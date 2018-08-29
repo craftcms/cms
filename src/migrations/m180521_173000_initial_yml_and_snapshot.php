@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -58,6 +59,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
     {
 
         $data = [
+            'dateModified' => DateTimeHelper::currentTimeStamp(),
             'siteGroups' => $this->_getSiteGroupData(),
             'sites' => $this->_getSiteData(),
             'sections' => $this->_getSectionData(),
