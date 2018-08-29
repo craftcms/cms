@@ -62,8 +62,10 @@ class Deprecator extends Component
      *
      * @param string $key
      * @param string $message
+     * @param string|null $file
+     * @param int|null $line
      */
-    public function log(string $key, string $message)
+    public function log(string $key, string $message, string $file = null, int $line = null)
     {
         if ($this->logTarget === false) {
             return;
@@ -76,7 +78,11 @@ class Deprecator extends Component
 
         // Get the debug backtrace
         $traces = debug_backtrace();
-        list($file, $line) = $this->_findOrigin($traces);
+
+        if ($file === null) {
+            list($file, $line) = $this->_findOrigin($traces);
+        }
+
         $fingerprint = $file . ($line ? ':' . $line : '');
         $index = $key . '-' . $fingerprint;
 
