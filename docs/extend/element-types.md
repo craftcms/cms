@@ -643,16 +643,16 @@ The Edit Category page offers a relatively straightforward example of how it cou
 
 - Controller actions:
 
-  - <api:craft\controllers\actionEditCategory> – renders the Edit Category page
-  - <api:craft\controllers\actionPreviewCategory> – renders a category’s front-end page for a Live Preview request
-  - <api:craft\controllers\actionSaveCategory> – saves a category
-  - <api:craft\controllers\actionDeleteCategory> – deletes a category
-  - <api:craft\controllers\actionShareCategory> – handles a Share Category request, creating a token for `categories/view-shared-category` and redirecting the user to it
-  - <api:craft\controllers\actionViewSharedCategory> – renders a category’s front-end page for a Share Category token
+  - [actionEditCategory()](api:craft\controllers\CategoriesController::actionEditCategory()) – renders the Edit Category page
+  - [actionPreviewCategory()](api:craft\controllers\CategoriesController::actionPreviewCategory()) – renders a category’s front-end page for a Live Preview request
+  - [actionSaveCategory()](api:craft\controllers\CategoriesController::actionSaveCategory()) – saves a category
+  - [actionDeleteCategory()](api:craft\controllers\CategoriesController::actionDeleteCategory()) – deletes a category
+  - [actionShareCategory()](api:craft\controllers\CategoriesController::actionShareCategory()) – handles a Share Category request, creating a token for `categories/view-shared-category` and redirecting the user to it
+  - [actionViewSharedCategory()](api:craft\controllers\CategoriesController::actionViewSharedCategory()) – renders a category’s front-end page for a Share Category token
 
-- Edit Category page template: `vendor/craftcms/cms/src/templates/categories/_edit.html`
+- Edit Category page template: [categories/_edit.html](https://github.com/craftcms/cms/blob/develop/src/templates/categories/_edit.html)
 
-Once you’ve set up an edit page for your element type, you can add a `getCpEditUrl()` method to your element class, which will communicate your elements’ edit page URLs within the Control Panel.
+Once you’ve set up an edit page for your element type, you can add a [getCpEditUrl()](api:craft\base\ElementInterface::getCpEditUrl()) method to your element class, which will communicate your elements’ edit page URLs within the Control Panel.
 
 ```php
 public function getCpEditUrl()
