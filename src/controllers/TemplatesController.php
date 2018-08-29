@@ -106,6 +106,17 @@ class TemplatesController extends Controller
     }
 
     /**
+     * Renders the Project Config Update notification template.
+     *
+     * @return Response
+     */
+    public function actionConfigUpdateNotification(): Response
+    {
+        // TODO maybe use same template, if POST data is only thing that differs?
+        return $this->renderTemplate('_special/configupdate');
+    }
+
+    /**
      * @return Response|null
      * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */

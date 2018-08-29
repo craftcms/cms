@@ -227,6 +227,11 @@ class Application extends \yii\web\Application
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
         }
 
+        // Check if project configuration needs to apply some changes here
+        if ($this->getProjectConfig()->isUpdatePending()) {
+            return $this->_processConfigUpdateLogic($request) ?: $this->getResponse();
+        }
+
         // If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
         if ($request->getIsCpRequest() && !($request->getIsActionRequest() && $this->_isSpecialCaseActionRequest($request))) {
             $user = $this->getUser();
@@ -630,6 +635,43 @@ class Application extends \yii\web\Application
 
             // Show the manual update notification template
             return $this->runAction('templates/manual-update-notification');
+        }
+
+        // We'll also let update actions go through
+        if ($request->getIsActionRequest()) {
+            $actionSegments = $request->getActionSegments();
+            if (
+                ArrayHelper::firstValue($actionSegments) === 'updater' ||
+                $actionSegments === ['app', 'migrate'] ||
+                $actionSegments === ['pluginstore', 'install', 'migrate']
+            ) {
+                return $this->runAction(implode('/', $actionSegments));
+            }
+        }
+
+        // If an exception gets throw during the rendering of the 503 template, let
+        // TemplatesController->actionRenderError() take care of it.
+        throw new ServiceUnavailableHttpException();
+    }
+
+    /**
+     * @param Request $request
+     * @return Response|null
+     * @throws HttpException
+     * @throws ServiceUnavailableHttpException
+     * @throws \yii\base\ExitException
+     */
+    private function _processConfigUpdateLogic(Request $request)
+    {
+        $this->_unregisterDebugModule();
+
+        // Let all non-action CP requests through.
+        if (
+            $request->getIsCpRequest() &&
+            (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
+        ) {
+            // Show the manual update notification template
+            return $this->runAction('templates/config-update-notification');
         }
 
         // We'll also let update actions go through

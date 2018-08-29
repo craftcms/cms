@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\db\Query;
 use craft\events\ParseConfigEvent;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\Path as PathHelper;
@@ -216,6 +217,13 @@ class ProjectConfig extends Component
 
         $targetFilePath = null;
 
+        static $timestampUpdated = null;
+
+        if (null === $timestampUpdated) {
+            $timestampUpdated = true;
+            $this->save('dateModified', DateTimeHelper::currentTimeStamp());
+        }
+
         if ($this->_useConfigFile()) {
             $configMap = $this->_getStoredConfigMap();
 
@@ -328,7 +336,12 @@ class ProjectConfig extends Component
      */
     public function isUpdatePending(): bool
     {
-        if ($this->_areConfigFilesModified()) {
+        // TODO remove after next breakpoint
+        if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
+            return false;
+        }
+
+        if ($this->_useConfigFile() && $this->_areConfigFilesModified()) {
             $changes = $this->_getPendingChanges();
 
             foreach ($changes as $changeType) {
@@ -339,7 +352,6 @@ class ProjectConfig extends Component
 
             $this->updateParsedConfigTimes();
         }
-
 
         return false;
     }
@@ -471,6 +483,31 @@ class ProjectConfig extends Component
             Craft::$app->saveInfo($info);
         }
 
+    }
+
+    /**
+     * Get a summary of all pending changes.
+     *
+     * @return array
+     */
+    public function getPendingChangeSummary(): array
+    {
+        $pendingChanges = $this->_getPendingChanges();
+
+        $summary = [];
+
+        // Reduce all the small changes to overall item changes.
+        foreach ($pendingChanges as $type => $changes) {
+            $summary[$type] = [];
+            foreach ($changes as $path) {
+                $pathParts = explode('.', $path);
+                if (count($pathParts) > 1) {
+                    $summary[$type][$pathParts[0].'.'.$pathParts[1]] = true;
+                }
+            }
+        }
+
+        return $summary;
     }
 
     // Private methods
@@ -611,7 +648,7 @@ class ProjectConfig extends Component
         $flatConfig = [];
         $flatCurrent = [];
 
-        unset($configSnapshot['imports'], $currentSnapshot['imports']);
+        unset($configSnapshot['dateModified'], $currentSnapshot['dateModified'], $configSnapshot['imports'], $currentSnapshot['imports']);
 
         // flatten both snapshots so we can compare them.
 
@@ -712,7 +749,7 @@ class ProjectConfig extends Component
         }
 
         foreach ($cachedModifiedTimes as $file => $modified) {
-            if (FileHelper::lastModifiedTime($file) > $modified) {
+            if (!file_exists($file) || FileHelper::lastModifiedTime($file) > $modified) {
                 return true;
             }
         }
