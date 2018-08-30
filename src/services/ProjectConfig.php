@@ -468,7 +468,7 @@ class ProjectConfig extends Component
             }
         }
 
-        if (($this->_updateConfigMap && $this->_useConfigFile())|| $this->_updateSnapshot) {
+        if (($this->_updateConfigMap && $this->_useConfigFile()) || $this->_updateSnapshot) {
             $info = Craft::$app->getInfo();
 
             if ($this->_updateConfigMap && $this->_useConfigFile()) {
