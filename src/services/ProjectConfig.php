@@ -219,6 +219,7 @@ class ProjectConfig extends Component
 
         static $timestampUpdated = null;
 
+        // TODO make sure $value is serializable and unserialable.
         if (null === $timestampUpdated) {
             $timestampUpdated = true;
             $this->save('dateModified', DateTimeHelper::currentTimeStamp());
