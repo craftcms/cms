@@ -37,6 +37,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $this->dropTableIfExists('{{%systemsettings}}');
 
+        $this->dropColumn('{{%plugins}}', 'settings');
+        $this->dropColumn('{{%plugins}}', 'licenseKey');
+        $this->dropColumn('{{%plugins}}', 'enabled');
+
         return true;
     }
 
@@ -71,6 +75,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             'tagGroups' => $this->_getTagGroupData(),
             'users' => $this->_getUserData(),
             'globalSets' => $this->_getGlobalSetData(),
+            'plugins' => $this->_getPluginData(),
         ];
 
         $data = array_merge_recursive($data, $this->_getSystemSettingData());
@@ -613,7 +618,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         return $groupData;
     }
 
-
     /**
      * Return global set data config array.
      *
@@ -654,6 +658,34 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         }
 
         return $setData;
+    }
+
+    /**
+     * Return plugin data config array
+     *
+     * @return array
+     */
+    private function _getPluginData(): array {
+        $plugins = (new Query())
+            ->select([
+                'handle',
+                'settings',
+                'licenseKey',
+                'enabled'])
+            ->from('{{%plugins}}')
+            ->all();
+
+        $pluginData = [];
+
+        foreach ($plugins as $plugin) {
+            $pluginData[$plugin['handle']] = [
+                'settings' => is_string($plugin['settings']) ? Json::decodeIfJson($plugin['settings']) : null,
+                'licenseKey' => $plugin['licenseKey'],
+                'enabled' => $plugin['enabled']
+            ];
+        }
+
+        return $pluginData;
     }
 
     /**
