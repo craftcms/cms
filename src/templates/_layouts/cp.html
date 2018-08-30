@@ -215,7 +215,7 @@
             <main id="main" role="main">
 
                 {% if fullPageForm -%}
-                    <form id="main-form" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect|hash }}"{% endif %} data-confirm-unload>
+                    <form id="main-form" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect|hash }}"{% endif %} data-confirm-unload novalidate>
                         {{- csrfInput() }}
                 {%- endif %}
 
