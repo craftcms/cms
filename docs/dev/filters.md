@@ -283,6 +283,10 @@ the [Apple Extended Keyboard II] [1].
 {{ content|markdown }}
 ```
 
+This filter supports two arguments:
+- `flavor` can be `'original'` (default value), `'gfm'`(GitHub-Flavored Markdown), `'gfm-comment'` (GFM with newlines converted to `<br>`s), and `'extra'` (Markdown Extra)
+- `inlineOnly` determines whether to only parse inline elements, omitting any `<p>` tags (defaults to `false`)
+
 ## `multisort`
 
 Sorts an array with [ArrayHelper::multisort()](api:yii\helpers\BaseArrayHelper::multisort()).
