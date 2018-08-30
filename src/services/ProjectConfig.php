@@ -258,13 +258,12 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Delete a value from the YML configuration by its path.
+     * Delete a value from the configuration by its path.
      *
      * @param string $path
-     * @param bool $deleteSilently whether delete should be broadcast via updates. Defaults to true.
      */
-    public function delete($path, bool $deleteSilently = false) {
-        $this->save($path, null, $deleteSilently);
+    public function delete($path) {
+        $this->save($path, null);
     }
 
     /**
