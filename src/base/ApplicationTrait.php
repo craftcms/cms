@@ -60,6 +60,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\services\Entries $entries The entries service
  * @property-read \craft\services\EntryRevisions $entryRevisions The entry revisions service
  * @property-read \craft\services\Fields $fields The fields service
+ * @property-read \craft\services\Gc $gc The garbage collection service
  * @property-read \craft\services\Globals $globals The globals service
  * @property-read \craft\services\Images $images The images service
  * @property-read \craft\services\Matrix $matrix The matrix service
@@ -89,9 +90,10 @@ use yii\web\ServerErrorHttpException;
  * @property-read bool $canTestEditions Whether Craft is running on a domain that is eligible to test out the editions
  * @property-read bool $canUpgradeEdition Whether Craft is eligible to be upgraded to a different edition
  * @property-read bool $hasWrongEdition Whether Craft is running with the wrong edition
+ * @property-read bool $isInitialized Whether Craft is fully initialized
+ * @property-read bool $isInMaintenanceMode Whether someone is currently performing a system update
+ * @property-read bool $isMultiSite Whether this site has multiple sites
  * @property-read bool $isSystemOn Whether the front end is accepting HTTP requests
- * @property-read bool $sInMaintenanceMode Whether someone is currently performing a system update
- * @property-read bool $sMultiSite Whether this site has multiple sites
  * @property-read Connection $db The database connection component
  * @property-read Formatter $formatter The formatter component
  * @property-read I18N $i18n The internationalization (i18n) component
@@ -131,6 +133,12 @@ trait ApplicationTrait
      * @var
      */
     private $_isInstalled;
+
+    /**
+     * @var bool Whether the application is fully initialized yet
+     * @see getIsInitialized()
+     */
+    private $_isInitialized = false;
 
     /**
      * @var
@@ -239,6 +247,16 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         $this->_isInstalled = $value;
+    }
+
+    /**
+     * Returns whether Craft has been fully initialized.
+     *
+     * @return bool
+     */
+    public function getIsInitialized(): bool
+    {
+        return $this->_isInitialized;
     }
 
     /**
@@ -407,7 +425,7 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
         $request = $this->getRequest();
 
-        return !$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@'.$request->getHostName());
+        return !$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@' . $request->getHostName());
     }
 
     /**
@@ -508,13 +526,13 @@ trait ApplicationTrait
 
             switch ($row['track']) {
                 case 'dev':
-                    $version .= '.0-alpha.'.$row['build'];
+                    $version .= '.0-alpha.' . $row['build'];
                     break;
                 case 'beta':
-                    $version .= '.0-beta.'.$row['build'];
+                    $version .= '.0-beta.' . $row['build'];
                     break;
                 default:
-                    $version .= '.'.$row['build'];
+                    $version .= '.' . $row['build'];
                     break;
             }
 
@@ -821,6 +839,16 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('fields');
+    }
+
+    /**
+     * Returns the garbage collection service.
+     *
+     * @return \craft\services\Gc The garbage collection service
+     */
+    public function getGc()
+    {
+        return $this->get('gc');
     }
 
     /**
@@ -1156,13 +1184,18 @@ trait ApplicationTrait
         // Load the plugins
         $this->getPlugins()->loadPlugins();
 
+        $this->_isInitialized = true;
+
         // Register all the listeners for config items
         $this->_registerConfigListeners();
 
-        // Fire an 'afterInit' event
+        // Fire an 'init' event
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
             $this->trigger(WebApplication::EVENT_INIT);
         }
+
+        // Possibly run garbage collection
+        $this->getGc()->run();
     }
 
     /**

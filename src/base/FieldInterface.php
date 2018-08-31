@@ -191,7 +191,6 @@ interface FieldInterface extends SavableComponentInterface
      *
      * Rules should be defined in the array syntax required by [[\yii\base\Model::rules()]],
      * with one difference: you can skip the first argument (the attribute list).
-     * Below are some examples:
      *
      * ```php
      * [
@@ -201,7 +200,17 @@ interface FieldInterface extends SavableComponentInterface
      *     ['string', 'min' => 3, 'max' => 12],
      *     // you can only pass the validator class name/handle if not setting any params
      *     'bool',
-     * ];
+     * ]
+     * ```
+     *
+     * To register validation rules that should only be enforced for _live_ elements,
+     * set the rule [scenario](https://www.yiiframework.com/doc/guide/2.0/en/structure-models#scenarios)
+     * to `live`:
+     *
+     * ```php
+     * [
+     *     ['string', 'min' => 3, 'max' => 12, 'on' => \craft\base\Element::SCENARIO_LIVE],
+     * ]
      * ```
      *
      * @return array
@@ -329,4 +338,19 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface $element The element that was just deleted
      */
     public function afterElementDelete(ElementInterface $element);
+
+    /**
+     * Performs actions before an element is restored.
+     *
+     * @param ElementInterface $element The element that is about to be restored
+     * @return bool Whether the element should be restored
+     */
+    public function beforeElementRestore(ElementInterface $element): bool;
+
+    /**
+     * Performs actions after the element has been restored.
+     *
+     * @param ElementInterface $element The element that was just restored
+     */
+    public function afterElementRestore(ElementInterface $element);
 }

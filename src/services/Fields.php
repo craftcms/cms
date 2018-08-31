@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\behaviors\ContentBehavior;
+use craft\behaviors\ElementQueryBehavior;
 use craft\db\Query;
 use craft\errors\FieldGroupNotFoundException;
 use craft\errors\FieldNotFoundException;
@@ -39,6 +40,7 @@ use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Url as UrlField;
 use craft\fields\Users as UsersField;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -210,10 +212,10 @@ class Fields extends Component
     private $_layoutsByType;
 
     /**
-     * @var bool Whether we’re listening for the request end, to update the field version
-     * @see updateFieldVersionAfterRequest()
+     * @var bool Whether we've already updated the field version in this request
+     * @see updateFieldVersion()
      */
-    private $_listeningForRequestEnd = false;
+    private $_updatedFieldVersion = false;
 
     // Public Methods
     // =========================================================================
@@ -782,7 +784,10 @@ class Fields extends Component
         $results = $this->_createFieldQuery()
             ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')
             ->innerJoin('{{%fieldlayouts}} fl', '[[fl.id]] = [[flf.layoutId]]')
-            ->where(['fl.type' => $elementType])
+            ->where([
+                'fl.type' => $elementType,
+                'fl.dateDeleted' => null,
+            ])
             ->all();
 
         $fields = [];
@@ -823,6 +828,57 @@ class Fields extends Component
             Craft::info('Field not saved due to validation error.', __METHOD__);
             return false;
         }
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            $fieldRecord = $this->_getFieldRecord($field);
+
+            // Create/alter the content table column
+            $contentTable = Craft::$app->getContent()->contentTable;
+            $oldColumnName = $this->oldFieldColumnPrefix . $fieldRecord->getOldHandle();
+            $newColumnName = Craft::$app->getContent()->fieldColumnPrefix . $field->handle;
+
+            if ($field::hasContentColumn()) {
+                $columnType = $field->getContentColumnType();
+
+                // Make sure we're working with the latest data in the case of a renamed field.
+                Craft::$app->getDb()->schema->refresh();
+
+                if (Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)) {
+                    Craft::$app->getDb()->createCommand()
+                        ->alterColumn($contentTable, $oldColumnName, $columnType)
+                        ->execute();
+                    if ($oldColumnName !== $newColumnName) {
+                        Craft::$app->getDb()->createCommand()
+                            ->renameColumn($contentTable, $oldColumnName, $newColumnName)
+                            ->execute();
+                    }
+                } else if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
+                    Craft::$app->getDb()->createCommand()
+                        ->alterColumn($contentTable, $newColumnName, $columnType)
+                        ->execute();
+                } else {
+                    Craft::$app->getDb()->createCommand()
+                        ->addColumn($contentTable, $newColumnName, $columnType)
+                        ->execute();
+                }
+            } else {
+                // Did the old field have a column we need to remove?
+                if (
+                    !$isNewField &&
+                    $fieldRecord->getOldHandle() &&
+                    Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)
+                ) {
+                    Craft::$app->getDb()->createCommand()
+                        ->dropColumn($contentTable, $oldColumnName)
+                        ->execute();
+                }
+            }
+
+            // Clear the translation key format if not using a custom translation method
+            if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
+                $field->translationKeyFormat = null;
+            }
 
         $groupRecord = $this->_getGroupRecord($field->groupId);
         $groupUid = $groupRecord->uid;
@@ -983,7 +1039,7 @@ class Fields extends Component
                 $transaction->commit();
 
                 // Update the field version at the end of the request
-                $this->updateFieldVersionAfterRequest();
+                $this->updateFieldVersion();
 
                 // Tell the current ContentBehavior class about the field
                 ContentBehavior::$fieldHandles[$fieldRecord->handle] = true;
@@ -1053,9 +1109,11 @@ class Fields extends Component
     public function handleDeletedField(ParseConfigEvent $event)
     {
         $path = $event->configPath;
+            );
 
         // Does it match a field?
         if (preg_match('/^' . self::CONFIG_FIELDS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
+            }
 
             $fieldRecord = $this->_getFieldRecord($matches[1]);
 
@@ -1092,7 +1150,7 @@ class Fields extends Component
             unset($this->_allFieldsInContext[$fieldRecord->context], $this->_fieldsWithContent[$fieldRecord->context]);
 
             // Update the field version at the end of the request
-            $this->updateFieldVersionAfterRequest();
+            $this->updateFieldVersion();
         }
     }
 
@@ -1112,7 +1170,7 @@ class Fields extends Component
         }
 
         $result = $this->_createLayoutQuery()
-            ->where(['id' => $layoutId])
+            ->andWhere(['id' => $layoutId])
             ->one();
 
         return $this->_layoutsById[$layoutId] = $result ? new FieldLayout($result) : null;
@@ -1131,7 +1189,7 @@ class Fields extends Component
         }
 
         $result = $this->_createLayoutQuery()
-            ->where(['type' => $type])
+            ->andWhere(['type' => $type])
             ->one();
 
         if (!$result) {
@@ -1436,7 +1494,7 @@ class Fields extends Component
         }
 
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%fieldlayouts}}', ['id' => $layout->id])
+            ->softDelete('{{%fieldlayouts}}', ['id' => $layout->id])
             ->execute();
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_LAYOUT)) {
@@ -1457,33 +1515,49 @@ class Fields extends Component
     public function deleteLayoutsByType(string $type): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete('{{%fieldlayouts}}', ['type' => $type])
+            ->softDelete('{{%fieldlayouts}}', ['type' => $type])
             ->execute();
 
         return (bool)$affectedRows;
     }
 
     /**
-     * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
+     * Restores a field layout by its ID.
+     *
+     * @param int $id The field layout’s ID
+     * @return bool Whether the layout was restored successfully
      */
-    public function updateFieldVersionAfterRequest()
+    public function restoreLayoutById(int $id): bool
     {
-        if ($this->_listeningForRequestEnd) {
-            return;
-        }
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->restore('{{%fieldlayouts}}', ['id' => $id])
+            ->execute();
 
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'updateFieldVersion']);
-        $this->_listeningForRequestEnd = true;
+        return (bool)$affectedRows;
     }
 
     /**
-     * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
+     * Sets a new field version, so the ContentBehavior and ElementQueryBehavior classes
+     * will get regenerated on the next request.
+     *
+     * This will only have an effect once per request. Subsequent calls will be ignored.
      */
     public function updateFieldVersion()
     {
+        if ($this->_updatedFieldVersion) {
+            return;
+        }
+
+        // Make sure that ContentBehavior and ElementQueryBehavior have already been loaded,
+        // so the field version change won't be detected until the next request
+        class_exists(ContentBehavior::class);
+        class_exists(ElementQueryBehavior::class);
+
         $info = Craft::$app->getInfo();
         $info->fieldVersion = StringHelper::randomString(12);
         Craft::$app->saveInfo($info);
+
+        $this->_updatedFieldVersion = true;
     }
 
     // Private Methods
@@ -1530,7 +1604,7 @@ class Fields extends Component
                 'fields.uid'
             ])
             ->from(['{{%fields}} fields'])
-            ->orderBy(['fields.name' => SORT_ASC]);
+            ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
     }
 
     /**
@@ -1546,7 +1620,8 @@ class Fields extends Component
                 'type',
                 'uid'
             ])
-            ->from(['{{%fieldlayouts}}']);
+            ->from(['{{%fieldlayouts}}'])
+            ->where(['dateDeleted' => null]);
     }
 
     /**

@@ -353,18 +353,33 @@ class Sections extends Component
     }
 
     /**
-     * Return a section by it's UID.
+     * Gets a section by its UID.
      *
-     * @param string $sectionUid
+     * ---
+     *
+     * ```php
+     * $section = Craft::$app->sections->getSectionByUid('b3a9eef3-9444-4995-84e2-6dc6b60aebd2');
+     * ```
+     * ```twig
+     * {% set section = craft.app.sections.getSectionByUid('b3a9eef3-9444-4995-84e2-6dc6b60aebd2') %}
+     * ```
+     *
+     * @param string $uid
      * @return Section|null
      */
-    public function getSectionByUid(string $sectionUid)
+    public function getSectionByUid(string $uid)
     {
         $result = $this->_createSectionQuery()
-            ->where(['sections.uid' => $sectionUid])
+            ->where(['sections.uid' => $uid])
             ->one();
 
-        return $result ? new Section($result) : null;
+        if (!$result) {
+            return null;
+        }
+
+        $section = new Section($result);
+        $this->_sectionsById[$section->id] = $section;
+        return $section;
     }
 
     /**
@@ -528,7 +543,6 @@ class Sections extends Component
 
         // Get the site settings
         $allSiteSettings = $section->getSiteSettings();
-
 
         if (empty($allSiteSettings)) {
             throw new Exception('Tried to save a section without any site settings');
@@ -1463,8 +1477,7 @@ class Sections extends Component
                 $entry = Entry::find()
                     ->id($data['id'])
                     ->siteId($data['siteId'])
-                    ->status(null)
-                    ->enabledForSite(false)
+                    ->anyStatus()
                     ->one();
                 break;
             }
@@ -1535,8 +1548,7 @@ class Sections extends Component
             /** @noinspection PhpUndefinedVariableInspection */
             $query->siteId(ArrayHelper::firstKey($allOldSiteSettingsRecords));
             $query->sectionId($section->id);
-            $query->status(null);
-            $query->enabledForSite(false);
+            $query->anyStatus();
             $query->orderBy('elements.id');
             $query->withStructure(false);
             /** @var Entry $entry */

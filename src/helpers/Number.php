@@ -61,7 +61,7 @@ class Number
 
         while ($num >= 0) {
             $ascii = ($num % 26) + 65;
-            $alpha = chr($ascii).$alpha;
+            $alpha = chr($ascii) . $alpha;
 
             $num = (int)($num / 26) - 1;
         }

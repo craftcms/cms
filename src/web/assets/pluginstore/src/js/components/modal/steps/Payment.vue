@@ -308,11 +308,11 @@
                             })
                         }
                         this.loading = false
-                        this.$root.displayError("Couldn't save billing informations.")
+                        this.$root.displayError("Couldn’t save billing information.")
                     })
                 }, () => {
                     this.loading = false
-                    this.$root.displayError("Couldn't save payment method.")
+                    this.$root.displayError("Couldn’t save payment method.")
                 })
             },
 

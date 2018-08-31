@@ -297,13 +297,13 @@ class UserGroups extends Component
     }
 
     /**
-     * Deletes a user group by its ID.
+     * Deletes a user group.
      *
-     * @param int $groupId
-     * @return bool
+     * @param UserGroup $group The user group
+     * @return bool Whether the user group was deleted successfully
      * @throws WrongEditionException if this is called from Craft Solo edition
      */
-    public function deleteGroupById(int $groupId): bool
+    public function deleteGroup(UserGroup $group): bool
     {
         Craft::$app->requireEdition(Craft::Pro);
 

@@ -57,7 +57,7 @@ class UtilitiesController extends Controller
         /** @var string|UtilityInterface $firstUtility */
         $firstUtility = reset($utilities);
 
-        return $this->redirect('utilities/'.$firstUtility::id());
+        return $this->redirect('utilities/' . $firstUtility::id());
     }
 
     /**
@@ -74,12 +74,12 @@ class UtilitiesController extends Controller
         $utilitiesService = Craft::$app->getUtilities();
 
         if (($class = $utilitiesService->getUtilityTypeById($id)) === null) {
-            throw new NotFoundHttpException('Invalid utility ID: '.$id);
+            throw new NotFoundHttpException('Invalid utility ID: ' . $id);
         }
 
         /** @var UtilityInterface $class */
         if ($utilitiesService->checkAuthorization($class) === false) {
-            throw new ForbiddenHttpException('User not permitted to access the "'.$class::displayName().'".');
+            throw new ForbiddenHttpException('User not permitted to access the "' . $class::displayName() . '".');
         }
 
         $this->getView()->registerAssetBundle(UtilitiesAsset::class);
@@ -296,8 +296,7 @@ class UtilitiesController extends Controller
 
                 /** @var Asset[] $assets */
                 $assets = Asset::find()
-                    ->status(null)
-                    ->enabledForSite(false)
+                    ->anyStatus()
                     ->id($params['deleteAsset'])
                     ->all();
 
@@ -350,7 +349,7 @@ class UtilitiesController extends Controller
                 } catch (InvalidArgumentException $e) {
                     // the directory doesn't exist
                 } catch (\Throwable $e) {
-                    Craft::warning("Could not clear the directory {$action}: ".$e->getMessage(), __METHOD__);
+                    Craft::warning("Could not clear the directory {$action}: " . $e->getMessage(), __METHOD__);
                 }
             } else if (isset($cacheOption['params'])) {
                 call_user_func_array($action, $cacheOption['params']);
@@ -380,7 +379,7 @@ class UtilitiesController extends Controller
         try {
             $backupPath = Craft::$app->getDb()->backup();
         } catch (\Throwable $e) {
-            throw new Exception('Could not create backup: '.$e->getMessage());
+            throw new Exception('Could not create backup: ' . $e->getMessage());
         }
 
         if (!is_file($backupPath)) {
@@ -391,20 +390,20 @@ class UtilitiesController extends Controller
             return $this->asJson(['success' => true]);
         }
 
-        $zipPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.pathinfo($backupPath, PATHINFO_FILENAME).'.zip';
+        $zipPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . pathinfo($backupPath, PATHINFO_FILENAME) . '.zip';
 
         if (is_file($zipPath)) {
             try {
                 FileHelper::unlink($zipPath);
             } catch (ErrorException $e) {
-                Craft::warning("Unable to delete the file \"{$zipPath}\": ".$e->getMessage(), __METHOD__);
+                Craft::warning("Unable to delete the file \"{$zipPath}\": " . $e->getMessage(), __METHOD__);
             }
         }
 
         $zip = new ZipArchive();
 
         if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-            throw new Exception('Cannot create zip at '.$zipPath);
+            throw new Exception('Cannot create zip at ' . $zipPath);
         }
 
         $filename = pathinfo($backupPath, PATHINFO_BASENAME);
@@ -428,7 +427,7 @@ class UtilitiesController extends Controller
         $this->requirePermission('utility:db-backup');
 
         $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
-        $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename.'.zip';
+        $filePath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $filename . '.zip';
 
         if (!is_file($filePath) || !Path::ensurePathIsContained($filePath)) {
             throw new NotFoundHttpException(Craft::t('app', 'Invalid backup name: {filename}', [
@@ -485,6 +484,7 @@ class UtilitiesController extends Controller
             $elements = (new Query())
                 ->select(['id', 'type'])
                 ->from(['{{%elements}}'])
+                ->where(['dateDeleted' => null])
                 ->all();
 
             $batch = [];
@@ -509,8 +509,7 @@ class UtilitiesController extends Controller
 
         $query = $class::find()
             ->id($params['id'])
-            ->status(null)
-            ->enabledForSite(false);
+            ->anyStatus();
 
         foreach ($siteIds as $siteId) {
             $query->siteId($siteId);

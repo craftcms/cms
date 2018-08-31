@@ -70,9 +70,9 @@ class Response extends \yii\web\Response
     {
         $cacheTime = 31536000; // 1 year
         $this->getHeaders()
-            ->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT')
+            ->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT')
             ->set('Pragma', 'cache')
-            ->set('Cache-Control', 'max-age='.$cacheTime);
+            ->set('Cache-Control', 'max-age=' . $cacheTime);
 
         return $this;
     }
@@ -88,7 +88,7 @@ class Response extends \yii\web\Response
         $modifiedTime = filemtime($path);
 
         if ($modifiedTime) {
-            $this->getHeaders()->set('Last-Modified', gmdate('D, d M Y H:i:s', $modifiedTime).' GMT');
+            $this->getHeaders()->set('Last-Modified', gmdate('D, d M Y H:i:s', $modifiedTime) . ' GMT');
         }
 
         return $this;
@@ -151,7 +151,7 @@ class Response extends \yii\web\Response
             $obContent = @ob_get_clean();
 
             if ($obContent !== false) {
-                $this->content = $obContent.$this->content;
+                $this->content = $obContent . $this->content;
             } else {
                 break;
             }
@@ -171,6 +171,42 @@ class Response extends \yii\web\Response
         // In case we're running on php-fpm (https://secure.php.net/manual/en/book.fpm.php)
         if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
+        }
+    }
+
+    /**
+     * @inheritdoc
+     * @internal this is an exact copy of yii\web\Response::sendContent(), except for the `@` before `set_time_limit(0)`
+     * @todo remove this if Yii ever merges https://github.com/yiisoft/yii2/pull/15679 or similar
+     */
+    protected function sendContent()
+    {
+        if ($this->stream === null) {
+            echo $this->content;
+
+            return;
+        }
+
+        @set_time_limit(0); // Reset time limit for big files
+        $chunkSize = 8 * 1024 * 1024; // 8MB per chunk
+
+        if (is_array($this->stream)) {
+            list($handle, $begin, $end) = $this->stream;
+            fseek($handle, $begin);
+            while (!feof($handle) && ($pos = ftell($handle)) <= $end) {
+                if ($pos + $chunkSize > $end) {
+                    $chunkSize = $end - $pos + 1;
+                }
+                echo fread($handle, $chunkSize);
+                flush(); // Free up memory. Otherwise large files will trigger PHP's memory limit.
+            }
+            fclose($handle);
+        } else {
+            while (!feof($this->stream)) {
+                echo fread($this->stream, $chunkSize);
+                flush();
+            }
+            fclose($this->stream);
         }
     }
 

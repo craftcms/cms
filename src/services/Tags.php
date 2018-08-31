@@ -353,13 +353,13 @@ class Tags extends Component
     }
 
     /**
-     * Deletes a tag group by its ID.
+     * Deletes a tag group.
      *
-     * @param int $tagGroupId
+     * @param TagGroup $group The tag group
      * @return bool Whether the tag group was deleted successfully
      * @throws \Throwable if reasons
      */
-    public function deleteTagGroupById(int $tagGroupId): bool
+    public function deleteTagGroup(TagGroup $group): bool
     {
         if (!$tagGroupId) {
             return false;
@@ -374,7 +374,7 @@ class Tags extends Component
         // Fire a 'beforeDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new TagGroupEvent([
-                'tagGroup' => $tagGroup
+                'tagGroup' => $group
             ]));
         }
 

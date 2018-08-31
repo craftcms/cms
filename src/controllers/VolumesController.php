@@ -187,7 +187,7 @@ class VolumesController extends Controller
             'handle' => $request->getBodyParam('handle'),
             'hasUrls' => (bool)$request->getBodyParam('hasUrls'),
             'url' => $request->getBodyParam('url'),
-            'settings' => $request->getBodyParam('types.'.$type)
+            'settings' => $request->getBodyParam('types.' . $type)
         ];
 
         // If this is an existing volume, populate with properties unchangeable by this action.

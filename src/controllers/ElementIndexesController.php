@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
+use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\ElementActionEvent;
@@ -58,7 +59,7 @@ class ElementIndexesController extends BaseElementsController
     private $_viewState;
 
     /**
-     * @var ElementQueryInterface|null
+     * @var ElementQueryInterface|ElementQuery|null
      */
     private $_elementQuery;
 
@@ -301,6 +302,9 @@ class ElementIndexesController extends BaseElementsController
 
         // Override with the request's params
         if ($criteria = $request->getBodyParam('criteria')) {
+            if (isset($criteria['trashed'])) {
+                $criteria['trashed'] = (bool)$criteria['trashed'];
+            }
             Craft::configure($query, $criteria);
         }
 
@@ -308,28 +312,23 @@ class ElementIndexesController extends BaseElementsController
         $collapsedElementIds = $request->getParam('collapsedElementIds');
 
         if ($collapsedElementIds) {
-            // Get the actual elements
-            $collapsedElementQuery = clone $query;
-            /** @var Element[] $collapsedElements */
-            $collapsedElements = $collapsedElementQuery
-                ->id($collapsedElementIds)
-                ->offset(0)
+            $descendantQuery = (clone $query)
+                ->offset(null)
                 ->limit(null)
-                ->orderBy(['lft' => SORT_ASC])
+                ->orderBy(null)
                 ->positionedAfter(null)
                 ->positionedBefore(null)
+                ->anyStatus();
+
+            // Get the actual elements
+            /** @var Element[] $collapsedElements */
+            $collapsedElements = (clone $descendantQuery)
+                ->id($collapsedElementIds)
+                ->orderBy(['lft' => SORT_ASC])
                 ->all();
 
             if (!empty($collapsedElements)) {
                 $descendantIds = [];
-
-                $descendantQuery = clone $query;
-                $descendantQuery
-                    ->offset(0)
-                    ->limit(null)
-                    ->orderBy(null)
-                    ->positionedAfter(null)
-                    ->positionedBefore(null);
 
                 foreach ($collapsedElements as $element) {
                     // Make sure we haven't already excluded this one, because its ancestor is collapsed as well
@@ -337,10 +336,11 @@ class ElementIndexesController extends BaseElementsController
                         continue;
                     }
 
-                    $descendantQuery->descendantOf($element);
-                    foreach ($descendantQuery->ids() as $id) {
-                        $descendantIds[] = $id;
-                    }
+                    $elementDescendantIds = (clone $descendantQuery)
+                        ->descendantOf($element)
+                        ->ids();
+
+                    $descendantIds = array_merge($descendantIds, $elementDescendantIds);
                 }
 
                 if (!empty($descendantIds)) {
@@ -416,6 +416,14 @@ class ElementIndexesController extends BaseElementsController
                 if ($actions[$i] === null) {
                     unset($actions[$i]);
                 }
+            }
+
+            if ($this->_elementQuery->trashed) {
+                if (!$action instanceof Restore) {
+                    unset($actions[$i]);
+                }
+            } else if ($action instanceof Restore) {
+                unset($actions[$i]);
             }
         }
 

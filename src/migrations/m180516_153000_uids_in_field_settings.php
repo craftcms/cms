@@ -30,7 +30,11 @@ class m180516_153000_uids_in_field_settings extends Migration
         $userGroupIds = [];
 
         foreach ($fields as $field) {
-            $settings = Json::decodeIfJson($field['settings']);
+            if ($field['settings']) {
+                $settings = Json::decodeIfJson($field['settings']) ?: [];
+            } else {
+                $settings = [];
+            }
 
             if (!empty($settings['targetSiteId'])) {
                 $siteIds[] = $settings['targetSiteId'];
@@ -116,7 +120,11 @@ class m180516_153000_uids_in_field_settings extends Migration
             ->pairs();
 
         foreach ($fields as $field) {
-            $settings = Json::decodeIfJson($field['settings']);
+            if ($field['settings']) {
+                $settings = Json::decodeIfJson($field['settings']) ?: [];
+            } else {
+                $settings = [];
+            }
 
             if (array_key_exists('targetSiteId', $settings)) {
                 $settings['targetSiteId'] =   $sites[$settings['targetSiteId']] ?? null;

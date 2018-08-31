@@ -197,6 +197,23 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
+    public function serializeValue($value, ElementInterface $element = null)
+    {
+        if ($value instanceof MultiOptionsFieldData) {
+            $serialized = [];
+            foreach ($value as $selectedValue) {
+                /** @var OptionData $selectedValue */
+                $serialized[] = $selectedValue->value;
+            }
+            return $serialized;
+        }
+
+        return parent::serializeValue($value, $element);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getElementValidationRules(): array
     {
         // Get all of the acceptable values
@@ -298,7 +315,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     {
         if ($this->options) {
             foreach ($this->options as $option) {
-                if ($option['value'] == $value) {
+                if ((string)$option['value'] === $value) {
                     return $option['label'];
                 }
             }

@@ -175,6 +175,7 @@ class Install extends Migration
         $this->createTable('{{%categories}}', [
             'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
+            'parentId' => $this->integer(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -248,6 +249,7 @@ class Install extends Migration
             'archived' => $this->boolean()->defaultValue(false)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%elements_sites}}', [
@@ -279,6 +281,7 @@ class Install extends Migration
         $this->createTable('{{%entries}}', [
             'id' => $this->integer()->notNull(),
             'sectionId' => $this->integer()->notNull(),
+            'parentId' => $this->integer(),
             'typeId' => $this->integer()->notNull(),
             'authorId' => $this->integer(),
             'postDate' => $this->dateTime(),
@@ -351,6 +354,7 @@ class Install extends Migration
             'type' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%fieldlayouttabs}}', [
@@ -541,6 +545,7 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%sitegroups}}', [
@@ -750,12 +755,13 @@ class Install extends Migration
         $this->createIndex(null, '{{%content}}', ['title'], false);
         $this->createIndex(null, '{{%deprecationerrors}}', ['key', 'fingerprint'], true);
         $this->createIndex(null, '{{%elementindexsettings}}', ['type'], true);
+        $this->createIndex(null, '{{%elements}}', ['dateDeleted'], false);
         $this->createIndex(null, '{{%elements}}', ['fieldLayoutId'], false);
         $this->createIndex(null, '{{%elements}}', ['type'], false);
         $this->createIndex(null, '{{%elements}}', ['enabled'], false);
         $this->createIndex(null, '{{%elements}}', ['archived', 'dateCreated'], false);
         $this->createIndex(null, '{{%elements_sites}}', ['elementId', 'siteId'], true);
-        $this->createIndex(null, '{{%elements_sites}}', ['uri', 'siteId'], true);
+        $this->createIndex(null, '{{%elements_sites}}', ['uri', 'siteId'], false);
         $this->createIndex(null, '{{%elements_sites}}', ['siteId'], false);
         $this->createIndex(null, '{{%elements_sites}}', ['slug', 'siteId'], false);
         $this->createIndex(null, '{{%elements_sites}}', ['enabled'], false);
@@ -783,6 +789,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%fieldlayoutfields}}', ['sortOrder'], false);
         $this->createIndex(null, '{{%fieldlayoutfields}}', ['tabId'], false);
         $this->createIndex(null, '{{%fieldlayoutfields}}', ['fieldId'], false);
+        $this->createIndex(null, '{{%fieldlayouts}}', ['dateDeleted'], false);
         $this->createIndex(null, '{{%fieldlayouts}}', ['type'], false);
         $this->createIndex(null, '{{%fieldlayouttabs}}', ['sortOrder'], false);
         $this->createIndex(null, '{{%fieldlayouttabs}}', ['layoutId'], false);
@@ -823,7 +830,8 @@ class Install extends Migration
         $this->createIndex(null, '{{%sessions}}', ['dateUpdated'], false);
         $this->createIndex(null, '{{%sessions}}', ['userId'], false);
         $this->createIndex(null, '{{%shunnedmessages}}', ['userId', 'message'], true);
-        $this->createIndex(null, '{{%sites}}', ['handle'], true);
+        $this->createIndex(null, '{{%sites}}', ['dateDeleted'], false);
+        $this->createIndex(null, '{{%sites}}', ['handle'], false);
         $this->createIndex(null, '{{%sites}}', ['sortOrder'], false);
         $this->createIndex(null, '{{%sitegroups}}', ['name'], true);
         $this->createIndex(null, '{{%structureelements}}', ['structureId', 'elementId'], true);
@@ -853,8 +861,8 @@ class Install extends Migration
         $this->createIndex(null, '{{%userpermissions_usergroups}}', ['groupId'], false);
         $this->createIndex(null, '{{%userpermissions_users}}', ['permissionId', 'userId'], true);
         $this->createIndex(null, '{{%userpermissions_users}}', ['userId'], false);
-        $this->createIndex(null, '{{%users}}', ['username'], true);
-        $this->createIndex(null, '{{%users}}', ['email'], true);
+        $this->createIndex(null, '{{%users}}', ['username'], false);
+        $this->createIndex(null, '{{%users}}', ['email'], false);
         $this->createIndex(null, '{{%users}}', ['uid'], false);
         $this->createIndex(null, '{{%users}}', ['verificationCode'], false);
         $this->createIndex(null, '{{%volumefolders}}', ['name', 'parentId', 'volumeId'], true);
@@ -877,10 +885,10 @@ class Install extends Migration
 
             $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');
 
-            $sql = 'CREATE FULLTEXT INDEX '.
-                $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON '.
-                $this->db->quoteTableName('{{%searchindex}}').' '.
-                '('.$this->db->quoteColumnName('keywords').')';
+            $sql = 'CREATE FULLTEXT INDEX ' .
+                $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')) . ' ON ' .
+                $this->db->quoteTableName('{{%searchindex}}') . ' ' .
+                '(' . $this->db->quoteColumnName('keywords') . ')';
 
             $this->db->createCommand($sql)->execute();
         } else {
@@ -895,10 +903,10 @@ class Install extends Migration
 
             $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');
 
-            $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords_vector')).' ON {{%searchindex}} USING GIN([[keywords_vector]] [[pg_catalog]].[[tsvector_ops]]) WITH (FASTUPDATE=YES)';
+            $sql = 'CREATE INDEX ' . $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords_vector')) . ' ON {{%searchindex}} USING GIN([[keywords_vector]] [[pg_catalog]].[[tsvector_ops]]) WITH (FASTUPDATE=YES)';
             $this->db->createCommand($sql)->execute();
 
-            $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON {{%searchindex}} USING btree(keywords)';
+            $sql = 'CREATE INDEX ' . $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')) . ' ON {{%searchindex}} USING btree(keywords)';
             $this->db->createCommand($sql)->execute();
         }
     }
@@ -914,6 +922,7 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%assets}}', ['volumeId'], '{{%volumes}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%categories}}', ['groupId'], '{{%categorygroups}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%categories}}', ['id'], '{{%elements}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%categories}}', ['parentId'], '{{%categories}}', ['id'], 'SET NULL', null);
         $this->addForeignKey(null, '{{%categorygroups}}', ['fieldLayoutId'], '{{%fieldlayouts}}', ['id'], 'SET NULL', null);
         $this->addForeignKey(null, '{{%categorygroups}}', ['structureId'], '{{%structures}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%categorygroups_sites}}', ['groupId'], '{{%categorygroups}}', ['id'], 'CASCADE', null);
@@ -927,6 +936,7 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%entries}}', ['authorId'], '{{%users}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%entries}}', ['id'], '{{%elements}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%entries}}', ['sectionId'], '{{%sections}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%entries}}', ['parentId'], '{{%entries}}', ['id'], 'SET NULL', null);
         $this->addForeignKey(null, '{{%entries}}', ['typeId'], '{{%entrytypes}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%entrydrafts}}', ['creatorId'], '{{%users}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%entrydrafts}}', ['entryId'], '{{%entries}}', ['id'], 'CASCADE', null);

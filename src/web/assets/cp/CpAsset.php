@@ -47,7 +47,7 @@ class CpAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             D3Asset::class,
@@ -71,7 +71,7 @@ class CpAsset extends AssetBundle
             'css/charts.css',
         ];
 
-        $this->js[] = 'js/Craft'.$this->dotJs();
+        $this->js[] = 'js/Craft' . $this->dotJs();
 
         parent::init();
     }
@@ -175,6 +175,7 @@ JS;
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
             'Save',
+            'Save as a new asset',
             'Score',
             'Search in subfolders',
             'Select',
@@ -225,6 +226,7 @@ JS;
         $orientation = $locale->getOrientation();
         $userService = Craft::$app->getUser();
         $currentUser = $userService->getIdentity();
+        $primarySite = $isInstalled && !$isMigrationNeeded ? $sitesService->getPrimarySite() : null;
 
         $data = [
             'actionTrigger' => $generalConfig->actionTrigger,
@@ -248,7 +250,8 @@ JS;
             'omitScriptNameInUrls' => (bool)$generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
             'path' => $request->getPathInfo(),
-            'primarySiteId' => $isInstalled && !$isMigrationNeeded ? $sitesService->getPrimarySite()->id : null,
+            'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
+            'primarySiteLanguage' => $primarySite->language ?? null,
             'Pro' => Craft::Pro,
             'publishableSections' => $isInstalled && $currentUser ? $this->_publishableSections($currentUser) : [],
             'registeredAssetBundles' => ['' => ''], // force encode as JS object
@@ -257,7 +260,7 @@ JS;
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'runQueueAutomatically' => (bool)$generalConfig->runQueueAutomatically,
             'scriptName' => $request->getScriptFile(),
-            'siteId' => $isInstalled && !$isMigrationNeeded ? $sitesService->currentSite->id : null,
+            'siteId' => $isInstalled && !$isMigrationNeeded ? (int)$sitesService->currentSite->id : null,
             'sites' => $this->_sites($sitesService),
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'Solo' => Craft::Solo,
@@ -301,7 +304,7 @@ JS;
         foreach (Craft::$app->getCategories()->getEditableGroups() as $group) {
             $groups[] = [
                 'handle' => $group->handle,
-                'id' => $group->id,
+                'id' => (int)$group->id,
                 'name' => Craft::t('site', $group->name),
                 'uid' => Craft::t('site', $group->uid),
             ];
@@ -319,7 +322,7 @@ JS;
                 $sections[] = [
                     'entryTypes' => $this->_entryTypes($section),
                     'handle' => $section->handle,
-                    'id' => $section->id,
+                    'id' => (int)$section->id,
                     'name' => Craft::t('site', $section->name),
                     'sites' => $section->getSiteIds(),
                     'type' => $section->type,
@@ -338,7 +341,7 @@ JS;
         foreach ($section->getEntryTypes() as $type) {
             $types[] = [
                 'handle' => $type->handle,
-                'id' => $type->id,
+                'id' => (int)$type->id,
                 'name' => Craft::t('site', $type->name),
             ];
         }
@@ -353,7 +356,7 @@ JS;
         foreach ($sitesService->getAllSites() as $site) {
             $sites[] = [
                 'handle' => $site->handle,
-                'id' => $site->id,
+                'id' => (int)$site->id,
                 'name' => Craft::t('site', $site->name),
             ];
         }

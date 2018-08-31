@@ -24,7 +24,7 @@
 
                 if (!this.$trigger.hasClass('disabled')) {
                     if (!this.progressBar) {
-                        this.progressBar = new Craft.ProgressBar(this.$status);
+                        this.progressBar = new Craft.ProgressBar(this.$status, true);
                     }
                     else {
                         this.progressBar.resetProgressBar();
@@ -38,6 +38,7 @@
                     this.currentBatchQueue = [];
 
                     this.progressBar.$progressBar.removeClass('hidden');
+                    this.progressBar.$progressBarStatus.removeClass('hidden');
 
                     this.progressBar.$progressBar.velocity('stop').velocity(
                         {
@@ -66,8 +67,9 @@
             },
 
             updateProgressBar: function() {
-                var width = (100 * this.completedActions / this.totalActions);
-                this.progressBar.setProgressPercentage(width);
+                this.progressBar.setItemCount(this.totalActions);
+                this.progressBar.setProcessedItemCount(this.completedActions);
+                this.progressBar.updateProgressBar();
             },
 
             loadAction: function(data) {
@@ -175,6 +177,7 @@
                     this.$allDone.css('opacity', 0);
                 }
 
+                this.progressBar.$progressBarStatus.addClass('hidden');
                 this.progressBar.$progressBar.velocity({opacity: 0}, {
                     duration: 'fast', complete: $.proxy(function() {
                         this.$allDone.velocity({opacity: 1}, {duration: 'fast'});

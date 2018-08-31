@@ -43,6 +43,7 @@ use DateTime;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\base\InvalidValueException;
 use yii\validators\NumberValidator;
 use yii\validators\Validator;
 
@@ -188,6 +189,17 @@ abstract class Element extends Component implements ElementInterface
      * @event \yii\base\Event The event that is triggered after the element is deleted
      */
     const EVENT_AFTER_DELETE = 'afterDelete';
+
+    /**
+     * @event ModelEvent The event that is triggered before the element is restored
+     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting restored.
+     */
+    const EVENT_BEFORE_RESTORE = 'beforeRestore';
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the element is restored
+     */
+    const EVENT_AFTER_RESTORE = 'afterRestore';
 
     /**
      * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
@@ -402,29 +414,15 @@ abstract class Element extends Component implements ElementInterface
                     $variables['structureEditable'] = true;
 
                     // Let StructuresController know that this user can make changes to the structure
-                    Craft::$app->getSession()->authorize('editStructure:'.$variables['structure']->id);
+                    Craft::$app->getSession()->authorize('editStructure:' . $variables['structure']->id);
                 }
             } else {
                 unset($viewState['order']);
             }
         } else {
-            $sortOptions = static::sortOptions();
-
-            if (!empty($sortOptions)) {
-                $sortOptions = array_keys($sortOptions);
-                $sortOptions[] = 'score';
-                $order = (!empty($viewState['order']) && in_array($viewState['order'], $sortOptions, true)) ? $viewState['order'] : reset($sortOptions);
-                $sort = (!empty($viewState['sort']) && in_array($viewState['sort'], ['asc', 'desc'], true)) ? $viewState['sort'] : 'asc';
-
-                // Combine them, accounting for the possibility that $order could contain multiple values,
-                // and be defensive about the possibility that the first value actually has "asc" or "desc"
-
-                // typeId             => typeId [sort]
-                // typeId, title      => typeId [sort], title
-                // typeId, title desc => typeId [sort], title desc
-                // typeId desc        => typeId [sort]
-
-                $elementQuery->orderBy(preg_replace('/^(.*?)(?:\s+(?:asc|desc))?(,.*)?$/i', "$1 {$sort}$2", $order));
+            $orderBy = self::_indexOrderBy($viewState);
+            if ($orderBy !== false) {
+                $elementQuery->orderBy($orderBy);
             }
         }
 
@@ -440,7 +438,7 @@ abstract class Element extends Component implements ElementInterface
 
         $variables['elements'] = $elementQuery->all();
 
-        $template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
+        $template = '_elements/' . $viewState['mode'] . 'view/' . ($includeContainer ? 'container' : 'elements');
 
         return Craft::$app->getView()->renderTemplate($template, $variables);
     }
@@ -585,7 +583,7 @@ abstract class Element extends Component implements ElementInterface
                 }
 
                 $condition[] = $thisElementCondition;
-                $sourceSelectSql .= ' WHEN '.
+                $sourceSelectSql .= ' WHEN ' .
                     $qb->buildCondition(
                         [
                             'and',
@@ -593,9 +591,9 @@ abstract class Element extends Component implements ElementInterface
                             ['>', 'lft', $elementStructureData['lft']],
                             ['<', 'rgt', $elementStructureData['rgt']]
                         ],
-                        $query->params).
+                        $query->params) .
                     " THEN :sourceId{$i}";
-                $query->params[':sourceId'.$i] = $elementStructureData['elementId'];
+                $query->params[':sourceId' . $i] = $elementStructureData['elementId'];
             }
 
             $sourceSelectSql .= ' END) as source';
@@ -645,6 +643,55 @@ abstract class Element extends Component implements ElementInterface
                 $field->modifyElementIndexQuery($elementQuery);
             }
         }
+    }
+
+    /**
+     * Returns the orderBy value for element indexes
+     *
+     * @param array $viewState
+     * @return array|false
+     */
+    private static function _indexOrderBy(array $viewState)
+    {
+        // Define the available sort attribute/option pairs
+        $sortOptions = [];
+        foreach (static::sortOptions() as $key => $sortOption) {
+            if (is_string($key)) {
+                // Shorthand syntax
+                $sortOptions[$key] = $key;
+            } else {
+                if (!isset($sortOption['orderBy'])) {
+                    throw new InvalidValueException('Sort options must specify an orderBy value');
+                }
+                $attribute = $sortOption['attribute'] ?? $sortOption['orderBy'];
+                $sortOptions[$attribute] = $sortOption['orderBy'];
+            }
+        }
+        $sortOptions['score'] = 'score';
+
+        if (!empty($viewState['order']) && isset($sortOptions[$viewState['order']])) {
+            $columns = $sortOptions[$viewState['order']];
+        } else if (count($sortOptions) > 1) {
+            $columns = reset($sortOptions);
+        } else {
+            return false;
+        }
+
+        // Borrowed from QueryTrait::normalizeOrderBy()
+        $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
+        $result = [];
+        foreach ($columns as $i => $column) {
+            if ($i === 0) {
+                // The first column's sort direction is always user-defined
+                $result[$column] = !empty($viewState['sort']) && strcasecmp($viewState['sort'], 'desc') ? SORT_ASC : SORT_DESC;
+            } else if (preg_match('/^(.*?)\s+(asc|desc)$/i', $column, $matches)) {
+                $result[$matches[1]] = strcasecmp($matches[2], 'desc') ? SORT_ASC : SORT_DESC;
+            } else {
+                $result[$column] = SORT_ASC;
+            }
+        }
+
+        return $result;
     }
 
     // Properties
@@ -918,7 +965,7 @@ abstract class Element extends Component implements ElementInterface
         ];
 
         if (static::hasTitles()) {
-            $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+            $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'trim' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
             $rules[] = [['title'], 'required', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
         }
 
@@ -934,8 +981,8 @@ abstract class Element extends Component implements ElementInterface
 
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
-                $attribute = 'field:'.$field->handle;
-                $isEmpty = [$this, 'isFieldEmpty:'.$field->handle];
+                $attribute = 'field:' . $field->handle;
+                $isEmpty = [$this, 'isFieldEmpty:' . $field->handle];
 
                 if ($field->required) {
                     // Only validate required custom fields on the LIVE scenario
@@ -956,7 +1003,7 @@ abstract class Element extends Component implements ElementInterface
                         }
 
                         if (!is_array($rule) || !isset($rule[0])) {
-                            throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
+                            throw new InvalidConfigException('Invalid validation rule for custom field "' . $field->handle . '".');
                         }
 
                         if (isset($rule[1])) {
@@ -1186,7 +1233,7 @@ abstract class Element extends Component implements ElementInterface
         $url = $this->getUrl();
 
         if ($url !== null) {
-            $link = '<a href="'.$url.'">'.Html::encode($this->__toString()).'</a>';
+            $link = '<a href="' . $url . '">' . Html::encode($this->__toString()) . '</a>';
 
             return Template::raw($link);
         }
@@ -1297,8 +1344,7 @@ abstract class Element extends Component implements ElementInterface
     {
         if ($this->_parent === null) {
             $this->_parent = $this->getAncestors(1)
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->one();
 
             if ($this->_parent === null) {
@@ -1388,8 +1434,7 @@ abstract class Element extends Component implements ElementInterface
             $query->structureId = $this->structureId;
             $query->prevSiblingOf = $this;
             $query->siteId = $this->siteId;
-            $query->status = null;
-            $query->enabledForSite = false;
+            $query->anyStatus();
             $this->_prevSibling = $query->one();
 
             if ($this->_prevSibling === null) {
@@ -1411,8 +1456,7 @@ abstract class Element extends Component implements ElementInterface
             $query->structureId = $this->structureId;
             $query->nextSiblingOf = $this;
             $query->siteId = $this->siteId;
-            $query->status = null;
-            $query->enabledForSite = false;
+            $query->anyStatus();
             $this->_nextSibling = $query->one();
 
             if ($this->_nextSibling === null) {
@@ -1604,7 +1648,7 @@ abstract class Element extends Component implements ElementInterface
             // Do we have any post data for this field?
             if (isset($values[$field->handle])) {
                 $value = $values[$field->handle];
-            } else if (!empty($this->_fieldParamNamePrefix) && UploadedFile::getInstancesByName($this->_fieldParamNamePrefix.'.'.$field->handle)) {
+            } else if (!empty($this->_fieldParamNamePrefix) && UploadedFile::getInstancesByName($this->_fieldParamNamePrefix . '.' . $field->handle)) {
                 // A file was uploaded for this field
                 $value = null;
             } else {
@@ -1766,7 +1810,7 @@ abstract class Element extends Component implements ElementInterface
 
             Craft::$app->getView()->setNamespace($originalNamespace);
 
-            $html .= '<input type="hidden" name="fieldLayoutId" value="'.$fieldLayout->id.'">';
+            $html .= '<input type="hidden" name="fieldLayoutId" value="' . $fieldLayout->id . '">';
         }
 
         return $html;
@@ -1852,6 +1896,41 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function beforeRestore(): bool
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            if (!$field->beforeElementRestore($this)) {
+                return false;
+            }
+        }
+
+        // Trigger a 'beforeRestore' event
+        $event = new ModelEvent();
+        $this->trigger(self::EVENT_BEFORE_RESTORE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterRestore()
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            $field->afterElementRestore($this);
+        }
+
+        // Trigger an 'afterRestore' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE)) {
+            $this->trigger(self::EVENT_AFTER_RESTORE);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeMoveInStructure(int $structureId): bool
     {
         // Trigger a 'beforeMoveInStructure' event
@@ -1895,7 +1974,7 @@ abstract class Element extends Component implements ElementInterface
         $field = $this->fieldByHandle($fieldHandle);
 
         if (!$field) {
-            throw new Exception('Invalid field handle: '.$fieldHandle);
+            throw new Exception('Invalid field handle: ' . $fieldHandle);
         }
 
         $behavior = $this->getBehavior('customFields');
@@ -1986,7 +2065,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if (empty($site)) {
-            throw new InvalidConfigException('Invalid site ID: '.$this->siteId);
+            throw new InvalidConfigException('Invalid site ID: ' . $this->siteId);
         }
 
         return $site;
@@ -2006,7 +2085,7 @@ abstract class Element extends Component implements ElementInterface
                 $url = $this->getUrl();
 
                 if ($url !== null) {
-                    return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
+                    return '<a href="' . $url . '" target="_blank" data-icon="world" title="' . Craft::t('app', 'Visit webpage') . '"></a>';
                 }
 
                 return '';
@@ -2018,7 +2097,7 @@ abstract class Element extends Component implements ElementInterface
                     $value = $this->uri;
 
                     if ($value === '__home__') {
-                        $value = '<span data-icon="home" title="'.Craft::t('app', 'Homepage').'"></span>';
+                        $value = '<span data-icon="home" title="' . Craft::t('app', 'Homepage') . '"></span>';
                     } else {
                         // Add some <wbr> tags in there so it doesn't all have to be on one line
                         $find = ['/'];
@@ -2028,13 +2107,13 @@ abstract class Element extends Component implements ElementInterface
 
                         if ($wordSeparator) {
                             $find[] = $wordSeparator;
-                            $replace[] = $wordSeparator.'<wbr>';
+                            $replace[] = $wordSeparator . '<wbr>';
                         }
 
                         $value = str_replace($find, $replace, $value);
                     }
 
-                    return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('app', 'Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
+                    return '<a href="' . $url . '" target="_blank" class="go" title="' . Craft::t('app', 'Visit webpage') . '"><span dir="ltr">' . $value . '</span></a>';
                 }
 
                 return '';
@@ -2072,7 +2151,7 @@ abstract class Element extends Component implements ElementInterface
                 if ($value instanceof DateTime) {
                     $formatter = Craft::$app->getFormatter();
 
-                    return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
+                    return '<span title="' . $formatter->asDatetime($value, Locale::LENGTH_SHORT) . '">' . $formatter->asTimestamp($value, Locale::LENGTH_SHORT) . '</span>';
                 }
 
                 return Html::encode($value);
@@ -2119,6 +2198,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($criteria instanceof ElementQueryInterface) {
+            /** @var ElementQuery $criteria */
             $query = clone $criteria;
         } else {
             $query = static::find()

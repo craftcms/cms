@@ -83,7 +83,7 @@ class ElementHelper
             $testSlug = $element->slug;
 
             if ($i > 0) {
-                $testSlug .= $slugWordSeparator.$i;
+                $testSlug .= $slugWordSeparator . $i;
             }
 
             $originalSlug = $element->slug;
@@ -97,7 +97,7 @@ class ElementHelper
                 $overage = strlen($testUri) - 255;
 
                 // Do we have anything left to chop off?
-                if (strlen($overage) > strlen($element->slug) - strlen($slugWordSeparator.$i)) {
+                if (strlen($overage) > strlen($element->slug) - strlen($slugWordSeparator . $i)) {
                     // Chop off the overage amount from the slug
                     $testSlug = $element->slug;
                     $testSlug = substr($testSlug, 0, -$overage);
@@ -143,7 +143,7 @@ class ElementHelper
 
         // If the URI format contains {id} but the element doesn't have one yet, preserve the {id} tag
         if (!$element->id && strpos($uriFormat, '{id') !== false) {
-            $variables['id'] = $element->tempId = 'id-'.StringHelper::randomString(10);
+            $variables['id'] = $element->tempId = 'id-' . StringHelper::randomString(10);
         }
 
         $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element, $variables);
@@ -186,10 +186,7 @@ class ElementHelper
      */
     public static function doesUriFormatHaveSlugTag(string $uriFormat): bool
     {
-        $element = (object)['slug' => StringHelper::randomString()];
-        $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
-
-        return StringHelper::contains($uri, $element->slug);
+        return (bool)preg_match('/\bslug\b/', $uriFormat);
     }
 
     /**
@@ -222,7 +219,7 @@ class ElementHelper
                     'siteId' => $site,
                 ];
             } else if (!isset($site['siteId'])) {
-                throw new Exception('Missing "siteId" key in '.get_class($element).'::getSupportedSites()');
+                throw new Exception('Missing "siteId" key in ' . get_class($element) . '::getSupportedSites()');
             }
 
             $site['siteUid'] = $siteUidMap[$site['siteId']];
@@ -246,7 +243,7 @@ class ElementHelper
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteUid'])) {
+                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteUid'])) {
                         return true;
                     }
                 }
@@ -271,7 +268,7 @@ class ElementHelper
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteUid'])) {
+                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteUid'])) {
                         $siteIds[] = $siteInfo['siteId'];
                     }
                 }

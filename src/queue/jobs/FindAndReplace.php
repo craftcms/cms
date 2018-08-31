@@ -50,7 +50,10 @@ class FindAndReplace extends BaseJob
     public function execute($queue)
     {
         // Find all the textual field columns
-        $this->_textColumns = [];
+        $this->_textColumns = [
+            ['{{%content}}', 'title'],
+        ];
+
         foreach (Craft::$app->getFields()->getAllFields() as $field) {
             if ($field instanceof Matrix) {
                 $this->_checkMatrixField($field);
@@ -118,7 +121,7 @@ class FindAndReplace extends BaseJob
             'string',
             'char'
         ], true)) {
-            $this->_textColumns[] = [$table, $fieldColumnPrefix.$field->handle];
+            $this->_textColumns[] = [$table, $fieldColumnPrefix . $field->handle];
         }
     }
 
@@ -139,7 +142,7 @@ class FindAndReplace extends BaseJob
         $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixField->id);
 
         foreach ($blockTypes as $blockType) {
-            $fieldColumnPrefix = 'field_'.$blockType->handle.'_';
+            $fieldColumnPrefix = 'field_' . $blockType->handle . '_';
 
             foreach ($blockType->getFields() as $field) {
                 $this->_checkField($field, $table, $fieldColumnPrefix);

@@ -64,6 +64,17 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     const EVENT_AFTER_ELEMENT_DELETE = 'afterElementDelete';
 
+    /**
+     * @event FieldElementEvent The event that is triggered before the element is restored
+     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting restored.
+     */
+    const EVENT_BEFORE_ELEMENT_RESTORE = 'beforeElementRestore';
+
+    /**
+     * @event FieldElementEvent The event that is triggered after the element is restored
+     */
+    const EVENT_AFTER_ELEMENT_RESTORE = 'afterElementRestore';
+
     // Translation methods
     // -------------------------------------------------------------------------
 
@@ -173,12 +184,15 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'reservedWords' => [
                     'archived',
                     'attributeLabel',
+                    'attributes',
                     'children',
                     'contentTable',
                     'dateCreated',
                     'dateUpdated',
                     'enabled',
                     'enabledForSite',
+                    'error',
+                    'errors',
                     'fieldValue',
                     'id',
                     'level',
@@ -194,6 +208,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                     'ref',
                     'rgt',
                     'root',
+                    'scenario',
                     'searchScore',
                     'siblings',
                     'site',
@@ -389,7 +404,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
             $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value));
+            $query->subQuery->andWhere(Db::parseParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $handle, $value));
         }
 
         return null;
@@ -493,6 +508,33 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementRestore(ElementInterface $element): bool
+    {
+        // Trigger a 'beforeElementRestore' event
+        $event = new FieldElementEvent([
+            'element' => $element,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_ELEMENT_RESTORE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementRestore(ElementInterface $element)
+    {
+        // Trigger an 'afterElementRestore' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_RESTORE)) {
+            $this->trigger(self::EVENT_AFTER_ELEMENT_RESTORE, new FieldElementEvent([
+                'element' => $element,
+            ]));
+        }
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -514,7 +556,7 @@ abstract class Field extends SavableComponent implements FieldInterface
             return null;
         }
 
-        return ($namespace ? $namespace.'.' : '').$this->handle;
+        return ($namespace ? $namespace . '.' : '') . $this->handle;
     }
 
     /**

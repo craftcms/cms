@@ -164,12 +164,16 @@ class Number extends Field implements PreviewableFieldInterface
         // If decimals is 0 (or null, empty for whatever reason), don't run this
         if ($value !== null && $this->decimals) {
             $decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
-            $value = number_format($value, $this->decimals, $decimalSeparator, '');
+            try {
+                $value = number_format($value, $this->decimals, $decimalSeparator, '');
+            } catch (\Throwable $e) {
+                // NaN
+            }
         }
 
-        return '<input type="hidden" name="'.$this->handle.'[locale]" value="'.Craft::$app->language.'">'.
+        return '<input type="hidden" name="' . $this->handle . '[locale]" value="' . Craft::$app->language . '">' .
             Craft::$app->getView()->renderTemplate('_includes/forms/text', [
-                'name' => $this->handle.'[value]',
+                'name' => $this->handle . '[value]',
                 'value' => $value,
                 'size' => $this->size
             ]);

@@ -24,6 +24,7 @@ use craft\web\twig\TemplateLoader;
 use Twig_ExtensionInterface;
 use yii\base\Arrayable;
 use yii\base\Exception;
+use yii\base\Model;
 use yii\helpers\Html;
 use yii\web\AssetBundle as YiiAssetBundle;
 
@@ -319,7 +320,7 @@ class View extends \yii\web\View
             return '';
         }
 
-        Craft::trace("Rendering template: $template", __METHOD__);
+        Craft::debug("Rendering template: $template", __METHOD__);
 
         // Render and return
         $renderingTemplate = $this->_renderingTemplate;
@@ -405,7 +406,7 @@ class View extends \yii\web\View
         $this->_renderingTemplate = $template;
 
         try {
-            $output = call_user_func_array([$twigTemplate, 'macro_'.$macro], $args);
+            $output = call_user_func_array([$twigTemplate, 'macro_' . $macro], $args);
         } catch (\RuntimeException $e) {
             if (!YII_DEBUG) {
                 // Throw a generic exception instead
@@ -431,7 +432,7 @@ class View extends \yii\web\View
         $twig = $this->getTwig();
         $twig->setDefaultEscaperStrategy(false);
         $lastRenderingTemplate = $this->_renderingTemplate;
-        $this->_renderingTemplate = 'string:'.$template;
+        $this->_renderingTemplate = 'string:' . $template;
         $result = $twig->createTemplate($template)->render($variables);
         $this->_renderingTemplate = $lastRenderingTemplate;
         $twig->setDefaultEscaperStrategy();
@@ -482,6 +483,14 @@ class View extends \yii\web\View
             }
 
             // Get the variables to pass to the template
+            if ($object instanceof Model) {
+                foreach ($object->attributes() as $name) {
+                    if (!isset($variables[$name]) && strpos($template, $name) !== false) {
+                        $variables[$name] = $object->$name;
+                    }
+                }
+            }
+
             if ($object instanceof Arrayable) {
                 // See if we should be including any of the extra fields
                 $extra = [];
@@ -497,11 +506,12 @@ class View extends \yii\web\View
             }
 
             $variables['object'] = $object;
+            $variables['_variables'] = $variables;
 
             // Render it!
             $twig->setDefaultEscaperStrategy(false);
             $lastRenderingTemplate = $this->_renderingTemplate;
-            $this->_renderingTemplate = 'string:'.$template;
+            $this->_renderingTemplate = 'string:' . $template;
             /** @var Template $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
             $output = $templateObj->render($variables);
@@ -535,7 +545,7 @@ class View extends \yii\web\View
         $tokens = [];
         while (true) {
             $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/', function(array $matches) use (&$tokens) {
-                $token = 'tok_'.StringHelper::randomString(10);
+                $token = 'tok_' . StringHelper::randomString(10);
                 $tokens[$token] = $matches[0];
                 return $token;
             }, $template, -1, $count);
@@ -545,7 +555,7 @@ class View extends \yii\web\View
         }
 
         // Swap out the remaining {xyz} tags with {{object.xyz}}
-        $template = preg_replace('/(?<!\{)\{\s*(\w+)([^\{]*?)\}/', '{{ ($1 ?? object.$1)$2|raw }}', $template);
+        $template = preg_replace('/(?<!\{)\{\s*(\w+)([^\{]*?)\}/', '{{ (_variables.$1 ?? object.$1)$2|raw }}', $template);
 
         // Bring the objects back
         foreach (array_reverse($tokens) as $token => $value) {
@@ -649,7 +659,7 @@ class View extends \yii\web\View
         // Normalize the template name
         $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', StringHelper::convertToUtf8($name))), '/');
 
-        $key = $this->_templatesPath.':'.$name;
+        $key = $this->_templatesPath . ':' . $name;
 
         // Is this template path already cached?
         if (isset($this->_templatePaths[$key])) {
@@ -665,7 +675,7 @@ class View extends \yii\web\View
         // Should we be looking for a localized version of the template?
         if ($this->_templateMode === self::TEMPLATE_MODE_SITE && Craft::$app->getIsInstalled()) {
             /** @noinspection PhpUnhandledExceptionInspection */
-            $sitePath = $this->_templatesPath.DIRECTORY_SEPARATOR.Craft::$app->getSites()->getCurrentSite()->handle;
+            $sitePath = $this->_templatesPath . DIRECTORY_SEPARATOR . Craft::$app->getSites()->getCurrentSite()->handle;
             if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
             }
@@ -692,7 +702,7 @@ class View extends \yii\web\View
             foreach ($roots as $templateRoot => $basePaths) {
                 /** @var string[] $basePaths */
                 $templateRootLen = strlen($templateRoot);
-                if (strncasecmp($templateRoot.'/', $name.'/', $templateRootLen + 1) === 0) {
+                if (strncasecmp($templateRoot . '/', $name . '/', $templateRootLen + 1) === 0) {
                     $subName = strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen + 1);
                     foreach ($basePaths as $basePath) {
                         if (($path = $this->_resolveTemplate($basePath, $subName)) !== null) {
@@ -740,12 +750,12 @@ class View extends \yii\web\View
     {
         Craft::$app->getDeprecator()->log('registerHiResCss', 'craft\\web\\View::registerHiResCss() has been deprecated. Use registerCss() instead, and type your own media selector.');
 
-        $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n".
-            "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n".
-            "only screen and (     -o-min-device-pixel-ratio: 3/2),\n".
-            "only screen and (        min-device-pixel-ratio: 1.5),\n".
-            "only screen and (        min-resolution: 1.5dppx){\n".
-            $css."\n".
+        $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n" .
+            "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n" .
+            "only screen and (     -o-min-device-pixel-ratio: 3/2),\n" .
+            "only screen and (        min-device-pixel-ratio: 1.5),\n" .
+            "only screen and (        min-resolution: 1.5dppx){\n" .
+            $css . "\n" .
             '}';
 
         $this->registerCss($css, $options, $key);
@@ -793,7 +803,7 @@ class View extends \yii\web\View
 
         foreach ([self::POS_HEAD, self::POS_BEGIN, self::POS_END, self::POS_LOAD, self::POS_READY] as $pos) {
             if (!empty($this->js[$pos])) {
-                $js .= implode("\n", $this->js[$pos])."\n";
+                $js .= implode("\n", $this->js[$pos]) . "\n";
             }
         }
 
@@ -812,11 +822,16 @@ class View extends \yii\web\View
      */
     public function registerJsFile($url, $options = [], $key = null)
     {
-        $key = $key ?: $url;
-        if (isset($this->_registeredJsFiles[$key])) {
-            return;
+        // If 'depends' is specified, ignore it  for now because the file will
+        // get registered as an asset bundle
+        if (empty($options['depends'])) {
+            $key = $key ?: $url;
+            if (isset($this->_registeredJsFiles[$key])) {
+                return;
+            }
+            $this->_registeredJsFiles[$key] = true;
         }
-        $this->_registeredJsFiles[$key] = true;
+
         parent::registerJsFile($url, $options, $key);
     }
 
@@ -897,7 +912,7 @@ class View extends \yii\web\View
         $this->registerAllAssetFiles();
 
         // Get the rendered body begin+end HTML
-        $html = $this->renderBodyBeginHtml().
+        $html = $this->renderBodyBeginHtml() .
             $this->renderBodyEndHtml(true);
 
         // Clear out the queued up files
@@ -935,7 +950,7 @@ class View extends \yii\web\View
             if ($translation !== $message) {
                 $jsMessage = Json::encode($message);
                 $jsTranslation = Json::encode($translation);
-                $js .= ($js !== '' ? "\n" : '')."Craft.translations[{$jsCategory}][{$jsMessage}] = {$jsTranslation};";
+                $js .= ($js !== '' ? "\n" : '') . "Craft.translations[{$jsCategory}][{$jsMessage}] = {$jsTranslation};";
             }
         }
 
@@ -1008,7 +1023,7 @@ JS;
             self::TEMPLATE_MODE_SITE
         ], true)
         ) {
-            throw new Exception('"'.$templateMode.'" is not a valid template mode');
+            throw new Exception('"' . $templateMode . '" is not a valid template mode');
         }
 
         // Set the new template mode
@@ -1104,12 +1119,12 @@ JS;
                 [$this, '_createTextareaMarker'], $html);
 
             // name= attributes
-            $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
+            $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1' . $namespace . '[$3]$4$2', $html);
 
             // id= and for= attributes
             if ($otherAttributes) {
                 $idNamespace = $this->formatInputId($namespace);
-                $html = preg_replace('/(?<![\w\-])((id|for|list|aria\-labelledby|data\-target|data\-reverse\-target|data\-target\-prefix)=(\'|")#?)([^\.\'"][^\'"]*)?\3/i', '$1'.$idNamespace.'-$4$3', $html);
+                $html = preg_replace('/(?<![\w\-])((id|for|list|aria\-labelledby|data\-target|data\-reverse\-target|data\-target\-prefix)=(\'|")#?)([^\.\'"][^\'"]*)?\3/i', '$1' . $idNamespace . '-$4$3', $html);
             }
 
             // Bring back the textarea content
@@ -1136,7 +1151,7 @@ JS;
         }
 
         if ($namespace !== null) {
-            $inputName = preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace.'[$1]$2', $inputName);
+            $inputName = preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace . '[$1]$2', $inputName);
         }
 
         return $inputName;
@@ -1159,7 +1174,7 @@ JS;
         }
 
         if ($namespace !== null) {
-            $inputId = $this->formatInputId($namespace).'-'.$inputId;
+            $inputId = $this->formatInputId($namespace) . '-' . $inputId;
         }
 
         return $inputId;
@@ -1255,6 +1270,19 @@ JS;
         $this->_registeredAssetBundles = array_flip($names);
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function endPage($ajaxMode = false)
+    {
+        if (!$ajaxMode && Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->_registeredJs('registeredJsFiles', $this->_registeredJsFiles);
+            $this->_registeredJs('registeredAssetBundles', $this->_registeredAssetBundles);
+        }
+
+        parent::endPage($ajaxMode);
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -1348,7 +1376,7 @@ JS;
     {
         $lines = [];
         if (!empty($this->title)) {
-            $lines[] = '<title>'.Html::encode($this->title).'</title>';
+            $lines[] = '<title>' . Html::encode($this->title) . '</title>';
         }
         if (!empty($this->_scripts[self::POS_HEAD])) {
             $lines[] = implode("\n", $this->_scripts[self::POS_HEAD]);
@@ -1356,7 +1384,7 @@ JS;
 
         $html = parent::renderHeadHtml();
 
-        return empty($lines) ? $html : implode("\n", $lines).$html;
+        return empty($lines) ? $html : implode("\n", $lines) . $html;
     }
 
     /**
@@ -1371,7 +1399,7 @@ JS;
 
         $html = parent::renderBodyBeginHtml();
 
-        return empty($lines) ? $html : implode("\n", $lines).$html;
+        return empty($lines) ? $html : implode("\n", $lines) . $html;
     }
 
     /**
@@ -1384,31 +1412,9 @@ JS;
             $lines[] = implode("\n", $this->_scripts[self::POS_END]);
         }
 
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            if (!empty($this->_registeredJsFiles)) {
-                $json = Json::encode($this->_registeredJsFiles);
-                $js = <<<JS
-if (typeof Craft !== 'undefined') {
-    jQuery.extend(Craft.registeredJsFiles, {$json}); 
-}
-JS;
-                $this->registerJs($js, self::POS_END);
-            }
-
-            if (!empty($this->_registeredAssetBundles)) {
-                $json = Json::encode($this->_registeredAssetBundles);
-                $js = <<<JS
-if (typeof Craft !== 'undefined') {
-    jQuery.extend(Craft.registeredAssetBundles, {$json}); 
-}
-JS;
-                $this->registerJs($js, self::POS_END);
-            }
-        }
-
         $html = parent::renderBodyEndHtml($ajaxMode);
 
-        return empty($lines) ? $html : implode("\n", $lines).$html;
+        return empty($lines) ? $html : implode("\n", $lines) . $html;
     }
 
     /**
@@ -1418,6 +1424,10 @@ JS;
      */
     protected function registerAssetFlashes()
     {
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            return;
+        }
+
         $session = Craft::$app->getSession();
 
         if ($session->getIsActive()) {
@@ -1477,7 +1487,7 @@ JS;
         }
 
         if (Path::ensurePathIsContained($name) === false) {
-            Craft::error('Someone tried to load a template outside the templates folder: '.$name);
+            Craft::error('Someone tried to load a template outside the templates folder: ' . $name);
             throw new \Twig_Error_Loader(Craft::t('app', 'Looks like you are trying to load a template outside the template folder.'));
         }
     }
@@ -1498,14 +1508,14 @@ JS;
         // $name could be an empty string (e.g. to load the homepage template)
         if ($name) {
             // Maybe $name is already the full file path
-            $testPath = $basePath.DIRECTORY_SEPARATOR.$name;
+            $testPath = $basePath . DIRECTORY_SEPARATOR . $name;
 
             if (is_file($testPath)) {
                 return $testPath;
             }
 
             foreach ($this->_defaultTemplateExtensions as $extension) {
-                $testPath = $basePath.DIRECTORY_SEPARATOR.$name.'.'.$extension;
+                $testPath = $basePath . DIRECTORY_SEPARATOR . $name . '.' . $extension;
 
                 if (is_file($testPath)) {
                     return $testPath;
@@ -1515,7 +1525,7 @@ JS;
 
         foreach ($this->_indexTemplateFilenames as $filename) {
             foreach ($this->_defaultTemplateExtensions as $extension) {
-                $testPath = $basePath.($name ? DIRECTORY_SEPARATOR.$name : '').DIRECTORY_SEPARATOR.$filename.'.'.$extension;
+                $testPath = $basePath . ($name ? DIRECTORY_SEPARATOR . $name : '') . DIRECTORY_SEPARATOR . $filename . '.' . $extension;
 
                 if (is_file($testPath)) {
                     return $testPath;
@@ -1594,10 +1604,27 @@ JS;
      */
     private function _createTextareaMarker(array $matches): string
     {
-        $marker = '{marker:'.StringHelper::randomString().'}';
+        $marker = '{marker:' . StringHelper::randomString() . '}';
         $this->_textareaMarkers[$marker] = $matches[2];
 
-        return $matches[1].$marker.$matches[3];
+        return $matches[1] . $marker . $matches[3];
+    }
+
+    private function _registeredJs($property, $names)
+    {
+        if (empty($names)) {
+            return;
+        }
+
+        $js = "if (typeof Craft !== 'undefined') {\n";
+        foreach (array_keys($names) as $name) {
+            if ($name) {
+                $jsName = Json::encode($name);
+                $js .= "  Craft.{$property}[{$jsName}] = true;\n";
+            }
+        }
+        $js .= '}';
+        $this->registerJs($js, self::POS_HEAD);
     }
 
     /**
@@ -1643,10 +1670,10 @@ JS;
                     $srcset = $element->getThumbUrl($size);
                 }
 
-                $srcsets[] = $srcset.' '.$size.'w';
+                $srcsets[] = $srcset . ' ' . $size . 'w';
             }
 
-            $sizesHtml = ($elementSize === 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]).'px';
+            $sizesHtml = ($elementSize === 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]) . 'px';
             $srcsetHtml = implode(', ', $srcsets);
             $imgHtml = "<div class='elementthumb' data-sizes='{$sizesHtml}' data-srcset='{$srcsetHtml}'></div>";
         } else {
@@ -1656,7 +1683,7 @@ JS;
         $htmlAttributes = array_merge(
             $element->getHtmlAttributes($context['context']),
             [
-                'class' => 'element '.$elementSize,
+                'class' => 'element ' . $elementSize,
                 'data-type' => get_class($element),
                 'data-id' => $element->id,
                 'data-site-id' => $element->siteId,
@@ -1681,24 +1708,28 @@ JS;
         $html = '<div';
 
         foreach ($htmlAttributes as $attribute => $value) {
-            $html .= ' '.$attribute.($value !== null ? '="'.HtmlHelper::encode($value).'"' : '');
+            $html .= ' ' . $attribute . ($value !== null ? '="' . HtmlHelper::encode($value) . '"' : '');
         }
 
         if (ElementHelper::isElementEditable($element)) {
             $html .= ' data-editable';
         }
 
+        if ($element->trashed) {
+            $html .= ' data-trashed';
+        }
+
         $html .= '>';
 
         if ($context['context'] === 'field' && isset($context['name'])) {
-            $html .= '<input type="hidden" name="'.$context['name'].'[]" value="'.$element->id.'">';
-            $html .= '<a class="delete icon" title="'.Craft::t('app', 'Remove').'"></a> ';
+            $html .= '<input type="hidden" name="' . $context['name'] . '[]" value="' . $element->id . '">';
+            $html .= '<a class="delete icon" title="' . Craft::t('app', 'Remove') . '"></a> ';
         }
 
         if ($element::hasStatuses()) {
             $status = $element->getStatus();
-            $statusClasses = $status.' '.($element::statuses()[$status]['color'] ?? '');
-            $html .= '<span class="status '.$statusClasses.'"></span>';
+            $statusClasses = $status . ' ' . ($element::statuses()[$status]['color'] ?? '');
+            $html .= '<span class="status ' . $statusClasses . '"></span>';
         }
 
         $html .= $imgHtml;
@@ -1708,7 +1739,7 @@ JS;
 
         $label = HtmlHelper::encode($element);
 
-        if ($context['context'] === 'index' && ($cpEditUrl = $element->getCpEditUrl())) {
+        if ($context['context'] === 'index' && !$element->trashed && ($cpEditUrl = $element->getCpEditUrl())) {
             $cpEditUrl = HtmlHelper::encode($cpEditUrl);
             $html .= "<a href=\"{$cpEditUrl}\">{$label}</a>";
         } else {

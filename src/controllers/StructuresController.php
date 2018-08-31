@@ -64,7 +64,7 @@ class StructuresController extends Controller
         $siteId = $request->getRequiredBodyParam('siteId');
 
         // Make sure they have permission to edit this structure
-        $this->requireAuthorization('editStructure:'.$structureId);
+        $this->requireAuthorization('editStructure:' . $structureId);
 
         if (($this->_structure = Craft::$app->getStructures()->getStructureById($structureId)) === null) {
             throw new NotFoundHttpException('Structure not found');
@@ -80,8 +80,7 @@ class StructuresController extends Controller
         $this->_element = $elementType::find()
             ->id($elementId)
             ->siteId($siteId)
-            ->status(null)
-            ->enabledForSite(false)
+            ->anyStatus()
             ->structureId($structureId)
             ->one();
 

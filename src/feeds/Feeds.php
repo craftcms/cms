@@ -84,7 +84,7 @@ class Feeds extends Component
         $offset = ($offset ?: 0);
 
         // Key based on the classname, url, limit and offset.
-        $key = md5(self::class.'.'.$url.'.'.$limit.'.'.$offset);
+        $key = md5(self::class . '.' . $url . '.' . $limit . '.' . $offset);
 
         // See if we have this cached already.
         if (($cached = Craft::$app->getCache()->get($key)) !== false) {
@@ -108,7 +108,7 @@ class Feeds extends Component
         try {
             $items = Reader::import($url);
         } catch (RuntimeException $e) {
-            Craft::warning('There was a problem parsing the feed: '.$e->getMessage(), __METHOD__);
+            Craft::warning('There was a problem parsing the feed: ' . $e->getMessage(), __METHOD__);
 
             return [];
         }
@@ -123,7 +123,7 @@ class Feeds extends Component
                 $urlModel->url = $permalink;
 
                 if (!$urlModel->validate()) {
-                    Craft::info('An item was omitted from the feed ('.$url.') because its permalink was an invalid URL: '.$permalink, __METHOD__);
+                    Craft::info('An item was omitted from the feed (' . $url . ') because its permalink was an invalid URL: ' . $permalink, __METHOD__);
                     continue;
                 }
             }
@@ -138,8 +138,8 @@ class Feeds extends Component
                 // See: https://github.com/zendframework/zendframework/issues/2969
                 // and https://github.com/zendframework/zendframework/pull/3570
                 'contributors' => $this->_getItemAuthors($item->getAuthors()),
-                'date' => $date ? new DateTime('@'.$date->format('U')) : null,
-                'dateUpdated' => $dateUpdated ? new DateTime('@'.$dateUpdated->format('U')) : null,
+                'date' => $date ? new DateTime('@' . $date->format('U')) : null,
+                'dateUpdated' => $dateUpdated ? new DateTime('@' . $dateUpdated->format('U')) : null,
                 'permalink' => $item->getPermalink(),
                 'summary' => $item->getDescription(),
                 'title' => $item->getTitle(),

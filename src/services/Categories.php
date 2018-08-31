@@ -222,6 +222,27 @@ class Categories extends Component
     }
 
     /**
+     * Returns a group by its UID.
+     *
+     * @param string $uid
+     * @return CategoryGroup|null
+     */
+    public function getGroupByUid(string $uid)
+    {
+        $groupRecord = CategoryGroupRecord::findOne([
+            'uid' => $uid
+        ]);
+
+        if (!$groupRecord) {
+            return null;
+        }
+
+        $group = $this->_createCategoryGroupFromRecord($groupRecord);
+        $this->_categoryGroupsById[$group->id] = $group;
+        return $group;
+    }
+
+    /**
      * Returns a group by its handle.
      *
      * @param string $groupHandle
@@ -233,14 +254,13 @@ class Categories extends Component
             'handle' => $groupHandle
         ]);
 
-        if ($groupRecord) {
-            $group = $this->_createCategoryGroupFromRecord($groupRecord);
-            $this->_categoryGroupsById[$group->id] = $group;
-
-            return $group;
+        if (!$groupRecord) {
+            return null;
         }
 
-        return null;
+        $group = $this->_createCategoryGroupFromRecord($groupRecord);
+        $this->_categoryGroupsById[$group->id] = $group;
+        return $group;
     }
 
     /**
@@ -529,7 +549,7 @@ class Categories extends Component
                     // Get all of the category IDs in this group
                     $categoryIds = Category::find()
                         ->groupId($groupRecord->id)
-                        ->status(null)
+                        ->anyStatus()
                         ->limit(null)
                         ->ids();
 
@@ -550,14 +570,14 @@ class Categories extends Component
                             foreach ($categoryIds as $categoryId) {
                                 App::maxPowerCaptain();
 
-                                // Loop through each of the changed sites and update all of the categories’ slugs and
-                                // URIs
-                                foreach ($sitesWithNewUriFormats as $siteId) {
-                                    $category = Category::find()
-                                        ->id($categoryId)
-                                        ->siteId($siteId)
-                                        ->status(null)
-                                        ->one();
+                            // Loop through each of the changed sites and update all of the categories’ slugs and
+                            // URIs
+                            foreach ($sitesWithNewUriFormats as $siteId) {
+                                $category = Category::find()
+                                    ->id($categoryId)
+                                    ->siteId($siteId)
+                                    ->anyStatus()
+                                    ->one();
 
                                     if ($category) {
                                         Craft::$app->getElements()->updateElementSlugAndUri($category, false, false);
@@ -580,7 +600,7 @@ class Categories extends Component
     /**
      * Deletes a category group by its ID.
      *
-     * @param int $groupId
+     * @param int $groupId The category group's ID
      * @return bool Whether the category group was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -596,12 +616,52 @@ class Categories extends Component
             return false;
         }
 
+        return $this->deleteGroup($group);
+    }
+
+    /**
+     * Deletes a category group.
+     *
+     * @param CategoryGroup $group The category group
+     * @return bool Whether the category group was deleted successfully
+     */
+    public function deleteGroup(CategoryGroup $group): bool
+    {
         // Fire a 'beforeDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new CategoryGroupEvent([
                 'categoryGroup' => $group
             ]));
         }
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            // Delete the field layout
+            $fieldLayoutId = (new Query())
+                ->select(['fieldLayoutId'])
+                ->from(['{{%categorygroups}}'])
+                ->where(['id' => $group->id])
+                ->scalar();
+
+            if ($fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+            }
+
+            // Delete the categories
+            $categories = Category::find()
+                ->anyStatus()
+                ->groupId($group->id)
+                ->all();
+
+            foreach ($categories as $category) {
+                Craft::$app->getElements()->deleteElement($category);
+            }
+
+            Craft::$app->getDb()->createCommand()
+                ->delete(
+                    '{{%categorygroups}}',
+                    ['id' => $group->id])
+                ->execute();
 
         Craft::$app->getProjectConfig()->save(self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid, null);
 
@@ -785,9 +845,7 @@ class Categories extends Component
         $query->id($categoryId);
         $query->structureId($structureId);
         $query->siteId($siteId);
-        $query->status(null);
-        $query->enabledForSite(false);
-
+        $query->anyStatus();
         return $query->one();
     }
 
@@ -812,8 +870,7 @@ class Categories extends Component
                 // Merge in any missing ancestors
                 /** @var CategoryQuery $ancestorQuery */
                 $ancestorQuery = $category->getAncestors()
-                    ->status(null)
-                    ->enabledForSite(false);
+                    ->anyStatus();
 
                 if ($prevCategory) {
                     $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevCategory->lft]);

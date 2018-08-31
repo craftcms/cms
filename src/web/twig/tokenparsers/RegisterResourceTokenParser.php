@@ -109,13 +109,23 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
         // Is there a position param?
         if ($this->allowPosition && $stream->test(\Twig_Token::NAME_TYPE, 'at')) {
             $stream->next();
-            $nameToken = $stream->expect(\Twig_Token::NAME_TYPE,
-                ['head', 'beginBody', 'endBody']);
+            $nameToken = $stream->expect(\Twig_Token::NAME_TYPE, [
+                'head',
+                'beginBody',
+                'endBody',
+                'POS_HEAD',
+                'POS_BEGIN',
+                'POS_END',
+            ]);
             $position = $nameToken->getValue();
         } else if ($this->allowRuntimePosition && $stream->test(\Twig_Token::NAME_TYPE, 'on')) {
             $stream->next();
-            $nameToken = $stream->expect(\Twig_Token::NAME_TYPE,
-                ['ready', 'load']);
+            $nameToken = $stream->expect(\Twig_Token::NAME_TYPE, [
+                'ready',
+                'load',
+                'POS_READY',
+                'POS_LOAD',
+            ]);
             $position = $nameToken->getValue();
         } else {
             $position = null;
@@ -165,7 +175,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      */
     public function decideBlockEnd(\Twig_Token $token): bool
     {
-        return $token->test('end'.strtolower($this->tag));
+        return $token->test('end' . strtolower($this->tag));
     }
 
     // Private Methods

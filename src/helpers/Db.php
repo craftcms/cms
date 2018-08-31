@@ -216,13 +216,13 @@ class Db
 
         // Decimal or int?
         if ($decimals > 0) {
-            return Schema::TYPE_DECIMAL."({$length},{$decimals})";
+            return Schema::TYPE_DECIMAL . "({$length},{$decimals})";
         }
 
         // Figure out the smallest possible int column type that will fit our min/max
         foreach (self::$_integerSizeRanges as $type => list($typeMin, $typeMax)) {
             if ($min >= $typeMin && $max <= $typeMax) {
-                return $type."({$length})";
+                return $type . "({$length})";
             }
         }
 
@@ -592,7 +592,7 @@ class Db
             // Assume that date params are set in the system timezone
             $val = DateTimeHelper::toDateTime($val, true);
 
-            $normalizedValues[] = $operator.static::prepareDateForDb($val);
+            $normalizedValues[] = $operator . static::prepareDateForDb($val);
         }
 
         return static::parseParam($column, $normalizedValues);
@@ -615,6 +615,37 @@ class Db
         $schema = $db->getSchema();
 
         return isset($schema->typeMap[$type]);
+    }
+
+    /**
+     * Executes a DELETE command, but only if there are any rows to delete.
+     *
+     * @param string $table the table where the data will be deleted from.
+     * @param string|array $condition the condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params the parameters to be bound to the command
+     * @param Connection|null $db
+     * @return int number of rows affected by the execution.
+     * @throws \yii\db\Exception execution failed
+     */
+    public static function deleteIfExists(string $table, $condition = '', array $params = [], Connection $db = null): int
+    {
+        if ($db === null) {
+            $db = Craft::$app->getDb();
+        }
+
+        $exists = (new Query())
+            ->from($table)
+            ->where($condition, $params)
+            ->exists($db);
+
+        if (!$exists) {
+            return 0;
+        }
+
+        return $db->createCommand()
+            ->delete($table, $condition, $params)
+            ->execute();
     }
 
     /**
@@ -682,6 +713,10 @@ class Db
     {
         if ($value === null) {
             return [];
+        }
+
+        if ($value instanceof \DateTime) {
+            return [$value];
         }
 
         if (is_string($value)) {

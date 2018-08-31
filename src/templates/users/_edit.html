@@ -120,7 +120,7 @@
 
         {% if CraftEdition == CraftPro %}
             {% for tab in user.getFieldLayout().getTabs() %}
-                <div id="{{ tab.getHtmlId() }}" class="hidden">
+                <div id="profile-{{ tab.getHtmlId() }}" class="hidden">
                     {% include "_includes/fields" with {
                         fields:  tab.getFields(),
                         element: user
@@ -198,8 +198,15 @@
                 {% set languageInput %}
                     <div class="select">
                         <select id="language" name="preferredLanguage">
-                            {% set allAppLocales = craft.app.i18n.getAppLocales()|multisort('displayName') %}
+                            {% set allAppLocales = craft.app.i18n.getAppLocales()|multisort('displayName')|index('id') %}
                             {% set userLanguage = user.getPreferredLanguage() ?: craft.app.language %}
+
+                            {% if allAppLocales[userLanguage] is not defined %}
+                                {% set userLanguage = userLanguage|replace('/-.*/', '') %}
+                                {% if allAppLocales[userLanguage] is not defined %}
+                                    {% set userLanguage = 'en' %}
+                                {% endif %}
+                            {% endif %}
 
                             {% for locale in allAppLocales %}
                                 <option value="{{ locale.id }}" {% if locale.id == userLanguage %}selected{% endif %}>{{ locale.getDisplayName() }}</option>
@@ -267,7 +274,7 @@
                                         <ul>
                                             {% for actionItem in actionList %}
                                                 <li><a
-                                                        {%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% endif %}
+                                                        {%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% if actionItem.id == 'delete-btn' %} class="error"{% endif %}{% endif %}
                                                         {%- if actionItem.action is defined %} class="formsubmit" data-action="{{ actionItem.action }}"{% endif -%}
                                                     >{{ actionItem.label }}</a>
                                                 </li>

@@ -746,6 +746,8 @@ class Matrix extends Component
      */
     public function saveField(MatrixField $field, ElementInterface $owner)
     {
+        $elementsService = Craft::$app->getElements();
+
         /** @var Element $owner */
         /** @var MatrixBlockQuery $query */
         /** @var MatrixBlock[] $blocks */
@@ -759,8 +761,7 @@ class Matrix extends Component
 
         if (($blocks = $query->getCachedResult()) === null) {
             $query = clone $query;
-            $query->status = null;
-            $query->enabledForSite = false;
+            $query->anyStatus();
             $blocks = $query->all();
         }
 
@@ -778,7 +779,6 @@ class Matrix extends Component
                 $newQuery->ownerId = $owner->id;
                 if (!$newQuery->exists()) {
                     // Duplicate the blocks for the new owner
-                    $elementsService = Craft::$app->getElements();
                     foreach ($blocks as $block) {
                         $elementsService->duplicateElement($block, [
                             'ownerId' => $owner->id,
@@ -810,8 +810,7 @@ class Matrix extends Component
 
                 // Delete any blocks that shouldn't be there anymore
                 $deleteBlocksQuery = MatrixBlock::find()
-                    ->status(null)
-                    ->enabledForSite(false)
+                    ->anyStatus()
                     ->ownerId($owner->id)
                     ->fieldId($field->id)
                     ->where(['not', ['elements.id' => $blockIds]]);
@@ -823,7 +822,14 @@ class Matrix extends Component
                 }
 
                 foreach ($deleteBlocksQuery->all() as $deleteBlock) {
-                    Craft::$app->getElements()->deleteElement($deleteBlock);
+                    // Disable it first, in case the block ends up getting restored along with
+                    // its owner element after a soft delete, so at least it won’t be enabled.
+                    if ($deleteBlock->enabled) {
+                        $deleteBlock->enabled = false;
+                        $elementsService->saveElement($deleteBlock, false, false);
+                    }
+
+                    $elementsService->deleteElement($deleteBlock);
                 }
             }
 
@@ -963,9 +969,7 @@ class Matrix extends Component
             $blockQuery = MatrixBlock::find()
                 ->fieldId($field->id)
                 ->ownerId($ownerId)
-                ->status(null)
-                ->enabledForSite(false)
-                ->limit(null)
+                ->anyStatus()
                 ->siteId($ownerSiteId)
                 ->ownerSiteId(':empty:');
             $blocks = $blockQuery->all();
@@ -1034,9 +1038,7 @@ class Matrix extends Component
                     $blocks = MatrixBlock::find()
                         ->fieldId($field->id)
                         ->ownerId($ownerId)
-                        ->status(null)
-                        ->enabledForSite(false)
-                        ->limit(null)
+                        ->anyStatus()
                         ->siteId($siteId)
                         ->ownerSiteId($siteId)
                         ->all();

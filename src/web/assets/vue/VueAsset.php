@@ -22,7 +22,7 @@ class VueAsset extends AssetBundle
         $this->sourcePath = '@lib';
 
         $this->js = [
-            'vue/vue'.$this->dotJs(),
+            'vue/vue' . $this->dotJs(),
             'vue-router/vue-router.js',
             'vuex/vuex.js',
             'axios/axios.js',

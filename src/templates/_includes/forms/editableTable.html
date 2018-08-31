@@ -6,6 +6,10 @@
 {%- set minRows = minRows ?? 'null' %}
 {%- set maxRows = maxRows ?? 'null' %}
 
+{% if not static %}
+    <input type="hidden" name="{{ name }}" value="">
+{% endif %}
+
 <table id="{{ id }}" class="shadow-box editable"
        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <thead>

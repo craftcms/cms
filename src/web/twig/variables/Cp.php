@@ -57,7 +57,7 @@ class Cp extends Component
      */
     public function craftIdAccountUrl()
     {
-        return Craft::$app->getPluginStore()->craftIdEndpoint.'/account';
+        return Craft::$app->getPluginStore()->craftIdEndpoint . '/account';
     }
 
     /**
@@ -122,7 +122,7 @@ class Cp extends Component
         foreach ($plugins as $plugin) {
             if (
                 $plugin->hasCpSection &&
-                Craft::$app->getUser()->checkPermission('accessPlugin-'.$plugin->id) &&
+                Craft::$app->getUser()->checkPermission('accessPlugin-' . $plugin->id) &&
                 ($pluginNavItem = $plugin->getCpNavItem()) !== null
             ) {
                 $navItems[] = $pluginNavItem;
@@ -177,7 +177,7 @@ class Cp extends Component
         $foundSelectedItem = false;
 
         foreach ($navItems as &$item) {
-            if (!$foundSelectedItem && ($item['url'] == $path || StringHelper::startsWith($path, $item['url'].'/'))) {
+            if (!$foundSelectedItem && ($item['url'] == $path || StringHelper::startsWith($path, $item['url'] . '/'))) {
                 $item['sel'] = true;
                 $foundSelectedItem = true;
             } else {
@@ -185,7 +185,7 @@ class Cp extends Component
             }
 
             if (!isset($item['id'])) {
-                $item['id'] = 'nav-'.preg_replace('/[^\w\-_]/', '', $item['url']);
+                $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', $item['url']);
             }
 
             $item['url'] = UrlHelper::url($item['url']);
@@ -269,7 +269,7 @@ class Cp extends Component
             /** @var Plugin $plugin */
             if ($plugin->hasCpSettings) {
                 $settings[$label][$plugin->id] = [
-                    'url' => 'settings/plugins/'.$plugin->id,
+                    'url' => 'settings/plugins/' . $plugin->id,
                     'icon' => $pluginsService->getPluginIconSvg($plugin->id),
                     'label' => $plugin->name
                 ];

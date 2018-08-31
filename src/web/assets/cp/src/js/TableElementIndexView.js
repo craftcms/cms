@@ -165,7 +165,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
                     if (response.tableAttributes) {
                         this._updateTableAttributes($element, response.tableAttributes);
                     }
-                }, this)
+                }, this),
+                elementIndex: this.elementIndex
             });
         },
 
@@ -274,6 +275,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
                             }
 
                             $spinnerRow.replaceWith($newElements);
+                            this.thumbLoader.load($newElements);
 
                             if (this.elementIndex.actions || this.settings.selectable) {
                                 this.elementSelect.addItems($newElements.filter(':not(.disabled)'));

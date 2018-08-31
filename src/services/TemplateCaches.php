@@ -230,17 +230,13 @@ class TemplateCaches extends Component
             $elementQuery->customFields = $customFields;
             $hash = md5($serialized);
 
-            gc_disable();
             foreach ($this->_cachedQueries as &$queries) {
                 $queries[$hash] = [
                     $elementQuery->elementType,
                     $serialized
                 ];
-                gc_collect_cycles();
             }
-            $queries = null;
             unset($queries);
-            gc_enable();
         }
     }
 

@@ -26,7 +26,7 @@ use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\models\SiteGroup;
-use craft\queue\jobs\ResaveElements;
+use craft\queue\jobs\PropagateElements;
 use craft\records\Site as SiteRecord;
 use craft\records\SiteGroup as SiteGroupRecord;
 use yii\base\Component;
@@ -519,6 +519,10 @@ class Sites extends Component
      */
     public function getEditableSiteIds(): array
     {
+        if (!Craft::$app->getIsMultiSite()) {
+            return $this->getAllSiteIds();
+        }
+
         if ($this->_editableSiteIds !== null) {
             return $this->_editableSiteIds;
         }
@@ -641,11 +645,19 @@ class Sites extends Component
     {
         $isNewSite = !$site->id;
 
+        if (Craft::$app->getIsInstalled()) {
+            // Did the primary site just change?
+            $oldPrimarySiteId = $this->getPrimarySite()->id;
+        } else {
+            $oldPrimarySiteId = null;
+        }
+
         // Fire a 'beforeSaveSite' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_SITE, new SiteEvent([
                 'site' => $site,
                 'isNew' => $isNewSite,
+                'oldPrimarySiteId' => $oldPrimarySiteId,
             ]));
         }
 
@@ -822,13 +834,14 @@ class Sites extends Component
                 ];
 
                 foreach ($elementTypes as $elementType) {
-                    $queue->push(new ResaveElements([
+                    $queue->push(new PropagateElements([
                         'elementType' => $elementType,
                         'criteria' => [
                             'siteId' => $oldPrimarySiteId,
                             'status' => null,
                             'enabledForSite' => false
-                        ]
+                        ],
+                        'siteId' => $site->id,
                     ]));
                 }
             }
@@ -1167,7 +1180,24 @@ class Sites extends Component
         }
 
         try {
-            $results = $this->_createSiteQuery()->all();
+            $results = (new Query())
+                ->select([
+                    's.id',
+                    's.groupId',
+                    's.name',
+                    's.handle',
+                    'language',
+                    's.primary',
+                    's.hasUrls',
+                    's.baseUrl',
+                    's.sortOrder',
+                    's.uid',
+                ])
+                ->from(['{{%sites}} s'])
+                ->innerJoin('{{%sitegroups}} sg', '[[sg.id]] = [[s.groupId]]')
+                ->where(['dateDeleted' => null])
+                ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC])
+                ->all();
         } catch (DbException $e) {
             // todo: remove this after the next breakpoint
             // If the error code is 42S02 (MySQL) or 42P01 (PostgreSQL), the sites table probably doesn't exist yet
@@ -1200,8 +1230,8 @@ class Sites extends Component
                     }
                 }
 
-                if (is_array($generalConfig->siteName) && isset($generalConfig->siteUrl[$site->handle])) {
-                    $site->overrideName($generalConfig->siteUrl[$site->handle]);
+                if (is_array($generalConfig->siteName) && isset($generalConfig->siteName[$site->handle])) {
+                    $site->overrideName($generalConfig->siteName[$site->handle]);
                 }
                 if (is_array($generalConfig->siteUrl) && isset($generalConfig->siteUrl[$site->handle])) {
                     $site->overrideBaseUrl($generalConfig->siteUrl[$site->handle]);
