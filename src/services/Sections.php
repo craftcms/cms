@@ -888,14 +888,16 @@ class Sections extends Component
                     }
 
                     // Delete the entries
-                    $entries = Entry::find()
+                    $entryQuery = Entry::find()
                         ->status(null)
                         ->enabledForSite(false)
-                        ->sectionId($sectionRecord->id)
-                        ->all();
+                        ->sectionId($sectionRecord->id);
 
-                    foreach ($entries as $entry) {
-                        Craft::$app->getElements()->deleteElement($entry);
+                    $elementsService = Craft::$app->getElements();
+                    foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                        foreach ($entryQuery->siteId($siteId)->each() as $entry) {
+                            $elementsService->deleteElement($entry);
+                        }
                     }
 
                     // Delete the structure, if there is one
@@ -1369,14 +1371,17 @@ class Sections extends Component
                     }
 
                     // Delete the entries
-                    $entries = Entry::find()
+                    $entryQuery = Entry::find()
                         ->status(null)
                         ->enabledForSite(false)
-                        ->typeId($entryTypeRecord->id)
-                        ->all();
+                        ->typeId($entryTypeRecord->id);
 
-                    foreach ($entries as $entry) {
-                        Craft::$app->getElements()->deleteElement($entry);
+
+                    $elementsService = Craft::$app->getElements();
+                    foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                        foreach ($entryQuery->siteId($siteId)->each() as $entry) {
+                            $elementsService->deleteElement($entry);
+                        }
                     }
 
                     // Delete the entry type.
