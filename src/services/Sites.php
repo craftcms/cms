@@ -686,6 +686,7 @@ class Sites extends Component
             $uid = StringHelper::UUID();
             $configData['sortOrder'] = ((int)(new Query())
                     ->from(['{{%sites}}'])
+                    ->where(['dateDeleted' => null])
                     ->max('[[sortOrder]]')) + 1;
         } else {
             $uid = Db::uidById('{{%sites}}', $site->id);
@@ -1131,7 +1132,9 @@ class Sites extends Component
 
                 try {
                     $affectedRows = Craft::$app->getDb()->createCommand()
-                        ->delete('{{%sites}}', ['id' => $siteRecord->id])
+                        ->update('{{%sites}}', [
+                            'dateDeleted' => Db::prepareDateForDb(new \DateTime()),
+                        ], ['id' => $siteRecord->id], [], false)
                         ->execute();
 
                     $transaction->commit();
