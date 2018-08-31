@@ -125,7 +125,7 @@ class Globals extends Component
         $allGlobalSets = $this->getAllSets();
 
         foreach ($allGlobalSets as $globalSet) {
-            if (Craft::$app->getUser()->checkPermission('editGlobalSet:'.$globalSet->uid)) {
+            if (Craft::$app->getUser()->checkPermission('editGlobalSet:' . $globalSet->uid)) {
                 $this->_editableGlobalSetIds[] = $globalSet->id;
             }
         }
@@ -370,7 +370,7 @@ class Globals extends Component
             ];
         }
 
-        $configPath = self::CONFIG_GLOBALSETS_KEY.'.'.$globalSetUid;
+        $configPath = self::CONFIG_GLOBALSETS_KEY . '.' . $globalSetUid;
         $projectConfig->save($configPath, $configData);
 
         if ($isNewSet) {
@@ -398,14 +398,14 @@ class Globals extends Component
         $path = $event->configPath;
 
         // If anything changes inside, just process the main entity
-        if (preg_match('/^'.self::CONFIG_GLOBALSETS_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+        if (preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
             $parts = explode('.', $path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a global set?
-        if (preg_match('/^'.self::CONFIG_GLOBALSETS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $globalSetUid = $matches[1];
             $data = $event->configData;
 
@@ -485,7 +485,7 @@ class Globals extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_GLOBALSETS_KEY.'.'.$globalSet->uid, null);
+        Craft::$app->getProjectConfig()->save(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid, null);
 
         return true;
     }
@@ -495,26 +495,26 @@ class Globals extends Component
      *
      * @param ParseConfigEvent $event
      */
-    public function handleDeletedGlobalSet (ParseConfigEvent $event)
+    public function handleDeletedGlobalSet(ParseConfigEvent $event)
     {
         $path = $event->configPath;
 
         // If anything changes inside, just process the main entity
-        if (preg_match('/^'.self::CONFIG_GLOBALSETS_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+        if (preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
             $parts = explode('.', $path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a global set?
-        if (preg_match('/^'.self::CONFIG_GLOBALSETS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $uid = $matches[1];
 
             $globalSetRecord = $this->_getGlobalSetRecord($uid);
 
             if ($globalSetRecord->id) {
                 $transaction = Craft::$app->getDb()->beginTransaction();
-                
+
                 try {
                     // Delete the field layout
                     $fieldLayoutId = (new Query())

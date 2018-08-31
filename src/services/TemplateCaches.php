@@ -290,7 +290,7 @@ class TemplateCaches extends Component
         }
 
         if (!$global && (strlen($path = $this->_getPath()) > 255)) {
-            Craft::warning('Skipped adding '.$key.' to template cache table because the path is > 255 characters: '.$path, __METHOD__);
+            Craft::warning('Skipped adding ' . $key . ' to template cache table because the path is > 255 characters: ' . $path, __METHOD__);
 
             return;
         }
@@ -314,7 +314,7 @@ class TemplateCaches extends Component
 
             $cacheDuration += time();
 
-            $expiration = new DateTime('@'.$cacheDuration);
+            $expiration = new DateTime('@' . $cacheDuration);
         }
 
         // Save it
@@ -685,7 +685,7 @@ class TemplateCaches extends Component
         $this->_path .= Craft::$app->getRequest()->getPathInfo();
 
         if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1) {
-            $this->_path .= '/'.Craft::$app->getConfig()->getGeneral()->pageTrigger.$pageNum;
+            $this->_path .= '/' . Craft::$app->getConfig()->getGeneral()->pageTrigger . $pageNum;
         }
 
         return $this->_path;

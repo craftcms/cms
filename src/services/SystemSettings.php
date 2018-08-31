@@ -57,7 +57,7 @@ class SystemSettings extends Component
      */
     public function getSetting(string $category, string $key)
     {
-        return Craft::$app->getProjectConfig()->get($category.'.'.$key);
+        return Craft::$app->getProjectConfig()->get($category . '.' . $key);
     }
 
     /**

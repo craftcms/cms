@@ -271,7 +271,7 @@ class Sites extends Component
             $uid = $groupRecord->uid;
         }
 
-        $projectConfig->save(self::CONFIG_SITEGROUP_KEY.'.'.$uid, $configData);
+        $projectConfig->save(self::CONFIG_SITEGROUP_KEY . '.' . $uid, $configData);
 
         // Now that we have an ID, save it on the model & models
         if ($isNewGroup) {
@@ -296,11 +296,12 @@ class Sites extends Component
      *
      * @param ParseConfigEvent $event
      */
-    public function handleChangedGroup(ParseConfigEvent $event) {
+    public function handleChangedGroup(ParseConfigEvent $event)
+    {
         $path = $event->configPath;
 
         // Does it match a field group?
-        if (preg_match('/^'.self::CONFIG_SITEGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^' . self::CONFIG_SITEGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $data = $event->configData;
             $uid = $matches[1];
 
@@ -321,11 +322,12 @@ class Sites extends Component
      *
      * @param ParseConfigEvent $event
      */
-    public function handleDeletedGroup(ParseConfigEvent $event) {
+    public function handleDeletedGroup(ParseConfigEvent $event)
+    {
         $path = $event->configPath;
 
         // Does it match a field group?
-        if (preg_match('/^'.self::CONFIG_SITEGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^' . self::CONFIG_SITEGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $uid = $matches[1];
 
             $groupRecord = $this->_getGroupRecord($uid);
@@ -385,7 +387,7 @@ class Sites extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_SITEGROUP_KEY.'.'.$group->uid, null);
+        Craft::$app->getProjectConfig()->save(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, null);
 
         // Delete our cache of it
         unset($this->_groupsById[$group->id]);
@@ -422,7 +424,7 @@ class Sites extends Component
     public function getSiteByUid(string $uid): Site
     {
         if (!isset($this->_sitesByUid[$uid])) {
-            throw new SiteNotFoundException('Site with UID ”'.$uid.'“ not found!');
+            throw new SiteNotFoundException('Site with UID ”' . $uid . '“ not found!');
         }
 
         return $this->_sitesByUid[$uid];
@@ -482,7 +484,7 @@ class Sites extends Component
         if (!$this->_currentSite) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
             if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                throw new InvalidArgumentException('Invalid site: '.$site);
+                throw new InvalidArgumentException('Invalid site: ' . $site);
             }
             return;
         }
@@ -524,7 +526,7 @@ class Sites extends Component
         $this->_editableSiteIds = [];
 
         foreach ($this->getAllSites() as $site) {
-            if (Craft::$app->getUser()->checkPermission('editSite:'.$site->uid)) {
+            if (Craft::$app->getUser()->checkPermission('editSite:' . $site->uid)) {
                 $this->_editableSiteIds[] = $site->id;
             }
         }
@@ -671,13 +673,13 @@ class Sites extends Component
         if ($isNewSite) {
             $uid = StringHelper::UUID();
             $configData['sortOrder'] = ((int)(new Query())
-                ->from(['{{%sites}}'])
-                ->max('[[sortOrder]]')) + 1;
+                    ->from(['{{%sites}}'])
+                    ->max('[[sortOrder]]')) + 1;
         } else {
             $uid = Db::uidById('{{%sites}}', $site->id);
         }
 
-        $configPath = self::CONFIG_SITES_KEY.'.'.$uid;
+        $configPath = self::CONFIG_SITES_KEY . '.' . $uid;
         $projectConfig->save($configPath, $configData);
 
         // Now that we have a site ID, save it on the model
@@ -707,17 +709,18 @@ class Sites extends Component
      * @param ParseConfigEvent $event
      * @throws \Throwable
      */
-    public function handleChangedSite(ParseConfigEvent $event) {
+    public function handleChangedSite(ParseConfigEvent $event)
+    {
         $path = $event->configPath;
 
         // Does it match a site?
-        if (preg_match('/^'.self::CONFIG_SITES_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^' . self::CONFIG_SITES_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $siteUid = $matches[1];
             $data = $event->configData;
             $groupUid = $data['siteGroup'];
 
             // Ensure we have the site group in place first
-            Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_SITEGROUP_KEY.'.'.$groupUid);
+            Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
 
             $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -851,9 +854,9 @@ class Sites extends Component
         $projectConfig = Craft::$app->getProjectConfig();
 
         foreach ($siteUids as $sortOrder => $siteUid) {
-            $data = $projectConfig->get(self::CONFIG_SITES_KEY.'.'.$siteUid);
+            $data = $projectConfig->get(self::CONFIG_SITES_KEY . '.' . $siteUid);
             $data['sortOrder'] = $sortOrder + 1;
-            $projectConfig->save(self::CONFIG_SITES_KEY.'.'.$siteUid, $data);
+            $projectConfig->save(self::CONFIG_SITES_KEY . '.' . $siteUid, $data);
         }
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_REORDER_SITES)) {
@@ -1080,7 +1083,7 @@ class Sites extends Component
             }
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_SITES_KEY.'.'.$site->uid, null);
+        Craft::$app->getProjectConfig()->save(self::CONFIG_SITES_KEY . '.' . $site->uid, null);
 
         // Fire an 'afterDeleteSite' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE)) {
@@ -1101,12 +1104,13 @@ class Sites extends Component
      * @throws \Throwable
      * @throws \yii\base\NotSupportedException
      */
-    public function handleDeletedSite(ParseConfigEvent $event) {
+    public function handleDeletedSite(ParseConfigEvent $event)
+    {
 
         $path = $event->configPath;
 
         // Does it match a site?
-        if (preg_match('/^'.self::CONFIG_SITES_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^' . self::CONFIG_SITES_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $siteRecord = $this->_getSiteRecord($matches[1]);
 
             if ($siteRecord->id) {

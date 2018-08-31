@@ -193,7 +193,7 @@ class Volumes extends Component
         $this->_viewableVolumeIds = [];
 
         foreach ($this->getAllVolumes() as $volume) {
-            if (Craft::$app->user->checkPermission('viewVolume:'.$volume->uid)) {
+            if (Craft::$app->user->checkPermission('viewVolume:' . $volume->uid)) {
                 $this->_viewableVolumeIds[] = $volume->id;
             }
         }
@@ -216,7 +216,7 @@ class Volumes extends Component
 
         foreach ($this->getAllVolumes() as $volume) {
             /** @var Volume $volume */
-            if (Craft::$app->user->checkPermission('viewVolume:'.$volume->uid)) {
+            if (Craft::$app->user->checkPermission('viewVolume:' . $volume->uid)) {
                 $this->_viewableVolumes[] = $volume;
             }
         }
@@ -346,7 +346,8 @@ class Volumes extends Component
      * @param string $volumeUid
      * @return VolumeInterface|null
      */
-    public function getVolumeByUid(string $volumeUid) {
+    public function getVolumeByUid(string $volumeUid)
+    {
         $result = $this->_createVolumeQuery()
             ->where(['uid' => $volumeUid])
             ->one();
@@ -446,7 +447,7 @@ class Volumes extends Component
         }
 
 
-        $configPath = self::CONFIG_VOLUME_KEY.'.'.$volumeUid;
+        $configPath = self::CONFIG_VOLUME_KEY . '.' . $volumeUid;
         $projectConfig->save($configPath, $configData);
 
         if ($isNewVolume) {
@@ -459,7 +460,7 @@ class Volumes extends Component
         $this->_volumesById[$volume->id] = $volume;
         $this->_volumesByHandle[$volume->handle] = $volume;
 
-        if ($this->_viewableVolumeIds !== null && Craft::$app->user->checkPermission('viewVolume:'.$volume->uid)) {
+        if ($this->_viewableVolumeIds !== null && Craft::$app->user->checkPermission('viewVolume:' . $volume->uid)) {
             $this->_viewableVolumeIds[] = $volume->id;
         }
 
@@ -484,14 +485,14 @@ class Volumes extends Component
         $path = $event->configPath;
 
         // If anything changes inside, just process the main entity
-        if (preg_match('/^'.self::CONFIG_VOLUME_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+        if (preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
             $parts = explode('.', $path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a volume?
-        if (preg_match('/^'.self::CONFIG_VOLUME_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
 
             $volumeUid = $matches[1];
             $data = $event->configData;
@@ -567,9 +568,9 @@ class Volumes extends Component
         $projectConfig = Craft::$app->getProjectConfig();
 
         foreach ($volumeIds as $volumeOrder => $volumeUid) {
-            $data = $projectConfig->get(self::CONFIG_VOLUME_KEY.'.'.$volumeUid);
+            $data = $projectConfig->get(self::CONFIG_VOLUME_KEY . '.' . $volumeUid);
             $data['sortOrder'] = $volumeOrder + 1;
-            $projectConfig->save(self::CONFIG_VOLUME_KEY.'.'.$volumeUid, $data);
+            $projectConfig->save(self::CONFIG_VOLUME_KEY . '.' . $volumeUid, $data);
         }
 
         return true;
@@ -695,7 +696,7 @@ class Volumes extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_VOLUME_KEY.'.'.$volume->uid, null);
+        Craft::$app->getProjectConfig()->save(self::CONFIG_VOLUME_KEY . '.' . $volume->uid, null);
 
         $volume->afterDelete();
 
@@ -714,19 +715,19 @@ class Volumes extends Component
      *
      * @param ParseConfigEvent $event
      */
-    public function handleDeletedVolume (ParseConfigEvent $event)
+    public function handleDeletedVolume(ParseConfigEvent $event)
     {
         $path = $event->configPath;
 
         // If anything changes inside, just process the main entity
-        if (preg_match('/^'.self::CONFIG_VOLUME_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+        if (preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
             $parts = explode('.', $path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a volume
-        if (preg_match('/'.self::CONFIG_VOLUME_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $uid = $matches[1];
 
             $volumeRecord = $this->_getVolumeRecord($uid);

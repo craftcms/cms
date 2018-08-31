@@ -127,7 +127,7 @@ class Categories extends Component
         $this->_editableGroupIds = [];
 
         foreach ($this->getAllGroups() as $group) {
-            if (Craft::$app->getUser()->checkPermission('editCategories:'.$group->uid)) {
+            if (Craft::$app->getUser()->checkPermission('editCategories:' . $group->uid)) {
                 $this->_editableGroupIds[] = $group->id;
             }
         }
@@ -363,7 +363,7 @@ class Categories extends Component
             ];
         }
 
-        $configPath = self::CONFIG_CATEGORYROUP_KEY.'.'.$categoryGroupUid;
+        $configPath = self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid;
         $projectConfig->save($configPath, $configData);
 
         if ($isNewCategoryGroup) {
@@ -394,9 +394,9 @@ class Categories extends Component
         $path = $event->configPath;
 
         // If anything changes inside, just process the main entity
-        if (preg_match('/^'.self::CONFIG_CATEGORYROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+        if (preg_match('/^' . self::CONFIG_CATEGORYROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
             $parts = explode('.', $path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
@@ -603,7 +603,7 @@ class Categories extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_CATEGORYROUP_KEY.'.'.$group->uid, null);
+        Craft::$app->getProjectConfig()->save(self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid, null);
 
         // Fire an 'afterDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
@@ -656,14 +656,14 @@ class Categories extends Component
         $path = $event->configPath;
 
         // If anything changes inside, just process the main entity
-        if (preg_match('/^'.self::CONFIG_CATEGORYROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+        if (preg_match('/^' . self::CONFIG_CATEGORYROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
             $parts = explode('.', $path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a category group?
-        if (preg_match('/'.self::CONFIG_CATEGORYROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/' . self::CONFIG_CATEGORYROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $uid = $matches[1];
 
             $categoryGroupRecord = $groupRecord = $this->_getCategoryGroupRecord($uid);

@@ -268,7 +268,7 @@ class Tags extends Component
             ];
         }
 
-        $configPath = self::CONFIG_TAGGROUP_KEY.'.'.$tagGroupUid;
+        $configPath = self::CONFIG_TAGGROUP_KEY . '.' . $tagGroupUid;
         $projectConfig->save($configPath, $configData);
 
         if ($isNewTagGroup) {
@@ -299,14 +299,14 @@ class Tags extends Component
         $path = $event->configPath;
 
         // If anything changes inside, just process the main entity
-        if (preg_match('/^'.self::CONFIG_TAGGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+        if (preg_match('/^' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
             $parts = explode('.', $path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a tag group?
-        if (preg_match('/'.self::CONFIG_TAGGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
 
             $tagGroupUid = $matches[1];
             $data = $event->configData;
@@ -378,7 +378,7 @@ class Tags extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_TAGGROUP_KEY.'.'.$tagGroup->uid, null);
+        Craft::$app->getProjectConfig()->save(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid, null);
 
         // Fire an 'afterDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
@@ -395,19 +395,19 @@ class Tags extends Component
      *
      * @param ParseConfigEvent $event
      */
-    public function handleDeletedTagGroup (ParseConfigEvent $event)
+    public function handleDeletedTagGroup(ParseConfigEvent $event)
     {
         $path = $event->configPath;
 
         // If anything changes inside, just process the main entity
-        if (preg_match('/^'.self::CONFIG_TAGGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+        if (preg_match('/^' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
             $parts = explode('.', $path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a tag group?
-        if (preg_match('/'.self::CONFIG_TAGGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $uid = $matches[1];
 
             $tagGroupRecord = $this->_getTagGroupRecord($uid);

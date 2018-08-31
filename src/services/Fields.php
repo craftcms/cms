@@ -305,7 +305,7 @@ class Fields extends Component
             $uid = $groupRecord->uid;
         }
 
-        $projectConfig->save(self::CONFIG_FIELDGROUP_KEY.'.'.$uid, $configData);
+        $projectConfig->save(self::CONFIG_FIELDGROUP_KEY . '.' . $uid, $configData);
 
         if ($isNewGroup) {
             $group->id = Db::idByUid('{{%fieldgroups}}', $uid);
@@ -329,11 +329,12 @@ class Fields extends Component
      *
      * @param ParseConfigEvent $event
      */
-    public function handleChangedGroup(ParseConfigEvent $event) {
+    public function handleChangedGroup(ParseConfigEvent $event)
+    {
         $path = $event->configPath;
 
         // Does it match a field group?
-        if (preg_match('/^'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^' . self::CONFIG_FIELDGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $data = $event->configData;
             $uid = $matches[1];
 
@@ -354,11 +355,12 @@ class Fields extends Component
      *
      * @param ParseConfigEvent $event
      */
-    public function handleDeletedGroup(ParseConfigEvent $event) {
+    public function handleDeletedGroup(ParseConfigEvent $event)
+    {
         $path = $event->configPath;
 
         // Does it match a field group?
-        if (preg_match('/^'.self::CONFIG_FIELDGROUP_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^' . self::CONFIG_FIELDGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $uid = $matches[1];
             $groupRecord = $this->_getGroupRecord($uid);
 
@@ -422,7 +424,7 @@ class Fields extends Component
             $this->deleteField($field);
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_FIELDGROUP_KEY.'.'.$group->uid, null);
+        Craft::$app->getProjectConfig()->save(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid, null);
 
         // Fire an 'afterDeleteFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_GROUP)) {
@@ -846,7 +848,7 @@ class Fields extends Component
             $oldFieldRecord = $this->_getFieldRecord($uid);
         }
 
-        $configPath = self::CONFIG_FIELDS_KEY.'.'.$uid;
+        $configPath = self::CONFIG_FIELDS_KEY . '.' . $uid;
         $projectConfig->save($configPath, $configData);
 
         if ($isNewField) {
@@ -895,18 +897,19 @@ class Fields extends Component
      * @param ParseConfigEvent $event
      * @throws \Throwable
      */
-    public function handleChangedField(ParseConfigEvent $event) {
+    public function handleChangedField(ParseConfigEvent $event)
+    {
         $path = $event->configPath;
 
         // Does it match a field?
-        if (preg_match('/^'.self::CONFIG_FIELDS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^' . self::CONFIG_FIELDS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $data = $event->configData;
             $groupUid = $data['fieldGroup'];
             $fieldUid = $matches[1];
 
             // Ensure we have the field group in place first
             if ($groupUid) {
-                Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_FIELDGROUP_KEY.'.'.$groupUid);
+                Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_FIELDGROUP_KEY . '.' . $groupUid);
             }
 
             $transaction = Craft::$app->getDb()->beginTransaction();
@@ -919,8 +922,8 @@ class Fields extends Component
 
                 // Create/alter the content table column
                 $contentTable = Craft::$app->getContent()->contentTable;
-                $oldColumnName = $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle();
-                $newColumnName = Craft::$app->getContent()->fieldColumnPrefix.$data['handle'];
+                $oldColumnName = $this->oldFieldColumnPrefix . $fieldRecord->getOldHandle();
+                $newColumnName = Craft::$app->getContent()->fieldColumnPrefix . $data['handle'];
 
                 if ($fieldtype::hasContentColumn()) {
                     $columnType = $data['contentColumnType'];
@@ -1030,7 +1033,7 @@ class Fields extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_FIELDS_KEY.'.'.$field->uid, null);
+        Craft::$app->getProjectConfig()->save(self::CONFIG_FIELDS_KEY . '.' . $field->uid, null);
 
         // Fire an 'afterDeleteField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
@@ -1052,7 +1055,7 @@ class Fields extends Component
         $path = $event->configPath;
 
         // Does it match a field?
-        if (preg_match('/^'.self::CONFIG_FIELDS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^' . self::CONFIG_FIELDS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
 
             $fieldRecord = $this->_getFieldRecord($matches[1]);
 
@@ -1064,9 +1067,9 @@ class Fields extends Component
                     $contentTable = Craft::$app->getContent()->contentTable;
                     $fieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
 
-                    if (Craft::$app->getDb()->columnExists($contentTable, $fieldColumnPrefix.$fieldRecord->handle)) {
+                    if (Craft::$app->getDb()->columnExists($contentTable, $fieldColumnPrefix . $fieldRecord->handle)) {
                         Craft::$app->getDb()->createCommand()
-                            ->dropColumn($contentTable, $fieldColumnPrefix.$fieldRecord->handle)
+                            ->dropColumn($contentTable, $fieldColumnPrefix . $fieldRecord->handle)
                             ->execute();
                     }
 
@@ -1223,14 +1226,14 @@ class Fields extends Component
      */
     public function assembleLayoutFromPost(string $namespace = null): FieldLayout
     {
-        $paramPrefix = ($namespace ? rtrim($namespace, '.').'.' : '');
+        $paramPrefix = ($namespace ? rtrim($namespace, '.') . '.' : '');
         $request = Craft::$app->getRequest();
 
-        $postedFieldLayout = $request->getBodyParam($paramPrefix.'fieldLayout', []);
-        $requiredFields = $request->getBodyParam($paramPrefix.'requiredFields', []);
+        $postedFieldLayout = $request->getBodyParam($paramPrefix . 'fieldLayout', []);
+        $requiredFields = $request->getBodyParam($paramPrefix . 'requiredFields', []);
 
         $fieldLayout = $this->assembleLayout($postedFieldLayout, $requiredFields);
-        $fieldLayout->id = $request->getBodyParam($paramPrefix.'fieldLayoutId');
+        $fieldLayout->id = $request->getBodyParam($paramPrefix . 'fieldLayoutId');
 
         return $fieldLayout;
     }
@@ -1340,7 +1343,7 @@ class Fields extends Component
 
             // Get the current layout
             if (($layoutRecord = FieldLayoutRecord::findOne($layout->id)) === null) {
-                throw new Exception('Invalid field layout ID: '.$layout->id);
+                throw new Exception('Invalid field layout ID: ' . $layout->id);
             }
         } else {
             $layoutRecord = new FieldLayoutRecord();

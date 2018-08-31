@@ -171,7 +171,8 @@ class ProjectConfig extends Component
     /**
      * @inheritdoc
      */
-    public function init() {
+    public function init()
+    {
         Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData']);
 
         // If we're not using the project config file, load the snapshot to emulate config files.
@@ -201,7 +202,7 @@ class ProjectConfig extends Component
         $arrayAccess = $this->_nodePathToArrayAccess($path);
 
         // TODO figure out a better but not convoluted way without eval
-        return eval('return isset($source'.$arrayAccess.') ? $source'.$arrayAccess.' : null;');
+        return eval('return isset($source' . $arrayAccess . ') ? $source' . $arrayAccess . ' : null;');
     }
 
     /**
@@ -229,13 +230,13 @@ class ProjectConfig extends Component
             $configMap = $this->_getStoredConfigMap();
 
             $topNode = array_shift($pathParts);
-            $targetFilePath = $configMap[$topNode] ?? Craft::$app->getPath()->getConfigPath() . '/'.self::CONFIG_FILENAME;
+            $targetFilePath = $configMap[$topNode] ?? Craft::$app->getPath()->getConfigPath() . '/' . self::CONFIG_FILENAME;
 
             $config = $this->_parseYamlFile($targetFilePath);
 
             // For new top nodes, update the map
             if (empty($configMap[$topNode])) {
-                $this->_mapNodeLocation($topNode, Craft::$app->getPath()->getConfigPath().'/'.self::CONFIG_FILENAME);
+                $this->_mapNodeLocation($topNode, Craft::$app->getPath()->getConfigPath() . '/' . self::CONFIG_FILENAME);
                 $this->_updateConfigMap = true;
             }
         } else {
@@ -245,9 +246,9 @@ class ProjectConfig extends Component
         $arrayAccess = $this->_nodePathToArrayAccess($path);
 
         if (null === $value) {
-            eval('unset($config'.$arrayAccess.');');
+            eval('unset($config' . $arrayAccess . ');');
         } else {
-            eval('$config'.$arrayAccess.' = $value;');
+            eval('$config' . $arrayAccess . ' = $value;');
         }
 
         $this->_saveConfig($config, $targetFilePath);
@@ -263,7 +264,8 @@ class ProjectConfig extends Component
      *
      * @param string $path
      */
-    public function delete($path) {
+    public function delete($path)
+    {
         $this->save($path, null);
     }
 
@@ -277,7 +279,7 @@ class ProjectConfig extends Component
         $snapshot = $this->_getCurrentSnapshot();
 
         $basePath = Craft::$app->getPath()->getConfigPath();
-        $baseFile = $basePath.'/'.self::CONFIG_FILENAME;
+        $baseFile = $basePath . '/' . self::CONFIG_FILENAME;
 
         $this->_saveConfig($snapshot, $baseFile);
         $this->updateParsedConfigTimesAfterRequest();
@@ -297,21 +299,21 @@ class ProjectConfig extends Component
             $this->_configMap = $this->_generateConfigMap();
 
             if (!empty($changes['removedItems'])) {
-                Craft::info('Parsing '.count($changes['removedItems']).' removed configuration objects', __METHOD__);
+                Craft::info('Parsing ' . count($changes['removedItems']) . ' removed configuration objects', __METHOD__);
                 foreach ($changes['removedItems'] as $itemPath) {
                     $this->processConfigChanges($itemPath);
                 }
             }
 
             if (!empty($changes['changedItems'])) {
-                Craft::info('Parsing '.count($changes['changedItems']).' changed configuration objects', __METHOD__);
+                Craft::info('Parsing ' . count($changes['changedItems']) . ' changed configuration objects', __METHOD__);
                 foreach ($changes['changedItems'] as $itemPath) {
                     $this->processConfigChanges($itemPath);
                 }
             }
 
             if (!empty($changes['newItems'])) {
-                Craft::info('Parsing '.count($changes['newItems']).' new configuration objects', __METHOD__);
+                Craft::info('Parsing ' . count($changes['newItems']) . ' new configuration objects', __METHOD__);
                 foreach ($changes['newItems'] as $itemPath) {
                     $this->processConfigChanges($itemPath);
                 }
@@ -326,7 +328,6 @@ class ProjectConfig extends Component
 
             throw $e;
         }
-
     }
 
     /**
@@ -440,8 +441,9 @@ class ProjectConfig extends Component
      *
      * @throws \yii\base\ErrorException
      */
-    public function saveModifiedConfigData() {
-        $traverseAndClean = function (&$array) use (&$traverseAndClean) {
+    public function saveModifiedConfigData()
+    {
+        $traverseAndClean = function(&$array) use (&$traverseAndClean) {
             $remove = [];
             foreach ($array as $key => &$value) {
                 if (\is_array($value)) {
@@ -482,7 +484,6 @@ class ProjectConfig extends Component
 
             Craft::$app->saveInfo($info);
         }
-
     }
 
     /**
@@ -502,7 +503,7 @@ class ProjectConfig extends Component
             foreach ($changes as $path) {
                 $pathParts = explode('.', $path);
                 if (count($pathParts) > 1) {
-                    $summary[$type][$pathParts[0].'.'.$pathParts[1]] = true;
+                    $summary[$type][$pathParts[0] . '.' . $pathParts[1]] = true;
                 }
             }
         }
@@ -565,7 +566,8 @@ class ProjectConfig extends Component
      * @param string $file
      * @return mixed
      */
-    private function _parseYamlFile(string $file) {
+    private function _parseYamlFile(string $file)
+    {
         if (empty($this->_parsedConfigs[$file])) {
             $this->_parsedConfigs[$file] = file_exists($file) ? Yaml::parseFile($file) : [];
         }
@@ -584,7 +586,6 @@ class ProjectConfig extends Component
     {
         $this->_getStoredConfigMap();
         $this->_configMap[$node] = $location;
-
     }
 
     /**
@@ -596,9 +597,10 @@ class ProjectConfig extends Component
     private function _modifySnapshot($configPath, $data)
     {
         $arrayAccess = $this->_nodePathToArrayAccess($configPath);
-        eval('$this->_snapshot'.$arrayAccess.' = $data;');
+        eval('$this->_snapshot' . $arrayAccess . ' = $data;');
         $this->_updateSnapshot = true;
     }
+
     /**
      * Get the stored config map.
      *
@@ -652,9 +654,9 @@ class ProjectConfig extends Component
 
         // flatten both snapshots so we can compare them.
 
-        $flatten = function ($array, $path, &$result) use (&$flatten) {
+        $flatten = function($array, $path, &$result) use (&$flatten) {
             foreach ($array as $key => $value) {
-                $thisPath = ltrim($path.'.'.$key, '.');
+                $thisPath = ltrim($path . '.' . $key, '.');
 
                 if (is_array($value)) {
                     $flatten($value, $thisPath, $result);
@@ -742,7 +744,7 @@ class ProjectConfig extends Component
      */
     private function _areConfigFilesModified(): bool
     {
-        $cachedModifiedTimes =  Craft::$app->getCache()->get(self::CACHE_KEY);
+        $cachedModifiedTimes = Craft::$app->getCache()->get(self::CACHE_KEY);
 
         if (!is_array($cachedModifiedTimes) || empty($cachedModifiedTimes)) {
             return true;
@@ -772,7 +774,7 @@ class ProjectConfig extends Component
         }
 
         $basePath = Craft::$app->getPath()->getConfigPath();
-        $baseFile = $basePath.'/'.self::CONFIG_FILENAME;
+        $baseFile = $basePath . '/' . self::CONFIG_FILENAME;
 
         $traverseFile = function($filePath) use (&$traverseFile) {
             $fileList = [$filePath];
@@ -782,7 +784,7 @@ class ProjectConfig extends Component
             if (isset($config['imports'])) {
                 foreach ($config['imports'] as $file) {
                     if (PathHelper::ensurePathIsContained($file)) {
-                        $fileList = array_merge($fileList, $traverseFile($fileDir.'/'.$file));
+                        $fileList = array_merge($fileList, $traverseFile($fileDir . '/' . $file));
                     }
                 }
             }
@@ -804,7 +806,7 @@ class ProjectConfig extends Component
     {
         // Clean up!
         $nodePath = preg_replace('/[^a-z0-9\-\.]/i', '', $nodePath);
-        return "['".preg_replace('/\./', "']['", $nodePath)."']";
+        return "['" . preg_replace('/\./', "']['", $nodePath) . "']";
     }
 
     /**

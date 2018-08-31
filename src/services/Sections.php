@@ -174,7 +174,7 @@ class Sections extends Component
         $this->_editableSectionIds = [];
 
         foreach ($this->getAllSections() as $section) {
-            if (Craft::$app->getUser()->checkPermission('editEntries:'.$section->uid)) {
+            if (Craft::$app->getUser()->checkPermission('editEntries:' . $section->uid)) {
                 $this->_editableSectionIds[] = $section->id;
             }
         }
@@ -523,7 +523,7 @@ class Sections extends Component
 
         // Load the existing entry type info
         if (!$isNewSection) {
-            $configData[self::CONFIG_ENTRYTYPES_KEY] = $projectConfig->get(self::CONFIG_SECTIONS_KEY.'.'.$sectionUid.'.'.self::CONFIG_ENTRYTYPES_KEY);
+            $configData[self::CONFIG_ENTRYTYPES_KEY] = $projectConfig->get(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.' . self::CONFIG_ENTRYTYPES_KEY);
         }
 
         // Get the site settings
@@ -544,7 +544,7 @@ class Sections extends Component
             ];
         }
 
-        $configPath = self::CONFIG_SECTIONS_KEY.'.'.$sectionUid;
+        $configPath = self::CONFIG_SECTIONS_KEY . '.' . $sectionUid;
         $projectConfig->save($configPath, $configData);
 
         if ($isNewSection) {
@@ -634,7 +634,7 @@ class Sections extends Component
                 $structure = $structureData ? (Craft::$app->getStructures()->getStructureByUid($structureData['uid']) ?? new Structure()) : new Structure();
 
                 $isNewSection = $sectionRecord->getIsNewRecord();
-                $isNewStructure = !(bool)$structure->id ;
+                $isNewStructure = !(bool)$structure->id;
 
                 if ($data['type'] === Section::TYPE_STRUCTURE) {
                     $structure->maxLevels = $structureData['maxLevels'];
@@ -824,7 +824,7 @@ class Sections extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_SECTIONS_KEY.'.'.$section->uid, null);
+        Craft::$app->getProjectConfig()->save(self::CONFIG_SECTIONS_KEY . '.' . $section->uid, null);
 
         // Fire an 'afterDeleteSection' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SECTION)) {
@@ -1097,7 +1097,7 @@ class Sections extends Component
             ];
         }
 
-        $configPath = self::CONFIG_SECTIONS_KEY.'.'.$section->uid.'.'.self::CONFIG_ENTRYTYPES_KEY.'.'.$entryTypeUid;
+        $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid;
         $projectConfig->save($configPath, $configData);
 
         if ($isNewEntryType) {
@@ -1125,14 +1125,14 @@ class Sections extends Component
         $path = $event->configPath;
 
         // If anything changes inside, just process the main entity
-        if (preg_match('/^'.self::CONFIG_SECTIONS_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.'.self::CONFIG_ENTRYTYPES_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+        if (preg_match('/^' . self::CONFIG_SECTIONS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\.' . self::CONFIG_ENTRYTYPES_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
             $parts = explode('.', $path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1].'.'.$parts[2].'.'.$parts[3]);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1] . '.' . $parts[2] . '.' . $parts[3]);
             return;
         }
 
         // Does it match an entry type?
-        if (preg_match('/^'.self::CONFIG_SECTIONS_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.'.self::CONFIG_ENTRYTYPES_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^' . self::CONFIG_SECTIONS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\.' . self::CONFIG_ENTRYTYPES_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $sectionUid = $matches[1];
             $entryTypeUid = $matches[2];
             $data = $event->configData;
@@ -1141,7 +1141,7 @@ class Sections extends Component
             ProjectConfigHelper::ensureAllSitesProcessed();
             ProjectConfigHelper::ensureAllFieldsProcessed();
 
-            Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_SECTIONS_KEY.'.'.$sectionUid);
+            Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid);
 
             $section = $this->getSectionByUid($sectionUid);
             $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid);
@@ -1223,7 +1223,7 @@ class Sections extends Component
                         }
                     } else {
                         if ($section->type === Section::TYPE_SINGLE) {
-                            $siteSettings = Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY.'.'.$sectionUid.'.siteSettings');
+                            $siteSettings = Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.siteSettings');
                             $allSiteUids = array_keys($siteSettings);
                             $sectionRecord = $this->_getSectionRecord($sectionUid);
                             $this->_onSaveSingle($sectionRecord, true, $allSiteUids);
@@ -1237,6 +1237,7 @@ class Sections extends Component
             }
         }
     }
+
     /**
      * Reorders entry types.
      *
@@ -1257,7 +1258,7 @@ class Sections extends Component
                 $sectionRecord = SectionRecord::findOne($entryTypeRecord->sectionId);
             }
 
-            $configPath = self::CONFIG_SECTIONS_KEY.'.'.$sectionRecord->uid.'.'.self::CONFIG_ENTRYTYPES_KEY.'.'.$entryTypeUid;
+            $configPath = self::CONFIG_SECTIONS_KEY . '.' . $sectionRecord->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid;
 
             $data = $projectConfig->get($configPath);
             $data['sortOrder'] = $entryTypeOrder + 1;
@@ -1318,7 +1319,7 @@ class Sections extends Component
         $section = $entryType->getSection();
         $sectionUid = $section->uid;
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_SECTIONS_KEY.'.'.$sectionUid.'.'.self::CONFIG_ENTRYTYPES_KEY.'.'.$entryTypeUid, null);
+        Craft::$app->getProjectConfig()->save(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid, null);
 
         // Fire an 'afterDeleteEntryType' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ENTRY_TYPE)) {
@@ -1340,7 +1341,7 @@ class Sections extends Component
         $path = $event->configPath;
 
         // Does it match an entry type?
-        if (preg_match('/' . self::CONFIG_SECTIONS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\.'.self::CONFIG_ENTRYTYPES_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/' . self::CONFIG_SECTIONS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\.' . self::CONFIG_ENTRYTYPES_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $uid = $matches[1];
 
             $entryTypeRecord = $this->_getEntryTypeRecord($uid);
@@ -1377,7 +1378,6 @@ class Sections extends Component
                 }
             }
         }
-
     }
     // Private Methods
     // =========================================================================

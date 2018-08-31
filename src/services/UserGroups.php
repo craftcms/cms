@@ -103,7 +103,7 @@ class UserGroups extends Component
             if (
                 ($currentUser !== null && (
                         $currentUser->isInGroup($group) ||
-                        $currentUser->can('assignUserGroup:'.$group->uid)
+                        $currentUser->can('assignUserGroup:' . $group->uid)
                     )) ||
                 ($user !== null && $user->isInGroup($group))
             ) {
@@ -221,7 +221,7 @@ class UserGroups extends Component
             // Re-save the existing permissions, it's not our place to touch that.
         }
 
-        $configPath = self::CONFIG_USERPGROUPS_KEY.'.'.$groupUid;
+        $configPath = self::CONFIG_USERPGROUPS_KEY . '.' . $groupUid;
 
         // Save everything except permissions. Not ours to touch.
         $configData = [
@@ -257,7 +257,7 @@ class UserGroups extends Component
         $path = $event->configPath;
 
         // Does it match a user group?
-        if (preg_match('/' . self::CONFIG_USERPGROUPS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/' . self::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             if (Craft::$app->getEdition() !== Craft::Pro) {
                 Craft::$app->setEdition(Craft::Pro);
             }
@@ -287,7 +287,7 @@ class UserGroups extends Component
         $path = $event->configPath;
 
         // Does it match a user group?
-        if (preg_match('/' . self::CONFIG_USERPGROUPS_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/' . self::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $uid = $matches[1];
 
             Craft::$app->getDb()->createCommand()
@@ -320,7 +320,7 @@ class UserGroups extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_USERPGROUPS_KEY.'.'.$group->uid, null);
+        Craft::$app->getProjectConfig()->save(self::CONFIG_USERPGROUPS_KEY . '.' . $group->uid, null);
 
         // Fire an 'afterDeleteUserGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_USER_GROUP)) {

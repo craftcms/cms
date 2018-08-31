@@ -293,7 +293,7 @@ class Search extends Component
 
         if ($cleanKeywords !== null && $cleanKeywords !== false && $cleanKeywords !== '') {
             // Add padding around keywords
-            $cleanKeywords = ' '.$cleanKeywords.' ';
+            $cleanKeywords = ' ' . $cleanKeywords . ' ';
         }
 
         if ($driver === DbConfig::DRIVER_PGSQL) {
@@ -371,7 +371,7 @@ class Search extends Component
 
         // Account for substrings
         if (!$term->subLeft) {
-            $keywords = ' '.$keywords;
+            $keywords = ' ' . $keywords;
         }
 
         if (!$term->subRight) {
@@ -472,7 +472,7 @@ class Search extends Component
             } // No SQL but keywords, save them for later
             else if ($keywords !== null && $keywords !== '') {
                 if ($inclusive && Craft::$app->getDb()->getIsMysql()) {
-                    $keywords = '+'.$keywords;
+                    $keywords = '+' . $keywords;
                 }
 
                 $words[] = $keywords;
@@ -561,12 +561,12 @@ class Search extends Component
 
                         // Add quotes for exact match
                         if ($isMysql && StringHelper::contains($keywords, ' ')) {
-                            $keywords = '"'.$keywords.'"';
+                            $keywords = '"' . $keywords . '"';
                         }
 
                         // Determine prefix for the full-text keyword
                         if ($term->exclude) {
-                            $keywords = '-'.$keywords;
+                            $keywords = '-' . $keywords;
                         }
 
                         // Only create an SQL clause if there's a subselect. Otherwise, return the keywords.
@@ -579,11 +579,11 @@ class Search extends Component
                         if ($term->exact) {
                             // Create exact clause from term
                             $operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
-                            $keywords = ($term->subLeft ? '%' : ' ').$keywords.($term->subRight ? '%' : ' ');
+                            $keywords = ($term->subLeft ? '%' : ' ') . $keywords . ($term->subRight ? '%' : ' ');
                         } else {
                             // Create LIKE clause from term
                             $operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
-                            $keywords = ($term->subLeft ? '%' : '% ').$keywords.($term->subRight ? '%' : ' %');
+                            $keywords = ($term->subLeft ? '%' : '% ') . $keywords . ($term->subRight ? '%' : ' %');
                         }
 
                         // Generate the SQL
@@ -600,7 +600,7 @@ class Search extends Component
 
         // If we have a where clause in the subselect, add the keyword bit to it.
         if ($subSelect !== null && $sql !== null) {
-            $sql = $this->_sqlSubSelect($subSelect.' AND '.$sql, $siteId);
+            $sql = $this->_sqlSubSelect($subSelect . ' AND ' . $sql, $siteId);
 
             // We need to reset keywords even if the subselect ended up in no results.
             $keywords = null;
@@ -712,7 +712,7 @@ class Search extends Component
         $elementIds = $query->column();
 
         if (!empty($elementIds)) {
-            return Craft::$app->getDb()->quoteColumnName('elementId').' IN ('.implode(', ', $elementIds).')';
+            return Craft::$app->getDb()->quoteColumnName('elementId') . ' IN (' . implode(', ', $elementIds) . ')';
         }
 
         return false;
@@ -742,7 +742,7 @@ class Search extends Component
         $ftVal = explode(' ', $val);
         $ftVal = implode(' & ', $ftVal);
 
-        $likeVal = !$exact ? '%'.$val.'%' : $val;
+        $likeVal = !$exact ? '%' . $val . '%' : $val;
 
         return sprintf("%s @@ '%s'::tsquery AND %s LIKE '%s'", Craft::$app->getDb()->quoteColumnName('keywords_vector'), $ftVal, Craft::$app->getDb()->quoteColumnName('keywords'), $likeVal);
     }

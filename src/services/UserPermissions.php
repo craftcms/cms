@@ -91,7 +91,7 @@ class UserPermissions extends Component
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
             if ($plugin->hasCpSection) {
-                $general['accessCp']['nested']['accessPlugin-'.$plugin->id] = [
+                $general['accessCp']['nested']['accessPlugin-' . $plugin->id] = [
                     'label' => Craft::t('app', 'Access {plugin}', ['plugin' => $plugin->name])
                 ];
             }
@@ -132,7 +132,7 @@ class UserPermissions extends Component
             ];
 
             foreach (Craft::$app->getUserGroups()->getAllGroups() as $userGroup) {
-                $userPermissions['editUsers']['nested']['assignUserGroups']['nested']['assignUserGroup:'.$userGroup->uid] = [
+                $userPermissions['editUsers']['nested']['assignUserGroups']['nested']['assignUserGroup:' . $userGroup->uid] = [
                     'label' => Craft::t('app', 'Assign users to “{group}”', [
                         'group' => Craft::t('site', $userGroup->name)
                     ])
@@ -150,7 +150,7 @@ class UserPermissions extends Component
             $sites = Craft::$app->getSites()->getAllSites();
 
             foreach ($sites as $site) {
-                $permissions[$label]['editSite:'.$site->uid] = [
+                $permissions[$label]['editSite:' . $site->uid] = [
                     'label' => Craft::t('app', 'Edit “{title}”',
                         ['title' => Craft::t('site', $site->name)])
                 ];
@@ -314,7 +314,7 @@ class UserPermissions extends Component
 
         if (!empty($permissions)) {
             $group = Craft::$app->getUserGroups()->getGroupById($groupId);
-            $path = UserGroups::CONFIG_USERPGROUPS_KEY.'.'.$group->id.'.permissions';
+            $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->id . '.permissions';
             Craft::$app->getProjectConfig()->save($path, $permissions);
         }
 
@@ -414,11 +414,12 @@ class UserPermissions extends Component
      *
      * @param ParseConfigEvent $event
      */
-    public function handleChangedGroupPermissions(ParseConfigEvent $event) {
+    public function handleChangedGroupPermissions(ParseConfigEvent $event)
+    {
         $path = $event->configPath;
 
         // Does it match user group permissions?
-        if (preg_match('/'.UserGroups::CONFIG_USERPGROUPS_KEY.'\.('.ProjectConfig::UID_PATTERN.')\.permissions$/i', $path, $matches)) {
+        if (preg_match('/' . UserGroups::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\.permissions$/i', $path, $matches)) {
 
             // Ensure all user groups are ready to roll
             ProjectConfigHelper::ensureAllUserGroupsProcessed();
@@ -461,7 +462,7 @@ class UserPermissions extends Component
         $path = $event->configPath;
 
         // Does it match permissions?
-        if (preg_match('/' . self::CONFIG_USERPERMISSIONS_KEY.'$/i', $path, $matches)) {
+        if (preg_match('/' . self::CONFIG_USERPERMISSIONS_KEY . '$/i', $path, $matches)) {
             $data = $event->configData;
             $records = UserPermissionRecord::find()
                 ->where(['name' => $data])
@@ -500,7 +501,7 @@ class UserPermissions extends Component
      */
     private function _getSingleEntryPermissions(Section $section): array
     {
-        $suffix = ':'.$section->uid;
+        $suffix = ':' . $section->uid;
 
         return [
             "editEntries{$suffix}" => [
@@ -534,7 +535,7 @@ class UserPermissions extends Component
      */
     private function _getEntryPermissions(Section $section): array
     {
-        $suffix = ':'.$section->uid;
+        $suffix = ':' . $section->uid;
 
         return [
             "editEntries{$suffix}" => [
@@ -587,7 +588,7 @@ class UserPermissions extends Component
         $permissions = [];
 
         foreach ($globalSets as $globalSet) {
-            $permissions['editGlobalSet:'.$globalSet->uid] = [
+            $permissions['editGlobalSet:' . $globalSet->uid] = [
                 'label' => Craft::t('app', 'Edit “{title}”',
                     ['title' => Craft::t('site', $globalSet->name)])
             ];
@@ -607,7 +608,7 @@ class UserPermissions extends Component
         $permissions = [];
 
         foreach ($groups as $group) {
-            $permissions['editCategories:'.$group->uid] = [
+            $permissions['editCategories:' . $group->uid] = [
                 'label' => Craft::t('app', 'Edit “{title}”',
                     ['title' => Craft::t('site', $group->name)])
             ];
@@ -624,7 +625,7 @@ class UserPermissions extends Component
      */
     private function _getVolumePermissions(string $volumeUid): array
     {
-        $suffix = ':'.$volumeUid;
+        $suffix = ':' . $volumeUid;
 
         return [
             "viewVolume{$suffix}" => [
@@ -655,7 +656,7 @@ class UserPermissions extends Component
 
         foreach (Craft::$app->getUtilities()->getAllUtilityTypes() as $class) {
             /** @var UtilityInterface $class */
-            $permissions['utility:'.$class::id()] = [
+            $permissions['utility:' . $class::id()] = [
                 'label' => $class::displayName()
             ];
         }
@@ -763,7 +764,8 @@ class UserPermissions extends Component
         $permissionRecord = UserPermissionRecord::findOne(['name' => $permissionName]);
 
         if (!$permissionRecord) {
-            $this->_ensurePermissionRecords([$permissionName]);$
+            $this->_ensurePermissionRecords([$permissionName]);
+            $
             $permissionRecord = UserPermissionRecord::findOne(['name' => $permissionName]);
         }
 

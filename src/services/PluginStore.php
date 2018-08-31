@@ -72,7 +72,7 @@ class PluginStore extends Component
         $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
 
         if (isset($craftIdAccount['error'])) {
-            throw new \Exception("Couldn’t get Craft ID account: ".$craftIdAccount['error']);
+            throw new \Exception("Couldn’t get Craft ID account: " . $craftIdAccount['error']);
         }
 
         return $craftIdAccount;
@@ -89,7 +89,7 @@ class PluginStore extends Component
 
         $token = $this->getToken();
         if ($token && $token->accessToken !== null) {
-            $options['headers']['Authorization'] = 'Bearer '.$token->accessToken;
+            $options['headers']['Authorization'] = 'Bearer ' . $token->accessToken;
         }
 
         return $options;

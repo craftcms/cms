@@ -166,7 +166,7 @@ class Matrix extends Component
         $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
 
         $contentService->fieldContext = StringHelper::randomString(10);
-        $contentService->fieldColumnPrefix = 'field_'.$blockType->handle.'_';
+        $contentService->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
 
         foreach ($blockType->getFields() as $field) {
             /** @var Field $field */
@@ -180,7 +180,7 @@ class Matrix extends Component
             // Make sure the block type handle + field handle combo is unique for the whole field. This prevents us from
             // worrying about content column conflicts like "a" + "b_c" == "a_b" + "c".
             if ($blockType->handle && $field->handle) {
-                $blockTypeAndFieldHandle = $blockType->handle.'_'.$field->handle;
+                $blockTypeAndFieldHandle = $blockType->handle . '_' . $field->handle;
 
                 if (in_array($blockTypeAndFieldHandle, $this->_uniqueBlockTypeAndFieldHandles, true)) {
                     // This error *might* not be entirely accurate, but it's such an edge case that it's probably better
@@ -338,7 +338,7 @@ class Matrix extends Component
                 $layoutUid => $fieldLayoutConfig
             ];
 
-            $configPath = self::CONFIG_BLOCKTYPE_KEY.'.'.$blockTypeUid;
+            $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockTypeUid;
             $projectConfig->save($configPath, $configData);
 
             if ($isNewBlockType) {
@@ -361,14 +361,14 @@ class Matrix extends Component
         $path = $event->configPath;
 
         // If anything changes inside, just process the main entity
-        if (preg_match('/^'.self::CONFIG_BLOCKTYPE_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+        if (preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
             $parts = explode('.', $path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a block type?
-        if (preg_match('/^'.self::CONFIG_BLOCKTYPE_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
 
             ProjectConfigHelper::ensureAllFieldsProcessed();
 
@@ -449,7 +449,7 @@ class Matrix extends Component
 
             // Set the new fieldColumnPrefix
             $originalFieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
-            Craft::$app->getContent()->fieldColumnPrefix = 'field_'.$blockType->handle.'_';
+            Craft::$app->getContent()->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
 
             // Now delete the block type fields
             foreach ($blockType->getFields() as $field) {
@@ -460,7 +460,7 @@ class Matrix extends Component
             Craft::$app->getContent()->fieldColumnPrefix = $originalFieldColumnPrefix;
             $contentService->contentTable = $originalContentTable;
 
-            Craft::$app->getProjectConfig()->save(self::CONFIG_BLOCKTYPE_KEY.'.'.$blockType->uid, null);
+            Craft::$app->getProjectConfig()->save(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid, null);
 
             $transaction->commit();
 
@@ -482,14 +482,14 @@ class Matrix extends Component
         $path = $event->configPath;
 
         // If anything changes inside, just process the main entity
-        if (preg_match('/^'.self::CONFIG_BLOCKTYPE_KEY.'\.('.ProjectConfig::UID_PATTERN.')\./i', $path)) {
+        if (preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
             $parts = explode('.', $path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0].'.'.$parts[1]);
+            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a block type?
-        if (preg_match('/^'.self::CONFIG_BLOCKTYPE_KEY.'\.('.ProjectConfig::UID_PATTERN.')$/i', $path, $matches)) {
+        if (preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
 
             $blockTypeUid = $matches[1];
             $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
@@ -519,7 +519,6 @@ class Matrix extends Component
 
                     throw $e;
                 }
-
             }
         }
     }
@@ -717,10 +716,10 @@ class Matrix extends Component
                 $handle = $matrixField->handle;
             }
 
-            $name = '_'.StringHelper::toLowerCase($handle).$name;
+            $name = '_' . StringHelper::toLowerCase($handle) . $name;
         } while ($matrixField = $this->getParentMatrixField($matrixField));
 
-        return '{{%matrixcontent'.$name.'}}';
+        return '{{%matrixcontent' . $name . '}}';
     }
 
     /**
@@ -840,7 +839,7 @@ class Matrix extends Component
             Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
 
             foreach ($collapsedBlockIds as $blockId) {
-                Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId('.$blockId.');');
+                Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId(' . $blockId . ');');
             }
         }
     }
@@ -928,7 +927,7 @@ class Matrix extends Component
         }
 
         if (($this->_blockTypeRecordsById[$blockType->id] = MatrixBlockTypeRecord::findOne($blockType->id)) === null) {
-            throw new MatrixBlockTypeNotFoundException('Invalid block type ID: '.$blockType->id);
+            throw new MatrixBlockTypeNotFoundException('Invalid block type ID: ' . $blockType->id);
         }
 
         return $this->_blockTypeRecordsById[$blockType->id];
