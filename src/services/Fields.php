@@ -829,56 +829,54 @@ class Fields extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            $fieldRecord = $this->_getFieldRecord($field);
+        $fieldRecord = $this->_getFieldRecord($field);
 
-            // Create/alter the content table column
-            $contentTable = Craft::$app->getContent()->contentTable;
-            $oldColumnName = $this->oldFieldColumnPrefix . $fieldRecord->getOldHandle();
-            $newColumnName = Craft::$app->getContent()->fieldColumnPrefix . $field->handle;
+        // Create/alter the content table column
+        $contentTable = Craft::$app->getContent()->contentTable;
+        $oldColumnName = $this->oldFieldColumnPrefix . $fieldRecord->getOldHandle();
+        $newColumnName = Craft::$app->getContent()->fieldColumnPrefix . $field->handle;
 
-            if ($field::hasContentColumn()) {
-                $columnType = $field->getContentColumnType();
+        if ($field::hasContentColumn()) {
+            $columnType = $field->getContentColumnType();
 
-                // Make sure we're working with the latest data in the case of a renamed field.
-                Craft::$app->getDb()->schema->refresh();
+            // Make sure we're working with the latest data in the case of a renamed field.
+            Craft::$app->getDb()->schema->refresh();
 
-                if (Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)) {
+            if (Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)) {
+                Craft::$app->getDb()->createCommand()
+                    ->alterColumn($contentTable, $oldColumnName, $columnType)
+                    ->execute();
+                if ($oldColumnName !== $newColumnName) {
                     Craft::$app->getDb()->createCommand()
-                        ->alterColumn($contentTable, $oldColumnName, $columnType)
-                        ->execute();
-                    if ($oldColumnName !== $newColumnName) {
-                        Craft::$app->getDb()->createCommand()
-                            ->renameColumn($contentTable, $oldColumnName, $newColumnName)
-                            ->execute();
-                    }
-                } else if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
-                    Craft::$app->getDb()->createCommand()
-                        ->alterColumn($contentTable, $newColumnName, $columnType)
-                        ->execute();
-                } else {
-                    Craft::$app->getDb()->createCommand()
-                        ->addColumn($contentTable, $newColumnName, $columnType)
+                        ->renameColumn($contentTable, $oldColumnName, $newColumnName)
                         ->execute();
                 }
+            } else if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
+                Craft::$app->getDb()->createCommand()
+                    ->alterColumn($contentTable, $newColumnName, $columnType)
+                    ->execute();
             } else {
-                // Did the old field have a column we need to remove?
-                if (
-                    !$isNewField &&
-                    $fieldRecord->getOldHandle() &&
-                    Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)
-                ) {
-                    Craft::$app->getDb()->createCommand()
-                        ->dropColumn($contentTable, $oldColumnName)
-                        ->execute();
-                }
+                Craft::$app->getDb()->createCommand()
+                    ->addColumn($contentTable, $newColumnName, $columnType)
+                    ->execute();
             }
+        } else {
+            // Did the old field have a column we need to remove?
+            if (
+                !$isNewField &&
+                $fieldRecord->getOldHandle() &&
+                Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)
+            ) {
+                Craft::$app->getDb()->createCommand()
+                    ->dropColumn($contentTable, $oldColumnName)
+                    ->execute();
+            }
+        }
 
-            // Clear the translation key format if not using a custom translation method
-            if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
-                $field->translationKeyFormat = null;
-            }
+        // Clear the translation key format if not using a custom translation method
+        if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
+            $field->translationKeyFormat = null;
+        }
 
         $groupRecord = $this->_getGroupRecord($field->groupId);
         $groupUid = $groupRecord->uid;
@@ -1109,11 +1107,9 @@ class Fields extends Component
     public function handleDeletedField(ParseConfigEvent $event)
     {
         $path = $event->configPath;
-            );
 
         // Does it match a field?
         if (preg_match('/^' . self::CONFIG_FIELDS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
-            }
 
             $fieldRecord = $this->_getFieldRecord($matches[1]);
 
@@ -1146,10 +1142,19 @@ class Fields extends Component
                 }
             }
 
-            // Un-cache it.
-            unset($this->_allFieldsInContext[$fieldRecord->context], $this->_fieldsWithContent[$fieldRecord->context]);
+            // Clear caches
+            unset(
+                $this->_fieldsById[$fieldRecord->id],
+                $this->_fieldsByContextAndHandle[$fieldRecord->context][$fieldRecord->handle],
+                $this->_allFieldsInContext[$fieldRecord->context],
+                $this->_fieldsWithContent[$fieldRecord->context]
+            );
 
-            // Update the field version at the end of the request
+            if (isset($this->_allFieldHandlesByContext[$fieldRecord->context])) {
+                ArrayHelper::removeValue($this->_allFieldHandlesByContext[$fieldRecord->context], $fieldRecord->handle);
+            }
+
+            // Update the field version
             $this->updateFieldVersion();
         }
     }

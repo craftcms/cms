@@ -886,8 +886,9 @@ class Sections extends Component
                     if (!empty($fieldLayoutIds)) {
                         Craft::$app->getFields()->deleteLayoutById($fieldLayoutIds);
                     }
-
+                    
                     // Delete the entries
+                    // (loop through all the sites in case there are any lingering entries from unsupported sites
                     $entryQuery = Entry::find()
                         ->status(null)
                         ->enabledForSite(false)
@@ -1371,6 +1372,7 @@ class Sections extends Component
                     }
 
                     // Delete the entries
+                    // (loop through all the sites in case there are any lingering entries from unsupported sites
                     $entryQuery = Entry::find()
                         ->status(null)
                         ->enabledForSite(false)

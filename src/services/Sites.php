@@ -1261,19 +1261,6 @@ class Sites extends Component
     }
 
     /**
-     * Returns a Query object prepped for retrieving sites.
-     *
-     * @return Query
-     */
-    private function _createSiteQuery(): Query
-    {
-        return (new Query())
-            ->select(['id', 'groupId', 'name', 'handle', 'language', 'primary', 'hasUrls', 'baseUrl', 'sortOrder', 'uid'])
-            ->from(['{{%sites}}'])
-            ->orderBy(['name' => SORT_ASC]);
-    }
-
-    /**
      * Gets a site group record or creates a new one.
      *
      * @param mixed $criteria ID or UID of the site group.

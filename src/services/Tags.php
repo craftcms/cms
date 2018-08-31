@@ -353,20 +353,36 @@ class Tags extends Component
     }
 
     /**
-     * Deletes a tag group.
+     * Deletes a tag group by its ID.
      *
-     * @param TagGroup $group The tag group
+     * @param int $groupId The tag group's ID
      * @return bool Whether the tag group was deleted successfully
      * @throws \Throwable if reasons
      */
-    public function deleteTagGroup(TagGroup $group): bool
+    public function deleteTagGroupById(int $groupId): bool
     {
-        if (!$tagGroupId) {
+        if (!$groupId) {
             return false;
         }
 
-        $tagGroup = $this->getTagGroupById($tagGroupId);
+        $group = $this->getTagGroupById($groupId);
 
+        if (!$group) {
+            return false;
+        }
+
+        return $this->deleteTagGroup($group);
+    }
+
+    /**
+     * Deletes a tag group.
+     *
+     * @param TagGroup $tagGroup The tag group
+     * @return bool Whether the tag group was deleted successfully
+     * @throws \Throwable if reasons
+     */
+    public function deleteTagGroup(TagGroup $tagGroup): bool
+    {
         if (!$tagGroup) {
             return false;
         }

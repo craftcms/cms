@@ -634,35 +634,6 @@ class Categories extends Component
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            // Delete the field layout
-            $fieldLayoutId = (new Query())
-                ->select(['fieldLayoutId'])
-                ->from(['{{%categorygroups}}'])
-                ->where(['id' => $group->id])
-                ->scalar();
-
-            if ($fieldLayoutId) {
-                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-            }
-
-            // Delete the categories
-            $categories = Category::find()
-                ->anyStatus()
-                ->groupId($group->id)
-                ->all();
-
-            foreach ($categories as $category) {
-                Craft::$app->getElements()->deleteElement($category);
-            }
-
-            Craft::$app->getDb()->createCommand()
-                ->delete(
-                    '{{%categorygroups}}',
-                    ['id' => $group->id])
-                ->execute();
-
         Craft::$app->getProjectConfig()->save(self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid, null);
 
         // Fire an 'afterDeleteGroup' event

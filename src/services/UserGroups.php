@@ -297,6 +297,26 @@ class UserGroups extends Component
     }
 
     /**
+     * Deletes a user group by its ID.
+     *
+     * @param int $groupId The user group's ID
+     * @return bool Whether the user group was deleted successfully
+     * @throws WrongEditionException if this is called from Craft Solo edition
+     */
+    public function deleteGroupById(int $groupId): bool
+    {
+        Craft::$app->requireEdition(Craft::Pro);
+
+        $group = $this->getGroupById($groupId);
+
+        if (!$group) {
+            return false;
+        }
+
+        return $this->deleteGroup($group);
+    }
+
+    /**
      * Deletes a user group.
      *
      * @param UserGroup $group The user group
@@ -306,8 +326,6 @@ class UserGroups extends Component
     public function deleteGroup(UserGroup $group): bool
     {
         Craft::$app->requireEdition(Craft::Pro);
-
-        $group = $this->getGroupById($groupId);
 
         if (!$group) {
             return false;
@@ -334,38 +352,6 @@ class UserGroups extends Component
 
     // Private Methods
     // =========================================================================
-
-    /**
-     * Gets a group's record.
-     *
-     * @param int|null $groupId
-     * @return UserGroupRecord
-     */
-    private function _getGroupRecordById(int $groupId = null): UserGroupRecord
-    {
-        if ($groupId !== null) {
-            $groupRecord = UserGroupRecord::findOne($groupId);
-
-            if (!$groupRecord) {
-                $this->_noGroupExists($groupId);
-            }
-        } else {
-            $groupRecord = new UserGroupRecord();
-        }
-
-        return $groupRecord;
-    }
-
-    /**
-     * Throws a "No group exists" exception.
-     *
-     * @param int $groupId
-     * @throws UserGroupNotFoundException
-     */
-    private function _noGroupExists(int $groupId)
-    {
-        throw new UserGroupNotFoundException("No group exists with the ID '{$groupId}'");
-    }
 
     /**
      * @return Query

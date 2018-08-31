@@ -699,11 +699,12 @@ class Volumes extends Component
         Craft::$app->getProjectConfig()->save(self::CONFIG_VOLUME_KEY . '.' . $volume->uid, null);
 
         $volume->afterDelete();
-            // Delete the assets
-            $assets = Asset::find()
-                ->anyStatus()
-                ->volumeId($volume->id)
-                ->all();
+
+        // Delete the assets
+        $assets = Asset::find()
+            ->anyStatus()
+            ->volumeId($volume->id)
+            ->all();
 
         // Fire an 'afterDeleteVolume' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_VOLUME)) {
