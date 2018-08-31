@@ -732,7 +732,7 @@ class UsersController extends Controller
                 if ($user->hasErrors()) {
                     foreach ($tab->getFields() as $field) {
                         /** @var Field $field */
-                        if ($hasErrors = $user->hasErrors($field->handle)) {
+                        if ($hasErrors = $user->hasErrors($field->handle . '.*')) {
                             break;
                         }
                     }

@@ -194,7 +194,7 @@ class GlobalsController extends Controller
             if ($globalSet->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
                     /** @var Field $field */
-                    if ($hasErrors = $globalSet->hasErrors($field->handle)) {
+                    if ($hasErrors = $globalSet->hasErrors($field->handle . '.*')) {
                         break;
                     }
                 }
