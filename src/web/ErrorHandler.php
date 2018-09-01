@@ -139,6 +139,22 @@ class ErrorHandler extends \yii\web\ErrorHandler
         return parent::renderCallStackItem($file, $line, $class, $method, $args, $index);
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function isCoreFile($file)
+    {
+        if (parent::isCoreFile($file)) {
+            return true;
+        }
+
+        $file = realpath($file);
+        $pathService = Craft::$app->getPath();
+        return strpos($file, $pathService->getCompiledTemplatesPath() . DIRECTORY_SEPARATOR) === 0 ||
+            strpos($file, $pathService->getVendorPath() . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR) === 0 ||
+            $file === __DIR__ . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'Template.php';
+    }
+
     // Protected Methods
     // =========================================================================
 
