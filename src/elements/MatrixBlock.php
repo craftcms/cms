@@ -288,7 +288,7 @@ class MatrixBlock extends Element
      */
     public function getContentTable(): string
     {
-        return Craft::$app->getMatrix()->getContentTableName($this->_getField());
+        return $this->_getField()->contentTable;
     }
 
     /**

@@ -71,6 +71,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     public $maxBlocks;
 
     /**
+     * @var string Content table name
+     * @since 3.0.23
+     */
+    public $contentTable;
+
+    /**
      * @var int Whether each site should get its own unique set of blocks
      */
     public $localizeBlocks = false;
@@ -84,6 +90,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      * @var MatrixBlockType[]|null The block types' fields
      */
     private $_blockTypeFields;
+
+    /**
+     * @var string Old content table name
+     */
+    private $_oldContentTable;
 
     // Public Methods
     // =========================================================================
@@ -632,8 +643,35 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         ];
     }
 
+    /**
+     * Returns the field's old content table name.
+     *
+     * @return string|null
+     * @since 3.0.23
+     */
+    public function getOldContentTable()
+    {
+        return $this->_oldContentTable;
+    }
+
     // Events
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        if (!parent::beforeSave($isNew)) {
+            return false;
+        }
+
+        // Set the new content table name
+        $this->_oldContentTable = $this->contentTable;
+        $this->contentTable = Craft::$app->getMatrix()->defineContentTableName($this);
+
+        return true;
+    }
 
     /**
      * @inheritdoc
