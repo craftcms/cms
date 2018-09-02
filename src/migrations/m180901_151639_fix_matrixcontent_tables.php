@@ -63,11 +63,11 @@ class m180901_151639_fix_matrixcontent_tables extends Migration
                 // duplicate the table for this field, and clean it up
                 $tableName = $field['settings']['contentTable'];
                 $this->execute("create table {$tableName} as select * from {$originalTableName}");
-                $this->addPrimaryKey(null, $tableName, ['id']);
 
                 if ($this->db->getIsPgsql()) {
                     // Manually construct the SQL for Postgres
                     // (see https://github.com/yiisoft/yii2/issues/12077)
+                    $this->addPrimaryKey(null, $tableName, ['id']);
                     $rawTableName = $this->db->tablePrefix . trim($tableName, '{}%');
                     $seqName = $rawTableName . '_id_seq';
                     $this->execute("create sequence [[{$seqName}]] start with {$seqStart} owned by [[{$rawTableName}.id]]");
@@ -78,7 +78,6 @@ class m180901_151639_fix_matrixcontent_tables extends Migration
                     $this->execute("alter table {$tableName} alter column [[dateUpdated]] set not null");
                     $this->execute("alter table {$tableName} alter column [[uid]] set not null");
                 } else {
-                    $this->execute("alter table {$tableName} drop primary key");
                     $this->alterColumn($tableName, 'id', $this->primaryKey());
                     $this->alterColumn($tableName, 'elementId', $this->integer()->notNull());
                     $this->alterColumn($tableName, 'siteId', $this->integer()->notNull());
