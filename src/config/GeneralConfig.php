@@ -228,7 +228,7 @@ class GeneralConfig extends BaseObject
      * - `5` – Friday
      * - `6` – Saturday
      */
-    public $defaultWeekStartDay = 0;
+    public $defaultWeekStartDay = 1;
     /**
      * @var bool By default, Craft will require a 'password' field to be submitted on front-end, public
      * user registrations. Setting this to `true` will no longer require it on the initial registration form.

@@ -30,3 +30,6 @@
 - Added `craft\services\Sections::getSectionByUid()`.
 - Added `craft\services\Sites::restoreSiteById()`.
 - Added the ActiveRecord Soft Delete Extension for Yii2.
+
+### Changed
+- The `defaultWeekStartDay` config setting is now set to `1` (Monday) by default, to conform with the ISO 8601 standard. 
