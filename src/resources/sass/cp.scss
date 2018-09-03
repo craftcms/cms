@@ -33,7 +33,13 @@ body { overflow-x: hidden; }
 
 #global-sidebar nav { @include flex-grow(1); -ms-flex-preferred-size: auto; }
 
-#global-sidebar #devmode { width: 100%; height: 4px; background: url(../images/dev-mode.svg) repeat-x 15px 0; cursor: help; }
+#global-sidebar #devmode {
+	width: 100%;
+	height: 4px;
+	min-height: 4px; // fixes Windows scaling bug (https://github.com/craftcms/cms/issues/3259)
+	background: url(../images/dev-mode.svg) repeat-x 15px 0;
+	cursor: help;
+}
 
 #global-sidebar a { color: hsl($hue, 5%, 85%);
 	@include transition(color linear 100ms);
