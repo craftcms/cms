@@ -224,8 +224,8 @@ JS;
         $sitesService = Craft::$app->getSites();
         $locale = Craft::$app->getLocale();
         $orientation = $locale->getOrientation();
-        $userService = Craft::$app->getUser();
-        $currentUser = $userService->getIdentity();
+        $userSession = Craft::$app->getUser();
+        $currentUser = $userSession->getIdentity();
         $primarySite = $isInstalled && !$isMigrationNeeded ? $sitesService->getPrimarySite() : null;
 
         $data = [
@@ -256,7 +256,7 @@ JS;
             'publishableSections' => $isInstalled && $currentUser ? $this->_publishableSections($currentUser) : [],
             'registeredAssetBundles' => ['' => ''], // force encode as JS object
             'registeredJsFiles' => ['' => ''], // force encode as JS object
-            'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userService->getRemainingSessionTime() : 0,
+            'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'runQueueAutomatically' => (bool)$generalConfig->runQueueAutomatically,
             'scriptName' => $request->getScriptFile(),

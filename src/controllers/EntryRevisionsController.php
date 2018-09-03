@@ -177,11 +177,11 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         $this->enforceEditEntryPermissions($entry);
-        $userSessionService = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
 
         // Is this another user's entry (and it's not a Single)?
         if (
-            $entry->authorId != $userSessionService->getIdentity()->id &&
+            $entry->authorId != $userSession->getIdentity()->id &&
             $entry->getSection()->type != Section::TYPE_SINGLE &&
             $entry->enabled
         ) {
@@ -250,11 +250,11 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         $this->enforceEditEntryPermissions($entry);
-        $userSessionService = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
 
         // Is this another user's entry (and it's not a Single)?
         if (
-            $entry->authorId != $userSessionService->getIdentity()->id &&
+            $entry->authorId != $userSession->getIdentity()->id &&
             $entry->getSection()->type !== Section::TYPE_SINGLE &&
             $entry->enabled
         ) {

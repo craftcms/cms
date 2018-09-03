@@ -227,10 +227,10 @@ class Asset extends Element
                 ]
             );
 
-            $userSessionService = Craft::$app->getUser();
+            $userSession = Craft::$app->getUser();
             $canDeleteAndSave = (
-                $userSessionService->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->id) &&
-                $userSessionService->checkPermission('saveAssetInVolume:' . $volume->id)
+                $userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->id) &&
+                $userSession->checkPermission('saveAssetInVolume:' . $volume->id)
             );
 
             // Rename File
@@ -239,7 +239,7 @@ class Asset extends Element
             }
 
             // Replace File
-            if ($userSessionService->checkPermission('saveAssetInVolume:' . $volume->id)) {
+            if ($userSession->checkPermission('saveAssetInVolume:' . $volume->id)) {
                 $actions[] = ReplaceFile::class;
             }
 
@@ -257,7 +257,7 @@ class Asset extends Element
             }
 
             // Delete
-            if ($userSessionService->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->id)) {
+            if ($userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->id)) {
                 $actions[] = DeleteAssets::class;
             }
         }
@@ -1087,11 +1087,11 @@ class Asset extends Element
             }
 
             // Is the image editable, and is the user allowed to edit?
-            $user = Craft::$app->getUser();
+            $userSession = Craft::$app->getUser();
             $editable = (
                 $this->getSupportsImageEditor() &&
-                $user->checkPermission('deleteFilesAndFoldersInVolume:' . $this->volumeId) &&
-                $user->checkPermission('saveAssetInVolume:' . $this->volumeId)
+                $userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $this->volumeId) &&
+                $userSession->checkPermission('saveAssetInVolume:' . $this->volumeId)
             );
 
             $html .= '<div class="image-preview-container' . ($editable ? ' editable' : '') . '">' .

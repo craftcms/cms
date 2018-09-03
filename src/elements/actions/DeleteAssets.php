@@ -53,7 +53,7 @@ class DeleteAssets extends ElementAction
      */
     public function performAction(ElementQueryInterface $query): bool
     {
-        $usersService = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
         $elementsService = Craft::$app->getElements();
 
         try {
@@ -61,7 +61,7 @@ class DeleteAssets extends ElementAction
                 /**
                  * @var Asset $asset
                  */
-                if ($usersService->checkPermission('deleteFilesAndFoldersInVolume:' . $asset->volumeId)) {
+                if ($userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $asset->volumeId)) {
                     $elementsService->deleteElement($asset);
                 }
             }

@@ -252,17 +252,17 @@ class Entry extends Element
 
         /** @var Section[] $sections */
         if (!empty($sections)) {
-            $userSessionService = Craft::$app->getUser();
+            $userSession = Craft::$app->getUser();
             $canSetStatus = true;
             $canEdit = false;
 
             foreach ($sections as $section) {
-                $canPublishEntries = $userSessionService->checkPermission('publishEntries:' . $section->id);
+                $canPublishEntries = $userSession->checkPermission('publishEntries:' . $section->id);
 
                 // Only show the Set Status action if we're sure they can make changes in all the sections
                 if (!(
                     $canPublishEntries &&
-                    ($section->type == Section::TYPE_SINGLE || $userSessionService->checkPermission('publishPeerEntries:' . $section->id))
+                    ($section->type == Section::TYPE_SINGLE || $userSession->checkPermission('publishPeerEntries:' . $section->id))
                 )
                 ) {
                     $canSetStatus = false;
@@ -317,7 +317,7 @@ class Entry extends Element
                 // New child?
                 if (
                     $section->type == Section::TYPE_STRUCTURE &&
-                    $userSessionService->checkPermission('createEntries:' . $section->id)
+                    $userSession->checkPermission('createEntries:' . $section->id)
                 ) {
                     $structure = Craft::$app->getStructures()->getStructureById($section->structureId);
 
@@ -333,8 +333,8 @@ class Entry extends Element
 
                 // Delete?
                 if (
-                    $userSessionService->checkPermission('deleteEntries:' . $section->id) &&
-                    $userSessionService->checkPermission('deletePeerEntries:' . $section->id)
+                    $userSession->checkPermission('deleteEntries:' . $section->id) &&
+                    $userSession->checkPermission('deletePeerEntries:' . $section->id)
                 ) {
                     $actions[] = $elementsService->createAction([
                         'type' => Delete::class,
