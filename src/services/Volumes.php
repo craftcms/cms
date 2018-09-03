@@ -700,12 +700,6 @@ class Volumes extends Component
 
         $volume->afterDelete();
 
-        // Delete the assets
-        $assets = Asset::find()
-            ->anyStatus()
-            ->volumeId($volume->id)
-            ->all();
-
         // Fire an 'afterDeleteVolume' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_VOLUME)) {
             $this->trigger(self::EVENT_AFTER_DELETE_VOLUME, new VolumeEvent([
@@ -756,8 +750,7 @@ class Volumes extends Component
 
                     // Delete the assets
                     $assets = Asset::find()
-                        ->status(null)
-                        ->enabledForSite(false)
+                        ->anyStatus()
                         ->volumeId($volumeRecord->id)
                         ->all();
 

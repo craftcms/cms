@@ -550,7 +550,6 @@ class Categories extends Component
                     $categoryIds = Category::find()
                         ->groupId($groupRecord->id)
                         ->anyStatus()
-                        ->limit(null)
                         ->ids();
 
                     // Are there any sites left?
@@ -715,8 +714,7 @@ class Categories extends Component
 
                     // Delete the tags
                     $categories = Category::find()
-                        ->status(null)
-                        ->enabledForSite(false)
+                        ->anyStatus()
                         ->groupId($categoryGroupRecord->id)
                         ->all();
 

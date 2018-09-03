@@ -710,6 +710,7 @@ class Sites extends Component
             $this->trigger(self::EVENT_AFTER_SAVE_SITE, new SiteEvent([
                 'site' => $site,
                 'isNew' => $isNewSite,
+                'oldPrimarySiteId' => $oldPrimarySiteId,
             ]));
         }
 
@@ -1132,9 +1133,7 @@ class Sites extends Component
 
                 try {
                     $affectedRows = Craft::$app->getDb()->createCommand()
-                        ->update('{{%sites}}', [
-                            'dateDeleted' => Db::prepareDateForDb(new \DateTime()),
-                        ], ['id' => $siteRecord->id], [], false)
+                        ->softDelete('{{%sites}}', ['id' => $siteRecord->id])
                         ->execute();
 
                     $transaction->commit();
@@ -1148,6 +1147,20 @@ class Sites extends Component
                 }
             }
         }
+    }
+
+    /**
+     * Restores a site by its ID.
+     *
+     * @param int $id The site’s ID
+     * @return bool Whether the site was restored successfully
+     */
+    public function restoreSiteById(int $id): bool
+    {
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->restore('{{%sites}}', ['id' => $id])
+            ->execute();
+        return (bool)$affectedRows;
     }
 
     // Private Methods
