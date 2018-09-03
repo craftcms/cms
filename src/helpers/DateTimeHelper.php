@@ -682,10 +682,10 @@ class DateTimeHelper
                 array_combine($sourceLocale->getMonthNames(Locale::LENGTH_MEDIUM), $targetLocale->getMonthNames(Locale::LENGTH_MEDIUM)),
                 array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_MEDIUM), $targetLocale->getWeekDayNames(Locale::LENGTH_MEDIUM)),
                 [
-                    'AM' => StringHelper::toUpperCase($amName),
-                    'PM' => StringHelper::toUpperCase($pmName),
-                    'am' => StringHelper::toLowerCase($amName),
-                    'pm' => StringHelper::toLowerCase($pmName)
+                    'AM' => mb_strtoupper($amName),
+                    'PM' => mb_strtoupper($pmName),
+                    'am' => mb_strtolower($amName),
+                    'pm' => mb_strtolower($pmName)
                 ]
             );
         }

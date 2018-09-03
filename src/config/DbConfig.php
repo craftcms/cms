@@ -31,7 +31,7 @@ class DbConfig extends BaseObject
     /**
      * @var array An array of key => value pairs of PDO attributes to pass into the PDO constructor.
      *
-     * For example, when using the MySQL PDO driver (https://secure.php.net/manual/en/ref.pdo-mysql.php),
+     * For example, when using the MySQL PDO driver (http://php.net/manual/en/ref.pdo-mysql.php),
      * if you wanted to enable a SSL database connection (assuming SSL is enabled in MySQL
      * (https://dev.mysql.com/doc/refman/5.5/en/using-secure-connections.html) and `'user'`
      * can connect via SSL, you'd set these:
@@ -60,8 +60,8 @@ class DbConfig extends BaseObject
     /**
      * @var string If you want to manually specify your PDO DSN connection string you can do so here.
      *
-     * - MySQL: https://secure.php.net/manual/en/ref.pdo-mysql.connection.php
-     * - PostgreSQL: https://secure.php.net/manual/en/ref.pdo-pgsql.connection.php
+     * - MySQL: http://php.net/manual/en/ref.pdo-mysql.connection.php
+     * - PostgreSQL: http://php.net/manual/en/ref.pdo-pgsql.connection.php
      * If you set this, then the [[server]], [[port]], [[user]], [[password]], [[database]],
      * [[driver]] and [[unixSocket]] config settings will be ignored.
      */

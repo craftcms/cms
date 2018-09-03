@@ -29,6 +29,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         sourceViewModes: null,
         $source: null,
         sourcesByKey: null,
+        $visibleSources: null,
 
         $customizeSourcesBtn: null,
         customizeSourcesModal: null,
@@ -130,7 +131,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 !Garnish.isMobileBrowser(true)
             ) {
                 this.addListener(Garnish.$win, 'resize', 'updateFixedToolbar');
-                this.addListener(Craft.cp.$contentContainer, 'scroll', 'updateFixedToolbar');
+                this.addListener(Garnish.$scrollContainer, 'scroll', 'updateFixedToolbar');
             }
 
             // Initialize the sources
@@ -287,7 +288,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getSourceContainer: function() {
-            return this.$sidebar.find('nav ul');
+            return this.$sidebar.find('nav>ul');
         },
 
         get $sources() {
@@ -328,11 +329,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (sourceKey) {
                 $source = this.getSourceByKey(sourceKey);
+
+                // Make sure it's visible
+                if (this.$visibleSources.index($source) === -1) {
+                    $source = null;
+                }
             }
 
             if (!sourceKey || !$source) {
                 // Select the first source by default
-                $source = this.$sources.first();
+                $source = this.$visibleSources.first();
             }
 
             if ($source.length) {
@@ -366,7 +372,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         updateFixedToolbar: function(e) {
-            this.updateFixedToolbar._scrollTop = Craft.cp.$contentContainer.scrollTop();
+            this.updateFixedToolbar._scrollTop = Garnish.$scrollContainer.scrollTop();
 
             if (Garnish.$win.width() > 992 && this.updateFixedToolbar._scrollTop >= 17) {
                 if (this.updateFixedToolbar._makingFixed = !this.$toolbar.hasClass('fixed')) {
@@ -376,7 +382,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if (this.updateFixedToolbar._makingFixed || e.type === 'resize') {
                     this.$toolbar.css({
-                        top: Craft.cp.$contentContainer.offset().top,
+                        top: Garnish.$scrollContainer.offset().top,
                         width: this.$main.width()
                     });
                 }
@@ -1244,7 +1250,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // If the selected source was just removed (maybe because its parent was collapsed),
             // there won't be a selected source
             if (!this.sourceSelect.totalSelected) {
-                this.sourceSelect.selectItem(this.$sources.first());
+                this.sourceSelect.selectItem(this.$visibleSources.first());
                 return;
             }
 
@@ -1300,6 +1306,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         _setSite: function(siteId) {
             this.siteId = siteId;
+            this.$visibleSources = $();
 
             // Hide any sources that aren't available for this site
             var $firstVisibleSource;
@@ -1310,6 +1317,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $source = this.$sources.eq(i);
                 if (typeof $source.data('sites') === 'undefined' || $source.data('sites').toString().split(',').indexOf(siteId.toString()) !== -1) {
                     $source.parent().removeClass('hidden');
+                    this.$visibleSources = this.$visibleSources.add($source);
                     if (!$firstVisibleSource) {
                         $firstVisibleSource = $source;
                     }

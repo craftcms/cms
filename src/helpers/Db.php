@@ -432,12 +432,12 @@ class Db
      * @param string|int|array $value The param value(s).
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
+     * @param bool $caseInsensitive Whether the resulting condition should be case-insensitive
      * @return mixed
      */
-    public static function parseParam(string $column, $value, string $defaultOperator = '=')
+    public static function parseParam(string $column, $value, string $defaultOperator = '=', $caseInsensitive = false)
     {
-        // Need to do a strict check here in case $value = true
-        if ($value === 'not ') {
+        if (is_string($value) && preg_match('/^not\s*$/', $value)) {
             return '';
         }
 
@@ -447,25 +447,40 @@ class Db
             return '';
         }
 
-        $firstVal = StringHelper::toLowerCase(reset($value));
+        $firstVal = strtolower(reset($value));
+        $negate = false;
 
-        if ($firstVal === 'and' || $firstVal === 'or') {
-            $glue = array_shift($value);
-        } else {
-            $glue = 'or';
+        switch ($firstVal) {
+            case 'and':
+            case 'or':
+                $glue = $firstVal;
+                array_shift($value);
+                break;
+            case 'not':
+                $glue = 'and';
+                $negate = true;
+                array_shift($value);
+                break;
+            default:
+                $glue = 'or';
         }
 
         $condition = [$glue];
         $isMysql = Craft::$app->getDb()->getIsMysql();
+
+        // Only PostgreSQL supports case-sensitive strings
+        if ($isMysql) {
+            $caseInsensitive = false;
+        }
 
         $inVals = [];
         $notInVals = [];
 
         foreach ($value as $val) {
             self::_normalizeEmptyValue($val);
-            $operator = self::_parseParamOperator($val, $defaultOperator);
+            $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
-            if (is_string($val) && StringHelper::toLowerCase($val) === ':empty:') {
+            if (is_string($val) && strtolower($val) === ':empty:') {
                 if ($operator === '=') {
                     if ($isMysql) {
                         $condition[] = [
@@ -516,13 +531,17 @@ class Db
                 $val = str_replace('\*', '*', $val);
 
                 if ($like) {
-                    $condition[] = [
-                        $operator === '=' ? 'like' : 'not like',
-                        $column,
-                        $val,
-                        false
-                    ];
+                    if ($caseInsensitive ) {
+                        $operator = $operator === '=' ? 'ilike' : 'not ilike';
+                    } else {
+                        $operator = $operator === '=' ? 'like' : 'not like';
+                    }
+                    $condition[] = [$operator, $column, $val, false];
                     continue;
+                }
+
+                if ($caseInsensitive) {
+                    $val = mb_strtolower($val);
                 }
             }
 
@@ -538,15 +557,27 @@ class Db
                 continue;
             }
 
-            $condition[] = [$operator, $column, $val];
+            if ($caseInsensitive) {
+                $condition[] = [$operator, "lower([[{$column}]])", $val];
+            } else {
+                $condition[] = [$operator, $column, $val];
+            }
         }
 
         if (!empty($inVals)) {
-            $condition[] = ['in', $column, $inVals];
+            if ($caseInsensitive) {
+                $condition[] = ['in', "lower([[{$column}]])", $inVals];
+            } else {
+                $condition[] = ['in', $column, $inVals];
+            }
         }
 
         if (!empty($notInVals)) {
-            $condition[] = ['not in', $column, $notInVals];
+            if ($caseInsensitive) {
+                $condition[] = ['not in', "lower([[{$column}]])", $notInVals];
+            } else {
+                $condition[] = ['not in', $column, $notInVals];
+            }
         }
 
         return $condition;
@@ -571,7 +602,7 @@ class Db
             return '';
         }
 
-        if ($value[0] === 'and' || $value[0] === 'or') {
+        if (in_array($value[0], ['and', 'or', 'not'], true)) {
             $normalizedValues[] = $value[0];
             array_shift($value);
         }
@@ -700,7 +731,7 @@ class Db
     {
         if ($value === null) {
             $value = ':empty:';
-        } else if (is_string($value) && StringHelper::toLowerCase($value) === ':notempty:') {
+        } else if (is_string($value) && strtolower($value) === ':notempty:') {
             $value = 'not :empty:';
         }
     }
@@ -710,10 +741,13 @@ class Db
      *
      * @param mixed &$value Te param value.
      * @param string $default The default operator to use
-     * @return string The operator.
+     * @param bool $negate Whether to reverse whatever the selected operator is
+     * @return string The operator ('!=', '<=', '>=', '<', '>', or '=')
      */
-    private static function _parseParamOperator(&$value, string $default): string
+    private static function _parseParamOperator(&$value, string $default, bool $negate = false): string
     {
+        $op = null;
+
         if (is_string($value)) {
             $lcValue = strtolower($value);
             foreach (self::$_operators as $operator) {
@@ -721,11 +755,33 @@ class Db
                 // Does the value start with this operator?
                 if (strncmp($lcValue, $operator, $len) === 0) {
                     $value = mb_substr($value, $len);
-                    return $operator === 'not ' ? '!=' : $operator;
+                    $op = $operator === 'not ' ? '!=' : $operator;
+                    break;
                 }
             }
         }
 
-        return $default === 'not' || $default === 'not ' ? '!=' : $default;
+        if ($op === null) {
+            $op = $default === 'not' || $default === 'not ' ? '!=' : $default;
+        }
+
+        if ($negate) {
+            switch ($op) {
+                case '!=':
+                    return '=';
+                case '<=':
+                    return '>';
+                case '>=':
+                    return '<';
+                case '<':
+                    return '>=';
+                case '>':
+                    return '<=';
+                case '=':
+                    return '!=';
+            }
+        }
+
+        return $op;
     }
 }

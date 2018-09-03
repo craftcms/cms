@@ -48,7 +48,7 @@
 {% endblock %}
 
 {% block content %}
-    <form id="userform" method="post" accept-charset="UTF-8" autocomplete="off" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}" data-confirm-unload>
+    <form id="userform" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}" data-confirm-unload>
         <input type="hidden" name="action" value="users/save-user">
         {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
         {{ hiddenInputs }}
@@ -74,6 +74,7 @@
                     name: 'email',
                     value: user.email,
                     required: true,
+                    type: 'email',
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                 }) }}
 
@@ -94,6 +95,7 @@
                     name: 'email',
                     value: user.email,
                     required: true,
+                    type: 'email',
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                 }) }}
 
@@ -103,8 +105,13 @@
                         id: 'newPassword',
                         name: 'newPassword',
                         type: 'password',
+                        autocomplete: 'new-password',
                         errors: user.getErrors('newPassword')
                     }) }}
+
+                    {% js %}
+                        new Craft.PasswordInput('#newPassword');
+                    {% endjs %}
                 {% endif %}
 
                 {% if currentUser.admin %}
@@ -118,16 +125,14 @@
             {% endif %}
         </div>
 
-        {% if CraftEdition == CraftPro %}
-            {% for tab in user.getFieldLayout().getTabs() %}
-                <div id="profile-{{ tab.getHtmlId() }}" class="hidden">
-                    {% include "_includes/fields" with {
-                        fields:  tab.getFields(),
-                        element: user
-                    } only %}
-                </div>
-            {% endfor %}
-        {% endif %}
+        {% for tab in user.getFieldLayout().getTabs() %}
+            <div id="profile-{{ tab.getHtmlId() }}" class="hidden">
+                {% include "_includes/fields" with {
+                    fields:  tab.getFields(),
+                    element: user
+                } only %}
+            </div>
+        {% endfor %}
 
         {% if CraftEdition == CraftPro and (currentUser.can('assignUserGroups') or currentUser.can('assignUserPermissions')) %}
             <div id="perms" class="hidden">

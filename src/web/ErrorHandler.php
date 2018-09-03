@@ -29,14 +29,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     const EVENT_BEFORE_HANDLE_EXCEPTION = 'beforeHandleException';
 
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var bool|null Whether [[renderCallStackItem()]] should render subsequent stack trace items in the event of a Twig error
-     */
-    private $_renderAllCallStackItems;
-
     // Public Methods
     // =========================================================================
 
@@ -110,33 +102,17 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function renderCallStackItem($file, $line, $class, $method, $args, $index)
+    public function isCoreFile($file)
     {
-        // Special behavior for Twig errors
-        if ($this->exception instanceof \Twig_Error) {
-            if ($index === 1) {
-                $this->_renderAllCallStackItems = true;
-                $templateLine = $this->exception->getTemplateLine();
-
-                // $templateLine could be null or -1
-                if (is_int($templateLine) && $templateLine > 0) {
-                    $templateSource = $this->exception->getSourceContext();
-                    if ($templateSource !== null) {
-                        $templateFile = $templateSource->getName();
-                        $resolvedTemplate = Craft::$app->getView()->resolveTemplate($templateFile);
-                        if ($resolvedTemplate !== false) {
-                            $file = $resolvedTemplate;
-                            $line = $templateLine;
-                            $this->_renderAllCallStackItems = false;
-                        }
-                    }
-                }
-            } else if ($this->_renderAllCallStackItems === false) {
-                return null;
-            }
+        if (parent::isCoreFile($file)) {
+            return true;
         }
 
-        return parent::renderCallStackItem($file, $line, $class, $method, $args, $index);
+        $file = realpath($file);
+        $pathService = Craft::$app->getPath();
+        return strpos($file, $pathService->getCompiledTemplatesPath() . DIRECTORY_SEPARATOR) === 0 ||
+            strpos($file, $pathService->getVendorPath() . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR) === 0 ||
+            $file === __DIR__ . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'Template.php';
     }
 
     // Protected Methods

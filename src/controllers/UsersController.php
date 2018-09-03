@@ -715,32 +715,29 @@ class UsersController extends Controller
             ]
         ];
 
-        // Only show custom fields if it's Craft Pro
-        if ($edition === Craft::Pro) {
-            foreach ($user->getFieldLayout()->getTabs() as $index => $tab) {
-                // Skip if the tab doesn't have any fields
-                if (empty($tab->getFields())) {
-                    continue;
-                }
+        foreach ($user->getFieldLayout()->getTabs() as $index => $tab) {
+            // Skip if the tab doesn't have any fields
+            if (empty($tab->getFields())) {
+                continue;
+            }
 
-                // Do any of the fields on this tab have errors?
-                $hasErrors = false;
+            // Do any of the fields on this tab have errors?
+            $hasErrors = false;
 
-                if ($user->hasErrors()) {
-                    foreach ($tab->getFields() as $field) {
-                        /** @var Field $field */
-                        if ($hasErrors = $user->hasErrors($field->handle)) {
-                            break;
-                        }
+            if ($user->hasErrors()) {
+                foreach ($tab->getFields() as $field) {
+                    /** @var Field $field */
+                    if ($hasErrors = $user->hasErrors($field->handle . '.*')) {
+                        break;
                     }
                 }
-
-                $tabs['profile' . $index] = [
-                    'label' => Craft::t('site', $tab->name),
-                    'url' => '#profile-' . $tab->getHtmlId(),
-                    'class' => $hasErrors ? 'error' : null
-                ];
             }
+
+            $tabs['profile' . $index] = [
+                'label' => Craft::t('site', $tab->name),
+                'url' => '#profile-' . $tab->getHtmlId(),
+                'class' => $hasErrors ? 'error' : null
+            ];
         }
 
         // Show the permission tab for the users that can change them on Craft Pro editions
@@ -870,7 +867,6 @@ class UsersController extends Controller
     {
         $this->requirePostRequest();
 
-        $edition = Craft::$app->getEdition();
         $request = Craft::$app->getRequest();
         $userComponent = Craft::$app->getUser();
         $currentUser = $userComponent->getIdentity();
@@ -1032,7 +1028,11 @@ class UsersController extends Controller
             $user->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!$user->validate(null, false)) {
+        // Manually validate the user so we can pass $clearErrors=false
+        if (
+            !$user->validate(null, false) ||
+            !Craft::$app->getElements()->saveElement($user, false)
+        ) {
             Craft::info('User not saved due to validation error.', __METHOD__);
 
             if ($thisIsPublicRegistration) {
@@ -1056,9 +1056,6 @@ class UsersController extends Controller
 
             return null;
         }
-
-        // Save the user (but no need to re-validate)
-        Craft::$app->getElements()->saveElement($user, false);
 
         // Save their preferences too
         $preferences = [

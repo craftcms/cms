@@ -28,7 +28,7 @@
     "element-resize-detector": "^1.1.12",
     "event-stream": "^3.3.4",
     "fabric": "^1.7.19",
-    "garnishjs": "^0.1.26",
+    "garnishjs": "^0.1.27",
     "grunt": "^1.0.3",
     "grunt-contrib-concat": "latest",
     "grunt-contrib-jshint": "latest",

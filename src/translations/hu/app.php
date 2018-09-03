@@ -1009,6 +1009,7 @@ return [
     'This field is not set to a valid source.' => 'Ez a mező nincs egy érvényes forráshoz kötve.',
     'This field is required' => 'Kötelező mező',
     'This field is translatable.' => 'Ez a mező lefordítható.',
+    'This field is translated for each site.' => 'Ez a mező minden webhely esetén külön fordítással rendelkezik.',
     'This field’s Volume configuration is invalid.' => 'A mező kötetbeállításai érvénytelen.',
     'This field’s default upload location Volume is missing' => 'A mező alapértelmezett feltöltési helyéül szolgáló kötet hiányzik.',
     'This field’s single upload location Volume is missing' => 'Hiányzik a mező egyszeri feltöltési helyéhez tartozó kötet.',

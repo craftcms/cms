@@ -72,6 +72,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     public $maxBlocks;
 
     /**
+     * @var string Content table name
+     * @since 3.0.23
+     */
+    public $contentTable;
+
+    /**
      * @var int Whether each site should get its own unique set of blocks
      */
     public $localizeBlocks = false;
@@ -85,6 +91,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      * @var MatrixBlockType[]|null The block types' fields
      */
     private $_blockTypeFields;
+
+    /**
+     * @var string Old content table name
+     */
+    private $_oldContentTable;
 
     // Public Methods
     // =========================================================================
@@ -190,7 +201,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $this->_blockTypes[] = $config;
             } else {
                 $blockType = new MatrixBlockType();
-                $blockType->id = $key;
+                $blockType->id = is_numeric($key) ? $key : null;
                 $blockType->fieldId = $this->id;
                 $blockType->name = $config['name'];
                 $blockType->handle = $config['handle'];
@@ -204,7 +215,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
                         $fields[] = Craft::$app->getFields()->createField([
                             'type' => $fieldConfig['type'],
-                            'id' => $fieldId,
+                            'id' => is_numeric($fieldId) ? $fieldId : null,
                             'name' => $fieldConfig['name'],
                             'handle' => $fieldConfig['handle'],
                             'instructions' => $fieldConfig['instructions'],
@@ -325,10 +336,28 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             }
         }
 
+        $blockTypes = [];
+        $blockTypeFields = [];
+        $totalNewBlockTypes = 0;
+
+        foreach ($this->getBlockTypes() as $blockType) {
+            $blockTypeId = (string)($blockType->id ?? 'new' . ++$totalNewBlockTypes);
+            $blockTypes[$blockTypeId] = $blockType;
+
+            $blockTypeFields[$blockTypeId] = [];
+            $totalNewFields = 0;
+            foreach ($blockType->getFields() as $field) {
+                $fieldId = (string)($field->id ?? 'new' . ++$totalNewFields);
+                $blockTypeFields[$blockTypeId][$fieldId] = $field;
+            }
+        }
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/settings',
             [
                 'matrixField' => $this,
-                'fieldTypes' => $fieldTypeOptions
+                'fieldTypes' => $fieldTypeOptions,
+                'blockTypes' => $blockTypes,
+                'blockTypeFields' => $blockTypeFields,
             ]);
     }
 
@@ -615,8 +644,35 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         ];
     }
 
+    /**
+     * Returns the field's old content table name.
+     *
+     * @return string|null
+     * @since 3.0.23
+     */
+    public function getOldContentTable()
+    {
+        return $this->_oldContentTable;
+    }
+
     // Events
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        if (!parent::beforeSave($isNew)) {
+            return false;
+        }
+
+        // Set the new content table name
+        $this->_oldContentTable = $this->contentTable;
+        $this->contentTable = Craft::$app->getMatrix()->defineContentTableName($this);
+
+        return true;
+    }
 
     /**
      * @inheritdoc
@@ -651,12 +707,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function beforeElementDelete(ElementInterface $element): bool
     {
+        /** @var Element $element */
         // Delete any Matrix blocks that belong to this element(s)
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
             $matrixBlocksQuery = MatrixBlock::find();
             $matrixBlocksQuery->anyStatus();
             $matrixBlocksQuery->siteId($siteId);
-            $matrixBlocksQuery->owner($element);
+            $matrixBlocksQuery->ownerId($element->id);
 
             /** @var MatrixBlock[] $matrixBlocks */
             $matrixBlocks = $matrixBlocksQuery->all();

@@ -767,7 +767,6 @@ class Install extends Migration
         $this->createIndex(null, '{{%elements}}', ['enabled'], false);
         $this->createIndex(null, '{{%elements}}', ['archived', 'dateCreated'], false);
         $this->createIndex(null, '{{%elements_sites}}', ['elementId', 'siteId'], true);
-        $this->createIndex(null, '{{%elements_sites}}', ['uri', 'siteId'], false);
         $this->createIndex(null, '{{%elements_sites}}', ['siteId'], false);
         $this->createIndex(null, '{{%elements_sites}}', ['slug', 'siteId'], false);
         $this->createIndex(null, '{{%elements_sites}}', ['enabled'], false);
@@ -868,8 +867,6 @@ class Install extends Migration
         $this->createIndex(null, '{{%userpermissions_usergroups}}', ['groupId'], false);
         $this->createIndex(null, '{{%userpermissions_users}}', ['permissionId', 'userId'], true);
         $this->createIndex(null, '{{%userpermissions_users}}', ['userId'], false);
-        $this->createIndex(null, '{{%users}}', ['username'], false);
-        $this->createIndex(null, '{{%users}}', ['email'], false);
         $this->createIndex(null, '{{%users}}', ['uid'], false);
         $this->createIndex(null, '{{%users}}', ['verificationCode'], false);
         $this->createIndex(null, '{{%volumefolders}}', ['name', 'parentId', 'volumeId'], true);
@@ -880,8 +877,12 @@ class Install extends Migration
         $this->createIndex(null, '{{%volumes}}', ['fieldLayoutId'], false);
         $this->createIndex(null, '{{%widgets}}', ['userId'], false);
 
-        // If we're using MySQL, add the FULLTEXT index on searchindex.keywords
         if ($this->db->getIsMysql()) {
+            $this->createIndex(null, '{{%elements_sites}}', ['uri', 'siteId']);
+            $this->createIndex(null, '{{%users}}', ['email']);
+            $this->createIndex(null, '{{%users}}', ['username']);
+
+            // Add the FULLTEXT index on searchindex.keywords
             $this->createTable('{{%searchindex}}', [
                 'elementId' => $this->integer()->notNull(),
                 'attribute' => $this->string(25)->notNull(),
@@ -899,6 +900,11 @@ class Install extends Migration
 
             $this->db->createCommand($sql)->execute();
         } else {
+            // Postgres is case-sensitive
+            $this->createIndex($this->db->getIndexName('{{%elements_sites}}', ['uri', 'siteId']), '{{%elements_sites}}', ['lower([[uri]])', 'siteId']);
+            $this->createIndex($this->db->getIndexName('{{%users}}', ['email']), '{{%users}}', ['lower([[email]])']);
+            $this->createIndex($this->db->getIndexName('{{%users}}', ['username']), '{{%users}}', ['lower([[username]])']);
+
             $this->createTable('{{%searchindex}}', [
                 'elementId' => $this->integer()->notNull(),
                 'attribute' => $this->string(25)->notNull(),

@@ -455,7 +455,7 @@ class View extends \yii\web\View
      * @param array $variables any additional variables that should be available to the template
      * @return string The rendered template.
      * @throws Exception in case of failure
-     * @throws \RuntimeException in case of failure
+     * @throws \Throwable in case of failure
      */
     public function renderObjectTemplate(string $template, $object, array $variables = []): string
     {
@@ -464,65 +464,70 @@ class View extends \yii\web\View
             return $template;
         }
 
+        $twig = $this->getTwig();
+
+        // Temporarily disable strict variables if it's enabled
+        $strictVariables = $twig->isStrictVariables();
+
+        if ($strictVariables) {
+            $twig->disableStrictVariables();
+        }
+
+        // Is this the first time we've parsed this template?
+        $cacheKey = md5($template);
+        if (!isset($this->_objectTemplates[$cacheKey])) {
+            // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
+            $template = $this->normalizeObjectTemplate($template);
+            $this->_objectTemplates[$cacheKey] = $twig->createTemplate($template);
+        }
+
+        // Get the variables to pass to the template
+        if ($object instanceof Model) {
+            foreach ($object->attributes() as $name) {
+                if (!isset($variables[$name]) && strpos($template, $name) !== false) {
+                    $variables[$name] = $object->$name;
+                }
+            }
+        }
+
+        if ($object instanceof Arrayable) {
+            // See if we should be including any of the extra fields
+            $extra = [];
+            foreach ($object->extraFields() as $field => $definition) {
+                if (is_int($field)) {
+                    $field = $definition;
+                }
+                if (strpos($template, $field) !== false) {
+                    $extra[] = $field;
+                }
+            }
+            $variables = array_merge($object->toArray([], $extra, false), $variables);
+        }
+
+        $variables['object'] = $object;
+        $variables['_variables'] = $variables;
+
+        // Render it!
+        $twig->setDefaultEscaperStrategy(false);
+        $lastRenderingTemplate = $this->_renderingTemplate;
+        $this->_renderingTemplate = 'string:' . $template;
+        /** @var Template $templateObj */
+        $templateObj = $this->_objectTemplates[$cacheKey];
+
+        $e = null;
         try {
-            $twig = $this->getTwig();
-
-            // Temporarily disable strict variables if it's enabled
-            $strictVariables = $twig->isStrictVariables();
-
-            if ($strictVariables) {
-                $twig->disableStrictVariables();
-            }
-
-            // Is this the first time we've parsed this template?
-            $cacheKey = md5($template);
-            if (!isset($this->_objectTemplates[$cacheKey])) {
-                // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
-                $template = $this->normalizeObjectTemplate($template);
-                $this->_objectTemplates[$cacheKey] = $twig->createTemplate($template);
-            }
-
-            // Get the variables to pass to the template
-            if ($object instanceof Model) {
-                foreach ($object->attributes() as $name) {
-                    if (!isset($variables[$name]) && strpos($template, $name) !== false) {
-                        $variables[$name] = $object->$name;
-                    }
-                }
-            }
-
-            if ($object instanceof Arrayable) {
-                // See if we should be including any of the extra fields
-                $extra = [];
-                foreach ($object->extraFields() as $field => $definition) {
-                    if (is_int($field)) {
-                        $field = $definition;
-                    }
-                    if (strpos($template, $field) !== false) {
-                        $extra[] = $field;
-                    }
-                }
-                $variables = array_merge($object->toArray([], $extra, false), $variables);
-            }
-
-            $variables['object'] = $object;
-            $variables['_variables'] = $variables;
-
-            // Render it!
-            $twig->setDefaultEscaperStrategy(false);
-            $lastRenderingTemplate = $this->_renderingTemplate;
-            $this->_renderingTemplate = 'string:' . $template;
-            /** @var Template $templateObj */
-            $templateObj = $this->_objectTemplates[$cacheKey];
             $output = $templateObj->render($variables);
-            $this->_renderingTemplate = $lastRenderingTemplate;
-            $twig->setDefaultEscaperStrategy();
+        } catch (\Throwable $e) {}
 
-            // Re-enable strict variables
-            if ($strictVariables) {
-                $twig->enableStrictVariables();
-            }
-        } catch (\RuntimeException $e) {
+        $this->_renderingTemplate = $lastRenderingTemplate;
+        $twig->setDefaultEscaperStrategy();
+
+        // Re-enable strict variables
+        if ($strictVariables) {
+            $twig->enableStrictVariables();
+        }
+
+        if ($e !== null) {
             if (!YII_DEBUG) {
                 // Throw a generic exception instead
                 throw new Exception('An error occurred when rendering a template.', 0, $e);

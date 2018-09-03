@@ -441,11 +441,15 @@ class m160807_144858_sites extends Migration
 
         foreach ($fields as $field) {
 
-            $settings = Json::decodeIfJson($field['settings']);
-
-            if (!is_array($settings)) {
-                echo 'Field ' . $field['id'] . ' (' . $field['type'] . ') settings were invalid JSON: ' . $field['settings'] . "\n";
+            if ($field['settings'] === null) {
+                echo 'Field ' . $field['id'] . ' (' . $field['type'] . ') settings were null' . "\n";
                 $settings = [];
+            } else {
+                $settings = Json::decodeIfJson($field['settings']);
+                if (!is_array($settings)) {
+                    echo 'Field ' . $field['id'] . ' (' . $field['type'] . ') settings were invalid JSON: ' . $field['settings'] . "\n";
+                    $settings = [];
+                }
             }
 
             $localized = ($field['translationMethod'] === 'site');
@@ -565,7 +569,7 @@ class m160807_144858_sites extends Migration
     protected function locale2handle(string $locale): string
     {
         // Make sure it's a valid handle
-        if (!preg_match('/^' . HandleValidator::$handlePattern . '$/', $locale) || in_array(StringHelper::toLowerCase($locale), HandleValidator::$baseReservedWords, true)) {
+        if (!preg_match('/^' . HandleValidator::$handlePattern . '$/', $locale) || in_array(strtolower($locale), HandleValidator::$baseReservedWords, true)) {
             $localeParts = array_filter(preg_split('/[^a-zA-Z0-9]/', $locale));
 
             // Prefix with a random string so there's no chance of a conflict with other locales
