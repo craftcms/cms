@@ -21,6 +21,7 @@
 - Fixed a SQL error that occurred when saving a Matrix field with new sub-fields on PostgreSQL. ([#3252](https://github.com/craftcms/cms/issues/3252))
 - Fixed a bug where custom user fields weren’t showing up on the My Account page when running Craft Solo edition. ([#3228](https://github.com/craftcms/cms/issues/3228))
 - Fixed a bug where multiple Matrix fields could share the same content table. ([#3249]())
+- Fixed a “cache is corrupted” Twig error that could occur when editing or saving an element if it had an Assets field with an unresolvable subfolder path template. ([#3257](https://github.com/craftcms/cms/issues/3257))
 
 ## 3.0.22 - 2018-08-28
 
