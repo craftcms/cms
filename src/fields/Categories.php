@@ -81,6 +81,7 @@ class Categories extends BaseRelationField
         if (is_array($value)) {
             /** @var Category[] $categories */
             $categories = Category::find()
+                ->siteId($this->targetSiteId($element))
                 ->id($value)
                 ->anyStatus()
                 ->all();
