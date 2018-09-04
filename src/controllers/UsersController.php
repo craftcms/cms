@@ -565,13 +565,13 @@ class UsersController extends Controller
         }
 
         /** @var User $user */
-
         $isNewUser = !$user->id;
 
         // Make sure they have permission to edit this user
         // ---------------------------------------------------------------------
 
-        if (!$user->getIsCurrent()) {
+        $isCurrentUser = $user->getIsCurrent();
+        if (!$isCurrentUser) {
             if ($isNewUser) {
                 $this->requirePermission('registerUsers');
             } else {
@@ -630,7 +630,7 @@ class UsersController extends Controller
                     break;
                 case User::STATUS_ACTIVE:
                     $statusLabel = Craft::t('app', 'Active');
-                    if (!$user->getIsCurrent()) {
+                    if (!$isCurrentUser) {
                         $statusActions[] = [
                             'action' => 'users/send-password-reset-email',
                             'label' => Craft::t('app', 'Send password reset email')
@@ -645,7 +645,7 @@ class UsersController extends Controller
                     break;
             }
 
-            if (!$user->getIsCurrent()) {
+            if (!$isCurrentUser) {
                 if ($userSession->getIsAdmin()) {
                     $sessionActions[] = [
                         'action' => 'users/impersonate',
@@ -696,7 +696,7 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         if (!$isNewUser) {
-            if ($user->getIsCurrent()) {
+            if ($isCurrentUser) {
                 $title = Craft::t('app', 'My Account');
             } else {
                 $title = Craft::t('app', '{user}’s Account', ['user' => $user->getName()]);
@@ -754,8 +754,7 @@ class UsersController extends Controller
         }
 
         // Show the preferences tab if it's the current user
-        $isCurrent = $user->getIsCurrent();
-        if ($isCurrent) {
+        if ($isCurrentUser) {
             $tabs['prefs'] = [
                 'label' => Craft::t('app', 'Preferences'),
                 'url' => '#prefs',
@@ -826,7 +825,7 @@ class UsersController extends Controller
         $this->getView()->registerAssetBundle(EditUserAsset::class);
 
         $userIdJs = Json::encode($user->id);
-        $isCurrentJs = ($isCurrent ? 'true' : 'false');
+        $isCurrentJs = ($isCurrentUser ? 'true' : 'false');
         $settingsJs = Json::encode([
             'deleteModalRedirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
         ]);
