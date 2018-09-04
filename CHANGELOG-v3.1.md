@@ -33,4 +33,5 @@
 
 ### Changed
 - The `defaultWeekStartDay` config setting is now set to `1` (Monday) by default, to conform with the ISO 8601 standard.
-- `info` buttons can now also have a `warning` class. 
+- `info` buttons can now also have a `warning` class.
+- User permission definitions can now include `info` and/or `warning` keys. 

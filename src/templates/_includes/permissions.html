@@ -38,6 +38,14 @@
                     disabled: disabled or isInGroupPermissions,
                 }) }}
 
+                {% if props.info ?? false %}
+                    <div class="info">{{ props.info }}</div>
+                {% endif %}
+
+                {% if props.warning ?? false %}
+                    <div class="info warning">{{ props.warning }}</div>
+                {% endif %}
+
                 {% if props.nested ?? false %}
                     {{ permissionList(context, props.nested, permissionName~'-nested', not checked) }}
                 {% endif %}
