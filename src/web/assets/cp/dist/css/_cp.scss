@@ -645,6 +645,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
             font-size: 0;
             display: block;
             position: absolute;
+            pointer-events: none;
             bottom: 0;
             left: 0;
             width: calc(100% - 1px);
