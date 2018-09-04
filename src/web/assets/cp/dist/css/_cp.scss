@@ -50,6 +50,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   #devmode {
     flex: 0 0 4px;
     width: 100%;
+    min-height: 4px; // fixes Windows scaling bug (https://github.com/craftcms/cms/issues/3259)
     background: url(../images/dev-mode.svg) repeat-x 21px 0;
     cursor: help;
   }
@@ -644,6 +645,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
             font-size: 0;
             display: block;
             position: absolute;
+            pointer-events: none;
             bottom: 0;
             left: 0;
             width: calc(100% - 1px);

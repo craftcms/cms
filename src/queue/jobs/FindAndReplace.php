@@ -133,19 +133,13 @@ class FindAndReplace extends BaseJob
      */
     private function _checkMatrixField(Matrix $matrixField)
     {
-        $table = Craft::$app->getMatrix()->getContentTableName($matrixField);
-
-        if ($table === false) {
-            throw new Exception('There was a problem getting the content table name.');
-        }
-
         $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixField->id);
 
         foreach ($blockTypes as $blockType) {
             $fieldColumnPrefix = 'field_' . $blockType->handle . '_';
 
             foreach ($blockType->getFields() as $field) {
-                $this->_checkField($field, $table, $fieldColumnPrefix);
+                $this->_checkField($field, $matrixField->contentTable, $fieldColumnPrefix);
             }
         }
     }

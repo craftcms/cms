@@ -16,7 +16,8 @@ class m160727_194637_column_cleanup extends Migration
     public function safeUp()
     {
         // Disable FK checks
-        $this->execute(Craft::$app->getDb()->getSchema()->getQueryBuilder()->checkIntegrity(false));
+        $queryBuilder = $this->db->getSchema()->getQueryBuilder();
+        $this->execute($queryBuilder->checkIntegrity(false));
 
         $this->alterColumn('{{%assetindexdata}}', 'volumeId', $this->integer()->notNull());
         $this->alterColumn('{{%assetindexdata}}', 'offset', $this->integer()->notNull());
@@ -34,7 +35,7 @@ class m160727_194637_column_cleanup extends Migration
         $this->alterColumn('{{%taggroups}}', 'fieldLayoutId', $this->integer());
 
         // Re-enable FK checks
-        $this->execute(Craft::$app->getDb()->getSchema()->getQueryBuilder()->checkIntegrity(true));
+        $this->execute($queryBuilder->checkIntegrity(true));
     }
 
     /**

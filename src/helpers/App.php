@@ -116,7 +116,7 @@ class App
      */
     public static function normalizeVersion(string $version): string
     {
-        return preg_replace('/^([^~+-]+).*$/', '$1', $version);
+        return preg_replace('/^([^\s~+-]+).*$/', '$1', $version);
     }
 
     /**

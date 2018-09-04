@@ -718,32 +718,29 @@ class UsersController extends Controller
             ]
         ];
 
-        // Only show custom fields if it's Craft Pro
-        if ($edition === Craft::Pro) {
-            foreach ($user->getFieldLayout()->getTabs() as $index => $tab) {
-                // Skip if the tab doesn't have any fields
-                if (empty($tab->getFields())) {
-                    continue;
-                }
+        foreach ($user->getFieldLayout()->getTabs() as $index => $tab) {
+            // Skip if the tab doesn't have any fields
+            if (empty($tab->getFields())) {
+                continue;
+            }
 
-                // Do any of the fields on this tab have errors?
-                $hasErrors = false;
+            // Do any of the fields on this tab have errors?
+            $hasErrors = false;
 
-                if ($user->hasErrors()) {
-                    foreach ($tab->getFields() as $field) {
-                        /** @var Field $field */
-                        if ($hasErrors = $user->hasErrors($field->handle)) {
-                            break;
-                        }
+            if ($user->hasErrors()) {
+                foreach ($tab->getFields() as $field) {
+                    /** @var Field $field */
+                    if ($hasErrors = $user->hasErrors($field->handle . '.*')) {
+                        break;
                     }
                 }
-
-                $tabs['profile' . $index] = [
-                    'label' => Craft::t('site', $tab->name),
-                    'url' => '#profile-' . $tab->getHtmlId(),
-                    'class' => $hasErrors ? 'error' : null
-                ];
             }
+
+            $tabs['profile' . $index] = [
+                'label' => Craft::t('site', $tab->name),
+                'url' => '#profile-' . $tab->getHtmlId(),
+                'class' => $hasErrors ? 'error' : null
+            ];
         }
 
         // Show the permission tab for the users that can change them on Craft Pro editions

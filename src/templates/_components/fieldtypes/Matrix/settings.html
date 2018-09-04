@@ -9,16 +9,16 @@
             </div>
             <div class="items">
                 <div class="blocktypes">
-                    {% for blockType in matrixField.getBlockTypes() %}
-                        <div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockType.id }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
+                    {% for blockTypeId, blockType in blockTypes %}
+                        <div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockTypeId }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
                             <div class="name">{% if blockType.name %}{{ blockType.name }}{% else %}&nbsp;{% endif %}</div>
                             <div class="handle code">{% if blockType.handle %}{{ blockType.handle }}{% else %}&nbsp;{% endif %}</div>
                             <div class="actions">
                                 <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
                                 <a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t('app') }}" role="button"></a>
                             </div>
-                            <input class="hidden" name="blockTypes[{{ blockType.id }}][name]" value="{{ blockType.name }}">
-                            <input class="hidden" name="blockTypes[{{ blockType.id }}][handle]" value="{{ blockType.handle }}">
+                            <input class="hidden" name="blockTypes[{{ blockTypeId }}][name]" value="{{ blockType.name }}">
+                            <input class="hidden" name="blockTypes[{{ blockTypeId }}][handle]" value="{{ blockType.handle }}">
                         </div>
                     {% endfor %}
                 </div>
@@ -32,10 +32,10 @@
                 <h5>{{ "Fields"|t('app') }}</h5>
             </div>
             <div class="items">
-                {% for blockType in matrixField.getBlockTypes() %}
-                    <div data-id="{{ blockType.id }}" class="hidden">
-                        {% for field in blockType.getFields() %}
-                            <div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ field.id }}">
+                {% for blockTypeId, blockType in blockTypes %}
+                    <div data-id="{{ blockTypeId }}" class="hidden">
+                        {% for fieldId, field in blockTypeFields[blockTypeId] %}
+                            <div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ fieldId }}">
                                 <div class="name{% if field.required %} required{% endif %}">
                                     {%- if field.name and field.name != '__blank__' %}{{ field.name }}{% else %}<em class="light">{{ '(blank)'|t('app') }}</em>{% endif -%}
                                 &nbsp;</div>
@@ -57,12 +57,11 @@
                 <h5>{{ "Field Settings"|t('app') }}</h5>
             </div>
             <div class="items">
-                {% for blockType in matrixField.getBlockTypes() %}
-                    <div data-id="{{ blockType.id }}">
-                        {% for field in blockType.getFields() %}
-                            {% set fieldId = field.id %}
+                {% for blockTypeId, blockType in blockTypes %}
+                    <div data-id="{{ blockTypeId }}">
+                        {% for fieldId, field in blockTypeFields[blockTypeId] %}
                             <div data-id="{{ fieldId }}" class="hidden">
-                                {% namespace 'blockTypes['~blockType.id~'][fields]['~fieldId~']' %}
+                                {% namespace 'blockTypes['~blockTypeId~'][fields]['~fieldId~']' %}
                                     {{ forms.textField({
                                         label: "Name"|t('app'),
                                         id: 'name',
@@ -104,7 +103,7 @@
                                         warning: (not field.getIsNew() and not field.hasErrors('type') ? "Changing this may result in data loss."|t('app')),
                                         id: 'type',
                                         name: 'type',
-                                        options: field.id and field.id[0:3] != 'new' ? fieldTypes[field.id] : fieldTypes.new,
+                                        options: fieldId[0:3] != 'new' ? fieldTypes[fieldId] : fieldTypes.new,
                                         value: className(field),
                                         errors: field.getErrors('type') ?? null
                                     }) }}
@@ -149,7 +148,7 @@
 
                                 <div class="fieldtype-settings">
                                     <div>
-                                        {% namespace 'blockTypes['~blockType.id~'][fields]['~fieldId~'][typesettings]' %}
+                                        {% namespace 'blockTypes['~blockTypeId~'][fields]['~fieldId~'][typesettings]' %}
                                             {{ field.getSettingsHtml()|raw  }}
                                         {% endnamespace %}
                                     </div>
