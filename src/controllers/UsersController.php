@@ -659,18 +659,18 @@ class UsersController extends Controller
                         'label' => Craft::t('app', 'Suspend')
                     ];
                 }
+            }
 
-                if ($userSession->checkPermission('deleteUsers')) {
-                    // Even if they have delete user permissions, we don't want a non-admin
-                    // to be able to delete an admin.
-                    $currentUser = $userSession->getIdentity();
+            if ($isCurrentUser || $userSession->checkPermission('deleteUsers')) {
+                // Even if they have delete user permissions, we don't want a non-admin
+                // to be able to delete an admin.
+                $currentUser = $userSession->getIdentity();
 
-                    if (($currentUser && $currentUser->admin) || !$user->admin) {
-                        $destructiveActions[] = [
-                            'id' => 'delete-btn',
-                            'label' => Craft::t('app', 'Delete…')
-                        ];
-                    }
+                if (($currentUser && $currentUser->admin) || !$user->admin) {
+                    $destructiveActions[] = [
+                        'id' => 'delete-btn',
+                        'label' => Craft::t('app', 'Delete…')
+                    ];
                 }
             }
         }
@@ -1368,9 +1368,13 @@ class UsersController extends Controller
     {
         $this->requirePostRequest();
         $this->requireLogin();
-        $this->requirePermission('deleteUsers');
 
         $userIds = Craft::$app->getRequest()->getRequiredBodyParam('userId');
+
+        if ($userIds !== (string)Craft::$app->getUser()->getIdentity()->id) {
+            $this->requirePermission('deleteUsers');
+        }
+
         $summary = [];
 
         $entryCount = (new Query())
@@ -1401,8 +1405,6 @@ class UsersController extends Controller
         $this->requirePostRequest();
         $this->requireLogin();
 
-        $this->requirePermission('deleteUsers');
-
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
         $user = Craft::$app->getUsers()->getUserById($userId);
 
@@ -1410,9 +1412,13 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
-        // Even if you have deleteUser permissions, only and admin should be able to delete another admin.
-        if ($user->admin) {
-            $this->requireAdmin();
+        if (!$user->getIsCurrent()) {
+            $this->requirePermission('deleteUsers');
+
+            // Even if you have deleteUser permissions, only and admin should be able to delete another admin.
+            if ($user->admin) {
+                $this->requireAdmin();
+            }
         }
 
         // Are we transferring the user's content to a different user?
