@@ -8,6 +8,7 @@
 - Added `json` to the default `allowedFileExtensions` config setting value. ([#3254](https://github.com/craftcms/cms/issues/3254))
 - Exception call stacks now collapse internal Twig methods by default.
 - Twig exception call stacks now show all of the steps leading up to the error.
+- Live Preview now reloads the preview pane automatically after an asset is saved from the Image Editor. ([#3265](https://github.com/craftcms/cms/issues/3265))
 
 ### Deprecated
 - Deprecated `craft\services\Matrix::getContentTableName()`. `craft\fields\Matrix::$contentTable` should be used instead.
