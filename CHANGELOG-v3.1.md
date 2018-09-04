@@ -32,4 +32,5 @@
 - Added the ActiveRecord Soft Delete Extension for Yii2.
 
 ### Changed
-- The `defaultWeekStartDay` config setting is now set to `1` (Monday) by default, to conform with the ISO 8601 standard. 
+- The `defaultWeekStartDay` config setting is now set to `1` (Monday) by default, to conform with the ISO 8601 standard.
+- `info` buttons can now also have a `warning` class. 
