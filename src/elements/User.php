@@ -209,7 +209,7 @@ class User extends Element implements IdentityInterface
             'label' => Craft::t('app', 'Edit user'),
         ]);
 
-        if (Craft::$app->getUser()->checkPermission('administrateUsers')) {
+        if (Craft::$app->getUser()->checkPermission('moderateUsers')) {
             // Suspend
             $actions[] = SuspendUsers::class;
 

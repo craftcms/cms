@@ -34,4 +34,6 @@
 ### Changed
 - The `defaultWeekStartDay` config setting is now set to `1` (Monday) by default, to conform with the ISO 8601 standard.
 - `info` buttons can now also have a `warning` class.
-- User permission definitions can now include `info` and/or `warning` keys. 
+- User permission definitions can now include `info` and/or `warning` keys.
+- The old “Administrate users” permission has been renamed to “Moderate users”.
+- The old “Change users’ emails” permission has been renamed to “Administrate users”, and now comes with the ability to activate user accounts and reset their passwords. ([#942](https://github.com/craftcms/cms/issues/942))  
