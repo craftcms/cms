@@ -1,6 +1,6 @@
 # User Queries
 
-You can fetch userrs in your templates or PHP code using **user queries**.
+You can fetch users in your templates or PHP code using **user queries**.
 
 ::: code
 ```twig
