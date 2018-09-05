@@ -100,7 +100,7 @@ return [
     'Are you sure you want to delete “{name}” and all its tags?' => 'Weet u zeker dat u \'{name}\' wilt verwijderen en al zijn tags?',
     'Are you sure you want to delete “{name}”?' => 'Weet je zeker dat je “{name}” wilt verwijderen?',
     'Are you sure you want to transfer your license to this domain?' => 'Weet je zeker dat je je licentie naar dit domein wilt overdragen?',
-    'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.' => 'Weet u zeker dat u {plugin} wilt deïstalleren? U verliest alle bijbehorende data.',
+    'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.' => 'Weet u zeker dat u {plugin} wilt deïnstalleren? U verliest alle bijbehorende data.',
     'Ascending' => 'Oplopend',
     'Ask on Stack Exchange' => 'Vragen op Stack Exchange',
     'Asset' => 'Bestand',

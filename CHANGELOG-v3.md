@@ -1,6 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.23.1 - 2018-09-04
+
+### Fixed
+- Fixed a bug where Matrix fields would get new content tables each time they were saved.
+
+## 3.0.23 - 2018-09-04
 
 ### Changed
 - Browser-based form validation is now disabled for page forms. ([#3247](https://github.com/craftcms/cms/issues/3247))
@@ -8,6 +13,7 @@
 - Added `json` to the default `allowedFileExtensions` config setting value. ([#3254](https://github.com/craftcms/cms/issues/3254))
 - Exception call stacks now collapse internal Twig methods by default.
 - Twig exception call stacks now show all of the steps leading up to the error.
+- Live Preview now reloads the preview pane automatically after an asset is saved from the Image Editor. ([#3265](https://github.com/craftcms/cms/issues/3265))
 
 ### Deprecated
 - Deprecated `craft\services\Matrix::getContentTableName()`. `craft\fields\Matrix::$contentTable` should be used instead.

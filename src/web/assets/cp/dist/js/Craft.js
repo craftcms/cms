@@ -1,4 +1,4 @@
-/*!   - 2018-09-03 */
+/*!   - 2018-09-05 */
 (function($){
 
 /** global: Craft */
@@ -6149,6 +6149,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          */
         onSave: function() {
             this.settings.onSave();
+            this.trigger('save');
         },
 
         /**
@@ -15716,6 +15717,7 @@ Craft.LivePreview = Garnish.Base.extend(
             }
 
             Garnish.on(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
+            Garnish.on(Craft.AssetImageEditor, 'save', this._forceUpdateIframeProxy);
 
             this.inPreviewMode = true;
             this.trigger('enter');
