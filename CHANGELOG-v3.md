@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed a bug where Matrix fields would get new content tables each time they were saved.
+
 ## 3.0.23 - 2018-09-04
 
 ### Changed

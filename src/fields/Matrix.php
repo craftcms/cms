@@ -667,7 +667,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         // Set the new content table name
-        $this->_oldContentTable = $this->contentTable;
+        if ($this->id) {
+            $currentField = Craft::$app->getFields()->getFieldById($this->id);
+            if ($currentField) {
+                /** @var Matrix $currentField */
+                $this->_oldContentTable = $this->contentTable = $currentField->contentTable ?? null;
+            }
+        }
+
         $this->contentTable = Craft::$app->getMatrix()->defineContentTableName($this);
 
         return true;
