@@ -2,7 +2,8 @@
 
 ## 3.0.23.1 - 2018-09-04
 
-### Fixed a bug where Matrix fields would get new content tables each time they were saved.
+### Fixed
+- Fixed a bug where Matrix fields would get new content tables each time they were saved.
 
 ## 3.0.23 - 2018-09-04
 
