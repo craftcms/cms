@@ -770,7 +770,7 @@ class Sites extends Component
                 $siteRecord->save(false);
 
                 // Force a reload with the fresh data.
-                if ($siteRecord->primary && null === $this->_primarySite) {
+                if ($siteRecord->primary && $this->_primarySite === null) {
                     $this->_sitesById = null;
                     $this->_loadAllSites();
                 }

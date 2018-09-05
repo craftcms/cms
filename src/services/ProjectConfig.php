@@ -247,7 +247,7 @@ class ProjectConfig extends Component
 
         $arrayAccess = $this->_nodePathToArrayAccess($path);
 
-        if (null === $value) {
+        if ($value === null) {
             eval('unset($config' . $arrayAccess . ');');
         } else {
             eval('$config' . $arrayAccess . ' = $value;');
@@ -393,7 +393,7 @@ class ProjectConfig extends Component
             if (!$storedConfigData && $configData) {
                 $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, $event);
                 // Might generate false positives, but is pretty fast.
-            } else if (null !== $configData && null !== $storedConfigData && Json::encode($storedConfigData) !== Json::encode($configData)) {
+            } else if ($configData !== null && $storedConfigData !== null && Json::encode($storedConfigData) !== Json::encode($configData)) {
                 $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, $event);
             } else {
                 return;
