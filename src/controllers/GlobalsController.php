@@ -228,13 +228,7 @@ class GlobalsController extends Controller
         $globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('setId');
         $siteId = Craft::$app->getRequest()->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
 
-        // Make sure the user is allowed to edit this global set and site
-        $this->requirePermission('editGlobalSet:' . $globalSetId);
-
         $site = Craft::$app->getSites()->getSiteById($siteId);
-            $this->requirePermission('editSite:' . $siteId);
-        }
-
         $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId, $siteId);
 
         if (!$globalSet) {
