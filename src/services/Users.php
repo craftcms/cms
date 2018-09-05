@@ -1138,6 +1138,8 @@ class Users extends Component
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
         } else {
             $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        }
+
         return UrlHelper::siteUrl($path, $params, $scheme, $siteId);
     }
 }
