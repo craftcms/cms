@@ -344,6 +344,12 @@ class ProjectConfig extends Component
             return false;
         }
 
+        // If the file does not exist, but should, generate it
+        if ($this->_useConfigFile() && !file_exists(Craft::$app->getPath()->getConfigPath() . '/' . self::CONFIG_FILENAME)) {
+            $this->regenerateConfigFileFromStoredConfig();
+            $this->saveModifiedConfigData();
+        }
+
         if ($this->_useConfigFile() && $this->_areConfigFilesModified()) {
             $changes = $this->_getPendingChanges();
 
