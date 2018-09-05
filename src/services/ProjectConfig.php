@@ -8,17 +8,16 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query;
+use craft\base\Plugin;
+use craft\base\PluginTrait;
 use craft\events\ParseConfigEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\Path as PathHelper;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Application;
 use yii\base\Component;
-use yii\base\Exception;
 
 /**
  * Project config service.
@@ -42,6 +41,9 @@ class ProjectConfig extends Component
 
     // Filename for base config file
     const CONFIG_FILENAME = 'system.yml';
+
+    // Key to use for schema version storage.
+    const CONFIG_SCHEMA_VERSION_KEY = 'schemaVersion';
 
     // TODO move this to UID validator class
     // TODO update StringHelper::isUUID() to use that
@@ -176,25 +178,25 @@ class ProjectConfig extends Component
         Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData']);
 
         // If we're not using the project config file, load the snapshot to emulate config files.
-        // This is needed so we can make comparisions between the config and the snapshot, as we're firing events.
+        // This is needed so we can make comparisons between the config and the snapshot, as we're firing events.
         if (!$this->_useConfigFile()) {
-            $this->_getConfigurationFromConfigFiles();
+            $this->_getConfigurationFromYml();
         }
 
         parent::init();
     }
 
     /**
-     * Get a value by path from the snapshot.
+     * Get a config value by it's path.
      *
      * @param string $path
-     * @param bool $getFromConfig whether data should be fetched from config instead of snapshot. Defaults to `false`
+     * @param bool $getFromYml whether data should be fetched from yml file instead of snapshot. Defaults to `false`
      * @return array|mixed|null
      */
-    public function get(string $path, $getFromConfig = false)
+    public function get(string $path, $getFromYml = false)
     {
-        if ($getFromConfig) {
-            $source = $this->_getConfigurationFromConfigFiles();
+        if ($getFromYml) {
+            $source = $this->_getConfigurationFromYml();
         } else {
             $source = $this->_getCurrentSnapshot();
         }
@@ -240,7 +242,7 @@ class ProjectConfig extends Component
                 $this->_updateConfigMap = true;
             }
         } else {
-            $config = $this->_getConfigurationFromConfigFiles();
+            $config = $this->_getConfigurationFromYml();
         }
 
         $arrayAccess = $this->_nodePathToArrayAccess($path);
@@ -479,7 +481,7 @@ class ProjectConfig extends Component
             }
 
             if ($this->_updateSnapshot) {
-                $info->configSnapshot = serialize($this->_getConfigurationFromConfigFiles());
+                $info->config = serialize($this->_getConfigurationFromYml());
             }
 
             Craft::$app->saveInfo($info);
@@ -538,7 +540,7 @@ class ProjectConfig extends Component
      *
      * @return array
      */
-    private function _getConfigurationFromConfigFiles(): array
+    private function _getConfigurationFromYml(): array
     {
         if ($this->_useConfigFile()) {
             $fileList = $this->_getConfigFileList();
@@ -624,7 +626,7 @@ class ProjectConfig extends Component
     private function _getCurrentSnapshot(): array
     {
         if (empty($this->_snapshot)) {
-            $snapshotData = Craft::$app->getInfo()->configSnapshot;
+            $snapshotData = Craft::$app->getInfo()->config;
             $this->_snapshot = $snapshotData ? unserialize($snapshotData, ['allowed_classes' => false]) : [];
         }
 
@@ -644,7 +646,7 @@ class ProjectConfig extends Component
             'changedItems' => [],
         ];
 
-        $configSnapshot = $this->_getConfigurationFromConfigFiles();
+        $configSnapshot = $this->_getConfigurationFromYml();
         $currentSnapshot = $this->_getCurrentSnapshot();
 
         $flatConfig = [];

@@ -62,9 +62,9 @@ class Info extends Model
     public $maintenance = false;
 
     /**
-     * @var string Serialized configuration snapshot
+     * @var string Serialized configuration
      */
-    public $configSnapshot = '';
+    public $config = '';
 
     /**
      * @var string JSON array of configuration map of UIDs to location in configuration

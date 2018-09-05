@@ -22,7 +22,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn('{{%info}}', 'configSnapshot', $this->mediumText()->null());
+        $this->addColumn('{{%info}}', 'config', $this->mediumText()->null());
         $this->addColumn('{{%info}}', 'configMap', $this->mediumText()->null());
 
 
@@ -31,7 +31,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         $snapshot = serialize($data);
 
         $this->update('{{%info}}', [
-            'configSnapshot' => $snapshot,
+            'config' => $snapshot,
         ]);
 
 
@@ -76,6 +76,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             'users' => $this->_getUserData(),
             'globalSets' => $this->_getGlobalSetData(),
             'plugins' => $this->_getPluginData(),
+            'schemaVersion' => Craft::$app->schemaVersion,
         ];
 
         $data = array_merge_recursive($data, $this->_getSystemSettingData());
@@ -671,7 +672,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'handle',
                 'settings',
                 'licenseKey',
-                'enabled'])
+                'enabled',
+                'schemaVersion',
+            ])
             ->from('{{%plugins}}')
             ->all();
 
@@ -681,7 +684,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $pluginData[$plugin['handle']] = [
                 'settings' => is_string($plugin['settings']) ? Json::decodeIfJson($plugin['settings']) : null,
                 'licenseKey' => $plugin['licenseKey'],
-                'enabled' => $plugin['enabled']
+                'enabled' => $plugin['enabled'],
+                'schemaVersion' => $plugin['schemaVersion'],
             ];
         }
 

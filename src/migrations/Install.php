@@ -17,6 +17,7 @@ use craft\models\FieldGroup;
 use craft\models\Info;
 use craft\models\Site;
 use craft\models\SiteGroup;
+use craft\services\ProjectConfig;
 
 /**
  * Installation Migration
@@ -400,7 +401,7 @@ class Install extends Migration
             'name' => $this->string()->notNull(),
             'on' => $this->boolean()->defaultValue(false)->notNull(),
             'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
-            'configSnapshot' => $this->mediumText()->null(),
+            'config' => $this->mediumText()->null(),
             'configMap' => $this->mediumText()->null(),
             'fieldVersion' => $this->char(12)->notNull()->defaultValue('000000000000'),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -1013,7 +1014,7 @@ class Install extends Migration
             'on' => true,
             'maintenance' => false,
             'fieldVersion' => StringHelper::randomString(12),
-            'configSnapshot' => serialize([]),
+            'config' => serialize([]),
             'configMap' => json_encode([])
         ]));
         echo " done\n";
@@ -1034,5 +1035,8 @@ class Install extends Migration
         $this->site->groupId = $siteGroup->id;
         $this->site->primary = true;
         Craft::$app->getSites()->saveSite($this->site);
+
+        // Save schema version to config
+        Craft::$app->getProjectConfig()->save(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, Craft::$app->schemaVersion);
     }
 }

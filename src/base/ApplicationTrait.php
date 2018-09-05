@@ -563,7 +563,7 @@ trait ApplicationTrait
 
             // TODO: Remove this after the next breakpoint
             if ($this->_storedVersion && version_compare($this->_storedVersion, '3.1', '<')) {
-                unset($attributes['configSnapshot'], $attributes['configMap']);
+                unset($attributes['config'], $attributes['configMap']);
             }
 
             if (array_key_exists('id', $attributes) && $attributes['id'] === null) {
