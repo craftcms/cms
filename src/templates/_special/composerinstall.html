@@ -1,0 +1,6 @@
+{% extends "_layouts/message" %}
+{% set title = "Complete the Update"|t('app') %}
+
+{% block message %}
+    <p>{{ "Unable to complete the update. This can probably be resolved by running the <code>composer install</code> terminal command."|t('app')|raw }}</p>
+{% endblock %}

@@ -112,8 +112,20 @@ class TemplatesController extends Controller
      */
     public function actionConfigUpdateNotification(): Response
     {
-        // TODO maybe use same template, if POST data is only thing that differs?
+        // TODO maybe use same template as manual-update-notification, if POST data is only thing that differs?
         return $this->renderTemplate('_special/configupdate');
+    }
+
+
+    /**
+     * Renders the Project Config Update notification template.
+     *
+     * @return Response
+     */
+    public function actionComposerInstallNotification(): Response
+    {
+        // TODO maybe use same template, if POST data is only thing that differs?
+        return $this->renderTemplate('_special/composerinstall');
     }
 
     /**

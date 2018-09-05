@@ -207,6 +207,11 @@ class Application extends \yii\web\Application
             throw new ServiceUnavailableHttpException();
         }
 
+        // Make sure schema required by config files aligns with what we have.
+        if (!$this->getProjectConfig()->getAreConfigSchemaVersionsCompatible()) {
+            return $this->_processComposerInstallLogic($request) ?: $this->getResponse();
+        }
+
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
         // If we're in maintenance mode and it's not a site request, show the manual update template.
         if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
@@ -701,6 +706,31 @@ class Application extends \yii\web\Application
             ) {
                 return $this->runAction(implode('/', $actionSegments));
             }
+        }
+
+        // If an exception gets throw during the rendering of the 503 template, let
+        // TemplatesController->actionRenderError() take care of it.
+        throw new ServiceUnavailableHttpException();
+    }
+
+    /**
+     * @param Request $request
+     * @return Response|null
+     * @throws HttpException
+     * @throws ServiceUnavailableHttpException
+     * @throws \yii\base\ExitException
+     */
+    private function _processComposerInstallLogic(Request $request)
+    {
+        $this->_unregisterDebugModule();
+
+        // Let all non-action CP requests through.
+        if (
+            $request->getIsCpRequest() &&
+            (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
+        ) {
+            // Show the manual update notification template
+            return $this->runAction('templates/composer-install-notification');
         }
 
         // If an exception gets throw during the rendering of the 503 template, let

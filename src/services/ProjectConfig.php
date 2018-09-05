@@ -513,6 +513,34 @@ class ProjectConfig extends Component
         return $summary;
     }
 
+    /**
+     * Return true if all schema versions stored in the config are compatible with the actual codebase.
+     *
+     * @return bool
+     */
+    public function getAreConfigSchemaVersionsCompatible(): bool
+    {
+        // TODO remove after next breakpoint
+        if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
+            return true;
+        }
+
+        if ((string) Craft::$app->schemaVersion !== (string) $this->get(self::CONFIG_SCHEMA_VERSION_KEY, true)) {
+            return false;
+        }
+
+        $plugins = Craft::$app->getPlugins()->getAllPlugins();
+
+        foreach ($plugins as $plugin) {
+            /** @var Plugin $plugin */
+            if ((string) $plugin->schemaVersion !== (string) $this->get(Plugins::CONFIG_PLUGINS_KEY.'.'.$plugin->handle.'.'.self::CONFIG_SCHEMA_VERSION_KEY, true)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     // Private methods
     // =========================================================================
 
