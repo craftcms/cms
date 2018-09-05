@@ -505,15 +505,18 @@ class Application extends \yii\web\Application
 
         // Should they be accessing the installer?
         if (!$isInstalled) {
-            // Give it to them if accessing the CP and devMode is enabled.
-            if ($isCpRequest && Craft::$app->getConfig()->getGeneral()->devMode) {
+            if (!$isCpRequest) {
+                throw new ServiceUnavailableHttpException();
+            }
+
+            // Redirect to the installer if Dev Mode is enabled
+            if (Craft::$app->getConfig()->getGeneral()->devMode) {
                 $url = UrlHelper::url('install');
                 $this->getResponse()->redirect($url);
                 $this->end();
-            } // Otherwise return a 503
-            else {
-                throw new ServiceUnavailableHttpException();
             }
+
+            throw new ServiceUnavailableHttpException(Craft::t('app', 'Craft isn’t installed yet.'));
         }
 
         return null;
