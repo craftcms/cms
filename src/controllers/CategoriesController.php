@@ -713,7 +713,7 @@ class CategoriesController extends Controller
             if ($variables['category']->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
                     /** @var Field $field */
-                    if ($hasErrors = $variables['category']->hasErrors($field->handle)) {
+                    if ($hasErrors = $variables['category']->hasErrors($field->handle . '.*')) {
                         break;
                     }
                 }

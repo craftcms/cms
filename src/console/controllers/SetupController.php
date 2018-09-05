@@ -167,7 +167,7 @@ EOD;
      */
     public function actionSecurityKey(): int
     {
-        $this->stdout(PHP_EOL . 'Generating a security key... ', Console::FG_YELLOW);
+        $this->stdout(PHP_EOL . 'Generating a security key ... ', Console::FG_YELLOW);
         $key = Craft::$app->getSecurity()->generateRandomString();
         if (!$this->_setEnvVar('SECURITY_KEY', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;
@@ -192,6 +192,7 @@ EOD;
         }
 
         $firstTime = true;
+        $badUserCredentials = false;
 
         top:
 
@@ -215,21 +216,21 @@ EOD;
         } else {
             $server = $this->prompt('Database server name or IP address:', [
                 'required' => true,
-                'default' => $dbConfig->server,
+                'default' => $dbConfig->server ?: '127.0.0.1',
             ]);
         }
         $dbConfig->server = strtolower($server);
 
         // port
         if ($this->port) {
-            $dbConfig->port = $this->port;
+            $dbConfig->port = (int)$this->port;
         } else {
             if ($firstTime) {
                 $defaultPort = $dbConfig->driver === DbConfig::DRIVER_MYSQL ? 3306 : 5432;
             } else {
                 $defaultPort = $dbConfig->port;
             }
-            $dbConfig->port = $this->prompt('Database port:', [
+            $dbConfig->port = (int)$this->prompt('Database port:', [
                 'required' => true,
                 'default' => $defaultPort,
                 'validator' => function(string $input): bool {
@@ -238,12 +239,14 @@ EOD;
             ]);
         }
 
+        userCredentials:
+
         // user
         if ($this->user) {
             $dbConfig->user = $this->user;
         } else {
             $dbConfig->user = $this->prompt('Database username:', [
-                'default' => $dbConfig->user,
+                'default' => $dbConfig->user ?: null,
             ]);
         }
 
@@ -255,13 +258,18 @@ EOD;
             $dbConfig->password = CliPrompt::hiddenPrompt(true);
         }
 
+        if ($badUserCredentials) {
+            $badUserCredentials = false;
+            goto test;
+        }
+
         // database
         if ($this->database) {
             $dbConfig->database = $this->database;
         } else if ($this->interactive || $dbConfig->database) {
             $dbConfig->database = $this->prompt('Database name:', [
                 'required' => true,
-                'default' => $dbConfig->database,
+                'default' => $dbConfig->database ?: null,
             ]);
         } else {
             $this->stderr('The --database option must be set.' . PHP_EOL, Console::FG_RED);
@@ -275,7 +283,7 @@ EOD;
             } else {
                 $dbConfig->schema = $this->prompt('Database schema:', [
                     'required' => true,
-                    'default' => $dbConfig->schema,
+                    'default' => $dbConfig->schema ?: 'public',
                 ]);
             }
         }
@@ -285,7 +293,7 @@ EOD;
             $tablePrefix = $this->tablePrefix;
         } else {
             $tablePrefix = $this->prompt('Database table prefix' . ($dbConfig->tablePrefix ? ' (type "none" for none)' : '') . ':', [
-                'default' => $dbConfig->tablePrefix,
+                'default' => $dbConfig->tablePrefix ?: null,
                 'validator' => function(string $input): bool {
                     if (strlen(StringHelper::ensureRight($input, '_')) > 6) {
                         Console::stderr($this->ansiFormat('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED));
@@ -302,7 +310,13 @@ EOD;
         }
 
         // Test the DB connection
-        $this->stdout('Testing database credentials... ', Console::FG_YELLOW);
+        $this->stdout('Testing database credentials ... ', Console::FG_YELLOW);
+
+        $originalServer = $dbConfig->server;
+        $originalPort = $dbConfig->port;
+
+        test:
+
         $dbConfig->updateDsn();
         /** @var Connection $db */
         $db = Craft::createObject(App::dbConfig($dbConfig));
@@ -321,13 +335,44 @@ EOD;
             /** @var \PDOException $pdoException */
             $pdoException = $e->getPrevious()->getPrevious() ?? $e->getPrevious() ?? $e;
             $this->stderr('failed: ' . $pdoException->getMessage() . PHP_EOL, Console::FG_RED);
-            //$this->stdout(VarDumper::dumpAsString($e->getPrevious()));
-            $firstTime = false;
+
+            // Test some common issues
+            $message = $pdoException->getMessage();
+
+            if ($dbConfig->server === 'localhost' && $message === 'SQLSTATE[HY000] [2002] No such file or directory') {
+                // means the Unix socket doesn't exist - https://stackoverflow.com/a/22927341/1688568
+                // try 127.0.0.1 instead...
+                $this->stdout('Trying with 127.0.0.1 instead of localhost ... ', Console::FG_YELLOW);
+                $dbConfig->server = '127.0.0.1';
+                goto test;
+            }
+
+            if ($dbConfig->port === 3306 && $message === 'SQLSTATE[HY000] [2002] Connection refused') {
+                // try 8889 instead (default MAMP port)...
+                $this->stdout('Trying with port 8889 instead of 3306 ... ', Console::FG_YELLOW);
+                $dbConfig->port = 8889;
+                goto test;
+            }
+
+            if (
+                strpos($message, 'Access denied for user') !== false ||
+                strpos($message, 'no password supplied') !== false ||
+                strpos($message, 'password authentication failed for user') !== false
+            ) {
+                $this->stdout('Try with a different username and/or password.' . PHP_EOL, Console::FG_YELLOW);
+                $badUserCredentials = true;
+                goto userCredentials;
+            }
 
             if (!$this->interactive) {
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
+            // Restore the original server/port values
+            $dbConfig->server = $originalServer;
+            $dbConfig->port = $originalPort;
+
+            $firstTime = false;
             goto top;
         }
 
@@ -335,7 +380,7 @@ EOD;
         Craft::$app->setIsInstalled(null);
 
         $this->stdout('success!' . PHP_EOL, Console::FG_GREEN);
-        $this->stdout('Saving database credentials to your .env file... ', Console::FG_YELLOW);
+        $this->stdout('Saving database credentials to your .env file ... ', Console::FG_YELLOW);
 
         if (
             !$this->_setEnvVar('DB_DRIVER', $dbConfig->driver) ||

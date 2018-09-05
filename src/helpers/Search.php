@@ -55,7 +55,7 @@ class Search
         $str = preg_replace('/&#?[a-z0-9]{2,8};/i', '', $str);
 
         // Normalize to lowercase
-        $str = StringHelper::toLowerCase($str);
+        $str = mb_strtolower($str);
 
         if ($processCharMap) {
             // Remove punctuation and diacritics

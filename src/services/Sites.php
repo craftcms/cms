@@ -1217,12 +1217,31 @@ class Sites extends Component
         } catch (DbException $e) {
             // todo: remove this after the next breakpoint
             // If the error code is 42S02 (MySQL) or 42P01 (PostgreSQL), the sites table probably doesn't exist yet
-            // If the error code is 42S22 (MySQL) or 42703 (PostgreSQL), then the sites table doesn't have a groupId column yet
-            if (isset($e->errorInfo[0]) && in_array($e->errorInfo[0], ['42S02', '42S22', '42P01', '42703'], true)) {
+            if (isset($e->errorInfo[0]) && in_array($e->errorInfo[0], ['42S02', '42P01'], true)) {
                 return;
             }
-            /** @noinspection PhpUnhandledExceptionInspection */
-            throw $e;
+            // If the error code is 42S22 (MySQL) or 42703 (PostgreSQL), then the sites table doesn't have a groupId or dateDeleted column yet
+            if (isset($e->errorInfo[0]) && in_array($e->errorInfo[0], ['42S22', '42703'], true)) {
+                $results = (new Query())
+                    ->select([
+                        's.id',
+                        's.name',
+                        's.handle',
+                        'language',
+                        's.primary',
+                        's.hasUrls',
+                        's.baseUrl',
+                        's.sortOrder',
+                        's.uid',
+                    ])
+                    ->from(['{{%sites}} s'])
+                    ->orderBy(['s.name' => SORT_ASC])
+                    ->all();
+            }
+            if (!isset($results)) {
+                /** @noinspection PhpUnhandledExceptionInspection */
+                throw $e;
+            }
         }
 
         // Check for results because during installation, the transaction hasn't been committed yet.

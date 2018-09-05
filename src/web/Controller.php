@@ -165,10 +165,10 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireLogin()
     {
-        $user = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
 
-        if ($user->getIsGuest()) {
-            $user->loginRequired();
+        if ($userSession->getIsGuest()) {
+            $userSession->loginRequired();
             Craft::$app->end();
         }
     }

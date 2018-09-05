@@ -227,10 +227,10 @@ class Asset extends Element
                 ]
             );
 
-            $userSessionService = Craft::$app->getUser();
+            $userSession = Craft::$app->getUser();
             $canDeleteAndSave = (
-                $userSessionService->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid) &&
-                $userSessionService->checkPermission('saveAssetInVolume:' . $volume->uid)
+                $userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid) &&
+                $userSession->checkPermission('saveAssetInVolume:' . $volume->uid)
             );
 
             // Rename File
@@ -239,7 +239,7 @@ class Asset extends Element
             }
 
             // Replace File
-            if ($userSessionService->checkPermission('saveAssetInVolume:' . $volume->uid)) {
+            if ($userSession->checkPermission('saveAssetInVolume:' . $volume->uid)) {
                 $actions[] = ReplaceFile::class;
             }
 
@@ -257,7 +257,7 @@ class Asset extends Element
             }
 
             // Delete
-            if ($userSessionService->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid)) {
+            if ($userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid)) {
                 $actions[] = DeleteAssets::class;
             }
         }
@@ -1087,14 +1087,14 @@ class Asset extends Element
             }
 
             // Is the image editable, and is the user allowed to edit?
-            $user = Craft::$app->getUser();
+            $userSession = Craft::$app->getUser();
 
             $volume = $this->getVolume();
 
             $editable = (
                 $this->getSupportsImageEditor() &&
-                $user->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid) &&
-                $user->checkPermission('saveAssetInVolume:' . $volume->uid)
+                $userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid) &&
+                $userSession->checkPermission('saveAssetInVolume:' . $volume->uid)
             );
 
             $html .= '<div class="image-preview-container' . ($editable ? ' editable' : '') . '">' .

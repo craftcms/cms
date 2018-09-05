@@ -72,8 +72,8 @@ class AppController extends Controller
         $this->requireAcceptsJson();
 
         // Require either the 'performUpdates' or 'utility:updates' permission
-        $user = Craft::$app->getUser();
-        if (!$user->checkPermission('performUpdates') && !$user->checkPermission('utility:updates')) {
+        $userSession = Craft::$app->getUser();
+        if (!$userSession->checkPermission('performUpdates') && !$userSession->checkPermission('utility:updates')) {
             throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
 

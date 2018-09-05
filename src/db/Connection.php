@@ -198,7 +198,7 @@ class Connection extends \yii\db\Connection
         $currentVersion = 'v' . Craft::$app->getVersion();
         $systemName = FileHelper::sanitizeFilename($this->_getFixedSystemName(), ['asciiOnly' => true]);
         $filename = ($systemName ? $systemName . '_' : '') . gmdate('ymd_His') . '_' . strtolower(StringHelper::randomString(10)) . '_' . $currentVersion . '.sql';
-        $file = Craft::$app->getPath()->getDbBackupPath() . '/' . StringHelper::toLowerCase($filename);
+        $file = Craft::$app->getPath()->getDbBackupPath() . '/' . mb_strtolower($filename);
 
         $this->backupTo($file);
 

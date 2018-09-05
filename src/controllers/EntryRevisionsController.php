@@ -177,11 +177,11 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         $this->enforceEditEntryPermissions($entry);
-        $userSessionService = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
 
         // Is this another user's entry (and it's not a Single)?
         if (
-            $entry->authorId != $userSessionService->getIdentity()->id &&
+            $entry->authorId != $userSession->getIdentity()->id &&
             $entry->getSection()->type != Section::TYPE_SINGLE &&
             $entry->enabled
         ) {
@@ -250,11 +250,11 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         $this->enforceEditEntryPermissions($entry);
-        $userSessionService = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
 
         // Is this another user's entry (and it's not a Single)?
         if (
-            $entry->authorId != $userSessionService->getIdentity()->id &&
+            $entry->authorId != $userSession->getIdentity()->id &&
             $entry->getSection()->type !== Section::TYPE_SINGLE &&
             $entry->enabled
         ) {
@@ -267,7 +267,8 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Revert to the version
-        if (!Craft::$app->getEntryRevisions()->revertEntryToVersion($version)) {
+        $revisionsService = Craft::$app->getEntryRevisions();
+        if (!$revisionsService->revertEntryToVersion($version)) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t revert entry to past version.'));
 
             // Send the version back to the template
@@ -276,6 +277,11 @@ class EntryRevisionsController extends BaseEntriesController
             ]);
 
             return null;
+        }
+
+        // Should we save a new version?
+        if ($version->getSection()->enableVersioning) {
+            $revisionsService->saveVersion($version);
         }
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry reverted to past version.'));

@@ -34,7 +34,7 @@ abstract class BaseEntriesController extends Controller
      */
     protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false)
     {
-        $userSessionService = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
         $permissionSuffix = ':' . $entry->getSection()->uid;
 
         if (Craft::$app->getIsMultiSite()) {
@@ -54,7 +54,7 @@ abstract class BaseEntriesController extends Controller
                 case Entry::class:
                     // If it's another user's entry (and it's not a Single), make sure they have permission to edit those
                     if (
-                        $entry->authorId != $userSessionService->getIdentity()->id &&
+                        $entry->authorId != $userSession->getIdentity()->id &&
                         $entry->getSection()->type !== Section::TYPE_SINGLE
                     ) {
                         $this->requirePermission('editPeerEntries' . $permissionSuffix);
@@ -65,7 +65,7 @@ abstract class BaseEntriesController extends Controller
                 case EntryDraft::class:
                     // If it's another user's draft, make sure they have permission to edit those
                     /** @var EntryDraft $entry */
-                    if (!$entry->creatorId || $entry->creatorId != $userSessionService->getIdentity()->id) {
+                    if (!$entry->creatorId || $entry->creatorId != $userSession->getIdentity()->id) {
                         $this->requirePermission('editPeerEntryDrafts' . $permissionSuffix);
                     }
 

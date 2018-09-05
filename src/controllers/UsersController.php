@@ -41,7 +41,7 @@ use yii\web\Response;
 /**
  * The UsersController class is a controller that handles various user account related tasks such as logging-in,
  * impersonating a user, logging out, forgetting passwords, setting passwords, validating accounts, activating
- * accounts, creating users, saving users, processing user avatars, deleting, suspending and un-suspending users.
+ * accounts, creating users, saving users, processing user avatars, deleting, suspending and unsuspending users.
  * Note that all actions in the controller, except [[actionLogin]], [[actionLogout]], [[actionGetRemainingSessionTime]],
  * [[actionSendPasswordResetEmail]], [[actionSetPassword]], [[actionVerifyEmail]] and [[actionSaveUser]] require an
  * authenticated Craft session via [[allowAnonymous]].
@@ -166,19 +166,19 @@ class UsersController extends Controller
         $this->requireAdmin();
         $this->requirePostRequest();
 
-        $userService = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
         $session = Craft::$app->getSession();
         $request = Craft::$app->getRequest();
 
         $userId = $request->getBodyParam('userId');
-        $originalUserId = $userService->getId();
+        $originalUserId = $userSession->getId();
 
         $session->set(User::IMPERSONATE_KEY, $originalUserId);
 
-        if (!$userService->loginByUserId($userId)) {
+        if (!$userSession->loginByUserId($userId)) {
             $session->remove(User::IMPERSONATE_KEY);
             $session->setError(Craft::t('app', 'There was a problem impersonating this user.'));
-            Craft::error($userService->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
+            Craft::error($userSession->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
 
             return null;
         }
@@ -340,7 +340,7 @@ class UsersController extends Controller
      */
     public function actionGetPasswordResetUrl()
     {
-        $this->requireAdmin();
+        $this->requirePermission('administrateUsers');
 
         if (!$this->_verifyElevatedSession()) {
             throw new BadRequestHttpException('Existing password verification failed');
@@ -482,7 +482,7 @@ class UsersController extends Controller
      */
     public function actionActivateUser(): Response
     {
-        $this->requireAdmin();
+        $this->requirePermission('administrateUsers');
         $this->requirePostRequest();
 
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
@@ -516,6 +516,7 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         $edition = Craft::$app->getEdition();
+        $userSession = Craft::$app->getUser();
 
         if ($user === null) {
             // Are we editing a specific user account?
@@ -529,7 +530,7 @@ class UsersController extends Controller
                         }
                     } else {
                         // Get the current user
-                        $user = Craft::$app->getUser()->getIdentity();
+                        $user = $userSession->getIdentity();
                     }
                 } else {
                     if ($user) {
@@ -564,13 +565,13 @@ class UsersController extends Controller
         }
 
         /** @var User $user */
-
         $isNewUser = !$user->id;
 
         // Make sure they have permission to edit this user
         // ---------------------------------------------------------------------
 
-        if (!$user->getIsCurrent()) {
+        $isCurrentUser = $user->getIsCurrent();
+        if (!$isCurrentUser) {
             if ($isNewUser) {
                 $this->requirePermission('registerUsers');
             } else {
@@ -595,7 +596,7 @@ class UsersController extends Controller
                         'action' => 'users/send-activation-email',
                         'label' => Craft::t('app', 'Send activation email')
                     ];
-                    if (Craft::$app->getUser()->getIsAdmin()) {
+                    if ($userSession->checkPermission('administrateUsers')) {
                         // Only need to show the "Copy activation URL" option if they don't have a password
                         if (!$user->password) {
                             $statusActions[] = [
@@ -611,7 +612,7 @@ class UsersController extends Controller
                     break;
                 case User::STATUS_LOCKED:
                     $statusLabel = Craft::t('app', 'Locked');
-                    if (Craft::$app->getUser()->checkPermission('administrateUsers')) {
+                    if ($userSession->checkPermission('moderateUsers')) {
                         $statusActions[] = [
                             'action' => 'users/unlock-user',
                             'label' => Craft::t('app', 'Unlock')
@@ -620,7 +621,7 @@ class UsersController extends Controller
                     break;
                 case User::STATUS_SUSPENDED:
                     $statusLabel = Craft::t('app', 'Suspended');
-                    if (Craft::$app->getUser()->checkPermission('administrateUsers')) {
+                    if ($userSession->checkPermission('moderateUsers')) {
                         $statusActions[] = [
                             'action' => 'users/unsuspend-user',
                             'label' => Craft::t('app', 'Unsuspend')
@@ -629,49 +630,47 @@ class UsersController extends Controller
                     break;
                 case User::STATUS_ACTIVE:
                     $statusLabel = Craft::t('app', 'Active');
-                    if (!$user->getIsCurrent()) {
+                    if (!$isCurrentUser) {
                         $statusActions[] = [
                             'action' => 'users/send-password-reset-email',
-                            'label' => Craft::t('app',
-                                'Send password reset email')
+                            'label' => Craft::t('app', 'Send password reset email')
                         ];
-                        if (Craft::$app->getUser()->getIsAdmin()) {
+                        if ($userSession->checkPermission('administrateUsers')) {
                             $statusActions[] = [
                                 'id' => 'copy-passwordreset-url',
-                                'label' => Craft::t('app',
-                                    'Copy password reset URL')
+                                'label' => Craft::t('app', 'Copy password reset URL')
                             ];
                         }
                     }
                     break;
             }
 
-            if (!$user->getIsCurrent()) {
-                if (Craft::$app->getUser()->getIsAdmin()) {
+            if (!$isCurrentUser) {
+                if ($userSession->getIsAdmin()) {
                     $sessionActions[] = [
                         'action' => 'users/impersonate',
                         'label' => Craft::t('app', 'Login as {user}', ['user' => $user->getName()])
                     ];
                 }
 
-                if (Craft::$app->getUser()->checkPermission('administrateUsers') && $user->getStatus() != User::STATUS_SUSPENDED) {
+                if ($userSession->checkPermission('moderateUsers') && $user->getStatus() != User::STATUS_SUSPENDED) {
                     $destructiveActions[] = [
                         'action' => 'users/suspend-user',
                         'label' => Craft::t('app', 'Suspend')
                     ];
                 }
+            }
 
-                if (Craft::$app->getUser()->checkPermission('deleteUsers')) {
-                    // Even if they have delete user permissions, we don't want a non-admin
-                    // to be able to delete an admin.
-                    $currentUser = Craft::$app->getUser()->getIdentity();
+            if ($isCurrentUser || $userSession->checkPermission('deleteUsers')) {
+                // Even if they have delete user permissions, we don't want a non-admin
+                // to be able to delete an admin.
+                $currentUser = $userSession->getIdentity();
 
-                    if (($currentUser && $currentUser->admin) || !$user->admin) {
-                        $destructiveActions[] = [
-                            'id' => 'delete-btn',
-                            'label' => Craft::t('app', 'Delete…')
-                        ];
-                    }
+                if (($currentUser && $currentUser->admin) || !$user->admin) {
+                    $destructiveActions[] = [
+                        'id' => 'delete-btn',
+                        'label' => Craft::t('app', 'Delete…')
+                    ];
                 }
             }
         }
@@ -697,7 +696,7 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         if (!$isNewUser) {
-            if ($user->getIsCurrent()) {
+            if ($isCurrentUser) {
                 $title = Craft::t('app', 'My Account');
             } else {
                 $title = Craft::t('app', '{user}’s Account', ['user' => $user->getName()]);
@@ -715,40 +714,37 @@ class UsersController extends Controller
             ]
         ];
 
-        // Only show custom fields if it's Craft Pro
-        if ($edition === Craft::Pro) {
-            foreach ($user->getFieldLayout()->getTabs() as $index => $tab) {
-                // Skip if the tab doesn't have any fields
-                if (empty($tab->getFields())) {
-                    continue;
-                }
+        foreach ($user->getFieldLayout()->getTabs() as $index => $tab) {
+            // Skip if the tab doesn't have any fields
+            if (empty($tab->getFields())) {
+                continue;
+            }
 
-                // Do any of the fields on this tab have errors?
-                $hasErrors = false;
+            // Do any of the fields on this tab have errors?
+            $hasErrors = false;
 
-                if ($user->hasErrors()) {
-                    foreach ($tab->getFields() as $field) {
-                        /** @var Field $field */
-                        if ($hasErrors = $user->hasErrors($field->handle)) {
-                            break;
-                        }
+            if ($user->hasErrors()) {
+                foreach ($tab->getFields() as $field) {
+                    /** @var Field $field */
+                    if ($hasErrors = $user->hasErrors($field->handle . '.*')) {
+                        break;
                     }
                 }
-
-                $tabs['profile' . $index] = [
-                    'label' => Craft::t('site', $tab->name),
-                    'url' => '#profile-' . $tab->getHtmlId(),
-                    'class' => $hasErrors ? 'error' : null
-                ];
             }
+
+            $tabs['profile' . $index] = [
+                'label' => Craft::t('site', $tab->name),
+                'url' => '#profile-' . $tab->getHtmlId(),
+                'class' => $hasErrors ? 'error' : null
+            ];
         }
 
         // Show the permission tab for the users that can change them on Craft Pro editions
         if (
             $edition === Craft::Pro &&
             (
-                Craft::$app->getUser()->checkPermission('assignUserPermissions') ||
-                Craft::$app->getUser()->checkPermission('assignUserGroups')
+                $userSession->checkPermission('assignUserPermissions') ||
+                $userSession->checkPermission('assignUserGroups')
             )
         ) {
             $tabs['perms'] = [
@@ -758,8 +754,7 @@ class UsersController extends Controller
         }
 
         // Show the preferences tab if it's the current user
-        $isCurrent = $user->getIsCurrent();
-        if ($isCurrent) {
+        if ($isCurrentUser) {
             $tabs['prefs'] = [
                 'label' => Craft::t('app', 'Preferences'),
                 'url' => '#prefs',
@@ -830,7 +825,7 @@ class UsersController extends Controller
         $this->getView()->registerAssetBundle(EditUserAsset::class);
 
         $userIdJs = Json::encode($user->id);
-        $isCurrentJs = ($isCurrent ? 'true' : 'false');
+        $isCurrentJs = ($isCurrentUser ? 'true' : 'false');
         $settingsJs = Json::encode([
             'deleteModalRedirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
         ]);
@@ -870,10 +865,9 @@ class UsersController extends Controller
     {
         $this->requirePostRequest();
 
-        $edition = Craft::$app->getEdition();
         $request = Craft::$app->getRequest();
-        $userComponent = Craft::$app->getUser();
-        $currentUser = $userComponent->getIdentity();
+        $userSession = Craft::$app->getUser();
+        $currentUser = $userSession->getIdentity();
         $requireEmailVerification = Craft::$app->getSystemSettings()->getSetting('users', 'requireEmailVerification');
 
         // Get the user being edited
@@ -933,7 +927,7 @@ class UsersController extends Controller
         $verifyNewEmail = false;
 
         // Are they allowed to set the email address?
-        if ($isNewUser || $isCurrentUser || $currentUser->can('changeUserEmails')) {
+        if ($isNewUser || $isCurrentUser || $currentUser->can('administrateUsers')) {
             $newEmail = $request->getBodyParam('email');
 
             // Make sure it actually changed
@@ -1032,7 +1026,11 @@ class UsersController extends Controller
             $user->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!$user->validate(null, false)) {
+        // Manually validate the user so we can pass $clearErrors=false
+        if (
+            !$user->validate(null, false) ||
+            !Craft::$app->getElements()->saveElement($user, false)
+        ) {
             Craft::info('User not saved due to validation error.', __METHOD__);
 
             if ($thisIsPublicRegistration) {
@@ -1057,9 +1055,6 @@ class UsersController extends Controller
             return null;
         }
 
-        // Save the user (but no need to re-validate)
-        Craft::$app->getElements()->saveElement($user, false);
-
         // Save their preferences too
         $preferences = [
             'language' => $request->getBodyParam('preferredLanguage', $user->getPreference('language')),
@@ -1082,7 +1077,7 @@ class UsersController extends Controller
                 $currentUser->mergePreferences($preferences);
             }
 
-            $userComponent->saveDebugPreferencesToSession();
+            $userSession->saveDebugPreferencesToSession();
         }
 
         // Is this the current user, and did their username just change?
@@ -1303,7 +1298,7 @@ class UsersController extends Controller
     {
         $this->requirePostRequest();
         $this->requireLogin();
-        $this->requirePermission('administrateUsers');
+        $this->requirePermission('moderateUsers');
 
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
         $user = Craft::$app->getUsers()->getUserById($userId);
@@ -1312,7 +1307,7 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
-        // Even if you have administrateUsers permissions, only and admin should be able to unlock another admin.
+        // Even if you have moderateUsers permissions, only and admin should be able to unlock another admin.
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         if ($user->admin && !$currentUser->admin) {
@@ -1337,7 +1332,7 @@ class UsersController extends Controller
     {
         $this->requirePostRequest();
         $this->requireLogin();
-        $this->requirePermission('administrateUsers');
+        $this->requirePermission('moderateUsers');
 
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
         $user = Craft::$app->getUsers()->getUserById($userId);
@@ -1346,7 +1341,7 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
-        // Even if you have administrateUsers permissions, only and admin should be able to suspend another admin.
+        // Even if you have moderateUsers permissions, only and admin should be able to suspend another admin.
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         if ($user->admin && !$currentUser->admin) {
@@ -1373,9 +1368,13 @@ class UsersController extends Controller
     {
         $this->requirePostRequest();
         $this->requireLogin();
-        $this->requirePermission('deleteUsers');
 
         $userIds = Craft::$app->getRequest()->getRequiredBodyParam('userId');
+
+        if ($userIds !== (string)Craft::$app->getUser()->getIdentity()->id) {
+            $this->requirePermission('deleteUsers');
+        }
+
         $summary = [];
 
         $entryCount = (new Query())
@@ -1406,8 +1405,6 @@ class UsersController extends Controller
         $this->requirePostRequest();
         $this->requireLogin();
 
-        $this->requirePermission('deleteUsers');
-
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
         $user = Craft::$app->getUsers()->getUserById($userId);
 
@@ -1415,9 +1412,13 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
-        // Even if you have deleteUser permissions, only and admin should be able to delete another admin.
-        if ($user->admin) {
-            $this->requireAdmin();
+        if (!$user->getIsCurrent()) {
+            $this->requirePermission('deleteUsers');
+
+            // Even if you have deleteUser permissions, only and admin should be able to delete another admin.
+            if ($user->admin) {
+                $this->requireAdmin();
+            }
         }
 
         // Are we transferring the user's content to a different user?
@@ -1461,7 +1462,7 @@ class UsersController extends Controller
     {
         $this->requirePostRequest();
         $this->requireLogin();
-        $this->requirePermission('administrateUsers');
+        $this->requirePermission('moderateUsers');
 
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
         $user = Craft::$app->getUsers()->getUserById($userId);
@@ -1470,7 +1471,7 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
-        // Even if you have administrateUsers permissions, only and admin should be able to un-suspend another admin.
+        // Even if you have moderateUsers permissions, only and admin should be able to unsuspend another admin.
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         if ($user->admin && !$currentUser->admin) {
@@ -1627,11 +1628,11 @@ class UsersController extends Controller
     private function _handleSuccessfulLogin(bool $setNotice): Response
     {
         // Get the return URL
-        $userService = Craft::$app->getUser();
-        $returnUrl = $userService->getReturnUrl();
+        $userSession = Craft::$app->getUser();
+        $returnUrl = $userSession->getReturnUrl();
 
         // Clear it out
-        $userService->removeReturnUrl();
+        $userSession->removeReturnUrl();
 
         // If this was an Ajax request, just return success:true
         if (Craft::$app->getRequest()->getAcceptsJson()) {
@@ -1645,7 +1646,7 @@ class UsersController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Logged in.'));
         }
 
-        return $this->redirectToPostedUrl($userService->getIdentity(), $returnUrl);
+        return $this->redirectToPostedUrl($userSession->getIdentity(), $returnUrl);
     }
 
     /**
@@ -1791,14 +1792,14 @@ class UsersController extends Controller
             if (is_array($permissions)) {
                 // See if there are any new permissions in here
                 $hasNewPermissions = false;
-                $authService = Craft::$app->getUser();
+                $userSession = Craft::$app->getUser();
 
                 foreach ($permissions as $permission) {
                     if (!$user->can($permission)) {
                         $hasNewPermissions = true;
 
                         // Make sure the current user even has permission to grant it
-                        if (!$authService->checkPermission($permission)) {
+                        if (!$userSession->checkPermission($permission)) {
                             throw new ForbiddenHttpException("Your account doesn't have permission to assign the {$permission} permission to a user.");
                         }
                     }
@@ -1877,9 +1878,9 @@ class UsersController extends Controller
             ->one();
 
         // If someone is logged in and it's not this person, log them out
-        $userService = Craft::$app->getUser();
-        if (($identity = $userService->getIdentity()) !== null && $userToProcess && $identity->id != $userToProcess->id) {
-            $userService->logout();
+        $userSession = Craft::$app->getUser();
+        if (($identity = $userSession->getIdentity()) !== null && $userToProcess && $identity->id != $userToProcess->id) {
+            $userSession->logout();
         }
 
         if ($userToProcess) {
@@ -1913,10 +1914,10 @@ class UsersController extends Controller
     private function _processInvalidToken($user): Response
     {
         // If they're already logged-in, just send them to the post-login URL
-        $userService = Craft::$app->getUser();
-        if (!$userService->getIsGuest()) {
-            $returnUrl = $userService->getReturnUrl();
-            $userService->removeReturnUrl();
+        $userSession = Craft::$app->getUser();
+        if (!$userSession->getIsGuest()) {
+            $returnUrl = $userSession->getReturnUrl();
+            $userSession->removeReturnUrl();
 
             return $this->redirect($returnUrl);
         }

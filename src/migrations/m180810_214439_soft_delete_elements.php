@@ -25,16 +25,6 @@ class m180810_214439_soft_delete_elements extends Migration
         $this->addColumn('{{%entries}}', 'parentId', $this->integer()->after('sectionId'));
         $this->addForeignKey(null, '{{%categories}}', ['parentId'], '{{%categories}}', ['id'], 'SET NULL', null);
         $this->addForeignKey(null, '{{%entries}}', ['parentId'], '{{%entries}}', ['id'], 'SET NULL', null);
-
-        // Unique element URIs should no longer be enforced by the DB
-        MigrationHelper::dropIndexIfExists('{{%elements_sites}}', ['uri', 'siteId'], true, $this);
-        $this->createIndex(null, '{{%elements_sites}}', ['uri', 'siteId'], false);
-
-        // Unique user emails & usernames should no longer be enforced by the DB
-        MigrationHelper::dropIndexIfExists('{{%users}}', ['username'], true, $this);
-        MigrationHelper::dropIndexIfExists('{{%users}}', ['email'], true, $this);
-        $this->createIndex(null, '{{%users}}', ['username'], false);
-        $this->createIndex(null, '{{%users}}', ['email'], false);
     }
 
     /**
