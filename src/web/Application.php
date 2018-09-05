@@ -207,8 +207,10 @@ class Application extends \yii\web\Application
             throw new ServiceUnavailableHttpException();
         }
 
+        $projectConfig = $this->getProjectConfig();
+
         // Make sure schema required by config files aligns with what we have.
-        if (!$this->getProjectConfig()->getAreConfigSchemaVersionsCompatible()) {
+        if ($projectConfig->isUpdatePending() && !$projectConfig->getAreConfigSchemaVersionsCompatible()) {
             return $this->_processComposerInstallLogic($request) ?: $this->getResponse();
         }
 
@@ -242,7 +244,7 @@ class Application extends \yii\web\Application
         }
 
         // Check if project configuration needs to apply some changes here
-        if ($this->getProjectConfig()->isUpdatePending()) {
+        if ($projectConfig->isUpdatePending()) {
             return $this->_processConfigUpdateLogic($request) ?: $this->getResponse();
         }
 
