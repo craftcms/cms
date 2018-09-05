@@ -302,7 +302,7 @@ class Sites extends Component
 
         // Does it match a field group?
         if (preg_match('/^' . self::CONFIG_SITEGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
-            $data = $event->configData;
+            $data = $event->newConfig;
             $uid = $matches[1];
 
             $groupRecord = $this->_getGroupRecord($uid);
@@ -730,7 +730,7 @@ class Sites extends Component
         // Does it match a site?
         if (preg_match('/^' . self::CONFIG_SITES_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $siteUid = $matches[1];
-            $data = $event->configData;
+            $data = $event->newConfig;
             $groupUid = $data['siteGroup'];
 
             // Ensure we have the site group in place first

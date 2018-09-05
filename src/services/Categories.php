@@ -424,7 +424,7 @@ class Categories extends Component
         if (preg_match('/' . self::CONFIG_CATEGORYROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
 
             $categoryGroupUid = $matches[1];
-            $data = $event->configData;
+            $data = $event->newConfig;
 
             // Make sure fields and sites are processed
             ProjectConfigHelper::ensureAllSitesProcessed();

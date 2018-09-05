@@ -37,10 +37,10 @@ class ProjectConfig extends Component
     const CACHE_DURATION = 60 * 60 * 24 * 30;
 
     // Array key to use if not using config files.
-    const SNAPSHOT_KEY = 'snapshot';
+    const CONFIG_KEY = 'storedConfig';
 
     // Filename for base config file
-    const CONFIG_FILENAME = 'system.yml';
+    const CONFIG_FILENAME = 'project.yaml';
 
     // Key to use for schema version storage.
     const CONFIG_SCHEMA_VERSION_KEY = 'schemaVersion';
@@ -122,9 +122,9 @@ class ProjectConfig extends Component
     const EVENT_AFTER_PARSE_CONFIG = 'afterParseConfig';
 
     /**
-     * @var array Current snapshot as stored in database.
+     * @var array Current config as stored in database.
      */
-    private $_snapshot;
+    private $_storedConfig;
 
     /**
      * @var array A list of already parsed change paths
@@ -157,12 +157,12 @@ class ProjectConfig extends Component
     private $_updateConfigMap = false;
 
     /**
-     * @var bool Whether to update the snapshot on request end
+     * @var bool Whether to update the config on request end
      */
-    private $_updateSnapshot = false;
+    private $_updateConfig = false;
 
     /**
-     * @var bool Whether we’re listening for the request end, to update the YML caches.
+     * @var bool Whether we’re listening for the request end, to update the Yaml caches.
      * @see _updateLastParsedConfigCache()
      */
     private $_waitingToUpdateParsedConfigTimes = false;
@@ -177,10 +177,10 @@ class ProjectConfig extends Component
     {
         Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData']);
 
-        // If we're not using the project config file, load the snapshot to emulate config files.
-        // This is needed so we can make comparisons between the config and the snapshot, as we're firing events.
+        // If we're not using the project config file, load the stored config to emulate config files.
+        // This is needed so we can make comparisons between the existing config and the modified config, as we're firing events.
         if (!$this->_useConfigFile()) {
-            $this->_getConfigurationFromYml();
+            $this->_getConfigurationFromYaml();
         }
 
         parent::init();
@@ -190,15 +190,15 @@ class ProjectConfig extends Component
      * Get a config value by it's path.
      *
      * @param string $path
-     * @param bool $getFromYml whether data should be fetched from yml file instead of snapshot. Defaults to `false`
+     * @param bool $getFromYaml whether data should be fetched from yaml file instead of the stored config. Defaults to `false`
      * @return array|mixed|null
      */
-    public function get(string $path, $getFromYml = false)
+    public function get(string $path, $getFromYaml = false)
     {
-        if ($getFromYml) {
-            $source = $this->_getConfigurationFromYml();
+        if ($getFromYaml) {
+            $source = $this->_getConfigurationFromYaml();
         } else {
-            $source = $this->_getCurrentSnapshot();
+            $source = $this->_getStoredConfig();
         }
 
         $arrayAccess = $this->_nodePathToArrayAccess($path);
@@ -208,7 +208,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Save a value to YML configuration by path.
+     * Save a value to yaml configuration by path.
      *
      * @param string $path
      * @param mixed $value
@@ -242,7 +242,7 @@ class ProjectConfig extends Component
                 $this->_updateConfigMap = true;
             }
         } else {
-            $config = $this->_getConfigurationFromYml();
+            $config = $this->_getConfigurationFromYaml();
         }
 
         $arrayAccess = $this->_nodePathToArrayAccess($path);
@@ -272,18 +272,18 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Generate the configuration file based on the current snapshot.
+     * Generate the configuration file based on the current stored config.
      *
      * @return void
      */
-    public function regenerateConfigFileFromSnapshot()
+    public function regenerateConfigFileFromStoredConfig()
     {
-        $snapshot = $this->_getCurrentSnapshot();
+        $storedConfig = $this->_getStoredConfig();
 
         $basePath = Craft::$app->getPath()->getConfigPath();
         $baseFile = $basePath . '/' . self::CONFIG_FILENAME;
 
-        $this->_saveConfig($snapshot, $baseFile);
+        $this->_saveConfig($storedConfig, $baseFile);
         $this->updateParsedConfigTimesAfterRequest();
     }
 
@@ -333,7 +333,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Whether there is an update pending based on config modified times and snapshot.
+     * Whether there is an update pending based on config modified times and stored config.
      *
      * @return bool
      */
@@ -360,20 +360,6 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Regenerate the configuration snapshot.
-     *
-     * @return bool
-     * @throws \yii\web\ServerErrorHttpException
-     */
-    public function regenerateSnapshotFromConfig(): bool
-    {
-        $this->_updateSnapshot = true;
-        $this->_updateConfigMap = true;
-
-        return true;
-    }
-
-    /**
      * Process config changes for a path.
      *
      * @param string $configPath
@@ -387,28 +373,28 @@ class ProjectConfig extends Component
         $this->_parsedChanges[$configPath] = true;
 
         $configData = $this->get($configPath, true);
-        $snapshotData = $this->get($configPath);
+        $storedConfigData = $this->get($configPath);
 
         $event = new ParseConfigEvent([
             'configPath' => $configPath,
-            'configData' => $configData,
-            'snapshotData' => $snapshotData,
+            'newConfig' => $configData,
+            'existingConfig' => $storedConfigData,
         ]);
 
-        if ($snapshotData && !$configData) {
+        if ($storedConfigData && !$configData) {
             $this->trigger(self::EVENT_REMOVED_CONFIG_OBJECT, $event);
         } else {
-            if (!$snapshotData && $configData) {
+            if (!$storedConfigData && $configData) {
                 $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, $event);
                 // Might generate false positives, but is pretty fast.
-            } else if (null !== $configData && null !== $snapshotData && Json::encode($snapshotData) !== Json::encode($configData)) {
+            } else if (null !== $configData && null !== $storedConfigData && Json::encode($storedConfigData) !== Json::encode($configData)) {
                 $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, $event);
             } else {
                 return;
             }
         }
 
-        $this->_modifySnapshot($configPath, $event->configData);
+        $this->_modifyStoredConfig($configPath, $event->newConfig);
         $this->updateParsedConfigTimesAfterRequest();
     }
 
@@ -473,15 +459,15 @@ class ProjectConfig extends Component
             }
         }
 
-        if (($this->_updateConfigMap && $this->_useConfigFile()) || $this->_updateSnapshot) {
+        if (($this->_updateConfigMap && $this->_useConfigFile()) || $this->_updateConfig) {
             $info = Craft::$app->getInfo();
 
             if ($this->_updateConfigMap && $this->_useConfigFile()) {
                 $info->configMap = Json::encode($this->_generateConfigMap());
             }
 
-            if ($this->_updateSnapshot) {
-                $info->config = serialize($this->_getConfigurationFromYml());
+            if ($this->_updateConfig) {
+                $info->config = serialize($this->_getConfigurationFromYaml());
             }
 
             Craft::$app->saveInfo($info);
@@ -564,30 +550,30 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Generate the configuration snapshot based on the configuration files.
+     * Generate the configuration based on the configuration files.
      *
      * @return array
      */
-    private function _getConfigurationFromYml(): array
+    private function _getConfigurationFromYaml(): array
     {
         if ($this->_useConfigFile()) {
             $fileList = $this->_getConfigFileList();
 
-            $snapshot = [];
+            $generatedConfig = [];
 
             foreach ($fileList as $file) {
                 $config = $this->_parseYamlFile($file);
-                $snapshot = array_merge($snapshot, $config);
+                $generatedConfig = array_merge($generatedConfig, $config);
             }
         } else {
-            if (empty($this->_parsedConfigs[self::SNAPSHOT_KEY])) {
-                $this->_parsedConfigs[self::SNAPSHOT_KEY] = $this->_getCurrentSnapshot();
+            if (empty($this->_parsedConfigs[self::CONFIG_KEY])) {
+                $this->_parsedConfigs[self::CONFIG_KEY] = $this->_getStoredConfig();
             }
 
-            $snapshot = $this->_parsedConfigs[self::SNAPSHOT_KEY];
+            $generatedConfig = $this->_parsedConfigs[self::CONFIG_KEY];
         }
 
-        return $snapshot;
+        return $generatedConfig;
     }
 
     /**
@@ -619,16 +605,16 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Modify the existing snapshot with new data.
+     * Modify the stored config with new data.
      *
      * @param $configPath
      * @param $data
      */
-    private function _modifySnapshot($configPath, $data)
+    private function _modifyStoredConfig($configPath, $data)
     {
         $arrayAccess = $this->_nodePathToArrayAccess($configPath);
-        eval('$this->_snapshot' . $arrayAccess . ' = $data;');
-        $this->_updateSnapshot = true;
+        eval('$this->_storedConfig' . $arrayAccess . ' = $data;');
+        $this->_updateConfig = true;
     }
 
     /**
@@ -647,18 +633,18 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Get the stored snapshot.
+     * Get the stored config.
      *
      * @return array
      */
-    private function _getCurrentSnapshot(): array
+    private function _getStoredConfig(): array
     {
-        if (empty($this->_snapshot)) {
-            $snapshotData = Craft::$app->getInfo()->config;
-            $this->_snapshot = $snapshotData ? unserialize($snapshotData, ['allowed_classes' => false]) : [];
+        if (empty($this->_storedConfig)) {
+            $configData = Craft::$app->getInfo()->config;
+            $this->_storedConfig = $configData ? unserialize($configData, ['allowed_classes' => false]) : [];
         }
 
-        return $this->_snapshot;
+        return $this->_storedConfig;
     }
 
     /**
@@ -674,15 +660,15 @@ class ProjectConfig extends Component
             'changedItems' => [],
         ];
 
-        $configSnapshot = $this->_getConfigurationFromYml();
-        $currentSnapshot = $this->_getCurrentSnapshot();
+        $configData = $this->_getConfigurationFromYaml();
+        $currentConfig = $this->_getStoredConfig();
 
         $flatConfig = [];
         $flatCurrent = [];
 
-        unset($configSnapshot['dateModified'], $currentSnapshot['dateModified'], $configSnapshot['imports'], $currentSnapshot['imports']);
+        unset($configData['dateModified'], $currentConfig['dateModified'], $configData['imports'], $currentConfig['imports']);
 
-        // flatten both snapshots so we can compare them.
+        // flatten both configs so we can compare them.
 
         $flatten = function($array, $path, &$result) use (&$flatten) {
             foreach ($array as $key => $value) {
@@ -696,8 +682,8 @@ class ProjectConfig extends Component
             }
         };
 
-        $flatten($configSnapshot, '', $flatConfig);
-        $flatten($currentSnapshot, '', $flatCurrent);
+        $flatten($configData, '', $flatConfig);
+        $flatten($currentConfig, '', $flatCurrent);
 
         // Compare and if something is different, mark the immediate parent as changed.
         foreach ($flatConfig as $key => $value) {
@@ -852,7 +838,7 @@ class ProjectConfig extends Component
             $this->_parsedConfigs[$configPath] = $data;
             $this->_modifiedYamlFiles[$configPath] = true;
         } else {
-            $this->_parsedConfigs[self::SNAPSHOT_KEY] = $data;
+            $this->_parsedConfigs[self::CONFIG_KEY] = $data;
         }
     }
 

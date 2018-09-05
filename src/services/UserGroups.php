@@ -263,7 +263,7 @@ class UserGroups extends Component
             }
 
             $uid = $matches[1];
-            $data = $event->configData;
+            $data = $event->newConfig;
 
             $groupRecord = UserGroupRecord::findOne(['uid' => $uid]) ?? new UserGroupRecord();
             $groupRecord->name = $data['name'];
@@ -273,7 +273,7 @@ class UserGroups extends Component
             $groupRecord->save(false);
 
             // Prevent permission information from being saved. Allowing it would prevent the appropriate event from firing.
-            $event->configData['permissions'] = $event->snapshotData['permissions'] ?? [];
+            $event->newConfig['permissions'] = $event->existingConfig['permissions'] ?? [];
         }
     }
 

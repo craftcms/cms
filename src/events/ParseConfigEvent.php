@@ -26,12 +26,12 @@ class ParseConfigEvent extends Event
     public $configPath;
 
     /**
-     * @var array The config data found in the config data
+     * @var array The new config data
      */
-    public $configData = [];
+    public $newConfig = [];
 
     /**
-     * @var array The config data found in the snapshot
+     * @var array The existing config data
      */
-    public $snapshotData = [];
+    public $existingConfig = [];
 }

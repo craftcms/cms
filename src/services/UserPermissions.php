@@ -424,7 +424,7 @@ class UserPermissions extends Component
             // Ensure all user groups are ready to roll
             ProjectConfigHelper::ensureAllUserGroupsProcessed();
             $uid = $matches[1];
-            $permissions = $event->configData;
+            $permissions = $event->newConfig;
             $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
 
             // Delete any existing group permissions
@@ -463,7 +463,7 @@ class UserPermissions extends Component
 
         // Does it match permissions?
         if (preg_match('/' . self::CONFIG_USERPERMISSIONS_KEY . '$/i', $path, $matches)) {
-            $data = $event->configData;
+            $data = $event->newConfig;
             $records = UserPermissionRecord::find()
                 ->where(['name' => $data])
                 ->indexBy('name')

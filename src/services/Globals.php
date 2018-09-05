@@ -407,7 +407,7 @@ class Globals extends Component
         // Does it match a global set?
         if (preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $globalSetUid = $matches[1];
-            $data = $event->configData;
+            $data = $event->newConfig;
 
             // Make sure fields are processed
             ProjectConfigHelper::ensureAllSitesProcessed();

@@ -627,7 +627,7 @@ class Sections extends Component
             ProjectConfigHelper::ensureAllFieldsProcessed();
 
             $sectionUid = $matches[1];
-            $data = $event->configData;
+            $data = $event->newConfig;
 
             $db = Craft::$app->getDb();
             $transaction = $db->beginTransaction();
@@ -1151,7 +1151,7 @@ class Sections extends Component
         if (preg_match('/^' . self::CONFIG_SECTIONS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\.' . self::CONFIG_ENTRYTYPES_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $sectionUid = $matches[1];
             $entryTypeUid = $matches[2];
-            $data = $event->configData;
+            $data = $event->newConfig;
 
             // Make sure fields are processed
             ProjectConfigHelper::ensureAllSitesProcessed();

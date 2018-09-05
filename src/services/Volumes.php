@@ -495,7 +495,7 @@ class Volumes extends Component
         if (preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
 
             $volumeUid = $matches[1];
-            $data = $event->configData;
+            $data = $event->newConfig;
 
             // Make sure fields are processed
             ProjectConfigHelper::ensureAllFieldsProcessed();

@@ -340,7 +340,7 @@ class Fields extends Component
 
         // Does it match a field group?
         if (preg_match('/^' . self::CONFIG_FIELDGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
-            $data = $event->configData;
+            $data = $event->newConfig;
             $uid = $matches[1];
 
             $groupRecord = $this->_getGroupRecord($uid);
@@ -960,7 +960,7 @@ class Fields extends Component
 
         // Does it match a field?
         if (preg_match('/^' . self::CONFIG_FIELDS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
-            $data = $event->configData;
+            $data = $event->newConfig;
             $groupUid = $data['fieldGroup'];
             $fieldUid = $matches[1];
 

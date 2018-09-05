@@ -232,7 +232,7 @@ class UpdaterController extends BaseUpdaterController
      */
     public function actionRegenerateConfig(): Response
     {
-        Craft::$app->getProjectConfig()->regenerateConfigFileFromSnapshot();
+        Craft::$app->getProjectConfig()->regenerateConfigFileFromStoredConfig();
 
         return $this->sendFinished();
     }

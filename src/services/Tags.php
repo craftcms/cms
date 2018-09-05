@@ -309,7 +309,7 @@ class Tags extends Component
         if (preg_match('/' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
 
             $tagGroupUid = $matches[1];
-            $data = $event->configData;
+            $data = $event->newConfig;
 
             // Make sure fields are processed
             ProjectConfigHelper::ensureAllFieldsProcessed();

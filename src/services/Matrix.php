@@ -373,7 +373,7 @@ class Matrix extends Component
             ProjectConfigHelper::ensureAllFieldsProcessed();
 
             $blockTypeUid = $matches[1];
-            $data = $event->configData;
+            $data = $event->newConfig;
 
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
