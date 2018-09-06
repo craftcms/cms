@@ -2027,6 +2027,8 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         // Prevent “1052 Column 'id' in order clause is ambiguous” MySQL error
         $orderColumnMap['id'] = 'elements.id';
+        $orderColumnMap['dateCreated'] = 'elements.dateCreated';
+        $orderColumnMap['dateUpdated'] = 'elements.dateUpdated';
 
         foreach ($orderColumnMap as $orderValue => $columnName) {
             // Are we ordering by this column name?
