@@ -429,7 +429,7 @@ class Fields extends Component
             $this->deleteField($field);
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid, null);
+        Craft::$app->getProjectConfig()->delete(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid);
 
         // Fire an 'afterDeleteFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_GROUP)) {
@@ -891,6 +891,7 @@ class Fields extends Component
             'handle' => $field->handle,
             'context' => $field->context,
             'instructions' => $field->instructions,
+            'searchable' => $field->searchable,
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
             'type' => \get_class($field),
@@ -1030,6 +1031,7 @@ class Fields extends Component
                 $fieldRecord->handle = $data['handle'];
                 $fieldRecord->context = $data['context'];
                 $fieldRecord->instructions = $data['instructions'];
+                $fieldRecord->searchable = $data['searchable'];
                 $fieldRecord->translationMethod = $data['translationMethod'];
                 $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
                 $fieldRecord->type = $data['type'];
@@ -1090,7 +1092,7 @@ class Fields extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_FIELDS_KEY . '.' . $field->uid, null);
+        Craft::$app->getProjectConfig()->delete(self::CONFIG_FIELDS_KEY . '.' . $field->uid);
 
         // Fire an 'afterDeleteField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
@@ -1463,7 +1465,7 @@ class Fields extends Component
                 $fieldRecord->layoutId = $layout->id;
                 $fieldRecord->tabId = $tab->id;
                 $fieldRecord->fieldId = $field->id;
-                $fieldRecord->required = $field->required;
+                $fieldRecord->required = (bool) $field->required;
                 $fieldRecord->sortOrder = $field->sortOrder;
                 $fieldRecord->save(false);
             }
@@ -1622,6 +1624,7 @@ class Fields extends Component
                 'fields.handle',
                 'fields.context',
                 'fields.instructions',
+                'fields.searchable',
                 'fields.translationMethod',
                 'fields.translationKeyFormat',
                 'fields.type',

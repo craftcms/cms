@@ -291,6 +291,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'fields.handle',
                 'fields.context',
                 'fields.instructions',
+                'fields.searchable',
                 'fields.translationMethod',
                 'fields.translationKeyFormat',
                 'fields.type',

@@ -201,10 +201,7 @@ class ProjectConfig extends Component
             $source = $this->_getStoredConfig();
         }
 
-        $arrayAccess = $this->_nodePathToArrayAccess($path);
-
-        // TODO figure out a better but not convoluted way without eval
-        return eval('return isset($source' . $arrayAccess . ') ? $source' . $arrayAccess . ' : null;');
+        return $this->_traverseDataArray($source, $path);
     }
 
     /**
@@ -245,13 +242,7 @@ class ProjectConfig extends Component
             $config = $this->_getConfigurationFromYaml();
         }
 
-        $arrayAccess = $this->_nodePathToArrayAccess($path);
-
-        if ($value === null) {
-            eval('unset($config' . $arrayAccess . ');');
-        } else {
-            eval('$config' . $arrayAccess . ' = $value;');
-        }
+        $this->_traverseDataArray($config, $path, $value, null === $value);
 
         $this->_saveConfig($config, $targetFilePath);
 
@@ -618,8 +609,7 @@ class ProjectConfig extends Component
      */
     private function _modifyStoredConfig($configPath, $data)
     {
-        $arrayAccess = $this->_nodePathToArrayAccess($configPath);
-        eval('$this->_storedConfig' . $arrayAccess . ' = $data;');
+        $this->_traverseDataArray($this->_storedConfig, $configPath, $data);
         $this->_updateConfig = true;
     }
 
@@ -819,19 +809,6 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Convert a node string to a string to be used in `eval()` to access an array key.
-     *
-     * @param string $nodePath
-     * @return string
-     */
-    private function _nodePathToArrayAccess(string $nodePath): string
-    {
-        // Clean up!
-        $nodePath = preg_replace('/[^a-z0-9\-\.]/i', '', $nodePath);
-        return "['" . preg_replace('/\./', "']['", $nodePath) . "']";
-    }
-
-    /**
      * Save configuration data to a path.
      *
      * @param array $data
@@ -862,5 +839,45 @@ class ProjectConfig extends Component
         }
 
         return $useConfigFile;
+    }
+
+    /**
+     * Traverse a nested data array according to path and perform an action depending on parameters.
+     *
+     * @param array $data A nested array of data to traverse
+     * @param array|string $path Path used to traverse the array. Either an array or a dot.based.path
+     * @param null $value Value to set at the destination. If left null, will return the value, unless deleting
+     * @param bool $delete Whether to delete the value at the destination or not.
+     * @return mixed|null
+     */
+    private function _traverseDataArray(array &$data, $path, $value = null, $delete = false)
+    {
+        if (is_string($path)) {
+            $path = explode('.', $path);
+        }
+
+        $nextSegment = array_shift($path);
+
+        // Last piece?
+        if (count($path) === 0) {
+            if ($delete) {
+                unset($data[$nextSegment]);
+            } else if (null === $value) {
+                return $data[$nextSegment] ?? null;
+            } else {
+                $data[$nextSegment] = $value;
+            }
+        } else {
+            if (!isset($data[$nextSegment])) {
+                // If the path doesn't exist, it's fine if we wanted to delete or read
+                if ($delete || null === $value) {
+                    return;
+                }
+
+                $data[$nextSegment] = [];
+            }
+
+            return $this->_traverseDataArray($data[$nextSegment], $path, $value, $delete);
+        }
     }
 }
