@@ -891,6 +891,7 @@ class Fields extends Component
             'handle' => $field->handle,
             'context' => $field->context,
             'instructions' => $field->instructions,
+            'searchable' => $field->searchable,
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
             'type' => \get_class($field),
@@ -1030,6 +1031,7 @@ class Fields extends Component
                 $fieldRecord->handle = $data['handle'];
                 $fieldRecord->context = $data['context'];
                 $fieldRecord->instructions = $data['instructions'];
+                $fieldRecord->searchable = $data['searchable'];
                 $fieldRecord->translationMethod = $data['translationMethod'];
                 $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
                 $fieldRecord->type = $data['type'];
