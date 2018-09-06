@@ -25,21 +25,33 @@ use Symfony\Component\Yaml\Yaml;
  */
 class ProjectConfig
 {
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var bool Whether we've already processed all field configs.
+     * @see ensureAllFieldsProcessed()
+     */
+    private static $_processedFields = false;
 
     /**
-     * Ensure all field config changes are processed immediately in a safe manner.
+     * @var bool Whether we've already processed all site configs.
+     * @see ensureAllSitesProcessed()
+     */
+    private static $_processedSites = false;
+
+    /**
+     * @var bool Whether we've already processed all user group configs.
+     * @see ensureAllUserGroupsProcessed()
+     */
+    private static $_processedUserGroups = false;
+
+    /**
+     * Ensures all field config changes are processed immediately in a safe manner.
      */
     public static function ensureAllFieldsProcessed()
     {
-        static $alreadyProcessed = false;
-
-        if ($alreadyProcessed) {
+        if (static::$_processedFields) {
             return;
         }
-
-        $alreadyProcessed = true;
+        static::$_processedFields = true;
 
         $projectConfig = Craft::$app->getProjectConfig();
         $allGroups = $projectConfig->get(Fields::CONFIG_FIELDGROUP_KEY, true);
@@ -61,13 +73,10 @@ class ProjectConfig
      */
     public static function ensureAllSitesProcessed()
     {
-        static $alreadyProcessed = false;
-
-        if ($alreadyProcessed) {
+        if (static::$_processedSites) {
             return;
         }
-
-        $alreadyProcessed = true;
+        static::$_processedSites = true;
 
         $projectConfig = Craft::$app->getProjectConfig();
         $allGroups = $projectConfig->get(Sites::CONFIG_SITEGROUP_KEY, true);
@@ -90,13 +99,10 @@ class ProjectConfig
      */
     public static function ensureAllUserGroupsProcessed()
     {
-        static $alreadyProcessed = false;
-
-        if ($alreadyProcessed) {
+        if (static::$_processedUserGroups) {
             return;
         }
-
-        $alreadyProcessed = true;
+        static::$_processedUserGroups = true;
 
         $projectConfig = Craft::$app->getProjectConfig();
         $allGroups = $projectConfig->get(UserGroups::CONFIG_USERPGROUPS_KEY, true);

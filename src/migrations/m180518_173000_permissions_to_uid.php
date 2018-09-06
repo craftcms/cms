@@ -2,13 +2,8 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
-use craft\helpers\FileHelper;
-use craft\helpers\Json;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\services\ProjectConfig;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -21,7 +16,6 @@ class m180518_173000_permissions_to_uid extends Migration
      */
     public function safeUp()
     {
-
         $permissions = (new Query())
             ->select(['id', 'name'])
             ->from(['{{%userpermissions}}'])
@@ -57,7 +51,6 @@ class m180518_173000_permissions_to_uid extends Migration
             ->from(['{{%volumes}}'])
             ->pairs();
 
-
         $relations = [
             'assignusergroup' => $userGroupMap,
             'editsite' => $siteMap,
@@ -80,13 +73,15 @@ class m180518_173000_permissions_to_uid extends Migration
         ];
 
         foreach ($permissions as $id => $permission) {
-            if (preg_match('/([\w]+)(:|-)([\d]+)/i', $permission, $matches) && array_key_exists(strtolower($matches[1]), $relations) && !empty($relations[strtolower($matches[1])][$matches[3]])) {
-                $permission = $matches[1].$matches[2].$relations[strtolower($matches[1])][$matches[3]];
+            if (
+                preg_match('/([\w]+)(:|-)([\d]+)/i', $permission, $matches) &&
+                array_key_exists(strtolower($matches[1]), $relations) &&
+                !empty($relations[strtolower($matches[1])][$matches[3]])
+            ) {
+                $permission = $matches[1] . $matches[2] . $relations[strtolower($matches[1])][$matches[3]];
                 $this->update('{{%userpermissions}}', ['name' => $permission], ['id' => $id]);
             }
         }
-
-        return true;
     }
 
     /**

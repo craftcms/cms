@@ -116,7 +116,6 @@ class TemplatesController extends Controller
         return $this->renderTemplate('_special/configupdate');
     }
 
-
     /**
      * Renders the Project Config Update notification template.
      *

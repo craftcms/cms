@@ -18,10 +18,13 @@ use craft\helpers\Path as PathHelper;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Application;
 use yii\base\Component;
+use yii\base\ErrorException;
+use yii\base\Exception;
+use yii\web\ServerErrorHttpException;
 
 /**
  * Project config service.
- * An instance of the ProjectConfig service is globally accessible in Craft via [[\craft\base\ApplicationTrait::ProjectConfig()|<code>Craft::$app->projectConfig</code>]].
+ * An instance of the ProjectConfig service is globally accessible in Craft via [[\craft\base\ApplicationTrait::ProjectConfig()|`Craft::$app->projectConfig`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1
@@ -33,8 +36,9 @@ class ProjectConfig extends Component
 
     // Cache settings
     // -------------------------------------------------------------------------
+
     const CACHE_KEY = 'project.config.files';
-    const CACHE_DURATION = 60 * 60 * 24 * 30;
+    const CACHE_DURATION = 2592000; // 30 days
 
     // Array key to use if not using config files.
     const CONFIG_KEY = 'storedConfig';
@@ -49,10 +53,12 @@ class ProjectConfig extends Component
     // TODO update StringHelper::isUUID() to use that
     // Regexp patterns
     // -------------------------------------------------------------------------
+
     const UID_PATTERN = '[a-zA-Z0-9_-]+';
 
     // Events
-    // =========================================================================
+    // -------------------------------------------------------------------------
+
     /**
      * @event ParseConfigEvent The event that is triggered on encountering a new config object
      *
@@ -121,6 +127,9 @@ class ProjectConfig extends Component
      */
     const EVENT_AFTER_PARSE_CONFIG = 'afterParseConfig';
 
+    // Properties
+    // =========================================================================
+
     /**
      * @var array Current config as stored in database.
      */
@@ -148,8 +157,9 @@ class ProjectConfig extends Component
 
     /**
      * @var array Config map currently used
+     * @see _getStoredConfigMap()
      */
-    private $_configMap = [];
+    private $_configMap;
 
     /**
      * @var bool Whether to update the config map on request end
@@ -166,6 +176,17 @@ class ProjectConfig extends Component
      * @see _updateLastParsedConfigCache()
      */
     private $_waitingToUpdateParsedConfigTimes = false;
+
+    /**
+     * @var bool Whether we're saving project configs to project.yaml
+     * @see _useConfigFile()
+     */
+    private $_useConfigFile;
+
+    /**
+     * @var bool Whether the config's dateModified timestamp has been updated by this request.
+     */
+    private $_timestampUpdated = false;
 
     // Public methods
     // =========================================================================
@@ -187,11 +208,11 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Get a config value by it's path.
+     * Returns a config value by its path.
      *
      * @param string $path
-     * @param bool $getFromYaml whether data should be fetched from yaml file instead of the stored config. Defaults to `false`
-     * @return array|mixed|null
+     * @param bool $getFromYaml whether data should be fetched `config/project.yaml` instead of the stored config. Defaults to `false`
+     * @return mixed
      */
     public function get(string $path, $getFromYaml = false)
     {
@@ -205,11 +226,14 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Save a value to yaml configuration by path.
+     * Saves a value to the project config at a given path.
      *
      * @param string $path
      * @param mixed $value
-     * @return void
+     * @throws ErrorException
+     * @throws Exception
+     * @throws ServerErrorHttpException
+     * @todo make sure $value is serializable and unserialable
      */
     public function save(string $path, $value)
     {
@@ -217,25 +241,22 @@ class ProjectConfig extends Component
 
         $targetFilePath = null;
 
-        static $timestampUpdated = null;
-
-        // TODO make sure $value is serializable and unserialable.
-        if (null === $timestampUpdated) {
-            $timestampUpdated = true;
+        if (!$this->_timestampUpdated) {
             $this->save('dateModified', DateTimeHelper::currentTimeStamp());
+            $this->_timestampUpdated = true;
         }
 
         if ($this->_useConfigFile()) {
             $configMap = $this->_getStoredConfigMap();
 
             $topNode = array_shift($pathParts);
-            $targetFilePath = $configMap[$topNode] ?? Craft::$app->getPath()->getConfigPath() . '/' . self::CONFIG_FILENAME;
+            $targetFilePath = $configMap[$topNode] ?? Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
 
             $config = $this->_parseYamlFile($targetFilePath);
 
             // For new top nodes, update the map
             if (empty($configMap[$topNode])) {
-                $this->_mapNodeLocation($topNode, Craft::$app->getPath()->getConfigPath() . '/' . self::CONFIG_FILENAME);
+                $this->_mapNodeLocation($topNode, Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME);
                 $this->_updateConfigMap = true;
             }
         } else {
@@ -253,19 +274,17 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Delete a value from the configuration by its path.
+     * Deletes a value from the configuration by its path.
      *
      * @param string $path
      */
-    public function delete($path)
+    public function delete(string $path)
     {
         $this->save($path, null);
     }
 
     /**
-     * Generate the configuration file based on the current stored config.
-     *
-     * @return void
+     * Generates `config/project.yaml` based on the current stored config.
      */
     public function regenerateConfigFileFromStoredConfig()
     {
@@ -279,7 +298,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Apply all pending changes
+     * Applies all pending changes.
      */
     public function applyPendingChanges()
     {
@@ -318,13 +337,12 @@ class ProjectConfig extends Component
             $this->updateParsedConfigTimesAfterRequest();
             $this->_updateConfigMap = true;
         } catch (\Throwable $e) {
-
             throw $e;
         }
     }
 
     /**
-     * Whether there is an update pending based on config modified times and stored config.
+     * Returns whether `config/project.yaml` has any pending changes that need to be applied to the project config.
      *
      * @return bool
      */
@@ -357,7 +375,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Process config changes for a path.
+     * Processes config changes for a given path.
      *
      * @param string $configPath
      */
@@ -396,9 +414,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Update cached config file modified times after the request ends.
-     *
-     * @return void
+     * Updates cached config file modified times after the request ends.
      */
     public function updateParsedConfigTimesAfterRequest()
     {
@@ -411,7 +427,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Update cached config file modified times immediately.
+     * Updates cached config file modified times immediately.
      *
      * @return bool
      */
@@ -422,9 +438,9 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Save all the config data that has been modified up to now.
+     * Saves all the config data that has been modified up to now.
      *
-     * @throws \yii\base\ErrorException
+     * @throws ErrorException
      */
     public function saveModifiedConfigData()
     {
@@ -472,7 +488,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Get a summary of all pending changes.
+     * Returns a summary of all pending config changes.
      *
      * @return array
      */
@@ -497,7 +513,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Return true if all schema versions stored in the config are compatible with the actual codebase.
+     * Returns whether all schema versions stored in the config are compatible with the actual codebase.
      *
      * @return bool
      */
@@ -593,7 +609,7 @@ class ProjectConfig extends Component
      *
      * @param $node
      * @param $location
-     * @throws \yii\web\ServerErrorHttpException
+     * @throws ServerErrorHttpException
      */
     private function _mapNodeLocation($node, $location)
     {
@@ -617,15 +633,15 @@ class ProjectConfig extends Component
      * Get the stored config map.
      *
      * @return array
-     * @throws \yii\web\ServerErrorHttpException
+     * @throws ServerErrorHttpException
      */
     private function _getStoredConfigMap(): array
     {
-        if (empty($this->_configMap)) {
-            $this->_configMap = Json::decode(Craft::$app->getInfo()->configMap) ?? [];
+        if ($this->_configMap !== null) {
+            return $this->_configMap;
         }
 
-        return $this->_configMap;
+        return $this->_configMap = Json::decode(Craft::$app->getInfo()->configMap) ?? [];
     }
 
     /**
@@ -786,7 +802,7 @@ class ProjectConfig extends Component
         }
 
         $basePath = Craft::$app->getPath()->getConfigPath();
-        $baseFile = $basePath . '/' . self::CONFIG_FILENAME;
+        $baseFile = $basePath . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
 
         $traverseFile = function($filePath) use (&$traverseFile) {
             $fileList = [$filePath];
@@ -796,14 +812,13 @@ class ProjectConfig extends Component
             if (isset($config['imports'])) {
                 foreach ($config['imports'] as $file) {
                     if (PathHelper::ensurePathIsContained($file)) {
-                        $fileList = array_merge($fileList, $traverseFile($fileDir . '/' . $file));
+                        $fileList = array_merge($fileList, $traverseFile($fileDir . DIRECTORY_SEPARATOR . $file));
                     }
                 }
             }
 
             return $fileList;
         };
-
 
         return $this->_configFileList = $traverseFile($baseFile);
     }
@@ -813,7 +828,7 @@ class ProjectConfig extends Component
      *
      * @param array $data
      * @param string|null $configPath
-     * @throws \yii\base\ErrorException
+     * @throws ErrorException
      */
     private function _saveConfig(array $data, string $configPath = null)
     {
@@ -830,15 +845,13 @@ class ProjectConfig extends Component
      *
      * @return bool
      */
-    private function _useConfigFile()
+    private function _useConfigFile(): bool
     {
-        static $useConfigFile = null;
-
-        if (null === $useConfigFile) {
-            $useConfigFile = Craft::$app->getConfig()->getGeneral()->useProjectConfigFile;
+        if ($this->_useConfigFile !== null) {
+            return $this->_useConfigFile;
         }
 
-        return $useConfigFile;
+        return $this->_useConfigFile = Craft::$app->getConfig()->getGeneral()->useProjectConfigFile;
     }
 
     /**

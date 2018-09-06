@@ -718,9 +718,10 @@ class GeneralConfig extends BaseObject
      */
     public $useFileLocks;
     /**
-     * @var bool Whether to use project configuration YAML file as the source of truth for the project configuration.
+     * @var bool Whether the project config should be saved out to `config/project.yaml`.
      *
-     * If set to true, all changes will also be propagated to YAML file to allow for migration between environments.
+     * If set to true, any changes to the project config will be duplicated in `config/project.yaml`,
+     * and any changes to `config/project.yaml` will be applied to the system.
      */
     public $useProjectConfigFile = false;
     /**

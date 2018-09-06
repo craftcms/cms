@@ -41,7 +41,6 @@ class FieldLayout extends Model
      */
     public $uid;
 
-
     /**
      * @var
      */
@@ -108,7 +107,7 @@ class FieldLayout extends Model
             $output['tabs'][] = $tabData;
         }
 
-        return empty($output) ? null : $output;
+        return $output ?: null;
     }
 
     /**

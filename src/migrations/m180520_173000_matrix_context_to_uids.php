@@ -2,13 +2,8 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
-use craft\helpers\FileHelper;
-use craft\helpers\Json;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\services\ProjectConfig;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -24,24 +19,26 @@ class m180520_173000_matrix_context_to_uids extends Migration
         // Get map of IDs to UIDs
         $blockPairs = (new Query())
             ->select(['id', 'uid'])
-            ->from('{{%matrixblocktypes}}')
+            ->from(['{{%matrixblocktypes}}'])
             ->pairs();
 
         // Get all
         $fields = (new Query())
             ->select(['id', 'context'])
-            ->from('{{%fields}}')
+            ->from(['{{%fields}}'])
             ->where(['like', 'context', 'matrixBlockType'])
             ->all();
 
         // Switch out ids for UIDs
         foreach ($fields as $row) {
             $context = explode(':', $row['context']);
-            $newContext = $context[0].':'.$blockPairs[$context[1]];
-            $this->update('{{%fields}}', ['context' => $newContext], ['id' => $row['id']]);
+            $newContext = $context[0] . ':' . $blockPairs[$context[1]];
+            $this->update('{{%fields}}', [
+                'context' => $newContext
+            ], [
+                'id' => $row['id']
+            ], [], false);
         }
-
-        return true;
     }
 
 

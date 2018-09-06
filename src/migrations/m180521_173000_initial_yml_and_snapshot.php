@@ -5,11 +5,9 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\elements\User;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\services\ProjectConfig;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -25,7 +23,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         $this->addColumn('{{%info}}', 'config', $this->mediumText()->null());
         $this->addColumn('{{%info}}', 'configMap', $this->mediumText()->null());
 
-
         $data = $this->_getProjectConfigData();
 
         $snapshot = serialize($data);
@@ -34,14 +31,11 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             'config' => $snapshot,
         ]);
 
-
         $this->dropTableIfExists('{{%systemsettings}}');
 
         $this->dropColumn('{{%plugins}}', 'settings');
         $this->dropColumn('{{%plugins}}', 'licenseKey');
         $this->dropColumn('{{%plugins}}', 'enabled');
-
-        return true;
     }
 
     /**
@@ -61,7 +55,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
      */
     private function _getProjectConfigData(): array
     {
-
         $data = [
             'dateModified' => DateTimeHelper::currentTimeStamp(),
             'siteGroups' => $this->_getSiteGroupData(),
@@ -79,10 +72,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             'schemaVersion' => Craft::$app->schemaVersion,
         ];
 
-        $data = array_merge_recursive($data, $this->_getSystemSettingData());
-
-        return $data;
-
+        return array_merge_recursive($data, $this->_getSystemSettingData());
     }
 
     /**
@@ -99,7 +89,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'uid',
                 'name',
             ])
-            ->from('{{%sitegroups}}')
+            ->from(['{{%sitegroups}}'])
             ->pairs();
 
         foreach ($siteGroups as $uid => $name) {
@@ -129,17 +119,15 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'sites.groupId',
                 'sites.uid',
                 'sites.primary',
-                'siteGroups.uid AS siteGroup'
+                'siteGroups.uid AS siteGroup',
             ])
-            ->from('{{%sites}} sites')
+            ->from(['{{%sites}} sites'])
             ->innerJoin('{{%sitegroups}} siteGroups', '[[sites.groupId]] = [[siteGroups.id]]')
             ->all();
 
         foreach ($sites as $site) {
             $uid = $site['uid'];
-
             unset($site['uid'], $site['groupId']);
-
             $data[$uid] = $site;
         }
 
@@ -165,8 +153,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'structures.uid AS structure',
                 'structures.maxLevels AS structureMaxLevels',
             ])
-            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
             ->from(['{{%sections}} sections'])
+            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
             ->all();
 
         $sectionData = [];
@@ -180,7 +168,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             } else {
                 unset($section['structure']);
             }
-
 
             $uid = $section['uid'];
             unset($section['id'], $section['structureMaxLevels'], $section['uid']);
@@ -199,7 +186,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'sites.uid AS siteUid',
                 'sections.uid AS sectionUid',
             ])
-            ->from('{{%sections_sites}} sections_sites')
+            ->from(['{{%sections_sites}} sections_sites'])
             ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_sites.siteId]]')
             ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[sections_sites.sectionId]]')
             ->all();
@@ -221,7 +208,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'entrytypes.titleFormat',
                 'entrytypes.sortOrder',
                 'entrytypes.uid',
-                'sections.uid AS sectionUid'
+                'sections.uid AS sectionUid',
             ])
             ->from(['{{%entrytypes}} as entrytypes'])
             ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entrytypes.sectionId]]')
@@ -267,7 +254,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->from(['{{%fieldgroups}}'])
             ->pairs();
 
-
         foreach ($fieldGroups as $uid => $name) {
             $data[$uid] = ['name' => $name];
         }
@@ -284,7 +270,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
     {
         $data = [];
 
-        $fieldRows= (new Query())
+        $fieldRows = (new Query())
             ->select([
                 'fields.id',
                 'fields.name',
@@ -297,9 +283,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'fields.type',
                 'fields.settings',
                 'fields.uid',
-                'fieldGroups.uid AS fieldGroup'
+                'fieldGroups.uid AS fieldGroup',
             ])
-            ->from('{{%fields}} fields')
+            ->from(['{{%fields}} fields'])
             ->leftJoin('{{%fieldgroups}} fieldGroups', '[[fields.groupId]] = [[fieldGroups.id]]')
             ->all();
 
@@ -312,7 +298,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $fieldInstance = $fieldService->getFieldById($fieldRow['id']);
             $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
             $fields[$fieldRow['uid']] = $fieldRow;
-
         }
 
         foreach ($fields as $field) {
@@ -341,9 +326,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'bt.handle',
                 'bt.sortOrder',
                 'bt.uid',
-                'f.uid AS field'
+                'f.uid AS field',
             ])
-            ->from('{{%matrixblocktypes}} bt')
+            ->from(['{{%matrixblocktypes}} bt'])
             ->innerJoin('{{%fields}} f', '[[bt.fieldId]] = [[f.id]]')
             ->all();
 
@@ -371,7 +356,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         }
 
         return $data;
-
     }
 
     /**
@@ -391,7 +375,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'volumes.url',
                 'volumes.settings',
                 'volumes.sortOrder',
-                'volumes.uid'
+                'volumes.uid',
             ])
             ->from(['{{%volumes}} volumes'])
             ->all();
@@ -435,7 +419,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         $layoutId = (new Query())
             ->select(['id'])
             ->from(['{{%fieldlayouts}}'])
-            ->where(['type' => 'craft\\elements\\User'])
+            ->where(['type' => User::class])
             ->scalar();
 
         if ($layoutId) {
@@ -466,7 +450,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         foreach ($groupPermissions as $groupPermission) {
             $permissionList[$groupPermission['groupId']][] = $permissions[$groupPermission['permissionId']];
         }
-
 
         foreach ($groups as $group) {
             $data['groups'][$group['uid']] = [
@@ -499,6 +482,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         foreach ($settings as &$setting) {
             $setting = Json::decodeIfJson($setting);
         }
+
         return $settings;
     }
 
@@ -518,8 +502,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'structures.uid AS structure',
                 'structures.maxLevels AS structureMaxLevels',
             ])
-            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[groups.structureId]]')
             ->from(['{{%categorygroups}} groups'])
+            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[groups.structureId]]')
             ->all();
 
         $groupData = [];
@@ -563,7 +547,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'sites.uid AS siteUid',
                 'groups.uid AS groupUid',
             ])
-            ->from('{{%categorygroups_sites}} groups_sites')
+            ->from(['{{%categorygroups_sites}} groups_sites'])
             ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[groups_sites.siteId]]')
             ->innerJoin('{{%categorygroups}} groups', '[[groups.id]] = [[groups_sites.groupId]]')
             ->all();
@@ -583,7 +567,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
      *
      * @return array
      */
-    private function _getTagGroupData(): array {
+    private function _getTagGroupData(): array
+    {
         $groupRows = (new Query())
             ->select([
                 'groups.name',
@@ -595,7 +580,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->all();
 
         $groupData = [];
-
         $layoutIds = [];
 
         foreach ($groupRows as $group) {
@@ -625,7 +609,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
      *
      * @return array
      */
-    private function _getGlobalSetData(): array {
+    private function _getGlobalSetData(): array
+    {
         $setRows = (new Query())
             ->select([
                 'sets.name',
@@ -637,7 +622,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->all();
 
         $setData = [];
-
         $layoutIds = [];
 
         foreach ($setRows as $setRow) {
@@ -667,7 +651,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
      *
      * @return array
      */
-    private function _getPluginData(): array {
+    private function _getPluginData(): array
+    {
         $plugins = (new Query())
             ->select([
                 'handle',
@@ -676,7 +661,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'enabled',
                 'schemaVersion',
             ])
-            ->from('{{%plugins}}')
+            ->from(['{{%plugins}}'])
             ->all();
 
         $pluginData = [];

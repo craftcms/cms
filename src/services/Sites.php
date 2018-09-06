@@ -667,11 +667,10 @@ class Sites extends Component
         }
 
         $groupRecord = $this->_getGroupRecord($site->groupId);
-        $groupUid = $groupRecord->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
         $configData = [
-            'siteGroup' => $groupUid,
+            'siteGroup' => $groupRecord->uid,
             'name' => $site->name,
             'handle' => $site->handle,
             'language' => $site->language,
@@ -679,7 +678,6 @@ class Sites extends Component
             'baseUrl' => $site->baseUrl,
             'sortOrder' => $site->sortOrder,
             'primary' => $site->primary,
-
         ];
 
         if ($isNewSite) {

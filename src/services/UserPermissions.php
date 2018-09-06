@@ -55,7 +55,6 @@ class UserPermissions extends Component
 
     const CONFIG_USERPERMISSIONS_KEY = 'users.permissions';
 
-
     // Public Methods
     // =========================================================================
 
