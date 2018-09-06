@@ -7,6 +7,7 @@
 
 ### Changed
 - The `defaultCpLanguage` config setting no longer needs to be a language that Craft is translated into, as long as it is a valid locale ID.
+- Updated Garnish to 0.1.28.
 
 ### Fixed
 - Fixed a SQL error that could occur when an element query’s `orderBy` parameter was set to `dateCreated` or `dateUpdated`.
