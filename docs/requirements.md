@@ -13,7 +13,7 @@ _Not in charge of the server? Send a link to this page to your server administra
 Craft requires the following:
 
 * PHP 7.0+
-* MySQL 5.5+ with InnoDB, or PostgreSQL 9.5+
+* MySQL 5.5+ with InnoDB (or MariaDB 5.5+), or PostgreSQL 9.5+
 * A web server (Apache, Nginx, IIS)
 * At least 256MB of memory allocated to PHP
 * At least 200MB of free disk space
@@ -52,7 +52,7 @@ Some shared hosting environments will disable certain common PHP methods and con
 
 The database user you tell Craft to connect with must have the following privileges:
 
-#### MySQL
+#### MySQL, MariaDB
 
 * `SELECT`
 * `INSERT`
