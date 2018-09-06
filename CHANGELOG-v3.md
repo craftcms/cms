@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a SQL error that could occur when an element query’s `orderBy` parameter was set to `dateCreated` or `dateUpdated`.
+- Fixed an error that could occur when updating to v3.0.23+ if multiple Matrix fields existed with the same handle, but they had no content tables, somehow.
 
 ## 3.0.23.1 - 2018-09-04
 
