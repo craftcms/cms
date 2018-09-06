@@ -485,7 +485,7 @@ class Globals extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid, null);
+        Craft::$app->getProjectConfig()->delete(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid);
 
         return true;
     }

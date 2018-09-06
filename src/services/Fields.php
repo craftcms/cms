@@ -429,7 +429,7 @@ class Fields extends Component
             $this->deleteField($field);
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid, null);
+        Craft::$app->getProjectConfig()->delete(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid);
 
         // Fire an 'afterDeleteFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_GROUP)) {
@@ -1092,7 +1092,7 @@ class Fields extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_FIELDS_KEY . '.' . $field->uid, null);
+        Craft::$app->getProjectConfig()->delete(self::CONFIG_FIELDS_KEY . '.' . $field->uid);
 
         // Fire an 'afterDeleteField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {

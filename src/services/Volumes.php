@@ -696,7 +696,7 @@ class Volumes extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_VOLUME_KEY . '.' . $volume->uid, null);
+        Craft::$app->getProjectConfig()->delete(self::CONFIG_VOLUME_KEY . '.' . $volume->uid);
 
         $volume->afterDelete();
 

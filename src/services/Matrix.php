@@ -454,7 +454,7 @@ class Matrix extends Component
             Craft::$app->getContent()->fieldColumnPrefix = $originalFieldColumnPrefix;
             $contentService->contentTable = $originalContentTable;
 
-            Craft::$app->getProjectConfig()->save(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid, null);
+            Craft::$app->getProjectConfig()->delete(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid);
 
             $transaction->commit();
 

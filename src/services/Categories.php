@@ -633,7 +633,7 @@ class Categories extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid, null);
+        Craft::$app->getProjectConfig()->delete(self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid);
 
         // Fire an 'afterDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
