@@ -204,6 +204,17 @@ class I18N extends \yii\i18n\I18N
         }
         closedir($handle);
 
+        // Add in any extra locales defined by the config
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (!empty($generalConfig->extraAppLocales)) {
+            foreach ($generalConfig->extraAppLocales as $localeId) {
+                $localeIds[$localeId] = true;
+            }
+        }
+        if ($generalConfig->defaultCpLanguage) {
+            $localeIds[$generalConfig->defaultCpLanguage] = true;
+        }
+
         return $this->_appLocaleIds = array_keys($localeIds);
     }
 
