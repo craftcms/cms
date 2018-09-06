@@ -766,7 +766,6 @@ class UserPermissions extends Component
 
         if (!$permissionRecord) {
             $this->_ensurePermissionRecords([$permissionName]);
-            $
             $permissionRecord = UserPermissionRecord::findOne(['name' => $permissionName]);
         }
 
