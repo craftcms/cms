@@ -284,6 +284,10 @@ class Images extends Component
             return;
         }
 
+        if (FileHelper::isGif($filePath) && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+            return;
+        }
+
         try {
             if (Craft::$app->getConfig()->getGeneral()->rotateImagesOnUploadByExifData) {
                 $cleanedByRotation = $this->rotateImageByExifData($filePath);
