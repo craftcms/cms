@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Updated Garnish to 0.1.28.
+
 ### Fixed
 - Fixed a bug where the Dev Mode indicator strip wasn’t visible on Chrome/Windows when using a scaled display. ([#3259](https://github.com/craftcms/cms/issues/3259))
 

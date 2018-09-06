@@ -3,7 +3,7 @@
  *
  * @copyright 2013 Pixel & Tonic, Inc.. All rights reserved.
  * @author    Brandon Kelly <brandon@pixelandtonic.com>
- * @version   0.1.27
+ * @version   0.1.28
  * @license   MIT
  */
 (function($){
@@ -1974,7 +1974,8 @@ Garnish.Drag = Garnish.BaseDrag.extend(
             $draggeeHelper.css({
                 width: $draggee.width() + 1, // Prevent the brower from wrapping text if the width was actually a fraction of a pixel larger
                 height: $draggee.height(),
-                margin: 0
+                margin: 0,
+                'pointer-events': 'none'
             });
 
             if (this.settings.helper) {
