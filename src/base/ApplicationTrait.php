@@ -67,7 +67,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\services\Path $path The path service
  * @property-read \craft\services\Plugins $plugins The plugins service
  * @property-read \craft\services\PluginStore $pluginStore The plugin store service
- * @property \craft\services\ProjectConfig $projectConfig The project config service
+ * @property-read \craft\services\ProjectConfig $projectConfig The project config service
  * @property-read \craft\services\Relations $relations The relations service
  * @property-read \craft\services\Routes $routes The routes service
  * @property-read \craft\services\Search $search The search service
