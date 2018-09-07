@@ -111,11 +111,11 @@ class FieldLayout extends Model
      * Return a field layout created from config data.
      *
      * @param array $config Config data to use.
-     * @return static
+     * @return self
      */
-    public static function createFromConfig(array $config)
+    public static function createFromConfig(array $config): self
     {
-        $layout = new FieldLayout();
+        $layout = new self();
 
         $tabs = [];
         $fieldService = Craft::$app->getFields();
