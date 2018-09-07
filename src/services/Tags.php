@@ -394,7 +394,7 @@ class Tags extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->delete(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid);
 
         // Fire an 'afterDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {

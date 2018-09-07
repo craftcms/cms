@@ -387,7 +387,7 @@ class Sites extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->delete(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid);
 
         // Delete our cache of it
         unset($this->_groupsById[$group->id]);
@@ -1096,7 +1096,7 @@ class Sites extends Component
             }
         }
 
-        Craft::$app->getProjectConfig()->delete(self::CONFIG_SITES_KEY . '.' . $site->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_SITES_KEY . '.' . $site->uid);
 
         // Fire an 'afterDeleteSite' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE)) {

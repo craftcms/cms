@@ -338,7 +338,7 @@ class UserGroups extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->delete(self::CONFIG_USERPGROUPS_KEY . '.' . $group->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_USERPGROUPS_KEY . '.' . $group->uid);
 
         // Fire an 'afterDeleteUserGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_USER_GROUP)) {

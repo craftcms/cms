@@ -274,11 +274,11 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Deletes a value from the configuration by its path.
+     * Removes an item from the config.
      *
-     * @param string $path
+     * @param string $path The path to the item
      */
-    public function delete(string $path)
+    public function remove(string $path)
     {
         $this->save($path, null);
     }

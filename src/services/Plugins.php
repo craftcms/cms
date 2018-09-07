@@ -564,7 +564,7 @@ class Plugins extends Component
                 ->delete('{{%plugins}}', ['id' => $id])
                 ->execute();
 
-            Craft::$app->getProjectConfig()->delete(self::CONFIG_PLUGINS_KEY . '.' . $handle);
+            Craft::$app->getProjectConfig()->remove(self::CONFIG_PLUGINS_KEY . '.' . $handle);
 
             $transaction->commit();
         } catch (\Throwable $e) {
