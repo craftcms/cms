@@ -224,8 +224,8 @@ class ProjectConfig extends Component
         $targetFilePath = null;
 
         if (!$this->_timestampUpdated) {
-            $this->save('dateModified', DateTimeHelper::currentTimeStamp());
             $this->_timestampUpdated = true;
+            $this->save('dateModified', DateTimeHelper::currentTimeStamp());
         }
 
         if ($this->_useConfigFile()) {
