@@ -26,7 +26,7 @@ class m180517_173000_user_photo_volume_to_uid extends Migration
         if ($settings) {
             $settings = Json::decodeIfJson($settings);
 
-            if (!empty(settings['photoVolumeId'])) {
+            if (!empty($settings['photoVolumeId'])) {
                 $volumeUid = (new Query())
                     ->select(['uid'])
                     ->where(['id' => $settings['photoVolumeId']])
