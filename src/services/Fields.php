@@ -683,6 +683,30 @@ class Fields extends Component
     }
 
     /**
+     * Returns a field by its UID.
+     *
+     * @param string $fieldUid The field’s UID
+     * @return FieldInterface|null The field, or null if it doesn’t exist
+     */
+    public function getFieldByUid(string $fieldUid)
+    {
+        $result = $this->_createFieldQuery()
+            ->where(['fields.uid' => $fieldUid])
+            ->one();
+
+        if (!$result) {
+            return null;
+        }
+
+        /** @var Field $field */
+        $field = $this->createField($result);
+        $this->_fieldsById[$field->id] = $field;
+        $this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
+
+        return $field;
+    }
+
+    /**
      * Returns a field by its handle.
      *
      * ---
