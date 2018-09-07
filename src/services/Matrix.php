@@ -16,7 +16,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
 use craft\errors\MatrixBlockTypeNotFoundException;
-use craft\events\ParseConfigEvent;
+use craft\events\ConfigEvent;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix as MatrixField;
 use craft\helpers\Db;
@@ -349,11 +349,11 @@ class Matrix extends Component
     /**
      * Handle block type change
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleChangedBlockType(ParseConfigEvent $event)
+    public function handleChangedBlockType(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // If anything changes inside, just process the main entity
         if (preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
@@ -368,7 +368,7 @@ class Matrix extends Component
             ProjectConfigHelper::ensureAllFieldsProcessed();
 
             $blockTypeUid = $matches[1];
-            $data = $event->newConfig;
+            $data = $event->newValue;
 
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
@@ -469,11 +469,11 @@ class Matrix extends Component
     /**
      * Handle block type change
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleDeletedBlockType(ParseConfigEvent $event)
+    public function handleDeletedBlockType(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // If anything changes inside, just process the main entity
         if (preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {

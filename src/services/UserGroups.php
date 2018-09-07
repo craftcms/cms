@@ -12,7 +12,7 @@ use craft\db\Query;
 use craft\elements\User;
 use craft\errors\UserGroupNotFoundException;
 use craft\errors\WrongEditionException;
-use craft\events\ParseConfigEvent;
+use craft\events\ConfigEvent;
 use craft\events\UserGroupEvent;
 use craft\helpers\Db;
 use craft\models\UserGroup;
@@ -250,11 +250,11 @@ class UserGroups extends Component
     /**
      * Handle any changed user groups.
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleChangedUserGroup(ParseConfigEvent $event)
+    public function handleChangedUserGroup(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match a user group?
         if (preg_match('/' . self::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
@@ -263,7 +263,7 @@ class UserGroups extends Component
             }
 
             $uid = $matches[1];
-            $data = $event->newConfig;
+            $data = $event->newValue;
 
             $groupRecord = UserGroupRecord::findOne(['uid' => $uid]) ?? new UserGroupRecord();
             $groupRecord->name = $data['name'];
@@ -273,18 +273,18 @@ class UserGroups extends Component
             $groupRecord->save(false);
 
             // Prevent permission information from being saved. Allowing it would prevent the appropriate event from firing.
-            $event->newConfig['permissions'] = $event->existingConfig['permissions'] ?? [];
+            $event->newValue['permissions'] = $event->oldValue['permissions'] ?? [];
         }
     }
 
     /**
      * Handle any deleted user groups.
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleDeletedUserGroup(ParseConfigEvent $event)
+    public function handleDeletedUserGroup(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match a user group?
         if (preg_match('/' . self::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {

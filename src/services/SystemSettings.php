@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\events\ParseConfigEvent;
 use craft\helpers\Json;
 use craft\models\MailSettings;
 use craft\records\SystemSettings as SystemSettingsRecord;

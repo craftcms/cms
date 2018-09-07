@@ -10,28 +10,28 @@ namespace craft\events;
 use yii\base\Event;
 
 /**
- * Parse config event class.
+ * Config event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.1
  */
-class ParseConfigEvent extends Event
+class ConfigEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var string|null The config path being parsed
+     * @var string|null The config path being processed
      */
-    public $configPath;
+    public $path;
 
     /**
-     * @var array The new config data
+     * @var array The old config item value
      */
-    public $newConfig = [];
+    public $oldValue = [];
 
     /**
-     * @var array The existing config data
+     * @var array The new config item value
      */
-    public $existingConfig = [];
+    public $newValue = [];
 }

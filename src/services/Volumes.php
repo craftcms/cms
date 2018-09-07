@@ -10,7 +10,7 @@ use craft\db\Query;
 use craft\elements\Asset;
 use craft\errors\MissingComponentException;
 use craft\events\FieldEvent;
-use craft\events\ParseConfigEvent;
+use craft\events\ConfigEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\VolumeEvent;
 use craft\helpers\Component as ComponentHelper;
@@ -478,11 +478,11 @@ class Volumes extends Component
     /**
      * Handle volume change
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleChangedVolume(ParseConfigEvent $event)
+    public function handleChangedVolume(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // If anything changes inside, just process the main entity
         if (preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
@@ -495,7 +495,7 @@ class Volumes extends Component
         if (preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
 
             $volumeUid = $matches[1];
-            $data = $event->newConfig;
+            $data = $event->newValue;
 
             // Make sure fields are processed
             ProjectConfigHelper::ensureAllFieldsProcessed();
@@ -713,11 +713,11 @@ class Volumes extends Component
     /**
      * Handle volume getting deleted
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleDeletedVolume(ParseConfigEvent $event)
+    public function handleDeletedVolume(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // If anything changes inside, just process the main entity
         if (preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {

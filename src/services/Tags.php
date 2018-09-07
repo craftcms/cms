@@ -13,7 +13,7 @@ use craft\db\Query;
 use craft\elements\Tag;
 use craft\errors\TagGroupNotFoundException;
 use craft\events\FieldEvent;
-use craft\events\ParseConfigEvent;
+use craft\events\ConfigEvent;
 use craft\events\TagGroupEvent;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -292,11 +292,11 @@ class Tags extends Component
     /**
      * Handle tag group change
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleChangedTagGroup(ParseConfigEvent $event)
+    public function handleChangedTagGroup(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // If anything changes inside, just process the main entity
         if (preg_match('/^' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
@@ -309,7 +309,7 @@ class Tags extends Component
         if (preg_match('/' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
 
             $tagGroupUid = $matches[1];
-            $data = $event->newConfig;
+            $data = $event->newValue;
 
             // Make sure fields are processed
             ProjectConfigHelper::ensureAllFieldsProcessed();
@@ -409,11 +409,11 @@ class Tags extends Component
     /**
      * Handle Tag group getting deleted
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleDeletedTagGroup(ParseConfigEvent $event)
+    public function handleDeletedTagGroup(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // If anything changes inside, just process the main entity
         if (preg_match('/^' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {

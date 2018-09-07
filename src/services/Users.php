@@ -16,7 +16,7 @@ use craft\errors\ImageException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
-use craft\events\ParseConfigEvent;
+use craft\events\ConfigEvent;
 use craft\events\UserAssignGroupEvent;
 use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
@@ -1006,11 +1006,11 @@ class Users extends Component
     /**
      * Handle user field layout changes.
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleChangedUserFieldLayout(ParseConfigEvent $event)
+    public function handleChangedUserFieldLayout(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Use this because we want this to trigger this if anything changes inside but ONLY ONCE
         static $parsed = false;

@@ -14,7 +14,7 @@ use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
 use craft\errors\SectionNotFoundException;
 use craft\events\EntryTypeEvent;
-use craft\events\ParseConfigEvent;
+use craft\events\ConfigEvent;
 use craft\events\SectionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -614,11 +614,11 @@ class Sections extends Component
     /**
      * Handle section change
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleChangedSection(ParseConfigEvent $event)
+    public function handleChangedSection(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match a category group?
         if (preg_match('/^' . self::CONFIG_SECTIONS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
@@ -627,7 +627,7 @@ class Sections extends Component
             ProjectConfigHelper::ensureAllFieldsProcessed();
 
             $sectionUid = $matches[1];
-            $data = $event->newConfig;
+            $data = $event->newValue;
 
             $db = Craft::$app->getDb();
             $transaction = $db->beginTransaction();
@@ -853,11 +853,11 @@ class Sections extends Component
     /**
      * Handle a section getting deleted
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleDeletedSection(ParseConfigEvent $event)
+    public function handleDeletedSection(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match a section?
         if (preg_match('/' . self::CONFIG_SECTIONS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
@@ -1134,11 +1134,11 @@ class Sections extends Component
     /**
      * Handle entry type change
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleChangedEntryType(ParseConfigEvent $event)
+    public function handleChangedEntryType(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // If anything changes inside, just process the main entity
         if (preg_match('/^' . self::CONFIG_SECTIONS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\.' . self::CONFIG_ENTRYTYPES_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
@@ -1151,7 +1151,7 @@ class Sections extends Component
         if (preg_match('/^' . self::CONFIG_SECTIONS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\.' . self::CONFIG_ENTRYTYPES_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $sectionUid = $matches[1];
             $entryTypeUid = $matches[2];
-            $data = $event->newConfig;
+            $data = $event->newValue;
 
             // Make sure fields are processed
             ProjectConfigHelper::ensureAllSitesProcessed();
@@ -1350,11 +1350,11 @@ class Sections extends Component
     /**
      * Handle an entry type getting deleted
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleDeletedEntryType(ParseConfigEvent $event)
+    public function handleDeletedEntryType(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match an entry type?
         if (preg_match('/' . self::CONFIG_SECTIONS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\.' . self::CONFIG_ENTRYTYPES_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {

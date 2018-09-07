@@ -15,7 +15,7 @@ use craft\base\Volume;
 use craft\db\Query;
 use craft\elements\User;
 use craft\errors\WrongEditionException;
-use craft\events\ParseConfigEvent;
+use craft\events\ConfigEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\CategoryGroup;
@@ -412,11 +412,11 @@ class UserPermissions extends Component
     /**
      * Handle any changed group permissions.
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleChangedGroupPermissions(ParseConfigEvent $event)
+    public function handleChangedGroupPermissions(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match user group permissions?
         if (preg_match('/' . UserGroups::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\.permissions$/i', $path, $matches)) {
@@ -424,7 +424,7 @@ class UserPermissions extends Component
             // Ensure all user groups are ready to roll
             ProjectConfigHelper::ensureAllUserGroupsProcessed();
             $uid = $matches[1];
-            $permissions = $event->newConfig;
+            $permissions = $event->newValue;
             $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
 
             // Delete any existing group permissions
@@ -455,15 +455,15 @@ class UserPermissions extends Component
     /**
      * Handle any changed permissions.
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleChangedPermissions(ParseConfigEvent $event)
+    public function handleChangedPermissions(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match permissions?
         if (preg_match('/' . self::CONFIG_USERPERMISSIONS_KEY . '$/i', $path, $matches)) {
-            $data = $event->newConfig;
+            $data = $event->newValue;
             $records = UserPermissionRecord::find()
                 ->where(['name' => $data])
                 ->indexBy('name')

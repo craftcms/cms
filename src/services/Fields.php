@@ -19,7 +19,7 @@ use craft\errors\MissingComponentException;
 use craft\events\FieldEvent;
 use craft\events\FieldGroupEvent;
 use craft\events\FieldLayoutEvent;
-use craft\events\ParseConfigEvent;
+use craft\events\ConfigEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\Assets as AssetsField;
 use craft\fields\Categories as CategoriesField;
@@ -332,15 +332,15 @@ class Fields extends Component
     /**
      * Handle field group change
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleChangedGroup(ParseConfigEvent $event)
+    public function handleChangedGroup(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match a field group?
         if (preg_match('/^' . self::CONFIG_FIELDGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
-            $data = $event->newConfig;
+            $data = $event->newValue;
             $uid = $matches[1];
 
             $groupRecord = $this->_getGroupRecord($uid);
@@ -358,11 +358,11 @@ class Fields extends Component
     /**
      * Handle field group getting deleted.
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleDeletedGroup(ParseConfigEvent $event)
+    public function handleDeletedGroup(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match a field group?
         if (preg_match('/^' . self::CONFIG_FIELDGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
@@ -976,16 +976,16 @@ class Fields extends Component
     /**
      * Handle field changes.
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      * @throws \Throwable
      */
-    public function handleChangedField(ParseConfigEvent $event)
+    public function handleChangedField(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match a field?
         if (preg_match('/^' . self::CONFIG_FIELDS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
-            $data = $event->newConfig;
+            $data = $event->newValue;
             $groupUid = $data['fieldGroup'];
             $fieldUid = $matches[1];
 
@@ -1131,11 +1131,11 @@ class Fields extends Component
     /**
      * Handle a field getting deleted.
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleDeletedField(ParseConfigEvent $event)
+    public function handleDeletedField(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match a field?
         if (preg_match('/^' . self::CONFIG_FIELDS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {

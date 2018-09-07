@@ -10,7 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Plugin;
 use craft\base\PluginTrait;
-use craft\events\ParseConfigEvent;
+use craft\events\ConfigEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
@@ -60,72 +60,54 @@ class ProjectConfig extends Component
     // -------------------------------------------------------------------------
 
     /**
-     * @event ParseConfigEvent The event that is triggered on encountering a new config object
-     *
-     * Components can get notified when a new config object is encountered
+     * @event ConfigEvent The event that is triggered when an item is added to the config.
      *
      * ```php
      * use craft\events\ParseConfigEvent;
-     * use craft\services\services\ProjectConfig;
+     * use craft\services\ProjectConfig;
      * use yii\base\Event;
      *
-     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_NEW_CONFIG_OBJECT, function(ParseConfigEvent $e) {
-     *      // Do something with the new configuration info
+     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, function(ParseConfigEvent $e) {
+     *     // Ensure the item is also added in the database...
      * });
      * ```
      */
-    const EVENT_NEW_CONFIG_OBJECT = 'newConfigObject';
+    const EVENT_ADD_ITEM = 'addItem';
 
     /**
-     * @event ParseConfigEvent The event that is triggered on encountering a changed config object
-     *
-     * Components can get notified when changes in a config object are encountered
+     * @event ConfigEvent The event that is triggered when an item is updated in the config.
      *
      * ```php
      * use craft\events\ParseConfigEvent;
-     * use craft\services\services\ProjectConfig;
+     * use craft\services\ProjectConfig;
      * use yii\base\Event;
      *
-     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_CHANGED_CONFIG_OBJECT, function(ParseConfigEvent $e) {
-     *      // Do something with the changed configuration info
+     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, function(ParseConfigEvent $e) {
+     *     // Ensure the item is also updated in the database...
      * });
      * ```
      */
-    const EVENT_CHANGED_CONFIG_OBJECT = 'changedConfigObject';
+    const EVENT_UPDATE_ITEM = 'updateItem';
 
     /**
-     * @event ParseConfigEvent The event that is triggered on encountering a removed config object
-     *
-     * Components can get notified when a config object is removed
+     * @event ConfigEvent The event that is triggered when an item is removed from the config.
      *
      * ```php
      * use craft\events\ParseConfigEvent;
-     * use craft\services\services\ProjectConfig;
+     * use craft\services\ProjectConfig;
      * use yii\base\Event;
      *
-     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVED_CONFIG_OBJECT, function(ParseConfigEvent $e) {
-     *      // Do something with the information that a configuration object was removed
+     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, function(ParseConfigEvent $e) {
+     *     // Ensure the item is also removed in the database...
      * });
      * ```
      */
-    const EVENT_REMOVED_CONFIG_OBJECT = 'removedConfigObject';
+    const EVENT_REMOVE_ITEM = 'removeItem';
 
     /**
-     * @event ParseConfigEvent The event that is triggered after parsing all configuration changes
-     *
-     * Components can get notified when all configuration has been parsed
-     *
-     * ```php
-     * use craft\events\ParseConfigEvent;
-     * use craft\services\services\ProjectConfig;
-     * use yii\base\Event;
-     *
-     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_AFTER_PARSE_CONFIG, function(ParseConfigEvent $e) {
-     *      // Apply buffered changes
-     * });
-     * ```
+     * @event Event The event that is triggered after pending changes in `config/project.yaml` have been applied.
      */
-    const EVENT_AFTER_PARSE_CONFIG = 'afterParseConfig';
+    const EVENT_AFTER_APPLY_CHANGES = 'afterApplyChanges';
 
     // Properties
     // =========================================================================
@@ -332,7 +314,11 @@ class ProjectConfig extends Component
             }
 
             Craft::info('Finalizing configuration parsing', __METHOD__);
-            $this->trigger(self::EVENT_AFTER_PARSE_CONFIG, new ParseConfigEvent());
+
+            // Fire an 'afterApplyChanges' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_APPLY_CHANGES)) {
+                $this->trigger(self::EVENT_AFTER_APPLY_CHANGES);
+            }
 
             $this->updateParsedConfigTimesAfterRequest();
             $this->_updateConfigMap = true;
@@ -377,39 +363,39 @@ class ProjectConfig extends Component
     /**
      * Processes config changes for a given path.
      *
-     * @param string $configPath
+     * @param string $path
      */
-    public function processConfigChanges(string $configPath)
+    public function processConfigChanges(string $path)
     {
-        if (!empty($this->_parsedChanges[$configPath])) {
+        if (!empty($this->_parsedChanges[$path])) {
             return;
         }
 
-        $this->_parsedChanges[$configPath] = true;
+        $this->_parsedChanges[$path] = true;
 
-        $configData = $this->get($configPath, true);
-        $storedConfigData = $this->get($configPath);
+        $oldValue = $this->get($path);
+        $newValue = $this->get($path, true);
 
-        $event = new ParseConfigEvent([
-            'configPath' => $configPath,
-            'newConfig' => $configData,
-            'existingConfig' => $storedConfigData,
-        ]);
+        $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
 
-        if ($storedConfigData && !$configData) {
-            $this->trigger(self::EVENT_REMOVED_CONFIG_OBJECT, $event);
+        if ($oldValue && !$newValue) {
+            // Fire a 'removeItem' event
+            $this->trigger(self::EVENT_REMOVE_ITEM, $event);
+        } else if (!$oldValue && $newValue) {
+            // Fire an 'addItem' event
+            $this->trigger(self::EVENT_ADD_ITEM, $event);
+        } else if (
+            $newValue !== null &&
+            $oldValue !== null &&
+            Json::encode($oldValue) !== Json::encode($newValue)
+        ) {
+            // Fire an 'updateItem' event
+            $this->trigger(self::EVENT_UPDATE_ITEM, $event);
         } else {
-            if (!$storedConfigData && $configData) {
-                $this->trigger(self::EVENT_NEW_CONFIG_OBJECT, $event);
-                // Might generate false positives, but is pretty fast.
-            } else if ($configData !== null && $storedConfigData !== null && Json::encode($storedConfigData) !== Json::encode($configData)) {
-                $this->trigger(self::EVENT_CHANGED_CONFIG_OBJECT, $event);
-            } else {
-                return;
-            }
+            return;
         }
 
-        $this->_modifyStoredConfig($configPath, $event->newConfig);
+        $this->_modifyStoredConfig($path, $event->newValue);
         $this->updateParsedConfigTimesAfterRequest();
     }
 

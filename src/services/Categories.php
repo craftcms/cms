@@ -15,7 +15,7 @@ use craft\elements\db\CategoryQuery;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
 use craft\events\FieldEvent;
-use craft\events\ParseConfigEvent;
+use craft\events\ConfigEvent;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -407,11 +407,11 @@ class Categories extends Component
     /**
      * Handle category group change
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleChangedCategoryGroup(ParseConfigEvent $event)
+    public function handleChangedCategoryGroup(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // If anything changes inside, just process the main entity
         if (preg_match('/^' . self::CONFIG_CATEGORYROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
@@ -424,7 +424,7 @@ class Categories extends Component
         if (preg_match('/' . self::CONFIG_CATEGORYROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
 
             $categoryGroupUid = $matches[1];
-            $data = $event->newConfig;
+            $data = $event->newValue;
 
             // Make sure fields and sites are processed
             ProjectConfigHelper::ensureAllSitesProcessed();
@@ -679,11 +679,11 @@ class Categories extends Component
     /**
      * Handle Category group getting deleted
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleDeletedCategoryGroup(ParseConfigEvent $event)
+    public function handleDeletedCategoryGroup(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // If anything changes inside, just process the main entity
         if (preg_match('/^' . self::CONFIG_CATEGORYROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {

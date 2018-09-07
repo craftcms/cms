@@ -15,7 +15,7 @@ use craft\elements\GlobalSet;
 use craft\errors\GlobalSetNotFoundException;
 use craft\events\FieldEvent;
 use craft\events\GlobalSetEvent;
-use craft\events\ParseConfigEvent;
+use craft\events\ConfigEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -391,11 +391,11 @@ class Globals extends Component
     /**
      * Handle global set change
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleChangedGlobalSet(ParseConfigEvent $event)
+    public function handleChangedGlobalSet(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // If anything changes inside, just process the main entity
         if (preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
@@ -407,7 +407,7 @@ class Globals extends Component
         // Does it match a global set?
         if (preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $globalSetUid = $matches[1];
-            $data = $event->newConfig;
+            $data = $event->newValue;
 
             // Make sure fields are processed
             ProjectConfigHelper::ensureAllSitesProcessed();
@@ -493,11 +493,11 @@ class Globals extends Component
     /**
      * Handle global set getting deleted
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleDeletedGlobalSet(ParseConfigEvent $event)
+    public function handleDeletedGlobalSet(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // If anything changes inside, just process the main entity
         if (preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {

@@ -17,7 +17,7 @@ use craft\elements\Tag;
 use craft\errors\SiteGroupNotFoundException;
 use craft\errors\SiteNotFoundException;
 use craft\events\DeleteSiteEvent;
-use craft\events\ParseConfigEvent;
+use craft\events\ConfigEvent;
 use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
 use craft\events\SiteGroupEvent;
@@ -294,15 +294,15 @@ class Sites extends Component
     /**
      * Handle site group change
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleChangedGroup(ParseConfigEvent $event)
+    public function handleChangedGroup(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match a field group?
         if (preg_match('/^' . self::CONFIG_SITEGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
-            $data = $event->newConfig;
+            $data = $event->newValue;
             $uid = $matches[1];
 
             $groupRecord = $this->_getGroupRecord($uid);
@@ -320,11 +320,11 @@ class Sites extends Component
     /**
      * Handle site group getting deleted.
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      */
-    public function handleDeletedGroup(ParseConfigEvent $event)
+    public function handleDeletedGroup(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match a field group?
         if (preg_match('/^' . self::CONFIG_SITEGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
@@ -718,17 +718,17 @@ class Sites extends Component
     /**
      * Handle site changes.
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      * @throws \Throwable
      */
-    public function handleChangedSite(ParseConfigEvent $event)
+    public function handleChangedSite(ConfigEvent $event)
     {
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match a site?
         if (preg_match('/^' . self::CONFIG_SITES_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
             $siteUid = $matches[1];
-            $data = $event->newConfig;
+            $data = $event->newValue;
             $groupUid = $data['siteGroup'];
 
             // Ensure we have the site group in place first
@@ -1112,15 +1112,15 @@ class Sites extends Component
     /**
      * Handle a deleted Site.
      *
-     * @param ParseConfigEvent $event
+     * @param ConfigEvent $event
      * @throws DbException
      * @throws \Throwable
      * @throws \yii\base\NotSupportedException
      */
-    public function handleDeletedSite(ParseConfigEvent $event)
+    public function handleDeletedSite(ConfigEvent $event)
     {
 
-        $path = $event->configPath;
+        $path = $event->path;
 
         // Does it match a site?
         if (preg_match('/^' . self::CONFIG_SITES_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
