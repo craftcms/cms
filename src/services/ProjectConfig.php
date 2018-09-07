@@ -210,8 +210,8 @@ class ProjectConfig extends Component
     /**
      * Saves a value to the project config at a given path.
      *
-     * @param string $path
-     * @param mixed $value
+     * @param string $path The config item path
+     * @param mixed $value The config value. Must be
      * @throws ErrorException
      * @throws Exception
      * @throws ServerErrorHttpException
@@ -245,7 +245,7 @@ class ProjectConfig extends Component
             $config = $this->_getConfigurationFromYaml();
         }
 
-        $this->_traverseDataArray($config, $path, $value, null === $value);
+        $this->_traverseDataArray($config, $path, $value, $value === null);
 
         $this->_saveConfig($config, $targetFilePath);
 
@@ -293,21 +293,21 @@ class ProjectConfig extends Component
             $this->_configMap = $this->_generateConfigMap();
 
             if (!empty($changes['removedItems'])) {
-                Craft::info('Parsing ' . count($changes['removedItems']) . ' removed configuration objects', __METHOD__);
+                Craft::info('Parsing ' . count($changes['removedItems']) . ' removed configuration items', __METHOD__);
                 foreach ($changes['removedItems'] as $itemPath) {
                     $this->processConfigChanges($itemPath);
                 }
             }
 
             if (!empty($changes['changedItems'])) {
-                Craft::info('Parsing ' . count($changes['changedItems']) . ' changed configuration objects', __METHOD__);
+                Craft::info('Parsing ' . count($changes['changedItems']) . ' changed configuration items', __METHOD__);
                 foreach ($changes['changedItems'] as $itemPath) {
                     $this->processConfigChanges($itemPath);
                 }
             }
 
             if (!empty($changes['newItems'])) {
-                Craft::info('Parsing ' . count($changes['newItems']) . ' new configuration objects', __METHOD__);
+                Craft::info('Parsing ' . count($changes['newItems']) . ' new configuration items', __METHOD__);
                 foreach ($changes['newItems'] as $itemPath) {
                     $this->processConfigChanges($itemPath);
                 }
@@ -561,18 +561,15 @@ class ProjectConfig extends Component
     {
         if ($this->_useConfigFile()) {
             $fileList = $this->_getConfigFileList();
-
-            $generatedConfig = [];
-
+            $fileConfigs = [];
             foreach ($fileList as $file) {
-                $config = $this->_parseYamlFile($file);
-                $generatedConfig = array_merge($generatedConfig, $config);
+                $fileConfigs[] = $this->_parseYamlFile($file);
             }
+            $generatedConfig = array_merge(...$fileConfigs);
         } else {
             if (empty($this->_parsedConfigs[self::CONFIG_KEY])) {
                 $this->_parsedConfigs[self::CONFIG_KEY] = $this->_getStoredConfig();
             }
-
             $generatedConfig = $this->_parsedConfigs[self::CONFIG_KEY];
         }
 
@@ -656,11 +653,8 @@ class ProjectConfig extends Component
      */
     private function _getPendingChanges(): array
     {
-        $changes = [
-            'newItems' => [],
-            'removedItems' => [],
-            'changedItems' => [],
-        ];
+        $newItems = [];
+        $changedItems = [];
 
         $configData = $this->_getConfigurationFromYaml();
         $currentConfig = $this->_getStoredConfig();
@@ -693,17 +687,17 @@ class ProjectConfig extends Component
             $immediateParent = pathinfo($key, PATHINFO_FILENAME);
 
             if (!array_key_exists($key, $flatCurrent)) {
-                $changes['newItems'][] = $immediateParent;
+                $newItems[] = $immediateParent;
             } elseif ($flatCurrent[$key] !== $value) {
-                $changes['changedItems'][] = $immediateParent;
+                $changedItems[] = $immediateParent;
             }
 
             unset($flatCurrent[$key]);
         }
 
-        $changes['removedItems'] = array_keys($flatCurrent);
+        $removedItems = array_keys($flatCurrent);
 
-        foreach ($changes['removedItems'] as &$removedItem) {
+        foreach ($removedItems as &$removedItem) {
             // Drop the last part of path
             $removedItem = pathinfo($removedItem, PATHINFO_FILENAME);
         }
@@ -720,15 +714,15 @@ class ProjectConfig extends Component
             return $aDepth > $bDepth ? -1 : 1;
         };
 
-        $changes['newItems'] = array_unique($changes['newItems']);
-        $changes['removedItems'] = array_unique($changes['removedItems']);
-        $changes['changedItems'] = array_unique($changes['changedItems']);
+        $newItems = array_unique($newItems);
+        $removedItems = array_unique($removedItems);
+        $changedItems = array_unique($changedItems);
 
-        uasort($changes['newItems'], $sorter);
-        uasort($changes['removedItems'], $sorter);
-        uasort($changes['changedItems'], $sorter);
+        uasort($newItems, $sorter);
+        uasort($removedItems, $sorter);
+        uasort($changedItems, $sorter);
 
-        return $changes;
+        return compact('newItems', 'removedItems', 'changedItems');
     }
 
     /**
@@ -849,7 +843,7 @@ class ProjectConfig extends Component
      *
      * @param array $data A nested array of data to traverse
      * @param array|string $path Path used to traverse the array. Either an array or a dot.based.path
-     * @param null $value Value to set at the destination. If left null, will return the value, unless deleting
+     * @param mixed $value Value to set at the destination. If null, will return the value, unless deleting
      * @param bool $delete Whether to delete the value at the destination or not.
      * @return mixed|null
      */
@@ -865,7 +859,7 @@ class ProjectConfig extends Component
         if (count($path) === 0) {
             if ($delete) {
                 unset($data[$nextSegment]);
-            } else if (null === $value) {
+            } else if ($value === null) {
                 return $data[$nextSegment] ?? null;
             } else {
                 $data[$nextSegment] = $value;
@@ -873,7 +867,7 @@ class ProjectConfig extends Component
         } else {
             if (!isset($data[$nextSegment])) {
                 // If the path doesn't exist, it's fine if we wanted to delete or read
-                if ($delete || null === $value) {
+                if ($delete || $value === null) {
                     return;
                 }
 
