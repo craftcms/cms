@@ -524,7 +524,9 @@ class ProjectConfig extends Component
             return true;
         }
 
-        if ((string) Craft::$app->schemaVersion !== (string) $this->get(self::CONFIG_SCHEMA_VERSION_KEY, true)) {
+        $configSchemaVersion = (string) $this->get(self::CONFIG_SCHEMA_VERSION_KEY, true);
+
+        if (version_compare((string) Craft::$app->schemaVersion, $configSchemaVersion, '<')) {
             return false;
         }
 
@@ -532,7 +534,9 @@ class ProjectConfig extends Component
 
         foreach ($plugins as $plugin) {
             /** @var Plugin $plugin */
-            if ((string) $plugin->schemaVersion !== (string) $this->get(Plugins::CONFIG_PLUGINS_KEY.'.'.$plugin->handle.'.'.self::CONFIG_SCHEMA_VERSION_KEY, true)) {
+            $configSchemaVersion = (string) $this->get(Plugins::CONFIG_PLUGINS_KEY.'.'.$plugin->handle.'.'.self::CONFIG_SCHEMA_VERSION_KEY, true);
+
+            if (version_compare((string) $plugin->schemaVersion, $configSchemaVersion, '<')) {
                 return false;
             }
         }
