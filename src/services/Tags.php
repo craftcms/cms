@@ -390,7 +390,7 @@ class Tags extends Component
         // Fire a 'beforeDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new TagGroupEvent([
-                'tagGroup' => $group
+                'tagGroup' => $tagGroup
             ]));
         }
 
