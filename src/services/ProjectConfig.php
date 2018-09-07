@@ -607,12 +607,12 @@ class ProjectConfig extends Component
     /**
      * Modify the stored config with new data.
      *
-     * @param $configPath
+     * @param $path
      * @param $data
      */
-    private function _modifyStoredConfig($configPath, $data)
+    private function _modifyStoredConfig($path, $data)
     {
-        $this->_traverseDataArray($this->_storedConfig, $configPath, $data);
+        $this->_traverseDataArray($this->_storedConfig, $path, $data);
         $this->_updateConfig = true;
     }
 
@@ -811,14 +811,14 @@ class ProjectConfig extends Component
      * Save configuration data to a path.
      *
      * @param array $data
-     * @param string|null $configPath
+     * @param string|null $path
      * @throws ErrorException
      */
-    private function _saveConfig(array $data, string $configPath = null)
+    private function _saveConfig(array $data, string $path = null)
     {
-        if ($this->_useConfigFile() && $configPath) {
-            $this->_parsedConfigs[$configPath] = $data;
-            $this->_modifiedYamlFiles[$configPath] = true;
+        if ($this->_useConfigFile() && $path) {
+            $this->_parsedConfigs[$path] = $data;
+            $this->_modifiedYamlFiles[$path] = true;
         } else {
             $this->_parsedConfigs[self::CONFIG_KEY] = $data;
         }
