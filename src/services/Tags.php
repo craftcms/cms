@@ -296,59 +296,57 @@ class Tags extends Component
      */
     public function handleChangedTagGroup(ConfigEvent $event)
     {
-        $path = $event->path;
-
         // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
-            $parts = explode('.', $path);
+        if (preg_match('/^' . self::CONFIG_TAGGROUP_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
+            $parts = explode('.', $event->path);
             Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a tag group?
-        if (preg_match('/' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
+        if (!preg_match('/' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
+            return;
+        }
 
-            $tagGroupUid = $matches[1];
-            $data = $event->newValue;
+        $tagGroupUid = $matches[1];
+        $data = $event->newValue;
 
-            // Make sure fields are processed
-            ProjectConfigHelper::ensureAllFieldsProcessed();
+        // Make sure fields are processed
+        ProjectConfigHelper::ensureAllFieldsProcessed();
 
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                $tagGroupRecord = $this->_getTagGroupRecord($tagGroupUid);
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            $tagGroupRecord = $this->_getTagGroupRecord($tagGroupUid);
 
-                $tagGroupRecord->name = $data['name'];
-                $tagGroupRecord->handle = $data['handle'];
-                $tagGroupRecord->uid = $tagGroupUid;
+            $tagGroupRecord->name = $data['name'];
+            $tagGroupRecord->handle = $data['handle'];
+            $tagGroupRecord->uid = $tagGroupUid;
 
-                if (!empty($data['fieldLayouts'])) {
-                    $fields = Craft::$app->getFields();
+            if (!empty($data['fieldLayouts'])) {
+                $fields = Craft::$app->getFields();
 
-                    // Delete the field layout
-                    if ($tagGroupRecord->fieldLayoutId) {
-                        $fields->deleteLayoutById($tagGroupRecord->fieldLayoutId);
-                    }
-
-                    //Create the new layout
-                    $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
-                    $layout->type = Tag::class;
-                    $layout->uid = key($data['fieldLayouts']);
-                    $fields->saveLayout($layout);
-                    $tagGroupRecord->fieldLayoutId = $layout->id;
-                } else {
-                    $tagGroupRecord->fieldLayoutId = null;
+                // Delete the field layout
+                if ($tagGroupRecord->fieldLayoutId) {
+                    $fields->deleteLayoutById($tagGroupRecord->fieldLayoutId);
                 }
 
-                // Save the volume
-                $tagGroupRecord->save(false);
-
-                $transaction->commit();
-            } catch (\Throwable $e) {
-                $transaction->rollBack();
-
-                throw $e;
+                //Create the new layout
+                $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                $layout->type = Tag::class;
+                $layout->uid = key($data['fieldLayouts']);
+                $fields->saveLayout($layout);
+                $tagGroupRecord->fieldLayoutId = $layout->id;
+            } else {
+                $tagGroupRecord->fieldLayoutId = null;
             }
+
+            // Save the volume
+            $tagGroupRecord->save(false);
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
     }
 
@@ -413,57 +411,57 @@ class Tags extends Component
      */
     public function handleDeletedTagGroup(ConfigEvent $event)
     {
-        $path = $event->path;
-
         // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
-            $parts = explode('.', $path);
+        if (preg_match('/^' . self::CONFIG_TAGGROUP_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
+            $parts = explode('.', $event->path);
             Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a tag group?
-        if (preg_match('/' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
-            $uid = $matches[1];
+        if (!preg_match('/' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
+            return;
+        }
 
-            $tagGroupRecord = $this->_getTagGroupRecord($uid);
+        $uid = $matches[1];
 
-            if ($tagGroupRecord->id) {
-                $transaction = Craft::$app->getDb()->beginTransaction();
+        $tagGroupRecord = $this->_getTagGroupRecord($uid);
 
-                try {
-                    // Delete the field layout
-                    $fieldLayoutId = (new Query())
-                        ->select(['fieldLayoutId'])
-                        ->from(['{{%taggroups}}'])
-                        ->where(['id' => $tagGroupRecord->id])
-                        ->scalar();
+        if (!$tagGroupRecord->id) {
+            return;
+        }
 
-                    if ($fieldLayoutId) {
-                        Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-                    }
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            // Delete the field layout
+            $fieldLayoutId = (new Query())
+                ->select(['fieldLayoutId'])
+                ->from(['{{%taggroups}}'])
+                ->where(['id' => $tagGroupRecord->id])
+                ->scalar();
 
-                    // Delete the tags
-                    $tags = Tag::find()
-                        ->anyStatus()
-                        ->groupId($tagGroupRecord->id)
-                        ->all();
-
-                    foreach ($tags as $tag) {
-                        Craft::$app->getElements()->deleteElement($tag);
-                    }
-
-                    Craft::$app->getDb()->createCommand()
-                        ->delete('{{%taggroups}}', ['id' => $tagGroupRecord->id])
-                        ->execute();
-
-                    $transaction->commit();
-                } catch (\Throwable $e) {
-                    $transaction->rollBack();
-
-                    throw $e;
-                }
+            if ($fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
             }
+
+            // Delete the tags
+            $tags = Tag::find()
+                ->anyStatus()
+                ->groupId($tagGroupRecord->id)
+                ->all();
+
+            foreach ($tags as $tag) {
+                Craft::$app->getElements()->deleteElement($tag);
+            }
+
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%taggroups}}', ['id' => $tagGroupRecord->id])
+                ->execute();
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
     }
 

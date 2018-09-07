@@ -416,39 +416,38 @@ class UserPermissions extends Component
      */
     public function handleChangedGroupPermissions(ConfigEvent $event)
     {
-        $path = $event->path;
-
         // Does it match user group permissions?
-        if (preg_match('/' . UserGroups::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\.permissions$/i', $path, $matches)) {
+        if (!preg_match('/' . UserGroups::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\.permissions$/i', $event->path, $matches)) {
+            return;
+        }
 
-            // Ensure all user groups are ready to roll
-            ProjectConfigHelper::ensureAllUserGroupsProcessed();
-            $uid = $matches[1];
-            $permissions = $event->newValue;
-            $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
+        // Ensure all user groups are ready to roll
+        ProjectConfigHelper::ensureAllUserGroupsProcessed();
+        $uid = $matches[1];
+        $permissions = $event->newValue;
+        $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
 
-            // Delete any existing group permissions
-            Craft::$app->getDb()->createCommand()
-                ->delete('{{%userpermissions_usergroups}}', ['groupId' => $userGroup->id])
-                ->execute();
+        // Delete any existing group permissions
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%userpermissions_usergroups}}', ['groupId' => $userGroup->id])
+            ->execute();
 
-            $groupPermissionVals = [];
+        $groupPermissionVals = [];
 
-            if ($permissions) {
-                $this->_ensurePermissionRecords($permissions);
-                foreach ($permissions as $permissionName) {
-                    $permissionRecord = $this->_getPermissionRecordByName($permissionName);
-                    $groupPermissionVals[] = [$permissionRecord->id, $userGroup->id];
-                }
-
-                // Add the new group permissions
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(
-                        '{{%userpermissions_usergroups}}',
-                        ['permissionId', 'groupId'],
-                        $groupPermissionVals)
-                    ->execute();
+        if ($permissions) {
+            $this->_ensurePermissionRecords($permissions);
+            foreach ($permissions as $permissionName) {
+                $permissionRecord = $this->_getPermissionRecordByName($permissionName);
+                $groupPermissionVals[] = [$permissionRecord->id, $userGroup->id];
             }
+
+            // Add the new group permissions
+            Craft::$app->getDb()->createCommand()
+                ->batchInsert(
+                    '{{%userpermissions_usergroups}}',
+                    ['permissionId', 'groupId'],
+                    $groupPermissionVals)
+                ->execute();
         }
     }
 
@@ -459,34 +458,36 @@ class UserPermissions extends Component
      */
     public function handleChangedPermissions(ConfigEvent $event)
     {
-        $path = $event->path;
-
         // Does it match permissions?
-        if (preg_match('/' . self::CONFIG_USERPERMISSIONS_KEY . '$/i', $path, $matches)) {
-            $data = $event->newValue;
-            $records = UserPermissionRecord::find()
-                ->where(['name' => $data])
-                ->indexBy('name')
-                ->all();
+        if (!preg_match('/' . self::CONFIG_USERPERMISSIONS_KEY . '$/i', $event->path, $matches)) {
+            return;
+        }
 
-            if ($data) {
-                foreach ($data as $permissionName) {
-                    // If not in the record list, create a new record
-                    if (!isset($records[$permissionName])) {
-                        $permissionRecord = new UserPermissionRecord();
-                        $permissionRecord->name = $permissionName;
-                        $permissionRecord->save();
-                    } else {
-                        // If it exists, remove from the record list
-                        unset($records[$permissionName]);
-                    }
-                }
+        $data = $event->newValue;
+        $records = UserPermissionRecord::find()
+            ->where(['name' => $data])
+            ->indexBy('name')
+            ->all();
 
-                // Any records remaining in the list were not in the config data, so gets deleted.
-                foreach ($records as $record) {
-                    $record->delete();
-                }
+        if (!$data) {
+            return;
+        }
+
+        foreach ($data as $permissionName) {
+            // If not in the record list, create a new record
+            if (!isset($records[$permissionName])) {
+                $permissionRecord = new UserPermissionRecord();
+                $permissionRecord->name = $permissionName;
+                $permissionRecord->save();
+            } else {
+                // If it exists, remove from the record list
+                unset($records[$permissionName]);
             }
+        }
+
+        // Any records remaining in the list were not in the config data, so gets deleted.
+        foreach ($records as $record) {
+            $record->delete();
         }
     }
 

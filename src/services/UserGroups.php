@@ -254,27 +254,27 @@ class UserGroups extends Component
      */
     public function handleChangedUserGroup(ConfigEvent $event)
     {
-        $path = $event->path;
-
         // Does it match a user group?
-        if (preg_match('/' . self::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
-            if (Craft::$app->getEdition() !== Craft::Pro) {
-                Craft::$app->setEdition(Craft::Pro);
-            }
-
-            $uid = $matches[1];
-            $data = $event->newValue;
-
-            $groupRecord = UserGroupRecord::findOne(['uid' => $uid]) ?? new UserGroupRecord();
-            $groupRecord->name = $data['name'];
-            $groupRecord->handle = $data['handle'];
-            $groupRecord->uid = $uid;
-
-            $groupRecord->save(false);
-
-            // Prevent permission information from being saved. Allowing it would prevent the appropriate event from firing.
-            $event->newValue['permissions'] = $event->oldValue['permissions'] ?? [];
+        if (!preg_match('/' . self::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
+            return;
         }
+
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            Craft::$app->setEdition(Craft::Pro);
+        }
+
+        $uid = $matches[1];
+        $data = $event->newValue;
+
+        $groupRecord = UserGroupRecord::findOne(['uid' => $uid]) ?? new UserGroupRecord();
+        $groupRecord->name = $data['name'];
+        $groupRecord->handle = $data['handle'];
+        $groupRecord->uid = $uid;
+
+        $groupRecord->save(false);
+
+        // Prevent permission information from being saved. Allowing it would prevent the appropriate event from firing.
+        $event->newValue['permissions'] = $event->oldValue['permissions'] ?? [];
     }
 
     /**
@@ -284,16 +284,16 @@ class UserGroups extends Component
      */
     public function handleDeletedUserGroup(ConfigEvent $event)
     {
-        $path = $event->path;
-
         // Does it match a user group?
-        if (preg_match('/' . self::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
-            $uid = $matches[1];
-
-            Craft::$app->getDb()->createCommand()
-                ->delete('{{%usergroups}}', ['uid' => $uid])
-                ->execute();
+        if (!preg_match('/' . self::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
+            return;
         }
+
+        $uid = $matches[1];
+
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%usergroups}}', ['uid' => $uid])
+            ->execute();
     }
 
     /**

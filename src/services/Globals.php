@@ -395,74 +395,73 @@ class Globals extends Component
      */
     public function handleChangedGlobalSet(ConfigEvent $event)
     {
-        $path = $event->path;
-
         // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
-            $parts = explode('.', $path);
+        if (preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
+            $parts = explode('.', $event->path);
             Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a global set?
-        if (preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
-            $globalSetUid = $matches[1];
-            $data = $event->newValue;
+        if (!preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
+            return;
+        }
 
-            // Make sure fields are processed
-            ProjectConfigHelper::ensureAllSitesProcessed();
-            ProjectConfigHelper::ensureAllFieldsProcessed();
+        $globalSetUid = $matches[1];
+        $data = $event->newValue;
 
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                $globalSetRecord = $this->_getGlobalSetRecord($globalSetUid);
+        // Make sure fields are processed
+        ProjectConfigHelper::ensureAllSitesProcessed();
+        ProjectConfigHelper::ensureAllFieldsProcessed();
 
-                $globalSetRecord->name = $data['name'];
-                $globalSetRecord->handle = $data['handle'];
-                $globalSetRecord->uid = $globalSetUid;
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            $globalSetRecord = $this->_getGlobalSetRecord($globalSetUid);
 
-                if (!empty($data['fieldLayouts'])) {
-                    $fields = Craft::$app->getFields();
+            $globalSetRecord->name = $data['name'];
+            $globalSetRecord->handle = $data['handle'];
+            $globalSetRecord->uid = $globalSetUid;
 
-                    // Delete the field layout
-                    if ($globalSetRecord->fieldLayoutId) {
-                        $fields->deleteLayoutById($globalSetRecord->fieldLayoutId);
-                    }
+            if (!empty($data['fieldLayouts'])) {
+                $fields = Craft::$app->getFields();
 
-                    //Create the new layout
-                    $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
-                    $layout->type = GlobalSet::class;
-                    $layout->uid = key($data['fieldLayouts']);
-                    $fields->saveLayout($layout);
-                    $globalSetRecord->fieldLayoutId = $layout->id;
-                } else {
-                    $globalSetRecord->fieldLayoutId = null;
+                // Delete the field layout
+                if ($globalSetRecord->fieldLayoutId) {
+                    $fields->deleteLayoutById($globalSetRecord->fieldLayoutId);
                 }
 
-                // Make sure there's an element for it.
-                $setId = Db::idByUid('{{%globalsets}}', $globalSetUid);
-
-                if (!$setId) {
-                    $element = new GlobalSet();
-                } else {
-                    $element = GlobalSet::findOne($setId);
-                }
-
-                $element->name = $globalSetRecord->name;
-                $element->handle = $globalSetRecord->handle;
-                $element->fieldLayoutId = $globalSetRecord->fieldLayoutId;
-                Craft::$app->getElements()->saveElement($element, false);
-
-                // Save the volume
-                $globalSetRecord->id = $element->id;
-                $globalSetRecord->save(false);
-
-                $transaction->commit();
-            } catch (\Throwable $e) {
-                $transaction->rollBack();
-
-                throw $e;
+                //Create the new layout
+                $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                $layout->type = GlobalSet::class;
+                $layout->uid = key($data['fieldLayouts']);
+                $fields->saveLayout($layout);
+                $globalSetRecord->fieldLayoutId = $layout->id;
+            } else {
+                $globalSetRecord->fieldLayoutId = null;
             }
+
+            // Make sure there's an element for it.
+            $setId = Db::idByUid('{{%globalsets}}', $globalSetUid);
+
+            if (!$setId) {
+                $element = new GlobalSet();
+            } else {
+                $element = GlobalSet::findOne($setId);
+            }
+
+            $element->name = $globalSetRecord->name;
+            $element->handle = $globalSetRecord->handle;
+            $element->fieldLayoutId = $globalSetRecord->fieldLayoutId;
+            Craft::$app->getElements()->saveElement($element, false);
+
+            // Save the volume
+            $globalSetRecord->id = $element->id;
+            $globalSetRecord->save(false);
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
     }
 
@@ -497,45 +496,46 @@ class Globals extends Component
      */
     public function handleDeletedGlobalSet(ConfigEvent $event)
     {
-        $path = $event->path;
-
         // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
-            $parts = explode('.', $path);
+        if (preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
+            $parts = explode('.', $event->path);
             Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a global set?
-        if (preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
-            $uid = $matches[1];
+        if (!preg_match('/^' . self::CONFIG_GLOBALSETS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
+            return;
+        }
 
-            $globalSetRecord = $this->_getGlobalSetRecord($uid);
+        $uid = $matches[1];
 
-            if ($globalSetRecord->id) {
-                $transaction = Craft::$app->getDb()->beginTransaction();
+        $globalSetRecord = $this->_getGlobalSetRecord($uid);
 
-                try {
-                    // Delete the field layout
-                    $fieldLayoutId = (new Query())
-                        ->select(['fieldLayoutId'])
-                        ->from(['{{%globalsets}}'])
-                        ->where(['id' => $globalSetRecord->id])
-                        ->scalar();
+        if (!$globalSetRecord->id) {
+            return;
+        }
 
-                    if ($fieldLayoutId) {
-                        Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-                    }
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
-                    Craft::$app->getElements()->deleteElementById($globalSetRecord->id);
+        try {
+            // Delete the field layout
+            $fieldLayoutId = (new Query())
+                ->select(['fieldLayoutId'])
+                ->from(['{{%globalsets}}'])
+                ->where(['id' => $globalSetRecord->id])
+                ->scalar();
 
-                    $transaction->commit();
-                } catch (\Throwable $e) {
-                    $transaction->rollBack();
-
-                    throw $e;
-                }
+            if ($fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
             }
+
+            Craft::$app->getElements()->deleteElementById($globalSetRecord->id);
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
     }
 

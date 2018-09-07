@@ -1010,29 +1010,35 @@ class Users extends Component
      */
     public function handleChangedUserFieldLayout(ConfigEvent $event)
     {
-        $path = $event->path;
+        // Make sure this is for a user field layout
+        if (!preg_match('/' . self::CONFIG_USERLAYOUT_KEY . '/i', $event->path, $matches)) {
+            return;
+        }
 
         // Use this because we want this to trigger this if anything changes inside but ONLY ONCE
         static $parsed = false;
-
-        if (!$parsed && preg_match('/' . self::CONFIG_USERLAYOUT_KEY . '/i', $path, $matches)) {
-            $parsed = true;
-            $data = Craft::$app->getProjectConfig()->get(self::CONFIG_USERLAYOUT_KEY, true);
-
-            $fields = Craft::$app->getFields();
-            $fields->deleteLayoutsByType(User::class);
-
-            if ($data) {
-                // Make sure fields are processed
-                ProjectConfigHelper::ensureAllFieldsProcessed();
-
-                $layout = FieldLayout::createFromConfig(reset($data));
-
-                $layout->type = User::class;
-                $layout->uid = key($data);
-                $fields->saveLayout($layout);
-            }
+        if ($parsed) {
+            return;
         }
+
+        $parsed = true;
+        $data = Craft::$app->getProjectConfig()->get(self::CONFIG_USERLAYOUT_KEY, true);
+
+        $fields = Craft::$app->getFields();
+        $fields->deleteLayoutsByType(User::class);
+
+        if (!$data) {
+            return;
+        }
+
+        // Make sure fields are processed
+        ProjectConfigHelper::ensureAllFieldsProcessed();
+
+        $layout = FieldLayout::createFromConfig(reset($data));
+
+        $layout->type = User::class;
+        $layout->uid = key($data);
+        $fields->saveLayout($layout);
     }
 
     /**

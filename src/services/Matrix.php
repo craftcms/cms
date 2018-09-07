@@ -353,60 +353,57 @@ class Matrix extends Component
      */
     public function handleChangedBlockType(ConfigEvent $event)
     {
-        $path = $event->path;
-
         // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
-            $parts = explode('.', $path);
+        if (preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
+            $parts = explode('.', $event->path);
             Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a block type?
-        if (preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
+        if (!preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
+            return;
+        }
 
-            ProjectConfigHelper::ensureAllFieldsProcessed();
+        ProjectConfigHelper::ensureAllFieldsProcessed();
 
-            $blockTypeUid = $matches[1];
-            $data = $event->newValue;
+        $blockTypeUid = $matches[1];
+        $data = $event->newValue;
 
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                // Get the block type record
-                $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            // Get the block type record
+            $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
 
-                // Set the basic info on the new block type record
-                $blockTypeRecord->fieldId = Db::idByUid('{{%fields}}', $data['field']);
-                $blockTypeRecord->name = $data['name'];
-                $blockTypeRecord->handle = $data['handle'];
-                $blockTypeRecord->sortOrder = $data['sortOrder'];
-                $blockTypeRecord->uid = $blockTypeUid;
+            // Set the basic info on the new block type record
+            $blockTypeRecord->fieldId = Db::idByUid('{{%fields}}', $data['field']);
+            $blockTypeRecord->name = $data['name'];
+            $blockTypeRecord->handle = $data['handle'];
+            $blockTypeRecord->sortOrder = $data['sortOrder'];
+            $blockTypeRecord->uid = $blockTypeUid;
 
-                if (!empty($data['fieldLayouts'])) {
-                    $fields = Craft::$app->getFields();
+            if (!empty($data['fieldLayouts'])) {
+                $fields = Craft::$app->getFields();
 
-                    // Delete the field layout
-                    $fields->deleteLayoutById($blockTypeRecord->fieldLayoutId);
+                // Delete the field layout
+                $fields->deleteLayoutById($blockTypeRecord->fieldLayoutId);
 
-                    //Create the new layout
-                    $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
-                    $layout->type = MatrixBlock::class;
-                    $layout->uid = key($data['fieldLayouts']);
-                    $fields->saveLayout($layout);
-                    $blockTypeRecord->fieldLayoutId = $layout->id;
-                } else {
-                    $blockTypeRecord->fieldLayoutId = null;
-                }
-
-                // Save it
-                $blockTypeRecord->save(false);
-
-                $transaction->commit();
-            } catch (\Throwable $e) {
-                $transaction->rollBack();
-
-                throw $e;
+                //Create the new layout
+                $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                $layout->type = MatrixBlock::class;
+                $layout->uid = key($data['fieldLayouts']);
+                $fields->saveLayout($layout);
+                $blockTypeRecord->fieldLayoutId = $layout->id;
+            } else {
+                $blockTypeRecord->fieldLayoutId = null;
             }
+
+            // Save it
+            $blockTypeRecord->save(false);
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
     }
 
@@ -473,47 +470,48 @@ class Matrix extends Component
      */
     public function handleDeletedBlockType(ConfigEvent $event)
     {
-        $path = $event->path;
-
         // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
-            $parts = explode('.', $path);
+        if (preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
+            $parts = explode('.', $event->path);
             Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a block type?
-        if (preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
+        if (!preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
+            return;
+        }
 
-            $blockTypeUid = $matches[1];
-            $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
+        $blockTypeUid = $matches[1];
+        $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
 
-            if ($blockTypeRecord->id) {
-                $db = Craft::$app->getDb();
-                $transaction = $db->beginTransaction();
+        if (!$blockTypeRecord->id) {
+            return;
+        }
 
-                try {
-                    // Delete the field layout
-                    $fieldLayoutId = (new Query())
-                        ->select(['fieldLayoutId'])
-                        ->from(['{{%matrixblocktypes}}'])
-                        ->where(['id' => $blockTypeRecord->id])
-                        ->scalar();
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
 
-                    // Delete the field layout
-                    Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+        try {
+            // Delete the field layout
+            $fieldLayoutId = (new Query())
+                ->select(['fieldLayoutId'])
+                ->from(['{{%matrixblocktypes}}'])
+                ->where(['id' => $blockTypeRecord->id])
+                ->scalar();
 
-                    // Finally delete the actual block type
-                    Craft::$app->getDb()->createCommand()
-                        ->delete('{{%matrixblocktypes}}', ['id' => $blockTypeRecord->id])
-                        ->execute();
-                    $transaction->commit();
-                } catch (\Throwable $e) {
-                    $transaction->rollBack();
+            // Delete the field layout
+            Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
 
-                    throw $e;
-                }
-            }
+            // Finally delete the actual block type
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%matrixblocktypes}}', ['id' => $blockTypeRecord->id])
+                ->execute();
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
     }
 

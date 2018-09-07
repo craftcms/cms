@@ -482,77 +482,75 @@ class Volumes extends Component
      */
     public function handleChangedVolume(ConfigEvent $event)
     {
-        $path = $event->path;
-
         // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
-            $parts = explode('.', $path);
+        if (preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
+            $parts = explode('.', $event->path);
             Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a volume?
-        if (preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
+        if (!preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
+            return;
+        }
 
-            $volumeUid = $matches[1];
-            $data = $event->newValue;
+        $volumeUid = $matches[1];
+        $data = $event->newValue;
 
-            // Make sure fields are processed
-            ProjectConfigHelper::ensureAllFieldsProcessed();
+        // Make sure fields are processed
+        ProjectConfigHelper::ensureAllFieldsProcessed();
 
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                $volumeRecord = $this->_getVolumeRecord($volumeUid);
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            $volumeRecord = $this->_getVolumeRecord($volumeUid);
 
-                $volumeRecord->name = $data['name'];
-                $volumeRecord->handle = $data['handle'];
-                $volumeRecord->type = $data['type'];
-                $volumeRecord->hasUrls = $data['hasUrls'];
-                $volumeRecord->url = !empty($data['url']) ? $data['url'] : null;
-                $volumeRecord->settings = $data['settings'];
-                $volumeRecord->uid = $volumeUid;
+            $volumeRecord->name = $data['name'];
+            $volumeRecord->handle = $data['handle'];
+            $volumeRecord->type = $data['type'];
+            $volumeRecord->hasUrls = $data['hasUrls'];
+            $volumeRecord->url = !empty($data['url']) ? $data['url'] : null;
+            $volumeRecord->settings = $data['settings'];
+            $volumeRecord->uid = $volumeUid;
 
-                if (!empty($data['fieldLayouts'])) {
-                    $fields = Craft::$app->getFields();
+            if (!empty($data['fieldLayouts'])) {
+                $fields = Craft::$app->getFields();
 
-                    // Delete the field layout
-                    $fields->deleteLayoutById($volumeRecord->fieldLayoutId);
+                // Delete the field layout
+                $fields->deleteLayoutById($volumeRecord->fieldLayoutId);
 
-                    //Create the new layout
-                    $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
-                    $layout->type = Asset::class;
-                    $layout->uid = key($data['fieldLayouts']);
-                    $fields->saveLayout($layout);
-                    $volumeRecord->fieldLayoutId = $layout->id;
-                } else {
-                    $volumeRecord->fieldLayoutId = null;
-                }
-
-                // Save the volume
-                $volumeRecord->save(false);
-
-                $assets = Craft::$app->getAssets();
-                $topFolder = $assets->findFolder([
-                    'volumeId' => $volumeRecord->id,
-                    'parentId' => ':empty:'
-                ]);
-
-                if ($topFolder === null) {
-                    $topFolder = new VolumeFolder([
-                        'volumeId' => $volumeRecord->id,
-                        'parentId' => null,
-                        'name' => $volumeRecord->name,
-                        'path' => ''
-                    ]);
-                    $topFolder->save();
-                }
-
-                $transaction->commit();
-            } catch (\Throwable $e) {
-                $transaction->rollBack();
-
-                throw $e;
+                //Create the new layout
+                $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                $layout->type = Asset::class;
+                $layout->uid = key($data['fieldLayouts']);
+                $fields->saveLayout($layout);
+                $volumeRecord->fieldLayoutId = $layout->id;
+            } else {
+                $volumeRecord->fieldLayoutId = null;
             }
+
+            // Save the volume
+            $volumeRecord->save(false);
+
+            $assets = Craft::$app->getAssets();
+            $topFolder = $assets->findFolder([
+                'volumeId' => $volumeRecord->id,
+                'parentId' => ':empty:'
+            ]);
+
+            if ($topFolder === null) {
+                $topFolder = new VolumeFolder([
+                    'volumeId' => $volumeRecord->id,
+                    'parentId' => null,
+                    'name' => $volumeRecord->name,
+                    'path' => ''
+                ]);
+                $topFolder->save();
+            }
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
     }
 
@@ -717,60 +715,60 @@ class Volumes extends Component
      */
     public function handleDeletedVolume(ConfigEvent $event)
     {
-        $path = $event->path;
-
         // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\./i', $path)) {
-            $parts = explode('.', $path);
+        if (preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
+            $parts = explode('.', $event->path);
             Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
             return;
         }
 
         // Does it match a volume
-        if (preg_match('/' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $path, $matches)) {
-            $uid = $matches[1];
+        if (!preg_match('/' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
+            return;
+        }
 
-            $volumeRecord = $this->_getVolumeRecord($uid);
+        $uid = $matches[1];
+        $volumeRecord = $this->_getVolumeRecord($uid);
 
-            if ($volumeRecord) {
-                $db = Craft::$app->getDb();
-                $transaction = $db->beginTransaction();
+        if (!$volumeRecord) {
+            return;
+        }
 
-                try {
-                    // Delete the field layout
-                    $fieldLayoutId = (new Query())
-                        ->select(['fieldLayoutId'])
-                        ->from(['{{%volumes}}'])
-                        ->where(['id' => $volumeRecord->id])
-                        ->scalar();
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
 
-                    if ($fieldLayoutId) {
-                        Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-                    }
+        try {
+            // Delete the field layout
+            $fieldLayoutId = (new Query())
+                ->select(['fieldLayoutId'])
+                ->from(['{{%volumes}}'])
+                ->where(['id' => $volumeRecord->id])
+                ->scalar();
 
-                    // Delete the assets
-                    $assets = Asset::find()
-                        ->anyStatus()
-                        ->volumeId($volumeRecord->id)
-                        ->all();
-
-                    foreach ($assets as $asset) {
-                        $asset->keepFileOnDelete = true;
-                        Craft::$app->getElements()->deleteElement($asset);
-                    }
-
-                    // Nuke the asset volume.
-                    $db->createCommand()
-                        ->delete('{{%volumes}}', ['id' => $volumeRecord->id])
-                        ->execute();
-
-                    $transaction->commit();
-                } catch (\Throwable $e) {
-                    $transaction->rollBack();
-
-                    throw $e;
-                }
+            if ($fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
             }
+
+            // Delete the assets
+            $assets = Asset::find()
+                ->anyStatus()
+                ->volumeId($volumeRecord->id)
+                ->all();
+
+            foreach ($assets as $asset) {
+                $asset->keepFileOnDelete = true;
+                Craft::$app->getElements()->deleteElement($asset);
+            }
+
+            // Nuke the asset volume.
+            $db->createCommand()
+                ->delete('{{%volumes}}', ['id' => $volumeRecord->id])
+                ->execute();
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
     }
 
