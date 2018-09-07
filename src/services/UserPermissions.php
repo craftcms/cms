@@ -416,14 +416,9 @@ class UserPermissions extends Component
      */
     public function handleChangedGroupPermissions(ConfigEvent $event)
     {
-        // Does it match user group permissions?
-        if (!preg_match('/' . UserGroups::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')\.permissions$/i', $event->path, $matches)) {
-            return;
-        }
-
         // Ensure all user groups are ready to roll
         ProjectConfigHelper::ensureAllUserGroupsProcessed();
-        $uid = $matches[1];
+        $uid = $event->tokenMatches[0];
         $permissions = $event->newValue;
         $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
 
@@ -458,11 +453,6 @@ class UserPermissions extends Component
      */
     public function handleChangedPermissions(ConfigEvent $event)
     {
-        // Does it match permissions?
-        if (!preg_match('/' . self::CONFIG_USERPERMISSIONS_KEY . '$/i', $event->path, $matches)) {
-            return;
-        }
-
         $data = $event->newValue;
         $records = UserPermissionRecord::find()
             ->where(['name' => $data])

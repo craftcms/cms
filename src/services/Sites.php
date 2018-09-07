@@ -298,13 +298,8 @@ class Sites extends Component
      */
     public function handleChangedGroup(ConfigEvent $event)
     {
-        // Does it match a field group?
-        if (!preg_match('/^' . self::CONFIG_SITEGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
         $data = $event->newValue;
-        $uid = $matches[1];
+        $uid = $event->tokenMatches[0];
 
         $groupRecord = $this->_getGroupRecord($uid);
 
@@ -324,13 +319,7 @@ class Sites extends Component
      */
     public function handleDeletedGroup(ConfigEvent $event)
     {
-        // Does it match a field group?
-        if (!preg_match('/^' . self::CONFIG_SITEGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
-        $uid = $matches[1];
-
+        $uid = $event->tokenMatches[0];
         $groupRecord = $this->_getGroupRecord($uid);
 
         if (!$groupRecord->id) {
@@ -725,12 +714,7 @@ class Sites extends Component
      */
     public function handleChangedSite(ConfigEvent $event)
     {
-        // Does it match a site?
-        if (!preg_match('/^' . self::CONFIG_SITES_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
-        $siteUid = $matches[1];
+        $siteUid = $event->tokenMatches[0];
         $data = $event->newValue;
         $groupUid = $data['siteGroup'];
 
@@ -1106,12 +1090,8 @@ class Sites extends Component
      */
     public function handleDeletedSite(ConfigEvent $event)
     {
-        // Does it match a site?
-        if (!preg_match('/^' . self::CONFIG_SITES_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
-        $siteRecord = $this->_getSiteRecord($matches[1]);
+        $siteUid = $event->tokenMatches[0];
+        $siteRecord = $this->_getSiteRecord($siteUid);
 
         if (!$siteRecord->id) {
             return;

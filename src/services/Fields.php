@@ -336,13 +336,8 @@ class Fields extends Component
      */
     public function handleChangedGroup(ConfigEvent $event)
     {
-        // Does it match a field group?
-        if (!preg_match('/^' . self::CONFIG_FIELDGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
         $data = $event->newValue;
-        $uid = $matches[1];
+        $uid = $event->tokenMatches[0];
 
         $groupRecord = $this->_getGroupRecord($uid);
 
@@ -362,12 +357,7 @@ class Fields extends Component
      */
     public function handleDeletedGroup(ConfigEvent $event)
     {
-        // Does it match a field group?
-        if (!preg_match('/^' . self::CONFIG_FIELDGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
-        $uid = $matches[1];
+        $uid = $event->tokenMatches[0];
         $groupRecord = $this->_getGroupRecord($uid);
 
         if (!$groupRecord->id) {
@@ -983,14 +973,9 @@ class Fields extends Component
      */
     public function handleChangedField(ConfigEvent $event)
     {
-        // Does it match a field?
-        if (!preg_match('/^' . self::CONFIG_FIELDS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
         $data = $event->newValue;
         $groupUid = $data['fieldGroup'];
-        $fieldUid = $matches[1];
+        $fieldUid = $event->tokenMatches[0];
 
         // Ensure we have the field group in place first
         if ($groupUid) {
@@ -1137,12 +1122,8 @@ class Fields extends Component
      */
     public function handleDeletedField(ConfigEvent $event)
     {
-        // Does it match a field?
-        if (!preg_match('/^' . self::CONFIG_FIELDS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
-        $fieldRecord = $this->_getFieldRecord($matches[1]);
+        $fieldUid = $event->tokenMatches[0];
+        $fieldRecord = $this->_getFieldRecord($fieldUid);
 
         if (!$fieldRecord->id) {
             return;

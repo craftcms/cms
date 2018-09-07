@@ -353,21 +353,9 @@ class Matrix extends Component
      */
     public function handleChangedBlockType(ConfigEvent $event)
     {
-        // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
-            $parts = explode('.', $event->path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
-            return;
-        }
-
-        // Does it match a block type?
-        if (!preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-        $blockTypeUid = $matches[1];
+        $blockTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -470,19 +458,7 @@ class Matrix extends Component
      */
     public function handleDeletedBlockType(ConfigEvent $event)
     {
-        // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
-            $parts = explode('.', $event->path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
-            return;
-        }
-
-        // Does it match a block type?
-        if (!preg_match('/^' . self::CONFIG_BLOCKTYPE_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
-        $blockTypeUid = $matches[1];
+        $blockTypeUid = $event->tokenMatches[0];
         $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
 
         if (!$blockTypeRecord->id) {

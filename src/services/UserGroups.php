@@ -254,16 +254,11 @@ class UserGroups extends Component
      */
     public function handleChangedUserGroup(ConfigEvent $event)
     {
-        // Does it match a user group?
-        if (!preg_match('/' . self::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
         if (Craft::$app->getEdition() !== Craft::Pro) {
             Craft::$app->setEdition(Craft::Pro);
         }
 
-        $uid = $matches[1];
+        $uid = $event->tokenMatches[0];
         $data = $event->newValue;
 
         $groupRecord = UserGroupRecord::findOne(['uid' => $uid]) ?? new UserGroupRecord();
@@ -284,12 +279,7 @@ class UserGroups extends Component
      */
     public function handleDeletedUserGroup(ConfigEvent $event)
     {
-        // Does it match a user group?
-        if (!preg_match('/' . self::CONFIG_USERPGROUPS_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
-        $uid = $matches[1];
+        $uid = $event->tokenMatches[0];
 
         Craft::$app->getDb()->createCommand()
             ->delete('{{%usergroups}}', ['uid' => $uid])

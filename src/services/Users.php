@@ -1010,11 +1010,6 @@ class Users extends Component
      */
     public function handleChangedUserFieldLayout(ConfigEvent $event)
     {
-        // Make sure this is for a user field layout
-        if (!preg_match('/' . self::CONFIG_USERLAYOUT_KEY . '/i', $event->path, $matches)) {
-            return;
-        }
-
         // Use this because we want this to trigger this if anything changes inside but ONLY ONCE
         static $parsed = false;
         if ($parsed) {

@@ -411,19 +411,7 @@ class Categories extends Component
      */
     public function handleChangedCategoryGroup(ConfigEvent $event)
     {
-        // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_CATEGORYROUP_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
-            $parts = explode('.', $event->path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
-            return;
-        }
-
-        // Does it match a category group?
-        if (!preg_match('/' . self::CONFIG_CATEGORYROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
-        $categoryGroupUid = $matches[1];
+        $categoryGroupUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
         // Make sure fields and sites are processed
@@ -680,20 +668,7 @@ class Categories extends Component
      */
     public function handleDeletedCategoryGroup(ConfigEvent $event)
     {
-        // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_CATEGORYROUP_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
-            $parts = explode('.', $event->path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
-            return;
-        }
-
-        // Does it match a category group?
-        if (!preg_match('/' . self::CONFIG_CATEGORYROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
-        $uid = $matches[1];
-
+        $uid = $event->tokenMatches[0];
         $categoryGroupRecord = $this->_getCategoryGroupRecord($uid);
 
         if (!$categoryGroupRecord->id) {

@@ -296,19 +296,7 @@ class Tags extends Component
      */
     public function handleChangedTagGroup(ConfigEvent $event)
     {
-        // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_TAGGROUP_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
-            $parts = explode('.', $event->path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
-            return;
-        }
-
-        // Does it match a tag group?
-        if (!preg_match('/' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
-        $tagGroupUid = $matches[1];
+        $tagGroupUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
         // Make sure fields are processed
@@ -411,20 +399,7 @@ class Tags extends Component
      */
     public function handleDeletedTagGroup(ConfigEvent $event)
     {
-        // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_TAGGROUP_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
-            $parts = explode('.', $event->path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
-            return;
-        }
-
-        // Does it match a tag group?
-        if (!preg_match('/' . self::CONFIG_TAGGROUP_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
-        $uid = $matches[1];
-
+        $uid = $event->tokenMatches[0];
         $tagGroupRecord = $this->_getTagGroupRecord($uid);
 
         if (!$tagGroupRecord->id) {

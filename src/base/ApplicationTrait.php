@@ -23,9 +23,19 @@ use craft\i18n\I18N;
 use craft\i18n\Locale;
 use craft\models\Info;
 use craft\queue\QueueInterface;
+use craft\services\Categories;
 use craft\services\Fields;
+use craft\services\Globals;
+use craft\services\Matrix;
 use craft\services\ProjectConfig;
+use craft\services\Sections;
 use craft\services\Security;
+use craft\services\Sites;
+use craft\services\Tags;
+use craft\services\UserGroups;
+use craft\services\UserPermissions;
+use craft\services\Users;
+use craft\services\Volumes;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\View;
@@ -1279,94 +1289,96 @@ trait ApplicationTrait
      */
     private function _registerConfigListeners()
     {
+        $projectConfigService = $this->getProjectConfig();
+
         // Field groups
         $fieldsService = $this->getFields();
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$fieldsService, 'handleChangedGroup']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$fieldsService, 'handleChangedGroup']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$fieldsService, 'handleDeletedGroup']);
+        $projectConfigService->onAdd(Fields::CONFIG_FIELDGROUP_KEY . '.{uid}', [$fieldsService, 'handleChangedGroup']);
+        $projectConfigService->onUpdate(Fields::CONFIG_FIELDGROUP_KEY . '.{uid}', [$fieldsService, 'handleChangedGroup']);
+        $projectConfigService->onRemove(Fields::CONFIG_FIELDGROUP_KEY . '.{uid}', [$fieldsService, 'handleDeletedGroup']);
 
         // Fields
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$fieldsService, 'handleChangedField']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$fieldsService, 'handleChangedField']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$fieldsService, 'handleDeletedField']);
+        $projectConfigService->onAdd(Fields::CONFIG_FIELDS_KEY . '.{uid}', [$fieldsService, 'handleChangedField']);
+        $projectConfigService->onUpdate(Fields::CONFIG_FIELDS_KEY . '.{uid}', [$fieldsService, 'handleChangedField']);
+        $projectConfigService->onRemove(Fields::CONFIG_FIELDS_KEY . '.{uid}', [$fieldsService, 'handleDeletedField']);
 
         // Block Types
         $matrixService = $this->getMatrix();
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$matrixService, 'handleChangedBlockType']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$matrixService, 'handleChangedBlockType']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$matrixService, 'handleDeletedBlockType']);
+        $projectConfigService->onAdd(Matrix::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$matrixService, 'handleChangedBlockType']);
+        $projectConfigService->onUpdate(Matrix::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$matrixService, 'handleChangedBlockType']);
+        $projectConfigService->onRemove(Matrix::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$matrixService, 'handleDeletedBlockType']);
 
         // Volumes
         $volumesService = $this->getVolumes();
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$volumesService, 'handleChangedVolume']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$volumesService, 'handleChangedVolume']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$volumesService, 'handleDeletedVolume']);
+        $projectConfigService->onAdd(Volumes::CONFIG_VOLUME_KEY . '.{uid}', [$volumesService, 'handleChangedVolume']);
+        $projectConfigService->onUpdate(Volumes::CONFIG_VOLUME_KEY . '.{uid}', [$volumesService, 'handleChangedVolume']);
+        $projectConfigService->onRemove(Volumes::CONFIG_VOLUME_KEY . '.{uid}', [$volumesService, 'handleDeletedVolume']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$volumesService, 'pruneDeletedField']);
 
         // Site groups
         $sitesService = $this->getSites();
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$sitesService, 'handleChangedGroup']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$sitesService, 'handleChangedGroup']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$sitesService, 'handleDeletedGroup']);
+        $projectConfigService->onAdd(Sites::CONFIG_SITEGROUP_KEY . '.{uid}', [$sitesService, 'handleChangedGroup']);
+        $projectConfigService->onUpdate(Sites::CONFIG_SITEGROUP_KEY . '.{uid}', [$sitesService, 'handleChangedGroup']);
+        $projectConfigService->onRemove(Sites::CONFIG_SITEGROUP_KEY . '.{uid}', [$sitesService, 'handleDeletedGroup']);
 
         // Sites
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$sitesService, 'handleChangedSite']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$sitesService, 'handleChangedSite']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$sitesService, 'handleDeletedSite']);
+        $projectConfigService->onAdd(Sites::CONFIG_SITES_KEY . '.{uid}', [$sitesService, 'handleChangedSite']);
+        $projectConfigService->onUpdate(Sites::CONFIG_SITES_KEY . '.{uid}', [$sitesService, 'handleChangedSite']);
+        $projectConfigService->onRemove(Sites::CONFIG_SITES_KEY . '.{uid}', [$sitesService, 'handleDeletedSite']);
 
         // Tags
         $tagsService = $this->getTags();
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$tagsService, 'handleChangedTagGroup']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$tagsService, 'handleChangedTagGroup']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$tagsService, 'handleDeletedTagGroup']);
+        $projectConfigService->onAdd(Tags::CONFIG_TAGGROUP_KEY . '.{uid}', [$tagsService, 'handleChangedTagGroup']);
+        $projectConfigService->onUpdate(Tags::CONFIG_TAGGROUP_KEY . '.{uid}', [$tagsService, 'handleChangedTagGroup']);
+        $projectConfigService->onRemove(Tags::CONFIG_TAGGROUP_KEY . '.{uid}', [$tagsService, 'handleDeletedTagGroup']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$tagsService, 'pruneDeletedField']);
 
         // Categories
         $categoriesService = $this->getCategories();
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$categoriesService, 'handleChangedCategoryGroup']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$categoriesService, 'handleChangedCategoryGroup']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$categoriesService, 'handleDeletedCategoryGroup']);
+        $projectConfigService->onAdd(Categories::CONFIG_CATEGORYROUP_KEY . '.{uid}', [$categoriesService, 'handleChangedCategoryGroup']);
+        $projectConfigService->onUpdate(Categories::CONFIG_CATEGORYROUP_KEY . '.{uid}', [$categoriesService, 'handleChangedCategoryGroup']);
+        $projectConfigService->onRemove(Categories::CONFIG_CATEGORYROUP_KEY . '.{uid}', [$categoriesService, 'handleDeletedCategoryGroup']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$categoriesService, 'pruneDeletedField']);
 
         // Permissions
         $userPermissionsService = $this->getUserPermissions();
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$userPermissionsService, 'handleChangedPermissions']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$userPermissionsService, 'handleChangedPermissions']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$userPermissionsService, 'handleChangedPermissions']);
+        $projectConfigService->onAdd(UserPermissions::CONFIG_USERPERMISSIONS_KEY, [$userPermissionsService, 'handleChangedPermissions']);
+        $projectConfigService->onUpdate(UserPermissions::CONFIG_USERPERMISSIONS_KEY, [$userPermissionsService, 'handleChangedPermissions']);
+        $projectConfigService->onRemove(UserPermissions::CONFIG_USERPERMISSIONS_KEY, [$userPermissionsService, 'handleChangedPermissions']);
 
         // User group permissions
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$userPermissionsService, 'handleChangedGroupPermissions']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$userPermissionsService, 'handleChangedGroupPermissions']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$userPermissionsService, 'handleChangedGroupPermissions']);
+        $projectConfigService->onAdd(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', [$userPermissionsService, 'handleChangedGroupPermissions']);
+        $projectConfigService->onUpdate(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', [$userPermissionsService, 'handleChangedGroupPermissions']);
+        $projectConfigService->onRemove(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', [$userPermissionsService, 'handleChangedGroupPermissions']);
 
         // User groups
         $userGroupsService = $this->getUserGroups();
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$userGroupsService, 'handleChangedUserGroup']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$userGroupsService, 'handleChangedUserGroup']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$userGroupsService, 'handleDeletedUserGroup']);
+        $projectConfigService->onAdd(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}', [$userGroupsService, 'handleChangedUserGroup']);
+        $projectConfigService->onUpdate(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}', [$userGroupsService, 'handleChangedUserGroup']);
+        $projectConfigService->onRemove(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}', [$userGroupsService, 'handleDeletedUserGroup']);
 
         // User field layout
         $usersService = $this->getUsers();
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$usersService, 'handleChangedUserFieldLayout']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$usersService, 'handleChangedUserFieldLayout']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$usersService, 'handleChangedUserFieldLayout']);
+        $projectConfigService->onAdd(Users::CONFIG_USERLAYOUT_KEY, [$usersService, 'handleChangedUserFieldLayout']);
+        $projectConfigService->onUpdate(Users::CONFIG_USERLAYOUT_KEY, [$usersService, 'handleChangedUserFieldLayout']);
+        $projectConfigService->onRemove(Users::CONFIG_USERLAYOUT_KEY, [$usersService, 'handleChangedUserFieldLayout']);
 
         // Global sets
         $globalsService = $this->getGlobals();
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$globalsService, 'handleChangedGlobalSet']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$globalsService, 'handleChangedGlobalSet']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$globalsService, 'handleDeletedGlobalSet']);
+        $projectConfigService->onAdd(Globals::CONFIG_GLOBALSETS_KEY . '.{uid}', [$globalsService, 'handleChangedGlobalSet']);
+        $projectConfigService->onUpdate(Globals::CONFIG_GLOBALSETS_KEY . '.{uid}', [$globalsService, 'handleChangedGlobalSet']);
+        $projectConfigService->onRemove(Globals::CONFIG_GLOBALSETS_KEY . '.{uid}', [$globalsService, 'handleDeletedGlobalSet']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$globalsService, 'pruneDeletedField']);
 
         // Sections
         $sectionsService = $this->getSections();
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$sectionsService, 'handleChangedSection']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$sectionsService, 'handleChangedSection']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$sectionsService, 'handleDeletedSection']);
+        $projectConfigService->onAdd(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionsService, 'handleChangedSection']);
+        $projectConfigService->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionsService, 'handleChangedSection']);
+        $projectConfigService->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionsService, 'handleDeletedSection']);
 
         // Entry Types
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_ADD_ITEM, [$sectionsService, 'handleChangedEntryType']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_UPDATE_ITEM, [$sectionsService, 'handleChangedEntryType']);
-        Event::on(ProjectConfig::class, ProjectConfig::EVENT_REMOVE_ITEM, [$sectionsService, 'handleDeletedEntryType']);
+        $projectConfigService->onAdd(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType']);
+        $projectConfigService->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType']);
+        $projectConfigService->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleDeletedEntryType']);
     }
 }

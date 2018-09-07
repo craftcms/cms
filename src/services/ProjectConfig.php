@@ -530,6 +530,78 @@ class ProjectConfig extends Component
         return true;
     }
 
+    // Config Change Event Registration
+    // -------------------------------------------------------------------------
+
+    /**
+     * Attaches an event handler for when an item is added to the config at a given path.
+     *
+     * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
+     * @param callable $handler The handler method.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
+     * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
+     */
+    public function onAdd(string $path, $handler, $data = null)
+    {
+        $this->registerChangeEventHandler(self::EVENT_ADD_ITEM, $path, $handler, $data);
+    }
+
+    /**
+     * Attaches an event handler for when an item is updated in the config at a given path.
+     *
+     * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
+     * @param callable $handler The handler method.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
+     * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
+     */
+    public function onUpdate(string $path, $handler, $data = null)
+    {
+        $this->registerChangeEventHandler(self::EVENT_UPDATE_ITEM, $path, $handler, $data);
+    }
+
+    /**
+     * Attaches an event handler for when an item is removed from the config at a given path.
+     *
+     * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
+     * @param callable $handler The handler method.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
+     * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
+     */
+    public function onRemove(string $path, $handler, $data = null)
+    {
+        $this->registerChangeEventHandler(self::EVENT_REMOVE_ITEM, $path, $handler, $data);
+    }
+
+    /**
+     * Registers a config change event listener, for a specific config path pattern.
+     *
+     * @param string $event The event name
+     * @param string $path The config path pattern. Can contain `{uid}` tokens, which will be passed to the handler.
+     * @param callable $handler The handler method.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
+     * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
+     */
+    public function registerChangeEventHandler(string $event, string $path, $handler, $data = null)
+    {
+        $pattern = '/^(?P<path>' . preg_quote($path, '/') . ')(?P<extra>\..+)?$/';
+        $pattern = str_replace('{uid}', '(' . self::UID_PATTERN . ')', $pattern);
+
+        $this->on($event, function(ConfigEvent $event) use ($pattern, $handler) {
+            if (preg_match($pattern, $event->path, $matches)) {
+                // Is this a nested path?
+                if (isset($matches['extra'])) {
+                    $this->processConfigChanges($matches['path']);
+                    return;
+                }
+
+                // Chop off [0] (full match) and ['path'] & [1] (requested path)
+                $event->tokenMatches = array_values(array_slice($matches, 3));
+                $handler($event);
+                $event->tokenMatches = null;
+            }
+        }, $data);
+    }
+
     // Private methods
     // =========================================================================
 

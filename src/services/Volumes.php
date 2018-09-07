@@ -482,19 +482,7 @@ class Volumes extends Component
      */
     public function handleChangedVolume(ConfigEvent $event)
     {
-        // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
-            $parts = explode('.', $event->path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
-            return;
-        }
-
-        // Does it match a volume?
-        if (!preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
-        $volumeUid = $matches[1];
+        $volumeUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
         // Make sure fields are processed
@@ -715,19 +703,7 @@ class Volumes extends Component
      */
     public function handleDeletedVolume(ConfigEvent $event)
     {
-        // If anything changes inside, just process the main entity
-        if (preg_match('/^' . self::CONFIG_VOLUME_KEY . '\.' . ProjectConfig::UID_PATTERN . '\./i', $event->path)) {
-            $parts = explode('.', $event->path);
-            Craft::$app->getProjectConfig()->processConfigChanges($parts[0] . '.' . $parts[1]);
-            return;
-        }
-
-        // Does it match a volume
-        if (!preg_match('/' . self::CONFIG_VOLUME_KEY . '\.(' . ProjectConfig::UID_PATTERN . ')$/i', $event->path, $matches)) {
-            return;
-        }
-
-        $uid = $matches[1];
+        $uid = $event->tokenMatches[0];
         $volumeRecord = $this->_getVolumeRecord($uid);
 
         if (!$volumeRecord) {
