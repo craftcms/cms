@@ -11,9 +11,6 @@ use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\Model;
-use craft\fields\PlainText;
-use craft\helpers\Db;
-use craft\records\FieldLayoutField;
 
 /**
  * FieldLayout model class.
@@ -113,32 +110,38 @@ class FieldLayout extends Model
     /**
      * Return a field layout created from config data.
      *
+     * @param array $config Config data to use.
      * @return static
      */
     public static function createFromConfig(array $config)
     {
         $layout = new FieldLayout();
 
-        // TODO this is horrible. Especially pretending to be a text field just to populate the tabs.
         $tabs = [];
-        foreach ($config['tabs'] as $tab) {
-            $layoutTab = new FieldLayoutTab();
-            $layoutTab->name = $tab['name'];
-            $layoutTab->sortOrder = $tab['sortOrder'];
+        $fieldService = Craft::$app->getFields();
 
-            if (!empty($tab['fields'])) {
-                $layoutFields = [];
-                foreach ($tab['fields'] as $uid => $field) {
-                    $layoutFields[] = Craft::$app->getFields()->createField([
-                        'type' => PlainText::class,
-                        'id' => Db::idByUid('{{%fields}}', $uid),
-                        'uid' => $uid,
-                        'sortOrder' => $field['sortOrder'],
-                        'required' => $field['required']
-                    ]);
+        if (!empty($config['tabs']) && is_array($config['tabs'])) {
+            foreach ($config['tabs'] as $tab) {
+                $layoutTab = new FieldLayoutTab();
+                $layoutTab->name = $tab['name'];
+                $layoutTab->sortOrder = $tab['sortOrder'];
+
+                if (!empty($tab['fields']) && is_array($tab['fields'])) {
+                    $layoutFields = [];
+
+                    foreach ($tab['fields'] as $uid => $field) {
+                        /** @var Field $createdField */
+                        $createdField = $fieldService->getFieldByUid($uid);
+
+                        if ($createdField) {
+                            $createdField->sortOrder = $field['sortOrder'];
+                            $createdField->required = $field['required'];
+                        }
+                    }
+
+                    $layoutTab->setFields($layoutFields);
+                    $tabs[] = $layoutTab;
                 }
-                $layoutTab->setFields($layoutFields);
-                $tabs[] = $layoutTab;
             }
         }
 
