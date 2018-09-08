@@ -584,7 +584,7 @@ class ProjectConfig extends Component
     public function registerChangeEventHandler(string $event, string $path, $handler, $data = null)
     {
         $pattern = '/^(?P<path>' . preg_quote($path, '/') . ')(?P<extra>\..+)?$/';
-        $pattern = str_replace('{uid}', '(' . self::UID_PATTERN . ')', $pattern);
+        $pattern = str_replace('\\{uid\\}', '(' . self::UID_PATTERN . ')', $pattern);
 
         $this->on($event, function(ConfigEvent $event) use ($pattern, $handler) {
             if (preg_match($pattern, $event->path, $matches)) {
