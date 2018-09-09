@@ -141,7 +141,7 @@ The `limit` and `offset` parameters will be ignored when you call `count()`.
 
 ### `ids()`
 
-If you just a list of matching element IDs, you can call `ids()`.
+If you just want a list of matching element IDs, you can call `ids()`.
 
 ::: code
 ```twig
