@@ -149,7 +149,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         $contexts = [];
         $layoutIds = [];
         foreach ($blockTypes as $blockType) {
-            $contexts[] = 'matrixBlockType:' . $blockType->id;
+            $contexts[] = 'matrixBlockType:' . $blockType->uid;
             $layoutIds[] = $blockType->fieldLayoutId;
         }
 
