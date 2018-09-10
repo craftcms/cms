@@ -56,6 +56,11 @@ class m180901_151639_fix_matrixcontent_tables extends Migration
                 $originalTableName = $originalField['settings']['contentTable'];
                 $originalSchema = $this->db->getTableSchema($originalTableName);
 
+                if ($originalSchema === null) {
+                    Craft::warning('Could not update the Matrix fields with the handle "' . $originalField['handle'] . '" because the content table doesn\'t exist.', __METHOD__);
+                    continue;
+                }
+
                 $originalFieldColumns = array_filter($originalSchema->getColumnNames(), function($columnName) {
                     return strpos($columnName, 'field_') === 0;
                 });
