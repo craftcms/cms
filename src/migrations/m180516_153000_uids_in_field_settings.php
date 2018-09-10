@@ -135,8 +135,8 @@ class m180516_153000_uids_in_field_settings extends Migration
                     $default = explode(':', $settings['defaultUploadLocationSource']);
                     $single = explode(':', $settings['singleUploadLocationSource']);
 
-                    $settings['defaultUploadLocationSource'] = $default[0].':'.$folders[$default[1]] ??  null;
-                    $settings['singleUploadLocationSource'] = $single[0].':'.$folders[$single[1]] ??  null;
+                    $settings['defaultUploadLocationSource'] = isset($folders[$default[1]]) ? $default[0].':'.$folders[$default[1]] :  null;
+                    $settings['singleUploadLocationSource'] = isset($folders[$single[1]]) ? $single[0].':'.$folders[$single[1]] :  null;
 
                     if (is_array($settings['sources'])) {
                         $newSources = [];
