@@ -254,16 +254,19 @@
             },
 
             loadPlugin(pluginId) {
-                this.loading = true
                 this.pluginSnippet = this.$store.getters.getPluginById(pluginId)
-                this.$store.commit(types.UPDATE_PLUGIN_DETAILS, null)
-                this.$store.dispatch('getPluginDetails', pluginId)
-                    .then(response => {
-                        this.loading = false
-                    })
-                    .catch(response => {
-                        this.loading = false
-                    })
+
+                if(!this.plugin || (this.plugin && this.plugin.id !== pluginId)) {
+                    this.loading = true
+                    this.$store.commit(types.UPDATE_PLUGIN_DETAILS, null)
+                    this.$store.dispatch('getPluginDetails', pluginId)
+                        .then(response => {
+                            this.loading = false
+                        })
+                        .catch(response => {
+                            this.loading = false
+                        })
+                }
             }
 
         },
