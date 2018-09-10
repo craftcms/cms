@@ -1,5 +1,4 @@
 import api from '../../api/craft'
-import * as types from '../mutation-types'
 
 /**
  * State
@@ -50,7 +49,7 @@ const actions = {
     getCraftData({commit}) {
         return new Promise((resolve, reject) => {
             api.getCraftData(response => {
-                commit(types.RECEIVE_CRAFT_DATA, {response})
+                commit('updateCraftData', {response})
                 resolve(response)
             }, response => {
                 reject(response)
@@ -59,7 +58,7 @@ const actions = {
     },
 
     updateCraftId({commit}, craftId) {
-        commit(types.RECEIVE_CRAFT_ID, craftId)
+        commit('updateCraftId', craftId)
     },
 
     tryEdition({commit}, edition) {
@@ -81,7 +80,7 @@ const actions = {
  */
 const mutations = {
 
-    [types.RECEIVE_CRAFT_DATA](state, {response}) {
+    updateCraftData(state, {response}) {
         state.CraftEdition = response.data.CraftEdition
         state.CraftPro = response.data.CraftPro
         state.CraftSolo = response.data.CraftSolo
@@ -97,7 +96,7 @@ const mutations = {
         state.defaultPluginSvg = response.data.defaultPluginSvg
     },
 
-    [types.RECEIVE_CRAFT_ID](state, {craftId}) {
+    updateCraftId(state, {craftId}) {
         state.craftId = craftId
     },
 

@@ -64,7 +64,7 @@
                 },
 
                 set(value) {
-                    this.$store.commit("CHANGE_IDENTITY_MODE", value)
+                    this.$store.commit('changeIdentityMode', value)
                 }
             },
 

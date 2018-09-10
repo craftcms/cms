@@ -1,5 +1,4 @@
 import api from '../../api/pluginstore'
-import * as types from '../mutation-types'
 
 /**
  * State
@@ -84,7 +83,7 @@ const actions = {
     getDeveloper({commit}, developerId) {
         return new Promise((resolve, reject) => {
             api.getDeveloper(developerId, developer => {
-                commit(types.RECEIVE_DEVELOPER, {developer})
+                commit('updateDeveloper', {developer})
                 resolve(developer)
             }, response => {
                 reject(response)
@@ -95,7 +94,7 @@ const actions = {
     getPluginStoreData({commit}) {
         return new Promise((resolve, reject) => {
             api.getPluginStoreData(response => {
-                commit(types.RECEIVE_PLUGIN_STORE_DATA, {response})
+                commit('updatePluginStoreData', {response})
                 resolve(response)
             }, response => {
                 reject(response)
@@ -106,7 +105,7 @@ const actions = {
     getPluginDetails({commit}, pluginId) {
         return new Promise((resolve, reject) => {
             api.getPluginDetails(pluginId, response => {
-                commit(types.UPDATE_PLUGIN_DETAILS, response.data)
+                commit('updatePluginDetails', response.data)
                 resolve(response)
             }, response => {
                 reject(response)
@@ -121,17 +120,17 @@ const actions = {
  */
 const mutations = {
 
-    [types.RECEIVE_DEVELOPER](state, {developer}) {
+    updateDeveloper(state, {developer}) {
         state.developer = developer
     },
 
-    [types.RECEIVE_PLUGIN_STORE_DATA](state, {response}) {
+    updatePluginStoreData(state, {response}) {
         state.categories = response.data.categories
         state.featuredPlugins = response.data.featuredPlugins
         state.plugins = response.data.plugins
     },
 
-    [types.UPDATE_PLUGIN_DETAILS](state, pluginDetails) {
+    updatePluginDetails(state, pluginDetails) {
         state.plugin = pluginDetails
     },
 

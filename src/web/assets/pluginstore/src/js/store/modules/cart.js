@@ -1,5 +1,4 @@
 import api from '../../api/cart'
-import * as types from '../mutation-types'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
@@ -87,7 +86,7 @@ const actions = {
             }
 
             api.updateCart(cart.number, data, response => {
-                commit(types.RECEIVE_CART, {response})
+                commit('updateCart', {response})
                 resolve(response)
             }, response => {
                 reject(response)
@@ -107,7 +106,7 @@ const actions = {
             }
 
             api.updateCart(cart.number, data, response => {
-                commit(types.RECEIVE_CART, {response})
+                commit('updateCart', {response})
                 resolve(response)
             }, response => {
                 reject(response)
@@ -134,7 +133,7 @@ const actions = {
                     if (orderNumber) {
                         api.getCart(orderNumber, response => {
                             if (!response.error) {
-                                commit(types.RECEIVE_CART, {response})
+                                commit('updateCart', {response})
                                 resolve(response)
                             } else {
                                 // Couldn’t get cart for this order number? Try to create a new one.
@@ -145,7 +144,7 @@ const actions = {
                                 }
 
                                 api.createCart(data, response2 => {
-                                    commit(types.RECEIVE_CART, {response: response2})
+                                    commit('updateCart', {response: response2})
                                     dispatch('saveOrderNumber', {orderNumber: response2.cart.number})
                                     resolve(response)
                                 }, response => {
@@ -164,7 +163,7 @@ const actions = {
                         }
 
                         api.createCart(data, response => {
-                            commit(types.RECEIVE_CART, {response})
+                            commit('updateCart', {response})
                             dispatch('saveOrderNumber', {orderNumber: response.cart.number})
                             resolve(response)
                         }, response => {
@@ -181,7 +180,7 @@ const actions = {
 
             api.updateCart(cart.number, data, response => {
                 if (!response.errors) {
-                    commit(types.RECEIVE_CART, {response})
+                    commit('updateCart', {response})
                     resolve(response)
                 } else {
                     reject(response)
@@ -194,7 +193,7 @@ const actions = {
 
     resetCart({commit, dispatch}) {
         return new Promise((resolve, reject) => {
-            commit(types.RESET_CART)
+            commit('resetCart')
             dispatch('resetOrderNumber')
             dispatch('getCart')
                 .then(response => {
@@ -265,16 +264,16 @@ const actions = {
  */
 const mutations = {
 
-    [types.RECEIVE_CART](state, {response}) {
+    updateCart(state, {response}) {
         state.cart = response.cart
         state.stripePublicKey = response.stripePublicKey
     },
 
-    [types.RESET_CART](state) {
+    resetCart(state) {
         state.cart = null
     },
 
-    [types.CHANGE_IDENTITY_MODE](state, mode) {
+    changeIdentityMode(state, mode) {
         state.identityMode = mode
     }
 

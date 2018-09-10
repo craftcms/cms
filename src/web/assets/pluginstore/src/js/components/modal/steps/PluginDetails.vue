@@ -117,7 +117,6 @@
 </template>
 
 <script>
-    import * as types from '../../../store/mutation-types'
     import {mapState, mapGetters, mapActions} from 'vuex'
 
     export default {
@@ -258,7 +257,7 @@
 
                 if(!this.plugin || (this.plugin && this.plugin.id !== pluginId)) {
                     this.loading = true
-                    this.$store.commit(types.UPDATE_PLUGIN_DETAILS, null)
+                    this.$store.commit('updatePluginDetails', null)
                     this.$store.dispatch('getPluginDetails', pluginId)
                         .then(response => {
                             this.loading = false
