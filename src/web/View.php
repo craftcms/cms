@@ -517,7 +517,8 @@ class View extends \yii\web\View
         $e = null;
         try {
             $output = $templateObj->render($variables);
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         $this->_renderingTemplate = $lastRenderingTemplate;
         $twig->setDefaultEscaperStrategy();
