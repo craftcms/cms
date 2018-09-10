@@ -535,7 +535,7 @@ abstract class BaseUpdaterController extends Controller
         }
 
         if (empty($details)) {
-            $details[] = 'Exception of class '.get_class($e).' was thrown.';
+            $details[] = 'Exception of class ' . get_class($e) . ' was thrown.';
         }
 
         return implode("\n\n", $details);

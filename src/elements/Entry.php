@@ -17,7 +17,6 @@ use craft\elements\actions\NewChild;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SetStatus;
 use craft\elements\actions\View;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;

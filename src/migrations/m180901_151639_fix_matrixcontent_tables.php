@@ -7,7 +7,6 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\fields\Matrix;
 use craft\helpers\Json;
-use yii\db\Expression;
 
 /**
  * m180901_151639_fix_matrixcontent_tables migration.
@@ -123,10 +122,11 @@ class m180901_151639_fix_matrixcontent_tables extends Migration
     private function _cleanUpTable(int $fieldId, string $tableName, array $originalFieldColumns)
     {
         // delete the rows we don't need
-        $this->delete($tableName, ['not in', 'elementId', (new Query())
-            ->select(['id'])
-            ->from(['{{%matrixblocks}}'])
-            ->where(['fieldId' => $fieldId])
+        $this->delete($tableName, [
+            'not in', 'elementId', (new Query())
+                ->select(['id'])
+                ->from(['{{%matrixblocks}}'])
+                ->where(['fieldId' => $fieldId])
         ]);
 
         // get all of the columns this field needs
