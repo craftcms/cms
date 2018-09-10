@@ -9,6 +9,7 @@ namespace craft\base;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\StringHelper;
 
 /**
  * Model base class.
@@ -101,6 +102,35 @@ abstract class Model extends \yii\base\Model
                 $this->addError($attrPrefix . $attribute, $error);
             }
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasErrors($attribute = null)
+    {
+        $includeNested = $attribute !== null && StringHelper::endsWith($attribute, '.*');
+
+        if ($includeNested) {
+            $attribute = StringHelper::removeRight($attribute, '.*');
+        }
+
+        if (parent::hasErrors($attribute)) {
+            return true;
+        }
+
+        if ($includeNested) {
+            foreach ($this->getErrors() as $attr => $errors) {
+                if (strpos($attr, $attribute . '.') === 0) {
+                    return true;
+                }
+                if (strpos($attr, $attribute . '[') === 0) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     // Deprecated Methods

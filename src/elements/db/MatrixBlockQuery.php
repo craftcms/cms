@@ -463,7 +463,7 @@ class MatrixBlockQuery extends ElementQuery
             $matrixField = Craft::$app->getFields()->getFieldById($this->fieldId);
 
             if ($matrixField) {
-                $this->contentTable = Craft::$app->getMatrix()->getContentTableName($matrixField);
+                $this->contentTable = $matrixField->contentTable;
             }
         }
 

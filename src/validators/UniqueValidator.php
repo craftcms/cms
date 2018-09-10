@@ -10,7 +10,7 @@ namespace craft\validators;
 use Craft;
 use craft\helpers\StringHelper;
 use yii\base\Model;
-use yii\db\ActiveRecordInterface;
+use yii\db\ActiveRecord;
 use yii\validators\UniqueValidator as YiiUniqueValidator;
 
 /**
@@ -55,7 +55,7 @@ class UniqueValidator extends YiiUniqueValidator
     {
         if ($targetClass = $this->targetClass) {
             // Exclude this model's row using the filter
-            /** @var ActiveRecordInterface|string $targetClass */
+            /** @var ActiveRecord|string $targetClass */
             $pks = $targetClass::primaryKey();
             if ($this->pk !== null) {
                 $pkMap = is_string($this->pk) ? StringHelper::split($this->pk) : $this->pk;
@@ -65,6 +65,7 @@ class UniqueValidator extends YiiUniqueValidator
 
             $exists = false;
             $filter = ['and'];
+            $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($targetClass::tableName());
 
             foreach ($pkMap as $k => $v) {
                 if (is_int($k)) {
@@ -77,7 +78,7 @@ class UniqueValidator extends YiiUniqueValidator
 
                 if ($model->$pkAttribute) {
                     $exists = true;
-                    $filter[] = ['not', [$pkColumn => $model->$pkAttribute]];
+                    $filter[] = ['not', ["$tableName.$pkColumn" => $model->$pkAttribute]];
                 }
             }
 

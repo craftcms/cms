@@ -292,70 +292,70 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Uppercases the first character of a multibyte string.
      *
-     * @param string $string The multibyte string.
+     * @param mixed $string The multibyte string.
      * @return string The string with the first character converted to upercase.
      */
-    public function ucfirstFilter(string $string): string
+    public function ucfirstFilter($string): string
     {
-        return StringHelper::upperCaseFirst($string);
+        return StringHelper::upperCaseFirst((string)$string);
     }
 
     /**
      * Lowercases the first character of a multibyte string.
      *
-     * @param string $string The multibyte string.
+     * @param mixed $string The multibyte string.
      * @return string The string with the first character converted to lowercase.
      */
-    public function lcfirstFilter(string $string): string
+    public function lcfirstFilter($string): string
     {
-        return StringHelper::lowercaseFirst($string);
+        return StringHelper::lowercaseFirst((string)$string);
     }
 
     /**
      * kebab-cases a string.
      *
-     * @param string $string The string
+     * @param mixed $string The string
      * @param string $glue The string used to glue the words together (default is a hyphen)
      * @param bool $lower Whether the string should be lowercased (default is true)
      * @param bool $removePunctuation Whether punctuation marks should be removed (default is true)
      * @return string The kebab-cased string
      */
-    public function kebabFilter(string $string, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string
+    public function kebabFilter($string, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string
     {
-        return StringHelper::toKebabCase($string, $glue, $lower, $removePunctuation);
+        return StringHelper::toKebabCase((string)$string, $glue, $lower, $removePunctuation);
     }
 
     /**
      * camelCases a string.
      *
-     * @param string $string The string
+     * @param mixed $string The string
      * @return string
      */
-    public function camelFilter(string $string): string
+    public function camelFilter($string): string
     {
-        return StringHelper::toCamelCase($string);
+        return StringHelper::toCamelCase((string)$string);
     }
 
     /**
      * PascalCases a string.
      *
-     * @param string $string The string
+     * @param mixed $string The string
      * @return string
      */
-    public function pascalFilter(string $string): string
+    public function pascalFilter($string): string
     {
-        return StringHelper::toPascalCase($string);
+        return StringHelper::toPascalCase((string)$string);
     }
 
     /**
      * snake_cases a string.
      *
-     * @param string $string The string
+     * @param mixed $string The string
      * @return string
      */
-    public function snakeFilter(string $string): string
+    public function snakeFilter($string): string
     {
-        return StringHelper::toSnakeCase($string);
+        return StringHelper::toSnakeCase((string)$string);
     }
 
 
@@ -386,12 +386,14 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Returns an array without certain values.
      *
-     * @param array $arr
+     * @param mixed $arr
      * @param mixed $exclude
      * @return array
      */
-    public function withoutFilter(array $arr, $exclude): array
+    public function withoutFilter($arr, $exclude): array
     {
+        $arr = (array)$arr;
+
         if (!is_array($exclude)) {
             $exclude = [$exclude];
         }
@@ -406,13 +408,13 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Parses a string for reference tags.
      *
-     * @param string $str
+     * @param mixed $str
      * @param int|null $siteId
      * @return \Twig_Markup
      */
-    public function parseRefsFilter(string $str, int $siteId = null): \Twig_Markup
+    public function parseRefsFilter($str, int $siteId = null): \Twig_Markup
     {
-        $str = Craft::$app->getElements()->parseRefs($str, $siteId);
+        $str = Craft::$app->getElements()->parseRefs((string)$str, $siteId);
 
         return TemplateHelper::raw($str);
     }
@@ -565,12 +567,12 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Encrypts and base64-encodes a string.
      *
-     * @param string $str the string
+     * @param mixed $str the string
      * @return string
      */
-    public function encencFilter(string $str): string
+    public function encencFilter($str): string
     {
-        return StringHelper::encenc($str);
+        return StringHelper::encenc((string)$str);
     }
 
     /**
@@ -640,30 +642,30 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Escapes commas and asterisks in a string so they are not treated as special characters in
      * [[Db::parseParam()]].
      *
-     * @param string $value The param value.
+     * @param mixed $value The param value.
      * @return string The escaped param value.
      */
-    public function literalFilter(string $value): string
+    public function literalFilter($value): string
     {
-        return Db::escapeParam($value);
+        return Db::escapeParam((string)$value);
     }
 
     /**
      * Parses text through Markdown.
      *
-     * @param string $markdown The markdown text to parse
+     * @param mixed $markdown The markdown text to parse
      * @param string|null $flavor The markdown flavor to use. Can be 'original', 'gfm' (GitHub-Flavored Markdown),
      * 'gfm-comment' (GFM with newlines converted to `<br>`s),
      * or 'extra' (Markdown Extra). Default is 'original'.
      * @param bool $inlineOnly Whether to only parse inline elements, omitting any `<p>` tags.
      * @return \Twig_Markup
      */
-    public function markdownFilter(string $markdown, string $flavor = null, bool $inlineOnly = false): \Twig_Markup
+    public function markdownFilter($markdown, string $flavor = null, bool $inlineOnly = false): \Twig_Markup
     {
         if ($inlineOnly) {
-            $html = Markdown::processParagraph($markdown, $flavor);
+            $html = Markdown::processParagraph((string)$markdown, $flavor);
         } else {
-            $html = Markdown::process($markdown, $flavor);
+            $html = Markdown::process((string)$markdown, $flavor);
         }
 
         return TemplateHelper::raw($html);
@@ -672,7 +674,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Duplicates an array and sorts it with [[\craft\helpers\ArrayHelper::multisort()]].
      *
-     * @param array $array the array to be sorted. The array will be modified after calling this method.
+     * @param mixed $array the array to be sorted. The array will be modified after calling this method.
      * @param string|\Closure|array $key the key(s) to be sorted by. This refers to a key name of the sub-array
      * elements, a property name of the objects, or an anonymous function returning the values for comparison
      * purpose. The anonymous function signature should be: `function($item)`.
@@ -687,7 +689,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @throws InvalidArgumentException if the $direction or $sortFlag parameters do not have
      * correct number of elements as that of $key.
      */
-    public function multisortFilter(array $array, $key, $direction = SORT_ASC, $sortFlag = SORT_REGULAR): array
+    public function multisortFilter($array, $key, $direction = SORT_ASC, $sortFlag = SORT_REGULAR): array
     {
         // Prevent multisort() from modifying the original array
         $array = array_merge($array);

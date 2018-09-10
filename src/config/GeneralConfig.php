@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Localization;
 use craft\helpers\StringHelper;
+use craft\services\Config;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -62,7 +63,7 @@ class GeneralConfig extends BaseObject
      * @var string[] The file extensions Craft should allow when a user is uploading files.
      * @see extraAllowedFileExtensions
      */
-    public $allowedFileExtensions = ['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jp2', 'jpeg', 'jpg', 'jpx', 'js', 'm2t', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'wma', 'wmv', 'xls', 'xlsx', 'zip'];
+    public $allowedFileExtensions = ['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jp2', 'jpeg', 'jpg', 'jpx', 'js', 'json', 'm2t', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'wma', 'wmv', 'xls', 'xlsx', 'zip'];
     /**
      * @var bool Whether users should be allowed to create similarly-named tags.
      */
@@ -280,6 +281,13 @@ class GeneralConfig extends BaseObject
      * @see allowedFileExtensions
      */
     public $extraAllowedFileExtensions;
+    /**
+     * @var string[]|null List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
+     *
+     * Only use this setting if your server has the Intl PHP extension, or if you’ve saved the corresponding
+     * [locale data](https://github.com/craftcms/locales) into your `config/locales/` folder.
+     */
+    public $extraAppLocales;
     /**
      * @var string|bool The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
      */
@@ -740,9 +748,11 @@ class GeneralConfig extends BaseObject
             'validationKey' => 'securityKey',
         ];
 
+        $configFilePath = null;
         foreach ($renamedSettings as $old => $new) {
             if (array_key_exists($old, $config)) {
-                Craft::$app->getDeprecator()->log($old, "The {$old} config setting has been renamed to {$new}.");
+                $configFilePath = $configFilePath ?? Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
+                Craft::$app->getDeprecator()->log($old, "The {$old} config setting has been renamed to {$new}.", $configFilePath);
                 $config[$new] = $config[$old];
                 unset($config[$old]);
             }
@@ -832,9 +842,16 @@ class GeneralConfig extends BaseObject
             } catch (InvalidArgumentException $e) {
                 throw new InvalidConfigException($e->getMessage(), 0, $e);
             }
+        }
 
-            if (!in_array($this->defaultCpLanguage, Craft::$app->getI18n()->getAppLocaleIds())) {
-                throw new InvalidConfigException('Unsupported language: ' . $this->defaultCpLanguage);
+        // Normalize the extra app locales
+        if (!empty($this->extraAppLocales)) {
+            foreach ($this->extraAppLocales as $i => $localeId) {
+                try {
+                    $this->extraAppLocales[$i] = Localization::normalizeLanguage($localeId);
+                } catch (InvalidArgumentException $e) {
+                    throw new InvalidConfigException($e->getMessage(), 0, $e);
+                }
             }
         }
     }

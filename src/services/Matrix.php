@@ -67,11 +67,6 @@ class Matrix extends Component
      */
     private $_uniqueBlockTypeAndFieldHandles = [];
 
-    /**
-     * @var
-     */
-    private $_parentMatrixFields;
-
     // Public Methods
     // =========================================================================
 
@@ -373,8 +368,7 @@ class Matrix extends Component
             $originalContentTable = $contentService->contentTable;
             /** @var MatrixField $matrixField */
             $matrixField = $fieldsService->getFieldById($blockType->fieldId);
-            $newContentTable = $this->getContentTableName($matrixField);
-            $contentService->contentTable = $newContentTable;
+            $contentService->contentTable = $matrixField->contentTable;
 
             // Set the new fieldColumnPrefix
             $originalFieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
@@ -464,19 +458,16 @@ class Matrix extends Component
     public function saveSettings(MatrixField $matrixField, bool $validate = true): bool
     {
         if (!$validate || $this->validateFieldSettings($matrixField)) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
+            $db = Craft::$app->getDb();
+            $transaction = $db->beginTransaction();
             try {
                 // Create the content table first since the block type fields will need it
-                $oldContentTable = $this->getContentTableName($matrixField, true);
-                $newContentTable = $this->getContentTableName($matrixField);
-
-                if ($newContentTable === false) {
-                    throw new Exception('There was a problem getting the new content table name.');
-                }
+                $oldContentTable = $matrixField->getOldContentTable();
+                $newContentTable = $matrixField->contentTable;
 
                 // Do we need to create/rename the content table?
-                if (!Craft::$app->getDb()->tableExists($newContentTable)) {
-                    if ($oldContentTable !== false && Craft::$app->getDb()->tableExists($oldContentTable)) {
+                if (!$db->tableExists($newContentTable)) {
+                    if ($oldContentTable && $db->tableExists($oldContentTable)) {
                         MigrationHelper::renameTable($oldContentTable, $newContentTable);
                     } else {
                         $this->_createContentTable($newContentTable);
@@ -544,13 +535,7 @@ class Matrix extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $originalContentTable = Craft::$app->getContent()->contentTable;
-            $contentTable = $this->getContentTableName($matrixField);
-
-            if ($contentTable === false) {
-                throw new Exception('There was a problem getting the content table.');
-            }
-
-            Craft::$app->getContent()->contentTable = $contentTable;
+            Craft::$app->getContent()->contentTable = $matrixField->contentTable;
 
             // Delete the block types
             $blockTypes = $this->getBlockTypesByFieldId($matrixField->id);
@@ -561,7 +546,7 @@ class Matrix extends Component
 
             // Drop the content table
             Craft::$app->getDb()->createCommand()
-                ->dropTable($contentTable)
+                ->dropTable($matrixField->contentTable)
                 ->execute();
 
             Craft::$app->getContent()->contentTable = $originalContentTable;
@@ -580,30 +565,31 @@ class Matrix extends Component
      * Returns the content table name for a given Matrix field.
      *
      * @param MatrixField $matrixField The Matrix field.
-     * @param bool $useOldHandle Whether the method should use the field’s old handle when determining the table
-     * name (e.g. to get the existing table name, rather than the new one).
      * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
+     * @deprecated in 3.0.23. Use [[MatrixField::contentTableName]] instead.
      */
-    public function getContentTableName(MatrixField $matrixField, bool $useOldHandle = false)
+    public function getContentTableName(MatrixField $matrixField)
     {
-        $name = '';
+        return $matrixField->contentTable;
+    }
 
-        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+    /**
+     * Defines a new Matrix content table name.
+     *
+     * @param MatrixField $field
+     * @return string
+     * @since 3.0.23
+     */
+    public function defineContentTableName(MatrixField $field): string
+    {
+        $baseName = 'matrixcontent_' . strtolower($field->handle);
+        $db = Craft::$app->getDb();
+        $i = -1;
         do {
-            if ($useOldHandle) {
-                if (!$matrixField->oldHandle) {
-                    return false;
-                }
-
-                $handle = $matrixField->oldHandle;
-            } else {
-                $handle = $matrixField->handle;
-            }
-
-            $name = '_' . strtolower($handle) . $name;
-        } while ($matrixField = $this->getParentMatrixField($matrixField));
-
-        return '{{%matrixcontent' . $name . '}}';
+            $i++;
+            $name = '{{%' . $baseName . ($i !== 0 ? '_' . $i : '') . '}}';
+        } while ($name !== $field->contentTable && $db->tableExists($name));
+        return $name;
     }
 
     /**
@@ -724,37 +710,6 @@ class Matrix extends Component
                 Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId(' . $blockId . ');');
             }
         }
-    }
-
-    /**
-     * Returns the parent Matrix field, if any.
-     *
-     * @param MatrixField $matrixField The Matrix field.
-     * @return MatrixField|null The Matrix field’s parent Matrix field, or `null` if there is none.
-     */
-    public function getParentMatrixField(MatrixField $matrixField)
-    {
-        if ($this->_parentMatrixFields !== null && array_key_exists($matrixField->id, $this->_parentMatrixFields)) {
-            return $this->_parentMatrixFields[$matrixField->id];
-        }
-
-        // Does this Matrix field belong to another one?
-        $parentMatrixFieldId = (new Query())
-            ->select(['fields.id'])
-            ->from(['{{%fields}} fields'])
-            ->innerJoin('{{%matrixblocktypes}} blocktypes', '[[blocktypes.fieldId]] = [[fields.id]]')
-            ->innerJoin('{{%fieldlayoutfields}} fieldlayoutfields', '[[fieldlayoutfields.layoutId]] = [[blocktypes.fieldLayoutId]]')
-            ->where(['fieldlayoutfields.fieldId' => $matrixField->id])
-            ->scalar();
-
-        if (!$parentMatrixFieldId) {
-            return $this->_parentMatrixFields[$matrixField->id] = null;
-        }
-
-        /** @var MatrixField $field */
-        $field = $this->_parentMatrixFields[$matrixField->id] = Craft::$app->getFields()->getFieldById($parentMatrixFieldId);
-
-        return $field;
     }
 
     // Private Methods
