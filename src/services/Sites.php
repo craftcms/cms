@@ -636,7 +636,7 @@ class Sites extends Component
     {
         $isNewSite = !$site->id;
 
-        if (Craft::$app->getIsInstalled()) {
+        if (!empty($this->_sitesById)) {
             // Did the primary site just change?
             $oldPrimarySiteId = $this->getPrimarySite()->id;
         } else {
