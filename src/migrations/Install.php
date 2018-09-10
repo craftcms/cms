@@ -554,6 +554,7 @@ class Install extends Migration
             'name' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%structureelements}}', [
@@ -833,7 +834,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%sites}}', ['dateDeleted'], false);
         $this->createIndex(null, '{{%sites}}', ['handle'], false);
         $this->createIndex(null, '{{%sites}}', ['sortOrder'], false);
-        $this->createIndex(null, '{{%sitegroups}}', ['name'], true);
+        $this->createIndex(null, '{{%sitegroups}}', ['name'], false);
         $this->createIndex(null, '{{%structureelements}}', ['structureId', 'elementId'], true);
         $this->createIndex(null, '{{%structureelements}}', ['root'], false);
         $this->createIndex(null, '{{%structureelements}}', ['lft'], false);

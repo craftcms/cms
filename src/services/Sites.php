@@ -326,7 +326,7 @@ class Sites extends Component
             return;
         }
 
-        $groupRecord->delete();
+        $groupRecord->softDelete();
 
         // Delete our cache of it
         unset($this->_groupsById[$groupRecord->id]);
@@ -1176,7 +1176,8 @@ class Sites extends Component
                 ])
                 ->from(['{{%sites}} s'])
                 ->innerJoin('{{%sitegroups}} sg', '[[sg.id]] = [[s.groupId]]')
-                ->where(['dateDeleted' => null])
+                ->where(['s.dateDeleted' => null])
+                ->andWhere(['sg.dateDeleted' => null])
                 ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC])
                 ->all();
         } catch (DbException $e) {
