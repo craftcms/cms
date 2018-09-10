@@ -88,8 +88,6 @@
 </template>
 
 <script>
-    import * as types from '../../../store/mutation-types'
-
     export default {
 
         props: ['pluginId'],
@@ -133,16 +131,7 @@
         methods: {
 
             loadPlugin(pluginId) {
-                this.loading = true
                 this.pluginSnippet = this.$store.getters.getPluginById(pluginId)
-                this.$store.commit(types.UPDATE_PLUGIN_DETAILS, null)
-                this.$store.dispatch('getPluginDetails', pluginId)
-                    .then(response => {
-                        this.loading = false
-                    })
-                    .catch(response => {
-                        this.loading = false
-                    })
             },
 
             addToCart(plugin, editionHandle) {
@@ -162,7 +151,6 @@
                         this.$root.openModal('cart')
                     })
             },
-
 
         },
 
