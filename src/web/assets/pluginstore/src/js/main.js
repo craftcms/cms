@@ -140,7 +140,7 @@ Garnish.$doc.ready(function() {
             },
 
             updateCraftId(craftId) {
-                this.$store.dispatch('updateCraftId', {craftId})
+                this.$store.dispatch('craft/updateCraftId', {craftId})
                 this.$emit('craftIdUpdated')
             },
 
@@ -185,7 +185,7 @@ Garnish.$doc.ready(function() {
             }.bind(this))
 
             // Load Plugin Store data
-            this.$store.dispatch('getPluginStoreData')
+            this.$store.dispatch('pluginStore/getPluginStoreData')
                 .then(response => {
                     this.pluginStoreDataLoaded = true
                     this.$emit('dataLoaded')
@@ -196,13 +196,13 @@ Garnish.$doc.ready(function() {
                 })
 
             // Load Craft data
-            this.$store.dispatch('getCraftData')
+            this.$store.dispatch('craft/getCraftData')
                 .then(data => {
                     this.craftIdDataLoaded = true
                     this.$emit('dataLoaded')
 
                     // Load cart
-                    this.$store.dispatch('getCart')
+                    this.$store.dispatch('cart/getCart')
                         .then(() => {
                             this.cartDataLoaded = true
                             this.$emit('dataLoaded')

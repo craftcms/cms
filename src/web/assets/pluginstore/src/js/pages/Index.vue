@@ -96,8 +96,8 @@
             }),
 
             ...mapGetters({
-                activeTrialPlugins: 'activeTrialPlugins',
-                getPluginsByIds: 'getPluginsByIds',
+                activeTrialPlugins: 'cart/activeTrialPlugins',
+                getPluginsByIds: 'pluginStore/getPluginsByIds',
             }),
 
         },
@@ -113,7 +113,7 @@
             const pluginHandle = this.$route.params.pluginHandle
             if (pluginHandle) {
                 this.$router.replace({path: '/'})
-                const plugin = this.$store.getters.getPluginByHandle(pluginHandle)
+                const plugin = this.$store.getters['pluginStore/getPluginByHandle'](pluginHandle)
 
                 if (this.$root.pluginStoreDataLoaded) {
                     // show plugin

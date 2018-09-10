@@ -28,19 +28,19 @@ const getters = {
         }
     },
 
-    isInstalled(state, rootState) {
+    isInstalled(state, getters, rootState, rootGetters) {
         return plugin => {
-            return rootState.installedPlugins.find(p => p.id == plugin.id)
+            return rootGetters['craft/installedPlugins'].find(p => p.id == plugin.id)
         }
     },
 
-    getPluginById(state, rootState) {
+    getPluginById(state) {
         return id => {
                 return state.plugins.find(p => p.id == id)
         }
     },
 
-    getPluginsByIds(state, rootState) {
+    getPluginsByIds(state) {
         return ids => {
             let plugins = [];
 
@@ -53,7 +53,7 @@ const getters = {
         }
     },
 
-    getPluginsByCategory(state, rootState) {
+    getPluginsByCategory(state) {
         return categoryId => {
             return state.plugins.filter(p => {
                 return p.categoryIds.find(c => c == categoryId)
@@ -61,7 +61,7 @@ const getters = {
         }
     },
 
-    getPluginsByDeveloperId(state, rootState) {
+    getPluginsByDeveloperId(state) {
         return developerId => {
             return state.plugins.filter(p => p.developerId == developerId)
         }
@@ -137,6 +137,7 @@ const mutations = {
 }
 
 export default {
+    namespaced: true,
     state,
     getters,
     actions,

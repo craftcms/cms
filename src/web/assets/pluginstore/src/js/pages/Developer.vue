@@ -61,9 +61,9 @@
 
             this.loading = true
 
-            this.plugins = this.$store.getters.getPluginsByDeveloperId(developerId)
+            this.plugins = this.$store.getters['pluginStore/getPluginsByDeveloperId'](developerId)
 
-            this.$store.dispatch('getDeveloper', developerId)
+            this.$store.dispatch('pluginStore/getDeveloper', developerId)
                 .then(developer => {
                     this.$root.pageTitle = this.$options.filters.escapeHtml(developer.developerName)
                     this.$root.loading = false

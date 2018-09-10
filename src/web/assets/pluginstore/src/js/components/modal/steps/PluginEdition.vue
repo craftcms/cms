@@ -131,7 +131,7 @@
         methods: {
 
             loadPlugin(pluginId) {
-                this.pluginSnippet = this.$store.getters.getPluginById(pluginId)
+                this.pluginSnippet = this.$store.getters['pluginStore/getPluginById'](pluginId)
             },
 
             addToCart(plugin, editionHandle) {
@@ -145,7 +145,7 @@
                     cmsLicenseKey: window.cmsLicenseKey,
                 }
 
-                this.$store.dispatch('addToCart', [item])
+                this.$store.dispatch('cart/addToCart', [item])
                     .then(() => {
                         this.loading = false
                         this.$root.openModal('cart')

@@ -123,8 +123,8 @@
             }),
 
             ...mapGetters({
-                activeTrialPlugins: 'activeTrialPlugins',
-                cartItems: 'cartItems',
+                activeTrialPlugins: 'cart/activeTrialPlugins',
+                cartItems: 'cart/cartItems',
             }),
 
             pendingActiveTrials() {
@@ -183,9 +183,9 @@
 
         methods: {
 
-            ...mapActions([
-                'removeFromCart'
-            ]),
+            ...mapActions({
+                removeFromCart: 'cart/removeFromCart'
+            }),
 
             addToCart(plugin) {
                 const item = {
@@ -196,7 +196,7 @@
                     cmsLicenseKey: window.cmsLicenseKey,
                 }
 
-                this.$store.dispatch('addToCart', [item])
+                this.$store.dispatch('cart/addToCart', [item])
             },
 
             addAllToCart() {
@@ -213,7 +213,7 @@
                     })
                 })
 
-                $store.dispatch('addToCart', items)
+                $store.dispatch('cart/addToCart', items)
             },
 
             payment() {

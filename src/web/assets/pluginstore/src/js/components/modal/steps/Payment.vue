@@ -244,7 +244,7 @@
                     },
                 }
 
-                this.$store.dispatch('saveCart', cartData)
+                this.$store.dispatch('cart/saveCart', cartData)
                     .then(response => {
                         cb(response)
                     })
@@ -282,13 +282,13 @@
                             makePrimary: this.replaceCard,
                         }
 
-                        this.$store.dispatch('checkout', checkoutData)
+                        this.$store.dispatch('cart/checkout', checkoutData)
                             .then(response => {
-                                this.$store.dispatch('savePluginLicenseKeys', this.cart)
+                                this.$store.dispatch('cart/savePluginLicenseKeys', this.cart)
                                     .then(response => {
-                                        this.$store.dispatch('getCraftData')
+                                        this.$store.dispatch('craft/getCraftData')
                                             .then(() => {
-                                                this.$store.dispatch('resetCart')
+                                                this.$store.dispatch('cart/resetCart')
                                                     .then(() => {
                                                         this.loading = false
                                                         this.error = false
@@ -356,7 +356,7 @@
                         couponCode: (value ? value : null),
                     }
 
-                    this.$store.dispatch('saveCart', data)
+                    this.$store.dispatch('cart/saveCart', data)
                         .then(response => {
                             this.couponCodeSuccess = true
                             this.couponCodeError = false

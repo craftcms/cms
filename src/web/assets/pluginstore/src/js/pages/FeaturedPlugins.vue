@@ -16,8 +16,8 @@
         computed: {
 
             ...mapGetters({
-                getFeaturedPlugin: 'getFeaturedPlugin',
-                getPluginsByIds: 'getPluginsByIds',
+                getFeaturedPlugin: 'pluginStore/getFeaturedPlugin',
+                getPluginsByIds: 'pluginStore/getPluginsByIds',
             }),
 
             featuredPlugin() {

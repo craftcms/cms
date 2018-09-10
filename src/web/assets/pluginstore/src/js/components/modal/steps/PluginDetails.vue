@@ -147,9 +147,9 @@
 
             ...mapGetters({
                 activeTrialPlugins: 'activeTrialPlugins',
-                isInCart: 'isInCart',
-                isInstalled: 'isInstalled',
-                pluginHasLicenseKey: 'pluginHasLicenseKey',
+                isInCart: 'cart/isInCart',
+                isInstalled: 'pluginStore/isInstalled',
+                pluginHasLicenseKey: 'craft/pluginHasLicenseKey',
             }),
 
             longDescription() {
@@ -214,9 +214,9 @@
 
         methods: {
 
-            ...mapActions([
-                'addToCart'
-            ]),
+            ...mapActions({
+                addToCart: 'cart/addToCart'
+            }),
 
             chooseEdition() {
                 this.$root.modalStep = 'plugin-edition'
@@ -233,7 +233,7 @@
                     cmsLicenseKey: window.cmsLicenseKey,
                 }
 
-                this.$store.dispatch('addToCart', [item])
+                this.$store.dispatch('cart/addToCart', [item])
                     .then(() => {
                         this.actionsLoading = false
                         this.$root.openModal('cart')
@@ -253,12 +253,12 @@
             },
 
             loadPlugin(pluginId) {
-                this.pluginSnippet = this.$store.getters.getPluginById(pluginId)
+                this.pluginSnippet = this.$store.getters['pluginStore/getPluginById'](pluginId)
 
                 if(!this.plugin || (this.plugin && this.plugin.id !== pluginId)) {
                     this.loading = true
-                    this.$store.commit('updatePluginDetails', null)
-                    this.$store.dispatch('getPluginDetails', pluginId)
+                    this.$store.commit('pluginStore/updatePluginDetails', null)
+                    this.$store.dispatch('pluginStore/getPluginDetails', pluginId)
                         .then(response => {
                             this.loading = false
                         })

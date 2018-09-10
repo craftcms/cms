@@ -31,10 +31,10 @@ const getters = {
         }
     },
 
-    activeTrialPlugins(state, getters, rootState) {
+    activeTrialPlugins(state, getters, rootState, rootGetters) {
         return rootState.pluginStore.plugins.filter(plugin => {
-            if (plugin.editions[0].price > 0 && !getters.pluginHasLicenseKey(plugin.handle)) {
-                return getters.installedPlugins.find(installedPlugin => plugin.handle === installedPlugin.handle)
+            if (plugin.editions[0].price > 0 && !rootGetters['craft/pluginHasLicenseKey'](plugin.handle)) {
+                return rootGetters['craft/installedPlugins'].find(installedPlugin => plugin.handle === installedPlugin.handle)
             }
         })
     },
@@ -330,6 +330,7 @@ const utils = {
 }
 
 export default {
+    namespaced: true,
     state,
     getters,
     actions,

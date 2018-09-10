@@ -41,7 +41,7 @@
                         cmsLicenseKey: window.cmsLicenseKey,
                     }
 
-                    this.$store.dispatch('addToCart', [item])
+                    this.$store.dispatch('cart/addToCart', [item])
                         .then(() => {
                             this.loading = false
                             this.$router.push({path: '/'})
@@ -69,9 +69,9 @@
         computed: {
 
             ...mapGetters({
-                isInCart: 'isInCart',
-                isInstalled: 'isInstalled',
-                pluginHasLicenseKey: 'pluginHasLicenseKey',
+                isInCart: 'cart/isInCart',
+                isInstalled: 'pluginStore/isInstalled',
+                pluginHasLicenseKey: 'craft/pluginHasLicenseKey',
             }),
 
         },
@@ -82,7 +82,7 @@
 
             // retrieve plugin
             const pluginHandle = this.$route.params.pluginHandle
-            const plugin = this.$store.getters.getPluginByHandle(pluginHandle)
+            const plugin = this.$store.getters['pluginStore/getPluginByHandle'](pluginHandle)
 
             if (this.$root.pluginStoreDataLoaded && this.$root.craftIdDataLoaded && this.$root.cartDataLoaded) {
                 // buy plugin

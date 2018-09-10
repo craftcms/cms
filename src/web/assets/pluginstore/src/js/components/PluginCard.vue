@@ -31,7 +31,7 @@
             }),
 
             ...mapGetters({
-                isInstalled: 'isInstalled',
+                isInstalled: 'pluginStore/isInstalled',
             }),
         }
 

@@ -64,7 +64,7 @@
                 },
 
                 set(value) {
-                    this.$store.commit('changeIdentityMode', value)
+                    this.$store.commit('cart/changeIdentityMode', value)
                 }
             },
 
@@ -108,7 +108,7 @@
                         email: this.guestEmail,
                     }
 
-                    this.$store.dispatch('saveCart', data)
+                    this.$store.dispatch('cart/saveCart', data)
                         .then(() => {
                             this.loading = false
                             this.$root.openModal('payment')

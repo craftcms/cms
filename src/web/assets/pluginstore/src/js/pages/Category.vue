@@ -22,8 +22,8 @@
         computed: {
 
             ...mapGetters({
-                getCategoryById: 'getCategoryById',
-                getPluginsByCategory: 'getPluginsByCategory',
+                getCategoryById: 'pluginStore/getCategoryById',
+                getPluginsByCategory: 'pluginStore/getPluginsByCategory',
             }),
 
             category() {
