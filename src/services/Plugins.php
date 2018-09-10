@@ -1179,7 +1179,7 @@ class Plugins extends Component
             return $row;
         }
 
-        $data = Craft::$app->getProjectConfig()->get(self::CONFIG_PLUGINS_KEY . '.' . $handle);
+        $data = Craft::$app->getProjectConfig()->get(self::CONFIG_PLUGINS_KEY . '.' . $handle) ?? Craft::$app->getProjectConfig()->get(self::CONFIG_PLUGINS_KEY . '.' . $handle, true);
 
         if (!$data) {
             throw new InvalidPluginException($handle);
