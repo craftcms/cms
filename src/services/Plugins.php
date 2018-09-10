@@ -202,8 +202,8 @@ class Plugins extends Component
             }
 
             // Clean up the row data
-            $row['settings'] = $configData['settings'];
-            $row['licenseKey'] = $configData['licenseKey'];
+            $row['settings'] = $configData['settings'] ?? [];
+            $row['licenseKey'] = $configData['licenseKey'] ?? null;
             $row['enabled'] = true;
             $row['installDate'] = DateTimeHelper::toDateTime($row['installDate']);
 
