@@ -1293,7 +1293,7 @@ class IOHelper
 		{
 			$folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
 
-			if ($folderContents)
+			if ($folderContents !== false)
 			{
 				foreach ($folderContents as $item)
 				{
@@ -1311,10 +1311,8 @@ class IOHelper
 
 				return true;
 			}
-			else
-			{
-				Craft::log('Tried to read the folder contents of '.$path.', but could not.', LogLevel::Error);
-			}
+
+			Craft::log('Tried to read the folder contents of '.$path.', but could not.', LogLevel::Error);
 		}
 		else
 		{
