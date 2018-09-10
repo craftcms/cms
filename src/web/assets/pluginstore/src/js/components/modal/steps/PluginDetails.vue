@@ -27,8 +27,8 @@
                                 <template v-else>
                                     <div class="license-status installed" data-icon="check">{{ "Installed as a trial"|t('app') }}</div>
 
-                                    <a v-if="isInCart(pluginSnippet)" @click="buyPlugin(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
-                                    <a v-else @click="buyPlugin(pluginSnippet)" class="btn submit" :title="buyBtnTitle">{{ pluginSnippet.editions[0].price|currency }}</a>
+                                    <a v-if="isInCart(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
+                                    <a v-else @click="chooseEdition(pluginSnippet)" class="btn submit" :title="buyBtnTitle">{{ pluginSnippet.editions[0].price|currency }}</a>
                                 </template>
                             </template>
 
@@ -43,8 +43,8 @@
                                         <input type="submit" class="btn" :value="'Try'|t('app')">
                                     </form>
 
-                                    <a v-if="isInCart(pluginSnippet)" @click="buyPlugin(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
-                                    <a v-else @click="buyPlugin(pluginSnippet)" class="btn submit" :title="buyBtnTitle">{{ pluginSnippet.editions[0].price|currency }}</a>
+                                    <a v-if="isInCart(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
+                                    <a v-else @click="chooseEdition(pluginSnippet)" class="btn submit" :title="buyBtnTitle">{{ pluginSnippet.editions[0].price|currency }}</a>
                                 </template>
                             </template>
                         </template>
@@ -218,6 +218,10 @@
             ...mapActions([
                 'addToCart'
             ]),
+
+            chooseEdition() {
+                this.$root.modalStep = 'plugin-edition'
+            },
 
             buyPlugin(plugin) {
                 this.actionsLoading = true

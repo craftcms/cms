@@ -2,6 +2,7 @@
     <div class="hidden">
         <div ref="pluginstoremodal" id="pluginstore-modal" class="pluginstore-modal modal" :class="'step-'+modalStep">
             <plugin-details v-if="modalStep === 'plugin-details'" :pluginId="pluginId"></plugin-details>
+            <plugin-edition v-if="modalStep === 'plugin-edition'" :pluginId="pluginId" @back="back()"></plugin-edition>
             <cart v-else-if="modalStep === 'cart'" @continue-shopping="$root.closeModal()"></cart>
             <identity v-else-if="modalStep === 'identity'" @back="back()"></identity>
             <payment v-else-if="modalStep === 'payment'" @back="back()"></payment>
@@ -17,6 +18,7 @@
 
         components: {
             PluginDetails: require('./steps/PluginDetails'),
+            PluginEdition: require('./steps/PluginEdition'),
             Cart: require('./steps/Cart'),
             Identity: require('./steps/Identity'),
             Payment: require('./steps/Payment'),
@@ -58,7 +60,9 @@
         methods: {
 
             back() {
-                if (this.identityMode === 'craftid' || this.modalStep === 'identity') {
+                if(this.modalStep === 'plugin-edition') {
+                    this.$root.modalStep = 'plugin-details';
+                } else if (this.identityMode === 'craftid' || this.modalStep === 'identity') {
                     this.$root.openModal('cart')
                 } else {
                     this.$root.openModal('identity')
