@@ -136,6 +136,7 @@ class FieldLayout extends Model
                         if ($createdField) {
                             $createdField->sortOrder = $field['sortOrder'];
                             $createdField->required = $field['required'];
+                            $layoutFields[] = $createdField;
                         }
                     }
 
