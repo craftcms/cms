@@ -1172,6 +1172,13 @@ class Plugins extends Component
      */
     private function _getPluginConfigData(string $handle): array
     {
+        if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
+            $row = (new Query())->from(['{{%plugins}}'])->where(['handle' => $handle])->one();
+            $row['settings'] = Json::decodeIfJson((string)$row['settings']);
+
+            return $row;
+        }
+
         $data = Craft::$app->getProjectConfig()->get(self::CONFIG_PLUGINS_KEY . '.' . $handle);
 
         if (!$data) {
