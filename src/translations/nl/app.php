@@ -100,7 +100,7 @@ return [
     'Are you sure you want to delete “{name}” and all its tags?' => 'Weet u zeker dat u \'{name}\' wilt verwijderen en al zijn tags?',
     'Are you sure you want to delete “{name}”?' => 'Weet je zeker dat je “{name}” wilt verwijderen?',
     'Are you sure you want to transfer your license to this domain?' => 'Weet je zeker dat je je licentie naar dit domein wilt overdragen?',
-    'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.' => 'Weet u zeker dat u {plugin} wilt deïstalleren? U verliest alle bijbehorende data.',
+    'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.' => 'Weet u zeker dat u {plugin} wilt deïnstalleren? U verliest alle bijbehorende data.',
     'Ascending' => 'Oplopend',
     'Ask on Stack Exchange' => 'Vragen op Stack Exchange',
     'Asset' => 'Bestand',
@@ -1197,7 +1197,7 @@ return [
 
 Bedankt voor het maken van een account op {{siteName}}! Klik op de volgende link om je account te activeren:
 
-{{link}}
+<{{link}}>
 
 Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'account_activation_heading' => 'Als iemand een account aanmaakt:',
@@ -1215,7 +1215,7 @@ Als je deze email niet verwachtte, kun je hem gewoon negeren.',
 
 Klik op de volgende link om je wachtwoord voor {{siteName}} te resetten:
 
-{{link}}
+<{{link}}>
 
 Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'forgot_password_heading' => 'Als iemand zijn wachtwoord vergeet:',
@@ -1249,7 +1249,7 @@ Hier zijn de gebruikte instellingen:
 
 Klik op deze link om je nieuwe emailadres te bevestigen:
 
-{{link}}
+<{{link}}>
 
 Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'verify_new_email_heading' => 'Als iemand zijn email-adres wijzigt:',

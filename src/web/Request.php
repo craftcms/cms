@@ -15,9 +15,9 @@ use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\services\Sites;
 use yii\base\InvalidConfigException;
+use yii\db\Exception as DbException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
-use yii\db\Exception as DbException;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 

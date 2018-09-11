@@ -7,7 +7,6 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\fields\Matrix;
 use craft\helpers\Json;
-use yii\db\Expression;
 
 /**
  * m180901_151639_fix_matrixcontent_tables migration.
@@ -55,6 +54,11 @@ class m180901_151639_fix_matrixcontent_tables extends Migration
                 $originalField = array_shift($fieldsByHandle[$handle]);
                 $originalTableName = $originalField['settings']['contentTable'];
                 $originalSchema = $this->db->getTableSchema($originalTableName);
+
+                if ($originalSchema === null) {
+                    Craft::warning('Could not update the Matrix fields with the handle "' . $originalField['handle'] . '" because the content table doesn\'t exist.', __METHOD__);
+                    continue;
+                }
 
                 $originalFieldColumns = array_filter($originalSchema->getColumnNames(), function($columnName) {
                     return strpos($columnName, 'field_') === 0;
@@ -118,10 +122,11 @@ class m180901_151639_fix_matrixcontent_tables extends Migration
     private function _cleanUpTable(int $fieldId, string $tableName, array $originalFieldColumns)
     {
         // delete the rows we don't need
-        $this->delete($tableName, ['not in', 'elementId', (new Query())
-            ->select(['id'])
-            ->from(['{{%matrixblocks}}'])
-            ->where(['fieldId' => $fieldId])
+        $this->delete($tableName, [
+            'not in', 'elementId', (new Query())
+                ->select(['id'])
+                ->from(['{{%matrixblocks}}'])
+                ->where(['fieldId' => $fieldId])
         ]);
 
         // get all of the columns this field needs

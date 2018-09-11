@@ -2012,8 +2012,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        $orderBy = array_merge($this->orderBy);
-        $orderByColumns = array_keys($orderBy);
+        // Define the real column name mapping (e.g. `fieldHandle` => `field_fieldHandle`)
         $orderColumnMap = [];
 
         if (is_array($this->customFields)) {
@@ -2027,6 +2026,13 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         // Prevent “1052 Column 'id' in order clause is ambiguous” MySQL error
         $orderColumnMap['id'] = 'elements.id';
+        $orderColumnMap['dateCreated'] = 'elements.dateCreated';
+        $orderColumnMap['dateUpdated'] = 'elements.dateUpdated';
+
+        // Rename orderBy keys based on the real column name mapping
+        // (yes this is awkward but we need to preserve the order of the keys!)
+        $orderBy = array_merge($this->orderBy);
+        $orderByColumns = array_keys($orderBy);
 
         foreach ($orderColumnMap as $orderValue => $columnName) {
             // Are we ordering by this column name?
@@ -2037,10 +2043,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $orderByColumns[$pos] = $columnName;
                 $orderBy = array_combine($orderByColumns, $orderBy);
             }
-        }
-
-        if (empty($orderBy)) {
-            return;
         }
 
         if ($this->inReverse) {

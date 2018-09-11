@@ -282,6 +282,13 @@ class GeneralConfig extends BaseObject
      */
     public $extraAllowedFileExtensions;
     /**
+     * @var string[]|null List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
+     *
+     * Only use this setting if your server has the Intl PHP extension, or if you’ve saved the corresponding
+     * [locale data](https://github.com/craftcms/locales) into your `config/locales/` folder.
+     */
+    public $extraAppLocales;
+    /**
      * @var string|bool The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
      */
     public $filenameWordSeparator = '-';
@@ -835,9 +842,16 @@ class GeneralConfig extends BaseObject
             } catch (InvalidArgumentException $e) {
                 throw new InvalidConfigException($e->getMessage(), 0, $e);
             }
+        }
 
-            if (!in_array($this->defaultCpLanguage, Craft::$app->getI18n()->getAppLocaleIds())) {
-                throw new InvalidConfigException('Unsupported language: ' . $this->defaultCpLanguage);
+        // Normalize the extra app locales
+        if (!empty($this->extraAppLocales)) {
+            foreach ($this->extraAppLocales as $i => $localeId) {
+                try {
+                    $this->extraAppLocales[$i] = Localization::normalizeLanguage($localeId);
+                } catch (InvalidArgumentException $e) {
+                    throw new InvalidConfigException($e->getMessage(), 0, $e);
+                }
             }
         }
     }

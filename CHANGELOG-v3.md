@@ -1,5 +1,20 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.24 - 2018-09-11
+
+### Added
+- Added the `extraAppLocales` config setting.
+
+### Changed
+- The `defaultCpLanguage` config setting no longer needs to be a language that Craft is translated into, as long as it is a valid locale ID.
+- Resave Elements jobs that are queued up after saving an entry type now include the section name in the job description. ([#3290](https://github.com/craftcms/cms/issues/3290))
+- Updated Garnish to 0.1.28.
+
+### Fixed
+- Fixed a SQL error that could occur when an element query’s `orderBy` parameter was set to `dateCreated` or `dateUpdated`.
+- Fixed an error that could occur when updating to v3.0.23+ if multiple Matrix fields existed with the same handle, but they had no content tables, somehow.
+- Fixed a bug where links in activation and forgot-password emails weren’t hyperlinked, leaving it up to the mail client to hopefully be smart about it. ([#3288](https://github.com/craftcms/cms/issues/3288))
+
 ## 3.0.23.1 - 2018-09-04
 
 ### Fixed
