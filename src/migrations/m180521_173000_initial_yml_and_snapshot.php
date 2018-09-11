@@ -6,8 +6,8 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\elements\User;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use Symfony\Component\Yaml\Yaml;
@@ -53,7 +53,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $snapshot = serialize($configData);
         $data['config'] = $snapshot;
-        
+
         $this->update('{{%info}}', $data);
 
         $this->dropTableIfExists('{{%systemsettings}}');
@@ -242,11 +242,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entrytypes.sectionId]]')
             ->all();
 
-        $layoutIds = [];
-        foreach ($entryTypeRows as $entryType) {
-            $layoutIds[] = $entryType['fieldLayoutId'];
-        }
-
+        $layoutIds = ArrayHelper::getColumn($entryTypeRows, 'fieldLayoutId');
         $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
 
         foreach ($entryTypeRows as $entryType) {
@@ -715,6 +711,22 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
      */
     private function _generateFieldLayoutArray(array $layoutIds): array
     {
+        // Get all the UIDs
+        $fieldLayoutUids = (new Query())
+            ->select(['id', 'uid'])
+            ->from(['{{%fieldlayouts}}'])
+            ->where(['id' => $layoutIds])
+            ->pairs();
+
+        $fieldLayouts = [];
+        foreach ($fieldLayoutUids as $id => $uid) {
+            $fieldLayouts[$id] = [
+                'uid' => $uid,
+                'tabs' => [],
+            ];
+        }
+
+        // Get the tabs and fields
         $fieldRows = (new Query())
             ->select([
                 'fields.handle',
@@ -727,7 +739,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'tabs.sortOrder AS tabOrder',
                 'tabs.uid AS tabUid',
                 'layouts.id AS layoutId',
-                'layouts.uid AS layoutUid',
             ])
             ->from(['{{%fieldlayoutfields}} AS layoutFields'])
             ->innerJoin('{{%fieldlayouttabs}} AS tabs', '[[layoutFields.tabId]] = [[tabs.id]]')
@@ -737,16 +748,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->orderBy(['tabs.sortOrder' => SORT_ASC, 'layoutFields.sortOrder' => SORT_ASC])
             ->all();
 
-        $fieldLayouts = [];
-
         foreach ($fieldRows as $fieldRow) {
-            $fieldLayouts[$fieldRow['layoutId']]['uid'] = $fieldRow['layoutUid'];
             $layout = &$fieldLayouts[$fieldRow['layoutId']];
-            $layout['uid'] = $fieldRow['layoutUid'];
-
-            if (empty($layout['tabs'])) {
-                $layout['tabs'] = [];
-            }
 
             if (empty($layout['tabs'][$fieldRow['tabUid']])) {
                 $layout['tabs'][$fieldRow['tabUid']] =
