@@ -221,10 +221,18 @@ class m160804_110002_userphotos_to_assets extends Migration
      */
     private function _setUserphotoVolume(int $volumeId)
     {
-        $systemSettings = Craft::$app->getSystemSettings();
-        $settings = $systemSettings->getSettings('users');
-        $settings['photoVolumeId'] = $volumeId;
-        $systemSettings->saveSettings('users', $settings);
+        $settings = (new Query())
+            ->select(['settings'])
+            ->where(['category' => 'users'])
+            ->from(['{{%systemsettings}}'])
+            ->scalar();
+
+        if ($settings) {
+            $settings = Json::decodeIfJson($settings);
+            $settings['photoVolumeId'] = $volumeId;
+
+            $this->update('{{%systemsettings}}', ['settings' => Json::encode($settings)], ['category' => 'users'], [], false);
+        }
     }
 
     /**

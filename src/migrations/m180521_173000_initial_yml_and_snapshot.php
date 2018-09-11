@@ -10,6 +10,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * m180521_173000_initial_yml_and_snapshot migration.
@@ -38,12 +39,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
             if (isset($existingData) && is_array($existingData)) {
                 $configData = array_replace_recursive($existingData, $configData);
-            }
-
-            // Last cleanup to compensate for a migration maybe using system settings service to store data in wrong format.
-            if (!empty($configData['users']['photoVolumeId'])){
-                $configData['users']['photoVolumeUid'] = Db::uidById('{{%volumes}}', $configData['users']['photoVolumeId']);
-                unset($configData['users']['photoVolumeId']);
             }
 
             $map = [];
