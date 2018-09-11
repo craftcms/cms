@@ -713,7 +713,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('className', 'get_class'),
             new \Twig_SimpleFunction('clone', [$this, 'cloneFunction']),
             new \Twig_SimpleFunction('csrfInput', [$this, 'csrfInputFunction']),
-            new \Twig_SimpleFunction('dbExpression', [$this, 'dbExpressionFunction']),
+            new \Twig_SimpleFunction('expression', [$this, 'expressionFunction']),
             new \Twig_SimpleFunction('floor', 'floor'),
             new \Twig_SimpleFunction('getenv', 'getenv'),
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
@@ -760,14 +760,14 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     {
         return clone $var;
     }
-    
+
     /**
      * @param mixed $expression
      * @param mixed $params
      * @param mixed $config
      * @return Expression
      */
-    public function dbExpressionFunction($expression, $params = [], $config = []): Expression
+    public function expressionFunction($expression, $params = [], $config = []): Expression
     {
         return new Expression($expression, $params, $config);
     }
