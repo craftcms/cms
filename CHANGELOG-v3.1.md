@@ -9,6 +9,7 @@
 - Added the `useProjectConfigFile` config setting.
 - Added the `gc` console command, which can be used to run garbage collection tasks.
 - Added the `trashed` element query param, which can be used to query for elements that have been soft-deleted.
+- Added the `expression()` Twig function, for creating new `yii\db\Expression` objects in templates. ([#3289](https://github.com/craftcms/cms/pull/3289))
 - Added `craft\base\Element::EVENT_AFTER_RESTORE`.
 - Added `craft\base\Element::EVENT_BEFORE_RESTORE`.
 - Added `craft\base\ElementInterface::afterRestore()`.
