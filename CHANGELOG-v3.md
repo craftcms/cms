@@ -7,6 +7,7 @@
 
 ### Changed
 - The `defaultCpLanguage` config setting no longer needs to be a language that Craft is translated into, as long as it is a valid locale ID.
+- Resave Elements jobs that are queued up after saving an entry type now include the section name in the job description. ([#3290](https://github.com/craftcms/cms/issues/3290))
 - Updated Garnish to 0.1.28.
 
 ### Fixed
