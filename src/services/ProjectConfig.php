@@ -155,9 +155,15 @@ class ProjectConfig extends Component
 
     /**
      * @var bool Whether we’re listening for the request end, to update the Yaml caches.
-     * @see _updateLastParsedConfigCache()
+     * @see updateParsedConfigTimes()
      */
     private $_waitingToUpdateParsedConfigTimes = false;
+
+    /**
+     * @var bool Whether we’re listening for the request end, to update the modified config data.
+     * @see saveModifiedConfigData()
+     */
+    private $_waitingToSaveModifiedConfigData = false;
 
     /**
      * @var bool Whether we're saving project configs to project.yaml
@@ -178,7 +184,7 @@ class ProjectConfig extends Component
      */
     public function init()
     {
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData']);
+        $this->saveDataAfterRequest();
 
         // If we're not using the project config file, load the stored config to emulate config files.
         // This is needed so we can make comparisons between the existing config and the modified config, as we're firing events.
@@ -187,6 +193,32 @@ class ProjectConfig extends Component
         }
 
         parent::init();
+    }
+
+    /**
+     * Set up an event handler to save modified data after request is over. This is called automatically when service is initialized.
+     *
+     * @return void
+     */
+    public function saveDataAfterRequest()
+    {
+        if (!$this->_waitingToSaveModifiedConfigData) {
+            Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData']);
+            $this->_waitingToSaveModifiedConfigData = true;
+        }
+    }
+
+    /**
+     * Disable the event handler that would save modified data after request is over.
+     *
+     * @return void
+     */
+    public function preventSavingDataAfterRequest()
+    {
+        if ($this->_waitingToSaveModifiedConfigData) {
+            Craft::$app->off(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData']);
+            $this->_waitingToSaveModifiedConfigData = false;
+        }
     }
 
     /**
