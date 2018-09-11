@@ -3,7 +3,6 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
-use craft\helpers\MigrationHelper;
 
 /**
  * m180810_214439_soft_delete_elements migration.

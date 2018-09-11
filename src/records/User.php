@@ -8,7 +8,6 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
-use craft\db\SoftDeleteTrait;
 use yii\db\ActiveQuery;
 use yii\db\ActiveQueryInterface;
 

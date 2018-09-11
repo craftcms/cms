@@ -62,7 +62,7 @@ class Gmail extends BaseTransportAdapter
             try {
                 $this->password = StringHelper::decdec($this->password);
             } catch (Exception $e) {
-                Craft::error('Could not decode Gmail password: '.$e->getMessage());
+                Craft::error('Could not decode Gmail password: ' . $e->getMessage());
                 Craft::$app->getErrorHandler()->logException($e);
                 $this->password = null;
             }

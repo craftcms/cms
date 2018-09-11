@@ -14,7 +14,6 @@ use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\helpers\App;
 use craft\queue\BaseJob;
-use yii\base\Exception;
 
 /**
  * PropagateElements job
