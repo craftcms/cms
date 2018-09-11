@@ -369,7 +369,7 @@ class Globals extends Component
         }
 
         $configPath = self::CONFIG_GLOBALSETS_KEY . '.' . $globalSetUid;
-        $projectConfig->save($configPath, $configData);
+        $projectConfig->set($configPath, $configData);
 
         if ($isNewSet) {
             $globalSet->id = Db::idByUid('{{%globalsets}}', $globalSetUid);
@@ -552,7 +552,7 @@ class Globals extends Component
         }
 
         if ($fieldPruned) {
-            $projectConfig->save(self::CONFIG_GLOBALSETS_KEY, $globalSets);
+            $projectConfig->set(self::CONFIG_GLOBALSETS_KEY, $globalSets);
         }
     }
 

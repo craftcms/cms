@@ -137,7 +137,7 @@ class Updates extends Component
                 ['handle' => $plugin->id])
             ->execute();
 
-        Craft::$app->getProjectConfig()->save(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.' . ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, $plugin->schemaVersion);
+        Craft::$app->getProjectConfig()->set(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.' . ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, $plugin->schemaVersion);
 
         return (bool)$affectedRows;
     }
@@ -320,7 +320,7 @@ class Updates extends Component
 
         Craft::$app->saveInfo($info);
 
-        Craft::$app->getProjectConfig()->save(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, $info->schemaVersion);
+        Craft::$app->getProjectConfig()->set(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, $info->schemaVersion);
 
         return true;
     }

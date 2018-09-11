@@ -269,7 +269,7 @@ class Tags extends Component
         }
 
         $configPath = self::CONFIG_TAGGROUP_KEY . '.' . $tagGroupUid;
-        $projectConfig->save($configPath, $configData);
+        $projectConfig->set($configPath, $configData);
 
         if ($isNewTagGroup) {
             $tagGroup->id = Db::idByUid('{{%taggroups}}', $tagGroupUid);
@@ -481,7 +481,7 @@ class Tags extends Component
         }
 
         if ($fieldPruned) {
-            $projectConfig->save(self::CONFIG_TAGGROUP_KEY, $tagGroups, true);
+            $projectConfig->set(self::CONFIG_TAGGROUP_KEY, $tagGroups, true);
         }
     }
 

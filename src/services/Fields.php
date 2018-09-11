@@ -305,7 +305,7 @@ class Fields extends Component
             $uid = $groupRecord->uid;
         }
 
-        $projectConfig->save(self::CONFIG_FIELDGROUP_KEY . '.' . $uid, $configData);
+        $projectConfig->set(self::CONFIG_FIELDGROUP_KEY . '.' . $uid, $configData);
 
         if ($isNewGroup) {
             $group->id = Db::idByUid('{{%fieldgroups}}', $uid);
@@ -921,7 +921,7 @@ class Fields extends Component
         }
 
         $configPath = self::CONFIG_FIELDS_KEY . '.' . $uid;
-        $projectConfig->save($configPath, $configData);
+        $projectConfig->set($configPath, $configData);
 
         if ($isNewField) {
             $field->id = Db::idByUid('{{%fields}}', $uid);

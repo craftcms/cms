@@ -448,7 +448,7 @@ class Volumes extends Component
 
 
         $configPath = self::CONFIG_VOLUME_KEY . '.' . $volumeUid;
-        $projectConfig->save($configPath, $configData);
+        $projectConfig->set($configPath, $configData);
 
         if ($isNewVolume) {
             $volume->id = Db::idByUid('{{%volumes}}', $volumeUid);
@@ -556,7 +556,7 @@ class Volumes extends Component
         foreach ($volumeIds as $volumeOrder => $volumeUid) {
             $data = $projectConfig->get(self::CONFIG_VOLUME_KEY . '.' . $volumeUid);
             $data['sortOrder'] = $volumeOrder + 1;
-            $projectConfig->save(self::CONFIG_VOLUME_KEY . '.' . $volumeUid, $data);
+            $projectConfig->set(self::CONFIG_VOLUME_KEY . '.' . $volumeUid, $data);
         }
 
         return true;
@@ -788,7 +788,7 @@ class Volumes extends Component
         }
 
         if ($fieldPruned) {
-            $projectConfig->save(self::CONFIG_VOLUME_KEY, $volumes);
+            $projectConfig->set(self::CONFIG_VOLUME_KEY, $volumes);
         }
     }
 

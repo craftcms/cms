@@ -334,7 +334,7 @@ class Matrix extends Component
             ];
 
             $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockTypeUid;
-            $projectConfig->save($configPath, $configData);
+            $projectConfig->set($configPath, $configData);
 
             if ($isNewBlockType) {
                 $blockType->id = Db::idByUid('{{%matrixblocktypes}}', $blockTypeUid);

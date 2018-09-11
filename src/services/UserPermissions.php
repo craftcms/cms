@@ -315,7 +315,7 @@ class UserPermissions extends Component
         if (!empty($permissions)) {
             $group = Craft::$app->getUserGroups()->getGroupById($groupId);
             $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->id . '.permissions';
-            Craft::$app->getProjectConfig()->save($path, $permissions);
+            Craft::$app->getProjectConfig()->set($path, $permissions);
         }
 
         // Cache the new permissions
@@ -782,6 +782,6 @@ class UserPermissions extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $permissionData = $projectConfig->get(self::CONFIG_USERPERMISSIONS_KEY, true);
         $permissionData = array_unique(array_merge($permissionData, $permissionNames));
-        $projectConfig->save(self::CONFIG_USERPERMISSIONS_KEY, $permissionData);
+        $projectConfig->set(self::CONFIG_USERPERMISSIONS_KEY, $permissionData);
     }
 }

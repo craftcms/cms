@@ -270,7 +270,7 @@ class Sites extends Component
             $uid = $groupRecord->uid;
         }
 
-        $projectConfig->save(self::CONFIG_SITEGROUP_KEY . '.' . $uid, $configData);
+        $projectConfig->set(self::CONFIG_SITEGROUP_KEY . '.' . $uid, $configData);
 
         // Now that we have an ID, save it on the model & models
         if ($isNewGroup) {
@@ -681,7 +681,7 @@ class Sites extends Component
         }
 
         $configPath = self::CONFIG_SITES_KEY . '.' . $uid;
-        $projectConfig->save($configPath, $configData);
+        $projectConfig->set($configPath, $configData);
 
         // Now that we have a site ID, save it on the model
         if ($isNewSite) {
@@ -839,7 +839,7 @@ class Sites extends Component
         foreach ($siteUids as $sortOrder => $siteUid) {
             $data = $projectConfig->get(self::CONFIG_SITES_KEY . '.' . $siteUid);
             $data['sortOrder'] = $sortOrder + 1;
-            $projectConfig->save(self::CONFIG_SITES_KEY . '.' . $siteUid, $data);
+            $projectConfig->set(self::CONFIG_SITES_KEY . '.' . $siteUid, $data);
         }
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_REORDER_SITES)) {

@@ -384,7 +384,7 @@ class Categories extends Component
         }
 
         $configPath = self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid;
-        $projectConfig->save($configPath, $configData);
+        $projectConfig->set($configPath, $configData);
 
         if ($isNewCategoryGroup) {
             $group->id = Db::idByUid('{{%categorygroups}}', $categoryGroupUid);
@@ -749,7 +749,7 @@ class Categories extends Component
         }
 
         if ($fieldPruned) {
-            $projectConfig->save(self::CONFIG_CATEGORYROUP_KEY, $categoryGroups);
+            $projectConfig->set(self::CONFIG_CATEGORYROUP_KEY, $categoryGroups);
         }
     }
 

@@ -559,7 +559,7 @@ class Sections extends Component
         }
 
         $configPath = self::CONFIG_SECTIONS_KEY . '.' . $sectionUid;
-        $projectConfig->save($configPath, $configData);
+        $projectConfig->set($configPath, $configData);
 
         if ($isNewSection) {
             $section->id = Db::idByUid('{{%sections}}', $sectionUid);
@@ -1102,7 +1102,7 @@ class Sections extends Component
         }
 
         $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid;
-        $projectConfig->save($configPath, $configData);
+        $projectConfig->set($configPath, $configData);
 
         if ($isNewEntryType) {
             $entryType->id = Db::idByUid('{{%entrytypes}}', $entryTypeUid);
@@ -1250,7 +1250,7 @@ class Sections extends Component
 
             $data = $projectConfig->get($configPath);
             $data['sortOrder'] = $entryTypeOrder + 1;
-            $projectConfig->save($configPath, $data);
+            $projectConfig->set($configPath, $data);
         }
 
 

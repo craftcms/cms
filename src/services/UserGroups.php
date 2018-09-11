@@ -228,7 +228,7 @@ class UserGroups extends Component
             'handle' => $group->handle
         ];
 
-        $projectConfig->save($configPath, $configData);
+        $projectConfig->set($configPath, $configData);
 
         // Now that we have a group ID, save it on the model
         if ($isNewGroup) {
