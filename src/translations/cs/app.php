@@ -1196,7 +1196,7 @@ return [
 
 děkujeme za vytvoření uživatelského účtu na webu {{siteName}}! Pro aktivaci svého účtu prosím otevři následující odkaz:
 
-{{link}}
+<{{link}}>
 
 Pokud nevíte, o co se jedná, klidně tuto zprávu ignorujte.',
     'account_activation_heading' => 'Když někdo vytvoří účet:',
@@ -1214,7 +1214,7 @@ Pokud nevíte, o co se jedná, klidně tuto zprávu ignorujte.',
 
 Pro obnovení hesla na webu {{siteName}} klikni na následující odkaz:
 
-{{link}}
+<{{link}}>
 
 Pokud nevíte o co se jedná, email klidně ignorujte.',
     'forgot_password_heading' => 'Když někdo zapomene heslo:',
@@ -1248,7 +1248,7 @@ Byla pro to použita následující nastavení:
 
 prosím ověřte Vaši novou emailovou adresu kliknutím na následující odkaz:
 
-{{link}}
+<{{link}}>
 
 Pokud nevíte, o co se jedná, tuto zprávu  klidně ignorujte.',
     'verify_new_email_heading' => 'Když někdo změní svoji emailovou adresu:',

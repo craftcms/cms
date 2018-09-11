@@ -1197,7 +1197,7 @@ return [
 ¡Gracias por crear una cuenta con {{siteName}}! Para activar tu cuenta, pulsa en el siguiente enlace:
 
 
-{{link}}
+<{{link}}>
 
 Si no estabas esperando este correo electrónico, ignóralo.',
     'account_activation_heading' => 'Cuando alguien crea una cuenta:',
@@ -1215,7 +1215,7 @@ Si no estabas esperando este correo electrónico, ignóralo.',
 
 Para restablecer la contraseña de tu {{siteName}} pulsa en el siguiente enlace:
 
-{{link}}
+<{{link}}>
 
 Si no estabas esperando este correo electrónico, ignóralo.',
     'forgot_password_heading' => 'Cuando alguien olvida su contraseña:',
@@ -1248,7 +1248,7 @@ Estas son las configuraciones que has utilizado:
 
 Verifica tu nueva dirección de correo electrónico pulsando en este enlace:
 
-{{link}}
+<{{link}}>
 
 Si no estabas esperando este correo electrónico, ignóralo.',
     'verify_new_email_heading' => 'Cuando alguien cambia su dirección de correo electrónico:',

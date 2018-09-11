@@ -1189,7 +1189,7 @@ class Sections extends Component
 
                 Craft::$app->getQueue()->push(new ResaveElements([
                     'description' => Craft::t('app', 'Resaving {type} entries', [
-                        'type' => $entryTypeRecord->name,
+                        'type' => ($section->type !== Section::TYPE_SINGLE ? $section->name . ' - ' : '') . $entryTypeRecord->name,
                     ]),
                     'elementType' => Entry::class,
                     'criteria' => [

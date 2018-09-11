@@ -1197,7 +1197,7 @@ return [
 
 Bedankt voor het maken van een account op {{siteName}}! Klik op de volgende link om je account te activeren:
 
-{{link}}
+<{{link}}>
 
 Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'account_activation_heading' => 'Als iemand een account aanmaakt:',
@@ -1215,7 +1215,7 @@ Als je deze email niet verwachtte, kun je hem gewoon negeren.',
 
 Klik op de volgende link om je wachtwoord voor {{siteName}} te resetten:
 
-{{link}}
+<{{link}}>
 
 Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'forgot_password_heading' => 'Als iemand zijn wachtwoord vergeet:',
@@ -1249,7 +1249,7 @@ Hier zijn de gebruikte instellingen:
 
 Klik op deze link om je nieuwe emailadres te bevestigen:
 
-{{link}}
+<{{link}}>
 
 Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'verify_new_email_heading' => 'Als iemand zijn email-adres wijzigt:',

@@ -1195,7 +1195,7 @@ return [
     'account_activation_body' => '您好，{{user.friendlyName}}，
 感谢您创建 {{siteName}} 帐户！要激活帐户，请单击下面的链接：
 
-{{link}}
+<{{link}}>
 
 如果不希望收到这封电子邮件，请予以忽略。',
     'account_activation_heading' => '有人创建帐户时：',
@@ -1213,7 +1213,7 @@ return [
 
 要重置您的 {{siteName}} 密码，请单击此链接：
 
-{{link}}
+<{{link}}>
 
 如果您无法识别此邮件，请忽略它。',
     'forgot_password_heading' => '当用户忘记他们的密码时：',
@@ -1247,7 +1247,7 @@ return [
 
 请单击下方链接验证您的新电子邮件地址：
 
-{{link}}
+<{{link}}>
 
 如果您无法识别此邮件，请忽略它。',
     'verify_new_email_heading' => '当用户更改他们的电子邮件地址时：',
