@@ -1044,6 +1044,6 @@ class Install extends Migration
         Craft::$app->getSites()->saveSite($this->site);
 
         // Save schema version to config
-        Craft::$app->getProjectConfig()->save(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, Craft::$app->schemaVersion);
+        Craft::$app->getProjectConfig()->set(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, Craft::$app->schemaVersion);
     }
 }

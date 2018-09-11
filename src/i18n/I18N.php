@@ -34,7 +34,14 @@ class I18N extends \yii\i18n\I18N
     private $_allLocaleIds;
 
     /**
-     * @var
+     * @var string[]
+     * @see getAppLocaleIds()
+     */
+    private $_appLocaleIds;
+
+    /**
+     * @var Locale[]
+     * @see getAppLocales()
      */
     private $_appLocales;
 
@@ -158,25 +165,11 @@ class I18N extends \yii\i18n\I18N
             return $this->_appLocales;
         }
 
-        $this->_appLocales = [new Locale(Craft::$app->sourceLanguage)];
+        $this->_appLocales = [];
 
-        // Scan the translations/ dir for the others
-        $dir = Craft::$app->getPath()->getCpTranslationsPath();
-        $handle = opendir($dir);
-        if ($handle === false) {
-            throw new Exception("Unable to open directory: $dir");
+        foreach ($this->getAppLocaleIds() as $localeId) {
+            $this->_appLocales[] = new Locale($localeId);
         }
-        while (($subDir = readdir($handle)) !== false) {
-            if ($subDir === '.' || $subDir === '..' || $subDir === Craft::$app->sourceLanguage) {
-                continue;
-            }
-            $path = $dir . DIRECTORY_SEPARATOR . $subDir;
-            if (is_file($path)) {
-                continue;
-            }
-            $this->_appLocales[] = new Locale($subDir);
-        }
-        closedir($handle);
 
         return $this->_appLocales;
     }
@@ -186,17 +179,43 @@ class I18N extends \yii\i18n\I18N
      * files exist in `vendor/craftcms/cms/src/translations/`.
      *
      * @return array An array of locale IDs.
+     * @throws Exception in case of failure
      */
     public function getAppLocaleIds(): array
     {
-        $locales = $this->getAppLocales();
-        $localeIds = [];
-
-        foreach ($locales as $locale) {
-            $localeIds[] = $locale->id;
+        if ($this->_appLocaleIds !== null) {
+            return $this->_appLocaleIds;
         }
 
-        return $localeIds;
+        $localeIds = [
+            Craft::$app->sourceLanguage => true,
+        ];
+
+        // Scan the translations/ dir for the others
+        $dir = Craft::$app->getPath()->getCpTranslationsPath();
+        $handle = opendir($dir);
+        if ($handle === false) {
+            throw new Exception("Unable to open directory: $dir");
+        }
+        while (($subDir = readdir($handle)) !== false) {
+            if ($subDir !== '.' && $subDir !== '..' && is_dir($dir . DIRECTORY_SEPARATOR . $subDir)) {
+                $localeIds[$subDir] = true;
+            }
+        }
+        closedir($handle);
+
+        // Add in any extra locales defined by the config
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (!empty($generalConfig->extraAppLocales)) {
+            foreach ($generalConfig->extraAppLocales as $localeId) {
+                $localeIds[$localeId] = true;
+            }
+        }
+        if ($generalConfig->defaultCpLanguage) {
+            $localeIds[$generalConfig->defaultCpLanguage] = true;
+        }
+
+        return $this->_appLocaleIds = array_keys($localeIds);
     }
 
     // Site Locales

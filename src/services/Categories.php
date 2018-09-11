@@ -14,8 +14,8 @@ use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
-use craft\events\FieldEvent;
 use craft\events\ConfigEvent;
+use craft\events\FieldEvent;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -384,7 +384,7 @@ class Categories extends Component
         }
 
         $configPath = self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid;
-        $projectConfig->save($configPath, $configData);
+        $projectConfig->set($configPath, $configData);
 
         if ($isNewCategoryGroup) {
             $group->id = Db::idByUid('{{%categorygroups}}', $categoryGroupUid);
@@ -749,7 +749,7 @@ class Categories extends Component
         }
 
         if ($fieldPruned) {
-            $projectConfig->save(self::CONFIG_CATEGORYROUP_KEY, $categoryGroups);
+            $projectConfig->set(self::CONFIG_CATEGORYROUP_KEY, $categoryGroups);
         }
     }
 

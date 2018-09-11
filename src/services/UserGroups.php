@@ -10,7 +10,6 @@ namespace craft\services;
 use Craft;
 use craft\db\Query;
 use craft\elements\User;
-use craft\errors\UserGroupNotFoundException;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\UserGroupEvent;
@@ -229,7 +228,7 @@ class UserGroups extends Component
             'handle' => $group->handle
         ];
 
-        $projectConfig->save($configPath, $configData);
+        $projectConfig->set($configPath, $configData);
 
         // Now that we have a group ID, save it on the model
         if ($isNewGroup) {

@@ -202,8 +202,8 @@ class Plugins extends Component
             }
 
             // Clean up the row data
-            $row['settings'] = $configData['settings'];
-            $row['licenseKey'] = $configData['licenseKey'];
+            $row['settings'] = $configData['settings'] ?? [];
+            $row['licenseKey'] = $configData['licenseKey'] ?? null;
             $row['enabled'] = true;
             $row['installDate'] = DateTimeHelper::toDateTime($row['installDate']);
 
@@ -380,7 +380,7 @@ class Plugins extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', true);
+        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', true);
 
         $this->_enabledPluginInfo[$handle] = $info;
         $this->_registerPlugin($plugin);
@@ -424,7 +424,7 @@ class Plugins extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', false);
+        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', false);
 
 
         unset($this->_enabledPluginInfo[$handle]);
@@ -486,7 +486,7 @@ class Plugins extends Component
 
             $this->_setPluginMigrator($plugin, $info['id']);
 
-            Craft::$app->getProjectConfig()->save(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', true);
+            Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', true);
 
             if ($plugin->install() === false) {
                 $transaction->rollBack();
@@ -615,7 +615,7 @@ class Plugins extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.settings', $plugin->getSettings()->toArray());
+        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.settings', $plugin->getSettings()->toArray());
 
         $plugin->afterSaveSettings();
 
@@ -996,7 +996,7 @@ class Plugins extends Component
             $normalizedLicenseKey = null;
         }
 
-        Craft::$app->getProjectConfig()->save(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.licenseKey', $normalizedLicenseKey);
+        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.licenseKey', $normalizedLicenseKey);
 
         // Update our cache of it
         if (isset($this->_enabledPluginInfo[$handle])) {

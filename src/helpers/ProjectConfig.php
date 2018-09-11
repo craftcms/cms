@@ -8,13 +8,9 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\models\Site;
 use craft\services\Fields;
-use craft\services\ProjectConfig as ProjectConfigService;
-use craft\services\Sections;
 use craft\services\Sites;
 use craft\services\UserGroups;
-use Symfony\Component\Yaml\Yaml;
 
 
 /**
@@ -59,12 +55,12 @@ class ProjectConfig
 
         foreach ($allGroups as $groupUid => $groupData) {
             // Ensure group is processed
-            $projectConfig->processConfigChanges(Fields::CONFIG_FIELDGROUP_KEY.'.'.$groupUid);
+            $projectConfig->processConfigChanges(Fields::CONFIG_FIELDGROUP_KEY . '.' . $groupUid);
         }
 
         foreach ($allFields as $fieldUid => $fieldData) {
             // Ensure field is processed
-            $projectConfig->processConfigChanges(Fields::CONFIG_FIELDS_KEY.'.'.$fieldUid);
+            $projectConfig->processConfigChanges(Fields::CONFIG_FIELDS_KEY . '.' . $fieldUid);
         }
     }
 
@@ -84,14 +80,13 @@ class ProjectConfig
 
         foreach ($allGroups as $groupUid => $groupData) {
             // Ensure group is processed
-            $projectConfig->processConfigChanges(Sites::CONFIG_SITEGROUP_KEY.'.'.$groupUid);
+            $projectConfig->processConfigChanges(Sites::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
         }
 
         foreach ($allSites as $siteUid => $siteData) {
             // Ensure site is processed
-            $projectConfig->processConfigChanges(Sites::CONFIG_SITES_KEY.'.'.$siteUid);
+            $projectConfig->processConfigChanges(Sites::CONFIG_SITES_KEY . '.' . $siteUid);
         }
-
     }
 
     /**
@@ -109,9 +104,9 @@ class ProjectConfig
 
         if (is_array($allGroups)) {
             foreach ($allGroups as $groupUid => $groupData) {
-                $path = UserGroups::CONFIG_USERPGROUPS_KEY.'.';
+                $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.';
                 // Ensure group is processed
-                $projectConfig->processConfigChanges($path.$groupUid);
+                $projectConfig->processConfigChanges($path . $groupUid);
             }
         }
     }

@@ -531,7 +531,7 @@ class Db
                 $val = str_replace('\*', '*', $val);
 
                 if ($like) {
-                    if ($caseInsensitive ) {
+                    if ($caseInsensitive) {
                         $operator = $operator === '=' ? 'ilike' : 'not ilike';
                     } else {
                         $operator = $operator === '=' ? 'like' : 'not like';

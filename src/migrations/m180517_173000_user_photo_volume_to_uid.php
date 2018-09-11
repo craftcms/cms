@@ -5,7 +5,6 @@ namespace craft\migrations;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\Json;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * m180517_173000_user_photo_volume_to_uid migration.

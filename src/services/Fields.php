@@ -13,13 +13,12 @@ use craft\base\FieldInterface;
 use craft\behaviors\ContentBehavior;
 use craft\behaviors\ElementQueryBehavior;
 use craft\db\Query;
-use craft\errors\FieldGroupNotFoundException;
 use craft\errors\FieldNotFoundException;
 use craft\errors\MissingComponentException;
+use craft\events\ConfigEvent;
 use craft\events\FieldEvent;
 use craft\events\FieldGroupEvent;
 use craft\events\FieldLayoutEvent;
-use craft\events\ConfigEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\Assets as AssetsField;
 use craft\fields\Categories as CategoriesField;
@@ -52,7 +51,6 @@ use craft\records\FieldGroup as FieldGroupRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use craft\records\FieldLayoutField as FieldLayoutFieldRecord;
 use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
-use yii\base\Application;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -307,7 +305,7 @@ class Fields extends Component
             $uid = $groupRecord->uid;
         }
 
-        $projectConfig->save(self::CONFIG_FIELDGROUP_KEY . '.' . $uid, $configData);
+        $projectConfig->set(self::CONFIG_FIELDGROUP_KEY . '.' . $uid, $configData);
 
         if ($isNewGroup) {
             $group->id = Db::idByUid('{{%fieldgroups}}', $uid);
@@ -923,7 +921,7 @@ class Fields extends Component
         }
 
         $configPath = self::CONFIG_FIELDS_KEY . '.' . $uid;
-        $projectConfig->save($configPath, $configData);
+        $projectConfig->set($configPath, $configData);
 
         if ($isNewField) {
             $field->id = Db::idByUid('{{%fields}}', $uid);
@@ -1472,7 +1470,7 @@ class Fields extends Component
                 $fieldRecord->layoutId = $layout->id;
                 $fieldRecord->tabId = $tab->id;
                 $fieldRecord->fieldId = $field->id;
-                $fieldRecord->required = (bool) $field->required;
+                $fieldRecord->required = (bool)$field->required;
                 $fieldRecord->sortOrder = $field->sortOrder;
                 $fieldRecord->save(false);
             }

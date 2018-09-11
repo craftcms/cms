@@ -8,14 +8,13 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\Field;
 use craft\db\Query;
 use craft\elements\GlobalSet;
 use craft\errors\GlobalSetNotFoundException;
+use craft\events\ConfigEvent;
 use craft\events\FieldEvent;
 use craft\events\GlobalSetEvent;
-use craft\events\ConfigEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -23,7 +22,6 @@ use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
 use yii\base\Component;
-use yii\base\Exception;
 
 /**
  * Globals service.
@@ -371,7 +369,7 @@ class Globals extends Component
         }
 
         $configPath = self::CONFIG_GLOBALSETS_KEY . '.' . $globalSetUid;
-        $projectConfig->save($configPath, $configData);
+        $projectConfig->set($configPath, $configData);
 
         if ($isNewSet) {
             $globalSet->id = Db::idByUid('{{%globalsets}}', $globalSetUid);
@@ -554,7 +552,7 @@ class Globals extends Component
         }
 
         if ($fieldPruned) {
-            $projectConfig->save(self::CONFIG_GLOBALSETS_KEY, $globalSets);
+            $projectConfig->set(self::CONFIG_GLOBALSETS_KEY, $globalSets);
         }
     }
 

@@ -16,7 +16,6 @@ use craft\helpers\Image as ImageHelper;
 use craft\image\Raster;
 use craft\image\Svg;
 use enshrined\svgSanitize\Sanitizer;
-use Imagine\Imagick\Imagick;
 use yii\base\Component;
 use yii\base\Exception;
 

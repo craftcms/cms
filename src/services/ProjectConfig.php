@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Plugin;
-use craft\base\PluginTrait;
 use craft\events\ConfigEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
@@ -220,13 +219,19 @@ class ProjectConfig extends Component
             $this->_waitingToSaveModifiedConfigData = false;
         }
     }
-
+    
     /**
-     * Returns a config value by its path.
+     * Returns a config item value value by its path.
      *
-     * @param string $path
-     * @param bool $getFromYaml whether data should be fetched `config/project.yaml` instead of the stored config. Defaults to `false`
-     * @return mixed
+     * ---
+     *
+     * ```php
+     * $value = Craft::$app->projectConfig->get('foo.bar');
+     * ```
+     *
+     * @param string $path The config item path
+     * @param bool $getFromYaml whether data should be fetched from `config/project.yaml` instead of the stored config. Defaults to `false`.
+     * @return mixed The config item value
      */
     public function get(string $path, $getFromYaml = false)
     {
@@ -240,16 +245,22 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Saves a value to the project config at a given path.
+     * Sets a config item value at the given path.
+     *
+     * ---
+     *
+     * ```php
+     * Craft::$app->projectConfig->set('foo.bar', 'value');
+     * ```
      *
      * @param string $path The config item path
-     * @param mixed $value The config value. Must be
+     * @param mixed $value The config item value
      * @throws ErrorException
      * @throws Exception
      * @throws ServerErrorHttpException
      * @todo make sure $value is serializable and unserialable
      */
-    public function save(string $path, $value)
+    public function set(string $path, $value)
     {
         $pathParts = explode('.', $path);
 
@@ -257,7 +268,7 @@ class ProjectConfig extends Component
 
         if (!$this->_timestampUpdated) {
             $this->_timestampUpdated = true;
-            $this->save('dateModified', DateTimeHelper::currentTimeStamp());
+            $this->set('dateModified', DateTimeHelper::currentTimeStamp());
         }
 
         if ($this->_useConfigFile()) {
@@ -288,13 +299,18 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Removes an item from the config.
+     * Removes a config item at the given path.
      *
-     * @param string $path The path to the item
+     * ---
+     * ```php
+     * Craft::$app->projectConfig->remove('foo.bar');
+     * ```
+     *
+     * @param string $path The config item path
      */
     public function remove(string $path)
     {
-        $this->save($path, null);
+        $this->set($path, null);
     }
 
     /**
@@ -393,9 +409,9 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Processes config changes for a given path.
+     * Processes changes in `config/project.yaml` for a given path.
      *
-     * @param string $path
+     * @param string $path The config item path
      */
     public function processConfigChanges(string $path)
     {
@@ -542,9 +558,9 @@ class ProjectConfig extends Component
             return true;
         }
 
-        $configSchemaVersion = (string) $this->get(self::CONFIG_SCHEMA_VERSION_KEY, true);
+        $configSchemaVersion = (string)$this->get(self::CONFIG_SCHEMA_VERSION_KEY, true);
 
-        if (version_compare((string) Craft::$app->schemaVersion, $configSchemaVersion, '<')) {
+        if (version_compare((string)Craft::$app->schemaVersion, $configSchemaVersion, '<')) {
             return false;
         }
 
@@ -552,9 +568,9 @@ class ProjectConfig extends Component
 
         foreach ($plugins as $plugin) {
             /** @var Plugin $plugin */
-            $configSchemaVersion = (string) $this->get(Plugins::CONFIG_PLUGINS_KEY.'.'.$plugin->handle.'.'.self::CONFIG_SCHEMA_VERSION_KEY, true);
+            $configSchemaVersion = (string)$this->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.' . self::CONFIG_SCHEMA_VERSION_KEY, true);
 
-            if (version_compare((string) $plugin->schemaVersion, $configSchemaVersion, '<')) {
+            if (version_compare((string)$plugin->schemaVersion, $configSchemaVersion, '<')) {
                 return false;
             }
         }
@@ -567,6 +583,34 @@ class ProjectConfig extends Component
 
     /**
      * Attaches an event handler for when an item is added to the config at a given path.
+     *
+     * ---
+     *
+     * ```php
+     * use craft\events\ConfigEvent;
+     * use craft\helpers\Db;
+     *
+     * Craft::$app->projectConfig->onAdd('foo.{uid}', function(ConfigEvent $event) {
+     *     // Get the UID from the item path
+     *     $uid = $event->tokenMatches[0];
+     *
+     *     // Prep the row data
+     *     $data = array_merge($event->newValue);
+     *
+     *     // See if the row already exists (maybe it was soft-deleted)
+     *     $id = Db::idByUid('{{%tablename}}', $uid);
+     *
+     *     if ($id) {
+     *         $data['dateDeleted'] = null;
+     *         Craft::$app->db->createCommand()->update('{{%tablename}}', $data, [
+     *             'id' => $id,
+     *         ]);
+     *     } else {
+     *         $data['uid'] = $uid;
+     *         Craft::$app->db->createCommand()->insert('{{%tablename}}', $data);
+     *     }
+     * });
+     * ```
      *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
@@ -581,6 +625,23 @@ class ProjectConfig extends Component
     /**
      * Attaches an event handler for when an item is updated in the config at a given path.
      *
+     * ---
+     *
+     * ```php
+     * use craft\events\ConfigEvent;
+     *
+     * Craft::$app->projectConfig->onUpdate('foo.{uid}', function(ConfigEvent $event) {
+     *     // Get the UID from the item path
+     *     $uid = $event->tokenMatches[0];
+     *
+     *     // Update the item in the database
+     *     $data = array_merge($event->newValue);
+     *     Craft::$app->db->createCommand()->update('{{%tablename}}', $data, [
+     *         'uid' => $uid,
+     *     ]);
+     * });
+     * ```
+     *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
      * @param mixed $data The data to be passed to the event handler when the event is triggered.
@@ -593,6 +654,22 @@ class ProjectConfig extends Component
 
     /**
      * Attaches an event handler for when an item is removed from the config at a given path.
+     *
+     * ---
+     *
+     * ```php
+     * use craft\events\ConfigEvent;
+     *
+     * Craft::$app->projectConfig->onRemove('foo.{uid}', function(ConfigEvent $event) {
+     *     // Get the UID from the item path
+     *     $uid = $event->tokenMatches[0];
+     *
+     *     // Soft-delete the item from the database
+     *     Craft::$app->db->createCommand()->softDelete('{{%tablename}}', [
+     *         'uid' => $uid,
+     *     ]);
+     * });
+     * ```
      *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
@@ -689,7 +766,7 @@ class ProjectConfig extends Component
     private function _parseYamlFile(string $file)
     {
         if (empty($this->_parsedConfigs[$file])) {
-            $this->_parsedConfigs[$file] = file_exists($file) ? Yaml::parse(file_get_contents($file)) : [];
+            $this->_parsedConfigs[$file] = file_exists($file) ? Yaml::parseFile($file) : [];
         }
 
         return $this->_parsedConfigs[$file];

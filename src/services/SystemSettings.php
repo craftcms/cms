@@ -8,9 +8,7 @@
 namespace craft\services;
 
 use Craft;
-use craft\helpers\Json;
 use craft\models\MailSettings;
-use craft\records\SystemSettings as SystemSettingsRecord;
 use yii\base\Component;
 
 /**
@@ -69,7 +67,7 @@ class SystemSettings extends Component
      */
     public function saveSettings(string $category, array $settings = null): bool
     {
-        Craft::$app->getProjectConfig()->save($category, $settings);
+        Craft::$app->getProjectConfig()->set($category, $settings);
         return true;
     }
 

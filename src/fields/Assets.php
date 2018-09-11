@@ -434,7 +434,7 @@ class Assets extends BaseRelationField
 
         if ($this->useSingleFolder) {
             $folder = Craft::$app->getAssets()->getFolderById($folderId);
-            $folderPath = 'folder:'.$folder->uid;
+            $folderPath = 'folder:' . $folder->uid;
 
             // Construct the path
             while ($folder->parentId && $folder->volumeId !== null) {

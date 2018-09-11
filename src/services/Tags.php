@@ -12,8 +12,8 @@ use craft\base\Field;
 use craft\db\Query;
 use craft\elements\Tag;
 use craft\errors\TagGroupNotFoundException;
-use craft\events\FieldEvent;
 use craft\events\ConfigEvent;
+use craft\events\FieldEvent;
 use craft\events\TagGroupEvent;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -269,7 +269,7 @@ class Tags extends Component
         }
 
         $configPath = self::CONFIG_TAGGROUP_KEY . '.' . $tagGroupUid;
-        $projectConfig->save($configPath, $configData);
+        $projectConfig->set($configPath, $configData);
 
         if ($isNewTagGroup) {
             $tagGroup->id = Db::idByUid('{{%taggroups}}', $tagGroupUid);
@@ -481,7 +481,7 @@ class Tags extends Component
         }
 
         if ($fieldPruned) {
-            $projectConfig->save(self::CONFIG_TAGGROUP_KEY, $tagGroups, true);
+            $projectConfig->set(self::CONFIG_TAGGROUP_KEY, $tagGroups, true);
         }
     }
 
