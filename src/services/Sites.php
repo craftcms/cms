@@ -21,7 +21,6 @@ use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
 use craft\events\SiteGroupEvent;
 use craft\helpers\App;
-use craft\helpers\Db;
 use craft\models\Site;
 use craft\models\SiteGroup;
 use craft\queue\jobs\PropagateElements;
@@ -359,7 +358,7 @@ class Sites extends Component
     public function getSiteByUid(string $uid): Site
     {
         if (!isset($this->_sitesByUid[$uid])) {
-            throw new SiteNotFoundException('Site with UID ”'.$uid.'“ not found!');
+            throw new SiteNotFoundException('Site with UID ”' . $uid . '“ not found!');
         }
 
         return $this->_sitesByUid[$uid];

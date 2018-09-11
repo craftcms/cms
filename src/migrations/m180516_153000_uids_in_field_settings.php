@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\Json;
@@ -40,7 +39,7 @@ class m180516_153000_uids_in_field_settings extends Migration
                 $siteIds[] = $settings['targetSiteId'];
             }
 
-            switch ($field['type']){
+            switch ($field['type']) {
                 case 'craft\fields\Assets':
                     list(, $folderIds[]) = explode(':', $settings['defaultUploadLocationSource']);
                     list(, $folderIds[]) = explode(':', $settings['singleUploadLocationSource']);
@@ -79,8 +78,6 @@ class m180516_153000_uids_in_field_settings extends Migration
 
                     break;
             }
-
-
         }
 
         $folders = (new Query())
@@ -127,23 +124,23 @@ class m180516_153000_uids_in_field_settings extends Migration
             }
 
             if (array_key_exists('targetSiteId', $settings)) {
-                $settings['targetSiteId'] =   $sites[$settings['targetSiteId']] ?? null;
+                $settings['targetSiteId'] = $sites[$settings['targetSiteId']] ?? null;
             }
 
-            switch ($field['type']){
+            switch ($field['type']) {
                 case 'craft\fields\Assets':
                     $default = explode(':', $settings['defaultUploadLocationSource']);
                     $single = explode(':', $settings['singleUploadLocationSource']);
 
-                    $settings['defaultUploadLocationSource'] = $default[0].':'.$folders[$default[1]] ??  null;
-                    $settings['singleUploadLocationSource'] = $single[0].':'.$folders[$single[1]] ??  null;
+                    $settings['defaultUploadLocationSource'] = $default[0] . ':' . $folders[$default[1]] ?? null;
+                    $settings['singleUploadLocationSource'] = $single[0] . ':' . $folders[$single[1]] ?? null;
 
                     if (is_array($settings['sources'])) {
                         $newSources = [];
 
                         foreach ($settings['sources'] as $source) {
                             $source = explode(':', $source);
-                            $newSources[] = $source[0].':'.$folders[$source[1]] ??  null;
+                            $newSources[] = $source[0] . ':' . $folders[$source[1]] ?? null;
                         }
 
                         $settings['sources'] = $newSources;
@@ -156,7 +153,7 @@ class m180516_153000_uids_in_field_settings extends Migration
 
                         foreach ($settings['sources'] as $source) {
                             $source = explode(':', $source);
-                            $newSources[] = $source[0].':'.$sections[$source[1]] ??  null;
+                            $newSources[] = $source[0] . ':' . $sections[$source[1]] ?? null;
                         }
 
                         $settings['sources'] = $newSources;
@@ -171,7 +168,7 @@ class m180516_153000_uids_in_field_settings extends Migration
                             $source = explode(':', $source);
 
                             if (count($source) > 1) {
-                                $newSources[] = $source[0].':'.$userGroups[$source[1]] ??  null;
+                                $newSources[] = $source[0] . ':' . $userGroups[$source[1]] ?? null;
                             } else {
                                 $newSources[] = $source[0];
                             }
@@ -183,12 +180,12 @@ class m180516_153000_uids_in_field_settings extends Migration
                     break;
                 case 'craft\fields\Categories':
                     $source = explode(':', $settings['source']);
-                    $settings['source'] = $source[0].':'.$categoryGroups[$source[1]] ?? null;
+                    $settings['source'] = $source[0] . ':' . $categoryGroups[$source[1]] ?? null;
 
                     break;
                 case 'craft\fields\Tags':
                     $source = explode(':', $settings['source']);
-                    $settings['source'] = $source[0].':'.$tagGroups[$source[1]] ?? null;
+                    $settings['source'] = $source[0] . ':' . $tagGroups[$source[1]] ?? null;
 
                     break;
             }

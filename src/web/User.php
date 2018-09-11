@@ -10,7 +10,6 @@ namespace craft\web;
 use Craft;
 use craft\elements\User as UserElement;
 use craft\helpers\ConfigHelper;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\validators\UserPasswordValidator;
