@@ -209,7 +209,10 @@ class Api extends Component
 
             // Should we be including the hash as well?
             if (strpos($package['version'], 'dev-') === 0) {
-                $hashes[$package['name']] = $package['dist']['reference'] ?? $package['source']['reference'];
+                $hash = $package['dist']['reference'] ?? $package['source']['reference'] ?? null;
+                if ($hash !== null) {
+                    $hashes[$package['name']] = $hash;
+                }
             }
         }
 
