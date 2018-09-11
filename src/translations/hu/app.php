@@ -1198,7 +1198,7 @@ return [
 
 Köszönjük, hogy regisztráltál, a felhasználói fiókod aktiválásához kattints az alábbi linkre:
 
-{{link}}',
+<{{link}}>',
     'account_activation_heading' => 'ha valaki készít egy fiókot:',
     'account_activation_subject' => 'Aktiváld a felhasználói fiókodat',
     'by {author}' => 'Készítette: {author}',
@@ -1214,7 +1214,7 @@ Köszönjük, hogy regisztráltál, a felhasználói fiókod aktiválásához ka
 
 A {{siteName}} jelszavad visszaállításához kattints erre a hivatkozásra:
 
-{{link}}
+<{{link}}>
 
 Ha nem vártad ezt az e-mailt, akkor hagyd figyelmen kívül.',
     'forgot_password_heading' => 'Amikor valaki elfelejti a jelszavát:',
@@ -1248,7 +1248,7 @@ Itt láthatók a használt beállítások:
 
 Kérjük erősitsd meg az új email címedet az alábbi linkre kattintva:
 
-{{link}}
+<{{link}}>
 
 Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül.',
     'verify_new_email_heading' => 'Amikor valaki e-mail címet változtat:',

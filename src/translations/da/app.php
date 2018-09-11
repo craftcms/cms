@@ -1196,7 +1196,7 @@ return [
  
 Tak fordu du oprette en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link: 
  
- {{link}} 
+ <{{link}}> 
  
  Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'account_activation_heading' => 'Når nogen opretter en bruger:',
@@ -1214,7 +1214,7 @@ Tak fordu du oprette en konto med {{siteName}}! Aktiver din konto ved at klikke 
 
 For at nulstille dit {{siteName}} kodeord, klik på følgende link:
 
-{{link}}
+<{{link}}>
 
 Hvis du ikke forventede denne email, så bare ignorer den.½',
     'forgot_password_heading' => 'Når nogen glemmer deres kodeord:',
@@ -1249,7 +1249,7 @@ Her er indstillingerne du har brugt:
  
  Bekræft din nye e-mailadresse ved at klikke på dette link: 
  
- {{link}} 
+ <{{link}}> 
  
  Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'verify_new_email_heading' => 'Når nogen ændrer deres e-mailadresse:',

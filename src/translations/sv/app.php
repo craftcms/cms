@@ -1196,7 +1196,7 @@ return [
 
 Tack för att du skapar ett konto hos {{siteName}}! Klicka på följande länk för att aktivera ditt konto:
 
-{{link}}
+<{{link}}>
 
 Om du inte förväntade dig det här e-postmeddelandet kan du bara ignorera det.',
     'account_activation_heading' => 'När någon skapar ett konto:',
@@ -1214,7 +1214,7 @@ Om du inte förväntade dig det här e-postmeddelandet kan du bara ignorera det.
 
 Klicka på den här länken för att återställa ditt lösenord till {{siteName}}:
 
-{{link}}
+<{{link}}>
 
 Om du inte hade väntat dig det här meddelandet behöver du inte göra någonting, ignorera det bara.',
     'forgot_password_heading' => 'När någon glömmer sitt lösenord:',
@@ -1248,7 +1248,7 @@ Här är inställningarna du använde:
 
 Var snäll och verifiera din nya e-postadress genom att klicka på denna länk:
 
-{{link}}
+<{{link}}>
 
 Om du inte väntade dig att få detta e-postmeddelande kan du ignorera det.',
     'verify_new_email_heading' => 'När någon ändrar sin e-postadress:',
