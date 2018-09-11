@@ -1,7 +1,7 @@
 # Release Notes for Craft CMS 3.1 (WIP)
 
 ### Added
-- Added the Project Config, a portable and centralized configuration for system settings. ([#881](https://github.com/craftcms/cms/issues/881)) 
+- Added the Project Config, a portable and centralized configuration for system settings. ([#1429](https://github.com/craftcms/cms/issues/1429)) 
 - Elements, field layouts, sites, and site groups are now soft-deleted. ([#867](https://github.com/craftcms/cms/issues/867))
 - Entries, categories, and users can now be restored within the Control Panel by searching for `is:trashed` and clicking the “Restore” button.
 - Custom fields can now opt out of being included in elements’ search keywords. ([#2600](https://github.com/craftcms/cms/issues/2600))
