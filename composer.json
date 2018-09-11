@@ -41,7 +41,7 @@
     "mikehaertl/php-shellcommand": "^1.2.5",
     "pixelandtonic/imagine": "~0.7.1.2",
     "seld/cli-prompt": "^1.0.3",
-    "symfony/yaml": "^3.2",
+    "symfony/yaml": "^3.2|^4.0",
     "true/punycode": "^2.1.0",
     "twig/twig": "^2.5.0",
     "yii2tech/ar-softdelete": "^1.0.2",
