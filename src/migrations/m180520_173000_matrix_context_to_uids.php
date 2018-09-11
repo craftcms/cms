@@ -4,7 +4,6 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * m180520_173000_matrix_context_to_uids migration.

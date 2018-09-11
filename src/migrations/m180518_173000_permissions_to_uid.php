@@ -4,7 +4,6 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * m180518_173000_permissions_to_uid migration.

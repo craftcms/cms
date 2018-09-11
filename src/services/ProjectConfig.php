@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Plugin;
-use craft\base\PluginTrait;
 use craft\events\ConfigEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
@@ -510,9 +509,9 @@ class ProjectConfig extends Component
             return true;
         }
 
-        $configSchemaVersion = (string) $this->get(self::CONFIG_SCHEMA_VERSION_KEY, true);
+        $configSchemaVersion = (string)$this->get(self::CONFIG_SCHEMA_VERSION_KEY, true);
 
-        if (version_compare((string) Craft::$app->schemaVersion, $configSchemaVersion, '<')) {
+        if (version_compare((string)Craft::$app->schemaVersion, $configSchemaVersion, '<')) {
             return false;
         }
 
@@ -520,9 +519,9 @@ class ProjectConfig extends Component
 
         foreach ($plugins as $plugin) {
             /** @var Plugin $plugin */
-            $configSchemaVersion = (string) $this->get(Plugins::CONFIG_PLUGINS_KEY.'.'.$plugin->handle.'.'.self::CONFIG_SCHEMA_VERSION_KEY, true);
+            $configSchemaVersion = (string)$this->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.' . self::CONFIG_SCHEMA_VERSION_KEY, true);
 
-            if (version_compare((string) $plugin->schemaVersion, $configSchemaVersion, '<')) {
+            if (version_compare((string)$plugin->schemaVersion, $configSchemaVersion, '<')) {
                 return false;
             }
         }

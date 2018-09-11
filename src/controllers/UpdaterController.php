@@ -12,7 +12,6 @@ use Composer\Semver\Comparator;
 use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
-use craft\events\ReplaceAssetEvent;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -278,7 +277,7 @@ class UpdaterController extends BaseUpdaterController
                 $data['current'][$packageName] = $current;
                 $data['requirements'][$packageName] = $version;
             }
-        } else if($request->getBodyParam('configUpdate') !== null) {
+        } else if ($request->getBodyParam('configUpdate') !== null) {
             $data = [
                 'updatePending' => true
             ];

@@ -10,7 +10,6 @@ namespace craft\services;
 use Craft;
 use craft\db\Query;
 use craft\elements\User;
-use craft\errors\UserGroupNotFoundException;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\UserGroupEvent;
