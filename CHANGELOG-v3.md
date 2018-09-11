@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.24 - 2018-09-11
 
 ### Added
 - Added the `extraAppLocales` config setting.
