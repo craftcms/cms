@@ -7,6 +7,8 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use Symfony\Component\Yaml\Yaml;
 
@@ -23,19 +25,51 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         $this->addColumn('{{%info}}', 'config', $this->mediumText()->null());
         $this->addColumn('{{%info}}', 'configMap', $this->mediumText()->null());
 
-        $data = $this->_getProjectConfigData();
+        $configData = $this->_getProjectConfigData();
 
-        $snapshot = serialize($data);
+        $data = [];
 
-        $this->update('{{%info}}', [
-            'config' => $snapshot,
-        ]);
+        if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
+            $filePath = Craft::$app->getPath()->getConfigPath() . '/' . Craft::$app->getProjectConfig()::CONFIG_FILENAME;
+
+            // See if there's something in the yaml file already for some reason
+            if (file_exists($filePath)) {
+                $existingData = Yaml::parse($filePath);
+            }
+
+            if (isset($existingData) && is_array($existingData)) {
+                $configData = array_replace_recursive($existingData, $configData);
+            }
+
+            // Last cleanup to compensate for a migration maybe using system settings service to store data in wrong format.
+            if (!empty($configData['users']['photoVolumeId'])){
+                $configData['users']['photoVolumeUid'] = Db::uidById('{{%volumes}}', $configData['users']['photoVolumeId']);
+                unset($configData['users']['photoVolumeId']);
+            }
+
+            $map = [];
+
+            foreach (array_keys($configData) as $key) {
+                $map[$key] = $filePath;
+            }
+
+            $data['configMap'] = Json::encode($map);
+            FileHelper::writeToFile($filePath, Yaml::dump($configData, 20, 2));
+        }
+
+        $snapshot = serialize($configData);
+        $data['config'] = $snapshot;
+        
+        $this->update('{{%info}}', $data);
 
         $this->dropTableIfExists('{{%systemsettings}}');
 
         $this->dropColumn('{{%plugins}}', 'settings');
         $this->dropColumn('{{%plugins}}', 'licenseKey');
         $this->dropColumn('{{%plugins}}', 'enabled');
+
+        // Finally, detach the event handler that would overwrite everything we've accomplished
+        Craft::$app->getProjectConfig()->preventSavingDataAfterRequest();
     }
 
     /**
