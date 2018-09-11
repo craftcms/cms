@@ -689,7 +689,7 @@ class ProjectConfig extends Component
     private function _parseYamlFile(string $file)
     {
         if (empty($this->_parsedConfigs[$file])) {
-            $this->_parsedConfigs[$file] = file_exists($file) ? Yaml::parseFile($file) : [];
+            $this->_parsedConfigs[$file] = file_exists($file) ? Yaml::parse(file_get_contents($file)) : [];
         }
 
         return $this->_parsedConfigs[$file];
