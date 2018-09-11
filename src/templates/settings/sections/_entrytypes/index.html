@@ -21,7 +21,7 @@
         </thead>
         <tbody>
             {% for entryType in entryTypes %}
-                <tr data-id="{{ entryType.id }}" data-name="{{ entryType.name|t('site') }}">
+                <tr data-id="{{ entryType.id }}" data-uid="{{ entryType.uid }}" data-name="{{ entryType.name|t('site') }}">
                     <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id) }}">{{ entryType.name|t('site') }}</a></th>
                     <td data-title="{{ 'Handle'|t('app') }}"><code>{{ entryType.handle }}</code></td>
                     {% if multiple %}
@@ -38,6 +38,7 @@
 {% if section.type != 'single' %}
     {% js %}
         new Craft.AdminTable({
+            idAttribute: 'data-uid',
             tableSelector: '#entrytypes',
             deleteAction: 'sections/delete-entry-type',
             minItems: 1,

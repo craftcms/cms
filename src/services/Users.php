@@ -16,6 +16,7 @@ use craft\errors\ImageException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
+use craft\events\ConfigEvent;
 use craft\events\UserAssignGroupEvent;
 use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
@@ -24,9 +25,11 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Image;
 use craft\helpers\Json;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
+use craft\models\FieldLayout;
 use craft\records\User as UserRecord;
 use DateTime;
 use yii\base\Component;
@@ -132,6 +135,8 @@ class Users extends Component
      * @event UserAssignGroupEvent The event that is triggered after a user is assigned to the default user group.
      */
     const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
+
+    const CONFIG_USERLAYOUT_KEY = 'users.fieldLayouts';
 
     // Public Methods
     // =========================================================================
@@ -409,9 +414,9 @@ class Users extends Component
         }
 
         $volumes = Craft::$app->getVolumes();
-        $volumeId = Craft::$app->getSystemSettings()->getSetting('users', 'photoVolumeId');
+        $volumeUid = Craft::$app->getSystemSettings()->getSetting('users', 'photoVolumeUid');
 
-        if (!$volumeId || ($volume = $volumes->getVolumeById($volumeId)) === null) {
+        if (!$volumeUid || ($volume = $volumes->getVolumeByUid($volumeUid)) === null) {
             throw new VolumeException(Craft::t('app',
                 'The volume set for user photo storage is not valid.'));
         }
@@ -442,7 +447,7 @@ class Users extends Component
             $photo->tempFilePath = $fileLocation;
             $photo->filename = $filenameToUse;
             $photo->newFolderId = $folderId;
-            $photo->volumeId = $volumeId;
+            $photo->volumeId = $volume->id;
 
             // Save photo.
             $elementsService = Craft::$app->getElements();
@@ -994,6 +999,56 @@ class Users extends Component
                 'user' => $user
             ]));
         }
+
+        return true;
+    }
+
+    /**
+     * Handle user field layout changes.
+     *
+     * @param ConfigEvent $event
+     */
+    public function handleChangedUserFieldLayout(ConfigEvent $event)
+    {
+        // Use this because we want this to trigger this if anything changes inside but ONLY ONCE
+        static $parsed = false;
+        if ($parsed) {
+            return;
+        }
+
+        $parsed = true;
+        $data = Craft::$app->getProjectConfig()->get(self::CONFIG_USERLAYOUT_KEY, true);
+
+        $fields = Craft::$app->getFields();
+        $fields->deleteLayoutsByType(User::class);
+
+        if (!$data) {
+            return;
+        }
+
+        // Make sure fields are processed
+        ProjectConfigHelper::ensureAllFieldsProcessed();
+
+        $layout = FieldLayout::createFromConfig(reset($data));
+
+        $layout->type = User::class;
+        $layout->uid = key($data);
+        $fields->saveLayout($layout);
+    }
+
+    /**
+     * Save the user field layout
+     *
+     * @param FieldLayout $layout
+     * @return bool
+     */
+    public function saveLayout(FieldLayout $layout)
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+        $fieldLayoutConfig = $layout->getConfig();
+        $uid = StringHelper::UUID();
+
+        $projectConfig->set(self::CONFIG_USERLAYOUT_KEY, [$uid => $fieldLayoutConfig]);
 
         return true;
     }

@@ -35,11 +35,11 @@ abstract class BaseEntriesController extends Controller
     protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false)
     {
         $userSession = Craft::$app->getUser();
-        $permissionSuffix = ':' . $entry->sectionId;
+        $permissionSuffix = ':' . $entry->getSection()->uid;
 
         if (Craft::$app->getIsMultiSite()) {
             // Make sure they have access to this site
-            $this->requirePermission('editSite:' . $entry->siteId);
+            $this->requirePermission('editSite:' . $entry->getSite()->uid);
         }
 
         // Make sure the user is allowed to edit entries in this section

@@ -1,0 +1,14 @@
+{% extends "_layouts/message" %}
+{% set title = "Complete the Update"|t('app') %}
+
+{% block message %}
+    <p>{{ "To complete the update, project configuration changes have to be applied."|t('app') }}</p>
+
+    <form method="post" class="buttons">
+        {{ csrfInput() }}
+        <input type="hidden" name="action" value="updater">
+        <input type="hidden" name="configUpdate" value="1">
+        <input type="hidden" name="return" value="{{ craft.app.request.getPathInfo() }}">
+        <input type="submit" class="btn submit" value="{{ 'Finish up'|t('app') }}">
+    </form>
+{% endblock %}

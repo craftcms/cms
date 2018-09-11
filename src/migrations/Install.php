@@ -17,6 +17,7 @@ use craft\models\FieldGroup;
 use craft\models\Info;
 use craft\models\Site;
 use craft\models\SiteGroup;
+use craft\services\ProjectConfig;
 
 /**
  * Installation Migration
@@ -400,6 +401,8 @@ class Install extends Migration
             'name' => $this->string()->notNull(),
             'on' => $this->boolean()->defaultValue(false)->notNull(),
             'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
+            'config' => $this->mediumText()->null(),
+            'configMap' => $this->mediumText()->null(),
             'fieldVersion' => $this->char(12)->notNull()->defaultValue('000000000000'),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -551,6 +554,7 @@ class Install extends Migration
             'name' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%structureelements}}', [
@@ -568,14 +572,6 @@ class Install extends Migration
         $this->createTable('{{%structures}}', [
             'id' => $this->primaryKey(),
             'maxLevels' => $this->smallInteger()->unsigned(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
-        ]);
-        $this->createTable('{{%systemsettings}}', [
-            'id' => $this->primaryKey(),
-            'category' => $this->string(15)->notNull(),
-            'settings' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -838,14 +834,13 @@ class Install extends Migration
         $this->createIndex(null, '{{%sites}}', ['dateDeleted'], false);
         $this->createIndex(null, '{{%sites}}', ['handle'], false);
         $this->createIndex(null, '{{%sites}}', ['sortOrder'], false);
-        $this->createIndex(null, '{{%sitegroups}}', ['name'], true);
+        $this->createIndex(null, '{{%sitegroups}}', ['name'], false);
         $this->createIndex(null, '{{%structureelements}}', ['structureId', 'elementId'], true);
         $this->createIndex(null, '{{%structureelements}}', ['root'], false);
         $this->createIndex(null, '{{%structureelements}}', ['lft'], false);
         $this->createIndex(null, '{{%structureelements}}', ['rgt'], false);
         $this->createIndex(null, '{{%structureelements}}', ['level'], false);
         $this->createIndex(null, '{{%structureelements}}', ['elementId'], false);
-        $this->createIndex(null, '{{%systemsettings}}', ['category'], true);
         $this->createIndex(null, '{{%taggroups}}', ['name'], true);
         $this->createIndex(null, '{{%taggroups}}', ['handle'], true);
         $this->createIndex(null, '{{%tags}}', ['groupId'], false);
@@ -1026,6 +1021,8 @@ class Install extends Migration
             'on' => true,
             'maintenance' => false,
             'fieldVersion' => StringHelper::randomString(12),
+            'config' => serialize([]),
+            'configMap' => json_encode([])
         ]));
         echo " done\n";
 
@@ -1045,5 +1042,8 @@ class Install extends Migration
         $this->site->groupId = $siteGroup->id;
         $this->site->primary = true;
         Craft::$app->getSites()->saveSite($this->site);
+
+        // Save schema version to config
+        Craft::$app->getProjectConfig()->set(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, Craft::$app->schemaVersion);
     }
 }

@@ -68,6 +68,11 @@ trait FieldTrait
      */
     public $columnPrefix;
 
+    /**
+     * @var string|null The field's UID
+     */
+    public $uid;
+
     // These properties are only populated if the field was fetched via a Field Layout
     // -------------------------------------------------------------------------
 

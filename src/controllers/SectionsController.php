@@ -392,8 +392,8 @@ class SectionsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $entryTypeIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
-        Craft::$app->getSections()->reorderEntryTypes($entryTypeIds);
+        $entryTypeUids = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        Craft::$app->getSections()->reorderEntryTypes($entryTypeUids);
 
         return $this->asJson(['success' => true]);
     }

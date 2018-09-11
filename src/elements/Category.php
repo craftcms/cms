@@ -122,7 +122,7 @@ class Category extends Element
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
                 'structureId' => $group->structureId,
-                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() ? true : Craft::$app->getUser()->checkPermission('editCategories:' . $group->id),
+                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() ? true : Craft::$app->getUser()->checkPermission('editCategories:' . $group->uid),
             ];
         }
 
@@ -331,7 +331,7 @@ class Category extends Element
      */
     public function getIsEditable(): bool
     {
-        return Craft::$app->getUser()->checkPermission('editCategories:' . $this->groupId);
+        return Craft::$app->getUser()->checkPermission('editCategories:' . $this->getGroup()->uid);
     }
 
     /**

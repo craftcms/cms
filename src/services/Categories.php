@@ -8,12 +8,18 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Field;
 use craft\db\Query;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
+use craft\events\ConfigEvent;
+use craft\events\FieldEvent;
 use craft\helpers\App;
+use craft\helpers\Db;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\FieldLayout;
@@ -54,6 +60,8 @@ class Categories extends Component
      * @event CategoryGroupEvent The event that is triggered after a category group is deleted.
      */
     const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
+
+    const CONFIG_CATEGORYROUP_KEY = 'categoryGroups';
 
     // Properties
     // =========================================================================
@@ -118,9 +126,9 @@ class Categories extends Component
 
         $this->_editableGroupIds = [];
 
-        foreach ($this->getAllGroupIds() as $groupId) {
-            if (Craft::$app->getUser()->checkPermission('editCategories:' . $groupId)) {
-                $this->_editableGroupIds[] = $groupId;
+        foreach ($this->getAllGroups() as $group) {
+            if (Craft::$app->getUser()->checkPermission('editCategories:' . $group->uid)) {
+                $this->_editableGroupIds[] = $group->id;
             }
         }
 
@@ -308,24 +316,20 @@ class Categories extends Component
             return false;
         }
 
-        if (!$isNewCategoryGroup) {
-            $groupRecord = CategoryGroupRecord::find()
+        if ($isNewCategoryGroup) {
+            $categoryGroupUid = StringHelper::UUID();
+            $structureUid = StringHelper::UUID();
+        } else {
+            $existingGroupRecord = CategoryGroupRecord::find()
                 ->where(['id' => $group->id])
                 ->one();
 
-            if (!$groupRecord) {
+            if (!$existingGroupRecord) {
                 throw new CategoryGroupNotFoundException("No category group exists with the ID '{$group->id}'");
             }
 
-            $oldCategoryGroup = new CategoryGroup($groupRecord->toArray([
-                'id',
-                'structureId',
-                'fieldLayoutId',
-                'name',
-                'handle',
-            ]));
-        } else {
-            $groupRecord = new CategoryGroupRecord();
+            $categoryGroupUid = $existingGroupRecord->uid;
+            $structureUid = Db::uidById('{{%structures}}', $existingGroupRecord->structureId);
         }
 
         // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
@@ -333,8 +337,32 @@ class Categories extends Component
             $group->maxLevels = null;
         }
 
-        $groupRecord->name = $group->name;
-        $groupRecord->handle = $group->handle;
+        $projectConfig = Craft::$app->getProjectConfig();
+        $configData = [
+            'name' => $group->name,
+            'handle' => $group->handle,
+            'structure' => [
+                'uid' => $structureUid,
+                'maxLevels' => $group->maxLevels,
+            ],
+            'siteSettings' => []
+        ];
+
+        $fieldLayout = $group->getFieldLayout();
+        $fieldLayoutConfig = $fieldLayout->getConfig();
+
+        if ($fieldLayoutConfig) {
+            if (empty($fieldLayout->id)) {
+                $layoutUid = StringHelper::UUID();
+                $fieldLayout->uid = $layoutUid;
+            } else {
+                $layoutUid = Db::uidById('{{%fieldlayouts}}', $fieldLayout->id);
+            }
+
+            $configData['fieldLayouts'] = [
+                $layoutUid => $fieldLayoutConfig
+            ];
+        }
 
         // Get the site settings
         $allSiteSettings = $group->getSiteSettings();
@@ -346,40 +374,95 @@ class Categories extends Component
             }
         }
 
+        foreach ($allSiteSettings as $siteId => $settings) {
+            $siteUid = Db::uidById('{{%sites}}', $siteId);
+            $configData['siteSettings'][$siteUid] = [
+                'hasUrls' => $settings['hasUrls'],
+                'uriFormat' => $settings['uriFormat'],
+                'template' => $settings['template'],
+            ];
+        }
+
+        $configPath = self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid;
+        $projectConfig->set($configPath, $configData);
+
+        if ($isNewCategoryGroup) {
+            $group->id = Db::idByUid('{{%categorygroups}}', $categoryGroupUid);
+        }
+
+        // Might as well update our cache of the category group while we have it.
+        $this->_categoryGroupsById[$group->id] = $group;
+
+        // Fire an 'afterSaveGroup' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new CategoryGroupEvent([
+                'categoryGroup' => $group,
+                'isNew' => $isNewCategoryGroup,
+            ]));
+        }
+
+        return true;
+    }
+
+    /**
+     * Handle category group change
+     *
+     * @param ConfigEvent $event
+     */
+    public function handleChangedCategoryGroup(ConfigEvent $event)
+    {
+        $categoryGroupUid = $event->tokenMatches[0];
+        $data = $event->newValue;
+
+        // Make sure fields and sites are processed
+        ProjectConfigHelper::ensureAllSitesProcessed();
+        ProjectConfigHelper::ensureAllFieldsProcessed();
+
+
         $db = Craft::$app->getDb();
         $transaction = $db->beginTransaction();
 
         try {
-            // Create/update the structure
-            if ($isNewCategoryGroup) {
-                $structure = new Structure();
-            } else {
-                /** @noinspection PhpUndefinedVariableInspection */
-                $structure = Craft::$app->getStructures()->getStructureById($oldCategoryGroup->structureId);
-            }
+            $structureData = $data['structure'];
+            $siteData = $data['siteSettings'];
+            $structureUid = $structureData['uid'];
 
-            $structure->maxLevels = $group->maxLevels;
+            // Basic data
+            $groupRecord = $this->_getCategoryGroupRecord($categoryGroupUid);
+            $groupRecord->name = $data['name'];
+            $groupRecord->handle = $data['handle'];
+            $groupRecord->uid = $categoryGroupUid;
+
+            $isNewRecord = $groupRecord->getIsNewRecord();
+
+            // Structure
+            $structure = Craft::$app->getStructures()->getStructureByUid($structureUid) ?? new Structure();
+            $structure->maxLevels = $structureData['maxLevels'];
             Craft::$app->getStructures()->saveStructure($structure);
+
             $groupRecord->structureId = $structure->id;
-            $group->structureId = $structure->id;
 
             // Save the field layout
-            /** @var FieldLayout $fieldLayout */
-            $fieldLayout = $group->getFieldLayout();
-            Craft::$app->getFields()->saveLayout($fieldLayout);
-            $groupRecord->fieldLayoutId = $fieldLayout->id;
-            $group->fieldLayoutId = $fieldLayout->id;
+            if (!empty($data['fieldLayouts'])) {
+                $fields = Craft::$app->getFields();
+
+                // Delete the field layout
+                if ($groupRecord->fieldLayoutId) {
+                    $fields->deleteLayoutById($groupRecord->fieldLayoutId);
+                }
+
+                //Create the new layout
+                $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                $layout->type = Category::class;
+                $layout->uid = key($data['fieldLayouts']);
+                $fields->saveLayout($layout);
+                $groupRecord->fieldLayoutId = $layout->id;
+            } else {
+                $groupRecord->fieldLayoutId = null;
+            }
 
             // Save the category group
             $groupRecord->save(false);
-
-            // Now that we have a category group ID, save it on the model
-            if (!$group->id) {
-                $group->id = $groupRecord->id;
-            }
-
-            // Might as well update our cache of the category group while we have it.
-            $this->_categoryGroupsById[$group->id] = $group;
 
             // Update the site settings
             // -----------------------------------------------------------------
@@ -387,58 +470,60 @@ class Categories extends Component
             $sitesNowWithoutUrls = [];
             $sitesWithNewUriFormats = [];
 
-            if (!$isNewCategoryGroup) {
+            if (!$isNewRecord) {
                 // Get the old category group site settings
                 $allOldSiteSettingsRecords = CategoryGroup_SiteSettingsRecord::find()
-                    ->where(['groupId' => $group->id])
+                    ->where(['groupId' => $groupRecord->id])
                     ->indexBy('siteId')
                     ->all();
             }
 
-            foreach ($allSiteSettings as $siteId => $siteSettings) {
+            $siteIdMap = Db::idsByUids('{{%sites}}', array_keys($siteData));
+
+            foreach ($siteData as $siteUid => $siteSettings) {
+                $siteId = $siteIdMap[$siteUid];
+
                 // Was this already selected?
-                if (!$isNewCategoryGroup && isset($allOldSiteSettingsRecords[$siteId])) {
+                if (!$isNewRecord && isset($allOldSiteSettingsRecords[$siteId])) {
                     $siteSettingsRecord = $allOldSiteSettingsRecords[$siteId];
                 } else {
                     $siteSettingsRecord = new CategoryGroup_SiteSettingsRecord();
-                    $siteSettingsRecord->groupId = $group->id;
+                    $siteSettingsRecord->groupId = $groupRecord->id;
                     $siteSettingsRecord->siteId = $siteId;
                 }
 
-                if ($siteSettingsRecord->hasUrls = $siteSettings->hasUrls) {
-                    $siteSettingsRecord->uriFormat = $siteSettings->uriFormat;
-                    $siteSettingsRecord->template = $siteSettings->template;
+                if ($siteSettingsRecord->hasUrls = $siteSettings['hasUrls']) {
+                    $siteSettingsRecord->uriFormat = $siteSettings['uriFormat'];
+                    $siteSettingsRecord->template = $siteSettings['template'];
                 } else {
-                    $siteSettingsRecord->uriFormat = $siteSettings->uriFormat = null;
-                    $siteSettingsRecord->template = $siteSettings->template = null;
+                    $siteSettingsRecord->uriFormat = null;
+                    $siteSettingsRecord->template = null;
                 }
 
                 if (!$siteSettingsRecord->getIsNewRecord()) {
                     // Did it used to have URLs, but not anymore?
-                    if ($siteSettingsRecord->isAttributeChanged('hasUrls', false) && !$siteSettings->hasUrls) {
+                    if ($siteSettingsRecord->isAttributeChanged('hasUrls', false) && !$siteSettings['hasUrls']) {
                         $sitesNowWithoutUrls[] = $siteId;
                     }
 
                     // Does it have URLs, and has its URI format changed?
-                    if ($siteSettings->hasUrls && $siteSettingsRecord->isAttributeChanged('uriFormat', false)) {
+                    if ($siteSettings['hasUrls'] && $siteSettingsRecord->isAttributeChanged('uriFormat', false)) {
                         $sitesWithNewUriFormats[] = $siteId;
                     }
                 }
 
                 $siteSettingsRecord->save(false);
-
-                // Set the ID on the model
-                $siteSettings->id = $siteSettingsRecord->id;
             }
 
-            if (!$isNewCategoryGroup) {
+            if (!$isNewRecord) {
                 // Drop any site settings that are no longer being used, as well as the associated category/element
                 // site rows
-                $siteIds = array_keys($allSiteSettings);
+                $affectedSiteUids = array_keys($siteData);
 
                 /** @noinspection PhpUndefinedVariableInspection */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
-                    if (!in_array($siteId, $siteIds, false)) {
+                    $siteUid = array_search($siteId, $siteIdMap, false);
+                    if (!in_array($siteUid, $affectedSiteUids, false)) {
                         $siteSettingsRecord->delete();
                     }
                 }
@@ -447,15 +532,15 @@ class Categories extends Component
             // Finally, deal with the existing categories...
             // -----------------------------------------------------------------
 
-            if (!$isNewCategoryGroup) {
+            if (!$isNewRecord) {
                 // Get all of the category IDs in this group
                 $categoryIds = Category::find()
-                    ->groupId($group->id)
+                    ->groupId($groupRecord->id)
                     ->anyStatus()
                     ->ids();
 
                 // Are there any sites left?
-                if (!empty($allSiteSettings)) {
+                if (!empty($siteData)) {
                     // Drop the old category URIs for any site settings that don't have URLs
                     if (!empty($sitesNowWithoutUrls)) {
                         $db->createCommand()
@@ -492,19 +577,8 @@ class Categories extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
-
-        // Fire an 'afterSaveGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new CategoryGroupEvent([
-                'categoryGroup' => $group,
-                'isNew' => $isNewCategoryGroup,
-            ]));
-        }
-
-        return true;
     }
 
     /**
@@ -544,41 +618,7 @@ class Categories extends Component
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            // Delete the field layout
-            $fieldLayoutId = (new Query())
-                ->select(['fieldLayoutId'])
-                ->from(['{{%categorygroups}}'])
-                ->where(['id' => $group->id])
-                ->scalar();
-
-            if ($fieldLayoutId) {
-                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-            }
-
-            // Delete the categories
-            $categories = Category::find()
-                ->anyStatus()
-                ->groupId($group->id)
-                ->all();
-
-            foreach ($categories as $category) {
-                Craft::$app->getElements()->deleteElement($category);
-            }
-
-            Craft::$app->getDb()->createCommand()
-                ->delete(
-                    '{{%categorygroups}}',
-                    ['id' => $group->id])
-                ->execute();
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid);
 
         // Fire an 'afterDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
@@ -620,6 +660,99 @@ class Categories extends Component
 
         return false;
     }
+
+    /**
+     * Handle Category group getting deleted
+     *
+     * @param ConfigEvent $event
+     */
+    public function handleDeletedCategoryGroup(ConfigEvent $event)
+    {
+        $uid = $event->tokenMatches[0];
+        $categoryGroupRecord = $this->_getCategoryGroupRecord($uid);
+
+        if (!$categoryGroupRecord->id) {
+            return;
+        }
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            // Delete the field layout
+            $fieldLayoutId = (new Query())
+                ->select(['fieldLayoutId'])
+                ->from(['{{%categorygroups}}'])
+                ->where(['id' => $categoryGroupRecord->id])
+                ->scalar();
+
+            if ($fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+            }
+
+            // Delete the tags
+            $categories = Category::find()
+                ->anyStatus()
+                ->groupId($categoryGroupRecord->id)
+                ->all();
+
+            foreach ($categories as $category) {
+                Craft::$app->getElements()->deleteElement($category);
+            }
+
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%categorygroups}}', ['id' => $categoryGroupRecord->id])
+                ->execute();
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Prune a deleted field from category group layouts.
+     *
+     * @param FieldEvent $event
+     */
+    public function pruneDeletedField(FieldEvent $event)
+    {
+        /** @var Field $field */
+        $field = $event->field;
+        $fieldUid = $field->uid;
+
+        $fieldPruned = false;
+        $projectConfig = Craft::$app->getProjectConfig();
+        $categoryGroups = $projectConfig->get(self::CONFIG_CATEGORYROUP_KEY);
+
+        // Loop through the categories and see if the UID exists in the field layouts.
+        foreach ($categoryGroups as &$categoryGroup) {
+            if (!empty($categoryGroup['fieldLayouts'])) {
+                foreach ($categoryGroup['fieldLayouts'] as &$layout) {
+                    if (!empty($layout['tabs'])) {
+                        foreach ($layout['tabs'] as &$tab) {
+                            if (!empty($tab['fields'])) {
+                                // Remove the straggler.
+                                if (array_key_exists($fieldUid, $tab['fields'])) {
+                                    unset($tab['fields'][$fieldUid]);
+                                    $fieldPruned = true;
+                                    // If last field, just remove field layouts entry altogether.
+                                    if (empty($tab['fields'])) {
+                                        unset($categoryGroup['fieldLayouts']);
+                                        break 2;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($fieldPruned) {
+            $projectConfig->set(self::CONFIG_CATEGORYROUP_KEY, $categoryGroups);
+        }
+    }
+
 
     // Categories
     // -------------------------------------------------------------------------
@@ -753,5 +886,16 @@ class Categories extends Component
         }
 
         return $group;
+    }
+
+    /**
+     * Gets a category group's record by uid.
+     *
+     * @param string $uid
+     * @return CategoryGroupRecord
+     */
+    private function _getCategoryGroupRecord(string $uid): CategoryGroupRecord
+    {
+        return CategoryGroupRecord::findOne(['uid' => $uid]) ?? new CategoryGroupRecord();
     }
 }

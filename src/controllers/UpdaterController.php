@@ -32,6 +32,8 @@ class UpdaterController extends BaseUpdaterController
     const ACTION_REVERT = 'revert';
     const ACTION_RESTORE_DB = 'restore-db';
     const ACTION_MIGRATE = 'migrate';
+    const ACTION_CONFIG_USE_YAML = 'apply-config-changes';
+    const ACTION_CONFIG_USE_SNAPSHOT = 'regenerate-config';
 
     // Public Methods
     // =========================================================================
@@ -182,6 +184,7 @@ class UpdaterController extends BaseUpdaterController
         // Are there any migrations to run?
         $installedHandles = array_keys($this->data['install']);
         $pendingHandles = Craft::$app->getUpdates()->getPendingMigrationHandles();
+
         if (!empty(array_intersect($pendingHandles, $installedHandles))) {
             $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
             return $this->sendNextAction($backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE);
@@ -205,6 +208,32 @@ class UpdaterController extends BaseUpdaterController
         }
 
         return $this->runMigrations($handles, self::ACTION_RESTORE_DB) ?? $this->sendFinished();
+    }
+
+    /**
+     * Apply the configuration changes.
+     *
+     * @return Response
+     * @throws \Throwable
+     */
+    public function actionApplyConfigChanges(): Response
+    {
+        Craft::$app->getProjectConfig()->applyPendingChanges();
+
+        return $this->sendFinished();
+    }
+
+    /**
+     * Overwrite the config file with the snapshot data.
+     *
+     * @return Response
+     * @throws \Throwable
+     */
+    public function actionRegenerateConfig(): Response
+    {
+        Craft::$app->getProjectConfig()->regenerateConfigFileFromStoredConfig();
+
+        return $this->sendFinished();
     }
 
     // Protected Methods
@@ -248,6 +277,10 @@ class UpdaterController extends BaseUpdaterController
                 $data['current'][$packageName] = $current;
                 $data['requirements'][$packageName] = $version;
             }
+        } else if ($request->getBodyParam('configUpdate') !== null) {
+            $data = [
+                'updatePending' => true
+            ];
         } else {
             // Figure out what needs to be updated, if any
             $data = [
@@ -272,7 +305,7 @@ class UpdaterController extends BaseUpdaterController
     protected function initialState(bool $force = false): array
     {
         // Is there anything to install/update?
-        if (empty($this->data['install']) && empty($this->data['migrate'])) {
+        if (empty($this->data['install']) && empty($this->data['migrate']) && empty($this->data['updatePending'])) {
             return $this->finishedState([
                 'status' => Craft::t('app', 'Nothing to update.')
             ]);
@@ -294,15 +327,35 @@ class UpdaterController extends BaseUpdaterController
             return $this->noComposerJsonState();
         }
 
-        // Enable maintenance mode
-        Craft::$app->enableMaintenanceMode();
+        if (!empty($this->data['updatePending'])) {
+            $projectConfig = Craft::$app->getProjectConfig();
+            $snapshotModifiedTime = $projectConfig->get('dateModified');
+            $configModifiedTime = $projectConfig->get('dateModified', true);
 
-        if (!empty($this->data['install'])) {
-            $nextAction = self::ACTION_COMPOSER_INSTALL;
+            // Bail if snapshot newer than config
+            if ($snapshotModifiedTime > $configModifiedTime) {
+                return [
+                    'error' => str_replace('<br>', "\n\n", Craft::t('app', 'It looks like snapshot has more recent changes than the config file.')),
+                    'options' => [
+                        $this->actionOption(Craft::t('app', 'Apply changes from config file'), self::ACTION_CONFIG_USE_YAML, ['submit' => true]),
+                        $this->actionOption(Craft::t('app', 'Overwrite config file using snapshot'), self::ACTION_CONFIG_USE_SNAPSHOT, ['submit' => true]),
+                    ]
+                ];
+            }
+
+            $nextAction = self::ACTION_CONFIG_USE_YAML;
         } else {
-            $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
-            $nextAction = $backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
+            // Enable maintenance mode
+            Craft::$app->enableMaintenanceMode();
+
+            if (!empty($this->data['install'])) {
+                $nextAction = self::ACTION_COMPOSER_INSTALL;
+            } else {
+                $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+                $nextAction = $backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
+            }
         }
+
 
         return $this->actionState($nextAction);
     }
@@ -348,6 +401,10 @@ class UpdaterController extends BaseUpdaterController
                 return Craft::t('app', 'Updating database…');
             case self::ACTION_REVERT:
                 return Craft::t('app', 'Reverting update (this may take a minute)…');
+            case self::ACTION_CONFIG_USE_YAML:
+                return Craft::t('app', 'Applying changes from the config file…');
+            case self::ACTION_CONFIG_USE_SNAPSHOT:
+                return Craft::t('app', 'Restoring the config file from snapshot…');
             case self::ACTION_SERVER_CHECK:
                 return Craft::t('app', 'Checking server requirements…');
             default:

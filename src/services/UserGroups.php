@@ -10,9 +10,10 @@ namespace craft\services;
 use Craft;
 use craft\db\Query;
 use craft\elements\User;
-use craft\errors\UserGroupNotFoundException;
 use craft\errors\WrongEditionException;
+use craft\events\ConfigEvent;
 use craft\events\UserGroupEvent;
+use craft\helpers\Db;
 use craft\models\UserGroup;
 use craft\records\UserGroup as UserGroupRecord;
 use yii\base\Component;
@@ -48,6 +49,8 @@ class UserGroups extends Component
      * @event UserGroupEvent The event that is triggered after a user group is saved.
      */
     const EVENT_AFTER_DELETE_USER_GROUP = 'afterDeleteUserGroup';
+
+    const CONFIG_USERPGROUPS_KEY = 'users.groups';
 
     // Public Methods
     // =========================================================================
@@ -99,7 +102,7 @@ class UserGroups extends Component
             if (
                 ($currentUser !== null && (
                         $currentUser->isInGroup($group) ||
-                        $currentUser->can('assignUserGroup:' . $group->id)
+                        $currentUser->can('assignUserGroup:' . $group->uid)
                     )) ||
                 ($user !== null && $user->isInGroup($group))
             ) {
@@ -120,6 +123,21 @@ class UserGroups extends Component
     {
         $result = $this->_createUserGroupsQuery()
             ->where(['id' => $groupId])
+            ->one();
+
+        return $result ? new UserGroup($result) : null;
+    }
+
+    /**
+     * Gets a user group by its UID.
+     *
+     * @param string $uid
+     * @return UserGroup|null
+     */
+    public function getGroupByUid(string $uid)
+    {
+        $result = $this->_createUserGroupsQuery()
+            ->where(['uid' => $uid])
             ->one();
 
         return $result ? new UserGroup($result) : null;
@@ -193,16 +211,28 @@ class UserGroups extends Component
             return false;
         }
 
-        $groupRecord = $this->_getGroupRecordById($group->id);
+        $projectConfig = Craft::$app->getProjectConfig();
 
-        $groupRecord->name = $group->name;
-        $groupRecord->handle = $group->handle;
+        if ($isNewGroup) {
+            $groupUid = StringHelper::UUID();
+        } else {
+            $groupUid = $group->uid;
+            // Re-save the existing permissions, it's not our place to touch that.
+        }
 
-        $groupRecord->save(false);
+        $configPath = self::CONFIG_USERPGROUPS_KEY . '.' . $groupUid;
+
+        // Save everything except permissions. Not ours to touch.
+        $configData = [
+            'name' => $group->name,
+            'handle' => $group->handle
+        ];
+
+        $projectConfig->set($configPath, $configData);
 
         // Now that we have a group ID, save it on the model
         if ($isNewGroup) {
-            $group->id = $groupRecord->id;
+            $group->id = Db::idByUid('{{%usergroups}}', $groupUid);
         }
 
         // Fire an 'afterSaveUserGroup' event
@@ -214,6 +244,45 @@ class UserGroups extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Handle any changed user groups.
+     *
+     * @param ConfigEvent $event
+     */
+    public function handleChangedUserGroup(ConfigEvent $event)
+    {
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            Craft::$app->setEdition(Craft::Pro);
+        }
+
+        $uid = $event->tokenMatches[0];
+        $data = $event->newValue;
+
+        $groupRecord = UserGroupRecord::findOne(['uid' => $uid]) ?? new UserGroupRecord();
+        $groupRecord->name = $data['name'];
+        $groupRecord->handle = $data['handle'];
+        $groupRecord->uid = $uid;
+
+        $groupRecord->save(false);
+
+        // Prevent permission information from being saved. Allowing it would prevent the appropriate event from firing.
+        $event->newValue['permissions'] = $event->oldValue['permissions'] ?? [];
+    }
+
+    /**
+     * Handle any deleted user groups.
+     *
+     * @param ConfigEvent $event
+     */
+    public function handleDeletedUserGroup(ConfigEvent $event)
+    {
+        $uid = $event->tokenMatches[0];
+
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%usergroups}}', ['uid' => $uid])
+            ->execute();
     }
 
     /**
@@ -247,6 +316,10 @@ class UserGroups extends Component
     {
         Craft::$app->requireEdition(Craft::Pro);
 
+        if (!$group) {
+            return false;
+        }
+
         // Fire a 'beforeDeleteUserGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, new UserGroupEvent([
@@ -254,9 +327,7 @@ class UserGroups extends Component
             ]));
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->delete('{{%usergroups}}', ['id' => $group->id])
-            ->execute();
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_USERPGROUPS_KEY . '.' . $group->uid);
 
         // Fire an 'afterDeleteUserGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_USER_GROUP)) {
@@ -272,38 +343,6 @@ class UserGroups extends Component
     // =========================================================================
 
     /**
-     * Gets a group's record.
-     *
-     * @param int|null $groupId
-     * @return UserGroupRecord
-     */
-    private function _getGroupRecordById(int $groupId = null): UserGroupRecord
-    {
-        if ($groupId !== null) {
-            $groupRecord = UserGroupRecord::findOne($groupId);
-
-            if (!$groupRecord) {
-                $this->_noGroupExists($groupId);
-            }
-        } else {
-            $groupRecord = new UserGroupRecord();
-        }
-
-        return $groupRecord;
-    }
-
-    /**
-     * Throws a "No group exists" exception.
-     *
-     * @param int $groupId
-     * @throws UserGroupNotFoundException
-     */
-    private function _noGroupExists(int $groupId)
-    {
-        throw new UserGroupNotFoundException("No group exists with the ID '{$groupId}'");
-    }
-
-    /**
      * @return Query
      */
     private function _createUserGroupsQuery(): Query
@@ -313,6 +352,7 @@ class UserGroups extends Component
                 'id',
                 'name',
                 'handle',
+                'uid'
             ])
             ->from(['{{%usergroups}}']);
     }

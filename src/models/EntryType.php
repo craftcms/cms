@@ -69,6 +69,11 @@ class EntryType extends Model
      */
     public $titleFormat;
 
+    /**
+     * @var string UID
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 

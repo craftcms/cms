@@ -725,6 +725,13 @@ class GeneralConfig extends BaseObject
      */
     public $useFileLocks;
     /**
+     * @var bool Whether the project config should be saved out to `config/project.yaml`.
+     *
+     * If set to true, any changes to the project config will be duplicated in `config/project.yaml`,
+     * and any changes to `config/project.yaml` will be applied to the system.
+     */
+    public $useProjectConfigFile = false;
+    /**
      * @var mixed The amount of time a user verification code can be used before expiring.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.

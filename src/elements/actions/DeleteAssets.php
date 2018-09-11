@@ -61,7 +61,7 @@ class DeleteAssets extends ElementAction
                 /**
                  * @var Asset $asset
                  */
-                if ($userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $asset->volumeId)) {
+                if ($userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $asset->getVolume()->uid)) {
                     $elementsService->deleteElement($asset);
                 }
             }

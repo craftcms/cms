@@ -22,10 +22,22 @@ use craft\i18n\I18N;
 use craft\i18n\Locale;
 use craft\models\Info;
 use craft\queue\QueueInterface;
+use craft\services\Categories;
+use craft\services\Fields;
+use craft\services\Globals;
+use craft\services\Matrix;
+use craft\services\Sections;
 use craft\services\Security;
+use craft\services\Sites;
+use craft\services\Tags;
+use craft\services\UserGroups;
+use craft\services\UserPermissions;
+use craft\services\Users;
+use craft\services\Volumes;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\View;
+use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\mutex\Mutex;
 use yii\queue\db\Queue;
@@ -63,6 +75,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\services\Path $path The path service
  * @property-read \craft\services\Plugins $plugins The plugins service
  * @property-read \craft\services\PluginStore $pluginStore The plugin store service
+ * @property-read \craft\services\ProjectConfig $projectConfig The project config service
  * @property-read \craft\services\Relations $relations The relations service
  * @property-read \craft\services\Routes $routes The routes service
  * @property-read \craft\services\Search $search The search service
@@ -257,12 +270,13 @@ trait ApplicationTrait
     /**
      * Returns whether this Craft install has multiple sites.
      *
+     * @param bool $refresh Whether to ignore the cached result and check again
      * @return bool
      */
-    public function getIsMultiSite(): bool
+    public function getIsMultiSite(bool $refresh = false): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if ($this->_isMultiSite !== null) {
+        if (!$refresh && $this->_isMultiSite !== null) {
             return $this->_isMultiSite;
         }
 
@@ -555,6 +569,11 @@ trait ApplicationTrait
             // TODO: Remove this after the next breakpoint
             unset($attributes['build'], $attributes['releaseDate'], $attributes['track']);
 
+            // TODO: Remove this after the next breakpoint
+            if ($this->_storedVersion && version_compare($this->_storedVersion, '3.1', '<')) {
+                unset($attributes['config'], $attributes['configMap']);
+            }
+
             if (array_key_exists('id', $attributes) && $attributes['id'] === null) {
                 unset($attributes['id']);
             }
@@ -581,10 +600,14 @@ trait ApplicationTrait
                     ->insert('{{%info}}', $attributes)
                     ->execute();
 
-                if (Craft::$app->getIsInstalled()) {
-                    // Set the new id
-                    $info->id = $this->getDb()->getLastInsertID('{{%info}}');
-                }
+                $this->setIsInstalled();
+
+                $row = (new Query())
+                    ->from(['{{%info}}'])
+                    ->one();
+
+                // Reload from DB with the new ID and modified dates.
+                $info = new Info($row);
             }
 
             // Use this as the new cached Info
@@ -1024,6 +1047,17 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the system config service.
+     *
+     * @return \craft\services\ProjectConfig The system config service
+     */
+    public function getProjectConfig()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('projectConfig');
+    }
+
+    /**
      * Returns the system settings service.
      *
      * @return \craft\services\SystemSettings The system settings service
@@ -1160,6 +1194,9 @@ trait ApplicationTrait
 
         $this->_isInitialized = true;
 
+        // Register all the listeners for config items
+        $this->_registerConfigListeners();
+
         // Fire an 'init' event
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
             $this->trigger(WebApplication::EVENT_INIT);
@@ -1243,5 +1280,103 @@ trait ApplicationTrait
 
         // Default to the source language.
         return $this->sourceLanguage;
+    }
+
+    /**
+     * Register event listeners for config changes.
+     */
+    private function _registerConfigListeners()
+    {
+        $projectConfigService = $this->getProjectConfig();
+
+        // Field groups
+        $fieldsService = $this->getFields();
+        $projectConfigService->onAdd(Fields::CONFIG_FIELDGROUP_KEY . '.{uid}', [$fieldsService, 'handleChangedGroup']);
+        $projectConfigService->onUpdate(Fields::CONFIG_FIELDGROUP_KEY . '.{uid}', [$fieldsService, 'handleChangedGroup']);
+        $projectConfigService->onRemove(Fields::CONFIG_FIELDGROUP_KEY . '.{uid}', [$fieldsService, 'handleDeletedGroup']);
+
+        // Fields
+        $projectConfigService->onAdd(Fields::CONFIG_FIELDS_KEY . '.{uid}', [$fieldsService, 'handleChangedField']);
+        $projectConfigService->onUpdate(Fields::CONFIG_FIELDS_KEY . '.{uid}', [$fieldsService, 'handleChangedField']);
+        $projectConfigService->onRemove(Fields::CONFIG_FIELDS_KEY . '.{uid}', [$fieldsService, 'handleDeletedField']);
+
+        // Block Types
+        $matrixService = $this->getMatrix();
+        $projectConfigService->onAdd(Matrix::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$matrixService, 'handleChangedBlockType']);
+        $projectConfigService->onUpdate(Matrix::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$matrixService, 'handleChangedBlockType']);
+        $projectConfigService->onRemove(Matrix::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$matrixService, 'handleDeletedBlockType']);
+
+        // Volumes
+        $volumesService = $this->getVolumes();
+        $projectConfigService->onAdd(Volumes::CONFIG_VOLUME_KEY . '.{uid}', [$volumesService, 'handleChangedVolume']);
+        $projectConfigService->onUpdate(Volumes::CONFIG_VOLUME_KEY . '.{uid}', [$volumesService, 'handleChangedVolume']);
+        $projectConfigService->onRemove(Volumes::CONFIG_VOLUME_KEY . '.{uid}', [$volumesService, 'handleDeletedVolume']);
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$volumesService, 'pruneDeletedField']);
+
+        // Site groups
+        $sitesService = $this->getSites();
+        $projectConfigService->onAdd(Sites::CONFIG_SITEGROUP_KEY . '.{uid}', [$sitesService, 'handleChangedGroup']);
+        $projectConfigService->onUpdate(Sites::CONFIG_SITEGROUP_KEY . '.{uid}', [$sitesService, 'handleChangedGroup']);
+        $projectConfigService->onRemove(Sites::CONFIG_SITEGROUP_KEY . '.{uid}', [$sitesService, 'handleDeletedGroup']);
+
+        // Sites
+        $projectConfigService->onAdd(Sites::CONFIG_SITES_KEY . '.{uid}', [$sitesService, 'handleChangedSite']);
+        $projectConfigService->onUpdate(Sites::CONFIG_SITES_KEY . '.{uid}', [$sitesService, 'handleChangedSite']);
+        $projectConfigService->onRemove(Sites::CONFIG_SITES_KEY . '.{uid}', [$sitesService, 'handleDeletedSite']);
+
+        // Tags
+        $tagsService = $this->getTags();
+        $projectConfigService->onAdd(Tags::CONFIG_TAGGROUP_KEY . '.{uid}', [$tagsService, 'handleChangedTagGroup']);
+        $projectConfigService->onUpdate(Tags::CONFIG_TAGGROUP_KEY . '.{uid}', [$tagsService, 'handleChangedTagGroup']);
+        $projectConfigService->onRemove(Tags::CONFIG_TAGGROUP_KEY . '.{uid}', [$tagsService, 'handleDeletedTagGroup']);
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$tagsService, 'pruneDeletedField']);
+
+        // Categories
+        $categoriesService = $this->getCategories();
+        $projectConfigService->onAdd(Categories::CONFIG_CATEGORYROUP_KEY . '.{uid}', [$categoriesService, 'handleChangedCategoryGroup']);
+        $projectConfigService->onUpdate(Categories::CONFIG_CATEGORYROUP_KEY . '.{uid}', [$categoriesService, 'handleChangedCategoryGroup']);
+        $projectConfigService->onRemove(Categories::CONFIG_CATEGORYROUP_KEY . '.{uid}', [$categoriesService, 'handleDeletedCategoryGroup']);
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$categoriesService, 'pruneDeletedField']);
+
+        // Permissions
+        $userPermissionsService = $this->getUserPermissions();
+        $projectConfigService->onAdd(UserPermissions::CONFIG_USERPERMISSIONS_KEY, [$userPermissionsService, 'handleChangedPermissions']);
+        $projectConfigService->onUpdate(UserPermissions::CONFIG_USERPERMISSIONS_KEY, [$userPermissionsService, 'handleChangedPermissions']);
+        $projectConfigService->onRemove(UserPermissions::CONFIG_USERPERMISSIONS_KEY, [$userPermissionsService, 'handleChangedPermissions']);
+
+        // User group permissions
+        $projectConfigService->onAdd(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', [$userPermissionsService, 'handleChangedGroupPermissions']);
+        $projectConfigService->onUpdate(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', [$userPermissionsService, 'handleChangedGroupPermissions']);
+        $projectConfigService->onRemove(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', [$userPermissionsService, 'handleChangedGroupPermissions']);
+
+        // User groups
+        $userGroupsService = $this->getUserGroups();
+        $projectConfigService->onAdd(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}', [$userGroupsService, 'handleChangedUserGroup']);
+        $projectConfigService->onUpdate(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}', [$userGroupsService, 'handleChangedUserGroup']);
+        $projectConfigService->onRemove(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}', [$userGroupsService, 'handleDeletedUserGroup']);
+
+        // User field layout
+        $usersService = $this->getUsers();
+        $projectConfigService->onAdd(Users::CONFIG_USERLAYOUT_KEY, [$usersService, 'handleChangedUserFieldLayout']);
+        $projectConfigService->onUpdate(Users::CONFIG_USERLAYOUT_KEY, [$usersService, 'handleChangedUserFieldLayout']);
+        $projectConfigService->onRemove(Users::CONFIG_USERLAYOUT_KEY, [$usersService, 'handleChangedUserFieldLayout']);
+
+        // Global sets
+        $globalsService = $this->getGlobals();
+        $projectConfigService->onAdd(Globals::CONFIG_GLOBALSETS_KEY . '.{uid}', [$globalsService, 'handleChangedGlobalSet']);
+        $projectConfigService->onUpdate(Globals::CONFIG_GLOBALSETS_KEY . '.{uid}', [$globalsService, 'handleChangedGlobalSet']);
+        $projectConfigService->onRemove(Globals::CONFIG_GLOBALSETS_KEY . '.{uid}', [$globalsService, 'handleDeletedGlobalSet']);
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$globalsService, 'pruneDeletedField']);
+
+        // Sections
+        $sectionsService = $this->getSections();
+        $projectConfigService->onAdd(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionsService, 'handleChangedSection']);
+        $projectConfigService->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionsService, 'handleChangedSection']);
+        $projectConfigService->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionsService, 'handleDeletedSection']);
+
+        // Entry Types
+        $projectConfigService->onAdd(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType']);
+        $projectConfigService->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType']);
+        $projectConfigService->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleDeletedEntryType']);
     }
 }

@@ -77,6 +77,9 @@ return [
         'pluginStore' => [
             'class' => craft\services\PluginStore::class,
         ],
+        'projectConfig' => [
+            'class' => craft\services\ProjectConfig::class,
+        ],
         'queue' => [
             'class' => craft\queue\Queue::class,
         ],
@@ -151,7 +154,7 @@ return [
                     'requireEmailVerification' => true,
                     'allowPublicRegistration' => false,
                     'defaultGroup' => null,
-                    'photoVolumeId' => null,
+                    'photoVolumeUid' => null,
                     'photoSubpath' => ''
                 ],
             ]

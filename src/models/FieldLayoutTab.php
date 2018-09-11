@@ -46,6 +46,11 @@ class FieldLayoutTab extends Model
     public $sortOrder;
 
     /**
+     * @var string|null UID
+     */
+    public $uid;
+
+    /**
      * @var FieldLayout|null
      */
     private $_layout;

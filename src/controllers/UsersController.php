@@ -1503,7 +1503,7 @@ class UsersController extends Controller
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = User::class;
 
-        if (!Craft::$app->getFields()->saveLayout($fieldLayout)) {
+        if (!Craft::$app->getUsers()->saveLayout($fieldLayout)) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user fields.'));
 
             return null;
@@ -1823,6 +1823,12 @@ class UsersController extends Controller
                     $groupIds = [];
                 }
 
+                $groupUidMap = [];
+                $allGroups = Craft::$app->getUserGroups()->getAllGroups();
+                foreach ($allGroups as $group) {
+                    $groupUidMap[$group->id] = $group->uid;
+                }
+
                 // See if there are any new groups in here
                 $oldGroupIds = [];
 
@@ -1839,7 +1845,7 @@ class UsersController extends Controller
                         // Make sure the current user is in the group or has permission to assign it
                         if (
                             !$currentUser->isInGroup($groupId) &&
-                            !$currentUser->can('assignUserGroup:' . $groupId)
+                            !$currentUser->can('assignUserGroup:' . $groupUidMap[$groupId])
                         ) {
                             throw new ForbiddenHttpException("Your account doesn't have permission to assign user group {$groupId} to a user.");
                         }
