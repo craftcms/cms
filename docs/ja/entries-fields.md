@@ -1,99 +1,90 @@
 # エントリフィールド
 
-エントリフィールドでは、[エントリ](sections-and-entries.md)を親エレメントに関連付けることができます。
+エントリフィールドでは、[エントリ](sections-and-entries.md)を他のエレメントに関連付けることができます。
 
 ## 設定
 
 エントリフィールドの設定は、次の通りです。
 
-* **ソース** – エントリを関連付けるセクション（デフォルトは「すべて」です）
-* **ターゲットロケール** – 関連付けするエントリーのロケール（この設定は複数のサイトロケールを持つ Craft Pro が実行されている場合のみ、表示されます）
-* **リミット** – フィールドと一度に関連付けできるエントリ数の上限（デフォルトは無制限です）
-* **選択ラベル** – フィールドの選択ボタンのラベルに使用されます
+- **ソース** – フィールドが、どのエントリ（または、他のエントリインデックスソース）からエントリを関連付けられるか。
+- **リミット** – フィールドと一度に関連付けできるエントリ数の上限（デフォルトは無制限です）
+- **選択ラベル** – フィールドの選択ボタンのラベルに使用されます
+
+### マルチサイト設定
+
+マルチサイトがインストールされている場合、次の設定も有効になります。（「高度」のトグルボタンで表示されます）
+
+- **特定のサイトから エントリ を関連付けますか?** – 特定のサイトのエントリとの関連付けのみを許可するかどうか。
+
+   有効にすると、サイトを選択するための新しい設定が表示されます。
+
+   無効にすると、関連付けられたエントリは常に現在のサイトから取得されます。
+
+- **サイトごとにリレーションを管理** – それぞれのサイトが関連付けられたエントリの独自のセットを取得するかどうか。
 
 ## フィールド
 
-エントリフィールドには、現在選択されているすべてのエントリのリストと、新しいエントリを追加するためのボタンがあります。
+エントリフィールドには、現在関連付けられているすべてのエントリのリストと、新しいエントリを追加するためのボタンがあります。
 
-「エントリを追加」ボタンをクリックすると、すでに追加されているエントリの検索や選択ができるモーダルウィンドウが表示されます。
+「エントリを追加」ボタンをクリックすると、すでに追加されているエントリの検索や選択ができるモーダルウィンドウが表示されます。このモーダルから新しいエントリを作るには、「新しいエントリの入力」ボタンをクリックします。
 
-### エントリコンテンツの編集
+### インラインのエントリ編集
 
-選択されたエントリをダブルクリックすると、エントリのタイトルやカスタムフィールドを編集できるモーダルウィンドウが開きます。
+関連付けられたエントリをダブルクリックすると、エントリのタイトルやカスタムフィールドを編集できる HUD を表示します。
 
 ## テンプレート記法
 
-テンプレート内でエントリフィールドのエレメントを取得する場合、エントリフィールドのハンドルを利用して、選択されたエントリにアクセスできます。
+テンプレート内でエントリフィールドのエレメントを取得する場合、エントリフィールドのハンドルを利用して、関連付けられたエントリにアクセスできます。
 
 ```twig
-{% set entries = entry.entriesFieldHandle %}
+{% set relatedEntries = entry.<FieldHandle> %}
 ```
 
-これは、所定のフィールドで選択されたすべてのエントリを出力するよう定義された[エレメントクエリ](element-queries.md)を提供します。言い換えれば、上の行は次のコードのショートカットとなります。
-
-```twig
-{% set entries = craft.entries({
- relatedTo: { sourceElement: entry, field: "entriesFieldHandle" },
- orderBy:"sortOrder",
- limit:null
-}) %}
-```
-
-（`relatedTo` パラメータの詳細は、[リレーション](relations.md)を見てください。）
+これは、所定のフィールドで関連付けられたすべてのエントリを出力するよう定義された[エレメントクエリ](dev/element-queries/entry-queries.md)を提供します。
 
 ### 実例
 
-エントリフィールドに選択されたエントリがあるかどうかを調べるには、`length` フィルタを利用します。
+関連付けられたすべてのエントリをループするには、[all()](api:craft\db\Query::all()) を呼び出して、結果をループ処理します。
 
 ```twig
-{% if entry.entriesFieldHandle|length %}
- ...
+{% set relatedEntries = entry.<FieldHandle>.all() %}
+{% if relatedEntries|length %}
+    <ul>
+        {% for rel in relatedEntries %}
+            <li><a href="{{ rel.url }}">{{ rel.title }}</a></li>
+        {% endfor %}
+    </ul>
 {% endif %}
 ```
 
-選択されたエントリをループするには
+関連付けられた最初のエントリだけが欲しい場合、代わりに [one()](api:craft\db\Query::one()) を呼び出して、何かが返されていることを確認します。
 
 ```twig
-{% for entry in entry.entriesFieldHandle.all() %}
- ...
-{% endfor %}
-```
-
-常に「`entry.entriesFieldHandle`」を記述するよりもむしろ、一度呼び出して別の変数にセットしましょう。
-
-```twig
-{% set entries = entry.entriesFieldHandle %}
-
-{% if entries|length %}
-
- <h3>Some great entries</h3>
- {% for entry in entries %}
- ...
- {% endfor %}
-
+{% set rel = entry.<FieldHandle>.one() %}
+{% if rel %}
+    <p><a href="{{ rel.url }}">{{ rel.title }}</a></p>
 {% endif %}
 ```
 
-ElementCriteriaModel オブジェクトにパラメータを追加することもできます。
+（取得する必要はなく）いずれかの関連付けられたエントリがあるかを確認したい場合、[exists()](api:craft\db\Query::exists()) を呼び出すことができます。
 
 ```twig
-{% set newsEntries = entry.entriesFieldHandle.section('news') %}
+{% if entry.<FieldHandle>.exists() %}
+    <p>There are related entries!</p>
+{% endif %}
 ```
 
-意図的にエントリフィールドへ1つだけセットしている場合でも、エントリフィールドを呼び出すと、選択されたエントリではなく、同じ ElementCriteriaModel として提供されることを覚えておいてください。選択された最初の（1つだけの）エントリを取得するには、`one()` を利用します。
+エントリクエリで[パラメータ](dev/element-queries/entry-queries.md#parameters)をセットすることもできます。例えば、`news` セクションに含まれるエントリだけを取得するには、[sectionId](dev/element-queries/entry-queries.md#sectionid) パラメータをセットします。
 
 ```twig
-{% set entry = entry.myEntriesField.one() %}
-
-{% if entry %}
- ...
-{% endif %}
+{% set relatedEntries = entry.<FieldHandle>
+    .section('news')
+    .all() %}
 ```
 
 ### 関連項目
 
-* [エレメントクエリ](element-queries.md)
-* [エントリのクエリパラメータ](element-query-params/entry-query-params.md)
+* [エントリクエリ](dev/element-queries/entry-queries.md)
 * <api:craft\elements\Entry>
 * [リレーション](relations.md)
 

@@ -19,13 +19,13 @@ Redactor プラグインをインストールする場合、`config/redactor/` �
 ```javascript
 // Bad:
 {
- /* interesting comment */
- buttons: ['bold', 'italic']
+  /* interesting comment */
+  buttons: ['bold', 'italic']
 }
 
 // Good:
 {
- "buttons": ["bold", "italic"]
+  "buttons": ["bold", "italic"]
 }
 ```
 
@@ -37,7 +37,7 @@ Redactor プラグインをインストールする場合、`config/redactor/` �
 
 ## リモートボリューム
 
-Amazon S3、Rackspace Cloud Files、および Google Cloud Storage のサポートは、プラグインに移行されました。それらのサービスを Craft 2 で利用していたアセットボリュームがある場合、新しいプラグインをインストールする必要があります。
+Amazon S3、Rackspace Cloud Files、および、Google Cloud Storage のサポートは、プラグインに移行されました。それらのサービスを Craft 2 で利用していたアセットボリュームがある場合、新しいプラグインをインストールする必要があります。
 
 - [Amazon S3](https://github.com/craftcms/aws-s3)
 - [Rackspace Cloud Files](https://github.com/craftcms/rackspace)
@@ -75,7 +75,7 @@ Amazon S3、Rackspace Cloud Files、および Google Cloud Storage のサポー�
 | `db.php` | `collation` |
 | `db.php` | `initSQLs` |
 | `general.php` | `appId` |
-| `general.php` | `cacheMethod` （[コンフィギュレーション > データキャッシュ設定](configuration.md#data-caching-config)を参照してください。） |
+| `general.php` | `cacheMethod` （[コンフィギュレーション > データキャッシュ設定](config/README.md#data-caching-config)を参照してください。） |
 
 ### `omitScriptNameInUrls` と `usePathInfo`
 
@@ -85,7 +85,7 @@ Amazon S3、Rackspace Cloud Files、および Google Cloud Storage のサポー�
 
 ## URL ルール
 
-`config/routes.php` に URL を保存しているならば、Yii 2 の [pattern-route 構文](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#url-rules) にアップデートする必要があります。
+`config/routes.php` に [URL ルール](config/README.md#url-rules)を保存しているならば、Yii 2 の [pattern-route 構文](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#url-rules) にアップデートする必要があります。
 
 - パターンの名前付けされたパラメータは、正規表現のサブパターン（`(?P<ParamName>RegExp)`）ではなく、フォーマット（`<ParamName:RegExp>`）を使用して定義する必要があります。
 - 名前付けされていないパラメータ（例：`([^\/]+)`）は、もはや許可されません。新しい名前付けされたパラメータ構文（`<ParamName:RegExp>`）に変換しなければなりません。
@@ -112,14 +112,14 @@ Amazon S3、Rackspace Cloud Files、および Google Cloud Storage のサポー�
 
 | 旧 | 新 |
 | ---------------- | ---------------------------------------- |
-| `CRAFT_LOCALE` | `CRAFT_SITE` |
-| `CRAFT_SITE_URL` | 代わりに、コンフィグ設定の `siteUrl` を使ってください |
+| `CRAFT_LOCALE` | [CRAFT_SITE](config/php-constants.md#craft-site) |
+| `CRAFT_SITE_URL` | 代わりに、コンフィグ設定の <config:siteUrl> を使ってください |
 
 ## 静的な翻訳ファイル
 
-Craft 3 でも[静的な翻訳](https://craftcms.com/support/static-translations)をサポートしていますが、ディレクトリ構成が変わりました。`translations/` フォルダの中にローケルごとのサブディレクトリを作成し、それぞれに**翻訳カテゴリ**ごとの PHP ファイルを作成する必要があります。
+Craft 3 でも[静的メッセージの翻訳](static-translations.md)をサポートしていますが、ディレクトリ構造が変わりました。`translations/` フォルダの中にローケルごとのサブディレクトリを作成し、それぞれに**翻訳カテゴリ**ごとの PHP ファイルを作成する必要があります。
 
-許可されている翻訳カテゴリは、次の通りです。
+受け入れられる翻訳カテゴリは、次の通りです。
 
 | カテゴリ | 説明 |
 | --------------- | ----------------------------------------- |
@@ -132,14 +132,14 @@ Craft 3 の `translations/` フォルダの構成は、次のようになりま�
 
 ```
 translations/
- en-US/
- app.php
- site.php
+└── de/
+    ├── app.php
+    └── site.php
 ```
 
 ## ユーザーフォト
 
-ユーザーフォトはアセットとして保存されるようになりました。Craft 3 にアップグレードすると、Craft は（ `<Username>/` サブフォルダを除く、Craft が事前にすべてのユーザー画像を格納している） `storage/userphotos/` を「User Photos」と呼ばれる新しいアセットボリュームとして自動的に作成します。しかしながら、このフォルダはウェブルートよりも上位階層にあるため、HTTP リクエストでアクセスできません。 そのため、このボリュームをアクセスできる状態にするまで、ユーサーフォトはフロントエンドで動作しません。
+ユーザーフォトはアセットとして保存されるようになりました。Craft 3 にアップグレードすると、Craft は（ `<Username>/` サブフォルダを除く、Craft が事前にすべてのユーザー画像を保管している） `storage/userphotos/` を「User Photos」と呼ばれる新しいアセットボリュームとして自動的に作成します。しかしながら、このフォルダはウェブルートよりも上位階層にあるため、HTTP リクエストでアクセスできません。 そのため、このボリュームをアクセスできる状態にするまで、ユーサーフォトはフロントエンドで動作しません。
 
 次の方法で解決してください。
 
@@ -175,7 +175,7 @@ Twig 1 では、存在しないブロックでさえも `block()` で呼び出�
 
 ```twig
 {% if block('foo') is not empty %}
- {{ block('foo') }}
+    {{ block('foo') }}
 {% endif %}
 ```
 
@@ -183,7 +183,7 @@ Twig 2 では、`defined` のテストでない限り、エラーを返します
 
 ```twig
 {% if block('foo') is defined %}
- {{ block('foo') }}
+    {{ block('foo') }}
 {% endif %}
 ```
 
@@ -204,8 +204,8 @@ Twig 2 では、`defined` のテストでない限り、エラーを返します
 | `{% includejs %}` | `{% js %}` |
 | `{% includecssfile url %}` | `{% do view.registerCssFile(url) %}` |
 | `{% includejsfile url %}` | `{% do view.registerJsFile(url) %}` |
-| `{% includecssresource path %}` | [アセットバンドル](asset-bundles.md)を見てください |
-| `{% includejsresource path %}` | [アセットバンドル](asset-bundles.md)を見てください |
+| `{% includecssresource path %}` | [アセットバンドル](extend/asset-bundles.md)を見てください |
+| `{% includejsresource path %}` | [アセットバンドル](extend/asset-bundles.md)を見てください |
 
 ## テンプレートファンクション
 
@@ -426,11 +426,11 @@ New:
 ```twig
 Old:
 {% set query = craft.entries()
- .relatedTo('and', 1, 2, 3) %}
+    .relatedTo('and', 1, 2, 3) %}
 
 New:
 {% set query = craft.entries()
- .relatedTo(['and', 1, 2, 3]) %}
+    .relatedTo(['and', 1, 2, 3]) %}
 ```
 
 #### エレメントクエリの複製
@@ -458,7 +458,7 @@ Craft 2 では、パラメータ設定メソッド（例：`.type('article')`）
 
 つまり、上記のサンプルコードでは `type` パラメータが適用されてしまうため、`totalEntries` には _Article_ エントリの総数がセットされます。
 
-Craft 2 動作に影響を与えるテンプレートがある場合、[clone()](templating/functions.md#clone-object) ファンクションを用いて修正できます。
+Craft 2 動作に影響を与えるテンプレートがある場合、[clone()](dev/functions.md#clone-object) ファンクションを用いて修正できます。
 
 ```twig
 {% set query = craft.entries.section('news') %}
@@ -481,7 +481,7 @@ Craft 2 動作に影響を与えるテンプレートがある場合、[clone()]
 | `ids(criteria)` | `ids()`（criteria パラメータは非推奨になりました） |
 | `find()` | `all()` |
 | `first()` | `one()` |
-| `last()` | `inReverse().one()` _(see [last()](#last))_ |
+| `last()` | `inReverse().one()` _（[last()](#last) を見てください）_ |
 | `total()` | `count()` |
 
 ### クエリを配列として扱う
@@ -514,8 +514,8 @@ New:
 
 ```twig
 {% set entries = craft.entries()
- .section('news')
- .all() %}
+    .section('news')
+    .all() %}
 {% set total = entries|length %}
 ```
 
@@ -527,12 +527,12 @@ New:
 
 ```twig
 {# Channel entries are ordered by `postDate DESC` by default, so this will swap
- it to `postDate ASC`, returning the oldest News entry: #}
+   it to `postDate ASC`, returning the oldest News entry: #} 
 
 {% set oldest = craft.entries()
- .section('news')
- .inReverse()
- .one() %}
+    .section('news')
+    .inReverse()
+    .one() %}
 ```
 
 `inReverse()` が期待した通りに動作しないケースが2つあります。
@@ -544,7 +544,7 @@ New:
 
 ```twig
 {% set query = craft.entries()
- .section('news') %}
+    .section('news') %}
 {% set total = query.count() %}
 {% set last = query.nth(total - 1) %}
 ```
@@ -653,47 +653,28 @@ CSRF プロテクションは、Craft 3 ではデフォルトで有効になり�
 
 ## Memcache
 
-コンフィグ設定の <config:cacheMethod> に `memcache` を指定し、設定ファイル `craft/config/memcache.php` で `useMemcached` に `true` をセットしていない場合、サーバーに memcached をインストールする必要があります。Craft 3 では、利用可能な memcache の PHP 7 互換バージョンがないため、それを使用します。
+コンフィグ設定の <config:cacheMethod> に `memcache` を指定し、設定ファイル `config/memcache.php` で `useMemcached` に `true` をセットしていない場合、サーバーに memcached をインストールする必要があります。Craft 3 では、利用可能な memcache の PHP 7 互換バージョンがないため、それを使用します。
 
 ## DbCache
 
 コンフィグ設定の <config:cacheMethod> に `db` を指定している場合、Craft 3 のアップデートを試す前に手動で SQL を実行する必要があります。
 
-*MySQL:*
-
 ```sql
 DROP TABLE IF EXISTS craft_cache;
 
 CREATE TABLE craft_cache (
- id char(128) NOT NULL PRIMARY KEY,
- expire int(11),
- data BLOB,
- dateCreated datetime NOT NULL,
- dateUpdated datetime NOT NULL,
- uid char(36) NOT NULL DEFAULT 0
+    id char(128) NOT NULL PRIMARY KEY,
+    expire int(11),
+    data BLOB,
+    dateCreated datetime NOT NULL,
+    dateUpdated datetime NOT NULL,
+    uid char(36) NOT NULL DEFAULT 0
 );
 ```
 
-*PostgreSQL:*
-
-```sql
-DROP TABLE IF EXISTS craft_cache;
-
-CREATE TABLE craft_cache (
- id char(128) NOT NULL PRIMARY KEY,
- expire int4,
- data BYTEA,
- dateCreated timestamp NOT NULL,
- dateUpdated timestamp NOT NULL,
- uid char(36) NOT NULL DEFAULT '0'::bpchar
-);
-```
-
-これらの例では、`craft`のコンフィグ設定にデフォルトの `craft/config/db.php` を使用している点に注意してください。
-
-コンフィグ設定を変更している場合、それに応じて前述のサンプルを調整してください。
+この例では、Craft 2 デフォルトの `craft` を DB コンフィグ設定の `tablePrefix` に設定している点に注意してください。コンフィグ設定を変更している場合、それに応じて前述のサンプルを調整してください。
 
 ## プラグイン
 
-[Craft 3 のためのプラグインアップデート](updating-plugins.md)を参照してください。
+[Craft 3 のためのプラグインアップデート](extend/updating-plugins.md)を参照してください。
 

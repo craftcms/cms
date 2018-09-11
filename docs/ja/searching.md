@@ -39,7 +39,7 @@ Craft は次の検索構文をサポートしています。
 
 ## 特定エレメントの属性を検索する
 
-アセット、カテゴリ、エントリ、ユーザー、およびタグは、それぞれ独自の属性を追加して検索することができます。
+アセット、カテゴリ、エントリ、ユーザー、および、タグは、それぞれ独自の属性を追加して検索することができます。
 
 * **アセット**
    * filename
@@ -66,7 +66,7 @@ Craft は次の検索構文をサポートしています。
 
 ## テンプレート記法
 
-`craft.assets()`、`craft.entries()`、`craft.tags()`、および `craft.users()`は、検索クエリを指定したエレメントの絞り込みに利用できる `search` パラメータをサポートしています。
+`craft.assets()`、`craft.entries()`、`craft.tags()`、および、`craft.users()`は、検索クエリを指定したエレメントの絞り込みに利用できる `search` パラメータをサポートしています。
 
 検索クエリは、次の2つの方法で指定できます。
 
@@ -75,16 +75,16 @@ Craft は次の検索構文をサポートしています。
 
 {# Pass the search query directly into the search param: #}
 {% set results = craft.entries({
- search: query
+    search: query
 }).all() %}
 
 {# Or pass it along with some custom search term options: #}
 {% set results = craft.entries({
- search: {
- query: query,
- subLeft: true,
- subRight: true
- }
+    search: {
+        query: query,
+        subLeft: true,
+        subRight: true                
+    }
 }).all() %}
 ```
 
@@ -96,14 +96,14 @@ Craft は次の検索構文をサポートしています。
 
 ```twig
 {% set results = craft.entries({
- search: query,
- orderBy: 'score'
+    search: query,
+    orderBy: 'score'
 }).all() %}
 ```
 
 この場合、返されるすべてのエレメントに `searchScore` 属性がセットされ、それぞれの検索スコアを知ることができます。
 
-> 動的な検索結果をリスト化する完全な例については、[検索フォーム](templating/examples/search-form.md)チュートリアルを参照してください。
+> 動的な検索結果をリスト化する完全な例については、[検索フォーム](dev/examples/search-form.md)チュートリアルを参照してください。
 
 ## 検索インデックスの再構築
 

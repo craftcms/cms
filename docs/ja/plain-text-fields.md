@@ -20,8 +20,8 @@
 
 ```twig
 {% if user.bio %}
- <h3>Bio</h3>
- {{ user.bio|markdown }}
+    <h3>Bio</h3>
+    {{ user.bio|markdown }}
 {% endif %}
 ```
 

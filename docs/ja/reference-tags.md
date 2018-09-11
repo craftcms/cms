@@ -5,7 +5,7 @@
 リファレンスタグの構文は、次のようになります。
 
 ```twig
-{Type>:<Identifier>:<Property>}
+{<Type>:<Identifier>:<Property>}
 ```
 
 ご覧の通り、それらは3つのセグメントで構成されています。
@@ -47,7 +47,7 @@
 
 ## リファレンスタグの解析
 
-[parseRefs](templating/filters.md#parserefs) フィルタを利用して、テンプレート内のリファレンスタグの文字列を解析できます。
+[parseRefs](dev/filters.md#parserefs) フィルタを利用して、テンプレート内のリファレンスタグの文字列を解析できます。
 
 ```twig
 {{ entry.body|parseRefs|raw }}

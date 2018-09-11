@@ -28,21 +28,60 @@ Craft のインストールが Vagrant box から実行されている場合、�
 
 プロンプトで `yes` と入力すると、新しいマイグレーションファイルがプロジェクトルートの `migrations/` フォルダに作成されます。
 
-マイグレーションファイルには、`safeUp()` と `safeDown()` という2つのメソッドを持つクラスが含まれています。`safeUp()` はメインのマイグレーションコードを記入する場所です。マイグレーションを元に戻せるようにしたい場合、`safeDown()` が復帰コードを記入する場所になります。
+### 内部で行うこと
+
+マイグレーションクラスには `safeUp()` と `safeDown()` メソッドが含まれます。マイグレーションが _適用される_ ときに `safeUp()` が実行され、_復帰させる_ ときに `safeDown()` が実行されます。
+
+::: tip
+デフォルトでは、`safeDown()` は `false` を返します。これは、マイグレーションの復帰はサポートされていないことを意味します。実際のマイグレーション復帰コードに置き換えるか、そのままにしておくかは、あなたの選択次第です。
+:::
+
+マイグレーションの目的に応じて、マイグレーションの `safeUp()` と `safeDown()` メソッドに必要なロジックを入力できます。プラグインやモジュールによって提供されるいかなる API と同様に、 [Craft の API](https://docs.craftcms.com/api/v3/) へフルアクセスできます。
+
+::: tip
+Mike Hudson 氏は、新しいカスタムフィールドを作成するような一般的なタスクを実行するいくつかの実例を挙げながら、コンテンツマイグレーションについて[素晴らしい記事](https://medium.com/@mikethehud/craft-cms-3-content-migration-examples-3a377f6420c3)を書かれています。
+:::
+
+### データベースデータの操作
+
+マイグレーションクラスは <api:craft\db\Migration> を拡張し、データベースを操作するためのいくつかのメソッドを提供しています。マイグレーションメソッドはどちらも使いやすく、ターミナルにステータスメッセージを出力するため、<api:craft\db\Command> よりもこれらを使う方が良いでしょう。
+
+```php
+// Bad:
+$this->db->createCommand()
+    ->insert('{{%tablename}}', $rows)
+    ->execute();
+
+// Good:
+$this->insert('{{%tablename}}', $rows);
+```
+
+::: warning
+<api:api:yii\db\Migration::insert()>、[batchInsert()](api:craft\db\Migration::batchInsert())、および、[update()](api:yii\db\Migration::update()) マイグレーションメソッドは、引数 `$columns` で指定したものに加えて `dateCreated`、 `dateUpdated`、`uid` テーブルのカラムにあるデータを自動的に挿入 / アップデートします。操作しているテーブルにこれらのカラムがない場合、引数 `$includeAuditColumns` に `false` を渡して、SQL エラーにならないようにしてください。
+:::
+
+::: tip
+<api:craft\db\Migration> はデータを _選択する_ ためのメソッドを持たないため、Yii の[クエリビルダー](https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder)を通す必要があります。
+
+```php
+use craft\db\Query;
+
+$result = (new Query())
+    // ...
+    ->all();
+```
+
+:::
 
 ### ロギング
 
 マイグレーションコード内でメッセージを記録したい場合、`Craft::info()` を呼び出すよりも echo で出力してください。
 
 ```php
-echo "> some note\n";
+echo "    > some note\n";
 ```
 
 マイグレーションがコンソールリクエストから実行された場合、メッセージがターミナル内に出力されるため、マイグレーションを実行している人がそのメッセージを見ることを保証します。ウェブリクエストであれば、`Craft::info()` を使用したときと同様に、Craft がそれを取得して `storage/logs/` に記録します。
-
-### データベースデータの操作
-
-Craft 3 は「audit」カラムのデータ（`dateCreated`、`dateUpdated`、 `uid`）を挿入 / 更新するかどうかを決定する`$includeAuditColumns` 引数（デフォルトは `true`に設定されています）を [batchInsert()]、[insert()]、および [update()] のマイグレーションメソッドに追加します。挿入しようとするテーブルがこれら3つのカラムすべてを持っていない場合、SQL エラーにならないよう、引数に `false` を渡す必要があります。
 
 ## マイグレーションの実行
 
@@ -60,6 +99,3 @@ Craft のインストールが Vagrant box から実行されている場合、�
 
 マイグレーションユーティリティから実行するには、コントロールパネールで「ユーティリティ > マイグレーション」に移動し、「新しいマイグレーションを適用」ボタンをクリックします。
 
-[batchInsert()]: api:yii\db\Migration::batchInsert()
-[insert()]: api:yii\db\Migration::insert()
-[update()]: api:yii\db\Migration::update()

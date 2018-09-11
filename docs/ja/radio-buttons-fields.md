@@ -30,9 +30,9 @@
 
 ```twig
 <ul>
- {% for option in entry.radioFieldHandle.options %}
- <li>{{ option }}</li>
- {% endfor %}
+    {% for option in entry.radioFieldHandle.options %}
+        <li>{{ option }}</li>
+    {% endfor %}
 </ul>
 ```
 

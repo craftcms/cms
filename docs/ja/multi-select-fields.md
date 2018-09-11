@@ -18,9 +18,9 @@
 
 ```twig
 <ul>
- {% for option in entry.multiselectFieldHandle %}
- <li>{{ option }}</li>
- {% endfor %}
+    {% for option in entry.multiselectFieldHandle %}
+        <li>{{ option }}</li>
+    {% endfor %}
 </ul>
 ```
 
@@ -28,9 +28,9 @@
 
 ```twig
 <ul>
- {% for option in entry.multiselectFieldHandle.options %}
- <li>{{ option }}</li>
- {% endfor %}
+    {% for option in entry.multiselectFieldHandle.options %}
+        <li>{{ option }}</li>
+    {% endfor %}
 </ul>
 ```
 
@@ -40,7 +40,7 @@
 
 ```twig
 {% if entry.multiselectFieldHandle.contains('tequilla') %}
- <p>Really?</p>
+    <p>Really?</p>
 {% endif %}
 ```
 

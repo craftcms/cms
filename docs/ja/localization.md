@@ -24,16 +24,16 @@ Craft は、それぞれのエントリにあるこのフィールドのコン�
 
 ```
 templates/
- index.twig--> default homepage template
- de/
- index.twig--> German homepage template
+├── index.twig      --> default homepage template
+└── de/
+    └── index.twig  --> German homepage template
 ```
 
 `craft.app.language` を利用して、言語に依存するテンプレートの特定パーツを切り替えます。
 
 ```twig
 {% if craft.app.language == 'de' %}
- <p>I like bread and beer.</p>
+    <p>I like bread and beer.</p>
 {% endif %}
 ```
 

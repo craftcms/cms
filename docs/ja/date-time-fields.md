@@ -10,7 +10,7 @@
 
 日/時フィールドでは、設定に応じて date picker、time picker、または両方が表示されます。
 
-日付と時刻は、いずれもユーザーが優先するロケールに応じてフォーマットされます。それらは、サイトのタイムゾーンで表示されますが、Craft の他のすべての日付と同様に UTC で格納されます。
+日付と時刻は、いずれもユーザーが優先するロケールに応じてフォーマットされます。それらは、サイトのタイムゾーンで表示されますが、Craft の他のすべての日付と同様に UTC で保存されます。
 
 ## テンプレート記法
 
@@ -18,7 +18,7 @@
 
 ```twig
 {% if user.birthday %}
- {{ user.name }}’s birthday is: {{ user.birthday|date('M j, Y') }}
+    {{ user.name }}’s birthday is: {{ user.birthday|date('M j, Y') }}
 {% endif %}
 ```
 

@@ -10,9 +10,9 @@ Lightswitch フィールドでは、「はい」または「いいえ」の答�
 
 ```twig
 {% if entry.lightswitchFieldHandle %}
- <p>I'm on!</p>
+    <p>I'm on!</p>
 {% else %}
- <p>I'm off.</p>
+    <p>I'm off.</p>
 {% endif %}
 ```
 

@@ -19,7 +19,7 @@
 **モード** には、次の値をセットできます。
 
 * **切り抜き** – 指定された幅と高さに画像を切り抜き、必要であれば画像を拡大します。（これがデフォルトのモードです。）
-* **フィット**– すべての寸法が指定された幅と高さに収まる範囲で、可能な限り大きいサイズになるよう画像を拡大・縮小します。
+* **フィット**  – すべての寸法が指定された幅と高さに収まる範囲で、可能な限り大きいサイズになるよう画像を拡大・縮小します。
 * **ストレッチ** – 指定された幅と高さに画像を伸張します。
 
 **モード** に「切り抜き」がセットされている場合、切り抜く際に画像のどのエリアを焦点として扱うかを定義できる「デフォルトの焦点」 プルダウンが表示されます。オプションには、次のものが含まれます。
@@ -48,7 +48,7 @@
 
 ### CP で定義された画像の変形を適用する
 
-トランスフォームを適用した画像を出力するには、トランスフォームのハンドルをアセットの [getUrl()](api:craft\elements\Asset::getUrl())、[getWidth()](api:craft\elements\Asset::getWidth())、および  [getHeight()](api:craft\elements\Asset::getHeight()) ファンクションに渡します。
+トランスフォームを適用した画像を出力するには、トランスフォームのハンドルをアセットの [getUrl()](api:craft\elements\Asset::getUrl())、[getWidth()](api:craft\elements\Asset::getWidth())、および、[getHeight()](api:craft\elements\Asset::getHeight()) ファンクションに渡します。
 
 ```twig
 <img src="{{ asset.getUrl('thumb') }}" width="{{ asset.getWidth('thumb') }}" height="{{ asset.getHeight('thumb') }}">
@@ -62,15 +62,15 @@
 
 ```twig
 {% set thumb = {
- mode: 'crop',
- width: 100,
- height: 100,
- quality: 75,
- position: 'top-center'
+    mode: 'crop',
+    width: 100,
+    height: 100,
+    quality: 75,
+    position: 'top-center'
 } %}
 ```
 
-次に、そのオブジェクトをアセットモデルの `getUrl()`、`getWidth()`、および `getHeight()` ファンクションへ渡します。
+次に、そのオブジェクトをアセットモデルの `getUrl()`、`getWidth()`、および、`getHeight()` ファンクションへ渡します。
 
 ```twig
 <img src="{{ asset.getUrl(thumb) }}" width="{{ asset.getWidth(thumb) }}" height="{{ asset.getHeight(thumb) }}">

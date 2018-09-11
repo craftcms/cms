@@ -31,45 +31,45 @@
 
 ```twig
 {% for block in entry.myMatrixField.all() %}
- ...
+    ...
 {% endfor %}
 ```
 
 for ループ内に記述されたすべてのコードは、 フィールドに含まれるそれぞれの行列ブロックに対して繰り返されます。定義済みの変数 `block` にセットされる現在のブロックは、<api:craft\elements\MatrixBlock> モデルになります。
 
-次に、4つのブロックタイプ（見出し、テキスト、画像、および引用）を持つ行列フィールドのテンプレートの実例を示します。`block.type` （<api:craft\elements\MatrixBlock::getType()>）をチェックすることによって、現在のブロックタイプのハンドルを確認できます。
+次に、4つのブロックタイプ（見出し、テキスト、画像、および、引用）を持つ行列フィールドのテンプレートの実例を示します。`block.type` （<api:craft\elements\MatrixBlock::getType()>）をチェックすることによって、現在のブロックタイプのハンドルを確認できます。
 
 ```twig
 {% for block in entry.myMatrixField.all() %}
 
- {% if block.type == "heading" %}
+    {% if block.type == "heading" %}
 
- <h3>{{ block.heading }}</h3>
+        <h3>{{ block.heading }}</h3>
 
- {% elseif block.type == "text" %}
+    {% elseif block.type == "text" %}
 
- {{ block.text|markdown }}
+        {{ block.text|markdown }}
 
- {% elseif block.type == "image" %}
+    {% elseif block.type == "image" %}
 
- {% set image = block.image.one() %}
- {% if image %}
- <img src="{{ image.getUrl('thumb') }}" width="{{ image.getWidth('thumb') }}" height="{{ image.getHeight('thumb') }}" alt="{{ image.title }}">
- {% endif %}
+        {% set image = block.image.one() %}
+        {% if image %}
+            <img src="{{ image.getUrl('thumb') }}" width="{{ image.getWidth('thumb') }}" height="{{ image.getHeight('thumb') }}" alt="{{ image.title }}">
+        {% endif %}
 
- {% elseif block.type == "quote" %}
+    {% elseif block.type == "quote" %}
 
- <blockquote>
- <p>{{ block.quote }}</p>
- <cite>– {{ block.cite }}</cite>
- </blockquote>
+        <blockquote>
+            <p>{{ block.quote }}</p>
+            <cite>– {{ block.cite }}</cite>
+        </blockquote>
 
- {% endif %}
+    {% endif %}
 
 {% endfor %}
 ```
 
-> このコードは [switch](templating/tags/switch.md) タグを利用して、簡略化できます。
+> このコードは [switch](dev/tags/switch.md) タグを利用して、簡略化できます。
 
 ### ブロックタイプのフィルタリング
 
@@ -77,7 +77,7 @@ for ループ内に記述されたすべてのコードは、 フィールドに
 
 ```twig
 {% for block in entry.myMatrixField.type('text').all() %}
- {{ block.text|markdown }}
+    {{ block.text|markdown }}
 {% endfor %}
 ```
 
@@ -85,11 +85,11 @@ for ループ内に記述されたすべてのコードは、 フィールドに
 
 ```twig
 {% for block in entry.myMatrixField.type('text, heading').all() %}
- {% if block.type == "heading" %}
- <h3>{{ block.heading }}</h3>
- {% else %}
- {{ block.text|markdown }}
- {% endif %}
+    {% if block.type == "heading" %}
+        <h3>{{ block.heading }}</h3>
+    {% else %}
+        {{ block.text|markdown }}
+    {% endif %}
 {% endfor %}
 ```
 
@@ -117,6 +117,6 @@ for ループ内に記述されたすべてのコードは、 フィールドに
 
 ### 関連項目
 
-* [エレメントクエリ](element-queries.md)
+* [エレメントクエリ](dev/element-queries/README.md)
 * <api:craft\models\MatrixBlock>
 

@@ -1,94 +1,84 @@
 # ユーザーフィールド
 
-ユーザーフィールドでは、[ユーザー](users.md)を親エントリに関連付けることができます。
+ユーザーフィールドでは、[ユーザー](users.md)を他のエレメントに関連付けることができます。
 
 ## 設定
 
 ユーザーフィールドの設定は、次の通りです。
 
-* **ソース** – ユーザーを関連付けるユーザーグループ（デフォルトは「すべて」です）
-* **リミット** – フィールドと一度に関連付けできるユーザー数の上限（デフォルトは無制限です）
-* **選択ラベル** – フィールドの選択ボタンのラベルに使用されます
+- **ソース** – フィールドが、どのユーザーグループ（または、他のユーザーインデックスソース）からユーザーを関連付けられるか。
+- **リミット** – フィールドと一度に関連付けできるユーザー数の上限（デフォルトは無制限です）
+- **選択ラベル** – フィールドの選択ボタンのラベルに使用されます
+
+### マルチサイト設定
+
+マルチサイトがインストールされている場合、次の設定も有効になります。（「高度」のトグルボタンで表示されます）
+
+- **サイトごとにリレーションを管理** – それぞれのサイトが関連付けられたユーザーの独自のセットを取得するかどうか。
 
 ## フィールド
 
-ユーザーフィールドには、現在選択されているすべてのユーザーのリストと、新しいユーザーを追加するためのボタンがあります。
+ユーザーフィールドには、現在関連付けられているすべてのユーザーのリストと、新しいユーザーを追加するためのボタンがあります。
 
 「ユーザーを追加」ボタンをクリックすると、すでに追加されているユーザーの検索や選択ができるモーダルウィンドウが表示されます。
 
+### インラインのユーザー編集
+
+関連付けられたユーザーをダブルクリックすると、ユーザーのカスタムフィールドを編集できる HUD を表示します。
+
 ## テンプレート記法
 
-テンプレート内でユーザーフィールドのエレメントを取得する場合、ユーザーフィールドのハンドルを利用して、選択されたユーザーにアクセスできます。
+テンプレート内でユーザーフィールドのエレメントを取得する場合、ユーザーフィールドのハンドルを利用して、関連付けられたユーザーにアクセスできます。
 
 ```twig
-{% set users = entry.usersFieldHandle %}
+{% set relatedUsers = entry.<FieldHandle> %}
 ```
 
-これは、所定のフィールドで選択されたすべてのユーザーを出力するよう準備された[エレメントクエリ](element-queries.md)を提供します。言い換えれば、上の行は次のコードのショートカットとなります。
-
-```twig
-{% craft.users({
- relatedTo: { sourceElement: entry, field: "usersFieldHandle" },
- orderBy:"sortOrder",
- limit:null
-}) %}
-```
-
-（`relatedTo` パラメータの詳細は、[リレーション](relations.md)を見てください。）
+これは、所定のフィールドで関連付けられたすべてのユーザーを出力するよう準備された[ユーザークエリ](dev/element-queries/user-queries.md)を提供します。
 
 ### 実例
 
-ユーザーフィールドに選択されたユーザーがあるかどうかを調べるには、`length` フィルタを利用します。
+関連付けられたすべてのユーザーをループするには、[all()](api:craft\db\Query::all()) を呼び出して、結果をループ処理します。
 
 ```twig
-{% if entry.usersFieldHandle|length %}
- ...
+{% set relatedUsers = entry.<FieldHandle>.all() %}
+{% if relatedUsers|length %}
+    <ul>
+        {% for rel in relatedUsers %}
+            <li><a href="{{ url('profiles/'~rel.username) }}">{{ rel.name }}</a></li>
+        {% endfor %}
+    </ul>
 {% endif %}
 ```
 
-選択されたユーザーをループするには
+関連付けられた最初のユーザーだけが欲しい場合、代わりに [one()](api:craft\db\Query::one()) を呼び出して、何かが返されていることを確認します。
 
 ```twig
-{% for user in entry.usersFieldHandle.all() %}
- ...
-{% endfor %}
-```
-
-常に「`entry.usersFieldHandle`」を記述するよりもむしろ、一度呼び出して別の変数にセットしましょう。
-
-```twig
-{% set users = entry.usersFieldHandle %}
-
-{% if users|length %}
-
- <h3>Some great users</h3>
- {% for user in users %}
- ...
- {% endfor %}
-
+{% set rel = entry.<FieldHandle>.one() %}
+{% if rel %}
+    <p><a href="{{ url('profiles/'~rel.username) }}">{{ rel.name }}</a></p>
 {% endif %}
 ```
 
-ElementCriteriaModel オブジェクトにパラメータを追加することもできます。
+（取得する必要はなく）いずれかの関連付けられたユーザーがあるかを確認したい場合、[exists()](api:craft\db\Query::exists()) を呼び出すことができます。
 
 ```twig
-{% set authors = entry.usersFieldHandle.group('authors') %}
+{% if entry.<FieldHandle>.exists() %}
+    <p>There are related users!</p>
+{% endif %}
 ```
 
-意図的にユーザーフィールドへ1つだけセットしている場合でも、ユーザーフィールドを呼び出すと、選択されたユーザーではなく、同じ ElementCriteriaModel が提供されることを覚えておいてください。選択された最初の（1つだけの）ユーザーを取得するには、`one()` を利用します。
+ユーザークエリで[パラメータ](dev/element-queries/user-queries.md#parameters)をセットすることもできます。例えば、`authors` グループに含まれるユーザーだけを取得するには、[groupId](dev/element-queries/user-queries.md#groupid) パラメータをセットします。
 
 ```twig
-{% set user = entry.myUsersField.one() %}
-
-{% if user %}
- ...
-{% endif %}
+{% set relatedUsers = entry.<FieldHandle>
+    .group('authors')
+    .all() %}
 ```
 
 ### 関連項目
 
-* [エレメントクエリ](element-queries.md)
-* [ユーザーのクエリパラメータ](element-query-params/user-query-params.md)
+* [ユーザークエリ](dev/element-queries/user-queries.md)
 * <api:craft\elements\User>
 * [リレーション](relations.md)
 

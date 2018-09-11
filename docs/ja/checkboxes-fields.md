@@ -24,9 +24,9 @@
 
 ```twig
 <ul>
- {% for option in entry.checkboxFieldHandle %}
- <li>{{ option }}</li>
- {% endfor %}
+    {% for option in entry.checkboxFieldHandle %}
+        <li>{{ option }}</li>
+    {% endfor %}
 </ul>
 ```
 
@@ -34,9 +34,9 @@
 
 ```twig
 <ul>
- {% for option in entry.checkboxFieldHandle.options %}
- <li>{{ option }}</li>
- {% endfor %}
+    {% for option in entry.checkboxFieldHandle.options %}
+        <li>{{ option }}</li>
+    {% endfor %}
 </ul>
 ```
 
@@ -46,18 +46,18 @@
 
 ```twig
 {% if entry.checkboxFieldHandle.contains('tequila') %}
- <p>Really?</p>
+    <p>Really?</p>
 {% endif %}
 ```
 
-フロントエンドの[エントリフォーム](templating/examples/entry-form.md)にチェックボックスフィールドを含める場合、チェックボックスの前に不可視フィールドを含め、チェックボックスがチェックされなかった場合でも、空の値が送信されるようにしてください。
+フロントエンドの[エントリフォーム](dev/examples/entry-form.md)にチェックボックスフィールドを含める場合、チェックボックスの前に不可視項目を含め、チェックボックスがチェックされなかった場合でも、空の値が送信されるようにしてください。
 
 ```twig
 <input type="hidden" name="fields[checkboxFieldhandle]" value="">
 
 <ul>
- <li><input type="checkbox" name="fields[checkboxFieldHandle][]" value="foo">{{ checkboxOption.label }}</li>
- <li><input type="checkbox" name="fields[checkboxFieldHandle][]" value="bar">{{ checkboxOption.label }}</li>
+    <li><input type="checkbox" name="fields[checkboxFieldHandle][]" value="foo">{{ checkboxOption.label }}</li>
+    <li><input type="checkbox" name="fields[checkboxFieldHandle][]" value="bar">{{ checkboxOption.label }}</li>
 </ul>
 ```
 

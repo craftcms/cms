@@ -10,7 +10,7 @@ Craft は次の5つの関連フィールドタイプがあります。
 * [タグフィールド](tags-fields.md)
 * [ユーザーフィールド](users-fields.md)
 
-他のフィールドタイプと同様に、これらを[セクション](sections-and-entries.md#sections)、[ユーザー](users.md)、[アセット](assets.md)、[カテゴリグループ](categories.md)、[タググループ](tags.md)、および[グローバル設定](globals.md)のフィールドレイアウトに追加できます。
+他のフィールドタイプと同様に、これらを[セクション](sections-and-entries.md#sections)、[ユーザー](users.md)、[アセット](assets.md)、[カテゴリグループ](categories.md)、[タググループ](tags.md)、および、[グローバル設定](globals.md)のフィールドレイアウトに追加できます。
 
 ## 専門用語
 
@@ -46,14 +46,14 @@ Craft のリレーションを操作する前に、それがテンプレート�
 
 ```twig
 {% if drink.ingredients|length %}
- 
- <h3>Ingredients</h3>
- 
- <ul>
- {% for ingredient in drink.ingredients %}
- <li>{{ ingredient.title }}</li>
- {% endfor %}
- </ul>
+    
+    <h3>Ingredients</h3>
+    
+    <ul>
+        {% for ingredient in drink.ingredients %}
+            <li>{{ ingredient.title }}</li>
+        {% endfor %}
+    </ul>
 
 {% endif %}
 ```
@@ -62,13 +62,13 @@ Craft のリレーションを操作する前に、それがテンプレート�
 
 ```twig
 {% for ingredient in drink.ingredients.section('ingredients') %}
- <li>{{ ingredient.title }}</li>
+    <li>{{ ingredient.title }}</li>
 {% endfor %}
 ```
 
 ### `relatedTo` パラメータ
 
-アセット、カテゴリ、エントリ、ユーザー、およびタグは、それぞれ `relatedTo` パラメータをサポートし、あらゆる種類のとんでもないことを可能にします。
+アセット、カテゴリ、エントリ、ユーザー、および、タグは、それぞれ `relatedTo` パラメータをサポートし、あらゆる種類のとんでもないことを可能にします。
 
 最も単純な書式としては、次のいずれかを渡すことができます。
 
@@ -98,8 +98,8 @@ Craft のリレーションを操作する前に、それがテンプレート�
 
 ```twig
 {% set ingredients = craft.entries.section('ingredients').relatedTo({
- sourceElement: drink,
- field: 'ingredients'
+    sourceElement: drink,
+    field: 'ingredients'
 }) %}
 ```
 
@@ -107,8 +107,8 @@ Craft のリレーションを操作する前に、それがテンプレート�
 
 ```twig
 {% set ingredients = craft.entries.section('ingredients').relatedTo({
- sourceElement: drink,
- sourceLocale: craft.locale
+    sourceElement: drink,
+    sourceLocale: craft.locale
 }) %}
 ```
 
@@ -118,8 +118,8 @@ Craft のリレーションを操作する前に、それがテンプレート�
 
 ```twig
 {% set ingredients = craft.entries.section('ingredients').relatedTo({
- sourceElement: drink,
- field: 'ingredientsMatrix.relatedIngredient'
+    sourceElement: drink,
+    field: 'ingredientsMatrix.relatedIngredient'
 }).all() %}
 ```
 
@@ -131,10 +131,10 @@ Craft のリレーションを操作する前に、それがテンプレート�
 {% set espresso = craft.entries.section('ingredients').slug('espresso').first() %}
 
 {% set cocktails = craft.entries.section('drinks').relatedTo(['and',
- { sourceElement: currentUser, field: 'favoriteDrinks' },
- { targetElement: espresso, field: 'ingredients' }
+    { sourceElement: currentUser, field: 'favoriteDrinks' },
+    { targetElement: espresso, field: 'ingredients' }
 ]).all() %}
 ```
 
-最初の引数（`'and'`）は、クエリがリレーションの基準と_すべて_一致しなければならないことを指定しています。リレーション基準の_いずれか_とマッチさせたい場合、`'or'` を渡すことができます。
+最初の引数（`'and'`）は、クエリがリレーションの基準と _すべて_ 一致しなければならないことを指定しています。リレーション基準の _いずれか_ とマッチさせたい場合、`'or'` を渡すことができます。
 

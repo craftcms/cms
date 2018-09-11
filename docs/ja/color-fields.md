@@ -8,11 +8,11 @@
 
 ```twig
 {% if entry.linkColor %}
- <style type="text/css">
- .content a {
- color: {{ entry.linkColor.getHex() }};
- }
- </style>
+    <style type="text/css">
+        .content a {
+            color: {{ entry.linkColor.getHex() }};
+        }
+    </style>
 {% endif %}
 ```
 
