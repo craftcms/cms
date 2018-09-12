@@ -23,3 +23,7 @@ You can create a Forgot Password form using the following code:
     <input type="submit" value="Submit">
 </form>
 ```
+
+While other pages in the forgot password process have Config options to set a custom path ([setPasswordPath](https://docs.craftcms.com/v2/config-settings.html#users), [setPasswordSuccessPath](https://docs.craftcms.com/v2/config-settings.html#users)), this form doesn't need one designated as it's only linked to by you in your Craft project.
+
+Where Craft needs to generate the links for the two examples given above, Craft never takes users to this template.
