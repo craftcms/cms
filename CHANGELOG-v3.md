@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed an error that could occur when installing or updating something within the Control Panel if `composer.json` required the `roave/security-advisories` package.
+- Fixed a PostgreSQL error that could occur in some circumstances when searching.
 
 ## 3.0.24 - 2018-09-11
 
