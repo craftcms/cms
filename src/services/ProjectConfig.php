@@ -493,6 +493,8 @@ class ProjectConfig extends Component
             foreach ($remove as $removeKey) {
                 unset($array[$removeKey]);
             }
+
+            ksort($array);
         };
 
         if (!empty($this->_modifiedYamlFiles) && $this->_useConfigFile()) {
