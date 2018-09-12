@@ -21,6 +21,7 @@ use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
 use craft\models\Info;
+use craft\queue\Queue;
 use craft\queue\QueueInterface;
 use craft\services\Security;
 use craft\web\Application as WebApplication;
@@ -28,7 +29,6 @@ use craft\web\AssetManager;
 use craft\web\View;
 use yii\base\InvalidConfigException;
 use yii\mutex\Mutex;
-use yii\queue\db\Queue;
 use yii\web\ServerErrorHttpException;
 
 /**
