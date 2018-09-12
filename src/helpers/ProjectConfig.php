@@ -58,9 +58,11 @@ class ProjectConfig
             $projectConfig->processConfigChanges(Fields::CONFIG_FIELDGROUP_KEY . '.' . $groupUid);
         }
 
-        foreach ($allFields as $fieldUid => $fieldData) {
-            // Ensure field is processed
-            $projectConfig->processConfigChanges(Fields::CONFIG_FIELDS_KEY . '.' . $fieldUid);
+        if (is_array($allFields)) {
+            foreach ($allFields as $fieldUid => $fieldData) {
+                // Ensure field is processed
+                $projectConfig->processConfigChanges(Fields::CONFIG_FIELDS_KEY . '.' . $fieldUid);
+            }
         }
     }
 
