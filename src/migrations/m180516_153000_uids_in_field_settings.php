@@ -46,7 +46,9 @@ class m180516_153000_uids_in_field_settings extends Migration
 
                     if (is_array($settings['sources'])) {
                         foreach ($settings['sources'] as $source) {
-                            list(, $folderIds[]) = explode(':', $source);
+                            if (strpos($source, ':') !== false) {
+                                list(, $folderIds[]) = explode(':', $source);
+                            }
                         }
                     }
 
@@ -54,7 +56,9 @@ class m180516_153000_uids_in_field_settings extends Migration
                 case 'craft\fields\Entries':
                     if (is_array($settings['sources'])) {
                         foreach ($settings['sources'] as $source) {
-                            list(, $sectionIds[]) = explode(':', $source);
+                            if (strpos($source, ':') !== false) {
+                                list(, $sectionIds[]) = explode(':', $source);
+                            }
                         }
                     }
 
