@@ -144,7 +144,11 @@ class m180516_153000_uids_in_field_settings extends Migration
 
                         foreach ($settings['sources'] as $source) {
                             $source = explode(':', $source);
-                            $newSources[] = $source[0] . ':' . $folders[$source[1]] ?? null;
+                            if (count($source) > 1) {
+                                $newSources[] = $source[0] . ':' . $folders[$source[1]] ?? null;
+                            } else {
+                                $newSources[] = $source[0];
+                            }
                         }
 
                         $settings['sources'] = $newSources;
@@ -157,7 +161,11 @@ class m180516_153000_uids_in_field_settings extends Migration
 
                         foreach ($settings['sources'] as $source) {
                             $source = explode(':', $source);
-                            $newSources[] = $source[0] . ':' . $sections[$source[1]] ?? null;
+                            if (count($source) > 1) {
+                                $newSources[] = $source[0] . ':' . $sections[$source[1]] ?? null;
+                            } else {
+                                $newSources[] = $source[0];
+                            }
                         }
 
                         $settings['sources'] = $newSources;
