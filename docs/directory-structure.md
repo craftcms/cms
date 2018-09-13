@@ -41,7 +41,7 @@ You can customize the name and location of this folder by setting the [CRAFT_STO
 
 ### `templates/`
 
-Your front-end templates go in here.
+Your front-end Twig templates go in here. Any local site assets, such as images, CSS, and JS that should be statically served, should live in the [web](directory-structure.md#web) folder.
 
 ::: tip
 You can customize the name and location of this folder by setting the [CRAFT_TEMPLATES_PATH](config/php-constants.md#craft-templates-path) PHP constant in `web/index.php`.
@@ -57,7 +57,7 @@ You can customize the name and location of this folder by changing the [CRAFT_VE
 
 ### `web/`
 
-This directory represents your server’s webroot.
+This directory represents your server’s webroot. The public `index.php` file lives here and this is where any of the local site images, CSS, and JS that is statically served should live.
 
 ::: tip
 You can customize the name and location of this folder. If you move it so it’s no longer living alongside the other Craft folders, make sure to update the [CRAFT_BASE_PATH](config/php-constants.md#craft-vendor-path) PHP constant in `<Webroot>/index.php`. 
