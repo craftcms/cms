@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 2.x
 
+## Unreleased
+
+### Fixed
+- Fixed a PHP error that could occur in some cases when calling `CategoriesService->getAllGroupIds()` and `CategoriesService->getAllGroups()` when `CategoriesService->getGroupById()` had been called previously with an invalid category group ID.
+
 ## 2.7.3 - 2018-10-23
 
 ### Changed
