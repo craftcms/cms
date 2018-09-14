@@ -38,8 +38,9 @@ interface QueueInterface
      * Sets the progress for the currently reserved job.
      *
      * @param int $progress The job progress (1-100)
+     * @param string $state The job state if set by steps. Empty string not null for SQL
      */
-    public function setProgress(int $progress);
+    public function setProgress(int $progress, string $state = "");
 
     /**
      * Returns whether there are any waiting jobs

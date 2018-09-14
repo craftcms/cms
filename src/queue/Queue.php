@@ -53,6 +53,11 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     private $_jobDescription;
 
     /**
+     * @var string|null The owner signature of the job being pushed into the queue
+     */
+    private $_owner = null;
+
+    /**
      * @var string|null The currently-executing job ID
      */
     private $_executingJobId;
@@ -144,6 +149,15 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             $this->_jobDescription = null;
         }
 
+        // Capture the owner so pushMessage() can access it
+        // we'll use reflection and magic to see about this one
+        // so that system and other tasks don't have to use owner
+        if (\property_exists(\get_class($job), 'owner')) {
+            $this->_owner = $job->owner;
+        } else {
+            $this->_owner = null;
+        }
+
         if (($id = parent::push($job)) === null) {
             return null;
         }
@@ -197,13 +211,14 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function setProgress(int $progress)
+    public function setProgress(int $progress, string $state = "")
     {
         Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%queue}}',
                 [
                     'progress' => $progress,
+                    'state' => $state,
                     'timeUpdated' => time(),
                 ],
                 ['id' => $this->_executingJobId],
@@ -275,7 +290,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getJobInfo(int $limit = null): array
     {
         $results = $this->_createJobQuery()
-            ->select(['id', 'description', 'progress', 'timeUpdated', 'fail', 'error'])
+            ->select(['id', 'description', 'owner', 'state', 'progress', 'timeUpdated', 'fail', 'error'])
             ->where('[[timePushed]] <= :time - [[delay]]', [':time' => time()])
             ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
             ->limit($limit)
@@ -288,7 +303,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'id' => $result['id'],
                 'status' => $this->_status($result),
                 'progress' => (int)$result['progress'],
-                'description' => $result['description'],
+                'description' => $result['state'] ?: $result['description'],
+                'owner' => $result['owner'] ?: "",
                 'error' => $result['error'],
             ];
         }
@@ -400,6 +416,7 @@ EOD;
                 [
                     'job' => $message,
                     'description' => $this->_jobDescription,
+                    'owner' => $this->_owner,
                     'timePushed' => time(),
                     'ttr' => $ttr,
                     'delay' => $delay,
