@@ -13,10 +13,11 @@ use craft\errors\SiteNotFoundException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
+use craft\services\Sites;
 use yii\base\InvalidConfigException;
+use yii\db\Exception as DbException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
-use yii\db\Exception as DbException;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -149,7 +150,7 @@ class Request extends \yii\web\Request
             Craft::setAlias('@webroot', dirname($this->getScriptFile()));
         }
         if (Craft::getRootAlias('@web') === false) {
-            Craft::setAlias('@web', $this->getHostInfo().$this->getBaseUrl());
+            Craft::setAlias('@web', $this->getHostInfo() . $this->getBaseUrl());
         }
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -159,15 +160,21 @@ class Request extends \yii\web\Request
 
         try {
             // Figure out which site is being requested
-            $site = $this->_getCurrentSite();
+            $sitesService = Craft::$app->getSites();
+            if ($sitesService->getHasCurrentSite()) {
+                $site = $sitesService->getCurrentSite();
+            } else {
+                $site = $this->_requestedSite($sitesService);
+                $sitesService->setCurrentSite($site);
+            }
 
             // If the requested URI begins with the current site's base URL path,
             // make sure that our internal path doesn't include those segments
             if ($site->baseUrl && ($siteBasePath = parse_url(Craft::getAlias($site->baseUrl), PHP_URL_PATH)) !== null) {
                 $siteBasePath = $this->_normalizePath($siteBasePath);
                 $baseUrl = $this->_normalizePath($this->getBaseUrl());
-                $fullUri = $baseUrl.($baseUrl && $path ? '/' : '').$path;
-                if (strpos($fullUri.'/', $siteBasePath.'/') === 0) {
+                $fullUri = $baseUrl . ($baseUrl && $path ? '/' : '') . $path;
+                if (strpos($fullUri . '/', $siteBasePath . '/') === 0) {
                     $path = $this->_fullPath = ltrim(substr($fullUri, strlen($siteBasePath)), '/');
                 }
             }
@@ -485,7 +492,7 @@ class Request extends \yii\web\Request
                 $property = (
                     preg_match(
                         '/(android|bb\\d+|meego).+mobile|avantgo|bada\\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\\.(browser|link)|vodafone|wap|windows ce|xda|xiino'
-                        .($detectTablets ? '|android|ipad|playbook|silk' : '').'/i',
+                        . ($detectTablets ? '|android|ipad|playbook|silk' : '') . '/i',
                         $this->getUserAgent()
                     ) ||
                     preg_match(
@@ -773,7 +780,7 @@ class Request extends \yii\web\Request
         $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
 
         foreach ($parts as $key => $part) {
-            if (strpos($part, $pathParam.'=') === 0) {
+            if (strpos($part, $pathParam . '=') === 0) {
                 unset($parts[$key]);
                 break;
             }
@@ -962,7 +969,7 @@ class Request extends \yii\web\Request
             $passwordHash = $currentUser->password;
             $userId = $currentUser->id;
             $hashable = implode('|', [$nonce, $userId, $passwordHash]);
-            $token = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
+            $token = $nonce . '|' . Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
         } else {
             // Unauthenticated users.
             $token = $nonce;
@@ -1012,7 +1019,7 @@ class Request extends \yii\web\Request
         $passwordHash = $currentUser->password;
         $userId = $currentUser->id;
         $hashable = implode('|', [$nonce, $userId, $passwordHash]);
-        $expectedToken = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
+        $expectedToken = $nonce . '|' . Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
 
         return Craft::$app->getSecurity()->compareString($expectedToken, $token);
     }
@@ -1046,28 +1053,20 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Determine the current site for the request, either because it is already defined
-     * or by finding the one that most closely matches the requested URL.
+     * Returns the site that most closely matches the requested URL.
      *
+     * @param Sites $sitesService
      * @return Site
      * @throws SiteNotFoundException if no sites exist
      */
-    private function _getCurrentSite(): Site
+    private function _requestedSite(Sites $sitesService): Site
     {
-        $sitesService = Craft::$app->getSites();
-
-        // If a current site is already defined, go with that
-        if ($sitesService->getHasCurrentSite()) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            return $sitesService->getCurrentSite();
-        }
-
         $sites = $sitesService->getAllSites();
 
         $hostName = $this->getHostName();
         $baseUrl = $this->_normalizePath($this->getBaseUrl());
         $path = $this->getFullPath();
-        $fullUri = $baseUrl.($baseUrl && $path ? '/' : '').$path;
+        $fullUri = $baseUrl . ($baseUrl && $path ? '/' : '') . $path;
         $secure = $this->getIsSecureConnection();
         $scheme = $secure ? 'https' : 'http';
         $port = $secure ? $this->getSecurePort() : $this->getPort();
@@ -1079,7 +1078,7 @@ class Request extends \yii\web\Request
             }
 
             if (($parsed = parse_url(Craft::getAlias($site->baseUrl))) === false) {
-                Craft::warning('Unable to parse the site base URL: '.$site->baseUrl);
+                Craft::warning('Unable to parse the site base URL: ' . $site->baseUrl);
                 continue;
             }
 
@@ -1090,14 +1089,14 @@ class Request extends \yii\web\Request
 
             // Does the site URL specify a base path?
             $parsedPath = !empty($parsed['path']) ? $this->_normalizePath($parsed['path']) : '';
-            if ($parsedPath && strpos($fullUri.'/', $parsedPath.'/') !== 0) {
+            if ($parsedPath && strpos($fullUri . '/', $parsedPath . '/') !== 0) {
                 continue;
             }
 
             // It's a possible match!
             $scores[$i] = 8 + strlen($parsedPath);
 
-            $parsedScheme = !empty($parsed['scheme']) ? strtolower($parsed['scheme']) : 'http';
+            $parsedScheme = !empty($parsed['scheme']) ? strtolower($parsed['scheme']) : $scheme;
             $parsedPort = $parsed['port'] ?? ($parsedScheme === 'https' ? 443 : 80);
 
             // Do the ports match?
@@ -1124,9 +1123,7 @@ class Request extends \yii\web\Request
         // Sort by scores descending
         arsort($scores, SORT_NUMERIC);
         $first = ArrayHelper::firstKey($scores);
-        $site = $sites[$first];
-        $sitesService->setCurrentSite($site);
-        return $site;
+        return $sites[$first];
     }
 
     /**

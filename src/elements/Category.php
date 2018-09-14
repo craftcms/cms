@@ -116,12 +116,12 @@ class Category extends Element
 
         foreach ($groups as $group) {
             $sources[] = [
-                'key' => 'group:'.$group->id,
+                'key' => 'group:' . $group->id,
                 'label' => Craft::t('site', $group->name),
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
                 'structureId' => $group->structureId,
-                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() ? true : Craft::$app->getUser()->checkPermission('editCategories:'.$group->id),
+                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() ? true : Craft::$app->getUser()->checkPermission('editCategories:' . $group->id),
             ];
         }
 
@@ -172,7 +172,7 @@ class Category extends Element
                     'type' => NewChild::class,
                     'label' => Craft::t('app', 'Create a new child category'),
                     'maxLevels' => $structure->maxLevels,
-                    'newChildUrl' => 'categories/'.$group->handle.'/new',
+                    'newChildUrl' => 'categories/' . $group->handle . '/new',
                 ]);
             }
 
@@ -194,9 +194,18 @@ class Category extends Element
     {
         return [
             'title' => Craft::t('app', 'Title'),
+            'slug' => Craft::t('app', 'Slug'),
             'uri' => Craft::t('app', 'URI'),
-            'elements.dateCreated' => Craft::t('app', 'Date Created'),
-            'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
+            [
+                'label' => Craft::t('app', 'Date Created'),
+                'orderBy' => 'elements.dateCreated',
+                'attribute' => 'dateCreated'
+            ],
+            [
+                'label' => Craft::t('app', 'Date Updated'),
+                'orderBy' => 'elements.dateUpdated',
+                'attribute' => 'dateUpdated'
+            ],
         ];
     }
 
@@ -276,7 +285,7 @@ class Category extends Element
         $categoryGroupSiteSettings = $this->getGroup()->getSiteSettings();
 
         if (!isset($categoryGroupSiteSettings[$this->siteId])) {
-            throw new InvalidConfigException('Category’s group ('.$this->groupId.') is not enabled for site '.$this->siteId);
+            throw new InvalidConfigException('Category’s group (' . $this->groupId . ') is not enabled for site ' . $this->siteId);
         }
 
         return $categoryGroupSiteSettings[$this->siteId]->uriFormat;
@@ -310,7 +319,7 @@ class Category extends Element
      */
     public function getIsEditable(): bool
     {
-        return Craft::$app->getUser()->checkPermission('editCategories:'.$this->groupId);
+        return Craft::$app->getUser()->checkPermission('editCategories:' . $this->groupId);
     }
 
     /**
@@ -320,10 +329,10 @@ class Category extends Element
     {
         $group = $this->getGroup();
 
-        $url = UrlHelper::cpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+        $url = UrlHelper::cpUrl('categories/' . $group->handle . '/' . $this->id . ($this->slug ? '-' . $this->slug : ''));
 
-        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->getCurrentSite()->id) {
-            $url .= '/'.$this->getSite()->handle;
+        if (Craft::$app->getIsMultiSite()) {
+            $url .= '/' . $this->getSite()->handle;
         }
 
         return $url;
@@ -352,7 +361,7 @@ class Category extends Element
         $group = Craft::$app->getCategories()->getGroupById($this->groupId);
 
         if (!$group) {
-            throw new InvalidConfigException('Invalid category group ID: '.$this->groupId);
+            throw new InvalidConfigException('Invalid category group ID: ' . $this->groupId);
         }
 
         return $group;
@@ -412,7 +421,7 @@ class Category extends Element
                 $parentCategory = Craft::$app->getCategories()->getCategoryById($this->newParentId, $this->siteId);
 
                 if (!$parentCategory) {
-                    throw new Exception('Invalid category ID: '.$this->newParentId);
+                    throw new Exception('Invalid category ID: ' . $this->newParentId);
                 }
             } else {
                 $parentCategory = null;
@@ -437,7 +446,7 @@ class Category extends Element
             $record = CategoryRecord::findOne($this->id);
 
             if (!$record) {
-                throw new Exception('Invalid category ID: '.$this->id);
+                throw new Exception('Invalid category ID: ' . $this->id);
             }
         } else {
             $record = new CategoryRecord();
@@ -570,9 +579,8 @@ class Category extends Element
         $oldParentQuery = self::find();
         $oldParentQuery->ancestorOf($this);
         $oldParentQuery->ancestorDist(1);
-        $oldParentQuery->status(null);
         $oldParentQuery->siteId($this->siteId);
-        $oldParentQuery->enabledForSite(false);
+        $oldParentQuery->anyStatus();
         $oldParentQuery->select('elements.id');
         $oldParentId = $oldParentQuery->scalar();
 

@@ -47,8 +47,17 @@ class SingleSectionUriValidator extends Validator
             ->from(['{{%elements_sites}} elements_sites'])
             ->where([
                 'elements_sites.siteId' => $model->siteId,
-                'elements_sites.uri' => $model->uriFormat
             ]);
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $query->andWhere([
+                'elements_sites.uri' => $model->uriFormat,
+            ]);
+        } else {
+            $query->andWhere([
+                'lower([[elements_sites.uri]])' => mb_strtolower($model->uriFormat),
+            ]);
+        }
 
         if ($section->id) {
             $query
@@ -60,7 +69,7 @@ class SingleSectionUriValidator extends Validator
             $site = Craft::$app->getSites()->getSiteById($model->siteId);
 
             if (!$site) {
-                throw new Exception('Invalid site ID: '.$model->siteId);
+                throw new Exception('Invalid site ID: ' . $model->siteId);
             }
 
             if ($model->uriFormat === '__home__') {

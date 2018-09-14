@@ -23,6 +23,19 @@ form.utility .utility-status .progressbar {
   opacity: 0;
 }
 
+form.utility .utility-status .progressbar.has-status {
+  top: 6px;
+}
+
+form.utility .utility-status .progressbar-status {
+  margin-top: 16px;
+  @include left(0);
+  font-size: 10px;
+  color: $mediumTextColor;
+  text-align: center;
+  @include padding-left(10px);
+}
+
 /* Asset Index */
 .confirmmodal .body {
   max-height: 200px;

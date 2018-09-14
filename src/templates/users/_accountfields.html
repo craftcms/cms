@@ -9,6 +9,7 @@
         name: 'username',
         value: (user is defined ? user.username : null),
         autofocus: true,
+        autocomplete: false,
         required: (isNewUser or (currentUser.admin or user.getIsCurrent()) ? true : false),
         disabled: (isNewUser or (currentUser.admin or user.getIsCurrent()) ? false : true),
         errors: (user is defined ? user.getErrors('username') : null)
@@ -24,6 +25,7 @@
             id: 'firstName',
             name: 'firstName',
             value: user.firstName,
+            autocomplete: false,
             errors: user.getErrors('firstName'),
             autofocus: craft.app.config.general.useEmailAsUsername
         }) }}
@@ -36,6 +38,7 @@
             id: 'lastName',
             name: 'lastName',
             value: user.lastName,
+            autocomplete: false,
             errors: user.getErrors('lastName')
         }) }}
 {% if not meta %}

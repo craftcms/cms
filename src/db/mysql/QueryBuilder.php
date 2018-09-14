@@ -41,12 +41,12 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     {
         // Default to InnoDb
         if ($options === null || strpos($options, 'ENGINE=') === false) {
-            $options = ($options !== null ? $options.' ' : '').'ENGINE=InnoDb';
+            $options = ($options !== null ? $options . ' ' : '') . 'ENGINE=InnoDb';
         }
 
         // Use the default charset
         if (strpos($options, 'DEFAULT CHARSET=') === false) {
-            $options .= ' DEFAULT CHARSET='.Craft::$app->getConfig()->getDb()->charset;
+            $options .= ' DEFAULT CHARSET=' . Craft::$app->getConfig()->getDb()->charset;
         }
 
         return parent::createTable($table, $columns, $options);
@@ -62,7 +62,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      */
     public function renameSequence(string $oldName, string $newName): string
     {
-        throw new NotSupportedException($this->db->getDriverName().' does not support renaming sequences.');
+        throw new NotSupportedException($this->db->getDriverName() . ' does not support renaming sequences.');
     }
 
     /**
@@ -73,7 +73,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      */
     public function dropTableIfExists(string $table): string
     {
-        return 'DROP TABLE IF EXISTS '.$this->db->quoteTableName($table);
+        return 'DROP TABLE IF EXISTS ' . $this->db->quoteTableName($table);
     }
 
     /**
@@ -93,16 +93,16 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     {
         $column = $this->db->quoteColumnName($column);
 
-        $findPhName = self::PARAM_PREFIX.count($params);
+        $findPhName = self::PARAM_PREFIX . count($params);
         $params[$findPhName] = $find;
 
-        $replacePhName = self::PARAM_PREFIX.count($params);
+        $replacePhName = self::PARAM_PREFIX . count($params);
         $params[$replacePhName] = $replace;
 
         $sql = "UPDATE {$table} SET {$column} = REPLACE({$column}, {$findPhName}, {$replacePhName})";
         $where = $this->buildWhere($condition, $params);
 
-        return $where === '' ? $sql : $sql.' '.$where;
+        return $where === '' ? $sql : $sql . ' ' . $where;
     }
 
     /**
@@ -114,9 +114,9 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      */
     public function fixedOrder(string $column, array $values): string
     {
-        $sql = 'FIELD('.$this->db->quoteColumnName($column);
+        $sql = 'FIELD(' . $this->db->quoteColumnName($column);
         foreach ($values as $value) {
-            $sql .= ','.$this->db->quoteValue($value);
+            $sql .= ',' . $this->db->quoteValue($value);
         }
         $sql .= ')';
 

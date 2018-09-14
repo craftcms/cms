@@ -423,9 +423,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         folderId = this._getFolderIdFromSourceKey($a.data('key')),
                         $source = this._getSourceByFolderId(folderId);
 
-                    // Make sure it's not already in the target folder
+                    // Make sure it's not already in the target folder and use this single folder Id.
                     if (this._getFolderIdFromSourceKey(this._getParentSource($source).data('key')) != targetFolderId) {
                         folderIds.push(folderId);
+                        break;
                     }
                 }
 
@@ -857,10 +858,23 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 }
                 else {
                     if (doReload) {
-                        this.updateElements();
+                        this._updateAfterUpload();
                     }
                 }
             }
+        },
+
+        /**
+         * Update the elements after an upload, setting sort to dateModified descending, if not using index.
+         * 
+         * @private
+         */
+        _updateAfterUpload: function () {
+            if (this.settings.context !== 'index') {
+                this.setSortAttribute('dateModified');
+                this.setSortDirection('desc');
+            }
+            this.updateElements();
         },
 
         /**
@@ -878,7 +892,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             var finalCallback = function() {
                 this.setIndexAvailable();
                 this.progressBar.hideProgressBar();
-                this.updateElements();
+                this._updateAfterUpload();
             }.bind(this);
 
             this.progressBar.setItemCount(returnData.length);

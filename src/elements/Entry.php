@@ -16,7 +16,6 @@ use craft\elements\actions\Edit;
 use craft\elements\actions\NewChild;
 use craft\elements\actions\SetStatus;
 use craft\elements\actions\View;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
@@ -191,7 +190,7 @@ class Entry extends Element
                 foreach ($sectionsByType[$type] as $section) {
                     /** @var Section $section */
                     $source = [
-                        'key' => 'section:'.$section->id,
+                        'key' => 'section:' . $section->id,
                         'label' => Craft::t('site', $section->name),
                         'sites' => $section->getSiteIds(),
                         'data' => [
@@ -207,7 +206,7 @@ class Entry extends Element
                     if ($type == Section::TYPE_STRUCTURE) {
                         $source['defaultSort'] = ['structure', 'asc'];
                         $source['structureId'] = $section->structureId;
-                        $source['structureEditable'] = Craft::$app->getUser()->checkPermission('publishEntries:'.$section->id);
+                        $source['structureEditable'] = Craft::$app->getUser()->checkPermission('publishEntries:' . $section->id);
                     } else {
                         $source['defaultSort'] = ['postDate', 'desc'];
                     }
@@ -252,12 +251,12 @@ class Entry extends Element
             $canEdit = false;
 
             foreach ($sections as $section) {
-                $canPublishEntries = $userSessionService->checkPermission('publishEntries:'.$section->id);
+                $canPublishEntries = $userSessionService->checkPermission('publishEntries:' . $section->id);
 
                 // Only show the Set Status action if we're sure they can make changes in all the sections
                 if (!(
                     $canPublishEntries &&
-                    ($section->type == Section::TYPE_SINGLE || $userSessionService->checkPermission('publishPeerEntries:'.$section->id))
+                    ($section->type == Section::TYPE_SINGLE || $userSessionService->checkPermission('publishPeerEntries:' . $section->id))
                 )
                 ) {
                     $canSetStatus = false;
@@ -312,7 +311,7 @@ class Entry extends Element
                 // New child?
                 if (
                     $section->type == Section::TYPE_STRUCTURE &&
-                    $userSessionService->checkPermission('createEntries:'.$section->id)
+                    $userSessionService->checkPermission('createEntries:' . $section->id)
                 ) {
                     $structure = Craft::$app->getStructures()->getStructureById($section->structureId);
 
@@ -321,15 +320,15 @@ class Entry extends Element
                             'type' => NewChild::class,
                             'label' => Craft::t('app', 'Create a new child entry'),
                             'maxLevels' => $structure->maxLevels,
-                            'newChildUrl' => 'entries/'.$section->handle.'/new',
+                            'newChildUrl' => 'entries/' . $section->handle . '/new',
                         ]);
                     }
                 }
 
                 // Delete?
                 if (
-                    $userSessionService->checkPermission('deleteEntries:'.$section->id) &&
-                    $userSessionService->checkPermission('deletePeerEntries:'.$section->id)
+                    $userSessionService->checkPermission('deleteEntries:' . $section->id) &&
+                    $userSessionService->checkPermission('deletePeerEntries:' . $section->id)
                 ) {
                     $actions[] = Craft::$app->getElements()->createAction([
                         'type' => Delete::class,
@@ -350,11 +349,20 @@ class Entry extends Element
     {
         return [
             'title' => Craft::t('app', 'Title'),
+            'slug' => Craft::t('app', 'Slug'),
             'uri' => Craft::t('app', 'URI'),
             'postDate' => Craft::t('app', 'Post Date'),
             'expiryDate' => Craft::t('app', 'Expiry Date'),
-            'elements.dateCreated' => Craft::t('app', 'Date Created'),
-            'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
+            [
+                'label' => Craft::t('app', 'Date Created'),
+                'orderBy' => 'elements.dateCreated',
+                'attribute' => 'dateCreated'
+            ],
+            [
+                'label' => Craft::t('app', 'Date Updated'),
+                'orderBy' => 'elements.dateUpdated',
+                'attribute' => 'dateUpdated'
+            ],
         ];
     }
 
@@ -584,7 +592,7 @@ class Entry extends Element
         $sectionSiteSettings = $this->getSection()->getSiteSettings();
 
         if (!isset($sectionSiteSettings[$this->siteId])) {
-            throw new InvalidConfigException('Entry’s section ('.$this->sectionId.') is not enabled for site '.$this->siteId);
+            throw new InvalidConfigException('Entry’s section (' . $this->sectionId . ') is not enabled for site ' . $this->siteId);
         }
 
         return $sectionSiteSettings[$this->siteId]->uriFormat;
@@ -625,7 +633,7 @@ class Entry extends Element
      */
     public function getRef()
     {
-        return $this->getSection()->handle.'/'.$this->slug;
+        return $this->getSection()->handle . '/' . $this->slug;
     }
 
     /**
@@ -657,7 +665,7 @@ class Entry extends Element
         }
 
         if (($section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
-            throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
+            throw new InvalidConfigException('Invalid section ID: ' . $this->sectionId);
         }
 
         return $section;
@@ -691,7 +699,7 @@ class Entry extends Element
         $sectionEntryTypes = ArrayHelper::index($this->getSection()->getEntryTypes(), 'id');
 
         if (!isset($sectionEntryTypes[$this->typeId])) {
-            throw new InvalidConfigException('Invalid entry type ID: '.$this->typeId);
+            throw new InvalidConfigException('Invalid entry type ID: ' . $this->typeId);
         }
 
         return $sectionEntryTypes[$this->typeId];
@@ -722,7 +730,7 @@ class Entry extends Element
         }
 
         if (($this->_author = Craft::$app->getUsers()->getUserById($this->authorId)) === null) {
-            throw new InvalidConfigException('Invalid author ID: '.$this->authorId);
+            throw new InvalidConfigException('Invalid author ID: ' . $this->authorId);
         }
 
         return $this->_author;
@@ -780,9 +788,10 @@ class Entry extends Element
     public function getIsEditable(): bool
     {
         return (
-            Craft::$app->getUser()->checkPermission('publishEntries:'.$this->sectionId) && (
+            Craft::$app->getUser()->checkPermission('publishEntries:' . $this->sectionId) && (
+                !$this->authorId ||
                 $this->authorId == Craft::$app->getUser()->getIdentity()->id ||
-                Craft::$app->getUser()->checkPermission('publishPeerEntries:'.$this->sectionId) ||
+                Craft::$app->getUser()->checkPermission('publishPeerEntries:' . $this->sectionId) ||
                 $this->getSection()->type == Section::TYPE_SINGLE
             )
         );
@@ -806,10 +815,10 @@ class Entry extends Element
         $section = $this->getSection();
 
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
-        $url = UrlHelper::cpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+        $url = UrlHelper::cpUrl('entries/' . $section->handle . '/' . $this->id . ($this->slug ? '-' . $this->slug : ''));
 
-        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->getCurrentSite()->id) {
-            $url .= '/'.$this->getSite()->handle;
+        if (Craft::$app->getIsMultiSite()) {
+            $url .= '/' . $this->getSite()->handle;
         }
 
         return $url;
@@ -921,6 +930,8 @@ EOD;
     {
         $entryType = $this->getType();
         if (!$entryType->hasTitleField) {
+            // Make sure that the locale has been loaded in case the title format has any Date/Time fields
+            Craft::$app->getLocale();
             // Set Craft to the entry's site's language, in case the title format has any static translations
             $language = Craft::$app->language;
             Craft::$app->language = $this->getSite()->language;
@@ -964,7 +975,7 @@ EOD;
                 $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, $this->siteId);
 
                 if (!$parentEntry) {
-                    throw new Exception('Invalid entry ID: '.$this->newParentId);
+                    throw new Exception('Invalid entry ID: ' . $this->newParentId);
                 }
             } else {
                 $parentEntry = null;
@@ -984,6 +995,8 @@ EOD;
         if ($this->enabled && !$this->postDate) {
             // Default the post date to the current date/time
             $this->postDate = DateTimeHelper::currentUTCDateTime();
+            // ...without the seconds
+            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
         }
 
         return parent::beforeSave($isNew);
@@ -1002,7 +1015,7 @@ EOD;
             $record = EntryRecord::findOne($this->id);
 
             if (!$record) {
-                throw new Exception('Invalid entry ID: '.$this->id);
+                throw new Exception('Invalid entry ID: ' . $this->id);
             }
         } else {
             $record = new EntryRecord();
@@ -1104,9 +1117,8 @@ EOD;
         $oldParentQuery = self::find();
         $oldParentQuery->ancestorOf($this);
         $oldParentQuery->ancestorDist(1);
-        $oldParentQuery->status(null);
         $oldParentQuery->siteId($this->siteId);
-        $oldParentQuery->enabledForSite(false);
+        $oldParentQuery->anyStatus();
         $oldParentQuery->select('elements.id');
         $oldParentId = $oldParentQuery->scalar();
 

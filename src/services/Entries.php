@@ -52,9 +52,7 @@ class Entries extends Component
         $query->id($entryId);
         $query->structureId($structureId);
         $query->siteId($siteId);
-        $query->status(null);
-        $query->enabledForSite(false);
-
+        $query->anyStatus();
         return $query->one();
     }
 }

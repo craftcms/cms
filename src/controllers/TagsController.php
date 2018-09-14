@@ -161,9 +161,9 @@ class TagsController extends Controller
         $this->requireAcceptsJson();
         $this->requireAdmin();
 
-        $sectionId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-        Craft::$app->getTags()->deleteTagGroupById($sectionId);
+        Craft::$app->getTags()->deleteTagGroupById($groupId);
 
         return $this->asJson(['success' => true]);
     }
@@ -185,7 +185,7 @@ class TagsController extends Controller
 
         $tags = Tag::find()
             ->groupId($tagGroupId)
-            ->title(Db::escapeParam($search).'*')
+            ->title(Db::escapeParam($search) . '*')
             ->where(['not', ['elements.id' => $excludeIds]])
             ->all();
 
@@ -243,7 +243,7 @@ class TagsController extends Controller
 
         $groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
         if (($group = Craft::$app->getTags()->getTagGroupById($groupId)) === null) {
-            throw new BadRequestHttpException('Invalid tag group ID: '.$groupId);
+            throw new BadRequestHttpException('Invalid tag group ID: ' . $groupId);
         }
 
         $tag = new Tag();

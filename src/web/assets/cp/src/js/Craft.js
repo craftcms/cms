@@ -337,7 +337,10 @@ $.extend(Craft,
                 data = {};
             }
 
-            var headers = {};
+            var headers = {
+                'X-Registered-Asset-Bundles': Object.keys(Craft.registeredAssetBundles).join(','),
+                'X-Registered-Js-Files': Object.keys(Craft.registeredJsFiles).join(',')
+            };
 
             if (Craft.csrfTokenValue && Craft.csrfTokenName) {
                 headers['X-CSRF-Token'] = Craft.csrfTokenValue;

@@ -7,8 +7,6 @@
 
 namespace craft\i18n;
 
-use Craft;
-
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

@@ -9,6 +9,7 @@ namespace craft\base;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\StringHelper;
 
 /**
  * Model base class.
@@ -18,6 +19,11 @@ use craft\helpers\DateTimeHelper;
  */
 abstract class Model extends \yii\base\Model
 {
+    // Traits
+    // =========================================================================
+
+    use ClonefixTrait;
+
     // Public Methods
     // =========================================================================
 
@@ -88,14 +94,43 @@ abstract class Model extends \yii\base\Model
     public function addModelErrors(\yii\base\Model $model, string $attrPrefix = '')
     {
         if ($attrPrefix !== '') {
-            $attrPrefix = rtrim($attrPrefix, '.').'.';
+            $attrPrefix = rtrim($attrPrefix, '.') . '.';
         }
 
         foreach ($model->getErrors() as $attribute => $errors) {
             foreach ($errors as $error) {
-                $this->addError($attrPrefix.$attribute, $error);
+                $this->addError($attrPrefix . $attribute, $error);
             }
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasErrors($attribute = null)
+    {
+        $includeNested = $attribute !== null && StringHelper::endsWith($attribute, '.*');
+
+        if ($includeNested) {
+            $attribute = StringHelper::removeRight($attribute, '.*');
+        }
+
+        if (parent::hasErrors($attribute)) {
+            return true;
+        }
+
+        if ($includeNested) {
+            foreach ($this->getErrors() as $attr => $errors) {
+                if (strpos($attr, $attribute . '.') === 0) {
+                    return true;
+                }
+                if (strpos($attr, $attribute . '[') === 0) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     // Deprecated Methods

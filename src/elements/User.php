@@ -182,7 +182,7 @@ class User extends Element implements IdentityInterface
 
                 foreach ($groups as $group) {
                     $sources[] = [
-                        'key' => 'group:'.$group->id,
+                        'key' => 'group:' . $group->id,
                         'label' => Craft::t('site', $group->name),
                         'criteria' => ['groupId' => $group->id],
                         'hasThumbs' => true
@@ -242,8 +242,16 @@ class User extends Element implements IdentityInterface
                 'firstName' => Craft::t('app', 'First Name'),
                 'lastName' => Craft::t('app', 'Last Name'),
                 'lastLoginDate' => Craft::t('app', 'Last Login'),
-                'elements.dateCreated' => Craft::t('app', 'Date Created'),
-                'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
+                [
+                    'label' => Craft::t('app', 'Date Created'),
+                    'orderBy' => 'elements.dateCreated',
+                    'attribute' => 'dateCreated'
+                ],
+                [
+                    'label' => Craft::t('app', 'Date Updated'),
+                    'orderBy' => 'elements.dateUpdated',
+                    'attribute' => 'dateUpdated'
+                ],
             ];
         } else {
             $attributes = [
@@ -252,8 +260,16 @@ class User extends Element implements IdentityInterface
                 'lastName' => Craft::t('app', 'Last Name'),
                 'email' => Craft::t('app', 'Email'),
                 'lastLoginDate' => Craft::t('app', 'Last Login'),
-                'elements.dateCreated' => Craft::t('app', 'Date Created'),
-                'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
+                [
+                    'label' => Craft::t('app', 'Date Created'),
+                    'orderBy' => 'elements.dateCreated',
+                    'attribute' => 'dateCreated'
+                ],
+                [
+                    'label' => Craft::t('app', 'Date Updated'),
+                    'orderBy' => 'elements.dateUpdated',
+                    'attribute' => 'dateUpdated'
+                ],
             ];
         }
 
@@ -334,7 +350,7 @@ class User extends Element implements IdentityInterface
     {
         $user = static::find()
             ->id($id)
-            ->status(null)
+            ->anyStatus()
             ->addSelect(['users.password'])
             ->one();
 
@@ -605,6 +621,22 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public function attributeLabels()
+    {
+        $labels = parent::attributeLabels();
+        $labels['currentPassword'] = Craft::t('app', 'Current Password');
+        $labels['email'] = Craft::t('app', 'Email');
+        $labels['firstName'] = Craft::t('app', 'First Name');
+        $labels['lastName'] = Craft::t('app', 'Last Name');
+        $labels['newPassword'] = Craft::t('app', 'New Password');
+        $labels['password'] = Craft::t('app', 'Password');
+        $labels['username'] = Craft::t('app', 'Username');
+        return $labels;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
@@ -621,7 +653,8 @@ class User extends Element implements IdentityInterface
             $rules[] = [
                 ['username', 'email'],
                 UniqueValidator::class,
-                'targetClass' => UserRecord::class
+                'targetClass' => UserRecord::class,
+                'caseInsensitive' => true,
             ];
 
             $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
@@ -658,8 +691,18 @@ class User extends Element implements IdentityInterface
     public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator)
     {
         $query = self::find()
-            ->where(['email' => $this->unverifiedEmail])
-            ->status(null);
+            ->anyStatus();
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $query->where([
+                'email' => $this->unverifiedEmail,
+            ]);
+        } else {
+            // Postgres is case-sensitive
+            $query->where([
+                'lower([[email]])' => mb_strtolower($this->unverifiedEmail),
+            ]);
+        }
 
         if ($this->id) {
             $query->andWhere(['not', ['elements.id' => $this->id]]);
@@ -1056,7 +1099,7 @@ class User extends Element implements IdentityInterface
         }
 
         if (Craft::$app->getEdition() === Craft::Pro) {
-            return UrlHelper::cpUrl('users/'.$this->id);
+            return UrlHelper::cpUrl('users/' . $this->id);
         }
 
         return null;
@@ -1150,7 +1193,7 @@ class User extends Element implements IdentityInterface
         }
 
         if (($this->_photo = Craft::$app->getAssets()->getAssetById($this->photoId)) === null) {
-            throw new InvalidConfigException('Invalid photo ID: '.$this->photoId);
+            throw new InvalidConfigException('Invalid photo ID: ' . $this->photoId);
         }
 
         return $this->_photo;
@@ -1217,7 +1260,7 @@ class User extends Element implements IdentityInterface
             $record = UserRecord::findOne($this->id);
 
             if (!$record) {
-                throw new Exception('Invalid user ID: '.$this->id);
+                throw new Exception('Invalid user ID: ' . $this->id);
             }
 
             if ($this->locked != $record->locked) {
@@ -1391,7 +1434,7 @@ class User extends Element implements IdentityInterface
             $requestUserAgent = Craft::$app->getRequest()->getUserAgent();
 
             if ($userAgent !== $requestUserAgent) {
-                Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent ('.$userAgent.') does not match the current request’s ('.$requestUserAgent.').', __METHOD__);
+                Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent (' . $userAgent . ') does not match the current request’s (' . $requestUserAgent . ').', __METHOD__);
 
                 return false;
             }

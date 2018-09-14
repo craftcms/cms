@@ -40,7 +40,7 @@ class Component
             $config = [];
         } else {
             if (empty($config['type'])) {
-                throw new InvalidConfigException('The config passed into Component::createComponent() did not specify a class: '.Json::encode($config));
+                throw new InvalidConfigException('The config passed into Component::createComponent() did not specify a class: ' . Json::encode($config));
             }
 
             $class = $config['type'];

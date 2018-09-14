@@ -165,7 +165,7 @@ class Sections extends Component
         $this->_editableSectionIds = [];
 
         foreach ($this->getAllSectionIds() as $sectionId) {
-            if (Craft::$app->getUser()->checkPermission('editEntries:'.$sectionId)) {
+            if (Craft::$app->getUser()->checkPermission('editEntries:' . $sectionId)) {
                 $this->_editableSectionIds[] = $sectionId;
             }
         }
@@ -773,14 +773,15 @@ class Sections extends Component
             }
 
             // Delete the entries
-            $entries = Entry::find()
-                ->status(null)
-                ->enabledForSite(false)
-                ->sectionId($section->id)
-                ->all();
-
-            foreach ($entries as $entry) {
-                Craft::$app->getElements()->deleteElement($entry);
+            // (loop through all the sites in case there are any lingering entries from unsupported sites)
+            $entryQuery = Entry::find()
+                ->anyStatus()
+                ->sectionId($section->id);
+            $elementsService = Craft::$app->getElements();
+            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                foreach ($entryQuery->siteId($siteId)->each() as $entry) {
+                    $elementsService->deleteElement($entry);
+                }
             }
 
             // Delete the structure, if there is one
@@ -1026,7 +1027,7 @@ class Sections extends Component
 
                 Craft::$app->getQueue()->push(new ResaveElements([
                     'description' => Craft::t('app', 'Resaving {type} entries', [
-                        'type' => $entryType->name,
+                        'type' => ($section->type !== Section::TYPE_SINGLE ? $section->name . ' - ' : '') . $entryType->name,
                     ]),
                     'elementType' => Entry::class,
                     'criteria' => [
@@ -1148,14 +1149,15 @@ class Sections extends Component
             }
 
             // Delete the entries
-            $entries = Entry::find()
-                ->status(null)
-                ->enabledForSite(false)
-                ->typeId($entryType->id)
-                ->all();
-
-            foreach ($entries as $entry) {
-                Craft::$app->getElements()->deleteElement($entry);
+            // (loop through all the sites in case there are any lingering entries from unsupported sites)
+            $entryQuery = Entry::find()
+                ->anyStatus()
+                ->typeId($entryType->id);
+            $elementsService = Craft::$app->getElements();
+            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                foreach ($entryQuery->siteId($siteId)->each() as $entry) {
+                    $elementsService->deleteElement($entry);
+                }
             }
 
             // Delete the entry type.
@@ -1247,7 +1249,7 @@ class Sections extends Component
         $entryTypes = ArrayHelper::index($this->getEntryTypesBySectionId($section->id), 'id');
 
         if (empty($entryTypes)) {
-            throw new Exception('Couldn’t find any entry types for the section: '.$section->id);
+            throw new Exception('Couldn’t find any entry types for the section: ' . $section->id);
         }
 
         // Get/save the entry
@@ -1261,8 +1263,7 @@ class Sections extends Component
                 $entry = Entry::find()
                     ->id($data['id'])
                     ->siteId($data['siteId'])
-                    ->status(null)
-                    ->enabledForSite(false)
+                    ->anyStatus()
                     ->one();
                 break;
             }
@@ -1333,8 +1334,7 @@ class Sections extends Component
             /** @noinspection PhpUndefinedVariableInspection */
             $query->siteId(ArrayHelper::firstKey($allOldSiteSettingsRecords));
             $query->sectionId($section->id);
-            $query->status(null);
-            $query->enabledForSite(false);
+            $query->anyStatus();
             $query->orderBy('elements.id');
             $query->withStructure(false);
             /** @var Entry $entry */

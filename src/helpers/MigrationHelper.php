@@ -167,10 +167,10 @@ class MigrationHelper
             $transaction = $db->beginTransaction();
             try {
                 if ($migration !== null) {
-                    $migration->renameSequence($rawOldName.'_id_seq', $rawNewName.'_id_seq');
+                    $migration->renameSequence($rawOldName . '_id_seq', $rawNewName . '_id_seq');
                 } else {
                     $db->createCommand()
-                        ->renameSequence($rawOldName.'_id_seq', $rawNewName.'_id_seq')
+                        ->renameSequence($rawOldName . '_id_seq', $rawNewName . '_id_seq')
                         ->execute();
                 }
                 $transaction->commit();

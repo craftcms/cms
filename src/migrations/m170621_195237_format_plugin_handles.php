@@ -16,7 +16,7 @@ class m170621_195237_format_plugin_handles extends Migration
      */
     public function safeUp()
     {
-        $path = Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'craftcms'.DIRECTORY_SEPARATOR.'plugins.php';
+        $path = Craft::$app->getVendorPath() . DIRECTORY_SEPARATOR . 'craftcms' . DIRECTORY_SEPARATOR . 'plugins.php';
 
         if (file_exists($path)) {
             /** @var array $plugins */
@@ -36,8 +36,8 @@ class m170621_195237_format_plugin_handles extends Migration
                     $this->update('{{%plugins}}', ['handle' => $newHandle], ['handle' => $oldHandle]);
 
                     // Update user permissions
-                    $oldName = 'accessplugin-'.strtolower($oldHandle);
-                    $newName = 'accessplugin-'.$newHandle;
+                    $oldName = 'accessplugin-' . strtolower($oldHandle);
+                    $newName = 'accessplugin-' . $newHandle;
                     $this->update('{{%userpermissions}}', ['name' => $newName], ['name' => $oldName]);
                 }
             }

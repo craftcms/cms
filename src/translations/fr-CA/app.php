@@ -1196,7 +1196,7 @@ return [
 
 Merci d’avoir créé un compte sur {{siteName}} ! Afin d’activer ce compte, merci de cliquer sur le lien suivant :
 
-{{link}}
+<{{link}}>
 
 Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
     'account_activation_heading' => 'Quand quelqu’un crée un compte :',
@@ -1214,7 +1214,7 @@ Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
 
 Pour réinitialiser votre mot de passe pour {{siteName}}, merci de cliquer sur le lien suivant :
 
-{{link}}
+<{{link}}>
 
 Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
     'forgot_password_heading' => 'Quand quelqu’un a oublié son mot de passe :',
@@ -1248,7 +1248,7 @@ Voici les paramètres que vous avez utilisés :
 
 Merci de vérifier votre nouveau courriel en cliquant sur le lien suivant :
 
-{{link}}
+<{{link}}>
 
 Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
     'verify_new_email_heading' => 'Quand quelqu’un modifie son courriel :',

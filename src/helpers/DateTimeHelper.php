@@ -151,8 +151,8 @@ class DateTimeHelper
             if (!empty($dt['time'])) {
                 $timePickerPhpFormat = $locale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
                 // Replace the localized "AM" and "PM"
-                if (preg_match('/(.*)('.preg_quote($locale->getAMName(), '/').'|'.preg_quote($locale->getPMName(), '/').')(.*)/u', $dt['time'], $matches)) {
-                    $dt['time'] = $matches[1].$matches[3];
+                if (preg_match('/(.*)(' . preg_quote($locale->getAMName(), '/') . '|' . preg_quote($locale->getPMName(), '/') . ')(.*)/u', $dt['time'], $matches)) {
+                    $dt['time'] = $matches[1] . $matches[3];
 
                     if ($matches[2] == $locale->getAMName()) {
                         $dt['time'] .= 'AM';
@@ -160,16 +160,16 @@ class DateTimeHelper
                         $dt['time'] .= 'PM';
                     }
 
-                    $timePickerPhpFormat = str_replace('A', '', $timePickerPhpFormat).'A';
+                    $timePickerPhpFormat = str_replace('A', '', $timePickerPhpFormat) . 'A';
                 }
 
-                $date .= ' '.$dt['time'];
-                $format .= ' '.$timePickerPhpFormat;
+                $date .= ' ' . $dt['time'];
+                $format .= ' ' . $timePickerPhpFormat;
             }
 
             // Add the timezone
             $format .= ' e';
-            $date .= ' '.$timeZone;
+            $date .= ' ' . $timeZone;
         } else {
             $date = trim((string)$value);
 
@@ -192,16 +192,16 @@ class DateTimeHelper
                 )?$/x', $date, $m)) {
                 $format = 'Y-m-d H:i:s';
 
-                $date = $m['year'].
-                    '-'.(!empty($m['mon']) ? sprintf('%02d', $m['mon']) : '01').
-                    '-'.(!empty($m['day']) ? sprintf('%02d', $m['day']) : '01').
-                    ' '.(!empty($m['hour']) ? sprintf('%02d', $m['hour']) : '00').
-                    ':'.(!empty($m['min']) ? $m['min'] : '00').
-                    ':'.(!empty($m['sec']) ? $m['sec'] : '00');
+                $date = $m['year'] .
+                    '-' . (!empty($m['mon']) ? sprintf('%02d', $m['mon']) : '01') .
+                    '-' . (!empty($m['day']) ? sprintf('%02d', $m['day']) : '01') .
+                    ' ' . (!empty($m['hour']) ? sprintf('%02d', $m['hour']) : '00') .
+                    ':' . (!empty($m['min']) ? $m['min'] : '00') .
+                    ':' . (!empty($m['sec']) ? $m['sec'] : '00');
 
                 if (!empty($m['ampm'])) {
                     $format .= ' A';
-                    $date .= ' '.$m['ampm'];
+                    $date .= ' ' . $m['ampm'];
                 }
 
                 // Was a time zone specified?
@@ -225,7 +225,7 @@ class DateTimeHelper
             }
         }
 
-        $dt = DateTime::createFromFormat('!'.$format, $date);
+        $dt = DateTime::createFromFormat('!' . $format, $date);
 
         if ($dt !== false && $setToSystemTimeZone) {
             $dt->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()));
@@ -362,7 +362,7 @@ class DateTimeHelper
      */
     public static function translateDate(string $str, string $language = null): string
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, __METHOD__.' is deprecated. Use craft\i18n\Formatter::asDate() instead.');
+        Craft::$app->getDeprecator()->log(__METHOD__, __METHOD__ . ' is deprecated. Use craft\i18n\Formatter::asDate() instead.');
 
         if ($language === null) {
             $language = Craft::$app->language;
@@ -538,7 +538,7 @@ class DateTimeHelper
             return false;
         }
 
-        $earliestTimestamp = strtotime('-'.$timeInterval);
+        $earliestTimestamp = strtotime('-' . $timeInterval);
 
         return ($timestamp >= $earliestTimestamp);
     }
@@ -639,7 +639,18 @@ class DateTimeHelper
             $timeComponents[] = $dateInterval->s == 1 ? Craft::t('app', '1 second') : Craft::t('app', '{num} seconds', ['num' => $dateInterval->s]);
         }
 
-        return implode(', ', $timeComponents);
+        $last = array_pop($timeComponents);
+        if (!empty($timeComponents)) {
+            $string = implode(', ', $timeComponents);
+            if (count($timeComponents) > 1) {
+                $string .= ',';
+            }
+            $string .= ' ' . Craft::t('app', 'and') . ' ';
+        } else {
+            $string = '';
+        }
+        $string .= $last;
+        return $string;
     }
 
     // Private Methods
@@ -671,10 +682,10 @@ class DateTimeHelper
                 array_combine($sourceLocale->getMonthNames(Locale::LENGTH_MEDIUM), $targetLocale->getMonthNames(Locale::LENGTH_MEDIUM)),
                 array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_MEDIUM), $targetLocale->getWeekDayNames(Locale::LENGTH_MEDIUM)),
                 [
-                    'AM' => StringHelper::toUpperCase($amName),
-                    'PM' => StringHelper::toUpperCase($pmName),
-                    'am' => StringHelper::toLowerCase($amName),
-                    'pm' => StringHelper::toLowerCase($pmName)
+                    'AM' => mb_strtoupper($amName),
+                    'PM' => mb_strtoupper($pmName),
+                    'am' => mb_strtolower($amName),
+                    'pm' => mb_strtolower($pmName)
                 ]
             );
         }

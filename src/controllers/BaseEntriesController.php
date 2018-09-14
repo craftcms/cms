@@ -35,20 +35,20 @@ abstract class BaseEntriesController extends Controller
     protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false)
     {
         $userSessionService = Craft::$app->getUser();
-        $permissionSuffix = ':'.$entry->sectionId;
+        $permissionSuffix = ':' . $entry->sectionId;
 
         if (Craft::$app->getIsMultiSite()) {
             // Make sure they have access to this site
-            $this->requirePermission('editSite:'.$entry->siteId);
+            $this->requirePermission('editSite:' . $entry->siteId);
         }
 
         // Make sure the user is allowed to edit entries in this section
-        $this->requirePermission('editEntries'.$permissionSuffix);
+        $this->requirePermission('editEntries' . $permissionSuffix);
 
         // Is it a new entry?
         if (!$entry->id || $duplicate) {
             // Make sure they have permission to create new entries in this section
-            $this->requirePermission('createEntries'.$permissionSuffix);
+            $this->requirePermission('createEntries' . $permissionSuffix);
         } else {
             switch (get_class($entry)) {
                 case Entry::class:
@@ -57,7 +57,7 @@ abstract class BaseEntriesController extends Controller
                         $entry->authorId != $userSessionService->getIdentity()->id &&
                         $entry->getSection()->type !== Section::TYPE_SINGLE
                     ) {
-                        $this->requirePermission('editPeerEntries'.$permissionSuffix);
+                        $this->requirePermission('editPeerEntries' . $permissionSuffix);
                     }
 
                     break;
@@ -66,7 +66,7 @@ abstract class BaseEntriesController extends Controller
                     // If it's another user's draft, make sure they have permission to edit those
                     /** @var EntryDraft $entry */
                     if (!$entry->creatorId || $entry->creatorId != $userSessionService->getIdentity()->id) {
-                        $this->requirePermission('editPeerEntryDrafts'.$permissionSuffix);
+                        $this->requirePermission('editPeerEntryDrafts' . $permissionSuffix);
                     }
 
                     break;

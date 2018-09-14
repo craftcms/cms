@@ -1196,7 +1196,7 @@ return [
 
 danke für das Einrichten eines Benutzerkontos auf {{siteName}}. Um Ihr Konto zu aktivieren, klicken Sie bitte auf den folgenden Link:
 
-{{link}}
+<{{link}}>
 
 Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'account_activation_heading' => 'Wenn jemand ein Benutzerkonto anlegt:',
@@ -1214,7 +1214,7 @@ Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
 
 um Ihr Passwort für {{siteName}} zurückzusetzen, klicken Sie bitte auf den folgenden Link:
 
-{{link}}
+<{{link}}>
 
 Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'forgot_password_heading' => 'Wenn jemand sein Passwort vergisst:',
@@ -1248,7 +1248,7 @@ Hier sind die von Ihnen verwendeten Einstellungen:
 
 bitte bestätigen Sie Ihre neue E-Mail-Adresse, indem Sie auf folgenden Link klicken:
 
-{{link}}
+<{{link}}>
 
 Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'verify_new_email_heading' => 'Wenn jemand seine Emailadresse ändert:',

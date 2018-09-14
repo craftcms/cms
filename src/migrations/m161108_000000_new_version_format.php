@@ -35,13 +35,13 @@ class m161108_000000_new_version_format extends Migration
 
         switch ($infoRow['track']) {
             case 'beta':
-                $version .= '.0-beta.'.$infoRow['build'];
+                $version .= '.0-beta.' . $infoRow['build'];
                 break;
             case 'dev':
-                $version .= '.0-dev.'.$infoRow['build'];
+                $version .= '.0-dev.' . $infoRow['build'];
                 break;
             default:
-                $version .= '.'.$infoRow['build'];
+                $version .= '.' . $infoRow['build'];
         }
 
         $this->update('{{%info}}', ['version' => $version]);

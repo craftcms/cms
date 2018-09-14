@@ -33,20 +33,20 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
      */
     private function _handleDupes(string $type)
     {
-        echo '    > looking for duplicate user group '.$type.'s ...';
+        echo '    > looking for duplicate user group ' . $type . 's ...';
         // Get any duplicates.
         $duplicates = (new Query())
             ->select($type)
             ->from(['{{%usergroups}}'])
             ->groupBy([$type])
-            ->having('count('.$this->db->quoteValue($type).') > '.$this->db->quoteValue('1'))
+            ->having('count(' . $this->db->quoteValue($type) . ') > ' . $this->db->quoteValue('1'))
             ->all($this->db);
 
         if (!empty($duplicates)) {
-            echo ' found '.count($duplicates)."\n";
+            echo ' found ' . count($duplicates) . "\n";
 
             foreach ($duplicates as $duplicate) {
-                echo '    > fixing duplicate "'.$duplicate[$type].'" user group '.$type."s\n";
+                echo '    > fixing duplicate "' . $duplicate[$type] . '" user group ' . $type . "s\n";
 
                 $rows = (new Query())
                     ->from(['{{%usergroups}}'])
@@ -65,9 +65,9 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
                         // Let's give this 100 tries.
                         for ($counter = 1; $counter <= 100; $counter++) {
                             if ($type === 'handle') {
-                                $newString = $duplicate[$type].$counter;
+                                $newString = $duplicate[$type] . $counter;
                             } else {
-                                $newString = $duplicate[$type].' '.$counter;
+                                $newString = $duplicate[$type] . ' ' . $counter;
                             }
 
                             $exists = (new Query())

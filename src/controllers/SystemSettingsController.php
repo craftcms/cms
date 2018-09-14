@@ -10,9 +10,11 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\MailerHelper;
 use craft\helpers\UrlHelper;
+use craft\mail\Mailer;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\TransportAdapterInterface;
@@ -20,6 +22,7 @@ use craft\models\Info;
 use craft\models\MailSettings;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
+use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use yii\base\Exception;
 use yii\web\NotFoundHttpException;
@@ -80,7 +83,7 @@ class SystemSettingsController extends Controller
                 $format = sprintf('%+d', $hour);
 
                 if ($minutes) {
-                    $format .= ':'.sprintf('%02u', $minutes);
+                    $format .= ':' . sprintf('%02u', $minutes);
                 }
             } else {
                 $format = '';
@@ -90,7 +93,7 @@ class SystemSettingsController extends Controller
             $timezoneIds[] = $timezoneId;
             $timezoneOptions[] = [
                 'value' => $timezoneId,
-                'label' => 'UTC'.$format.($abbr !== 'UTC' ? " ({$abbr})" : '').($timezoneId !== 'UTC' ? ' – '.$timezoneId : '')
+                'label' => 'UTC' . $format . ($abbr !== 'UTC' ? " ({$abbr})" : '') . ($timezoneId !== 'UTC' ? ' – ' . $timezoneId : '')
             ];
         }
 
@@ -253,18 +256,19 @@ class SystemSettingsController extends Controller
         $adapterIsValid = $adapter->validate();
 
         if ($settingsIsValid && $adapterIsValid) {
-            $mailer = MailerHelper::createMailer($settings);
+            /** @var Mailer $mailer */
+            $mailer = Craft::createObject(App::mailerConfig($settings));
 
             // Compose the settings list as HTML
             $settingsList = '';
 
             foreach (['fromEmail', 'fromName', 'template'] as $name) {
                 if (!empty($settings->$name)) {
-                    $settingsList .= '- **'.$settings->getAttributeLabel($name).':** '.$settings->$name."\n";
+                    $settingsList .= '- **' . $settings->getAttributeLabel($name) . ':** ' . $settings->$name . "\n";
                 }
             }
 
-            $settingsList .= '- **'.Craft::t('app', 'Transport Type').':** '.$adapter::displayName()."\n";
+            $settingsList .= '- **' . Craft::t('app', 'Transport Type') . ':** ' . $adapter::displayName() . "\n";
 
             $security = Craft::$app->getSecurity();
 
@@ -283,6 +287,9 @@ class SystemSettingsController extends Controller
 
             try {
                 $emailSent = $message->send();
+            } catch (TemplateLoaderException $e) {
+                $settings->addError('template', $e->getMessage());
+                $emailSent = false;
             } catch (\Throwable $e) {
                 Craft::$app->getErrorHandler()->logException($e);
                 $emailSent = false;
@@ -383,7 +390,7 @@ class SystemSettingsController extends Controller
         $settings->fromName = $request->getBodyParam('fromName');
         $settings->template = $request->getBodyParam('template');
         $settings->transportType = $request->getBodyParam('transportType');
-        $settings->transportSettings = $request->getBodyParam('transportTypes.'.$settings->transportType);
+        $settings->transportSettings = $request->getBodyParam('transportTypes.' . $settings->transportType);
 
         return $settings;
     }

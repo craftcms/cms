@@ -163,7 +163,7 @@ class EntryRevisions extends Component
             foreach ($allDrafts as $draft) {
                 if (
                     ($draft->creatorId && $draft->creatorId == $user->id) ||
-                    $user->can('editPeerEntryDrafts:'.$draft->sectionId)
+                    $user->can('editPeerEntryDrafts:' . $draft->sectionId)
                 ) {
                     $editableDrafts[] = $draft;
                 }
@@ -410,10 +410,24 @@ class EntryRevisions extends Component
     public function saveVersion(Entry $entry): bool
     {
         // Get the total number of existing versions for this entry/site
-        $totalVersions = (new Query())
+        $versionQuery = (new Query())
             ->from(['{{%entryversions}}'])
-            ->where(['entryId' => $entry->id, 'siteId' => $entry->siteId])
-            ->count('[[id]]');
+            ->where(['entryId' => $entry->id, 'siteId' => $entry->siteId]);
+        $totalVersions = $versionQuery->count('[[id]]');
+        $revisionData = $this->_getRevisionData($entry);
+
+        if ($totalVersions) {
+            $lastVersionData = $versionQuery
+                ->select(['data'])
+                ->orderBy(['id' => SORT_DESC])
+                ->scalar();
+            $lastVersionData = Json::decode($lastVersionData);
+
+            // If nothing changed, then we're done here
+            if (!$this->compareRevisionData($lastVersionData, $revisionData)) {
+                return true;
+            }
+        }
 
         $versionRecord = new EntryVersionRecord();
         $versionRecord->entryId = $entry->id;
@@ -421,7 +435,7 @@ class EntryRevisions extends Component
         $versionRecord->creatorId = $entry->revisionCreatorId ?? Craft::$app->getUser()->getIdentity()->id ?? $entry->authorId;
         $versionRecord->siteId = $entry->siteId;
         $versionRecord->num = $totalVersions + 1;
-        $versionRecord->data = $this->_getRevisionData($entry);
+        $versionRecord->data = $revisionData;
         $versionRecord->notes = $entry->revisionNotes;
 
         return $versionRecord->save();
@@ -473,6 +487,21 @@ class EntryRevisions extends Component
         return true;
     }
 
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * Compares two revisions' data and returns whether it has changed.
+     *
+     * @param array $revisionA
+     * @param array $revisionB
+     * @return bool whether it looks like something has changed
+     */
+    protected function compareRevisionData(array $revisionA, array $revisionB): bool
+    {
+        return $revisionA !== $revisionB;
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -489,7 +518,7 @@ class EntryRevisions extends Component
             $draftRecord = EntryDraftRecord::findOne($draft->draftId);
 
             if (!$draftRecord) {
-                throw new EntryDraftNotFoundException('Invalid entry draft ID: '.$draft->draftId);
+                throw new EntryDraftNotFoundException('Invalid entry draft ID: ' . $draft->draftId);
             }
         } else {
             $draftRecord = new EntryDraftRecord();

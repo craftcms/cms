@@ -24,6 +24,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Image;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\records\User as UserRecord;
@@ -163,15 +164,30 @@ class Users extends Component
      */
     public function getUserByUsernameOrEmail(string $usernameOrEmail)
     {
-        return User::find()
-            ->where([
-                'or',
-                ['username' => $usernameOrEmail],
-                ['email' => $usernameOrEmail]
-            ])
+        $query = User::find()
             ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->status(null)
-            ->one();
+            ->anyStatus();
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $query
+                ->where([
+                    'username' => $usernameOrEmail,
+                ])
+                ->orWhere([
+                    'email' => $usernameOrEmail,
+                ]);
+        } else {
+            // Postgres is case-sensitive
+            $query
+                ->where([
+                    'lower([[username]])' => mb_strtolower($usernameOrEmail),
+                ])
+                ->orWhere([
+                    'lower([[email]])' => mb_strtolower($usernameOrEmail),
+                ]);
+        }
+
+        return $query->one();
     }
 
     /**
@@ -188,8 +204,7 @@ class Users extends Component
     {
         return User::find()
             ->uid($uid)
-            ->status(null)
-            ->enabledForSite(false)
+            ->anyStatus()
             ->one();
     }
 
@@ -221,7 +236,7 @@ class Users extends Component
             $userRecord->verificationCode = null;
             $userRecord->save();
 
-            Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' is expired.', __METHOD__);
+            Craft::warning('The verification code (' . $code . ') given for userId: ' . $user->id . ' is expired.', __METHOD__);
             return false;
         }
 
@@ -232,7 +247,7 @@ class Users extends Component
         }
 
         if (!$valid) {
-            Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.', __METHOD__);
+            Craft::warning('The verification code (' . $code . ') given for userId: ' . $user->id . ' does not match the hash in the database.', __METHOD__);
             return false;
         }
 
@@ -1014,6 +1029,10 @@ class Users extends Component
     {
         $securityService = Craft::$app->getSecurity();
         $unhashedCode = $securityService->generateRandomString(32);
+
+        // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
+        $unhashedCode = str_replace('_', StringHelper::randomString(1), $unhashedCode);
+
         $hashedCode = $securityService->hashPassword($unhashedCode);
         $userRecord->verificationCode = $hashedCode;
         $userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
@@ -1058,7 +1077,7 @@ class Users extends Component
         $userRecord->save();
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $path = $generalConfig->actionTrigger.'/users/'.$action;
+        $path = $generalConfig->actionTrigger . '/users/' . $action;
         $params = [
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
@@ -1073,11 +1092,15 @@ class Users extends Component
                 return UrlHelper::cpUrl($path, $params, $scheme);
             }
 
-            $path = $generalConfig->cpTrigger.'/'.$path;
+            $path = $generalConfig->cpTrigger . '/' . $path;
         }
 
-        // todo: should we factor in the user's preferred language (as we did in v2)?
-        $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        } else {
+            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        }
+
         return UrlHelper::siteUrl($path, $params, $scheme, $siteId);
     }
 }

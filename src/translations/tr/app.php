@@ -1196,7 +1196,7 @@ return [
 
 {{siteName}} ile bir hesap oluşturduğunuz için teşekkürler! Hesabınızı etkinleştirmek için şu bağlantıya tıklayınız:
 
-{{link}}
+<{{link}}>
 
 Bu epostayı neden aldığınızı bilmiyorsanız, kaale almayınız.',
     'account_activation_heading' => 'Biri hesap oluşturduğunda:',
@@ -1214,7 +1214,7 @@ Bu epostayı neden aldığınızı bilmiyorsanız, kaale almayınız.',
 
 {{siteName}} şifrenizi yenilemek için şu bağlantıya tıklayınız:
 
-{{link}}
+<{{link}}>
 
 Bu epostayı neden aldığınızı bilmiyorsanız, kaale almayınız.',
     'forgot_password_heading' => 'Birisi şifresini unuttuğunda:',
@@ -1248,7 +1248,7 @@ Gerkli ayarlar şu şekilde:
 
 Lütfen eposta adresinizi şu bağlantıya tıklayarak onaylayın:
 
-{{link}}
+<{{link}}>
 
 Bu epostayı beklemiyorduysanız, görmezden gelin.',
     'verify_new_email_heading' => 'Birisi eposta adresini değiştirdiği zaman:',

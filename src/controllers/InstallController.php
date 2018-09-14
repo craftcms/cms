@@ -12,6 +12,7 @@ use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\elements\User;
 use craft\errors\DbConnectException;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\Install;
@@ -85,7 +86,7 @@ class InstallController extends Controller
         $this->getView()->registerAssetBundle(InstallerAsset::class);
 
         // Grab the license text
-        $licensePath = dirname(Craft::$app->getBasePath()).'/LICENSE.md';
+        $licensePath = dirname(Craft::$app->getBasePath()) . '/LICENSE.md';
         $license = file_get_contents($licensePath);
 
         // Guess the site name based on the server name
@@ -96,9 +97,9 @@ class InstallController extends Controller
         $defaultSiteUrl = '@web';
 
         $iconsPath = Craft::getAlias('@app/icons');
-        $dbIcon = $showDbScreen ? file_get_contents($iconsPath.DIRECTORY_SEPARATOR.'database.svg') : null;
-        $userIcon = file_get_contents($iconsPath.DIRECTORY_SEPARATOR.'user.svg');
-        $worldIcon = file_get_contents($iconsPath.DIRECTORY_SEPARATOR.'world.svg');
+        $dbIcon = $showDbScreen ? file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'database.svg') : null;
+        $userIcon = file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'user.svg');
+        $worldIcon = file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'world.svg');
 
         return $this->renderTemplate('_special/install', compact(
             'showDbScreen',
@@ -145,7 +146,8 @@ class InstallController extends Controller
         if (empty($errors)) {
             // Test the connection
             $dbConfig->updateDsn();
-            $db = Connection::createFromConfig($dbConfig);
+            /** @var Connection $db */
+            $db = Craft::createObject(App::dbConfig($dbConfig));
 
             try {
                 $db->open();
@@ -165,7 +167,7 @@ class InstallController extends Controller
                     default:
                         $attr = '*';
                 }
-                $errors[$attr][] = 'PDO exception: '.$pdoException->getMessage();
+                $errors[$attr][] = 'PDO exception: ' . $pdoException->getMessage();
             }
         }
 
@@ -251,7 +253,8 @@ class InstallController extends Controller
             $configService->setDotEnvVar('DB_PORT', $dbConfig->port);
 
             // Update the db component based on new values
-            $db = Connection::createFromConfig($dbConfig);
+            /** @var Connection $db */
+            $db = Craft::createObject(App::dbConfig($dbConfig));
             Craft::$app->set('db', $db);
         }
 
@@ -361,14 +364,14 @@ class InstallController extends Controller
 
         $dbConfig->dsn = null;
         $dbConfig->url = null;
-        $dbConfig->driver = $request->getRequiredBodyParam($prefix.'driver');
-        $dbConfig->server = $request->getBodyParam($prefix.'server') ?: 'localhost';
-        $dbConfig->port = $request->getBodyParam($prefix.'port');
-        $dbConfig->user = $request->getBodyParam($prefix.'user') ?: 'root';
-        $dbConfig->password = $request->getBodyParam($prefix.'password');
-        $dbConfig->database = $request->getBodyParam($prefix.'database');
-        $dbConfig->schema = $request->getBodyParam($prefix.'schema') ?: 'public';
-        $dbConfig->tablePrefix = $request->getBodyParam($prefix.'tablePrefix');
+        $dbConfig->driver = $request->getRequiredBodyParam($prefix . 'driver');
+        $dbConfig->server = $request->getBodyParam($prefix . 'server') ?: 'localhost';
+        $dbConfig->port = $request->getBodyParam($prefix . 'port');
+        $dbConfig->user = $request->getBodyParam($prefix . 'user') ?: 'root';
+        $dbConfig->password = $request->getBodyParam($prefix . 'password');
+        $dbConfig->database = $request->getBodyParam($prefix . 'database');
+        $dbConfig->schema = $request->getBodyParam($prefix . 'schema') ?: 'public';
+        $dbConfig->tablePrefix = $request->getBodyParam($prefix . 'tablePrefix');
 
         $dbConfig->init();
     }

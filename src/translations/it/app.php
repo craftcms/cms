@@ -1196,7 +1196,7 @@ return [
 
  Grazie per aver creato un account con {{siteName}}! Per attivare il tuo account, clicca sul seguente link:
 
- {{link}}
+ <{{link}}>
 
  Se non aspettavi questa email, ignorala semplicemente.',
     'account_activation_heading' => 'Quando qualcuno crea un account:',
@@ -1214,7 +1214,7 @@ return [
 
  Per reimpostare la tua {{siteName}} password, clicca su questo link:
 
- {{link}}
+ <{{link}}>
 
 Se non aspettavi questa email, ignorala semplicemente.',
     'forgot_password_heading' => 'Quando qualcuno dimentica la propria password:',
@@ -1248,7 +1248,7 @@ Se non aspettavi questa email, ignorala semplicemente.',
 
 Ti preghiamo di verificare il tuo nuovo indirizzo email cliccando su questo link:
 
- {{link}}
+ <{{link}}>
 
  Se non aspettavi questa email, ignorala semplicemente.',
     'verify_new_email_heading' => 'Quando qualcuno cambia il proprio indirizzo email:',
