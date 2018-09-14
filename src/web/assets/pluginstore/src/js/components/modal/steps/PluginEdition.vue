@@ -7,12 +7,19 @@
 
         <template slot="main">
 
-            <table v-if="pluginSnippet" class="data fullwidth">
+            <table v-if="pluginSnippet" class="data fullwidth choose-edition">
                 <thead>
                 <tr>
-                    <th>Plugin Icon</th>
-                    <th v-for="edition in editions">
-                        <div>{{edition.name}}</div>
+                    <th>
+                        <div class="plugin-icon-md">
+                            <img v-if="pluginSnippet.iconUrl" :src="pluginSnippet.iconUrl" height="48" />
+                            <img v-else :src="defaultPluginSvg" height="48" />
+                        </div>
+                    </th>
+                    <td v-for="edition in editions">
+                        <div>
+                            <div class="edition-badge">{{edition.name}}</div>
+                        </div>
                         <div>
                             <template v-if="edition.price > 0">{{edition.price|currency}}</template>
                             <template v-else>Free</template>
@@ -21,7 +28,7 @@
                         <div v-if="edition.price > 0" class="buttons">
                             <a class="btn submit" @click="addToCart(pluginSnippet, edition.handle)">Add to cart</a>
                         </div>
-                    </th>
+                    </td>
                 </tr>
                 </thead>
                 <tbody>

@@ -474,6 +474,13 @@ ul.categories {
   border-radius: 4px;
 }
 
+.plugin-icon-md,
+.plugin-icon-md img {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+}
+
 .plugin-icon-large,
 .plugin-icon-large img {
   width: 72px;
@@ -558,6 +565,34 @@ ul.categories {
       a {
         display: block;
       }
+    }
+  }
+}
+
+/* Edition Badge */
+
+.edition-badge {
+  margin: 0 auto 24px !important;
+  font-weight: 500;
+  font-size: 14px;
+  color: $submitColor;
+  letter-spacing: 3.3px;
+  line-height: 14px;
+  border: 1px solid $submitColor;
+  border-radius: 3px;
+  padding: 8px 6.7px 8px 9px;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+
+/* Choose Edition */
+
+table.choose-edition {
+  thead {
+    th,
+    td {
+      padding-bottom: 14px;
     }
   }
 }
