@@ -1229,28 +1229,30 @@ class Sections extends Component
     /**
      * Reorders entry types.
      *
-     * @param array $entryTypeUids
+     * @param array $entryTypeIds
      * @return bool Whether the entry types were reordered successfully
      * @throws \Throwable if reasons
      */
-    public function reorderEntryTypes(array $entryTypeUids): bool
+    public function reorderEntryTypes(array $entryTypeIds): bool
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
         $sectionRecord = null;
 
-        foreach ($entryTypeUids as $entryTypeOrder => $entryTypeUid) {
-            $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid);
+        $uidsByIds = Db::uidsByIds('{{%entrytypes}}', $entryTypeIds);
 
-            if (!$sectionRecord) {
-                $sectionRecord = SectionRecord::findOne($entryTypeRecord->sectionId);
+        foreach ($entryTypeIds as $entryTypeOrder => $entryTypeId) {
+            if (!empty($uidsByIds[$entryTypeId])) {
+                $entryTypeUid = $uidsByIds[$entryTypeId];
+                $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid);
+
+                if (!$sectionRecord) {
+                    $sectionRecord = SectionRecord::findOne($entryTypeRecord->sectionId);
+                }
+
+                $configPath = self::CONFIG_SECTIONS_KEY . '.' . $sectionRecord->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid;
+                $projectConfig->set($configPath . '.sortOrder', $entryTypeOrder + 1);
             }
-
-            $configPath = self::CONFIG_SECTIONS_KEY . '.' . $sectionRecord->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid;
-
-            $data = $projectConfig->get($configPath);
-            $data['sortOrder'] = $entryTypeOrder + 1;
-            $projectConfig->set($configPath, $data);
         }
 
 

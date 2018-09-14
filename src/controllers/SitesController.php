@@ -295,8 +295,8 @@ class SitesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $siteUids = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
-        Craft::$app->getSites()->reorderSites($siteUids);
+        $siteIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        Craft::$app->getSites()->reorderSites($siteIds);
 
         return $this->asJson(['success' => true]);
     }

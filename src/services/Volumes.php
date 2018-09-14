@@ -553,10 +553,13 @@ class Volumes extends Component
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        foreach ($volumeIds as $volumeOrder => $volumeUid) {
-            $data = $projectConfig->get(self::CONFIG_VOLUME_KEY . '.' . $volumeUid);
-            $data['sortOrder'] = $volumeOrder + 1;
-            $projectConfig->set(self::CONFIG_VOLUME_KEY . '.' . $volumeUid, $data);
+        $uidsByIds = Db::uidsByIds('{{%volumes}}', $volumeIds);
+
+        foreach ($volumeIds as $volumeOrder => $volumeId) {
+            if (!empty($uidsByIds[$volumeId])) {
+                $volumeUid = $uidsByIds[$volumeId];
+                $projectConfig->set(self::CONFIG_VOLUME_KEY . '.' . $volumeUid . '.sortOrder', $volumeOrder + 1);
+            }
         }
 
         return true;

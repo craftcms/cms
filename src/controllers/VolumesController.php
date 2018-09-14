@@ -233,8 +233,8 @@ class VolumesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $volumeUids = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
-        Craft::$app->getVolumes()->reorderVolumes($volumeUids);
+        $volumeIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        Craft::$app->getVolumes()->reorderVolumes($volumeIds);
 
         return $this->asJson(['success' => true]);
     }

@@ -38,7 +38,6 @@
 {% if section.type != 'single' %}
     {% js %}
         new Craft.AdminTable({
-            idAttribute: 'data-uid',
             tableSelector: '#entrytypes',
             deleteAction: 'sections/delete-entry-type',
             minItems: 1,
