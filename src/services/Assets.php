@@ -31,6 +31,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
+use craft\image\Raster;
 use craft\models\AssetTransform;
 use craft\models\FolderCriteria;
 use craft\models\VolumeFolder;
@@ -715,9 +716,14 @@ class Assets extends Component
 
             // hail Mary
             try {
-                Craft::$app->getImages()->loadImage($imageSource, false, $svgSize)
-                    ->scaleToFit($width, $height)
-                    ->saveAs($path);
+                $image = Craft::$app->getImages()->loadImage($imageSource, false, $svgSize)
+                    ->scaleToFit($width, $height);
+
+                if ($image instanceof Raster) {
+                    $image->disableAnimation();
+                }
+
+                $image->saveAs($path);
             } catch (ImageException $exception) {
                 Craft::warning($exception->getMessage());
                 return $this->getIconPath($asset);
