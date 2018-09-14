@@ -28,6 +28,7 @@
 - Added `craft\helpers\Db::idByUid()`.
 - Added `craft\helpers\Db::idsByUids()`.
 - Added `craft\helpers\Db::uidById()`.
+- Added `craft\helpers\Db::uidsByIds()`.
 - Added `craft\helpers\ProjectConfig`.
 - Added `craft\models\FieldLayout::createFromConfig()`.
 - Added `craft\models\FieldLayout::getConfig()`.

@@ -731,6 +731,22 @@ class Db
         return $uid ?: null;
     }
 
+    /**
+     * Returns an array `id`:`uid` pairs from a given table, by their `id`s.
+     *
+     * @param string $table
+     * @param int[] $ids
+     * @return string[]
+     */
+    public static function uidsByIds(string $table, array $ids): array
+    {
+        return (new Query())
+            ->select(['id', 'uid'])
+            ->from([$table])
+            ->where(['id' => $ids])
+            ->pairs();
+    }
+
     // Private Methods
     // =========================================================================
 
