@@ -110,7 +110,7 @@ module.exports = {
                 title: 'エレメントのクエリ',
                 collapsable: false,
                 children: [
-                    'element-queries/',
+                    ['element-queries/', 'エレメントクエリについて'],
                     'element-queries/asset-queries',
                     'element-queries/category-queries',
                     'element-queries/entry-queries',
