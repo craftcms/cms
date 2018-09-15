@@ -43,7 +43,7 @@ Craft 3 の新しいコピーをダウンロードすると、プロジェクト
 
 ### `templates/`
 
-フロントエンド向けのテンプレートをここにまとめます。
+フロントエンド向けのテンプレートがここに入ります。静的に配信する画像、CSS、JS などのローカルサイトのアセットは、[web](directory-structure.md#web) フォルダに保存します。
 
 ::: tip
 `web/index.php` に [CRAFT_TEMPLATES_PATH](config/php-constants.md#craft-templates-path) PHP 定数を設定すると、このフォルダの名前や場所をカスタマイズできます。
@@ -59,7 +59,7 @@ Craft 3 の新しいコピーをダウンロードすると、プロジェクト
 
 ### `web/`
 
-このディレクトリはサーバーのウェブルートを表します。
+このディレクトリはサーバーのウェブルートを表します。パブリックの `index.php` ファイルがここにあり、静的に配信されるローカルサイトの画像、CSS、JS などがあります。
 
 ::: tip
 このフォルダの名前や場所をカスタマイズできます。もし、他の Craft フォルダと並んでいる状態から移動するならば、`<Webroot>/index.php` の [CRAFT_BASE_PATH](config/php-constants.md#craft-vendor-path) PHP 定数を確実に更新してください。

@@ -1,6 +1,6 @@
-# User Queries
+# ユーザークエリ
 
-You can fetch users in your templates or PHP code using **user queries**.
+**ユーザークエリ**を使用して、テンプレートや PHP コード内でユーザーを取得できます。
 
 ::: code
 
@@ -16,20 +16,20 @@ $myUserQuery = \craft\elements\User::find();
 
 :::
 
-Once you’ve created a user query, you can set [parameters](#parameters) on it to narrow down the results, and then [execute it](README.md#executing-element-queries) by calling `.all()`. An array of [User](api:craft\elements\User) objects will be returned.
+ユーザークエリを作成すると、結果を絞り込むための[パラメータ](#parameters)をセットできます。さらに、`.all()` を呼び出して[実行](README.md#executing-element-queries)できます。[User](api:craft\elements\User) オブジェクトの配列が返されます。
 
 ::: tip
-See [Introduction to Element Queries](README.md) to learn about how element queries work.
+エレメントクエリがどのように機能するかについては、[エレメントクエリについて](README.md)を参照してください。
 :::
 
 ## 実例
 
-We can display a list of the users in an “Authors” user group by doing the following:
+次の操作を行うことで、「Authors」ユーザーグループに含まれるユーザーのリストを表示できます。
 
-1. Create a user query with `craft.users()`.
-2. Set the [group](#group) parameter on it.
-3. Fetch the users with `.all()`.
-4. Loop through the users using a [for](https://twig.symfony.com/doc/2.x/tags/for.html) tag to create the list HTML.
+1. `craft.users()` でユーザークエリを作成します。
+2. [group](#group) パラメータをセットします。
+3. `.all()` でユーザーを取得します。
+4. [for](https://twig.symfony.com/doc/2.x/tags/for.html) タグを使用してユーザーをループ処理し、リストの HTML を作成します。
 
 ```twig
 {# Create a user query with the 'group' parameter #}
@@ -49,13 +49,13 @@ We can display a list of the users in an “Authors” user group by doing the f
 
 ## パラメータ
 
-User queries support the following parameters:
+ユーザークエリは、次のパラメータをサポートしています。
 
 <!-- BEGIN PARAMS -->
 
 ### `admin`
 
-Narrows the query results to only users that have admin accounts.
+「管理」権限を持つユーザーだけに、クエリの結果を絞り込みます。
 
 ::: code
 
@@ -77,7 +77,7 @@ $elements = ElementClass::find()
 
 ### `anyStatus`
 
-Clears out the [status](#status) and [enabledForSite()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-enabledforsite) parameters.
+[status](#status) および [enabledForSite()](https://docs.craftcms.com/api/v3/craft-elements-db-elementquery.html#method-enabledforsite) パラメータをクリアします。
 
 ::: code
 
@@ -99,7 +99,7 @@ $elements = ElementClass::find()
 
 ### `asArray`
 
-Causes the query to return matching elements as arrays of data, rather than ElementClass objects.
+ElementClass オブジェクトではなく、データの配列として、マッチしたエレメントをクエリが返します。
 
 ::: code
 
@@ -121,9 +121,9 @@ $elements = ElementClass::find()
 
 ### `can`
 
-Narrows the query results to only users that have a certain user permission, either directly on the user account or through one of their user groups.
+直接ユーザーアカウントにセットされているかユーザーグループの1つを通してセットされている、特定のユーザー権限を持つユーザーだけに、クエリの結果を絞り込みます。
 
-See [Users](https://docs.craftcms.com/v3/users.html) for a full list of available user permissions defined by Craft.
+Craft によって定義された利用可能なユーザー権限のリストは、[ユーザー](../../users.html)を参照してください。
 
 ::: code
 
@@ -145,15 +145,15 @@ $elements = ElementClass::find()
 
 ### `dateCreated`
 
-Narrows the query results based on the elements’ creation dates.
+エレメントの作成日に基づいて、クエリの結果を絞り込みます。
 
-Possible values include:
+利用可能な値には、次のものが含まれます。
 
-| Value | Fetches elements…
+| 値 | 取得するエレメント
 | - | -
-| `'>= 2018-04-01'` | that were created on or after 2018-04-01.
-| `'< 2018-05-01'` | that were created before 2018-05-01
-| `['and', '>= 2018-04-04', '< 2018-05-01']` | that were created between 2018-04-01 and 2018-05-01.
+| `'>= 2018-04-01'` | 2018-04-01 以降に作成されたもの。
+| `'< 2018-05-01'` | 2018-05-01 より前に作成されたもの。
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | 2018-04-01 から 2018-05-01 の間に作成されたもの。
 
 ::: code
 
@@ -181,15 +181,15 @@ $elements = ElementClass::find()
 
 ### `dateUpdated`
 
-Narrows the query results based on the elements’ last-updated dates.
+エレメントの最終アップデート日に基づいて、クエリの結果が絞り込まれます。
 
-Possible values include:
+利用可能な値には、次のものが含まれます。
 
-| Value | Fetches elements…
+| 値 | 取得するエレメント
 | - | -
-| `'>= 2018-04-01'` | that were updated on or after 2018-04-01.
-| `'< 2018-05-01'` | that were updated before 2018-05-01
-| `['and', '>= 2018-04-04', '< 2018-05-01']` | that were updated between 2018-04-01 and 2018-05-01.
+| `'>= 2018-04-01'` | 2018-04-01 以降にアップデートされたもの。
+| `'< 2018-05-01'` | 2018-05-01 より前にアップデートされたもの。
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | 2018-04-01 から 2018-05-01 の間にアップデートされたもの。
 
 ::: code
 
@@ -215,15 +215,15 @@ $elements = ElementClass::find()
 
 ### `email`
 
-Narrows the query results based on the users’ email addresses.
+ユーザーのメールアドレスに基づいて、クエリの結果を絞り込みます。
 
-Possible values include:
+利用可能な値には、次のものが含まれます。
 
-| Value | Fetches elements…
+| 値 | 取得するエレメント
 | - | -
-| `'foo@bar.baz'` | with an email of `foo@bar.baz`.
-| `'not foo@bar.baz'` | not with an email of `foo@bar.baz`.
-| `'*@bar.baz'` | with an email that ends with `@bar.baz`.
+| `'foo@bar.baz'` | メールアドレスが `foo@bar.baz`。
+| `'not foo@bar.baz'` | メールアドレスが `foo@bar.baz` ではない。
+| `'*@bar.baz'` | メールアドレスが `@bar.baz` で終わる。
 
 ::: code
 
@@ -245,14 +245,14 @@ $elements = ElementClass::find()
 
 ### `firstName`
 
-Narrows the query results based on the users’ first names.
+ユーザーのファーストネーム（名）に基づいて、クエリの結果を絞り込みます。
 
-Possible values include:
+利用可能な値には、次のものが含まれます。
 
-| Value | Fetches elements…
+| 値 | 取得するエレメント
 | - | -
-| `'Jane'` | with a first name of `Jane`.
-| `'not Jane'` | not with a first name of `Jane`.
+| `'Jane'` | ファーストネームが `Jane`。
+| `'not Jane'` | ファーストネームが `Jane` ではない。
 
 ::: code
 
@@ -274,7 +274,7 @@ $elements = ElementClass::find()
 
 ### `fixedOrder`
 
-Causes the query results to be returned in the order specified by [id](#id).
+クエリの結果を [id](#id) で指定された順序で返します。
 
 ::: code
 
@@ -298,17 +298,17 @@ $elements = ElementClass::find()
 
 ### `group`
 
-Narrows the query results based on the user group the users belong to.
+ユーザーが属するユーザーグループに基づいて、クエリの結果を絞り込みます。
 
-Possible values include:
+利用可能な値には、次のものが含まれます。
 
-| Value | Fetches elements…
+| 値 | 取得するエレメント
 | - | -
-| `'foo'` | in a group with a handle of `foo`.
-| `'not foo'` | not in a group with a handle of `foo`.
-| `['foo', 'bar']` | in a group with a handle of `foo` or `bar`.
-| `['not', 'foo', 'bar']` | not in a group with a handle of `foo` or `bar`.
-| a [UserGroup](api:craft\models\UserGroup) object | in a group represented by the object.
+| `'foo'` | ハンドルが `foo` のグループ内。
+| `'not foo'` | ハンドルが `foo` のグループ内ではない。
+| `['foo', 'bar']` | ハンドルが `foo` または `bar` のグループ内。
+| `['not', 'foo', 'bar']` | ハンドルが `foo` または `bar` のグループ内ではない。
+| [UserGroup](api:craft\models\UserGroup) オブジェクト | オブジェクトで表されるグループ内。
 
 ::: code
 
@@ -330,16 +330,16 @@ $elements = ElementClass::find()
 
 ### `groupId`
 
-Narrows the query results based on the user group the users belong to, per the groups’ IDs.
+グループ ID ごとに、ユーザーが属するユーザーグループに基づいて、クエリの結果を絞り込みます。
 
-Possible values include:
+利用可能な値には、次のものが含まれます。
 
-| Value | Fetches elements…
+| 値 | 取得するエレメント
 | - | -
-| `1` | in a group with an ID of 1.
-| `'not 1'` | not in a group with an ID of 1.
-| `[1, 2]` | in a group with an ID of 1 or 2.
-| `['not', 1, 2]` | not in a group with an ID of 1 or 2.
+| `1` | ID が 1 のグループ内。
+| `'not 1'` | ID が 1 のグループ内ではない。
+| `[1, 2]` | ID が 1 または 2 のグループ内。
+| `['not', 1, 2]` | ID が 1 または 2 のグループ内ではない。
 
 ::: code
 
@@ -361,16 +361,16 @@ $elements = ElementClass::find()
 
 ### `id`
 
-Narrows the query results based on the elements’ IDs.
+エレメントの ID に基づいて、クエリの結果を絞り込みます。
 
-Possible values include:
+利用可能な値には、次のものが含まれます。
 
-| Value | Fetches elements…
+| 値 | 取得するエレメント
 | - | -
-| `1` | with an ID of 1.
-| `'not 1'` | not with an ID of 1.
-| `[1, 2]` | with an ID of 1 or 2.
-| `['not', 1, 2]` | not with an ID of 1 or 2.
+| `1` | ID が 1。
+| `'not 1'` | ID が 1ではない。
+| `[1, 2]` | ID が 1 または 2。
+| `['not', 1, 2]` | ID が 1 または 2 ではない。
 
 ::: code
 
@@ -391,12 +391,12 @@ $element = ElementClass::find()
 :::
 
 ::: tip
-This can be combined with [fixedOrder](#fixedorder) if you want the results to be returned in a specific order.
+特定の順序で結果を返したい場合、[fixedOrder](#fixedorder) と組み合わせることができます。
 :::
 
 ### `inReverse`
 
-Causes the query results to be returned in reverse order.
+クエリの結果を逆順で返します。
 
 ::: code
 
@@ -418,15 +418,15 @@ $elements = ElementClass::find()
 
 ### `lastLoginDate`
 
-Narrows the query results based on the users’ last login dates.
+ユーサーの最終ログイン日に基づいて、クエリの結果を絞り込みます。
 
-Possible values include:
+利用可能な値には、次のものが含まれます。
 
-| Value | Fetches elements…
+| 値 | 取得するエレメント
 | - | -
-| `'>= 2018-04-01'` | that last logged-in on or after 2018-04-01.
-| `'< 2018-05-01'` | that last logged-in before 2018-05-01
-| `['and', '>= 2018-04-04', '< 2018-05-01']` | that last logged-in between 2018-04-01 and 2018-05-01.
+| `'>= 2018-04-01'` | 2018-04-01 以降に最終ログインされたもの。
+| `'< 2018-05-01'` | 2018-05-01 より前に最終ログインされたもの。
+| `['and', '>= 2018-04-04', '< 2018-05-01']` | 2018-04-01 から 2018-05-01 の間に最終ログインされたもの。
 
 ::: code
 
@@ -452,14 +452,14 @@ $elements = ElementClass::find()
 
 ### `lastName`
 
-Narrows the query results based on the users’ last names.
+ユーザーのラストネーム（姓）に基づいて、クエリの結果を絞り込みます。
 
-Possible values include:
+利用可能な値には、次のものが含まれます。
 
-| Value | Fetches elements…
+| 値 | 取得するエレメント
 | - | -
-| `'Doe'` | with a last name of `Doe`.
-| `'not Doe'` | not with a last name of `Doe`.
+| `'Doe'` | ラストネームが `Doe`。
+| `'not Doe'` | ラストネームが `Doe` ではない。
 
 ::: code
 
@@ -481,7 +481,7 @@ $elements = ElementClass::find()
 
 ### `limit`
 
-Determines the number of elements that should be returned.
+返されるエレメントの数を決定します。
 
 ::: code
 
@@ -503,7 +503,7 @@ $elements = ElementClass::find()
 
 ### `offset`
 
-Determines how many elements should be skipped in the results.
+結果からスキップされるエレメントの数を決定します。
 
 ::: code
 
@@ -525,7 +525,7 @@ $elements = ElementClass::find()
 
 ### `orderBy`
 
-Determines the order that the elements should be returned in.
+返されるエレメントの順序を決定します。
 
 ::: code
 
@@ -547,9 +547,9 @@ $elements = ElementClass::find()
 
 ### `relatedTo`
 
-Narrows the query results to only elements that are related to certain other elements.
+特定の他のエレメントと関連付けられたエレメントだけに、クエリの結果を絞り込みます。
 
-See [Relations](https://docs.craftcms.com/v3/relations.html) for a full explanation of how to work with this parameter.
+このパラメーターがどのように機能するかの詳細については、[リレーション](../../relations.html)を参照してください。
 
 ::: code
 
@@ -571,9 +571,9 @@ $elements = ElementClass::find()
 
 ### `search`
 
-Narrows the query results to only elements that match a search query.
+検索結果にマッチするエレメントだけに、クエリの結果を絞り込みます。
 
-See [Searching](https://docs.craftcms.com/v3/searching.html) for a full explanation of how to work with this parameter.
+このパラメーターがどのように機能するかの詳細については、[検索](../../searching.html)を参照してください。
 
 ::: code
 
@@ -601,17 +601,17 @@ $elements = ElementClass::find()
 
 ### `status`
 
-Narrows the query results based on the elements’ statuses.
+エレメントのステータスに基づいて、クエリの結果を絞り込みます。
 
-Possible values include:
+利用可能な値には、次のものが含まれます。
 
-| Value | Fetches elements…
+| 値 | 取得するエレメント
 | - | -
-| `'active'` _(default)_ | with active accounts.
-| `'locked'` | with locked accounts.
-| `'suspended'` | with suspended accounts.
-| `'pending'` | with accounts that are still pending activation.
-| `['active', 'locked']` | with active or locked accounts.
+| `'active'` _（デフォルト）_ | 有効なアカウント。
+| `'locked'` | ロックされているアカウント。
+| `'suspended'` | 停止されているアカウント。
+| `'pending'` | アクティベーションが保留されているアカウント。
+| `['active', 'locked']` | active または locked のアカウント。
 
 ::: code
 
@@ -633,7 +633,7 @@ $elements = ElementClass::find()
 
 ### `uid`
 
-Narrows the query results based on the elements’ UIDs.
+エレメントの UID に基づいて、クエリの結果を絞り込みます。
 
 ::: code
 
@@ -655,14 +655,14 @@ $element = ElementClass::find()
 
 ### `username`
 
-Narrows the query results based on the users’ usernames.
+ユーザーのユーザー名に基づいて、クエリの結果を絞り込みます。
 
-Possible values include:
+利用可能な値には、次のものが含まれます。
 
-| Value | Fetches elements…
+| 値 | 取得するエレメント
 | - | -
-| `'foo'` | with a username of `foo`.
-| `'not foo'` | not with a username of `foo`.
+| `'foo'` | ユーザー名が `foo`。
+| `'not foo'` | ユーザー名が `foo` ではない。
 
 ::: code
 
@@ -690,9 +690,9 @@ $element = ElementClass::find()
 
 ### `with`
 
-Causes the query to return matching elements eager-loaded with related elements.
+関連付けられたエレメントを eager-loaded した状態で、マッチしたエレメントをクエリが返します。
 
-See [Eager-Loading Elements](https://docs.craftcms.com/v3/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
+このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](../eager-loading-elements.html)を参照してください。
 
 ::: code
 

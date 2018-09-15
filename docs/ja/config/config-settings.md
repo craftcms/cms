@@ -1054,7 +1054,7 @@ PHP セッション Cookie の名前。
 
 コントロールパネルからログインした後にユーザーをリダイレクトするパス。
 
-既にログインしているユーザーが CP のログインページ（`/admin/login`）または、CP のルート URL（/admin）にアクセスした場合も、この設定が効力を発揮します。
+すでにログインしているユーザーが CP のログインページ（`/admin/login`）または、CP のルート URL（/admin）にアクセスした場合も、この設定が効力を発揮します。
 
 サポートされる値の種類は、[craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) のリストを参照してください。
 
@@ -1074,7 +1074,7 @@ PHP セッション Cookie の名前。
 
 フロントエンドサイトからログインした後にユーザーをリダイレクトするパス。
 
-既にログインしているユーザーがログインページ（コンフィグ設定の loginPath に明示されているとおり）にアクセスした場合も、効力を発揮します。
+すでにログインしているユーザーがログインページ（コンフィグ設定の loginPath に明示されているとおり）にアクセスした場合も、効力を発揮します。
 
 サポートされる値の種類は、[craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) のリストを参照してください。
 

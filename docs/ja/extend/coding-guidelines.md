@@ -275,7 +275,7 @@ $this->requireAcceptsJson();
 - Use the `['{{%tablename}}']` syntax with `from()` instead of `'{{%tablename}}'`.
 - Use the `['col1' => SORT_ASC, 'col2' => SORT_DESC]` syntax with `orderBy()` instead of `'col1, col2 desc'`.
 
-### Conditions
+### 条件
 
 - Always use Yii’s [declarative condition syntax](api:yii\db\QueryInterface::where()) when possible, as it will automatically quote table/column names and values for you.
 - For consistency, use:

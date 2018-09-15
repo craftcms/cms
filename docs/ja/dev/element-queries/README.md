@@ -1,14 +1,14 @@
-# Introduction to Element Queries
+# エレメントクエリについて
 
-You can fetch elements (entries, categories, assets, etc.) in your templates or PHP code using **element queries**.
+**エレメントクエリ**を使用して、テンプレートや PHP コード内でエレメント（エントリ、カテゴリ、アセットなど）を取得できます。
 
-Working with element queries consists of three steps:
+エレメントクエリの働きは、3つのステップで成り立ちます。
 
-1. **Create the element query.** You do this by calling a “factory function” that is named after the element type you are going to fetch. For example, if you want to fetch entries, you’d call `craft.entries()`, which returns a new [entry query](entry-queries.md).
-2. **Set some parameters.** By default, element queries will be configured to return all elements of the specified type. You can narrow that down to just the elements you care about by setting parameters on the query.
-3. **Execute the query.** Once you’ve specified the query parameters, you’re ready for Craft to fetch the elements and give you the results. You do that by calling `.all()` or `.one()`, depending on whether you need multiple elements, or just one.
+1. **エレメントクエリの作成。** 取得しようとしているエレメントタイプに基づく「ファクトリファンクション」を呼び出すことによって、これを行います。例えば、エントリを取得したい場合、新しい[エントリクエリ](entry-queries.md)を返す `craft.entries()` を呼び出します。
+2. **いくつかのパラメータをセット。** デフォルトでは、エレメントクエリは指定されたタイプのすべてのエレメントを返すように設定されています。クエリのパラメータを設定することで、エレメントを絞り込むことができます。
+3. **クエリの実行。** クエリパラメータを指定したら、Craft がエレメントを取得して結果を得る準備ができています。複数のエレメント、または、1つだけ必要なのかに応じて `.all()` か `.one()` を呼び出すことで、それを実行できます。
 
-Here’s what a typical element query might look like:
+典型的なエレメントクエリは、次のようになります。
 
 ::: code
 
@@ -38,27 +38,27 @@ $entries = $entryQuery->all();
 
 :::
 
-Each type of element has its own function for creating element queries, and they each have their own parameters you can set. See the individual element query pages for more details on working with them:
+それぞれのタイプのエレメントは、エレメントクエリを作成するための独自のファンクションを持っていて、それぞれ独自のパラメータをセットできます。それらがどんな働きをするかの詳細については、個々のエレメントクエリのページを参照してください。
 
 - [アセットクエリ](asset-queries.md)
 - [カテゴリクエリ](category-queries.md)
 - [エントリクエリ](entry-queries.md)
-- [Global Set Queries](global-set-queries.md)
-- [Matrix Block Queries](matrix-block-queries.md)
+- [グローバル設定クエリ](global-set-queries.md)
+- [行列ブロッククエリ](matrix-block-queries.md)
 - [タグクエリ](tag-queries.md)
 - [ユーザークエリ](user-queries.md)
 
 ::: tip
-Most custom fields support element query parameters as well, named after the field handles.
+ほとんどのカスタムフィールドは、フィールドハンドルの名前に基づいて、エレメントクエリのパラメータもサポートしています。
 :::
 
 ## エレメントクエリの実行
 
-Once you’ve defined your parameters on the query, there are multiple functions available to execute it, depending on what you need back.
+クエリのパラメータを定義したら、必要とするものに応じて、それを実行するために利用可能な複数のファンクションがあります。
 
 ### `all()`
 
-Most of the time, you just want to get the elements that you’re querying for. You do that with the `all()` function.
+ほとんどの場合、照会しているエレメントの取得だけを望んでいます。`all()` ファンクションでそれを実行します。
 
 ::: code
 
@@ -82,7 +82,7 @@ $entries = Entry::find()
 
 ### `one()`
 
-If you only need a single element, call `one()` instead of `all()`. It will either return the element or `null` if no matching element exists.
+単一のエレメントだけを取得したい場合、`all()` の代わりに `one()` を呼び出します。エレメント、または、マッチするエレメントが存在しない場合は `null` のいずれかを返します。
 
 ::: code
 
@@ -106,7 +106,7 @@ $entry = Entry::find()
 
 ### `exists()`
 
-If you just need to check if any elements exist that match the element query, you can call `exists()`, which will return either `true` or `false`.
+エレメントクエリにマッチするいずれかのエレメントが存在するかを確認したい場合、`true` または `false` を返す、`exists()` を呼び出します。
 
 ::: code
 
@@ -130,7 +130,7 @@ $exists = Entry::find()
 
 ### `count()`
 
-If you want to know how many elements match your element query, you can call `count()`.
+エレメントクエリにマッチするエレメントの数を知りたい場合、`count()` を呼び出します。
 
 ::: code
 
@@ -151,12 +151,12 @@ $count = Entry::find()
 :::
 
 ::: tip
-The `limit` and `offset` parameters will be ignored when you call `count()`.
+`count()` を呼び出す際、`limit` および `offset` パラメータは無視されます。
 :::
 
 ### `ids()`
 
-If you just want a list of matching element IDs, you can call `ids()`.
+マッチするエレメント ID のリストが必要な場合、`ids()` を呼び出します。
 
 ::: code
 
@@ -176,24 +176,24 @@ $entryIds = Entry::find()
 
 :::
 
-## Advanced Element Queries
+## 高度なエレメントクエリ
 
-Element queries are specialized [query builders](https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder) under the hood, so they support most of the same methods provided by <api:craft\db\Query>.
+エレメントクエリは、専門的な[クエリビルダー](https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder)です。そのため、<api:craft\db\Query> によって提供されるものとほとんど同じメソッドをサポートしています。
 
-### Selections
+### 選択
 
 - [select()](api:yii\db\Query::select())
 - [addSelect()](api:yii\db\Query::addSelect())
 - [distinct()](api:yii\db\Query::distinct())
 - [groupBy()](api:yii\db\Query::groupBy())
 
-### Joins
+### 結合
 
 - [innerJoin()](api:yii\db\Query::innerJoin())
 - [leftJoin()](api:yii\db\Query::leftJoin())
 - [rightJoin()](api:yii\db\Query::rightJoin())
 
-### Conditions
+### 条件
 
 - [where()](api:yii\db\QueryTrait::where())
 - [andWhere()](api:yii\db\QueryTrait::andWhere())
@@ -202,7 +202,7 @@ Element queries are specialized [query builders](https://www.yiiframework.com/do
 - [andFilterWhere()](api:yii\db\QueryTrait::andFilterWhere())
 - [orFilterWhere()](api:yii\db\QueryTrait::orFilterWhere())
 
-### Query Execution
+### クエリの実行
 
 - [all()](api:yii\db\Query::all())
 - [one()](api:yii\db\Query::one())
@@ -217,7 +217,7 @@ Element queries are specialized [query builders](https://www.yiiframework.com/do
 - [max()](api:yii\db\Query::max())
 
 ::: tip
-When customizing an element query, you can call [getRawSql()](api:craft\db\Query::getRawSql()) to get the full SQL that is going to be executed by the query, so you have a better idea of what to modify.
+エレメントクエリをカスタマイズする際、[getRawSql()](api:craft\db\Query::getRawSql()) を呼び出すことで、クエリによって実行される完全な SQL を取得できます。そのため、何を修正すればよいかの良いアイデアを得られるでしょう。
 
 ```twig
 {{ dump(query.getRawSql()) }}
