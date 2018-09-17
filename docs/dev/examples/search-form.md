@@ -4,6 +4,7 @@ To create a search form, first create a normal HTML form with a `search` input:
 
 ```twig
 <form action="{{ url('search/results') }}">
+    {{ csrfInput() }}
     <input type="search" name="q" placeholder="Search">
     <input type="submit" value="Go">
 </form>
