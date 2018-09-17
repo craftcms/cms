@@ -188,7 +188,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param string           $filename         The name of the file to insert.
 	 * @param bool             $preventConflicts If set to true, will ensure that a conflict is not encountered by
 	 *                                           checking the file name prior insertion.
-	 *
+	 * @throws Exception
 	 * @return AssetOperationResponseModel
 	 */
 	public function insertFileByPath($localFilePath, AssetFolderModel $folder, $filename, $preventConflicts = false)
@@ -272,7 +272,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 					$fileModel->getContent()->title = Craft::t('Mobile Upload');
 				}
 
-				craft()->assets->storeFile($fileModel);
+				if (!craft()->assets->storeFile($fileModel)) {
+				    throw new Exception('Unable to store asset record for '.$response->getDataItem('filePath'));
+				}
 
 				if (!$this->isSourceLocal() && $fileModel->kind == 'image')
 				{
