@@ -12,15 +12,15 @@ module.exports = {
     sidebar: {
         '/ja/extend/': [
             {
-                title: 'Extending Craft',
+                title: 'Craft の拡張',
                 collapsable: false,
                 children: [
-                    ['', 'Introduction'],
+                    ['', 'はじめに'],
                     'coding-guidelines',
                 ]
             },
             {
-                title: 'Module Development',
+                title: 'モジュール開発',
                 collapsable: false,
                 children: [
                     'module-guide',
@@ -61,7 +61,7 @@ module.exports = {
                 ]
             },
             {
-                title: 'More',
+                title: 'その他',
                 collapsable: false,
                 children: [
                     'user-permissions',
