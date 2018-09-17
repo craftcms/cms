@@ -25,22 +25,31 @@ class m180517_173000_user_photo_volume_to_uid extends Migration
         if ($settings) {
             $settings = Json::decodeIfJson($settings);
 
-            if (!empty($settings['photoVolumeId'])) {
-                $volumeUid = (new Query())
-                    ->select(['uid'])
-                    ->where(['id' => $settings['photoVolumeId']])
-                    ->from(['{{%volumes}}'])
-                    ->scalar();
+            if (isset($settings['photoVolumeId'])) {
+                if (empty($settings['photoVolumeId'])) {
+                    $settings['photoVolumeUid'] = null;
+                } else {
+                    $volumeUid = (new Query())
+                        ->select(['uid'])
+                        ->where(['id' => $settings['photoVolumeId']])
+                        ->from(['{{%volumes}}'])
+                        ->scalar();
 
-                if ($volumeUid) {
-                    $settings['photoVolumeUid'] = $volumeUid;
-                    unset($settings['photoVolumeId']);
-                    $this->update('{{%systemsettings}}', [
-                        'settings' => Json::encode($settings),
-                    ], [
-                        'category' => 'users'
-                    ], [], false);
+                    if ($volumeUid) {
+                        $settings['photoVolumeUid'] = $volumeUid;
+                    } else {
+                        $settings['photoVolumeUid'] = null;
+                    }
                 }
+
+                unset($settings['photoVolumeId']);
+
+                $this->update('{{%systemsettings}}', [
+                    'settings' => Json::encode($settings),
+                ], [
+                    'category' => 'users'
+                ], [], false);
+
             }
         }
     }
