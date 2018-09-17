@@ -1,21 +1,21 @@
-# Extending Craft
+# Craft の拡張
 
-Craft provides a complete toolkit for customizing its features and functionality – almost every aspect of Craft can be extended, hooked into, or completely replaced. If you know PHP, you can build anything you want with it.
+Craft は、特徴や機能をカスタマイズするための完全なツールキットを提供しています。Craft のほとんどすべての局面を拡張したり、フックしたり、完全に置き換えることができます。PHP を知っているなら、あなたが望むものを構築することができます。
 
-## Modules vs. Plugins
+## モジュール 対 プラグイン
 
-Most customizations come in the form of a **module** or a **plugin**.
+ほとんどのカスタマイズは、**モジュール**、または、**プラグイン**の形で行われます。
 
-As Yii’s documentation [puts it](https://www.yiiframework.com/doc/guide/2.0/en/structure-modules), **modules** are _“self-contained software units that consist of models, views, controllers, and other supporting components”_. In other words, modules extend the system in various ways, without needing to change any of the core system code.
+Yii のドキュメントに[記載されているように](https://www.yiiframework.com/doc/guide/2.0/en/structure-modules)、**モジュール**は _「モデル、ビュー、コントローラー、および、その他のサポートコンポーネントでできている、独立したソフトウェアユニット」_ です。言い換えれば、モジュールはコアのシステムコードを変更することなく、様々な方法でシステムを拡張します。
 
-Modules can be simple, serving a single purpose like providing a new [Dashboard widget type](widget-types.md), or they can be complex, introducing entirely new concepts to the system, like an e-commerce application.
+モジュールは新しい[ダッシュボードウィジェットタイプ](widget-types.md)を提供するような単一の目的を満たすためにシンプルか、 Eコマースアプリケーションのような完全に新しいコンセプトをシステムに導入するために複雑であり得ます。
 
-**Plugins** are a Craft-specific concept, so you won’t find any mention of it in the Yii docs. They can do everything modules can do (plugins actually _are_ modules, technically), and some other things that make them better for being publicly distributed:
+**プラグイン**は、Craft 特有のコンセプトであるため、Yii のドキュメントにはそれに関する言及がありません。それらはモジュールでできるすべてのこと（技術的には、プラグインも実際はモジュール _です_ 。）が可能で、一般に配布されるためのより良いことが含まれています。
 
-- They can be installed/trialed/purchased from the Craft Plugin Store.
-- They can make database changes when installed, updated, or uninstalled.
-- They get their own settings page within the Settings section of the Control Panel.
-- They can be enabled/disabled by an admin, without running any Composer commands.
+- Craft のプラグインストアからインストール / 試用 / 購入することができます。
+- インストール、アップデート、または、アンインストール時にデータベースを変更できます。
+- コントロールパネルの「設定」セクション内に独自の設定ページを持てます。
+- Composer コマンドを実行することなく、管理者によって有効 / 無効にすることができます。
 
-If the thing you want to build would benefit from those features, make it a plugin. Otherwise, a module might be better.
+構築したいものがこれらの特徴によって恩恵を受ける場合、プラグインにしてください。そうでなければ、モジュールの方が良いかもしれません。
 

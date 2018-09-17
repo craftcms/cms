@@ -411,7 +411,7 @@ $globalSets = \craft\elements\GlobalSet::find()
 | 値 | 取得するグローバル設定
 | - | -
 | `'foo'` | ハンドルが `foo` のサイトから。
-| `\craft\elements\db\Site` オブジェクト | オブジェクトによって表されるサイトから。
+| `\craft\elements\db\Site` オブジェクト | オブジェクトで表されるサイトから。
 
 ::: code
 

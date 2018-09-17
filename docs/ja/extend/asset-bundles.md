@@ -1,21 +1,21 @@
-# Asset Bundles
+# アセットバンドル
 
-Plugins, like Craft, are supposed to be installed above the web root, which ensures that their files can’t be accessed directly via HTTP requests. Generally that’s a Very Good Thing, because it protects Craft sites from a whole host of security vulnerabilities.
+プラグインは、Craft と同様に HTTP リクエスト経由でファイルに直接アクセスできないことを保証するウェブルート上へのインストールをサポートしています。一般的に、それはとても良いことです。なぜなら、Craft サイトをあらゆるセキュリティ脆弱性から守ることができるためです。
 
-There’s one case where it would be nice if HTTP requests *could* access Craft/plugin files directly though: front-end resources, such as images, CSS, and JavaScript files. Thankfully, Yii has a concept called [Asset Bundles](https://www.yiiframework.com/doc/guide/2.0/en/structure-assets) to help with this.
+ですが、HTTP リクエストで Craft / プラグインのファイルへ直接アクセス *できれば* 素敵なケースが1つあります。それは、画像、CSS、JavaScript ファイルのようなフロントエンドリソースです。ありがたいことに、Yii にはこれを支援するための[アセットバンドル](https://www.yiiframework.com/doc/guide/2.0/en/structure-assets)と呼ばれるコンセプトがあります。
 
-Asset Bundles do two things:
+アセットバンドルは2つのことを行います。
 
-- They publish an inaccessible directory into a directory below the web root, making it available for front-end pages to consume via HTTP requests.
-- They can register specific CSS and JS files within the directory as `<link>` and `<script>` tags in the currently-rendered page.
+- ウェブルート配下のディレクトリにあるアクセスできないディレクトリを公開し、HTTP リクエスト経由でフロントエンドのページで利用できるようにします。
+- 現在レンダリングされたページの `<link>` および `<script>` タグとして、ディレクトリ内の特定の CSS および JS ファイルを登録できます。
 
-### Setting it Up
+### 設定方法
 
-First establish where you want your web-publishable files to live within your plugin. Give them a directory that’s just for them. This will be the asset bundle’s **source directory**. For this example, we’ll go with `resources/`.
+はじめに、プラグイン内でウェブ公開したいファイルをどこに配置するか確定してください。公開するファイルのためだけのディレクトリを与えてください。これはアセットバンドルの**ソースディレクトリ**になります。この例では、`resources/` とします。
 
-Then, create a file that will hold your asset bundle class. This can be located and named whatever you want. We’ll go with `FooBundle` here.
+次に、アセットバンドルクラスを持つファイルを作成します。これは、あなたが望む場所で好きな名前にできます。ここでは `FooBundle` とします。
 
-Here’s what your plugin’s structure should look like:
+プラグインの構造は次のようになります。
 
 ```
 base_dir/
@@ -27,7 +27,7 @@ base_dir/
         └── ...
 ```
 
-Use this template as a starting point for your asset bundle class:
+アセットバンドルクラスの出発点として、このテンプレートを使用してください。
 
 ```php
 <?php
@@ -64,20 +64,20 @@ class MyPluginAsset extends AssetBundle
 ```
 
 ::: tip
-`@ns/prefix` is a placeholder for your plugin’s auto-generated [Yii alias], which will be based on your plugin’s root namespace. It represents the path to your plugin’s `src/` directory.
+`@ns/prefix` はプラグインのルート名前空間に基づいて、自動生成されたプラグインの [Yii alias] のためのプレースホルダーになります。プラグインの `src/` ディレクトリのパスを表します。
 :::
 
-### Registering the Asset Bundle
+### アセットバンドルの登録
 
-With that in place, all that is left is to register the asset bundle wherever its JS/CSS files are needed.
+ファイルをあるべき場所に用意したら、あとは JS / CSS ファイルを必要とされる場所でアセットバンドルに登録するだけです。
 
-You can register it from a template using this code:
+次のコードを使用して、テンプレートから登録できます。
 
 ```twig
 {% do view.registerAssetBundle("ns\\prefix\\FooBundle") %}
 ```
 
-Or if the request is getting routed to a custom controller action, you could register it from there, before your template gets rendered:
+または、リクエストがカスタムコントローラーアクションにルーティングされている場合、テンプレートがレンダリングされる前にそこから登録できます。
 
 ```php
 use ns\prefix\FooBundle;
@@ -90,26 +90,26 @@ public function actionFoo()
 }
 ```
 
-### Getting Published File URLs
+### 公開されたファイル URL の取得
 
-If you have a one-off file that you need to get the published URL for, but it doesn’t need to be registered as a CSS or JS file on the current page, you can use <api:craft\web\AssetManager::getPublishedUrl()>:
+公開 URL を必要とするものの、CSS や JS ファイルのように現在のページで登録する必要がないファイルがある場合、<api:craft\web\AssetManager::getPublishedUrl()> を使用できます。
 
 ```php
 $url = \Craft::$app->assetManager->getPublishedUrl('@ns/prefix/path/to/file.svg', true);
 ```
 
-Craft will automatically publish the file for you (if it’s not published already), and return its URL.
+（既に公開されてない場合）Craft が自動的にそのファイルを公開し、URL を返します。
 
-If you want the file to be published alongside other files in the same directory, but you only want a single file’s URL, then split its path into two parts: 1) the path to the parent directory that contains all the files you want to publish; and 2) the path to the individual file you want the URL for, relative to that parent directory.
+同じディレクトリの他のファイルと一緒に公開したいものの、単一ファイルの URL だけ必要な場合、そのパスを2つのパートに分割します。1）公開したいすべてのファイルを含む親ディレクトリのパス。2）URL を必要とする個々のファイルの親ディレクトリからの相対パス。
 
-For example, if you had a bunch of icon SVG files in an `icons/` folder within your plugin, and you wanted to publish the `icons/` folder as a whole, but only needed the URL to `shaker.svg`, you would do this:
+例えば、プラグインの `icons/` フォルダに沢山のアイコン SVG ファイル群を持ち、`icons/` フォルダ全体を公開したいものの、`shaker.svg` の URL だけが必要な場合、次のようにします。
 
 ```php
 $url = \Craft::$app->assetManager->getPublishedUrl('@ns/prefix/icons', true, 'shaker.svg');
 ```
 
 ::: tip
-`@ns/prefix` is a placeholder for your plugin’s auto-generated [Yii alias], which will be based on your plugin’s root namespace. It represents the path to your plugin’s `src/` directory.
+`@ns/prefix` はプラグインのルート名前空間に基づいて、自動生成されたプラグインの [Yii alias] のためのプレースホルダーになります。プラグインの `src/` ディレクトリのパスを表します。
 :::
 
 [Yii alias]: https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases

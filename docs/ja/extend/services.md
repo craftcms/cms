@@ -1,23 +1,23 @@
-# Services
+# サービス
 
 [[toc]]
 
-## What are Services?
+## サービスとは？
 
-Services are [singleton](https://en.wikipedia.org/wiki/Singleton_pattern) classes that get attached to your primary plugin class as [components](https://www.yiiframework.com/doc/guide/2.0/en/structure-application-components) (e.g. `MyPlugin::getInstance()->serviceName`).
+サービスは、[コンポーネント](https://www.yiiframework.com/doc/guide/2.0/en/structure-application-components)のようにプライマリプラグインクラスに付加される（例：`MyPlugin::getInstance()->serviceName`）[singleton](https://en.wikipedia.org/wiki/Singleton_pattern) クラスです。
 
-They have two jobs:
+それは2つの働きを持っています。
 
-- They contain most of your plugin’s business logic.
-- They define your plugin’s API, which your plugin (and other plugins) can access.
+- プラグインのビジネスロジックの大半を含んでいます。
+- プラグイン（および、他のプラグイン）がアクセスできる、プラグインの API を定義します。
 
-For example, Craft’s field management code is located in <api:craft\services\Fields>, which is available at `Craft::$app->fields`. It has a `getFieldByHandle()` method that returns a field model by its handle. If that’s something you want to do, you can call `Craft::$app->fields->getFieldByHandle('foo')`.
+例えば、Craft のフィールド管理コードは <api:craft\services\Fields> にあり、`Craft::$app->fields` で利用できます。それは、ハンドルによってフィールドモデルを返す `getFieldByHandle()` メソッドを持ちます。そうしたい場合は、`Craft::$app->fields->getFieldByHandle('foo')` で呼び出すことができます。
 
-## Creating a Service
+## サービスの作成
 
-To create a service class for your plugin, create a `services/` subdirectory within your plugin’s `src/` directory, and create a file within it named after the class name you want to give your service. If you want to name your service class `Foo` then name the file `Foo.php`.
+プラグインのサービスクラスを作成するために、プラグインの `src/` ディレクトリ内に `services/` サブディレクトリを作成し、提供したいサービスのクラス名にちなんで名付けられたファイルを作成します。サービスクラスの名前を `Foo` にしたい場合、ファイルに `Foo.php` という名前をつけます。
 
-Open the file in your text editor and use this template as its starting point:
+テキストエディタでファイルを開き、出発点としてこのテンプレートを使用してください。
 
 ```php
 <?php
@@ -31,7 +31,7 @@ class Foo extends Component
 }
 ```
 
-Once the service class exists, you can register it as a component on your primary plugin class by calling [setComponents()](api:yii\di\ServiceLocator::setComponents()) from its [init()](api:yii\base\BaseObject::init()) method:
+サービスクラスが存在すると、[init()](api:yii\base\BaseObject::init()) メソッドから [setComponents()](api:yii\di\ServiceLocator::setComponents()) を呼び出すことによって、プライマリプラグインクラスのコンポーネントとして登録できます。
 
 ```php
 public function init()
@@ -46,37 +46,37 @@ public function init()
 }
 ```
 
-## Calling Service Methods
+## サービスメソッドの呼び出し
 
-You can access your service from anywhere in the codebase using `MyPlugin::getInstance()->serviceName`. So if your service name is `foo` and it has a method named `bar()`, you could call it like this:
+`MyPlugin::getInstance()->serviceName` を使用して、コードベースのどこからでもサービスにアクセスできます。そのため、サービス名が `foo` で `bar()` と名付けられたメソッドを持つ場合、次のように呼び出すことができます。
 
 ```php
 MyPlugin::getInstance()->foo->bar()
 ```
 
-If you need to call a service method directly from your primary Plugin class, you can skip `MyPlugin::getInstance()` and just use `$this`:
+プライマリプラグインクラスから直接サービスメソッドを呼び出す必要がある場合、 `MyPlugin::getInstance()` をスキップして `$this` を使用できます。
 
 ```php
 $this->foo->bar()
 ```
 
-## Model Operation Methods
+## モデル操作メソッド
 
-Many service methods perform some sort of operation for a given model, such as a CRUD operation.
+多くのサービスメソッドは、CRUD 操作のような特定のモデルに向けてある種の操作を行います。
 
-There are two common types of model operation methods in Craft:
+Craft には、2つの一般的なモデル操作メソッドがあります。
 
-1. Methods that accept a *specific model class* (e.g. <api:craft\services\Categories::saveGroup()>, which saves a category group represented by the given <api:craft\models\CategoryGroup> model). We call these **class-oriented methods**.
+1. *特定のモデルクラス*（例：指定された <api:craft\models\CategoryGroup> モデルによって表されるカテゴリグループを保存する <api:craft\services\Categories::saveGroup()>）を受け入れるメソッド。私たちは、これらを**クラス指向メソッド**と呼びます。
 
-2. Methods that accept any class so long as it implements an *interface* (e.g. <api:craft\services\Fields::deleteField()>, which deletes a field represented by the given <api:craft\base\FieldInterface> instance, regardless of its actual class). We call these **interface-oriented methods**.
+2. *インターフェース*（例：実際のクラスかどうかに関わらず、指定された <api:craft\base\FieldInterface> インターフェースで表されるフィールドを削除する <api:craft\services\Fields::deleteField()>）を実装している限り、すべてのクラスを受け入れるメソッド。私たちは、これらを**インターフェース指向メソッド**と呼びます。
 
-Both types of methods should follow the same general control flow, with one difference: interface-oriented methods should trigger callback methods on the model before and after the action is performed, giving the model a chance to run its own custom logic.
+両方のタイプのメソッドは、1つの違いを除き同じ一般的な制御フローに従う必要があります。インターフェース指向メソッドは、アクションが実行される前後にモデルのコールバックメソッドをトリガし、モデルに独自のカスタムロジックを実行するチャンスを与えるべきです。
 
-Here’s an example: <api:craft\services\Elements::saveElement()> will call `beforeSave()` and `afterSave()` methods on the element model before and after it saves a record of the element to the `elements` database table. Entry elements (<api:craft\elements\Entry>) use their `afterSave()` method as an opportunity to save a row in the entry-specific `entries` database table.
+ここに例を示します。<api:craft\services\Elements::saveElement()> は、`elements` データベーステーブルにエレメントのレコードを保存する前後で、エレメントモデルの `beforeSave()` および `afterSave()` メソッドを呼び出します。 エントリエレメント（<api:craft\elements\Entry>）は、エントリ特有の `entries` データベーステーブルに行を保存する機会として、`afterSave()` メソッドを使用します。
 
-### Class-Oriented Methods
+### クラス指向メソッド
 
-Here’s a control flow diagram for class-oriented methods:
+クラス指向メソッドの制御フロー図です。
 
 ```
 ╔════════════════════════════╗
@@ -128,10 +128,10 @@ Here’s a control flow diagram for class-oriented methods:
 ```
 
 ::: tip
-It’s only necessary to wrap the operation in a database transaction if the operation encompasses multiple database changes.
+操作が複数データベースの変更を含む場合、データベーストランザクションで操作をラップする必要があるだけです。
 :::
 
-Here’s a complete code example of what that looks like:
+完全なコードの実例は、次のようになります。
 
 ```php
 public function saveRecipe(Recipe $recipe, $runValidation = true)
@@ -161,9 +161,9 @@ public function saveRecipe(Recipe $recipe, $runValidation = true)
 }
 ```
 
-### Interface-Oriented Methods
+### インターフェース指向メソッド
 
-Here’s a control flow diagram for interface-oriented methods:
+インターフェース指向メソッドの制御フロー図です。
 
 ```
 ╔═════════════════════════════════════════════════╗
@@ -228,7 +228,7 @@ Here’s a control flow diagram for interface-oriented methods:
                   ┗━━━━━━━━━━━━━┛
 ```
 
-Here’s a complete code example of what that looks like:
+完全なコードの実例は、次のようになります。
 
 ```php
 public function saveIngredient(IngredientInterface $ingredient, $runValidation = true)

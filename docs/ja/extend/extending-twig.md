@@ -1,19 +1,19 @@
-# Extending Twig
+# Twig 拡張
 
-Craft provides two ways for plugins to extend its Twig templating environment.
+Craft は、プラグイン向けに Twig テンプレート環境を拡張するための2つの方法を提供します。
 
 [[toc]]
 
-## Extend the Global `craft` Variable
+## グローバル `craft` 変数の拡張
 
-The global `craft` template variable is an instance of <api:craft\web\twig\variables\CraftVariable>. When a template references `craft.entries` or `craft.entries()`, it’s calling [CraftVariable::entries()](api:craft\web\twig\variables\CraftVariable::entries()) behind the scenes, for example.
+グローバル `craft` テンプレート変数は、<api:craft\web\twig\variables\CraftVariable> のインスタンスです。例えば、テンプレートが `craft.entries` または `craft.entries()` を参照する際、 その裏で [CraftVariable::entries()](api:craft\web\twig\variables\CraftVariable::entries()) が呼び出されます。
 
-The `CraftVariable` instance can be extended by plugins with [behaviors](https://www.yiiframework.com/doc/guide/2.0/en/concept-behaviors) and [services](https://www.yiiframework.com/doc/guide/2.0/en/concept-service-locator). Choosing the right approach depends on what you’re trying to add to it.
+`CraftVariable` インスタンスは、[ビヘイビア](https://www.yiiframework.com/doc/guide/2.0/en/concept-behaviors)、および、[サービス](https://www.yiiframework.com/doc/guide/2.0/en/concept-service-locator)を持つプラグインによって拡張できます。正しいアプローチを選択することは、何を追加しようとしているかに依存します。
 
-- Use a **behavior** to add custom properties or methods directly onto the `craft` variable (e.g. `craft.foo()`).
-- Use a **service** to add a sub-object to the `craft` variable, which can be accessed with a custom property name, called the service’s “ID”. (e.g. `craft.foo.*`).
+- カスタムプロパティ、または、メソッドを直接 `craft` 変数に追加するために、**ビヘイビア**を使用します（例：`craft.foo()`）。
+- `craft` 変数に、サービスの「ID」と呼ばれるカスタムプロパティ名でアクセスできるサブオブジェクトを追加するために、**サービス**を使用します（例：`craft.foo.*`）。
 
-You can attach your behavior or service to the `CraftVariable` instance by registering an [EVENT_INIT](api:craft\web\twig\variables\CraftVariable::EVENT_INIT) event handler from your plugin’s `init()` method:
+プラグインの `init()` メソッドから [EVENT_INIT](api:craft\web\twig\variables\CraftVariable::EVENT_INIT) イベントハンドラを登録することで、`CraftVariable` インスタンスにビヘイビア、または、サービスを付加できます。
 
 ```php
 use craft\web\twig\variables\CraftVariable;
@@ -38,11 +38,11 @@ public function init()
 }
 ```
 
-## Register a Twig Extension
+## Twig エクステンションの登録
 
-If you want to add new global variables, functions, filters, tags, operators, or tests to Twig, you can do that by creating a custom [Twig extension](https://twig.symfony.com/doc/2.x/advanced.html#creating-an-extension).
+新しいグローバル変数、ファンクション、フィルター、タグ、演算子、または、テストを Twig に追加したい場合、カスタムの [Twig エクステンション](https://twig.symfony.com/doc/2.x/advanced.html#creating-an-extension) を作成することによって実行できます。
 
-Twig extensions can be registered for Craft’s Twig environment by calling <api:craft\web\View::registerTwigExtension()> method:
+Twig エクステンションは、<api:craft\web\View::registerTwigExtension()> メソッドを呼び出すことで Craft の Twig 環境向けに登録できます。
 
 ```php
 public function init()

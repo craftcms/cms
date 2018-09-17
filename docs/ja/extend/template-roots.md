@@ -1,12 +1,12 @@
-# Template Roots
+# テンプレートルート
 
-Modules and plugins can register custom “template roots” for either Control Panel or front-end templates.
+モジュールやプラグインは、コントロールパネル、または、フロントエンドテンプレート向けに、カスタムの「テンプレートルート」を登録できます。
 
-A template root is a directory that contains templates, which are accessible to other templates from a predefined template path prefix.
+テンプレートルートは、定義済みのテンプレートパス接頭辞から他のテンプレートにアクセスできる、テンプレートを含むディレクトリです。
 
-For example, you could create a plugin that provides common Twig utility macros, which could be accessible from `_utils/macros.twig`.
+例えば、`_utils/macros.twig` からアクセスできる共通の Twig ユーティリティマクロを提供するプラグインを作成できます。
 
-To do that, use the [EVENT_REGISTER_SITE_TEMPLATE_ROOTS](api:craft\web\View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS) event:
+そのために、[EVENT_REGISTER_SITE_TEMPLATE_ROOTS](api:craft\web\View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS) イベントを使用します。
 
 ```php
 use craft\events\RegisterTemplateRootsEvent;
@@ -27,9 +27,9 @@ public function init()
 }
 ```
 
-If you want to register new Control Panel template roots, use the [EVENT_REGISTER_CP_TEMPLATE_ROOTS](api:craft\web\View::EVENT_REGISTER_CP_TEMPLATE_ROOTS) event instead.
+新しいコントロールパネルのテンプレートルートを登録する場合、代わりに [EVENT_REGISTER_CP_TEMPLATE_ROOTS](api:craft\web\View::EVENT_REGISTER_CP_TEMPLATE_ROOTS) イベントを使用してください。
 
-## Plugin Control Panel Templates
+## プラグインコントロールパネルのテンプレート
 
-Plugins get a Control Panel template root added automatically, named after the plugin handle, which points to the `templates/` folder within the plugin’s base source folder.
+プラグインは自動的に追加され、プラグインハンドルにちなんで名付けられた、プラグインのベースソースフォルダ内にある `templates/` フォルダを指す、コントロールパネルのテンプレートルートを取得します。
 

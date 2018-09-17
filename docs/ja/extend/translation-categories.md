@@ -1,12 +1,12 @@
-# Translation Categories
+# 翻訳カテゴリ
 
-Modules and plugins can provide custom translation categories, for use by Yii’s [Message Translations](https://www.yiiframework.com/doc/guide/1.1/en/topics.i18n#message-translation) feature.
+モジュールやプラグインは、Yii の [Message Translations](https://www.yiiframework.com/doc/guide/1.1/en/topics.i18n#message-translation) 機能を使用することによって、カスタム翻訳カテゴリを提供できます。
 
 ::: tip
-See [Static Message Translations](../static-translations.md) for more details on how message translations work.
+メッセージ変換がどのように機能するかの詳細については、[静的メッセージの翻訳](../static-translations.md)を参照してください。
 :::
 
-Translation categories can be added programmatically by adding a new translation source onto the <api:yii\i18n\I18N::$translations> array.
+翻訳カテゴリは、 <api:yii\i18n\I18N::$translations> 配列に新しい翻訳ソースを加えることにより、プログラムで追加できます。
 
 ```php
 use craft\i18n\PhpMessageSource;
@@ -24,7 +24,7 @@ public function init()
 }
 ```
 
-If you have control over the [application config](../config/README.md#application-config), you could also add the translation category from there:
+[アプリケーション設定](../config/README.md#application-config)をコントロールできる場合、そこから翻訳カテゴリを追加することもできます。
 
 ```php
 // -- config/app.php --
@@ -44,9 +44,9 @@ return [
 ];
 ```
 
-## Plugin Translations
+## プラグインの翻訳
 
-Plugins get a custom translation category registered automatically, named after the plugin handle. Plugins can provide translation files within a `translations/` folder in their base source folder.
+プラグインは自動的に登録され、プラグインハンドルにちなんで名付けられた、カスタム翻訳カテゴリを取得します。プラグインは ベースソースフォルダ内の `translations/` 内で翻訳ファイルを提供できます。
 
 ```
 src/

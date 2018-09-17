@@ -10,7 +10,7 @@
 
 ### Redactor 設定
 
-Redactor プラグインをインストールする場合、`config/redactor/` に定義された Redactor 設定が有効な JSON であることを確認する必要があります。すなわち、
+Redactor プラグインをインストールする場合、`config/redactor/` に定義された Redactor 設定が有効な JSON であることを保証する必要があります。すなわち、
 
 - コメントは使えません
 - （コンフィグ設定名である）すべてのオブジェクトプロパティは、ダブルクォートで囲まれていなければなりません。
@@ -113,7 +113,7 @@ Amazon S3、Rackspace Cloud Files、および、Google Cloud Storage のサポ�
 | 旧 | 新 |
 | ---------------- | ---------------------------------------- |
 | `CRAFT_LOCALE` | [CRAFT_SITE](config/php-constants.md#craft-site) |
-| `CRAFT_SITE_URL` | 代わりに、コンフィグ設定の <config:siteUrl> を使ってください |
+| `CRAFT_SITE_URL` | 代わりに、コンフィグ設定の <config:siteUrl> を使用してください |
 
 ## 静的な翻訳ファイル
 

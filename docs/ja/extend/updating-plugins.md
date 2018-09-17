@@ -115,7 +115,7 @@ To keep front-end Twig code looking clean, the `|t` and `|translate` filters don
 {{ "News"|t('site') }}
 ```
 
-## DB Queries
+## データベースクエリ
 
 ### Table Names
 

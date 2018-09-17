@@ -1,6 +1,6 @@
-# User Permissions
+# ユーザー権限
 
-Modules and plugins can register new user permissions to the system using the [EVENT_REGISTER_PERMISSIONS](api:craft\services\UserPermissions::EVENT_REGISTER_PERMISSIONS) event:
+モジュールとプラグインは、[EVENT_REGISTER_PERMISSIONS](api:craft\services\UserPermissions::EVENT_REGISTER_PERMISSIONS) イベントを使用して新しいユーザー権限をシステムに登録できます。
 
 ```php
 use craft\events\RegisterUserPermissionsEvent;
@@ -25,7 +25,7 @@ public function init()
 }
 ```
 
-Permissions can also have nested permissions by adding a `nested` key to the permission array.
+権限は `nested` キーをパーミッションの配列に追加することで、ネストされた権限を持つこともできます。
 
 ```php
 'permissionName' => [
@@ -38,9 +38,9 @@ Permissions can also have nested permissions by adding a `nested` key to the per
 ];
 ```
 
-## Requiring Permissions
+## 権限の要求
 
-Controllers can require that the logged-in user has a permission by calling [requirePermission()](api:craft\web\Controller::requirePermission()).
+コントローラーは、[requirePermission()](api:craft\web\Controller::requirePermission()) を呼び出すことで、ログインしているユーザー権限を持っていることを要求できます。
 
 ```php
 public function actionStayUpLate()
@@ -50,17 +50,17 @@ public function actionStayUpLate()
 }
 ```
 
-If the user doesn’t have that permission, then a 403 error will be returned.
+ユーザーがその権限を持たない場合、403 エラーが返されます。
 
-Templates can also ensure that the user has a permission with the [requirePermission](../dev/tags/requirepermission.md) tag:
+テンプレートでは、[requirePermission](../dev/tags/requirepermission.md) タグでユーザー権限を持っていることを保証することもできます。
 
 ```twig
 {% requirePermission 'stayUpLate' %}
 ```
 
-## Checking Permissions
+## 権限の確認
 
-You can check if the logged-in user has a permission by calling <api:craft\web\User::checkPermission()>:
+<api:craft\web\User::checkPermission()> を呼び出すことで、ログインしているユーザーが権限を持っているかを確認できます。
 
 ```php
 // See if they have the `stayUpLate` permission
@@ -69,7 +69,7 @@ if (Craft::$app->user->checkPermission('stayUpLate')) {
 }
 ```
 
-You can also see if any given user has a permission by calling <api:craft\elements\User::can()>:
+<api:craft\elements\User::can()> を呼び出すことで、指定されたユーザーが権限を持っているかを確認することもできます。
 
 ```php
 /** @var \craft\elements\User $user */

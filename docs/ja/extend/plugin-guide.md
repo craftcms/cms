@@ -1,4 +1,4 @@
-# How to Build a Plugin
+# プラグインの構築方法
 
 [[toc]]
 
@@ -6,8 +6,8 @@
 
 プラグイン作成に取り組む前に、いくつかのことを決めておく必要があります。
 
-- **Package name** – Used to name your Composer package for the plugin. （詳細については、[documentation][package name] を参照してください。）これが Craft のプラグインだと識別する手助けになるため、2番目のセグメント（`/` の後）に接頭辞 `craft-` を付けることをお勧めします。例えば `pixelandtonic/craft-recipes` のような形です。
-- **Namespace** – The root namespace that your plugin’s classes will live in. （詳細については、[PSR-4] オートローディング仕様を参照してください。）これは `craft\` ではじめるべき *ではない* ことに注意してください。あなたやデベロッパーを識別する何かを使用してください。
+- **パッケージ名** – プラグイン向けに Composer パッケージの名前として使用されます。（詳細については、[documentation][package name] を参照してください。）これが Craft のプラグインだと識別する手助けになるため、2番目のセグメント（`/` の後）に接頭辞 `craft-` を付けることをお勧めします。例えば `pixelandtonic/craft-recipes` のような形です。
+- **名前空間** – プラグインのクラスが稼働する、ルート名前空間。（詳細については、[PSR-4] オートローディング仕様を参照してください。）これは `craft\` ではじめるべき *ではない* ことに注意してください。あなたやデベロッパーを識別する何かを使用してください。
 - **プラグインハンドル** – Craft のエコシステム内でプラグインを一意に識別する何か。（プラグインハンドルは、文字ではじまり、小文字の英字、数字、および、ダッシュのみでなければなりません。`kebab-cased` にすべきです。）
 - **プラグイン名** – コントロールパネル内でプラグインを何と呼ぶか。
 
@@ -28,7 +28,7 @@
         └── Plugin.php
 ```
 
-The name of your plugin directory doesn’t matter. 簡単に識別できるものを選んでください。
+プラグインディレクトリの名前は、重要ではありません。簡単に識別できるものを選んでください。
 
 ::: tip
 数クリックでプラグインの土台を作成できる [pluginfactory.io](https://pluginfactory.io/) を利用してください。
@@ -36,7 +36,7 @@ The name of your plugin directory doesn’t matter. 簡単に識別できるも�
 
 ## composer.json
 
-Create a `composer.json` file at the root of your plugin directory, and use this template as a starting point:
+プラグインディレクトリのルートに `composer.json` ファイルを作成し、出発点としてこのテンプレートを使用してください。
 
 ```json
 {
@@ -77,19 +77,19 @@ Create a `composer.json` file at the root of your plugin directory, and use this
 
 - `package/name` をパッケージ名にします。
 - `Developer Name` をあたなの名前、または、プラグインが帰属する組織名にします。
-- `https://developer-website.tld` with the URL to the website the developer name should link to in the Control Panel.
-- `email@developer-website.tld` with your support email.
-- `developer/repo` with the actual GitHub account and repository names where the plugin will live.
-- `namespace\\prefix\\` with your namespace prefix. (Use double-backslashes because this is JSON, and note this must end with `\\`.)
+- `https://developer-website.tld` をコントロールパネルの開発者名にリンクするウェブサイトの URL にします。
+- `email@developer-website.tld` をサポートのメールアドレスにします。
+- `developer/repo` をプラグインが稼働している実際の GitHub アカウントとリポジトリ名にします。
+- `namespace\\prefix\\` を名前空間接頭辞にします。（これは JSON であるため、二重バックスラッシュを使用し、最後が `\\` でなければならない点に注意してください。）
 - `plugin-handle` をプラグインハンドルにします。
 - `Plugin Name` をプラグイン名にします。
 
-If you’d prefer to release your plugin with the [Craft license](https://craftcms.github.io/license/) rather than [MIT](https://opensource.org/licenses/MIT), change the `license` value to `"proprietary"`.
+[MIT](https://opensource.org/licenses/MIT) よりむしろ [Craft license](https://craftcms.github.io/license/) でプラグインをリリースしたい場合、`license` 値を `"proprietary"` に変更してください。
 
 `extra` オブジェクトにセットできるプロパティの完全なリストは、次の通りです。
 
-- `handle` – The plugin handle _(required)_.
-- `class` – The [Plugin class](#the-plugin-class) name. 設定されていない場合、インストーラーはそれぞれの `autoload` パスのルートで `Plugin.php` ファイルを探します。
+- `handle` – プラグインハンドル _（必須）_ 。
+- `class` – [プラグインクラス](#the-plugin-class)名。設定されていない場合、インストーラーはそれぞれの `autoload` パスのルートで `Plugin.php` ファイルを探します。
 - `basePath` – プラグインのソースファイルへのベースパス。[Yii alias]（例： `@vendorname/foo`） としてフォーマットされた `autoload` 名前空間の1つからはじめることができます。設定されてない場合、プライマリプラグインクラスを含むディレクトリが使用されます。
 - `name` – プラグイン名。設定されていない場合、（ベンダー接頭辞なしの）パッケージ名が使用されます。
 - `version` - プラグインのバージョン。設定されていない場合、現在のパッケージバージョンが使用されます。
@@ -109,12 +109,12 @@ Composer が厳密に要求しているわけではありませんが、プラ�
 :::
 
 ::: warning
-If you’re updating a Craft 2 plugin, make sure to remove the `composer/installers` dependency if it has one.
+Craft 2 プラグインをアップデートする場合、`composer/installers` 依存があれば確実に削除してください。
 :::
 
-## The Plugin Class
+## プラグインクラス
 
-The `src/Plugin.php` file is your plugin’s entry point for the system. すべてのリクエスト開始時に、インスタンスが作られます。`init()` メソッドはイベントリスナーやそれ自体の初期化を必要とする他のステップを登録するのに最適な場所です。
+`src/Plugin.php` ファイルは、システム向けのプラグインのエントリポイントです。すべてのリクエスト開始時に、インスタンスが作られます。`init()` メソッドはイベントリスナーやそれ自体の初期化を必要とする他のステップを登録するのに最適な場所です。
 
 このテンプレートを `Plugin.php` ファイルの出発点として使用してください。
 
@@ -183,7 +183,7 @@ Composer のインストールログは、シンボリックリンク経由で�
 ```
 
 ::: warning
-One caveat of `path` Composer repositories is that Composer may ignore `path`-based dependencies when you run `composer update`. So any time you change anything in `composer.json`, such as your plugin’s dependency requirements or its plugin information, you might need to completely remove and re-require your plugin in your project for those changes to take effect.
+`path` Composer リポジトリの難点の1つは、`composer update` を実行した際に Composer が `path` ベースの依存関係を無視することです。そのため、プラグインの依存要件やプラグインの情報のような `composer.json` の内容に変更を加える際は、それらの変化が効力を発揮するようプロジェクト内のプラグインを完全に削除してから再要求する必要があります。
 
 ```bash
 # go to the project directory
