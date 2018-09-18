@@ -73,6 +73,10 @@ class GeneralConfig extends BaseObject
      */
     public $allowUppercaseInSlug = false;
     /**
+     * @var bool Whether Craft logs should be anonymized.
+     */
+    public $anonymizeLogs = false;
+    /**
      * @var bool Whether users should automatically be logged in after activating their account.
      */
     public $autoLoginAfterAccountActivation = false;
