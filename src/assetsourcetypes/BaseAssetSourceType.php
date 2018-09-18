@@ -273,7 +273,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				}
 
 				if (!craft()->assets->storeFile($fileModel)) {
-				    throw new Exception('Unable to store asset record for '.$response->getDataItem('filePath'));
+				    $allErrors = $fileModel->getErrors();
+				    $validationError = '';
+
+				    foreach ($allErrors as $attribute => $errors) {
+                        $validationError .= "\n" . $attribute . ': ' . implode('; ', $errors);
+                    }
+
+				    throw new Exception('Unable to store asset record for ' . $response->getDataItem('filePath') . ': ' . $validationError);
 				}
 
 				if (!$this->isSourceLocal() && $fileModel->kind == 'image')
