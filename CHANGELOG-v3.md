@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\log\FileTarget::$includeUserIp` which determines whether users’ IP addresses should be included in the logs (`false` by default). ([#3310](https://github.com/craftcms/cms/pull/3310))
+
 ### Fixed
 - Fixed an error that could occur when installing or updating something within the Control Panel if `composer.json` required the `roave/security-advisories` package.
 - Fixed a SQL error that could occur when searching on PostgreSQL installs.
