@@ -688,6 +688,12 @@ class Search extends Component
                     $val[$key] = $temp;
                 }
             }
+        } else {
+            // If where here, it's a single string with punctuation that's been stripped out (i.e. "multi-site").
+            // We can assume "and".
+            if (StringHelper::contains($val, ' ')) {
+                $val = StringHelper::replace($val, ' ', ' & ');
+            }
         }
 
         return sprintf("%s @@ '%s'::tsquery", Craft::$app->getDb()->quoteColumnName('keywords_vector'), (is_array($val) ? implode($glue, $val) : $val));

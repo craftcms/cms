@@ -10,7 +10,6 @@ namespace craft\mail;
 use Craft;
 use craft\elements\User;
 use craft\helpers\Template;
-use craft\web\twig\TemplateLoaderException;
 use Swift_TransportException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -128,7 +127,7 @@ class Mailer extends \yii\swiftmailer\Mailer
                 $htmlBody = $view->renderTemplate($template, array_merge($variables, [
                     'body' => Template::raw(Markdown::process($textBody)),
                 ]));
-            } catch (TemplateLoaderException $e) {
+            } catch (\Throwable $e) {
                 // Clean up before throwing
             }
 
