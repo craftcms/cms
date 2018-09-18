@@ -25,7 +25,7 @@ class m180517_173000_user_photo_volume_to_uid extends Migration
         if ($settings) {
             $settings = Json::decodeIfJson($settings);
 
-            if (isset($settings['photoVolumeId'])) {
+            if (array_key_exists('photoVolumeId', $settings)) {
                 if (empty($settings['photoVolumeId'])) {
                     $settings['photoVolumeUid'] = null;
                 } else {
