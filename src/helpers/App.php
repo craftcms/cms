@@ -381,6 +381,12 @@ class App
             'dirMode' => $generalConfig->defaultDirMode,
         ];
 
+        if ($generalConfig->anonymizeLogs) {
+            $target['prefix'] = function () {
+                return null;
+            };
+        }
+
         if ($isConsoleRequest) {
             $target['logFile'] = '@storage/logs/console.log';
         } else {
