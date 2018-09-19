@@ -26,7 +26,7 @@ Searching for… | will find elements…
 `body:sal*` | where the `body` field contains a word that begins with “sal”.
 `body:*ty` | where the `body` field contains a word that ends with “ty”.
 `body:*alt*` | where the `body` field contains a word that contains “alt”.
-`body::salty` | where the `body` filed is set to “salty” and nothing more.
+`body::salty` | where the `body` field is set to “salty” and nothing more.
 `body::"salty dog"` | where the `body` field is set to “salty dog” and nothing more.
 `body::salty*` | where the `body` field begins with “salty”.
 `body::*dog` | where the `body` field ends with “dog”.
