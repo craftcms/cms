@@ -650,7 +650,7 @@ Defined by
 By default, Craft will require a 'password' field to be submitted on front-end, public
 user registrations. Setting this to `true` will no longer require it on the initial registration form.
 
-If you have email verification enabled, the will set their password once they've clicked on the
+If you have email verification enabled, they will set their password once they've clicked on the
 verification link in the email. If you don't, the only way they can set their password is to go
 through your "forgot password" workflow.
 
