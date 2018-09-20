@@ -851,16 +851,29 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $svg = preg_replace('/<\?xml.*?\?>/', '', $svg);
 
         // Namespace any IDs
-        if (strpos($svg, 'id=') !== false) {
+        if (strpos($svg, 'id=') !== false || strpos($svg, 'class=') !== false) {
             $namespace = StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 10) . '-';
             $ids = [];
+            $classes = [];
             $svg = preg_replace_callback('/\bid=([\'"])([^\'"]+)\\1/i', function($matches) use ($namespace, &$ids) {
                 $ids[] = $matches[2];
                 return "id={$matches[1]}{$namespace}{$matches[2]}{$matches[1]}";
             }, $svg);
+            $svg = preg_replace_callback('/\bclass=([\'"])([^\'"]+)\\1/i', function($matches) use ($namespace, &$classes) {
+                $newClasses = [];
+                foreach (preg_split('/\s+/', $matches[2]) as $class) {
+                    $classes[] = $class;
+                    $newClasses[] = $namespace . $class;
+                }
+                return 'class=' . $matches[1] . implode(' ', $newClasses) . $matches[1];
+            }, $svg);
             foreach ($ids as $id) {
                 $quotedId = preg_quote($id, '\\');
                 $svg = preg_replace("/#{$quotedId}\b(?!\-)/", "#{$namespace}{$id}", $svg);
+            }
+            foreach ($classes as $class) {
+                $quotedClass = preg_quote($class, '\\');
+                $svg = preg_replace("/\.{$quotedClass}\b(?!\-)/", ".{$namespace}{$class}", $svg);
             }
         }
 

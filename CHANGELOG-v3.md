@@ -4,6 +4,7 @@
 
 ### Changed
 - `ancestors`, `descendants`, `nextSibling`, `parent`, and `prevSibling` are now reserved field handles.
+- The `svg()` Twig function namespaces class names in addition to IDs now.
 
 ## 3.0.25 - 2018-09-18
 
