@@ -6,6 +6,9 @@
 - `ancestors`, `descendants`, `nextSibling`, `parent`, and `prevSibling` are now reserved field handles.
 - The `svg()` Twig function namespaces class names in addition to IDs now.
 
+### Fixed
+- Fixed a validation error that could occur when saving an entry as a new entry if the URI format didn’t contain a `{slug}` tag. ([#3320](https://github.com/craftcms/cms/issues/3320))
+
 ## 3.0.25 - 2018-09-18
 
 ### Added
