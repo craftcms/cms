@@ -1,14 +1,14 @@
-# Utility Types
+# ユーティリティタイプ
 
-Plugins can provide custom utility types for the Utilities section by creating a class that implements <api:craft\base\UtilityInterface>.
+プラグインは、<api:craft\base\UtilityInterface> を実装するクラスを作成することによって、ユーティリティセクション向けのカスタムユーティリティタイプを提供できます。
 
-As a convenience, you can extend <api:craft\base\Utility>, which provides a base utility type implementation.
+便利なものとして、基本ユーティリティタイプの実装を提供する <api:craft\base\Utility> を拡張できます。
 
-You can refer to Craft’s own utility classes for examples. They are located in `vendor/craftcms/cms/src/utilities/`.
+例えば、Craft 自身のユーティリティクラスを参照することもできます。それらは `vendor/craftcms/cms/src/utilities/` にあります。
 
-## Registering Custom Utility Types
+## カスタムユーティリティタイプの登録
 
-Once you have created your utility class, you will need to register it with the Utilities service, so Craft will know about it when populating the list of available utility types:
+ユーティリティクラスを作成したら、ユーティリティサービスに登録する必要があります。それによって、Craft は利用可能なユーティリティタイプのリストへ代入する際にそれを知ります。
 
 ```php
 <?php

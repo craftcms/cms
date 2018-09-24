@@ -1,14 +1,14 @@
 # フィールドタイプ
 
-Plugins can provide custom field types by creating a class that implements <api:craft\base\FieldInterface> and <api:craft\base\FieldTrait>. The class will serve both as a way to communicate various things about your field type (with static methods), and as a model that fields of its type will be instantiated with.
+プラグインは、<api:craft\base\FieldInterface> および <api:craft\base\FieldTrait> を実装するクラスを作成することによって、カスタムフィールドタイプを提供できます。そのクラスは（静的メソッドで）フィールドタイプについて様々なことを伝える手段として、さらに、そのタイプのフィールドが一緒にインスタンス化されるであろうモデルとしての両方の役割を果たします。
 
-As a convenience, you can extend <api:craft\base\Field>, which provides a base field type implementation.
+便利なものとして、基本フィールドタイプの実装を提供する <api:craft\base\Field> を拡張できます。
 
-You can refer to Craft’s own field classes for examples. They are located in `vendor/craftcms/cms/src/fields/`.
+例えば、Craft 自身のフィールドクラスを参照することもできます。それらは `vendor/craftcms/cms/src/fields/` にあります。
 
-## Registering Custom Field Types
+## カスタムフィールドタイプの登録
 
-Once you have created your field class, you will need to register it with the Fields service, so Craft will know about it when populating the list of available field types:
+フィールドクラスを作成したら、フィールドサービスに登録する必要があります。それによって、Craft は利用可能なフィールドタイプのリストへ代入する際にそれを知ります。
 
 ```php
 <?php

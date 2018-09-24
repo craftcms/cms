@@ -1,14 +1,14 @@
-# Volume Types
+# ボリュームタイプ
 
-Plugins can provide custom asset volume types by creating a class that implements <api:craft\base\VolumeInterface> and <api:craft\base\VolumeTrait>. The class will serve both as a way to communicate various things about your volume type (with static methods), and as a model that volumes of its type will be instantiated with.
+プラグインは、<api:craft\base\VolumeInterface> および <api:craft\base\VolumeTrait> を実装するクラスを作成することによって、カスタムアセットボリュームタイプを提供できます。そのクラスは（静的メソッドで）ボリュームタイプについて様々なことを伝える手段として、さらに、そのタイプのボリュームが一緒にインスタンス化されるであろうモデルとしての両方の役割を果たします。
 
-As a convenience, you can extend <api:craft\base\Volume>, which provides a base volume type implementation, optimized for [Flysystem](https://flysystem.thephpleague.com/) adapters.
+便利なものとして、[Flysystem](https://flysystem.thephpleague.com/) アダプタ向けに最適化された基本ボリュームタイプの実装を提供する <api:craft\base\Volume> を拡張することができます。
 
-You can refer to Craft’s own volume classes for examples. They are located in `vendor/craftcms/cms/src/volumes/`.
+例えば、Craft 自身のボリュームクラスを参照することもできます。それらは `vendor/craftcms/cms/src/volumes/` にあります。
 
-## Registering Custom Volume Types
+## カスタムボリュームタイプの登録
 
-Once you have created your volume class, you will need to register it with the Volumes service, so Craft will know about it when populating the list of available volume types:
+ボリュームクラスを作成したら、ボリュームサービスに登録する必要があります。それによって、Craft は利用可能なボリュームタイプのリストへ代入する際にそれを知ります。
 
 ```php
 <?php

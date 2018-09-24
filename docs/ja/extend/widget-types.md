@@ -1,14 +1,14 @@
-# Widget Types
+# ウィジェットタイプ
 
-Plugins can provide custom widget types for the Dashboard by creating a class that implements <api:craft\base\WidgetInterface> and <api:craft\base\WidgetTrait>. The class will serve both as a way to communicate various things about your widget type (with static methods), and as a model that widgets of its type will be instantiated with.
+プラグインは、<api:craft\base\WidgetInterface> および <api:craft\base\WidgetTrait> を実装するクラスを作成することによって、ダッシュボード向けのカスタムウィジェットタイプを提供できます。そのクラスは（静的メソッドで）ウィジェットタイプについて様々なことを伝える手段として、さらに、そのタイプのウィジェットが一緒にインスタンス化されるであろうモデルとしての両方の役割を果たします。
 
-As a convenience, you can extend <api:craft\base\Widget>, which provides a base widget type implementation.
+便利なものとして、基本ウィジェットタイプの実装を提供する <api:craft\base\Widget> を拡張できます。
 
-You can refer to Craft’s own widget classes for examples. They are located in `vendor/craftcms/cms/src/widgets/`.
+例えば、Craft 自身のウィジェットクラスを参照することもできます。それらは `vendor/craftcms/cms/src/widgets/` にあります。
 
-## Registering Custom Widget Types
+## カスタムウィジェットタイプの登録
 
-Once you have created your widget class, you will need to register it with the Dashboard service, so Craft will know about it when populating the list of available widget types:
+ウィジェットクラスを作成したら、ダッシュボードサービスに登録する必要があります。それによって、Craft は利用可能なウィジェットタイプのリストへ代入する際にそれを知ります。
 
 ```php
 <?php

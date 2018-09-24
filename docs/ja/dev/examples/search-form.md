@@ -1,9 +1,10 @@
 # 検索フォーム
 
-検索フォームを作成するには、初めに入力項目 `search` を含む通常の HTML を作成します。
+検索フォームを作成するには、はじめに入力項目 `search` を含む通常の HTML を作成します。
 
 ```twig
 <form action="{{ url('search/results') }}">
+    {{ csrfInput() }}
     <input type="search" name="q" placeholder="Search">
     <input type="submit" value="Go">
 </form>

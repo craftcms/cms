@@ -98,7 +98,7 @@ public function actionFoo()
 $url = \Craft::$app->assetManager->getPublishedUrl('@ns/prefix/path/to/file.svg', true);
 ```
 
-（既に公開されてない場合）Craft が自動的にそのファイルを公開し、URL を返します。
+（すでに公開されてない場合）Craft が自動的にそのファイルを公開し、URL を返します。
 
 同じディレクトリの他のファイルと一緒に公開したいものの、単一ファイルの URL だけ必要な場合、そのパスを2つのパートに分割します。1）公開したいすべてのファイルを含む親ディレクトリのパス。2）URL を必要とする個々のファイルの親ディレクトリからの相対パス。
 

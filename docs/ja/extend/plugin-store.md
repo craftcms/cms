@@ -1,73 +1,73 @@
-# Publishing to the Plugin Store
+# プラグインストアでの配布
 
-If you want to make your plugin available in the in-app Plugin Store, and on [plugins.craftcms.com](https://plugins.craftcms.com/), follow this guide.
+プラグインをシステム内のプラグインストアと [plugins.craftcms.com](https://plugins.craftcms.com/) で利用可能にしたい場合、このガイドに従ってください。
 
-## Choose a License
+## ライセンスの選択
 
-All plugins in the Plugin Store must have one of two licenses:
+プラグインストア内のすべてのプラグインは、2つのライセンスのうちのいずれかでなければなりません。
 
-- **[MIT](https://opensource.org/licenses/MIT)** – Use this if you aren’t planning on ever charging for your plugin, and you’re OK with other people pretty much doing whatever they want with your code, as long as they give credit back to you. ([Example](https://github.com/craftcms/element-api/blob/v2/LICENSE.md))
-- **[Craft](https://craftcms.github.io/license/)** – Use this if you are planning on charging for your plugin, and want to prevent people from using your code without paying up. ([Example](https://github.com/craftcms/cms/blob/develop/LICENSE.md))
+- **[MIT](https://opensource.org/licenses/MIT)** – プラグインに対して請求を予定していない場合に使用します。あなたにクレジットを返す限り、あなたのコードで他の人がしたいことを行うことを許可します。（[実例](https://github.com/craftcms/element-api/blob/v2/LICENSE.md)）
+- **[Craft](https://craftcms.github.io/license/)** – プラグインに対して請求を予定し、支払いなしであなたのコードを使用することを阻止したい場合に使用します。（[実例](https://github.com/craftcms/cms/blob/develop/LICENSE.md)）
 
-Create a `LICENSE.md` file at the root of your plugin’s repository, and paste in the license text, beginning with a copyright notice.
+プラグインリポジトリのルートに `LICENSE.md` ファイルを作成し、著作権表示からはじめて、ライセンステキストをペーストします。
 
 ```
 Copyright © <YourName>
 ```
 
-## Registering your Plugin
+## プラグインの登録
 
-To register your plugin, first make sure it’s published to a public GitHub repository. Then create a Craft ID account at [id.craftcms.com](https://id.craftcms.com), and connect it to your GitHub account.
+プラグインを登録するには、はじめに GitHub の公開リポジトリに公開されていることを確認してください。次に [id.craftcms.com](https://id.craftcms.com) で Craft ID アカウントを作成し、GitHub アカウントに接続します。
 
 ::: warning
-If your plugins are published to a GitHub organization account, make sure that the organization is checked when authenticating your GitHub account.
+プラグインが GitHub の organization アカウントで公開されている場合、GitHub アカウントの認証時にその組織がチェックされていることを確認してください。
 :::
 
-From your Craft ID account, go to Plugins → “Add a plugin”, and click the “Select” button next to your plugin’s repository. You will then be able to edit its description, screenshots, and other details.
+Craft ID アカウントから「Plugins」へ移動後に「Add a plugin」をクリックし、プラグインのリポジトリの横にある「Select」ボタンをクリックします。説明文、スクリーンショット、および、その他の詳細を編集できます。
 
-### Choose a Price
+### 価格の選択
 
-If you wish to sell your plugin, choose a price point that makes sense. Here are some suggested price ranges to consider:
+プラグインを販売したい場合、筋が通っている価格を選択してください。考慮すべき推奨される価格帯は次の通りです。
 
-| Price Range | Example Use Cases |
+| 価格帯 | 使用例 |
 | ----------- | ------------------------------------------------------ |
-| $10-$29 | Lightweight “plug and play” utilities and integrations |
-| $49-$99 | Complex field types and integrations |
-| $149-$249 | Plugins that add significant new system functionality |
-| $499-$999 | Major or highly niche applications |
+| $10-$29 | 軽量な「プラグアンドプレイ」ユーティリティとインテグレーション |
+| $49-$99 | 複雑なフィールドタイプとインテグレーション |
+| $149-$249 | 重要な新しいシステム機能を追加するプラグイン |
+| $499-$999 | 主要、または、高度にニッチなアプリケーション |
 
-You will also be required to pick a Renewal Price, which is the annual fee the Plugin Store will charge customers who wish to continue installing new updates, after the first year. Pick a Renewal Price that is around 20-50% of the initial Price. For example, if you are charging $99 for your plugin, your Renewal Price should be between $19-$49.
+また、2年目以降に新しいアップデートをインストールしたい顧客にプラグインストアが請求する年額料金である更新価格を選択する必要があります。最初の価格のおよそ 20-50% で更新価格を選択してください。例えば、プラグインで $99 請求する場合、更新価格は $19-$49 の間にするべきです。
 
 ::: warning
-If you initially submit your plugin as free, you will not be able to change it to a commercial plugin later; you will need to submit the commercial version as a completely separate plugin. Eventually the Plugin Store will support plugin Editions, which will provide a path for free plugins to offer commercial upgrades.
+最初にプラグインを無料で提出した場合、あとから商用プラグインに変更することはできません。商用バージョンは、完全に別のプラグインとして提出する必要があります。最終的に、プラグインストアは無料プラグインから商用アップグレードを申し込むための方法を提供するプラグインエディションをサポートするでしょう。
 :::
 
-### Submit for Approval
+### 承認のための提出
 
-Once you’re ready to submit the plugin, click the “Submit for approval” button. Once your plugin is approved, it will become visible on [plugins.craftcms.com](https://plugins.craftcms.com/). It won’t necessarily be available in the in-app Plugin Store yet, though, unless your plugin already has at least one [release](#plugin-releases).
+プラグインを提出するための準備ができたら、「Submit for approval」ボタンをクリックしてください。プラグインが承認されると、[plugins.craftcms.com](https://plugins.craftcms.com/) で表示されるようになります。プラグインが少なくとも1つの[リリース](#plugin-releases)を持っていない限り、アプリ内のプラグインストアで利用可能にならない点に注意してください。
 
 ::: tip
-You might want to register your plugin with [Packagist](https://packagist.org/) in addition to the Plugin Store, so that people can install and update your plugin from the command line. But Packagist isn’t a requirement for the Plugin Store.
+人々がコマンドラインからプラグインのインストールとアップデートすることもできるよう、プラグインストアに加えて [Packagist](https://packagist.org/) でプラグインを登録したいかもしれません。しかし、Packagist はプラグインストアの必須要件ではありません。
 :::
 
-## Plugin Releases
+## プラグインのリリース
 
-To release a new version of your plugin, first decide on the version number. The Plugin Store follows the same [Semantic Versioning](https://semver.org/) conventions supported by Composer:
+プラグインの新しいバージョンをリリースするために、はじめにバージョン番号を決定してください。プラグインストアは Composer でサポートされているのと同じ [Semantic Versioning](https://semver.org/) 規約に従います。
 
-- Versions should have 3 or 4 segments (e.g. `1.2.3` or `1.2.3.4`).
-- Pre-release versions should end with a release identifier (`-alpha.X`, `-beta.X`, or `-RCX`).
+- バージョンは3つ、または、4つのセグメント（例：`1.2.3` または `1.2.3.4`）が必要です。
+- プレリリースバージョンには、リリース識別子（`-alpha.X`、`-beta.X`、または、`-RCX`）が必要です。
 
-Once you’ve decided on a version, follow these steps:
+バージョンを決定したら、次のステップに従います。
 
-1. If your plugin has a [changelog](changelogs-and-updates.md), make sure the new version has a correctly-formatted heading, including the release date.
+1. プラグインが[更新履歴](changelogs-and-updates.md)を持つ場合、新しいバージョンがリリース日を含めた正しいフォーマットの見出しを持つことを確認してください。
 
    ```markdown
    ## 3.0.0 - 2018-03-31
    ```
 
-2. If your plugin’s `composer.json` file includes a `version` property, make sure that it is set to the new version number.
+2. プラグインの `composer.json` ファイルに `version` プロパティを含む場合、新しいバージョンがセットされていることを確認してください。
 
-3. Once everything is good to go and committed to Git, [create a tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) named after the version number, optionally beginning with `v` (e.g. `v3.0.0` or `v3.0.0-beta.1`). Prefixing the tag name with `release-` is also allowed (e.g. `release-3.0.0` or `release-v3.0.0`).
+3. すべて問題なく Git にコミットされたら、オプションとして `v` からはじめてバージョン番号にちなんで名付けられた[タグを作成](https://git-scm.com/book/en/v2/Git-Basics-Tagging)してください（例：`v3.0.0` または `v3.0.0-beta.1`）。タグ名の接頭辞に `release-` を付けることも許可されています（例：`release-3.0.0` または `release-v3.0.0`）。
 
-4. Push your latest commits and your new version tag to GitHub. At this point the Plugin Store should automatically get notified about the release, and will start recording it. If all goes well, it will show up in the Plugin Store within a minute or two.
+4. 最新のコミットと新しいバージョンタグを GitHub にプッシュしてください。この時点で、プラグインストアはそのリリースについて自動的に通知を受け取り、それを記録しはじめます。すべてうまくいった場合、1〜2分でプラグインストアに表示されます。
 

@@ -1,16 +1,16 @@
-# Control Panel Templates
+# コントロールパネルのテンプレート
 
-The Control Panel is built using Twig templates, so extending it with new pages should feel familiar if you’ve worked with Twig on the front-end.
+コントロールパネルは Twig テンプレートを使用して構築されているため、フロントエンドの Twig を操作していれば、新しいページでそれを拡張するのは慣れ親しんだ感じがするでしょう。
 
-Plugins can define templates within the `templates/` folder within their base source folder. Templates within there can be referenced using the plugin’s handle as the template path prefix.
+プラグインは、ベースソースフフォルダにある `templates/` フォルダ内のテンプレートを定義できます。そこに含まれるテンプレートは、プラグインのハンドルをテンプレートパス接頭辞として使用することで参照できます。
 
-For example if a plugin’s handle is `foo` and it has a `templates/bar.twig` template, that template could be accessed by going to `/admin/foo/bar`, or from Twig by including/extending `foo/bar` (or `foo/bar.twig`).
+例えば、プラグインのハンドルが `foo` で  `templates/bar.twig` テンプレートを持つ場合、そのテンプレートは`/admin/foo/bar` にブラウザで移動するか、Twig から `foo/bar`（または、`foo/bar.twig`）を include / extends することによってアクセスできます。
 
-Modules can have templates too, but they will need to manually define a [template root](template-roots.md) before they are accessible.
+モジュールもテンプレートを持つことができます。しかし、アクセスできるようにする前に[テンプレートルート](template-roots.md)を手動で定義する必要があります。
 
-## Page Templates
+## ページのテンプレート
 
-At a minimum, page templates should extend Craft’s [_layouts/cp](https://github.com/craftcms/cms/blob/develop/src/templates/_layouts/cp.html) layout template, set a `title` variable, and define a `content` block.
+少なくとも、ページのテンプレートは Craft の [_layouts/cp](https://github.com/craftcms/cms/blob/develop/src/templates/_layouts/cp.html) レイアウトテンプレートを extends し、`title` 変数のセットと`content` ブロックを定義する必要があります。
 
 ```twig
 {% extends "_layouts/cp" %}
@@ -21,12 +21,12 @@ At a minimum, page templates should extend Craft’s [_layouts/cp](https://githu
 {% endblock %}
 ```
 
-The following blocks can also be defined, to customize other aspects of the page:
+次のブロックも、ページの他の外観をカスタマイズするために定義できます。
 
-- `header` – Used to output the page header, including the page title and other header elements.
-- `pageTitle` – Used to output the page title.
-- `contextMenu` – Used to output context menus beside the page title. (For example, the entry revision menu on Edit Entry pages.)
-- `actionButton` – Used to output the primary page action button. (For example, the Save button on Edit Entry pages.)
-- `sidebar` – Used to output the page sidebar contents.
-- `details` – Used to output the detail pane contents.
+- `header` – ページタイトルや他のヘッダー要素を含むページヘッダーの出力に使用されます。
+- `pageTitle` – ページタイトルの出力にしようされます。
+- `contextMenu` – ページタイトル脇のコンテクストメニューの出力に使用されます。（例：エントリ編集ページのエントリのリビジョンメニュー。）
+- `actionButton` – プライマリのページアクションボタンの出力に使用されます。（例：エントリ編集ページの保存ボタン。）
+- `sidebar` – ページのサイドバーコンテンツの出力に使用されます。
+- `details` – 詳細ペインのコンテンツの出力に使用されます。
 

@@ -1,18 +1,18 @@
-# Plugin Migrations
+# プラグインマイグレーション
 
-If your schema changes over the life of your plugin, you can write a [migration](https://www.yiiframework.com/doc/guide/2.0/en/db-migrations) to keep existing installations updated with the latest schema. Craft automatically checks for new migrations whenever a plugin’s schema version number changes.
+スキーマがプラグインのを寿命を超えて変化した場合、既存のインストールを最新のスキーマでアップデートするために[マイグレーション](https://www.yiiframework.com/doc/guide/2.0/en/db-migrations)を作成します。Craft はプラグインのスキーマバージョン番号が変わるごとに、新しいマイグレーションを自動的にチェックします。
 
 [[toc]]
 
 ## マイグレーションの作成
 
-To create a new migration, open up your terminal and go to a Craft project that your plugin is installed in:
+新しいマイグレーションを作成するには、ターミナルを開き、プラグインがインストールされている Craft プロジェクトに移動します。
 
 ```bash
 cd /path/to/project
 ```
 
-Then run the following command to generate a new migration file for your plugin (replacing `<MigrationName>` and `<PluginHandle>` with your migration name and plugin handle, respectively):
+それから、プラグインのための新しいマイグレーションファイルを生成するために次のコマンドを実行します（`<MigrationName>` と `<PluginHandle>` をそれぞれマイグレーション名とプラグインハンドルに置き換えます）。
 
 ```bash
 ./craft migrate/create <MigrationName> --plugin=<PluginHandle>
@@ -26,17 +26,17 @@ Craft のインストールが Vagrant box から実行されている場合、�
 マイグレーション名は有効な PHP クラス名でなければなりません。慣習として、`StudlyCase` よりも `snake_case` を使うことをお勧めします。
 :::
 
-Enter `yes` at the prompt, and a new migration file will be created in a `migrations/` subfolder within your plugin’s source directory.
+プロンプトで `yes` と入力すると、新しいマイグレーションファイルがプラグインのソースディレクトリ内の `migrations/` サブフォルダに作成されます。
 
 ### 内部で行うこと
 
 マイグレーションクラスには `safeUp()` と `safeDown()` メソッドが含まれます。マイグレーションが _適用される_ ときに `safeUp()` が実行され、_復帰させる_ ときに `safeDown()` が実行されます。
 
 ::: tip
-You can safely ignore the `safeDown()` method, as Craft doesn’t have a way to revert plugin migrations from the Control Panel.
+Craft にはコントロールパネルからプラグインのマイグレーションを元に戻す方法がないため、`safeDown()` メソッドを無視しても問題ありません。
 :::
 
-You have full access to [Craft’s API](https://docs.craftcms.com/api/v3/) from your `safeUp()` method, but be careful about using your own plugin’s APIs here. As your plugin’s database schema changes over time, so will your API’s assumptions about the schema. If an old migration calls a service method that relies on database changes that haven’t been applied yet, it will result in a SQL error. So in general you should execute all SQL queries directly from your own migration class. It may feel like you’re duplicating code, but it will be more future-proof.
+`safeUp()` メソッドから [Craft の API](https://docs.craftcms.com/api/v3/) に完全にアクセスできますが、ここでプラグイン独自の API を使用することに注意してください。長い間にプラグインのデータベーススキーマが変化するように、スキーマに関する API の想定も変化します。古いマイグレーションが、まだ適用されていないデータベースの変更を前提とするサービスメソッドを呼び出すと、SQL エラーをもたらすでしょう。そのため、一般的には独自のマイグレーションクラスからすべての SQL クエリを直接実行する必要があります。コードを複製しているように感じるかもしれませんが、将来的にも保証されるでしょう。
 
 ### データベースデータの操作
 
@@ -81,7 +81,7 @@ echo "    > some note\n";
 
 ## マイグレーションの実行
 
-To execute your plugin’s migrations, you’ll need to increase its schema version. (If you haven’t already explicitly defined your plugin’s schema version, it will be `1.0.0` by default.)
+プラグインのマイグレーションを実行するには、スキーマバージョンを増やす必要があります。（プラグインのスキーマバージョンを明示的に定義していない場合、デフォルトで `1.0.0` になります。）
 
 ```php
 class Plugin extends \craft\base\Plugin
@@ -92,17 +92,17 @@ class Plugin extends \craft\base\Plugin
 }
 ```
 
-With that in place, go to your Control Panel, and Craft will prompt you to run any pending plugin migrations. Click “Finish up” to do that.
+ファイルをあるべき場所に用意したら、コントロールパネルに移動すると、Craft が保留中のプラグインマイグレーションを実行するよう促すでしょう。これを実行するには「完了」をクリックしてください。
 
-Alternatively, you can run pending migrations from your terminal with the `migrate/up` command:
+あるいは、`migrate/up` コマンドでターミナルから保留中のマイグレーションを実行できます。
 
 ```bash
 ./craft migrate/up --plugin=<plugin-handle>
 ```
 
-## Install Migrations
+## インストールマイグレーション
 
-Plugins can have a special “Install” migration which handles the installation and uninstallation of the plugin. Install migrations live at `migrations/Install.php` alongside normal migrations. They should follow this template:
+プラグインは、プラグインのインストールとアンインストールで処理される特別な「インストール」マイグレーションを持つことができます。インストールマイグレーションは、通常のマイグレーションと並行して `migrations/Install.php` にあります。次のテンプレートに従うべきです。
 
 ```php
 <?php
@@ -124,15 +124,15 @@ class Install extends Migration
 }
 ```
 
-You can give your plugin an install migration with the `migrate/create` command if you pass the migration name “`install`”:
+マイグレーション名「`install`」を渡すと、`migrate/create` コマンドでプラグインにインストールマイグレーションを与えることができます。
 
 ```bash
 ./craft migrate/create install --plugin=<PluginHandle>
 ```
 
-When a plugin has an Install migration, its `safeUp()` method will be called when the plugin is installed, and its `safeDown()` method will be called when the plugin is uninstalled (invoked by <api:craft\base\Plugin::install()> and `uninstall()`).
+プラグインがインストールマイグレーションを持つ場合、`safeUp()` メソッドはプラグインがインストールされるときに呼び出されます。そして、`safeDown()` メソッドはプラグインがアンインストールされるときに呼び出されます（<api:craft\base\Plugin::install()> と `uninstall()` によって行使されます）。
 
 ::: tip
-It is *not* a plugin’s responsibility to manage its row in the `plugins` database table. Craft takes care of that for you.
+`plugins` データベーステーブルの行を管理するのはプラグインの責任 *ではありません*。Craft がそれをケアします。
 :::
 
