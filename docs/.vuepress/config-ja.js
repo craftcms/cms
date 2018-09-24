@@ -27,7 +27,7 @@ module.exports = {
                 ]
             },
             {
-                title: 'Plugin Development',
+                title: 'プラグイン開発',
                 collapsable: false,
                 children: [
                     'plugin-guide',
@@ -39,7 +39,7 @@ module.exports = {
                 ]
             },
             {
-                title: 'Extending the Control Panel',
+                title: 'コントロールパネルの拡張',
                 collapsable: false,
                 children: [
                     'cp-section',
@@ -49,7 +49,7 @@ module.exports = {
                 ]
             },
             {
-                title: 'System Components',
+                title: 'システムコンポーネント',
                 collapsable: false,
                 children: [
                     'widget-types',
