@@ -91,7 +91,7 @@ Or you can show them as a hierarchical list with the [nav](dev/tags/nav.md) tag:
                     </ul>
                 {% endifchildren %}
             </li>
-        {% endfor %}
+        {% endnav %}
     </ul>
 {% endif %}
 ```
