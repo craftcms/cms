@@ -627,6 +627,7 @@ public function modifyEntrySources(&$sources, $context)
 }
 
 // New:
+use craft\base\Element;
 use craft\elements\Entry;
 use craft\events\RegisterElementSourcesEvent;
 use yii\base\Event;
