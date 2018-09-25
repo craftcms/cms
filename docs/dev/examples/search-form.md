@@ -10,7 +10,7 @@ To create a search form, first create a normal HTML form with a `search` input:
 </form>
 ```
 
-Then, on whatever template your form submits to (e.g. `search/results.html`), just pull the search query from the `GET`/`POST` data, and pass it to the `search` [entry query param](../element-queries/entry-queries.md#search):
+Then, on whatever template your form submits to (e.g. `search/results.twig`), just pull the search query from the `GET`/`POST` data, and pass it to the `search` [entry query param](../element-queries/entry-queries.md#search):
 
 ```twig
 <h1>Search Results</h1>

@@ -46,7 +46,7 @@ Here is how Craft handles each request:
    If none of the above checks are successful, Craft will throw a [NotFoundHttpException](api:yii\web\NotFoundHttpException). If [Dev Mode](config:devMode) is enabled, an error report for the exception will be shown. Otherwise, a 404 error will be returned.
 
    ::: tip
-   You can customize your site’s 404 page by placing a `404.html` template at the root of your `templates/` directory. You can test this page even if [Dev Mode](config:devMode) is enabled by going to `http://my-project.test/404`. 
+   You can customize your site’s 404 page by placing a `404.twig` template at the root of your `templates/` directory. You can test this page even if [Dev Mode](config:devMode) is enabled by going to `http://my-project.test/404`. 
    :::
 
 
@@ -141,7 +141,7 @@ For example, with this URL rule:
 'blog/archive/<year:\d{4}>' => ['template' => 'blog/_archive'],
 ```
 
-If you access `http://my-project.test/blog/archive/2018`, your `blog/_archive.html` template will get loaded a `year` variable set to `2018`.
+If you access `http://my-project.test/blog/archive/2018`, your `blog/_archive.twig` template will get loaded a `year` variable set to `2018`.
 
 ```twig
 <h1>Blog Entries from {{ year }}</h1>

@@ -108,7 +108,7 @@ The config file cannot contain any keys that are not defined in the plugin’s s
 
 Plugins can also provide a settings page in the Control Panel, which may make it easier for admins to manage settings values, depending on the plugin.
 
-To give your plugin a settings page, create a `templates/` directory within your plugin’s source directory, and create a `settings.html` file within it:
+To give your plugin a settings page, create a `templates/` directory within your plugin’s source directory, and create a `settings.twig` file within it:
 
 ```twig
 {% import "_includes/forms" as forms %}
