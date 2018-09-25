@@ -699,7 +699,7 @@ Whether uppercase letters should be allowed in entry and category slugs. Note th
 
 **Since**: Craft 2.1
 
-Explicitly sets the base URL to the control panel, which may be used if the dynamically-determined URL is not desired for some reason.
+Explicitly sets the base URL to the Control Panel, which may be used if the dynamically-determined URL is not desired for some reason.
 
 ```php
 'baseCpUrl' => 'http://admin.example.com/',
@@ -1287,7 +1287,7 @@ Configures Craft to send all system emails to a single email address (or multipl
 
 **Since**: Craft 2.1
 
-Removes “Username” fields in the control panel, and automatically saves users’ usernames based on their email addresses.
+Removes “Username” fields in the Control Panel, and automatically saves users’ usernames based on their email addresses.
 
 ```php
 'useEmailAsUsername' => true,

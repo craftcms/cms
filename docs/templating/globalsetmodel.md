@@ -42,4 +42,4 @@ GlobalSetModel objects have the following methods:
 
 ### `getCpEditUrl()`
 
-Returns the URL to the global set’s edit page within the control panel.
+Returns the URL to the global set’s edit page within the Control Panel.

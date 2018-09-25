@@ -57,7 +57,7 @@ The MySQL user you tell Craft to connect with must have the following privileges
 
 ## CP Browser Requirements
 
-Craft’s control panel requires a modern browser:
+Craft’s Control Panel requires a modern browser:
 
 ### Windows and OS X
 

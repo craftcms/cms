@@ -165,7 +165,7 @@ If `getChildren()` is called for an entry in a Channel section, it will return a
 
 ### `getCpEditUrl()`
 
-Returns the URL to the entry’s edit page within the control panel.
+Returns the URL to the entry’s edit page within the Control Panel.
 
 ### `getDescendants( distance )`
 
