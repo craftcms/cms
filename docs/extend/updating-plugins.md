@@ -839,7 +839,7 @@ Additionally, any `<div class="pane">`s you had should generally lose their `pan
 
 ### Control Panel Template Hooks
 
-The following Control Panel template hooks have been renamed:
+The following Control Panel [template hooks](template-hooks.md) have been renamed:
 
 | Old                              | New
 | -------------------------------- | ----------------------------

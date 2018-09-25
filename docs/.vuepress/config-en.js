@@ -72,6 +72,7 @@ module.exports = {
                     // 'behaviors',
                     'template-roots',
                     'extending-twig',
+                    'template-hooks',
                     // 'front-end-controllers',
                 ]
             }
@@ -98,6 +99,7 @@ module.exports = {
                     'tags/css',
                     'tags/exit',
                     'tags/header',
+                    'tags/hook',
                     'tags/js',
                     'tags/nav',
                     'tags/paginate',
