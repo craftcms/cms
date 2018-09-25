@@ -18,9 +18,13 @@ This tag makes it easy to paginate a set of elements across multiple pages.
 
 Paginated URLs will be identical to the first page’s URL, except that “/p_X_” will be appended to the end (where _X_ is the page number), e.g. `http://my-project.test/news/p2`.
 
-Tip: You can use the <config:pageTrigger> config setting to customize what comes before the actual page number in your URLs. For example you could set it to `'page/'`, and your paginated URLs would start looking like `http://my-project.test/news/page/2`.
+::: tip
+You can use the <config:pageTrigger> config setting to customize what comes before the actual page number in your URLs. For example you could set it to `'page/'`, and your paginated URLs would start looking like `http://my-project.test/news/page/2`.
+:::
 
-Warning: Only a single `{% paginate %}` tag should be used per request.
+::: warning
+Only a single `{% paginate %}` tag should be used per request.
+:::
 
 ## Parameters
 
