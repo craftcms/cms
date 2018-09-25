@@ -22,7 +22,7 @@ Each transform has the following settings:
 * **Fit**  – Scales the image so that it is as big as possible with all dimensions fitting within the specified width and height.
 * **Stretch** – Stretches the image to the specified width and height.
 
-If **Mode** is set to “Crop”, an additional “Crop Position” setting will appear, where you can define which area of the image should be treated as the focal point when cropping. Its options include:
+If **Mode** is set to “Crop”, an additional “Default Focal Point” setting will appear, where you can define which area of the image Craft should center the crop on, for images without a [focal point](assets.md#focal-points) set. Its options include:
 
 * Top-Left
 * Top-Center
