@@ -201,11 +201,9 @@ module.exports = {
                     'routing',
                     'relations',
                     'searching',
-                    'reference-tags',
                     'sites',
                     ['localization', 'Localization'],
                     'static-translations',
-                    'content-migrations',
                     'plugins',
                 ]
             },
@@ -215,6 +213,14 @@ module.exports = {
                 children: [
                     'dev/',
                     'extend/',
+                ]
+            },
+            {
+                title: 'Advanced',
+                collapsable: false,
+                children: [
+                    'content-migrations',
+                    'reference-tags',
                 ]
             },
         ]
