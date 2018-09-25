@@ -15,8 +15,11 @@ Then, on whatever template your form submits to (e.g. `search/results.html`), ju
 ```twig
 <h1>Search Results</h1>
 
-{% set query = craft.app.request.getParam('q') %}
-{% set entries = craft.entries.search(query).orderBy('score').all() %}
+{% set searchQuery = craft.app.request.getParam('q') %}
+{% set entries = craft.entries()
+    .search(searchQuery)
+    .orderBy('score')
+    .all() %}
 
 {% if entries|length %}
     <p>{{ entries|length }} results:</p>
@@ -27,6 +30,6 @@ Then, on whatever template your form submits to (e.g. `search/results.html`), ju
         {% endfor %}
     </ul>
 {% else %}
-    <p>Your search for “{{ query }}” didn’t return any results.</p>
+    <p>Your search for “{{ searchQuery }}” didn’t return any results.</p>
 {% endif %}
 ```

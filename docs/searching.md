@@ -15,7 +15,6 @@ Searching for… | will find elements…
 `salty OR dog` | containing either “salty” or “dog” (or both).
 `salty -dog` | containing “salty” but not “dog”.
 `"salty dog"` | containing the exact phrase “salty dog”.
-`sal*` | containing a word that begins with “sal”.
 `*ty` | containing a word that ends with “ty”.
 `*alt*` | containing a word that contains “alt”.
 `body:salty` | where the `body` field contains “salty”.
@@ -23,7 +22,6 @@ Searching for… | will find elements…
 `body:salty OR body:dog` | where the `body` field contains either “salty” or “dog”.
 `body:salty -body:dog` | where the `body` field contains “salty” but not “dog”.
 `body:"salty dog"` | where the `body` field contains the exact phrase “salty dog”.
-`body:sal*` | where the `body` field contains a word that begins with “sal”.
 `body:*ty` | where the `body` field contains a word that ends with “ty”.
 `body:*alt*` | where the `body` field contains a word that contains “alt”.
 `body::salty` | where the `body` field is set to “salty” and nothing more.
@@ -32,10 +30,6 @@ Searching for… | will find elements…
 `body::*dog` | where the `body` field ends with “dog”.
 `body:*` | where the `body` field contains any value.
 `-body:*` | where the `body` field is empty.
-
-::: tip
-You can alter the default behavior of search terms with the <config:defaultSearchTermOptions> config setting. See [Enabling Fuzzy Search by Default](https://craftcms.com/support/enabling-fuzzy-search-by-default) for more info.
-:::
 
 ## Searching for specific element attributes
 
@@ -74,37 +68,25 @@ Assets, categories, entries, users, and tags each support their own set of addit
 
 `craft.assets()`, `craft.entries()`, `craft.tags()`, and `craft.users()` support a `search` parameter that you can use to filter their elements by a given search query.
 
-You can specify the search query in two different ways:
-
 ```twig
-{% set query = craft.request.getParam('q') %}
+{# Get the user's search query from the 'q' query-string param #}
+{% set searchQuery = craft.request.getParam('q') %}
 
-{# Pass the search query directly into the search param: #}
-{% set results = craft.entries({
-    search: query
-}).all() %}
-
-{# Or pass it along with some custom search term options: #}
-{% set results = craft.entries({
-    search: {
-        query: query,
-        subLeft: true,
-        subRight: true                
-    }
-}).all() %}
+{# Fetch entries that match the search query #}
+{% set results = craft.entries()
+    .search(searchQuery)
+    .all() %}
 ```
-
-If you go the latter route, note that the `query` property is required. Beyond that, you can use all of the same keys available to the <config:defaultSearchTermOptions> config setting.
 
 ### Ordering results by score
 
 You can also set the `orderBy` parameter to `'score'` if you want results ordered by best-match to worst-match:
 
 ```twig
-{% set results = craft.entries({
-    search: query,
-    orderBy: 'score'
-}).all() %}
+{% set results = craft.entries(){
+    .search(searchQuery)
+    .orderBy('score')
+    .all() %}
 ```
 
 When you do this, each of the elements returned will have a `searchScore` attribute set, which reveals what their search score was.
