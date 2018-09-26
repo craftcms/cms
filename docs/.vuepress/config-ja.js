@@ -71,6 +71,7 @@ module.exports = {
                     // 'behaviors',
                     'template-roots',
                     'extending-twig',
+                    'template-hooks',
                     // 'front-end-controllers',
                 ]
             }
@@ -97,6 +98,7 @@ module.exports = {
                     'tags/css',
                     'tags/exit',
                     'tags/header',
+                    'tags/hook',
                     'tags/js',
                     'tags/nav',
                     'tags/paginate',
@@ -198,11 +200,9 @@ module.exports = {
                     'routing',
                     'relations',
                     'searching',
-                    'reference-tags',
                     'sites',
                     ['localization', 'ローカライゼーション'],
                     'static-translations',
-                    'content-migrations',
                     'plugins',
                 ]
             },
@@ -212,6 +212,14 @@ module.exports = {
                 children: [
                     'dev/',
                     'extend/',
+                ]
+            },
+            {
+                title: '高度な話題',
+                collapsable: false,
+                children: [
+                    'content-migrations',
+                    'reference-tags',
                 ]
             },
         ]
