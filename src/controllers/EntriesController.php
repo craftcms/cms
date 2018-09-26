@@ -812,9 +812,11 @@ class EntriesController extends BaseEntriesController
                     throw new NotFoundHttpException('Entry not found');
                 }
             } else {
+                $authorId = Craft::$app->getRequest()->getQueryParam('authorId', Craft::$app->getUser()->getIdentity()->id);
+
                 $variables['entry'] = new Entry();
                 $variables['entry']->sectionId = $variables['section']->id;
-                $variables['entry']->authorId = Craft::$app->getUser()->getIdentity()->id;
+                $variables['entry']->authorId = $authorId;
                 $variables['entry']->enabled = true;
                 $variables['entry']->siteId = $site->id;
 
