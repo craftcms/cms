@@ -625,6 +625,7 @@ public function modifyEntrySources(&$sources, $context)
 }
 
 // New:
+use craft\base\Element;
 use craft\elements\Entry;
 use craft\events\RegisterElementSourcesEvent;
 use yii\base\Event;
@@ -836,7 +837,7 @@ $html = \Craft::$app->view->renderTemplate('plugin-handle/path/to/template');
 
 ### コントロールパネルテンプレートフック
 
-次のコントロールパネルテンプレートフックは、リネームされました。
+The following Control Panel [template hooks](template-hooks.md) have been renamed:
 
 | 旧 | 新 |
 | -------------------------------- | ---------------------------- |

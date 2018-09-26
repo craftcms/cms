@@ -92,7 +92,7 @@
                     </ul>
                 {% endifchildren %}
             </li>
-        {% endfor %}
+        {% endnav %}
     </ul>
 {% endif %}
 ```

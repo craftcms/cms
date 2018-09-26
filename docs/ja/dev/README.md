@@ -20,30 +20,30 @@ PHP コードはテンプレート内で使用できませんが、Craft はニ�
 
 Craft には、テンプレートへの Unix スタイルのファイルシステムのパスや `templates` フォルダからの相対パスという、それぞれのケースで適用される標準的なテンプレートパスのフォーマットがあります。
 
-例えば、`templates/recipes/entry.html` にテンプレートがある場合、次のテンプレートパスで指し示すことができます。
+例えば、`templates/recipes/entry.twig` にテンプレートがある場合、次のテンプレートパスで指し示すことができます。
 
 * `recipes/entry`
-* `recipes/entry.html`
+* `recipes/entry.twig`
 
 ### インデックステンプレート
 
-テンプレートの名前が `index.html` の場合、テンプレートパスで明示的に記述する必要はありません。
+テンプレートの名前が `index.twig` の場合、テンプレートパスで明示的に記述する必要はありません。
 
-例えば、`templates/recipes/ingredients/index.html`にテンプレートがある場合、次のテンプレートパスで指し示すことができます。
+例えば、`templates/recipes/ingredients/index.twig` にテンプレートがある場合、次のテンプレートパスで指し示すことができます。
 
 * `recipes/ingredients`
 * `recipes/ingredients/index`
-* `recipes/ingredients/index.html`
+* `recipes/ingredients/index.twig`
 
-`templates/recipes/ingredients.html` *と* `templates/recipes/ingredients/index.html` の両方にテンプレートがある場合、`recipes/ingredients` は `ingredients.html` にマッチします。
+`templates/recipes/ingredients.twig` *と* `templates/recipes/ingredients/index.twig` の両方にテンプレートがある場合、`recipes/ingredients` は `ingredients.twig` にマッチします。
 
 ### 不可視テンプレート
 
-Craft は、`recipes/_entry.html` のように、名前の接頭辞にアンダースコアが付いたテンプレートを直接アクセスできない不可視テンプレートとして扱います。
+Craft は、`recipes/_entry.twig` のように、名前の接頭辞にアンダースコアが付いたテンプレートを直接アクセスできない不可視テンプレートとして扱います。
 
 `recipes/entry` にあるテンプレートを利用した、`http://mysite.com/recipes/gin-tonic` でアクセスできるレシピのエントリがある場合、誰でも `http://mysite.com/recipes/entry` で直接テンプレートにアクセスできてしまいます。
 
-この例では、エントリ URL の一部としてのみ利用されるため、テンプレートへダイレクトにアクセスする理由がありません。そこで、Craft が不可視ファイルだとみなすようファイル名を `_entry.html` に変更し、セクションの設定をアップデートします。
+この例では、エントリ URL の一部としてのみ利用されるため、テンプレートへダイレクトにアクセスする理由がありません。そこで、Craft が不可視ファイルだとみなすようファイル名を `_entry.twig` に変更し、セクションの設定をアップデートします。
 
 これで `http://mysite.com/recipes/entry` にアクセスすると、Craft がテンプレートのレンダリングを試みる代わりに、404 エラーを返します。
 
@@ -51,7 +51,7 @@ Craft は、`recipes/_entry.html` のように、名前の接頭辞にアンダ�
 
 Craft でマルチサイトを運用している場合、特定のサイトだけで利用可能なテンプレートを含むサイト固有のサブフォルダを `templates/` フォルダ内に作成できます。
 
-例えば、ドイツのカスタマーを歓迎するための特別なテンプレートを作成したいものの、英語版サイトで必要ない場合、`templates/de/welcome.html` に保存します。そのテンプレートは `http://example.de/welcome` からアクセスできるでしょう。
+例えば、ドイツのカスタマーを歓迎するための特別なテンプレートを作成したいものの、英語版サイトで必要ない場合、`templates/de/welcome.twig` に保存します。そのテンプレートは `http://example.de/welcome` からアクセスできるでしょう。
 
 Craft は、通常のテンプレートを探す_前に_ローカライズ用のテンプレートを探します。それによって、ローカライズされていないテンプレートを上書きすることができます。詳細については、[ローカライゼーションガイド](../localization.md)を参照してください。
 

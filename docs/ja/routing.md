@@ -45,7 +45,7 @@ Craft はリクエストを次のように処理します。
    上記のチェックがいずれも成功しなかった場合、Craft は [NotFoundHttpException](api:yii\web\NotFoundHttpException) を返します。[Dev Mode](config:devMode) が有効な場合、例外についてのエラーレポートが表示されます。そうでなければ、404 エラーが返されます。
 
    ::: tip
-    `404.html` テンプレートを `templates/` ディレクトリのルートに配置することで、サイトの404ページをカスタマイズできます。`http://my-project.test/404` にアクセスすることで、[Dev Mode](config:devMode) が有効になっている場合でも、このページをテストできます。
+    `404.twig` テンプレートを `templates/` ディレクトリのルートに配置することで、サイトの404ページをカスタマイズできます。`http://my-project.test/404` にアクセスすることで、[Dev Mode](config:devMode) が有効になっている場合でも、このページをテストできます。
     :::
 
 ## 動的なルート
@@ -137,7 +137,7 @@ return [
 'blog/archive/<year:\d{4}>' => ['template' => 'blog/_archive'],
 ```
 
-`http://my-project.test/blog/archive/2018` にアクセスすると、`blog/_archive.html` テンプレートは、変数 `year` に `2018` をセットした状態で読み込まれます。
+`http://my-project.test/blog/archive/2018` にアクセスすると、`blog/_archive.twig` テンプレートは、変数 `year` に `2018` をセットした状態で読み込まれます。
 
 ```twig
 <h1>Blog Entries from {{ year }}</h1>

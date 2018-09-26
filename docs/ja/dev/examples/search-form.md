@@ -10,13 +10,16 @@
 </form>
 ```
 
-次に、フォームの送信先にあたるテンプレート（例：`search/results.html`）で `GET` / `POST` データから検索クエリを取り出し、それを `search` [エントリクエリパラメータ](../element-queries/entry-queries.md#search)に渡します。
+次に、フォームの送信先にあたるテンプレート（例：`search/results.twig`）で `GET` / `POST` データから検索クエリを取り出し、それを `search` [エントリクエリパラメータ](../element-queries/entry-queries.md#search)に渡します。
 
 ```twig
 <h1>Search Results</h1>
 
-{% set query = craft.app.request.getParam('q') %}
-{% set entries = craft.entries.search(query).orderBy('score').all() %}
+{% set searchQuery = craft.app.request.getParam('q') %}
+{% set entries = craft.entries()
+    .search(searchQuery)
+    .orderBy('score')
+    .all() %}
 
 {% if entries|length %}
     <p>{{ entries|length }} results:</p>
@@ -27,7 +30,7 @@
         {% endfor %}
     </ul>
 {% else %}
-    <p>Your search for “{{ query }}” didn’t return any results.</p>
+    <p>Your search for “{{ searchQuery }}” didn’t return any results.</p>
 {% endif %}
 ```
 
