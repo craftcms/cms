@@ -3,7 +3,7 @@ namespace app\helpers;
 
 use \craft\helpers\ArrayHelper;
 
-class ArrayHelperTest extends \Codeception\TestCase\Test
+class ArrayHelperTest extends \Codeception\Test\Unit
 {
     /**
      * @var \UnitTester
@@ -65,5 +65,10 @@ class ArrayHelperTest extends \Codeception\TestCase\Test
         $array = ['foo' => 'bar', 'fizz' => 'plop'];
         ArrayHelper::rename($array, 'fooX', 'fooY', 'test');
         $this->assertSame(['foo' => 'bar', 'fizz' => 'plop', 'fooY' => 'test'], $array);
+    }
+
+    public function testFilterbyValue()
+    {
+
     }
 }

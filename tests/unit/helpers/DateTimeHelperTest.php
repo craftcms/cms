@@ -14,6 +14,27 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
         $this->assertSame(DateTimeHelper::SECONDS_YEAR, 31556874);
     }
 
+    public function testCurrentUtcDateTime()
+    {
+        $this->assertSame(DateTimeHelper::currentUTCDateTime(), (new DateTime(null, new DateTimeZone('UTC'))));
+    }
+
+    public function testCurrentUtcDateTimeStamp()
+    {
+        $this->assertSame(DateTimeHelper::currentTimeStamp(),
+            (new DateTime(null, new DateTimeZone('UTC')))->getTimestamp()
+        );
+    }
+
+    public function testSecondsToHumanTimeDuration()
+    {
+        $this->assertSame(DateTimeHelper::secondsToHumanTimeDuration(22), '22 seconds');
+        $this->assertSame(DateTimeHelper::secondsToHumanTimeDuration(60), '1 minute');
+        $this->assertSame(DateTimeHelper::secondsToHumanTimeDuration(120), '2 minutes');
+        $this->assertSame(DateTimeHelper::secondsToHumanTimeDuration(125), '2 minutes, 5 seconds');
+        $this->assertSame(DateTimeHelper::secondsToHumanTimeDuration(121), '2 minutes, 1 second');
+    }
+
     public function testToDateTime()
     {
         $systemTimezone = new \DateTimeZone(ini_get('date.timezone'));

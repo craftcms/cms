@@ -7,7 +7,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\services\Entries;
 
-class AppTest extends \Codeception\TestCase\Test
+class AppTest extends \Codeception\Test\Unit
 {
     /**
      * @var \UnitTester
@@ -76,14 +76,14 @@ class AppTest extends \Codeception\TestCase\Test
     public function testMaxPowerCaptain(){
         $craftMemoryLimit = Craft::$app->getConfig()->getGeneral()->phpMaxMemoryLimit;
         App::maxPowerCaptain();
-        $newMemoryLimit = ini_get('memory_limit');
 
-        $this->assertSame($newMemoryLimit, $craftMemoryLimit);
+        $this->assertSame(ini_get('memory_limit'), $craftMemoryLimit);
         $this->assertSame(ini_get('max_execution_time'), 0);
 
         // Make sure if we set it again all is well.
         App::maxPowerCaptain();
-        $this->assertSame($newMemoryLimit, $craftMemoryLimit);
+        $this->assertSame(ini_get('memory_limit'), $craftMemoryLimit);
+        $this->assertSame(ini_get('max_execution_time'), 0);
     }
 
     public function testDbConfigHasRequiredIndexes()
@@ -124,6 +124,6 @@ class AppTest extends \Codeception\TestCase\Test
 
    private function runConfigTest(array $configArray, array $desiredSchemaArray) : bool
    {
-       return array_diff_key(array_flip($desiredSchemaArray), $configArray);
+       return (bool)array_diff_key($desiredSchemaArray, $configArray);
    }
 }
