@@ -1,8 +1,11 @@
 <?php
 namespace app\helpers;
 
+use Codeception\Codecept;
 use Craft;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
+use craft\services\Entries;
 
 class AppTest extends \Codeception\TestCase\Test
 {
@@ -41,4 +44,86 @@ class AppTest extends \Codeception\TestCase\Test
         $this->assertFalse(App::isValidEdition(2));
         $this->assertFalse(App::isValidEdition(3));
     }
+
+    public function testVersionNormalization()
+    {
+        $this->assertSame(App::normalizeVersion('2.0.0--beta'), '2.0.0');
+        $this->assertSame(App::normalizeVersion('v120.19.2--beta'), '120.19.2');
+
+        // Language vesion description return nothing.
+        $this->assertSame(App::normalizeVersion('version'), '');
+        // Check if empty string.
+        $this->assertSame(App::normalizeVersion(''), '');
+    }
+
+    public function testPhpConfigValueAsBool()
+    {
+        $this->assertTrue(App::phpConfigValueAsBool('DISPLAY_ERRORS'));
+        $this->assertTrue(App::phpConfigValueAsBool('mbstring'));
+        $this->assertFalse(App::phpConfigValueAsBool(''));
+        $this->assertFalse(App::phpConfigValueAsBool('This isnt a config value'));
+    }
+
+    public function testClassHumanization()
+    {
+        $this->assertSame(App::humanizeClass(Entries::class), 'Entries');
+
+        $this->assertSame(App::humanizeClass(''), '');
+        // Make sure non craft classes are normalized. TODO: Depend on class that is auto shipped with the tests and not a codeception class.
+        $this->assertSame(App::humanizeClass(\PHPUnit\Util\PHP\AbstractPhpProcess::class), 'AbstractPhpProcess');
+    }
+
+    public function testMaxPowerCaptain(){
+        $craftMemoryLimit = Craft::$app->getConfig()->getGeneral()->phpMaxMemoryLimit;
+        App::maxPowerCaptain();
+        $newMemoryLimit = ini_get('memory_limit');
+
+        $this->assertSame($newMemoryLimit, $craftMemoryLimit);
+        $this->assertSame(ini_get('max_execution_time'), 0);
+
+        // Make sure if we set it again all is well.
+        App::maxPowerCaptain();
+        $this->assertSame($newMemoryLimit, $craftMemoryLimit);
+    }
+
+    public function testDbConfigHasRequiredIndexes()
+    {
+        // https://stackoverflow.com/questions/13169588/how-to-check-if-multiple-array-keys-exists
+        // TODO: Do we need all of these?
+        $dbConfig = App::dbConfig();
+        $desiredSchemaArray = [
+            'class',
+            'dsn',
+            'password',
+            'username',
+            'charset',
+            'tablePrefix',
+            'schemaMap',
+            'commandMap',
+            'attributes',
+            'enableSchemaCache'
+        ];
+
+        $this->assertTrue($this->runConfigTest($dbConfig, $desiredSchemaArray));
+   }
+
+   public function testWebRequestConfig()
+   {
+       $webConfig = App::webRequestConfig();
+       $desiredSchemaArray = [
+           'class',
+           'enableCookieValidation',
+           'cookieValidationKey',
+           'enableCsrfValidation',
+           'enableCsrfCookie',
+           'csrfParam',
+       ];
+
+       $this->assertTrue($webConfig, $desiredSchemaArray);
+   }
+
+   private function runConfigTest(array $configArray, array $desiredSchemaArray) : bool
+   {
+       return array_diff_key(array_flip($desiredSchemaArray), $configArray);
+   }
 }

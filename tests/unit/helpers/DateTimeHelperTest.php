@@ -48,23 +48,77 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
         $this->assertSame(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601('2018-09-09')), true);
     }
 
+    public function testHumanIntervalDuration()
+    {
+        $dateTimeInterval = new \DateInterval('P1D');
+        $this->assertTrue(DateTimeHelper::humanDurationFromInterval($dateTimeInterval), '1 Day');
+    }
+
     public function testYesterday()
     {
-        $dateTimeOjbect = new \DateTime('now');
+        $this->testDateTimeIs('isYesterday', 'day');
+    }
 
-        // Is today yesterday?
-        $this->assertFalse(DateTimeHelper::isYesterday($dateTimeOjbect->format('Y-m-d')));
+    public function testThisYearCheck()
+    {
+        $this->testDateTimeIs('isThisYear', 'year');
+    }
 
-        // Is yesterday yesterda
-        $dateTimeOjbect->modify('-1 day');
-        $this->assertTrue(DateTimeHelper::isYesterday($dateTimeOjbect->format('Y-m-d')));
+    public function testThisWeek()
+    {
+        $this->testDateTimeIs('isThisWeek', 'week');
+    }
 
-        // Is 2 days ago yesterday
-        $dateTimeOjbect->modify('-1 day');
-        $this->assertTrue(DateTimeHelper::isYesterday($dateTimeOjbect->format('Y-m-d')));
+    public function testIsInThePast()
+    {
+        $this->testDateTimeIs('isInThePast', 'hour');
+    }
 
-        $this->assertFalse(DateTimeHelper::isYesterday(''));
+    public function testSecondsToInterval()
+    {
+        $dateTimeInterval = DateTimeHelper::secondsToInterval(10);
+        $this->assertSame($dateTimeInterval->s, 10);
+        $this->assertSame($dateTimeInterval->format('sdhm'), 10000);
 
+        $dateTimeInterval = DateTimeHelper::secondsToInterval(0);
+        $this->assertSame($dateTimeInterval->s, 0);
+        $this->assertSame($dateTimeInterval->format('sdhm'), 0000);
+
+
+        $dateTimeInterval = DateTimeHelper::secondsToInterval(92817295781282);
+        $this->assertSame($dateTimeInterval->s, 92817295781282);
+        $this->assertSame($dateTimeInterval->format('sdhm'), 92817295781282000);
+    }
+
+
+    public function intervalToSeconds()
+    {
+        $seconds = DateTimeHelper::intervalToSeconds(new \DateInterval('P1D'));
+        $this->assertSame($seconds, 86400);
+
+        $seconds = DateTimeHelper::intervalToSeconds(new \DateInterval('P1D2H'));
+        $this->assertSame($seconds, 93600);
+    }
+    
+    private function testEmptyDateTimeClass($function)
+    {
+        $this->assertFalse(DateTimeHelper::$function(null));
+        $this->assertFalse(DateTimeHelper::$function(false));
+        $this->assertFalse(DateTimeHelper::$function(''));
+    }
+
+    private function testDateTimeIs(string $function, $timeParam)
+    {
+        $this->testEmptyDateTimeClass($function);
+        $dateTime = new \DateTime('now');
+
+        $this->assertTrue(DateTimeHelper::$function($dateTime));
+
+        $dateTime->modify('+2 '.$timeParam.'');
+        $this->assertFalse(DateTimeHelper::$function($dateTime));
+
+        $dateTime->modify('-4 '.$timeParam.'');
+        $this->assertFalse(DateTimeHelper::$function($dateTime));
     }
 
 }
