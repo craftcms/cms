@@ -15,9 +15,15 @@ class JsonHelperTest extends \Codeception\TestCase\Test
 {
     public function testDecodeIfJson()
     {
+        $jsonArray = [
+            'WHAT DO WE WANT' => 'JSON',
+            'WHEN DO WE WANT IT' => "NOW",
+        ];
+
+        $json = json_encode($jsonArray);
         $this->assertSame(
             Json::decodeIfJson(
-            '{"WHAT DO WE WANT": "JSON", "WHEN DO WE WANT IT: "NOW"}'
+                $json
             ),
             [
                 'WHAT DO WE WANT' => 'JSON',

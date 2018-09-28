@@ -69,6 +69,19 @@ class ArrayHelperTest extends \Codeception\Test\Unit
 
     public function testFilterbyValue()
     {
+        $array = [
+            [
+                'name' => 'array 1',
+                'description' => 'the first array',
+            ],
+            [
+                'name' => 'array 2',
+                'description' => 'the second array'
+            ]
+        ];
 
+        $filtered = ArrayHelper::filterByValue($array, 'name', 'array 1');
+        $this->assertCount(1, $filtered);
+        $this->assertSame( 'the first array', $filtered[0]['description']);
     }
 }

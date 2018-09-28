@@ -48,29 +48,30 @@ class AppTest extends \Codeception\Test\Unit
     public function testVersionNormalization()
     {
         $this->assertSame(App::normalizeVersion('2.0.0--beta'), '2.0.0');
-        $this->assertSame(App::normalizeVersion('v120.19.2--beta'), '120.19.2');
+        $this->assertSame(App::normalizeVersion('v120.19.2--beta'), 'v120.19.2');
 
         // Language vesion description return nothing.
-        $this->assertSame(App::normalizeVersion('version'), '');
+        $this->assertSame('version', App::normalizeVersion('version'));
         // Check if empty string.
         $this->assertSame(App::normalizeVersion(''), '');
     }
 
     public function testPhpConfigValueAsBool()
     {
+
         $this->assertTrue(App::phpConfigValueAsBool('DISPLAY_ERRORS'));
-        $this->assertTrue(App::phpConfigValueAsBool('mbstring'));
+        $this->assertTrue(App::phpConfigValueAsBool('date.timezone'));
         $this->assertFalse(App::phpConfigValueAsBool(''));
         $this->assertFalse(App::phpConfigValueAsBool('This isnt a config value'));
     }
 
     public function testClassHumanization()
     {
-        $this->assertSame(App::humanizeClass(Entries::class), 'Entries');
+        $this->assertSame(App::humanizeClass(Entries::class), 'entries');
 
         $this->assertSame(App::humanizeClass(''), '');
         // Make sure non craft classes are normalized. TODO: Depend on class that is auto shipped with the tests and not a codeception class.
-        $this->assertSame(App::humanizeClass(\PHPUnit\Util\PHP\AbstractPhpProcess::class), 'AbstractPhpProcess');
+        $this->assertSame('abstract php process', App::humanizeClass(\PHPUnit\Util\PHP\AbstractPhpProcess::class));
     }
 
     public function testMaxPowerCaptain(){
@@ -119,7 +120,7 @@ class AppTest extends \Codeception\Test\Unit
            'csrfParam',
        ];
 
-       $this->assertTrue($webConfig, $desiredSchemaArray);
+       $this->assertTrue($this->runConfigTest($webConfig, $desiredSchemaArray));
    }
 
    private function runConfigTest(array $configArray, array $desiredSchemaArray) : bool

@@ -36,6 +36,7 @@ class DbHelperTest extends \Codeception\Test\Unit
         $this->assertSame(Db::parseParam('foo', 'bar, baz'));
 
 
+
         // EMPTY VALUE TESTING---------------------------------------------------
         // No param passed? Empty string
         $this->assertSame(Db::parseParam('', ''), '');
@@ -78,7 +79,9 @@ class DbHelperTest extends \Codeception\Test\Unit
     public function testIsTextualCollumnType()
     {
         $this->assertTrue(Db::isTextualColumnType('tinytext'));
-        $this->assertTrue(Db::isTextualColumnType('textual'));
+        $this->assertTrue(Db::isTextualColumnType('enum'));
+        $this->assertTrue(Db::isTextualColumnType('longtext'));
+        $this->assertTrue(Db::isTextualColumnType('mediumtext'));
 
 
         $this->assertFalse(Db::isTextualColumnType('decimal'));
@@ -88,8 +91,11 @@ class DbHelperTest extends \Codeception\Test\Unit
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
 
+        $excpectedDateTime = new \DateTime('2018-06-06 18:00:00');
+        $excpectedDateTime->setTimezone(new \DateTimeZone('UTC'));
+
         $dateTime = new \DateTime('2018-06-06 18:00:00');
-        $this->assertSame(Db::prepareValueForDb($dateTime), '2018-06-06 18:00:00');
+        $this->assertSame(Db::prepareValueForDb($dateTime), $excpectedDateTime->format('Y-m-d H:i:s'));
         $this->assertSame(Db::prepareValueForDb($jsonableArray), json_encode($jsonableArray));
 
         // TODO: Serializable test case

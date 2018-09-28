@@ -16,13 +16,15 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
 
     public function testCurrentUtcDateTime()
     {
-        $this->assertSame(DateTimeHelper::currentUTCDateTime(), (new DateTime(null, new DateTimeZone('UTC'))));
+        $this->assertSame(DateTimeHelper::currentUTCDateTime(), (new \DateTime(null, new \DateTimeZone('UTC'))));
     }
 
     public function testCurrentUtcDateTimeStamp()
     {
-        $this->assertSame(DateTimeHelper::currentTimeStamp(),
-            (new DateTime(null, new DateTimeZone('UTC')))->getTimestamp()
+        $dateTime = new \DateTime(null, new \DateTimeZone('UTC'));
+        $this->assertSame(
+            DateTimeHelper::currentTimeStamp(),
+            $dateTime->getTimestamp()
         );
     }
 
@@ -42,10 +44,10 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
         $naturalDateTimeValue2 = new \DateTime('2018-08-08 20:00:00', $systemTimezone);
 
         // Does toDateTime make changes to variable if it is passed as a \DateTime object
-        $this->assertSame($naturalDateTimeValue, DateTimeHelper::toDateTime($naturalDateTimeValue2));
+        $this->assertSame($naturalDateTimeValue->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($naturalDateTimeValue2)->format('Y-m-d H:i:s'));
 
         // Does the to date time equal the same as set with string.
-        $this->assertSame(DateTimeHelper::toDateTime('2018-08-08 20:00:00'), $naturalDateTimeValue);
+        $this->assertSame(DateTimeHelper::toDateTime('2018-08-08 20:00:00')->format('Y-m-d H:i:s'), $naturalDateTimeValue->format('Y-m-d H:i:s'));
 
         // Does a null string, array or void return false
         $this->assertFalse(DateTimeHelper::toDateTime(''));
@@ -56,23 +58,25 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
     public function testNormalizeTimezone()
     {
         // TODO: is this right?
-        $this->assertSame('Eastern standard time', DateTimeHelper::normalizeTimeZone('EST'));
-        $this->assertSame('Europe/Paris', DateTimeHelper::normalizeTimeZone('CET'));
+        $this->assertSame('America/New_York', DateTimeHelper::normalizeTimeZone('EST'));
+        $this->assertSame('Europe/Berlin', DateTimeHelper::normalizeTimeZone('CET'));
     }
 
     public function testIso86()
     {
         $dateTimeObject = new \DateTime('2018-09-21');
         // Too easy.
-        $this->assertSame(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601($dateTimeObject)), true);
-        $this->assertSame(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601('2018')), true);
-        $this->assertSame(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601('2018-09-09')), true);
+        $this->assertTrue(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601($dateTimeObject)));
+        $this->assertTrue(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601('2018')));
+        $this->assertTrue(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601('2018-09-09')));
     }
 
     public function testHumanIntervalDuration()
     {
         $dateTimeInterval = new \DateInterval('P1D');
-        $this->assertTrue(DateTimeHelper::humanDurationFromInterval($dateTimeInterval), '1 Day');
+        $this->assertSame('1 day', DateTimeHelper::humanDurationFromInterval($dateTimeInterval));
+
+        // TODO: Need more.
     }
 
     public function testYesterday()
@@ -107,8 +111,8 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
 
 
         $dateTimeInterval = DateTimeHelper::secondsToInterval(92817295781282);
-        $this->assertSame($dateTimeInterval->s, 92817295781282);
-        $this->assertSame($dateTimeInterval->format('sdhm'), 92817295781282000);
+        $this->assertSame(92817295781282, $dateTimeInterval->s);
+        $this->assertSame(92817295781282000, $dateTimeInterval->format('sdhm'));
     }
 
 
