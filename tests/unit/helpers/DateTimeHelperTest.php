@@ -16,7 +16,7 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
 
     public function testCurrentUtcDateTime()
     {
-        $this->assertSame(DateTimeHelper::currentUTCDateTime(), (new \DateTime(null, new \DateTimeZone('UTC'))));
+        $this->assertSame(DateTimeHelper::currentUTCDateTime(), new \DateTime(null, new \DateTimeZone('UTC')));
     }
 
     public function testCurrentUtcDateTimeStamp()
@@ -40,8 +40,10 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
     public function testToDateTime()
     {
         $systemTimezone = new \DateTimeZone(ini_get('date.timezone'));
-        $naturalDateTimeValue = new \DateTime('2018-08-08 20:00:00', $systemTimezone);
-        $naturalDateTimeValue2 = new \DateTime('2018-08-08 20:00:00', $systemTimezone);
+        $naturalDateTimeValue = new \DateTime('2018-08-08 20:00:00');
+        $naturalDateTimeValue2 = new \DateTime('2018-08-08 20:00:00');
+        $naturalDateTimeValue->setTimezone($systemTimezone);
+        $naturalDateTimeValue2->setTimezone($systemTimezone);
 
         // Does toDateTime make changes to variable if it is passed as a \DateTime object
         $this->assertSame($naturalDateTimeValue->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($naturalDateTimeValue2)->format('Y-m-d H:i:s'));
@@ -81,22 +83,22 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
 
     public function testYesterday()
     {
-        $this->testDateTimeIs('isYesterday', 'day');
+        $this->testDateTimeIs('isYesterday', 'days');
     }
 
     public function testThisYearCheck()
     {
-        $this->testDateTimeIs('isThisYear', 'year');
+        $this->testDateTimeIs('isThisYear', 'years');
     }
 
     public function testThisWeek()
     {
-        $this->testDateTimeIs('isThisWeek', 'week');
+        $this->testDateTimeIs('isThisWeek', 'weeks');
     }
 
     public function testIsInThePast()
     {
-        $this->testDateTimeIs('isInThePast', 'hour');
+        $this->testDateTimeIs('isInThePast', 'hours');
     }
 
     public function testSecondsToInterval()

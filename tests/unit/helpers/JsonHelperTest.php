@@ -32,10 +32,7 @@ class JsonHelperTest extends \Codeception\TestCase\Test
         );
 
         // Empty string should be valid json.
-        // TODO: IS THIS TRUE. DOES THIS NEED A JSON {} TO BE VALID
-        $this->assertSame(Json::decodeIfJson('', []));
+        $this->assertSame(null, Json::decodeIfJson(''));
 
-        // Invalid json
-        $this->assertFalse(Json::decodeIfJson('{"sasadsads: "adssaddsa"}'));
     }
 }

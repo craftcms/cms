@@ -15,8 +15,8 @@ class HtmlHelperTest extends \Codeception\Test\Unit
 {
     public function testParamEncoding()
     {
-        $htmlString1 = '<p>Im a paragraph. What am i, {whatIsThis}</p>';
-        $htmlString2 = '{variable1}, {variable2}';
+        $htmlString1 = '<p>Im a paragraph. What am i, {{whatIsThis}}</p>';
+        $htmlString2 = '{{variable1}}, {{variable2}}';
 
         $this->assertSame(
             Html::encodeParams($htmlString1, ['whatIsThis' => 'A paragraph']),

@@ -32,8 +32,8 @@ class DbHelperTest extends \Codeception\Test\Unit
 
         // Lets add another param into this and simulate passig value as an array.
         $expectedReturn[1]['foo'][] = 'baz';
-        $this->assertSame(Db::parseParam('foo', ['bar', 'baz']));
-        $this->assertSame(Db::parseParam('foo', 'bar, baz'));
+        $this->assertSame(Db::parseParam('foo', ['bar', 'baz']), $expectedReturn);
+        $this->assertSame(Db::parseParam('foo', 'bar, baz'), $expectedReturn);
 
 
 
@@ -62,7 +62,6 @@ class DbHelperTest extends \Codeception\Test\Unit
         $this->assertSame(Db::getNumericalColumnType(0, 1231224), 'integer(7)');
         $this->assertSame(Db::getNumericalColumnType(0, 230221224), 'integer(9)');
     }
-
 
     public function testGetSimplifiedCollumnType()
     {

@@ -83,5 +83,41 @@ class ArrayHelperTest extends \Codeception\Test\Unit
         $filtered = ArrayHelper::filterByValue($array, 'name', 'array 1');
         $this->assertCount(1, $filtered);
         $this->assertSame( 'the first array', $filtered[0]['description']);
+
+        // Set the name to empty and see if we can filter by keys with an empty value
+        $array[0]['name'] = '';
+        $filtered = ArrayHelper::filterByValue($array, 'name', '');
+        $this->assertCount(1, $filtered);
+        $this->assertSame('the first array', $filtered[0]['description']);
+
+        // Add a new key to the array. that it empty and with an empty value. See if it can find that.
+        $array[0][''] = '';
+        $filtered = ArrayHelper::filterByValue($array, '', '');
+        $this->assertCount(1, $filtered);
+        $this->assertSame('the first array', $filtered[0]['description']);
+
+        // Filter by emojis?
+        $array[0]['😀'] = '😘';
+        $filtered = ArrayHelper::filterByValue($array, '😀', '😘');
+        $this->assertCount(1, $filtered);
+        $this->assertSame('the first array', $filtered[0]['description']);
+
+
+        // Make sure that filter by value hasnt made any changes to the array content e.t.c.
+        $mockedUp = [
+            [
+                'name' => '',
+                'description' => 'the first array',
+                '' => '',
+                '😀' =>'😘'
+
+            ],
+            [
+                'name' => 'array 2',
+                'description' => 'the second array'
+            ]
+        ];
+
+        $this->assertSame($array, $mockedUp);
     }
 }

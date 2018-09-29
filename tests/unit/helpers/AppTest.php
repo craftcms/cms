@@ -58,9 +58,7 @@ class AppTest extends \Codeception\Test\Unit
 
     public function testPhpConfigValueAsBool()
     {
-
         $this->assertTrue(App::phpConfigValueAsBool('DISPLAY_ERRORS'));
-        $this->assertTrue(App::phpConfigValueAsBool('date.timezone'));
         $this->assertFalse(App::phpConfigValueAsBool(''));
         $this->assertFalse(App::phpConfigValueAsBool('This isnt a config value'));
     }
