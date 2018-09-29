@@ -15,6 +15,17 @@ use yii\rest\Serializer;
 
 class DbHelperTest extends \Codeception\Test\Unit
 {
+    const BASIC_PARSEPARAM_QUERY = [
+        'or',
+        [
+            'in',
+            'foo',
+            [
+                'bar'
+            ]
+        ]
+    ];
+
     public function testParseParam()
     {
         $expectedReturn = [

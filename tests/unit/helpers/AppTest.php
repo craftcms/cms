@@ -47,13 +47,14 @@ class AppTest extends \Codeception\Test\Unit
 
     public function testVersionNormalization()
     {
-        $this->assertSame(App::normalizeVersion('2.0.0--beta'), '2.0.0');
-        $this->assertSame(App::normalizeVersion('v120.19.2--beta'), 'v120.19.2');
-
-        // Language vesion description return nothing.
+        $this->assertSame('2.0.0', App::normalizeVersion('2.0.0--beta'));
+        $this->assertSame('v120.19.2', App::normalizeVersion('v120.19.2--beta'));
         $this->assertSame('version', App::normalizeVersion('version'));
+
+        $this->assertSame('version 21', App::normalizeVersion('version 21'));
+
         // Check if empty string.
-        $this->assertSame(App::normalizeVersion(''), '');
+        $this->assertSame(App::normalizeVersion('', ''));
     }
 
     public function testPhpConfigValueAsBool()

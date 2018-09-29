@@ -57,13 +57,13 @@ class UrlHelperTest extends Unit
             self::ABSOLUTE_URL_HTTPS_WWW
         );
 
-        // Empty string with spaces.
+        // Empty string with spaces. 4 spaces are added
         $this->assertSame(
             UrlHelper::urlWithParams(
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                '                           '
+                '    '
             ),
-            self::ABSOLUTE_URL_HTTPS_WWW
+            self::ABSOLUTE_URL_HTTPS_WWW.'    '
         );
 
         // Non multidim array. Param name with numerical index key.
@@ -93,12 +93,89 @@ class UrlHelperTest extends Unit
             self::ABSOLUTE_URL_HTTPS_WWW.'?param3=name3param1=name&param2=name2'
         );
 
+    }
+
+    public function testCpUrlCreation()
+    {
+        $cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
+
         $this->assertSame(
-            UrlHelper::urlWithParams(
-                self::ABSOLUTE_URL_HTTPS_WWW.'#22?param3=name3',
-                'param1=name&param2=name2'
-            ),
-            self::ABSOLUTE_URL_HTTPS_WWW.'#22?param3=name3param1=name&param2=name2'
+            \Craft::$app->getConfig()->getGeneral()->siteUrl.$cpTrigger.'/random/endpoint',
+            UrlHelper::cpUrl('random/endpoint')
         );
+    }
+
+    public function testUrlWithScheme()
+    {
+        $this->assertEquals('php://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW, 'php'));
+        $this->assertEquals('ftp://craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS, 'ftp'));
+        $this->assertEquals('walawalabingbang://craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL, 'walawalabingbang'));
+        $this->assertEquals('https://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW, 'https://'));
+        $this->assertEquals('https://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW));
+        $this->assertEquals('sftp://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW, 'sftp'));
+    }
+
+    public function testHostInfoRetrieval()
+    {
+        $this->assertSame('https://google.com', UrlHelper::hostInfo('https://google.com'));
+        $this->assertSame('http://facebook.com', UrlHelper::hostInfo('http://facebook.com'));
+        $this->assertSame('ftp://www.craftcms.com', UrlHelper::hostInfo('ftp://www.craftcms.com/why/craft/is/cool/'));
+        $this->assertSame('walawalabingbang://gt.com', UrlHelper::hostInfo('walawalabingbang://gt.com/'));
+        $this->assertSame('sftp://volkswagen', UrlHelper::hostInfo('sftp://volkswagen'));
+
+        // TODO: What if no param is passed in. The method does this variably based on console requests.
+        // TODO: How will this work? Should we use if else inside of a test and how are we going ot get the the host info. Preferably via natural vanilla php/
+        /*
+        if(\Craft::$app->getRequest()->getIsConsoleRequest()) {
+            $this->assertSame('', UrlHelper::hostInfo('craftcms.com'));
+        } else {
+            // If its a web request. Make sure that ::hostInfo return the current host
+            $this->assertSame($currentHostInfo = UrlHelper::host(), UrlHelper::hostInfo('craftcms.com'));
+        }
+        */
+
+    }
+
+    public function testUrlCreation()
+    {
+        $siteUrl = \Craft::$app->getConfig()->getGeneral()->siteUrl;
+        $cpTrigger = \Craft::$app->getConfig()->getGeneral()->cpTrigger;
+
+        $this->assertEquals(
+            UrlHelper::url($siteUrl, '' ,'ftp').'google?param1=name',
+            UrlHelper::url('google', ['param1' => 'name'], 'ftp')
+        );
+    }
+
+    public function testGetSchemeForTokenUrl()
+    {
+        $this->assertTrue(in_array(UrlHelper::getSchemeForTokenizedUrl(), ['http://', 'https://']));
+
+        // Run down the logic to see what we will need to require.
+        $useSslOnTokenizedUrls = Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls;
+
+        // If they've explicitly set `useSslOnTokenizedUrls` to true, require https.
+        if ($useSslOnTokenizedUrls === true) {
+            $this->assertSame('https://', UrlHelper::getSchemeForTokenizedUrl());
+            return true;
+        }
+
+        // If they've explicitly set `useSslOnTokenizedUrls` to false, require http.
+        if ($useSslOnTokenizedUrls === false) {
+            $this->assertSame('http://', UrlHelper::getSchemeForTokenizedUrl());
+            return true;
+        }
+
+        // If the siteUrl is https or the current request is https, require https://.
+        $scheme = parse_url(UrlHelper::baseSiteUrl(), PHP_URL_SCHEME);
+        $request = Craft::$app->getRequest();
+        if (($scheme !== false && strtolower($scheme) === 'https') || (!$request->getIsConsoleRequest() && $request->getIsSecureConnection())) {
+            $this->assertSame('https://', UrlHelper::getSchemeForTokenizedUrl());
+            return true;
+        }
+
+        $this->assertSame('http://', UrlHelper::getSchemeForTokenizedUrl('http://'));
+        return true;
+
     }
 }

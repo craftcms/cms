@@ -8,5 +8,9 @@
  */
 
 return [
-    'devMode'=>true
+    'devMode'=>true,
+
+    // Cp trigger is used to test if cpurl is created correctly.
+    'cpTrigger' => 'adminustriggerus',
+    'siteUrl' => 'http://test.craftcms.test/'
 ];
