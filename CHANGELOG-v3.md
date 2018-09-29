@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.26 - 2018-09-29
 
 ### Changed
 - `ancestors`, `descendants`, `nextSibling`, `parent`, and `prevSibling` are now reserved field handles.
