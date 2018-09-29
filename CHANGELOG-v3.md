@@ -5,6 +5,7 @@
 ### Changed
 - `ancestors`, `descendants`, `nextSibling`, `parent`, and `prevSibling` are now reserved field handles.
 - The `svg()` Twig function namespaces class names in addition to IDs now.
+- Changed `yiisoft/yii2-queue` version requirement from `^2.0.1` to `2.0.1`. ([#3332](https://github.com/craftcms/cms/issues/3332))
 
 ### Fixed
 - Fixed a validation error that could occur when saving an entry as a new entry if the URI format didn’t contain a `{slug}` tag. ([#3320](https://github.com/craftcms/cms/issues/3320))
