@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Changed `yiisoft/yii2-queue` version requirement from `2.0.1` to `<=2.1.0`. ([#3332](https://github.com/craftcms/cms/issues/3332))
+
 ## 3.0.26 - 2018-09-29
 
 ### Changed
