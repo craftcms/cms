@@ -11,16 +11,25 @@ namespace craftunit\support\helpers;
 
 class UnitExceptionHandler
 {
-    public static function ensureException(\Throwable $exception = null, string $class) : bool
+    /**
+     * Checks whether the $function returns an exception and if it is of a certain type.
+     *
+     * @param        $function The callback function that will throw the exception
+     * @param string $requiredException The required exception class
+     *
+     * @return bool
+     */
+    public static function ensureException(\Closure $function, $requiredException) : bool
     {
-        if (!$exception) {
-            return false;
+        try {
+            $function();
+        } catch (\Throwable $exception){
+            if ($exception instanceof $requiredException) {
+               return true;
+            }
         }
 
-        if (!$exception instanceof $class) {
-            return false;
-        }
-
-        return true;
+        // All went well. Not good.
+        return false;
     }
 }

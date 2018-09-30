@@ -13,12 +13,15 @@ use Codeception\Test\Unit;
 use craft\base\ComponentInterface;
 use craft\errors\MissingComponentException;
 use craft\helpers\Component;
+use craftunit\support\helpers\UnitExceptionHandler;
 use craftunit\support\mockclasses\components\ComponentExample;
+use craftunit\support\mockclasses\components\DependencyHeavyComponent;
 use craftunit\support\mockclasses\components\ExtendedComponentExample;
 use yii\base\InvalidConfigException;
 
 class ComponentHelperTest extends Unit
 {
+
     public function testComponentCreation()
     {
         // Test baseline component creation.
@@ -29,51 +32,74 @@ class ComponentHelperTest extends Unit
             ])
         );
 
-        // Test that an invalidConfig is thrown if the class doesnt implement the correct parent.
-        $exceptionThrown = false;
-        try {
-            Component::createComponent([
-                'type' => ExtendedComponentExample::class,
-            ], 'random\\class\\that\\doesnt\\exist');
-        } catch (InvalidConfigException $exception) {
-            $exceptionThrown = true;
-        }
 
-        $this->assertTrue($exceptionThrown);
+        $this->assertTrue(
+            UnitExceptionHandler::ensureException(
+                function () {
+                    Component::createComponent([
+                        'type' => ExtendedComponentExample::class,
+                    ], 'random\\class\\that\\doesnt\\exist');
+                },
+                InvalidConfigException::class
+            )
+        );
 
-        // Test that unfound components throw a MissingComponentException
-        $exceptionThrown = false;
-        try {
-            Component::createComponent([
-                'type' => 'i\\dont\\exist\\as\\a\\class'
-            ]);
-        } catch (MissingComponentException $exception) {
-            $exceptionThrown = true;
-        }
+        $this->assertTrue(
+            UnitExceptionHandler::ensureException(
+                function () {
+                    Component::createComponent([
+                        'type' => 'i\\dont\\exist\\as\\a\\class'
+                    ]);
+                },
+                MissingComponentException::class
+            )
+        );
 
-        $this->assertTrue($exceptionThrown);
+        $this->assertTrue(
+            UnitExceptionHandler::ensureException(
+                function () {
+                    Component::createComponent([
+                        'type' => self::class
+                    ]);
+                },
+                InvalidConfigException::class
+            )
+        );
 
-        // Test that Components have to implement component interface
-        $exceptionThrown = false;
-        try {
-            Component::createComponent([
-                'type' => self::class
-            ]);
-        } catch (InvalidConfigException $exception) {
-            $exceptionThrown = true;
-        }
+        $this->assertTrue(
+            UnitExceptionHandler::ensureException(
+                function () {
+                    Component::createComponent([]);
+                },
+                InvalidConfigException::class
+            )
+        );
 
-        $this->assertTrue($exceptionThrown);
+        $this->assertTrue(
+            UnitExceptionHandler::ensureException(
+                function () {
+                    Component::createComponent([]);
+                },
+                InvalidConfigException::class
+            )
+        );
 
-        // Test that Components have to add a type in the provided array.
-        $exceptionThrown = false;
-        try {
-            Component::createComponent([]);
-        } catch (InvalidConfigException $exception) {
-            $exceptionThrown = true;
-        }
+        $this->assertTrue(
+            UnitExceptionHandler::ensureException(
+                function () {
+                    Component::createComponent([
+                        'type' => DependencyHeavyComponent::class,
+                        'dependancy1' => 'value1',
+                        'dependancy2' => 'value2',
+                        'settings' => [
+                            'settingsdependency1' => 'value'
+                        ]
+                    ]);
+                },
+                InvalidConfigException::class
+            )
+        );
 
-        $this->assertTrue($exceptionThrown);
 
         // TODO: Figure out a way to test plugin functionality
     }
