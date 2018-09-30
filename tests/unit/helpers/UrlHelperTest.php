@@ -48,7 +48,7 @@ class UrlHelperTest extends Unit
             self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2'
         );
 
-        // Empty array. No mods
+        // Empty array. No modifications alowed.
         $this->assertSame(
             UrlHelper::urlWithParams(
                 self::ABSOLUTE_URL_HTTPS_WWW,
@@ -57,40 +57,40 @@ class UrlHelperTest extends Unit
             self::ABSOLUTE_URL_HTTPS_WWW
         );
 
-        // Empty string with spaces. 4 spaces are added
+        // Empty string with spaces. 4 spaces are added and a question mark.
         $this->assertSame(
+            self::ABSOLUTE_URL_HTTPS_WWW.'?    ',
             UrlHelper::urlWithParams(
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 '    '
-            ),
-            self::ABSOLUTE_URL_HTTPS_WWW.'    '
+            )
         );
 
         // Non multidim array. Param name with numerical index key.
         $this->assertSame(
+            self::ABSOLUTE_URL_HTTPS_WWW.'?0=someparam',
             UrlHelper::urlWithParams(
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 ['someparam']
-            ),
-            self::ABSOLUTE_URL_HTTPS_WWW.'?0=someparam'
+            )
         );
 
         // Params via string
         $this->assertSame(
+            self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2',
             UrlHelper::urlWithParams(
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 '?param1=name&param2=name2'
-            ),
-            self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2'
+            )
         );
 
-        // Check on url that has params.
+        // Check on url that already has params.
         $this->assertSame(
+            self::ABSOLUTE_URL_HTTPS_WWW.'?param3=name3&param1=name&param2=name2',
             UrlHelper::urlWithParams(
                 self::ABSOLUTE_URL_HTTPS_WWW.'?param3=name3',
                 '?param1=name&param2=name2'
-            ),
-            self::ABSOLUTE_URL_HTTPS_WWW.'?param3=name3param1=name&param2=name2'
+            )
         );
 
     }
@@ -110,7 +110,7 @@ class UrlHelperTest extends Unit
         $this->assertEquals('php://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW, 'php'));
         $this->assertEquals('ftp://craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS, 'ftp'));
         $this->assertEquals('walawalabingbang://craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL, 'walawalabingbang'));
-        $this->assertEquals('https://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW, 'https://'));
+        $this->assertEquals('https://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW, 'https'));
         $this->assertEquals('https://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW));
         $this->assertEquals('sftp://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW, 'sftp'));
     }
@@ -141,18 +141,20 @@ class UrlHelperTest extends Unit
         $siteUrl = \Craft::$app->getConfig()->getGeneral()->siteUrl;
         $cpTrigger = \Craft::$app->getConfig()->getGeneral()->cpTrigger;
 
+        $ftpUrl = UrlHelper::urlWithScheme($siteUrl, 'ftp');
+
         $this->assertEquals(
-            UrlHelper::url($siteUrl, '' ,'ftp').'google?param1=name',
-            UrlHelper::url('google', ['param1' => 'name'], 'ftp')
+            $ftpUrl.'v1/api?param1=name',
+            UrlHelper::url($siteUrl.'v1/api', ['param1' => 'name'], 'ftp', false)
         );
     }
 
     public function testGetSchemeForTokenUrl()
     {
-        $this->assertTrue(in_array(UrlHelper::getSchemeForTokenizedUrl(), ['http://', 'https://']));
+        $this->assertTrue(in_array(UrlHelper::getSchemeForTokenizedUrl(), ['http', 'https']));
 
         // Run down the logic to see what we will need to require.
-        $useSslOnTokenizedUrls = Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls;
+        $useSslOnTokenizedUrls = \Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls;
 
         // If they've explicitly set `useSslOnTokenizedUrls` to true, require https.
         if ($useSslOnTokenizedUrls === true) {

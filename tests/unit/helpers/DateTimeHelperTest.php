@@ -16,7 +16,7 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
 
     public function testCurrentUtcDateTime()
     {
-        $this->assertSame(DateTimeHelper::currentUTCDateTime(), new \DateTime(null, new \DateTimeZone('UTC')));
+        $this->assertSame(DateTimeHelper::currentUTCDateTime()->format('Y-m-d H:i:s'), (new \DateTime(null, new \DateTimeZone('UTC')))->format('Y-m-d H:i:s'));
     }
 
     public function testCurrentUtcDateTimeStamp()
@@ -39,17 +39,30 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
 
     public function testToDateTime()
     {
-        $systemTimezone = new \DateTimeZone(ini_get('date.timezone'));
-        $naturalDateTimeValue = new \DateTime('2018-08-08 20:00:00');
-        $naturalDateTimeValue2 = new \DateTime('2018-08-08 20:00:00');
-        $naturalDateTimeValue->setTimezone($systemTimezone);
-        $naturalDateTimeValue2->setTimezone($systemTimezone);
+        $craftTimezone = \Craft::$app->getTimeZone();
+        $systemTimezone = new \DateTimeZone($craftTimezone);
+        $utcTimezone = new \DateTimeZone('UTC');
+
+        $systemTime1 = new \DateTime('2018-08-08 20:00:00', $systemTimezone);
+        $systemTime2 = new \DateTime('2018-08-08 20:00:00', $systemTimezone);
 
         // Does toDateTime make changes to variable if it is passed as a \DateTime object
-        $this->assertSame($naturalDateTimeValue->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($naturalDateTimeValue2)->format('Y-m-d H:i:s'));
+        $this->assertSame($systemTime1->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($systemTime2)->format('Y-m-d H:i:s'));
+        $this->assertSame($systemTime1->getTimezone()->getName(), DateTimeHelper::toDateTime($systemTime2)->getTimezone()->getName());
 
-        // Does the to date time equal the same as set with string.
-        $this->assertSame(DateTimeHelper::toDateTime('2018-08-08 20:00:00')->format('Y-m-d H:i:s'), $naturalDateTimeValue->format('Y-m-d H:i:s'));
+        // Does the date time equal. When assuming the dateTime is is the current timezone.
+        $this->assertSame($systemTime1->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime('2018-08-08 20:00:00', true)->format('Y-m-d H:i:s'));
+
+        // Does the date time helper not set to system timezone when set. Reverting back to utc
+        $this->assertSame($utcTimezone->getName(), DateTimeHelper::toDateTime('2018-08-08 20:00:00', false, false)->getTimezone()->getName());
+
+        // Does the dateTime create a format in utc and then set the tz to the system. If we dont overide setSystemTzToFalse.
+        $modifyableDateTime = new \DateTime('2018-08-08 20:00:00', $utcTimezone);
+        $modifyableDateTime->setTimezone($systemTimezone);
+        $this->assertSame($modifyableDateTime->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime('2018-08-08 20:00:00', false)->format('Y-m-d H:i:s'));
+
+
+        // TODO Create a bunch more with various input formats.
 
         // Does a null string, array or void return false
         $this->assertFalse(DateTimeHelper::toDateTime(''));
@@ -103,18 +116,18 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
 
     public function testSecondsToInterval()
     {
-        $dateTimeInterval = DateTimeHelper::secondsToInterval(10);
-        $this->assertSame($dateTimeInterval->s, 10);
-        $this->assertSame($dateTimeInterval->format('sdhm'), 10000);
+        $interval = DateTimeHelper::secondsToInterval(10);
+        $this->assertSame(10, $interval->s);
+        $this->assertSame(10000, (int)$interval->format('%s%d%h%m'));
 
-        $dateTimeInterval = DateTimeHelper::secondsToInterval(0);
-        $this->assertSame($dateTimeInterval->s, 0);
-        $this->assertSame($dateTimeInterval->format('sdhm'), 0000);
+        $interval = DateTimeHelper::secondsToInterval(0);
+        $this->assertSame(0, $interval->s);
+        $this->assertSame(0000, (int)$interval->format('%s%d%h%m'));
 
 
-        $dateTimeInterval = DateTimeHelper::secondsToInterval(92817295781282);
-        $this->assertSame(92817295781282, $dateTimeInterval->s);
-        $this->assertSame(92817295781282000, $dateTimeInterval->format('sdhm'));
+        $interval = DateTimeHelper::secondsToInterval(92817295781282);
+        $this->assertSame(92817295781282, $interval->s);
+        $this->assertSame(92817295781282000, (int)$interval->format('%s%d%h%m'));
     }
 
 

@@ -12,6 +12,7 @@ $devMode = true;
 
 $vendorPath = realpath(CRAFT_VENDOR_PATH);
 $craftPath = __DIR__.'/_craft';
+$basePath = dirname(__DIR__);
 
 $configPath = realpath($craftPath.'/config');
 $contentMigrationsPath = realpath($craftPath.'/migrations');
@@ -39,6 +40,11 @@ $srcPath = dirname(__DIR__).'/src';
 $libPath = dirname(__DIR__).'/lib';
 require $vendorPath.'/yiisoft/yii2/Yii.php';
 require $srcPath.'/Craft.php';
+
+// Load dotenv?
+if (file_exists($basePath.'/.env')) {
+    (new Dotenv\Dotenv($basePath))->load();
+}
 
 // Set aliases
 
