@@ -125,9 +125,9 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
         $this->assertSame(0000, (int)$interval->format('%s%d%h%m'));
 
 
-        $interval = DateTimeHelper::secondsToInterval(92817295781282);
-        $this->assertSame(92817295781282, $interval->s);
-        $this->assertSame(92817295781282000, (int)$interval->format('%s%d%h%m'));
+        $interval = DateTimeHelper::secondsToInterval(928172);
+        $this->assertSame(928172, $interval->s);
+        $this->assertSame(928172, (int)$interval->format('%s%d%h%m'));
     }
 
 

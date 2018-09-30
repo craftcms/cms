@@ -97,12 +97,13 @@ class UrlHelperTest extends Unit
 
     public function testCpUrlCreation()
     {
-        $cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
-
+        $cpTrigger = \Craft::$app->getConfig()->getGeneral()->cpTrigger;
         $this->assertSame(
-            \Craft::$app->getConfig()->getGeneral()->siteUrl.$cpTrigger.'/random/endpoint',
+            UrlHelper::url($cpTrigger.'/random/endpoint'),
             UrlHelper::cpUrl('random/endpoint')
         );
+
+        // TODO: More scenarios
     }
 
     public function testUrlWithScheme()
@@ -111,7 +112,7 @@ class UrlHelperTest extends Unit
         $this->assertEquals('ftp://craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS, 'ftp'));
         $this->assertEquals('walawalabingbang://craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL, 'walawalabingbang'));
         $this->assertEquals('https://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW, 'https'));
-        $this->assertEquals('https://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW));
+        $this->assertEquals('https://craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL, 'https'));
         $this->assertEquals('sftp://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW, 'sftp'));
     }
 
@@ -158,25 +159,25 @@ class UrlHelperTest extends Unit
 
         // If they've explicitly set `useSslOnTokenizedUrls` to true, require https.
         if ($useSslOnTokenizedUrls === true) {
-            $this->assertSame('https://', UrlHelper::getSchemeForTokenizedUrl());
+            $this->assertSame('https', UrlHelper::getSchemeForTokenizedUrl());
             return true;
         }
 
         // If they've explicitly set `useSslOnTokenizedUrls` to false, require http.
         if ($useSslOnTokenizedUrls === false) {
-            $this->assertSame('http://', UrlHelper::getSchemeForTokenizedUrl());
+            $this->assertSame('http', UrlHelper::getSchemeForTokenizedUrl());
             return true;
         }
 
         // If the siteUrl is https or the current request is https, require https://.
         $scheme = parse_url(UrlHelper::baseSiteUrl(), PHP_URL_SCHEME);
-        $request = Craft::$app->getRequest();
+        $request = \Craft::$app->getRequest();
         if (($scheme !== false && strtolower($scheme) === 'https') || (!$request->getIsConsoleRequest() && $request->getIsSecureConnection())) {
-            $this->assertSame('https://', UrlHelper::getSchemeForTokenizedUrl());
+            $this->assertSame('https', UrlHelper::getSchemeForTokenizedUrl());
             return true;
         }
 
-        $this->assertSame('http://', UrlHelper::getSchemeForTokenizedUrl('http://'));
+        $this->assertSame('http', UrlHelper::getSchemeForTokenizedUrl('http://'));
         return true;
 
     }

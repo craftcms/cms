@@ -90,10 +90,10 @@ class ArrayHelperTest extends \Codeception\Test\Unit
         $this->assertCount(1, $filtered);
         $this->assertSame('the first array', $filtered[0]['description']);
 
-        // Add a new key to the array. that it empty and with an empty value. See if it can find that.
+        // Add a new key to the array. that it empty and with an empty value. Make sure that when filtering empty it return everything.
         $array[0][''] = '';
         $filtered = ArrayHelper::filterByValue($array, '', '');
-        $this->assertCount(1, $filtered);
+        $this->assertCount(count($array), $filtered);
         $this->assertSame('the first array', $filtered[0]['description']);
 
         // Filter by emojis?

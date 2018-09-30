@@ -81,24 +81,24 @@ class StringHelperTest extends \Codeception\Test\Unit
 
     public function testStringIndexCounter()
     {
-        $this->assertCount(2, StringHelper::indexOf('thisisstring', 'is'));
+        $this->assertSame(2, StringHelper::indexOf('thisisstring', 'is'));
 
-        $this->assertCount(6, StringHelper::indexOf('craft cms', 'cms'));
-        $this->assertCount(1, StringHelper::indexOf('😀😘', '😘'));
-        $this->assertCount(2, StringHelper::indexOf('/@#$%^&*', '#'));
-        $this->assertCount(0, StringHelper::indexOf('hello, people', 'he'));
+        $this->assertSame(6, StringHelper::indexOf('craft cms', 'cms'));
+        $this->assertSame(1, StringHelper::indexOf('😀😘', '😘'));
+        $this->assertSame(2, StringHelper::indexOf('/@#$%^&*', '#'));
+        $this->assertSame(0, StringHelper::indexOf('hello, people', 'he'));
 
 
         $this->assertFalse(StringHelper::indexOf('some string', 'a needle'));
-        $this->assertCount(0, StringHelper::indexOf('', ''));
+        $this->assertSame(0, StringHelper::indexOf('', ''));
     }
 
     public function testSubstringCount()
     {
-        $this->assertCount(2, StringHelper::countSubstrings('hello', 'l'));
-        $this->assertCount(1, StringHelper::countSubstrings('😀😘', '😘'));
-        $this->assertCount(3, StringHelper::countSubstrings('!@#$%^&*()^^', '^'));
-        $this->assertCount(4, StringHelper::countSubstrings('    ', ' '));
+        $this->assertSame(2, StringHelper::countSubstrings('hello', 'l'));
+        $this->assertSame(1, StringHelper::countSubstrings('😀😘', '😘'));
+        $this->assertSame(3, StringHelper::countSubstrings('!@#$%^&*()^^', '^'));
+        $this->assertSame(4, StringHelper::countSubstrings('    ', ' '));
     }
 
     public function testToSnakeCase()
