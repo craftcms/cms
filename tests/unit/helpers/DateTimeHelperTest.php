@@ -84,6 +84,13 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
         $this->assertTrue(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601($dateTimeObject)));
         $this->assertTrue(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601('2018')));
         $this->assertTrue(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601('2018-09-09')));
+
+        $this->assertTrue(DateTimeHelper::isIso8601('Y-m-d\TH:i:sP'));
+        
+        $this->assertFalse(DateTimeHelper::isIso8601('2008-09-15'));
+        $this->assertFalse(DateTimeHelper::isIso8601('2008-09-15T15:53:00'));
+        $this->assertFalse(DateTimeHelper::isIso8601('Iam not a string'));
+        $this->assertFalse(DateTimeHelper::isIso8601($dateTimeObject));
     }
 
     public function testHumanIntervalDuration()
@@ -127,7 +134,7 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
 
         $interval = DateTimeHelper::secondsToInterval(928172);
         $this->assertSame(928172, $interval->s);
-        $this->assertSame(928172, (int)$interval->format('%s%d%h%m'));
+        $this->assertSame(928172000, (int)$interval->format('%s%d%h%m'));
     }
 
 

@@ -4,6 +4,7 @@ namespace craftcms\tests\helpers;
 use Codeception\Util\ReflectionHelper;
 use craft\helpers\StringHelper;
 use craftcms\tests\support\ReflectionSupport;
+use yii\base\ErrorException;
 
 /**
  * Created by PhpStorm.
@@ -58,8 +59,23 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertFalse(StringHelper::containsAll('iam some text', ['tEXt']));
         $this->assertTrue(StringHelper::containsAll('iam some text', ['tEXt'], false));
 
-        $this->assertTrue(StringHelper::containsAll('', ['']));
-        $this->assertFalse(StringHelper::containsAll('', []));
+        // Test that empty array with a string in it returns an exception.
+        $testPassed = false;
+        try {
+            StringHelper::containsAll('', ['']);
+        } catch (ErrorException $exception){
+            $testPassed = true;
+        }
+        $this->assertTrue($testPassed);
+
+        // Test that empty array returns an exception.
+        $testPassed = false;
+        try {
+            StringHelper::containsAll('', []);
+        } catch (ErrorException $exception){
+            $testPassed = true;
+        }
+        $this->assertTrue($testPassed);
     }
 
     public function testUppercaseFirst()
@@ -90,7 +106,15 @@ class StringHelperTest extends \Codeception\Test\Unit
 
 
         $this->assertFalse(StringHelper::indexOf('some string', 'a needle'));
-        $this->assertSame(0, StringHelper::indexOf('', ''));
+
+        // Test that empty string returns an exception.
+        $testPassed = false;
+        try {
+            StringHelper::indexOf('', '');
+        } catch (ErrorException $exception){
+            $testPassed = true;
+        }
+        $this->assertTrue($testPassed);
     }
 
     public function testSubstringCount()
