@@ -1,5 +1,5 @@
 <?php
-namespace app\helpers;
+namespace craftunit\helpers;
 
 use Codeception\Codecept;
 use Craft;

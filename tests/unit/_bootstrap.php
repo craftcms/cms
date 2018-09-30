@@ -1,3 +1,6 @@
 <?php
 // Here you can initialize variables that will be available to your tests
 
+// Autoload the mock classes
+\Codeception\Util\Autoload::addNamespace('', dirname(__DIR__).'/_support/mockclasses/components');
+

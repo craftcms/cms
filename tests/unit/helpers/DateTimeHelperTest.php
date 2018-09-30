@@ -1,5 +1,5 @@
 <?php
-namespace app\helpers;
+namespace craftunit\helpers;
 
 use craft\helpers\DateTimeHelper;
 
@@ -84,9 +84,9 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
         $this->assertTrue(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601($dateTimeObject)));
         $this->assertTrue(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601('2018')));
         $this->assertTrue(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601('2018-09-09')));
+        $this->assertTrue(DateTimeHelper::isIso8601('2018-09-30T13:41:06+00:00'));
 
-        $this->assertTrue(DateTimeHelper::isIso8601('Y-m-d\TH:i:sP'));
-        
+        $this->assertFalse(DateTimeHelper::isIso8601('YYYY-MM-DDTHH:MM:SS+HH:MM'));
         $this->assertFalse(DateTimeHelper::isIso8601('2008-09-15'));
         $this->assertFalse(DateTimeHelper::isIso8601('2008-09-15T15:53:00'));
         $this->assertFalse(DateTimeHelper::isIso8601('Iam not a string'));

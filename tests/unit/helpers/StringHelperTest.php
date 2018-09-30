@@ -1,5 +1,5 @@
 <?php
-namespace craftcms\tests\helpers;
+namespace craftunit\helpers;
 
 use Codeception\Util\ReflectionHelper;
 use craft\helpers\StringHelper;
@@ -68,14 +68,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         }
         $this->assertTrue($testPassed);
 
-        // Test that empty array returns an exception.
-        $testPassed = false;
-        try {
-            StringHelper::containsAll('', []);
-        } catch (ErrorException $exception){
-            $testPassed = true;
-        }
-        $this->assertTrue($testPassed);
+        $this->assertFalse(StringHelper::containsAll('', []));
     }
 
     public function testUppercaseFirst()

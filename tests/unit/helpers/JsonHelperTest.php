@@ -6,7 +6,7 @@
  * Time: 11:05
  */
 
-namespace app\helpers;
+namespace craftunit\helpers;
 
 
 use craft\helpers\Json;

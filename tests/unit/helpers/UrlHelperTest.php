@@ -6,7 +6,7 @@
  * Time: 12:47
  */
 
-namespace app\helpers;
+namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
