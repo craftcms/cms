@@ -132,5 +132,25 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame('', StringHelper::toSnakeCase(' '));
     }
 
+    public function testIsMb4()
+    {
+        $this->assertFalse(StringHelper::containsMb4('QWERTYUIOPASDFGHJKLZXCVBNM1234567890'));
+        $this->assertFalse(StringHelper::containsMb4('!@#$%^&*()_'));
+        $this->assertFalse(StringHelper::containsMb4('⛄'));
+        $this->assertFalse(StringHelper::containsMb4(''));
 
+        $this->assertTrue(StringHelper::containsMb4('😀😘'));
+        $this->assertTrue(StringHelper::containsMb4('QWERTYUIOPASDFGHJKLZXCVBNM1234567890😘'));
+        $this->assertTrue(StringHelper::containsMb4('!@#$%^&*()_🎧'));
+        $this->assertTrue(StringHelper::containsMb4('!@#$%^&*()_𢵌'));
+    }
+
+    public function testCharsAsArray()
+    {
+        $this->assertSame([], StringHelper::charsAsArray(''));
+        $this->assertSame(['a', 'b', 'c'], StringHelper::charsAsArray('abc'));
+        $this->assertSame(['!', '@', '#', '$', '%', '^'], StringHelper::charsAsArray('!@#$%^'));
+        $this->assertSame(['🎧', '𢵌', '😀', '😘', '⛄'], StringHelper::containsMb4('🎧𢵌😀😘⛄'));
+
+    }
 }
