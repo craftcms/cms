@@ -588,25 +588,4 @@ EOD;
 
         return self::STATUS_RESERVED;
     }
-
-    /**
-     * Closes the connection with the client and turns the request into a worker.
-     *
-     * @see handleResponse()
-     */
-    private function _closeRequestAndRun()
-    {
-        // Make sure nothing has been output to the browser yet
-        if (headers_sent()) {
-            return;
-        }
-
-        // Close the client connection
-        $response = Craft::$app->getResponse();
-        $response->content = '1';
-        $response->sendAndClose();
-
-        // Run any pending jobs
-        $this->run();
-    }
 }
