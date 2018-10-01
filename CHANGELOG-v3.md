@@ -8,6 +8,7 @@
 ### Fixed
 - Fixed a bug where enabling the “Propagate entries across all enabled sites?” setting for an existing Channel section (or converting the section to a Structure) wouldn’t update entries that had been created for the non-primary site.
 - Fixed a bug where Craft wasn’t detecting and retrying queue jobs that had timed out.
+- Fixed a bug where `Craft::$app->locale` could return the wrong locale during Live Preview requests. ([#3336](https://github.com/craftcms/cms/issues/3336))
 
 ## 3.0.26.1 - 2018-09-29
 

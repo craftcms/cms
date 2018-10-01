@@ -1011,6 +1011,7 @@ class EntriesController extends BaseEntriesController
         }
 
         Craft::$app->language = $site->language;
+        Craft::$app->set('locale', Craft::$app->getI18n()->getLocaleById($site->language));
 
         if (!$entry->postDate) {
             $entry->postDate = new DateTime();
