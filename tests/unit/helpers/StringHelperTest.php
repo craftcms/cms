@@ -149,8 +149,94 @@ class StringHelperTest extends \Codeception\Test\Unit
     {
         $this->assertSame([], StringHelper::charsAsArray(''));
         $this->assertSame(['a', 'b', 'c'], StringHelper::charsAsArray('abc'));
+        $this->assertSame(['1', '2', '3'], StringHelper::charsAsArray('123'));
         $this->assertSame(['!', '@', '#', '$', '%', '^'], StringHelper::charsAsArray('!@#$%^'));
-        $this->assertSame(['🎧', '𢵌', '😀', '😘', '⛄'], StringHelper::containsMb4('🎧𢵌😀😘⛄'));
+        $this->assertSame(['🎧', '𢵌', '😀', '😘', '⛄'], StringHelper::charsAsArray('🎧𢵌😀😘⛄'));
+    }
 
+    public function testToAscii()
+    {
+        $this->assertSame('', StringHelper::toAscii(''));
+        $this->assertSame('abc', StringHelper::toAscii('abc'));
+        $this->assertSame('123', StringHelper::toAscii('123'));
+        $this->assertSame('!@#$%^', StringHelper::toAscii('!@#$%^'));
+        $this->assertSame('', StringHelper::toAscii('🎧𢵌😀😘⛄'));
+    }
+
+    public function testFirst()
+    {
+        $this->assertSame('', StringHelper::first('', 1));
+        $this->assertSame('qwertyuiopas', StringHelper::first('qwertyuiopasdfghjklzxcvbnm', 12));
+        $this->assertSame('QWE', StringHelper::first('QWERTYUIOPASDFGHJKLZXCVBNM', 3));
+        $this->assertSame('12', StringHelper::first('123456789', 2));
+        $this->assertSame('!@#$%^', StringHelper::first('!@#$%^', 100));
+        $this->assertSame('🎧𢵌', StringHelper::first('🎧𢵌😀😘⛄', 2));
+    }
+
+    public function testStripHtml()
+    {
+        $this->assertSame('hello', StringHelper::stripHtml('<p>hello</p>'));
+        $this->assertSame('stuff', StringHelper::stripHtml('<>stuff</>'));
+        $this->assertSame('craft', StringHelper::stripHtml('<script src="https://">craft</script>'));
+        $this->assertSame('', StringHelper::stripHtml('<link src="#">'));
+        $this->assertSame('stuff', StringHelper::stripHtml('<random-tag src="#">stuff</random-tag>'));
+        $this->assertSame('stuff  ', StringHelper::stripHtml('<div><p>stuff  </p></div>'));
+    }
+
+    public function testIsUUID()
+    {
+        $this->assertTrue(StringHelper::isUUID(StringHelper::UUID()));
+        $this->assertTrue(StringHelper::isUUID('c3d6a75d-5b98-4048-8106-8cc2de4af159'));
+        $this->assertTrue(StringHelper::isUUID('c74e8f78-c052-4978-b0e8-77a307f7b946'));
+        $this->assertTrue(StringHelper::isUUID('469e6ed2-f270-458a-a80e-173821fee715'));
+        $this->assertTrue(StringHelper::isUUID('00000000-0000-0000-0000-000000000000'));
+        $this->assertTrue(StringHelper::isUUID('  c3d6a75d-5b98-4048-8106-8cc2de4af159  '));
+        // Sure this is right behaviour?
+        $this->assertTrue(StringHelper::isUUID(StringHelper::UUID().StringHelper::UUID()));
+
+        $this->assertFalse(StringHelper::isUUID('abc'));
+        $this->assertFalse(StringHelper::isUUID('123'));
+        $this->assertFalse(StringHelper::isUUID(''));
+        $this->assertFalse(StringHelper::isUUID(' '));
+        $this->assertFalse(StringHelper::isUUID('!@#$%^&*()'));
+        $this->assertFalse(StringHelper::isUUID('469e6ed2-🎧𢵌😀😘-458a-a80e-173821fee715'));
+        $this->assertFalse(StringHelper::isUUID('&*%!$^!#-5b98-4048-8106-8cc2de4af159'));
+    }
+
+    public function testCollapseWhitespace()
+    {
+        $this->assertSame('', StringHelper::collapseWhitespace('    '));
+        $this->assertSame('', StringHelper::collapseWhitespace('                                           '));
+        $this->assertSame('qwe rty uio pasd', StringHelper::collapseWhitespace('qwe rty     uio   pasd'));
+        $this->assertSame('Q W E', StringHelper::collapseWhitespace('Q                     W E'));
+        $this->assertSame('12345 67 89', StringHelper::collapseWhitespace('    12345   67     89     '));
+        $this->assertSame('! @ #$ % ^', StringHelper::collapseWhitespace('! @     #$     %       ^'));
+        $this->assertSame('🎧𢵌 😀😘⛄', StringHelper::collapseWhitespace('🎧𢵌       😀😘⛄       '));
+    }
+
+    public function testIsWhitespace()
+    {
+        $this->assertTrue(StringHelper::isWhitespace(''));
+        $this->assertTrue(StringHelper::isWhitespace(' '));
+        $this->assertTrue(StringHelper::isWhitespace('                                           '));
+        $this->assertFalse(StringHelper::isWhitespace('qwe rty     uio   pasd'));
+        $this->assertFalse(StringHelper::isWhitespace('Q                     W E'));
+        $this->assertFalse(StringHelper::isWhitespace('    12345   67     89     '));
+        $this->assertFalse(StringHelper::isWhitespace('! @     #$     %       ^'));
+        $this->assertFalse(StringHelper::isWhitespace('🎧𢵌       😀😘⛄       '));
+        $this->assertFalse(StringHelper::isWhitespace('craftcms'));
+        $this->assertFalse(StringHelper::isWhitespace('😀😘'));
+        $this->assertFalse(StringHelper::isWhitespace('/@#$%^&*'));
+        $this->assertFalse(StringHelper::isWhitespace('hello,people'));
+    }
+
+    public function testSplit()
+    {
+        $this->assertSame(['22', '23'], StringHelper::split('22, 23'));
+        $this->assertSame(['ab', 'cd'], StringHelper::split('ab,cd'));
+        $this->assertSame(['22', '23'], StringHelper::split('22,23, '));
+        $this->assertSame(['22', '23'], StringHelper::split('22| 23', '|'));
+        $this->assertSame(['22,', '23'], StringHelper::split('22,/ 23', '/'));
+        $this->assertSame(['22', '23'], StringHelper::split('22😀23', '😀'));
     }
 }
