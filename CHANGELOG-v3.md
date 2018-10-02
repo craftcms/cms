@@ -6,6 +6,7 @@
 - It’s now possible to load a Create Entry page with a specific user preselected in the Author field, using a new `authorId` query string param. ([#3326](https://github.com/craftcms/cms/pull/3326))
 - The `svg()` Twig function now has a `namespace` argument, which can be set to `false` to avoid namespacing IDs and class names. ([#3337](https://github.com/craftcms/cms/issues/3337))
 - Disabled Matrix blocks are no longer visible when sharing an entry draft or version. ([#3338](https://github.com/craftcms/cms/issues/3338))
+- Control Panel tabs that have errors now have alert icons.
 
 ### Fixed
 - Fixed a bug where enabling the “Propagate entries across all enabled sites?” setting for an existing Channel section (or converting the section to a Structure) wouldn’t update entries that had been created for the non-primary site.
