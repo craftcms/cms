@@ -78,6 +78,14 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
 
         $this->dateTimeTester($arrayFormat, '2018-08-08 20:00:00');
 
+
+        $w3cDateTime = DateTimeHelper::toDateTime('2018-08-08T20:00:00+06:00', false, false);
+        $this->assertSame('+06:00', $w3cDateTime->getTimezone()->getName());
+        $w3cDateTime->setTimezone($systemTimezone);
+        $w3cDateTimeAdjusted = DateTimeHelper::toDateTime('2018-08-08T20:00:00+06:00', false, true);
+        $this->assertSame($w3cDateTime->getTimezone()->getName(), $w3cDateTimeAdjusted->getTimezone()->getName());
+        $this->dateTimeTester('2018-08-08T20:00:00', '2018-08-08 20:00:00');
+
         // TODO Create a bunch more with various input formats.
 
         // Does a null string, array or void or invalid

@@ -57,9 +57,10 @@ class AppTest extends \Codeception\Test\Unit
         $this->assertSame('^200', App::normalizeVersion('^200'));
         $this->assertSame('v^2\0.0', App::normalizeVersion('v^2\0.0'));
         $this->assertSame('v^2|0.0', App::normalizeVersion('v^2|0.0'));
-        $this->assertSame('~v^2|0.0', App::normalizeVersion('~v^2.0.0'));
-        $this->assertSame('v^2|0.0', App::normalizeVersion('*v^2.0.0'));
-        $this->assertSame('v^2|0.0', App::normalizeVersion('*v^2.0.0(beta)'));
+        $this->assertSame('~v^2.0.0', App::normalizeVersion('~v^2.0.0'));
+        $this->assertSame('*v^2.0.0', App::normalizeVersion('*v^2.0.0'));
+        $this->assertSame('*v^2.0.0(beta)', App::normalizeVersion('*v^2.0.0(beta)'));
+        $this->assertSame('\*v^2.0.0(beta)', App::normalizeVersion('\*v^2.0.0(beta)'));
 
         $this->assertSame('', App::normalizeVersion(''));
     }

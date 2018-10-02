@@ -25,6 +25,21 @@ class DbHelperTest extends \Codeception\Test\Unit
             ]
         ]
     ];
+
+    const MULTI_PARSEPARAM_NOT = [
+        'or',
+        [
+            '!=',
+            'content_table',
+            'field_1'
+        ],
+        [
+            '!=',
+            'content_table',
+            'field_2'
+        ]
+    ];
+
     const MULTI_PARSEPARAM = [
         'or',
         [
@@ -47,16 +62,38 @@ class DbHelperTest extends \Codeception\Test\Unit
         ]
     ];
 
+    const MULTI_PARSEPARAM_EMPTY = [
+        'or',
+        [
+            'not',
+            [
+                'or',
+                [
+                    'content_table' => null,
+                ],
+                [
+                    'content_table' => '',
+                ]
+            ]
+        ],
+        [
+            '!=',
+            'content_table',
+            'field_2'
+        ]
+    ];
+
     public function testParseParam()
     {
+        $this->assertSame(self::BASIC_PARSEPARAM, Db::parseParam('foo', 'bar'));
+        $this->assertSame(self::MULTI_PARSEPARAM, Db::parseParam('content_table', ['field_1', 'field_2']));
+        $this->assertSame(self::MULTI_PARSEPARAM, Db::parseParam('content_table', 'field_1, field_2'));
+        $this->assertSame(self::MULTI_PARSEPARAM_NOT, Db::parseParam('content_table', 'field_1, field_2', 'not'));
+        $this->assertSame(self::MULTI_PARSEPARAM_NOT, Db::parseParam('content_table', 'field_1, field_2', '!='));
 
-        $this->assertSame(Db::parseParam('foo', 'bar'), self::BASIC_PARSEPARAM);
-
-        $this->assertSame(Db::parseParam('content_table', ['field_1', 'field_2']), self::MULTI_PARSEPARAM);
-        $this->assertSame(Db::parseParam('content_table', 'field_1, field_2'), self::MULTI_PARSEPARAM);
-
+        $this->assertSame(self::MULTI_PARSEPARAM_EMPTY, Db::parseParam('content_table', ':empty:, field_2', '!='));
+        $this->assertSame('', Db::parseParam('content_table', 'not'));
         $this->assertSame('', Db::parseParam('content', []));
-
 
         // No param passed? Empty string
         $this->assertSame('', Db::parseParam('', ''));

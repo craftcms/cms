@@ -10,18 +10,13 @@
 return [
 
 	// The database server name or IP address. Usually this is 'localhost' or '127.0.0.1'.
-	'server' => 'localhost',
-
-	// The database username to connect with.
+    'driver' => getenv('TEST_DB_DRIVER'),
+    'server' => getenv('TEST_DB_SERVER'),
 	'user' => getenv('TEST_DB_USER'),
-
-	// The database password to connect with.
-	'password' => getenv('TEST_DB_PASS'),
-
-	// The name of the database to select.
-	'database' => getenv('TEST_DB_NAME'),
-
-	// The prefix to use when naming tables. This can be no more than 5 characters.
-	'tablePrefix' => 'craft',
+    'password' => getenv('TEST_DB_PASS'),
+    'database' => getenv('TEST_DB_NAME'),
+    'schema' => getenv('TEST_DB_SCHEMA'),
+    'tablePrefix' => getenv('TEST_DB_TABLE_PREFIX'),
+    'port' => getenv('TEST_DB_PORT'),
 
 ];
