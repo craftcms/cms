@@ -525,7 +525,7 @@ class Sections extends Component
         ];
 
         if ($section->type === Section::TYPE_STRUCTURE) {
-            if ($isNewSection) {
+            if ($isNewSection || !$sectionRecord->structureId) {
                 $structureUid = StringHelper::UUID();
             } else {
                 $structureUid = Db::uidById('{{%structures}}', $sectionRecord->structureId);
