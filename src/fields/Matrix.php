@@ -915,7 +915,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $ownerId = null;
         }
 
-        $isLivePreview = Craft::$app->getRequest()->getIsLivePreview();
+        // Should we ignore disabled blocks?
+        $request = Craft::$app->getRequest();
+        $hideDisabledBlocks = (
+            $request->getToken() !== null ||
+            $request->getIsLivePreview()
+        );
+
         $blocks = [];
         $sortOrder = 0;
         $prevBlock = null;
@@ -926,7 +932,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             }
 
             // Skip disabled blocks on Live Preview requests
-            if ($isLivePreview && empty($blockData['enabled'])) {
+            if ($hideDisabledBlocks && empty($blockData['enabled'])) {
                 continue;
             }
 

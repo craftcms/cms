@@ -496,6 +496,7 @@ class Sections extends Component
         if ($isNewSection) {
             $sectionUid = StringHelper::UUID();
         } else {
+            /** @var SectionRecord $sectionRecord */
             $sectionRecord = SectionRecord::find()
                 ->where(['id' => $section->id])
                 ->one();
@@ -633,6 +634,7 @@ class Sections extends Component
 
             // Basic data
             $sectionRecord = $this->_getSectionRecord($sectionUid);
+            $oldSectionRecord = clone $sectionRecord;
             $sectionRecord->uid = $sectionUid;
             $sectionRecord->name = $data['name'];
             $sectionRecord->handle = $data['handle'];
@@ -724,8 +726,9 @@ class Sections extends Component
                     $this->_onSaveSingle($sectionRecord, $isNewSection, array_keys($siteSettingData));
                     break;
                 case Section::TYPE_STRUCTURE:
-                    /** @noinspection PhpUndefinedVariableInspection */
-                    $this->_onSaveStructure($sectionRecord, $isNewSection, $isNewStructure, $allOldSiteSettingsRecords);
+                    if (!$isNewSection && $isNewStructure) {
+                        $this->_populateNewStructure($sectionRecord, $oldSectionRecord, array_keys($allOldSiteSettingsRecords));
+                    }
                     break;
             }
 
@@ -733,7 +736,7 @@ class Sections extends Component
             // -----------------------------------------------------------------
 
             if (!$isNewSection) {
-                if ($sectionRecord->propagateEntries) {
+                if ($oldSectionRecord->propagateEntries) {
                     // Find a site that the section was already enabled in, and still is
                     $oldSiteIds = array_keys($allOldSiteSettingsRecords);
                     $newSiteIds = $siteIdMap;
@@ -1504,29 +1507,42 @@ class Sections extends Component
     }
 
     /**
-     * Performs some Structure-specific tasks when a section is saved.
+     * Adds existing entries to a newly-created structure, if the section type was just converted to Structure.
      *
-     * @param SectionRecord $section
-     * @param bool $isNewSection
-     * @param bool $isNewStructure
-     * @param Section_SiteSettingsRecord[] $allOldSiteSettingsRecords
+     * @param SectionRecord $sectionRecord
+     * @param SectionRecord $oldSectionRecord
+     * @param string[] $oldSiteIds
      * @see saveSection()
      * @throws Exception if reasons
      */
-    private function _onSaveStructure(SectionRecord $section, bool $isNewSection, bool $isNewStructure, array $allOldSiteSettingsRecords)
+    private function _populateNewStructure(SectionRecord $sectionRecord, SectionRecord $oldSectionRecord, array $oldSiteIds)
     {
-        if (!$isNewSection && $isNewStructure) {
+        if ($oldSectionRecord->propagateEntries) {
+            $siteIds = reset($oldSiteIds);
+        } else {
+            $siteIds = $oldSiteIds;
+        }
+
+        $handledEntryIds = [];
+        $structuresService = Craft::$app->getStructures();
+
+        foreach ($siteIds as $siteId) {
             // Add all of the entries to the structure
-            $query = Entry::find();
-            /** @noinspection PhpUndefinedVariableInspection */
-            $query->siteId(ArrayHelper::firstKey($allOldSiteSettingsRecords));
-            $query->sectionId($section->id);
-            $query->anyStatus();
-            $query->orderBy('elements.id');
-            $query->withStructure(false);
+            $query = Entry::find()
+                ->siteId($siteId)
+                ->sectionId($sectionRecord->id)
+                ->anyStatus()
+                ->orderBy(['elements.id' => SORT_ASC])
+                ->withStructure(false);
+
+            if (!empty($handledEntryIds)) {
+                $query->andWhere(['not', ['elements.id' => $handledEntryIds]]);
+            }
+
             /** @var Entry $entry */
             foreach ($query->each() as $entry) {
-                Craft::$app->getStructures()->appendToRoot($section->structureId, $entry, 'insert');
+                $structuresService->appendToRoot($sectionRecord->structureId, $entry, 'insert');
+                $handledEntryIds[] = $entry->id;
             }
         }
     }
