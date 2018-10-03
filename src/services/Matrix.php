@@ -633,6 +633,8 @@ class Matrix extends Component
             $blocks = $query->all();
         }
 
+        $elementsService = Craft::$app->getElements();
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // If this is a preexisting element, make sure that the blocks for this field/owner respect the field's translation setting
@@ -647,7 +649,6 @@ class Matrix extends Component
                 $newQuery->ownerId = $owner->id;
                 if (!$newQuery->exists()) {
                     // Duplicate the blocks for the new owner
-                    $elementsService = Craft::$app->getElements();
                     foreach ($blocks as $block) {
                         $elementsService->duplicateElement($block, [
                             'ownerId' => $owner->id,
@@ -667,7 +668,7 @@ class Matrix extends Component
                     $block->ownerSiteId = ($field->localizeBlocks ? $owner->siteId : null);
                     $block->propagating = $owner->propagating;
 
-                    Craft::$app->getElements()->saveElement($block, false, $propagate);
+                    $elementsService->saveElement($block, false, $propagate);
 
                     $blockIds[] = $block->id;
 
