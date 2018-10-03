@@ -88,15 +88,21 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
 
         // TODO Create a bunch more with various input formats.
 
+
+
         // Does a null string, array or void or invalid
-        $this->assertFalse(DateTimeHelper::toDateTime(['2018-08-08']));
+        $this->assertFalse(DateTimeHelper::toDateTime(['date' => '', 'time' => '']));
         $this->assertFalse(DateTimeHelper::toDateTime(['date' => '2018-08-08']));
-        $this->assertFalse(DateTimeHelper::toDateTime(['date' => '30-02-2018', 'time' => '08:00 PM']));
         $this->assertFalse(DateTimeHelper::toDateTime(['date' => '2018-08-08', 'time' => '08:00 PM']));
         $this->assertFalse(DateTimeHelper::toDateTime(['date' => '2018-08-08', 'time' => '8:00']));
         $this->assertFalse(DateTimeHelper::toDateTime(['date' => '2018-08-08', 'time' => '08:00 AM', 'timezone' => 'raaaa']));
         $this->assertFalse(DateTimeHelper::toDateTime(''));
-        $this->assertFalse(DateTimeHelper::toDateTime([]));
+
+        /*
+         *   How we do this?
+         *   $this->assertFalse(DateTimeHelper::toDateTime([]));
+        */
+
         $this->assertFalse(DateTimeHelper::toDateTime(null));
     }
 
@@ -121,11 +127,17 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
         $dateTimeWithSystemTzAdjusted->setTimezone($systemTimezone);
         $this->assertSame($dateTimeWithSystemTzAdjusted->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($toDateTimeFormat, false, true)->format('Y-m-d H:i:s'));
     }
+
     public function testNormalizeTimezone()
     {
-        // TODO: is this right?
         $this->assertSame('America/New_York', DateTimeHelper::normalizeTimeZone('EST'));
         $this->assertSame('Europe/Berlin', DateTimeHelper::normalizeTimeZone('CET'));
+        $this->assertSame('+09:00', DateTimeHelper::normalizeTimeZone('+0900'));
+        $this->assertSame('-02:00', DateTimeHelper::normalizeTimeZone('-02:00'));
+        $this->assertSame('UTC', DateTimeHelper::normalizeTimeZone('UTC'));
+        $this->assertSame('UTC', DateTimeHelper::normalizeTimeZone('GMT'));
+        $this->assertSame('Europe/Amsterdam', DateTimeHelper::normalizeTimeZone('Europe/Amsterdam'));
+
     }
 
     public function testIso86()
@@ -154,22 +166,55 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
 
     public function testYesterday()
     {
-        $this->testDateTimeIs('isYesterday', 'days');
+        $dateTime = new \DateTime('now');
+
+        $dateTime->modify('-1 days');
+        $this->assertTrue(DateTimeHelper::isYesterday($dateTime));
+
+
+        $dateTime->modify('-1 days');
+        $this->assertFalse(DateTimeHelper::isYesterday($dateTime));
+
+        $dateTime->modify('+2 days');
+        $this->assertFalse(DateTimeHelper::isYesterday($dateTime));
+
+        $dateTime = new \DateTime('yesterday', \Craft::$app->getTimeZone());
+        $this->assertTrue(DateTimeHelper::isYesterday($dateTime));
     }
 
     public function testThisYearCheck()
     {
         $this->testDateTimeIs('isThisYear', 'years');
+
     }
 
     public function testThisWeek()
     {
-        $this->testDateTimeIs('isThisWeek', 'weeks');
+        $dateTime = new \DateTime('now');
+        $this->assertTrue(DateTimeHelper::isThisWeek($dateTime));
+
+        $dateTime->modify('-1 weeks');
+        $this->assertFalse(DateTimeHelper::isThisWeek($dateTime));
+
+
+        $dateTime->modify('+1 weeks');
+        $this->assertTrue(DateTimeHelper::isThisWeek($dateTime));
+
+        $dateTime->modify('+2 weeks');
+        $this->assertFalse(DateTimeHelper::isYesterday($dateTime));
     }
 
     public function testIsInThePast()
     {
-        $this->testDateTimeIs('isInThePast', 'hours');
+        $dateTime = new \DateTime('now', \Craft::$app->getTimeZone());
+        $this->assertTrue(DateTimeHelper::isInThePast($dateTime));
+
+        $dateTime->modify('-1 minutes');
+        $this->assertTrue(DateTimeHelper::isInThePast($dateTime));
+
+
+        $dateTime->modify('+2 minutes');
+        $this->assertTrue(DateTimeHelper::isInThePast($dateTime));
     }
 
     public function testSecondsToInterval()
@@ -189,34 +234,14 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
     }
 
 
-    public function intervalToSeconds()
+    public function testIntervalToSeconds()
     {
         $seconds = DateTimeHelper::intervalToSeconds(new \DateInterval('P1D'));
         $this->assertSame($seconds, 86400);
 
-        $seconds = DateTimeHelper::intervalToSeconds(new \DateInterval('P1D2H'));
-        $this->assertSame($seconds, 93600);
-    }
-    
-    private function testEmptyDateTimeClass($function)
-    {
-        $this->assertFalse(DateTimeHelper::$function(null));
-        $this->assertFalse(DateTimeHelper::$function(false));
-        $this->assertFalse(DateTimeHelper::$function(''));
+        $seconds = DateTimeHelper::intervalToSeconds(new \DateInterval('P1DT1H'));
+        $this->assertSame($seconds, 90000);
     }
 
-    private function testDateTimeIs(string $function, $timeParam)
-    {
-        $this->testEmptyDateTimeClass($function);
-        $dateTime = new \DateTime('now');
-
-        $this->assertTrue(DateTimeHelper::$function($dateTime));
-
-        $dateTime->modify('+2 '.$timeParam.'');
-        $this->assertFalse(DateTimeHelper::$function($dateTime));
-
-        $dateTime->modify('-4 '.$timeParam.'');
-        $this->assertFalse(DateTimeHelper::$function($dateTime));
-    }
 
 }

@@ -85,6 +85,7 @@ class DbHelperTest extends \Codeception\Test\Unit
 
     public function testParseParam()
     {
+        // TODO: Postgres >.<
         $this->assertSame(self::BASIC_PARSEPARAM, Db::parseParam('foo', 'bar'));
         $this->assertSame(self::MULTI_PARSEPARAM, Db::parseParam('content_table', ['field_1', 'field_2']));
         $this->assertSame(self::MULTI_PARSEPARAM, Db::parseParam('content_table', 'field_1, field_2'));
