@@ -8,6 +8,7 @@
 ### Changed
 - It’s now possible to load a Create Entry page with a specific user preselected in the Author field, using a new `authorId` query string param. ([#3326](https://github.com/craftcms/cms/pull/3326))
 - The `svg()` Twig function now has a `namespace` argument, which can be set to `false` to avoid namespacing IDs and class names. ([#3337](https://github.com/craftcms/cms/issues/3337))
+- Matrix fields that are set to manage blocks on a per-site basis will now duplicate Matrix blocks across all of the owner element’s supported sites when the element is first created. ([#3082](https://github.com/craftcms/cms/issues/3082))
 - Disabled Matrix blocks are no longer visible when sharing an entry draft or version. ([#3338](https://github.com/craftcms/cms/issues/3338))
 - Control Panel tabs that have errors now have alert icons.
 
