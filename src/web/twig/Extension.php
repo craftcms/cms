@@ -819,11 +819,14 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Returns the (sanitized) contents of a given SVG file, namespacing any of its IDs in the process.
      *
      * @param string|Asset $svg An SVG asset, a file path, or XML data
-     * @param bool $sanitize Whether the file should be sanitized first
-     * @param bool $namespace Whether class names and IDs within the SVG should be namespaced, to avoid conflicts with other elements in the DOM
+     * @param bool|null $sanitize Whether the file should be sanitized first.
+     * Will be true by default if the SVG is an asset.
+     * @param bool|null $namespace Whether class names and IDs within the SVG
+     * should be namespaced, to avoid conflicts with other elements in the DOM.
+     * Will be true by default if the SVG is an asset.
      * @return \Twig_Markup|string
      */
-    public function svgFunction($svg, bool $sanitize = true, bool $namespace = true)
+    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null)
     {
         if ($svg instanceof Asset) {
             try {
@@ -833,6 +836,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
                 Craft::$app->getErrorHandler()->logException($e);
                 return '';
             }
+
+            // Force sanitization and namespacing unless explicitly disabled
+            $sanitize = $sanitize ?? true;
+            $namespace = $namespace ?? true;
         } else if (stripos($svg, '<svg') === false) {
             // No <svg> tag, so it's probably a file path
             $svg = Craft::getAlias($svg);
