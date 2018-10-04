@@ -3,8 +3,28 @@ namespace craftunit\helpers;
 
 use craft\helpers\DateTimeHelper;
 
+/**
+ * Unit tests for the DateTime Helper class.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.0
+ */
 class DateTimeHelperTest extends \Codeception\TestCase\Test
 {
+    /**
+     * @var \UnitTester
+     */
+    protected $tester;
+
+    protected function _before()
+    {
+    }
+
+    protected function _after()
+    {
+    }
+
     public function testContsants()
     {
         $this->assertSame(DateTimeHelper::SECONDS_DAY, 86400);
@@ -166,6 +186,7 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
 
     public function testYesterday()
     {
+        $systemTz = new \DateTimeZone(\Craft::$app->getTimeZone());
         $dateTime = new \DateTime('now');
 
         $dateTime->modify('-1 days');
@@ -178,14 +199,20 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
         $dateTime->modify('+2 days');
         $this->assertFalse(DateTimeHelper::isYesterday($dateTime));
 
-        $dateTime = new \DateTime('yesterday', \Craft::$app->getTimeZone());
+        $dateTime = new \DateTime('yesterday', $systemTz);
         $this->assertTrue(DateTimeHelper::isYesterday($dateTime));
     }
 
     public function testThisYearCheck()
     {
-        $this->testDateTimeIs('isThisYear', 'years');
+        $dateTime = new \DateTime('now');
+        $this->assertTrue(DateTimeHelper::isThisYear($dateTime));
 
+        $dateTime->modify('-1 years');
+        $this->assertFalse(DateTimeHelper::isThisYear($dateTime));
+
+        $dateTime->modify('+2 years');
+        $this->assertFalse(DateTimeHelper::isThisYear($dateTime));
     }
 
     public function testThisWeek()
@@ -206,15 +233,16 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
 
     public function testIsInThePast()
     {
-        $dateTime = new \DateTime('now', \Craft::$app->getTimeZone());
+        $systemTz = new \DateTimeZone(\Craft::$app->getTimeZone());
+        $dateTime = new \DateTime('now', $systemTz);
+        $dateTime->modify('-5 seconds');
         $this->assertTrue(DateTimeHelper::isInThePast($dateTime));
 
         $dateTime->modify('-1 minutes');
         $this->assertTrue(DateTimeHelper::isInThePast($dateTime));
 
-
         $dateTime->modify('+2 minutes');
-        $this->assertTrue(DateTimeHelper::isInThePast($dateTime));
+        $this->assertFalse(DateTimeHelper::isInThePast($dateTime));
     }
 
     public function testSecondsToInterval()

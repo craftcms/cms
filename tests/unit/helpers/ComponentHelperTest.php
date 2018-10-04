@@ -19,8 +19,28 @@ use craftunit\support\mockclasses\components\DependencyHeavyComponent;
 use craftunit\support\mockclasses\components\ExtendedComponentExample;
 use yii\base\InvalidConfigException;
 
+/**
+ * Unit tests for the Component Helper class.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.0
+ */
 class ComponentHelperTest extends Unit
 {
+
+    /**
+     * @var \UnitTester
+     */
+    protected $tester;
+
+    protected function _before()
+    {
+    }
+
+    protected function _after()
+    {
+    }
 
     public function testComponentCreation()
     {
@@ -32,80 +52,94 @@ class ComponentHelperTest extends Unit
             ])
         );
 
-
-        $this->assertTrue(
-            UnitExceptionHandler::ensureException(
-                function () {
-                    Component::createComponent([
-                        'type' => ExtendedComponentExample::class,
-                    ], 'random\\class\\that\\doesnt\\exist');
-                },
-                InvalidConfigException::class
-            )
-        );
-
-        $this->assertTrue(
-            UnitExceptionHandler::ensureException(
-                function () {
-                    Component::createComponent([
-                        'type' => 'i\\dont\\exist\\as\\a\\class'
-                    ]);
-                },
-                MissingComponentException::class
-            )
-        );
-
-        $this->assertTrue(
-            UnitExceptionHandler::ensureException(
-                function () {
-                    Component::createComponent([
-                        'type' => self::class
-                    ]);
-                },
-                InvalidConfigException::class
-            )
-        );
-
-        $this->assertTrue(
-            UnitExceptionHandler::ensureException(
-                function () {
-                    Component::createComponent([]);
-                },
-                InvalidConfigException::class
-            )
-        );
-
-        $this->assertTrue(
-            UnitExceptionHandler::ensureException(
-                function () {
-                    Component::createComponent([]);
-                },
-                InvalidConfigException::class
-            )
-        );
-
-        $this->assertTrue(
-            UnitExceptionHandler::ensureException(
-                function () {
-                    Component::createComponent([
-                        'type' => DependencyHeavyComponent::class,
-                        'dependancy1' => 'value1',
-                        'dependancy2' => 'value2',
-                        'settings' => [
-                            'settingsdependency1' => 'value'
-                        ]
-                    ]);
-                },
-                InvalidConfigException::class
-            )
-        );
+        $this->tester->expectException(InvalidConfigException::class, function (){
+            Component::createComponent([
+                'type' => ExtendedComponentExample::class,
+            ], 'random\\class\\that\\doesnt\\exist');
+        });
 
 
-        // TODO: Figure out a way to test plugin functionality
+        $this->tester->expectException(InvalidConfigException::class, function (){
+            Component::createComponent([
+                'type' => ExtendedComponentExample::class,
+            ], 'random\\class\\that\\doesnt\\exist');
+        });
+
+        $this->tester->expectException(MissingComponentException::class, function (){
+            Component::createComponent([
+                'type' => 'i\\dont\\exist\\as\\a\\class'
+            ]);
+        });
+
+        $this->tester->expectException(InvalidConfigException::class, function (){
+            Component::createComponent([
+                'type' => self::class
+            ]);
+        });
+
+        $this->tester->expectException(InvalidConfigException::class, function (){
+            Component::createComponent([]);
+        });
+
+        $this->tester->expectException(InvalidConfigException::class, function (){
+            Component::createComponent([
+                'type' => DependencyHeavyComponent::class,
+                'dependancy1' => 'value1',
+                'dependancy2' => 'value2',
+                'settings' => [
+                    'settingsdependency1' => 'value'
+                ]
+            ]);
+        });
+
+
+        // TODO: Figure out a way to test plugin functionality. Probs create a mock plugin under /_support/mockclasses
     }
 
     public function testMergingOfSettings()
     {
+        $basicComponentArray = [
+            'name' => 'Component',
+            'description' => 'Lorem ipsum',
+            'settings' => [
+                'setting1' => 'stuff',
+                'setting2' => 'stuff2'
+            ]
+        ];
+        $jsonBasicComponentArray = [
+            'name' => 'Component',
+            'description' => 'Lorem ipsum',
+            'settings' => json_encode([
+                'setting1' => 'stuff',
+                'setting2' => 'stuff2'
+            ])
+        ];
+        $mergedComponentArray = [
+            'name' => 'Component',
+            'description' => 'Lorem ipsum',
+            'setting1' => 'stuff',
+            'setting2' => 'stuff2'
+        ];
+        $this->assertSame($mergedComponentArray, Component::mergeSettings($basicComponentArray));
 
+        $this->assertSame([], Component::mergeSettings([]));
+        $this->assertSame($mergedComponentArray, Component::mergeSettings($jsonBasicComponentArray));
+        $this->assertSame($mergedComponentArray, Component::mergeSettings($mergedComponentArray));
+        $this->assertSame(['settings'], Component::mergeSettings(['settings']));
+
+        // Ensure nested settings array aren't changed.
+        $this->assertSame(
+            [
+                [
+                    'settings' => '22'
+                ]
+            ],
+            Component::mergeSettings([
+                [
+                    'settings' => '22'
+                ]
+                ]
+            )
+        );
     }
 }

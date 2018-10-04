@@ -1,20 +1,35 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: gieltettelaarlaptop
- * Date: 28/09/2018
- * Time: 11:44
- */
 
 namespace craftunit\helpers;
 
 
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craftunit\support\mockclasses\components\Serializable;
 use yii\rest\Serializer;
 
+/**
+ * Unit tests for the DB Helper class.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.0
+ */
 class DbHelperTest extends \Codeception\Test\Unit
 {
+    /**
+     * @var \UnitTester
+     */
+    protected $tester;
+
+    protected function _before()
+    {
+    }
+
+    protected function _after()
+    {
+    }
+
     const BASIC_PARSEPARAM = [
         'or',
         [
@@ -147,15 +162,24 @@ class DbHelperTest extends \Codeception\Test\Unit
     public function testValuePrepareForDb()
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
+        $jsonableClass = new \stdClass();
+        $jsonableClass->name = 'name';
+        $serializable = new Serializable();
 
         $excpectedDateTime = new \DateTime('2018-06-06 18:00:00');
         $excpectedDateTime->setTimezone(new \DateTimeZone('UTC'));
 
         $dateTime = new \DateTime('2018-06-06 18:00:00');
-        $this->assertSame(Db::prepareValueForDb($dateTime), $excpectedDateTime->format('Y-m-d H:i:s'));
-        $this->assertSame(Db::prepareValueForDb($jsonableArray), json_encode($jsonableArray));
+        $this->assertSame($excpectedDateTime->format('Y-m-d H:i:s'), Db::prepareValueForDb($dateTime));
+        $this->assertSame( json_encode($jsonableArray), Db::prepareValueForDb($jsonableArray));
+        $this->assertSame('{"name":"name"}', Db::prepareValueForDb($jsonableClass));
+        $this->assertSame('Serialized data', $serializable->serialize());
 
-        // TODO: Serializable test case
+    }
+
+    public function testPrepareDateForDb()
+    {
+        $dateTime = new \DateTime('2018-08-08 20:00:00');
     }
 
 }

@@ -3,6 +3,13 @@ namespace craftunit\helpers;
 
 use \craft\helpers\ArrayHelper;
 
+/**
+ * Unit tests for the Array Helper class.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.0
+ */
 class ArrayHelperTest extends \Codeception\Test\Unit
 {
     /**
@@ -33,6 +40,14 @@ class ArrayHelperTest extends \Codeception\Test\Unit
         $array = [1, 2, 3];
         ArrayHelper::prependOrAppend($array, 4, true);
         $this->assertSame([4, 1, 2, 3], $array);
+
+        $array = [1, 2, 3];
+        ArrayHelper::prependOrAppend($array, ['22'], false);
+        $this->assertSame([1, 2, 3, ['22']], $array);
+
+        $array = [1, 2, 3];
+        ArrayHelper::prependOrAppend($array, null, false);
+        $this->assertSame([1, 2, 3, null], $array);
     }
 
     public function testFilterEmptyStringsFromArray()
@@ -69,6 +84,7 @@ class ArrayHelperTest extends \Codeception\Test\Unit
 
     public function testFilterbyValue()
     {
+        // TODO: Inconsistent coding style
         $array = [
             [
                 'name' => 'array 1',
@@ -102,7 +118,66 @@ class ArrayHelperTest extends \Codeception\Test\Unit
         $this->assertCount(1, $filtered);
         $this->assertSame('the first array', $filtered[0]['description']);
 
+        // See if we can filter by an array as a value.
+        $this->assertSame([['name' => ['testname' => true]]],
+            ArrayHelper::filterByValue(
+            [
+                ['name' => ['testname' => true]],
+                ['name' => '22'],
+            ],
+            'name',
+            ['testname' => true]
+        ));
 
+        // Strict will only return 1. Non strict will typecast integer to string and thus find 2.
+        $this->assertCount(2,
+            ArrayHelper::filterByValue(
+                [
+                    ['name' => 22],
+                    ['name' => '22'],
+                ],
+                'name',
+                22,
+                false
+            )
+        );
+        $this->assertCount(1,
+            ArrayHelper::filterByValue(
+                [
+                    ['name' => 22],
+                    ['name' => '22'],
+                ],
+                'name',
+                22,
+                true
+            )
+        );
+
+        $this->assertSame(
+            [['name' => 'john']],
+            ArrayHelper::filterByValue(
+            [
+                ['name' => 'john'],
+                ['name' => 'michael'],
+            ],
+            ['name'],
+            'john',
+            true
+        ));
+
+        $this->assertSame(
+            [['name' => 'john']],
+            ArrayHelper::filterByValue(
+                [
+                    ['name' => 'john'],
+                    ['name' => 'michael'],
+                ],
+                function ($array, $default){
+                    return $array['name'];
+                },
+                'john',
+                true
+            ));
         // Make sure that filter by value hasnt made any changes to the array content e.t.c.
         $mockedUp = [
             [

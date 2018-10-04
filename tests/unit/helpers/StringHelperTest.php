@@ -5,19 +5,46 @@ use Codeception\Util\ReflectionHelper;
 use craft\helpers\StringHelper;
 use craftcms\tests\support\ReflectionSupport;
 use yii\base\ErrorException;
+use yii\db\Exception;
 
 /**
- * Created by PhpStorm.
- * User: gieltettelaarlaptop
- * Date: 29/09/2018
- * Time: 16:45
+ * Unit tests for the String Helper class.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.0
  */
-
 class StringHelperTest extends \Codeception\Test\Unit
 {
-    public function testStuff()
+    /**
+     * @var \UnitTester
+     */
+    protected $tester;
+
+    protected function _before()
+    {
+    }
+
+    protected function _after()
+    {
+    }
+
+    public function testUtf8Definition()
     {
         $this->assertSame('UTF-8', StringHelper::UTF8);
+    }
+
+    public function testStartsWith()
+    {
+        $this->assertTrue(StringHelper::startsWith('thisisastring a', 't'));
+        $this->assertTrue(StringHelper::startsWith('', ''));
+        $this->assertTrue(StringHelper::startsWith('craft cms is awsome', 'craft c'));
+        $this->assertTrue(StringHelper::startsWith('😀😘', '😀'));
+        $this->assertTrue(StringHelper::startsWith('  ', ' '));
+
+        $this->assertFalse(StringHelper::startsWith('a ball is round', 'b'));
+        $this->assertFalse(StringHelper::startsWith('a ball is round', 'ball'));
+        $this->assertFalse(StringHelper::startsWith('29*@1*1209)*08231b**!@&712&(!&@', '!&@'));
     }
 
     public function testEndsWith()
@@ -101,13 +128,9 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertFalse(StringHelper::indexOf('some string', 'a needle'));
 
         // Test that empty string returns an exception.
-        $testPassed = false;
-        try {
+        $this->tester->expectException(ErrorException::class, function (){
             StringHelper::indexOf('', '');
-        } catch (ErrorException $exception){
-            $testPassed = true;
-        }
-        $this->assertTrue($testPassed);
+        });
     }
 
     public function testSubstringCount()
@@ -238,5 +261,16 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame(['22', '23'], StringHelper::split('22| 23', '|'));
         $this->assertSame(['22,', '23'], StringHelper::split('22,/ 23', '/'));
         $this->assertSame(['22', '23'], StringHelper::split('22😀23', '😀'));
+    }
+
+    public function testDelimit()
+    {
+        $this->assertSame('', StringHelper::delimit('   ', '|'));
+        $this->assertSame('hello|iam|astring', StringHelper::delimit('HelloIamAstring', '|'));
+        $this->assertSame('😀😁😂🤣😃😄😅😆', StringHelper::delimit('😀😁😂🤣😃😄😅😆', '|'));
+        $this->assertSame('hello iam astring', StringHelper::delimit('HelloIamAstring', ' '));
+        $this->assertSame('hello!@#iam!@#astring', StringHelper::delimit('HelloIamAstring', '!@#'));
+        $this->assertSame('hello😀😁😂iam😀😁😂astring', StringHelper::delimit('HelloIamAstring', '😀😁😂'));
+        $this->assertSame('hello😀😁😂iam😀😁😂a2string', StringHelper::delimit('HelloIamA2string', '😀😁😂'));
     }
 }

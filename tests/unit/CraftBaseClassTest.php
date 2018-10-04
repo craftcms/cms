@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: gieltettelaarlaptop
- * Date: 28/09/2018
- * Time: 00:13
- */
+namespace craftunit\base;
 
 class CraftBaseClassTest extends \Codeception\Test\Unit
 {

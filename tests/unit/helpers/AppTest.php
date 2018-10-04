@@ -7,6 +7,13 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\services\Entries;
 
+/**
+ * Unit tests for the App Helper class.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.0
+ */
 class AppTest extends \Codeception\Test\Unit
 {
     /**
@@ -67,7 +74,16 @@ class AppTest extends \Codeception\Test\Unit
 
     public function testPhpConfigValueAsBool()
     {
+        $displayErrorsValue = ini_get('display_errors');
+        @ini_set('display_errors', 1);
         $this->assertTrue(App::phpConfigValueAsBool('display_errors'));
+        @ini_set('display_errors', $displayErrorsValue);
+
+        $timezoneValue = ini_get('date.timezone');
+        @ini_set('date.timezone', Craft::$app->getTimeZone() ?: 'Europe/Amsterdam');
+        $this->assertFalse(App::phpConfigValueAsBool('date.timezone'));
+        @ini_set('date.timezone', $timezoneValue);
+
         $this->assertFalse(App::phpConfigValueAsBool(''));
         $this->assertFalse(App::phpConfigValueAsBool('This isnt a config value'));
     }
@@ -77,8 +93,9 @@ class AppTest extends \Codeception\Test\Unit
         $this->assertSame(App::humanizeClass(Entries::class), 'entries');
 
         $this->assertSame(App::humanizeClass(''), '');
-        // Make sure non craft classes are normalized. TODO: Depend on class that is auto shipped with the tests and not a codeception class.
         $this->assertSame('app test', App::humanizeClass(self::class));
+        $this->assertSame('std class', App::humanizeClass(\stdClass::class));
+        $this->assertSame('iam not a  class!@#$%^&*()1234567890', App::humanizeClass('iam not a CLASS!@#$%^&*()1234567890'));
     }
 
     public function testMaxPowerCaptain(){
@@ -99,15 +116,11 @@ class AppTest extends \Codeception\Test\Unit
 
     public function testLicenseKey()
     {
-        $licenseKey = App::licenseKey();
         $this->assertSame(250, strlen(App::licenseKey()));
-
-        // TODO: What else to test here?
     }
 
     public function testDbConfigHasRequiredIndexes()
     {
-        // TODO: Do we need all of these?
         $dbConfig = App::dbConfig();
         $desiredSchemaArray = [
             'class',
@@ -122,7 +135,7 @@ class AppTest extends \Codeception\Test\Unit
             'enableSchemaCache'
         ];
 
-        $this->assertTrue($this->runConfigTest($dbConfig, $desiredSchemaArray));
+        $this->assertFalse($this->areKeysMissing($dbConfig, $desiredSchemaArray));
    }
 
    public function testWebRequestConfig()
@@ -137,11 +150,17 @@ class AppTest extends \Codeception\Test\Unit
            'csrfParam',
        ];
 
-       $this->assertTrue($this->runConfigTest($webConfig, $desiredSchemaArray));
+       $this->assertFalse($this->areKeysMissing($webConfig, $desiredSchemaArray));
    }
 
-   private function runConfigTest(array $configArray, array $desiredSchemaArray) : bool
+   private function areKeysMissing(array $configArray, array $desiredSchemaArray) : bool
    {
-       return (bool)array_diff_key($desiredSchemaArray, $configArray);
+       foreach ($desiredSchemaArray as $desiredSchemaItem) {
+           if (!array_key_exists($desiredSchemaItem, $configArray)) {
+               return true;
+           }
+       }
+
+       return false;
    }
 }

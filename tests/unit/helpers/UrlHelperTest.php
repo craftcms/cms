@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: gieltettelaarlaptop
- * Date: 29/09/2018
- * Time: 12:47
- */
 
 namespace craftunit\helpers;
 
@@ -12,8 +6,28 @@ namespace craftunit\helpers;
 use Codeception\Test\Unit;
 use craft\helpers\UrlHelper;
 
+/**
+ * Unit tests for the Url Helper class.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.0
+ */
 class UrlHelperTest extends Unit
 {
+    /**
+     * @var \UnitTester
+     */
+    protected $tester;
+
+    protected function _before()
+    {
+    }
+
+    protected function _after()
+    {
+    }
+
     const ABSOLUTE_URL = 'https://craftcms.com/';
     const ABSOLUTE_URL_HTTPS = 'https://craftcms.com/';
     const ABSOLUTE_URL_WWW = 'http://www.craftcms.com/';
@@ -22,22 +36,68 @@ class UrlHelperTest extends Unit
     const NON_ABSOLUTE_URL_WWW = 'www.craftcms.com/';
     const PROTOCOL_RELATIVE_URL = '//craftcms.com/';
 
-    public function testIsAbsoluteUrl()
+    /**
+     * @dataProvider protocolRelativeUrlData
+     * @dataProvider absoluteUrlData
+     * @dataProvider fulUrlData
+     */
+    public function testIsUrlFunction($url, bool $result, $method)
     {
-        $this->assertTrue(UrlHelper::isAbsoluteUrl(self::ABSOLUTE_URL));
-        $this->assertTrue(UrlHelper::isAbsoluteUrl(self::ABSOLUTE_URL_HTTPS));
-        $this->assertTrue(UrlHelper::isAbsoluteUrl(self::ABSOLUTE_URL_WWW));
-        $this->assertTrue(UrlHelper::isAbsoluteUrl(self::ABSOLUTE_URL_HTTPS_WWW));
-
-        $this->assertFalse(UrlHelper::isAbsoluteUrl(self::NON_ABSOLUTE_URL));
-        $this->assertFalse(UrlHelper::isAbsoluteUrl(self::NON_ABSOLUTE_URL_WWW));
+        $urlHelperResult = UrlHelper::$method($url);
+        $this->assertSame($urlHelperResult, $result);
+        $this->assertInternalType('boolean', $urlHelperResult);
     }
 
-     public function testIsProtocalRelativeUrl()
+    /**
+     * @return array
+     */
+    public function absoluteUrlData()
     {
-        $this->assertTrue(UrlHelper::isProtocolRelativeUrl(self::PROTOCOL_RELATIVE_URL));
+        return [
+            'absolute-url' => [ self::ABSOLUTE_URL, true, 'isAbsoluteUrl' ],
+            'absolute-url-https' => [ self::ABSOLUTE_URL_HTTPS, true, 'isAbsoluteUrl' ],
+            'absolute-url-https-www' => [ self::ABSOLUTE_URL_HTTPS_WWW, true, 'isAbsoluteUrl' ],
+            'absolute-url-www' => [ self::ABSOLUTE_URL_WWW, true, 'isAbsoluteUrl' ],
+            'non-url' => [self::NON_ABSOLUTE_URL, false, 'isAbsoluteUrl'],
+            'non-absolute-url-www' => [ self::NON_ABSOLUTE_URL_WWW, false, 'isAbsoluteUrl' ]
+        ];
     }
 
+    /**
+     * @return array
+     */
+    public function fulUrlData()
+    {
+        return [
+            'absolute-url' => [ self::ABSOLUTE_URL, true, 'isFullUrl' ],
+            'absolute-url-https' => [ self::ABSOLUTE_URL_HTTPS, true, 'isFullUrl' ],
+            'absolute-url-https-www' => [ self::ABSOLUTE_URL_HTTPS_WWW, true, 'isFullUrl' ],
+            'absolute-url-www' => [ self::ABSOLUTE_URL_WWW, true, 'isFullUrl' ],
+            'root-relative' => [ '/22', true, 'isFullUrl' ],
+            'protocol-relative' => [ self::PROTOCOL_RELATIVE_URL, true, 'isFullUrl' ],
+            'mb4-string' => [ '😀😘', false, 'isFullUrl' ],
+            'random-chars' => [ '!@#$%^&*()<>', false, 'isFullUrl' ],
+            'random-string' => ['hello', false, 'isFullUrl'],
+            'non-url' => [self::NON_ABSOLUTE_URL, false, 'isFullUrl'],
+            'non-absolute-url-www' => [ self::NON_ABSOLUTE_URL_WWW, false, 'isFullUrl' ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function protocolRelativeUrlData()
+    {
+        return [
+            'root-relative-true' => [ '/22', true, 'isRootRelativeUrl'],
+            'protocol-relative' => [ '//cdn.craftcms.com/22', false, 'isRootRelativeUrl' ],
+            'absolute-url-https-www' => [ self::ABSOLUTE_URL_HTTPS_WWW, false, 'isRootRelativeUrl' ]
+        ];
+    }
+
+    /**
+     *
+     */
     public function testUrlWithParams()
     {
         $this->assertSame(
@@ -95,6 +155,9 @@ class UrlHelperTest extends Unit
 
     }
 
+    /**
+     *
+     */
     public function testCpUrlCreation()
     {
         $cpTrigger = \Craft::$app->getConfig()->getGeneral()->cpTrigger;
@@ -106,6 +169,9 @@ class UrlHelperTest extends Unit
         // TODO: More scenarios
     }
 
+    /**
+     * @throws \craft\errors\SiteNotFoundException
+     */
     public function testUrlWithScheme()
     {
         $this->assertEquals('php://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW, 'php'));
@@ -124,19 +190,14 @@ class UrlHelperTest extends Unit
         $this->assertSame('walawalabingbang://gt.com', UrlHelper::hostInfo('walawalabingbang://gt.com/'));
         $this->assertSame('sftp://volkswagen', UrlHelper::hostInfo('sftp://volkswagen'));
 
-        // TODO: What if no param is passed in. The method does this variably based on console requests.
-        // TODO: How will this work? Should we use if else inside of a test and how are we going ot get the the host info. Preferably via natural vanilla php/
-        /*
-        if(\Craft::$app->getRequest()->getIsConsoleRequest()) {
-            $this->assertSame('', UrlHelper::hostInfo('craftcms.com'));
-        } else {
-            // If its a web request. Make sure that ::hostInfo return the current host
-            $this->assertSame($currentHostInfo = UrlHelper::host(), UrlHelper::hostInfo('craftcms.com'));
-        }
-        */
-
+        // If nothing is passed in your mileage may vary depending on request type. So we need to know what to expect before hand..
+        $expectedValue = \Craft::$app->getRequest()->getIsConsoleRequest() ? '' : \Craft::$app->getRequest()->getHostInfo();
+        $this->assertSame($expectedValue, UrlHelper::hostInfo(''));
     }
 
+    /**
+     * @throws \craft\errors\SiteNotFoundException
+     */
     public function testUrlCreation()
     {
         $siteUrl = \Craft::$app->getConfig()->getGeneral()->siteUrl;
@@ -150,6 +211,10 @@ class UrlHelperTest extends Unit
         );
     }
 
+    /**
+     * @return bool
+     * @throws \craft\errors\SiteNotFoundException
+     */
     public function testGetSchemeForTokenUrl()
     {
         $this->assertTrue(in_array(UrlHelper::getSchemeForTokenizedUrl(), ['http', 'https']));
@@ -177,8 +242,9 @@ class UrlHelperTest extends Unit
             return true;
         }
 
-        $this->assertSame('http', UrlHelper::getSchemeForTokenizedUrl('http://'));
+        $this->assertSame('http', UrlHelper::getSchemeForTokenizedUrl());
         return true;
-
     }
+
+
 }
