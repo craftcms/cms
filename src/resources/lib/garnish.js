@@ -3,7 +3,7 @@
  *
  * @copyright 2013 Pixel & Tonic, Inc.. All rights reserved.
  * @author    Brandon Kelly <brandon@pixelandtonic.com>
- * @version   0.1.28
+ * @version   0.1.29
  * @license   MIT
  */
 (function($){
@@ -2832,7 +2832,7 @@ Garnish.HUD = Garnish.Base.extend(
             this.show();
 
             this.addListener(this.$body, 'submit', '_handleSubmit');
-            this.addListener(this.$shade, 'tap', 'hide');
+            this.addListener(this.$shade, 'tap,click', 'hide');
 
             if (this.settings.closeBtn) {
                 this.addListener(this.settings.closeBtn, 'activate', 'hide');
