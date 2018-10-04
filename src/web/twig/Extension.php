@@ -836,10 +836,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
                 Craft::$app->getErrorHandler()->logException($e);
                 return '';
             }
-
-            // Force sanitization and namespacing unless explicitly disabled
-            $sanitize = $sanitize ?? true;
-            $namespace = $namespace ?? true;
         } else if (stripos($svg, '<svg') === false) {
             // No <svg> tag, so it's probably a file path
             $svg = Craft::getAlias($svg);
@@ -848,7 +844,15 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
                 return '';
             }
             $svg = file_get_contents($svg);
+
+            // This came from a file path, so pretty good chance that the SVG can be trusted.
+            $sanitize = $sanitize ?? false;
+            $namespace = $namespace ?? false;
         }
+
+        // Sanitize and namespace the SVG by default
+        $sanitize = $sanitize ?? true;
+        $namespace = $namespace ?? true;
 
         // Sanitize?
         if ($sanitize) {

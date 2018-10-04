@@ -19,7 +19,7 @@
 - Fixed a bug where page titles in the Control Panel could be blank when showing validation errors for things that were missing their name or title. ([#3344](https://github.com/craftcms/cms/issues/3344))
 
 ### Security
-- The `svg()` Twig function no longer sanitizes SVGs or namespaces their IDs or class names by default, unless the passed-in SVG is an [Asset](https://docs.craftcms.com/api/v3/craft-elements-asset.html) object. ([#3337](https://github.com/craftcms/cms/issues/3337))
+- The `svg()` Twig function no longer sanitizes SVGs or namespaces their IDs or class names by default when a file path (or alias) was passed in. ([#3337](https://github.com/craftcms/cms/issues/3337))
 
 ## 3.0.26.1 - 2018-09-29
 
