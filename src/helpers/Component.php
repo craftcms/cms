@@ -94,7 +94,7 @@ class Component
 
         if (is_string($settings)) {
             $settings = Json::decode($settings);
-            if(!is_array($settings)){
+            if (!is_array($settings)) {
                 return $config;
             }
         }
