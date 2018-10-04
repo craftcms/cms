@@ -11,6 +11,7 @@
 - Disabled Matrix blocks are no longer visible when sharing an entry draft or version. ([#3338](https://github.com/craftcms/cms/issues/3338))
 - Control Panel tabs that have errors now have alert icons.
 - Updated jQuery Touch Events to 2.0.0.
+- Updated Garnish to 0.1.29.
 
 ### Fixed
 - Fixed a bug where enabling the “Propagate entries across all enabled sites?” setting for an existing Channel section (or converting the section to a Structure) wouldn’t update entries that had been created for the non-primary site.
