@@ -816,14 +816,15 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     }
 
     /**
-     * Returns the (sanitized) contents of a given SVG file, namespacing any of its IDs in the process.
+     * Returns the contents of a given SVG file.
      *
-     * @param string|Asset $svg An SVG asset, a file path, or XML data
-     * @param bool|null $sanitize Whether the file should be sanitized first.
-     * Will be true by default if the SVG is an asset.
+     * @param string|Asset $svg An SVG asset, a file path, or raw SVG markup
+     * @param bool|null $sanitize Whether the SVG should be sanitized of potentially
+     * malicious scripts. By default the SVG will only be sanitized if an asset
+     * or markup is passed in. (File paths are assumed to be safe.)
      * @param bool|null $namespace Whether class names and IDs within the SVG
-     * should be namespaced, to avoid conflicts with other elements in the DOM.
-     * Will be true by default if the SVG is an asset.
+     * should be namespaced to avoid conflicts with other elements in the DOM.
+     * By default the SVG will only be namespaced if an asset or markup is passed in.
      * @return \Twig_Markup|string
      */
     public function svgFunction($svg, bool $sanitize = null, bool $namespace = null)
