@@ -241,7 +241,7 @@ class EntriesController extends BaseEntriesController
         if ($entry->id === null) {
             $variables['title'] = Craft::t('app', 'Create a new entry');
         } else {
-            $variables['docTitle'] = $variables['title'] = $entry->title;
+            $variables['docTitle'] = $variables['title'] = trim($entry->title) ?: Craft::t('app', 'Edit Entry');
 
             if (get_class($entry) !== Entry::class) {
                 $variables['docTitle'] .= ' (' . $variables['revisionLabel'] . ')';

@@ -17,6 +17,7 @@
 - Fixed a bug where Craft wasn’t detecting and retrying queue jobs that had timed out.
 - Fixed a bug where `Craft::$app->locale` could return the wrong locale during Live Preview requests. ([#3336](https://github.com/craftcms/cms/issues/3336))
 - Fixed a SQL error that could occur when upgrading to Craft 3, if a foreign key had an unexpected name.
+- Fixed a bug where page titles in the Control Panel could be blank when showing validation errors for things that were missing their name or title. ([#3344](https://github.com/craftcms/cms/issues/3344))
 
 ## 3.0.26.1 - 2018-09-29
 

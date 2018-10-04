@@ -104,7 +104,7 @@ class CategoriesController extends Controller
                 }
             }
 
-            $variables['title'] = $categoryGroup->name;
+            $variables['title'] = trim($categoryGroup->name) ?: Craft::t('app', 'Edit Category Group');
         } else {
             if ($categoryGroup === null) {
                 $categoryGroup = new CategoryGroup();
@@ -332,7 +332,7 @@ class CategoriesController extends Controller
         if ($category->id === null) {
             $variables['title'] = Craft::t('app', 'Create a new category');
         } else {
-            $variables['docTitle'] = $variables['title'] = $category->title;
+            $variables['docTitle'] = $variables['title'] = trim($category->title) ?: Craft::t('app', 'Edit Category');
         }
 
         // Breadcrumbs

@@ -702,8 +702,10 @@ class UsersController extends Controller
         if (!$isNewUser) {
             if ($user->getIsCurrent()) {
                 $title = Craft::t('app', 'My Account');
+            } else if ($name = trim($user->getName())) {
+                $title = Craft::t('app', '{user}’s Account', ['user' => $name]);
             } else {
-                $title = Craft::t('app', '{user}’s Account', ['user' => $user->getName()]);
+                $title = Craft::t('app', 'Edit User');
             }
         } else {
             $title = Craft::t('app', 'Register a new user');
