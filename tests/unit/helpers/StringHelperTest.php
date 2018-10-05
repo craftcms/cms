@@ -177,6 +177,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame(['🎧', '𢵌', '😀', '😘', '⛄'], StringHelper::charsAsArray('🎧𢵌😀😘⛄'));
     }
 
+
     public function testToAscii()
     {
         $this->assertSame('', StringHelper::toAscii(''));
@@ -273,4 +274,5 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame('hello😀😁😂iam😀😁😂astring', StringHelper::delimit('HelloIamAstring', '😀😁😂'));
         $this->assertSame('hello😀😁😂iam😀😁😂a2string', StringHelper::delimit('HelloIamA2string', '😀😁😂'));
     }
+
 }

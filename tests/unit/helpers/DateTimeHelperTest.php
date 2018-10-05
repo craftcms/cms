@@ -57,73 +57,145 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
         $this->assertSame(DateTimeHelper::secondsToHumanTimeDuration(121), '2 minutes, 1 second');
     }
 
+    /**
+     *
+     */
     public function testToDateTime()
     {
-        $craftTimezone = \Craft::$app->getTimeZone();
-        $systemTimezone = new \DateTimeZone($craftTimezone);
-        $utcTimezone = new \DateTimeZone('UTC');
-
-        $systemTime1 = new \DateTime('2018-08-08 20:00:00', $systemTimezone);
-        $systemTime2 = new \DateTime('2018-08-08 20:00:00', $systemTimezone);
-
-        $utcToSytemTime = new \DateTime('2018-08-08 20:00:00', $utcTimezone);
-        $utcToSytemTime->setTimezone($systemTimezone);
-
-        // Does toDateTime make changes to variable if it is passed as a \DateTime object
-        $this->assertSame($systemTime1->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($systemTime2)->format('Y-m-d H:i:s'));
-        $this->assertSame($systemTime1->getTimezone()->getName(), DateTimeHelper::toDateTime($systemTime2)->getTimezone()->getName());
-
-
-        $this->dateTimeTester('2018-08-08 20:00:00', '2018-08-08 20:00:00');
-
-        // Does the date time helper not set to system timezone when being told to. Reverting back to utc
-        $this->assertSame($utcTimezone->getName(), DateTimeHelper::toDateTime('2018-08-08 20:00:00', false, false)->getTimezone()->getName());
-
-        // Does the system set the timezone if asked.
-        $this->assertSame($systemTimezone->getName(), DateTimeHelper::toDateTime('2018-08-08 20:00:00', false, true)->getTimezone()->getName());
-
-        // Does the dateTime create a format in utc and then set the tz to the system. If we dont overide setSystemTzToFalse.
-        // Test that this happens explicitly by adding assume set sytem timezone to false and not defining it.
-        $this->assertSame($utcToSytemTime->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime('2018-08-08 20:00:00', false)->format('Y-m-d H:i:s'));
-        $this->assertSame($utcToSytemTime->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime('2018-08-08 20:00:00')->format('Y-m-d H:i:s'));
-
-        $arrayFormat = [
-            'date' => '08-08-2018',
-            'time' => '08:00 PM',
-        ];
-        $toDtValue = DateTimeHelper::toDateTime($arrayFormat);
-        $this->assertInstanceOf(\DateTime::class, $toDtValue);
-        $this->assertSame($systemTimezone->getName(), $toDtValue->getTimezone()->getName());
-        $this->assertSame($utcToSytemTime->format('Y-m-d H:i:s'), $toDtValue->format('Y-m-d H:i:s'));
-
-        $this->dateTimeTester($arrayFormat, '2018-08-08 20:00:00');
-
-
-        $w3cDateTime = DateTimeHelper::toDateTime('2018-08-08T20:00:00+06:00', false, false);
-        $this->assertSame('+06:00', $w3cDateTime->getTimezone()->getName());
-        $w3cDateTime->setTimezone($systemTimezone);
-        $w3cDateTimeAdjusted = DateTimeHelper::toDateTime('2018-08-08T20:00:00+06:00', false, true);
-        $this->assertSame($w3cDateTime->getTimezone()->getName(), $w3cDateTimeAdjusted->getTimezone()->getName());
-        $this->dateTimeTester('2018-08-08T20:00:00', '2018-08-08 20:00:00');
-
-        // TODO Create a bunch more with various input formats.
-
-
-
-        // Does a null string, array or void or invalid
-        $this->assertFalse(DateTimeHelper::toDateTime(['date' => '', 'time' => '']));
-        $this->assertFalse(DateTimeHelper::toDateTime(['date' => '2018-08-08']));
-        $this->assertFalse(DateTimeHelper::toDateTime(['date' => '2018-08-08', 'time' => '08:00 PM']));
-        $this->assertFalse(DateTimeHelper::toDateTime(['date' => '2018-08-08', 'time' => '8:00']));
-        $this->assertFalse(DateTimeHelper::toDateTime(['date' => '2018-08-08', 'time' => '08:00 AM', 'timezone' => 'raaaa']));
-        $this->assertFalse(DateTimeHelper::toDateTime(''));
-
         /*
          *   How we do this?
          *   $this->assertFalse(DateTimeHelper::toDateTime([]));
         */
+    }
 
-        $this->assertFalse(DateTimeHelper::toDateTime(null));
+    /**
+     * @dataProvider invalidToDateTimeFormatsData
+     * @param $format
+     */
+    public function testToDateTimeInvalidFormats($format)
+    {
+        $this->assertFalse(DateTimeHelper::toDateTime($format));
+    }
+
+    public function invalidToDateTimeFormatsData()
+    {
+        return [
+            'no-params' => [['date' => '', 'time' => '']],
+            'invalid-date-format' => [['date' => '2018-08-08']],
+            'invalid-date-valid-time' => [['date' => '2018-08-08', 'time' => '08:00 PM']],
+            'null-type' => [null],
+            'empty-string' => [''],
+        ];
+    }
+
+    /**
+     * @dataProvider simpleDateTimeFormats
+     * @param $format
+     */
+    public function testUtcDefault($format)
+    {
+        $utc = new \DateTimeZone('UTC');
+        $toDateTime = DateTimeHelper::toDateTime($format, false, false);
+        $this->assertSame($utc->getName(), $toDateTime->getTimezone()->getName());
+    }
+
+    public function simpleDateTimeFormats()
+    {
+        return [
+            'mysql' => ['2018-08-08 20:00:00'],
+            'array' => [['date' => '08-09-2018', 'time' => '08:00 PM']],
+            'w3c-format' => ['2018-08-09T20:00:00'],
+            'dtobject' => [new \DateTime('2018-08-09', new \DateTimeZone('UTC'))]
+        ];
+    }
+
+
+    /**
+     *@dataProvider toDateTimeWithTzFormats
+     * @param               $format
+     * @param \DateTime      $expectedResult
+     * @param \DateTimeZone $expectedTimezone
+     */
+    public function testToDateTimeRespectsTz($format, \DateTime $expectedResult, \DateTimeZone $expectedTimezone)
+    {
+        $toDateTime = DateTimeHelper::toDateTime($format, false, false);
+
+        $this->assertInstanceOf(\DateTime::class, $toDateTime);
+        $this->assertSame($expectedTimezone->getName(), $toDateTime->getTimezone()->getName());
+        $this->assertSame($expectedTimezone->getName(), $expectedResult->getTimezone()->getName());
+        $this->assertSame($expectedResult->format('Y-m-d H:i:s'), $toDateTime->format('Y-m-d H:i:s'));
+    }
+
+    public function toDateTimeWithTzFormats()
+    {
+        $basicDateTimeCreator = function ($timezone){
+            $tz = new \DateTimezone($timezone);
+            // Crafts toDateTime sets the format as utc.
+            $dt = new \DateTime('2018-08-09 20:00:00', $tz);
+            return $dt;
+        };
+
+        return [
+            'mysql-format' => [
+               '2018-08-09 20:00:00',
+                $basicDateTimeCreator('UTC'),
+                new \DateTimeZone('UTC')
+            ],
+            'array-format' => [
+                ['date' => '08-09-2018', 'time' => '08:00 PM', 'timezone' => 'Asia/Tokyo'],
+                $basicDateTimeCreator('Asia/Tokyo'),
+                new \DateTimeZone('Asia/Tokyo')
+            ],
+            'w3c-format' => [
+                '2018-08-09T20:00:00+09:00',
+                $basicDateTimeCreator('+09:00'),
+                new \DateTimeZone('+09:00')
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider toDateTimeFormats
+     * @param          $format
+     * @param \Closure $expectedResult
+     */
+    public function testToDateTimeCreation($format, \Closure $expectedResult)
+    {
+        $toDateTime = DateTimeHelper::toDateTime($format);
+        $this->assertSame($expectedResult()->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($format)->format('Y-m-d H:i:s'));
+        $this->assertInstanceOf(\DateTime::class, $toDateTime);
+    }
+
+    public function toDateTimeFormats()
+    {
+        $basicDateTimeCreator = function (){
+            $systemTimezone = new \DateTimezone(\Craft::$app->getTimeZone());
+            $utcTz = new \DateTimeZone('UTC');
+
+            // Crafts toDateTime sets the format as utc. Then converts to system tz unless overridden by variables.
+            $dt = new \DateTime('2018-08-09 20:00:00', $utcTz);
+            $dt->setTimezone($systemTimezone);
+            return $dt;
+        };
+
+        return [
+            'basic-mysql-format' => [
+                '2018-08-09 20:00:00',
+                $basicDateTimeCreator,
+            ],
+            'array-format' => [
+                ['date' => '08-09-2018', 'time' => '08:00 PM'],
+                $basicDateTimeCreator,
+            ],
+            'w3c-format' => [
+                '2018-08-09T20:00:00',
+                $basicDateTimeCreator,
+            ],
+            'unix-timestamp' => [
+                '1533844800',
+                $basicDateTimeCreator,
+            ],
+        ];
     }
 
     public function dateTimeTester(
