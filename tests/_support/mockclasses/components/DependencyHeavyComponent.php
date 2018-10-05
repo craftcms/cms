@@ -24,13 +24,13 @@ class DependencyHeavyComponent implements ComponentInterface
     public function __construct(array $settings)
     {
         if (!isset($settings['dependency1'])) {
-            throw new InvalidConfigException('Dependency 1 doesnt exist');
+            throw new \Exception('Dependency 1 doesnt exist');
         }
         if (!isset($settings['dependency2'])) {
-            throw new InvalidConfigException('Dependency 2 doesnt exist');
+            throw new \Exception('Dependency 2 doesnt exist');
         }
         if (!isset($settings['settingsdependency1'])) {
-            throw new InvalidConfigException('Settings dependency 1 doesnt exist');
+            throw new \Exception('Settings dependency 1 doesnt exist');
         }
     }
 

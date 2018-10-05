@@ -83,7 +83,7 @@ class ComponentHelperTest extends Unit
 
     /**
      * @dataProvider failingComponentCreationData
-     * @param \Closure $callback
+     * @param $desiredParent
      * @param string   $requiredException
      */
     public function testFailedComponentExceptions(array $settings, $desiredParent, string $requiredException)
@@ -96,6 +96,12 @@ class ComponentHelperTest extends Unit
             );
     }
 
+    /**
+     * Returns data for failed component creations. Defines settings, the required exception
+     * and if the 'type' class must have a class as parent.
+     *
+     * @return array
+     */
     public function failingComponentCreationData()
     {
         return [
