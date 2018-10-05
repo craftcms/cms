@@ -490,7 +490,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $block = new MatrixBlock();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;
-                $block->siteId = $element->siteId;
+                $block->siteId = $element->siteId ?? null;
                 $value[] = $block;
             }
         }
