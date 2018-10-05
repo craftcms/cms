@@ -6,6 +6,7 @@ namespace craftunit\helpers;
 use craft\helpers\Db;
 use craftunit\support\mockclasses\components\Serializable;
 use Codeception\Test\Unit;
+use yii\base\Exception;
 
 /**
  * Unit tests for the DB Helper class.
@@ -121,16 +122,28 @@ class DbHelperTest extends Unit
         $this->assertSame(self::EMPTY_COLLUMN_PARSEPARAM, Db::parseParam('', 'field_1'));
     }
 
-    public function testGetNumericCollumnType()
+    /**
+     * @dataProvider numericCollumnTypesData
+     */
+    public function testGetNumericCollumnType($int1, $int2, $result)
     {
-        $this->assertSame(Db::getNumericalColumnType(0, 5), 'smallint(1)');
-        $this->assertSame(Db::getNumericalColumnType(0, 0), 'smallint(0)');
-        $this->assertSame(Db::getNumericalColumnType(0, 10), 'smallint(2)');
-        $this->assertSame(Db::getNumericalColumnType(0, 100), 'smallint(3)');
+        $this->assertSame($result, Db::getNumericalColumnType($int1, $int2));
+    }
 
-        $this->assertSame(Db::getNumericalColumnType(100, 0), 'smallint(3)');
-        $this->assertSame(Db::getNumericalColumnType(0, 1231224), 'integer(7)');
-        $this->assertSame(Db::getNumericalColumnType(0, 230221224), 'integer(9)');
+    public function numericCollumnTypesData()
+    {
+        return [
+            'smallint1-minus' => [-0, -5, 'smallint(1)'],
+            'smallint1' => [0, 5, 'smallint(1)'],
+            'smallint1-minus-string' => ['-2', '-5', 'smallint(1)'],
+            'smallint1-string' => ['0', '5', 'smallint(1)'],
+            'smallint0' => [0, 0, 'smallint(0)'],
+            'smallint2' => [0, 10, 'smallint(2)'],
+            'smallint3' => [0, 100, 'smallint(3)'],
+            'smallint3-2' => [100, 0, 'smallint(3)'],
+            'smallint7' => [0, 1231224, 'integer(7)'],
+            'smallint9' => [0, 230221224, 'integer(9)'],
+        ];
     }
 
     public function testGetSimplifiedCollumnType()
@@ -141,21 +154,6 @@ class DbHelperTest extends Unit
         $this->assertSame('textual', Db::getSimplifiedColumnType('Tinytext'));
         $this->assertSame('numeric', Db::getSimplifiedColumnType('Decimal'));
         $this->assertSame('textual', Db::getSimplifiedColumnType('Longtext'));
-    }
-
-    /**
-     * TODO: Fix this test.
-     */
-    public function testIsTextualCollumnType()
-    {
-        $this->markTestSkipped('Test bugs out. Need to determine what is textual ctype is used for. ');
-
-        $this->assertTrue(Db::isTextualColumnType('Longtext'));
-        $this->assertTrue(Db::isTextualColumnType('Tinytext'));
-        $this->assertTrue(Db::isTextualColumnType('text'));
-
-        $this->assertFalse(Db::isTextualColumnType('decimal'));
-        $this->assertFalse(Db::isTextualColumnType('integer'));
     }
 
     public function testValuePrepareForDb()
@@ -172,13 +170,32 @@ class DbHelperTest extends Unit
         $this->assertSame($excpectedDateTime->format('Y-m-d H:i:s'), Db::prepareValueForDb($dateTime));
         $this->assertSame( json_encode($jsonableArray), Db::prepareValueForDb($jsonableArray));
         $this->assertSame('{"name":"name"}', Db::prepareValueForDb($jsonableClass));
-        $this->assertSame('Serialized data', $serializable->serialize());
-
+        $this->assertSame('Serialized data', Db::prepareValueForDb($serializable));
     }
 
     public function testPrepareDateForDb()
     {
-        $dateTime = new \DateTime('2018-08-08 20:00:00');
-    }
+        $date = new \DateTime('2018-08-08 20:00:00', new \DateTimeZone('UTC'));
+        $this->assertSame($date->format('Y-m-d H:i:s'), Db::prepareDateForDb($date));
 
+        $date = new \DateTime('2018-08-08 20:00:00', new \DateTimeZone('Asia/Tokyo'));
+        $dbPrepared = Db::prepareDateForDb($date);
+
+        // Ensure db makes no changes.
+        $this->assertSame('2018-08-08 20:00:00', $date->format('Y-m-d H:i:s'));
+        $this->assertSame('Asia/Tokyo', $date->getTimezone()->getName());
+
+        // Set the time to utc from tokyo and ensure its the same as that from prepare.
+        $date->setTimezone(new \DateTimeZone('UTC'));
+        $this->assertSame($date->format('Y-m-d H:i:s'), $dbPrepared);
+
+        // One test to ensure that when a date time is passed in via, for example, string format.
+        // It is created, set to system, set to utc and then formatted as MySql format.
+        $date = new \DateTime('2018-08-09 20:00:00', new \DateTimeZone('+09:00'));
+        $preparedWithTz = Db::prepareDateForDb('2018-08-09T20:00:00+09:00');
+
+        $date->setTimezone(new \DateTimeZone(\Craft::$app->getTimeZone()));
+        $date->setTimezone(new \DateTimeZone('UTC'));
+        $this->assertSame($date->format('Y-m-d H:i:s'), $preparedWithTz);
+    }
 }

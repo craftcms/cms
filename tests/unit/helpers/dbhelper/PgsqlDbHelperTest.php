@@ -12,7 +12,7 @@ namespace craftunit\helpers;
 use Codeception\Test\Unit;
 
 /**
- * Unit tests for the DB Helper class.
+ * Unit tests for the DB Helper class where its output may need to be pgsql specific. Will be skipped if db isnt pgsql.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -30,10 +30,6 @@ class PgsqlDbHelperTest extends Unit
         if (getenv('TEST_DB_DRIVER') !== 'pgsql') {
             $this->markTestSkipped();
         }
-    }
-
-    public function teststuff(){
-
     }
 
     protected function _after()
