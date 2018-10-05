@@ -1196,7 +1196,7 @@ return [
 
 Takk for at du opprettet en konto hos {{siteName}}! For å aktivere kontoen din, må du trykke på følgende link:
 
-{{link}}
+<{{link}}>
 
 Har du ikke bedt om denne e-posten, vennligst se bort fra den.',
     'account_activation_heading' => 'Når noen oppretter en konto:',
@@ -1214,7 +1214,7 @@ Har du ikke bedt om denne e-posten, vennligst se bort fra den.',
 
 For å nullstille ditt {{siteName}} passord, vennligst trykk på denne linken:
 
-{{link}}
+<{{link}}>
 
 Om du ikke har bedt om denne e-posten, vennligst se bort fra den.',
     'forgot_password_heading' => 'Når noen glemmer passordet sitt:',
@@ -1248,7 +1248,7 @@ Her er innstillingene du benyttet:
 
 Vennligst bekreft din nye e-postadresse ved å trykke på denne linken:
 
-{{link}}
+<{{link}}>
 
 Om du ikke har bedt om denne e-posten, vennligst se bort fra den.',
     'verify_new_email_heading' => 'Når noen endrer e-postadressen sin:',

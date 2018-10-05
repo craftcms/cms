@@ -10,21 +10,12 @@
 
 {% set fullPageForm = true %}
 
-{% set isNewTransform = (transform is not defined or not transform.id) %}
-
-
-{% if isNewTransform %}
-    {% set title = "Create a new image transform"|t('app') %}
-{% else %}
-    {% set title = transform.name %}
-{% endif %}
-
 
 {% block content %}
         <input type="hidden" name="action" value="asset-transforms/save-transform">
         {{ redirectInput('settings/assets/transforms') }}
 
-        {% if not isNewTransform %}<input type="hidden" name="transformId" value="{{ transform.id }}">{% endif %}
+        {% if transform.id %}<input type="hidden" name="transformId" value="{{ transform.id }}">{% endif %}
 
         {{ forms.textField({
             first: true,

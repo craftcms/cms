@@ -205,20 +205,15 @@ class Updates extends Component
             foreach ($handles as $handle) {
                 if ($handle === 'craft') {
                     Craft::$app->getMigrator()->up();
-                    $versionUpdated = Craft::$app->getUpdates()->updateCraftVersionInfo();
+                    Craft::$app->getUpdates()->updateCraftVersionInfo();
                 } else if ($handle === 'content') {
                     Craft::$app->getContentMigrator()->up();
-                    $versionUpdated = true;
                 } else {
                     /** @var Plugin $plugin */
                     $plugin = Craft::$app->getPlugins()->getPlugin($handle);
                     $name = $plugin->name;
                     $plugin->getMigrator()->up();
-                    $versionUpdated = Craft::$app->getUpdates()->setNewPluginInfo($plugin);
-                }
-
-                if (!$versionUpdated) {
-                    throw new Exception("Couldn't set new version info for $name.");
+                    Craft::$app->getUpdates()->setNewPluginInfo($plugin);
                 }
             }
 

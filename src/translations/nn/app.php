@@ -1196,7 +1196,7 @@ return [
 
 Takk for at du oppretta ein konto hos {{siteName}}! For å aktivere kontoen din, må du trykke på følgande link:
 
-{{link}}
+<{{link}}>
 
 Har du ikkje bede om denne e-posten, kan du berre sjå vekkifrå han.',
     'account_activation_heading' => 'Når nokon opprettar ein konto:',
@@ -1214,7 +1214,7 @@ Har du ikkje bede om denne e-posten, kan du berre sjå vekkifrå han.',
 
 For å nullstille passordet ditt på {{siteName}}, ver venleg å trykk på denne lenka:
 
-{{link}}
+<{{link}}>
 
 Om du ikkje har bede om denne e-posten, kan du berre sjå vekkifrå han.',
     'forgot_password_heading' => 'Når nokon gløymer passordet sitt:',
@@ -1248,7 +1248,7 @@ Her er innstillingane du brukte:
 
 Ver venleg å stadfest den nye e-postadressa ved å trykke på denne lenka:
 
-{{link}}
+<{{link}}>
 
 Om du ikkje har bede om denne e-posten kan du berre sjå vekkifrå han.',
     'verify_new_email_heading' => 'Når nokon endrar e-postadressa si:',

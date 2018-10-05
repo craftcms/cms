@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.0.23.1",
+  "version": "3.0.26.1",
   "keywords": [
     "cms",
     "craftcms",
@@ -46,7 +46,7 @@
     "yiisoft/yii2": "~2.0.15.1",
     "yiisoft/yii2-debug": "^2.0.10",
     "yiisoft/yii2-swiftmailer": "^2.1.0",
-    "yiisoft/yii2-queue": "^2.0.1",
+    "yiisoft/yii2-queue": "2.1.0",
     "zendframework/zend-feed": "^2.8.0"
   },
   "require-dev": {

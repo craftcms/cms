@@ -170,6 +170,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 ['handle'],
                 HandleValidator::class,
                 'reservedWords' => [
+                    'ancestors',
                     'archived',
                     'attributeLabel',
                     'attributes',
@@ -177,6 +178,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                     'contentTable',
                     'dateCreated',
                     'dateUpdated',
+                    'descendants',
                     'enabled',
                     'enabledForSite',
                     'error',
@@ -188,11 +190,13 @@ abstract class Field extends SavableComponent implements FieldInterface
                     'link',
                     'name', // global set-specific
                     'next',
-                    'next',
+                    'nextSibling',
                     'owner',
+                    'parent',
                     'parents',
                     'postDate', // entry-specific
                     'prev',
+                    'prevSibling',
                     'ref',
                     'rgt',
                     'root',

@@ -11,7 +11,6 @@ use Craft;
 use craft\errors\MissingComponentException;
 use craft\events\RegisterComponentTypesEvent;
 use craft\mail\Mailer;
-use craft\mail\Message;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Gmail;
 use craft\mail\transportadapters\Sendmail;

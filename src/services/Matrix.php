@@ -621,9 +621,12 @@ class Matrix extends Component
         /** @var MatrixBlock[] $blocks */
         $query = $owner->getFieldValue($field->handle);
 
-        // Skip if the query's site ID is different than the element's
-        // (Indicates that the value as copied from another site for element propagation)
-        if ($query->siteId != $owner->siteId) {
+        // If the element is brand new and propagating, and the field manages blocks on a per-site basis,
+        // then we will need to duplicate the blocks for this site
+        $duplicateBlocks = !$query->ownerId && $owner->propagating && $field->localizeBlocks;
+
+        // Skip if the element is propagating right now, and we don't need to duplicate the blocks
+        if ($owner->propagating && !$duplicateBlocks) {
             return;
         }
 
@@ -632,6 +635,8 @@ class Matrix extends Component
             $query->anyStatus();
             $blocks = $query->all();
         }
+
+        $elementsService = Craft::$app->getElements();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -647,7 +652,6 @@ class Matrix extends Component
                 $newQuery->ownerId = $owner->id;
                 if (!$newQuery->exists()) {
                     // Duplicate the blocks for the new owner
-                    $elementsService = Craft::$app->getElements();
                     foreach ($blocks as $block) {
                         $elementsService->duplicateElement($block, [
                             'ownerId' => $owner->id,
@@ -663,11 +667,19 @@ class Matrix extends Component
                 $propagate = !$owner->propagating;
 
                 foreach ($blocks as $block) {
-                    $block->ownerId = $owner->id;
-                    $block->ownerSiteId = ($field->localizeBlocks ? $owner->siteId : null);
-                    $block->propagating = $owner->propagating;
-
-                    Craft::$app->getElements()->saveElement($block, false, $propagate);
+                    if ($duplicateBlocks) {
+                        $block = $elementsService->duplicateElement($block, [
+                            'ownerId' => $owner->id,
+                            'ownerSiteId' => ($field->localizeBlocks ? $owner->siteId : null),
+                            'siteId' => $owner->siteId,
+                            'propagating' => false,
+                        ]);
+                    } else {
+                        $block->ownerId = $owner->id;
+                        $block->ownerSiteId = ($field->localizeBlocks ? $owner->siteId : null);
+                        $block->propagating = $owner->propagating;
+                        $elementsService->saveElement($block, false, $propagate);
+                    }
 
                     $blockIds[] = $block->id;
 
