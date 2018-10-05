@@ -69,7 +69,6 @@ The database user you tell Craft to connect with must have the following privile
 
 * `SELECT`
 * `INSERT`
-* `DELETE`
 * `UPDATE`
 * `CREATE`
 * `DELETE`
