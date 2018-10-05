@@ -1838,7 +1838,6 @@ body.rtl #main-container #main #main-content #details .meta .ui-datepicker { mar
   body.ltr.showing-nav.fixed-header #main-container #main #header { left: 225px; }
   body.rtl.showing-nav.fixed-header #main-container #main #header { right: 225px; }
   #main-container #main #main-content { width: 100vw; }
-  #main-container #main #main-content #content-container { width: 100% !important; }
   #crumbs { display: -webkit-box !important; display: -ms-flexbox !important; display: flex !important; }
   #crumbs #nav-toggle { display: block; } }
 @media only screen and (max-width: 998px) { #global-container { height: auto; min-height: 100vh; }
@@ -1852,6 +1851,7 @@ body.rtl #main-container #main #main-content #details .meta .ui-datepicker { mar
   #main-container #main #main-content #sidebar, #main-container #main #main-content #content-container, #main-container #main #main-content #details { overflow-y: visible; }
   #main-container #main #main-content #sidebar { -ms-flex-preferred-size: auto; flex-basis: auto; width: auto; -webkit-box-shadow: inset 0 -1px 0 #e3e5e8; box-shadow: inset 0 -1px 0 #e3e5e8; }
   body:not(.showing-sidebar) #main-container #main #main-content #sidebar { display: none; }
+  #main-container #main #main-content #content-container { width: 100% !important; }
   #main-container #main #main-content #details { -ms-flex-preferred-size: auto; flex-basis: auto; width: auto; -webkit-box-shadow: inset 0 1px 0 rgba(0, 0, 20, 0.1) !important; box-shadow: inset 0 1px 0 rgba(0, 0, 20, 0.1) !important; padding-top: 0; } }
 @media only screen and (max-width: 767px) { #main-container #crumbs, #main-container #main #header, #main-container #main #main-content #content-container #tabs ul li a, #main-container #main #main-content #content-container #content, #main-container #main #main-content #details .meta { padding-left: 12px; padding-right: 12px; }
   #main-container #main #main-content #content-container #tabs ul li a:after { width: 12px; } }

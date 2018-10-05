@@ -859,10 +859,6 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
       #main-content {
         width: 100vw;
-
-        #content-container {
-          width: 100% !important;
-        }
       }
     }
   }
@@ -926,6 +922,10 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
           body:not(.showing-sidebar) & {
             display: none;
           }
+        }
+
+        #content-container {
+          width: 100% !important;
         }
 
         #details {
