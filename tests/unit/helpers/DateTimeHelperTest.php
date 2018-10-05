@@ -8,6 +8,7 @@ use yii\base\ErrorException;
 /**
  * Unit tests for the DateTime Helper class.
  *
+ * TODO: This suite must be more effecient with some global variables.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
@@ -64,6 +65,9 @@ class DateTimeHelperTest extends Unit
         $this->assertSame(DateTimeHelper::secondsToHumanTimeDuration(121), '2 minutes, 1 second');
     }
 
+    /**
+     * An empty array will return an ErrorException
+     */
     public function testEmptyArrayReturnsException()
     {
         $this->tester->expectException(ErrorException::class, function (){

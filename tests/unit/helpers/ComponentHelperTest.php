@@ -86,55 +86,53 @@ class ComponentHelperTest extends Unit
      * @param \Closure $callback
      * @param string   $requiredException
      */
-    public function testFailedComponentExceptions(\Closure $callback, string $requiredException)
+    public function testFailedComponentExceptions(array $settings, $desiredParent, string $requiredException)
     {
-        $this->tester->expectException($requiredException, $callback);
+        $this->tester->expectException(
+            $requiredException,
+            function () use($settings, $desiredParent){
+                Component::createComponent($settings, $desiredParent);
+            }
+            );
     }
 
     public function failingComponentCreationData()
     {
         return [
             'invalid-required-parent-class' => [
-                function(){
-                    return Component::createComponent([
-                        'type' => ExtendedComponentExample::class,
-                    ], 'random\\class\\that\\doesnt\\exist');
-                    },
-                    InvalidConfigException::class,
+                ['type' => ExtendedComponentExample::class],
+                'random\\class\\that\\doesnt\\exist',
+                InvalidConfigException::class,
                 ],
             'class-doesnt-exist' => [
-                function(){
-                    return Component::createComponent([
-                        'type' => 'i\\dont\\exist\\as\\a\\class'
-                    ]);
-                },
+                [
+                    'type' => 'i\\dont\\exist\\as\\a\\class'
+                ],
+                null,
                 MissingComponentException::class
             ],
             'class-not-a-component' => [
-                function(){
-                    return Component::createComponent([
-                        'type' => self::class
-                    ]);
-                },
+                [
+                    'type' => self::class
+                ],
+                null,
                 InvalidConfigException::class,
             ],
             'no-params' => [
-                function(){
-                    return Component::createComponent([]);
-                },
+                [],
+                null,
                 InvalidConfigException::class,
             ],
             'incorrect-dependancies' => [
-                function(){
-                    return Component::createComponent([
-                        'type' => DependencyHeavyComponent::class,
-                        'notavaliddependancy' => 'value1',
-                        'notavaliddependancy2' => 'value2',
-                        'settings' => [
-                            'notavaliddependancy3' => 'value'
-                        ]
-                    ]);
-                },
+                [
+                    'type' => DependencyHeavyComponent::class,
+                    'notavaliddependancy' => 'value1',
+                    'notavaliddependancy2' => 'value2',
+                    'settings' => [
+                        'notavaliddependancy3' => 'value'
+                    ]
+                ],
+                null,
                 \Exception::class,
             ]
 
