@@ -1,7 +1,9 @@
 <?php
 namespace craftunit\helpers;
 
+use Codeception\Test\Unit;
 use craft\helpers\DateTimeHelper;
+use yii\base\ErrorException;
 
 /**
  * Unit tests for the DateTime Helper class.
@@ -10,12 +12,17 @@ use craft\helpers\DateTimeHelper;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
  */
-class DateTimeHelperTest extends \Codeception\TestCase\Test
+class DateTimeHelperTest extends Unit
 {
     /**
      * @var \UnitTester
      */
     protected $tester;
+
+    /**
+     * @var \DateTimeZone
+     */
+    protected $systemTimezone;
 
     protected function _before()
     {
@@ -57,15 +64,56 @@ class DateTimeHelperTest extends \Codeception\TestCase\Test
         $this->assertSame(DateTimeHelper::secondsToHumanTimeDuration(121), '2 minutes, 1 second');
     }
 
-    /**
-     *
-     */
-    public function testToDateTime()
+    public function testEmptyArrayReturnsException()
     {
-        /*
-         *   How we do this?
-         *   $this->assertFalse(DateTimeHelper::toDateTime([]));
-        */
+        $this->tester->expectException(ErrorException::class, function (){
+            return DateTimeHelper::toDateTime([]);
+        });
+    }
+
+
+    /**
+     * What we are testing here is that if we tell the DtHelper to not assume a timezone and set it to system.
+     * That all formats are converted to the system timezone from the inputted system timezone. ie an array like this:
+     *
+     * ['date' => '2018-08-08', 'timezone' => 'Asia/Tokyo']
+     *
+     * toDateTime must start the DateTime from utc instead starting at Asia/Tokyo and then convert it to system.
+     *
+     * @dataProvider formatsWithTimezone
+     *
+     * @param           $format
+     * @param \DateTime $expectedResult
+     */
+    public function testUtcIgnorance($format, \DateTime $expectedResult)
+    {
+        $toDateTime = DateTimeHelper::toDateTime($format);
+        $systemTz = new \DateTimeZone(\Craft::$app->getTimeZone());
+
+        $this->assertInstanceOf(\DateTime::class, $toDateTime);
+        $this->assertSame($systemTz->getName(), $toDateTime->getTimezone()->getName());
+        $this->assertSame($systemTz->getName(), $expectedResult->getTimezone()->getName());
+        $this->assertSame($expectedResult->format('Y-m-d H:i:s'), $toDateTime->format('Y-m-d H:i:s'));
+    }
+
+    public function formatsWithTimezone()
+    {
+        $customTz = new \DateTimezone('Asia/Tokyo');
+        $systemTimezone = new \DateTimeZone(\Craft::$app->getTimeZone());
+        // Crafts toDateTime sets the format as utc.
+        $dt = new \DateTime('2018-08-09 20:00:00', $customTz);
+        $dt->setTimezone($systemTimezone);
+
+        return [
+            'array-format' => [
+                ['date' => '08-09-2018', 'time' => '08:00 PM', 'timezone' => 'Asia/Tokyo'],
+                $dt,
+            ],
+            'w3c-format' => [
+                '2018-08-09T20:00:00+09:00',
+                $dt,
+            ],
+        ];
     }
 
     /**
