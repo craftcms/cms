@@ -4,7 +4,9 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
+use craft\db\MigrationManager;
 use craft\fields\Url;
+use craft\helpers\MigrationHelper;
 use craft\helpers\UrlHelper;
 
 /**
@@ -172,7 +174,6 @@ class UrlHelperTest extends Unit
      */
     public function cpUrlCreationData()
     {
-        $adminTrigger = \Craft::$app->getConfig()->getGeneral()->cpTrigger;
         return [
             'test-empty' => ['', '', []],
             'test-simple-endpoint' => [
@@ -203,27 +204,44 @@ class UrlHelperTest extends Unit
     }
 
     /**
-     * @throws \craft\errors\SiteNotFoundException
-     */
-    public function testUrlWithScheme()
-    {
-    }
-
-    /**
      * @dataProvider urlWithSchemeProvider
      * @dataProvider urlWithTokenProvider
      * @dataProvider urlWithParamsProvider
-     *
+     * @dataProvider stripQueryStringProvider
      * @param      $url
      * @param      $data
      * @param bool $result
      * @param      $method
      */
-    public function testUrlWithFunctions($result, $url, $modifier, $method)
+    public function testUrlModifiers($result, $url, $modifier, $method)
     {
         $this->assertSame($result, UrlHelper::$method($url, $modifier));
     }
 
+    public function stripQueryStringProvider()
+    {
+        return [
+            [
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                null,
+                'stripQueryString'
+            ],
+            [
+                self::ABSOLUTE_URL_WWW,
+                self::ABSOLUTE_URL_WWW.'?param1=entry1',
+                null,
+                'stripQueryString'
+            ],
+            [
+            self::ABSOLUTE_URL_HTTPS_WWW,
+                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=entry1?param2=entry2',
+                null,
+                'stripQueryString'
+            ]
+
+        ];
+    }
     public function urlWithParamsProvider()
     {
         return [
@@ -325,15 +343,26 @@ class UrlHelperTest extends Unit
         ];
     }
 
+    public function testBaseTesting()
+    {
+        // TODO: Is this in all scenarious.
+        $this->assertSame('/', UrlHelper::baseUrl());
+        $this->assertSame('/', UrlHelper::baseCpUrl());
+        $this->assertSame('/', UrlHelper::baseSiteUrl());
+        $this->assertSame('/', UrlHelper::baseRequestUrl());
+        $this->assertSame('', UrlHelper::host());
+        $this->assertSame('', UrlHelper::cpHost());
+    }
+
     public function testHostInfoRetrieval()
     {
         $this->assertSame('https://google.com', UrlHelper::hostInfo('https://google.com'));
         $this->assertSame('http://facebook.com', UrlHelper::hostInfo('http://facebook.com'));
         $this->assertSame('ftp://www.craftcms.com', UrlHelper::hostInfo('ftp://www.craftcms.com/why/craft/is/cool/'));
         $this->assertSame('walawalabingbang://gt.com', UrlHelper::hostInfo('walawalabingbang://gt.com/'));
-        $this->assertSame('sftp://volkswagen', UrlHelper::hostInfo('sftp://volkswagen'));
+        $this->assertSame('sftp://volkswagen', UrlHelper::hostInfo('sftp://volkswagen/2/2/2/2/2/2/2/2/2///222////222'));
 
-        // If nothing is passed in your mileage may vary depending on request type. So we need to know what to expect before hand..
+        // If nothing is passed to the hostInfo() your mileage may vary depending on request type. So we need to know what to expect before hand..
         $expectedValue = \Craft::$app->getRequest()->getIsConsoleRequest() ? '' : \Craft::$app->getRequest()->getHostInfo();
         $this->assertSame($expectedValue, UrlHelper::hostInfo(''));
     }

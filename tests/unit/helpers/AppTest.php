@@ -5,7 +5,9 @@ use Codeception\Codecept;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\services\Entries;
+use yii\base\Component;
 
 /**
  * Unit tests for the App Helper class.
@@ -52,24 +54,31 @@ class AppTest extends \Codeception\Test\Unit
         $this->assertFalse(App::isValidEdition(3));
     }
 
-    public function testVersionNormalization()
+    /**
+     * @dataProvider versionListData
+     *
+     * @param $result
+     * @param $input
+     */
+    public function testInputOutput($result, $input)
     {
-        $this->assertSame('2.0.0', App::normalizeVersion('2.0.0--beta'));
-        $this->assertSame('v120.19.2', App::normalizeVersion('v120.19.2--beta'));
-        $this->assertSame('version', App::normalizeVersion('version'));
-        $this->assertSame('version', App::normalizeVersion('version 21'));
-        $this->assertSame('2', App::normalizeVersion('2-0-0'));
-        $this->assertSame('2', App::normalizeVersion('2+0+0'));
-        $this->assertSame('2\0\0', App::normalizeVersion('2\0\0'));
-        $this->assertSame('^200', App::normalizeVersion('^200'));
-        $this->assertSame('v^2\0.0', App::normalizeVersion('v^2\0.0'));
-        $this->assertSame('v^2|0.0', App::normalizeVersion('v^2|0.0'));
-        $this->assertSame('~v^2.0.0', App::normalizeVersion('~v^2.0.0'));
-        $this->assertSame('*v^2.0.0', App::normalizeVersion('*v^2.0.0'));
-        $this->assertSame('*v^2.0.0(beta)', App::normalizeVersion('*v^2.0.0(beta)'));
-        $this->assertSame('\*v^2.0.0(beta)', App::normalizeVersion('\*v^2.0.0(beta)'));
+        $this->assertSame($result, App::normalizeVersion($input));
+    }
 
-        $this->assertSame('', App::normalizeVersion(''));
+
+    public function versionListData()
+    {
+        return [
+            ['version', 'version 21'],
+            ['v120.19.2', 'v120.19.2--beta'],
+            ['version', 'version'],
+            ['2\0\0', '2\0\0'],
+            ['2', '2+2+2'],
+            ['2', '2-0-0'],
+            ['', ''],
+            ['\*v^2.0.0(beta)', '\*v^2.0.0(beta)'],
+
+        ];
     }
 
     public function testPhpConfigValueAsBool()
@@ -90,9 +99,9 @@ class AppTest extends \Codeception\Test\Unit
 
     public function testClassHumanization()
     {
-        $this->assertSame(App::humanizeClass(Entries::class), 'entries');
+        $this->assertSame('entries', App::humanizeClass(Entries::class));
 
-        $this->assertSame(App::humanizeClass(''), '');
+        $this->assertSame( '', App::humanizeClass(''));
         $this->assertSame('app test', App::humanizeClass(self::class));
         $this->assertSame('std class', App::humanizeClass(\stdClass::class));
         $this->assertSame('iam not a  class!@#$%^&*()1234567890', App::humanizeClass('iam not a CLASS!@#$%^&*()1234567890'));
@@ -119,39 +128,38 @@ class AppTest extends \Codeception\Test\Unit
         $this->assertSame(250, strlen(App::licenseKey()));
     }
 
-    public function testDbConfigHasRequiredIndexes()
+    /**
+     * @dataProvider configsData
+     */
+    public function testConfigIndexes($method, $desiredConfig)
     {
-        $dbConfig = App::dbConfig();
-        $desiredSchemaArray = [
-            'class',
-            'dsn',
-            'password',
-            'username',
-            'charset',
-            'tablePrefix',
-            'schemaMap',
-            'commandMap',
-            'attributes',
-            'enableSchemaCache'
+        $config = App::$method();
+
+        $this->assertFalse($this->areKeysMissing($config, $desiredConfig));
+
+        $this->assertTrue(class_exists($config['class']));
+
+        // Make sure its a component
+        $this->assertTrue(in_array(Component::class, class_parents($config['class'])));
+
+    }
+
+    public function configsData()
+    {
+        $viewRequirments = Craft::$app->getRequest()->getIsCpRequest() ? ['class', 'registeredAssetBundled', 'registeredJsFiled'] : ['class'];
+        return [
+            ['dbConfig', [ 'class', 'dsn', 'password', 'username',  'charset', 'tablePrefix',  'schemaMap',  'commandMap',  'attributes','enableSchemaCache' ]],
+            ['webRequestConfig', [ 'class',  'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam',  ]],
+            ['cacheConfig', [ 'class',  'cachePath', 'fileMode', 'dirMode', 'defaultDuration']],
+            ['mailerConfig', [ 'class',  'messageClass', 'from', 'template', 'transport']],
+            ['mutexConfig', [ 'class',  'fileMode', 'dirMode']],
+            ['logConfig', [ 'class',  'targets']],
+            ['sessionConfig', [ 'class',  'flashParam', 'authAccessParam', 'name', 'cookieParams']],
+            ['userConfig', [ 'class',  'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'identityCookie', 'usernameCookie', 'idParam', 'authTimeoutParam', 'absoluteAuthTimeoutParam', 'returnUrlParam']],
+            ['viewConfig', $viewRequirments],
+
         ];
-
-        $this->assertFalse($this->areKeysMissing($dbConfig, $desiredSchemaArray));
-   }
-
-   public function testWebRequestConfig()
-   {
-       $webConfig = App::webRequestConfig();
-       $desiredSchemaArray = [
-           'class',
-           'enableCookieValidation',
-           'cookieValidationKey',
-           'enableCsrfValidation',
-           'enableCsrfCookie',
-           'csrfParam',
-       ];
-
-       $this->assertFalse($this->areKeysMissing($webConfig, $desiredSchemaArray));
-   }
+    }
 
    private function areKeysMissing(array $configArray, array $desiredSchemaArray) : bool
    {
