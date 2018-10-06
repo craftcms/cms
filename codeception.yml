@@ -26,13 +26,14 @@ modules:
   config:
     Yii2:
       configFile: 'tests/_craft/config/test.php'
-#  enabled:
-#    - Db:
-#        dsn: "mysql:host=127.0.0.1;dbname=%TEST_DB_NAME%"
-#        user: '%TEST_DB_USER%'
-#        password: '%TEST_DB_PASS%'
- #       dump: 'tests/_data/dump.sql'
- #       populate: true
- #       cleanup: true
- #       reconnect: true
-#
+      entryUrl: 'https://test.craftcms.dev/'
+      entryScript: '/index.php'
+  enabled:
+   # - Db:
+     #   dsn: "%TEST_DB_DRIVER%:host=127.0.0.1;dbname=%TEST_DB_NAME%"
+       # user: '%TEST_DB_USER%'
+        #password: '%TEST_DB_PASS%'
+        #dump: 'tests/_data/dump.sql'
+        #populate: true
+        #cleanup: true
+        #reconnect: true
