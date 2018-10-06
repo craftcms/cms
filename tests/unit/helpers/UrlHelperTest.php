@@ -20,15 +20,30 @@ class UrlHelperTest extends Unit
      */
     protected $tester;
 
+    protected $entryScript;
+    protected $entryUrl;
+    protected $baseForUrlCreation;
+    protected $cpTrigger;
+
     protected function _before()
     {
+        $this->cpTrigger = \Craft::$app->getConfig()->getGeneral()->cpTrigger;
+        $yii2 = $this->getModule('Yii2');
+        $this->entryScript = $yii2->_getConfig('entryScript');
+        $this->entryUrl = $yii2->_getConfig('entryUrl');
+
+        if (\Craft::$app->getRequest()->getIsConsoleRequest()) {
+            $this->baseForUrlCreation = $this->entryScript;
+        } else{
+            $this->baseForUrlCreation = '/';
+        }
     }
 
     protected function _after()
     {
     }
 
-    const ABSOLUTE_URL = 'https://craftcms.com/';
+    const ABSOLUTE_URL = 'http://craftcms.com/';
     const ABSOLUTE_URL_HTTPS = 'https://craftcms.com/';
     const ABSOLUTE_URL_WWW = 'http://www.craftcms.com/';
     const ABSOLUTE_URL_HTTPS_WWW = 'https://www.craftcms.com/';
@@ -96,77 +111,94 @@ class UrlHelperTest extends Unit
     }
 
     /**
-     *
+     * @dataProvider urlWithParamsData()
      */
-    public function testUrlWithParams()
+    public function testUrlWithParams($result, $url, $params)
     {
-        $this->assertSame(
-            UrlHelper::urlWithParams(
+        $this->assertSame($result, UrlHelper::urlWithParams($url, $params));
+    }
+
+    public function urlWithParamsData()
+    {
+        return [
+            'basic-array' => [
+                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2',
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 ['param1' => 'name', 'param2' => 'name2']
-            ),
-            self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2'
-        );
-
-        // Empty array. No modifications alowed.
-        $this->assertSame(
-            UrlHelper::urlWithParams(
+            ],
+            'empty-array' => [
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                []
-            ),
-            self::ABSOLUTE_URL_HTTPS_WWW
-        );
-
-        // Empty string with spaces. 4 spaces are added and a question mark.
-        $this->assertSame(
-            self::ABSOLUTE_URL_HTTPS_WWW.'?    ',
-            UrlHelper::urlWithParams(
+                self::ABSOLUTE_URL_HTTPS_WWW,
+               []
+            ],
+            '4-spaces' => [
+                self::ABSOLUTE_URL_HTTPS_WWW.'?    ',
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 '    '
-            )
-        );
-
-        // Non multidim array. Param name with numerical index key.
-        $this->assertSame(
-            self::ABSOLUTE_URL_HTTPS_WWW.'?0=someparam',
-            UrlHelper::urlWithParams(
+            ],
+            'numerical-index-array'  => [
+                self::ABSOLUTE_URL_HTTPS_WWW.'?0=someparam',
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 ['someparam']
-            )
-        );
-
-        // Params via string
-        $this->assertSame(
-            self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2',
-            UrlHelper::urlWithParams(
+            ],
+            'query-string' => [
+                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2',
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 '?param1=name&param2=name2'
-            )
-        );
-
-        // Check on url that already has params.
-        $this->assertSame(
-            self::ABSOLUTE_URL_HTTPS_WWW.'?param3=name3&param1=name&param2=name2',
-            UrlHelper::urlWithParams(
+            ],
+            'pre-queried-url' => [
+                self::ABSOLUTE_URL_HTTPS_WWW.'?param3=name3&param1=name&param2=name2',
                 self::ABSOLUTE_URL_HTTPS_WWW.'?param3=name3',
                 '?param1=name&param2=name2'
-            )
-        );
+            ],
+    ];
+    }
 
+
+    /**
+     * @dataProvider cpUrlCreationData
+     */
+    public function testCpUrlCreation($result, $inputUrl, $params, $scheme = 'https')
+    {
+        $this->assertSame(
+            $this->baseForUrlCreation.'?p='.$this->cpTrigger.''.$result.'',
+            UrlHelper::cpUrl($inputUrl, $params, $scheme)
+        );
     }
 
     /**
-     *
+     * @return array
      */
-    public function testCpUrlCreation()
+    public function cpUrlCreationData()
     {
-        $cpTrigger = \Craft::$app->getConfig()->getGeneral()->cpTrigger;
-        $this->assertSame(
-            UrlHelper::url($cpTrigger.'/random/endpoint'),
-            UrlHelper::cpUrl('random/endpoint')
-        );
-
-        // TODO: More scenarios
+        $adminTrigger = \Craft::$app->getConfig()->getGeneral()->cpTrigger;
+        return [
+            'test-empty' => ['', '', []],
+            'test-simple-endpoint' => [
+                '/nav&param1=entry1&param2=entry2',
+                'nav',
+                ['param1' => 'entry1', 'param2' => 'entry2']
+            ],
+            'test-preexisting-endpoints' => [
+                '/nav&param3=entry3&param1=entry1&param2=entry2',
+                'nav?param3=entry3',
+                ['param1' => 'entry1', 'param2' => 'entry2']
+            ],
+            [
+                '/nav&param1=entry1&param2=entry2',
+                'nav',
+                [
+                    'param1' => 'entry1',
+                    'param2' => 'entry2'],
+                'https'
+            ],
+            'test-url-gets-ignored' => [
+                '/https://test.craftcms.dev&param1=entry1&param2=entry2',
+                'https://test.craftcms.dev',
+                ['param1' => 'entry1', 'param2' => 'entry2'],
+                'https'
+            ]
+        ];
     }
 
     /**
@@ -174,12 +206,68 @@ class UrlHelperTest extends Unit
      */
     public function testUrlWithScheme()
     {
-        $this->assertEquals('php://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW, 'php'));
-        $this->assertEquals('ftp://craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS, 'ftp'));
-        $this->assertEquals('walawalabingbang://craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL, 'walawalabingbang'));
-        $this->assertEquals('https://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW, 'https'));
-        $this->assertEquals('https://craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL, 'https'));
-        $this->assertEquals('sftp://www.craftcms.com/', UrlHelper::urlWithScheme(self::ABSOLUTE_URL_HTTPS_WWW, 'sftp'));
+    }
+
+    /**
+     * @dataProvider urlWithSchemeProvider
+     * @param      $url
+     * @param      $data
+     * @param bool $result
+     * @param      $method
+     */
+    public function testUrlWithFunctions($result, $url, $modifier, $method)
+    {
+        $this->assertSame($result, UrlHelper::$method($url, $modifier));
+    }
+
+    public function urlWithTokenProvider()
+    {
+        return [
+            [
+
+            ]
+        ];
+    }
+    public function urlWithSchemeProvider()
+    {
+        return [
+                [
+                    str_replace('https://', 'php://', self::ABSOLUTE_URL_HTTPS_WWW),
+                    self::ABSOLUTE_URL_HTTPS_WWW,
+                    'php',
+                    'urlWithScheme'
+                ],
+                [
+                    str_replace('https://', 'ftp://', self::ABSOLUTE_URL_HTTPS),
+                    self::ABSOLUTE_URL_HTTPS,
+                    'ftp',
+                    'urlWithScheme'
+                ],
+                [
+                    str_replace('http://', 'walawalabingbang://', self::ABSOLUTE_URL),
+                    self::ABSOLUTE_URL,
+                    'walawalabingbang',
+                    'urlWithScheme'
+                ],
+                [
+                    self::ABSOLUTE_URL_HTTPS_WWW,
+                    self::ABSOLUTE_URL_HTTPS_WWW,
+                    'https',
+                    'urlWithScheme'
+                ],
+                [
+                    str_replace('http://', 'https://', self::ABSOLUTE_URL),
+                    self::ABSOLUTE_URL,
+                    'https',
+                    'urlWithScheme'
+                ],
+                [
+                    str_replace('https://', 'sftp://', self::ABSOLUTE_URL_HTTPS_WWW),
+                    self::ABSOLUTE_URL_HTTPS_WWW,
+                    'sftp',
+                    'urlWithScheme'
+            ],
+        ];
     }
 
     public function testHostInfoRetrieval()

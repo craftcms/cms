@@ -6,6 +6,7 @@ namespace craftunit\helpers;
 use craft\helpers\Db;
 use craftunit\support\mockclasses\components\Serializable;
 use Codeception\Test\Unit;
+use yii\db\Exception;
 
 /**
  * Unit tests for the DB Helper class.
@@ -207,14 +208,71 @@ class DbHelperTest extends Unit
         ];
     }
 
-    public function testGetSimplifiedCollumnType()
+    /**
+     * @dataProvider collumnLengthParseData
+     */
+    public function testCollumnLengthParsing($result, $input)
     {
-        $this->assertSame('textual', Db::getSimplifiedColumnType('Textual'));
-        $this->assertSame( 'numeric', Db::getSimplifiedColumnType('Integer'));
-        $this->assertSame('raaaaaa', Db::getSimplifiedColumnType('RAAAAAA'));
-        $this->assertSame('textual', Db::getSimplifiedColumnType('Tinytext'));
-        $this->assertSame('numeric', Db::getSimplifiedColumnType('Decimal'));
-        $this->assertSame('textual', Db::getSimplifiedColumnType('Longtext'));
+        $this->assertSame($result, Db::parseColumnLength($input));
+    }
+
+    public function collumnLengthParseData()
+    {
+        return [
+            [2, 'integer(2)'],
+            [null, '2'],
+            [100, 'craftcms(100)'],
+            [null, '(100)'],
+            [null, '!@#$%^&*(100)'],
+            [null, '!@#$%^&*(100)'],
+            [null, '(integer(2))'],
+        ];
+    }
+
+    /**
+     * @dataProvider simplifiedCollumnData
+     */
+    public function testGetSimplifiedCollumnType($result, $input)
+    {
+        $this->assertSame($result, Db::getSimplifiedColumnType($input));
+    }
+
+    public function simplifiedCollumnData()
+    {
+        return [
+            ['textual', 'Textual'],
+            ['numeric', 'Integer'],
+            ['raaa', 'RAAA'],
+            ['textual', 'Tinytext'],
+            ['numeric', 'Decimal'],
+            ['textual', 'Longtext'],
+            ['textual', 'string!@#$%^&*()'],
+        ];
+    }
+    /**
+     * @dataProvider deletablesData
+     */
+    public function testDeleteIfExists($result, string $table, $condition = '', array $params = [])
+    {
+        $this->assertSame($result, Db::deleteIfExists($table, $condition, $params));
+    }
+
+    public function deletablesData()
+    {
+        // TODO: Setup a fixture for this.....
+        return [
+            [0, '{{%users}} users', 'users.id = 1234567890 and users.uid = "THISISNOTAUID"']
+        ];
+    }
+
+    /*
+     * Tests that a Yii\Db\Exception will be thrown if the table *Literaly* doesnt exist in the schema.
+     */
+    public function testDeleteIfExistsException()
+    {
+        $this->tester->expectException(Exception::class, function (){
+            Db::deleteIfExists('iamnotatable12345678900987654321');
+        });
     }
 
     public function testValuePrepareForDb()
@@ -250,8 +308,8 @@ class DbHelperTest extends Unit
         $date->setTimezone($this->utcTimezone);
         $this->assertSame($date->format('Y-m-d H:i:s'), $dbPrepared);
 
-        // One test to ensure that when a date time is passed in via, for example, string format.
-        // It is created, set to system, set to utc and then formatted as MySql format.
+        // One test to ensure that when a date time is passed in via, for example, string format but with a timezone. I.E an array or as demonstrated below.
+        // It is created as a \DateTime with its predefined timezone, set to system, set to utc and then formatted as MySql format.
         $date = new \DateTime('2018-08-09 20:00:00', new \DateTimeZone('+09:00'));
         $preparedWithTz = Db::prepareDateForDb('2018-08-09T20:00:00+09:00');
 
