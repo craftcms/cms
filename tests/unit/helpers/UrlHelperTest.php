@@ -4,6 +4,7 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
+use craft\fields\Url;
 use craft\helpers\UrlHelper;
 
 /**
@@ -210,6 +211,9 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider urlWithSchemeProvider
+     * @dataProvider urlWithTokenProvider
+     * @dataProvider urlWithParamsProvider
+     *
      * @param      $url
      * @param      $data
      * @param bool $result
@@ -220,14 +224,65 @@ class UrlHelperTest extends Unit
         $this->assertSame($result, UrlHelper::$method($url, $modifier));
     }
 
+    public function urlWithParamsProvider()
+    {
+        return [
+            [
+                self::ABSOLUTE_URL_HTTPS.'?param1=entry1',
+                self::ABSOLUTE_URL_HTTPS,
+                ['param1' => 'entry1'],
+                'urlWithParams'
+            ],
+            [
+                self::ABSOLUTE_URL_HTTPS.'?param1=entry1&param2=entry2',
+                self::ABSOLUTE_URL_HTTPS,
+                ['param1' => 'entry1', 'param2' => 'entry2'],
+                'urlWithParams'
+            ],
+            [
+                self::ABSOLUTE_URL_HTTPS.'?param1=entry1&param2=entry2',
+                self::ABSOLUTE_URL_HTTPS,
+                'param1=entry1&param2=entry2',
+                'urlWithParams'
+            ],
+            'anchor-gets-kept' => [
+                self::ABSOLUTE_URL_HTTPS.'#anchor?param1=entry1&param2=entry2',
+                self::ABSOLUTE_URL_HTTPS.'#anchor',
+                'param1=entry1&param2=entry2',
+                'urlWithParams'
+            ],
+            'prev-param-gets-kept' => [
+                self::ABSOLUTE_URL_WWW.'#anchor?param3=entry3&param1=entry1&param2=entry2',
+                self::ABSOLUTE_URL_WWW.'#anchor?param3=entry3',
+                '?param1=entry1&param2=entry2',
+                'urlWithParams'
+            ],
+        ];
+    }
     public function urlWithTokenProvider()
     {
         return [
             [
-
+                self::ABSOLUTE_URL.'?token=value',
+                self::ABSOLUTE_URL,
+                'value',
+                'urlWithToken'
+            ],
+            [
+                self::ABSOLUTE_URL.'?token=value&token=value',
+                self::ABSOLUTE_URL.'?token=value',
+                'value',
+                'urlWithToken'
+            ],
+            [
+                self::ABSOLUTE_URL.'?token=',
+                self::ABSOLUTE_URL.'',
+                '',
+                'urlWithToken'
             ]
         ];
     }
+
     public function urlWithSchemeProvider()
     {
         return [
