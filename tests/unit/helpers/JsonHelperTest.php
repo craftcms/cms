@@ -33,28 +33,24 @@ class JsonHelperTest extends \Codeception\TestCase\Test
     {
     }
 
-    public function testDecodeIfJson()
+    /**
+     * @dataProvider jsonDecodabledData
+     */
+    public function testDecodeIfJson($input, $output)
     {
-        $jsonArray = [
+        $this->assertSame($output, Json::decodeIfJson($input));
+    }
+
+    public function jsonDecodabledData()
+    {
+        $basicArray = [
             'WHAT DO WE WANT' => 'JSON',
-            'WHEN DO WE WANT IT' => "NOW",
+            'WHEN DO WE WANT IT' => 'NOW',
         ];
-
-        $json = json_encode($jsonArray);
-        $this->assertSame(
-            Json::decodeIfJson(
-                $json
-            ),
-            [
-                'WHAT DO WE WANT' => 'JSON',
-                'WHEN DO WE WANT IT' => "NOW",
-            ]
-        );
-
-        // Empty string should be valid json.
-        $this->assertSame(null, Json::decodeIfJson(''));
-
-        // Invalid json should return string.
-        $this->assertSame('{"test":"test"', Json::decodeIfJson('{"test":"test"'));
+        return [
+            ['{"test":"test"', '{"test":"test"'],
+            [ json_encode($basicArray), $basicArray],
+            ['', null]
+        ];
     }
 }

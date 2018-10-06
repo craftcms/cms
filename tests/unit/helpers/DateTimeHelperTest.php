@@ -20,13 +20,15 @@ class DateTimeHelperTest extends Unit
      */
     protected $tester;
 
-    /**
-     * @var \DateTimeZone
-     */
     protected $systemTimezone;
+    protected $utcTimezone;
+    protected $asiaTokyoTimezone;
 
     protected function _before()
     {
+        $this->systemTimezone = new \DateTimeZone(\Craft::$app->getTimeZone());
+        $this->utcTimezone = new \DateTimeZone('UTC');
+        $this->asiaTokyoTimezone = new \DateTimeZone('Asia/Tokyo');
     }
 
     protected function _after()
@@ -44,12 +46,12 @@ class DateTimeHelperTest extends Unit
 
     public function testCurrentUtcDateTime()
     {
-        $this->assertSame(DateTimeHelper::currentUTCDateTime()->format('Y-m-d H:i:s'), (new \DateTime(null, new \DateTimeZone('UTC')))->format('Y-m-d H:i:s'));
+        $this->assertSame(DateTimeHelper::currentUTCDateTime()->format('Y-m-d H:i:s'), (new \DateTime(null, $this->utcTimezone))->format('Y-m-d H:i:s'));
     }
 
     public function testCurrentUtcDateTimeStamp()
     {
-        $dateTime = new \DateTime(null, new \DateTimeZone('UTC'));
+        $dateTime = new \DateTime(null, $this->utcTimezone);
         $this->assertSame(
             DateTimeHelper::currentTimeStamp(),
             $dateTime->getTimestamp()
@@ -92,21 +94,18 @@ class DateTimeHelperTest extends Unit
     public function testUtcIgnorance($format, \DateTime $expectedResult)
     {
         $toDateTime = DateTimeHelper::toDateTime($format);
-        $systemTz = new \DateTimeZone(\Craft::$app->getTimeZone());
+        $systemTz = $this->systemTimezone->getName();
 
         $this->assertInstanceOf(\DateTime::class, $toDateTime);
-        $this->assertSame($systemTz->getName(), $toDateTime->getTimezone()->getName());
-        $this->assertSame($systemTz->getName(), $expectedResult->getTimezone()->getName());
+        $this->assertSame($systemTz, $toDateTime->getTimezone()->getName());
+        $this->assertSame($systemTz, $expectedResult->getTimezone()->getName());
         $this->assertSame($expectedResult->format('Y-m-d H:i:s'), $toDateTime->format('Y-m-d H:i:s'));
     }
 
     public function formatsWithTimezone()
     {
-        $customTz = new \DateTimezone('Asia/Tokyo');
-        $systemTimezone = new \DateTimeZone(\Craft::$app->getTimeZone());
-        // Crafts toDateTime sets the format as utc.
-        $dt = new \DateTime('2018-08-09 20:00:00', $customTz);
-        $dt->setTimezone($systemTimezone);
+        $dt = new \DateTime('2018-08-09 20:00:00', new \DateTimeZone('Asia/Tokyo'));
+        $dt->setTimezone(new \DateTimeZone(\Craft::$app->getTimeZone()));
 
         return [
             'array-format' => [
@@ -148,7 +147,7 @@ class DateTimeHelperTest extends Unit
     {
         $utc = new \DateTimeZone('UTC');
         $toDateTime = DateTimeHelper::toDateTime($format, false, false);
-        $this->assertSame($utc->getName(), $toDateTime->getTimezone()->getName());
+        $this->assertSame($this->utcTimezone->getName(), $toDateTime->getTimezone()->getName());
     }
 
     public function simpleDateTimeFormats()

@@ -6,7 +6,6 @@ namespace craftunit\helpers;
 use craft\helpers\Db;
 use craftunit\support\mockclasses\components\Serializable;
 use Codeception\Test\Unit;
-use yii\base\Exception;
 
 /**
  * Unit tests for the DB Helper class.
@@ -22,25 +21,20 @@ class DbHelperTest extends Unit
      */
     protected $tester;
 
+    protected $systemTimezone;
+    protected $utcTimezone;
+    protected $asiaTokyoTimezone;
+
     protected function _before()
     {
+        $this->systemTimezone = new \DateTimeZone(\Craft::$app->getTimeZone());
+        $this->utcTimezone = new \DateTimeZone('UTC');
+        $this->asiaTokyoTimezone = new \DateTimeZone('Asia/Tokyo');
     }
 
     protected function _after()
     {
     }
-
-    const BASIC_PARSEPARAM = [
-        'or',
-        [
-            'in',
-            'foo',
-            [
-                'bar'
-            ]
-        ]
-    ];
-
     const MULTI_PARSEPARAM_NOT = [
         'or',
         [
@@ -77,50 +71,117 @@ class DbHelperTest extends Unit
         ]
     ];
 
-    const MULTI_PARSEPARAM_EMPTY = [
-        'or',
-        [
-            'not',
-            [
-                'or',
-                [
-                    'content_table' => null,
-                ],
-                [
-                    'content_table' => '',
-                ]
-            ]
-        ],
-        [
-            '!=',
-            'content_table',
-            'field_2'
-        ]
-    ];
-
-    public function testParseParam()
+    /**
+     * @dataProvider parseParamDataProvider
+     */
+    public function testParseParamGeneral($result, array $inputArray)
     {
-        // TODO: Postgres >.<
-        $this->assertSame(self::BASIC_PARSEPARAM, Db::parseParam('foo', 'bar'));
-        $this->assertSame(self::MULTI_PARSEPARAM, Db::parseParam('content_table', ['field_1', 'field_2']));
-        $this->assertSame(self::MULTI_PARSEPARAM, Db::parseParam('content_table', 'field_1, field_2'));
-        $this->assertSame(self::MULTI_PARSEPARAM_NOT, Db::parseParam('content_table', 'field_1, field_2', 'not'));
-        $this->assertSame(self::MULTI_PARSEPARAM_NOT, Db::parseParam('content_table', 'field_1, field_2', '!='));
+        $collumn = isset($inputArray[0]) ? $inputArray[0] : null;
+        $value =  isset($inputArray[1]) ? $inputArray[1] : null;
+        $defaultOperator =  isset($inputArray[2]) ? $inputArray[2] : '=';
+        $caseInsensitive =  isset($inputArray[3]) ? $inputArray[3] : null;
 
-        $this->assertSame(self::MULTI_PARSEPARAM_EMPTY, Db::parseParam('content_table', ':empty:, field_2', '!='));
-        $this->assertSame('', Db::parseParam('content_table', 'not'));
-        $this->assertSame('', Db::parseParam('content', []));
-
-        // No param passed? Empty string
-        $this->assertSame('', Db::parseParam('', ''));
-        $this->assertSame('', Db::parseParam('content', null));
-
-        // No value. Empty string.
-        $this->assertSame('', Db::parseParam('contentCol', ''));
-
-        // No collumn does return an array.
-        $this->assertSame(self::EMPTY_COLLUMN_PARSEPARAM, Db::parseParam('', 'field_1'));
+        $this->assertSame($result, Db::parseParam($collumn, $value, $defaultOperator, $caseInsensitive));
     }
+
+    public function parseParamDataProvider()
+    {
+        return [
+            'basic' => [
+                ['or', [ 'in', 'foo', [ 'bar']]],
+                ['foo', 'bar']
+            ],
+            'multi-array-format' => [
+                self::MULTI_PARSEPARAM,
+                ['content_table', ['field_1', 'field_2']],
+            ],
+            'multi-split-by-comma' => [
+                self::MULTI_PARSEPARAM,
+                ['content_table', 'field_1, field_2']
+            ],
+            'multi-not-param' => [
+                self::MULTI_PARSEPARAM_NOT,
+                ['content_table', 'field_1, field_2', 'not'],
+            ],
+            'multi-not-symbol' => [
+                self::MULTI_PARSEPARAM_NOT,
+                ['content_table', 'field_1, field_2', '!=']
+            ],
+            'multi-:empty:-param' => [
+                [ 'or', [ 'not', ['or',['content_table' => null, ], ['content_table' => '',]]], ['!=', 'content_table', 'field_2']],
+                ['content_table', ':empty:, field_2', '!=']
+            ],
+            'empty' => [
+                ['or',[
+                        'in',
+                        '',[
+                            'field_1',
+                        ]]],
+                ['', 'field_1'],
+            ],
+            'random-symbol' => [
+                ['or',
+                    ['raaa',  'content_table', 'field_1'],
+                ],
+                ['content_table', 'field_1', 'raaa'],
+            ],
+            'random-symbol-multi' => [
+                ['or',
+                    ['raaa',  'content_table', 'field_1'],
+                    [ 'raaa', 'content_table', 'field_2' ]
+                ],
+                ['content_table', 'field_1, field_2', 'raaa'],
+            ],
+            ['', ['content_table', 'not']],
+            ['', ['content', []]],
+            ['', ['', '']],
+            ['', ['content', null]],
+            ['', ['contentCol', '']]
+        ];
+    }
+
+    /**
+     * @dataProvider escapeParamData
+     */
+    public function testEscapeParam(string $result, string $input)
+    {
+        $escapeResult = Db::escapeParam($input);
+        $this->assertSame($result, $escapeResult);
+        $this->assertInternalType('string', $escapeResult);
+    }
+
+    public function escapeParamData()
+    {
+        return [
+            ['\*', '*'],
+            ['\,', ','],
+            ['\,\*', ',*']
+        ];
+    }
+
+    /**
+     * @dataProvider collumnTypeParsingData
+     */
+    public function testCollumnTypeParsing($result, string $input)
+    {
+        $this->assertSame($result, Db::parseColumnType($input));
+    }
+
+    public function collumnTypeParsingData()
+    {
+        return [
+            ['test', 'test'],
+            [null, '!@#$%^&*()craftcms'],
+            ['craftcms', 'craftcms!@#$%^&*()'],
+            ['craft', 'craft,cms'],
+            ['123', '123 craft'],
+            ['craft', 'CRAFT'],
+            [null, '🎧𢵌 😀😘⛄'],
+            [null, 'Δδ'],
+            [null, '"craftcms"']
+        ];
+    }
+
 
     /**
      * @dataProvider numericCollumnTypesData
@@ -164,7 +225,7 @@ class DbHelperTest extends Unit
         $serializable = new Serializable();
 
         $excpectedDateTime = new \DateTime('2018-06-06 18:00:00');
-        $excpectedDateTime->setTimezone(new \DateTimeZone('UTC'));
+        $excpectedDateTime->setTimezone($this->utcTimezone);
 
         $dateTime = new \DateTime('2018-06-06 18:00:00');
         $this->assertSame($excpectedDateTime->format('Y-m-d H:i:s'), Db::prepareValueForDb($dateTime));
@@ -175,10 +236,10 @@ class DbHelperTest extends Unit
 
     public function testPrepareDateForDb()
     {
-        $date = new \DateTime('2018-08-08 20:00:00', new \DateTimeZone('UTC'));
+        $date = new \DateTime('2018-08-08 20:00:00', $this->utcTimezone);
         $this->assertSame($date->format('Y-m-d H:i:s'), Db::prepareDateForDb($date));
 
-        $date = new \DateTime('2018-08-08 20:00:00', new \DateTimeZone('Asia/Tokyo'));
+        $date = new \DateTime('2018-08-08 20:00:00', $this->asiaTokyoTimezone);
         $dbPrepared = Db::prepareDateForDb($date);
 
         // Ensure db makes no changes.
@@ -186,7 +247,7 @@ class DbHelperTest extends Unit
         $this->assertSame('Asia/Tokyo', $date->getTimezone()->getName());
 
         // Set the time to utc from tokyo and ensure its the same as that from prepare.
-        $date->setTimezone(new \DateTimeZone('UTC'));
+        $date->setTimezone($this->utcTimezone);
         $this->assertSame($date->format('Y-m-d H:i:s'), $dbPrepared);
 
         // One test to ensure that when a date time is passed in via, for example, string format.
@@ -194,8 +255,8 @@ class DbHelperTest extends Unit
         $date = new \DateTime('2018-08-09 20:00:00', new \DateTimeZone('+09:00'));
         $preparedWithTz = Db::prepareDateForDb('2018-08-09T20:00:00+09:00');
 
-        $date->setTimezone(new \DateTimeZone(\Craft::$app->getTimeZone()));
-        $date->setTimezone(new \DateTimeZone('UTC'));
+        $date->setTimezone($this->systemTimezone);
+        $date->setTimezone($this->utcTimezone);
         $this->assertSame($date->format('Y-m-d H:i:s'), $preparedWithTz);
     }
 }
