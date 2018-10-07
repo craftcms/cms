@@ -336,4 +336,32 @@ class StringHelperTest extends \Codeception\Test\Unit
         ];
     }
 
+    /**
+     * @dataProvider mb4EncodingProvider
+     * @param $result
+     * @param $input
+     */
+    public function testMb4Encoding($result, $input)
+    {
+        $mb4String = StringHelper::encodeMb4($input);
+       $this->assertSame($result, $mb4String);
+        $this->assertInternalType('string', $mb4String);
+
+        $this->assertFalse(StringHelper::containsMb4($mb4String));
+    }
+
+    public function mb4EncodingProvider()
+    {
+        return [
+            ['&#x1f525;', '🔥'],
+            ['&#x1f525;', '&#x1f525;'],
+            ['&#x1f1e6;&#x1f1fa;', '🇦🇺'],
+            ['&#x102cd;', '𐋍'],
+            ['asdfghjklqwertyuiop1234567890!@#$%^&*()_+', 'asdfghjklqwertyuiop1234567890!@#$%^&*()_+'],
+            ['&#x102cd;&#x1f1e6;&#x1f1fa;&#x1f525;', '𐋍🇦🇺🔥'],
+            'ensure-non-mb4-is-ignored' => ['&#x102cd;1234567890&#x1f1e6;&#x1f1fa; &#x1f525;', '𐋍1234567890🇦🇺 🔥']
+        ];
+    }
+
+
 }

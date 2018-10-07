@@ -56,12 +56,12 @@ class ColorValidatorTest extends Unit
         return [
             ['#ffc10e', 'ffc10e'],
             ['#', '#'],
-            ['#1234567890qwertyuiop', '1234567890qwertyuiop'],
+            ['#1234567890qwertyuiop!@#$%^&*()', '1234567890qwertyuiop!@#$%^&*()'],
             ['#12', '12'],
             ['#!!@@##', '!@#'],
-            ['#aassdd', 'asd'],
-            ['#aassdd', 'ASD']
-
+            'three-chars-becomes-six' => ['#aassdd', 'asd'],
+            ['#aassdd', 'ASD'],
+            ['#a22d', 'a22d']
         ];
     }
 
