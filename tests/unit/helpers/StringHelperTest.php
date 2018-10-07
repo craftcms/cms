@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 namespace craftunit\helpers;
 
 use Codeception\Util\ReflectionHelper;
@@ -325,22 +330,10 @@ class StringHelperTest extends \Codeception\Test\Unit
             ['1234567890', '22'],
             ['!@#$%^&*()_{}|:"<>?', 0],
             ['!@#$%^&*()_{}|:"<>?', 8],
-
-            'mb4' => ['🎧𢵌😀😘⛄', 2]
-
+            ['                           ', 8],
+            'tabs' => ['              ', 4],
+            ['asdfghjklxcvbnmqwertyuiop', '10']
         ];
     }
-
-    public function testToString()
-    {
-        //StringHelper::toString();
-    }
-
-    public function testUtf8Conversion()
-    {
-        //StringHelper::convertToUtf8();
-    }
-
-
 
 }

@@ -1,11 +1,9 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: gieltettelaarlaptop
- * Date: 29/09/2018
- * Time: 12:44
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
  */
-
 namespace craftunit\helpers;
 
 

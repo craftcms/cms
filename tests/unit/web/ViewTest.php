@@ -1,5 +1,18 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+namespace craftunit\web;
 
+/**
+ * Unit tests for the Url Helper class.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.0
+ */
 class ViewTest extends \Codeception\Test\Unit
 {
     /**
@@ -9,7 +22,7 @@ class ViewTest extends \Codeception\Test\Unit
     // tests
     public function testNormalizeObjectTemplate()
     {
-        $view = Craft::$app->view;
+        $view = \Craft::$app->view;
 
         $this->assertEquals( '{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}', $view->normalizeObjectTemplate('{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}'));
         $this->assertEquals( '{{ (_variables.foo ?? object.foo)|raw }}', $view->normalizeObjectTemplate('{foo}'));
