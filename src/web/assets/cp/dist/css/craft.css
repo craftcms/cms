@@ -741,7 +741,7 @@ body.ltr .elements .thumbsview li { float: left; }
 body.rtl .elements .thumbsview li { float: right; }
 body.ltr .elements .thumbsview li { margin: 14px 0 0 14px ; }
 body.rtl .elements .thumbsview li { margin: 14px 14px 0 0 ; }
-.elements .thumbsview li.has-checkbox .checkbox { position: absolute; top: 106px; }
+.elements .thumbsview li.has-checkbox .checkbox { position: absolute; top: 108px; }
 body.ltr .elements .thumbsview li.has-checkbox .checkbox { left: 4px; }
 body.rtl .elements .thumbsview li.has-checkbox .checkbox { right: 4px; }
 body.ltr .elements .thumbsview li.has-checkbox .element.large.hasthumb:not(.hasstatus) { padding-left: 20px; }
