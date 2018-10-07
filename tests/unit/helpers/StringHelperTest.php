@@ -87,13 +87,9 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertTrue(StringHelper::containsAll('iam some text', ['tEXt'], false));
 
         // Test that empty array with a string in it returns an exception.
-        $testPassed = false;
-        try {
+        $this->tester->expectException(ErrorException::class, function (){
             StringHelper::containsAll('', ['']);
-        } catch (ErrorException $exception){
-            $testPassed = true;
-        }
-        $this->assertTrue($testPassed);
+        });
 
         $this->assertFalse(StringHelper::containsAll('', []));
     }
@@ -274,5 +270,77 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame('hello😀😁😂iam😀😁😂astring', StringHelper::delimit('HelloIamAstring', '😀😁😂'));
         $this->assertSame('hello😀😁😂iam😀😁😂a2string', StringHelper::delimit('HelloIamA2string', '😀😁😂'));
     }
+
+    /**
+     * @dataProvider ensureRightData
+     * @param $input
+     */
+    public function testEnsureRight($result, $input, $ensure)
+    {
+        $this->assertSame($result, StringHelper::ensureRight($input, $ensure));
+    }
+
+    public function ensureRightData()
+    {
+        return [
+            ['hello', 'hello', 'o'],
+            ['!@#$%^&*()1234567890', '!@#$%^&*()1234567890', '567890'],
+            ['hello, my name is', 'hello, my name is', 'e is'],
+            ['hEllo, my name is', 'hEllo, my name is', 'Ello, my name is'],
+            ['😀😁😂', '😀😁😂', '😂'],
+
+            // Assert that without matches it gets added to the end.
+            ['hEllo, my name ishello, m', 'hEllo, my name is', 'hello, m'],
+            ['😀😁1aA!😂😁1aA!', '😀😁1aA!😂', '😁1aA!'],
+            ['!@#$%^&*()1234567 890567890', '!@#$%^&*()1234567 890', '567890'],
+
+        ];
+    }
+
+    /**
+     * @dataProvider randomStringWithCharsData
+     *
+     * @param $result
+     * @param $valid
+     * @param $length
+     */
+    public function testRandomStringWithChars($valid, int $length)
+    {
+        $str = StringHelper::randomStringWithChars($valid, $length);
+        $strLen = \mb_strlen($str);
+
+        $this->assertSame($length, $strLen);
+
+        for ($i = 0; $i<$strLen; $i++) {
+            if (\mb_strpos($valid, $str[$i]) === false) {
+                $this->fail('Invalid chars');
+            }
+        }
+    }
+
+    public function randomStringWithCharsData()
+    {
+        return [
+            ['asdfghjklxcvbnmqwertyuiop', 10],
+            ['1234567890', '22'],
+            ['!@#$%^&*()_{}|:"<>?', 0],
+            ['!@#$%^&*()_{}|:"<>?', 8],
+
+            'mb4' => ['🎧𢵌😀😘⛄', 2]
+
+        ];
+    }
+
+    public function testToString()
+    {
+        //StringHelper::toString();
+    }
+
+    public function testUtf8Conversion()
+    {
+        //StringHelper::convertToUtf8();
+    }
+
+
 
 }

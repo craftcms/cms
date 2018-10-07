@@ -141,13 +141,13 @@ class AppTest extends \Codeception\Test\Unit
 
         // Make sure its a component
         $this->assertTrue(in_array(Component::class, class_parents($config['class'])));
-
     }
 
     public function configsData()
     {
         $viewRequirments = Craft::$app->getRequest()->getIsCpRequest() ? ['class', 'registeredAssetBundled', 'registeredJsFiled'] : ['class'];
         return [
+            ['assetManagerConfig', ['class', 'basePath', 'baseUrl', 'fileMode', 'dirMode', 'appendTimestamp']],
             ['dbConfig', [ 'class', 'dsn', 'password', 'username',  'charset', 'tablePrefix',  'schemaMap',  'commandMap',  'attributes','enableSchemaCache' ]],
             ['webRequestConfig', [ 'class',  'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam',  ]],
             ['cacheConfig', [ 'class',  'cachePath', 'fileMode', 'dirMode', 'defaultDuration']],
