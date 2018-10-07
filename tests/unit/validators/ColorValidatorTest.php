@@ -8,6 +8,8 @@ namespace craftunit\validators;
 
 use Codeception\Test\Unit;
 use craft\validators\ColorValidator;
+use craftunit\support\mockclasses\models\ExampleModel;
+use yii\base\Model;
 
 /**
  * Class ColorValidatorTest.
@@ -23,12 +25,17 @@ class ColorValidatorTest extends Unit
      */
     protected $colorValidator;
 
+    /**
+     * @var ExampleModel
+     */
+    protected $model;
     /*
      * @var \UnitTester
      */
     protected $tester;
     public function _before()
     {
+        $this->model = new ExampleModel();
         $this->colorValidator = new ColorValidator();
     }
 
@@ -74,4 +81,34 @@ class ColorValidatorTest extends Unit
             ColorValidator::normalizeColor('');
         });
     }
+
+    /**
+     * @dataProvider colorValidatorAttributes
+     * @param $result
+     * @param $input
+     * @param $attributeName
+     */
+    public function testAttributeValidation($input, $attributeName, bool $mustValidate)
+    {
+        $this->model->$attributeName = $input;
+
+        $this->colorValidator->validateAttribute($this->model, $attributeName);
+
+        if (!$mustValidate) {
+            $this->assertArrayHasKey($attributeName, $this->model->getErrors());
+        } else{
+            $this->assertArrayNotHasKey($attributeName, $this->model->getErrors());
+        }
+
+        $this->model->clearErrors();
+        $this->model->$attributeName = null;
+    }
+
+    public function colorValidatorAttributes()
+    {
+        return [
+            ['xxx', 'exampleParam', false]
+        ];
+    }
+
 }
