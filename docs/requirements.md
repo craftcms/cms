@@ -84,7 +84,6 @@ Craft’s Control Panel requires a modern browser:
 * Chrome 29 or later
 * Firefox 28 or later
 * Safari 9.0 or later
-* Internet Explorer 11 or later
 * Microsoft Edge
 
 ### Mobile
