@@ -65,9 +65,11 @@ class AppTest extends \Codeception\Test\Unit
      * @param $result
      * @param $input
      */
-    public function testInputOutput($result, $input)
+    public function testVersionNormalization($result, string $input)
     {
+        $version = App::normalizeVersion($input);
         $this->assertSame($result, App::normalizeVersion($input));
+        $this->assertInternalType('string', $version);
     }
 
 

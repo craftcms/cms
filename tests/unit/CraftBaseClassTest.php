@@ -4,7 +4,10 @@ namespace craftunit\base;
 use Craft;
 use craft\db\Query;
 use craft\elements\User;
+use craft\helpers\App;
 use craft\mail\Message;
+use craft\web\Application;
+use craft\web\Request;
 use craftunit\fixtures\TestFixture;
 
 class CraftBaseClassTest extends \Codeception\Test\Unit

@@ -9,7 +9,6 @@ namespace craftunit\validators;
 use Codeception\Test\Unit;
 use craft\validators\ColorValidator;
 use craftunit\support\mockclasses\models\ExampleModel;
-use yii\base\Model;
 
 /**
  * Class ColorValidatorTest.
@@ -88,27 +87,38 @@ class ColorValidatorTest extends Unit
      * @param $input
      * @param $attributeName
      */
-    public function testAttributeValidation($input, $attributeName, bool $mustValidate)
+    public function testAttributeValidation($input, bool $mustValidate)
     {
-        $this->model->$attributeName = $input;
+        $this->model->exampleParam = $input;
 
-        $this->colorValidator->validateAttribute($this->model, $attributeName);
+        $this->colorValidator->validateAttribute($this->model, 'exampleParam');
 
         if (!$mustValidate) {
-            $this->assertArrayHasKey($attributeName, $this->model->getErrors());
+            $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         } else{
-            $this->assertArrayNotHasKey($attributeName, $this->model->getErrors());
+            $this->assertSame([], $this->model->getErrors());
         }
 
         $this->model->clearErrors();
-        $this->model->$attributeName = null;
+        $this->model->exampleParam = null;
     }
 
     public function colorValidatorAttributes()
     {
         return [
-            ['xxx', 'exampleParam', false]
+            ['#ffc', true],
+            ['#ffc10e', 'exampleParam', true],
+            ['ffc10e', true],
+            ['#ffc10eaaaaaaaaa', false],
+            ['fffc10e', false],
+            ['xxx', false],
+            ['#ffc1', false],
+            ['#ffc1e', false],
+            ['#ff', false],
+            ['#f', false],
+            ['#', false],
+            ['rgba(255, 0, 0, 0.2)', false],
+            ['255, 0, 0, 0.2', false]
         ];
     }
-
 }
