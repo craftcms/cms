@@ -12,5 +12,5 @@ return [
 
     // Cp trigger is used to test if cpurl is created correctly.
     'cpTrigger' => 'adminustriggerus',
-    'siteUrl' => 'http://craft3.craft.dev/'
+    'siteUrl' => getenv('TEST_SITE_URL'),
 ];

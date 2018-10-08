@@ -103,7 +103,11 @@ class DateTimeHelperTest extends Unit
 
         $this->assertInstanceOf(\DateTime::class, $toDateTime);
         $this->assertSame($systemTz, $toDateTime->getTimezone()->getName());
+
+        // Ensure the expected result is in the same timezone as the system.
         $this->assertSame($systemTz, $expectedResult->getTimezone()->getName());
+
+        // Are they the same?
         $this->assertSame($expectedResult->format('Y-m-d H:i:s'), $toDateTime->format('Y-m-d H:i:s'));
     }
 
@@ -254,28 +258,6 @@ class DateTimeHelperTest extends Unit
         ];
     }
 
-    public function dateTimeTester(
-        $toDateTimeFormat,
-        string $dateTimeCreatableFormat
-    ) {
-        $craftTimezone = \Craft::$app->getTimeZone();
-        $systemTimezone = new \DateTimeZone($craftTimezone);
-        $utcTimezone = new \DateTimeZone('UTC');
-
-        $dateTimeWithSystemTz = new \DateTime($dateTimeCreatableFormat, $systemTimezone);
-
-        // Does the system TZ get keepen when told to assume it is correct.
-        $this->assertSame($dateTimeWithSystemTz->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($toDateTimeFormat, true)->format('Y-m-d H:i:s'));
-
-        // Does the system time get keepen when
-        $this->assertSame($dateTimeWithSystemTz->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($toDateTimeFormat, true, true)->format('Y-m-d H:i:s'));
-
-        // Does the system set the timezone if asked and not assume the system tz
-        $dateTimeWithSystemTzAdjusted = new \DateTime($dateTimeCreatableFormat, $utcTimezone);
-        $dateTimeWithSystemTzAdjusted->setTimezone($systemTimezone);
-        $this->assertSame($dateTimeWithSystemTzAdjusted->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($toDateTimeFormat, false, true)->format('Y-m-d H:i:s'));
-    }
-
     public function testNormalizeTimezone()
     {
         $this->assertSame('America/New_York', DateTimeHelper::normalizeTimeZone('EST'));
@@ -398,6 +380,4 @@ class DateTimeHelperTest extends Unit
         $seconds = DateTimeHelper::intervalToSeconds(new \DateInterval('P1DT1H'));
         $this->assertSame($seconds, 90000);
     }
-
-
 }

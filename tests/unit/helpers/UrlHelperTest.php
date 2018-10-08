@@ -12,6 +12,7 @@ use craft\db\MigrationManager;
 use craft\fields\Url;
 use craft\helpers\MigrationHelper;
 use craft\helpers\UrlHelper;
+use craft\i18n\PhpMessageSource;
 
 /**
  * Unit tests for the Url Helper class.
@@ -29,7 +30,8 @@ class UrlHelperTest extends Unit
 
     protected $entryScript;
     protected $entryUrl;
-    protected $baseForUrlCreation;
+    protected $baseUrl;
+    protected $baseUrlWithScript;
     protected $cpTrigger;
 
     protected function _before()
@@ -39,10 +41,22 @@ class UrlHelperTest extends Unit
         $this->entryScript = $yii2->_getConfig('entryScript');
         $this->entryUrl = $yii2->_getConfig('entryUrl');
 
+        $currentSiteUrl = null;
+        $currentSite = \Craft::$app->getSites()->getCurrentSite();
+        if ($currentSite->baseUrl) {
+            $currentSiteUrl = rtrim(\Craft::getAlias($currentSite->baseUrl), '/') . '/';
+        }
+
+        $this->baseUrl = $currentSiteUrl;
+        // Add the entry script. This url is for creation.
+        if (strpos($this->entryScript, $currentSiteUrl) === false) {
+            $currentSiteUrl = $currentSiteUrl.$this->entryScript;
+        }
+
         if (\Craft::$app->getRequest()->getIsConsoleRequest()) {
-            $this->baseForUrlCreation = $this->entryScript;
-        } else{
-            $this->baseForUrlCreation = '/';
+            $this->baseUrlWithScript = $currentSiteUrl ?: $this->entryScript;
+        } else {
+            $this->baseUrlWithScript = $currentSiteUrl ?: '/';
         }
     }
 
@@ -167,8 +181,15 @@ class UrlHelperTest extends Unit
      */
     public function testCpUrlCreation($result, $inputUrl, $params, $scheme = 'https')
     {
+        // Make sure https is enabled for the base url.
+        if ($scheme === 'https') {
+            $baseUrl = str_replace('http://', 'https://', $this->baseUrlWithScript);
+        } else {
+            $baseUrl = str_replace('https://', 'http://', $this->baseUrlWithScript);
+        }
+
         $this->assertSame(
-            $this->baseForUrlCreation.'?p='.$this->cpTrigger.''.$result.'',
+            $baseUrl.'?p='.$this->cpTrigger.''.$result.'',
             UrlHelper::cpUrl($inputUrl, $params, $scheme)
         );
     }
@@ -232,8 +253,8 @@ class UrlHelperTest extends Unit
                 'stripQueryString'
             ],
             [
-                self::ABSOLUTE_URL_WWW,
-                self::ABSOLUTE_URL_WWW.'?param1=entry1',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=entry1',
                 null,
                 'stripQueryString'
             ],
@@ -246,6 +267,7 @@ class UrlHelperTest extends Unit
 
         ];
     }
+
     public function urlWithParamsProvider()
     {
         return [
@@ -274,32 +296,54 @@ class UrlHelperTest extends Unit
                 'urlWithParams'
             ],
             'prev-param-gets-kept' => [
-                self::ABSOLUTE_URL_WWW.'#anchor?param3=entry3&param1=entry1&param2=entry2',
-                self::ABSOLUTE_URL_WWW.'#anchor?param3=entry3',
+                self::ABSOLUTE_URL_HTTPS_WWW.'#anchor?param3=entry3&param1=entry1&param2=entry2',
+                self::ABSOLUTE_URL_HTTPS_WWW.'#anchor?param3=entry3',
                 '?param1=entry1&param2=entry2',
                 'urlWithParams'
             ],
         ];
     }
+
     public function urlWithTokenProvider()
     {
+        $requiredScheme = UrlHelper::getSchemeForTokenizedUrl();
+        if (strpos($requiredScheme, 'https') !== false) {
+            $https = true;
+            $baseUrl = self::ABSOLUTE_URL_HTTPS;
+        } else {
+            $https = false;
+            $baseUrl = self::ABSOLUTE_URL;
+        }
+
         return [
             [
-                self::ABSOLUTE_URL.'?token=value',
-                self::ABSOLUTE_URL,
+                $baseUrl.'?token=value',
+                $baseUrl,
                 'value',
                 'urlWithToken'
             ],
             [
-                self::ABSOLUTE_URL.'?token=value&token=value',
-                self::ABSOLUTE_URL.'?token=value',
+                $baseUrl.'?token=value&token=value',
+                $baseUrl.'?token=value',
                 'value',
                 'urlWithToken'
             ],
             [
-                self::ABSOLUTE_URL.'?token=',
-                self::ABSOLUTE_URL.'',
+                $baseUrl.'?token=',
+                $baseUrl.'',
                 '',
+                'urlWithToken'
+            ],
+            'ensure-scheme-is-overridden' => [
+                $https ? self::ABSOLUTE_URL_HTTPS.'?token=value' : self::ABSOLUTE_URL.'?token=value',
+                $https ? self::ABSOLUTE_URL : self::ABSOLUTE_URL_HTTPS,
+                'value',
+                'urlWithToken'
+            ],
+            'no-protocol' => [
+                'craft?token=value',
+                'craft',
+                'value',
                 'urlWithToken'
             ]
         ];
@@ -308,37 +352,37 @@ class UrlHelperTest extends Unit
     public function urlWithSchemeProvider()
     {
         return [
-                [
+                'php-replace' => [
                     str_replace('https://', 'php://', self::ABSOLUTE_URL_HTTPS_WWW),
                     self::ABSOLUTE_URL_HTTPS_WWW,
                     'php',
                     'urlWithScheme'
                 ],
-                [
+                'ftp-replace' => [
                     str_replace('https://', 'ftp://', self::ABSOLUTE_URL_HTTPS),
                     self::ABSOLUTE_URL_HTTPS,
                     'ftp',
                     'urlWithScheme'
                 ],
-                [
+                'non-valid-protocol' => [
                     str_replace('http://', 'walawalabingbang://', self::ABSOLUTE_URL),
-                    self::ABSOLUTE_URL,
+                    self::ABSOLUTE_URL_HTTPS,
                     'walawalabingbang',
                     'urlWithScheme'
                 ],
-                [
+                'www-replace' => [
                     self::ABSOLUTE_URL_HTTPS_WWW,
                     self::ABSOLUTE_URL_HTTPS_WWW,
                     'https',
                     'urlWithScheme'
                 ],
-                [
-                    str_replace('http://', 'https://', self::ABSOLUTE_URL),
-                    self::ABSOLUTE_URL,
+                'no-chnage-needed' => [
+                     self::ABSOLUTE_URL_HTTPS,
+                    self::ABSOLUTE_URL_HTTPS,
                     'https',
                     'urlWithScheme'
                 ],
-                [
+                'ftp-https' => [
                     str_replace('https://', 'sftp://', self::ABSOLUTE_URL_HTTPS_WWW),
                     self::ABSOLUTE_URL_HTTPS_WWW,
                     'sftp',
@@ -347,12 +391,52 @@ class UrlHelperTest extends Unit
         ];
     }
 
+    /**
+     * @dataProvider urlFunctionDataProvider
+     *
+     * @param             $result
+     * @param string      $path
+     * @param null        $params
+     * @param string|null $scheme
+     * @param bool|null   $showScriptName
+     */
+    public function testUrlFunction($result, string $path = '', $params = null, string $scheme = null, bool $showScriptName = null)
+    {
+        $this->assertSame($result, UrlHelper::url($path, $params, $scheme, $showScriptName));
+    }
+
+    public function urlFunctionDataProvider()
+    {
+        return [
+            'test-full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
+            'test-scheme-override' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https']
+        ];
+    }
+
+    /**
+     * Tests that when a $scheme is not defined when creating a url.
+     * It uses the below described method to determine the scheme type and adds this to a url.
+     */
+    public function testAutomaticProtocolType()
+    {
+        $schemeType = !\Craft::$app->getRequest()->getIsConsoleRequest() && \Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
+
+        // Dont pass in a scheme type. Ensure it determines this itself.
+        $result = UrlHelper::url('someendpoint');
+        $conformsScheme = (strpos($result, $schemeType) !== false);
+        $this->assertTrue($conformsScheme);
+    }
+
+
+
     public function testBaseTesting()
     {
-        // TODO: Is this in all scenarious.
-        $this->assertSame('/', UrlHelper::baseUrl());
+        // TODO: Add a cp conditional.
+        $this->assertSame($this->baseUrl, UrlHelper::baseUrl());
+        $this->assertSame($this->baseUrl, UrlHelper::baseSiteUrl());
+
+        // TODO: BaseCPUrl custom trigger should be tested here as well.
         $this->assertSame('/', UrlHelper::baseCpUrl());
-        $this->assertSame('/', UrlHelper::baseSiteUrl());
         $this->assertSame('/', UrlHelper::baseRequestUrl());
         $this->assertSame('', UrlHelper::host());
         $this->assertSame('', UrlHelper::cpHost());
@@ -369,22 +453,6 @@ class UrlHelperTest extends Unit
         // If nothing is passed to the hostInfo() your mileage may vary depending on request type. So we need to know what to expect before hand..
         $expectedValue = \Craft::$app->getRequest()->getIsConsoleRequest() ? '' : \Craft::$app->getRequest()->getHostInfo();
         $this->assertSame($expectedValue, UrlHelper::hostInfo(''));
-    }
-
-    /**
-     * @throws \craft\errors\SiteNotFoundException
-     */
-    public function testUrlCreation()
-    {
-        $siteUrl = \Craft::$app->getConfig()->getGeneral()->siteUrl;
-        $cpTrigger = \Craft::$app->getConfig()->getGeneral()->cpTrigger;
-
-        $ftpUrl = UrlHelper::urlWithScheme($siteUrl, 'ftp');
-
-        $this->assertEquals(
-            $ftpUrl.'v1/api?param1=name',
-            UrlHelper::url($siteUrl.'v1/api', ['param1' => 'name'], 'ftp', false)
-        );
     }
 
     /**
