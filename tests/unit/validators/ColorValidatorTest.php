@@ -107,7 +107,7 @@ class ColorValidatorTest extends Unit
     {
         return [
             ['#ffc', true],
-            ['#ffc10e', 'exampleParam', true],
+            ['#ffc10e', true],
             ['ffc10e', true],
             ['#ffc10eaaaaaaaaa', false],
             ['fffc10e', false],
