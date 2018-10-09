@@ -1,11 +1,12 @@
 <template>
     <div>
-        <status-message v-if="loading" :message="statusMessage" />
+        <status-message v-if="loading" :message="statusMessage"></status-message>
     </div>
 </template>
 
 <script>
     import {mapGetters} from 'vuex'
+    import StatusMessage from '../components/StatusMessage'
 
     export default {
 
@@ -17,7 +18,7 @@
         },
 
         components: {
-            StatusMessage: require('../components/StatusMessage'),
+            StatusMessage,
         },
 
         methods: {

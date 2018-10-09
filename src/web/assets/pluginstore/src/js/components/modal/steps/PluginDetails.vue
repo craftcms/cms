@@ -118,13 +118,14 @@
 
 <script>
     import {mapState, mapGetters, mapActions} from 'vuex'
+    import Step from '../Step'
 
     export default {
 
         props: ['pluginId'],
 
         components: {
-            Step: require('../Step'),
+            Step,
         },
 
         data() {

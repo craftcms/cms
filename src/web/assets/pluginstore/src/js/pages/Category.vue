@@ -6,11 +6,12 @@
 
 <script>
     import {mapGetters} from 'vuex'
+    import PluginIndex from '../components/PluginIndex'
 
     export default {
 
         components: {
-            PluginIndex: require('../components/PluginIndex'),
+            PluginIndex,
         },
 
         data() {
