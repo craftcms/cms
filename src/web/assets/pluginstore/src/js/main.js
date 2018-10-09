@@ -4,6 +4,8 @@ import {escapeHtml, formatNumber, t} from './filters/craft'
 import router from './router'
 import store from './store'
 import {mapState} from 'vuex'
+import Modal from './components/modal/Modal'
+import StatusMessage from './components/StatusMessage'
 
 Vue.filter('currency', currency)
 Vue.filter('escapeHtml', escapeHtml)
@@ -19,8 +21,8 @@ Garnish.$doc.ready(function() {
         store,
 
         components: {
-            modal: require('./components/modal/Modal'),
-            statusMessage: require('./components/StatusMessage'),
+            Modal,
+            StatusMessage,
         },
 
         data() {
@@ -52,11 +54,11 @@ Garnish.$doc.ready(function() {
 
         watch: {
 
-            cart() {
+            cart(cart) {
                 let totalQty = 0
 
-                if (this.cart) {
-                    totalQty = this.cart.totalQty
+                if (cart) {
+                    totalQty = cart.totalQty
                 }
 
                 $('.badge', this.$cartButton).html(totalQty)
@@ -139,7 +141,8 @@ Garnish.$doc.ready(function() {
                 this.showModal = false
             },
 
-            updateCraftId(craftId) {
+            updateCraftId(craftIdJson) {
+                const craftId = JSON.parse(craftIdJson);
                 this.$store.dispatch('updateCraftId', {craftId})
                 this.$emit('craftIdUpdated')
             },

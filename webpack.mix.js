@@ -28,7 +28,13 @@ mix.options({
                 comments: false
             }
         }
-    }
+    },
+    postCss: [
+        require('autoprefixer')({
+            grid: true,
+            browsers: ['ie > 11'],
+        })
+    ]
 });
 
 mix

@@ -34,6 +34,7 @@
 
 <script>
     import {mapState} from 'vuex'
+    import PluginIndex from '../components/PluginIndex'
 
     export default {
 
@@ -45,7 +46,7 @@
         },
 
         components: {
-            PluginIndex: require('../components/PluginIndex'),
+            PluginIndex,
         },
 
         computed: {
