@@ -34,10 +34,15 @@ class HandleValidatorTest extends Unit
      * @var \UnitTester
      */
     protected $tester;
+
+    protected $reservedWords =  ['bird', 'is', 'the', 'word'];
     public function _before()
     {
         $this->model = new ExampleModel();
-        $this->colorValidator = new HandleValidator();
+        $this->handleValidator = new HandleValidator(['reservedWords' => $this->reservedWords]);
+
+        $this->assertSame($this->reservedWords, $this->handleValidator->reservedWords);
+        $this->reservedWords  = array_merge($this->reservedWords, HandleValidator::$baseReservedWords);
     }
 
     public function testStaticConstants()
@@ -56,14 +61,50 @@ class HandleValidatorTest extends Unit
 
     public function testStaticConstantsArentAllowed()
     {
-        foreach (HandleValidator::$baseReservedWords as $reservedWord) {
-            $this->model->exampleParam = $reservedWord;
-            $this->handleValidator->validateAttribute($this->model->exampleParam, 'exampleParam');
 
-            $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+        foreach ($this->reservedWords as $reservedWord) {
+            $this->model->exampleParam = $reservedWord;
+            $this->handleValidator->validateAttribute($this->model, 'exampleParam');
+
+            $this->assertArrayHasKey('exampleParam', $this->model->getErrors(), $reservedWord);
 
             $this->model->clearErrors();
             $this->model->exampleParam = null;
         }
+    }
+
+    /**
+     * @dataProvider handleValidationData
+     *
+     * @param bool $result
+     * @param      $input
+     */
+    public function testHandleValidation(bool $mustValidate, $input)
+    {
+        $this->model->exampleParam = $input;
+
+        $validatorResult = $this->handleValidator->validateAttribute($this->model, 'exampleParam');
+
+        $this->assertSame(null, $validatorResult);
+
+        if ($mustValidate) {
+            $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());
+        } else {
+            $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+        }
+
+        $this->model->clearErrors();
+        $this->model->exampleParam = null;
+    }
+
+    public function handleValidationData()
+    {
+        return [
+            [true, 'iamAHandle'],
+            [true, 'ASDFGHJKLQWERTYUIOPZXCVBNM'],
+            [false, '!@#$%^&*()'],
+            [false, '🔥'],
+            [false, '123'],
+        ];
     }
 }

@@ -400,16 +400,30 @@ class UrlHelperTest extends Unit
      * @param string|null $scheme
      * @param bool|null   $showScriptName
      */
-    public function testUrlFunction($result, string $path = '', $params = null, string $scheme = null, bool $showScriptName = null)
+    public function testUrlFunction($result, string $path = '', $params = null, string $scheme = null, bool $showScriptName = null, bool $isNonCompletedUrl = false)
     {
+        if ($isNonCompletedUrl === true || !UrlHelper::isAbsoluteUrl($result)) {
+            $oldResult = $result;
+            $result = $this->baseUrl.$oldResult;
+
+            $this->assertSame($result, UrlHelper::url($path, $params, $scheme, false));
+            $result = $this->baseUrlWithScript.'?p='.$oldResult;
+
+        }
+
         $this->assertSame($result, UrlHelper::url($path, $params, $scheme, $showScriptName));
     }
 
     public function urlFunctionDataProvider()
     {
         return [
-            'test-full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
-            'test-scheme-override' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https']
+            'full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
+            'full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
+            'scheme-override' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
+            'scheme-override-param-add' => [self::ABSOLUTE_URL_HTTPS.'?param1=entry1&param2=entry2', self::ABSOLUTE_URL,  ['param1'=> 'entry1', 'param2'=>'entry2'],  'https'],
+            // TODO: Test ssl errors.
+            'base' => ['endpoint', 'endpoint',  null,  null, null, true],
+
         ];
     }
 
@@ -434,11 +448,11 @@ class UrlHelperTest extends Unit
         // TODO: Add a cp conditional.
         $this->assertSame($this->baseUrl, UrlHelper::baseUrl());
         $this->assertSame($this->baseUrl, UrlHelper::baseSiteUrl());
+        $this->assertSame(rtrim($this->baseUrl, '/'), UrlHelper::host());
 
         // TODO: BaseCPUrl custom trigger should be tested here as well.
         $this->assertSame('/', UrlHelper::baseCpUrl());
         $this->assertSame('/', UrlHelper::baseRequestUrl());
-        $this->assertSame('', UrlHelper::host());
         $this->assertSame('', UrlHelper::cpHost());
     }
 
