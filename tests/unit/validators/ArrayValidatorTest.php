@@ -11,6 +11,7 @@ namespace craftunit\validators;
 
 use Codeception\Test\Unit;
 use craft\validators\ArrayValidator;
+use craftunit\support\mockclasses\models\ExampleModel;
 
 /**
  * Class ArrayValidator.
@@ -49,6 +50,21 @@ class ArrayValidatorTest extends Unit
         $this->assertSame('aint right', $this->arrayValidator->notEqual);
     }
 
+    public function testMessagingOnEmptyInputArray()
+    {
+        $newValidator = new ArrayValidator([]);
+    }
+
+    public function testCountArrayInputValue()
+    {
+        $newValidator = new ArrayValidator(['count' => [2, 5]]);
+        $this->assertSame(2, $newValidator->min);
+        $this->assertSame(5, $newValidator->max);
+
+        // Make sure if count is empty array. $count is a null variable.
+        $newValidator = new ArrayValidator(['count' => []]);
+        $this->assertNull($newValidator->count);
+    }
     public function testValidation()
     {
 
