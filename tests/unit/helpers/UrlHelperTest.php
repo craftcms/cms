@@ -36,27 +36,28 @@ class UrlHelperTest extends Unit
 
     protected function _before()
     {
-        $this->cpTrigger = \Craft::$app->getConfig()->getGeneral()->cpTrigger;
+        $generalConfig = \Craft::$app->getConfig()->getGeneral();
+        $this->cpTrigger = $generalConfig->cpTrigger;
+        $configSiteUrl = $generalConfig->siteUrl;
+
         $yii2 = $this->getModule('Yii2');
         $this->entryScript = $yii2->_getConfig('entryScript');
         $this->entryUrl = $yii2->_getConfig('entryUrl');
 
-        $currentSiteUrl = null;
-        $currentSite = \Craft::$app->getSites()->getCurrentSite();
-        if ($currentSite->baseUrl) {
-            $currentSiteUrl = rtrim(\Craft::getAlias($currentSite->baseUrl), '/') . '/';
+        if (!$configSiteUrl) {
+            $configSiteUrl = $this->entryUrl;
         }
 
-        $this->baseUrl = $currentSiteUrl;
-        // Add the entry script. This url is for creation.
-        if (strpos($this->entryScript, $currentSiteUrl) === false) {
-            $currentSiteUrl = $currentSiteUrl.$this->entryScript;
+        $this->baseUrl = $configSiteUrl;
+        // Add the entry script. This  is for the withScript variable.
+        if (strpos($this->entryScript, $configSiteUrl) === false) {
+            $configSiteUrl .= $this->entryScript;
         }
 
         if (\Craft::$app->getRequest()->getIsConsoleRequest()) {
-            $this->baseUrlWithScript = $currentSiteUrl ?: $this->entryScript;
+            $this->baseUrlWithScript = $configSiteUrl ?: $this->entryScript;
         } else {
-            $this->baseUrlWithScript = $currentSiteUrl ?: '/';
+            $this->baseUrlWithScript = $configSiteUrl ?: '/';
         }
     }
 
@@ -408,7 +409,12 @@ class UrlHelperTest extends Unit
 
             $this->assertSame($result, UrlHelper::url($path, $params, $scheme, false));
             $result = $this->baseUrlWithScript.'?p='.$oldResult;
+        }
 
+        // If no scheme was passed in. We need to set the result to whatever the the url() function will use aswell.
+        if ($scheme === null) {
+            $scheme = !\Craft::$app->getRequest()->getIsConsoleRequest() && \Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
+            $result = $this->urlWithScheme($result, $scheme);
         }
 
         $this->assertSame($result, UrlHelper::url($path, $params, $scheme, $showScriptName));
@@ -417,14 +423,43 @@ class UrlHelperTest extends Unit
     public function urlFunctionDataProvider()
     {
         return [
-            'full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
-            'full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
-            'scheme-override' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
-            'scheme-override-param-add' => [self::ABSOLUTE_URL_HTTPS.'?param1=entry1&param2=entry2', self::ABSOLUTE_URL,  ['param1'=> 'entry1', 'param2'=>'entry2'],  'https'],
             // TODO: Test ssl errors.
             'base' => ['endpoint', 'endpoint',  null,  null, null, true],
 
+            'full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
+            'full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
+            'scheme-override' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
+            'scheme-override-param-add' => [
+                self::ABSOLUTE_URL_HTTPS.'?param1=entry1&param2=entry2',
+                self::ABSOLUTE_URL,
+                ['param1'=> 'entry1', 'param2'=>'entry2'],
+                'https'
+            ],
+
         ];
+    }
+
+    /**
+     * Replaces the http or https in a url to the $scheme variable.
+     * @param $url
+     * @param $scheme
+     * @return string
+     */
+    public function urlWithScheme(string $url, string $scheme) : string
+    {
+        // Did they pass the $scheme in with :// or without? If no exists then add it.
+        $scheme = strpos('://', $scheme) !== false ? $scheme : $scheme.'://';
+
+        if (strpos($url, 'http://') !== false) {
+            $url = str_replace('http://', $scheme, $url);
+            return $url;
+        }
+        if (strpos($url, 'https://') !== false) {
+            $url = str_replace('https://', $scheme, $url);
+            return $url;
+        }
+
+        return $url;
     }
 
     /**

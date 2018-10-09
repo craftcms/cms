@@ -103,6 +103,7 @@ class HandleValidatorTest extends Unit
             [true, 'iamAHandle'],
             [true, 'iam1Handle'],
             [true, 'ASDFGHJKLQWERTYUIOPZXCVBNM'],
+            [false, 'iam!Handle'],
             [false, '!@#$%^&*()'],
             [false, '🔥'],
             [false, '123'],
