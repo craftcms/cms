@@ -308,7 +308,7 @@ class DbHelperTest extends Unit
         $date->setTimezone($this->utcTimezone);
         $this->assertSame($date->format('Y-m-d H:i:s'), $dbPrepared);
 
-        // One test to ensure that when a date time is passed in via, for example, string format but with a timezone. I.E an array or as demonstrated below.
+        // One test to ensure that when a date time is passed in via, for example, string format but with a timezone
         // It is created as a \DateTime with its predefined timezone, set to system, set to utc and then formatted as MySql format.
         $date = new \DateTime('2018-08-09 20:00:00', new \DateTimeZone('+09:00'));
         $preparedWithTz = Db::prepareDateForDb('2018-08-09T20:00:00+09:00');
@@ -316,5 +316,7 @@ class DbHelperTest extends Unit
         $date->setTimezone($this->systemTimezone);
         $date->setTimezone($this->utcTimezone);
         $this->assertSame($date->format('Y-m-d H:i:s'), $preparedWithTz);
+
+        // TODO: Test that if a \DateTime is passed it its Timezone isnt changed(changed back from utc to what it was when passed in.
     }
 }

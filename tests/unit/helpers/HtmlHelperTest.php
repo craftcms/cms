@@ -31,58 +31,39 @@ class HtmlHelperTest extends \Codeception\Test\Unit
     {
     }
 
-    public function testParamEncoding()
+    /**
+     * @dataProvider htmlEncodingDataProvider
+     *
+     * @param $result
+     * @param $input
+     * @param $variables
+     */
+    public function testParamEncoding($result, $input, $variables)
+    {
+        $this->assertSame($result, Html::encodeParams($input, $variables));
+    }
+
+    public function htmlEncodingDataProvider()
     {
         $htmlTagString = '<p>Im a paragraph. What am i, {whatIsThis}</p>';
         $pureVariableString = '{variable1}, {variable2}';
         $htmlDoubleCurlyString = '{{variable1}}, {{variable2}}';
 
-        $this->assertSame(
-            Html::encodeParams($htmlTagString, ['whatIsThis' => 'A paragraph']),
-            '<p>Im a paragraph. What am i, A paragraph</p>'
-        );
+        return [
+            ['<p>Im a paragraph. What am i, A paragraph</p>', $htmlTagString, ['whatIsThis' => 'A paragraph']],
+            ['stuff, other', $pureVariableString, ['variable1' => 'stuff', 'variable2' => 'other']],
+            ['stuff, other', $pureVariableString, ['variable1' => 'stuff', 'variable2' => 'other']],
+            ['stuff, {variable2}', $pureVariableString, ['variable1' => 'stuff']],
+            'ensure-double-curly' => ['{stuff}, {{variable2}}', $htmlDoubleCurlyString, ['variable1' => 'stuff']],
 
-        $this->assertSame(
-            Html::encodeParams($pureVariableString, ['variable1' => 'stuff', 'variable2' => 'other']),
-            'stuff, other'
-        );
-
-        $this->assertSame(
-            Html::encodeParams($pureVariableString, ['variable1' => 'stuff', 'variable2' => 'other']),
-            'stuff, other'
-        );
-
-        // Ensure with partial matches it only encodes what is present.
-        $this->assertSame(
-            Html::encodeParams($pureVariableString, ['variable1' => 'stuff']),
-            'stuff, {variable2}'
-        );
-
-        // Ensure on double curly that it encodes and leaves the second curly brace.
-        $this->assertSame(
-            Html::encodeParams($htmlDoubleCurlyString, ['variable1' => 'stuff']),
-            '{stuff}, {{variable2}}'
-        );
-
-        // Empty param testing.
-        $this->assertSame(
-            Html::encodeParams($htmlTagString, []),
-            $htmlTagString
-        );
-        $this->assertSame(
-            Html::encodeParams($pureVariableString, []),
-            $pureVariableString
-        );
-
-        $this->assertSame(
-            '<p>Im a paragraph. What am i, !@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`</p>!@#$%^&*(){}|::"<><?>/*-~`',
-            Html::encodeParams($htmlTagString.'!@#$%^&*(){}|::"<><?>/*-~`', ['whatIsThis' => '!@#$%^&*(){}|::"<><?>/*-~`'])
-        );
-
-        // Ensure on double curly that it encodes and leaves the second curly brace.
-        $this->assertSame(
-            '😘!@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`, {variable2}',
-            Html::encodeParams($pureVariableString, ['variable1' => '😘!@#$%^&*(){}|::"<><?>/*-~`'])
-        );
+            [$htmlTagString, $htmlTagString, []],
+            [$pureVariableString, $pureVariableString, []],
+            [
+                '<p>Im a paragraph. What am i, !@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`</p>!@#$%^&*(){}|::"<><?>/*-~`',
+                $htmlTagString.'!@#$%^&*(){}|::"<><?>/*-~`',
+                ['whatIsThis' => '!@#$%^&*(){}|::"<><?>/*-~`']
+            ],
+            ['😘!@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`, {variable2}', $pureVariableString, ['variable1' => '😘!@#$%^&*(){}|::"<><?>/*-~`']]
+        ];
     }
 }
