@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "axios": "^0.17.1",
+    "feature-detect-es6": "^1.5.0",
     "lodash": "^4.17.10",
     "vue": "^2.4.4",
     "vue-cleave": "^1.2.2",

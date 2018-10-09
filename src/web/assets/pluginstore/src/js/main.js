@@ -1,3 +1,5 @@
+let detect = require('feature-detect-es6')
+
 import Vue from 'vue'
 import {currency} from './filters/currency'
 import {escapeHtml, formatNumber, t} from './filters/craft'
@@ -49,6 +51,14 @@ Garnish.$doc.ready(function() {
                 cart: state => state.cart.cart,
                 craftId: state => state.craft.craftId,
             }),
+
+            supportsES6() {
+                if (detect.all('promises')){
+                    return true;
+                }
+
+                return false;
+            }
 
         },
 
