@@ -13,6 +13,7 @@
 - The Debug Toolbar is no longer shown in Live Preview iframes.
 - Updated jQuery Touch Events to 2.0.0.
 - Updated Garnish to 0.1.29.
+- The Plugin Store now requires browsers with ES6 support.
 
 ### Fixed
 - Fixed a bug where enabling the “Propagate entries across all enabled sites?” setting for an existing Channel section (or converting the section to a Structure) wouldn’t update entries that had been created for the non-primary site.
@@ -23,6 +24,7 @@
 - Fixed an error that could occur if a component’s settings were stored as `null`. ([#3342](https://github.com/craftcms/cms/pull/3342))
 - Fixed a bug where details panes weren’t visible on browser windows sized between 999 and 1,223 pixels wide.
 - Fixed an error that occurred if a Quick Post widget contained a Matrix field that had Min Blocks set and only had one block type.
+- Fixed a bug where the Plugin Store was not working properly with Internet Explorer.
 
 ### Security
 - The `svg()` Twig function no longer sanitizes SVGs or namespaces their IDs or class names by default when a file path (or alias) was passed in. ([#3337](https://github.com/craftcms/cms/issues/3337))
