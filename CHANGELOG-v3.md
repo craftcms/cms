@@ -25,6 +25,7 @@
 - Fixed a bug where details panes weren’t visible on browser windows sized between 999 and 1,223 pixels wide.
 - Fixed an error that occurred if a Quick Post widget contained a Matrix field that had Min Blocks set and only had one block type.
 - Fixed a bug where the Plugin Store was not working properly with Internet Explorer.
+- Fixed a bug where disabled Matrix blocks were getting validated as live. ([#3354](https://github.com/craftcms/cms/issues/3354))
 
 ### Security
 - The `svg()` Twig function no longer sanitizes SVGs or namespaces their IDs or class names by default when a file path (or alias) was passed in. ([#3337](https://github.com/craftcms/cms/issues/3337))
