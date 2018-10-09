@@ -1,8 +1,8 @@
 <template>
-	<div>
-		<div id="graphic" class="spinner big error"></div>
-		<div id="status">{{ statusMessage }}</div>
-	</div>
+    <div>
+        <div id="graphic" class="spinner big error"></div>
+        <div id="status">{{ statusMessage }}</div>
+    </div>
 
 </template>
 
