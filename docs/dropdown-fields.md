@@ -4,7 +4,7 @@ Dropdown fields give you a dropdown input.
 
 ## Settings
 
-![dropdown-settings.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/dropdown/dropdown-settings.2x.png)
+![dropdown-settings.2x](./images/field-types/dropdown/dropdown-settings.2x.png)
 
 Dropdown fields have the following settings:
 
@@ -14,7 +14,7 @@ Dropdown fields have the following settings:
 
 Dropdown fields will show a dropdown input with each of the Dropdown Options as defined in the field settings:
 
-![dropdown-entry1.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/dropdown/dropdown-entry1.2x.png)
+![dropdown-entry1.2x](./images/field-types/dropdown/dropdown-entry1.2x.png)
 
 ## Templating
 

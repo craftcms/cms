@@ -4,7 +4,7 @@ Assets fields allow you to select related [assets](assets.md).
 
 ## Settings
 
-![assets-settings.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/assets/assets-settings.2x.png)
+![assets-settings.2x](./images/field-types/assets/assets-settings.2x.png)
 
 Assets fields have the following settings:
 
@@ -20,13 +20,13 @@ Assets fields have the following settings:
 
 If the “Restrict uploads to a single folder?” setting is checked, the “Sources” and “Default Upload Location” settings will be replaced with an “Upload Location” setting.
 
-![assets-settings-singlefolder.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/assets/assets-settings-singlefolder.2x.jpg)
+![assets-settings-singlefolder.2x](./images/field-types/assets/assets-settings-singlefolder.2x.jpg)
 
 ### Restricting Allowed File Types
 
 If the “Restrict allowed file types?” setting is checked, a list of file types will appear below it.
 
-![assets-settings-filetypes.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/assets/assets-settings-filetypes.2x.jpg)
+![assets-settings-filetypes.2x](./images/field-types/assets/assets-settings-filetypes.2x.jpg)
 
 ### Dynamic Subfolder Paths
 
@@ -48,17 +48,17 @@ Note that if you are creating the Assets field within a [Matrix field](matrix-fi
 
 Assets fields list all of the currently selected assets, with a button to select new ones:
 
-![assets-entry.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/assets/assets-entry.2x.jpg)
+![assets-entry.2x](./images/field-types/assets/assets-entry.2x.jpg)
 
 Clicking the “Add an asset” button will bring up a modal window where you can find and select additional assets, as well as upload new ones:
 
-![assets-entry-add.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/assets/assets-entry-add.2x.jpg)
+![assets-entry-add.2x](./images/field-types/assets/assets-entry-add.2x.jpg)
 
 ### Editing Asset Content
 
 Double-clicking on a selected asset will open a modal where you can edit the file’s title and any fields you have associated with your assets from Settings → Assets → Fields.
 
-![assets-entry-edit.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/assets/assets-entry-edit.2x.jpg)
+![assets-entry-edit.2x](./images/field-types/assets/assets-entry-edit.2x.jpg)
 
 ## Templating
 

@@ -4,7 +4,7 @@ Plain Text fields give you either a normal text input or a multi-line textarea, 
 
 ## Settings
 
-![plain-text-settings.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/plain-text/plain-text-settings.2x.png)
+![plain-text-settings.2x](./images/field-types/plain-text/plain-text-settings.2x.png)
 
 Plain Text fields have the following settings:
 
@@ -16,7 +16,7 @@ Plain Text fields have the following settings:
 
 Plain Text fields will either show a normal text input or a multi-line textarea, depending on whether the “Allow line breaks” setting was checked.
 
-![plain-text-entry.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/plain-text/plain-text-entry.2x.png)
+![plain-text-entry.2x](./images/field-types/plain-text/plain-text-entry.2x.png)
 
 ## Templating
 

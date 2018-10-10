@@ -2,7 +2,7 @@
 
 You can search for elements anywhere you see this bar:
 
-![search](https://craftcmsassets.craftcdn.com/images/docs/search.png)
+![search](./images/search.png)
 
 ## Supported syntaxes
 

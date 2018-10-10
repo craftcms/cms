@@ -4,7 +4,7 @@ Table fields give you a customizable table, where you can create multiple rows o
 
 ## Settings
 
-![table-settings.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/table/table-settings.2x.png)
+![table-settings.2x](./images/field-types/table/table-settings.2x.png)
 
 Table fields have the following settings:
 
@@ -23,7 +23,7 @@ Table fields have the following settings:
 
 Table fields will show the table as configured based on the field settings. You can reorder, delete, and add new rows, and modify their values.
 
-![table-entry.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/table/table-entry.2x.png)
+![table-entry.2x](./images/field-types/table/table-entry.2x.png)
 
 ## Templating
 

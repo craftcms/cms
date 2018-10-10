@@ -4,7 +4,7 @@ Radio Buttons fields give you a group of radio buttons.
 
 ## Settings
 
-![radio-button-settings.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/radio-buttons/radio-button-settings.2x.png)
+![radio-button-settings.2x](./images/field-types/radio-buttons/radio-button-settings.2x.png)
 
 Radio Buttons fields have the following settings:
 
@@ -14,7 +14,7 @@ Radio Buttons fields have the following settings:
 
 Radio Buttons fields will show a radio group with each of the Radio Button Options as defined in the field settings:
 
-![radio-button-entry.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/radio-buttons/radio-button-entry.2x.png)
+![radio-button-entry.2x](./images/field-types/radio-buttons/radio-button-entry.2x.png)
 
 ## Templating
 

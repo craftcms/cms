@@ -4,7 +4,7 @@ Multi-select fields give you a multi-select input.
 
 ## Settings
 
-![multi-select-settings.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/multi-select/multi-select-settings.2x.png)
+![multi-select-settings.2x](./images/field-types/multi-select/multi-select-settings.2x.png)
 
 Multi-select fields have the following settings:
 
@@ -14,7 +14,7 @@ Multi-select fields have the following settings:
 
 Multi-select fields will show a multi-select input with each of the Multi-select Options as defined in the field settings:
 
-![multi-select-entry.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/multi-select/multi-select-entry.2x.png)
+![multi-select-entry.2x](./images/field-types/multi-select/multi-select-entry.2x.png)
 
 ## Templating
 

@@ -6,7 +6,7 @@ Color fields give you a color picker, and save a hexadecimal value of the select
 
 Color fields will either use your browser’s color picker (if your browser supports `<input type="color">`) or a Javascript-powered color picker.
 
-![color-entry.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/color/color-entry.2x.png)
+![color-entry.2x](./images/field-types/color/color-entry.2x.png)
 
 ## Templating
 

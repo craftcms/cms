@@ -4,7 +4,7 @@ Rich Text fields give you a Redactor-powered WYSIWYG editor, which stores HTML.
 
 ## Settings
 
-![rich-text-settings-2.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/rich-text/rich-text-settings-2.2x.png)
+![rich-text-settings-2.2x](./images/field-types/rich-text/rich-text-settings-2.2x.png)
 
 Rich Text fields have the following settings:
 
@@ -39,7 +39,7 @@ Craft comes with two Redactor configs by default:
 
 Rich Text fields will show a Redactor field that has been configured with whatever settings are defined in the selected Redactor config:
 
-![rich-text-entry.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/rich-text/rich-text-entry.2x.png)
+![rich-text-entry.2x](./images/field-types/rich-text/rich-text-entry.2x.png)
 
 ## Templating
 

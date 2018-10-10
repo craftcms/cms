@@ -4,7 +4,7 @@ Entries fields allow you to relate [entries](sections-and-entries.md) to the par
 
 ## Settings
 
-![entries-settings.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/entries/entries-settings.2x.png)
+![entries-settings.2x](./images/field-types/entries/entries-settings.2x.png)
 
 Entries fields have the following settings:
 
@@ -17,17 +17,17 @@ Entries fields have the following settings:
 
 Entries fields list all of the currently selected entries, with a button to select new ones:
 
-![entries-entry.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/entries/entries-entry.2x.jpg)
+![entries-entry.2x](./images/field-types/entries/entries-entry.2x.jpg)
 
 Clicking the “Add an entry” button will bring up a modal window where you can find and select additional entries:
 
-![entries-entry-add.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/entries/entries-entry-add.2x.jpg)
+![entries-entry-add.2x](./images/field-types/entries/entries-entry-add.2x.jpg)
 
 ### Editing Entry Content
 
 Double-clicking on a selected entry will open a modal where you can edit the entry’s title and custom fields.
 
-![entries-entry-edit.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/entries/entries-entry-edit.2x.jpg)
+![entries-entry-edit.2x](./images/field-types/entries/entries-entry-edit.2x.jpg)
 
 ## Templating
 

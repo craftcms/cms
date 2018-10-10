@@ -6,7 +6,7 @@ Rather than requiring that everyone upload images at a certain size, Craft lets 
 
 You can define transforms from the Control Panel by going to Settings → Assets → Image Transforms and clicking the “New Transform” button.
 
-![transform-settings.2x](https://craftcmsassets.craftcdn.com/images/docs/transform-settings.2x.jpg)
+![transform-settings.2x](./images/transform-settings.2x.jpg)
 
 Each transform has the following settings:
 

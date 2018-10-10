@@ -4,7 +4,7 @@ Users fields type allow you relate [users](users.md) to the parent element.
 
 ## Settings
 
-![users-settings.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/users/users-settings.2x.png)
+![users-settings.2x](./images/field-types/users/users-settings.2x.png)
 
 Users fields have the following settings:
 
@@ -16,11 +16,11 @@ Users fields have the following settings:
 
 Users fields list all of the currently selected users, with a button to select new ones:
 
-![users-entry.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/users/users-entry.2x.png)
+![users-entry.2x](./images/field-types/users/users-entry.2x.png)
 
 Clicking the “Add a user button will bring up a modal window where you can find and select additional users:
 
-![users-entry-add.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/users/users-entry-add.2x.png)
+![users-entry-add.2x](./images/field-types/users/users-entry-add.2x.png)
 
 ## Templating
 

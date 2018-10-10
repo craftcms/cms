@@ -4,7 +4,7 @@ Number fields give you a text input that accepts a numeric value.
 
 ## Settings
 
-![number-settings.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/number/number-settings.2x.png)
+![number-settings.2x](./images/field-types/number/number-settings.2x.png)
 
 Number fields have the following settings:
 
@@ -16,7 +16,7 @@ Number fields have the following settings:
 
 Number fields will show a text box where you can enter a number:
 
-![number-entry.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/number/number-entry.2x.png)
+![number-entry.2x](./images/field-types/number/number-entry.2x.png)
 
 ## Templating
 

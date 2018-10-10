@@ -4,7 +4,7 @@ Checkboxes fields give you a group of checkboxes.
 
 ## Settings
 
-![checkbox-settings.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/checkboxes/checkbox-settings.2x.png)
+![checkbox-settings.2x](./images/field-types/checkboxes/checkbox-settings.2x.png)
 
 Checkboxes fields have the following settings:
 
@@ -14,7 +14,7 @@ Checkboxes fields have the following settings:
 
 Checkboxes fields will show each of the checkbox options as defined in the field settings:
 
-![checkbox-entry.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/checkboxes/checkbox-entry.2x.png)
+![checkbox-entry.2x](./images/field-types/checkboxes/checkbox-entry.2x.png)
 
 ## Templating
 

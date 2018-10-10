@@ -4,7 +4,7 @@ Tags fields allow you create [tags](tags.md) and relate them to the parent eleme
 
 ## Settings
 
-![tags-settings.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/tags/tags-settings.2x.png)
+![tags-settings.2x](./images/field-types/tags/tags-settings.2x.png)
 
 Tags fields have the following settings:
 
@@ -14,7 +14,7 @@ Tags fields have the following settings:
 
 ## The Field
 
-![tags-entry-add.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/tags/tags-entry-add.2x.jpg)
+![tags-entry-add.2x](./images/field-types/tags/tags-entry-add.2x.jpg)
 
 Tags fields list all of the currently selected tags, with a text input to add new ones.
 
@@ -24,7 +24,7 @@ As you type into the text input, the Tags field will search through the existing
 
 Double-clicking on a selected tag will open a modal where you can edit the tag’s title, and any fields you have associated with your tags from Settings → Tags → Fields.
 
-![tags-entry-edit.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/tags/tags-entry-edit.2x.jpg)
+![tags-entry-edit.2x](./images/field-types/tags/tags-entry-edit.2x.jpg)
 
 ## Templating
 

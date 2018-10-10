@@ -4,7 +4,7 @@ Matrix fields allow you to create multiple blocks of content within a single fie
 
 ## Settings
 
-![Matrix field settings](https://craftcmsassets.craftcdn.com/images/docs/field-types/matrix/matrix-settings-craft23@2x.png)
+![Matrix field settings](./images/field-types/matrix/matrix-settings-craft23@2x.png)
 
 Matrix fields have the following settings:
 
@@ -15,25 +15,25 @@ Matrix fields have the following settings:
 
 On a fresh entry, Matrix fields will just show a group of buttons – one for each of the Block Types you created in the field’s settings.
 
-![A Matrix field without any blocks](https://craftcmsassets.craftcdn.com/images/docs/field-types/matrix/matrix-entry-fresh-craft23@2x.png)
+![A Matrix field without any blocks](./images/field-types/matrix/matrix-entry-fresh-craft23@2x.png)
 
 When you click on one of those buttons, a new block will be created. The Block Type’s name will be shown in the block’s title bar, and each of the Block Type’s fields will be present within the body of the block.
 
-![matrix-entry-firstblock-craft23@2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/matrix/matrix-entry-firstblock-craft23@2x.png)
+![matrix-entry-firstblock-craft23@2x](./images/field-types/matrix/matrix-entry-firstblock-craft23@2x.png)
 
 You can add as many blocks to your Matrix field as you’d like (or at least as many as the field’s Max Blocks setting will allow).
 
-![matrix-entry-multipleblocks-craft23@2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/matrix/matrix-entry-multipleblocks-craft23@2x.png)
+![matrix-entry-multipleblocks-craft23@2x](./images/field-types/matrix/matrix-entry-multipleblocks-craft23@2x.png)
 
 Each block has a settings menu that reveals additional things you can do with the block.
 
-![matrix-entry-blockmenu-craft23@2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/matrix/matrix-entry-blockmenu-craft23@2x.png)
+![matrix-entry-blockmenu-craft23@2x](./images/field-types/matrix/matrix-entry-blockmenu-craft23@2x.png)
 
 If multiple blocks are selected, the Collapse/Expand, Disable/Enable, and Delete options will apply to all of the selected blocks.
 
 You can collapse Matrix blocks by clicking the “Collapse” menu option, or by double-clicking on a block’s title bar. When a block is collapsed, its title bar will show a preview of its content, so you can still identify which block it is.
 
-![matrix-entry-collapsedblocks-craft23@2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/matrix/matrix-entry-collapsedblocks-craft23@2x.png)
+![matrix-entry-collapsedblocks-craft23@2x](./images/field-types/matrix/matrix-entry-collapsedblocks-craft23@2x.png)
 
 Blocks can also be reordered by dragging the “Move” icon at the end of the block’s title bar. If multiple blocks are selected, all of the selected blocks will be going along for the ride.
 

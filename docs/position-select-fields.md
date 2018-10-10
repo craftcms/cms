@@ -4,7 +4,7 @@ Position Select fields give you a button group with various positioning options,
 
 ## Settings
 
-![position-select-settings.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/position-select/position-select-settings.2x.png)
+![position-select-settings.2x](./images/field-types/position-select/position-select-settings.2x.png)
 
 Position Select fields have the following settings:
 
@@ -14,7 +14,7 @@ Position Select fields have the following settings:
 
 Position Select fields will show a button group with icons representing each of the options you chose in the field’s settings.
 
-![position-select-input.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/position-select/position-select-input.2x.png)
+![position-select-input.2x](./images/field-types/position-select/position-select-input.2x.png)
 
 ## Templating
 

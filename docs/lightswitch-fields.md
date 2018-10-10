@@ -4,7 +4,7 @@ Lightswitch fields give you a simple toggle input for times when all you need is
 
 ## The Field
 
-![lightswitch-entry.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/lightswitch/lightswitch-entry.2x.jpg)
+![lightswitch-entry.2x](./images/field-types/lightswitch/lightswitch-entry.2x.jpg)
 
 ## Templating
 

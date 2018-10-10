@@ -4,7 +4,7 @@ Categories fields allow you to relate [categories](categories.md) to the parent 
 
 ## Settings
 
-![categories-settings.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/categories/categories-settings.2x.png)
+![categories-settings.2x](./images/field-types/categories/categories-settings.2x.png)
 
 Categories fields have the following settings:
 
@@ -17,11 +17,11 @@ Categories fields have the following settings:
 
 Categories fields list all of the currently selected categories, with a button to select new ones:
 
-![categories-entry.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/categories/categories-entry.2x.jpg)
+![categories-entry.2x](./images/field-types/categories/categories-entry.2x.jpg)
 
 Clicking the “Add a category” button will bring up a modal window where you can find and select additional categories:
 
-![categories-entry-add.2x](https://craftcmsassets.craftcdn.com/images/docs/field-types/categories/categories-entry-add.2x.jpg)
+![categories-entry-add.2x](./images/field-types/categories/categories-entry-add.2x.jpg)
 
 When you select a nested category, all of the ancestors leading up to that category will also automatically be selected. Likewise, when you deselect a category from within the main field input, any of its descendants will also become deselected.
 
