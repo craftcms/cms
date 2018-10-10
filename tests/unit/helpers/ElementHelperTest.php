@@ -40,15 +40,24 @@ class ElementHelperTest extends Unit
     public function createSlugData()
     {
         $glue = \Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
-        $lower = !\Craft::$app->getConfig()->getGeneral()->allowUppercaseInSlug;
 
         return [
-            ['word_word', 'wordWord'],
             ['word'.$glue.'Word', 'wordWord'],
             ['word'.$glue.'word', 'word word'],
             ['word', 'word'],
-
+            ['1234567890', '123456789'],
         ];
     }
 
+    public function testLowerRemoveFromCreateSlug()
+    {
+        $general =  \Craft::$app->getConfig()->getGeneral();
+        $oldAllow = $general->allowUppercaseInSlug;
+        $general->allowUppercaseInSlug = false;
+
+        $this->assertSame('word'.$general->slugWordSeparator.'word', ElementHelper::createSlug('word WORD'));
+
+        \Craft::$app->getConfig()->getGeneral()->allowUppercaseInSlug = $oldAllow;
+
+    }
 }
