@@ -50,9 +50,26 @@ class ArrayValidatorTest extends Unit
         $this->assertSame('aint right', $this->arrayValidator->notEqual);
     }
 
-    public function testMessagingOnEmptyInputArray()
+    /**
+     * Test that if messages arent provided when creating the array validator, they will be provided automatically.
+     * @dataProvider paramsToTestOnEmpty
+     * @param ArrayValidator $validator
+     * @param $variableName
+     */
+    public function testMessagingOnEmptyInputArray(ArrayValidator $validator, $variableName)
     {
-        $newValidator = new ArrayValidator([]);
+        $this->assertTrue((strlen($validator->$variableName) > 2));
+
+        $this->assertInternalType('string', $validator->$variableName);
+    }
+
+    public function paramsToTestOnEmpty()
+    {
+        $newValidator = new ArrayValidator(['min' => 1, 'max' => 10, 'count' => 4]);
+
+        return [
+            [$newValidator, 'message'], [$newValidator, 'tooFew'], [$newValidator, 'tooMany'], [$newValidator, 'notEqual']
+        ];
     }
 
     public function testCountArrayInputValue()
@@ -65,9 +82,50 @@ class ArrayValidatorTest extends Unit
         $newValidator = new ArrayValidator(['count' => []]);
         $this->assertNull($newValidator->count);
     }
-    public function testValidation()
+
+    /**
+     * @dataProvider arrayValidatorValues
+     * @param      $inputValue
+     * @param bool $mustValidate
+     */
+    public function testValidation($inputValue, bool $mustValidate)
+    {
+        $countValue = $this->arrayValidator->count;
+        $this->arrayValidator->count = null;
+
+        $this->model->exampleParam = $inputValue;
+        $result = $this->arrayValidator->validateAttribute($this->model, 'exampleParam');
+
+        if ($mustValidate) {
+            $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());
+        } else {
+            $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+        }
+
+        $this->model->clearErrors();
+        $this->model->exampleParam = null;
+        $this->arrayValidator->count = $countValue;
+    }
+
+    /**
+     * TODO: Add a count validation method that validates arrays are within count and if are too big or small they throw an error. .
+     * @param array $input
+     */
+    public function testCountValidation()
     {
 
     }
 
+    public function arrayValidatorValues()
+    {
+        return [
+            [[1, 2, 3, 4 ], true],
+            [[1, 2, 3, 4, 5 ], true],
+            [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ], true],
+            [[[1, 1], [2, 2], [3, 3], 4, 5, 6, 7, 8, 9, 10 ], true],
+            ['hello', false],
+            [[1, 2], false]
+
+        ];
+    }
 }
