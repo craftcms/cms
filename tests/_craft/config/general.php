@@ -12,5 +12,7 @@ return [
 
     // Cp trigger is used to test if cpurl is created correctly.
     'cpTrigger' => 'adminustriggerus',
-    'siteUrl' => getenv('TEST_SITE_URL'),
+    'siteUrl' => 'https://test.craftcms.dev/',
+    'slugWordSeparator' => '--',
+    'allowUppercaseInSlug' => true,
 ];
