@@ -847,29 +847,45 @@ class AssetTransforms extends Component
                         Craft::warning("Unable to delete the file \"{$imageSourcePath}\": " . $e->getMessage(), __METHOD__);
                     }
 
-                    $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true) . '.' . $asset->getExtension();
-                    $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
+                    $prefix = pathinfo($asset->filename, PATHINFO_FILENAME) . '.delimiter.';
+                    $extension = $asset->getExtension();
+                    $tempFilename = uniqid($prefix, true) . '.' . $extension;
+                    $tempPath = Craft::$app->getPath()->getTempPath();
+                    $tempFilePath = $tempPath . DIRECTORY_SEPARATOR . $tempFilename;
 
-                    $volume->saveFileLocally($asset->getPath(), $tempPath);
+                    // Fetch a list of existing temp files for this image.
+                    $files = FileHelper::findFiles($tempPath, [
+                        'only' => [
+                            $prefix . '*' .  '.' . $extension
+                        ]
+                    ]);
 
-                    if (!is_file($tempPath) || filesize($tempPath) === 0) {
+                    // And clean them up.
+                    if (!empty($files)) {
+                        foreach ($files as $filePath) {
+                            FileHelper::unlink($filePath);
+                        }
+                    }
+                    $volume->saveFileLocally($asset->getPath(), $tempFilePath);
+
+                    if (!is_file($tempFilePath) || filesize($tempFilePath) === 0) {
                         try {
-                            FileHelper::unlink($tempPath);
+                            FileHelper::unlink($tempFilePath);
                         } catch (ErrorException $e) {
-                            Craft::warning("Unable to delete the file \"{$tempPath}\": " . $e->getMessage(), __METHOD__);
+                            Craft::warning("Unable to delete the file \"{$tempFilePath}\": " . $e->getMessage(), __METHOD__);
                         }
                         throw new VolumeException(Craft::t('app', 'Tried to download the source file for image “{file}”, but it was 0 bytes long.',
                             ['file' => $asset->filename]));
                     }
 
-                    $this->storeLocalSource($tempPath, $imageSourcePath);
+                    $this->storeLocalSource($tempFilePath, $imageSourcePath);
 
                     // Delete the leftover data.
                     $this->queueSourceForDeletingIfNecessary($imageSourcePath);
                     try {
-                        FileHelper::unlink($tempPath);
+                        FileHelper::unlink($tempFilePath);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$tempPath}\": " . $e->getMessage(), __METHOD__);
+                        Craft::warning("Unable to delete the file \"{$tempFilePath}\": " . $e->getMessage(), __METHOD__);
                     }
                 }
             }
