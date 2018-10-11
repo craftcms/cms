@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.27 - 2018-10-11
 
 ### Added
 - Added `craft\helpers\MigrationHelper::findForeignKey()`.
