@@ -801,9 +801,13 @@ class Assets extends Component
 
         // Get a list from DB as well
         $fileList = (new Query())
-            ->select(['filename'])
-            ->from(['{{%assets}}'])
-            ->where(['folderId' => $folderId])
+            ->select(['assets.filename'])
+            ->from(['{{%assets}} assets'])
+            ->innerJoin(['{{%elements}} elements'], '[[assets.id]] = [[elements.id]]')
+            ->where([
+                'assets.folderId' => $folderId,
+                'elements.dateDeleted' => null
+            ])
             ->column();
 
         // Combine the indexed list and the actual file list to make the final potential conflict list.
