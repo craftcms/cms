@@ -349,7 +349,7 @@ return [
     'Delete {site}' => '{site} löschen',
     'Delete…' => 'Löschen',
     'Deleting stale template caches' => 'Cache abgelaufener Templates löschen',
-    'Deprecation Errors' => 'Veralteter Code',
+    'Deprecation Warnings' => 'Veralteter Code',
     'Descending' => 'Absteigend',
     'Description' => 'Beschreibung',
     'Deselect All' => 'Gesamte Auswahl aufheben',

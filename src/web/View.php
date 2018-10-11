@@ -466,13 +466,6 @@ class View extends \yii\web\View
 
         $twig = $this->getTwig();
 
-        // Temporarily disable strict variables if it's enabled
-        $strictVariables = $twig->isStrictVariables();
-
-        if ($strictVariables) {
-            $twig->disableStrictVariables();
-        }
-
         // Is this the first time we've parsed this template?
         $cacheKey = md5($template);
         if (!isset($this->_objectTemplates[$cacheKey])) {
@@ -506,6 +499,13 @@ class View extends \yii\web\View
 
         $variables['object'] = $object;
         $variables['_variables'] = $variables;
+
+        // Temporarily disable strict variables if it's enabled
+        $strictVariables = $twig->isStrictVariables();
+
+        if ($strictVariables) {
+            $twig->disableStrictVariables();
+        }
 
         // Render it!
         $twig->setDefaultEscaperStrategy(false);

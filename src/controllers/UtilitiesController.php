@@ -96,7 +96,7 @@ class UtilitiesController extends Controller
      * View stack trace for a deprecator log entry.
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Errors utility
+     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Warnings utility
      */
     public function actionGetDeprecationErrorTracesModal(): Response
     {
@@ -118,7 +118,7 @@ class UtilitiesController extends Controller
      * Deletes all deprecation errors.
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Errors utility
+     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Warnings utility
      */
     public function actionDeleteAllDeprecationErrors(): Response
     {
@@ -137,7 +137,7 @@ class UtilitiesController extends Controller
      * Deletes a deprecation error.
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Errors utility
+     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Warnings utility
      */
     public function actionDeleteDeprecationError(): Response
     {

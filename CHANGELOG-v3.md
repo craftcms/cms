@@ -1,5 +1,38 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.27 - 2018-10-11
+
+### Added
+- Added `craft\helpers\MigrationHelper::findForeignKey()`.
+- Added the `cp.globals.edit` and `cp.globals.edit.content` template hooks to the Edit Global Set page. ([#3356](https://github.com/craftcms/cms/pull/3356))
+
+### Changed
+- It’s now possible to load a Create Entry page with a specific user preselected in the Author field, using a new `authorId` query string param. ([#3326](https://github.com/craftcms/cms/pull/3326))
+- Matrix fields that are set to manage blocks on a per-site basis will now duplicate Matrix blocks across all of the owner element’s supported sites when the element is first created. ([#3082](https://github.com/craftcms/cms/issues/3082))
+- Disabled Matrix blocks are no longer visible when sharing an entry draft or version. ([#3338](https://github.com/craftcms/cms/issues/3338))
+- Control Panel tabs that have errors now have alert icons.
+- The Debug Toolbar is no longer shown in Live Preview iframes.
+- The Plugin Store now requires browsers with ES6 support.
+- Updated jQuery Touch Events to 2.0.0.
+- Updated Garnish to 0.1.29.
+
+### Fixed
+- Fixed a bug where enabling the “Propagate entries across all enabled sites?” setting for an existing Channel section (or converting the section to a Structure) wouldn’t update entries that had been created for the non-primary site.
+- Fixed a bug where Craft wasn’t detecting and retrying queue jobs that had timed out.
+- Fixed a bug where `Craft::$app->locale` could return the wrong locale during Live Preview requests. ([#3336](https://github.com/craftcms/cms/issues/3336))
+- Fixed a SQL error that could occur when upgrading to Craft 3, if a foreign key had an unexpected name.
+- Fixed a bug where page titles in the Control Panel could be blank when showing validation errors for things that were missing their name or title. ([#3344](https://github.com/craftcms/cms/issues/3344))
+- Fixed an error that could occur if a component’s settings were stored as `null`. ([#3342](https://github.com/craftcms/cms/pull/3342))
+- Fixed a bug where details panes weren’t visible on browser windows sized between 999 and 1,223 pixels wide.
+- Fixed an error that occurred if a Quick Post widget contained a Matrix field that had Min Blocks set and only had one block type.
+- Fixed a bug where disabled Matrix blocks were getting validated as live. ([#3354](https://github.com/craftcms/cms/issues/3354))
+- Fixed a bug where the `EVENT_AFTER_ACTIVATE_USER` event wasn’t getting triggered on user registration when email verification isn’t required. ([craftcms/commerce-digital-products#18](https://github.com/craftcms/commerce-digital-products/issues/18))
+- Added garbage collection for offline storage of remote assets. ([#3335](https://github.com/craftcms/cms/pull/3335))
+- Fixed a bug where Twig could end up in a strange state if an error occurred when preparing to render an object template. ([#3364](https://github.com/craftcms/cms/issues/3364))
+
+### Security
+- The `svg()` Twig function no longer sanitizes SVGs or namespaces their IDs or class names by default when a file path (or alias) was passed in. ([#3337](https://github.com/craftcms/cms/issues/3337))
+
 ## 3.0.26.1 - 2018-09-29
 
 ### Changed

@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'Slet {site}',
     'Delete…' => 'Slet...',
     'Deleting stale template caches' => 'Sletter uaktuelle skabelon caches',
-    'Deprecation Errors' => 'Forældelses fejl',
+    'Deprecation Warnings' => 'Forældelses fejl',
     'Descending' => 'Falder',
     'Description' => 'Beskrivelse',
     'Deselect All' => 'Fravælg alle',

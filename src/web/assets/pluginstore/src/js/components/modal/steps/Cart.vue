@@ -108,11 +108,12 @@
 
 <script>
     import {mapState, mapGetters, mapActions} from 'vuex'
+    import Step from '../Step'
 
     export default {
 
         components: {
-            Step: require('../Step'),
+            Step,
         },
 
         computed: {

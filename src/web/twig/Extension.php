@@ -816,13 +816,18 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     }
 
     /**
-     * Returns the (sanitized) contents of a given SVG file, namespacing any of its IDs in the process.
+     * Returns the contents of a given SVG file.
      *
-     * @param string|Asset $svg An SVG asset, a file path, or XML data
-     * @param bool $sanitize Whether the file should be sanitized first
+     * @param string|Asset $svg An SVG asset, a file path, or raw SVG markup
+     * @param bool|null $sanitize Whether the SVG should be sanitized of potentially
+     * malicious scripts. By default the SVG will only be sanitized if an asset
+     * or markup is passed in. (File paths are assumed to be safe.)
+     * @param bool|null $namespace Whether class names and IDs within the SVG
+     * should be namespaced to avoid conflicts with other elements in the DOM.
+     * By default the SVG will only be namespaced if an asset or markup is passed in.
      * @return \Twig_Markup|string
      */
-    public function svgFunction($svg, bool $sanitize = true)
+    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null)
     {
         if ($svg instanceof Asset) {
             try {
@@ -840,7 +845,15 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
                 return '';
             }
             $svg = file_get_contents($svg);
+
+            // This came from a file path, so pretty good chance that the SVG can be trusted.
+            $sanitize = $sanitize ?? false;
+            $namespace = $namespace ?? false;
         }
+
+        // Sanitize and namespace the SVG by default
+        $sanitize = $sanitize ?? true;
+        $namespace = $namespace ?? true;
 
         // Sanitize?
         if ($sanitize) {
@@ -850,30 +863,33 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         // Remove the XML declaration
         $svg = preg_replace('/<\?xml.*?\?>/', '', $svg);
 
-        // Namespace any IDs
-        if (strpos($svg, 'id=') !== false || strpos($svg, 'class=') !== false) {
-            $namespace = StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 10) . '-';
+        // Namespace class names and IDs
+        if (
+            $namespace && (
+            strpos($svg, 'id=') !== false || strpos($svg, 'class=') !== false)
+        ) {
+            $ns = StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 10) . '-';
             $ids = [];
             $classes = [];
-            $svg = preg_replace_callback('/\bid=([\'"])([^\'"]+)\\1/i', function($matches) use ($namespace, &$ids) {
+            $svg = preg_replace_callback('/\bid=([\'"])([^\'"]+)\\1/i', function($matches) use ($ns, &$ids) {
                 $ids[] = $matches[2];
-                return "id={$matches[1]}{$namespace}{$matches[2]}{$matches[1]}";
+                return "id={$matches[1]}{$ns}{$matches[2]}{$matches[1]}";
             }, $svg);
-            $svg = preg_replace_callback('/\bclass=([\'"])([^\'"]+)\\1/i', function($matches) use ($namespace, &$classes) {
+            $svg = preg_replace_callback('/\bclass=([\'"])([^\'"]+)\\1/i', function($matches) use ($ns, &$classes) {
                 $newClasses = [];
                 foreach (preg_split('/\s+/', $matches[2]) as $class) {
                     $classes[] = $class;
-                    $newClasses[] = $namespace . $class;
+                    $newClasses[] = $ns . $class;
                 }
                 return 'class=' . $matches[1] . implode(' ', $newClasses) . $matches[1];
             }, $svg);
             foreach ($ids as $id) {
                 $quotedId = preg_quote($id, '\\');
-                $svg = preg_replace("/#{$quotedId}\b(?!\-)/", "#{$namespace}{$id}", $svg);
+                $svg = preg_replace("/#{$quotedId}\b(?!\-)/", "#{$ns}{$id}", $svg);
             }
             foreach ($classes as $class) {
                 $quotedClass = preg_quote($class, '\\');
-                $svg = preg_replace("/\.{$quotedClass}\b(?!\-)/", ".{$namespace}{$class}", $svg);
+                $svg = preg_replace("/\.{$quotedClass}\b(?!\-)/", ".{$ns}{$class}", $svg);
             }
         }
 
