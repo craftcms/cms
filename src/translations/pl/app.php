@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'Usuń witrynę {site}',
     'Delete…' => 'Usuń...',
     'Deleting stale template caches' => 'Usuwanie buforów przestarzałych szablonów',
-    'Deprecation Errors' => 'Błędy przestarzałości',
+    'Deprecation Warnings' => 'Błędy przestarzałości',
     'Descending' => 'Malejąco',
     'Description' => 'Opis',
     'Deselect All' => 'Odznacz wszystko',

@@ -349,7 +349,7 @@ return [
     'Delete {site}' => '{site} 삭제',
     'Delete…' => '삭제 중...',
     'Deleting stale template caches' => '오래된 템플릿 캐시 삭제',
-    'Deprecation Errors' => '사용 중단 오류',
+    'Deprecation Warnings' => '사용 중단 오류',
     'Descending' => '내림차순',
     'Description' => '설명',
     'Deselect All' => '전체 선택 해제',

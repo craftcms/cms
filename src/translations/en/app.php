@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'Delete {site}',
     'Delete…' => 'Delete…',
     'Deleting stale template caches' => 'Deleting stale template caches',
-    'Deprecation Errors' => 'Deprecation Errors',
+    'Deprecation Warnings' => 'Deprecation Warnings',
     'Descending' => 'Descending',
     'Description' => 'Description',
     'Deselect All' => 'Deselect All',

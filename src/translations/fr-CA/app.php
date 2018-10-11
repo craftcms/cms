@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'Supprimer {site}',
     'Delete…' => 'Supprimer…',
     'Deleting stale template caches' => 'Caches de modèles périmés en cours de suppression',
-    'Deprecation Errors' => 'Erreur de dépréciation',
+    'Deprecation Warnings' => 'Erreur de dépréciation',
     'Descending' => 'Descendant',
     'Description' => 'Description',
     'Deselect All' => 'Tout Désélectionner',

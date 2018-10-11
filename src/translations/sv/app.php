@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'Ta bort {site}',
     'Delete…' => 'Radera...',
     'Deleting stale template caches' => 'Tar bort inaktuella mallars cacheminne',
-    'Deprecation Errors' => 'Utfasningsfel',
+    'Deprecation Warnings' => 'Utfasningsfel',
     'Descending' => 'Fallande',
     'Description' => 'Beskrivning',
     'Deselect All' => 'Avmarkera alla',
