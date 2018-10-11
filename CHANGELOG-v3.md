@@ -28,6 +28,7 @@
 - Fixed an error that occurred if a Quick Post widget contained a Matrix field that had Min Blocks set and only had one block type.
 - Fixed a bug where the Plugin Store was not working properly with Internet Explorer.
 - Fixed a bug where disabled Matrix blocks were getting validated as live. ([#3354](https://github.com/craftcms/cms/issues/3354))
+- Fixed a bug where the `EVENT_AFTER_ACTIVATE_USER` event wasn’t getting triggered on user registration when email verification isn’t required. ([craftcms/commerce-digital-products#18](https://github.com/craftcms/commerce-digital-products/issues/18))
 
 ### Security
 - The `svg()` Twig function no longer sanitizes SVGs or namespaces their IDs or class names by default when a file path (or alias) was passed in. ([#3337](https://github.com/craftcms/cms/issues/3337))

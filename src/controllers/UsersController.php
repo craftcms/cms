@@ -995,9 +995,9 @@ class UsersController extends Controller
         $user->firstName = $request->getBodyParam('firstName', $user->firstName);
         $user->lastName = $request->getBodyParam('lastName', $user->lastName);
 
-        // If email verification is required, then new users will be saved in a pending state,
+        // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
-        if ($isNewUser && $requireEmailVerification) {
+        if ($isNewUser) {
             $user->pending = true;
         }
 
@@ -1060,6 +1060,12 @@ class UsersController extends Controller
             ]);
 
             return null;
+        }
+
+        // If this is a new user and email verification isn't required,
+        // go ahead and activate them now.
+        if ($isNewUser && !$requireEmailVerification) {
+            Craft::$app->getUsers()->activateUser($user);
         }
 
         // Save their preferences too
