@@ -647,7 +647,7 @@ public function defineAdditionalAssetTableAttributes()
 
 Called by
 
-:   <api:Craft\UserAssetType::defineAvailableTableAttributes()>
+:   <api:Craft\UserElementType::defineAvailableTableAttributes()>
 
 Gives plugins a chance to make additional table columns available to user indexes.
 
