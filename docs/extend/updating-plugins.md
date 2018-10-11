@@ -139,7 +139,7 @@ $results = (new Query())
 
 ### Operational Queries
 
-Operational queries can be built from the helper methods on <api:craft\db\Command> (accessed via `Craft::$app->db->createCommand()`), much like the <api:Craft\DbCommand> class in Craft 2.
+Operational queries can be built from the helper methods on <api:craft\db\Command> (accessed via `Craft::$app->db->createCommand()`), much like the [`DbCommand`](https://docs.craftcms.com/api/v2/craft-dbcommand.html) class in Craft 2.
 
 One notable difference is that the helper methods no longer automatically execute the query, so you must chain a call to `execute()`.
 
@@ -183,7 +183,7 @@ $tablePrefix = Craft::$app->config->db->tablePrefix;
 
 ## Files
 
-- <api:Craft\IOHelper> has been replaced with <api:craft\helpers\FileHelper>, which extends Yii’s <api:yii\helpers\BaseFileHelper>.
+- `IOHelper` has been replaced with <api:craft\helpers\FileHelper>, which extends Yii’s <api:yii\helpers\BaseFileHelper>.
 - Directory paths returned by <api:craft\helpers\FileHelper> and <api:craft\services\Path> methods no longer include a trailing slash.
 - File system paths in Craft now use the `DIRECTORY_SEPARATOR` PHP constant (which is set to either `/` or `\` depending on the environment) rather than hard-coded forward slashes (`/`).
 

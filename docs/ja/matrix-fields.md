@@ -118,5 +118,5 @@ for ループ内に記述されたすべてのコードは、 フィールドに
 ### 関連項目
 
 * [エレメントクエリ](dev/element-queries/README.md)
-* <api:craft\models\MatrixBlock>
+* <api:craft\elements\MatrixBlock>
 
