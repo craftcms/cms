@@ -605,7 +605,7 @@ class EntriesController extends BaseEntriesController
         $request = Craft::$app->getRequest();
         $entryId = $request->getRequiredBodyParam('entryId');
         $siteId = $request->getBodyParam('siteId');
-        $entry = $request->getEntryById($entryId, $siteId);
+        $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
 
         if (!$entry) {
             throw new NotFoundHttpException('Entry not found');
