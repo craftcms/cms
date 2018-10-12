@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.27.1 - 2018-10-12
+
+### Fixed
+- Fixed an error that occurred when deleting an entry from the Edit Entry page. ([#3372](https://github.com/craftcms/cms/issues/3372))
+- Fixed an error that could occur when changing a Channel section to Structure. ([#3373](https://github.com/craftcms/cms/issues/3373))
+- Fixed an error that occurred when saving Matrix content from console requests.
+
 ## 3.0.27 - 2018-10-11
 
 ### Added

@@ -888,7 +888,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         // Should we ignore disabled blocks?
         $request = Craft::$app->getRequest();
-        $hideDisabledBlocks = (
+        $hideDisabledBlocks = !$request->getIsConsoleRequest() && (
             $request->getToken() !== null ||
             $request->getIsLivePreview()
         );
