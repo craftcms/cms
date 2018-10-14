@@ -40,10 +40,10 @@ $libPath = dirname(__DIR__).'/lib';
 require $vendorPath.'/yiisoft/yii2/Yii.php';
 require $srcPath.'/Craft.php';
 
-
-if (file_exists($basePath.'/.env')) {
-    (new Dotenv\Dotenv($basePath))->load();
+if (file_exists(__DIR__.'/.env')) {
+    (new Dotenv\Dotenv(__DIR__))->load();
 }
+
 
 // Set aliases
 

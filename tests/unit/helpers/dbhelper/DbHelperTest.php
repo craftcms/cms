@@ -7,6 +7,7 @@ use craft\helpers\Db;
 use craftunit\support\mockclasses\components\Serializable;
 use Codeception\Test\Unit;
 use yii\db\Exception;
+use yii\db\Schema;
 
 /**
  * Unit tests for the DB Helper class.
@@ -390,5 +391,27 @@ class DbHelperTest extends Unit
             [false, 1],
         ];
     }
+
+    /**
+     * @dataProvider textualStorageData
+     * @param $result
+     * @param $input\
+     */
+    public function testGetTextualColumnStorageCapacity($result, $input)
+    {
+        $capacity = Db::getTextualColumnStorageCapacity($input);
+        $this->assertSame($result, $capacity);
+    }
+    public function textualStorageData()
+    {
+        return [
+            [1, Schema::TYPE_CHAR],
+            [255, Schema::TYPE_STRING],
+            [false, Schema::TYPE_MONEY],
+            [false, Schema::TYPE_BOOLEAN],
+        ];
+    }
+
+
 
 }

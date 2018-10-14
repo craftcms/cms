@@ -14,5 +14,4 @@ class TestFixture extends \yii\test\ActiveFixture
 {
     public $modelClass = User::class;
     public $dataFile = __DIR__.'/data/test.php';
-
 }

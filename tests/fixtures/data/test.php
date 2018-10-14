@@ -2,13 +2,13 @@
 
 return [
     'test1' => [
+        'id' => '1',
         'username' => 'craftcms',
         'email' => 'craft@cms.com',
         'admin' => false,
-        'client' => false,
         'locked' => false,
         'suspended' => false,
-        'archived' => false,
+        'pending' => false,
         'passwordResetRequired' => false,
         'dateCreated' => '2018-08-08 20:00:00',
         'dateUpdated' => '2018-08-08 20:00:00',

@@ -71,7 +71,6 @@ class MysqlDbHelperTest extends Unit
     {
         return [
             [null, Schema::TYPE_ENUM],
-            [false, 'enum()']
         ];
     }
 
@@ -97,4 +96,6 @@ class MysqlDbHelperTest extends Unit
             ],
         ];
     }
+
+
 }
