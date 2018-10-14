@@ -99,7 +99,71 @@ class ArrayHelperTest extends \Codeception\Test\Unit
         ];
     }
 
+    /**
+     * @dataProvider firstValueData
+     * @param $result
+     * @param $input
+     */
+    public function testFirstValue($result, $input)
+    {
+        $firstVal = ArrayHelper::firstValue($input);
+        $this->assertSame($result, $firstVal);
+    }
 
+    public function firstValueData()
+    {
+        $std = new \stdClass();
+        $std->a = '22';
+        return [
+            ['test', ['test']],
+            [['test'], [['test']]],
+            [$std, ['key' => $std]]
+        ];
+    }
+
+    /**
+     * @dataProvider withoutData
+     * @param $result
+     * @param $array
+     * @param $key
+     */
+    public function testWithout($result, $array, $key)
+    {
+        $without = ArrayHelper::without($array, $key);
+        $this->assertSame($result, $without);
+    }
+
+    public function withoutData()
+    {
+        return [
+            [[], ['key' => 'value'], 'key'],
+            [['key' => 'value'], ['key' => 'value', 'key2' => 'value2'], 'key2'],
+            [['key' => 'value'], ['key' => 'value'], 'notakey'],
+            [[], ['value'], 0],
+        ];
+    }
+
+    /**
+     * @dataProvider withoutValueData
+     * @param $result
+     * @param $array
+     * @param $key
+     */
+    public function testWithoutValue($result, $array, $value)
+    {
+        $without = ArrayHelper::withoutValue($array, $value);
+        $this->assertSame($result, $without);
+    }
+
+    public function withoutValueData()
+    {
+        return [
+            [[], ['key' => 'value'], 'value'],
+            [['key' => 'value'], ['key' => 'value'], 'notavalue'],
+            [[], ['value'], 'value'],
+            [[], ['key' => 'value', 'key2' => 'value'], 'value'],
+        ];
+    }
 
     public function testFilterbyValue()
     {
