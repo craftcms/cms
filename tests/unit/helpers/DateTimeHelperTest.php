@@ -367,6 +367,8 @@ class DateTimeHelperTest extends Unit
             ['1 year', 'P1Y'],
             ['1 month', 'P1M'],
             ['1 hour', 'PT1H'],
+            ['1 second', 'PT1S'],
+            ['2 months, 1 day, and 1 hour', 'P2M1DT1H'],
             ['1 hour and 1 minute', 'PT1H1M25S', false],
             ['1 hour and 2 minutes', 'PT1H1M55S', false],
             ['less than a minute', 'PT1S', false],

@@ -49,6 +49,11 @@ class ComponentHelperTest extends Unit
     public function successfulComponentCreationData()
     {
         return [
+            'string-to-class-conversion' => [
+                function(){
+                    return Component::createComponent(ComponentExample::class);
+                },
+            ],
           'succesfull-basic' => [
               function(){
                   return Component::createComponent([

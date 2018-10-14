@@ -129,15 +129,16 @@ class ConfigHelperTest extends Unit
 
             // If variable is callable.  Ensure the handle gets passed into the callable.
             ['imahandle', function($handle){  return $handle; }, 'imahandle'],
-            ['imaparam', $exampleModel, null],
-            [reset($exampleModel), $exampleModel, null],
+            ['imaparam', $exampleModel],
+            [reset($exampleModel), $exampleModel],
             ['imnotavalue', ['imnotahandle' => 'imnotavalue', 'anotherkey' => 'anothervalue'], 'imahandle'],
-            ['string', 'string', null],
-            ['', '', null],
-            [123, 123, null],
-            [false, false, null],
-            [true, true, null],
-            [12345678901234567890,12345678901234567890 , null],
+            ['string', 'string'],
+            ['', ''],
+            [null, []],
+            [123, 123],
+            [false, false],
+            [true, true],
+            [12345678901234567890,12345678901234567890 ],
 
         ];
     }
