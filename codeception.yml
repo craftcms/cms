@@ -21,19 +21,19 @@ coverage:
       - src/translations/*
       - src/migration.php.template
 params:
-  - .env
+  - tests/.env
 modules:
   config:
     Yii2:
       configFile: 'tests/_craft/config/test.php'
       entryUrl: 'https://test.craftcms.dev/'
-      entryScript: '/index.php'
+      entryScript: 'index.php'
   enabled:
-   # - Db:
-     #   dsn: "%TEST_DB_DRIVER%:host=127.0.0.1;dbname=%TEST_DB_NAME%"
-       # user: '%TEST_DB_USER%'
-        #password: '%TEST_DB_PASS%'
-        #dump: 'tests/_data/dump.sql'
-        #populate: true
-        #cleanup: true
-        #reconnect: true
+    - Db:
+        dsn: "%TEST_DB_DRIVER%:host=127.0.0.1;dbname=%TEST_DB_NAME%"
+        user: '%TEST_DB_USER%'
+        password: '%TEST_DB_PASS%'
+        dump: 'tests/_data/dump.sql'
+        populate: true
+        cleanup: true
+        reconnect: true
