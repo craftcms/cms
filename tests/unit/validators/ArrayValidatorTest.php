@@ -51,8 +51,11 @@ class ArrayValidatorTest extends Unit
     }
 
     /**
-     * Test that if messages arent provided when creating the array validator, they will be provided automatically.
+     * Test that if messages arent provided when creating the array validator (I.E not setting the $tooMany message),
+     * they will be provided automatically.
+     *
      * @dataProvider paramsToTestOnEmpty
+     *
      * @param ArrayValidator $validator
      * @param $variableName
      */
@@ -104,16 +107,6 @@ class ArrayValidatorTest extends Unit
 
         $this->model->clearErrors();
         $this->model->exampleParam = null;
-        $this->arrayValidator->count = $countValue;
-    }
-
-    /**
-     * TODO: Add a count validation method that validates arrays are within count and if are too big or small they throw an error. .
-     * @param array $input
-     */
-    public function testCountValidation()
-    {
-
     }
 
     public function arrayValidatorValues()
@@ -124,8 +117,24 @@ class ArrayValidatorTest extends Unit
             [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ], true],
             [[[1, 1], [2, 2], [3, 3], 4, 5, 6, 7, 8, 9, 10 ], true],
             ['hello', false],
-            [[1, 2], false]
-
+            [[1, 2], false],
+            [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ], false],
         ];
+    }
+
+    /**
+     * Here we *specifically* test that if we pass in an array which as more than the minimum(4) and less than the maximum(10)
+     * BUT that is more than the count(5) an error will still be thrown.
+     */
+    public function testCountValidation()
+    {
+        $this->model->exampleParam = [1, 2, 3, 4, 5, 6, 7];
+        $result = $this->arrayValidator->validateAttribute($this->model, 'exampleParam');
+
+         $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+        $this->assertSame('aint right', $this->model->getErrors('exampleParam')[0]);
+
+         $this->model->exampleParam = null;
+         $this->model->clearErrors();
     }
 }
