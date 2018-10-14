@@ -4,25 +4,26 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
+use craft\db\mysql\Schema;
 use craft\helpers\Db;
-use yii\db\pgsql\Schema;
 
 /**
- * Unit tests for the DB Helper class where its output may need to be pgsql specific. Will be skipped if db isnt pgsql.
+ * Unit tests for the DB Helper class where its output may need to be mysql specific. Will be skipped if db isnt mysql.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
  */
-class PgsqlDbHelperTest extends Unit
+class MysqlDbHelperTest extends Unit
 {
     /**
      * @var \UnitTester
      */
     protected $tester;
-    public function _before()
+
+    protected function _before()
     {
-        if (!\Craft::$app->getDb()->getIsPgsql()) {
+        if (!\Craft::$app->getDb()->getIsMysql()) {
             $this->markTestSkipped();
         }
     }
@@ -44,11 +45,11 @@ class PgsqlDbHelperTest extends Unit
         $pgsqlSchema = new \craft\db\pgsql\Schema();
         $returnArray = [];
 
-        foreach ($pgsqlSchema->typeMap as $key => $value) {
+        foreach ($mysqlSchema->typeMap as $key => $value) {
             $returnArray[] = [$key, true];
         }
-        foreach ($mysqlSchema->typeMap as $key => $value) {
-            if (!isset($pgsqlSchema->typeMap[$key])) {
+        foreach ($pgsqlSchema->typeMap as $key => $value) {
+            if (!isset($mysqlSchema->typeMap[$key])) {
                 $returnArray[] = [$key, false];
             }
         }
@@ -69,7 +70,8 @@ class PgsqlDbHelperTest extends Unit
     public function textualStorageData()
     {
         return [
-            [null, \craft\db\pgsql\Schema::TYPE_TEXT],
+            [null, Schema::TYPE_ENUM],
+            [false, 'enum()']
         ];
     }
 
@@ -90,14 +92,9 @@ class PgsqlDbHelperTest extends Unit
     {
         return [
             'multi-:empty:-param' => [
-                [
-                    'or',
-                    [ 'not', ['content_table' => null], ],
-                    ['!=', 'content_table', 'field_2']
-                ],
+                [ 'or', [ 'not', ['or',['content_table' => null, ], ['content_table' => '',]]], ['!=', 'content_table', 'field_2']],
                 ['content_table', ':empty:, field_2', '!=']
             ],
         ];
     }
-
 }

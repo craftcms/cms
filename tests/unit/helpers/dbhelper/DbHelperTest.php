@@ -108,10 +108,6 @@ class DbHelperTest extends Unit
                 self::MULTI_PARSEPARAM_NOT,
                 ['content_table', 'field_1, field_2', '!=']
             ],
-            'multi-:empty:-param' => [
-                [ 'or', [ 'not', ['or',['content_table' => null, ], ['content_table' => '',]]], ['!=', 'content_table', 'field_2']],
-                ['content_table', ':empty:, field_2', '!=']
-            ],
             'empty' => [
                 ['or',[
                         'in',
@@ -187,24 +183,26 @@ class DbHelperTest extends Unit
     /**
      * @dataProvider numericCollumnTypesData
      */
-    public function testGetNumericCollumnType($int1, $int2, $result)
+    public function testGetNumericCollumnType($result, $int1, $int2, $decimals = null)
     {
-        $this->assertSame($result, Db::getNumericalColumnType($int1, $int2));
+        $this->assertSame($result, Db::getNumericalColumnType($int1, $int2, $decimals));
     }
 
     public function numericCollumnTypesData()
     {
         return [
-            'smallint1-minus' => [-0, -5, 'smallint(1)'],
-            'smallint1' => [0, 5, 'smallint(1)'],
-            'smallint1-minus-string' => ['-2', '-5', 'smallint(1)'],
-            'smallint1-string' => ['0', '5', 'smallint(1)'],
-            'smallint0' => [0, 0, 'smallint(0)'],
-            'smallint2' => [0, 10, 'smallint(2)'],
-            'smallint3' => [0, 100, 'smallint(3)'],
-            'smallint3-2' => [100, 0, 'smallint(3)'],
-            'smallint7' => [0, 1231224, 'integer(7)'],
-            'smallint9' => [0, 230221224, 'integer(9)'],
+            'smallint1-minus' => ['smallint(1)', -0, -5],
+            'smallint1' => ['smallint(1)', 0, 5],
+            'smallint1-minus-string' => [ 'smallint(1)', '-2', '-5',],
+            'smallint1-string' => ['smallint(1)', '0', '5'],
+            'smallint0' => ['smallint(0)', 0, 0],
+            'smallint2' => ['smallint(2)', 0, 10],
+            'smallint3' => ['smallint(3)', 0, 100],
+            'smallint3-2' => ['smallint(3)', 100, 0],
+            'smallint7' => ['integer(7)', 0, 1231224],
+            'smallint9' => [ 'integer(9)', 0, 230221224],
+            'non-numeric' => ['integer(11)', null, null],
+            'decimals' => ['decimal(6,2)', 123, 1233, 2],
         ];
     }
 
@@ -247,21 +245,23 @@ class DbHelperTest extends Unit
             ['numeric', 'Decimal'],
             ['textual', 'Longtext'],
             ['textual', 'string!@#$%^&*()'],
+            ['!@#$%', '!@#$%']
         ];
     }
+
     /**
-     * @dataProvider deletablesData
+     * // TODO: Set this up with a fixture or a migration so that we can *actually* delete tables
+     * @dataProvider deleteTablesData
      */
     public function testDeleteIfExists($result, string $table, $condition = '', array $params = [])
     {
         $this->assertSame($result, Db::deleteIfExists($table, $condition, $params));
     }
 
-    public function deletablesData()
+    public function deleteTablesData()
     {
-        // TODO: Setup a fixture for this.....
         return [
-            [0, '{{%users}} users', 'users.id = 1234567890 and users.uid = "THISISNOTAUID"']
+            [0, '{{%users}} users', "[[users.id]] = 1234567890 and [[users.uid]] = 'THISISNOTAUID'"]
         ];
     }
 
@@ -270,12 +270,23 @@ class DbHelperTest extends Unit
      */
     public function testDeleteIfExistsException()
     {
-        $this->tester->expectException(Exception::class, function (){
+        $this->tester->expectException(Exception::class, function () {
             Db::deleteIfExists('iamnotatable12345678900987654321');
         });
     }
 
-    public function testValuePrepareForDb()
+    /**
+     * @dataProvider dataForDbPrepare
+     * @param $result
+     * @param $input
+     */
+    public function testValuePrepareForDb($result, $input)
+    {
+        $prepped = Db::prepareValueForDb($input);
+        $this->assertSame($result, $prepped);
+    }
+
+    public function dataForDbPrepare()
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
         $jsonableClass = new \stdClass();
@@ -283,15 +294,24 @@ class DbHelperTest extends Unit
         $serializable = new Serializable();
 
         $excpectedDateTime = new \DateTime('2018-06-06 18:00:00');
-        $excpectedDateTime->setTimezone($this->utcTimezone);
+        $excpectedDateTime->setTimezone(new \DateTimeZone('UTC'));
 
         $dateTime = new \DateTime('2018-06-06 18:00:00');
-        $this->assertSame($excpectedDateTime->format('Y-m-d H:i:s'), Db::prepareValueForDb($dateTime));
-        $this->assertSame( json_encode($jsonableArray), Db::prepareValueForDb($jsonableArray));
-        $this->assertSame('{"name":"name"}', Db::prepareValueForDb($jsonableClass));
-        $this->assertSame('Serialized data', Db::prepareValueForDb($serializable));
+
+        return [
+            [$excpectedDateTime->format('Y-m-d H:i:s'), $dateTime],
+            ['{"name":"name"}', $jsonableClass],
+            ['{"JsonArray":"SomeArray"}', $jsonableArray],
+            ['Serialized data', $serializable],
+            [false, false],
+            // TODO: MB4.
+            ['😀😘', '😀😘']
+        ];
     }
 
+    /**
+     * TODO: Refactor this test to make it slightly clearer.
+     */
     public function testPrepareDateForDb()
     {
         $date = new \DateTime('2018-08-08 20:00:00', $this->utcTimezone);
@@ -317,6 +337,58 @@ class DbHelperTest extends Unit
         $date->setTimezone($this->utcTimezone);
         $this->assertSame($date->format('Y-m-d H:i:s'), $preparedWithTz);
 
-        // TODO: Test that if a \DateTime is passed it its Timezone isnt changed(changed back from utc to what it was when passed in.
+        // Test that an invalid format will return null.
+        $this->assertNull(Db::prepareDateForDb(['date' => '']));
     }
+
+    /**
+     * @dataProvider columnCompatibilityData
+     * @param $result
+     * @param $columnA
+     * @param $columnB
+     */
+    public function testColumnCompatibility($result, $columnA, $columnB)
+    {
+        $areCompatible = Db::areColumnTypesCompatible($columnA, $columnB);
+        $this->assertSame($result, $areCompatible);
+    }
+    public function columnCompatibilityData()
+    {
+        return [
+            [true, 'Tinytext', 'Longtext'],
+            [true, 'Decimal', 'Decimal'],
+            [true, '!@#$%', '!@#$%'],
+            [true, 'string', 'string!@#$%'],
+            [false, 'decimal', 'string'],
+            [false, 'abc', '123'],
+            [false, 'datetime', 'timestamp'],
+        ];
+    }
+
+    /**
+     * TODO: Why do all these fail?
+     * @dataProvider isNumericData
+     * @param $result
+     * @param $input
+     */
+    public function testIsNumericColumnType($result, $input)
+    {
+        $isNumeric = Db::isNumericColumnType($input);
+        $this->assertSame($result, $isNumeric);
+    }
+
+    public function isNumericData()
+    {
+        return [
+            [false, 'integer(1)'],
+            [false, 'decimal'],
+            [false, 'bigint(5)'],
+            [false, 'float'],
+            [false, '[[float]]'],
+            [false, '1234567890!@#$%^&*()'],
+            [false, 'textual'],
+            [false, 1],
+        ];
+    }
+
 }

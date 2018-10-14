@@ -5,6 +5,7 @@ use Craft;
 use craft\db\Query;
 use craft\elements\User;
 use craft\helpers\App;
+use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\mail\Message;
 use craft\web\Application;
