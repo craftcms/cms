@@ -45,7 +45,7 @@ class ElementHelperTest extends Unit
             ['word'.$glue.'Word', 'wordWord'],
             ['word'.$glue.'word', 'word word'],
             ['word', 'word'],
-            ['1234567890', '123456789'],
+            ['123456789', '123456789'],
         ];
     }
 
@@ -58,6 +58,5 @@ class ElementHelperTest extends Unit
         $this->assertSame('word'.$general->slugWordSeparator.'word', ElementHelper::createSlug('word WORD'));
 
         \Craft::$app->getConfig()->getGeneral()->allowUppercaseInSlug = $oldAllow;
-
     }
 }

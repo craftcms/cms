@@ -61,10 +61,6 @@ class UrlHelperTest extends Unit
         }
     }
 
-    protected function _after()
-    {
-    }
-
     const ABSOLUTE_URL = 'http://craftcms.com/';
     const ABSOLUTE_URL_HTTPS = 'https://craftcms.com/';
     const ABSOLUTE_URL_WWW = 'http://www.craftcms.com/';
@@ -247,6 +243,12 @@ class UrlHelperTest extends Unit
     public function stripQueryStringProvider()
     {
         return [
+            'invalid-query-string' => [
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                self::ABSOLUTE_URL_HTTPS_WWW.'&query=string',
+                null,
+                'stripQueryString'
+            ],
             [
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 self::ABSOLUTE_URL_HTTPS_WWW,
@@ -353,6 +355,24 @@ class UrlHelperTest extends Unit
     public function urlWithSchemeProvider()
     {
         return [
+                'no-scheme' => [
+                    'imaurl',
+                    'imaurl',
+                    '',
+                    'urlWithScheme'
+                ],
+                'nothing' => [
+                    '',
+                    '',
+                    '',
+                    'urlWithScheme'
+                ],
+                'protocol-relative' => [
+                    'https://cdn.craftcms.com',
+                    '//cdn.craftcms.com',
+                    'https',
+                    'urlWithScheme'
+                ],
                 'php-replace' => [
                     str_replace('https://', 'php://', self::ABSOLUTE_URL_HTTPS_WWW),
                     self::ABSOLUTE_URL_HTTPS_WWW,
@@ -377,7 +397,7 @@ class UrlHelperTest extends Unit
                     'https',
                     'urlWithScheme'
                 ],
-                'no-chnage-needed' => [
+                'no-change-needed' => [
                      self::ABSOLUTE_URL_HTTPS,
                     self::ABSOLUTE_URL_HTTPS,
                     'https',

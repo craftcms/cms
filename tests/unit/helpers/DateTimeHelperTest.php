@@ -75,9 +75,9 @@ class DateTimeHelperTest extends Unit
     /**
      * @dataProvider secondsToHumanTimeData
      */
-    public function testSecondsToHumanTimeDuration($result, $input)
+    public function testSecondsToHumanTimeDuration($result, $input, $showSeconds = true)
     {
-        $toHuman = DateTimeHelper::secondsToHumanTimeDuration($input);
+        $toHuman = DateTimeHelper::secondsToHumanTimeDuration($input, $showSeconds);
         $this->assertSame($result, $toHuman);
         $this->assertInternalType('string', $toHuman);
     }
@@ -90,6 +90,12 @@ class DateTimeHelperTest extends Unit
             ['2 minutes', 120],
             ['2 minutes, 5 seconds', 125],
             ['2 minutes, 1 second', 121],
+            ['2 minutes', 121, false],
+            ['3 minutes', 179, false],
+            ['1 hour', 3600],
+            ['1 day', 86400],
+            ['1 week', 604800],
+
         ];
     }
     /**
@@ -257,11 +263,16 @@ class DateTimeHelperTest extends Unit
 
             // Crafts toDateTime sets the format as utc. Then converts to system tz unless overridden by variables.
             $dt = new \DateTime('2018-08-09 20:00:00', $utcTz);
+
             $dt->setTimezone($systemTimezone);
 
         return [
             'basic-mysql-format' => [
                 '2018-08-09 20:00:00',
+                $dt,
+            ],
+            'array-format' => [
+                ['date' => '08-09-2018', 'time' => '08:00 PM'],
                 $dt,
             ],
             'array-format' => [
@@ -335,12 +346,31 @@ class DateTimeHelperTest extends Unit
         ];
     }
 
-    public function testHumanIntervalDuration()
-    {
-        $dateTimeInterval = new \DateInterval('P1D');
-        $this->assertSame('1 day', DateTimeHelper::humanDurationFromInterval($dateTimeInterval));
 
-        // TODO: Need more.
+    /**
+     * @dataProvider humanIntervalDurationData
+     * @param $result
+     * @param $inputString
+     *
+     * @throws \Exception
+     */
+    public function testHumanIntervalDuration($result, $inputString, $showSeconds = true)
+    {
+        $fromInterval = DateTimeHelper::humanDurationFromInterval(new \DateInterval($inputString), $showSeconds);
+
+        $this->assertSame($result, $fromInterval);
+    }
+    public function humanIntervalDurationData()
+    {
+        return [
+            ['1 day', 'P1D'],
+            ['1 year', 'P1Y'],
+            ['1 month', 'P1M'],
+            ['1 hour', 'PT1H'],
+            ['1 hour and 1 minute', 'PT1H1M25S', false],
+            ['1 hour and 2 minutes', 'PT1H1M55S', false],
+            ['less than a minute', 'PT1S', false],
+        ];
     }
 
     public function testIsToday()
@@ -439,11 +469,22 @@ class DateTimeHelperTest extends Unit
     {
         $tomorow = new \DateTime('tomorrow');
         $yesterday = new \DateTime('yesterday');
+        $aYearAgo = new \DateTime('2010-08-8 20:00:00');
 
-        $twoDayInterval = new \DateInterval('P2D');
+        $modable = new \DateTime('now');
+        $modable->modify('-2 days');
+
+        $hourAgo = new \DateTime('now');
+        $hourAgo->modify('-1 hour');
 
         return [
-            [true, $yesterday, $twoDayInterval],
+            [true, $yesterday, 2],
+            [true, $yesterday, 'somestring'],
+            [true, $yesterday, ''],
+            [true, $modable->format('Y-m-d H:i:s'), 3],
+            [true, $hourAgo, '4 hours'],
+
+            [false, $aYearAgo, 25],
             [false, $tomorow, 0],
         ];
     }
@@ -539,4 +580,59 @@ class DateTimeHelperTest extends Unit
         ];
     }
 
+    /**
+     * @dataProvider isValidTimestampData
+     * @param $result
+     * @param $input
+     */
+    public function testIsValidTimeStamp($result, $input)
+    {
+        $isValidTimestamp = DateTimeHelper::isValidTimeStamp($input);
+        $this->assertSame($result, $isValidTimestamp);
+        $this->assertInternalType('bool', $isValidTimestamp);
+    }
+    public function isValidTimestampData()
+    {
+        $amsterdamTime = new \DateTime('2018-12-30 20:00:00', new \DateTimeZone('Europe/Amsterdam'));
+        $tokyoTime = new \DateTime('2018-12-30 20:00:00', new \DateTimeZone('Asia/Tokyo'));
+
+        return [
+            [true, $amsterdamTime->getTimestamp()],
+            [true, $tokyoTime->getTimestamp()],
+            [true, '1539520249'],
+            [true, 0000000000],
+            [false, '2018-10-14T21:30:49+09:00'],
+            [false, true],
+            [false, 'string'],
+            [false, null],
+            [false, false],
+        ];
+    }
+
+    /**
+     * @dataProvider isInvalidIntervalString
+     * @param $result
+     * @param $input
+     */
+    public function testIsValidIntervalString($result, $input)
+    {
+        $isValid = DateTimeHelper::isValidIntervalString($input);
+        $this->assertSame($result, $isValid);
+    }
+    public function isInvalidIntervalString()
+    {
+        return [
+            [true, '1 day'],
+            [true, '1 hour'],
+            [true, '1 hour + 1 day'],
+            [true, '1 second'],
+            [true, '1 year'],
+            [true, '1 month'],
+            [true, '1 minutes'],
+
+            [false, ''],
+            [false, 'random string'],
+
+        ];
+    }
 }
