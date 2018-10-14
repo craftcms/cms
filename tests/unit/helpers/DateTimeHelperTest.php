@@ -279,32 +279,60 @@ class DateTimeHelperTest extends Unit
         ];
     }
 
-    public function testNormalizeTimezone()
+    /**
+     * @dataProvider timezoneNormalizeData
+     * @param $result
+     * @param $input
+     */
+    public function testNormalizeTimezone($result, $input)
     {
-        $this->assertSame('America/New_York', DateTimeHelper::normalizeTimeZone('EST'));
-        $this->assertSame('Europe/Berlin', DateTimeHelper::normalizeTimeZone('CET'));
-        $this->assertSame('+09:00', DateTimeHelper::normalizeTimeZone('+0900'));
-        $this->assertSame('-02:00', DateTimeHelper::normalizeTimeZone('-02:00'));
-        $this->assertSame('UTC', DateTimeHelper::normalizeTimeZone('UTC'));
-        $this->assertSame('UTC', DateTimeHelper::normalizeTimeZone('GMT'));
-        $this->assertSame('Europe/Amsterdam', DateTimeHelper::normalizeTimeZone('Europe/Amsterdam'));
-
+        $normalized = DateTimeHelper::normalizeTimeZone($input);
+        $this->assertSame($result, $normalized);
     }
 
-    public function testIso86()
+    public function timezoneNormalizeData()
+    {
+        return [
+            ['America/New_York', 'EST'],
+            ['Europe/Berlin', 'CET'],
+            ['+09:00', '+0900'],
+            ['-02:00', '-02:00'],
+            ['UTC', 'UTC'],
+            ['UTC', 'GMT'],
+            ['Europe/Amsterdam', 'Europe/Amsterdam'],
+            [false, 'NotATz'],
+        ];
+    }
+
+    /**
+     * @dataProvider isIso8601Data
+     * @param $result
+     * @param $input
+     */
+    public function testIso86($result, $input)
+    {
+        $isIso = DateTimeHelper::isIso8601($input);
+        $this->assertSame($result, $isIso);
+    }
+
+    public function isIso8601Data()
     {
         $dateTimeObject = new \DateTime('2018-09-21');
-        // Too easy.
-        $this->assertTrue(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601($dateTimeObject)));
-        $this->assertTrue(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601('2018')));
-        $this->assertTrue(DateTimeHelper::isIso8601(DateTimeHelper::toIso8601('2018-09-09')));
-        $this->assertTrue(DateTimeHelper::isIso8601('2018-09-30T13:41:06+00:00'));
 
-        $this->assertFalse(DateTimeHelper::isIso8601('YYYY-MM-DDTHH:MM:SS+HH:MM'));
-        $this->assertFalse(DateTimeHelper::isIso8601('2008-09-15'));
-        $this->assertFalse(DateTimeHelper::isIso8601('2008-09-15T15:53:00'));
-        $this->assertFalse(DateTimeHelper::isIso8601('Iam not a string'));
-        $this->assertFalse(DateTimeHelper::isIso8601($dateTimeObject));
+        return [
+            [true, DateTimeHelper::toIso8601($dateTimeObject)],
+            [true, DateTimeHelper::toIso8601('2018')],
+            [true, DateTimeHelper::toIso8601('2018-09-09')],
+            [true, '2018-09-30T13:41:06+00:00'],
+
+            [false, 'YYYY-MM-DDTHH:MM:SS+HH:MM'],
+            [false, '2008-09-15'],
+            [false, 'Iam not a string'],
+            [false, $dateTimeObject],
+            [false, false],
+            [false, null],
+
+        ];
     }
 
     public function testHumanIntervalDuration()
@@ -315,14 +343,27 @@ class DateTimeHelperTest extends Unit
         // TODO: Need more.
     }
 
+    public function testIsToday()
+    {
+        $dateTime = new \DateTime('now');
+        $this->assertTrue(DateTimeHelper::isToday($dateTime));
+
+        $dateTime->modify('-1 days');
+        $this->assertFalse(DateTimeHelper::isToday($dateTime));
+
+        $dateTime->modify('-1 days');
+        $this->assertFalse(DateTimeHelper::isToday($dateTime));
+
+        $dateTime->modify('+2 days');
+        $this->assertTrue(DateTimeHelper::isToday($dateTime));
+    }
+
     public function testYesterday()
     {
-        $systemTz = new \DateTimeZone(\Craft::$app->getTimeZone());
         $dateTime = new \DateTime('now');
 
         $dateTime->modify('-1 days');
         $this->assertTrue(DateTimeHelper::isYesterday($dateTime));
-
 
         $dateTime->modify('-1 days');
         $this->assertFalse(DateTimeHelper::isYesterday($dateTime));
@@ -330,7 +371,7 @@ class DateTimeHelperTest extends Unit
         $dateTime->modify('+2 days');
         $this->assertFalse(DateTimeHelper::isYesterday($dateTime));
 
-        $dateTime = new \DateTime('yesterday', $systemTz);
+        $dateTime = new \DateTime('yesterday');
         $this->assertTrue(DateTimeHelper::isYesterday($dateTime));
     }
 
@@ -376,29 +417,126 @@ class DateTimeHelperTest extends Unit
         $this->assertFalse(DateTimeHelper::isInThePast($dateTime));
     }
 
-    public function testSecondsToInterval()
+    public function testIsThisMonth()
     {
-        $interval = DateTimeHelper::secondsToInterval(10);
-        $this->assertSame(10, $interval->s);
-        $this->assertSame(10000, (int)$interval->format('%s%d%h%m'));
+        $dateTime = new \DateTime('now');
+        $this->assertTrue(DateTimeHelper::isThisMonth($dateTime));
 
-        $interval = DateTimeHelper::secondsToInterval(0);
-        $this->assertSame(0, $interval->s);
-        $this->assertSame(0000, (int)$interval->format('%s%d%h%m'));
+        $dateTime->modify('-35 days');
+        $this->assertFalse(DateTimeHelper::isThisMonth($dateTime));
+    }
 
+    /**
+     * @dataProvider withinLastData
+     */
+    public function testIsWithinLast($result, $dateTime, $interval)
+    {
+        $isWthinLast = DateTimeHelper::isWithinLast($dateTime, $interval);
+        $this->assertSame($result, $isWthinLast);
+    }
 
-        $interval = DateTimeHelper::secondsToInterval(928172);
-        $this->assertSame(928172, $interval->s);
-        $this->assertSame(928172000, (int)$interval->format('%s%d%h%m'));
+    public function withinLastData()
+    {
+        $tomorow = new \DateTime('tomorrow');
+        $yesterday = new \DateTime('yesterday');
+
+        $twoDayInterval = new \DateInterval('P2D');
+
+        return [
+            [true, $yesterday, $twoDayInterval],
+            [false, $tomorow, 0],
+        ];
     }
 
 
-    public function testIntervalToSeconds()
+    /**
+     * @dataProvider secondsToIntervalData
+     * @param $result
+     * @param $input
+     * @param $shortFormat
+     * @param $longFormat
+     */
+    public function testSecondsToInterval($shortResult, $longResult, $input)
     {
-        $seconds = DateTimeHelper::intervalToSeconds(new \DateInterval('P1D'));
-        $this->assertSame($seconds, 86400);
-
-        $seconds = DateTimeHelper::intervalToSeconds(new \DateInterval('P1DT1H'));
-        $this->assertSame($seconds, 90000);
+        $interval = DateTimeHelper::secondsToInterval($input);
+        $this->assertSame($shortResult, $interval->s);
+        $this->assertSame($longResult, (int)$interval->format('%s%d%h%m'));
     }
+
+    public function secondsToIntervalData()
+    {
+        return [
+            [10, 10000, 10],
+            [0, 0000, 0],
+            [928172, 928172000, 928172],
+
+        ];
+    }
+
+    /**
+     * @dataProvider intervalToSecondsData
+     * @param $result
+     * @param $period
+     *
+     * @throws \Exception
+     */
+    public function testIntervalToSeconds($result, $period)
+    {
+        $seconds = DateTimeHelper::intervalToSeconds(new \DateInterval($period));
+        $this->assertSame($result, $seconds);
+    }
+    public function intervalToSecondsData()
+    {
+        return [
+            [86400, 'P1D'],
+            [90000, 'P1DT1H']
+        ];
+    }
+
+    /**
+     * @dataProvider toIso8601Data
+     * @param $result
+     * @param $input
+     */
+    public function testToIso8601($result, $input)
+    {
+        $toIso8601 = DateTimeHelper::toIso8601($input);
+        $this->assertSame($result, $toIso8601);
+    }
+
+    /**
+     * @return array
+     */
+    public function toIso8601Data()
+    {
+        $amsterdamTime = new \DateTime('2018-08-08 20:00:00', new \DateTimeZone('Europe/Amsterdam'));
+        $tokyoTime = new \DateTime('2018-08-08 20:00:00', new \DateTimeZone('Asia/Tokyo'));
+
+        return [
+            ['2018-08-08T20:00:00+09:00', $tokyoTime],
+            ['2018-08-08T20:00:00+02:00', $amsterdamTime],
+            'invalid-format-returns-false' => [false, ['date' => '']]
+        ];
+    }
+
+    /**
+     * @dataProvider timezoneAbbreviationData
+     * @param $result
+     * @param $input
+     */
+    public function testTimezoneAbbreviation($result, $input)
+    {
+        $abbreviated = DateTimeHelper::timeZoneAbbreviation($input);
+        $this->assertSame($result, $abbreviated);
+        $this->assertInternalType('string', $abbreviated);
+    }
+    public function timezoneAbbreviationData()
+    {
+        return [
+            ['CEST', 'Europe/Amsterdam'],
+            ['JST', 'Asia/Tokyo'],
+            ['GMT+0900', '+0900'],
+        ];
+    }
+
 }
