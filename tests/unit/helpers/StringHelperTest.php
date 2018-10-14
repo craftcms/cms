@@ -276,6 +276,12 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame('hello😀😁😂iam😀😁😂a2string', StringHelper::delimit('HelloIamA2string', '😀😁😂'));
     }
 
+    public function delimitData()
+    {
+        return [
+
+        ];
+    }
     /**
      * @dataProvider ensureRightData
      * @param $input
@@ -316,6 +322,7 @@ class StringHelperTest extends \Codeception\Test\Unit
 
         $this->assertSame($length, $strLen);
 
+        // Loop through the string and see if any of the characters arent on the list of allowed chars.
         for ($i = 0; $i<$strLen; $i++) {
             if (\mb_strpos($valid, $str[$i]) === false) {
                 $this->fail('Invalid chars');

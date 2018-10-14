@@ -23,20 +23,12 @@ class JsonHelperTest extends \Codeception\TestCase\Test
      */
     protected $tester;
 
-    protected function _before()
-    {
-    }
-
-    protected function _after()
-    {
-    }
-
     /**
      * @dataProvider jsonDecodabledData
      */
-    public function testDecodeIfJson($input, $output)
+    public function testDecodeIfJson($result, $input)
     {
-        $this->assertSame($output, Json::decodeIfJson($input));
+        $this->assertSame($result, Json::decodeIfJson($input));
     }
 
     public function jsonDecodabledData()
@@ -47,8 +39,8 @@ class JsonHelperTest extends \Codeception\TestCase\Test
         ];
         return [
             ['{"test":"test"', '{"test":"test"'],
-            [ json_encode($basicArray), $basicArray],
-            ['', null]
+            [$basicArray, json_encode($basicArray)],
+            [null, '']
         ];
     }
 }

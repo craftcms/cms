@@ -6,11 +6,8 @@
  */
 namespace craftunit\helpers;
 
-use Codeception\Codecept;
 use Craft;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use craft\services\Entries;
 use yii\base\Component;
 
@@ -28,14 +25,6 @@ class AppTest extends \Codeception\Test\Unit
      */
     protected $tester;
 
-    protected function _before()
-    {
-    }
-
-    protected function _after()
-    {
-    }
-
     public function testEditions()
     {
         $this->assertEquals([Craft::Solo, Craft::Pro], App::editions());
@@ -47,16 +36,31 @@ class AppTest extends \Codeception\Test\Unit
         $this->assertEquals('Pro', App::editionName(Craft::Pro));
     }
 
-    public function testIsValidEdition()
+    /**
+     * @dataProvider validEditionsData
+     */
+    public function testIsValidEdition($result, $input)
     {
-        $this->assertTrue(App::isValidEdition('1'));
-        $this->assertFalse(App::isValidEdition(null));
-        $this->assertFalse(App::isValidEdition(false));
-        $this->assertTrue(App::isValidEdition(0));
-        $this->assertFalse(App::isValidEdition(4));
-        $this->assertTrue(App::isValidEdition(1));
-        $this->assertFalse(App::isValidEdition(2));
-        $this->assertFalse(App::isValidEdition(3));
+        $isValid = App::isValidEdition($input);
+        $this->assertSame($result, $isValid);
+        $this->assertInternalType('boolean', $isValid);
+    }
+
+    public function validEditionsData()
+    {
+        return [
+            [true, Craft::Pro],
+            [true, Craft::Solo],
+            [true, '1'],
+            [true, 0],
+            [true, 1],
+            [true, true],
+            [false, null],
+            [false, false],
+            [false, 4],
+            [false, 2],
+            [false, 3],
+        ];
     }
 
     /**
@@ -104,15 +108,28 @@ class AppTest extends \Codeception\Test\Unit
         $this->assertFalse(App::phpConfigValueAsBool('This isnt a config value'));
     }
 
-    public function testClassHumanization()
+    /**
+     * @dataProvider classHumanizationData
+     */
+    public function testClassHumanization($result, $input)
     {
-        $this->assertSame('entries', App::humanizeClass(Entries::class));
+        $humanizedClass = App::humanizeClass($input);
+        $this->assertSame($result, $humanizedClass);
 
-        $this->assertSame( '', App::humanizeClass(''));
-        $this->assertSame('app test', App::humanizeClass(self::class));
-        $this->assertSame('std class', App::humanizeClass(\stdClass::class));
-        $this->assertSame('iam not a  class!@#$%^&*()1234567890', App::humanizeClass('iam not a CLASS!@#$%^&*()1234567890'));
+        // Make sure we dont have any uppercase characters.
+        $this->assertSame(0, preg_match('/[A-Z]/', $humanizedClass));
     }
+
+    public function classHumanizationData()
+    {
+        return [
+            ['entries', Entries::class],
+            ['app test', self::class],
+            ['std class', \stdClass::class],
+            ['iam not a  class!@#$%^&*()1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
+        ];
+    }
+
 
     public function testMaxPowerCaptain(){
         $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -144,6 +161,7 @@ class AppTest extends \Codeception\Test\Unit
 
         $this->assertFalse($this->areKeysMissing($config, $desiredConfig));
 
+        // Make sure we aren't passing in anything unkown or invalid.
         $this->assertTrue(class_exists($config['class']));
 
         // Make sure its a component
@@ -168,14 +186,14 @@ class AppTest extends \Codeception\Test\Unit
         ];
     }
 
-   private function areKeysMissing(array $configArray, array $desiredSchemaArray) : bool
-   {
-       foreach ($desiredSchemaArray as $desiredSchemaItem) {
-           if (!array_key_exists($desiredSchemaItem, $configArray)) {
-               return true;
-           }
-       }
+    private function areKeysMissing(array $configArray, array $desiredSchemaArray) : bool
+    {
+        foreach ($desiredSchemaArray as $desiredSchemaItem) {
+            if (!array_key_exists($desiredSchemaItem, $configArray)) {
+                return true;
+            }
+        }
 
-       return false;
-   }
+        return false;
+    }
 }

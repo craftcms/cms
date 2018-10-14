@@ -36,42 +36,62 @@ class DateTimeHelperTest extends Unit
         $this->asiaTokyoTimezone = new \DateTimeZone('Asia/Tokyo');
     }
 
-    protected function _after()
+    /**
+     * @dataProvider constantsData
+     */
+    public function testContsants($result, $input)
     {
+        $this->assertSame($result, $input);
+        $this->assertInternalType('integer', $input);
     }
 
-    public function testContsants()
+    public function constantsData()
     {
-        $this->assertSame(DateTimeHelper::SECONDS_DAY, 86400);
-        $this->assertSame(DateTimeHelper::SECONDS_HOUR, 3600);
-        $this->assertSame(DateTimeHelper::SECONDS_MINUTE, 60);
-        $this->assertSame(DateTimeHelper::SECONDS_MONTH, 2629740);
-        $this->assertSame(DateTimeHelper::SECONDS_YEAR, 31556874);
+        return [
+            [86400, DateTimeHelper::SECONDS_DAY],
+            [3600, DateTimeHelper::SECONDS_HOUR],
+            [60, DateTimeHelper::SECONDS_MINUTE],
+            [2629740, DateTimeHelper::SECONDS_MONTH],
+            [31556874, DateTimeHelper::SECONDS_YEAR],
+        ];
     }
 
     public function testCurrentUtcDateTime()
     {
-        $this->assertSame(DateTimeHelper::currentUTCDateTime()->format('Y-m-d H:i:s'), (new \DateTime(null, $this->utcTimezone))->format('Y-m-d H:i:s'));
+        $this->assertSame(
+            (new \DateTime(null, $this->utcTimezone))->format('Y-m-d H:i:s'),
+            DateTimeHelper::currentUTCDateTime()->format('Y-m-d H:i:s')
+        );
     }
 
     public function testCurrentUtcDateTimeStamp()
     {
-        $dateTime = new \DateTime(null, $this->utcTimezone);
         $this->assertSame(
             DateTimeHelper::currentTimeStamp(),
-            $dateTime->getTimestamp()
+            (new \DateTime(null, $this->utcTimezone))->getTimestamp()
         );
     }
 
-    public function testSecondsToHumanTimeDuration()
+    /**
+     * @dataProvider secondsToHumanTimeData
+     */
+    public function testSecondsToHumanTimeDuration($result, $input)
     {
-        $this->assertSame(DateTimeHelper::secondsToHumanTimeDuration(22), '22 seconds');
-        $this->assertSame(DateTimeHelper::secondsToHumanTimeDuration(60), '1 minute');
-        $this->assertSame(DateTimeHelper::secondsToHumanTimeDuration(120), '2 minutes');
-        $this->assertSame(DateTimeHelper::secondsToHumanTimeDuration(125), '2 minutes, 5 seconds');
-        $this->assertSame(DateTimeHelper::secondsToHumanTimeDuration(121), '2 minutes, 1 second');
+        $toHuman = DateTimeHelper::secondsToHumanTimeDuration($input);
+        $this->assertSame($result, $toHuman);
+        $this->assertInternalType('string', $toHuman);
     }
 
+    public function secondsToHumanTimeData()
+    {
+        return [
+            ['22 seconds', 22],
+            ['1 second', 1],
+            ['2 minutes', 120],
+            ['2 minutes, 5 seconds', 125],
+            ['2 minutes, 1 second', 121],
+        ];
+    }
     /**
      * An empty array will return an ErrorException
      */
@@ -89,7 +109,7 @@ class DateTimeHelperTest extends Unit
      *
      * ['date' => '2018-08-08', 'timezone' => 'Asia/Tokyo']
      *
-     * toDateTime must start the DateTime from utc instead starting at Asia/Tokyo and then convert it to system.
+     * toDateTime must start the DateTime from Asia/Tokyo instead of UTC(The default starting point) and then convert it to the system timezone.
      *
      * @dataProvider formatsWithTimezone
      *
@@ -149,6 +169,8 @@ class DateTimeHelperTest extends Unit
     }
 
     /**
+     * Test that if we set the $setToSystemTimezone value to false that toDateTime creates a tz in UTC.
+     *
      * @dataProvider simpleDateTimeFormats
      * @param $format
      */
@@ -171,6 +193,8 @@ class DateTimeHelperTest extends Unit
 
 
     /**
+     * Test that dateTime is created with the passed in timezone IF $setSystemTimezone is set to false.
+     *
      *@dataProvider toDateTimeWithTzFormats
      * @param               $format
      * @param \DateTime      $expectedResult
@@ -219,41 +243,38 @@ class DateTimeHelperTest extends Unit
      * @param          $format
      * @param \Closure $expectedResult
      */
-    public function testToDateTimeCreation($format, \Closure $expectedResult)
+    public function testToDateTimeCreation($format, \DateTime $expectedResult)
     {
         $toDateTime = DateTimeHelper::toDateTime($format);
-        $this->assertSame($expectedResult()->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($format)->format('Y-m-d H:i:s'));
+        $this->assertSame($expectedResult->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($format)->format('Y-m-d H:i:s'));
         $this->assertInstanceOf(\DateTime::class, $toDateTime);
     }
 
     public function toDateTimeFormats()
     {
-        $basicDateTimeCreator = function (){
             $systemTimezone = new \DateTimezone(\Craft::$app->getTimeZone());
             $utcTz = new \DateTimeZone('UTC');
 
             // Crafts toDateTime sets the format as utc. Then converts to system tz unless overridden by variables.
             $dt = new \DateTime('2018-08-09 20:00:00', $utcTz);
             $dt->setTimezone($systemTimezone);
-            return $dt;
-        };
 
         return [
             'basic-mysql-format' => [
                 '2018-08-09 20:00:00',
-                $basicDateTimeCreator,
+                $dt,
             ],
             'array-format' => [
                 ['date' => '08-09-2018', 'time' => '08:00 PM'],
-                $basicDateTimeCreator,
+                $dt,
             ],
             'w3c-format' => [
                 '2018-08-09T20:00:00',
-                $basicDateTimeCreator,
+                $dt,
             ],
             'unix-timestamp' => [
                 '1533844800',
-                $basicDateTimeCreator,
+                $dt,
             ],
         ];
     }

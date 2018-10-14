@@ -49,10 +49,13 @@ class ConfigHelperTest extends Unit
             [5120, '5K'],
             [5120, 'ABCDEFHIJFLKNOPQRSTUVWXYZ5K'],
             [5, '5ABCDEFHIJFKLKNOPQRSTUVWXYZ'],
-            [5120, '!@#$%^&*()5K'],
+            [5120, '!@#$%^5K&*()'],
             [4, '4'],
             [5, 5],
             [0, 'M5'],
+            [0, false],
+            [1, true],
+            [0, null],
         ];
     }
 
@@ -77,26 +80,30 @@ class ConfigHelperTest extends Unit
             [1, 1],
             [0, 0],
             [0, false],
-            [0, ''],
             [0, '0'],
         ];
     }
 
-    /**
-     * TODO: Shouldnt these tests all return an InvalidConfigException
-     */
     public function testDurationSecondsException()
     {
+        $this->tester->expectException(
+            InvalidConfigException::class, function () {
+                ConfigHelper::durationInSeconds(true);
+        });
+
         $this->tester->expectException(ErrorException::class, function (){
             ConfigHelper::durationInSeconds(['test' => 'test']);
         });
 
         $this->tester->expectException(ErrorException::class, function (){
-            ConfigHelper::durationInSeconds(new \DateTime('2018-08-08 20:0:00'));
+            $dateTime = new \DateTime('2018-08-08 20:0:00');
+            ConfigHelper::durationInSeconds($dateTime);
         });
 
         $this->tester->expectException(ErrorException::class, function (){
-            ConfigHelper::durationInSeconds(new \stdClass('2018-08-08 20:0:00'));
+            $std = new \stdClass();
+            $std->a = 'a';
+            ConfigHelper::durationInSeconds($std);
         });
     }
 

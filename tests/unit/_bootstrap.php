@@ -5,5 +5,4 @@
 \Codeception\Util\Autoload::addNamespace('', dirname(__DIR__).'/_support/mockclasses/components');
 \Codeception\Util\Autoload::addNamespace('', dirname(__DIR__).'/_support/mockclasses/serializable');
 \Codeception\Util\Autoload::addNamespace('', dirname(__DIR__).'/_support/mockclasses/models');
-
 \Codeception\Util\Autoload::addNamespace('', dirname(__DIR__).'/fixtures');

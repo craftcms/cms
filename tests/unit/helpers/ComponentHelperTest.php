@@ -32,14 +32,6 @@ class ComponentHelperTest extends Unit
      */
     protected $tester;
 
-    protected function _before()
-    {
-    }
-
-    protected function _after()
-    {
-    }
-
     /**
      * Tests wheter the $callback will evaluate to an instance of the componentInterface.
      *

@@ -22,37 +22,43 @@ class ArrayHelperTest extends \Codeception\Test\Unit
      */
     protected $tester;
 
-    protected function _before()
+    /**
+     * @dataProvider toArrayData
+     */
+    public function testToArray($result, $input)
     {
+        $toArray = ArrayHelper::toArray($input);
+        $this->assertSame($result, $toArray);
     }
 
-    protected function _after()
+    /**
+     * TODO: Example with a \stdClass?
+     * @return array
+     */
+    public function toArrayData()
     {
+        return[
+            [[], null], [[1,2,3], [1,2,3]]
+        ];
     }
 
-    public function testToArray()
+    /**
+     * @dataProvider prependOrAppendData
+     */
+    public function testPrependOrAppend($result, $inputArray, $appendable, $preOrAppend)
     {
-        $this->assertEquals([], ArrayHelper::toArray(null));
-        $this->assertEquals([1, 2, 3], ArrayHelper::toArray([1, 2, 3]));
+        ArrayHelper::prependOrAppend($inputArray, $appendable, $preOrAppend);
+        $this->assertSame($result, $inputArray);
     }
 
-    public function testPrependOrAppend()
+    public function prependOrAppendData()
     {
-        $array = [1, 2, 3];
-        ArrayHelper::prependOrAppend($array, 4, false);
-        $this->assertSame([1, 2, 3, 4], $array);
-
-        $array = [1, 2, 3];
-        ArrayHelper::prependOrAppend($array, 4, true);
-        $this->assertSame([4, 1, 2, 3], $array);
-
-        $array = [1, 2, 3];
-        ArrayHelper::prependOrAppend($array, ['22'], false);
-        $this->assertSame([1, 2, 3, ['22']], $array);
-
-        $array = [1, 2, 3];
-        ArrayHelper::prependOrAppend($array, null, false);
-        $this->assertSame([1, 2, 3, null], $array);
+        return [
+            [[1, 2, 3, 4],  [1, 2, 3], 4, false],
+            [[4, 1, 2, 3],  [1, 2, 3], 4, true],
+            [[1, 2, 3, ['22']],  [1, 2, 3], ['22'], false],
+            [[1, 2, 3, null],  [1, 2, 3], null, false],
+        ];
     }
 
     public function testFilterEmptyStringsFromArray()
@@ -68,28 +74,35 @@ class ArrayHelperTest extends \Codeception\Test\Unit
         $this->assertEquals('firstKey', ArrayHelper::firstKey(['firstKey' => 'firstValue', 'secondKey' => 'secondValue']));
     }
 
-    public function testRename()
+    /**
+     * @dataProvider renameDataProvider
+     *
+     * @param      $result
+     * @param      $inputArray
+     * @param      $oldKey
+     * @param      $newKey
+     * @param null $default
+     */
+    public function testArrayRename($result, $inputArray, $oldKey, $newKey, $default = null)
     {
-        $array = ['foo' => 'bar', 'fizz' => 'plop'];
-        ArrayHelper::rename($array, 'foo', 'foo2');
-        $this->assertSame(['fizz' => 'plop', 'foo2' => 'bar'], $array);
-
-        $array = ['foo' => 'bar', 'fizz' => 'plop'];
-        ArrayHelper::rename($array, 'fooX', 'fooY');
-        $this->assertSame(['foo' => 'bar', 'fizz' => 'plop', 'fooY' => null], $array);
-
-        $array = ['foo' => 'bar', 'fizz' => 'plop'];
-        ArrayHelper::rename($array, 'fooX', 'foo');
-        $this->assertSame(['foo' => 'bar', 'fizz' => 'plop'], $array);
-
-        $array = ['foo' => 'bar', 'fizz' => 'plop'];
-        ArrayHelper::rename($array, 'fooX', 'fooY', 'test');
-        $this->assertSame(['foo' => 'bar', 'fizz' => 'plop', 'fooY' => 'test'], $array);
+        ArrayHelper::rename($inputArray, $oldKey, $newKey, $default);
+        $this->assertSame($result, $inputArray);
     }
+
+    public function renameDataProvider()
+    {
+        return [
+            [['fizz' => 'plop', 'foo2' => 'bar'], ['foo' => 'bar', 'fizz' => 'plop'], 'foo', 'foo2'],
+            [['foo' => 'bar', 'fizz' => 'plop', 'fooY' => null], ['foo' => 'bar', 'fizz' => 'plop'], 'fooX', 'fooY'],
+            [['foo' => 'bar', 'fizz' => 'plop'], ['foo' => 'bar', 'fizz' => 'plop'], 'fooX', 'foo'],
+            [['foo' => 'bar', 'fizz' => 'plop', 'fooY' => 'test'], ['foo' => 'bar', 'fizz' => 'plop'], 'fooX', 'fooY', 'test'],
+        ];
+    }
+
+
 
     public function testFilterbyValue()
     {
-        // TODO: Inconsistent coding style
         $array = [
             [
                 'name' => 'array 1',
@@ -111,11 +124,11 @@ class ArrayHelperTest extends \Codeception\Test\Unit
         $this->assertCount(1, $filtered);
         $this->assertSame('the first array', $filtered[0]['description']);
 
-        // Add a new key to the array. that it empty and with an empty value. Make sure that when filtering empty it return everything.
+        // Add a new key to the array that it empty and with an empty value. Make sure that when filtering empty by empty  it returns everything.
         $array[0][''] = '';
         $filtered = ArrayHelper::filterByValue($array, '', '');
         $this->assertCount(count($array), $filtered);
-        $this->assertSame('the first array', $filtered[0]['description']);
+        $this->assertSame($array, $filtered);
 
         // Filter by emojis?
         $array[0]['😀'] = '😘';
