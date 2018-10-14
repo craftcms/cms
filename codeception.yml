@@ -33,7 +33,7 @@ modules:
         dsn: "%TEST_DB_DRIVER%:host=127.0.0.1;dbname=%TEST_DB_NAME%"
         user: '%TEST_DB_USER%'
         password: '%TEST_DB_PASS%'
-        dump: 'tests/_data/dump.sql'
+        dump: 'tests/_data/craft3test.sql'
         populate: true
         cleanup: true
         reconnect: true
