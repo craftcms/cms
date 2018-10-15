@@ -121,4 +121,4 @@ You can get the total number of blocks using the [length filter](https://twig.sy
 ### See Also
 
 * [Element Queries](dev/element-queries/README.md)
-* <api:craft\models\MatrixBlock>
+* <api:craft\elements\MatrixBlock>

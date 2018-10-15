@@ -137,7 +137,7 @@ $results = (new Query())
 
 ### 操作クエリ
 
-操作クエリは、Craft 2 の <api:Craft\DbCommand> クラスと同様に（`Craft::$app->db->createCommand()` 経由でアクセスされる）<api:craft\db\Command> のヘルパーメソッドから構築できます。
+操作クエリは、Craft 2 の [`DbCommand`](https://docs.craftcms.com/api/v2/craft-dbcommand.html) クラスと同様に（`Craft::$app->db->createCommand()` 経由でアクセスされる）<api:craft\db\Command> のヘルパーメソッドから構築できます。
 
 1つの顕著な違いは、ヘルパーメソッドはもはや自動的にクエリを実行しません。そのため、`execute()` の呼び出しを連鎖させる必要があります。
 
@@ -181,7 +181,7 @@ $tablePrefix = Craft::$app->config->db->tablePrefix;
 
 ## ファイル
 
-- <api:Craft\IOHelper> は、Yii の <api:yii\helpers\BaseFileHelper> を拡張する <api:craft\helpers\FileHelper> で置き換えられました。
+- `IOHelper` は、Yii の <api:yii\helpers\BaseFileHelper> を拡張する <api:craft\helpers\FileHelper> で置き換えられました。
 - <api:craft\helpers\FileHelper> および <api:craft\services\Path> メソッドから返されるディレクトリパスには、スラッシュが含まれなくなりました。
 - Craft のファイルシステムパスは、ハードコードされたスラッシュ（`/`）ではなく、（環境に依存して `/` または `\` のどちらかがセットされる）PHP 定数の `DIRECTORY_SEPARATOR` を使用します。
 

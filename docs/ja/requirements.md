@@ -69,7 +69,6 @@ Craft のデータベースに接続するユーザーには、次の特権が�
 
 * `SELECT`
 * `INSERT`
-* `DELETE`
 * `UPDATE`
 * `CREATE`
 * `DELETE`
@@ -85,7 +84,6 @@ Craft のコントロールパネルは、モダンブラウザが必要です�
 * Chrome 29 以降
 * Firefox 28 以降
 * Safari 9.0 以降
-* Internet Explorer 11 以降
 * Microsoft Edge
 
 ### モバイル
