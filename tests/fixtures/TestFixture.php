@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.github.io/license/
+ */
+
 namespace craftunit\fixtures;
 
 use craft\records\User;
