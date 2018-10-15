@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Craft.EntryTypeSwitcher now fires a `beforeTypeChange` event before swapping the Edit Entry form tabs. ([#3375](https://github.com/craftcms/cms/pull/3375))
+- Craft.MatrixInput now fires an `afterInit` event after initialization. ([#3375](https://github.com/craftcms/cms/pull/3375))
+- Craft.MatrixInput now fires an `blockAdded` event after adding a new block. ([#3375](https://github.com/craftcms/cms/pull/3375))
+
 ## 3.0.27.1 - 2018-10-12
 
 ### Fixed
