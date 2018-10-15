@@ -91,7 +91,22 @@ class MysqlDbHelperTest extends Unit
     {
         return [
             'multi-:empty:-param' => [
-                [ 'or', [ 'not', ['or',['content_table' => null, ], ['content_table' => '',]]], ['!=', 'content_table', 'field_2']],
+                [
+                    'or',
+                    [
+                        'not',
+                        [
+                            'or',
+                            ['content_table' => null],
+                            ['content_table' => '']
+                    ],
+                    ],
+                    [
+                        '!=',
+                        'content_table',
+                        'field_2'
+                    ]
+                ],
                 ['content_table', ':empty:, field_2', '!=']
             ],
         ];
