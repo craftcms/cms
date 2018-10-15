@@ -140,16 +140,12 @@ class AppTest extends \Codeception\Test\Unit
 
         $this->assertSame($desiredMemLimit, ini_get('memory_limit'));
         $this->assertSame('0', ini_get('max_execution_time'));
-
-        // Make sure if we set it again all is well.
-        App::maxPowerCaptain();
-        $this->assertSame($desiredMemLimit, ini_get('memory_limit'));
-        $this->assertSame('0', ini_get('max_execution_time'));
     }
 
     public function testLicenseKey()
     {
         $this->assertSame(250, strlen(App::licenseKey()));
+        // TODO: More needed here to test with constant and invalid file path. See coverage report for more info. 
     }
 
     /**

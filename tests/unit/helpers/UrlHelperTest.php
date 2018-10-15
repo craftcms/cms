@@ -274,6 +274,12 @@ class UrlHelperTest extends Unit
     public function urlWithParamsProvider()
     {
         return [
+            'with-fragment' => [
+                self::ABSOLUTE_URL_HTTPS.'?param1=entry1#some-hashtag',
+                self::ABSOLUTE_URL_HTTPS,
+                ['param1' => 'entry1', '#' => 'some-hashtag'],
+                'urlWithParams'
+            ],
             [
                 self::ABSOLUTE_URL_HTTPS.'?param1=entry1',
                 self::ABSOLUTE_URL_HTTPS,
