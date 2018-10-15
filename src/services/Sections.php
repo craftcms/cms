@@ -915,7 +915,7 @@ class Sections extends Component
      * ---
      *
      * ```php
-     * $entryType = Craft::$app->sections->getEntryTypeByHandle('article');
+     * $entryTypes = Craft::$app->sections->getEntryTypesByHandle('article');
      * ```
      *
      * @param string $entryTypeHandle
