@@ -1,9 +1,8 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: Giel Tettelaar PC
- * Date: 9/30/2018
- * Time: 5:18 PM
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craftunit\support\mockclasses\components;
@@ -12,6 +11,13 @@ namespace craftunit\support\mockclasses\components;
 use craft\base\ComponentInterface;
 use yii\base\InvalidConfigException;
 
+/**
+ * Class DependencyHeavyComponent.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since  3.0
+ */
 class DependencyHeavyComponent implements ComponentInterface
 {
     /**
