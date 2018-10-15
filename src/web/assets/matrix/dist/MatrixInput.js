@@ -261,9 +261,7 @@
                 $(bodyHtml).appendTo($fieldsContainer);
 
                 this.trigger('blockAdded', {
-                    data: {
-                        block: $block
-                    }
+                    $block: $block
                 });
 
                 // Animate the block into position
