@@ -1331,7 +1331,7 @@ class Sections extends Component
     private function _populateNewStructure(Section $section, Section $oldSection, array $oldSiteIds)
     {
         if ($oldSection->propagateEntries) {
-            $siteIds = reset($oldSiteIds);
+            $siteIds = [reset($oldSiteIds)];
         } else {
             $siteIds = $oldSiteIds;
         }
