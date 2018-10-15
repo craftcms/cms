@@ -20,6 +20,8 @@
                     this.$spinner.addClass('hidden');
 
                     if (textStatus === 'success') {
+                        this.trigger('beforeTypeChange');
+
                         var $tabs = $('#tabs');
                         if ($tabs.length) {
                             $tabs.replaceWith(response.tabsHtml);
