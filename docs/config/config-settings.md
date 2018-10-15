@@ -1637,8 +1637,11 @@ Whether Craft should run pending queue jobs automatically over HTTP requests.
 This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
 where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won’t work.
 
-If disabled, an alternate queue runner *must* be set up separately.
+If disabled, an alternate queue runner *must* be set up separately.  For example, this Cron command would trigger a task runner once every minute:
 
+```
+*/1 * * * * /usr/bin/curl --silent --compressed http://example.com/index.php?p=actions/queue/run
+```
 
 ### `sanitizeSvgUploads`
 
