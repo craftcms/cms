@@ -217,13 +217,13 @@ class SystemSettingsController extends Controller
         $this->requirePostRequest();
 
         $settings = $this->_createMailSettingsFromPost();
-        $settingsIsValid = $settings->validate();
+        $settingsAreValid = $settings->validate();
 
         /** @var BaseTransportAdapter $adapter */
         $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
         $adapterIsValid = $adapter->validate();
 
-        if (!$settingsIsValid || !$adapterIsValid) {
+        if (!$settingsAreValid || !$adapterIsValid) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save email settings.'));
 
             // Send the settings back to the template
