@@ -17,7 +17,7 @@ use yii\base\Component;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
- * @deprecated in 3.1. Use [[\craft\ProjectConfig]] instead.
+ * @deprecated in 3.1. Use [[\craft\services\ProjectConfig]] instead.
  */
 class SystemSettings extends Component
 {
@@ -37,7 +37,7 @@ class SystemSettings extends Component
      *
      * @param string $category
      * @return array
-     * @deprecated in 3.1. Use [[\craft\ProjectConfig::get()]] instead.
+     * @deprecated in 3.1. Use [[\craft\services\ProjectConfig::get()]] instead.
      */
     public function getSettings(string $category): array
     {
@@ -50,7 +50,7 @@ class SystemSettings extends Component
      * @param string $category
      * @param string $key
      * @return mixed
-     * @deprecated in 3.1. Use [[\craft\ProjectConfig::get()]] instead.
+     * @deprecated in 3.1. Use [[\craft\services\ProjectConfig::get()]] instead.
      */
     public function getSetting(string $category, string $key)
     {
@@ -63,7 +63,7 @@ class SystemSettings extends Component
      * @param string $category
      * @param array|null $settings
      * @return bool Whether the new settings saved
-     * @deprecated in 3.1. Use [[\craft\ProjectConfig::save()]] instead.
+     * @deprecated in 3.1. Use [[\craft\services\ProjectConfig::save()]] instead.
      */
     public function saveSettings(string $category, array $settings = null): bool
     {
@@ -75,7 +75,7 @@ class SystemSettings extends Component
      * Returns the email settings.
      *
      * @return MailSettings
-     * @deprecated in 3.1. Use [[\craft\ProjectConfig::get()]] instead.
+     * @deprecated in 3.1. Use [[\craft\services\ProjectConfig::get()]] instead.
      */
     public function getEmailSettings(): MailSettings
     {
