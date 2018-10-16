@@ -98,6 +98,17 @@ class Install extends Migration
             'transportType' => Sendmail::class
         ]);
         echo " done\n";
+
+        // Save the default user settings
+        echo '    > save the user settings ...';
+        Craft::$app->getProjectConfig()->set('user', [
+            'requireEmailVerification' => true,
+            'allowPublicRegistration' => false,
+            'defaultGroup' => null,
+            'photoVolumeUid' => null,
+            'photoSubpath' => ''
+        ]);
+        echo " done\n";
     }
 
     /**
