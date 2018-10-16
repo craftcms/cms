@@ -14,7 +14,7 @@
 
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
 
-{% set requireEmailVerification = craft.app.systemSettings.getSettings('users').requireEmailVerification %}
+{% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') %}
 
 {% set hiddenInputs %}
     {{ csrfInput() }}

@@ -23,7 +23,7 @@
 
 
 {% if settings is not defined %}
-    {% set settings = craft.app.systemSettings.getSettings('email') %}
+    {% set settings = craft.app.projectConfig.get('email') %}
     {% set freshSettings = true %}
 {% else %}
     {% set freshSettings = false %}
