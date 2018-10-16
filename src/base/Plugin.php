@@ -268,14 +268,14 @@ class Plugin extends Module implements PluginInterface
      * Compares the active edition with the given edition.
      *
      * @param string $edition The edition to compare the active edition against
-     * @param string $operator The comparison operator to use. `>=` by default,
-     * meaning the method will return `true` if the active edition is greater than
-     * or equal to the given edition.
+     * @param string $operator The comparison operator to use. `=` by default,
+     * meaning the method will return `true` if the active edition is equal to
+     * the passed-in edition.
      * @return bool
      * @throws InvalidArgumentException if `$edition` is an unsupported edition,
      * or if `$operator` is an invalid operator.
      */
-    public function is(string $edition, string $operator = '>='): bool
+    public function is(string $edition, string $operator = '='): bool
     {
         $editions = static::editions();
         $activeIndex = array_search($this->edition, $editions, true);
