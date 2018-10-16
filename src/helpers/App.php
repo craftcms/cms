@@ -317,6 +317,17 @@ class App
     }
 
     /**
+     * Returns the system email settings.
+     *
+     * @return MailSettings
+     */
+    public static function mailSettings(): MailSettings
+    {
+        $settings = Craft::$app->getProjectConfig()->get('email') ?? [];
+        return new MailSettings($settings);
+    }
+
+    /**
      * Returns the `mailer` component config.
      *
      * @param MailSettings|null $settings The system mail settings
@@ -325,7 +336,7 @@ class App
     public static function mailerConfig(MailSettings $settings = null): array
     {
         if ($settings === null) {
-            $settings = Craft::$app->getSystemSettings()->getEmailSettings();
+            $settings = static::mailSettings();
         }
 
         try {

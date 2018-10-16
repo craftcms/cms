@@ -25,6 +25,7 @@
 - Added `craft\db\SoftDeleteTrait`, which can be used by Active Record classes that wish to support soft deletes.
 - Added `craft\elements\actions\Restore`, which can be included in elements’ `defineActions()` methods to opt into element restoration.
 - Added `craft\events\ConfigEvent`.
+- Added `craft\helpers\App::mailSettings()`.
 - Added `craft\helpers\Db::idByUid()`.
 - Added `craft\helpers\Db::idsByUids()`.
 - Added `craft\helpers\Db::uidById()`.
@@ -55,5 +56,4 @@
 - Animated gif thumbnails are no longer animated. ([#3110](https://github.com/craftcms/cms/issues/3110))
 
 ### Deprecated
-
 - Deprecated `craft\services\SystemSettings`. `craft\services\ProjectConfig` should be used instead.

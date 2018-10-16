@@ -149,7 +149,7 @@ class SystemSettingsController extends Controller
     public function actionEditEmailSettings(MailSettings $settings = null, TransportAdapterInterface $adapter = null): Response
     {
         if ($settings === null) {
-            $settings = Craft::$app->getSystemSettings()->getEmailSettings();
+            $settings = App::mailSettings();
         }
 
         if ($adapter === null) {

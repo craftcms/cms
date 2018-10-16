@@ -9,6 +9,7 @@ namespace craft\mail;
 
 use Craft;
 use craft\elements\User;
+use craft\helpers\App;
 use craft\helpers\Template;
 use Swift_TransportException;
 use yii\base\InvalidConfigException;
@@ -102,7 +103,7 @@ class Mailer extends \yii\swiftmailer\Mailer
                 Craft::$app->language = $message->language;
             }
 
-            $settings = Craft::$app->getSystemSettings()->getEmailSettings();
+            $settings = App::mailSettings();
             $variables = ($message->variables ?: []) + [
                     'emailKey' => $message->key,
                     'fromEmail' => $settings->fromEmail,

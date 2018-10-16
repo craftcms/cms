@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\helpers\App;
 use craft\models\MailSettings;
 use yii\base\Component;
 
@@ -75,11 +76,10 @@ class SystemSettings extends Component
      * Returns the email settings.
      *
      * @return MailSettings
-     * @deprecated in 3.1. Use [[\craft\services\ProjectConfig::get()]] instead.
+     * @deprecated in 3.1. Use [[\craft\helpers\App::mailSettings()]] instead.
      */
     public function getEmailSettings(): MailSettings
     {
-        $settings = Craft::$app->getProjectConfig()->get('email') ?? [];
-        return new MailSettings($settings);
+        return App::mailSettings();
     }
 }
