@@ -7,6 +7,9 @@
 - Craft.MatrixInput now fires an `afterInit` event after initialization. ([#3375](https://github.com/craftcms/cms/pull/3375))
 - Craft.MatrixInput now fires an `blockAdded` event after adding a new block. ([#3375](https://github.com/craftcms/cms/pull/3375))
 
+### Fixed
+- Fixed an error that could occur when acquiring a lock for a file path, if the `mutex` component was swapped out with `yii\mutex\MysqlMutex`.
+
 ## 3.0.27.1 - 2018-10-12
 
 ### Fixed
