@@ -94,7 +94,7 @@ Make sure your site’s AppPool account has write permissions to these folders/f
 If you used Composer to download Craft, you can probably safely skip this step. 
 :::
 
-Each Craft project should have a unique security key, which is shared between each of the environments that the project in installed on.
+Each Craft project should have a unique security key, which is shared between each of the environments that the project is installed on.
 
 You can generate and assign the key [manually](#set-the-key-manually), or have Craft do it for you with a [terminal command](#set-the-key-from-your-terminal).
 
