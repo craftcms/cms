@@ -1,19 +1,21 @@
 <template>
-	<div>
-		<plugin-search @showResults="showingSearchResults = true" @hideResults="showingSearchResults = false" :plugins="pluginsToRender" :sort.sync="sort"></plugin-search>
+    <div>
+        <plugin-search @showResults="showingSearchResults = true" @hideResults="showingSearchResults = false" :plugins="pluginsToRender" :sort.sync="sort"></plugin-search>
 
-		<plugin-grid v-if="!showingSearchResults" :plugins="pluginsToRender" :columns="columns"></plugin-grid>
-	</div>
+        <plugin-grid v-if="!showingSearchResults" :plugins="pluginsToRender" :columns="columns"></plugin-grid>
+    </div>
 </template>
 
 <script>
     import clone from 'lodash/clone'
+    import PluginGrid from './PluginGrid'
+    import PluginSearch from './PluginSearch'
 
     export default {
 
         components: {
-            PluginGrid: require('./PluginGrid'),
-            PluginSearch: require('./PluginSearch'),
+            PluginGrid,
+            PluginSearch,
         },
 
         props: ['plugins', 'columns'],

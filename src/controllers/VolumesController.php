@@ -121,7 +121,7 @@ class VolumesController extends Controller
         if ($isNewVolume) {
             $title = Craft::t('app', 'Create a new asset volume');
         } else {
-            $title = $volume->name;
+            $title = trim($volume->name) ?: Craft::t('app', 'Edit Volume');
         }
 
         $crumbs = [

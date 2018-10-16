@@ -224,7 +224,7 @@ class FieldsController extends Controller
         ];
 
         if ($fieldId !== null) {
-            $title = $field->name;
+            $title = trim($field->name) ?: Craft::t('app', 'Edit Field');
         } else {
             $title = Craft::t('app', 'Create a new field');
         }

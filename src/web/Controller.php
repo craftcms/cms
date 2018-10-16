@@ -12,6 +12,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use GuzzleHttp\Exception\ClientException;
+use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;

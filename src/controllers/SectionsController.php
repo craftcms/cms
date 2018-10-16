@@ -79,7 +79,7 @@ class SectionsController extends Controller
                 }
             }
 
-            $variables['title'] = $section->name;
+            $variables['title'] = trim($section->name) ?: Craft::t('app', 'Edit Section');
         } else {
             if ($section === null) {
                 $section = new Section();
@@ -290,7 +290,7 @@ class SectionsController extends Controller
                 }
             }
 
-            $title = $entryType->name;
+            $title = trim($entryType->name) ?: Craft::t('app', 'Edit Entry Type');
         } else {
             if ($entryType === null) {
                 $entryType = new EntryType();

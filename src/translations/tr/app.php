@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'Siteyi Sil: {site}',
     'Delete…' => 'Sil...',
     'Deleting stale template caches' => 'Bozuk şablon önbellekleri siliniyor',
-    'Deprecation Errors' => 'Eskime Hataları',
+    'Deprecation Warnings' => 'Eskime Hataları',
     'Descending' => 'Azalan',
     'Description' => 'Açıklama',
     'Deselect All' => 'Hiçbirini Seçme',

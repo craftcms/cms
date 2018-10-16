@@ -24,7 +24,7 @@
 {% if isNewGroup %}
     {% set title = "Create a new user group"|t('app') %}
 {% else %}
-    {% set title = group.name %}
+    {% set title = group.name|trim ?: 'Edit User Group'|t('app') %}
 {% endif %}
 
 

@@ -76,9 +76,16 @@ class AssetTransformsController extends Controller
 
         $this->getView()->registerAssetBundle(EditTransformAsset::class);
 
+        if ($transform->id) {
+            $title = trim($transform->name) ?: Craft::t('app', 'Edit Image Transform');
+        } else {
+            $title = Craft::t('app', 'Create a new image transform');
+        }
+
         return $this->renderTemplate('settings/assets/transforms/_settings', [
             'handle' => $transformHandle,
-            'transform' => $transform
+            'transform' => $transform,
+            'title' => $title,
         ]);
     }
 

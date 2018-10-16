@@ -349,7 +349,7 @@ return [
     'Delete {site}' => '删除{site}',
     'Delete…' => '删除…',
     'Deleting stale template caches' => '正在删除旧的模板缓存',
-    'Deprecation Errors' => '已废弃特性报错',
+    'Deprecation Warnings' => '已废弃特性报错',
     'Descending' => '降序',
     'Description' => '描述',
     'Deselect All' => '取消全选',

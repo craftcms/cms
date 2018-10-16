@@ -18,8 +18,8 @@
                 </tr>
                 <tr class="license-statuses">
                     <td></td>
-                    <td><status-badge :edition="CraftSolo" /></td>
-                    <td><status-badge :edition="CraftPro" /></td>
+                    <td><status-badge :edition="CraftSolo"></status-badge></td>
+                    <td><status-badge :edition="CraftPro"></status-badge></td>
                 </tr>
                 <tr class="price">
                     <th scope="row" class="feature"></th>
@@ -33,8 +33,8 @@
                 </tr>
                 <tr class="buybtns">
                     <td></td>
-                    <td><buy-btn :edition="CraftSolo" edition-handle="solo" /></td>
-                    <td><buy-btn :edition="CraftPro" edition-handle="pro" /></td>
+                    <td><buy-btn :edition="CraftSolo" edition-handle="solo"></buy-btn></td>
+                    <td><buy-btn :edition="CraftPro" edition-handle="pro"></buy-btn></td>
                 </tr>
                 </thead>
                 <tbody>
@@ -92,12 +92,14 @@
 
 <script>
     import {mapState} from 'vuex'
+    import StatusBadge from '../components/upgradecraft/StatusBadge'
+    import BuyBtn from '../components/upgradecraft/BuyBtn'
 
     export default {
 
         components: {
-            StatusBadge: require('../components/upgradecraft/StatusBadge'),
-            BuyBtn: require('../components/upgradecraft/BuyBtn'),
+            StatusBadge,
+            BuyBtn,
         },
 
         computed: {

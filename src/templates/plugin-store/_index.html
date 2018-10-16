@@ -3,125 +3,129 @@
 {% set title = 'Plugin Store'|t('app') %}
 
 {% do view.registerTranslations('app', [
-	"Active installs",
-	"Active Trials",
-	"Add to cart",
-	"Added to cart",
-	"Ascending",
-	"Billing",
-	"Buy later",
-	"Buy now",
-	"Buy now for {price}",
-	"Cart",
-	"Categories",
-	"Changelog",
-	"Checkout",
-	"Cloud Storage Integration",
-	"Community Support (Slack, Stack Exchange)",
-	"Compatibility",
-	"Connect to your Craft ID",
-	"Contact",
-	"Content Modeling",
-	"Continue as guest",
-	"Continue",
-	"Coupon Code",
-	"Descending",
-	"Description",
-	"Developer Support",
-	"Documentation",
-	"Features",
-	"For when you’re building a website for yourself or a friend.",
-	"For when you’re building something professionally for a client or team.",
-	"Free",
-	"Install",
-	"Installed",
-	"Item",
-	"Items in your cart",
-	"Last update",
-	"Last Update",
-	"License",
-	"Loading Plugin Store…",
-	"Manage plugins",
-	"Multi-site Multi-lingual",
-	"Name",
-	"Page not found.",
-	"Pay",
-	"Payment Method",
-	"Plugin Name",
-	"Plugin Store",
-	"Popularity",
-	"Price",
-	"Pro Rate Discount",
-	"Reactivate",
-	"Renewal price",
-	"Screenshots",
-	"Search plugins",
-	"Security & Bug Fixes",
-	"See all",
-	"Staff Picks",
-	"Subtotal",
-	"Support",
-	"System Branding",
-	"Thank You!",
-	"The Plugin Store is not available, please try again later.",
-	"Total",
-	"Try for free",
-	"Try",
-	"Upgrade Craft CMS",
-	"Use your Craft ID",
-	"User Accounts",
-	"Version",
-	"Website",
-	"Your order has been processed successfully.",
-	"{price} plus {renewalPrice}/year for updates",
-	"{price}/year",
+    "Active installs",
+    "Active Trials",
+    "Add to cart",
+    "Added to cart",
+    "Ascending",
+    "Billing",
+    "Buy later",
+    "Buy now",
+    "Buy now for {price}",
+    "Cart",
+    "Categories",
+    "Changelog",
+    "Checkout",
+    "Cloud Storage Integration",
+    "Community Support (Slack, Stack Exchange)",
+    "Compatibility",
+    "Connect to your Craft ID",
+    "Contact",
+    "Content Modeling",
+    "Continue as guest",
+    "Continue",
+    "Coupon Code",
+    "Descending",
+    "Description",
+    "Developer Support",
+    "Documentation",
+    "Features",
+    "For when you’re building a website for yourself or a friend.",
+    "For when you’re building something professionally for a client or team.",
+    "Free",
+    "Install",
+    "Installed",
+    "Item",
+    "Items in your cart",
+    "Last update",
+    "Last Update",
+    "License",
+    "Loading Plugin Store…",
+    "Manage plugins",
+    "Multi-site Multi-lingual",
+    "Name",
+    "Page not found.",
+    "Pay",
+    "Payment Method",
+    "Plugin Name",
+    "Plugin Store",
+    "Popularity",
+    "Price",
+    "Pro Rate Discount",
+    "Reactivate",
+    "Renewal price",
+    "Screenshots",
+    "Search plugins",
+    "Security & Bug Fixes",
+    "See all",
+    "Staff Picks",
+    "Subtotal",
+    "Support",
+    "System Branding",
+    "Thank You!",
+    "The Plugin Store is not available, please try again later.",
+    "Total",
+    "Try for free",
+    "Try",
+    "Upgrade Craft CMS",
+    "Use your Craft ID",
+    "User Accounts",
+    "Version",
+    "Website",
+    "Your order has been processed successfully.",
+    "{price} plus {renewalPrice}/year for updates",
+    "{price}/year",
 ]) %}
 
 {% block actionButton %}
 
-	<div id="pluginstore-actions-spinner" class="spinner hidden"></div>
+    <div id="pluginstore-actions-spinner" class="spinner hidden"></div>
 
-	<div id="pluginstore-actions" class="hidden">
+    <div id="pluginstore-actions" class="hidden">
 
-		<a id="cart-button" role="button" tabindex="0">{{ svg('@app/icons/shopping-cart.svg') }} <span class="badge">0</span></a>
+        <a id="cart-button" role="button" tabindex="0">{{ svg('@app/icons/shopping-cart.svg', namespace=true) }} <span class="badge">0</span></a>
 
-		<a id="craftid-account" class="menubtn hidden"><span class="photo">{{ svg('@app/icons/craftid.svg') }}</span><span class="label">Account</span></a>
+        <a id="craftid-account" class="menubtn hidden"><span class="photo">{{ svg('@app/icons/craftid.svg', namespace=true) }}</span><span class="label">Account</span></a>
 
-		<div class="menu">
-			<ul>
-				<li><a href="{{ craft.cp.craftIdAccountUrl() }}" rel="noopener" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
-				<li>
-					<form method="post" id="disconnect">
-						{{ csrfInput() }}
-						<input type="hidden" name="action" value="plugin-store/disconnect">
-						<a onclick="document.getElementById('disconnect').submit();">{{ "Sign out from Craft ID"|t('app') }}</a>
-					</form>
-				</li>
-			</ul>
-		</div>
+        <div class="menu">
+            <ul>
+                <li><a href="{{ craft.cp.craftIdAccountUrl() }}" rel="noopener" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
+                <li>
+                    <form method="post" id="disconnect">
+                        {{ csrfInput() }}
+                        <input type="hidden" name="action" value="plugin-store/disconnect">
+                        <a onclick="document.getElementById('disconnect').submit();">{{ "Sign out from Craft ID"|t('app') }}</a>
+                    </form>
+                </li>
+            </ul>
+        </div>
 
-		<form id="craftid-connect-form" method="post">
-			{{ csrfInput() }}
-			<input type="hidden" name="action" value="plugin-store/connect">
-			<div class="ssl-status light" title="{{ craft.app.request.isSecureConnection ? "Your connection is secure"|t('app') : "Your connection is insecure"|t('app') }}">
-				<i class="{{ craft.app.request.isSecureConnection ? "secure" : "insecure" }} icon"></i>
-			</div>
-			<a onclick="document.getElementById('craftid-connect-form').submit();">{{ 'Sign into Craft ID'|t('app') }}</a>
-		</form>
-	</div>
+        <form id="craftid-connect-form" method="post">
+            {{ csrfInput() }}
+            <input type="hidden" name="action" value="plugin-store/connect">
+            <div class="ssl-status light" title="{{ craft.app.request.isSecureConnection ? "Your connection is secure"|t('app') : "Your connection is insecure"|t('app') }}">
+                <i class="{{ craft.app.request.isSecureConnection ? "secure" : "insecure" }} icon"></i>
+            </div>
+            <a onclick="document.getElementById('craftid-connect-form').submit();">{{ 'Sign into Craft ID'|t('app') }}</a>
+        </form>
+    </div>
 
 {% endblock %}
 
 {% set content %}
 
-	<template v-if="pluginStoreDataLoaded && !pluginStoreDataError">
-		<router-view></router-view>
-	</template>
+    <template v-if="supportsES6">
+        <template v-if="pluginStoreDataLoaded && !pluginStoreDataError">
+            <router-view></router-view>
+        </template>
+        <template v-else>
+            <status-message :error="pluginStoreDataError" :message="statusMessage"></status-message>
+        </template>
 
-	<template v-else>
-		<status-message :error="pluginStoreDataError" :message="statusMessage" />
-	</template>
-
-	<modal :show.sync="showModal" :plugin-id="pluginId" />
+        <modal :show.sync="showModal" :plugin-id="pluginId"></modal>
+    </template>
+    <template v-else>
+        <p>{{ 'The Plugin Store requires a modern browser with ES6 support.' }}</p>
+    </template>
 
 {% endset %}

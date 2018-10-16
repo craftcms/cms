@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'Odstrániť {site}',
     'Delete…' => 'Zmazať...',
     'Deleting stale template caches' => 'Odstraňovanie zastaraného cache šablón',
-    'Deprecation Errors' => 'Deprecation Chyby',
+    'Deprecation Warnings' => 'Deprecation Chyby',
     'Descending' => 'Zostupne',
     'Description' => 'Popis',
     'Deselect All' => 'Zrušiť výber',

@@ -206,78 +206,95 @@ only screen and (min-resolution: 1.5dppx) {
   }
 }
 
+
 /* Grids */
 
 .ps-grid-wrapper {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-gap: 40px;
-}
+  display: flex;
 
-.ps-grid-wrapper.has-sidebar {
-  grid-template-columns: 1fr 4fr;
+  .ps-grid-sidebar {
+    width: 20%;
+    margin-right: 40px;
+  }
+
+  .ps-grid-main {
+    flex: 1;
+  }
 }
 
 .ps-grid-plugins {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-auto-rows: 1fr;
-  grid-gap: 20px;
-  color: #444;
-  margin-bottom: 20px;
-}
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  margin: 0 -10px;
 
-.ps-grid-plugins-4 {
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-}
+  .ps-grid-box {
+    box-sizing: border-box;
+    width: 33.3333333333%;
+    margin-bottom: 20px;
 
-.ps-grid-box {
-  background-color: #fff;
-  overflow: hidden;
+    .plugin-card {
+      margin: 0 10px;
+
+      .plugin-icon {
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  &.ps-grid-plugins-4 {
+    .ps-grid-box {
+      width: 25%;
+    }
+  }
 }
 
 @media only screen and (max-width: $minFullUiWidth - 1px) {
-  .ps-grid-plugins-4 {
-    grid-template-columns: 1fr 1fr 1fr;
+  .psd-grid-box {
+    &.ps-grid-plugins-4 {
+      .ps-grid-box {
+        width: 33.3333333333%;
+      }
+    }
   }
 }
 
 @media only screen and (min-width: $minLargeScreenWidth) {
   .ps-grid-plugins {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-  }
+    .ps-grid-box {
+      width: 25%;
+    }
 
-  .ps-grid-plugins-4 {
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    &.ps-grid-plugins-4 {
+      .ps-grid-box {
+        width: 20%;
+      }
+    }
   }
 }
 
-// Rearrange #main-content to flow vertically at < 999
 @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
   .ps-grid-wrapper.has-sidebar {
-    grid-template-columns: 1fr;
+    .ps-grid-box {
+      width: 100%;
+    }
   }
+
   .ps-grid-plugins {
-    grid-template-columns: 1fr 1fr;
-  }
-  .ps-grid-plugins-4 {
-    grid-template-columns: 1fr 1fr;
+    .ps-grid-box {
+      width: 50%;
+    }
   }
 }
 
 @media only screen and (max-width: 673px) {
   .ps-grid-plugins {
-    grid-gap: 10px;
-  }
-
-  .ps-grid-plugins {
-    grid-template-columns: 1fr;
-  }
-  .ps-grid-plugins-4 {
-    grid-template-columns: 1fr;
+    .ps-grid-box {
+      width: 100%;
+    }
   }
 }
+
 
 /* Categories */
 

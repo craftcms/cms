@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'A(z) {site} törlése',
     'Delete…' => 'Törlés...',
     'Deleting stale template caches' => 'Nem használt gyorsítótár sablonok törlése.',
-    'Deprecation Errors' => 'Elavulási hibák',
+    'Deprecation Warnings' => 'Elavulási hibák',
     'Descending' => 'Csökkenő',
     'Description' => 'Leírás',
     'Deselect All' => 'Minden kiválasztás visszavonása',

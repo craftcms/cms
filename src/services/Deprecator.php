@@ -34,7 +34,7 @@ class Deprecator extends Component
      * @var string|false Whether deprecation errors should be logged in the database ('db'),
      * error logs ('logs'), or not at all (false).
      *
-     * Changing this will prevent deprecation errors from showing up in the "Deprecation Errors" utility
+     * Changing this will prevent deprecation errors from showing up in the "Deprecation Warnings" utility
      * or in the "Deprecated" panel in the Debug Toolbar.
      */
     public $logTarget = 'db';

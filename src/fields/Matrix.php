@@ -496,7 +496,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $block = new MatrixBlock();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;
-                $block->siteId = $element->siteId;
+                $block->siteId = $element->siteId ?? Craft::$app->getSites()->getCurrentSite()->id;
                 $value[] = $block;
             }
         }
@@ -553,7 +553,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         foreach ($value->all() as $i => $block) {
             /** @var MatrixBlock $block */
-            if ($element->getScenario() === Element::SCENARIO_LIVE) {
+            if ($block->enabled && $element->getScenario() === Element::SCENARIO_LIVE) {
                 $block->setScenario(Element::SCENARIO_LIVE);
             }
 
@@ -917,7 +917,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         // Should we ignore disabled blocks?
         $request = Craft::$app->getRequest();
-        $hideDisabledBlocks = (
+        $hideDisabledBlocks = !$request->getIsConsoleRequest() && (
             $request->getToken() !== null ||
             $request->getIsLivePreview()
         );

@@ -1012,7 +1012,7 @@ class Sections extends Component
      * ---
      *
      * ```php
-     * $entryType = Craft::$app->sections->getEntryTypeByHandle('article');
+     * $entryTypes = Craft::$app->sections->getEntryTypesByHandle('article');
      * ```
      *
      * @param string $entryTypeHandle
@@ -1518,7 +1518,7 @@ class Sections extends Component
     private function _populateNewStructure(SectionRecord $sectionRecord, SectionRecord $oldSectionRecord, array $oldSiteIds)
     {
         if ($oldSectionRecord->propagateEntries) {
-            $siteIds = reset($oldSiteIds);
+            $siteIds = [reset($oldSiteIds)];
         } else {
             $siteIds = $oldSiteIds;
         }
