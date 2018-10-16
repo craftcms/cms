@@ -414,14 +414,14 @@ class Users extends Component
         }
 
         $volumes = Craft::$app->getVolumes();
-        $volumeUid = Craft::$app->getSystemSettings()->getSetting('users', 'photoVolumeUid');
+        $volumeUid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
 
         if (!$volumeUid || ($volume = $volumes->getVolumeByUid($volumeUid)) === null) {
             throw new VolumeException(Craft::t('app',
                 'The volume set for user photo storage is not valid.'));
         }
 
-        $subpath = (string)Craft::$app->getSystemSettings()->getSetting('users', 'photoSubpath');
+        $subpath = (string)Craft::$app->getProjectConfig()->get('users.photoSubpath');
 
         if ($subpath) {
             try {
@@ -973,7 +973,7 @@ class Users extends Component
     public function assignUserToDefaultGroup(User $user): bool
     {
         // Make sure there's a default group
-        $defaultGroupId = Craft::$app->getSystemSettings()->getSetting('users', 'defaultGroup');
+        $defaultGroupId = Craft::$app->getProjectConfig()->get('users.defaultGroup');
 
         if (!$defaultGroupId) {
             return false;

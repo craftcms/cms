@@ -42,8 +42,8 @@ class SystemSettings
      */
     public function __get(string $category): array
     {
-        Craft::$app->getDeprecator()->log('craft.systemSettings.[category]', 'craft.systemSettings.[category] has been deprecated. Use craft.app.systemSettings.getSettings(\'category\') instead.');
+        Craft::$app->getDeprecator()->log('craft.systemSettings.[category]', 'craft.systemSettings.[category] has been deprecated. Use craft.app.projectConfig.get(\'category\') instead.');
 
-        return Craft::$app->getSystemSettings()->getSettings($category);
+        return Craft::$app->getProjectConfig()->get($category) ?? [];
     }
 }

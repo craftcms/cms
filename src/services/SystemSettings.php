@@ -79,8 +79,7 @@ class SystemSettings extends Component
      */
     public function getEmailSettings(): MailSettings
     {
-        $settings = $this->getSettings('email');
-
+        $settings = Craft::$app->getProjectConfig()->get('email') ?? [];
         return new MailSettings($settings);
     }
 }

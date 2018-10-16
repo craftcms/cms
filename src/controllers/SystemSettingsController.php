@@ -235,9 +235,9 @@ class SystemSettingsController extends Controller
             return null;
         }
 
-        Craft::$app->getSystemSettings()->saveSettings('email', $settings->toArray());
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
+        Craft::$app->getProjectConfig()->set('email', $settings->toArray());
 
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
         return $this->redirectToPostedUrl();
     }
 

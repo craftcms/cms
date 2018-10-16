@@ -92,7 +92,7 @@ class Install extends Migration
 
         // Save the default email settings
         echo '    > save the email settings ...';
-        Craft::$app->getSystemSettings()->saveSettings('email', [
+        Craft::$app->getProjectConfig()->set('email', [
             'fromEmail' => $this->email,
             'fromName' => $this->site->name,
             'transportType' => Sendmail::class

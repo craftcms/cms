@@ -124,8 +124,8 @@ class UserSettingsController extends Controller
     public function actionSaveUserSettings()
     {
         $this->requirePostRequest();
-        $systemSettingsService = Craft::$app->getSystemSettings();
-        $settings = $systemSettingsService->getSettings('users');
+        $projectConfig = Craft::$app->getProjectConfig();
+        $settings = $projectConfig->get('users') ?? [];
 
         $settings['photoVolumeUid'] = Craft::$app->getRequest()->getBodyParam('photoVolumeUid');
         $settings['photoSubpath'] = Craft::$app->getRequest()->getBodyParam('photoSubpath');
@@ -136,19 +136,9 @@ class UserSettingsController extends Controller
             $settings['defaultGroup'] = Craft::$app->getRequest()->getBodyParam('defaultGroup');
         }
 
-        if (!$systemSettingsService->saveSettings('users', $settings)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user settings.'));
-
-            // Send the settings back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'settings' => $settings
-            ]);
-
-            return null;
-        }
+        $projectConfig->set('users', $settings);
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
-
         return $this->redirectToPostedUrl();
     }
 }
