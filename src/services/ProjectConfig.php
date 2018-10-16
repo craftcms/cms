@@ -1051,7 +1051,7 @@ class ProjectConfig extends Component
             if (!isset($data[$nextSegment])) {
                 // If the path doesn't exist, it's fine if we wanted to delete or read
                 if ($delete || $value === null) {
-                    return;
+                    return null;
                 }
 
                 $data[$nextSegment] = [];
