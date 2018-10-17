@@ -471,7 +471,8 @@ class Plugins extends Component
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
         try {
             $info = [
                 'handle' => $handle,
@@ -480,18 +481,25 @@ class Plugins extends Component
                 'installDate' => Db::prepareDateForDb(new \DateTime()),
             ];
 
-            Craft::$app->getDb()->createCommand()
+            $db->createCommand()
                 ->insert('{{%plugins}}', $info)
                 ->execute();
 
-
             $info['installDate'] = DateTimeHelper::toDateTime($info['installDate']);
-            $info['id'] = Craft::$app->getDb()->getLastInsertID('{{%plugins}}');
+            $info['id'] = $db->getLastInsertID('{{%plugins}}');
 
             $this->_setPluginMigrator($plugin, $info['id']);
 
             if ($plugin->install() === false) {
                 $transaction->rollBack();
+
+                if ($db->getIsMysql()) {
+                    // Explicitly remove the plugins row just in case the transaction was implicitly committed
+                    $db->createCommand()
+                        ->delete('{{%plugins}}', ['handle' => $handle])
+                        ->execute();
+                }
+
                 return false;
             }
 
