@@ -55,9 +55,7 @@ class Plugin extends Module implements PluginInterface
     // =========================================================================
 
     /**
-     * Returns supported plugin editions (lowest to highest).
-     *
-     * @return string[]
+     * @inheritdoc
      */
     public static function editions(): array
     {

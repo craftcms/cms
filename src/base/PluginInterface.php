@@ -19,6 +19,16 @@ use craft\web\twig\variables\Cp;
  */
 interface PluginInterface
 {
+    // Static
+    // =========================================================================
+
+    /**
+     * Returns supported plugin editions (lowest to highest).
+     *
+     * @return string[]
+     */
+    public static function editions(): array;
+
     // Public Methods
     // =========================================================================
 
