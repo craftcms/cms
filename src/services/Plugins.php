@@ -486,18 +486,19 @@ class Plugins extends Component
 
             $this->_setPluginMigrator($plugin, $info['id']);
 
-            Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', true);
+            Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle, [
+                'enabled' => true,
+                'schemaVersion' => $plugin->schemaVersion,
+            ]);
 
             if ($plugin->install() === false) {
                 $transaction->rollBack();
-
                 return false;
             }
 
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
 
