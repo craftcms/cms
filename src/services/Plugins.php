@@ -202,6 +202,7 @@ class Plugins extends Component
             }
 
             // Clean up the row data
+            $row['edition'] = $configData['edition'] ?? null;
             $row['settings'] = $configData['settings'] ?? [];
             $row['licenseKey'] = $configData['licenseKey'] ?? null;
             $row['enabled'] = true;
@@ -445,11 +446,12 @@ class Plugins extends Component
      * Installs a plugin by its handle.
      *
      * @param string $handle The plugin’s handle
+     * @param string|null $edition The plugin’s edition
      * @return bool Whether the plugin was installed successfully.
      * @throws InvalidPluginException if the plugin doesn’t exist
      * @throws \Throwable if reasons
      */
-    public function installPlugin(string $handle): bool
+    public function installPlugin(string $handle, string $edition = null): bool
     {
         $this->loadPlugins();
 
@@ -463,6 +465,17 @@ class Plugins extends Component
 
         /** @var Plugin $plugin */
         $plugin = $this->createPlugin($handle);
+
+        // Set the edition
+        if ($edition === null) {
+            // See if one is already set in the project config
+            $edition = $projectConfig->get($configKey . '.edition');
+        }
+        $editions = $plugin::editions();
+        if ($edition === null || !in_array($edition, $editions, true)) {
+            $edition = reset($editions);
+        }
+        $plugin->edition = $edition;
 
         // Fire a 'beforeInstallPlugin' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_INSTALL_PLUGIN)) {
@@ -510,6 +523,7 @@ class Plugins extends Component
         }
 
         // Add the plugin to the project config
+        $projectConfig->set($configKey . '.edition', $edition);
         $projectConfig->set($configKey . '.enabled', true);
         $projectConfig->set($configKey . '.schemaVersion', $plugin->schemaVersion);
 
@@ -793,6 +807,7 @@ class Plugins extends Component
             unset($config['aliases']);
         }
 
+        /** @var string|PluginInterface $class */
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
@@ -803,6 +818,13 @@ class Plugins extends Component
         // Is it installed?
         if ($info !== null) {
             $config['isInstalled'] = true;
+
+            // Set the edition
+            $config['edition'] = $info['edition'] ?? 'standard';
+            $editions = $class::editions();
+            if (!in_array($config['edition'], $editions, true)) {
+                $config['edition'] = reset($editions);
+            }
 
             $settings = array_merge(
                 $info['settings'] ?? [],
