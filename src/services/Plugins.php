@@ -492,6 +492,14 @@ class Plugins extends Component
 
             if ($plugin->install() === false) {
                 $transaction->rollBack();
+
+                if ($db->getIsMysql()) {
+                    // Explicitly remove the plugins row just in case the transaction was implicitly committed
+                    $db->createCommand()
+                        ->delete('{{%plugins}}', ['handle' => $handle])
+                        ->execute();
+                }
+
                 return false;
             }
 
