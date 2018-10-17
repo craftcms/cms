@@ -68,7 +68,14 @@ class App
      */
     public static function editionName(int $edition): string
     {
-        return ($edition == Craft::Pro) ? 'Pro' : 'Solo';
+        switch ($edition) {
+            case Craft::Solo:
+                return 'Solo';
+            case Craft::Pro:
+                return 'Pro';
+            default:
+                throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition);
+        }
     }
 
     /**
