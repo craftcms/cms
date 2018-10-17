@@ -380,6 +380,7 @@ class Plugins extends Component
             ]));
         }
 
+        // Enable the plugin in the project config
         Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', true);
 
         $this->_enabledPluginInfo[$handle] = $info;
@@ -424,8 +425,8 @@ class Plugins extends Component
             ]));
         }
 
+        // Disable the plugin in the project config
         Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.enabled', false);
-
 
         unset($this->_enabledPluginInfo[$handle]);
         $this->_unregisterPlugin($plugin);
@@ -486,11 +487,6 @@ class Plugins extends Component
 
             $this->_setPluginMigrator($plugin, $info['id']);
 
-            Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle, [
-                'enabled' => true,
-                'schemaVersion' => $plugin->schemaVersion,
-            ]);
-
             if ($plugin->install() === false) {
                 $transaction->rollBack();
                 return false;
@@ -501,6 +497,12 @@ class Plugins extends Component
             $transaction->rollBack();
             throw $e;
         }
+
+        // Add the plugin to the project config
+        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle, [
+            'enabled' => true,
+            'schemaVersion' => $plugin->schemaVersion,
+        ]);
 
         $this->_enabledPluginInfo[$handle] = $info;
         $this->_registerPlugin($plugin);
@@ -565,14 +567,15 @@ class Plugins extends Component
                 ->delete('{{%plugins}}', ['id' => $id])
                 ->execute();
 
-            Craft::$app->getProjectConfig()->remove(self::CONFIG_PLUGINS_KEY . '.' . $handle);
-
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        // Remove the plugin from the project config
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_PLUGINS_KEY . '.' . $handle);
 
         $this->_unregisterPlugin($plugin);
         unset($this->_enabledPluginInfo[$handle]);
@@ -616,6 +619,7 @@ class Plugins extends Component
             return false;
         }
 
+        // Update the plugin's settings in the project config
         Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.settings', $plugin->getSettings()->toArray());
 
         $plugin->afterSaveSettings();
@@ -997,6 +1001,7 @@ class Plugins extends Component
             $normalizedLicenseKey = null;
         }
 
+        // Set the plugin's license key in the project config
         Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.licenseKey', $normalizedLicenseKey);
 
         // Update our cache of it
