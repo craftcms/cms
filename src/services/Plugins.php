@@ -471,7 +471,8 @@ class Plugins extends Component
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
         try {
             $info = [
                 'handle' => $handle,
@@ -480,13 +481,12 @@ class Plugins extends Component
                 'installDate' => Db::prepareDateForDb(new \DateTime()),
             ];
 
-            Craft::$app->getDb()->createCommand()
+            $db->createCommand()
                 ->insert('{{%plugins}}', $info)
                 ->execute();
 
-
             $info['installDate'] = DateTimeHelper::toDateTime($info['installDate']);
-            $info['id'] = Craft::$app->getDb()->getLastInsertID('{{%plugins}}');
+            $info['id'] = $db->getLastInsertID('{{%plugins}}');
 
             $this->_setPluginMigrator($plugin, $info['id']);
 
