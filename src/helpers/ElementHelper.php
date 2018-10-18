@@ -165,27 +165,29 @@ class ElementHelper
     {
         /** @var Element $element */
         $query = (new Query())
-            ->from(['{{%elements_sites}}'])
+            ->from(['{{%elements_sites}} elements_sites'])
+            ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
-                'siteId' => $element->siteId,
+                'elements_sites.siteId' => $element->siteId,
+                'elements.dateDeleted' => null,
             ]);
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query->andWhere([
-                'uri' => $testUri,
+                'elements_sites.uri' => $testUri,
             ]);
         } else {
             // Postgres is case-sensitive
             $query->andWhere([
-                'lower([[uri]])' => mb_strtolower($testUri),
+                'lower([[elements_sites.uri]])' => mb_strtolower($testUri),
             ]);
         }
 
         if ($element->id) {
-            $query->andWhere(['not', ['elementId' => $element->id]]);
+            $query->andWhere(['not', ['elements.id' => $element->id]]);
         }
 
-        return (int)$query->count('[[id]]') === 0;
+        return (int)$query->count() === 0;
     }
 
     /**

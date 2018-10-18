@@ -101,7 +101,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read bool $isInitialized Whether Craft is fully initialized
  * @property-read bool $isInMaintenanceMode Whether someone is currently performing a system update
  * @property-read bool $isMultiSite Whether this site has multiple sites
- * @property-read bool $isSystemOn Whether the front end is accepting HTTP requests
+ * @property-read bool $isSystemLive Whether the system is live
  * @property-read Connection $db The database connection component
  * @property-read Formatter $formatter The formatter component
  * @property-read I18N $i18n The internationalization (i18n) component
@@ -167,12 +167,6 @@ trait ApplicationTrait
      * @var bool
      */
     private $_gettingLanguage = false;
-
-    /**
-     * @var string|null The stored version
-     * @todo Remove this after the next breakpoint
-     */
-    private $_storedVersion;
 
     // Public Methods
     // =========================================================================
@@ -291,7 +285,8 @@ trait ApplicationTrait
     public function getEdition(): int
     {
         /** @var WebApplication|ConsoleApplication $this */
-        return (int)$this->getInfo()->edition;
+        $handle = $this->getProjectConfig()->get('system.edition') ?? 'solo';
+        return App::editionIdByHandle($handle);
     }
 
     /**
@@ -361,13 +356,8 @@ trait ApplicationTrait
     public function setEdition(int $edition): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        $info = $this->getInfo();
-        $oldEdition = $info->edition;
-        $info->edition = $edition;
-
-        if (!$this->saveInfo($info)) {
-            return false;
-        }
+        $oldEdition = $this->getEdition();
+        $this->getProjectConfig()->set('system.edition', App::editionHandle($edition));
 
         // Fire an 'afterEditionChange' event
         if (!$this->getRequest()->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
@@ -448,18 +438,30 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns whether the front end is accepting HTTP requests.
+     * Returns whether the system is currently live.
      *
      * @return bool
+     */
+    public function getIsLive(): bool
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        if (is_bool($on = $this->getConfig()->getGeneral()->isSystemLive)) {
+            return $on;
+        }
+
+        return $this->getProjectConfig()->get('system.live');
+    }
+
+    /**
+     * Returns whether the system is currently live.
+     *
+     * @return bool
+     * @deprecated in 3.1. Use [[getIsLive()]] instead.
      */
     public function getIsSystemOn(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if (is_bool($on = $this->getConfig()->getGeneral()->isSystemOn)) {
-            return $on;
-        }
-
-        return (bool)$this->getInfo()->on;
+        return $this->getIsLive();
     }
 
     /**
@@ -528,7 +530,6 @@ trait ApplicationTrait
         }
 
         // TODO: Remove this after the next breakpoint
-        $this->_storedVersion = $row['version'];
         if (isset($row['build'])) {
             $version = $row['version'];
 
@@ -546,10 +547,7 @@ trait ApplicationTrait
 
             $row['version'] = $version;
         }
-        if (isset($row['siteName'])) {
-            $row['name'] = $row['siteName'];
-        }
-        unset($row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
+        unset($row['edition'], $row['name'], $row['timezone'], $row['on'], $row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
 
         return $this->_info = new Info($row);
     }
@@ -570,7 +568,7 @@ trait ApplicationTrait
             unset($attributes['build'], $attributes['releaseDate'], $attributes['track']);
 
             // TODO: Remove this after the next breakpoint
-            if ($this->_storedVersion && version_compare($this->_storedVersion, '3.1', '<')) {
+            if (version_compare($info['version'], '3.1', '<')) {
                 unset($attributes['config'], $attributes['configMap']);
             }
 
@@ -580,15 +578,7 @@ trait ApplicationTrait
 
             if ($this->getIsInstalled()) {
                 // TODO: Remove this after the next breakpoint
-                if (version_compare($this->_storedVersion, '3.0', '<')) {
-                    $infoTable = $this->getDb()->getTableSchema('{{%info}}');
-
-                    if ($infoTable->getColumn('siteName')) {
-                        $siteName = $attributes['name'];
-                        $attributes['siteName'] = $siteName;
-                        unset($attributes['name']);
-                    }
-
+                if (version_compare($info['version'], '3.0', '<')) {
                     unset($attributes['fieldVersion']);
                 }
 
@@ -1215,7 +1205,7 @@ trait ApplicationTrait
         $timezone = $this->getConfig()->getGeneral()->timezone;
 
         if (!$timezone) {
-            $timezone = $this->getInfo()->timezone;
+            $timezone = $this->getProjectConfig()->get('system.timeZone');
         }
 
         if ($timezone) {

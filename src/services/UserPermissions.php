@@ -78,7 +78,7 @@ class UserPermissions extends Component
                 'label' => Craft::t('app', 'Access the CP'),
                 'nested' => [
                     'accessCpWhenSystemIsOff' => [
-                        'label' => Craft::t('app', 'Access the CP when the system is off')
+                        'label' => Craft::t('app', 'Access the CP when the system is offline')
                     ],
                     'performUpdates' => [
                         'label' => Craft::t('app', 'Perform Craft CMS and plugin updates')

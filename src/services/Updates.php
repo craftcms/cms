@@ -137,7 +137,7 @@ class Updates extends Component
                 ['handle' => $plugin->id])
             ->execute();
 
-        Craft::$app->getProjectConfig()->set(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.' . ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, $plugin->schemaVersion);
+        Craft::$app->getProjectConfig()->set(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion', $plugin->schemaVersion);
 
         return (bool)$affectedRows;
     }

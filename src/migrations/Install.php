@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Migration;
 use craft\elements\Asset;
 use craft\elements\User;
+use craft\helpers\App;
 use craft\helpers\StringHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\FieldGroup;
@@ -89,6 +90,16 @@ class Install extends Migration
         if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
             Craft::$app->getUser()->login($user);
         }
+
+        // Save the default system settings
+        echo '    > save the system settings ...';
+        Craft::$app->getProjectConfig()->set('system', [
+            'edition' => App::editionHandle(Craft::Solo),
+            'name' => $this->site->name,
+            'live' => true,
+            'timeZone' => 'America/Los_Angeles',
+        ]);
+        echo " done\n";
 
         // Save the default email settings
         echo '    > save the email settings ...';
@@ -407,10 +418,6 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'version' => $this->string(50)->notNull(),
             'schemaVersion' => $this->string(15)->notNull(),
-            'edition' => $this->tinyInteger()->unsigned()->notNull(),
-            'timezone' => $this->string(30),
-            'name' => $this->string()->notNull(),
-            'on' => $this->boolean()->defaultValue(false)->notNull(),
             'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
             'config' => $this->mediumText()->null(),
             'configMap' => $this->mediumText()->null(),
@@ -1023,9 +1030,6 @@ class Install extends Migration
         Craft::$app->saveInfo(new Info([
             'version' => Craft::$app->getVersion(),
             'schemaVersion' => Craft::$app->schemaVersion,
-            'edition' => 0,
-            'name' => $this->site->name,
-            'on' => true,
             'maintenance' => false,
             'fieldVersion' => StringHelper::randomString(12),
             'config' => serialize([]),

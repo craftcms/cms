@@ -53,15 +53,10 @@ class SystemSettingsController extends Controller
     /**
      * Shows the general settings form.
      *
-     * @param Info|null $info The info being edited, if there were any validation errors.
      * @return Response
      */
-    public function actionGeneralSettings(Info $info = null): Response
+    public function actionGeneralSettings(): Response
     {
-        if ($info === null) {
-            $info = Craft::$app->getInfo();
-        }
-
         // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
         $timezoneOptions = [];
 
@@ -102,7 +97,7 @@ class SystemSettingsController extends Controller
         $this->getView()->registerAssetBundle(GeneralSettingsAsset::class);
 
         return $this->renderTemplate('settings/general/_index', [
-            'info' => $info,
+            'system' => Craft::$app->getProjectConfig()->get('system'),
             'timezoneOptions' => $timezoneOptions
         ]);
     }
@@ -116,25 +111,14 @@ class SystemSettingsController extends Controller
     {
         $this->requirePostRequest();
 
-        $info = Craft::$app->getInfo();
+        $projectConfig = Craft::$app->getProjectConfig();
+        $request = Craft::$app->getRequest();
 
-        $info->name = Craft::$app->getRequest()->getBodyParam('name');
-        $info->on = (bool)Craft::$app->getRequest()->getBodyParam('on');
-        $info->timezone = Craft::$app->getRequest()->getBodyParam('timezone');
-
-        if (!Craft::$app->saveInfo($info)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save general settings.'));
-
-            // Send the info back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'info' => $info
-            ]);
-
-            return null;
-        }
+        $projectConfig->set('system.name', $request->getBodyParam('name'));
+        $projectConfig->set('system.live', (bool)$request->getBodyParam('live'));
+        $projectConfig->set('system.timeZone', $request->getBodyParam('timeZone'));
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'General settings saved.'));
-
         return $this->redirectToPostedUrl();
     }
 

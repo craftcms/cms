@@ -786,7 +786,7 @@ class Application extends \yii\web\Application
      */
     private function _checkSystemStatusPermissions(Request $request): bool
     {
-        if ($this->getIsSystemOn() || $this->_isSpecialCaseActionRequest($request)) {
+        if ($this->getIsLive() || $this->_isSpecialCaseActionRequest($request)) {
             return true;
         }
 
