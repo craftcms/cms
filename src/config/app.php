@@ -189,27 +189,27 @@ return [
             return Craft::createObject($config);
         },
 
-        'mailer' => function() {
-            $config = craft\helpers\App::mailerConfig();
-            return Craft::createObject($config);
+        'formatter' => function() {
+            return Craft::$app->getLocale()->getFormatter();
         },
 
         'locale' => function() {
             return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
         },
 
-        'mutex' => function() {
-            $config = craft\helpers\App::mutexConfig();
-            return Craft::createObject($config);
-        },
-
-        'formatter' => function() {
-            return Craft::$app->getLocale()->getFormatter();
-        },
-
         'log' => function() {
             $config = craft\helpers\App::logConfig();
             return $config ? Craft::createObject($config) : null;
+        },
+
+        'mailer' => function() {
+            $config = craft\helpers\App::mailerConfig();
+            return Craft::createObject($config);
+        },
+
+        'mutex' => function() {
+            $config = craft\helpers\App::mutexConfig();
+            return Craft::createObject($config);
         },
 
         'view' => function() {
