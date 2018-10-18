@@ -26,6 +26,7 @@ use craft\web\Request as WebRequest;
 use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
+use yii\base\InvalidArgumentException;
 use yii\caching\FileCache;
 use yii\helpers\Inflector;
 use yii\log\Dispatcher;
@@ -61,6 +62,24 @@ class App
     }
 
     /**
+     * Returns the handle of the given Craft edition.
+     *
+     * @param int $edition An edition’s ID.
+     * @return string The edition’s name.
+     */
+    public static function editionHandle(int $edition): string
+    {
+        switch ($edition) {
+            case Craft::Solo:
+                return 'solo';
+            case Craft::Pro:
+                return 'pro';
+            default:
+                throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition);
+        }
+    }
+
+    /**
      * Returns the name of the given Craft edition.
      *
      * @param int $edition An edition’s ID.
@@ -75,6 +94,25 @@ class App
                 return 'Pro';
             default:
                 throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition);
+        }
+    }
+
+    /**
+     * Returns the ID of a Craft edition by its handle.
+     *
+     * @param string $handle An edition’s handle
+     * @return int The edition’s ID
+     * @throws InvalidArgumentException if $handle is invalid
+     */
+    public static function editionIdByHandle(string $handle): int
+    {
+        switch ($handle) {
+            case 'solo':
+                return Craft::Solo;
+            case 'pro':
+                return Craft::Pro;
+            default:
+                throw new InvalidArgumentException('Invalid Craft edition handle: ' . $handle);
         }
     }
 

@@ -37,26 +37,6 @@ class Info extends Model
     public $schemaVersion = '0';
 
     /**
-     * @var int Edition
-     */
-    public $edition = Craft::Solo;
-
-    /**
-     * @var string System name
-     */
-    public $name = '';
-
-    /**
-     * @var string Timezone
-     */
-    public $timezone = 'America/Los_Angeles';
-
-    /**
-     * @var bool On
-     */
-    public $on = false;
-
-    /**
      * @var bool Maintenance
      */
     public $maintenance = false;
@@ -97,25 +77,11 @@ class Info extends Model
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        parent::init();
-
-        // Make sure $edition is going to be an int
-        if (is_string($this->edition)) {
-            $this->edition = (int)$this->edition;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function rules()
     {
         return [
-            [['id', 'edition'], 'number', 'integerOnly' => true],
-            [['version', 'schemaVersion', 'edition', 'name'], 'required'],
-            [['timezone'], 'string', 'max' => 30],
+            [['id'], 'number', 'integerOnly' => true],
+            [['version', 'schemaVersion'], 'required'],
         ];
     }
 }

@@ -285,7 +285,8 @@ trait ApplicationTrait
     public function getEdition(): int
     {
         /** @var WebApplication|ConsoleApplication $this */
-        return (int)$this->getInfo()->edition;
+        $handle = $this->getProjectConfig()->get('system.edition') ?? 'solo';
+        return App::editionIdByHandle($handle);
     }
 
     /**
@@ -355,13 +356,8 @@ trait ApplicationTrait
     public function setEdition(int $edition): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        $info = $this->getInfo();
-        $oldEdition = $info->edition;
-        $info->edition = $edition;
-
-        if (!$this->saveInfo($info)) {
-            return false;
-        }
+        $oldEdition = $this->getEdition();
+        $this->getProjectConfig()->set('system.edition', App::editionHandle($edition));
 
         // Fire an 'afterEditionChange' event
         if (!$this->getRequest()->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
@@ -453,7 +449,7 @@ trait ApplicationTrait
             return $on;
         }
 
-        return (bool)$this->getInfo()->on;
+        return $this->getProjectConfig()->get('system.live');
     }
 
     /**
@@ -539,10 +535,7 @@ trait ApplicationTrait
 
             $row['version'] = $version;
         }
-        if (isset($row['siteName'])) {
-            $row['name'] = $row['siteName'];
-        }
-        unset($row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
+        unset($row['edition'], $row['name'], $row['timezone'], $row['on'], $row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
 
         return $this->_info = new Info($row);
     }
@@ -574,14 +567,6 @@ trait ApplicationTrait
             if ($this->getIsInstalled()) {
                 // TODO: Remove this after the next breakpoint
                 if (version_compare($info['version'], '3.0', '<')) {
-                    $infoTable = $this->getDb()->getTableSchema('{{%info}}');
-
-                    if ($infoTable->getColumn('siteName')) {
-                        $siteName = $attributes['name'];
-                        $attributes['siteName'] = $siteName;
-                        unset($attributes['name']);
-                    }
-
                     unset($attributes['fieldVersion']);
                 }
 
@@ -1208,7 +1193,7 @@ trait ApplicationTrait
         $timezone = $this->getConfig()->getGeneral()->timezone;
 
         if (!$timezone) {
-            $timezone = $this->getInfo()->timezone;
+            $timezone = $this->getProjectConfig()->get('system.timeZone');
         }
 
         if ($timezone) {

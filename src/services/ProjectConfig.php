@@ -46,7 +46,7 @@ class ProjectConfig extends Component
     const CONFIG_FILENAME = 'project.yaml';
 
     // Key to use for schema version storage.
-    const CONFIG_SCHEMA_VERSION_KEY = 'schemaVersion';
+    const CONFIG_SCHEMA_VERSION_KEY = 'system.schemaVersion';
 
     // TODO move this to UID validator class
     // TODO update StringHelper::isUUID() to use that
@@ -570,7 +570,7 @@ class ProjectConfig extends Component
 
         foreach ($plugins as $plugin) {
             /** @var Plugin $plugin */
-            $configSchemaVersion = (string)$this->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.' . self::CONFIG_SCHEMA_VERSION_KEY, true);
+            $configSchemaVersion = (string)$this->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion', true);
 
             if (version_compare((string)$plugin->schemaVersion, $configSchemaVersion, '<')) {
                 return false;
