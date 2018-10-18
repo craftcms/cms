@@ -168,12 +168,6 @@ trait ApplicationTrait
      */
     private $_gettingLanguage = false;
 
-    /**
-     * @var string|null The stored version
-     * @todo Remove this after the next breakpoint
-     */
-    private $_storedVersion;
-
     // Public Methods
     // =========================================================================
 
@@ -528,7 +522,6 @@ trait ApplicationTrait
         }
 
         // TODO: Remove this after the next breakpoint
-        $this->_storedVersion = $row['version'];
         if (isset($row['build'])) {
             $version = $row['version'];
 
@@ -570,7 +563,7 @@ trait ApplicationTrait
             unset($attributes['build'], $attributes['releaseDate'], $attributes['track']);
 
             // TODO: Remove this after the next breakpoint
-            if ($this->_storedVersion && version_compare($this->_storedVersion, '3.1', '<')) {
+            if (version_compare($info['version'], '3.1', '<')) {
                 unset($attributes['config'], $attributes['configMap']);
             }
 
@@ -580,7 +573,7 @@ trait ApplicationTrait
 
             if ($this->getIsInstalled()) {
                 // TODO: Remove this after the next breakpoint
-                if (version_compare($this->_storedVersion, '3.0', '<')) {
+                if (version_compare($info['version'], '3.0', '<')) {
                     $infoTable = $this->getDb()->getTableSchema('{{%info}}');
 
                     if ($infoTable->getColumn('siteName')) {
