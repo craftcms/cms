@@ -27,43 +27,16 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $configData = $this->_getProjectConfigData();
 
-        $data = [];
-
-        if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
-            $filePath = Craft::$app->getPath()->getConfigPath() . '/' . Craft::$app->getProjectConfig()::CONFIG_FILENAME;
-
-            // See if there's something in the yaml file already for some reason
-            if (file_exists($filePath)) {
-                $existingData = Yaml::parse($filePath);
-            }
-
-            if (isset($existingData) && is_array($existingData)) {
-                $configData = array_replace_recursive($existingData, $configData);
-            }
-
-            $map = [];
-
-            foreach (array_keys($configData) as $key) {
-                $map[$key] = $filePath;
-            }
-
-            $data['configMap'] = Json::encode($map);
-            FileHelper::writeToFile($filePath, Yaml::dump($configData, 20, 2));
+        $projectConfig = Craft::$app->getProjectConfig();
+        foreach ($configData as $path => $value) {
+            $projectConfig->set($path, $value);
         }
-
-        $snapshot = serialize($configData);
-        $data['config'] = $snapshot;
-
-        $this->update('{{%info}}', $data);
 
         $this->dropTableIfExists('{{%systemsettings}}');
 
         $this->dropColumn('{{%plugins}}', 'settings');
         $this->dropColumn('{{%plugins}}', 'licenseKey');
         $this->dropColumn('{{%plugins}}', 'enabled');
-
-        // Finally, detach the event handler that would overwrite everything we've accomplished
-        Craft::$app->getProjectConfig()->preventSavingDataAfterRequest();
     }
 
     /**
