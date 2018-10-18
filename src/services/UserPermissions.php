@@ -442,41 +442,6 @@ class UserPermissions extends Component
         }
     }
 
-    /**
-     * Handle any changed permissions.
-     *
-     * @param ConfigEvent $event
-     */
-    public function handleChangedPermissions(ConfigEvent $event)
-    {
-        $data = $event->newValue;
-        $records = UserPermissionRecord::find()
-            ->where(['name' => $data])
-            ->indexBy('name')
-            ->all();
-
-        if (!$data) {
-            return;
-        }
-
-        foreach ($data as $permissionName) {
-            // If not in the record list, create a new record
-            if (!isset($records[$permissionName])) {
-                $permissionRecord = new UserPermissionRecord();
-                $permissionRecord->name = $permissionName;
-                $permissionRecord->save();
-            } else {
-                // If it exists, remove from the record list
-                unset($records[$permissionName]);
-            }
-        }
-
-        // Any records remaining in the list were not in the config data, so gets deleted.
-        foreach ($records as $record) {
-            $record->delete();
-        }
-    }
-
     // Private Methods
     // =========================================================================
 
