@@ -329,10 +329,10 @@ class GeneralConfig extends BaseObject
      */
     public $ipHeaders;
     /**
-     * @var bool|null Whether the site is currently online or not. If set to `true` or `false`, it will take precedence over the
+     * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the
      * System Status setting in Settings → General.
      */
-    public $isSystemOn;
+    public $isSystemLive;
     /**
      * @var bool Whether non-ASCII characters in auto-generated slugs should be converted to ASCII (i.e. ñ → n).
      *
@@ -761,6 +761,7 @@ class GeneralConfig extends BaseObject
             'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
             'activateAccountFailurePath' => 'invalidUserTokenPath',
             'validationKey' => 'securityKey',
+            'isSystemOn' => 'isSystemLive',
         ];
 
         $configFilePath = null;

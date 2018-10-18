@@ -1664,7 +1664,7 @@ class UsersController extends Controller
      */
     private function _enforceOfflineLoginPage()
     {
-        if (!Craft::$app->getIsSystemOn()) {
+        if (!Craft::$app->getIsLive()) {
             $request = Craft::$app->getRequest();
             if ($request->getIsCpRequest()) {
                 $loginPath = 'login';

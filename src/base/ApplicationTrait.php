@@ -101,7 +101,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read bool $isInitialized Whether Craft is fully initialized
  * @property-read bool $isInMaintenanceMode Whether someone is currently performing a system update
  * @property-read bool $isMultiSite Whether this site has multiple sites
- * @property-read bool $isSystemOn Whether the front end is accepting HTTP requests
+ * @property-read bool $isSystemLive Whether the system is live
  * @property-read Connection $db The database connection component
  * @property-read Formatter $formatter The formatter component
  * @property-read I18N $i18n The internationalization (i18n) component
@@ -438,18 +438,30 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns whether the front end is accepting HTTP requests.
+     * Returns whether the system is currently live.
      *
      * @return bool
      */
-    public function getIsSystemOn(): bool
+    public function getIsLive(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if (is_bool($on = $this->getConfig()->getGeneral()->isSystemOn)) {
+        if (is_bool($on = $this->getConfig()->getGeneral()->isSystemLive)) {
             return $on;
         }
 
         return $this->getProjectConfig()->get('system.live');
+    }
+
+    /**
+     * Returns whether the system is currently live.
+     *
+     * @return bool
+     * @deprecated in 3.1. Use [[getIsLive()]] instead.
+     */
+    public function getIsSystemOn(): bool
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->getIsLive();
     }
 
     /**

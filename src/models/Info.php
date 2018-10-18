@@ -84,4 +84,51 @@ class Info extends Model
             [['version', 'schemaVersion'], 'required'],
         ];
     }
+
+    // Deprecated
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns the active Craft edition.
+     *
+     * @return int
+     * @deprecated in 3.1. Use `Craft::$app->getEdition()` instead.
+     */
+    public function getEdition(): int
+    {
+        return Craft::$app->getEdition();
+    }
+
+    /**
+     * Returns the system name.
+     *
+     * @return string
+     * @deprecated in 3.1. Use `Craft::$app->projectConfig->get('system.name')` instead.
+     */
+    public function getName(): string
+    {
+        return Craft::$app->getProjectConfig()->get('system.name');
+    }
+
+    /**
+     * Returns the system time zone.
+     *
+     * @return string
+     * @deprecated in 3.1. Use `Craft::$app->getTimeZone()` instead.
+     */
+    public function getTimezone(): string
+    {
+        return Craft::$app->getTimeZone();
+    }
+
+    /**
+     * Returns whether the system is currently live.
+     *
+     * @return bool
+     * @deprecated in 3.1. Use `Craft::$app->getIsLive()` instead.
+     */
+    public function getOn(): bool
+    {
+        return Craft::$app->getIsLive();
+    }
 }
