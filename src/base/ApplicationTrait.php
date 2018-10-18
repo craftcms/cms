@@ -1328,13 +1328,8 @@ trait ApplicationTrait
         $projectConfigService->onRemove(Categories::CONFIG_CATEGORYROUP_KEY . '.{uid}', [$categoriesService, 'handleDeletedCategoryGroup']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$categoriesService, 'pruneDeletedField']);
 
-        // Permissions
-        $userPermissionsService = $this->getUserPermissions();
-        $projectConfigService->onAdd(UserPermissions::CONFIG_USERPERMISSIONS_KEY, [$userPermissionsService, 'handleChangedPermissions']);
-        $projectConfigService->onUpdate(UserPermissions::CONFIG_USERPERMISSIONS_KEY, [$userPermissionsService, 'handleChangedPermissions']);
-        $projectConfigService->onRemove(UserPermissions::CONFIG_USERPERMISSIONS_KEY, [$userPermissionsService, 'handleChangedPermissions']);
-
         // User group permissions
+        $userPermissionsService = $this->getUserPermissions();
         $projectConfigService->onAdd(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', [$userPermissionsService, 'handleChangedGroupPermissions']);
         $projectConfigService->onUpdate(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', [$userPermissionsService, 'handleChangedGroupPermissions']);
         $projectConfigService->onRemove(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', [$userPermissionsService, 'handleChangedGroupPermissions']);

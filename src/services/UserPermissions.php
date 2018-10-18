@@ -53,8 +53,6 @@ class UserPermissions extends Component
      */
     private $_permissionsByUserId;
 
-    const CONFIG_USERPERMISSIONS_KEY = 'users.permissions';
-
     // Public Methods
     // =========================================================================
 
@@ -388,7 +386,6 @@ class UserPermissions extends Component
         if (!empty($permissions)) {
             $userPermissionVals = [];
 
-            $this->_ensurePermissionRecords($permissions);
             foreach ($permissions as $permissionName) {
                 $permissionRecord = $this->_getPermissionRecordByName($permissionName);
                 $userPermissionVals[] = [$permissionRecord->id, $userId];
@@ -430,7 +427,6 @@ class UserPermissions extends Component
         $groupPermissionVals = [];
 
         if ($permissions) {
-            $this->_ensurePermissionRecords($permissions);
             foreach ($permissions as $permissionName) {
                 $permissionRecord = $this->_getPermissionRecordByName($permissionName);
                 $groupPermissionVals[] = [$permissionRecord->id, $userGroup->id];
@@ -755,7 +751,6 @@ class UserPermissions extends Component
         $permissionRecord = UserPermissionRecord::findOne(['name' => $permissionName]);
 
         if (!$permissionRecord) {
-            $this->_ensurePermissionRecords([$permissionName]);
             $permissionRecord = UserPermissionRecord::findOne(['name' => $permissionName]);
         }
 
@@ -770,18 +765,5 @@ class UserPermissions extends Component
         return (new Query())
             ->select(['p.name'])
             ->from(['{{%userpermissions}} p']);
-    }
-
-    /**
-     * Ensure that a list of permissions have a matching DB record.
-     *
-     * @param array $permissionNames
-     */
-    private function _ensurePermissionRecords(array $permissionNames)
-    {
-        $projectConfig = Craft::$app->getProjectConfig();
-        $permissionData = $projectConfig->get(self::CONFIG_USERPERMISSIONS_KEY, true);
-        $permissionData = array_unique(array_merge($permissionData, $permissionNames));
-        $projectConfig->set(self::CONFIG_USERPERMISSIONS_KEY, $permissionData);
     }
 }
