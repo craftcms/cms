@@ -5,6 +5,7 @@
 - Elements, field layouts, sites, and site groups are now soft-deleted. ([#867](https://github.com/craftcms/cms/issues/867))
 - Entries, categories, and users can now be restored within the Control Panel by searching for `is:trashed` and clicking the “Restore” button.
 - Custom fields can now opt out of being included in elements’ search keywords. ([#2600](https://github.com/craftcms/cms/issues/2600))
+- Added the `disableAdminFunctions` config setting.
 - Added the `softDeleteDuration` config setting.
 - Added the `useProjectConfigFile` config setting.
 - Added the `gc` console command, which can be used to run garbage collection tasks.

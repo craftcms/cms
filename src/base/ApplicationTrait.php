@@ -399,7 +399,10 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         // Only admin accounts can upgrade Craft
-        if ($this->getUser()->getIsAdmin()) {
+        if (
+            $this->getUser()->getIsAdmin() &&
+            !Craft::$app->getConfig()->getGeneral()->disableAdminFunctions
+        ) {
             // Are they either *using* or *licensed to use* something < Craft Pro?
             $activeEdition = $this->getEdition();
             $licensedEdition = $this->getLicensedEdition();

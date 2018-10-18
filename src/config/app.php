@@ -77,9 +77,6 @@ return [
         'pluginStore' => [
             'class' => craft\services\PluginStore::class,
         ],
-        'projectConfig' => [
-            'class' => craft\services\ProjectConfig::class,
-        ],
         'queue' => [
             'class' => craft\queue\Queue::class,
         ],
@@ -209,6 +206,11 @@ return [
 
         'mutex' => function() {
             $config = craft\helpers\App::mutexConfig();
+            return Craft::createObject($config);
+        },
+
+        'projectConfig' => function() {
+            $config = craft\helpers\App::projectConfigConfig();
             return Craft::createObject($config);
         },
 
