@@ -1444,9 +1444,9 @@ class Fields extends Component
 
         if (!$isNewLayout) {
             $layoutRecord->id = $layout->id;
+            $layoutRecord->uid = $layout->uid ?? Db::uidById('{{%fieldlayouts}}', $layout->id);
         }
 
-        $layoutRecord->uid = $layout->uid;
         $layoutRecord->save(false);
 
         if ($isNewLayout) {
