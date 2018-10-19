@@ -454,8 +454,16 @@ class ProjectConfig extends Component
             return;
         }
 
-        $this->_modifyStoredConfig($path, $event->newValue);
+        $this->updateStoredConfigAfterRequest();
         $this->updateParsedConfigTimesAfterRequest();
+    }
+
+    /**
+     * Updates the stored config after the request ends.
+     */
+    public function updateStoredConfigAfterRequest()
+    {
+        $this->_updateConfig = true;
     }
 
     /**
@@ -796,17 +804,6 @@ class ProjectConfig extends Component
     {
         $this->_getStoredConfigMap();
         $this->_configMap[$node] = $location;
-    }
-
-    /**
-     * Modify the stored config with new data.
-     *
-     * @param $path
-     * @param $data
-     */
-    private function _modifyStoredConfig($path, $data)
-    {
-        $this->_updateConfig = true;
     }
 
     /**
