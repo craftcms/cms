@@ -875,6 +875,7 @@ class Sections extends Component
                 ->select(['fieldLayoutId'])
                 ->from(['{{%entrytypes}}'])
                 ->where(['id' => $entryTypeIds])
+                ->andWhere(['not', ['fieldLayoutId' => null]])
                 ->column();
 
             if (!empty($fieldLayoutIds)) {
