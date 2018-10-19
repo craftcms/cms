@@ -716,7 +716,9 @@ class UserPermissions extends Component
         $permissionRecord = UserPermissionRecord::findOne(['name' => $permissionName]);
 
         if (!$permissionRecord) {
-            $permissionRecord = UserPermissionRecord::findOne(['name' => $permissionName]);
+            $permissionRecord = new UserPermissionRecord();
+            $permissionRecord->name = $permissionName;
+            $permissionRecord->save();
         }
 
         return $permissionRecord;
