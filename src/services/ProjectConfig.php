@@ -19,6 +19,7 @@ use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\NotSupportedException;
 use yii\web\ServerErrorHttpException;
 
 /**
@@ -46,7 +47,7 @@ class ProjectConfig extends Component
     const CONFIG_FILENAME = 'project.yaml';
 
     // Key to use for schema version storage.
-    const CONFIG_SCHEMA_VERSION_KEY = 'schemaVersion';
+    const CONFIG_SCHEMA_VERSION_KEY = 'system.schemaVersion';
 
     // TODO move this to UID validator class
     // TODO update StringHelper::isUUID() to use that
@@ -110,6 +111,11 @@ class ProjectConfig extends Component
 
     // Properties
     // =========================================================================
+
+    /**
+     * @var bool Whether the project config is read-only.
+     */
+    public $readOnly = false;
 
     /**
      * @var array Current config as stored in database.
@@ -255,6 +261,7 @@ class ProjectConfig extends Component
      *
      * @param string $path The config item path
      * @param mixed $value The config item value
+     * @throws NotSupportedException if the service is set to read-only mode
      * @throws ErrorException
      * @throws Exception
      * @throws ServerErrorHttpException
@@ -262,6 +269,10 @@ class ProjectConfig extends Component
      */
     public function set(string $path, $value)
     {
+        if ($this->readOnly) {
+            throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
+        }
+
         $pathParts = explode('.', $path);
 
         $targetFilePath = null;
@@ -570,7 +581,7 @@ class ProjectConfig extends Component
 
         foreach ($plugins as $plugin) {
             /** @var Plugin $plugin */
-            $configSchemaVersion = (string)$this->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.' . self::CONFIG_SCHEMA_VERSION_KEY, true);
+            $configSchemaVersion = (string)$this->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion', true);
 
             if (version_compare((string)$plugin->schemaVersion, $configSchemaVersion, '<')) {
                 return false;

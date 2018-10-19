@@ -962,7 +962,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
         // Only set these things when Craft is installed and not being updated
         if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-            $globals['systemName'] = Craft::$app->getInfo()->name;
+            $globals['systemName'] = Craft::$app->getProjectConfig()->get('system.name');
             /** @noinspection PhpUnhandledExceptionInspection */
             $site = Craft::$app->getSites()->getCurrentSite();
             $globals['currentSite'] = $site;

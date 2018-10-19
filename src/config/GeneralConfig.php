@@ -57,6 +57,8 @@ class GeneralConfig extends BaseObject
     public $aliases = [];
     /**
      * @var bool Whether Craft should allow system and plugin updates in the Control Panel, and plugin installation from the Plugin Store.
+     *
+     * This setting will automatically be disabled if [[disableAdminFunctions]] is enabled.
      */
     public $allowUpdates = true;
     /**
@@ -243,6 +245,10 @@ class GeneralConfig extends BaseObject
      */
     public $devMode = false;
     /**
+     * @var bool Whether administrative features should be disabled.
+     */
+    public $disableAdminFunctions = false;
+    /**
      * @var bool Whether to use a cookie to persist the CSRF token if [[enableCsrfProtection]] is enabled. If false, the CSRF token
      * will be stored in session under the 'csrfTokenName' config setting name. Note that while storing CSRF tokens in
      * session increases security, it requires starting a session for every page that a CSRF token is need, which may
@@ -329,10 +335,10 @@ class GeneralConfig extends BaseObject
      */
     public $ipHeaders;
     /**
-     * @var bool|null Whether the site is currently online or not. If set to `true` or `false`, it will take precedence over the
+     * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the
      * System Status setting in Settings → General.
      */
-    public $isSystemOn;
+    public $isSystemLive;
     /**
      * @var bool Whether non-ASCII characters in auto-generated slugs should be converted to ASCII (i.e. ñ → n).
      *
@@ -761,6 +767,7 @@ class GeneralConfig extends BaseObject
             'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
             'activateAccountFailurePath' => 'invalidUserTokenPath',
             'validationKey' => 'securityKey',
+            'isSystemOn' => 'isSystemLive',
         ];
 
         $configFilePath = null;

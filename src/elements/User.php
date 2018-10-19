@@ -1485,13 +1485,13 @@ class User extends Element implements IdentityInterface
                             return self::AUTH_NO_CP_ACCESS;
                         }
                         if (
-                            Craft::$app->getIsSystemOn() === false &&
+                            Craft::$app->getIsLive() === false &&
                             $this->can('accessCpWhenSystemIsOff') === false
                         ) {
                             return self::AUTH_NO_CP_OFFLINE_ACCESS;
                         }
                     } else if (
-                        Craft::$app->getIsSystemOn() === false &&
+                        Craft::$app->getIsLive() === false &&
                         $this->can('accessSiteWhenSystemIsOff') === false
                     ) {
                         return self::AUTH_NO_SITE_OFFLINE_ACCESS;
