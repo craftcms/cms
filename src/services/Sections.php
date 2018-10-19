@@ -1223,7 +1223,7 @@ class Sections extends Component
                 }
             }
         } else if ($section->type === Section::TYPE_SINGLE) {
-            $siteSettings = Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.siteSettings');
+            $siteSettings = Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.siteSettings', true);
             $allSiteUids = array_keys($siteSettings);
             $sectionRecord = $this->_getSectionRecord($sectionUid);
             $this->_onSaveSingle($sectionRecord, true, $allSiteUids);
