@@ -806,7 +806,6 @@ class ProjectConfig extends Component
      */
     private function _modifyStoredConfig($path, $data)
     {
-        $this->_traverseDataArray($this->_storedConfig, $path, $data);
         $this->_updateConfig = true;
     }
 
