@@ -312,7 +312,7 @@ class UserPermissions extends Component
 
         if (!empty($permissions)) {
             $group = Craft::$app->getUserGroups()->getGroupById($groupId);
-            $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->id . '.permissions';
+            $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->uid . '.permissions';
             Craft::$app->getProjectConfig()->set($path, $permissions);
         }
 
