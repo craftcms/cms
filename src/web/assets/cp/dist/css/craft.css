@@ -1663,7 +1663,7 @@ html, body { overflow-x: hidden; -webkit-text-size-adjust: 100%; }
 #global-container { display: -webkit-box; display: -ms-flexbox; display: flex; min-height: 0; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: stretch; -ms-flex-align: stretch; align-items: stretch; height: 100vh; width: 100vw; }
 
 /* global sidebar */
-#global-sidebar { -webkit-box-flex: 0; -ms-flex: 0 0 225px; flex: 0 0 225px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; z-index: 100; position: relative; width: 225px; height: 100vh; padding: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; background: #333f4d; -webkit-box-shadow: none; box-shadow: none; }
+#global-sidebar { -webkit-box-flex: 0; -ms-flex: 0 0 225px; flex: 0 0 225px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; z-index: 100; position: relative; width: 225px; height: 100vh; padding: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; background: #333f4d; -webkit-box-shadow: inset -1px 0 0 #1f262e; box-shadow: inset -1px 0 0 #1f262e; }
 #global-sidebar #devmode { -webkit-box-flex: 0; -ms-flex: 0 0 4px; flex: 0 0 4px; width: 100%; min-height: 4px; background: url(../images/dev-mode.svg) repeat-x 21px 0; cursor: help; }
 #global-sidebar a { color: #d7d9db; -webkit-transition: color linear 100ms; transition: color linear 100ms; text-decoration: none; }
 #global-sidebar > a, #global-sidebar *:not(.has-subnav) > a { outline: none; -webkit-transition: background-color linear 100ms; transition: background-color linear 100ms; }
@@ -1702,7 +1702,7 @@ body.rtl #global-sidebar #system-info #system-name #user-info #user-photo { marg
 #global-sidebar #job-icon:hover .progressbar-inner { background: #fff; }
 #global-sidebar #job-icon:hover .icon > span.icon > canvas#job-icon-hover { opacity: 1; }
 #global-sidebar #nav { overflow: visible; }
-#global-sidebar #nav li:not(.has-subnav) > a.sel { color: #fff; background: #27303a; border-color: #da5a47; opacity: 1; }
+#global-sidebar #nav li:not(.has-subnav) > a.sel { color: #fff; background: #27303a; -webkit-box-shadow: inset 0 0 0 1px #1f262e; box-shadow: inset 0 0 0 1px #1f262e; border-color: #da5a47; opacity: 1; }
 #global-sidebar #nav li:not(.has-subnav) > a.sel .icon { opacity: 1; }
 #global-sidebar #nav li a { border-left: 0 solid transparent; }
 body.ltr #global-sidebar #nav li a { padding-left: 18px; }
