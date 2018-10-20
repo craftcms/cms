@@ -509,7 +509,7 @@ class Sections extends Component
         }
 
         // Main section settings
-        if ($section->type !== Section::TYPE_CHANNEL) {
+        if ($section->type === Section::TYPE_SINGLE) {
             $section->propagateEntries = true;
         }
 
