@@ -19,8 +19,9 @@ class m181017_225222_system_config_settings extends Migration
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        // Don't overwrite existing system config if there already is one
-        if ($projectConfig->get('system') === null) {
+        // Don't make the same config changes twice
+        $schemaVersion = $projectConfig->get('system.schemaVersion', true);
+        if (version_compare($schemaVersion, '3.1.3', '<')) {
             $info = (new Query())
                 ->select(['edition', 'name', 'timezone', 'on'])
                 ->from('{{%info}}')
@@ -33,10 +34,10 @@ class m181017_225222_system_config_settings extends Migration
                 'schemaVersion' => $projectConfig->get('schemaVersion'),
                 'timeZone' => $info['timezone'],
             ]);
-        }
 
-        // Drop the old top-level schemaVersion config setting
-        $projectConfig->remove('schemaVersion');
+            // Drop the old top-level schemaVersion config setting
+            $projectConfig->remove('schemaVersion');
+        }
 
         // Drop the columns from the info table
         $this->dropColumn('{{%info}}', 'edition');

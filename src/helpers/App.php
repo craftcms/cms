@@ -21,6 +21,7 @@ use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
 use craft\mutex\FileMutex;
+use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
 use craft\web\Session;
@@ -453,6 +454,17 @@ class App
             'targets' => [
                 $target,
             ]
+        ];
+    }
+
+    /**
+     * Returns the `projectConfig` component config.
+     */
+    public static function projectConfigConfig(): array
+    {
+        return [
+            'class' => ProjectConfigService::class,
+            'readOnly' => Craft::$app->getConfig()->getGeneral()->disableAdminFunctions,
         ];
     }
 

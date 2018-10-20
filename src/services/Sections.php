@@ -509,7 +509,7 @@ class Sections extends Component
         }
 
         // Main section settings
-        if ($section->type !== Section::TYPE_CHANNEL) {
+        if ($section->type === Section::TYPE_SINGLE) {
             $section->propagateEntries = true;
         }
 
@@ -875,6 +875,7 @@ class Sections extends Component
                 ->select(['fieldLayoutId'])
                 ->from(['{{%entrytypes}}'])
                 ->where(['id' => $entryTypeIds])
+                ->andWhere(['not', ['fieldLayoutId' => null]])
                 ->column();
 
             if (!empty($fieldLayoutIds)) {
@@ -1222,7 +1223,7 @@ class Sections extends Component
                 }
             }
         } else if ($section->type === Section::TYPE_SINGLE) {
-            $siteSettings = Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.siteSettings');
+            $siteSettings = Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.siteSettings', true);
             $allSiteUids = array_keys($siteSettings);
             $sectionRecord = $this->_getSectionRecord($sectionUid);
             $this->_onSaveSingle($sectionRecord, true, $allSiteUids);

@@ -53,8 +53,6 @@ class UserPermissions extends Component
      */
     private $_permissionsByUserId;
 
-    const CONFIG_USERPERMISSIONS_KEY = 'users.permissions';
-
     // Public Methods
     // =========================================================================
 
@@ -314,7 +312,7 @@ class UserPermissions extends Component
 
         if (!empty($permissions)) {
             $group = Craft::$app->getUserGroups()->getGroupById($groupId);
-            $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->id . '.permissions';
+            $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->uid . '.permissions';
             Craft::$app->getProjectConfig()->set($path, $permissions);
         }
 
@@ -388,7 +386,6 @@ class UserPermissions extends Component
         if (!empty($permissions)) {
             $userPermissionVals = [];
 
-            $this->_ensurePermissionRecords($permissions);
             foreach ($permissions as $permissionName) {
                 $permissionRecord = $this->_getPermissionRecordByName($permissionName);
                 $userPermissionVals[] = [$permissionRecord->id, $userId];
@@ -430,7 +427,6 @@ class UserPermissions extends Component
         $groupPermissionVals = [];
 
         if ($permissions) {
-            $this->_ensurePermissionRecords($permissions);
             foreach ($permissions as $permissionName) {
                 $permissionRecord = $this->_getPermissionRecordByName($permissionName);
                 $groupPermissionVals[] = [$permissionRecord->id, $userGroup->id];
@@ -443,41 +439,6 @@ class UserPermissions extends Component
                     ['permissionId', 'groupId'],
                     $groupPermissionVals)
                 ->execute();
-        }
-    }
-
-    /**
-     * Handle any changed permissions.
-     *
-     * @param ConfigEvent $event
-     */
-    public function handleChangedPermissions(ConfigEvent $event)
-    {
-        $data = $event->newValue;
-        $records = UserPermissionRecord::find()
-            ->where(['name' => $data])
-            ->indexBy('name')
-            ->all();
-
-        if (!$data) {
-            return;
-        }
-
-        foreach ($data as $permissionName) {
-            // If not in the record list, create a new record
-            if (!isset($records[$permissionName])) {
-                $permissionRecord = new UserPermissionRecord();
-                $permissionRecord->name = $permissionName;
-                $permissionRecord->save();
-            } else {
-                // If it exists, remove from the record list
-                unset($records[$permissionName]);
-            }
-        }
-
-        // Any records remaining in the list were not in the config data, so gets deleted.
-        foreach ($records as $record) {
-            $record->delete();
         }
     }
 
@@ -755,8 +716,9 @@ class UserPermissions extends Component
         $permissionRecord = UserPermissionRecord::findOne(['name' => $permissionName]);
 
         if (!$permissionRecord) {
-            $this->_ensurePermissionRecords([$permissionName]);
-            $permissionRecord = UserPermissionRecord::findOne(['name' => $permissionName]);
+            $permissionRecord = new UserPermissionRecord();
+            $permissionRecord->name = $permissionName;
+            $permissionRecord->save();
         }
 
         return $permissionRecord;
@@ -770,18 +732,5 @@ class UserPermissions extends Component
         return (new Query())
             ->select(['p.name'])
             ->from(['{{%userpermissions}} p']);
-    }
-
-    /**
-     * Ensure that a list of permissions have a matching DB record.
-     *
-     * @param array $permissionNames
-     */
-    private function _ensurePermissionRecords(array $permissionNames)
-    {
-        $projectConfig = Craft::$app->getProjectConfig();
-        $permissionData = $projectConfig->get(self::CONFIG_USERPERMISSIONS_KEY, true);
-        $permissionData = array_unique(array_merge($permissionData, $permissionNames));
-        $projectConfig->set(self::CONFIG_USERPERMISSIONS_KEY, $permissionData);
     }
 }

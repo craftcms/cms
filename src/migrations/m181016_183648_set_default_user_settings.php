@@ -16,6 +16,13 @@ class m181016_183648_set_default_user_settings extends Migration
     public function safeUp()
     {
         $projectConfig = Craft::$app->getProjectConfig();
+
+        // Don't make the same config changes twice
+        $schemaVersion = $projectConfig->get('system.schemaVersion', true) ?? $projectConfig->get('schemaVersion', true);
+        if (version_compare($schemaVersion, '3.1.2', '>=')) {
+            return;
+        }
+
         $settings = $projectConfig->get('users') ?? [];
 
         $settings = array_merge([

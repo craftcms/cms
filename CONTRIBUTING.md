@@ -30,7 +30,7 @@ That comes with some limitations on what you can do with the code:
 
 ### Code of Conduct
 
-Please take a couple minutes to read through Craft’s [code of conduct](https://github.com/craftcms/docs/blob/v3/en/coc.md). By participating here, you are expected to uphold this code. Please report unacceptable behavior to [support@craftcms.com][support].
+Please take a couple minutes to read through Craft’s [code of conduct](https://docs.craftcms.com/v3/coc.html). By participating here, you are expected to uphold this code. Please report unacceptable behavior to [support@craftcms.com][support].
 
 ## Security Disclosures
 

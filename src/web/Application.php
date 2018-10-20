@@ -235,9 +235,6 @@ class Application extends \yii\web\Application
             }
         }
 
-        // If the system is offline, make sure they have permission to be here
-        $this->_enforceSystemStatusPermissions($request);
-
         // Check if a plugin needs to update the database.
         if ($this->getUpdates()->getIsPluginDbUpdateNeeded()) {
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
@@ -247,6 +244,9 @@ class Application extends \yii\web\Application
         if ($projectConfig->isUpdatePending()) {
             return $this->_processConfigUpdateLogic($request) ?: $this->getResponse();
         }
+
+        // If the system is offline, make sure they have permission to be here
+        $this->_enforceSystemStatusPermissions($request);
 
         // If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
         if ($request->getIsCpRequest() && !($request->getIsActionRequest() && $this->_isSpecialCaseActionRequest($request))) {

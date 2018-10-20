@@ -88,6 +88,13 @@ class Mailer extends \yii\swiftmailer\Mailer
     public function send($message)
     {
         if ($message instanceof Message && $message->key !== null) {
+            if ($message->language === null) {
+                // Default to the current language
+                $message->language = Craft::$app->getRequest()->getIsSiteRequest()
+                    ? Craft::$app->language
+                    : Craft::$app->getSites()->getPrimarySite()->language;
+            }
+
             $systemMessage = Craft::$app->getSystemMessages()->getMessage($message->key, $message->language);
             $subjectTemplate = $systemMessage->subject;
             $textBodyTemplate = $systemMessage->body;
@@ -99,9 +106,7 @@ class Mailer extends \yii\swiftmailer\Mailer
 
             // Use the message language
             $language = Craft::$app->language;
-            if ($message->language !== null) {
-                Craft::$app->language = $message->language;
-            }
+            Craft::$app->language = $message->language;
 
             $settings = App::mailSettings();
             $variables = ($message->variables ?: []) + [

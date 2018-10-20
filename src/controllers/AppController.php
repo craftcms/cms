@@ -85,6 +85,7 @@ class AppController extends Controller
 
         $allowUpdates = (
             Craft::$app->getConfig()->getGeneral()->allowUpdates &&
+            !Craft::$app->getConfig()->getGeneral()->disableAdminFunctions &&
             Craft::$app->getUser()->checkPermission('performUpdates')
         );
 

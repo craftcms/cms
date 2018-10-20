@@ -4,7 +4,7 @@ return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
     'version' => '3.1.0',
-    'schemaVersion' => '3.1.3',
+    'schemaVersion' => '3.1.4',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -76,9 +76,6 @@ return [
         ],
         'pluginStore' => [
             'class' => craft\services\PluginStore::class,
-        ],
-        'projectConfig' => [
-            'class' => craft\services\ProjectConfig::class,
         ],
         'queue' => [
             'class' => craft\queue\Queue::class,
@@ -189,13 +186,22 @@ return [
             return Craft::createObject($config);
         },
 
-        'mailer' => function() {
-            $config = craft\helpers\App::mailerConfig();
-            return Craft::createObject($config);
+        'formatter' => function() {
+            return Craft::$app->getLocale()->getFormatter();
         },
 
         'locale' => function() {
             return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
+        },
+
+        'log' => function() {
+            $config = craft\helpers\App::logConfig();
+            return $config ? Craft::createObject($config) : null;
+        },
+
+        'mailer' => function() {
+            $config = craft\helpers\App::mailerConfig();
+            return Craft::createObject($config);
         },
 
         'mutex' => function() {
@@ -203,13 +209,9 @@ return [
             return Craft::createObject($config);
         },
 
-        'formatter' => function() {
-            return Craft::$app->getLocale()->getFormatter();
-        },
-
-        'log' => function() {
-            $config = craft\helpers\App::logConfig();
-            return $config ? Craft::createObject($config) : null;
+        'projectConfig' => function() {
+            $config = craft\helpers\App::projectConfigConfig();
+            return Craft::createObject($config);
         },
 
         'view' => function() {

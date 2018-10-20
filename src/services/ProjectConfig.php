@@ -19,6 +19,7 @@ use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\NotSupportedException;
 use yii\web\ServerErrorHttpException;
 
 /**
@@ -110,6 +111,11 @@ class ProjectConfig extends Component
 
     // Properties
     // =========================================================================
+
+    /**
+     * @var bool Whether the project config is read-only.
+     */
+    public $readOnly = false;
 
     /**
      * @var array Current config as stored in database.
@@ -255,6 +261,7 @@ class ProjectConfig extends Component
      *
      * @param string $path The config item path
      * @param mixed $value The config item value
+     * @throws NotSupportedException if the service is set to read-only mode
      * @throws ErrorException
      * @throws Exception
      * @throws ServerErrorHttpException
@@ -262,6 +269,10 @@ class ProjectConfig extends Component
      */
     public function set(string $path, $value)
     {
+        if ($this->readOnly) {
+            throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
+        }
+
         $pathParts = explode('.', $path);
 
         $targetFilePath = null;
@@ -443,8 +454,16 @@ class ProjectConfig extends Component
             return;
         }
 
-        $this->_modifyStoredConfig($path, $event->newValue);
+        $this->updateStoredConfigAfterRequest();
         $this->updateParsedConfigTimesAfterRequest();
+    }
+
+    /**
+     * Updates the stored config after the request ends.
+     */
+    public function updateStoredConfigAfterRequest()
+    {
+        $this->_updateConfig = true;
     }
 
     /**
@@ -785,18 +804,6 @@ class ProjectConfig extends Component
     {
         $this->_getStoredConfigMap();
         $this->_configMap[$node] = $location;
-    }
-
-    /**
-     * Modify the stored config with new data.
-     *
-     * @param $path
-     * @param $data
-     */
-    private function _modifyStoredConfig($path, $data)
-    {
-        $this->_traverseDataArray($this->_storedConfig, $path, $data);
-        $this->_updateConfig = true;
     }
 
     /**

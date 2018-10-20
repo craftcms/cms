@@ -14,6 +14,7 @@ use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\UserGroupEvent;
 use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\models\UserGroup;
 use craft\records\UserGroup as UserGroupRecord;
 use yii\base\Component;

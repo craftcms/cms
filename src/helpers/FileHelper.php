@@ -337,7 +337,11 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         if ($lock) {
-            Craft::$app->getMutex()->acquire($file);
+            $mutex = Craft::$app->getMutex();
+            $lockName = md5($file);
+            $mutex->acquire($lockName);
+        } else {
+            $lockName = $mutex = null;
         }
 
         $flags = 0;
@@ -350,7 +354,7 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         if ($lock) {
-            Craft::$app->getMutex()->release($file);
+            $mutex->release($lockName);
         }
     }
 
