@@ -11,10 +11,9 @@ use Codeception\Test\Unit;
 use craft\base\ComponentInterface;
 use craft\errors\MissingComponentException;
 use craft\helpers\Component;
-use craftunit\support\helpers\UnitExceptionHandler;
-use craftunit\support\mockclasses\components\ComponentExample;
-use craftunit\support\mockclasses\components\DependencyHeavyComponent;
-use craftunit\support\mockclasses\components\ExtendedComponentExample;
+use craft\test\mockclasses\components\ComponentExample;
+use craft\test\mockclasses\components\DependencyHeavyComponent;
+use craft\test\mockclasses\components\ExtendedComponentExample;
 use yii\base\InvalidConfigException;
 
 /**

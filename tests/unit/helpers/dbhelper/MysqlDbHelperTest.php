@@ -112,5 +112,24 @@ class MysqlDbHelperTest extends Unit
         ];
     }
 
+    /**
+     * @dataProvider getTextualCollumnType
+     */
+    public function testGetTextualCollumnTypeByContentLength($result, $input)
+    {
+        $textualCapacity = Db::getTextualColumnTypeByContentLength((int)$input);
+        $this->assertSame($result, $textualCapacity);
+    }
 
+    public function getTextualCollumnType()
+    {
+        return [
+            ['string', 254],
+            ['text', 65534],
+            ['mediumtext', 16777214],
+            ['string', 4294967294],
+            ['string', false],
+            ['string', null],
+        ];
+    }
 }

@@ -4,7 +4,7 @@ namespace craftunit\helpers;
 
 
 use craft\helpers\Db;
-use craftunit\support\mockclasses\components\Serializable;
+use craft\test\mockclasses\serializable\Serializable;
 use Codeception\Test\Unit;
 use yii\db\Exception;
 use yii\db\Schema;
@@ -412,6 +412,20 @@ class DbHelperTest extends Unit
         ];
     }
 
+    /**
+     * @dataProvider getMaxAllowedValueForNumericColumnData
+     * @param $result
+     * @param $input
+     */
+    public function testGetMaxAllowedValueForNumericColumn($result, $input)
+    {
+        $allowed = Db::getMaxAllowedValueForNumericColumn($input);
+        $this->assertSame($result, $allowed);
+    }
+    public function getMaxAllowedValueForNumericColumnData()
+    {
+        return [
 
-
+        ];
+    }
 }

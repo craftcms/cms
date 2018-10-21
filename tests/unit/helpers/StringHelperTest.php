@@ -6,11 +6,8 @@
  */
 namespace craftunit\helpers;
 
-use Codeception\Util\ReflectionHelper;
 use craft\helpers\StringHelper;
-use craftcms\tests\support\ReflectionSupport;
 use yii\base\ErrorException;
-use yii\db\Exception;
 
 /**
  * Unit tests for the String Helper class.

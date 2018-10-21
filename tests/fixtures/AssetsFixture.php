@@ -4,19 +4,21 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.github.io/license/
  */
-namespace craftunit\support\mockclasses\models;
+namespace craftunit\fixtures;
 
-
-use craft\base\Model;
+use craft\test\elementfixtures\AssetFixture;
 
 /**
- * Class ExampleModel.
+ * Class AssetsFixture.
+ *
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0
  */
-class ExampleModel extends Model
+class AssetsFixture extends AssetFixture
 {
-    public $exampleParam;
+    public $dataFile = __DIR__.'/data/assets.php';
+    public $depends = [VolumesFixture::class, VolumesFolderFixture::class];
+
 }

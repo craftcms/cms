@@ -4,22 +4,19 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.github.io/license/
  */
+namespace craft\test\mockclasses\models;
 
-namespace craftunit\support\mockclasses\components;
 
-use craft\base\Serializable as SerializableInterface;
+use craft\base\Model;
 
 /**
- * Class Serializable.
+ * Class ExampleModel.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0
  */
-class Serializable implements SerializableInterface
+class ExampleModel extends Model
 {
-    public function serialize()
-    {
-        return 'Serialized data';
-    }
+    public $exampleParam;
 }

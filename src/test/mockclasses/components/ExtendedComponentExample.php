@@ -5,7 +5,7 @@
  * @license   https://craftcms.github.io/license/
  */
 
-namespace craftunit\support\mockclasses\components;
+namespace craft\test\mockclasses\components;
 
 /**
  * Class ExtendedComponentExample.

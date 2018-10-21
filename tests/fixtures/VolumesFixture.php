@@ -4,23 +4,23 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.github.io/license/
  */
+namespace craftunit\fixtures;
 
-
-namespace craftunit\support\mockclasses\components;
-
-use craft\base\ComponentInterface;
+use craft\records\Volume;
+use yii\test\ActiveFixture;
 
 /**
- * Class ComponentExample.
+ * Class VolumesFixture.
+ *
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0
  */
-class ComponentExample implements ComponentInterface
+class VolumesFixture extends ActiveFixture
 {
-    public static function displayName() : string
-    {
-        return 'Component example';
-    }
+    public $modelClass = Volume::class;
+    public $dataFile = __DIR__.'/data/volumes.php';
+
+    const BASE_URL = 'https://cdn.test.craftcms.dev/';
 }

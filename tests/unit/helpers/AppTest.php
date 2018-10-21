@@ -145,7 +145,7 @@ class AppTest extends \Codeception\Test\Unit
     public function testLicenseKey()
     {
         $this->assertSame(250, strlen(App::licenseKey()));
-        // TODO: More needed here to test with constant and invalid file path. See coverage report for more info. 
+        // TODO: More needed here to test with constant and invalid file path. See coverage report for more info.
     }
 
     /**

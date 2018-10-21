@@ -11,7 +11,7 @@ namespace craftunit\validators;
 
 use Codeception\Test\Unit;
 use craft\validators\ArrayValidator;
-use craftunit\support\mockclasses\models\ExampleModel;
+use craft\test\mockclasses\models\ExampleModel;
 
 /**
  * Class ArrayValidator.

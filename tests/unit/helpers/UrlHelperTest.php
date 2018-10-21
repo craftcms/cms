@@ -8,11 +8,7 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
-use craft\db\MigrationManager;
-use craft\fields\Url;
-use craft\helpers\MigrationHelper;
 use craft\helpers\UrlHelper;
-use craft\i18n\PhpMessageSource;
 
 /**
  * Unit tests for the Url Helper class.
@@ -563,6 +559,21 @@ class UrlHelperTest extends Unit
 
         $this->assertSame('http', UrlHelper::getSchemeForTokenizedUrl());
         return true;
+    }
+
+    public function testSchemeForTokenizedBasedOnConfig()
+    {
+        // Run down the logic to see what we will need to require.
+        $config =  \Craft::$app->getConfig()->getGeneral();
+        $useSslOnTokenizedUrls = \Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls;
+
+        $config->useSslOnTokenizedUrls = true;
+        $this->assertSame('https', UrlHelper::getSchemeForTokenizedUrl());
+
+        $config->useSslOnTokenizedUrls = false;
+        $this->assertSame('http', UrlHelper::getSchemeForTokenizedUrl());
+
+        $config->useSslOnTokenizedUrls = $useSslOnTokenizedUrls;
     }
 
 

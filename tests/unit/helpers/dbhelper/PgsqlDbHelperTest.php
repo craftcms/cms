@@ -5,8 +5,6 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Db;
-use yii\db\pgsql\Schema;
-
 /**
  * Unit tests for the DB Helper class where its output may need to be pgsql specific. Will be skipped if db isnt pgsql.
  *
@@ -97,6 +95,27 @@ class PgsqlDbHelperTest extends Unit
                 ],
                 ['content_table', ':empty:, field_2', '!=']
             ],
+        ];
+    }
+
+    /**
+     * @dataProvider getTextualCollumnType
+     */
+    public function testGetTextualCollumnTypeByContentLength($result, $input)
+    {
+        $textualCapacity = Db::getTextualColumnStorageCapacity($input);
+        $this->assertSame($result, $textualCapacity);
+    }
+
+    public function getTextualCollumnType()
+    {
+        return [
+            ['text', 254],
+            ['text', 65534],
+            ['text', 16777214],
+            ['text', 4294967294],
+            ['text', false],
+            ['text', null],
         ];
     }
 

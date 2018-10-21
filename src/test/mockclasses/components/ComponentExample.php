@@ -4,20 +4,21 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.github.io/license/
  */
+namespace craft\test\mockclasses\components;
 
-namespace craftunit\fixtures;
-
-use craft\records\User;
+use craft\base\ComponentInterface;
 
 /**
- * A super simple test fixture demonstrating how fixtures work in craft/yii.
+ * Class ComponentExample.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since  3.0
  */
-class TestFixture extends \yii\test\ActiveFixture
+class ComponentExample implements ComponentInterface
 {
-    public $modelClass = User::class;
-    public $dataFile = __DIR__.'/data/test.php';
+    public static function displayName() : string
+    {
+        return 'Component example';
+    }
 }
