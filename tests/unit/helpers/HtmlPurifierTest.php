@@ -73,16 +73,10 @@ class HtmlPurifierTest extends Unit
 
     public function testConfigure()
     {
-        $purifier_config = \HTMLPurifier_Config::createDefault();
-        $purifier_config->set('HTML.AllowedElements', 'p, a, ul, ol, li, h1, h2, h3, h4, h5, h6, br, strong, em, b, i');
-        $purifier_config->set('HTML.AllowedAttributes', '');
-        $purifier_config->set('CSS.AllowedProperties', '');
-        $purifier_config->set('AutoFormat.RemoveEmpty', true);
-        $purifier_config->set('AutoFormat.AutoParagraph', true);
-// May cause problems with empty table cells and headers
-        $purifier_config->set('AutoFormat.RemoveEmpty.RemoveNbsp', true);
-
-
+        $config = \HTMLPurifier_Config::createDefault();
+        HtmlPurifier::configure($config);
+        $this->assertSame('1', $config->get('HTML.DefinitionID'));
+        $this->assertSame('', $config->get('Attr.DefaultImageAlt'));
+        $this->assertSame('', $config->get('Attr.DefaultInvalidImageAlt'));
     }
-
 }

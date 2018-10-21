@@ -114,8 +114,10 @@ class ImageHelperTest extends Unit
                 'channels' => 3
             ], dirname(__FILE__, 3).'\_data\assets\files\google.png'],
             [false, dirname(__FILE__, 3).'\_data\assets\files\no-ihdr.png'],
+            [false, dirname(__FILE__, 3).'\_data\assets\files\invalid-ihdr.png'],
             [false, ''],
             [false, dirname(__FILE__, 3).'\_data\assets\files\ign.jpg'],
+            // TODO: Test empty unpack() function  and invalid IHDR chunks and INVALID color value. See coverage for more.
         ];
     }
 
@@ -159,7 +161,50 @@ class ImageHelperTest extends Unit
             [[200, 200], dirname(__FILE__, 3).'\_data\assets\files\google.png'],
             [[0, 0], dirname(__FILE__, 3).'\_data\assets\files\random.tiff'],
             [[100.0, 100.0], dirname(__FILE__, 3).'\_data\assets\files\gng.svg'],
+        ];
+    }
 
+    /**
+     * @dataProvider parseSvgData
+     * @param $result
+     * @param $input
+     */
+    public function testParseSvgImageSize($result, $input)
+    {
+        $parsed = Image::parseSvgSize($input);
+        $this->assertSame($result, $parsed);
+    }
+    public function parseSvgData()
+    {
+        return [
+            [[140.0, 41.0], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg')],
+            [[100.0, 100.0], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\gng.svg')],
+
+            // This svg is same as craft-logo but we removed viewbox="" and height=""/width="" so it returns 100.0 100.0 instead of 140.0 41.0
+            [[100, 100], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\no-dimension-svg.svg')],
+            [[100, 100], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\google.png')],
+        ];
+    }
+
+    /**
+     * @dataProvider imageByStreamData
+     * @param $result
+     * @param $input
+     */
+    public function testImageByStream($result, $input)
+    {
+        $stream = Image::imageSizeByStream($input);
+        $this->assertSame($result, $stream);
+    }
+    public function imageByStreamData()
+    {
+        return [
+            [[400, 300], fopen(dirname(__FILE__, 3).'\_data\assets\files\example-gif.gif', 'r')],
+            [[960, 640], fopen(dirname(__FILE__, 3).'\_data\assets\files\background.jpg', 'r')],
+            [[200, 200], fopen(dirname(__FILE__, 3).'\_data\assets\files\google.png', 'r')],
+            [false, fopen(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg', 'r')],
+
+            // TODO: Generate a bunch of invalid image formats that generate exceptions.
         ];
     }
 }
