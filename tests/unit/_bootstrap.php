@@ -3,3 +3,4 @@
 
 // Autoload the fixtures
 \Codeception\Util\Autoload::addNamespace('', dirname(__DIR__).'/fixtures');
+

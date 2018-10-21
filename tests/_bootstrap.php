@@ -44,7 +44,6 @@ if (file_exists(__DIR__.'/.env')) {
     (new Dotenv\Dotenv(__DIR__))->load();
 }
 
-
 // Set aliases
 
 Craft::setAlias('@lib', $libPath);

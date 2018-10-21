@@ -10,6 +10,7 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
+use craft\elements\Asset;
 use craft\helpers\Assets;
 use craftunit\fixtures\AssetsFixture;
 use craftunit\fixtures\VolumesFolderFixture;
@@ -39,8 +40,8 @@ class AssetsHelperTest extends Unit
                 'class' => VolumesFolderFixture::class,
             ],
             'assets' => [
-                'class' => AssetsFixture::class,
-            ],
+                'class' => AssetsFixture::class
+            ]
         ];
     }
 

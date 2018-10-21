@@ -96,11 +96,69 @@ class ImageHelperTest extends Unit
      */
     public function testPngImageInfo($result, $input)
     {
-
+        $imageInfo = Image::pngImageInfo($input);
+        $this->assertSame($result, $imageInfo);
     }
     public function pngImageInfoData()
     {
         return [
+            [[
+                'width' => 200,
+                'height' => 200,
+                'bit-depth' => 8,
+                'color' => 2,
+                'compression' => 0,
+                'filter' => 0,
+                'interface' => 0,
+                'color-type' => 'Truecolour',
+                'channels' => 3
+            ], dirname(__FILE__, 3).'\_data\assets\files\google.png'],
+            [false, dirname(__FILE__, 3).'\_data\assets\files\no-ihdr.png'],
+            [false, ''],
+            [false, dirname(__FILE__, 3).'\_data\assets\files\ign.jpg'],
+        ];
+    }
+
+    /**
+     * @dataProvider canHaveExitData
+     * @param $result
+     * @param $input
+     */
+    public function testCanHaveExifData($result, $input)
+    {
+        $canHavExit = Image::canHaveExifData($input);
+        $this->assertSame($result, $canHavExit);
+    }
+    public function canHaveExitData()
+    {
+        return [
+            [true, dirname(__FILE__, 3).'\_data\assets\files\background.jpg'],
+            [true, dirname(__FILE__, 3).'\_data\assets\files\background.jpeg'],
+            [true, dirname(__FILE__, 3).'\_data\assets\files\random.tiff'],
+
+            [false, dirname(__FILE__, 3).'\_data\assets\files\random.tif'],
+            [false, dirname(__FILE__, 3).'\_data\assets\files\empty-file.text'],
+            [false, dirname(__FILE__, 3).'\_data\assets\files\google.png'],
+        ];
+    }
+
+    /**
+     * @dataProvider imageSizeData
+     * @param $result
+     * @param $input
+     */
+    public function testImageSize($result, $input)
+    {
+        $imageSize = Image::imageSize($input);
+        $this->assertSame($result, $imageSize);
+    }
+    public function imageSizeData()
+    {
+        return [
+            [[960, 640], dirname(__FILE__, 3).'\_data\assets\files\background.jpg'],
+            [[200, 200], dirname(__FILE__, 3).'\_data\assets\files\google.png'],
+            [[0, 0], dirname(__FILE__, 3).'\_data\assets\files\random.tiff'],
+            [[100.0, 100.0], dirname(__FILE__, 3).'\_data\assets\files\gng.svg'],
 
         ];
     }
