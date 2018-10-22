@@ -105,6 +105,11 @@ class Request extends \yii\web\Request
     private $_actionSegments;
 
     /**
+     * @var bool
+     */
+    private $_isLivePreview = false;
+
+    /**
      * @var bool|null
      */
     private $_isMobileBrowser;
@@ -455,11 +460,17 @@ class Request extends \yii\web\Request
      */
     public function getIsLivePreview(): bool
     {
-        return (
-            $this->getIsSiteRequest() &&
-            $this->getIsActionRequest() &&
-            $this->getBodyParam('livePreview')
-        );
+        return $this->_isLivePreview;
+    }
+
+    /**
+     * Sets whether this is a Live Preview request.
+     *
+     * @param bool $isLivePreview
+     */
+    public function setIsLivePreview(bool $isLivePreview)
+    {
+        $this->_isLivePreview = $isLivePreview;
     }
 
     /**

@@ -4,6 +4,7 @@
 - Added the Project Config, a portable and centralized configuration for system settings. ([#1429](https://github.com/craftcms/cms/issues/1429)) 
 - Elements, field layouts, sites, and site groups are now soft-deleted. ([#867](https://github.com/craftcms/cms/issues/867))
 - Entries, categories, and users can now be restored within the Control Panel by searching for `is:trashed` and clicking the “Restore” button.
+- Added cross-domain support for Live Preview. ([#1521](https://github.com/craftcms/cms/issues/1521))
 - Custom fields can now opt out of being included in elements’ search keywords. ([#2600](https://github.com/craftcms/cms/issues/2600))
 - Added the `disableAdminFunctions` config setting.
 - Added the `softDeleteDuration` config setting.
@@ -20,6 +21,7 @@
 - Added `craft\base\Field::EVENT_BEFORE_ELEMENT_RESTORE`.
 - Added `craft\base\FieldInterface::afterElementRestore()`.
 - Added `craft\base\FieldInterface::beforeElementRestore()`.
+- Added `craft\controllers\LivePreviewController`.
 - Added `craft\db\Command::restore()`.
 - Added `craft\db\Command::softDelete()`.
 - Added `craft\db\Migration::restore()`.
@@ -62,6 +64,7 @@
 - System user permissions now reference things by their UIDs rather than IDs (e.g. `editEntries:<UID>` rather than `editEntries:<ID>`).
 - Animated gif thumbnails are no longer animated. ([#3110](https://github.com/craftcms/cms/issues/3110))
 - Token params can now live in either the query string or the POST request body.
+- Element types that support Live Preview must now hash the `previewAction` value for `Craft.LivePreview`.
 
 ### Deprecated
 - Deprecated `craft\base\ApplicationTrait::getIsSystemOn()`. `getIsLive()` should be used instead.
@@ -70,3 +73,6 @@
 - Deprecated `craft\models\Info::getOn()`. `Craft::$app->getIsLive()` should be used instead.
 - Deprecated `craft\models\Info::getTimezone()`. `Craft::$app->getTimeZone()` should be used instead.
 - Deprecated `craft\services\SystemSettings`. `craft\services\ProjectConfig` should be used instead.
+
+### Security
+- It’s no longer possible to spoof Live Preview requests.

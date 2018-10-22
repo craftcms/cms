@@ -302,7 +302,7 @@ class EntriesController extends BaseEntriesController
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $entry->getUrl(),
-                    'previewAction' => 'entries/preview-entry',
+                    'previewAction' => Craft::$app->getSecurity()->hashData('entries/preview-entry'),
                     'previewParams' => [
                         'sectionId' => $section->id,
                         'entryId' => $entry->id,

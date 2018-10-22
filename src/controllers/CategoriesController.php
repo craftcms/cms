@@ -361,7 +361,7 @@ class CategoriesController extends Controller
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $category->getUrl(),
-                    'previewAction' => 'categories/preview-category',
+                    'previewAction' => Craft::$app->getSecurity()->hashData('categories/preview-category'),
                     'previewParams' => [
                         'groupId' => $variables['group']->id,
                         'categoryId' => $category->id,

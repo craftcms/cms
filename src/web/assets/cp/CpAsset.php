@@ -118,6 +118,7 @@ JS;
             'Close Live Preview',
             'Close',
             'Continue',
+            'Could not create a Live Preview token.',
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
@@ -267,6 +268,7 @@ JS;
             'systemUid' => Craft::$app->getSystemUid(),
             'timepickerOptions' => $this->_timepickerOptions($locale, $orientation),
             'timezone' => Craft::$app->getTimeZone(),
+            'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
             'useCompressedJs' => (bool)$generalConfig->useCompressedJs,
             'usePathInfo' => (bool)$generalConfig->usePathInfo,

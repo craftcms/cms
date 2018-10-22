@@ -80,6 +80,11 @@ abstract class Controller extends \yii\web\Controller
      */
     public function beforeAction($action)
     {
+        // Don't enable CSRF validation for Live Preview requests
+        if (Craft::$app->getRequest()->getIsLivePreview()) {
+            $this->enableCsrfValidation = false;
+        }
+
         if (!parent::beforeAction($action)) {
             return false;
         }
