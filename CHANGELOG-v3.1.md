@@ -61,6 +61,7 @@
 - All users now have the ability to delete their own user accounts. ([#3013](https://github.com/craftcms/cms/issues/3013))
 - System user permissions now reference things by their UIDs rather than IDs (e.g. `editEntries:<UID>` rather than `editEntries:<ID>`).
 - Animated gif thumbnails are no longer animated. ([#3110](https://github.com/craftcms/cms/issues/3110))
+- Token params can now live in either the query string or the POST request body.
 
 ### Deprecated
 - Deprecated `craft\base\ApplicationTrait::getIsSystemOn()`. `getIsLive()` should be used instead.
