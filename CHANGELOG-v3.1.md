@@ -46,6 +46,8 @@
 - Added `craft\services\ProjectConfig`.
 - Added `craft\services\Sections::getSectionByUid()`.
 - Added `craft\services\Sites::restoreSiteById()`.
+- Added `craft\web\Controller::requireCpRequest()`.
+- Added `craft\web\Controller::requireSiteRequest()`.
 - Added the ActiveRecord Soft Delete Extension for Yii2.
 - Added the Symfony Yaml Component.
 

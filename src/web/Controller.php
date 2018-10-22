@@ -265,6 +265,30 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
+     * Throws a 400 error if the current request isn’t a Control Panel request.
+     *
+     * @throws BadRequestHttpException if the request is not a CP request
+     */
+    public function requireCpRequest()
+    {
+        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+            throw new BadRequestHttpException('Request must be a Control Panel request');
+        }
+    }
+
+    /**
+     * Throws a 400 error if the current request isn’t a site request.
+     *
+     * @throws BadRequestHttpException if the request is not a site request
+     */
+    public function requireSiteRequest()
+    {
+        if (!Craft::$app->getRequest()->getIsSiteRequest()) {
+            throw new BadRequestHttpException('Request must be a site request');
+        }
+    }
+
+    /**
      * Redirects to the URI specified in the POST.
      *
      * @param mixed $object Object containing properties that should be parsed for in the URL.
