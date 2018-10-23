@@ -602,10 +602,14 @@ class SectionsService extends BaseApplicationComponent
 							if (!$isNewSection)
 							{
 								// Re-save the entrytype name if the section name just changed
-								if (!$isNewSection && $oldSection->name != $section->name)
+								if (!$isNewSection && (
+									$oldSection->name != $section->name ||
+									$oldSection->handle != $section->handle
+								))
 								{
 									$entryType = $this->getEntryTypeById($entryTypeId);
 									$entryType->name = $section->name;
+									$entryType->handle = $section->handle;
 									$this->saveEntryType($entryType);
 								}
 
