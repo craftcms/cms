@@ -5,7 +5,7 @@
 ### Changed
 - Single sections’ entry types’ handles are now updated to match their section’s handle whenever the section is saved. ([#2824](https://github.com/craftcms/cms/issues/2824))
 - Animated GIF thumbnails are no longer animated. ([#3110](https://github.com/craftcms/cms/issues/3110))
-- Craft now throws an exception if an asset is uploaded sucecssfully but its record can’t be saved.
+- Craft now throws an exception if an asset is uploaded successfully but its record can’t be saved.
 - Updated jQuery Touch Events to 2.0.0.
 - Updated Garnish to 0.1.29.
 
