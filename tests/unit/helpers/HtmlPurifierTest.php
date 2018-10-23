@@ -78,5 +78,6 @@ class HtmlPurifierTest extends Unit
         $this->assertSame('1', $config->get('HTML.DefinitionID'));
         $this->assertSame('', $config->get('Attr.DefaultImageAlt'));
         $this->assertSame('', $config->get('Attr.DefaultInvalidImageAlt'));
+
     }
 }

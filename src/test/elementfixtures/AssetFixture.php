@@ -37,6 +37,7 @@ abstract class AssetFixture extends ElementFixture
             foreach ($data as $handle => $value) {
                 $element->$handle = $value;
             }
+
             try {
                 $result = Craft::$app->getElements()->saveElement($element);
             } catch (\PHPUnit\Framework\Exception $e) {
