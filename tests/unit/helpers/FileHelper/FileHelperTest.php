@@ -25,6 +25,18 @@ class FileHelperTest extends Unit
      */
     protected $tester;
 
+    public function testCreateRemove()
+    {
+        $location = dirname(__DIR__, 4).'/at-root';
+        FileHelper::createDirectory('at-root');
+        $this->assertDirectoryExists($location);
+
+        FileHelper::removeDirectory($location);
+        $this->assertDirectoryNotExists($location);
+
+        $this->assertNull(FileHelper::removeDirectory('notadir'));
+    }
+
     /**
      * @dataProvider pathNormalizedData
      *
@@ -145,14 +157,111 @@ class FileHelperTest extends Unit
      */
     public function testGetMimeType($result, $file, $magicFile, $checkExtension)
     {
-        $mimeType = FileHelper::getMimeType();
+        $mimeType = FileHelper::getMimeType($file, $magicFile, $checkExtension);
         $this->assertSame($result, $mimeType);
     }
     public function mimeTypeData()
     {
         return [
-            []
+            ['application/pdf', dirname(__DIR__, 3).'/_data/assets/files/pdf-sample.pdf', null, true],
+            ['text/plain', dirname(__DIR__, 3).'/_data/assets/files/empty-file.text', null, true],
+            ['text/html', dirname(__DIR__, 3).'/_data/assets/files/test.html', null, true],
+            ['image/gif', dirname(__DIR__, 3).'/_data/assets/files/example-gif.gif', null, true],
+            ['application/pdf', dirname(__DIR__, 3).'/_data/assets/files/pdf-sample.pdf', null, true],
+            ['image/svg+xml', dirname(__DIR__, 3).'/_data/assets/files/gng.svg', null, true],
+            ['application/xml', dirname(__DIR__, 3).'/_data/assets/files/random.xml', null, true],
+            ['directory', __DIR__, null, true],
         ];
     }
+
+    /**
+     * @dataProvider mimeTypeFalseData
+     * @param $result
+     * @param $file
+     *
+     * @throws \yii\base\InvalidConfigException\
+     */
+    public function testGetMimeTypeOnFalse($result, $file)
+    {
+        $mimeType = FileHelper::getMimeType($file, null, false);
+        $this->assertSame($result, $mimeType);
+    }
+    public function mimeTypeFalseData()
+    {
+        return [
+            ['text/plain', dirname(__DIR__, 3).'/_data/assets/files/test.html'],
+
+        ];
+    }
+
+    public function testGetMimeTypeExceptions()
+    {
+        $this->tester->expectException(ErrorException::class, function () {
+            FileHelper::getMimeType('notafile');
+        });
+    }
+
+    /**
+     * @dataProvider sanitizedFilenameData
+     * @param $result
+     * @param $input
+     * @param $options
+     */
+    public function testFilenameSanitazion($result, $input, $options)
+    {
+        $sanitized = FileHelper::sanitizeFilename($input, $options);
+        $this->assertSame($result, $sanitized);
+    }
+    public function sanitizedFilenameData()
+    {
+        return [
+            ['notafile', 'notafile', []],
+            ['not-a-file', 'not a file', []],
+            ['im-a-file@.svg', 'im-a-file!@#$%^&*(.svg', []],
+            ['i(c)m-a-file.svg', 'i£©m-a-file⚽🐧🎺.svg', ['asciiOnly' => true]],
+            ['not||a||file', 'not a file', ['separator' => '||']],
+
+            // Set the seperator to an non-ascii char will get added and then stripped.
+            ['notafile', 'not a file', ['separator' => '🐧', 'asciiOnly' => true]],
+            ['notafile', 'not a file', ['separator' => '🐧', 'asciiOnly' => true]],
+        ];
+    }
+
+    /**
+     * @dataProvider mimeTypeData
+     * @param $result
+     * @param $input
+     * @param $magicFile
+     * @param $checkExtension
+     */
+    public function testIsSvg($result, $input, $magicFile, $checkExtension)
+    {
+        $result = false;
+        if (strpos($input, '.svg') !== false) {
+            $result = true;
+        }
+
+        $isSvg = FileHelper::isSvg($input, $magicFile, $checkExtension);
+        $this->assertSame($result, $isSvg);
+    }
+
+    /**
+     * @dataProvider mimeTypeData
+     * @param $result
+     * @param $input
+     * @param $magicFile
+     * @param $checkExtension
+     */
+    public function testIsGif($result, $input, $magicFile, $checkExtension)
+    {
+        $result = false;
+        if (strpos($input, '.gif') !== false) {
+            $result = true;
+        }
+
+        $isSvg = FileHelper::isGif($input, $magicFile, $checkExtension);
+        $this->assertSame($result, $isSvg);
+    }
+
 
 }
