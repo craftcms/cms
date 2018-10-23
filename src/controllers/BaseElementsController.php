@@ -29,17 +29,12 @@ abstract class BaseElementsController extends Controller
     /**
      * Initializes the application component.
      *
-     * @throws ForbiddenHttpException if this is not a Control Panel request
+     * @throws BadRequestHttpException
      */
     public function init()
     {
-        // Element controllers only support JSON responses
         $this->requireAcceptsJson();
-
-        // Element controllers are only available to the Control Panel
-        if (!Craft::$app->getRequest()->getIsCpRequest()) {
-            throw new ForbiddenHttpException('Action only available from the Control Panel');
-        }
+        $this->requireCpRequest();
     }
 
     // Protected Methods

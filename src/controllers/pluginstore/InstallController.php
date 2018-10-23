@@ -54,7 +54,10 @@ class InstallController extends BaseUpdaterController
         // Only admins can install plugins
         $this->requireAdmin();
 
-        if (!Craft::$app->getConfig()->getGeneral()->allowUpdates) {
+        if (
+            !Craft::$app->getConfig()->getGeneral()->allowUpdates ||
+            Craft::$app->getConfig()->getGeneral()->disableAdminFunctions
+        ) {
             throw new ForbiddenHttpException('Installation of plugins from the Plugin Store is disabled.');
         }
 

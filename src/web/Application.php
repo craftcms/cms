@@ -207,6 +207,13 @@ class Application extends \yii\web\Application
             throw new ServiceUnavailableHttpException();
         }
 
+        $projectConfig = $this->getProjectConfig();
+
+        // Make sure schema required by config files aligns with what we have.
+        if ($projectConfig->isUpdatePending() && !$projectConfig->getAreConfigSchemaVersionsCompatible()) {
+            return $this->_processComposerInstallLogic($request) ?: $this->getResponse();
+        }
+
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
         // If we're in maintenance mode and it's not a site request, show the manual update template.
         if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
@@ -228,13 +235,18 @@ class Application extends \yii\web\Application
             }
         }
 
-        // If the system is offline, make sure they have permission to be here
-        $this->_enforceSystemStatusPermissions($request);
-
         // Check if a plugin needs to update the database.
         if ($this->getUpdates()->getIsPluginDbUpdateNeeded()) {
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
         }
+
+        // Check if project configuration needs to apply some changes here
+        if ($projectConfig->isUpdatePending()) {
+            return $this->_processConfigUpdateLogic($request) ?: $this->getResponse();
+        }
+
+        // If the system is offline, make sure they have permission to be here
+        $this->_enforceSystemStatusPermissions($request);
 
         // If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
         if ($request->getIsCpRequest() && !($request->getIsActionRequest() && $this->_isSpecialCaseActionRequest($request))) {
@@ -671,6 +683,68 @@ class Application extends \yii\web\Application
     }
 
     /**
+     * @param Request $request
+     * @return Response|null
+     * @throws HttpException
+     * @throws ServiceUnavailableHttpException
+     * @throws \yii\base\ExitException
+     */
+    private function _processConfigUpdateLogic(Request $request)
+    {
+        $this->_unregisterDebugModule();
+
+        // Let all non-action CP requests through.
+        if (
+            $request->getIsCpRequest() &&
+            (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
+        ) {
+            // Show the manual update notification template
+            return $this->runAction('templates/config-update-notification');
+        }
+
+        // We'll also let update actions go through
+        if ($request->getIsActionRequest()) {
+            $actionSegments = $request->getActionSegments();
+            if (
+                ArrayHelper::firstValue($actionSegments) === 'updater' ||
+                $actionSegments === ['app', 'migrate'] ||
+                $actionSegments === ['pluginstore', 'install', 'migrate']
+            ) {
+                return $this->runAction(implode('/', $actionSegments));
+            }
+        }
+
+        // If an exception gets throw during the rendering of the 503 template, let
+        // TemplatesController->actionRenderError() take care of it.
+        throw new ServiceUnavailableHttpException();
+    }
+
+    /**
+     * @param Request $request
+     * @return Response|null
+     * @throws HttpException
+     * @throws ServiceUnavailableHttpException
+     * @throws \yii\base\ExitException
+     */
+    private function _processComposerInstallLogic(Request $request)
+    {
+        $this->_unregisterDebugModule();
+
+        // Let all non-action CP requests through.
+        if (
+            $request->getIsCpRequest() &&
+            (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
+        ) {
+            // Show the manual update notification template
+            return $this->runAction('templates/composer-install-notification');
+        }
+
+        // If an exception gets throw during the rendering of the 503 template, let
+        // TemplatesController->actionRenderError() take care of it.
+        throw new ServiceUnavailableHttpException();
+    }
+
+    /**
      * Checks if the system is off, and if it is, enforces the "Access the site/CP when the system is off" permissions.
      *
      * @param Request $request
@@ -712,7 +786,7 @@ class Application extends \yii\web\Application
      */
     private function _checkSystemStatusPermissions(Request $request): bool
     {
-        if ($this->getIsSystemOn() || $this->_isSpecialCaseActionRequest($request)) {
+        if ($this->getIsLive() || $this->_isSpecialCaseActionRequest($request)) {
             return true;
         }
 

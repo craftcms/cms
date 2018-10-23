@@ -137,6 +137,14 @@ class Updates extends Component
                 ['handle' => $plugin->id])
             ->execute();
 
+        // Only update the schema version if it's changed from what's in the file,
+        // so we don't accidentally overwrite other pending changes
+        $projectConfig = Craft::$app->getProjectConfig();
+        $key = Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion';
+        if ($projectConfig->get($key, true) !== $plugin->schemaVersion) {
+            Craft::$app->getProjectConfig()->set($key, $plugin->schemaVersion);
+        }
+
         return (bool)$affectedRows;
     }
 
@@ -311,6 +319,15 @@ class Updates extends Component
         $info->version = Craft::$app->getVersion();
         $info->schemaVersion = Craft::$app->schemaVersion;
 
-        return Craft::$app->saveInfo($info);
+        Craft::$app->saveInfo($info);
+
+        // Only update the schema version if it's changed from what's in the file,
+        // so we don't accidentally overwrite other pending changes
+        $projectConfig = Craft::$app->getProjectConfig();
+        if ($projectConfig->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, true) !== $info->schemaVersion) {
+            Craft::$app->getProjectConfig()->set(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, $info->schemaVersion);
+        }
+
+        return true;
     }
 }

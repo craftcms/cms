@@ -203,6 +203,16 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function archived(bool $value = true);
 
     /**
+     * Sets the [[$trashed]] property.
+     *
+     * @param bool|null $value The property value (defaults to true)
+     * @return static self reference
+     */
+    public function trashed($value = true);
+
+    /**
+     * Sets the [[$dateCreated]] property.
+     *
      * Narrows the query results based on the {elements}’ creation dates.
      *
      * Possible values include:

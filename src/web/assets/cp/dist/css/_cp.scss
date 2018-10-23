@@ -45,7 +45,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   -webkit-overflow-scrolling: touch;
   @include light-on-dark-text;
   background: $sidebarBgColor;
-  box-shadow: none;
+  box-shadow: inset -1px 0 0 darken($sidebarBgColor, 10%);
 
   #devmode {
     flex: 0 0 4px;
@@ -231,6 +231,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       &:not(.has-subnav) > a.sel {
         color: #fff;
         background: darken($sidebarBgColor, 6%);
+        box-shadow: inset 0 0 0 1px darken($sidebarBgColor, 10%);
         border-color: $submitColor;
         opacity: 1;
 

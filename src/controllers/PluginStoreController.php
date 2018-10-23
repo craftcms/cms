@@ -58,13 +58,16 @@ class PluginStoreController extends Controller
             'edition' => strtolower(Craft::$app->getEditionName()),
         ];
 
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $allowUpdates = $generalConfig->allowUpdates && !$generalConfig->disableAdminFunctions;
+
         $view = $this->getView();
         $view->registerJsFile('https://js.stripe.com/v2/');
         $view->registerJsFile('https://js.stripe.com/v3/');
         $view->registerJs('window.craftApiEndpoint = "' . Craft::$app->getPluginStore()->craftApiEndpoint . '";', View::POS_BEGIN);
         $view->registerJs('window.pluginStoreAppBaseUrl = "' . $pluginStoreAppBaseUrl . '";', View::POS_BEGIN);
         $view->registerJs('window.cmsInfo = ' . Json::encode($cmsInfo) . ';', View::POS_BEGIN);
-        $view->registerJs('window.allowUpdates = ' . Json::encode(Craft::$app->getConfig()->getGeneral()->allowUpdates) . ';', View::POS_BEGIN);
+        $view->registerJs('window.allowUpdates = ' . Json::encode($allowUpdates) . ';', View::POS_BEGIN);
         $view->registerJs('window.cmsLicenseKey = ' . Json::encode(App::licenseKey()) . ';', View::POS_BEGIN);
 
         $view->registerAssetBundle(PluginStoreAsset::class);

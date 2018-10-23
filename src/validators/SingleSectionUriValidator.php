@@ -45,8 +45,10 @@ class SingleSectionUriValidator extends Validator
         // Make sure no other elements are using this URI already
         $query = (new Query())
             ->from(['{{%elements_sites}} elements_sites'])
+            ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
                 'elements_sites.siteId' => $model->siteId,
+                'elements.dateDeleted' => null,
             ]);
 
         if (Craft::$app->getDb()->getIsMysql()) {
@@ -61,7 +63,7 @@ class SingleSectionUriValidator extends Validator
 
         if ($section->id) {
             $query
-                ->innerJoin('{{%entries}} entries', '[[entries.id]] = [[elements_sites.elementId]]')
+                ->innerJoin('{{%entries}} entries', '[[entries.id]] = [[elements.id]]')
                 ->andWhere(['not', ['entries.sectionId' => $section->id]]);
         }
 

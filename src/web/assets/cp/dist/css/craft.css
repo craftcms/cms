@@ -310,8 +310,11 @@ body.rtl th.right, body.rtl td.right { text-align: left; }
 .clearafter:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
 
 .info { vertical-align: bottom; display: inline-block; width: 1em; height: 1.375em; text-align: center; cursor: pointer; overflow: hidden; }
-.info:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; vertical-align: baseline; width: 100%; line-height: 1.375; content: 'info'; color: #b9bfc6; }
-.info:hover:before { color: #0d78f2; }
+.info:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; vertical-align: baseline; width: 100%; line-height: 1.375; color: #b9bfc6; }
+.info:not(.warning):before { content: 'info'; }
+.info:not(.warning):hover:before { color: #0d78f2; }
+.info.warning:before { content: 'alert'; }
+.info.warning:hover:before { color: #e78640; }
 
 .info-hud { max-width: 250px; }
 
@@ -843,8 +846,8 @@ body.rtl table.editable tbody tr td.action + td.action { padding-right: 0; }
 table.editable tbody tr td.code textarea::-webkit-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 table.editable tbody tr td.code textareainput:-ms-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 table.editable tbody tr td.code textarea::-ms-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
+table.editable tbody tr td.code textarea:-moz-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 table.editable tbody tr td.code textarea::-webkit-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
-table.editable tbody tr td.code textarea:-ms-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 table.editable tbody tr td.code textarea::placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 table.editable tbody textarea, table.editable tbody textarea.text, table.editable tbody input.text { display: block; width: 100%; border: none; border-radius: 0; padding: 7px 10px; background: transparent; overflow: hidden; -webkit-transition: none; transition: none; }
 table.editable tbody textarea:focus, table.editable tbody textarea.text:focus, table.editable tbody input.text:focus { border: 1px solid rgba(0, 0, 0, 0.15); padding: 6px 9px; outline: none; }
@@ -1353,9 +1356,9 @@ input:-ms-input-placeholder { color: #b9bfc6; }
 
 ::-ms-input-placeholder { color: #b9bfc6; }
 
-::-webkit-input-placeholder { color: #b9bfc6; }
+:-moz-placeholder { color: #b9bfc6; }
 
-:-ms-input-placeholder { color: #b9bfc6; }
+::-webkit-input-placeholder { color: #b9bfc6; }
 
 ::placeholder { color: #b9bfc6; }
 
@@ -1660,7 +1663,7 @@ html, body { overflow-x: hidden; -webkit-text-size-adjust: 100%; }
 #global-container { display: -webkit-box; display: -ms-flexbox; display: flex; min-height: 0; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: stretch; -ms-flex-align: stretch; align-items: stretch; height: 100vh; width: 100vw; }
 
 /* global sidebar */
-#global-sidebar { -webkit-box-flex: 0; -ms-flex: 0 0 225px; flex: 0 0 225px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; z-index: 100; position: relative; width: 225px; height: 100vh; padding: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; background: #333f4d; -webkit-box-shadow: none; box-shadow: none; }
+#global-sidebar { -webkit-box-flex: 0; -ms-flex: 0 0 225px; flex: 0 0 225px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; z-index: 100; position: relative; width: 225px; height: 100vh; padding: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; background: #333f4d; -webkit-box-shadow: inset -1px 0 0 #1f262e; box-shadow: inset -1px 0 0 #1f262e; }
 #global-sidebar #devmode { -webkit-box-flex: 0; -ms-flex: 0 0 4px; flex: 0 0 4px; width: 100%; min-height: 4px; background: url(../images/dev-mode.svg) repeat-x 21px 0; cursor: help; }
 #global-sidebar a { color: #d7d9db; -webkit-transition: color linear 100ms; transition: color linear 100ms; text-decoration: none; }
 #global-sidebar > a, #global-sidebar *:not(.has-subnav) > a { outline: none; -webkit-transition: background-color linear 100ms; transition: background-color linear 100ms; }
@@ -1699,7 +1702,7 @@ body.rtl #global-sidebar #system-info #system-name #user-info #user-photo { marg
 #global-sidebar #job-icon:hover .progressbar-inner { background: #fff; }
 #global-sidebar #job-icon:hover .icon > span.icon > canvas#job-icon-hover { opacity: 1; }
 #global-sidebar #nav { overflow: visible; }
-#global-sidebar #nav li:not(.has-subnav) > a.sel { color: #fff; background: #27303a; border-color: #da5a47; opacity: 1; }
+#global-sidebar #nav li:not(.has-subnav) > a.sel { color: #fff; background: #27303a; -webkit-box-shadow: inset 0 0 0 1px #1f262e; box-shadow: inset 0 0 0 1px #1f262e; border-color: #da5a47; opacity: 1; }
 #global-sidebar #nav li:not(.has-subnav) > a.sel .icon { opacity: 1; }
 #global-sidebar #nav li a { border-left: 0 solid transparent; }
 body.ltr #global-sidebar #nav li a { padding-left: 18px; }
@@ -1814,7 +1817,6 @@ body.rtl #main-container #main #main-content #content-container #content { borde
 #main-container #main #main-content #details .meta > .field.has-errors { margin: 0 -24px !important; padding: 0 24px; }
 #main-container #main #main-content #details .meta > .field + .field { border-top-color: rgba(0, 0, 20, 0.1); }
 #main-container #main #main-content #details .meta .text::-webkit-input-placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
-#main-container #main #main-content #details .meta .text:-ms-input-placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
 #main-container #main #main-content #details .meta .text::-ms-input-placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
 #main-container #main #main-content #details .meta .text::placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
 body.ltr #main-container #main #main-content #details .meta .ui-datepicker { margin: 0 0 0 -8px ; }

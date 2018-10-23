@@ -94,7 +94,7 @@ class Tag extends Element
 
         foreach (Craft::$app->getTags()->getAllTagGroups() as $tagGroup) {
             $sources[] = [
-                'key' => 'taggroup:' . $tagGroup->id,
+                'key' => 'taggroup:' . $tagGroup->uid,
                 'label' => Craft::t('site', $tagGroup->name),
                 'criteria' => ['groupId' => $tagGroup->id]
             ];

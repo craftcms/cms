@@ -105,11 +105,7 @@ JS;
     }
 
     /**
-     * Performs the action on any elements that match the given criteria.
-     *
-     * @param ElementQueryInterface $query The element query defining which elements the action should affect.
-     * @return bool Whether the action was performed successfully.
-     * @throws Exception
+     * @inheritdoc
      */
     public function performAction(ElementQueryInterface $query): bool
     {
@@ -133,10 +129,11 @@ JS;
         }
 
         // Delete the users
+        $elementsService = Craft::$app->getElements();
         foreach ($users as $user) {
             if (!in_array($user->id, $undeletableIds, false)) {
                 $user->inheritorOnDelete = $transferContentTo;
-                Craft::$app->getElements()->deleteElement($user);
+                $elementsService->deleteElement($user);
             }
         }
 

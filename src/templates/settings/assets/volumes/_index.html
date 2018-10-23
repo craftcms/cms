@@ -20,7 +20,7 @@
             </thead>
             <tbody>
                 {% for volume in volumes %}
-                    <tr data-id="{{ volume.id }}" data-name="{{ volume.name|t('site') }}">
+                    <tr data-id="{{ volume.id }}" data-uid="{{ volume.uid }}" data-name="{{ volume.name|t('site') }}">
                         <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/assets/volumes/' ~ volume.id) }}">{{ volume.name|t('site') }}</a></th>
                         <td scope="row" data-title="{{ 'Handle'|t('app') }}" class="code">{{ volume.handle }}</td>
                         <td data-title="{{ 'Type'|t('app') }}">

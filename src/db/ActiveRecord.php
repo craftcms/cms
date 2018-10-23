@@ -21,9 +21,6 @@ use craft\helpers\StringHelper;
  */
 abstract class ActiveRecord extends \yii\db\ActiveRecord
 {
-    // Static
-    // =========================================================================
-
     // Public Methods
     // =========================================================================
 
@@ -44,7 +41,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
                 $this->dateCreated = $now;
             }
 
-            if ($this->hasAttribute('uid')) {
+            if ($this->hasAttribute('uid') && empty($this->uid)) {
                 $this->uid = StringHelper::UUID();
             }
         }

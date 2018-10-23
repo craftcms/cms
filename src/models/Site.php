@@ -82,6 +82,11 @@ class Site extends Model
      */
     public $sortOrder = 1;
 
+    /**
+     * @var string|null Site UID
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 

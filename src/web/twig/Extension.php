@@ -45,6 +45,7 @@ use DateTimeZone;
 use enshrined\svgSanitize\Sanitizer;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\db\Expression;
 use yii\helpers\Markdown;
 
 /**
@@ -712,6 +713,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('className', 'get_class'),
             new \Twig_SimpleFunction('clone', [$this, 'cloneFunction']),
             new \Twig_SimpleFunction('csrfInput', [$this, 'csrfInputFunction']),
+            new \Twig_SimpleFunction('expression', [$this, 'expressionFunction']),
             new \Twig_SimpleFunction('floor', 'floor'),
             new \Twig_SimpleFunction('getenv', 'getenv'),
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
@@ -757,6 +759,17 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function cloneFunction($var)
     {
         return clone $var;
+    }
+
+    /**
+     * @param mixed $expression
+     * @param mixed $params
+     * @param mixed $config
+     * @return Expression
+     */
+    public function expressionFunction($expression, $params = [], $config = []): Expression
+    {
+        return new Expression($expression, $params, $config);
     }
 
     /**
@@ -949,7 +962,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
         // Only set these things when Craft is installed and not being updated
         if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-            $globals['systemName'] = Craft::$app->getInfo()->name;
+            $globals['systemName'] = Craft::$app->getProjectConfig()->get('system.name');
             /** @noinspection PhpUnhandledExceptionInspection */
             $site = Craft::$app->getSites()->getCurrentSite();
             $globals['currentSite'] = $site;

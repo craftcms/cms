@@ -92,6 +92,16 @@ class Elements extends Component
     const EVENT_AFTER_DELETE_ELEMENT = 'afterDeleteElement';
 
     /**
+     * @event ElementEvent The event that is triggered before an element is restored.
+     */
+    const EVENT_BEFORE_RESTORE_ELEMENT = 'beforeRestoreElement';
+
+    /**
+     * @event ElementEvent The event that is triggered after an element is restored.
+     */
+    const EVENT_AFTER_RESTORE_ELEMENT = 'afterRestoreElement';
+
+    /**
      * @event ElementEvent The event that is triggered before an element is saved.
      */
     const EVENT_BEFORE_SAVE_ELEMENT = 'beforeSaveElement';
@@ -216,12 +226,12 @@ class Elements extends Component
         }
 
         // First get the element ID and type
-
         $query = (new Query())
             ->select(['elements.id', 'elements.type'])
             ->from(['{{%elements}} elements'])
             ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
             ->where([
+                'elements.dateDeleted' => null,
                 'elements_sites.siteId' => $siteId,
             ]);
 
@@ -602,7 +612,6 @@ class Elements extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
 
@@ -854,7 +863,6 @@ class Elements extends Component
             return $success;
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
     }
@@ -924,7 +932,6 @@ class Elements extends Component
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
-
         try {
             // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
             /** @var StructureElementRecord[] $records */
@@ -949,12 +956,12 @@ class Elements extends Component
             // this element is suddenly going to show up in a new query)
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
-            // Delete the elements table rows, which will cascade across all other InnoDB tables
+            // Soft delete the elements table row
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%elements}}', ['id' => $element->id])
+                ->softDelete('{{%elements}}', ['id' => $element->id])
                 ->execute();
 
-            // The searchindex table is probably MyISAM, though
+            // Hard delete the search indexes
             Craft::$app->getDb()->createCommand()
                 ->delete('{{%searchindex}}', ['elementId' => $element->id])
                 ->execute();
@@ -964,14 +971,113 @@ class Elements extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
-
 
         // Fire an 'afterDeleteElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ELEMENT)) {
             $this->trigger(self::EVENT_AFTER_DELETE_ELEMENT, new ElementEvent([
+                'element' => $element,
+            ]));
+        }
+
+        return true;
+    }
+
+    /**
+     * Restores an element.
+     *
+     * @param ElementInterface $element
+     * @return bool Whether the element was restored successfully
+     * @throws Exception if the $element doesn’t have any supported sites
+     * @throws \Throwable if reasons
+     */
+    public function restoreElement(ElementInterface $element): bool
+    {
+        /** @var Element $element */
+        // Fire a 'beforeRestoreElement' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_ELEMENT)) {
+            $this->trigger(self::EVENT_BEFORE_RESTORE_ELEMENT, new ElementEvent([
+                'element' => $element,
+            ]));
+        }
+
+        if (!$element->beforeRestore()) {
+            return false;
+        }
+
+        // Get the sites supported by this element
+        if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
+            throw new Exception("Element {$element->id} has no supported sites.");
+        }
+
+        // Make sure the element actually supports the site it's being saved in
+        $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
+        if (!in_array($element->siteId, $supportedSiteIds, false)) {
+            throw new Exception('Attempting to restore an element in an unsupported site.');
+        }
+
+        // Get the element in each supported site
+        $siteElements = [];
+        /** @var Element|string $class */
+        $class = get_class($element);
+        foreach ($supportedSites as $siteInfo) {
+            $siteId = $siteInfo['siteId'];
+            if ($siteId != $element->siteId) {
+                $siteElement = $class::find()
+                    ->id($element->id)
+                    ->siteId($siteId)
+                    ->anyStatus()
+                    ->trashed(null)
+                    ->one();
+                if ($siteElement) {
+                    $siteElements[] = $siteElement;
+                }
+            }
+        }
+
+        // Make sure it still passes essential validation
+        $element->setScenario(Element::SCENARIO_ESSENTIALS);
+        if (!$element->validate()) {
+            Craft::warning("Unable to restore element {$element->id}: doesn't pass essential validation: " . print_r($element->errors, true), __METHOD__);
+            return false;
+        }
+
+        foreach ($siteElements as $siteElement) {
+            if ($siteElement !== $element) {
+                $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+                if (!$siteElement->validate()) {
+                    Craft::warning("Unable to restore element {$element->id}: doesn't pass essential validation for site {$element->siteId}: " . print_r($element->errors, true), __METHOD__);
+                    throw new Exception("Element {$element->id} doesn't pass essential validation for site {$element->siteId}.");
+                }
+            }
+        }
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            // Restore it
+            Craft::$app->getDb()->createCommand()
+                ->restore('{{%elements}}', ['id' => $element->id])
+                ->execute();
+
+            // Restore its search indexes
+            $searchService = Craft::$app->getSearch();
+            $searchService->indexElementAttributes($element);
+            foreach ($siteElements as $siteElement) {
+                $searchService->indexElementAttributes($siteElement);
+            }
+
+            $element->afterRestore();
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        // Fire an 'afterRestoreElement' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE_ELEMENT)) {
+            $this->trigger(self::EVENT_AFTER_RESTORE_ELEMENT, new ElementEvent([
                 'element' => $element,
             ]));
         }

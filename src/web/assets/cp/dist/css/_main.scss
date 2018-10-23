@@ -592,12 +592,25 @@ td.right {
     vertical-align: baseline;
     width: 100%;
     line-height: 1.375;
-    content: 'info';
     color: $lightTextColor;
   }
 
-  &:hover:before {
-    color: $linkColor;
+  &:not(.warning) {
+    &:before {
+      content: 'info';
+    }
+    &:hover:before {
+      color: $linkColor;
+    }
+  }
+
+  &.warning {
+    &:before {
+      content: 'alert';
+    }
+    &:hover:before {
+      color: $warningColor;
+    }
   }
 }
 

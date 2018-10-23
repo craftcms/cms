@@ -16,6 +16,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\errors\SiteNotFoundException;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
@@ -87,7 +88,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public $source;
 
     /**
-     * @var int|null The site that this field should relate elements from
+     * @var string|null The site that this field should relate elements from
      */
     public $targetSiteId;
 
@@ -605,7 +606,7 @@ JS;
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
             $siteOptions[] = [
                 'label' => Craft::t('site', $site->name),
-                'value' => $site->id
+                'value' => $site->uid
             ];
         }
 
@@ -735,7 +736,11 @@ JS;
         /** @var Element|null $element */
         if (Craft::$app->getIsMultiSite()) {
             if ($this->targetSiteId) {
-                return $this->targetSiteId;
+                try {
+                    return Craft::$app->getSites()->getSiteByUid($this->targetSiteId)->id;
+                } catch (SiteNotFoundException $exception) {
+                    Craft::warning($exception->getMessage(), __METHOD__);
+                }
             }
 
             if ($element !== null) {

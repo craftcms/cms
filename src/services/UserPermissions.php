@@ -15,7 +15,9 @@ use craft\base\Volume;
 use craft\db\Query;
 use craft\elements\User;
 use craft\errors\WrongEditionException;
+use craft\events\ConfigEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\CategoryGroup;
 use craft\models\Section;
 use craft\records\UserPermission as UserPermissionRecord;
@@ -74,7 +76,7 @@ class UserPermissions extends Component
                 'label' => Craft::t('app', 'Access the CP'),
                 'nested' => [
                     'accessCpWhenSystemIsOff' => [
-                        'label' => Craft::t('app', 'Access the CP when the system is off')
+                        'label' => Craft::t('app', 'Access the CP when the system is offline')
                     ],
                     'performUpdates' => [
                         'label' => Craft::t('app', 'Perform Craft CMS and plugin updates')
@@ -105,19 +107,20 @@ class UserPermissions extends Component
                         'registerUsers' => [
                             'label' => Craft::t('app', 'Register users')
                         ],
-                        'administrateUsers' => [
-                            'label' => Craft::t('app', 'Administrate users'),
-                            'nested' => [
-                                'changeUserEmails' => [
-                                    'label' => Craft::t('app', 'Change users’ emails')
-                                ]
-                            ]
+                        'moderateUsers' => [
+                            'label' => Craft::t('app', 'Moderate users'),
+                            'info' => Craft::t('app', 'Includes suspending, unsuspending, and unlocking user accounts.'),
                         ],
                         'assignUserPermissions' => [
                             'label' => Craft::t('app', 'Assign user permissions')
                         ],
                         'assignUserGroups' => [
                             'label' => Craft::t('app', 'Assign user groups')
+                        ],
+                        'administrateUsers' => [
+                            'label' => Craft::t('app', 'Administrate users'),
+                            'info' => Craft::t('app', 'Includes activating user accounts, resetting passwords, and changing email addresses.'),
+                            'warning' => Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.'),
                         ],
                     ],
                 ],
@@ -127,7 +130,7 @@ class UserPermissions extends Component
             ];
 
             foreach (Craft::$app->getUserGroups()->getAllGroups() as $userGroup) {
-                $userPermissions['editUsers']['nested']['assignUserGroups']['nested']['assignUserGroup:' . $userGroup->id] = [
+                $userPermissions['editUsers']['nested']['assignUserGroups']['nested']['assignUserGroup:' . $userGroup->uid] = [
                     'label' => Craft::t('app', 'Assign users to “{group}”', [
                         'group' => Craft::t('site', $userGroup->name)
                     ])
@@ -145,7 +148,7 @@ class UserPermissions extends Component
             $sites = Craft::$app->getSites()->getAllSites();
 
             foreach ($sites as $site) {
-                $permissions[$label]['editSite:' . $site->id] = [
+                $permissions[$label]['editSite:' . $site->uid] = [
                     'label' => Craft::t('app', 'Edit “{title}”',
                         ['title' => Craft::t('site', $site->name)])
                 ];
@@ -194,7 +197,7 @@ class UserPermissions extends Component
 
         foreach ($volumes as $volume) {
             $label = Craft::t('app', 'Volume - {volume}', ['volume' => Craft::t('site', $volume->name)]);
-            $permissions[$label] = $this->_getVolumePermissions($volume->id);
+            $permissions[$label] = $this->_getVolumePermissions($volume->uid);
         }
 
         // Utilities
@@ -301,11 +304,6 @@ class UserPermissions extends Component
     {
         Craft::$app->requireEdition(Craft::Pro);
 
-        // Delete any existing group permissions
-        Craft::$app->getDb()->createCommand()
-            ->delete('{{%userpermissions_usergroups}}', ['groupId' => $groupId])
-            ->execute();
-
         // Lowercase the permissions
         $permissions = array_map('strtolower', $permissions);
 
@@ -313,20 +311,9 @@ class UserPermissions extends Component
         $permissions = $this->_filterOrphanedPermissions($permissions);
 
         if (!empty($permissions)) {
-            $groupPermissionVals = [];
-
-            foreach ($permissions as $permissionName) {
-                $permissionRecord = $this->_getPermissionRecordByName($permissionName);
-                $groupPermissionVals[] = [$permissionRecord->id, $groupId];
-            }
-
-            // Add the new group permissions
-            Craft::$app->getDb()->createCommand()
-                ->batchInsert(
-                    '{{%userpermissions_usergroups}}',
-                    ['permissionId', 'groupId'],
-                    $groupPermissionVals)
-                ->execute();
+            $group = Craft::$app->getUserGroups()->getGroupById($groupId);
+            $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->uid . '.permissions';
+            Craft::$app->getProjectConfig()->set($path, $permissions);
         }
 
         // Cache the new permissions
@@ -419,6 +406,42 @@ class UserPermissions extends Component
         return true;
     }
 
+    /**
+     * Handle any changed group permissions.
+     *
+     * @param ConfigEvent $event
+     */
+    public function handleChangedGroupPermissions(ConfigEvent $event)
+    {
+        // Ensure all user groups are ready to roll
+        ProjectConfigHelper::ensureAllUserGroupsProcessed();
+        $uid = $event->tokenMatches[0];
+        $permissions = $event->newValue;
+        $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
+
+        // Delete any existing group permissions
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%userpermissions_usergroups}}', ['groupId' => $userGroup->id])
+            ->execute();
+
+        $groupPermissionVals = [];
+
+        if ($permissions) {
+            foreach ($permissions as $permissionName) {
+                $permissionRecord = $this->_getPermissionRecordByName($permissionName);
+                $groupPermissionVals[] = [$permissionRecord->id, $userGroup->id];
+            }
+
+            // Add the new group permissions
+            Craft::$app->getDb()->createCommand()
+                ->batchInsert(
+                    '{{%userpermissions_usergroups}}',
+                    ['permissionId', 'groupId'],
+                    $groupPermissionVals)
+                ->execute();
+        }
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -430,7 +453,7 @@ class UserPermissions extends Component
      */
     private function _getSingleEntryPermissions(Section $section): array
     {
-        $suffix = ':' . $section->id;
+        $suffix = ':' . $section->uid;
 
         return [
             "editEntries{$suffix}" => [
@@ -464,7 +487,7 @@ class UserPermissions extends Component
      */
     private function _getEntryPermissions(Section $section): array
     {
-        $suffix = ':' . $section->id;
+        $suffix = ':' . $section->uid;
 
         return [
             "editEntries{$suffix}" => [
@@ -517,7 +540,7 @@ class UserPermissions extends Component
         $permissions = [];
 
         foreach ($globalSets as $globalSet) {
-            $permissions['editGlobalSet:' . $globalSet->id] = [
+            $permissions['editGlobalSet:' . $globalSet->uid] = [
                 'label' => Craft::t('app', 'Edit “{title}”',
                     ['title' => Craft::t('site', $globalSet->name)])
             ];
@@ -537,7 +560,7 @@ class UserPermissions extends Component
         $permissions = [];
 
         foreach ($groups as $group) {
-            $permissions['editCategories:' . $group->id] = [
+            $permissions['editCategories:' . $group->uid] = [
                 'label' => Craft::t('app', 'Edit “{title}”',
                     ['title' => Craft::t('site', $group->name)])
             ];
@@ -549,12 +572,12 @@ class UserPermissions extends Component
     /**
      * Returns the array source permissions.
      *
-     * @param int $volumeId
+     * @param string $volumeUid
      * @return array
      */
-    private function _getVolumePermissions(int $volumeId): array
+    private function _getVolumePermissions(string $volumeUid): array
     {
-        $suffix = ':' . $volumeId;
+        $suffix = ':' . $volumeUid;
 
         return [
             "viewVolume{$suffix}" => [
@@ -690,9 +713,7 @@ class UserPermissions extends Component
         // Permission names are always stored in lowercase
         $permissionName = strtolower($permissionName);
 
-        $permissionRecord = UserPermissionRecord::findOne([
-            'name' => $permissionName
-        ]);
+        $permissionRecord = UserPermissionRecord::findOne(['name' => $permissionName]);
 
         if (!$permissionRecord) {
             $permissionRecord = new UserPermissionRecord();

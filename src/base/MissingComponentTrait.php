@@ -76,7 +76,10 @@ trait MissingComponentTrait
         $iconUrl = null;
         $iconSvg = null;
 
-        if (Craft::$app->getUser()->getIsAdmin()) {
+        if (
+            Craft::$app->getUser()->getIsAdmin() &&
+            !Craft::$app->getConfig()->getGeneral()->disableAdminFunctions
+        ) {
             $pluginsService = Craft::$app->getPlugins();
 
             // Special cases for removed 1st party components

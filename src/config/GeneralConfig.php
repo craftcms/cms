@@ -57,6 +57,8 @@ class GeneralConfig extends BaseObject
     public $aliases = [];
     /**
      * @var bool Whether Craft should allow system and plugin updates in the Control Panel, and plugin installation from the Plugin Store.
+     *
+     * This setting will automatically be disabled if [[disableAdminFunctions]] is enabled.
      */
     public $allowUpdates = true;
     /**
@@ -228,7 +230,7 @@ class GeneralConfig extends BaseObject
      * - `5` – Friday
      * - `6` – Saturday
      */
-    public $defaultWeekStartDay = 0;
+    public $defaultWeekStartDay = 1;
     /**
      * @var bool By default, Craft will require a 'password' field to be submitted on front-end, public
      * user registrations. Setting this to `true` will no longer require it on the initial registration form.
@@ -242,6 +244,10 @@ class GeneralConfig extends BaseObject
      * @var bool Whether the system should run in [Dev Mode](https://craftcms.com/support/dev-mode).
      */
     public $devMode = false;
+    /**
+     * @var bool Whether administrative features should be disabled.
+     */
+    public $disableAdminFunctions = false;
     /**
      * @var bool Whether to use a cookie to persist the CSRF token if [[enableCsrfProtection]] is enabled. If false, the CSRF token
      * will be stored in session under the 'csrfTokenName' config setting name. Note that while storing CSRF tokens in
@@ -329,10 +335,10 @@ class GeneralConfig extends BaseObject
      */
     public $ipHeaders;
     /**
-     * @var bool|null Whether the site is currently online or not. If set to `true` or `false`, it will take precedence over the
+     * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the
      * System Status setting in Settings → General.
      */
-    public $isSystemOn;
+    public $isSystemLive;
     /**
      * @var bool Whether non-ASCII characters in auto-generated slugs should be converted to ASCII (i.e. ñ → n).
      *
@@ -628,6 +634,14 @@ class GeneralConfig extends BaseObject
      */
     public $secureProtocolHeaders;
     /**
+     * @var mixed The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection.
+     *
+     * Set to `0` if you don’t ever want to delete soft-deleted items.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     */
+    public $softDeleteDuration = 2592000;
+    /**
      * @var bool Whether Twig runtime errors should be suppressed.
      *
      * If it is set to `true`, the errors will still be logged to Craft’s log files.
@@ -656,7 +670,7 @@ class GeneralConfig extends BaseObject
      */
     public $translationDebugOutput = false;
     /**
-     * @var string The query string parameter name that tokens should be set to.
+     * @var string The request parameter name that tokens should be set to.
      */
     public $tokenParam = 'token';
     /**
@@ -717,6 +731,13 @@ class GeneralConfig extends BaseObject
      */
     public $useFileLocks;
     /**
+     * @var bool Whether the project config should be saved out to `config/project.yaml`.
+     *
+     * If set to true, any changes to the project config will be duplicated in `config/project.yaml`,
+     * and any changes to `config/project.yaml` will be applied to the system.
+     */
+    public $useProjectConfigFile = false;
+    /**
      * @var mixed The amount of time a user verification code can be used before expiring.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
@@ -746,6 +767,7 @@ class GeneralConfig extends BaseObject
             'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
             'activateAccountFailurePath' => 'invalidUserTokenPath',
             'validationKey' => 'securityKey',
+            'isSystemOn' => 'isSystemLive',
         ];
 
         $configFilePath = null;
@@ -829,6 +851,7 @@ class GeneralConfig extends BaseObject
         $this->purgePendingUsersDuration = ConfigHelper::durationInSeconds($this->purgePendingUsersDuration);
         $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($this->rememberUsernameDuration);
         $this->rememberedUserSessionDuration = ConfigHelper::durationInSeconds($this->rememberedUserSessionDuration);
+        $this->softDeleteDuration = ConfigHelper::durationInSeconds($this->softDeleteDuration);
         $this->userSessionDuration = ConfigHelper::durationInSeconds($this->userSessionDuration);
         $this->verificationCodeDuration = ConfigHelper::durationInSeconds($this->verificationCodeDuration);
 

@@ -115,18 +115,21 @@ JS;
             'Cancel',
             'Choose a user',
             'Choose which table columns should be visible for this source, and in which order.',
-            'Close',
             'Close Live Preview',
+            'Close',
             'Continue',
+            'Could not create a Live Preview token.',
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
-            'Delete',
+            'day',
+            'days',
             'Delete folder',
             'Delete heading',
             'Delete it',
             'Delete user',
             'Delete users',
+            'Delete',
             'Display as thumbnails',
             'Display in a table',
             'Done',
@@ -138,8 +141,10 @@ JS;
             'Give your tab a name.',
             'Handle',
             'Heading',
-            'Hide',
             'Hide sidebar',
+            'Hide',
+            'hour',
+            'hours',
             'Incorrect password.',
             'Instructions',
             'Keep both',
@@ -150,6 +155,8 @@ JS;
             'Make not required',
             'Make required',
             'Merge the folder (any conflicting files will be replaced)',
+            'minute',
+            'minutes',
             'More',
             'Move',
             'Name',
@@ -169,21 +176,23 @@ JS;
             'Pending',
             'Really delete folder “{folder}”?',
             'Remove',
-            'Rename',
             'Rename folder',
+            'Rename',
             'Reorder',
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
-            'Save',
             'Save as a new asset',
+            'Save',
             'Score',
             'Search in subfolders',
-            'Select',
+            'second',
+            'seconds',
             'Select transform',
+            'Select',
             'Settings',
-            'Show',
             'Show nav',
             'Show sidebar',
+            'Show',
             'Show/hide children',
             'Sort by {attribute}',
             'Source settings saved',
@@ -195,20 +204,12 @@ JS;
             'Try again',
             'Upload failed for {filename}',
             'Upload files',
+            'week',
+            'weeks',
             'What do you want to do with their content?',
             'What do you want to do?',
             'Your session has ended.',
             'Your session will expire in {time}.',
-            'day',
-            'days',
-            'hour',
-            'hours',
-            'minute',
-            'minutes',
-            'second',
-            'seconds',
-            'week',
-            'weeks',
             '{ctrl}C to copy.',
             '{num} Available Updates',
             '“{name}” deleted.',
@@ -224,8 +225,8 @@ JS;
         $sitesService = Craft::$app->getSites();
         $locale = Craft::$app->getLocale();
         $orientation = $locale->getOrientation();
-        $userService = Craft::$app->getUser();
-        $currentUser = $userService->getIdentity();
+        $userSession = Craft::$app->getUser();
+        $currentUser = $userSession->getIdentity();
         $primarySite = $isInstalled && !$isMigrationNeeded ? $sitesService->getPrimarySite() : null;
 
         $data = [
@@ -256,7 +257,7 @@ JS;
             'publishableSections' => $isInstalled && $currentUser ? $this->_publishableSections($currentUser) : [],
             'registeredAssetBundles' => ['' => ''], // force encode as JS object
             'registeredJsFiles' => ['' => ''], // force encode as JS object
-            'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userService->getRemainingSessionTime() : 0,
+            'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'runQueueAutomatically' => (bool)$generalConfig->runQueueAutomatically,
             'scriptName' => $request->getScriptFile(),
@@ -267,6 +268,7 @@ JS;
             'systemUid' => Craft::$app->getSystemUid(),
             'timepickerOptions' => $this->_timepickerOptions($locale, $orientation),
             'timezone' => Craft::$app->getTimeZone(),
+            'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
             'useCompressedJs' => (bool)$generalConfig->useCompressedJs,
             'usePathInfo' => (bool)$generalConfig->usePathInfo,
@@ -306,6 +308,7 @@ JS;
                 'handle' => $group->handle,
                 'id' => (int)$group->id,
                 'name' => Craft::t('site', $group->name),
+                'uid' => Craft::t('site', $group->uid),
             ];
         }
 
@@ -317,7 +320,7 @@ JS;
         $sections = [];
 
         foreach (Craft::$app->getSections()->getEditableSections() as $section) {
-            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can('createEntries:' . $section->id)) {
+            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can('createEntries:'.$section->uid)) {
                 $sections[] = [
                     'entryTypes' => $this->_entryTypes($section),
                     'handle' => $section->handle,
@@ -325,6 +328,7 @@ JS;
                     'name' => Craft::t('site', $section->name),
                     'sites' => $section->getSiteIds(),
                     'type' => $section->type,
+                    'uid' => $section->uid,
                 ];
             }
         }

@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\SoftDeleteTrait;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -28,6 +29,11 @@ use yii\db\ActiveQueryInterface;
  */
 class Site extends ActiveRecord
 {
+    // Traits
+    // =========================================================================
+
+    use SoftDeleteTrait;
+
     // Public Methods
     // =========================================================================
 

@@ -484,6 +484,7 @@ class UtilitiesController extends Controller
             $elements = (new Query())
                 ->select(['id', 'type'])
                 ->from(['{{%elements}}'])
+                ->where(['dateDeleted' => null])
                 ->all();
 
             $batch = [];

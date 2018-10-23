@@ -11,12 +11,14 @@ use Craft;
 use craft\db\Migration;
 use craft\elements\Asset;
 use craft\elements\User;
+use craft\helpers\App;
 use craft\helpers\StringHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\FieldGroup;
 use craft\models\Info;
 use craft\models\Site;
 use craft\models\SiteGroup;
+use craft\services\ProjectConfig;
 
 /**
  * Installation Migration
@@ -89,12 +91,33 @@ class Install extends Migration
             Craft::$app->getUser()->login($user);
         }
 
+        // Save the default system settings
+        echo '    > save the system settings ...';
+        Craft::$app->getProjectConfig()->set('system', [
+            'edition' => App::editionHandle(Craft::Solo),
+            'name' => $this->site->name,
+            'live' => true,
+            'timeZone' => 'America/Los_Angeles',
+        ]);
+        echo " done\n";
+
         // Save the default email settings
         echo '    > save the email settings ...';
-        Craft::$app->getSystemSettings()->saveSettings('email', [
+        Craft::$app->getProjectConfig()->set('email', [
             'fromEmail' => $this->email,
             'fromName' => $this->site->name,
             'transportType' => Sendmail::class
+        ]);
+        echo " done\n";
+
+        // Save the default user settings
+        echo '    > save the user settings ...';
+        Craft::$app->getProjectConfig()->set('user', [
+            'requireEmailVerification' => true,
+            'allowPublicRegistration' => false,
+            'defaultGroup' => null,
+            'photoVolumeUid' => null,
+            'photoSubpath' => ''
         ]);
         echo " done\n";
     }
@@ -175,6 +198,7 @@ class Install extends Migration
         $this->createTable('{{%categories}}', [
             'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
+            'parentId' => $this->integer(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -248,6 +272,7 @@ class Install extends Migration
             'archived' => $this->boolean()->defaultValue(false)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%elements_sites}}', [
@@ -279,6 +304,7 @@ class Install extends Migration
         $this->createTable('{{%entries}}', [
             'id' => $this->integer()->notNull(),
             'sectionId' => $this->integer()->notNull(),
+            'parentId' => $this->integer(),
             'typeId' => $this->integer()->notNull(),
             'authorId' => $this->integer(),
             'postDate' => $this->dateTime(),
@@ -351,6 +377,7 @@ class Install extends Migration
             'type' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%fieldlayouttabs}}', [
@@ -369,6 +396,7 @@ class Install extends Migration
             'handle' => $this->string(64)->notNull(),
             'context' => $this->string()->notNull()->defaultValue('global'),
             'instructions' => $this->text(),
+            'searchable' => $this->boolean()->notNull()->defaultValue(true),
             'translationMethod' => $this->string()->notNull()->defaultValue('none'),
             'translationKeyFormat' => $this->text(),
             'type' => $this->string()->notNull(),
@@ -390,11 +418,9 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'version' => $this->string(50)->notNull(),
             'schemaVersion' => $this->string(15)->notNull(),
-            'edition' => $this->tinyInteger()->unsigned()->notNull(),
-            'timezone' => $this->string(30),
-            'name' => $this->string()->notNull(),
-            'on' => $this->boolean()->defaultValue(false)->notNull(),
             'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
+            'config' => $this->mediumText()->null(),
+            'configMap' => $this->mediumText()->null(),
             'fieldVersion' => $this->char(12)->notNull()->defaultValue('000000000000'),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -438,10 +464,7 @@ class Install extends Migration
             'handle' => $this->string()->notNull(),
             'version' => $this->string()->notNull(),
             'schemaVersion' => $this->string()->notNull(),
-            'licenseKey' => $this->char(24),
             'licenseKeyStatus' => $this->enum('licenseKeyStatus', ['valid', 'invalid', 'mismatched', 'astray', 'unknown'])->notNull()->defaultValue('unknown'),
-            'enabled' => $this->boolean()->defaultValue(false)->notNull(),
-            'settings' => $this->text(),
             'installDate' => $this->dateTime()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -538,6 +561,7 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%sitegroups}}', [
@@ -545,6 +569,7 @@ class Install extends Migration
             'name' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%structureelements}}', [
@@ -562,14 +587,6 @@ class Install extends Migration
         $this->createTable('{{%structures}}', [
             'id' => $this->primaryKey(),
             'maxLevels' => $this->smallInteger()->unsigned(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
-        ]);
-        $this->createTable('{{%systemsettings}}', [
-            'id' => $this->primaryKey(),
-            'category' => $this->string(15)->notNull(),
-            'settings' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -755,6 +772,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%content}}', ['title'], false);
         $this->createIndex(null, '{{%deprecationerrors}}', ['key', 'fingerprint'], true);
         $this->createIndex(null, '{{%elementindexsettings}}', ['type'], true);
+        $this->createIndex(null, '{{%elements}}', ['dateDeleted'], false);
         $this->createIndex(null, '{{%elements}}', ['fieldLayoutId'], false);
         $this->createIndex(null, '{{%elements}}', ['type'], false);
         $this->createIndex(null, '{{%elements}}', ['enabled'], false);
@@ -787,6 +805,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%fieldlayoutfields}}', ['sortOrder'], false);
         $this->createIndex(null, '{{%fieldlayoutfields}}', ['tabId'], false);
         $this->createIndex(null, '{{%fieldlayoutfields}}', ['fieldId'], false);
+        $this->createIndex(null, '{{%fieldlayouts}}', ['dateDeleted'], false);
         $this->createIndex(null, '{{%fieldlayouts}}', ['type'], false);
         $this->createIndex(null, '{{%fieldlayouttabs}}', ['sortOrder'], false);
         $this->createIndex(null, '{{%fieldlayouttabs}}', ['layoutId'], false);
@@ -807,7 +826,6 @@ class Install extends Migration
         $this->createIndex(null, '{{%matrixblocktypes}}', ['fieldLayoutId'], false);
         $this->createIndex(null, '{{%migrations}}', ['pluginId'], false);
         $this->createIndex(null, '{{%migrations}}', ['type', 'pluginId'], false);
-        $this->createIndex(null, '{{%plugins}}', ['enabled']);
         $this->createIndex(null, '{{%plugins}}', ['handle'], true);
         $this->createIndex(null, '{{%queue}}', ['fail', 'timeUpdated', 'timePushed']);
         $this->createIndex(null, '{{%queue}}', ['fail', 'timeUpdated', 'delay']);
@@ -827,16 +845,16 @@ class Install extends Migration
         $this->createIndex(null, '{{%sessions}}', ['dateUpdated'], false);
         $this->createIndex(null, '{{%sessions}}', ['userId'], false);
         $this->createIndex(null, '{{%shunnedmessages}}', ['userId', 'message'], true);
-        $this->createIndex(null, '{{%sites}}', ['handle'], true);
+        $this->createIndex(null, '{{%sites}}', ['dateDeleted'], false);
+        $this->createIndex(null, '{{%sites}}', ['handle'], false);
         $this->createIndex(null, '{{%sites}}', ['sortOrder'], false);
-        $this->createIndex(null, '{{%sitegroups}}', ['name'], true);
+        $this->createIndex(null, '{{%sitegroups}}', ['name'], false);
         $this->createIndex(null, '{{%structureelements}}', ['structureId', 'elementId'], true);
         $this->createIndex(null, '{{%structureelements}}', ['root'], false);
         $this->createIndex(null, '{{%structureelements}}', ['lft'], false);
         $this->createIndex(null, '{{%structureelements}}', ['rgt'], false);
         $this->createIndex(null, '{{%structureelements}}', ['level'], false);
         $this->createIndex(null, '{{%structureelements}}', ['elementId'], false);
-        $this->createIndex(null, '{{%systemsettings}}', ['category'], true);
         $this->createIndex(null, '{{%taggroups}}', ['name'], true);
         $this->createIndex(null, '{{%taggroups}}', ['handle'], true);
         $this->createIndex(null, '{{%tags}}', ['groupId'], false);
@@ -926,6 +944,7 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%assets}}', ['volumeId'], '{{%volumes}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%categories}}', ['groupId'], '{{%categorygroups}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%categories}}', ['id'], '{{%elements}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%categories}}', ['parentId'], '{{%categories}}', ['id'], 'SET NULL', null);
         $this->addForeignKey(null, '{{%categorygroups}}', ['fieldLayoutId'], '{{%fieldlayouts}}', ['id'], 'SET NULL', null);
         $this->addForeignKey(null, '{{%categorygroups}}', ['structureId'], '{{%structures}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%categorygroups_sites}}', ['groupId'], '{{%categorygroups}}', ['id'], 'CASCADE', null);
@@ -939,6 +958,7 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%entries}}', ['authorId'], '{{%users}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%entries}}', ['id'], '{{%elements}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%entries}}', ['sectionId'], '{{%sections}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%entries}}', ['parentId'], '{{%entries}}', ['id'], 'SET NULL', null);
         $this->addForeignKey(null, '{{%entries}}', ['typeId'], '{{%entrytypes}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%entrydrafts}}', ['creatorId'], '{{%users}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%entrydrafts}}', ['entryId'], '{{%entries}}', ['id'], 'CASCADE', null);
@@ -1010,11 +1030,10 @@ class Install extends Migration
         Craft::$app->saveInfo(new Info([
             'version' => Craft::$app->getVersion(),
             'schemaVersion' => Craft::$app->schemaVersion,
-            'edition' => 0,
-            'name' => $this->site->name,
-            'on' => true,
             'maintenance' => false,
             'fieldVersion' => StringHelper::randomString(12),
+            'config' => serialize([]),
+            'configMap' => json_encode([])
         ]));
         echo " done\n";
 
@@ -1034,5 +1053,8 @@ class Install extends Migration
         $this->site->groupId = $siteGroup->id;
         $this->site->primary = true;
         Craft::$app->getSites()->saveSite($this->site);
+
+        // Save schema version to config
+        Craft::$app->getProjectConfig()->set(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, Craft::$app->schemaVersion);
     }
 }

@@ -25,8 +25,6 @@ class m170206_142126_system_name extends Migration
         $this->update('{{%info}}', ['name' => $systemName]);
         $this->alterColumn('{{%info}}', 'name', $this->string()->notNull());
 
-        Craft::$app->getInfo()->name = $systemName;
-
         return true;
     }
 
