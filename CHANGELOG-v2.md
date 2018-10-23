@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 2.x
 
-## Unreleased
+## 2.7.3 - 2018-10-23
 
 ### Changed
 - Single sections’ entry types’ handles are now updated to match their section’s handle whenever the section is saved. ([#2824](https://github.com/craftcms/cms/issues/2824))
