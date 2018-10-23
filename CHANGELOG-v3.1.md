@@ -65,6 +65,7 @@
 - Animated gif thumbnails are no longer animated. ([#3110](https://github.com/craftcms/cms/issues/3110))
 - Token params can now live in either the query string or the POST request body.
 - Element types that support Live Preview must now hash the `previewAction` value for `Craft.LivePreview`.
+- Live Preview now loads each new preview into its own `<iframe>` element. ([#3366](https://github.com/craftcms/cms/issues/3366))
 
 ### Deprecated
 - Deprecated `craft\base\ApplicationTrait::getIsSystemOn()`. `getIsLive()` should be used instead.
