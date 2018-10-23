@@ -905,7 +905,7 @@ return [
     'Sources' => 'Quellen',
     'Square' => 'Quadrat',
     'Square SVG file recommended. The logo will be displayed at {size} by {size}.' => 'Quadratische SVG-Datei empfohlen Das Logo wird in der Größe {size} x {size} angezeigt.',
-    'Stack Trace' => 'Stapelspur',
+    'Stack Trace' => 'Stack Trace',
     'Staff Picks' => 'Auswahl unserer Mitarbeiter',
     'Status' => 'Status',
     'Status updated, with some failures due to validation errors.' => 'Status wurde – aufgrund von Validierungsfehlern nicht vollständig erfolgreich – aktualisiert.',

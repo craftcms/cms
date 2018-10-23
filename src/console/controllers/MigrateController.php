@@ -279,7 +279,19 @@ class MigrateController extends BaseMigrateController
     }
 
     /**
-     * @inheritdoc
+     * Upgrades the application by applying new migrations.
+     *
+     * For example,
+     *
+     * ```
+     * craft migrate     # apply all new migrations
+     * craft migrate 3   # apply the first 3 new migrations
+     * ```
+     *
+     * @param int $limit the number of new migrations to be applied. If 0, it means
+     * applying all available new migrations.
+     *
+     * @return int the status of the action execution. 0 means normal, other values mean abnormal.
      */
     public function actionUp($limit = 0)
     {

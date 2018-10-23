@@ -139,7 +139,7 @@
     }) }}
 
     {% if craft.app.getIsMultiSite() %}
-        <div class="type-channel {% if section.type != 'channel' %}hidden{% endif %}">
+        <div class="field type-channel type-structure {% if section.type == 'single' %}hidden{% endif %}">
             {{ forms.checkboxField({
                 label: 'Propagate entries across all enabled sites?'|t('app'),
                 instructions: 'Whether entries should be propagated across all the sites the section is enabled in. If this is disabled, each entry will only belong to the site it was created in.'|t('app'),
@@ -151,7 +151,7 @@
         </div>
     {% endif %}
 
-    <div class="type-structure {% if section.type != 'structure' %}hidden{% endif %}">
+    <div class="field type-structure {% if section.type != 'structure' %}hidden{% endif %}">
         {{ forms.textField({
             label: "Max Levels"|t('app'),
             instructions: "The maximum number of levels this section can have. Leave blank if you don’t care."|t('app'),

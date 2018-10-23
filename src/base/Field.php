@@ -88,6 +88,12 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public static function supportedTranslationMethods(): array
     {
+        if (!static::hasContentColumn()) {
+            return [
+                self::TRANSLATION_METHOD_NONE,
+            ];
+        }
+
         return [
             self::TRANSLATION_METHOD_NONE,
             self::TRANSLATION_METHOD_SITE,
