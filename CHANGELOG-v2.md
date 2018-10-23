@@ -4,15 +4,14 @@
 
 ### Changed
 - Single sections’ entry types’ handles are now updated to match their section’s handle whenever the section is saved. ([#2824](https://github.com/craftcms/cms/issues/2824))
-- Updated Garnish to 0.1.28.
-- Animated gif thumbnails are no longer animated. ([#3110](https://github.com/craftcms/cms/issues/3110))
-- From now on an exception will be thrown if an asset if uploaded sucecssfully, but the record couldn't be saved.
+- Animated GIF thumbnails are no longer animated. ([#3110](https://github.com/craftcms/cms/issues/3110))
+- Craft now throws an exception if an asset is uploaded sucecssfully but its record can’t be saved.
 - Updated jQuery Touch Events to 2.0.0.
 - Updated Garnish to 0.1.29.
 
 ### Fixed
 - Fixed a bug where the Dev Mode indicator strip wasn’t visible on Chrome/Windows when using a scaled display. ([#3259](https://github.com/craftcms/cms/issues/3259))
-- Fixed a false `error` that would go into the log files if you called `IOHelper::clearFolder()` on a folder that had no contents already.
+- Fixed bug where an error would be logged if `IOHelper::clearFolder()` was called on an empty folder.
 
 ## 2.7.2 - 2018-08-24
 
