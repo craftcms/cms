@@ -89,7 +89,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
      */
     public function getRootPath(): string
     {
-        return FileHelper::normalizePath(Craft::getAlias($this->path));
+        return FileHelper::normalizePath(Craft::parseEnv($this->path));
     }
 
     /**

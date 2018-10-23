@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\behaviors\EnvAttributeParserBehavior;
 
 /**
  * MailSettings Model class.
@@ -48,6 +49,23 @@ class MailSettings extends Model
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'fromEmail',
+                    'fromName',
+                    'template',
+                ],
+            ]
+        ];
+    }
 
     /**
      * @inheritdoc

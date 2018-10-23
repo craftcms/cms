@@ -36,11 +36,11 @@
         errors: adapter.getErrors('username')
     }) }}
 
-    {{ forms.passwordField({
+    {{ forms.textField({
         label: "Password"|t('app'),
         id: 'password',
         name: 'password',
-        value: adapter.password ? adapter.password|encenc,
+        value: adapter.password,
         errors: adapter.getErrors('password')
     }) }}
 </div>
