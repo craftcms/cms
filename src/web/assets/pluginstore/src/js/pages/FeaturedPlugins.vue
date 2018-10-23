@@ -1,16 +1,17 @@
 <template>
-	<div v-if="featuredPlugin">
-		<plugin-grid :columns="4" :plugins="getPluginsByIds(featuredPlugin.plugins)"></plugin-grid>
-	</div>
+    <div v-if="featuredPlugin">
+        <plugin-grid :columns="4" :plugins="getPluginsByIds(featuredPlugin.plugins)"></plugin-grid>
+    </div>
 </template>
 
 <script>
     import {mapGetters} from 'vuex'
+    import PluginGrid from '../components/PluginGrid'
 
     export default {
 
         components: {
-            PluginGrid: require('../components/PluginGrid'),
+            PluginGrid,
         },
 
         computed: {

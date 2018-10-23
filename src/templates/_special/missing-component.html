@@ -6,7 +6,7 @@
                 {% if iconUrl %}
                     <img src="{{ iconUrl }}">
                 {% else %}
-                    {{ svg(iconSvg) }}
+                    {{ svg(iconSvg, sanitize=true, namespace=true) }}
                 {% endif %}
             </div>
             <div class="flex">

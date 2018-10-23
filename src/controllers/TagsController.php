@@ -69,7 +69,7 @@ class TagsController extends Controller
                 }
             }
 
-            $title = $tagGroup->name;
+            $title = trim($tagGroup->name) ?: Craft::t('app', 'Edit Tag Group');
         } else {
             if ($tagGroup === null) {
                 $tagGroup = new TagGroup();

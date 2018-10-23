@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'מחק את {site}',
     'Delete…' => 'מחק...',
     'Deleting stale template caches' => 'מחק מטמוני תבניות ישנים',
-    'Deprecation Errors' => 'שגיאות דפרקציה',
+    'Deprecation Warnings' => 'שגיאות דפרקציה',
     'Descending' => 'יורד',
     'Description' => 'תיאור',
     'Deselect All' => 'בטל את כל הבחירות',

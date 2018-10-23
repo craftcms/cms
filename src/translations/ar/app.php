@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'حذف {site}',
     'Delete…' => 'حذف...',
     'Deleting stale template caches' => 'يتم حذف التخزينات المؤقتة القديمة للقوالب',
-    'Deprecation Errors' => 'أخطاء البرمجة المهجورة',
+    'Deprecation Warnings' => 'أخطاء البرمجة المهجورة',
     'Descending' => 'تنازلي',
     'Description' => 'الوصف',
     'Deselect All' => 'إلغاء تحديد الكل',

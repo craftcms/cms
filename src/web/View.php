@@ -466,13 +466,6 @@ class View extends \yii\web\View
 
         $twig = $this->getTwig();
 
-        // Temporarily disable strict variables if it's enabled
-        $strictVariables = $twig->isStrictVariables();
-
-        if ($strictVariables) {
-            $twig->disableStrictVariables();
-        }
-
         // Is this the first time we've parsed this template?
         $cacheKey = md5($template);
         if (!isset($this->_objectTemplates[$cacheKey])) {
@@ -506,6 +499,13 @@ class View extends \yii\web\View
 
         $variables['object'] = $object;
         $variables['_variables'] = $variables;
+
+        // Temporarily disable strict variables if it's enabled
+        $strictVariables = $twig->isStrictVariables();
+
+        if ($strictVariables) {
+            $twig->disableStrictVariables();
+        }
 
         // Render it!
         $twig->setDefaultEscaperStrategy(false);
@@ -1512,7 +1512,7 @@ JS;
         $name = trim(FileHelper::normalizePath($name), '/');
 
         // $name could be an empty string (e.g. to load the homepage template)
-        if ($name) {
+        if ($name !== '') {
             // Maybe $name is already the full file path
             $testPath = $basePath . DIRECTORY_SEPARATOR . $name;
 
@@ -1531,7 +1531,7 @@ JS;
 
         foreach ($this->_indexTemplateFilenames as $filename) {
             foreach ($this->_defaultTemplateExtensions as $extension) {
-                $testPath = $basePath . ($name ? DIRECTORY_SEPARATOR . $name : '') . DIRECTORY_SEPARATOR . $filename . '.' . $extension;
+                $testPath = $basePath . ($name !== '' ? DIRECTORY_SEPARATOR . $name : '') . DIRECTORY_SEPARATOR . $filename . '.' . $extension;
 
                 if (is_file($testPath)) {
                     return $testPath;

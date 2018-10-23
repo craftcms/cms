@@ -12,15 +12,20 @@
 
 <script>
     import {mapState} from 'vuex'
+    import Payment from './steps/Payment'
+    import PluginDetails from './steps/PluginDetails'
+    import Cart from './steps/Cart'
+    import Identity from './steps/Identity'
+    import ThankYou from './steps/ThankYou'
 
     export default {
 
         components: {
-            PluginDetails: require('./steps/PluginDetails'),
-            Cart: require('./steps/Cart'),
-            Identity: require('./steps/Identity'),
-            Payment: require('./steps/Payment'),
-            ThankYou: require('./steps/ThankYou'),
+            PluginDetails,
+            Cart,
+            Identity,
+            Payment,
+            ThankYou,
         },
 
         props: ['pluginId', 'show'],

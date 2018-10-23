@@ -367,10 +367,11 @@ class Application extends \yii\web\Application
             return;
         }
 
-        $isCpRequest = $this->getRequest()->getIsCpRequest();
+        $request = $this->getRequest();
         if (
-            ($isCpRequest && !$session->get('enableDebugToolbarForCp')) ||
-            (!$isCpRequest && !$session->get('enableDebugToolbarForSite'))
+            $request->getIsLivePreview() ||
+            ($request->getIsCpRequest() && !$session->get('enableDebugToolbarForCp')) ||
+            (!$request->getIsCpRequest() && !$session->get('enableDebugToolbarForSite'))
         ) {
             return;
         }

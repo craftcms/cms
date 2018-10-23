@@ -10,7 +10,6 @@ namespace craft\mail;
 use Craft;
 use craft\elements\User;
 use craft\helpers\Template;
-use craft\web\twig\TemplateLoaderException;
 use Swift_TransportException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -88,6 +87,13 @@ class Mailer extends \yii\swiftmailer\Mailer
     public function send($message)
     {
         if ($message instanceof Message && $message->key !== null) {
+            if ($message->language === null) {
+                // Default to the current language
+                $message->language = Craft::$app->getRequest()->getIsSiteRequest()
+                    ? Craft::$app->language
+                    : Craft::$app->getSites()->getPrimarySite()->language;
+            }
+
             $systemMessage = Craft::$app->getSystemMessages()->getMessage($message->key, $message->language);
             $subjectTemplate = $systemMessage->subject;
             $textBodyTemplate = $systemMessage->body;
@@ -99,9 +105,7 @@ class Mailer extends \yii\swiftmailer\Mailer
 
             // Use the message language
             $language = Craft::$app->language;
-            if ($message->language !== null) {
-                Craft::$app->language = $message->language;
-            }
+            Craft::$app->language = $message->language;
 
             $settings = Craft::$app->getSystemSettings()->getEmailSettings();
             $variables = ($message->variables ?: []) + [
@@ -128,7 +132,7 @@ class Mailer extends \yii\swiftmailer\Mailer
                 $htmlBody = $view->renderTemplate($template, array_merge($variables, [
                     'body' => Template::raw(Markdown::process($textBody)),
                 ]));
-            } catch (TemplateLoaderException $e) {
+            } catch (\Throwable $e) {
                 // Clean up before throwing
             }
 

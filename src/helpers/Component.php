@@ -81,7 +81,7 @@ class Component
     }
 
     /**
-     * Extracts settings from a given component config, and returns a new config array wiith the settings merged in.
+     * Extracts settings from a given component config, and returns a new config array with the settings merged in.
      *
      * @param array $config
      * @return array
@@ -94,6 +94,9 @@ class Component
 
         if (is_string($settings)) {
             $settings = Json::decode($settings);
+            if (!is_array($settings)) {
+                return $config;
+            }
         }
 
         return array_merge($config, $settings);

@@ -3,10 +3,17 @@
 #pluginstore-modal {
   max-width: 850px;
   max-height: 650px;
+  z-index: 20000;
+  position: absolute;
+  top: 0;
+  left: 0;
 
   .pluginstore-modal-flex {
-    position: relative;
-    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     flex-direction: column;
 
@@ -27,6 +34,7 @@
       display: flex;
       flex-grow: 1;
       margin-bottom: 0;
+      min-height: 0;
 
       .pluginstore-modal-content {
         overflow: auto;
@@ -89,6 +97,8 @@
         display: flex;
         position: relative;
         min-height: 0;
+        flex-basis: 100%;
+        width: 100%;
 
         .plugin-details-loading {
           position: absolute;
@@ -102,6 +112,8 @@
           min-width: 0;
           padding: 24px;
           overflow: auto;
+          flex-basis: 100%;
+          width: 100%;
 
           img {
             max-width: 100%;

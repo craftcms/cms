@@ -572,15 +572,13 @@ class Elements extends Component
             /** @var Element $mainClone */
             $mainClone = clone $element;
             $mainClone->setAttributes($newAttributes);
-            $mainClone->setScenario(Element::SCENARIO_ESSENTIALS);
             $mainClone->id = null;
             $mainClone->contentId = null;
 
-            if (!$this->saveElement($mainClone, true, false)) {
+            if (!$this->saveElement($mainClone, false, false)) {
                 throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
             }
 
-            $mainClone->setScenario($element->getScenario());
             foreach ($supportedSites as $siteInfo) {
                 if ($siteInfo['siteId'] != $element->siteId) {
                     $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
@@ -592,11 +590,10 @@ class Elements extends Component
                     /** @var Element $siteClone */
                     $siteClone = clone $siteElement;
                     $siteClone->setAttributes($newAttributes);
-                    $siteClone->setScenario(Element::SCENARIO_ESSENTIALS);
                     $siteClone->id = $mainClone->id;
                     $siteClone->contentId = null;
 
-                    if (!$this->saveElement($siteClone, true, false)) {
+                    if (!$this->saveElement($siteClone, false, false)) {
                         throw new InvalidElementException($siteClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $siteInfo['siteId']);
                     }
                 }

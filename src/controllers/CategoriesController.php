@@ -104,7 +104,7 @@ class CategoriesController extends Controller
                 }
             }
 
-            $variables['title'] = $categoryGroup->name;
+            $variables['title'] = trim($categoryGroup->name) ?: Craft::t('app', 'Edit Category Group');
         } else {
             if ($categoryGroup === null) {
                 $categoryGroup = new CategoryGroup();
@@ -142,7 +142,6 @@ class CategoriesController extends Controller
         $this->requireAdmin();
 
         $request = Craft::$app->getRequest();
-
         $group = new CategoryGroup();
 
         // Main group settings
@@ -273,6 +272,8 @@ class CategoriesController extends Controller
 
         $this->_enforceEditCategoryPermissions($category);
 
+        $request = Craft::$app->getRequest();
+
         // Parent Category selector variables
         // ---------------------------------------------------------------------
 
@@ -307,7 +308,7 @@ class CategoriesController extends Controller
             }
 
             // Get the initially selected parent
-            $parentId = Craft::$app->getRequest()->getParam('parentId');
+            $parentId = $request->getParam('parentId');
 
             if ($parentId === null && $category->id !== null) {
                 $parentId = $category->getAncestors(1)
@@ -331,7 +332,7 @@ class CategoriesController extends Controller
         if ($category->id === null) {
             $variables['title'] = Craft::t('app', 'Create a new category');
         } else {
-            $variables['docTitle'] = $variables['title'] = $category->title;
+            $variables['docTitle'] = $variables['title'] = trim($category->title) ?: Craft::t('app', 'Edit Category');
         }
 
         // Breadcrumbs
@@ -355,7 +356,7 @@ class CategoriesController extends Controller
         }
 
         // Enable Live Preview?
-        if (!Craft::$app->getRequest()->isMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'], $category->siteId)) {
+        if (!$request->isMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'], $category->siteId)) {
             $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
@@ -525,7 +526,8 @@ class CategoriesController extends Controller
     {
         $this->requirePostRequest();
 
-        $categoryId = Craft::$app->getRequest()->getRequiredBodyParam('categoryId');
+        $request = Craft::$app->getRequest();
+        $categoryId = $request->getRequiredBodyParam('categoryId');
         $category = Craft::$app->getCategories()->getCategoryById($categoryId);
 
         if (!$category) {
@@ -537,7 +539,7 @@ class CategoriesController extends Controller
 
         // Delete it
         if (!Craft::$app->getElements()->deleteElement($category)) {
-            if (Craft::$app->getRequest()->getAcceptsJson()) {
+            if ($request->getAcceptsJson()) {
                 return $this->asJson(['success' => false]);
             }
 
@@ -551,7 +553,7 @@ class CategoriesController extends Controller
             return null;
         }
 
-        if (Craft::$app->getRequest()->getAcceptsJson()) {
+        if ($request->getAcceptsJson()) {
             return $this->asJson(['success' => true]);
         }
 
@@ -736,8 +738,9 @@ class CategoriesController extends Controller
      */
     private function _getCategoryModel(): Category
     {
-        $categoryId = Craft::$app->getRequest()->getBodyParam('categoryId');
-        $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
+        $request = Craft::$app->getRequest();
+        $categoryId = $request->getBodyParam('categoryId');
+        $siteId = $request->getBodyParam('siteId');
 
         if ($categoryId) {
             $category = Craft::$app->getCategories()->getCategoryById($categoryId, $siteId);
@@ -746,7 +749,7 @@ class CategoriesController extends Controller
                 throw new NotFoundHttpException('Category not found');
             }
         } else {
-            $groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
+            $groupId = $request->getRequiredBodyParam('groupId');
             if (($group = Craft::$app->getCategories()->getGroupById($groupId)) === null) {
                 throw new BadRequestHttpException('Invalid category group ID: ' . $groupId);
             }
@@ -787,16 +790,17 @@ class CategoriesController extends Controller
     private function _populateCategoryModel(Category $category)
     {
         // Set the category attributes, defaulting to the existing values for whatever is missing from the post data
-        $category->slug = Craft::$app->getRequest()->getBodyParam('slug', $category->slug);
-        $category->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled', $category->enabled);
+        $request = Craft::$app->getRequest();
+        $category->slug = $request->getBodyParam('slug', $category->slug);
+        $category->enabled = (bool)$request->getBodyParam('enabled', $category->enabled);
 
-        $category->title = Craft::$app->getRequest()->getBodyParam('title', $category->title);
+        $category->title = $request->getBodyParam('title', $category->title);
 
-        $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
+        $fieldsLocation = $request->getParam('fieldsLocation', 'fields');
         $category->setFieldValuesFromRequest($fieldsLocation);
 
         // Parent
-        if (($parentId = Craft::$app->getRequest()->getBodyParam('parentId')) !== null) {
+        if (($parentId = $request->getBodyParam('parentId')) !== null) {
             if (is_array($parentId)) {
                 $parentId = reset($parentId) ?: '';
             }
@@ -827,6 +831,7 @@ class CategoriesController extends Controller
         }
 
         Craft::$app->language = $site->language;
+        Craft::$app->set('locale', Craft::$app->getI18n()->getLocaleById($site->language));
 
         // Have this category override any freshly queried categories with the same ID/site
         Craft::$app->getElements()->setPlaceholderElement($category);

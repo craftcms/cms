@@ -11,7 +11,7 @@ use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
- * Asset bundle for the Deprecation Errors utility
+ * Asset bundle for the Deprecation Warnings utility
  */
 class DeprecationErrorsAsset extends AssetBundle
 {

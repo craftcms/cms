@@ -6,7 +6,7 @@
 #content .update .update-header { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #e3e5e8; margin-bottom: 16px; }
 #content .update .update-header .readable { -webkit-box-flex: 1; -ms-flex-positive: 1; flex-grow: 1; margin: 0; }
 #content .update .update-header .buttons { margin: 0; }
-#content .update blockquote.ineligible { border: none; background: #bd5a0c; color: #110902; }
+#content .update blockquote.ineligible { border: none; background: #e78640; color: #110902; }
 #content .update blockquote.ineligible:before { content: 'ban'; color: #110902; }
 #content .update .releases { position: relative; }
 #content .update .releases .release { padding: 0; }

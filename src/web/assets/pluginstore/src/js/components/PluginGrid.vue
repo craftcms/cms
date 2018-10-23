@@ -8,12 +8,13 @@
     </div>
 </template>
 
-
 <script>
+    import PluginCard from './PluginCard'
+
     export default {
 
         components: {
-            PluginCard: require('./PluginCard'),
+            PluginCard,
         },
 
         props: ['plugins', 'columns'],

@@ -83,7 +83,7 @@
                     {% if hasSystemIcon %}
                         <img src="{{ craft.rebrand.icon.url }}" alt="">
                     {% else %}
-                        {{ svg('@app/icons/circle-c-outline.svg') }}
+                        {{ svg('@app/icons/circle-c-outline.svg', namespace=true) }}
                     {% endif %}
                 </div>
                 <div id="system-name">
@@ -118,7 +118,7 @@
                             <a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
                                 <span class="icon icon-mask">
                                     {%- if item.icon is defined -%}
-                                        {{ svg(item.icon) }}
+                                        {{ svg(item.icon, sanitize=true, namespace=true) }}
                                     {%- elseif item.fontIcon is defined -%}
                                         <span data-icon="{{ item.fontIcon }}"></span>
                                     {%- else -%}

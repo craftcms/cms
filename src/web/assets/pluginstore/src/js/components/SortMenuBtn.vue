@@ -1,16 +1,16 @@
 <template>
-	<div>
-		<div class="btn menubtn sortmenubtn" :data-icon="value.direction">{{ menuLabel }}</div>
-		<div class="menu">
-			<ul class="padded sort-attributes">
-				<li v-for="label, key in attributes"><a @click="selectAttribute(key)" :class="{sel: value.attribute == key}">{{ label }}</a></li>
-			</ul>
-			<hr>
-			<ul class="padded sort-directions">
-				<li v-for="label, key in directions"><a @click="selectDirection(key)" :class="{sel: value.direction == key}">{{ label }}</a></li>
-			</ul>
-		</div>
-	</div>
+    <div>
+        <div class="btn menubtn sortmenubtn" :data-icon="value.direction">{{ menuLabel }}</div>
+        <div class="menu">
+            <ul class="padded sort-attributes">
+                <li v-for="label, key in attributes"><a @click="selectAttribute(key)" :class="{sel: value.attribute == key}">{{ label }}</a></li>
+            </ul>
+            <hr>
+            <ul class="padded sort-directions">
+                <li v-for="label, key in directions"><a @click="selectDirection(key)" :class="{sel: value.direction == key}">{{ label }}</a></li>
+            </ul>
+        </div>
+    </div>
 </template>
 
 <script>
