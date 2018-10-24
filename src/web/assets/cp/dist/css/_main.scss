@@ -4075,6 +4075,9 @@ body.message .message-container .pane {
 /* auto-suggest */
 
 .autosuggest__results-container {
+  position: absolute;
+  z-index: 1;
+  width: 100%;
   border-radius: $paneBorderRadius;
   background: #fff;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);

@@ -1,0 +1,55 @@
+{% do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
+
+{%- set limit = (limit is defined ? limit : 5) %}
+{%- set placeholder = (placeholder is defined ? placeholder : '') %}
+
+{%- set class = [
+    'text',
+    (class is defined and class ? class : null),
+    (size is defined and size ? null : 'fullwidth')
+]|filter|join(' ') %}
+
+<div id="{{ id }}">
+    <vue-autosuggest :suggestions="filteredOptions" :on-selected="onSelected" :limit="limit" :input-props="inputProps"></vue-autosuggest>
+</div>
+
+{% js %}
+new Vue({
+    el: '#{{ id }}',
+
+    data() {
+        return {
+            selected: '',
+            options: [{
+                data: {{ options|json_encode|raw }}
+            }],
+            filteredOptions: [],
+            inputProps: {
+                class: "{{ class }}",
+                onInputChange: this.onInputChange,
+                placeholder: "{{ placeholder }}"
+            },
+            limit: {{ limit }}
+        };
+    },
+
+    methods: {
+        onSelected(option) {
+            this.selected = option.item;
+        },
+        onInputChange(text) {
+            if (text === '' || text === undefined) {
+                return;
+            }
+
+            const filteredData = this.options[0].data.filter(item => {
+                return item.toLowerCase().indexOf(text.toLowerCase()) > -1;
+            }).slice(0, this.limit);
+
+            this.filteredOptions = [{
+                data: filteredData
+            }];
+        }
+    }
+})
+{% endjs %}
