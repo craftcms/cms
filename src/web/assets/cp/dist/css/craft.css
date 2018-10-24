@@ -1249,7 +1249,7 @@ body.rtl .field > .warning:before { margin: -2px 0 0 2px ; }
 .field > .heading > .instructions img, .checkboxfield.has-instructions .instructions img { max-width: 100%; }
 
 /* toggles and nested fields */
-.nested-fields { margin: -24px; padding: 24px 24px 0; overflow: hidden; }
+.nested-fields { margin: -24px; padding: 24px 24px 0; }
 .nested-fields.hidden { display: block; height: 0; }
 .nested-fields > .field:last-child { padding-bottom: 24px; }
 
