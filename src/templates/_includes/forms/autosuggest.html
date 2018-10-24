@@ -18,7 +18,7 @@
             :limit="limit"
             @selected="onSelected">
         <template slot-scope="{suggestion}">
-            {{suggestion.item.name}}
+            {{suggestion.item.name || suggestion.item}}
             <span v-if="suggestion.item.hint" class="light">– {{suggestion.item.hint}}</span>
         </template>
     </vue-autosuggest>
@@ -107,10 +107,7 @@ new Vue({
             this.selected = option.item;
         },
         getSuggestionValue(suggestion) {
-            return suggestion.item.name;
-        },
-        onFocus() {
-            this.filteredOptions = this.filteredOptions;
+            return suggestion.item.name || suggestion.item;
         }
     }
 })
