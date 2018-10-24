@@ -10,7 +10,7 @@
 ]|filter|join(' ') %}
 
 <div id="{{ containerId }}">
-    <vue-autosuggest :suggestions="filteredOptions" :on-selected="onSelected" :limit="limit" :input-props="inputProps"></vue-autosuggest>
+    <vue-autosuggest :suggestions="filteredOptions" :limit="limit" :input-props="inputProps" @selected="onSelected" @blur="onBlur"></vue-autosuggest>
 </div>
 
 {% js %}
@@ -57,6 +57,9 @@ new Vue({
             this.filteredOptions = [{
                 data: filteredData
             }];
+        },
+        onBlur() {
+            this.filteredOptions = [];
         }
     }
 })
