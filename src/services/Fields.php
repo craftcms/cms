@@ -866,7 +866,7 @@ class Fields extends Component
         // Tell the current ContentBehavior class about the field
         ContentBehavior::$fieldHandles[$field->handle] = true;
 
-        // Update the field version at the end of the request
+        // Update the field version
         $this->updateFieldVersion();
 
         // Fire an 'afterSaveField' event
@@ -956,7 +956,7 @@ class Fields extends Component
             throw $e;
         }
 
-        // Update the field version at the end of the request
+        // Update the field version
         $this->updateFieldVersion();
 
         // Fire an 'afterDeleteField' event
