@@ -77,11 +77,7 @@ class Craft extends Yii
             $str = getenv($matches[1]) ?: $str;
         }
 
-        if (isset($str[0]) && $str[0] === '@') {
-            $str = static::getAlias($str) ?: $str;
-        }
-
-        return $str;
+        return static::getAlias($str);
     }
 
     /**
