@@ -31,7 +31,6 @@ class m181017_225222_system_config_settings extends Migration
                 'edition' => App::editionHandle((int)$info['edition']),
                 'live' => (bool)$info['on'],
                 'name' => $info['name'],
-                'schemaVersion' => $projectConfig->get('schemaVersion'),
                 'timeZone' => $info['timezone'],
             ]);
 
