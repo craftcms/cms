@@ -87,6 +87,22 @@ class AssetTransform extends Model
     /**
      * @inheritdoc
      */
+    public function attributeLabels()
+    {
+        return [
+            'handle' => Craft::t('app', 'Handle'),
+            'height' => Craft::t('app', 'Height'),
+            'mode' => Craft::t('app', 'Mode'),
+            'name' => Craft::t('app', 'Name'),
+            'position' => Craft::t('app', 'Position'),
+            'quality' => Craft::t('app', 'Quality'),
+            'width' => Craft::t('app', 'Width'),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         return [

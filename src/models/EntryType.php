@@ -88,6 +88,19 @@ class EntryType extends Model
     /**
      * @inheritdoc
      */
+    public function attributeLabels()
+    {
+        return [
+            'handle' => Craft::t('app', 'Handle'),
+            'name' => Craft::t('app', 'Name'),
+            'titleFormat' => Craft::t('app', 'Title Format'),
+            'titleLabel' => Craft::t('app', 'Title Field Label'),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = [
