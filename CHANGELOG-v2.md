@@ -1,6 +1,33 @@
 # Release Notes for Craft CMS 2.x
 
-## Unreleased
+## 2.7.3 - 2018-10-23
+
+### Changed
+- Single sections’ entry types’ handles are now updated to match their section’s handle whenever the section is saved. ([#2824](https://github.com/craftcms/cms/issues/2824))
+- Animated GIF thumbnails are no longer animated. ([#3110](https://github.com/craftcms/cms/issues/3110))
+- Craft now throws an exception if an asset is uploaded successfully but its record can’t be saved.
+- Updated jQuery Touch Events to 2.0.0.
+- Updated Garnish to 0.1.29.
+
+### Fixed
+- Fixed a bug where the Dev Mode indicator strip wasn’t visible on Chrome/Windows when using a scaled display. ([#3259](https://github.com/craftcms/cms/issues/3259))
+- Fixed bug where an error would be logged if `IOHelper::clearFolder()` was called on an empty folder.
+
+## 2.7.2 - 2018-08-24
+
+### Changed
+- Updated Garnish to 0.1.27.
+
+### Fixed
+- Fixed a PHP error that occurred on servers running PHP 5.4 - 5.5.
+
+## 2.7.1 - 2018-08-23
+
+### Changed
+- Craft now throws an exception when validating a custom field that is missing its field type, rather than allowing a PHP error to occur.
+
+### Fixed
+- Fixed a PHP error that occurred when compiling templates with `{% cache %}` tags, on servers running PHP 7.2.
 
 ## 2.7.0 - 2018-07-31
 

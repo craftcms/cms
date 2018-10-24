@@ -61,6 +61,7 @@ class CraftSupport extends Model
     public function attributeLabels()
     {
         return [
+            'attachment' => Craft::t('app', 'Attachment'),
             'fromEmail' => Craft::t('app', 'Your Email'),
         ];
     }

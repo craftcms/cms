@@ -101,6 +101,19 @@ class Site extends Model
     /**
      * @inheritdoc
      */
+    public function attributeLabels()
+    {
+        return [
+            'baseUrl' => Craft::t('app', 'Base URL'),
+            'handle' => Craft::t('app', 'Handle'),
+            'language' => Craft::t('app', 'Language'),
+            'name' => Craft::t('app', 'Name'),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = [

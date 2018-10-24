@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where the `ContentBehaviour` and `ElementQueryBehavior` classes could be missing some field properties. ([#3400](https://github.com/craftcms/cms/issues/3400))
+
+## 3.0.28 - 2018-10-23
+
 ### Added
 - Structure sections now have the ability to disable entry propagation, like Channel sections. ([#2386](https://github.com/craftcms/cms/issues/2386))
 
