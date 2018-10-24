@@ -3279,9 +3279,49 @@ ul.tree,
 .shadow-box {
   border-radius: $paneBorderRadius;
   border: 1px solid #ccc;
-  overflow: hidden;
   width: 100%;
   box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
+}
+
+table.shadow-box {
+  thead:first-child,
+  tbody:first-child {
+    tr:first-child {
+      th:first-child,
+      td:first-child {
+        &,
+        &.disabled:after {
+          border-top-left-radius: $paneBorderRadius - 1;
+        }
+      }
+      th:last-child,
+      td:last-child {
+        &,
+        &.disabled:after {
+          border-top-right-radius: $paneBorderRadius - 1;
+        }
+      }
+    }
+  }
+  thead:last-child,
+  tbody:last-child {
+    tr:last-child {
+      th:first-child,
+      td:first-child {
+        &,
+        &.disabled:after {
+          border-bottom-left-radius: $paneBorderRadius - 1;
+        }
+      }
+      th:last-child,
+      td:last-child {
+        &,
+        &.disabled:after {
+          border-bottom-right-radius: $paneBorderRadius - 1;
+        }
+      }
+    }
+  }
 }
 
 .text:not(.selectize-text),
@@ -4072,6 +4112,9 @@ body.message .message-container .pane {
 }
 
 /* auto-suggest */
+.autosuggest-container {
+  position: relative;
+}
 
 .autosuggest__results-container {
   position: absolute;
@@ -4082,6 +4125,9 @@ body.message .message-container .pane {
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
   padding: 0 14px;
+  text-align: left;
+  @include sans-serif-font;
+  font-size: 1em !important;
 
   .autosuggest__results_title {
     @include h6-styles;

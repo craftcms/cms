@@ -9,7 +9,7 @@
     (size is defined and size ? null : 'fullwidth')
 ]|filter|join(' ') %}
 
-<div id="{{ containerId }}">
+<div id="{{ containerId }}" class="autosuggest-container">
     {% verbatim %}
     <vue-autosuggest
             :suggestions="filteredOptions"

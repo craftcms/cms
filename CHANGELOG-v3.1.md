@@ -6,6 +6,7 @@
 - Entries, categories, and users can now be restored within the Control Panel by searching for `is:trashed` and clicking the “Restore” button.
 - Some Site settings (Base URL), volume settings (Base URL and File System Path), and email settings (System Email Address, Sender Name, HTML Email Template, Username, Password, and Host Name) can now be set to environment variables using a `$VARIABLE_NAME` syntax. ([#3219](https://github.com/craftcms/cms/issues/3219))
 - Control Panel settings that support environment variables now autosuggest environment variable names (and aliases when applicable) while typing.
+- Control Panel settings that define a template path now autosuggest existing template files.
 - Added cross-domain support for Live Preview. ([#1521](https://github.com/craftcms/cms/issues/1521))
 - Custom fields can now opt out of being included in elements’ search keywords. ([#2600](https://github.com/craftcms/cms/issues/2600))
 - Added the `disableAdminFunctions` config setting.
@@ -58,6 +59,7 @@
 - Added `craft\web\Controller::requireCpRequest()`.
 - Added `craft\web\Controller::requireSiteRequest()`.
 - Added `craft\web\twig\variables\Cp::getEnvSuggestions()`.
+- Added `craft\web\twig\variables\Cp::getTemplateSuggestions()`.
 - Added the ActiveRecord Soft Delete Extension for Yii2.
 - Added the Symfony Yaml Component.
 - The bundled Vue asset bundle now includes Vue-autosuggest.

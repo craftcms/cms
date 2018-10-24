@@ -356,4 +356,81 @@ class Cp extends Component
 
         return $suggestions;
     }
+
+    /**
+     * Returns the available template path suggestions for template inputs.
+     *
+     * @return string[]
+     */
+    public function getTemplateSuggestions(): array
+    {
+        // Get all the template files sorted by path length
+        $root = Craft::$app->getPath()->getSiteTemplatesPath();
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root));
+        /** @var \SplFileInfo[] $files */
+        $files = [];
+        $pathLengths = [];
+
+        foreach ($iterator as $file) {
+            /** @var \SplFileInfo $file */
+            if (!$file->isDir() && $file->getFilename()[0] !== '.') {
+                $files[] = $file;
+                $pathLengths[] = strlen($file->getRealPath());
+            }
+        }
+
+        array_multisort($pathLengths, SORT_NUMERIC, $files);
+
+        // Now build the suggestions array
+        $suggestions = [];
+        $templates = [];
+        $sites = [];
+        $config = Craft::$app->getConfig()->getGeneral();
+        $rootLength = strlen($root);
+
+        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            $sites[$site->handle] = Craft::t('site', $site->name);
+        }
+
+        foreach ($files as $file) {
+            $template = substr($file->getRealPath(), $rootLength + 1);
+
+            // Can we chop off the extension?
+            $extension = $file->getExtension();
+            if (in_array($extension, $config->defaultTemplateExtensions, true)) {
+                $template = substr($template, 0, strlen($template) - (strlen($extension) + 1));
+            }
+
+            $hint = null;
+
+            // Is it in a site template directory?
+            foreach ($sites as $handle => $name) {
+                if (strpos($template, $handle . DIRECTORY_SEPARATOR) === 0) {
+                    $hint = $name;
+                    $template = substr($template, strlen($handle) + 1);
+                    break;
+                }
+            }
+
+            // Avoid listing the same template path twice (considering localized templates)
+            if (isset($templates[$template])) {
+                continue;
+            }
+
+            $templates[$template] = true;
+            $suggestions[] = [
+                'name' => $template,
+                'hint' => $hint,
+            ];
+        }
+
+        ArrayHelper::multisort($suggestions, 'name');
+
+        return [
+            [
+                'label' => Craft::t('app', 'Templates'),
+                'data' => $suggestions,
+            ]
+        ];
+    }
 }
