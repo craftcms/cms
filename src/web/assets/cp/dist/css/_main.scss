@@ -4083,6 +4083,11 @@ body.message .message-container .pane {
   box-sizing: border-box;
   padding: 0 14px;
 
+  .autosuggest__results_title {
+    @include h6-styles;
+    margin-top: 14px !important;
+  }
+
   .autosuggest__results_item {
     @include menu-option-styles;
 

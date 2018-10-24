@@ -10,7 +10,19 @@
 ]|filter|join(' ') %}
 
 <div id="{{ containerId }}">
-    <vue-autosuggest :suggestions="filteredOptions" :limit="limit" :input-props="inputProps" @selected="onSelected" @blur="onBlur"></vue-autosuggest>
+    {% verbatim %}
+    <vue-autosuggest
+            :suggestions="filteredOptions"
+            :getSuggestionValue="getSuggestionValue"
+            :input-props="inputProps"
+            :limit="limit"
+            @selected="onSelected">
+        <template slot-scope="{suggestion}">
+            {{suggestion.item.name}}
+            <span v-if="suggestion.item.hint" class="light">– {{suggestion.item.hint}}</span>
+        </template>
+    </vue-autosuggest>
+    {% endverbatim %}
 </div>
 
 {% js %}
@@ -20,10 +32,8 @@ new Vue({
     data() {
         return {
             selected: '',
-            options: [{
-                data: {{ options|json_encode|raw }}
-            }],
             filteredOptions: [],
+            suggestions: {{ suggestions|json_encode|raw }},
             inputProps: {
                 class: "{{ class }}",
                 initialValue: "{{ (value ?? '')|e('js') }}",
@@ -42,24 +52,43 @@ new Vue({
     },
 
     methods: {
-        onSelected(option) {
-            this.selected = option.item;
-        },
         onInputChange(text) {
             if (text === '' || text === undefined) {
+                this.filteredOptions = this.suggestions;
                 return;
             }
 
-            const filteredData = this.options[0].data.filter(item => {
-                return item.toLowerCase().indexOf(text.toLowerCase()) > -1;
-            }).slice(0, this.limit);
+            text = text.toLowerCase();
 
-            this.filteredOptions = [{
-                data: filteredData
-            }];
+            var filtered = [];
+            var i, j, sectionFilter, item;
+
+            for (i = 0; i < this.suggestions.length; i++) {
+                sectionFilter = [];
+                for (j = 0; j < this.suggestions[i].data.length; j++) {
+                    item = this.suggestions[i].data[j];
+                    if ((item.name || item).toLowerCase().indexOf(text) !== -1) {
+                        sectionFilter.push(item.name ? item : {name: item});
+                    }
+                }
+                if (sectionFilter.length) {
+                    filtered.push({
+                        label: this.suggestions[i].label || null,
+                        data: sectionFilter.slice(0, this.limit)
+                    });
+                }
+            }
+
+            this.filteredOptions = filtered;
         },
-        onBlur() {
-            this.filteredOptions = [];
+        onSelected(option) {
+            this.selected = option.item;
+        },
+        getSuggestionValue(suggestion) {
+            return suggestion.item.name;
+        },
+        onFocus() {
+            this.filteredOptions = this.filteredOptions;
         }
     }
 })
