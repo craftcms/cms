@@ -365,6 +365,8 @@ class Elements extends Component
     public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true): bool
     {
         /** @var Element $element */
+        $element->clearErrors();
+        
         $isNewElement = !$element->id;
 
         // Fire a 'beforeSaveElement' event
@@ -391,7 +393,7 @@ class Elements extends Component
         }
 
         // Set a dummy title if there isn't one already and the element type has titles
-        if (!$runValidation && $element::hasContent() && $element::hasTitles() && !$element->validate(['title'])) {
+        if (!$runValidation && $element::hasContent() && $element::hasTitles() && !$element->validate(['title'], false)) {
             $humanClass = ucfirst(App::humanizeClass(get_class($element)));
             if ($isNewElement) {
                 $element->title = Craft::t('app', 'New {class}', ['class' => $humanClass]);
@@ -401,7 +403,7 @@ class Elements extends Component
         }
 
         // Validate
-        if ($runValidation && !$element->validate()) {
+        if ($runValidation && !$element->validate(null, false)) {
             Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
 
             return false;
