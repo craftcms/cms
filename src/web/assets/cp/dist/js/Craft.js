@@ -2540,6 +2540,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             if (this.searching) {
                 // Clear the search value without causing it to update elements
                 this.searchText = null;
+                this.searchQuery = null;
                 this.$search.val('');
                 this.stopSearching();
             }
