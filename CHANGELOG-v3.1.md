@@ -14,6 +14,7 @@
 - Added the `trashed` element query param, which can be used to query for elements that have been soft-deleted.
 - Added the `expression()` Twig function, for creating new `yii\db\Expression` objects in templates. ([#3289](https://github.com/craftcms/cms/pull/3289))
 - Added the `parseEnv()` Twig function.
+- Added the `_includes/forms/autosuggest.html` include template for the Control Panel. 
 - Added `Craft::parseEnv()`.
 - Added `craft\base\ApplicationTrait::getIsLive()`.
 - Added `craft\base\Element::EVENT_AFTER_RESTORE`.
@@ -57,6 +58,7 @@
 - Added `craft\web\Controller::requireSiteRequest()`.
 - Added the ActiveRecord Soft Delete Extension for Yii2.
 - Added the Symfony Yaml Component.
+- The bundled Vue asset bundle now includes Vue-autosuggest.
 
 ### Changed
 - The `defaultWeekStartDay` config setting is now set to `1` (Monday) by default, to conform with the ISO 8601 standard.

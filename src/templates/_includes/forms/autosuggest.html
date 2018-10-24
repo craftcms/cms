@@ -1,7 +1,7 @@
 {% do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
 
-{%- set limit = (limit is defined ? limit : 5) %}
-{%- set placeholder = (placeholder is defined ? placeholder : '') %}
+{%- set id = (id is defined and id ? id : 'autosuggest'~random()) %}
+{%- set containerId = id ~ '-container' %}
 
 {%- set class = [
     'text',
@@ -9,13 +9,13 @@
     (size is defined and size ? null : 'fullwidth')
 ]|filter|join(' ') %}
 
-<div id="{{ id }}">
+<div id="{{ containerId }}">
     <vue-autosuggest :suggestions="filteredOptions" :on-selected="onSelected" :limit="limit" :input-props="inputProps"></vue-autosuggest>
 </div>
 
 {% js %}
 new Vue({
-    el: '#{{ id }}',
+    el: "#{{ containerId|namespaceInputId|e('js') }}",
 
     data() {
         return {
@@ -27,9 +27,15 @@ new Vue({
             inputProps: {
                 class: "{{ class }}",
                 onInputChange: this.onInputChange,
-                placeholder: "{{ placeholder }}"
+                style: "{{ (style ?? '')|e('js') }}",
+                id: "{{ id|namespaceInputId|e('js') }}",
+                size: "{{ (size ?? '')|e('js') }}",
+                value: "{{ (value ?? '')|e('js') }}",
+                maxlength: "{{ (maxlength ?? '')|e('js') }}",
+                title: "{{ (title ?? '')|e('js') }}",
+                placeholder: "{{ (placeholder ?? '')|e('js') }}"
             },
-            limit: {{ limit }}
+            limit: {{ limit ?? 5 }}
         };
     },
 
