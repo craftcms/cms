@@ -26,12 +26,14 @@ new Vue({
             filteredOptions: [],
             inputProps: {
                 class: "{{ class }}",
+                initialValue: "{{ (value ?? '')|e('js') }}",
                 onInputChange: this.onInputChange,
                 style: "{{ (style ?? '')|e('js') }}",
                 id: "{{ id|namespaceInputId|e('js') }}",
+                name: "{{ (name ?? '')|namespaceInputName|e('js') }}",
                 size: "{{ (size ?? '')|e('js') }}",
-                value: "{{ (value ?? '')|e('js') }}",
                 maxlength: "{{ (maxlength ?? '')|e('js') }}",
+                autofocus: {{ (autofocus ?? false) ? 'true' : 'false' }},
                 title: "{{ (title ?? '')|e('js') }}",
                 placeholder: "{{ (placeholder ?? '')|e('js') }}"
             },
