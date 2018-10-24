@@ -1515,7 +1515,7 @@ body.message .message-container.no-access { background: rgba(50, 50, 50, 0.9); }
 body.message .message-container .pane { top: 50%; margin-top: -33px !important; margin-left: auto; margin-right: auto; width: 320px; }
 
 /* auto-suggest */
-.autosuggest__results-container { position: absolute; z-index: 1; width: 100%; border-radius: 5px; background: #fff; -webkit-box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5); box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5); -webkit-box-sizing: border-box; box-sizing: border-box; padding: 0 14px; }
+.autosuggest__results-container { position: absolute; z-index: 2; width: 100%; border-radius: 5px; background: #fff; -webkit-box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5); box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5); -webkit-box-sizing: border-box; box-sizing: border-box; padding: 0 14px; }
 .autosuggest__results-container .autosuggest__results_title { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: #b9bfc6; text-transform: uppercase; font-weight: bold; margin-top: 14px !important; }
 .autosuggest__results-container .autosuggest__results_item { margin: 0 -14px; padding: 10px 14px; color: #29323d; text-decoration: none; white-space: nowrap; }
 .autosuggest__results-container .autosuggest__results_item:hover, .autosuggest__results-container .autosuggest__results_item.autosuggest__results_item-highlighted { color: #29323d; background-color: #d5d8dd; cursor: pointer; }
