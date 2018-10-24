@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\events\RegisterCpNavItemsEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -301,5 +302,58 @@ class Cp extends Component
     public function getAlerts(): array
     {
         return CpHelper::alerts(Craft::$app->getRequest()->getPathInfo());
+    }
+
+    /**
+     * Returns the available environment variable and alias suggestions for
+     * inputs that support them.
+     *
+     * @param bool $includeAliases Whether aliases should be included in the list
+     * (only enable this if the setting defines a URL or file path)
+     * @return string[]
+     */
+    public function getEnvSuggestions(bool $includeAliases = false): array
+    {
+        $suggestions = [];
+        $security = Craft::$app->getSecurity();
+
+        $envSuggestions = [];
+        foreach (array_keys($_ENV) as $var) {
+            $envSuggestions[] = [
+                'name' => '$' . $var,
+                'hint' => $security->redactIfSensitive($var, Craft::getAlias(getenv($var)))
+            ];
+        }
+        ArrayHelper::multisort($envSuggestions, 'name');
+        $suggestions[] = [
+            'label' => Craft::t('app', 'Environment Variables'),
+            'data' => $envSuggestions,
+        ];
+
+        if ($includeAliases) {
+            $aliasSuggestions = [];
+            foreach (Craft::$aliases as $alias => $path) {
+                if (is_array($path)) {
+                    if (isset($path[$alias])) {
+                        $aliasSuggestions[] = [
+                            'name' => $alias,
+                            'hint' => $path[$alias],
+                        ];
+                    }
+                } else {
+                    $aliasSuggestions[] = [
+                        'name' => $alias,
+                        'hint' => $path,
+                    ];
+                }
+            }
+            ArrayHelper::multisort($aliasSuggestions, 'name');
+            $suggestions[] = [
+                'label' => Craft::t('app', 'Aliases'),
+                'data' => $aliasSuggestions,
+            ];
+        }
+
+        return $suggestions;
     }
 }
