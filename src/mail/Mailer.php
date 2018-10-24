@@ -111,8 +111,8 @@ class Mailer extends \yii\swiftmailer\Mailer
             $settings = App::mailSettings();
             $variables = ($message->variables ?: []) + [
                     'emailKey' => $message->key,
-                    'fromEmail' => $settings->fromEmail,
-                    'fromName' => $settings->fromName,
+                    'fromEmail' => Craft::parseEnv($settings->fromEmail),
+                    'fromName' => Craft::parseEnv($settings->fromName),
                 ];
 
             // Render the subject and textBody

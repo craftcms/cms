@@ -175,7 +175,7 @@ class Request extends \yii\web\Request
 
             // If the requested URI begins with the current site's base URL path,
             // make sure that our internal path doesn't include those segments
-            if ($site->baseUrl && ($siteBasePath = parse_url(Craft::getAlias($site->baseUrl), PHP_URL_PATH)) !== null) {
+            if ($site->baseUrl && ($siteBasePath = parse_url($site->getBaseUrl(), PHP_URL_PATH)) !== null) {
                 $siteBasePath = $this->_normalizePath($siteBasePath);
                 $baseUrl = $this->_normalizePath($this->getBaseUrl());
                 $fullUri = $baseUrl . ($baseUrl && $path ? '/' : '') . $path;
@@ -1088,7 +1088,7 @@ class Request extends \yii\web\Request
                 continue;
             }
 
-            if (($parsed = parse_url(Craft::getAlias($site->baseUrl))) === false) {
+            if (($parsed = parse_url($site->getBaseUrl())) === false) {
                 Craft::warning('Unable to parse the site base URL: ' . $site->baseUrl);
                 continue;
             }

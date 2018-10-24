@@ -395,8 +395,10 @@ class App
         return [
             'class' => Mailer::class,
             'messageClass' => Message::class,
-            'from' => [$settings->fromEmail => $settings->fromName],
-            'template' => $settings->template,
+            'from' => [
+                Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName)
+            ],
+            'template' => Craft::parseEnv($settings->template),
             'transport' => $adapter->defineTransport(),
         ];
     }

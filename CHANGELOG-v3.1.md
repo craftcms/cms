@@ -4,6 +4,9 @@
 - Added the Project Config, a portable and centralized configuration for system settings. ([#1429](https://github.com/craftcms/cms/issues/1429)) 
 - Elements, field layouts, sites, and site groups are now soft-deleted. ([#867](https://github.com/craftcms/cms/issues/867))
 - Entries, categories, and users can now be restored within the Control Panel by searching for `is:trashed` and clicking the “Restore” button.
+- Some Site settings (Base URL), volume settings (Base URL and File System Path), and email settings (System Email Address, Sender Name, HTML Email Template, Username, Password, and Host Name) can now be set to environment variables using a `$VARIABLE_NAME` syntax. ([#3219](https://github.com/craftcms/cms/issues/3219))
+- Control Panel settings that support environment variables now autosuggest environment variable names (and aliases when applicable) while typing.
+- Control Panel settings that define a template path now autosuggest existing template files.
 - Added cross-domain support for Live Preview. ([#1521](https://github.com/craftcms/cms/issues/1521))
 - Custom fields can now opt out of being included in elements’ search keywords. ([#2600](https://github.com/craftcms/cms/issues/2600))
 - Added the `disableAdminFunctions` config setting.
@@ -12,6 +15,9 @@
 - Added the `gc` console command, which can be used to run garbage collection tasks.
 - Added the `trashed` element query param, which can be used to query for elements that have been soft-deleted.
 - Added the `expression()` Twig function, for creating new `yii\db\Expression` objects in templates. ([#3289](https://github.com/craftcms/cms/pull/3289))
+- Added the `parseEnv()` Twig function.
+- Added the `_includes/forms/autosuggest.html` include template for the Control Panel. 
+- Added `Craft::parseEnv()`.
 - Added `craft\base\ApplicationTrait::getIsLive()`.
 - Added `craft\base\Element::EVENT_AFTER_RESTORE`.
 - Added `craft\base\Element::EVENT_BEFORE_RESTORE`.
@@ -21,6 +27,7 @@
 - Added `craft\base\Field::EVENT_BEFORE_ELEMENT_RESTORE`.
 - Added `craft\base\FieldInterface::afterElementRestore()`.
 - Added `craft\base\FieldInterface::beforeElementRestore()`.
+- Added `craft\behaviors\EnvAttributeParserBehavior`.
 - Added `craft\controllers\LivePreviewController`.
 - Added `craft\db\Command::restore()`.
 - Added `craft\db\Command::softDelete()`.
@@ -39,6 +46,7 @@
 - Added `craft\helpers\ProjectConfig`.
 - Added `craft\models\FieldLayout::createFromConfig()`.
 - Added `craft\models\FieldLayout::getConfig()`.
+- Added `craft\models\Site::getBaseUrl()`.
 - Added `craft\services\Categories::getGroupByUid()`.
 - Added `craft\services\Elements::restoreElement()`.
 - Added `craft\services\Elements::EVENT_AFTER_RESTORE_ELEMENT`.
@@ -50,8 +58,11 @@
 - Added `craft\services\Sites::restoreSiteById()`.
 - Added `craft\web\Controller::requireCpRequest()`.
 - Added `craft\web\Controller::requireSiteRequest()`.
+- Added `craft\web\twig\variables\Cp::getEnvSuggestions()`.
+- Added `craft\web\twig\variables\Cp::getTemplateSuggestions()`.
 - Added the ActiveRecord Soft Delete Extension for Yii2.
 - Added the Symfony Yaml Component.
+- The bundled Vue asset bundle now includes Vue-autosuggest.
 
 ### Changed
 - The `defaultWeekStartDay` config setting is now set to `1` (Monday) by default, to conform with the ISO 8601 standard.
@@ -74,6 +85,7 @@
 - Deprecated `craft\models\Info::getOn()`. `Craft::$app->getIsLive()` should be used instead.
 - Deprecated `craft\models\Info::getTimezone()`. `Craft::$app->getTimeZone()` should be used instead.
 - Deprecated `craft\services\SystemSettings`. `craft\services\ProjectConfig` should be used instead.
+- Deprecated `craft\validators\UrlValidator::$allowAlias`. `craft\behaviors\EnvAttributeParserBehavior` should be used instead.
 
 ### Security
 - It’s no longer possible to spoof Live Preview requests.

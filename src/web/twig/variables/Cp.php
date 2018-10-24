@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\events\RegisterCpNavItemsEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -301,5 +302,135 @@ class Cp extends Component
     public function getAlerts(): array
     {
         return CpHelper::alerts(Craft::$app->getRequest()->getPathInfo());
+    }
+
+    /**
+     * Returns the available environment variable and alias suggestions for
+     * inputs that support them.
+     *
+     * @param bool $includeAliases Whether aliases should be included in the list
+     * (only enable this if the setting defines a URL or file path)
+     * @return string[]
+     */
+    public function getEnvSuggestions(bool $includeAliases = false): array
+    {
+        $suggestions = [];
+        $security = Craft::$app->getSecurity();
+
+        $envSuggestions = [];
+        foreach (array_keys($_ENV) as $var) {
+            $envSuggestions[] = [
+                'name' => '$' . $var,
+                'hint' => $security->redactIfSensitive($var, Craft::getAlias(getenv($var)))
+            ];
+        }
+        ArrayHelper::multisort($envSuggestions, 'name');
+        $suggestions[] = [
+            'label' => Craft::t('app', 'Environment Variables'),
+            'data' => $envSuggestions,
+        ];
+
+        if ($includeAliases) {
+            $aliasSuggestions = [];
+            foreach (Craft::$aliases as $alias => $path) {
+                if (is_array($path)) {
+                    if (isset($path[$alias])) {
+                        $aliasSuggestions[] = [
+                            'name' => $alias,
+                            'hint' => $path[$alias],
+                        ];
+                    }
+                } else {
+                    $aliasSuggestions[] = [
+                        'name' => $alias,
+                        'hint' => $path,
+                    ];
+                }
+            }
+            ArrayHelper::multisort($aliasSuggestions, 'name');
+            $suggestions[] = [
+                'label' => Craft::t('app', 'Aliases'),
+                'data' => $aliasSuggestions,
+            ];
+        }
+
+        return $suggestions;
+    }
+
+    /**
+     * Returns the available template path suggestions for template inputs.
+     *
+     * @return string[]
+     */
+    public function getTemplateSuggestions(): array
+    {
+        // Get all the template files sorted by path length
+        $root = Craft::$app->getPath()->getSiteTemplatesPath();
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root));
+        /** @var \SplFileInfo[] $files */
+        $files = [];
+        $pathLengths = [];
+
+        foreach ($iterator as $file) {
+            /** @var \SplFileInfo $file */
+            if (!$file->isDir() && $file->getFilename()[0] !== '.') {
+                $files[] = $file;
+                $pathLengths[] = strlen($file->getRealPath());
+            }
+        }
+
+        array_multisort($pathLengths, SORT_NUMERIC, $files);
+
+        // Now build the suggestions array
+        $suggestions = [];
+        $templates = [];
+        $sites = [];
+        $config = Craft::$app->getConfig()->getGeneral();
+        $rootLength = strlen($root);
+
+        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            $sites[$site->handle] = Craft::t('site', $site->name);
+        }
+
+        foreach ($files as $file) {
+            $template = substr($file->getRealPath(), $rootLength + 1);
+
+            // Can we chop off the extension?
+            $extension = $file->getExtension();
+            if (in_array($extension, $config->defaultTemplateExtensions, true)) {
+                $template = substr($template, 0, strlen($template) - (strlen($extension) + 1));
+            }
+
+            $hint = null;
+
+            // Is it in a site template directory?
+            foreach ($sites as $handle => $name) {
+                if (strpos($template, $handle . DIRECTORY_SEPARATOR) === 0) {
+                    $hint = $name;
+                    $template = substr($template, strlen($handle) + 1);
+                    break;
+                }
+            }
+
+            // Avoid listing the same template path twice (considering localized templates)
+            if (isset($templates[$template])) {
+                continue;
+            }
+
+            $templates[$template] = true;
+            $suggestions[] = [
+                'name' => $template,
+                'hint' => $hint,
+            ];
+        }
+
+        ArrayHelper::multisort($suggestions, 'name');
+
+        return [
+            [
+                'label' => Craft::t('app', 'Templates'),
+                'data' => $suggestions,
+            ]
+        ];
     }
 }

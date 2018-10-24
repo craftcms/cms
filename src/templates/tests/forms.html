@@ -3,6 +3,7 @@
 {% import "_includes/forms" as forms %}
 
 {% block content %}
+    <h2>Checkboxes</h2>
     {{ forms.checkboxSelectField({
         label: "Checkbox select with “All” option",
         options: [
@@ -21,6 +22,22 @@
             { value: 'three', label: 'Three' },
         ],
         showAllOption: false,
+    }) }}
+
+    <h2>Auto Suggest</h2>
+
+    {{ forms.autosuggestField({
+        label: 'Autosuggest One',
+        id: 'app1',
+        placeholder: "Type ‘o’…",
+        options: ['One', 'Two', 'Three', 'Four', 'Five'],
+    }) }}
+
+    {{ forms.autosuggestField({
+        label: 'Autosuggest Two',
+        id: 'app2',
+        placeholder: "Type a letter…",
+        options: ['Alexander', 'Amaretto', 'Americano', 'Apple Martini', 'Apple Schnapps', 'Apricot Brandy', 'B-52', 'Bacardi Cocktail', 'Banana Daiquiri', 'Beer', 'Beer1', 'Beer2', 'Beer3', 'Bellini', 'Black Russian', 'Bloody Mary', 'Blue Curaçao', 'Blue Hawaii', 'Bourbon', 'Brandy', 'Brandy Alexander', 'Brandy Egg Nog', 'Bronx', 'Cachaça', 'Caipirinha', 'Campari', 'Champagne', 'Champagne', 'Champagne Cooler', 'ChampagneWithStrawberry', 'Cherry Brandy', 'Christmas Cocktail', 'Club Soda', 'Coconut Cream', 'Cognac', 'Cointreau', 'Coke', 'Cosmopolitan', 'Cosmopolitan', 'Cranberry Juice', 'Cream', 'Crème de Cacao', 'Crème de Cassis', 'Crème de Yvette', 'Cuba Libre', 'Daiquiri', 'Demerara Rum', 'Drambuie', 'Dry Vermouth', 'Egg Yolk', 'Espresso', 'Espresso Martini', 'EspressoMartini1', 'EspressoMartini2', 'French Connection', 'Galliano Liqueur', 'Gibson', 'Gimlet', 'Gin', 'Gin and Tonic', 'Gin Fizz', 'Gin Rickey', 'GinAndTonic1', 'GinAndTonic2', 'GinAndTonic3', 'Ginger Ale', 'Godfather', 'Godmother', 'Golden Cadillac', 'Gomme Syrup', 'Grand Marnier', 'Grapefruit', 'Green Chartreuse', 'Grenadine', 'Harvey Wallbanger', 'Ice Pick', 'Iced Tea', 'Irish Whiskey', 'Japanese Slipper', 'John Collins', 'Kahlúa', 'Kamikaze', 'Kir', 'Kir Royale', 'Kirsch', 'Lemon Juice', 'Lime Juice', 'Long Island Iced Tea', 'Mai Kai Martini', 'MaiKaiMartini1', 'MaiKaiMartini2', 'Manhattan', 'Margarita', 'Martini', 'Midori', 'Midori Splice', 'Milk', 'Mimosa', 'Mojito', 'Mojito', 'Negroni', 'Orange Juice', 'Passion Fruit Juice', 'Peach Brandy', 'Peach Puree', 'Pineapple Juice', 'Piña Colada', 'Port', 'Porto Flip', 'Red Wine', 'Rob Roy', 'Rusty Nail', 'Salty Dog', 'Scotch', 'Screwdriver', 'Sex on the Beach', 'Shots', 'Simple Syrup', 'Singapore Sling', 'Sloe Gin', 'Sweet & Sour Mix', 'Sweet Vermouth', 'TahoeDrink', 'Tequila', 'Tequila', 'Tequila Sunrise', 'Tomato Juice', 'Tonic Water', 'Triple Sec', 'Vodka', 'Vodka', 'Vodka Citron', 'VodkaMidoriSplice', 'Water', 'Whiskey', 'Whiskey Sour', 'Whiskey1', 'Whiskey2', 'WhiskeySour1', 'WhiskeySour2', 'White Rum', 'White Russian', 'White Wine', 'Wine1', 'Wine2', 'Yellow Chartreuse'],
     }) }}
 {% endblock %}
 
