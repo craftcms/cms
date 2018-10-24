@@ -206,12 +206,6 @@ class Fields extends Component
      */
     private $_layoutsByType;
 
-    /**
-     * @var bool Whether we've already updated the field version in this request
-     * @see updateFieldVersion()
-     */
-    private $_updatedFieldVersion = false;
-
     // Public Methods
     // =========================================================================
 
@@ -1352,15 +1346,9 @@ class Fields extends Component
     /**
      * Sets a new field version, so the ContentBehavior and ElementQueryBehavior classes
      * will get regenerated on the next request.
-     *
-     * This will only have an effect once per request. Subsequent calls will be ignored.
      */
     public function updateFieldVersion()
     {
-        if ($this->_updatedFieldVersion) {
-            return;
-        }
-
         // Make sure that ContentBehavior and ElementQueryBehavior have already been loaded,
         // so the field version change won't be detected until the next request
         class_exists(ContentBehavior::class);
@@ -1369,8 +1357,6 @@ class Fields extends Component
         $info = Craft::$app->getInfo();
         $info->fieldVersion = StringHelper::randomString(12);
         Craft::$app->saveInfo($info);
-
-        $this->_updatedFieldVersion = true;
     }
 
     // Private Methods
