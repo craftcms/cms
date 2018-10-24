@@ -4072,6 +4072,26 @@ body.message .message-container .pane {
   width: 320px;
 }
 
+/* auto-suggest */
+
+.autosuggest__results-container {
+  border-radius: $paneBorderRadius;
+  background: #fff;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  padding: 0 14px;
+  
+  .autosuggest__results_item {
+    @include menu-option-styles;
+
+    &:hover,
+    &.autosuggest__results_item-highlighted {
+      @include menu-option-active-styles;
+      cursor: pointer;
+    }
+  }
+}
+
 /* ----------------------------------------
 /* Matrix
 /* ----------------------------------------*/
