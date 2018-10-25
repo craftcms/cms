@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Email and URL fields now have “Placeholder Text” settings. ([#3397](https://github.com/craftcms/cms/issues/3397))
+
 ### Fixed
 - Fixed a bug where the `ContentBehaviour` and `ElementQueryBehavior` classes could be missing some field properties. ([#3400](https://github.com/craftcms/cms/issues/3400))
 - Fixed a bug where some fields within Matrix fields could lose their values after enabling the “Manage blocks on a per-site basis” setting. ([verbb/super-table/203](https://github.com/verbb/super-table/issues/203))
