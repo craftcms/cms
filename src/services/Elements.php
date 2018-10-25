@@ -921,11 +921,17 @@ class Elements extends Component
     {
         /** @var Element $element */
         // Fire a 'beforeDeleteElement' event
+
+        $event =  new ElementEvent([
+            'element' => $element,
+            'doFullDelete' => false,
+        ]);
+
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ELEMENT)) {
-            $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, new ElementEvent([
-                'element' => $element,
-            ]));
+            $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, $event);
         }
+
+        $doHardDelete = $event->doFullDelete;
 
         if (!$element->beforeDelete()) {
             return false;
@@ -956,12 +962,19 @@ class Elements extends Component
             // this element is suddenly going to show up in a new query)
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
-            // Soft delete the elements table row
-            Craft::$app->getDb()->createCommand()
-                ->softDelete('{{%elements}}', ['id' => $element->id])
-                ->execute();
+            if($doHardDelete) {
+                Craft::$app->getDb()->createCommand()
+                    ->delete('{{%elements}}', ['id' => $element->id])
+                    ->execute();
+            }
+            else {
+                // Soft delete the elements table row
+                Craft::$app->getDb()->createCommand()
+                    ->softDelete('{{%elements}}', ['id' => $element->id])
+                    ->execute();
+            }
 
-            // Hard delete the search indexes
+            // Always hard delete the search indexes
             Craft::$app->getDb()->createCommand()
                 ->delete('{{%searchindex}}', ['elementId' => $element->id])
                 ->execute();

@@ -30,4 +30,9 @@ class ElementEvent extends Event
      * @var bool Whether the element is brand new
      */
     public $isNew = false;
+
+    /**
+     * @var bool Whether to do full or soft delete
+     */
+    public $doFullDelete = false;
 }
