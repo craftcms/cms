@@ -11,23 +11,18 @@ use craft\base\ElementInterface;
 use yii\base\Event;
 
 /**
- * Element event class.
+ * Delete element event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ElementEvent extends Event
+class DeleteElementEvent extends ElementEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var ElementInterface|null The element model associated with the event.
+     * @var bool Whether to immediately hard-delete the element, rather than soft-deleting it
      */
-    public $element;
-
-    /**
-     * @var bool Whether the element is brand new
-     */
-    public $isNew = false;
+    public $hardDelete = false;
 }

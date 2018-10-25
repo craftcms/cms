@@ -24,6 +24,7 @@ use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
+use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -921,17 +922,11 @@ class Elements extends Component
     {
         /** @var Element $element */
         // Fire a 'beforeDeleteElement' event
-
-        $event =  new ElementEvent([
+        $event = new DeleteElementEvent([
             'element' => $element,
-            'doFullDelete' => false,
+            'hardDelete' => false,
         ]);
-
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ELEMENT)) {
-            $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, $event);
-        }
-
-        $doHardDelete = $event->doFullDelete;
+        $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, $event);
 
         if (!$element->beforeDelete()) {
             return false;
@@ -962,12 +957,11 @@ class Elements extends Component
             // this element is suddenly going to show up in a new query)
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
-            if($doHardDelete) {
+            if ($event->hardDelete) {
                 Craft::$app->getDb()->createCommand()
                     ->delete('{{%elements}}', ['id' => $element->id])
                     ->execute();
-            }
-            else {
+            } else {
                 // Soft delete the elements table row
                 Craft::$app->getDb()->createCommand()
                     ->softDelete('{{%elements}}', ['id' => $element->id])
