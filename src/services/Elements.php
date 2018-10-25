@@ -83,7 +83,7 @@ class Elements extends Component
     const EVENT_AFTER_MERGE_ELEMENTS = 'afterMergeElements';
 
     /**
-     * @event ElementEvent The event that is triggered before an element is deleted.
+     * @event DeleteElementEvent The event that is triggered before an element is deleted.
      */
     const EVENT_BEFORE_DELETE_ELEMENT = 'beforeDeleteElement';
 
