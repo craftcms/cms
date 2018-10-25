@@ -156,16 +156,16 @@ With those in place, you could begin your asset volumes’ Base URL and File Sys
 If you’d like, you can set the alias values with environment variables, either from your `.env` file or somewhere in your environment’s configuration:
 
 ```bash
-ASSET_BASE_URL=http://my-project.com/assets
-ASSET_BASE_PATH=/path/to/web/assets
+ASSETS_BASE_URL=http://my-project.com/assets
+ASSETS_BASE_PATH=/path/to/web/assets
 ```
 
 Then you can pull them into the alias definitions using [getenv()](http://php.net/manual/en/function.getenv.php):
 
 ```php
 'aliases' => [
-    '@assetBaseUrl' => getenv('ASSET_BASE_URL'),
-    '@assetBasePath' => getenv('ASSET_BASE_PATH'),
+    '@assetBaseUrl' => getenv('ASSETS_BASE_URL'),
+    '@assetBasePath' => getenv('ASSETS_BASE_PATH'),
 ],
 ```
 
