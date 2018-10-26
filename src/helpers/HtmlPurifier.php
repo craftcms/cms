@@ -68,6 +68,9 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
             // http://developers.whatwg.org/edits.html
             $def->addElement('ins', 'Block', 'Flow', 'Common', ['cite' => 'URI', 'datetime' => 'CDATA']);
             $def->addElement('del', 'Block', 'Flow', 'Common', ['cite' => 'URI', 'datetime' => 'CDATA']);
+
+            // https://github.com/ezyang/htmlpurifier/issues/152#issuecomment-414192516
+            $def->addAttribute('a', 'download', 'URI');
         }
     }
 }
