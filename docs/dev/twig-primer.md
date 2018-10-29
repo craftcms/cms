@@ -50,14 +50,14 @@ Output tags are only for outputting to the template, so you never place output t
 These examples are incorrect:
 
 ```twig
-{% set entry = craft.entries.section( {{ sectionId }} ).first() %}
+{% set entry = craft.entries.section( {{ sectionId }} ).one() %}
 {% set entry = craft.entries.section( {% if filterBySection %} sectionId {% endif %} ) %}
 ```
 
 These are correct:
 
 ```twig
-{% set entry = craft.entries.section( sectionId ).first() %}
+{% set entry = craft.entries.section( sectionId ).one() %}
 {% set entry = craft.entries.section( filterBySection ? sectionId : null ) %}
 ```
 
