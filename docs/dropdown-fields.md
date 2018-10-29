@@ -8,39 +8,46 @@ Dropdown fields have the following settings:
 
 * **Dropdown Options** – Define the options that will be available in the field. You even get to set the option values and labels separately, and choose which one should be selected by default.
 
+## Templating Examples
 
-## The Field
-
-Dropdown fields will show a dropdown input with each of the Dropdown Options as defined in the field settings:
-
-## Templating
-
-You can output the selected option’s value like so:
+#### Output the selected option’s value:
 
 ```twig
-{{ entry.dropdownFieldHandle }}
+{{ entry.dropdownFieldHandle }} or {{ entry.dropdownFieldHandle.value }}
 ```
 
-You can output the selected option’s label like so:
+#### Output the selected option’s label:
 
 ```twig
 {{ entry.dropdownFieldHandle.label }}
 ```
 
-Or you can loop through all of the available options rather than just the selected one:
+#### Loop through all of the available options:
 
 ```twig
-<ul>
-    {% for option in entry.dropdownFieldHandle.options %}
-        <li>{{ option }}</li>
-    {% endfor %}
-</ul>
+{% for option in entry.dropdownFieldHandle.options %}
+    Label:    {{ option.label }}
+    Value:    {{ option }} or {{ option.value }}
+    Selected: {{ option.selected ? 'Yes' : 'No' }}
+{% endfor %}
 ```
 
-You can output an option’s label by typing `{{ option.label }}` instead, and you can tell if the option is selected or not via `option.selected`.
-
-If you’re not directly outputting the value of the field, like assigning it to a variable for example, you will need to use `dropdownFieldHandle.value`, like so:
+#### Entry form:
 
 ```twig
-{% set dropdownValue = entry.dropdownFieldHandle.value %}
+{% set field = craft.app.fields.getFieldByHandle('dropdownFieldHandle') %}
+
+<select name="fields[dropdownFieldHandle]">
+    {% for option in field.options %}
+
+        {% set selected = entry is defined
+            ? entry.dropdownFieldHandle.value == option.value
+            : option.default %}
+
+        <option value="{{ option.value }}"
+                {% if selected %}selected{% endif %}>
+            {{ option.label }}
+        </option>
+    {% endfor %}
+</select>
 ```

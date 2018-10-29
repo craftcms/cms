@@ -6,41 +6,61 @@ Multi-select fields give you a multi-select input.
 
 Multi-select fields have the following settings:
 
-* **Multi-select Options** – Define the options that will be available in the field. You even get to set the option values and labels separately, and choose which ones should be checked by default.
+* **Multi-select Options** – Define the options that will be available in the field. You even get to set the option values and labels separately, and choose which ones should be selected by default.
 
+## Templating Examples
 
-## The Field
-
-Multi-select fields will show a multi-select input with each of the Multi-select Options as defined in the field settings:
-
-## Templating
-
-You can loop through your selected options like so:
+#### Loop through the selected options:
 
 ```twig
-<ul>
-    {% for option in entry.multiselectFieldHandle %}
-        <li>{{ option }}</li>
-    {% endfor %}
-</ul>
+{% for option in entry.multiselectFieldHandle %}
+    Label: {{ option.label }}
+    Value: {{ option }} or {{ option.value }}
+{% endfor %}
 ```
 
-Or you can loop through all of the available options rather than just the selected ones:
+#### Loop through all of the available options:
 
 ```twig
-<ul>
-    {% for option in entry.multiselectFieldHandle.options %}
-        <li>{{ option }}</li>
-    {% endfor %}
-</ul>
+{% for option in entry.multiselectFieldHandle.options %}
+    Label:    {{ option.label }}
+    Value:    {{ option }} or {{ option.value }}
+    Selected: {{ option.selected ? 'Yes' : 'No' }}
+{% endfor %}
 ```
 
-In either case, you can output an option’s label by typing `{{ option.label }}` instead, and you can tell if the option is selected or not via `option.selected`.
-
-You can also tell if a particular option is selected outside the scope of looping through the options like so:
+#### See if any options are selected:
 
 ```twig
-{% if entry.multiselectFieldHandle.contains('tequilla') %}
-    <p>Really?</p>
-{% endif %}
+{% if entry.multiselectFieldHandle|length %}
+```
+
+#### See if a particular option is selected:
+
+```twig
+{% if entry.multiselectFieldHandle.contains('optionValue') %}
+```
+
+#### Entry form:
+
+```twig
+{% set field = craft.app.fields.getFieldByHandle('multiselectFieldHandle') %}
+
+{# Include a hidden input first so Craft knows to update the
+   existing value, if no options are selected. #}
+<input type="hidden" name="fields[multiselectFieldHandle]" value="">
+
+<select multiple name="fields[multiselectFieldHandle][]">
+    {% for option in field.options %}
+
+        {% set selected = entry is defined
+            ? entry.multiselectFieldHandle.contains(option.value)
+            : option.default %}
+
+        <option value="{{ option.value }}"
+                {% if selected %}selected{% endif %}>
+            {{ option.label }}
+        </option>
+    {% endfor %}
+</select>
 ```

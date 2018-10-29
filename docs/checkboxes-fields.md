@@ -8,56 +8,62 @@ Checkboxes fields have the following settings:
 
 * **Checkbox Options** – Define the checkboxes that will be available in the field. You even get to set the option values and labels separately, and choose which ones should be checked by default.
 
+## Templating Examples
 
-## The Field
+#### Loop through the checked checkboxes:
 
-Checkboxes fields will show each of the checkbox options as defined in the field settings:
+```twig
+{% for option in entry.checkboxFieldHandle %}
+    Label: {{ option.label }}
+    Value: {{ option }} or {{ option.value }}
+{% endfor %}
+```
 
-## Templating
+#### Loop through all of the available checkboxes:
 
-If you only have one checkbox, and you just want to tell if it has been selected, you can do that using the `length` filter:
+```twig
+{% for option in entry.checkboxFieldHandle.options %}
+    Label:   {{ option.label }}
+    Value:   {{ option }} or {{ option.value }}
+    Checked: {{ option.selected ? 'Yes' : 'No' }}
+{% endfor %}
+```
+
+#### See if any checkboxes are checked:
 
 ```twig
 {% if entry.checkboxFieldHandle|length %}
 ```
 
-You can loop through your selected options like so:
+#### See if a particular checkbox is checked:
 
 ```twig
-<ul>
-    {% for option in entry.checkboxFieldHandle %}
-        <li>{{ option }}</li>
-    {% endfor %}
-</ul>
+{% if entry.checkboxFieldHandle.contains('optionValue') %}
 ```
 
-Or you can loop through all of the available options rather than just the selected ones:
+#### Entry form:
 
 ```twig
-<ul>
-    {% for option in entry.checkboxFieldHandle.options %}
-        <li>{{ option }}</li>
-    {% endfor %}
-</ul>
-```
+{% set field = craft.app.fields.getFieldByHandle('checkboxFieldhandle') %}
 
-In either case, you can output an option’s label by typing `{{ option.label }}` instead, and you can tell if the option is selected or not via `option.selected`.
-
-You can also tell if a particular option is selected outside the scope of looping through the options like so:
-
-```twig
-{% if entry.checkboxFieldHandle.contains('tequila') %}
-    <p>Really?</p>
-{% endif %}
-```
-
-If you are including a Checkboxes field on a front-end [entry from](dev/examples/entry-form.md), make sure to include a hidden input before the checkboxes, so that an empty value is submitted if no checkboxes are checked.
-
-```twig
+{# Include a hidden input first so Craft knows to update the
+   existing value, if no checkboxes are checked. #}
 <input type="hidden" name="fields[checkboxFieldhandle]" value="">
 
 <ul>
-    <li><input type="checkbox" name="fields[checkboxFieldHandle][]" value="foo">{{ checkboxOption.label }}</li>
-    <li><input type="checkbox" name="fields[checkboxFieldHandle][]" value="bar">{{ checkboxOption.label }}</li>
+    {% for option in field.options %}
+
+        {% set checked = entry is defined
+            ? entry.checkboxFieldhandle.contains(option.value)
+            : option.default %}
+
+        <li><label>
+            <input type="checkbox"
+                name="fields[checkboxFieldHandle][]"
+                value="{{ option.value }}"
+                {% if checked %}checked{% endif %}>
+            {{ option.label }}
+        </label></li>
+    {% endfor %}
 </ul>
 ```
