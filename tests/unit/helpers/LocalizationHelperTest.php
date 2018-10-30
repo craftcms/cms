@@ -10,8 +10,10 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Localization;
 use yii\base\InvalidArgumentException;
+use yii\i18n\MissingTranslationEvent;
 
 /**
  * Class LocalizationHelper.
@@ -82,9 +84,21 @@ class LocalizationHelperTest extends Unit
             ['2000000000', '20,0000,0000', null],
             ['20 0000 0000', '20 0000 0000', null],
             ['20.0000.0000', '20.0000.0000', null],
+            [2000000000, 2000000000, null],
         ];
     }
 
+    public function testNumberNormalizationCustomLocale()
+    {
+        $locale = null;
+        foreach (\Craft::$app->getI18n()->getAllLocaleIds() as $localeId) {
+            if ($localeId !== \Craft::$app->language) {
+                $locale = $localeId;
+            }
+        }
+
+        $this->assertSame('29999', Localization::normalizeNumber('2,99,99', $locale));
+    }
     /**
      * @dataProvider localeDataData
      *
@@ -99,6 +113,9 @@ class LocalizationHelperTest extends Unit
 
     public function localeDataData()
     {
+        $dir = dirname(__DIR__, 3).'/src/config/locales/nl.php';
+        $nlTranslation = require_once $dir;
+
         return [
             [[
                 'english' => 'language',
@@ -108,9 +125,11 @@ class LocalizationHelperTest extends Unit
                 ]
             ], 'a-locale-id'],
             ['language', 'another-locale-id'],
-            [['language2'], '/sub/another-locale-id']
+            [['language2'], '/sub/another-locale-id'],
+            [ArrayHelper::merge($nlTranslation, ['dutch' => 'a language']), 'nl']
         ];
     }
+
     /*
      * @TODO: Fix this method and find a way to alter the PathService $_configPath variable.
      */
@@ -122,7 +141,7 @@ class LocalizationHelperTest extends Unit
         $this->assertSame([], Localization::localeData('a-locale-id'));
         \Craft::$app->getConfig()->configDir = $oldConfigPath;
     }
-    
+
     /**
      * @dataProvider findMissingTranslationData
      *
@@ -138,7 +157,6 @@ class LocalizationHelperTest extends Unit
     public function findMissingTranslationData()
     {
         return [
-
         ];
     }
 }

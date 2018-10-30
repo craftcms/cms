@@ -22,7 +22,7 @@ class FileHelperTest extends Unit
 {
     public function _before()
     {
-        FileHelper::clearDirectory(__DIR__.'/sandbox/copyInto');
+        FileHelper::clearDirectory(__DIR__ . '/sandbox/copyInto');
     }
 
     /**
@@ -32,7 +32,7 @@ class FileHelperTest extends Unit
 
     public function testCreateRemove()
     {
-        $location = dirname(__DIR__, 4).'/at-root';
+        $location = dirname(__DIR__, 4) . '/at-root';
         FileHelper::createDirectory('at-root');
         $this->assertDirectoryExists($location);
 
@@ -44,8 +44,8 @@ class FileHelperTest extends Unit
 
     public function testCopyAndClear()
     {
-        $copyIntoDir = __DIR__.'/sandbox/copyInto';
-        $copyFromDir = dirname(__DIR__, 3).'/_data/assets/files';
+        $copyIntoDir = __DIR__ . '/sandbox/copyInto';
+        $copyFromDir = dirname(__DIR__, 3) . '/_data/assets/files';
 
         // Clear it.
         FileHelper::clearDirectory($copyIntoDir);
@@ -181,6 +181,7 @@ class FileHelperTest extends Unit
 
     /**
      * @dataProvider mimeTypeData
+     *
      * @param $result
      * @param $file
      * @param $magicFile
@@ -193,22 +194,24 @@ class FileHelperTest extends Unit
         $mimeType = FileHelper::getMimeType($file, $magicFile, $checkExtension);
         $this->assertSame($result, $mimeType);
     }
+
     public function mimeTypeData()
     {
         return [
-            ['application/pdf', dirname(__DIR__, 3).'/_data/assets/files/pdf-sample.pdf', null, true],
-            ['text/plain', dirname(__DIR__, 3).'/_data/assets/files/empty-file.text', null, true],
-            ['text/html', dirname(__DIR__, 3).'/_data/assets/files/test.html', null, true],
-            ['image/gif', dirname(__DIR__, 3).'/_data/assets/files/example-gif.gif', null, true],
-            ['application/pdf', dirname(__DIR__, 3).'/_data/assets/files/pdf-sample.pdf', null, true],
-            ['image/svg+xml', dirname(__DIR__, 3).'/_data/assets/files/gng.svg', null, true],
-            ['application/xml', dirname(__DIR__, 3).'/_data/assets/files/random.xml', null, true],
+            ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
+            ['text/plain', dirname(__DIR__, 3) . '/_data/assets/files/empty-file.text', null, true],
+            ['text/html', dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, true],
+            ['image/gif', dirname(__DIR__, 3) . '/_data/assets/files/example-gif.gif', null, true],
+            ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
+            ['image/svg+xml', dirname(__DIR__, 3) . '/_data/assets/files/gng.svg', null, true],
+            ['application/xml', dirname(__DIR__, 3) . '/_data/assets/files/random.xml', null, true],
             ['directory', __DIR__, null, true],
         ];
     }
 
     /**
      * @dataProvider mimeTypeFalseData
+     *
      * @param $result
      * @param $file
      *
@@ -219,10 +222,11 @@ class FileHelperTest extends Unit
         $mimeType = FileHelper::getMimeType($file, null, false);
         $this->assertSame($result, $mimeType);
     }
+
     public function mimeTypeFalseData()
     {
         return [
-            ['text/plain', dirname(__DIR__, 3).'/_data/assets/files/test.html'],
+            ['text/plain', dirname(__DIR__, 3) . '/_data/assets/files/test.html'],
 
         ];
     }
@@ -236,6 +240,7 @@ class FileHelperTest extends Unit
 
     /**
      * @dataProvider sanitizedFilenameData
+     *
      * @param $result
      * @param $input
      * @param $options
@@ -245,6 +250,7 @@ class FileHelperTest extends Unit
         $sanitized = FileHelper::sanitizeFilename($input, $options);
         $this->assertSame($result, $sanitized);
     }
+
     public function sanitizedFilenameData()
     {
         return [
@@ -262,6 +268,7 @@ class FileHelperTest extends Unit
 
     /**
      * @dataProvider mimeTypeData
+     *
      * @param $result
      * @param $input
      * @param $magicFile
@@ -280,6 +287,7 @@ class FileHelperTest extends Unit
 
     /**
      * @dataProvider mimeTypeData
+     *
      * @param $result
      * @param $input
      * @param $magicFile
@@ -296,5 +304,57 @@ class FileHelperTest extends Unit
         $this->assertSame($result, $isSvg);
     }
 
+    /**
+     * @dataProvider writeToFileData
+     *
+     * @param $results
+     * @param $file
+     * @param $contents
+     * @param $options
+     */
+    public function testWriteToFile($content, $file, $contents, $options, $removeDir = false, $removeableDir = '')
+    {
+        $writeToFile = FileHelper::writeToFile($file, $contents, $options);
 
+        $this->assertTrue(is_file($file));
+        $this->assertSame($content, file_get_contents($file));
+
+        if ($removeDir) {
+            FileHelper::removeDirectory($removeableDir);
+        } else {
+            FileHelper::unlink($file);
+        }
+
+    }
+
+    public function writeToFileData()
+    {
+        $sandboxDir = __DIR__.'/sandbox/writeto';
+        return [
+            ['content', $sandboxDir.'/notafile', 'content', []],
+            ['content', $sandboxDir.'/notadir/notafile', 'content', [], true, $sandboxDir.'/notadir'],
+        ];
+    }
+    public function testWriteToFileAppend()
+    {
+        $sandboxDir = __DIR__.'/sandbox/writeto';
+        $file = $sandboxDir.'/test-file';
+        
+        FileHelper::writeToFile($file, 'contents');
+        $this->assertSame('contents', file_get_contents($file));
+
+        FileHelper::writeToFile($file, 'changed');
+        $this->assertSame('changed', file_get_contents($file));
+
+        FileHelper::writeToFile($file, 'andappended', ['append' => true]);
+        $this->assertSame('changedandappended', file_get_contents($file));
+
+        FileHelper::unlink($file);
+    }
+    public function testWriteToFileExceptions()
+    {
+        $this->tester->expectException(InvalidArgumentException::class, function () {
+            FileHelper::writeToFile('notafile/folder', 'somecontent', ['createDirs' => false]);
+        });
+    }
 }

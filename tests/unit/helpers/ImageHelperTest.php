@@ -22,6 +22,11 @@ use craft\helpers\Image;
  */
 class ImageHelperTest extends Unit
 {
+    /**
+     * @var \UnitTester
+     */
+    protected $tester;
+
     public function testConstants()
     {
         $this->assertSame(3, Image::EXIF_IFD0_ROTATE_180);
@@ -205,6 +210,14 @@ class ImageHelperTest extends Unit
             [false, fopen(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg', 'r')],
 
             // TODO: Generate a bunch of invalid image formats that generate exceptions.
+
         ];
+    }
+
+    public function testImageSizeByStringExceptions()
+    {
+        $this->tester->expectException(\TypeError::class, function () {
+            Image::imageSizeByStream('not a stream');
+        });
     }
 }
