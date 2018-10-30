@@ -20,6 +20,11 @@ use yii\base\InvalidArgumentException;
  */
 class FileHelperTest extends Unit
 {
+    public function _before()
+    {
+        FileHelper::clearDirectory(__DIR__.'/sandbox/copyInto');
+    }
+
     /**
      * @var \UnitTester
      */
@@ -35,6 +40,34 @@ class FileHelperTest extends Unit
         $this->assertDirectoryNotExists($location);
 
         $this->assertNull(FileHelper::removeDirectory('notadir'));
+    }
+
+    public function testCopyAndClear()
+    {
+        $copyIntoDir = __DIR__.'/sandbox/copyInto';
+        $copyFromDir = dirname(__DIR__, 3).'/_data/assets/files';
+
+        // Clear it.
+        FileHelper::clearDirectory($copyIntoDir);
+
+        // Make sure its clear
+        $this->assertTrue(FileHelper::isDirectoryEmpty($copyIntoDir));
+
+        // Test that clearing an empty dir wont make things go wrong.
+        FileHelper::clearDirectory($copyIntoDir);
+
+        // Copy into the directory
+        FileHelper::copyDirectory($copyFromDir, $copyIntoDir);
+
+        // Make sure something exists
+        $this->assertSame(scandir($copyFromDir, 1), scandir($copyIntoDir, 1));
+        $this->assertFalse(FileHelper::isDirectoryEmpty($copyIntoDir));
+
+        // Clear it out.
+        FileHelper::clearDirectory($copyIntoDir);
+
+        // Ensure everything is empty.
+        $this->assertTrue(FileHelper::isDirectoryEmpty($copyIntoDir));
     }
 
     /**
