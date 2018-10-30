@@ -1,9 +1,18 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.29 - 2018-10-30
+
+### Added
+- Email and URL fields now have “Placeholder Text” settings. ([#3397](https://github.com/craftcms/cms/issues/3397))
+
+### Changed
+- The default HTML Purifier configuration now allows `download` attributes in `<a>` tags. ([craftcms/redactor#86](https://github.com/craftcms/redactor/issues/86))
 
 ### Fixed
 - Fixed a bug where the `ContentBehaviour` and `ElementQueryBehavior` classes could be missing some field properties. ([#3400](https://github.com/craftcms/cms/issues/3400))
+- Fixed a bug where some fields within Matrix fields could lose their values after enabling the “Manage blocks on a per-site basis” setting. ([verbb/super-table#203](https://github.com/verbb/super-table/issues/203))
+- Fixed a bug where HTML Purifier wasn’t being initialized with HTML 5 element support.
+- Fixed a bug where it was possible to save Assets fields with the “Restrict allowed file types?” setting enabled, but no specific file types selected. ([#3410](https://github.com/craftcms/cms/issues/3410))
 
 ## 3.0.28 - 2018-10-23
 
