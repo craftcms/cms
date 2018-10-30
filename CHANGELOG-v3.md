@@ -12,6 +12,7 @@
 - Fixed a bug where the `ContentBehaviour` and `ElementQueryBehavior` classes could be missing some field properties. ([#3400](https://github.com/craftcms/cms/issues/3400))
 - Fixed a bug where some fields within Matrix fields could lose their values after enabling the “Manage blocks on a per-site basis” setting. ([verbb/super-table/203](https://github.com/verbb/super-table/issues/203))
 - Fixed a bug where HTML Purifier wasn’t being initialized with HTML 5 element support.
+- Fixed a bug where it was possible to save Assets fields with the “Restrict allowed file types?” setting enabled, but no specific file types selected. ([#3410](https://github.com/craftcms/cms/issues/3410))
 
 ## 3.0.28 - 2018-10-23
 
