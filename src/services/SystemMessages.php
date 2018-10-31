@@ -129,15 +129,13 @@ class SystemMessages extends Component
         // Start with the defaults
         $defaults = $this->getAllDefaultMessages();
 
-        $allMessages = Craft::$app->getProjectConfig()->get(self::CONFIG_MESSAGE_KEY);
+        $allMessages = Craft::$app->getProjectConfig()->get(self::CONFIG_MESSAGE_KEY) ?? [];
 
         $overrides = [];
 
-        if (is_array($allMessages)) {
-            foreach ($allMessages as $key => $translations) {
-                if (isset($translations[$language])) {
-                    $overrides[$key] = $translations[$language];
-                }
+        foreach ($allMessages as $key => $translations) {
+            if (isset($translations[$language])) {
+                $overrides[$key] = $translations[$language];
             }
         }
 
