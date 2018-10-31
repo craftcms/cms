@@ -8,6 +8,7 @@ namespace craftunit\helpers\filehelper;
 
 use Codeception\Test\Unit;
 use craft\helpers\FileHelper;
+use Symfony\Component\Filesystem\Exception\IOException;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
 
@@ -333,13 +334,15 @@ class FileHelperTest extends Unit
         return [
             ['content', $sandboxDir.'/notafile', 'content', []],
             ['content', $sandboxDir.'/notadir/notafile', 'content', [], true, $sandboxDir.'/notadir'],
+            ['content', $sandboxDir.'/notafile2', 'content', ['lock' => true]],
+
         ];
     }
     public function testWriteToFileAppend()
     {
         $sandboxDir = __DIR__.'/sandbox/writeto';
         $file = $sandboxDir.'/test-file';
-        
+
         FileHelper::writeToFile($file, 'contents');
         $this->assertSame('contents', file_get_contents($file));
 
@@ -357,4 +360,24 @@ class FileHelperTest extends Unit
             FileHelper::writeToFile('notafile/folder', 'somecontent', ['createDirs' => false]);
         });
     }
+
+    /**
+     * @dataProvider lastModdedTimeData
+     * @param $result
+     * @param $path
+     */
+    public function testLastModdedTime($result, $path)
+    {
+        $time = FileHelper::lastModifiedTime($path);
+        $this->assertSame($result, $time);
+    }
+    public function lastModdedTimeData()
+    {
+        return [
+            [1540928894,__DIR__.'/sandbox/times'],
+            [1540928894,__DIR__.'/sandbox/times/test1.txt'],
+
+        ];
+    }
+
 }
