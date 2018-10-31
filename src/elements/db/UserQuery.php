@@ -523,7 +523,7 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch active and locked {elements} #}
      * {% set {elements-var} = {twig-function}
-     *     .status(['active', 'locked')
+     *     .status(['active', 'locked'])
      *     .all() %}
      * ```
      *
