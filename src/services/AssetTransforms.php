@@ -19,6 +19,7 @@ use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetTransformEvent;
 use craft\events\AssetTransformImageEvent;
+use craft\events\ConfigEvent;
 use craft\events\GenerateTransformEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -26,6 +27,7 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
+use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\models\AssetTransform;
 use craft\models\AssetTransformIndex;
@@ -82,6 +84,8 @@ class AssetTransforms extends Component
      * @event AssetTransformImageEvent The event that is triggered after deleting generated transforms.
      */
     const EVENT_AFTER_DELETE_TRANSFORMS = 'afterDeleteTransforms';
+
+    const CONFIG_TRANSFORM_KEY = 'imageTransforms';
 
     // Properties
     // =========================================================================
@@ -203,42 +207,30 @@ class AssetTransforms extends Component
         }
 
         if ($isNewTransform) {
-            $transformRecord = new AssetTransformRecord();
+            $transformUid = StringHelper::UUID();
         } else {
-            $transformRecord = AssetTransformRecord::findOne($transform->id);
-
-            if (!$transformRecord) {
-                throw new AssetTransformException(Craft::t('app',
-                    'Can’t find the transform with ID “{id}”',
-                    ['id' => $transform->id]));
-            }
+            $transformUid = Db::uidById('{{%assettransforms}}', $transform->id);
         }
 
-        $transformRecord->name = $transform->name;
-        $transformRecord->handle = $transform->handle;
+        $projectConfig = Craft::$app->getProjectConfig();
 
-        $heightChanged = $transformRecord->width !== $transform->width || $transformRecord->height !== $transform->height;
-        $modeChanged = $transformRecord->mode !== $transform->mode || $transformRecord->position !== $transform->position;
-        $qualityChanged = $transformRecord->quality !== $transform->quality;
-        $interlaceChanged = $transformRecord->interlace !== $transform->interlace;
+        $configData = [
+            'format' => $transform->format,
+            'handle' => $transform->handle,
+            'height' => $transform->height,
+            'interlace' => $transform->interlace,
+            'mode' => $transform->mode,
+            'name' => $transform->name,
+            'position' => $transform->position,
+            'quality' => $transform->quality,
+            'width' => $transform->width
+        ];
 
-        if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged) {
-            $transformRecord->dimensionChangeTime = new DateTime('@' . time());
-        }
+        $configPath = self::CONFIG_TRANSFORM_KEY . '.' . $transformUid;
+        $projectConfig->set($configPath, $configData);
 
-        $transformRecord->mode = $transform->mode;
-        $transformRecord->position = $transform->position;
-        $transformRecord->width = $transform->width;
-        $transformRecord->height = $transform->height;
-        $transformRecord->quality = $transform->quality;
-        $transformRecord->interlace = $transform->interlace;
-        $transformRecord->format = $transform->format;
-
-        $transformRecord->save(false);
-
-        // Now that we have a transform ID, save it on the model
-        if (!$transform->id) {
-            $transform->id = $transformRecord->id;
+        if ($isNewTransform) {
+            $transform->id = Db::idByUid('{{%assettransforms}}', $transformUid);
         }
 
         // Fire an 'afterSaveAssetTransform' event
@@ -252,6 +244,48 @@ class AssetTransforms extends Component
         return true;
     }
 
+    /**
+     * Handle transform change.
+     *
+     * @param ConfigEvent $event
+     */
+    public function handleChangedTransform(ConfigEvent $event)
+    {
+        $transformUid = $event->tokenMatches[0];
+        $data = $event->newValue;
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            $transformRecord = $this->_getTransformRecord($transformUid);
+            $transformRecord->name = $data['name'];
+            $transformRecord->handle = $data['handle'];
+
+            $heightChanged = $transformRecord->width !== $data['width'] || $transformRecord->height !== $data['height'];
+            $modeChanged = $transformRecord->mode !== $data['mode'] || $transformRecord->position !== $data['position'];
+            $qualityChanged = $transformRecord->quality !== $data['quality'];
+            $interlaceChanged = $transformRecord->interlace !== $data['interlace'];
+
+            if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged) {
+                $transformRecord->dimensionChangeTime = new DateTime('@' . time());
+            }
+
+            $transformRecord->mode = $data['mode'];
+            $transformRecord->position = $data['position'];
+            $transformRecord->width = $data['width'];
+            $transformRecord->height = $data['height'];
+            $transformRecord->quality = $data['quality'];
+            $transformRecord->interlace = $data['interlace'];
+            $transformRecord->format = $data['format'];
+
+            $transformRecord->save(false);
+
+            $transaction->commit();
+
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+    }
     /**
      * Deletes an asset transform by its ID.
      *
@@ -297,11 +331,7 @@ class AssetTransforms extends Component
             ]));
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->delete(
-                '{{%assettransforms}}',
-                ['id' => $transform->id])
-            ->execute();
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid);
 
         // Fire an 'afterDeleteAssetTransform' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM)) {
@@ -312,6 +342,25 @@ class AssetTransforms extends Component
 
         return true;
     }
+
+    /**
+     * Handle transform being deleted
+     *
+     * @param ConfigEvent $event
+     */
+    public function handleDeletedTransform(ConfigEvent $event)
+    {
+        $transformUid = $event->tokenMatches[0];
+
+        Craft::$app->getDb()->createCommand()
+            ->delete(
+                '{{%assettransforms}}',
+                ['uid' => $transformUid])
+            ->execute();
+    }
+
+
+
 
     /**
      * Eager-loads transform indexes for a given set of file IDs.
@@ -1245,7 +1294,8 @@ class AssetTransforms extends Component
                 'format',
                 'quality',
                 'interlace',
-                'dimensionChangeTime'
+                'dimensionChangeTime',
+                'uid'
             ])
             ->from(['{{%assettransforms}}'])
             ->orderBy(['name' => SORT_ASC]);
@@ -1392,4 +1442,16 @@ class AssetTransforms extends Component
             $this->queueSourceForDeletingIfNecessary($imageSource);
         }
     }
+
+    /**
+     * Gets a transform's record by uid.
+     *
+     * @param string $uid
+     * @return AssetTransformRecord
+     */
+    private function _getTransformRecord(string $uid): AssetTransformRecord
+    {
+        return AssetTransformRecord::findOne(['uid' => $uid]) ?? new AssetTransformRecord();
+    }
+
 }
