@@ -12,9 +12,11 @@ namespace craftunit\helpers;
 use Codeception\Test\Unit;
 use craft\elements\Asset;
 use craft\helpers\Assets;
+use craft\helpers\ConfigHelper;
 use craftunit\fixtures\AssetsFixture;
 use craftunit\fixtures\VolumesFolderFixture;
 use craftunit\fixtures\VolumesFixture;
+use yii\base\Exception;
 
 /**
  * Class AssetsHelper.
@@ -32,23 +34,23 @@ class AssetsHelperTest extends Unit
     /**
      * TODO: When saving via active record ids arent stored onto the record and are thus not usable
      * [yii\db\IntegrityException] SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'elementId' cannot be null
-    The SQL being executed was: INSERT INTO `craft_elements_sites` (`elementId`, `siteId`, `slug`, `uri`, `enabled`, `dateCreated`, `uid`, `dateUpdated`) VALUES (NULL, 1, NULL, NULL, 1, '2018-10-31 20:47:36', '18e780f5-54e8-47eb-9d0b-a7abbf6538e9', '2018-10-31 20:47:36')
-
-
-    public function _fixtures()
-    {
-        return [
-            'volumes' => [
-                'class' => VolumesFixture::class,
-            ],
-            'volumes-folder' => [
-                'class' => VolumesFolderFixture::class,
-            ],
-            'assets' => [
-                'class' => AssetsFixture::class
-            ]
-        ];
-    }
+     * The SQL being executed was: INSERT INTO `craft_elements_sites` (`elementId`, `siteId`, `slug`, `uri`, `enabled`, `dateCreated`, `uid`, `dateUpdated`) VALUES (NULL, 1, NULL, NULL, 1, '2018-10-31 20:47:36', '18e780f5-54e8-47eb-9d0b-a7abbf6538e9', '2018-10-31 20:47:36')
+     *
+     *
+     * public function _fixtures()
+     * {
+     * return [
+     * 'volumes' => [
+     * 'class' => VolumesFixture::class,
+     * ],
+     * 'volumes-folder' => [
+     * 'class' => VolumesFolderFixture::class,
+     * ],
+     * 'assets' => [
+     * 'class' => AssetsFixture::class
+     * ]
+     * ];
+     * }
      * */
 
     /**
@@ -67,6 +69,7 @@ class AssetsHelperTest extends Unit
 
     /**
      * @dataProvider prepareAssetNameData
+     *
      * @param $result
      * @param $name
      * @param $isFilename
@@ -77,6 +80,7 @@ class AssetsHelperTest extends Unit
         $assetName = Assets::prepareAssetName($name, $isFilename, $preventPluginMods);
         $this->assertSame($result, $assetName);
     }
+
     public function prepareAssetNameData()
     {
         return [
@@ -88,11 +92,13 @@ class AssetsHelperTest extends Unit
             ['-.', '', true, false],
         ];
     }
+
     public function testPrepareAssetNameAsciiRemove()
     {
         \Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii = true;
         $this->assertSame('test.text', Assets::prepareAssetName('tes§t.text'));
     }
+
     public function testConfigSeperator()
     {
         \Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = '||';
@@ -107,6 +113,7 @@ class AssetsHelperTest extends Unit
 
     /**
      * @dataProvider filename2TitleData
+     *
      * @param $result
      * @param $input
      */
@@ -115,6 +122,7 @@ class AssetsHelperTest extends Unit
         $file2Title = Assets::filename2Title($input);
         $this->assertSame($result, $file2Title);
     }
+
     public function filename2TitleData()
     {
         return [
@@ -126,6 +134,7 @@ class AssetsHelperTest extends Unit
 
     /**
      * @dataProvider fileKindLabelData
+     *
      * @param $result
      * @param $input
      */
@@ -134,10 +143,95 @@ class AssetsHelperTest extends Unit
         $label = Assets::getFileKindLabel($input);
         $this->assertSame($result, $label);
     }
+
     public function fileKindLabelData()
     {
-        return [
+        $returnArray = [];
+        foreach (Assets::getFileKinds() as $key => $fileKind) {
+            $returnArray[] = [$fileKind['label'], $key];
+        }
 
+        $returnArray[] = ['unknown', 'not a file'];
+        return $returnArray;
+    }
+
+    /**
+     * @dataProvider fileKindByExtensionData
+     *
+     * @param $result
+     * @param $input
+     */
+    public function testFileKindByExtension($result, $input)
+    {
+        $kind = Assets::getFileKindByExtension($input);
+        $this->assertSame($result, $kind);
+    }
+
+    public function fileKindByExtensionData()
+    {
+        return [
+            ['unknown', 'html'],
+            ['access', 'file.accdb'],
         ];
+    }
+
+    /**
+     * @dataProvider parseFileLocationData
+     * @param $result
+     * @param $input
+     *
+     * @throws \yii\base\Exception
+     */
+    public function testParseFileLocation($result, $input)
+    {
+        $location = Assets::parseFileLocation($input);
+        $this->assertSame($result, $location);
+    }
+    public function parseFileLocationData()
+    {
+        return [
+            [['2', '.'], '{folder:2}.'],
+            [['2', '.!@#$%^&*()'], '{folder:2}.!@#$%^&*()']
+        ];
+    }
+    public function testParseFileLocationException()
+    {
+        $this->tester->expectException(Exception::class, function (){
+            Assets::parseFileLocation('!@#$%^&*()_');
+        });
+        $this->tester->expectException(Exception::class, function (){
+            Assets::parseFileLocation('');
+        });
+        $this->tester->expectException(Exception::class, function (){
+            Assets::parseFileLocation('{folder:string}.');
+        });
+    }
+
+    public function testMaxUploadSize()
+    {
+        $oldMaxFile = ini_get('upload_max_filesize');
+        $oldMaxPost = ini_get('post_max_size');
+        $memLimit = ini_get('memory_limit');
+
+        $this->setUploadIniValues();
+        $this->assertSame(16777216, Assets::getMaxUploadSize());
+
+        ini_set('memory_limit', '0M');
+        $this->assertSame(16777216, Assets::getMaxUploadSize());
+
+        $this->setUploadIniValues();
+        \Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1;
+        $this->assertSame(1, Assets::getMaxUploadSize());
+
+        ini_set('upload_max_filesize', $oldMaxFile);
+        ini_set('post_max_size', $oldMaxPost);
+        ini_set('memory_limit', $memLimit);
+    }
+
+    private function setUploadIniValues()
+    {
+        ini_set('upload_max_filesize', '500M');
+        ini_set('post_max_size', '500M');
+        ini_set('memory_limit', '16M');
     }
 }
