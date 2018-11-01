@@ -6,9 +6,9 @@ module.exports = {
     shouldPrefetch: () => false,
     ga: 'UA-39036834-8',
     themeConfig: {
-        docsRepo: 'craftcms/docs',
+        docsRepo: 'craftcms/cms',
         docsDir: 'docs',
-        docsBranch: 'v2',
+        docsBranch: 'develop-v2',
         editLinks: true,
         nav: [
             {
