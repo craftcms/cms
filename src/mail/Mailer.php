@@ -174,8 +174,12 @@ class Mailer extends \yii\swiftmailer\Mailer
         try {
             return parent::send($message);
         } catch (Swift_TransportException $e) {
-            Craft::error('Error sending email: ' . $e->getMessage());
-            Craft::$app->getErrorHandler()->logException($e);
+            $message = $e->getMessage();
+
+            // Remove the stack trace to get rid of any sensitive info. Note that Swiftmailer includes a debug
+            // backlog in the exception message. :-/
+            $message = substr($message, 0, strpos($message, 'Stack trace:') - 1);
+            Craft::$app->getErrorHandler()->logException(new Swift_TransportException($message, $e->getCode()));
             return false;
         }
     }
