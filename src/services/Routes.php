@@ -293,8 +293,6 @@ class Routes extends Component
      */
     public function updateRouteOrder(array $routeUids)
     {
-        $db = Craft::$app->getDb();
-
         foreach ($routeUids as $order => $routeUid) {
             Craft::$app->getProjectConfig()->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid . '.sortOrder', $order + 1);
         }
