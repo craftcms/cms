@@ -631,7 +631,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|array|\DateTime $value The property value
+     * @param string|\DateTime $value The property value
      * @return static self reference
      * @uses $before
      */
@@ -671,7 +671,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|array|\DateTime $value The property value
+     * @param string|\DateTime $value The property value
      * @return static self reference
      * @uses $after
      */
