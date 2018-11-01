@@ -180,7 +180,7 @@ Allowed types
 
 Default value
 
-:   `['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jp2', 'jpeg', 'jpg', 'jpx', 'js', 'm2t', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'wma', 'wmv', 'xls', 'xlsx', 'zip']`
+:   `['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jp2', 'jpeg', 'jpg', 'jpx', 'js', 'json', 'm2t', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'wma', 'wmv', 'xls', 'xlsx', 'zip']`
 
 Defined by
 
@@ -650,7 +650,7 @@ Defined by
 By default, Craft will require a 'password' field to be submitted on front-end, public
 user registrations. Setting this to `true` will no longer require it on the initial registration form.
 
-If you have email verification enabled, they will set their password once they've clicked on the
+If you have email verification enabled, new users will set their password once they've clicked on the
 verification link in the email. If you don't, the only way they can set their password is to go
 through your "forgot password" workflow.
 
@@ -796,6 +796,28 @@ Defined by
 
 
 List of file extensions that will be merged into the [$allowedFileExtensions](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-allowedfileextensions) config setting.
+
+
+### `extraAppLocales`
+
+Allowed types
+
+:   [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
+
+Default value
+
+:   `null`
+
+Defined by
+
+:   [GeneralConfig::$extraAppLocales](api:craft\config\GeneralConfig::$extraAppLocales)
+
+
+
+List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
+
+Only use this setting if your server has the Intl PHP extension, or if you’ve saved the corresponding
+[locale data](https://github.com/craftcms/locales) into your `config/locales/` folder.
 
 
 ### `filenameWordSeparator`
@@ -1637,11 +1659,8 @@ Whether Craft should run pending queue jobs automatically over HTTP requests.
 This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
 where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won’t work.
 
-If disabled, an alternate queue runner *must* be set up separately.  For example, this Cron command would trigger a queue runner once every minute:
+If disabled, an alternate queue runner *must* be set up separately.
 
-```
-*/1 * * * * /usr/bin/curl --silent --compressed http://example.com/index.php?p=actions/queue/run
-```
 
 ### `sanitizeSvgUploads`
 

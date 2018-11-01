@@ -1226,8 +1226,8 @@ Possible values include:
 | Value | Fetches entries…
 | - | -
 | `'live'` _(default)_ | that are live.
-| `'pending'` | that are pending (enabled with Post Date in the future).
-| `'expired'` | that are expired (enabled with Post Date in the past).
+| `'pending'` | that are pending (enabled with a Post Date in the future).
+| `'expired'` | that are expired (enabled with an Expiry Date in the past).
 | `'disabled'` | that are disabled.
 | `['live', 'pending']` | that are live or pending.
 
