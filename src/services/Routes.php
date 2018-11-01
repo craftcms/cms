@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\db\Query;
 use craft\errors\RouteNotFoundException;
+use craft\events\DeleteSiteEvent;
 use craft\events\RouteEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -261,6 +262,28 @@ class Routes extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Handle a deleted site when it affects existing routes
+     *
+     * @param DeleteSiteEvent $event
+     */
+    public function handleDeletedSite(DeleteSiteEvent $event)
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+        $newSiteUid = !empty($event->transferContentTo) ? Db::uidById('{{%sites}}', $event->transferContentTo) : null;
+        $routes = $projectConfig->get(self::CONFIG_ROUTES_KEY) ?? [];
+
+        foreach ($routes as $routeUid => $route) {
+            if ($route['siteUid'] === $event->site->uid) {
+                if ($newSiteUid) {
+                    $projectConfig->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid . '.siteUid', $newSiteUid);
+                } else {
+                    $projectConfig->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid);
+                }
+            }
+        }
     }
 
     /**

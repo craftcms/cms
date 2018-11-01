@@ -1324,6 +1324,9 @@ trait ApplicationTrait
         $projectConfigService->onUpdate(Sites::CONFIG_SITES_KEY . '.{uid}', [$sitesService, 'handleChangedSite']);
         $projectConfigService->onRemove(Sites::CONFIG_SITES_KEY . '.{uid}', [$sitesService, 'handleDeletedSite']);
 
+        // Routes
+        Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, [Craft::$app->getRoutes(), 'handleDeletedSite']);
+
         // Tags
         $tagsService = $this->getTags();
         $projectConfigService->onAdd(Tags::CONFIG_TAGGROUP_KEY . '.{uid}', [$tagsService, 'handleChangedTagGroup']);
