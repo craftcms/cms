@@ -14,9 +14,9 @@ module.exports = {
         }
     },
     themeConfig: {
-        docsRepo: 'craftcms/docs',
+        docsRepo: 'craftcms/cms',
         docsDir: 'docs',
-        docsBranch: 'v3',
+        docsBranch: 'develop',
         editLinks: true,
         locales: {
             '/': require('./config-en'),
@@ -30,6 +30,14 @@ module.exports = {
                     { text: 'Craft 3 Documentation', link: '/' },
                     { text: 'Craft 2 Class Reference', link: 'https://docs.craftcms.com/api/v2/' },
                     { text: 'Craft 3 Class Reference', link: 'https://docs.craftcms.com/api/v3/' },
+                ]
+            },
+            {
+                text: 'Craft Commerce',
+                items: [
+                    { text: 'Commerce 1 Documentation', link: 'https://docs.craftcms.com/commerce/v1/' },
+                    { text: 'Commerce 2 Documentation', link: 'https://docs.craftcms.com/commerce/v2/' },
+                    { text: 'Commerce 2 Class Reference', link: 'https://docs.craftcms.com/commerce/api/v2/' },
                 ]
             },
             { text: 'Craftnet API', link: 'https://docs.api.craftcms.com/' },
