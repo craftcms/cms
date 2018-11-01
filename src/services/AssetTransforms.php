@@ -359,9 +359,6 @@ class AssetTransforms extends Component
             ->execute();
     }
 
-
-
-
     /**
      * Eager-loads transform indexes for a given set of file IDs.
      *
