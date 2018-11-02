@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where the Edit User page could forget which permissions were selected when saving a user with validation errors, if the Username, First Name, and Last name fields were all blank. ([#3412](https://github.com/craftcms/cms/issues/3412))
+- Fixed a bug where the Edit User Group page could forget which permissions were selected when saving a user group with validation errors, if the Name field was blank.
+
 ### Security
 - Fixed a bug where sensitive info could be displayed in the Craft log files if there was a problem connecting to the email server.
 

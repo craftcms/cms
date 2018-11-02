@@ -499,8 +499,8 @@ class Asset extends Element
     public function __toString()
     {
         try {
-            if ($this->_transform !== null) {
-                return (string)$this->getUrl();
+            if ($this->_transform !== null && ($url = (string)$this->getUrl())) {
+                return $url;
             }
             return parent::__toString();
         } catch (\Exception $e) {
