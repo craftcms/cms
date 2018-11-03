@@ -278,8 +278,13 @@ Defined by
 
 
 
-The base URL that Craft should use when generating Control Panel URLs. This will be determined
-automatically if left blank.
+The base URL that Craft should use when generating Control Panel URLs.
+
+It will be determined automatically if left blank.
+
+::: tip
+The base CP URL should **not** include the [CP trigger word](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-cptrigger) (e.g. `/admin`).
+:::
 
 
 ### `blowfishHashCost`
