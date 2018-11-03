@@ -160,6 +160,8 @@ class NumberHelperTest extends Unit
             ['1000', '1000'],
             ['50', $toStringClass],
             [1, 'five'],
+            [1, [false]],
+            [0, []]
 
         ];
     }
