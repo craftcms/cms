@@ -100,8 +100,13 @@ class GeneralConfig extends BaseObject
      */
     public $backupCommand;
     /**
-     * @var string|null The base URL that Craft should use when generating Control Panel URLs. This will be determined
-     * automatically if left blank.
+     * @var string|null The base URL that Craft should use when generating Control Panel URLs.
+     *
+     * It will be determined automatically if left blank.
+     *
+     * ::: tip
+     * The base CP URL should **not** include the [[cpTrigger|CP trigger word]] (e.g. `/admin`).
+     * :::
      */
     public $baseCpUrl;
     /**
