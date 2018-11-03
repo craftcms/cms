@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\base\ElementAction::$elementType`, which element action classes can use to reference their associated element type.
+
 ### Changed
 - Entries’ “Enabled” setting is now labeled “Enabled Globally” on multi-site installs. ([#2899](https://github.com/craftcms/cms/issues/2899))
 - Entries’ “Enabled for site” setting now includes the site name in its label, and only shows up if the “Enabled Globally” setting is checked. ([#2899](https://github.com/craftcms/cms/issues/2899))
