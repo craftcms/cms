@@ -82,12 +82,12 @@ class UserPasswordValidator extends StringValidator
 
         if ($this->forceDifferent && $this->currentPassword) {
             $newPassword = $model->$attribute;
-
             if (Craft::$app->getSecurity()->validatePassword($newPassword, $this->currentPassword)) {
                 $this->addError($model, $attribute, $this->sameAsCurrent);
             }
         }
     }
+
 
     /**
      * @inheritdoc

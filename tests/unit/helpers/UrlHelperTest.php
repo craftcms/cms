@@ -135,6 +135,11 @@ class UrlHelperTest extends Unit
     public function urlWithParamsData()
     {
         return [
+            '#' => [
+                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2#anchor',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                ['param1' => 'name', 'param2' => 'name2', '#' => 'anchor']
+            ],
             'basic-array' => [
                 self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2',
                 self::ABSOLUTE_URL_HTTPS_WWW,
