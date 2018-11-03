@@ -11,6 +11,7 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Number;
+use craft\test\mockclasses\NumberToString;
 
 /**
  * Class NumberHelperTest.
@@ -139,9 +140,29 @@ class NumberHelperTest extends Unit
         ];
     }
 
+    /**
+     * @dataProvider makeNumericData
+     * @param $result
+     * @param $input
+     */
     public function testMakeNumeric($result, $input)
     {
-        
+        $numeric = Number::makeNumeric($input);
+        $this->assertSame($result, $numeric);
     }
+    public function makeNumericData()
+    {
+        $toStringClass = new NumberToString('50');
+
+        return [
+            [0, false],
+            [1, true],
+            ['1000', '1000'],
+            ['50', $toStringClass],
+            [1, 'five'],
+
+        ];
+    }
+
 
 }
