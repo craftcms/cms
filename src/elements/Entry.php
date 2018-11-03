@@ -271,7 +271,10 @@ class Entry extends Element
 
             // Set Status
             if ($canSetStatus) {
-                $actions[] = SetStatus::class;
+                $actions[] = [
+                    'type' => SetStatus::class,
+                    'allowDisabledForSite' => true,
+                ];
             }
 
             // Edit
