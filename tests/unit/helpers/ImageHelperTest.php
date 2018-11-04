@@ -213,11 +213,4 @@ class ImageHelperTest extends Unit
 
         ];
     }
-
-    public function testImageSizeByStringExceptions()
-    {
-        $this->tester->expectException(\TypeError::class, function () {
-            Image::imageSizeByStream('not a stream');
-        });
-    }
 }

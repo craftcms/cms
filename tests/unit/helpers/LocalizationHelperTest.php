@@ -45,7 +45,7 @@ class LocalizationHelperTest extends Unit
     public function languageNormalizationData()
     {
         return [
-            ['dutch', 'nl'],
+            ['nl', 'nl'],
             ['en-US', 'en-US'],
             ['af', 'af'],
             ['af-NA', 'af-NA'],

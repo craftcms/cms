@@ -36,23 +36,24 @@ class AssetsHelperTest extends Unit
      * [yii\db\IntegrityException] SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'elementId' cannot be null
      * The SQL being executed was: INSERT INTO `craft_elements_sites` (`elementId`, `siteId`, `slug`, `uri`, `enabled`, `dateCreated`, `uid`, `dateUpdated`) VALUES (NULL, 1, NULL, NULL, 1, '2018-10-31 20:47:36', '18e780f5-54e8-47eb-9d0b-a7abbf6538e9', '2018-10-31 20:47:36')
      *
-     *
-     * public function _fixtures()
-     * {
-     * return [
-     * 'volumes' => [
-     * 'class' => VolumesFixture::class,
-     * ],
-     * 'volumes-folder' => [
-     * 'class' => VolumesFolderFixture::class,
-     * ],
-     * 'assets' => [
-     * 'class' => AssetsFixture::class
-     * ]
-     * ];
-     * }
-     * */
+     */
+/*
+      public function _fixtures()
+      {
+          return [
+              'volumes' => [
+                  'class' => VolumesFixture::class,
+              ],
+              'volumes-folder' => [
+                  'class' => VolumesFolderFixture::class,
+              ],
+              'assets' => [
+                  'class' => AssetsFixture::class
+              ]
+          ];
+      }
 
+*/
     /**
      * @param $result
      * @param $input

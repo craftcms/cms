@@ -11,7 +11,7 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Number;
-use craft\test\mockclasses\NumberToString;
+use craft\test\mockclasses\ToStringTest;
 
 /**
  * Class NumberHelperTest.
@@ -152,7 +152,7 @@ class NumberHelperTest extends Unit
     }
     public function makeNumericData()
     {
-        $toStringClass = new NumberToString('50');
+        $toStringClass = new ToStringTest('50');
 
         return [
             [0, false],

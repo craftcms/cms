@@ -7,6 +7,8 @@
 namespace craftunit\helpers;
 
 use craft\helpers\StringHelper;
+use craft\helpers\Stringy;
+use craft\test\mockclasses\ToStringTest;
 use yii\base\ErrorException;
 
 /**
@@ -550,5 +552,117 @@ class StringHelperTest extends \Codeception\Test\Unit
         ];
     }
 
+    /**
+     * @dataProvider convertToUtf8Data
+     * @param $result
+     * @param $input
+     */
+    public function testConvertToUtf8($result, $input)
+    {
+        $utf8 = StringHelper::convertToUtf8($input);
+        $this->assertSame($result, $utf8);
+    }
+    public function convertToUtf8Data()
+    {
+        return [
+            ['\x74\x65\x73\x74', '\x74\x65\x73\x74'],
+            ['craftcms', 'craftcms'],
+            ['😂😁', '😂😁'],
+            ['Foo © bar 𝌆 baz ☃ qux', 'Foo © bar 𝌆 baz ☃ qux'],
+            ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±']
+        ];
+    }
 
+    /**
+     * @dataProvider encDecData
+     * @param $result
+     * @param $input
+     */
+    public function testEncDec( $input)
+    {
+        $enc = StringHelper::encenc($input);
+        $this->assertStringStartsWith('base64:', $enc);
+        $this->assertSame($input, StringHelper::decdec($enc));
+    }
+    public function encDecData()
+    {
+        return [
+            ['1234567890asdfghjkl'],
+            ['😂😁'],
+            ['!@#$%^&*()_+{}|:"<>?']
+        ];
+    }
+
+    public function testAsciiCharMap()
+    {
+        $deArray = ['ä',  'ö',  'ü',  'Ä',  'Ö',  'Ü'];
+        $this->assertArrayNotHasKey('de', StringHelper::asciiCharMap(false, 'de'));
+        $deMap = StringHelper::asciiCharMap(true, 'de');
+        foreach ($deArray as $deChar) {
+            $this->assertArrayHasKey($deChar, $deMap);
+        }
+    }
+
+    /**
+     * @param $result
+     * @param $input
+     */
+    public function testUUID()
+    {
+        $uuid = StringHelper::UUID();
+        $this->assertSame(1, preg_match('/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i', $uuid));
+        $this->assertSame(36, strlen($uuid));
+    }
+
+    /**
+     * @dataProvider toStringData
+     * @param $result
+     * @param $input
+     * @param $glue
+     */
+    public function testToString($result, $input, $glue = ',')
+    {
+        $string = StringHelper::toString($input, $glue);
+        $this->assertSame($result, $string);
+    }
+    public function toStringData()
+    {
+        return [
+            ['test', 'test'],
+            ['', new \stdClass()],
+            ['ima string', new ToStringTest('ima string')],
+            ['t,e,s,t', ['t', 'e', 's', 't']],
+            ['t|e|s|t', ['t', 'e', 's', 't'], '|'],
+        ];
+    }
+
+    /**
+     * @dataProvider randomStringData
+     * @param $length
+     * @param $extendedChars
+     */
+    public function testRandomString($length = 36, $extendedChars = false)
+    {
+        $random = StringHelper::randomString($length, $extendedChars);
+        $len = strlen($random);
+        $this->assertSame($length, $len);
+        if ($extendedChars) {
+            $validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+[]\{}|;:\'",./<>?"';
+        } else {
+            $validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+        }
+
+        $randomCharArray = str_split($random);
+        foreach ($randomCharArray as $char) {
+            $this->assertContains($char, $validChars);
+        }
+    }
+    public function randomStringData()
+    {
+        return [
+            [],
+            [50, false],
+            [55, true],
+        ];
+    }
 }

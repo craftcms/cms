@@ -71,6 +71,13 @@ class FileHelperTest extends Unit
         $this->assertTrue(FileHelper::isDirectoryEmpty($copyIntoDir));
     }
 
+    public function testClearException()
+    {
+        $this->tester->expectException(InvalidArgumentException::class, function () {
+            FileHelper::clearDirectory('not-a-dir');
+        });
+    }
+
     /**
      * @dataProvider pathNormalizedData
      *
@@ -98,26 +105,6 @@ class FileHelperTest extends Unit
             [' +HostName[@SSL][@Port]+SharedFolder+Resource', ' \\HostName[@SSL][@Port]\SharedFolder\Resource', '+'],
             ['|?|C:|my_dir', '\\?\C:\my_dir', '|'],
             ['==stuff', '\\\\stuff', '='],
-        ];
-    }
-
-    /**
-     * @dataProvider dirCreationData
-     *
-     * @param $result
-     * @param $path
-     * @param $mode
-     * @param $recursive
-     */
-    public function testDirCreation($result, $path, $mode, $recursive)
-    {
-
-    }
-
-    public function dirCreationData()
-    {
-        return [
-
         ];
     }
 
@@ -327,7 +314,6 @@ class FileHelperTest extends Unit
         }
 
     }
-
     public function writeToFileData()
     {
         $sandboxDir = __DIR__.'/sandbox/writeto';
@@ -360,24 +346,4 @@ class FileHelperTest extends Unit
             FileHelper::writeToFile('notafile/folder', 'somecontent', ['createDirs' => false]);
         });
     }
-
-    /**
-     * @dataProvider lastModdedTimeData
-     * @param $result
-     * @param $path
-     */
-    public function testLastModdedTime($result, $path)
-    {
-        $time = FileHelper::lastModifiedTime($path);
-        $this->assertSame($result, $time);
-    }
-    public function lastModdedTimeData()
-    {
-        return [
-            [1540928894,__DIR__.'/sandbox/times'],
-            [1540928894,__DIR__.'/sandbox/times/test1.txt'],
-
-        ];
-    }
-
 }
