@@ -305,6 +305,20 @@ class DateTimeHelperTest extends Unit
     }
 
     /**
+     * DateTimeHelper::toDateTime:145-148
+     */
+    public function testEmptyArrayDateDefault()
+    {
+        $dt = DateTimeHelper::toDateTime(['date' => '', 'time' => '08:00PM']);
+
+        $created = new \DateTime('now', $this->utcTimezone);
+        $comparable = new \DateTime($created->format('Y-m-d').' 20:00:00', $this->utcTimezone);
+        $comparable->setTimezone($this->systemTimezone);
+
+        $this->assertSame($comparable->format('Y-m-d H:i:s'), $dt->format('Y-m-d H:i:s'));
+    }
+
+    /**
      * @dataProvider timezoneNormalizeData
      * @param $result
      * @param $input
