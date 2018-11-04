@@ -131,13 +131,15 @@ class DbHelperTest extends Unit
             ['', 'content', null],
             ['', 'contentCol', ''],
 
+            'firstval-or' =>[
+                ['or', ['in', 'content_table', ['field_1', 'field_2']]],
+                'content_table', ['or', 'field_1', 'field_2'],
+            ],
             'firstval-not' =>[
-                ['and', [['not in', 'content_table', ['not', 'content_table', 'field_2']]]],
+                ['and', ['not in', 'content_table', ['field_1', 'field_2']]],
                 'content_table', ['not', 'field_1', 'field_2'],
             ],
-
         ];
-
     }
 
     /**
@@ -427,7 +429,37 @@ class DbHelperTest extends Unit
     public function getMaxAllowedValueForNumericColumnData()
     {
         return [
-
+            [2147483647, 'integer(9)'],
+            [false, 9],
+            [false, 'stuff(9)'],
+            [9223372036854775807, 'bigint(9223372036854775807)']
         ];
     }
+
+    /**
+     * @dataProvider getMinAllowedValueForNumericColumnData
+     * @param $result
+     * @param $input
+     */
+    public function testGetMinAllowedValueForNumericCollumn($result, $input)
+    {
+        $allowed = Db::getMinAllowedValueForNumericColumn($input);
+        $this->assertSame($result, $allowed);
+    }
+    public function getMinAllowedValueForNumericColumnData()
+    {
+        return [
+            [-2147483648, 'integer(9)'],
+            [false, 9],
+            [false, 'stuff(9)'],
+            [-9223372036854775808, 'bigint(9223372036854775807)']
+        ];
+    }
+
+    public function testPrepareValueForDb($result, $input)
+    {
+        $prepared = Db::prepareValuesForDb($input);
+        $this->assertSame($result, $input);
+    }
+
 }
