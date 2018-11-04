@@ -76,13 +76,8 @@ class DbHelperTest extends Unit
     /**
      * @dataProvider parseParamDataProvider
      */
-    public function testParseParamGeneral($result, array $inputArray)
+    public function testParseParamGeneral($result, $collumn, $value, $defaultOperator = '=', $caseInsensitive = false)
     {
-        $collumn = isset($inputArray[0]) ? $inputArray[0] : null;
-        $value =  isset($inputArray[1]) ? $inputArray[1] : null;
-        $defaultOperator =  isset($inputArray[2]) ? $inputArray[2] : '=';
-        $caseInsensitive =  isset($inputArray[3]) ? $inputArray[3] : null;
-
         $this->assertSame($result, Db::parseParam($collumn, $value, $defaultOperator, $caseInsensitive));
     }
 
@@ -91,23 +86,23 @@ class DbHelperTest extends Unit
         return [
             'basic' => [
                 ['or', [ 'in', 'foo', [ 'bar']]],
-                ['foo', 'bar']
+                'foo', 'bar'
             ],
             'multi-array-format' => [
                 self::MULTI_PARSEPARAM,
-                ['content_table', ['field_1', 'field_2']],
+                'content_table', ['field_1', 'field_2'],
             ],
             'multi-split-by-comma' => [
                 self::MULTI_PARSEPARAM,
-                ['content_table', 'field_1, field_2']
+                'content_table', 'field_1, field_2'
             ],
             'multi-not-param' => [
                 self::MULTI_PARSEPARAM_NOT,
-                ['content_table', 'field_1, field_2', 'not'],
+                'content_table', 'field_1, field_2', 'not',
             ],
             'multi-not-symbol' => [
                 self::MULTI_PARSEPARAM_NOT,
-                ['content_table', 'field_1, field_2', '!=']
+                'content_table', 'field_1, field_2', '!='
             ],
             'empty' => [
                 ['or',[
@@ -115,27 +110,34 @@ class DbHelperTest extends Unit
                         '',[
                             'field_1',
                         ]]],
-                ['', 'field_1'],
+                '', 'field_1',
             ],
             'random-symbol' => [
                 ['or',
                     ['raaa',  'content_table', 'field_1'],
                 ],
-                ['content_table', 'field_1', 'raaa'],
+                'content_table', 'field_1', 'raaa',
             ],
             'random-symbol-multi' => [
                 ['or',
                     ['raaa',  'content_table', 'field_1'],
                     [ 'raaa', 'content_table', 'field_2' ]
                 ],
-                ['content_table', 'field_1, field_2', 'raaa'],
+                'content_table', 'field_1, field_2', 'raaa',
             ],
-            ['', ['content_table', 'not']],
-            ['', ['content', []]],
-            ['', ['', '']],
-            ['', ['content', null]],
-            ['', ['contentCol', '']]
+            ['', 'content_table', 'not'],
+            ['', 'content', []],
+            ['', '', ''],
+            ['', 'content', null],
+            ['', 'contentCol', ''],
+
+            'firstval-not' =>[
+                ['and', [['not in', 'content_table', ['not', 'content_table', 'field_2']]]],
+                'content_table', ['not', 'field_1', 'field_2'],
+            ],
+
         ];
+
     }
 
     /**

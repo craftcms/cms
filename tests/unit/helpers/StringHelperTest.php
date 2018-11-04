@@ -665,4 +665,22 @@ class StringHelperTest extends \Codeception\Test\Unit
             [55, true],
         ];
     }
+
+    /**
+     * @dataProvider toPascalCaseData
+     * @param $result
+     * @param $input
+     */
+    public function testToPascalCase($result, $input)
+    {
+        $pascal = StringHelper::toPascalCase($input);
+        $this->assertSame($result, $pascal);
+    }
+    public function toPascalCaseData()
+    {
+        return [
+
+        ];
+    }
+
 }

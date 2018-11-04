@@ -74,13 +74,8 @@ class PgsqlDbHelperTest extends Unit
     /**
      * @dataProvider parseParamData
      */
-    public function testParseParamGeneral($result, array $inputArray)
+    public function testParseParamGeneral($result, $collumn, $value, $defaultOperator, $caseInsensitive )
     {
-        $collumn = isset($inputArray[0]) ? $inputArray[0] : null;
-        $value =  isset($inputArray[1]) ? $inputArray[1] : null;
-        $defaultOperator =  isset($inputArray[2]) ? $inputArray[2] : '=';
-        $caseInsensitive =  isset($inputArray[3]) ? $inputArray[3] : null;
-
         $this->assertSame($result, Db::parseParam($collumn, $value, $defaultOperator, $caseInsensitive));
     }
 
@@ -93,7 +88,7 @@ class PgsqlDbHelperTest extends Unit
                     [ 'not', ['content_table' => null], ],
                     ['!=', 'content_table', 'field_2']
                 ],
-                ['content_table', ':empty:, field_2', '!=']
+                'content_table', ':empty:, field_2', '!='
             ],
         ];
     }
