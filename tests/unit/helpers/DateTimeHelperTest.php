@@ -167,6 +167,8 @@ class DateTimeHelperTest extends Unit
     {
         return [
             'no-params' => [['date' => '', 'time' => '']],
+            'invalid-seperator' => ['2018/08/09 20:00:00'],
+            'invalid-seperator-2' => ['2018.08.09 20:00:00'],
             'invalid-date-format' => [['date' => '2018-08-08']],
             'invalid-date-valid-time' => [['date' => '2018-08-08', 'time' => '08:00 PM']],
             'null-type' => [null],
@@ -220,7 +222,6 @@ class DateTimeHelperTest extends Unit
     {
         $basicDateTimeCreator = function ($timezone){
             $tz = new \DateTimezone($timezone);
-            // Crafts toDateTime sets the format as utc.
             $dt = new \DateTime('2018-08-09 20:00:00', $tz);
             return $dt;
         };
@@ -249,8 +250,10 @@ class DateTimeHelperTest extends Unit
      * @param          $format
      * @param \Closure $expectedResult
      */
-    public function testToDateTimeCreation($format, \DateTime $expectedResult)
+    public function testToDateTimeCreation($format, \Closure $expectedResult)
     {
+        $expectedResult = $expectedResult();
+
         $toDateTime = DateTimeHelper::toDateTime($format);
         $this->assertSame($expectedResult->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($format)->format('Y-m-d H:i:s'));
         $this->assertInstanceOf(\DateTime::class, $toDateTime);
@@ -258,17 +261,28 @@ class DateTimeHelperTest extends Unit
 
     public function toDateTimeFormats()
     {
+        // Because we dont have access to Craft::$app here we smuggle this in via callback and call it in the test function. Which does have access to Craft::$app.
+        $dt = function () {
             $systemTimezone = new \DateTimezone(\Craft::$app->getTimeZone());
             $utcTz = new \DateTimeZone('UTC');
 
-            // Crafts toDateTime sets the format as utc. Then converts to system tz unless overridden by variables.
+            // Crafts toDateTime sets the input time as utc. Then converts to system tz unless overridden by variables $assumeSystemTimeZone and $setToSystemTimeZone.
             $dt = new \DateTime('2018-08-09 20:00:00', $utcTz);
-
             $dt->setTimezone($systemTimezone);
+            return $dt;
+        };
 
         return [
             'basic-mysql-format' => [
                 '2018-08-09 20:00:00',
+                $dt,
+            ],
+            'array-diff-seperator' => [
+                ['date' => '08/09/2018', 'time' => '08:00 PM'],
+                $dt,
+            ],
+            'array-diff-seperator-2' => [
+                ['date' => '08.09.2018', 'time' => '08:00 PM'],
                 $dt,
             ],
             'array-format' => [
@@ -576,7 +590,7 @@ class DateTimeHelperTest extends Unit
     public function timezoneAbbreviationData()
     {
         return [
-            ['CEST', 'Europe/Amsterdam'],
+            ['CET', 'Europe/Amsterdam'],
             ['JST', 'Asia/Tokyo'],
             ['GMT+0900', '+0900'],
         ];
@@ -636,5 +650,32 @@ class DateTimeHelperTest extends Unit
             [false, 'random string'],
 
         ];
+    }
+
+    /**
+     * @dataProvider timezoneOffsetData
+     * @param $result
+     * @param $input
+     */
+    public function testTimezoneOffset($result, $input)
+    {
+        $offset = DateTimeHelper::timezoneOffset($input);
+        $this->assertSame($result, $offset);
+    }
+    public function timezoneOffsetData()
+    {
+        return [
+            ['+00:00', 'UTC'],
+            ['+00:00', 'GMT'],
+            ['-05:00', 'America/New_York'],
+            ['+09:00', 'Asia/Tokyo'],
+            ['+09:00', '+09:00'],
+        ];
+    }
+    public function testTimezoneOffsetException()
+    {
+        $this->tester->expect(\Exception::class, function () {
+            DateTimeHelper::timeZoneOffset('invalid');
+        });
     }
 }
