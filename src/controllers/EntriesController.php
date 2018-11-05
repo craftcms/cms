@@ -213,6 +213,9 @@ class EntriesController extends BaseEntriesController
         // Other variables
         // ---------------------------------------------------------------------
 
+        // Body class
+        $variables['bodyClass'] = 'edit-entry site--' . $site->handle;
+
         // Page title w/ revision label
         $variables['showSites'] = (
             Craft::$app->getIsMultiSite() &&
