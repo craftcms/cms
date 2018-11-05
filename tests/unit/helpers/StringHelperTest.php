@@ -682,9 +682,9 @@ class StringHelperTest extends \Codeception\Test\Unit
             ['TestS2SZw2', 'test s 2 s zw 2'],
             ['', '😂 😁'],
             ['TestTestCraftCmsAbc', 'Test test CRAFT cms !@#$%^&  *(abc)'],
-            ['craftCms', 'Craft Cms'],
-            ['craftCms', 'CRAFT CMS'],
-            ['craftcms', 'CRAFTCMS'],
+            ['CraftCms', 'Craft Cms'],
+            ['CraftCms', 'CRAFT CMS'],
+            ['Craftcms', 'CRAFTCMS'],
             ['', ''],
             ['', '😘'],
             ['22AlphaNNumeric', '22 AlphaN Numeric'],
@@ -742,5 +742,50 @@ class StringHelperTest extends \Codeception\Test\Unit
             ['22-alpha-n-numeric', '22 AlphaN Numeric'],
             ['', '!@#$%  ^&*()'],
         ];
+    }
+
+    /**
+     * @dataProvider linesData
+     * @param $result
+     * @param $input
+     */
+    public function testLines($result, $input)
+    {
+        $lines = StringHelper::lines($input);
+        $this->assertSame($result, count($lines));
+    }
+    public function linesData()
+    {
+        return [
+            [4, 'test
+             
+             
+             test'],
+            [1, 'test <br> test'],
+            [1, 'thesearetabs       notspaces'],
+            [2, '😂
+            😁'],
+            [11, '
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            ']
+        ];
+    }
+
+    
+    public function testToUppercase($result, $input)
+    {
+
+    }
+    public function toUppercaseData()
+    {
+
     }
 }
