@@ -74,7 +74,7 @@ class PgsqlDbHelperTest extends Unit
     /**
      * @dataProvider parseParamData
      */
-    public function testParseParamGeneral($result, $collumn, $value, $defaultOperator, $caseInsensitive )
+    public function testParseParamGeneral($result, $collumn, $value, $defaultOperator = '=', $caseInsensitive = false)
     {
         $this->assertSame($result, Db::parseParam($collumn, $value, $defaultOperator, $caseInsensitive));
     }

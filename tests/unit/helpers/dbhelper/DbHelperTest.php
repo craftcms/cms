@@ -4,7 +4,6 @@ namespace craftunit\helpers;
 
 
 use craft\helpers\Db;
-use craft\helpers\Json;
 use craft\test\mockclasses\serializable\Serializable;
 use Codeception\Test\Unit;
 use yii\db\Exception;
@@ -480,7 +479,7 @@ class DbHelperTest extends Unit
         $dateTime = new \DateTime('2018-06-06 18:00:00');
 
         return [
-            [['{"date":"2018-06-06 18:00:00.000000","timezone_type":3,"timezone":"Europe/Berlin"}'], [$dateTime]],
+            [['{"date":"2018-06-06 18:00:00.000000","timezone_type":3,"timezone":"America/Los_Angeles"}'], [$dateTime]],
             [['{"name":"name"}'], [$jsonableClass]],
             [['{"JsonArray":"SomeArray"}'], [$jsonableArray]],
             [['[]'], [$serializable]],

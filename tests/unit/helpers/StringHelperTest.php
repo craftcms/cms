@@ -72,17 +72,17 @@ class StringHelperTest extends \Codeception\Test\Unit
     }
 
     /**
-     * @dataProvider toCamelCaseData
+     * @dataProvider camelCaseData
      * @param $result
      * @param $input
      */
-    public function testToCamelCase($result, $input)
+    public function testCamelCase($result, $input)
     {
         $toCamel = StringHelper::camelCase($input);
         $this->assertSame($result, $toCamel);
     }
 
-    public function toCamelCaseData()
+    public function camelCaseData()
     {
         return [
             ['craftCms', 'Craft Cms'],
@@ -679,8 +679,68 @@ class StringHelperTest extends \Codeception\Test\Unit
     public function toPascalCaseData()
     {
         return [
-
+            ['TestS2SZw2', 'test s 2 s zw 2'],
+            ['', '😂 😁'],
+            ['TestTestCraftCmsAbc', 'Test test CRAFT cms !@#$%^&  *(abc)'],
+            ['craftCms', 'Craft Cms'],
+            ['craftCms', 'CRAFT CMS'],
+            ['craftcms', 'CRAFTCMS'],
+            ['', ''],
+            ['', '😘'],
+            ['22AlphaNNumeric', '22 AlphaN Numeric'],
+            ['', '!@#$%  ^&*()'],
         ];
     }
 
+    /**
+     * @dataProvider toCamelCaseData
+     * @param $result
+     * @param $input
+     */
+    public function testToCamelCase($result, $input)
+    {
+        $camel = StringHelper::toCamelCase($input);
+        $this->assertSame($result, $camel);
+    }
+    public function toCamelCaseData()
+    {
+        return [
+            ['testS2SZw2', 'test s 2 s zw 2'],
+            ['', '😂 😁'],
+            ['testTestCraftCmsAbc', 'Test test CRAFT cms !@#$%^&  *(abc)'],
+            ['craftCms', 'Craft Cms'],
+            ['craftCms', 'CRAFT CMS'],
+            ['craftcms', 'CRAFTCMS'],
+            ['', ''],
+            ['', '😘'],
+            ['22AlphaNNumeric', '22 AlphaN Numeric'],
+            ['', '!@#$%  ^&*()'],
+        ];
+    }
+
+    /**
+     * @dataProvider toKebabCaseData
+     * @param $result
+     * @param $input
+     */
+    public function testToKebabCase($result, $input)
+    {
+        $kebab = StringHelper::toKebabCase($input);
+        $this->assertSame($result, $kebab);
+    }
+    public function toKebabCaseData()
+    {
+        return [
+            ['test-s-2-s-zw-2', 'test s 2 s zw 2'],
+            ['', '😂 😁'],
+            ['test-test-craft-cms-abc', 'Test test CRAFT cms !@#$%^&  *(abc)'],
+            ['craft-cms', 'Craft Cms'],
+            ['craft-cms', 'CRAFT CMS'],
+            ['craftcms', 'CRAFTCMS'],
+            ['', ''],
+            ['', '😘'],
+            ['22-alpha-n-numeric', '22 AlphaN Numeric'],
+            ['', '!@#$%  ^&*()'],
+        ];
+    }
 }
