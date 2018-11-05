@@ -930,4 +930,33 @@ class StringHelperTest extends \Codeception\Test\Unit
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
         ];
     }
+
+    /**
+     * @dataProvider substrData
+     * @param      $result
+     * @param      $input
+     * @param      $start
+     * @param null $length
+     */
+    public function testSubstr($result, $input, $start, $length = null)
+    {
+        $substr = StringHelper::substr($input, $start, $length);
+        $this->assertSame($result, $substr);
+    }
+    public function substrData()
+    {
+        return [
+            ['st s', 'test s 2 s zw 2', 2, 4],
+            [' 😁😂😘', '😂 😁😂😘 😁😂😘 😁', 1, 4],
+            ['test CRAF', 'Test test CRAFT cms !@#$%^&  *(abc)', 5, 9],
+
+            ['Craft Cms', 'Craft Cms', 0, 1000],
+            ['AFT CMS', 'CRAFT CMS', 2, 1000],
+            ['CRAFTCMS', 'CRAFTCMS', 0],
+            ['AFTCMS', 'CRAFTCMS', 2],
+            ['', '', 2, 5],
+            ['', '😘', 1, 5],
+            ['#$%  ', '!@#$%  ^&*()', 2, 5],
+        ];
+    }
 }
