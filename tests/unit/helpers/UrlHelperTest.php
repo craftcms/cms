@@ -8,11 +8,8 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
-use craft\db\MigrationManager;
-use craft\fields\Url;
-use craft\helpers\MigrationHelper;
 use craft\helpers\UrlHelper;
-use craft\i18n\PhpMessageSource;
+use yii\base\Exception;
 
 /**
  * Unit tests for the Url Helper class.
@@ -33,6 +30,7 @@ class UrlHelperTest extends Unit
     protected $baseUrl;
     protected $baseUrlWithScript;
     protected $cpTrigger;
+
 
     protected function _before()
     {
@@ -139,6 +137,11 @@ class UrlHelperTest extends Unit
     public function urlWithParamsData()
     {
         return [
+            '#' => [
+                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2#anchor',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                ['param1' => 'name', 'param2' => 'name2', '#' => 'anchor']
+            ],
             'basic-array' => [
                 self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2',
                 self::ABSOLUTE_URL_HTTPS_WWW,
@@ -502,16 +505,12 @@ class UrlHelperTest extends Unit
         $this->assertTrue($conformsScheme);
     }
 
-
-
     public function testBaseTesting()
     {
-        // TODO: Add a cp conditional.
         $this->assertSame($this->baseUrl, UrlHelper::baseUrl());
         $this->assertSame($this->baseUrl, UrlHelper::baseSiteUrl());
         $this->assertSame(rtrim($this->baseUrl, '/'), UrlHelper::host());
 
-        // TODO: BaseCPUrl custom trigger should be tested here as well.
         $this->assertSame('/', UrlHelper::baseCpUrl());
         $this->assertSame('/', UrlHelper::baseRequestUrl());
         $this->assertSame('', UrlHelper::cpHost());
@@ -565,5 +564,44 @@ class UrlHelperTest extends Unit
         return true;
     }
 
+    public function testSchemeForTokenizedBasedOnConfig()
+    {
+        // Run down the logic to see what we will need to require.
+        $config =  \Craft::$app->getConfig()->getGeneral();
+        $useSslOnTokenizedUrls = \Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls;
 
+        $config->useSslOnTokenizedUrls = true;
+        $this->assertSame('https', UrlHelper::getSchemeForTokenizedUrl());
+
+        $config->useSslOnTokenizedUrls = false;
+        $this->assertSame('http', UrlHelper::getSchemeForTokenizedUrl());
+
+        $config->useSslOnTokenizedUrls = $useSslOnTokenizedUrls;
+    }
+
+    /**
+     * @dataProvider siteUrlData
+     * @param      $result
+     * @param      $path
+     * @param null $params
+     * @param null $scheme
+     * @param null $siteId
+     */
+    public function testSiteUrl($result, $path, $params = null, $scheme = null, $siteId = null)
+    {
+        $siteUrl = UrlHelper::siteUrl($path, $params, $scheme, $siteId);
+        $this->assertSame($result, $siteUrl);
+    }
+    public function siteUrlData()
+    {
+        return [
+            ['http://test.craftcms.dev/index.php?p=endpoint', 'endpoint'],
+        ];
+    }
+    public function testSiteUrlExceptions()
+    {
+        $this->tester->expectException(Exception::class, function () {
+            UrlHelper::siteUrl('', null, null, 12892);
+        });
+    }
 }

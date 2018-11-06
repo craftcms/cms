@@ -9,8 +9,6 @@
 
 return [
     'devMode'=>true,
-
-    // Cp trigger is used to test if cpurl is created correctly.
     'cpTrigger' => 'adminustriggerus',
     'siteUrl' => 'https://test.craftcms.dev/',
     'slugWordSeparator' => '--',

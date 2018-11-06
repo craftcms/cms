@@ -4,23 +4,20 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.github.io/license/
  */
+namespace craftunit\fixtures;
 
-
-namespace craftunit\support\mockclasses\components;
-
-use craft\base\ComponentInterface;
+use craft\test\elementfixtures\AssetFixture;
 
 /**
- * Class ComponentExample.
+ * Class AssetsFixture.
+ *
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0
  */
-class ComponentExample implements ComponentInterface
+class AssetsFixture extends AssetFixture
 {
-    public static function displayName() : string
-    {
-        return 'Component example';
-    }
+    public $dataFile = __DIR__.'/data/assets.php';
+    public $depends = [VolumesFixture::class, VolumesFolderFixture::class];
 }

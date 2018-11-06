@@ -4,19 +4,20 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.github.io/license/
  */
-namespace craftunit\support\mockclasses\models;
 
-
-use craft\base\Model;
+namespace craft\test\mockclasses\components;
 
 /**
- * Class ExampleModel.
+ * Class ExtendedComponentExample.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0
  */
-class ExampleModel extends Model
+class ExtendedComponentExample extends ComponentExample
 {
-    public $exampleParam;
+    public static function displayName(): string
+    {
+        return 'Extended component example';
+    }
 }

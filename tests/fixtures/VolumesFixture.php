@@ -4,20 +4,23 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.github.io/license/
  */
-
 namespace craftunit\fixtures;
 
-use craft\records\User;
+use craft\records\Volume;
+use yii\test\ActiveFixture;
 
 /**
- * A super simple test fixture demonstrating how fixtures work in craft/yii.
+ * Class VolumesFixture.
+ *
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since  3.0
  */
-class TestFixture extends \yii\test\ActiveFixture
+class VolumesFixture extends ActiveFixture
 {
-    public $modelClass = User::class;
-    public $dataFile = __DIR__.'/data/test.php';
+    public $modelClass = Volume::class;
+    public $dataFile = __DIR__.'/data/volumes.php';
+
+    const BASE_URL = 'https://cdn.test.craftcms.dev/';
 }

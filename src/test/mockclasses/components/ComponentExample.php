@@ -4,20 +4,21 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.github.io/license/
  */
+namespace craft\test\mockclasses\components;
 
-namespace craftunit\support\mockclasses\components;
+use craft\base\ComponentInterface;
 
 /**
- * Class ExtendedComponentExample.
+ * Class ComponentExample.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0
  */
-class ExtendedComponentExample extends ComponentExample
+class ComponentExample implements ComponentInterface
 {
-    public static function displayName(): string
+    public static function displayName() : string
     {
-        return 'Extended component example';
+        return 'Component example';
     }
 }

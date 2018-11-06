@@ -10,7 +10,7 @@ namespace craftunit\validators;
 
 use Codeception\Test\Unit;
 use craft\validators\HandleValidator;
-use craftunit\support\mockclasses\models\ExampleModel;
+use craft\test\mockclasses\models\ExampleModel;
 
 /**
  * Class HandleValidatorTest.

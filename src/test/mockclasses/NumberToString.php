@@ -5,21 +5,27 @@
  * @license   https://craftcms.github.io/license/
  */
 
-namespace craftunit\support\mockclasses\components;
+namespace craft\test\mockclasses;
 
-use craft\base\Serializable as SerializableInterface;
 
 /**
- * Class Serializable.
+ * Class NumberToString.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0
  */
-class Serializable implements SerializableInterface
+class NumberToString
 {
-    public function serialize()
+    private $string;
+
+    public function __construct(string $string)
     {
-        return 'Serialized data';
+        $this->string = $string;
+    }
+
+    public function __toString()
+    {
+        return $this->string;
     }
 }

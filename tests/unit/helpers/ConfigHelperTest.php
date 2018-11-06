@@ -11,8 +11,7 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\ConfigHelper;
-use craftunit\support\mockclasses\models\ExampleModel;
-use PHPUnit\Util\ConfigurationGenerator;
+use craft\test\mockclasses\models\ExampleModel;
 use yii\base\ErrorException;
 use yii\base\InvalidConfigException;
 

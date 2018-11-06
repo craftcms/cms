@@ -6,11 +6,10 @@
  */
 namespace craftunit\helpers;
 
-use Codeception\Util\ReflectionHelper;
 use craft\helpers\StringHelper;
-use craftcms\tests\support\ReflectionSupport;
+use craft\helpers\Stringy;
+use craft\test\mockclasses\ToStringTest;
 use yii\base\ErrorException;
-use yii\db\Exception;
 
 /**
  * Unit tests for the String Helper class.
@@ -73,17 +72,17 @@ class StringHelperTest extends \Codeception\Test\Unit
     }
 
     /**
-     * @dataProvider toCamelCaseData
+     * @dataProvider camelCaseData
      * @param $result
      * @param $input
      */
-    public function testToCamelCase($result, $input)
+    public function testCamelCase($result, $input)
     {
         $toCamel = StringHelper::camelCase($input);
         $this->assertSame($result, $toCamel);
     }
 
-    public function toCamelCaseData()
+    public function camelCaseData()
     {
         return [
             ['craftCms', 'Craft Cms'],
@@ -553,5 +552,411 @@ class StringHelperTest extends \Codeception\Test\Unit
         ];
     }
 
+    /**
+     * @dataProvider convertToUtf8Data
+     * @param $result
+     * @param $input
+     */
+    public function testConvertToUtf8($result, $input)
+    {
+        $utf8 = StringHelper::convertToUtf8($input);
+        $this->assertSame($result, $utf8);
+    }
+    public function convertToUtf8Data()
+    {
+        return [
+            ['\x74\x65\x73\x74', '\x74\x65\x73\x74'],
+            ['craftcms', 'craftcms'],
+            ['😂😁', '😂😁'],
+            ['Foo © bar 𝌆 baz ☃ qux', 'Foo © bar 𝌆 baz ☃ qux'],
+            ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±']
+        ];
+    }
 
+    /**
+     * @dataProvider encDecData
+     * @param $result
+     * @param $input
+     */
+    public function testEncDec( $input)
+    {
+        $enc = StringHelper::encenc($input);
+        $this->assertStringStartsWith('base64:', $enc);
+        $this->assertSame($input, StringHelper::decdec($enc));
+    }
+    public function encDecData()
+    {
+        return [
+            ['1234567890asdfghjkl'],
+            ['😂😁'],
+            ['!@#$%^&*()_+{}|:"<>?']
+        ];
+    }
+
+    public function testAsciiCharMap()
+    {
+        $deArray = ['ä',  'ö',  'ü',  'Ä',  'Ö',  'Ü'];
+        $this->assertArrayNotHasKey('de', StringHelper::asciiCharMap(false, 'de'));
+        $deMap = StringHelper::asciiCharMap(true, 'de');
+        foreach ($deArray as $deChar) {
+            $this->assertArrayHasKey($deChar, $deMap);
+        }
+    }
+
+    /**
+     * @param $result
+     * @param $input
+     */
+    public function testUUID()
+    {
+        $uuid = StringHelper::UUID();
+        $this->assertSame(1, preg_match('/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i', $uuid));
+        $this->assertSame(36, strlen($uuid));
+    }
+
+    /**
+     * @dataProvider toStringData
+     * @param $result
+     * @param $input
+     * @param $glue
+     */
+    public function testToString($result, $input, $glue = ',')
+    {
+        $string = StringHelper::toString($input, $glue);
+        $this->assertSame($result, $string);
+    }
+    public function toStringData()
+    {
+        return [
+            ['test', 'test'],
+            ['', new \stdClass()],
+            ['ima string', new ToStringTest('ima string')],
+            ['t,e,s,t', ['t', 'e', 's', 't']],
+            ['t|e|s|t', ['t', 'e', 's', 't'], '|'],
+        ];
+    }
+
+    /**
+     * @dataProvider randomStringData
+     * @param $length
+     * @param $extendedChars
+     */
+    public function testRandomString($length = 36, $extendedChars = false)
+    {
+        $random = StringHelper::randomString($length, $extendedChars);
+        $len = strlen($random);
+        $this->assertSame($length, $len);
+        if ($extendedChars) {
+            $validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+[]\{}|;:\'",./<>?"';
+        } else {
+            $validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+        }
+
+        $randomCharArray = str_split($random);
+        foreach ($randomCharArray as $char) {
+            $this->assertContains($char, $validChars);
+        }
+    }
+    public function randomStringData()
+    {
+        return [
+            [],
+            [50, false],
+            [55, true],
+        ];
+    }
+
+    /**
+     * @dataProvider toPascalCaseData
+     * @param $result
+     * @param $input
+     */
+    public function testToPascalCase($result, $input)
+    {
+        $pascal = StringHelper::toPascalCase($input);
+        $this->assertSame($result, $pascal);
+    }
+    public function toPascalCaseData()
+    {
+        return [
+            ['TestS2SZw2', 'test s 2 s zw 2'],
+            ['', '😂 😁'],
+            ['TestTestCraftCmsAbc', 'Test test CRAFT cms !@#$%^&  *(abc)'],
+            ['CraftCms', 'Craft Cms'],
+            ['CraftCms', 'CRAFT CMS'],
+            ['Craftcms', 'CRAFTCMS'],
+            ['', ''],
+            ['', '😘'],
+            ['22AlphaNNumeric', '22 AlphaN Numeric'],
+            ['', '!@#$%  ^&*()'],
+        ];
+    }
+
+    /**
+     * @dataProvider toCamelCaseData
+     * @param $result
+     * @param $input
+     */
+    public function testToCamelCase($result, $input)
+    {
+        $camel = StringHelper::toCamelCase($input);
+        $this->assertSame($result, $camel);
+    }
+    public function toCamelCaseData()
+    {
+        return [
+            ['testS2SZw2', 'test s 2 s zw 2'],
+            ['', '😂 😁'],
+            ['testTestCraftCmsAbc', 'Test test CRAFT cms !@#$%^&  *(abc)'],
+            ['craftCms', 'Craft Cms'],
+            ['craftCms', 'CRAFT CMS'],
+            ['craftcms', 'CRAFTCMS'],
+            ['', ''],
+            ['', '😘'],
+            ['22AlphaNNumeric', '22 AlphaN Numeric'],
+            ['', '!@#$%  ^&*()'],
+        ];
+    }
+
+    /**
+     * @dataProvider toKebabCaseData
+     * @param $result
+     * @param $input
+     */
+    public function testToKebabCase($result, $input)
+    {
+        $kebab = StringHelper::toKebabCase($input);
+        $this->assertSame($result, $kebab);
+    }
+    public function toKebabCaseData()
+    {
+        return [
+            ['test-s-2-s-zw-2', 'test s 2 s zw 2'],
+            ['', '😂 😁'],
+            ['test-test-craft-cms-abc', 'Test test CRAFT cms !@#$%^&  *(abc)'],
+            ['craft-cms', 'Craft Cms'],
+            ['craft-cms', 'CRAFT CMS'],
+            ['craftcms', 'CRAFTCMS'],
+            ['', ''],
+            ['', '😘'],
+            ['22-alpha-n-numeric', '22 AlphaN Numeric'],
+            ['', '!@#$%  ^&*()'],
+        ];
+    }
+
+    /**
+     * @dataProvider linesData
+     * @param $result
+     * @param $input
+     */
+    public function testLines($result, $input)
+    {
+        $lines = StringHelper::lines($input);
+        $this->assertSame($result, count($lines));
+    }
+    public function linesData()
+    {
+        return [
+            [4, 'test
+             
+             
+             test'],
+            [1, 'test <br> test'],
+            [1, 'thesearetabs       notspaces'],
+            [2, '😂
+            😁'],
+            [11, '
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            ']
+        ];
+    }
+
+    /**
+     * @dataProvider toUppercaseData
+     * @param $result
+     * @param $input
+     */
+    public function testToUppercase($result, $input)
+    {
+        $uppercase = StringHelper::toUpperCase($input);
+        $this->assertSame($result, $uppercase);
+    }
+    public function toUppercaseData()
+    {
+        return [
+            ['TEST S 2 S ZW 2', 'test s 2 s zw 2'],
+            ['😂 😁', '😂 😁'],
+            ['TEST TEST CRAFT CMS !@#$%^&  *(ABC)', 'Test test CRAFT cms !@#$%^&  *(abc)'],
+            ['CRAFT CMS', 'Craft Cms'],
+            ['CRAFT CMS', 'CRAFT CMS'],
+            ['CRAFTCMS', 'CRAFTCMS'],
+            ['', ''],
+            ['😘', '😘'],
+            ['22 ALPHAN NUMERIC', '22 AlphaN Numeric'],
+            ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+        ];
+    }
+
+    /**
+     * @dataProvider trimData
+     * @param $result
+     * @param $input
+     */
+    public function testTrim($result, $input)
+    {
+        $trim = StringHelper::trim($input);
+        $this->assertSame($result, $trim);
+    }
+    public function trimData()
+    {
+        return [
+            ['😂 😁', '😂 😁 '],
+            ['', ''],
+            ['😘', '😘'],
+            ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+            ['\x09Example string\x0A', '\x09Example string\x0A'],
+            ['\t\tThese are a few words :) ...', '\t\tThese are a few words :) ...  ']
+        ];
+    }
+
+    /**
+     * @dataProvider toTitleCase
+     * @param $result
+     * @param $input
+     */
+    public function testToTitleCase($result, $input)
+    {
+        $toTitleCase = StringHelper::toTitleCase($input);
+        $this->assertSame($result, $toTitleCase);
+    }
+    public function toTitleCase()
+    {
+        return [
+            ['Test S 2 S Zw 2', 'test s 2 s zw 2'],
+            ['😂 😁', '😂 😁'],
+            ['Test Test Craft Cms !@#$%^&  *(Abc)', 'Test test CRAFT cms !@#$%^&  *(abc)'],
+            ['Craft Cms', 'Craft Cms'],
+            ['Craft Cms', 'CRAFT CMS'],
+            ['Craftcms', 'CRAFTCMS'],
+            ['', ''],
+            ['😘', '😘'],
+            ['22 Alphan Numeric', '22 AlphaN Numeric'],
+            ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+        ];
+    }
+
+    /**
+     * @dataProvider toLowerCaseData
+     * @param $result
+     * @param $input
+     */
+    public function testToLowerCase($result, $input)
+    {
+        $toLower = StringHelper::toLowerCase($input);
+        $this->assertSame($result, $toLower);
+    }
+    public function toLowerCaseData()
+    {
+        return [
+            ['test s 2 s zw 2', 'test s 2 s zw 2'],
+            ['😂 😁', '😂 😁'],
+            ['test test craft cms !@#$%^&  *(abc)', 'Test test CRAFT cms !@#$%^&  *(abc)'],
+            ['craft cms', 'Craft Cms'],
+            ['craft cms', 'CRAFT CMS'],
+            ['craftcms', 'CRAFTCMS'],
+            ['', ''],
+            ['😘', '😘'],
+            ['22 alphan numeric', '22 AlphaN Numeric'],
+            ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+        ];
+    }
+
+    /**
+     * @dataProvider titelizeData
+     * @param $result
+     * @param $input
+     */
+    public function testTitleize($result, $input)
+    {
+        $titelize = StringHelper::titleize($input);
+        $this->assertSame($result, $titelize);
+    }
+    public function titelizeData()
+    {
+        return [
+            ['Test S 2 S Zw 2', 'test s 2 s zw 2'],
+            ['😂 😁', '😂 😁'],
+            ['Test Test Craft Cms !@#$%^&  *(abc)', 'Test test CRAFT cms !@#$%^&  *(abc)'],
+            ['Craft Cms', 'Craft Cms'],
+            ['Craft Cms', 'CRAFT CMS'],
+            ['Craftcms', 'CRAFTCMS'],
+            ['', ''],
+            ['😘', '😘'],
+            ['22 Alphan Numeric', '22 AlphaN Numeric'],
+            ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+        ];
+    }
+
+    /**
+     * @dataProvider swapCaseData
+     * @param $result
+     * @param $input
+     */
+    public function testSwapCase($result, $input)
+    {
+        $swap = StringHelper::swapCase($input);
+        $this->assertSame($result, $swap);
+    }
+    public function swapCaseData()
+    {
+        return [
+            ['TEST S 2 S ZW 2', 'test s 2 s zw 2'],
+            ['😂 😁', '😂 😁'],
+            ['tEST TEST craft CMS !@#$%^&  *(ABC)', 'Test test CRAFT cms !@#$%^&  *(abc)'],
+            ['cRAFT cMS', 'Craft Cms'],
+            ['craft cms', 'CRAFT CMS'],
+            ['craftcms', 'CRAFTCMS'],
+            ['', ''],
+            ['😘', '😘'],
+            ['22 aLPHAn nUMERIC', '22 AlphaN Numeric'],
+            ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+        ];
+    }
+
+    /**
+     * @dataProvider substrData
+     * @param      $result
+     * @param      $input
+     * @param      $start
+     * @param null $length
+     */
+    public function testSubstr($result, $input, $start, $length = null)
+    {
+        $substr = StringHelper::substr($input, $start, $length);
+        $this->assertSame($result, $substr);
+    }
+    public function substrData()
+    {
+        return [
+            ['st s', 'test s 2 s zw 2', 2, 4],
+            [' 😁😂😘', '😂 😁😂😘 😁😂😘 😁', 1, 4],
+            ['test CRAF', 'Test test CRAFT cms !@#$%^&  *(abc)', 5, 9],
+
+            ['Craft Cms', 'Craft Cms', 0, 1000],
+            ['AFT CMS', 'CRAFT CMS', 2, 1000],
+            ['CRAFTCMS', 'CRAFTCMS', 0],
+            ['AFTCMS', 'CRAFTCMS', 2],
+            ['', '', 2, 5],
+            ['', '😘', 1, 5],
+            ['#$%  ', '!@#$%  ^&*()', 2, 5],
+        ];
+    }
 }

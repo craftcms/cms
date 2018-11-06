@@ -11,7 +11,7 @@ namespace craftunit\validators;
 
 use Codeception\Test\Unit;
 use craft\validators\ArrayValidator;
-use craftunit\support\mockclasses\models\ExampleModel;
+use craft\test\mockclasses\models\ExampleModel;
 
 /**
  * Class ArrayValidator.
@@ -94,20 +94,16 @@ class ArrayValidatorTest extends Unit
      */
     public function testValidation($inputValue, bool $mustValidate)
     {
-        $countValue = $this->arrayValidator->count;
         $this->arrayValidator->count = null;
 
         $this->model->exampleParam = $inputValue;
-        $result = $this->arrayValidator->validateAttribute($this->model, 'exampleParam');
+        $this->arrayValidator->validateAttribute($this->model, 'exampleParam');
 
         if ($mustValidate) {
             $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());
         } else {
             $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
-
-        $this->model->clearErrors();
-        $this->model->exampleParam = null;
     }
 
     public function arrayValidatorValues()
@@ -134,8 +130,5 @@ class ArrayValidatorTest extends Unit
 
          $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         $this->assertSame('aint right', $this->model->getErrors('exampleParam')[0]);
-
-         $this->model->exampleParam = null;
-         $this->model->clearErrors();
     }
 }

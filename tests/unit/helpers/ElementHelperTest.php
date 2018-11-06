@@ -46,6 +46,8 @@ class ElementHelperTest extends Unit
             ['word'.$glue.'word', 'word word'],
             ['word', 'word'],
             ['123456789', '123456789'],
+            ['abc...dfg', 'abc...dfg'],
+            ['abc...dfg', 'abc...(dfg)'],
         ];
     }
 
@@ -59,4 +61,30 @@ class ElementHelperTest extends Unit
 
         \Craft::$app->getConfig()->getGeneral()->allowUppercaseInSlug = $oldAllow;
     }
+
+    /**
+     * @dataProvider doesuriHaveSlugTagData
+     * @param $result
+     * @param $input
+     */
+    public function testDoesUriFormatHaveSlugTag($result, $input)
+    {
+        $doesIt = ElementHelper::doesUriFormatHaveSlugTag($input);
+        $this->assertSame($result, $doesIt);
+        $this->assertInternalType('boolean', $doesIt);
+    }
+    public function doesuriHaveSlugTagData()
+    {
+
+        return [
+            [true, 'entry/slug'],
+            [true, 'entry/{slug}'],
+            [false, 'entry/{notASlug}'],
+            [false, 'entry/{SLUG}'],
+            [false, 'entry/data'],
+        ];
+    }
+
+
+
 }

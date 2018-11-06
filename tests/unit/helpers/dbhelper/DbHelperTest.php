@@ -4,7 +4,7 @@ namespace craftunit\helpers;
 
 
 use craft\helpers\Db;
-use craftunit\support\mockclasses\components\Serializable;
+use craft\test\mockclasses\serializable\Serializable;
 use Codeception\Test\Unit;
 use yii\db\Exception;
 use yii\db\Schema;
@@ -76,13 +76,8 @@ class DbHelperTest extends Unit
     /**
      * @dataProvider parseParamDataProvider
      */
-    public function testParseParamGeneral($result, array $inputArray)
+    public function testParseParamGeneral($result, $collumn, $value, $defaultOperator = '=', $caseInsensitive = false)
     {
-        $collumn = isset($inputArray[0]) ? $inputArray[0] : null;
-        $value =  isset($inputArray[1]) ? $inputArray[1] : null;
-        $defaultOperator =  isset($inputArray[2]) ? $inputArray[2] : '=';
-        $caseInsensitive =  isset($inputArray[3]) ? $inputArray[3] : null;
-
         $this->assertSame($result, Db::parseParam($collumn, $value, $defaultOperator, $caseInsensitive));
     }
 
@@ -91,23 +86,23 @@ class DbHelperTest extends Unit
         return [
             'basic' => [
                 ['or', [ 'in', 'foo', [ 'bar']]],
-                ['foo', 'bar']
+                'foo', 'bar'
             ],
             'multi-array-format' => [
                 self::MULTI_PARSEPARAM,
-                ['content_table', ['field_1', 'field_2']],
+                'content_table', ['field_1', 'field_2'],
             ],
             'multi-split-by-comma' => [
                 self::MULTI_PARSEPARAM,
-                ['content_table', 'field_1, field_2']
+                'content_table', 'field_1, field_2'
             ],
             'multi-not-param' => [
                 self::MULTI_PARSEPARAM_NOT,
-                ['content_table', 'field_1, field_2', 'not'],
+                'content_table', 'field_1, field_2', 'not',
             ],
             'multi-not-symbol' => [
                 self::MULTI_PARSEPARAM_NOT,
-                ['content_table', 'field_1, field_2', '!=']
+                'content_table', 'field_1, field_2', '!='
             ],
             'empty' => [
                 ['or',[
@@ -115,26 +110,35 @@ class DbHelperTest extends Unit
                         '',[
                             'field_1',
                         ]]],
-                ['', 'field_1'],
+                '', 'field_1',
             ],
             'random-symbol' => [
                 ['or',
                     ['raaa',  'content_table', 'field_1'],
                 ],
-                ['content_table', 'field_1', 'raaa'],
+                'content_table', 'field_1', 'raaa',
             ],
             'random-symbol-multi' => [
                 ['or',
                     ['raaa',  'content_table', 'field_1'],
                     [ 'raaa', 'content_table', 'field_2' ]
                 ],
-                ['content_table', 'field_1, field_2', 'raaa'],
+                'content_table', 'field_1, field_2', 'raaa',
             ],
-            ['', ['content_table', 'not']],
-            ['', ['content', []]],
-            ['', ['', '']],
-            ['', ['content', null]],
-            ['', ['contentCol', '']]
+            ['', 'content_table', 'not'],
+            ['', 'content', []],
+            ['', '', ''],
+            ['', 'content', null],
+            ['', 'contentCol', ''],
+
+            'firstval-or' =>[
+                ['or', ['in', 'content_table', ['field_1', 'field_2']]],
+                'content_table', ['or', 'field_1', 'field_2'],
+            ],
+            'firstval-not' =>[
+                ['and', ['not in', 'content_table', ['field_1', 'field_2']]],
+                'content_table', ['not', 'field_1', 'field_2'],
+            ],
         ];
     }
 
@@ -412,6 +416,75 @@ class DbHelperTest extends Unit
         ];
     }
 
+    /**
+     * @dataProvider getMaxAllowedValueForNumericColumnData
+     * @param $result
+     * @param $input
+     */
+    public function testGetMaxAllowedValueForNumericColumn($result, $input)
+    {
+        $allowed = Db::getMaxAllowedValueForNumericColumn($input);
+        $this->assertSame($result, $allowed);
+    }
+    public function getMaxAllowedValueForNumericColumnData()
+    {
+        return [
+            [2147483647, 'integer(9)'],
+            [false, 9],
+            [false, 'stuff(9)'],
+            [9223372036854775807, 'bigint(9223372036854775807)']
+        ];
+    }
 
+    /**
+     * @dataProvider getMinAllowedValueForNumericColumnData
+     * @param $result
+     * @param $input
+     */
+    public function testGetMinAllowedValueForNumericCollumn($result, $input)
+    {
+        $allowed = Db::getMinAllowedValueForNumericColumn($input);
+        $this->assertSame($result, $allowed);
+    }
+    public function getMinAllowedValueForNumericColumnData()
+    {
+        return [
+            [-2147483648, 'integer(9)'],
+            [false, 9],
+            [false, 'stuff(9)'],
+            [-9223372036854775808, 'bigint(9223372036854775807)']
+        ];
+    }
 
+    /**
+     * @dataProvider prepareValuesForDbData
+     * @param $result
+     * @param $input
+     */
+    public function testPrepareValueForDb($result, $input)
+    {
+        $prepared = Db::prepareValuesForDb($input);
+        $this->assertSame($result, $prepared);
+    }
+    public function prepareValuesForDbData()
+    {
+        $jsonableArray = ['JsonArray' => 'SomeArray'];
+        $jsonableClass = new \stdClass();
+        $jsonableClass->name = 'name';
+        $serializable = new Serializable();
+
+        $excpectedDateTime = new \DateTime('2018-06-06 18:00:00');
+        $excpectedDateTime->setTimezone(new \DateTimeZone('UTC'));
+
+        $dateTime = new \DateTime('2018-06-06 18:00:00');
+
+        return [
+            [['{"date":"2018-06-06 18:00:00.000000","timezone_type":3,"timezone":"America/Los_Angeles"}'], [$dateTime]],
+            [['{"name":"name"}'], [$jsonableClass]],
+            [['{"JsonArray":"SomeArray"}'], [$jsonableArray]],
+            [['[]'], [$serializable]],
+            [[false], [false]],
+            [['😀😘'], ['😀😘']]
+        ];
+    }
 }
