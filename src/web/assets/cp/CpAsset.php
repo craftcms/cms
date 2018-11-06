@@ -359,6 +359,7 @@ JS;
             $sites[] = [
                 'handle' => $site->handle,
                 'id' => (int)$site->id,
+                'uid' => (string)$site->uid,
                 'name' => Craft::t('site', $site->name),
             ];
         }

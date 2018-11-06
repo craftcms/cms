@@ -497,17 +497,6 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
-        $this->createTable('{{%routes}}', [
-            'id' => $this->primaryKey(),
-            'siteId' => $this->integer(),
-            'uriParts' => $this->string()->notNull(),
-            'uriPattern' => $this->string()->notNull(),
-            'template' => $this->string(500)->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
-        ]);
         $this->createTable('{{%sections}}', [
             'id' => $this->primaryKey(),
             'structureId' => $this->integer(),
@@ -833,8 +822,6 @@ class Install extends Migration
         $this->createIndex(null, '{{%relations}}', ['sourceId'], false);
         $this->createIndex(null, '{{%relations}}', ['targetId'], false);
         $this->createIndex(null, '{{%relations}}', ['sourceSiteId'], false);
-        $this->createIndex(null, '{{%routes}}', ['uriPattern'], false);
-        $this->createIndex(null, '{{%routes}}', ['siteId'], false);
         $this->createIndex(null, '{{%sections}}', ['handle'], true);
         $this->createIndex(null, '{{%sections}}', ['name'], true);
         $this->createIndex(null, '{{%sections}}', ['structureId'], false);
@@ -989,7 +976,6 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%relations}}', ['sourceId'], '{{%elements}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%relations}}', ['sourceSiteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, '{{%relations}}', ['targetId'], '{{%elements}}', ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, '{{%routes}}', ['siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, '{{%sections}}', ['structureId'], '{{%structures}}', ['id'], 'SET NULL', null);
         $this->addForeignKey(null, '{{%sections_sites}}', ['siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, '{{%sections_sites}}', ['sectionId'], '{{%sections}}', ['id'], 'CASCADE', null);

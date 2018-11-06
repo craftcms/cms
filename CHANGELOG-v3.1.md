@@ -55,6 +55,7 @@
 - Added `craft\services\Fields::restoreLayoutById()`.
 - Added `craft\services\Gc` for handling garbage collection tasks.
 - Added `craft\services\ProjectConfig`.
+- Added `craft\services\Routes::deleteRouteByUid()`
 - Added `craft\services\Sections::getSectionByUid()`.
 - Added `craft\services\Sites::restoreSiteById()`.
 - Added `craft\web\Controller::requireCpRequest()`.
@@ -78,6 +79,11 @@
 - Token params can now live in either the query string or the POST request body.
 - Element types that support Live Preview must now hash the `previewAction` value for `Craft.LivePreview`.
 - Live Preview now loads each new preview into its own `<iframe>` element. ([#3366](https://github.com/craftcms/cms/issues/3366))
+- `craft\services\Routes::saveRoute()` now expects site and route UIDs instead of IDs.
+- `craft\services\Routes::updateRouteOrder()` now expects route UIDs instead of IDs.
+
+### Removed
+- Removed `craft\services\Routes::deleteRouteById()`
 
 ### Deprecated
 - Deprecated `craft\base\ApplicationTrait::getIsSystemOn()`. `getIsLive()` should be used instead.
@@ -85,6 +91,7 @@
 - Deprecated `craft\models\Info::getName()`. `Craft::$app->projectConfig->get('system.name')` should be used instead.
 - Deprecated `craft\models\Info::getOn()`. `Craft::$app->getIsLive()` should be used instead.
 - Deprecated `craft\models\Info::getTimezone()`. `Craft::$app->getTimeZone()` should be used instead.
+- Deprecated `craft\services\Routes::getDbRoutes()`. `craft\services\Routes::getProjectConfigRoutes()` should be used instead.
 - Deprecated `craft\services\SystemSettings`. `craft\services\ProjectConfig` should be used instead.
 - Deprecated `craft\validators\UrlValidator::$allowAlias`. `craft\behaviors\EnvAttributeParserBehavior` should be used instead.
 

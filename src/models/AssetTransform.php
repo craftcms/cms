@@ -81,6 +81,11 @@ class AssetTransform extends Model
      */
     public $quality;
 
+    /**
+     * @var string|null UID
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 
