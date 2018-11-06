@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Query;
-use craft\events\ConfigEvent;
 use craft\events\RegisterEmailMessagesEvent;
 use craft\helpers\ArrayHelper;
 use craft\models\SystemMessage;
@@ -32,8 +31,6 @@ class SystemMessages extends Component
      * @event RegisterEmailMessagesEvent The event that is triggered when registering email messages.
      */
     const EVENT_REGISTER_MESSAGES = 'registerMessages';
-
-    const CONFIG_MESSAGE_KEY = 'messages';
 
     // Properties
     // =========================================================================
@@ -129,15 +126,10 @@ class SystemMessages extends Component
         // Start with the defaults
         $defaults = $this->getAllDefaultMessages();
 
-        $allMessages = Craft::$app->getProjectConfig()->get(self::CONFIG_MESSAGE_KEY) ?? [];
-
-        $overrides = [];
-
-        foreach ($allMessages as $key => $translations) {
-            if (isset($translations[$language])) {
-                $overrides[$key] = $translations[$language];
-            }
-        }
+        // Fetch any custom messages
+        $overrides = $this->_createMessagesQuery()
+            ->where(['language' => $language])
+            ->all();
 
         // Combine them to create the final messages array
         $messages = [];
@@ -176,7 +168,11 @@ class SystemMessages extends Component
         }
 
         // Fetch the customization (if there is one)
-        $override = Craft::$app->getProjectConfig()->get(self::CONFIG_MESSAGE_KEY . '.' . $key . '.' . $language);
+        $override = $this->_createMessagesQuery()
+            ->select(['subject', 'body'])
+            ->where(['key' => $key, 'language' => $language])
+            ->indexBy(null)
+            ->one();
 
         // Combine them to create the final message
         $message = clone $default;
@@ -198,13 +194,56 @@ class SystemMessages extends Component
      */
     public function saveMessage(SystemMessage $message, string $language = null): bool
     {
-        $configData = [
-            'subject' => $message->subject,
-            'body' => $message->body
-        ];
+        $record = $this->_getMessageRecord($message->key, $language);
 
-        Craft::$app->getProjectConfig()->set(self::CONFIG_MESSAGE_KEY . '.' . $message->key . '.' . $language, $configData);
+        $record->subject = $message->subject;
+        $record->body = $message->body;
 
-        return true;
+        if ($record->save()) {
+            return true;
+        }
+
+        $message->addErrors($record->getErrors());
+
+        return false;
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns a new Query prepped to return system email messages from the DB.
+     *
+     * @return Query
+     */
+    private function _createMessagesQuery(): Query
+    {
+        return (new Query())
+            ->select(['key', 'subject', 'body'])
+            ->from(['{{%systemmessages}}'])
+            ->indexBy('key');
+    }
+
+    /**
+     * Gets a message record by its key.
+     *
+     * @param string $key
+     * @param string $language
+     * @return EmailMessageRecord
+     */
+    private function _getMessageRecord(string $key, string $language): EmailMessageRecord
+    {
+        $record = EmailMessageRecord::findOne([
+            'key' => $key,
+            'language' => $language,
+        ]);
+
+        if (!$record) {
+            $record = new EmailMessageRecord();
+            $record->key = $key;
+            $record->language = $language;
+        }
+
+        return $record;
     }
 }

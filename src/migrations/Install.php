@@ -291,6 +291,16 @@ class Install extends Migration
             'path' => $this->string()->notNull(),
             'PRIMARY KEY([[hash]])',
         ]);
+        $this->createTable('{{%systemmessages}}', [
+            'id' => $this->primaryKey(),
+            'language' => $this->string()->notNull(),
+            'key' => $this->string()->notNull(),
+            'subject' => $this->text()->notNull(),
+            'body' => $this->text()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
         $this->createTable('{{%entries}}', [
             'id' => $this->integer()->notNull(),
             'sectionId' => $this->integer()->notNull(),
@@ -760,6 +770,8 @@ class Install extends Migration
         $this->createIndex(null, '{{%elements_sites}}', ['siteId'], false);
         $this->createIndex(null, '{{%elements_sites}}', ['slug', 'siteId'], false);
         $this->createIndex(null, '{{%elements_sites}}', ['enabled'], false);
+        $this->createIndex(null, '{{%systemmessages}}', ['key', 'language'], true);
+        $this->createIndex(null, '{{%systemmessages}}', ['language'], false);
         $this->createIndex(null, '{{%entries}}', ['postDate'], false);
         $this->createIndex(null, '{{%entries}}', ['expiryDate'], false);
         $this->createIndex(null, '{{%entries}}', ['authorId'], false);
