@@ -328,6 +328,9 @@ class CategoriesController extends Controller
         // Other variables
         // ---------------------------------------------------------------------
 
+        // Body class
+        $variables['bodyClass'] = 'edit-category site--' . $site->handle;
+
         // Page title
         if ($category->id === null) {
             $variables['title'] = Craft::t('app', 'Create a new category');
@@ -361,7 +364,7 @@ class CategoriesController extends Controller
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $category->getUrl(),
-                    'previewAction' => 'categories/preview-category',
+                    'previewAction' => Craft::$app->getSecurity()->hashData('categories/preview-category'),
                     'previewParams' => [
                         'groupId' => $variables['group']->id,
                         'categoryId' => $category->id,

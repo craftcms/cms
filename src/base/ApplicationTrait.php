@@ -23,6 +23,7 @@ use craft\i18n\Locale;
 use craft\models\Info;
 use craft\queue\Queue;
 use craft\queue\QueueInterface;
+use craft\services\AssetTransforms;
 use craft\services\Categories;
 use craft\services\Fields;
 use craft\services\Globals;
@@ -1306,6 +1307,12 @@ trait ApplicationTrait
         $projectConfigService->onRemove(Volumes::CONFIG_VOLUME_KEY . '.{uid}', [$volumesService, 'handleDeletedVolume']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$volumesService, 'pruneDeletedField']);
 
+        // Transforms
+        $transformService = $this->getAssetTransforms();
+        $projectConfigService->onAdd(AssetTransforms::CONFIG_TRANSFORM_KEY . '.{uid}', [$transformService, 'handleChangedTransform']);
+        $projectConfigService->onUpdate(AssetTransforms::CONFIG_TRANSFORM_KEY . '.{uid}', [$transformService, 'handleChangedTransform']);
+        $projectConfigService->onRemove(AssetTransforms::CONFIG_TRANSFORM_KEY . '.{uid}', [$transformService, 'handleDeletedTransform']);
+
         // Site groups
         $sitesService = $this->getSites();
         $projectConfigService->onAdd(Sites::CONFIG_SITEGROUP_KEY . '.{uid}', [$sitesService, 'handleChangedGroup']);
@@ -1316,6 +1323,9 @@ trait ApplicationTrait
         $projectConfigService->onAdd(Sites::CONFIG_SITES_KEY . '.{uid}', [$sitesService, 'handleChangedSite']);
         $projectConfigService->onUpdate(Sites::CONFIG_SITES_KEY . '.{uid}', [$sitesService, 'handleChangedSite']);
         $projectConfigService->onRemove(Sites::CONFIG_SITES_KEY . '.{uid}', [$sitesService, 'handleDeletedSite']);
+
+        // Routes
+        Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, [Craft::$app->getRoutes(), 'handleDeletedSite']);
 
         // Tags
         $tagsService = $this->getTags();

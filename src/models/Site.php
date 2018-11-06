@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\behaviors\EnvAttributeParserBehavior;
 use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
@@ -91,16 +92,45 @@ class Site extends Model
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * Returns the site’s base URL.
+     *
+     * @return string|null
      */
-    public function __construct($config = [])
+    public function getBaseUrl(): string
     {
-        // Normalize the base URL
-        if (isset($config['baseUrl'])) {
-            $config['baseUrl'] = rtrim($config['baseUrl'], '/') . '/';
+        if ($this->baseUrl) {
+            return rtrim(Craft::parseEnv($this->baseUrl), '/') . '/';
         }
 
-        parent::__construct($config);
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'baseUrl',
+                ],
+            ]
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels()
+    {
+        return [
+            'baseUrl' => Craft::t('app', 'Base URL'),
+            'handle' => Craft::t('app', 'Handle'),
+            'language' => Craft::t('app', 'Language'),
+            'name' => Craft::t('app', 'Name'),
+        ];
     }
 
     /**
@@ -114,7 +144,7 @@ class Site extends Model
             [['name', 'handle', 'baseUrl'], 'string', 'max' => 255],
             [['language'], LanguageValidator::class, 'onlySiteLanguages' => false],
             [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['baseUrl'], UrlValidator::class, 'allowAlias' => true, 'defaultScheme' => 'http'],
+            [['baseUrl'], UrlValidator::class, 'defaultScheme' => 'http'],
         ];
 
         if (Craft::$app->getIsInstalled()) {
@@ -131,7 +161,7 @@ class Site extends Model
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->name);
+        return Craft::t('site', $this->name) ?: static::class;
     }
 
     /**
@@ -172,6 +202,6 @@ class Site extends Model
     public function overrideBaseUrl(string $baseUrl)
     {
         $this->originalBaseUrl = (string)$this->baseUrl;
-        $this->baseUrl = rtrim($baseUrl, '/') . '/';
+        $this->baseUrl = $baseUrl;
     }
 }

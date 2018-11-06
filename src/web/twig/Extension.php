@@ -716,6 +716,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('expression', [$this, 'expressionFunction']),
             new \Twig_SimpleFunction('floor', 'floor'),
             new \Twig_SimpleFunction('getenv', 'getenv'),
+            new \Twig_SimpleFunction('parseEnv', [Craft::class, 'parseEnv']),
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
             new \Twig_SimpleFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new \Twig_SimpleFunction('round', [$this, 'roundFunction']),
@@ -967,7 +968,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             $site = Craft::$app->getSites()->getCurrentSite();
             $globals['currentSite'] = $site;
             $globals['siteName'] = $site->name;
-            $globals['siteUrl'] = Craft::getAlias($site->baseUrl);
+            $globals['siteUrl'] = $site->getBaseUrl();
 
             // Global sets (site templates only)
             if ($templateMode === View::TEMPLATE_MODE_SITE) {

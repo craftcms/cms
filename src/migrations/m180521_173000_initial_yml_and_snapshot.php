@@ -70,7 +70,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             'users' => $this->_getUserData(),
             'globalSets' => $this->_getGlobalSetData(),
             'plugins' => $this->_getPluginData(),
-            'schemaVersion' => Craft::$app->schemaVersion,
         ];
 
         return array_merge_recursive($data, $this->_getSystemSettingData());

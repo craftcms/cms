@@ -80,6 +80,11 @@ abstract class Controller extends \yii\web\Controller
      */
     public function beforeAction($action)
     {
+        // Don't enable CSRF validation for Live Preview requests
+        if (Craft::$app->getRequest()->getIsLivePreview()) {
+            $this->enableCsrfValidation = false;
+        }
+
         if (!parent::beforeAction($action)) {
             return false;
         }
@@ -259,8 +264,32 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireToken()
     {
-        if (!Craft::$app->getRequest()->getQueryParam(Craft::$app->getConfig()->getGeneral()->tokenParam)) {
+        if (!Craft::$app->getRequest()->getParam(Craft::$app->getConfig()->getGeneral()->tokenParam)) {
             throw new BadRequestHttpException('Valid token required');
+        }
+    }
+
+    /**
+     * Throws a 400 error if the current request isn’t a Control Panel request.
+     *
+     * @throws BadRequestHttpException if the request is not a CP request
+     */
+    public function requireCpRequest()
+    {
+        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+            throw new BadRequestHttpException('Request must be a Control Panel request');
+        }
+    }
+
+    /**
+     * Throws a 400 error if the current request isn’t a site request.
+     *
+     * @throws BadRequestHttpException if the request is not a site request
+     */
+    public function requireSiteRequest()
+    {
+        if (!Craft::$app->getRequest()->getIsSiteRequest()) {
+            throw new BadRequestHttpException('Request must be a site request');
         }
     }
 

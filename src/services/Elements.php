@@ -24,6 +24,7 @@ use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
+use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -82,7 +83,7 @@ class Elements extends Component
     const EVENT_AFTER_MERGE_ELEMENTS = 'afterMergeElements';
 
     /**
-     * @event ElementEvent The event that is triggered before an element is deleted.
+     * @event DeleteElementEvent The event that is triggered before an element is deleted.
      */
     const EVENT_BEFORE_DELETE_ELEMENT = 'beforeDeleteElement';
 
@@ -567,24 +568,25 @@ class Elements extends Component
      */
     public function duplicateElement(ElementInterface $element, array $newAttributes = []): ElementInterface
     {
+        // Create our first clone for the $element's site
         /** @var Element $element */
-        $supportedSites = ElementHelper::supportedSitesForElement($element);
+        $element->getFieldValues();
+        /** @var Element $mainClone */
+        $mainClone = clone $element;
+        $mainClone->setAttributes($newAttributes);
+        $mainClone->id = null;
+        $mainClone->contentId = null;
 
         // Make sure the element actually supports its own site ID
+        $supportedSites = ElementHelper::supportedSitesForElement($mainClone);
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (!in_array($element->siteId, $supportedSiteIds, false)) {
+        if (!in_array($mainClone->siteId, $supportedSiteIds, false)) {
             throw new Exception('Attempting to duplicate an element in an unsupported site.');
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Start with $element's site
-            /** @var Element $mainClone */
-            $mainClone = clone $element;
-            $mainClone->setAttributes($newAttributes);
-            $mainClone->id = null;
-            $mainClone->contentId = null;
-
             if (!$this->saveElement($mainClone, false, false)) {
                 throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
             }
@@ -921,11 +923,11 @@ class Elements extends Component
     {
         /** @var Element $element */
         // Fire a 'beforeDeleteElement' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ELEMENT)) {
-            $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, new ElementEvent([
-                'element' => $element,
-            ]));
-        }
+        $event = new DeleteElementEvent([
+            'element' => $element,
+            'hardDelete' => false,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, $event);
 
         if (!$element->beforeDelete()) {
             return false;
@@ -956,12 +958,18 @@ class Elements extends Component
             // this element is suddenly going to show up in a new query)
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
-            // Soft delete the elements table row
-            Craft::$app->getDb()->createCommand()
-                ->softDelete('{{%elements}}', ['id' => $element->id])
-                ->execute();
+            if ($event->hardDelete) {
+                Craft::$app->getDb()->createCommand()
+                    ->delete('{{%elements}}', ['id' => $element->id])
+                    ->execute();
+            } else {
+                // Soft delete the elements table row
+                Craft::$app->getDb()->createCommand()
+                    ->softDelete('{{%elements}}', ['id' => $element->id])
+                    ->execute();
+            }
 
-            // Hard delete the search indexes
+            // Always hard delete the search indexes
             Craft::$app->getDb()->createCommand()
                 ->delete('{{%searchindex}}', ['elementId' => $element->id])
                 ->execute();
