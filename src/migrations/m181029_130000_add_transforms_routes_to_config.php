@@ -9,9 +9,9 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 
 /**
- * m181029_130000_add_transforms_messages_routes_to_config migration.
+ * m181029_130000_add_transforms_routes_to_config migration.
  */
-class m181029_130000_add_transforms_messages_routes_to_config extends Migration
+class m181029_130000_add_transforms_routes_to_config extends Migration
 {
     /**
      * @inheritdoc
@@ -27,10 +27,8 @@ class m181029_130000_add_transforms_messages_routes_to_config extends Migration
         }
 
         $this->_migrateTransforms();
-        $this->_migrateMessages();
         $this->_migrateRoutes();
 
-        $this->dropTableIfExists('{{%systemmessages}}');
         $this->dropTableIfExists('{{%routes}}');
     }
 
@@ -39,7 +37,7 @@ class m181029_130000_add_transforms_messages_routes_to_config extends Migration
      */
     public function safeDown()
     {
-        echo "m181029_130000_add_transforms_messages_routes_to_config cannot be reverted.\n";
+        echo "m181029_130000_add_transforms_routes_to_config cannot be reverted.\n";
         return false;
     }
 
@@ -73,33 +71,6 @@ class m181029_130000_add_transforms_messages_routes_to_config extends Migration
         }
 
         Craft::$app->getProjectConfig()->set('imageTransforms', $transformRows);
-    }
-
-    /**
-     * Migrate system messages to project config
-     */
-    private function _migrateMessages()
-    {
-        $data = [];
-        $messages = (new Query())
-            ->select([
-                'language',
-                'key',
-                'subject',
-                'body',
-            ])
-            ->from(['{{%systemmessages}}'])
-            ->all();
-
-
-        foreach ($messages as $message) {
-            $data[$message['key']][$message['language']] = [
-                'subject' => $message['subject'],
-                'body' => $message['body']
-            ];
-        }
-
-        Craft::$app->getProjectConfig()->set('messages', $data);
     }
 
     /**
