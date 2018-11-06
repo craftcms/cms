@@ -102,8 +102,13 @@ class GeneralConfig extends BaseObject
      */
     public $backupCommand;
     /**
-     * @var string|null The base URL that Craft should use when generating Control Panel URLs. This will be determined
-     * automatically if left blank.
+     * @var string|null The base URL that Craft should use when generating Control Panel URLs.
+     *
+     * It will be determined automatically if left blank.
+     *
+     * ::: tip
+     * The base CP URL should **not** include the [[cpTrigger|CP trigger word]] (e.g. `/admin`).
+     * :::
      */
     public $baseCpUrl;
     /**
@@ -235,7 +240,7 @@ class GeneralConfig extends BaseObject
      * @var bool By default, Craft will require a 'password' field to be submitted on front-end, public
      * user registrations. Setting this to `true` will no longer require it on the initial registration form.
      *
-     * If you have email verification enabled, the will set their password once they've clicked on the
+     * If you have email verification enabled, new users will set their password once they've clicked on the
      * verification link in the email. If you don't, the only way they can set their password is to go
      * through your "forgot password" workflow.
      */

@@ -90,12 +90,9 @@ class Template
     {
         /** @var ElementQuery $query */
         $currentPage = Craft::$app->getRequest()->getPageNum();
-        $limit = $query->limit;
 
-        // Get the total result count, without applying the limit
-        $query->limit = null;
-        $total = (int)$query->count();
-        $query->limit = $limit;
+        // Get the total result count
+        $total = (int)$query->count() - ($query->offset ?? 0);
 
         // Bail out early if there are no results. Also avoids a divide by zero bug in the calculation of $totalPages
         if ($total === 0) {
@@ -103,9 +100,7 @@ class Template
         }
 
         // If they specified limit as null or 0 (for whatever reason), just assume it's all going to be on one page.
-        if (!$limit) {
-            $limit = $total;
-        }
+        $limit = $query->limit ?: $total;
 
         $totalPages = (int)ceil($total / $limit);
 

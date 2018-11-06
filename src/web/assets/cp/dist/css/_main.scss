@@ -2503,6 +2503,10 @@ ul.tree,
       line-height: 18px;
     }
 
+    &.lightswitch-field > .heading {
+      flex: 1;
+    }
+
     & > .input {
       .flex {
         flex-wrap: nowrap;
@@ -2531,6 +2535,10 @@ ul.tree,
   & > .data > .value {
     padding: 8px 0;
     width: calc(100% - 112px);
+  }
+
+  & > .field.lightswitch-field > .input {
+    width: auto;
   }
 
   & > .field {

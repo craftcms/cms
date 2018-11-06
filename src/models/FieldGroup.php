@@ -45,6 +45,16 @@ class FieldGroup extends Model
     /**
      * @inheritdoc
      */
+    public function attributeLabels()
+    {
+        return [
+            'name' => Craft::t('app', 'Name'),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         return [
@@ -62,7 +72,7 @@ class FieldGroup extends Model
      */
     public function __toString(): string
     {
-        return (string)$this->name;
+        return (string)$this->name ?: static::class;
     }
 
     /**

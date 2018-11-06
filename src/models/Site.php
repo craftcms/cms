@@ -123,6 +123,19 @@ class Site extends Model
     /**
      * @inheritdoc
      */
+    public function attributeLabels()
+    {
+        return [
+            'baseUrl' => Craft::t('app', 'Base URL'),
+            'handle' => Craft::t('app', 'Handle'),
+            'language' => Craft::t('app', 'Language'),
+            'name' => Craft::t('app', 'Name'),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = [
@@ -148,7 +161,7 @@ class Site extends Model
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->name);
+        return Craft::t('site', $this->name) ?: static::class;
     }
 
     /**

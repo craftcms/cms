@@ -182,6 +182,9 @@ class GlobalsController extends Controller
             $globalSet = $editableGlobalSets[$globalSetHandle];
         }
 
+        // Body class
+        $bodyClass = 'edit-global-set site--' . $site->handle;
+
         // Define the content tabs
         // ---------------------------------------------------------------------
 
@@ -209,6 +212,7 @@ class GlobalsController extends Controller
 
         // Render the template!
         return $this->renderTemplate('globals/_edit', compact(
+            'bodyClass',
             'editableGlobalSets',
             'globalSet',
             'tabs'

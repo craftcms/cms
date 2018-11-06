@@ -425,6 +425,9 @@ class ElementIndexesController extends BaseElementsController
             } else if ($action instanceof Restore) {
                 unset($actions[$i]);
             }
+
+            /** @var ElementActionInterface $action */
+            $action->setElementType($elementType);
         }
 
         return array_values($actions);

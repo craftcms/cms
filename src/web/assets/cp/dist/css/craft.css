@@ -962,12 +962,14 @@ body.rtl .missing-component .install-plugin .icon { right: 0; }
 .meta { padding: 0; overflow: visible; }
 .meta > .field, .meta > .data { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: justify; -ms-flex-pack: justify; justify-content: space-between; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -ms-flex-wrap: wrap; flex-wrap: wrap; margin: 0 !important; padding: 0 24px; }
 .meta > .field > .heading, .meta > .data > .heading { -webkit-box-flex: 0; -ms-flex: 0 0 105px; flex: 0 0 105px; margin-bottom: 0; line-height: 18px; }
+.meta > .field.lightswitch-field > .heading, .meta > .data.lightswitch-field > .heading { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 .meta > .field > .input .flex, .meta > .data > .input .flex { -ms-flex-wrap: nowrap; flex-wrap: nowrap; }
 .meta > .field > .input .flex > *, .meta > .data > .input .flex > * { margin-bottom: 0; }
 .meta > .field > .heading { padding: 14px 0; }
 .meta > .data > .heading { padding: 8px 0; }
 .meta > .field > .heading > label, .meta > .data > .heading { color: #8f98a3; }
 .meta > .field > .input, .meta > .data > .value { padding: 8px 0; width: calc(100% - 112px); }
+.meta > .field.lightswitch-field > .input { width: auto; }
 .meta > .field { -webkit-box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); -webkit-transition: -webkit-box-shadow linear 100ms; transition: -webkit-box-shadow linear 100ms; transition: box-shadow linear 100ms; transition: box-shadow linear 100ms, -webkit-box-shadow linear 100ms; }
 .meta > .field.has-focus { z-index: 1; -webkit-box-shadow: 0 0 5px #33aaff; box-shadow: 0 0 5px #33aaff; }
 .meta > .field.has-errors { margin: 0 -1px !important; border: 1px solid #da5a47 !important; }
