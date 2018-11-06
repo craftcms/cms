@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.30 - 2018-11-06
 
 ### Added
 - Added “Duplicate” and “Duplicate (with children)” actions to the Entries and Categories index pages. ([#1291](https://github.com/craftcms/cms/issues/1291))
