@@ -272,16 +272,11 @@ class Routes extends Component
     public function handleDeletedSite(DeleteSiteEvent $event)
     {
         $projectConfig = Craft::$app->getProjectConfig();
-        $newSiteUid = !empty($event->transferContentTo) ? Db::uidById('{{%sites}}', $event->transferContentTo) : null;
         $routes = $projectConfig->get(self::CONFIG_ROUTES_KEY) ?? [];
 
         foreach ($routes as $routeUid => $route) {
             if ($route['siteUid'] === $event->site->uid) {
-                if ($newSiteUid) {
-                    $projectConfig->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid . '.siteUid', $newSiteUid);
-                } else {
-                    $projectConfig->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid);
-                }
+                $projectConfig->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid);
             }
         }
     }
