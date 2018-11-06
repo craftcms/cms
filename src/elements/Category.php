@@ -11,7 +11,9 @@ use Craft;
 use craft\base\Element;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
+use craft\elements\actions\DeepDuplicate;
 use craft\elements\actions\Delete;
+use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
 use craft\elements\actions\NewChild;
 use craft\elements\actions\SetStatus;
@@ -174,6 +176,13 @@ class Category extends Element
                     'maxLevels' => $structure->maxLevels,
                     'newChildUrl' => 'categories/' . $group->handle . '/new',
                 ]);
+            }
+
+            // Duplicate
+            $actions[] = Duplicate::class;
+
+            if ($group->maxLevels != 1) {
+                $actions[] = DeepDuplicate::class;
             }
 
             // Delete

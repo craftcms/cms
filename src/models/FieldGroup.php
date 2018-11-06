@@ -67,7 +67,7 @@ class FieldGroup extends Model
      */
     public function __toString(): string
     {
-        return (string)$this->name;
+        return (string)$this->name ?: static::class;
     }
 
     /**

@@ -829,6 +829,9 @@ class UsersController extends Controller
         // Load the resources and render the page
         // ---------------------------------------------------------------------
 
+        // Body class
+        $bodyClass = 'edit-user';
+
         $this->getView()->registerAssetBundle(EditUserAsset::class);
 
         $userIdJs = Json::encode($user->id);
@@ -843,6 +846,7 @@ class UsersController extends Controller
             'isNewUser',
             'statusLabel',
             'actions',
+            'bodyClass',
             'title',
             'tabs',
             'selectedTab',

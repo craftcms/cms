@@ -1,5 +1,31 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.30 - 2018-11-06
+
+### Added
+- Added “Duplicate” and “Duplicate (with children)” actions to the Entries and Categories index pages. ([#1291](https://github.com/craftcms/cms/issues/1291))
+- Added `craft\base\ElementAction::$elementType`, which element action classes can use to reference their associated element type.
+- Added `craft\elements\actions\DeepDuplicate`.
+- Added `craft\elements\actions\Duplicate`.
+- Added `craft\elements\actions\SetStatus::$allowDisabledForSite`, which can be used by localizable element types to enable a “Disabled for Site” status option.
+
+### Changed
+- Entries’ “Enabled” setting is now labeled “Enabled Globally” on multi-site installs. ([#2899](https://github.com/craftcms/cms/issues/2899))
+- Entries’ “Enabled for site” setting now includes the site name in its label, and only shows up if the “Enabled Globally” setting is checked. ([#2899](https://github.com/craftcms/cms/issues/2899))
+- The Set Status action on the Entries index page now includes a “Disabled for Site” option. ([#2899](https://github.com/craftcms/cms/issues/2899))
+- Edit Category pages now have `edit-category` and `site--<SiteHandle>` classes on the `<body>`. ([#3439](https://github.com/craftcms/cms/issues/3439))
+- Edit Entry pages now have `edit-entry` and `site--<SiteHandle>` classes on the `<body>`. ([#3439](https://github.com/craftcms/cms/issues/3439))
+- Edit Global Set pages now have `edit-global-set` and `site--<SiteHandle>` classes on the `<body>`. ([#3439](https://github.com/craftcms/cms/issues/3439))
+- Edit User pages now have an `edit-user` class on the `<body>`. ([#3439](https://github.com/craftcms/cms/issues/3439))
+
+### Fixed
+- Fixed a bug where the Edit User page could forget which permissions were selected when saving a user with validation errors, if the Username, First Name, and Last name fields were all blank. ([#3412](https://github.com/craftcms/cms/issues/3412))
+- Fixed a bug where the Edit User Group page could forget which permissions were selected when saving a user group with validation errors, if the Name field was blank.
+- Fixed a bug where the `{% paginate %}` tag wasn’t factoring the `offset` element query param into its total page calculation. ([#3420](https://github.com/craftcms/cms/issues/3420))
+
+### Security
+- Fixed a bug where sensitive info could be displayed in the Craft log files if there was a problem connecting to the email server.
+
 ## 3.0.29 - 2018-10-30
 
 ### Added

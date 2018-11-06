@@ -413,6 +413,9 @@ class ElementIndexesController extends BaseElementsController
                     unset($actions[$i]);
                 }
             }
+
+            /** @var ElementActionInterface $action */
+            $action->setElementType($elementType);
         }
 
         return array_values($actions);

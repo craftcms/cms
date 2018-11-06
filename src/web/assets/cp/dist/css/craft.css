@@ -843,8 +843,8 @@ body.rtl table.editable tbody tr td.action + td.action { padding-right: 0; }
 table.editable tbody tr td.code textarea::-webkit-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 table.editable tbody tr td.code textareainput:-ms-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 table.editable tbody tr td.code textarea::-ms-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
+table.editable tbody tr td.code textarea:-moz-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 table.editable tbody tr td.code textarea::-webkit-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
-table.editable tbody tr td.code textarea:-ms-input-placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 table.editable tbody tr td.code textarea::placeholder { font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; }
 table.editable tbody textarea, table.editable tbody textarea.text, table.editable tbody input.text { display: block; width: 100%; border: none; border-radius: 0; padding: 7px 10px; background: transparent; overflow: hidden; -webkit-transition: none; transition: none; }
 table.editable tbody textarea:focus, table.editable tbody textarea.text:focus, table.editable tbody input.text:focus { border: 1px solid rgba(0, 0, 0, 0.15); padding: 6px 9px; outline: none; }
@@ -959,12 +959,14 @@ body.rtl .missing-component .install-plugin .icon { right: 0; }
 .meta { padding: 0; overflow: visible; }
 .meta > .field, .meta > .data { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: justify; -ms-flex-pack: justify; justify-content: space-between; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -ms-flex-wrap: wrap; flex-wrap: wrap; margin: 0 !important; padding: 0 24px; }
 .meta > .field > .heading, .meta > .data > .heading { -webkit-box-flex: 0; -ms-flex: 0 0 105px; flex: 0 0 105px; margin-bottom: 0; line-height: 18px; }
+.meta > .field.lightswitch-field > .heading, .meta > .data.lightswitch-field > .heading { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 .meta > .field > .input .flex, .meta > .data > .input .flex { -ms-flex-wrap: nowrap; flex-wrap: nowrap; }
 .meta > .field > .input .flex > *, .meta > .data > .input .flex > * { margin-bottom: 0; }
 .meta > .field > .heading { padding: 14px 0; }
 .meta > .data > .heading { padding: 8px 0; }
 .meta > .field > .heading > label, .meta > .data > .heading { color: #8f98a3; }
 .meta > .field > .input, .meta > .data > .value { padding: 8px 0; width: calc(100% - 112px); }
+.meta > .field.lightswitch-field > .input { width: auto; }
 .meta > .field { -webkit-box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); box-shadow: 0 0 2px rgba(51, 170, 255, 0), inset 0 0 0 1px rgba(51, 170, 255, 0); -webkit-transition: -webkit-box-shadow linear 100ms; transition: -webkit-box-shadow linear 100ms; transition: box-shadow linear 100ms; transition: box-shadow linear 100ms, -webkit-box-shadow linear 100ms; }
 .meta > .field.has-focus { z-index: 1; -webkit-box-shadow: 0 0 5px #33aaff; box-shadow: 0 0 5px #33aaff; }
 .meta > .field.has-errors { margin: 0 -1px !important; border: 1px solid #da5a47 !important; }
@@ -1353,9 +1355,9 @@ input:-ms-input-placeholder { color: #b9bfc6; }
 
 ::-ms-input-placeholder { color: #b9bfc6; }
 
-::-webkit-input-placeholder { color: #b9bfc6; }
+:-moz-placeholder { color: #b9bfc6; }
 
-:-ms-input-placeholder { color: #b9bfc6; }
+::-webkit-input-placeholder { color: #b9bfc6; }
 
 ::placeholder { color: #b9bfc6; }
 
@@ -1814,7 +1816,6 @@ body.rtl #main-container #main #main-content #content-container #content { borde
 #main-container #main #main-content #details .meta > .field.has-errors { margin: 0 -24px !important; padding: 0 24px; }
 #main-container #main #main-content #details .meta > .field + .field { border-top-color: rgba(0, 0, 20, 0.1); }
 #main-container #main #main-content #details .meta .text::-webkit-input-placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
-#main-container #main #main-content #details .meta .text:-ms-input-placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
 #main-container #main #main-content #details .meta .text::-ms-input-placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
 #main-container #main #main-content #details .meta .text::placeholder, #main-container #main #main-content #details .meta .datewrapper .text:placeholder-shown + div[data-icon], #main-container #main #main-content #details .meta .timewrapper .text:placeholder-shown + div[data-icon] { color: #94999e; }
 body.ltr #main-container #main #main-content #details .meta .ui-datepicker { margin: 0 0 0 -8px ; }

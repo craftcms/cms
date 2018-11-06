@@ -32,12 +32,25 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     // =========================================================================
 
     /**
+     * @var string|ElementInterface
+     */
+    protected $elementType;
+
+    /**
      * @var
      */
     private $_message;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function setElementType(string $elementType)
+    {
+        $this->elementType = $elementType;
+    }
 
     /**
      * @inheritdoc

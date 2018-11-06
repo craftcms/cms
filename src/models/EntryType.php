@@ -144,7 +144,7 @@ class EntryType extends Model
      */
     public function __toString(): string
     {
-        return (string)$this->handle;
+        return (string)$this->handle ?: static::class;
     }
 
     /**

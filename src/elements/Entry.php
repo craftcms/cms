@@ -11,7 +11,9 @@ use Craft;
 use craft\base\Element;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
+use craft\elements\actions\DeepDuplicate;
 use craft\elements\actions\Delete;
+use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
 use craft\elements\actions\NewChild;
 use craft\elements\actions\SetStatus;
@@ -271,7 +273,10 @@ class Entry extends Element
 
             // Set Status
             if ($canSetStatus) {
-                $actions[] = SetStatus::class;
+                $actions[] = [
+                    'type' => SetStatus::class,
+                    'allowDisabledForSite' => true,
+                ];
             }
 
             // Edit
@@ -322,6 +327,15 @@ class Entry extends Element
                             'maxLevels' => $structure->maxLevels,
                             'newChildUrl' => 'entries/' . $section->handle . '/new',
                         ]);
+                    }
+                }
+
+                // Duplicate
+                if ($userSessionService->checkPermission('publishEntries:' . $section->id)) {
+                    $actions[] = Duplicate::class;
+
+                    if ($section->type === Section::TYPE_STRUCTURE && $section->maxLevels != 1) {
+                        $actions[] = DeepDuplicate::class;
                     }
                 }
 

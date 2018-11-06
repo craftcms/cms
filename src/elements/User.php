@@ -571,7 +571,7 @@ class User extends Element implements IdentityInterface
     public function __toString()
     {
         try {
-            return $this->getName();
+            return $this->getName() ?: static::class;
         } catch (\Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
