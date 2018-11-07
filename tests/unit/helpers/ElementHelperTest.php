@@ -112,7 +112,7 @@ class ElementHelperTest extends Unit
             // 254 chars.
             [['uri' => 'test/asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssssssss'], ['uriFormat' => 'test/{slug}', 'slug' => 'asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssssssss']],
 
-
+            // TODO: Test the line 100.
             // TODO: Test _isUniqueUri and setup fixtures that add data to elements_sites
         ];
     }
@@ -124,7 +124,7 @@ class ElementHelperTest extends Unit
             ElementHelper::setUniqueUri($el);
         });
     }
-    public function testMaxLength()
+    public function maxLength()
     {
         // 256 length slug. Oh no we dont.
         $this->tester->expectException(OperationAbortedException::class, function () {
@@ -136,6 +136,47 @@ class ElementHelperTest extends Unit
         });
     }
 
+    public function testSetNextOnPrevElement()
+    {
+        $editable = [
+            $one = new ExampleElement(['id' => '1']),
+            $two = new ExampleElement(['id' => '2']),
+            $three = new ExampleElement(['id' => '3'])
+        ];
+        ElementHelper::setNextPrevOnElements($editable);
+        $this->assertNull($one->getPrev());
 
+        $this->assertSame($two, $one->getNext());
+        $this->assertSame($two, $one->getNext());
+        $this->assertSame($two, $three->getPrev());
 
+        $this->assertNull($three->getNext());
+    }
+
+    /**
+     * @dataProvider findSourcesData
+     * @param      $result
+     * @param      $elementType
+     * @param      $sourceKey
+     * @param null $context
+     */
+    public function testFindSources($result, $sourceKey, $context = null)
+    {
+        $source = ElementHelper::findSource(ExampleElement::class, $sourceKey, $context);
+        $this->assertSame($result, $source);
+    }
+    public function findSourcesData()
+    {
+        return [
+            [null, 'not a source'],
+            [[
+                'key' => 'criteria1',
+                'label' => 'Criteria',
+                'criteria' => [
+                    'id' => '1'
+                ]
+            ], 'criteria1'],
+            [null, '*/criteria1'],
+        ];
+    }
 }
