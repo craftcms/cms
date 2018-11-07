@@ -10,7 +10,9 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
+use craft\errors\OperationAbortedException;
 use craft\helpers\ElementHelper;
+use craft\test\mockclasses\elements\ExampleElement;
 
 /**
  * Class ElementHelperTest.
@@ -54,12 +56,9 @@ class ElementHelperTest extends Unit
     public function testLowerRemoveFromCreateSlug()
     {
         $general =  \Craft::$app->getConfig()->getGeneral();
-        $oldAllow = $general->allowUppercaseInSlug;
         $general->allowUppercaseInSlug = false;
 
         $this->assertSame('word'.$general->slugWordSeparator.'word', ElementHelper::createSlug('word WORD'));
-
-        \Craft::$app->getConfig()->getGeneral()->allowUppercaseInSlug = $oldAllow;
     }
 
     /**
@@ -83,6 +82,58 @@ class ElementHelperTest extends Unit
             [false, 'entry/{SLUG}'],
             [false, 'entry/data'],
         ];
+    }
+
+    /**
+     * @dataProvider setUniqueUriData
+     * @param $result
+     * @param $config
+     */
+    public function testSetUniqueUri($result, $config)
+    {
+        $example = new ExampleElement($config);
+        $uri = ElementHelper::setUniqueUri($example);
+
+        $this->assertNull($uri);
+        foreach ($result as $key => $res) {
+            $this->assertSame($res, $example->$key);
+        }
+    }
+    public function setUniqueUriData()
+    {
+        return [
+            [['uri' => null], ['uriFormat' => null]],
+            [['uri' => ''], ['uriFormat' => '']],
+            [['uri' => 'craft'], ['uriFormat' => '{slug}', 'slug' => 'craft']],
+            [['uri' => 'test'], ['uriFormat' => 'test/{slug}']],
+            [['uri' => 'test/test'], ['uriFormat' => 'test/{slug}', 'slug' => 'test']],
+            [['uri' => 'test/tes.!@#$%^&*()_t'], ['uriFormat' => 'test/{slug}', 'slug' => 'tes.!@#$%^&*()_t']],
+
+            // 254 chars.
+            [['uri' => 'test/asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssssssss'], ['uriFormat' => 'test/{slug}', 'slug' => 'asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssssssss']],
+
+
+            // TODO: Test _isUniqueUri and setup fixtures that add data to elements_sites
+        ];
+    }
+    public function testMaxSlugIncrementExceptions()
+    {
+        \Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = 0;
+        $this->tester->expectException(OperationAbortedException::class, function () {
+            $el = new ExampleElement(['uriFormat' => 'test/{slug}']);
+            ElementHelper::setUniqueUri($el);
+        });
+    }
+    public function testMaxLength()
+    {
+        // 256 length slug. Oh no we dont.
+        $this->tester->expectException(OperationAbortedException::class, function () {
+            $el = new ExampleElement([
+                'uriFormat' => 'test/{slug}',
+                'slug' => 'asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssss22ssss'
+            ]);
+            ElementHelper::setUniqueUri($el);
+        });
     }
 
 
