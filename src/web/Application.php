@@ -210,8 +210,8 @@ class Application extends \yii\web\Application
         $projectConfig = $this->getProjectConfig();
 
         // Make sure schema required by config files aligns with what we have.
-        if ($projectConfig->isUpdatePending() && !$projectConfig->getAreConfigSchemaVersionsCompatible()) {
-            return $this->_processComposerInstallLogic($request) ?: $this->getResponse();
+        if ($projectConfig->getAreChangesPending() && !$projectConfig->getAreConfigSchemaVersionsCompatible()) {
+            return $this->_handleIncompatibleConfig($request);
         }
 
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
@@ -241,8 +241,8 @@ class Application extends \yii\web\Application
         }
 
         // Check if project configuration needs to apply some changes here
-        if ($projectConfig->isUpdatePending()) {
-            return $this->_processConfigUpdateLogic($request) ?: $this->getResponse();
+        if ($projectConfig->getAreChangesPending()) {
+            return $this->_processConfigSyncLogic($request) ?: $this->getResponse();
         }
 
         // If the system is offline, make sure they have permission to be here
@@ -689,7 +689,7 @@ class Application extends \yii\web\Application
      * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
-    private function _processConfigUpdateLogic(Request $request)
+    private function _processConfigSyncLogic(Request $request)
     {
         $this->_unregisterDebugModule();
 
@@ -698,15 +698,17 @@ class Application extends \yii\web\Application
             $request->getIsCpRequest() &&
             (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
         ) {
-            // Show the manual update notification template
-            return $this->runAction('templates/config-update-notification');
+            // Show the config sync kickoff template
+            return $this->runAction('templates/config-sync-kickoff');
         }
 
         // We'll also let update actions go through
         if ($request->getIsActionRequest()) {
             $actionSegments = $request->getActionSegments();
+            $firstSegment = ArrayHelper::firstValue($actionSegments);
             if (
-                ArrayHelper::firstValue($actionSegments) === 'updater' ||
+                $firstSegment === 'updater' ||
+                $firstSegment === 'config-sync' ||
                 $actionSegments === ['app', 'migrate'] ||
                 $actionSegments === ['pluginstore', 'install', 'migrate']
             ) {
@@ -721,12 +723,12 @@ class Application extends \yii\web\Application
 
     /**
      * @param Request $request
-     * @return Response|null
+     * @return Response
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
-    private function _processComposerInstallLogic(Request $request)
+    private function _handleIncompatibleConfig(Request $request): Response
     {
         $this->_unregisterDebugModule();
 
@@ -736,7 +738,7 @@ class Application extends \yii\web\Application
             (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
         ) {
             // Show the manual update notification template
-            return $this->runAction('templates/composer-install-notification');
+            return $this->runAction('templates/incompatible-config-alert');
         }
 
         // If an exception gets throw during the rendering of the 503 template, let

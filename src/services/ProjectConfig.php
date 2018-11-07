@@ -26,6 +26,7 @@ use yii\web\ServerErrorHttpException;
  * Project config service.
  * An instance of the ProjectConfig service is globally accessible in Craft via [[\craft\base\ApplicationTrait::ProjectConfig()|`Craft::$app->projectConfig`]].
  *
+ * @property-read bool $areChangesPending Whether `project.yaml` has any pending changes that need to be applied to the project config
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1
  */
@@ -387,11 +388,11 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Returns whether `config/project.yaml` has any pending changes that need to be applied to the project config.
+     * Returns whether `project.yaml` has any pending changes that need to be applied to the project config.
      *
      * @return bool
      */
-    public function isUpdatePending(): bool
+    public function getAreChangesPending(): bool
     {
         // TODO remove after next breakpoint
         if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {

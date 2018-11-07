@@ -106,25 +106,23 @@ class TemplatesController extends Controller
     }
 
     /**
-     * Renders the Project Config Update notification template.
+     * Renders the Project Config sync kickoff template.
      *
      * @return Response
      */
-    public function actionConfigUpdateNotification(): Response
+    public function actionConfigSyncKickoff(): Response
     {
-        // TODO maybe use same template as manual-update-notification, if POST data is only thing that differs?
-        return $this->renderTemplate('_special/configupdate');
+        return $this->renderTemplate('_special/configsync');
     }
 
     /**
-     * Renders the Project Config Update notification template.
+     * Renders the incompatible project config alert template.
      *
      * @return Response
      */
-    public function actionComposerInstallNotification(): Response
+    public function actionIncompatibleConfigAlert(): Response
     {
-        // TODO maybe use same template, if POST data is only thing that differs?
-        return $this->renderTemplate('_special/composerinstall');
+        return $this->renderTemplate('_special/incompatibleconfigs');
     }
 
     /**
