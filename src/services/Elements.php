@@ -581,7 +581,7 @@ class Elements extends Component
             }
 
             foreach ($supportedSites as $siteInfo) {
-                if ($siteInfo['siteId'] != $element->siteId) {
+                if ($siteInfo['siteId'] != $mainClone->siteId) {
                     $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
 
                     if ($siteElement === null) {
