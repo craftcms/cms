@@ -745,9 +745,9 @@ class Plugins extends Component
 
         $configData = $this->_getPluginConfigData($handle);
 
-        $row['settings'] = $configData['settings'];
-        $row['enabled'] = $configData['enabled'];
-        $row['licenseKey'] = $configData['licenseKey'];
+        $row['settings'] = $configData['settings'] ?? [];
+        $row['enabled'] = $configData['enabled'] ?? false;
+        $row['licenseKey'] = $configData['licenseKey'] ?? null;
 
         $row['installDate'] = DateTimeHelper::toDateTime($row['installDate']);
 
@@ -1168,8 +1168,8 @@ class Plugins extends Component
                 }
 
                 // Clean up the row data
-                $row['settings'] = $configData['settings'];
-                $row['licenseKey'] = $configData['licenseKey'];
+                $row['settings'] = $configData['settings'] ?? [];
+                $row['licenseKey'] = $configData['licenseKey'] ?? null;
                 $row['enabled'] = true;
 
                 $this->_disabledPluginInfo[$handle] = $row;
