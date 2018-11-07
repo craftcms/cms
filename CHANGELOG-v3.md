@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.30.1 - 2018-11-07
 
 ### Fixed
 - Fixed an error that occurred when saving an element with a new Matrix block, if the Matrix field was set to manage blocks on a per-site basis. ([#3445](https://github.com/craftcms/cms/issues/3445))
