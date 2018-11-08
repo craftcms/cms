@@ -326,9 +326,9 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Generates `config/project.yaml` based on the current stored config.
+     * Regenerates `project.yaml` based on the loaded project config.
      */
-    public function regenerateConfigFileFromStoredConfig()
+    public function regenerateYamlFromConfig()
     {
         $storedConfig = $this->_getStoredConfig();
 
@@ -340,9 +340,9 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Applies all pending changes.
+     * Applies changes in `project.yaml` to the project config.
      */
-    public function applyPendingChanges()
+    public function applyYamlChanges()
     {
         try {
             $changes = $this->_getPendingChanges();
@@ -401,7 +401,7 @@ class ProjectConfig extends Component
 
         // If the file does not exist, but should, generate it
         if ($this->_useConfigFile() && !file_exists(Craft::$app->getPath()->getConfigPath() . '/' . self::CONFIG_FILENAME)) {
-            $this->regenerateConfigFileFromStoredConfig();
+            $this->regenerateYamlFromConfig();
             $this->saveModifiedConfigData();
         }
 
