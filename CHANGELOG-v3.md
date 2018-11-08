@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.30.2 - 2018-11-08
+
+### Fixed
+- Fixed an error that could occur on servers running PHP 7.0.32. ([#3453](https://github.com/craftcms/cms/issues/3453))
+
 ## 3.0.30.1 - 2018-11-07
 
 ### Fixed
