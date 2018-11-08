@@ -510,8 +510,10 @@ class Plugins extends Component
         }
 
         // Add the plugin to the project config
-        $projectConfig->set($configKey . '.enabled', true);
-        $projectConfig->set($configKey . '.schemaVersion', $plugin->schemaVersion);
+        if (!$projectConfig->get($configKey, true)) {
+            $projectConfig->set($configKey . '.enabled', true);
+            $projectConfig->set($configKey . '.schemaVersion', $plugin->schemaVersion);
+        }
 
         $this->_enabledPluginInfo[$handle] = $info;
         $this->_registerPlugin($plugin);
@@ -584,7 +586,10 @@ class Plugins extends Component
         }
 
         // Remove the plugin from the project config
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_PLUGINS_KEY . '.' . $handle);
+        $projectConfig = Craft::$app->getProjectConfig();
+        if ($projectConfig->get(self::CONFIG_PLUGINS_KEY . '.' . $handle, true)) {
+            Craft::$app->getProjectConfig()->remove(self::CONFIG_PLUGINS_KEY . '.' . $handle);
+        }
 
         $this->_unregisterPlugin($plugin);
         unset($this->_enabledPluginInfo[$handle]);
