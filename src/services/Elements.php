@@ -123,6 +123,14 @@ class Elements extends Component
      */
     const EVENT_AFTER_PERFORM_ACTION = 'afterPerformAction';
 
+    // Static
+    // =========================================================================
+
+    /**
+     * @var array Stores a mapping of element IDs to their duplicated element ID(s).
+     */
+    public static $duplicatedElementIds = [];
+
     // Properties
     // =========================================================================
 
@@ -580,6 +588,9 @@ class Elements extends Component
             if (!$this->saveElement($mainClone, false, false)) {
                 throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
             }
+
+            // Map it
+            static::$duplicatedElementIds[$element->id] = $mainClone->id;
 
             // Propagate it
             foreach ($supportedSites as $siteInfo) {
