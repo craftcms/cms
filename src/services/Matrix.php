@@ -618,95 +618,87 @@ class Matrix extends Component
      */
     public function saveField(MatrixField $field, ElementInterface $owner)
     {
+        // Is the owner being duplicated?
         /** @var Element $owner */
-        /** @var MatrixBlockQuery $query */
-        /** @var MatrixBlock[] $blocks */
-        $query = $owner->getFieldValue($field->handle);
+        if ($owner->duplicateOf !== null) {
+            /** @var MatrixBlockQuery $query */
+            $query = $owner->duplicateOf->getFieldValue($field->handle);
 
-        // If the element is brand new and propagating, and the field manages blocks on a per-site basis,
-        // then we will need to duplicate the blocks for this site
-        $duplicateBlocks = !$query->ownerId && $owner->propagating && $field->localizeBlocks;
+            // If this is the first site the element is being duplicated for, or if the element is set to manage blocks
+            // on a per-site basis, then we need to duplicate them for the new element
+            $duplicateBlocks = !$owner->propagating || $field->localizeBlocks;
+        } else {
+            /** @var MatrixBlockQuery $query */
+            $query = $owner->getFieldValue($field->handle);
+
+            // If the element is brand new and propagating, and the field manages blocks on a per-site basis,
+            // then we will need to duplicate the blocks for this site
+            $duplicateBlocks = !$query->ownerId && $owner->propagating && $field->localizeBlocks;
+        }
 
         // Skip if the element is propagating right now, and we don't need to duplicate the blocks
         if ($owner->propagating && !$duplicateBlocks) {
             return;
         }
 
-        if (($blocks = $query->getCachedResult()) === null) {
-            $query = clone $query;
-            $query->anyStatus();
-            $blocks = $query->all();
-        }
+        // Fetch the Matrix blocks
+        /** @var MatrixBlock[] $blocks */
+        $blocks = $query->getCachedResult() ?? (clone $query)->anyStatus()->all();
 
         $elementsService = Craft::$app->getElements();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // If this is a preexisting element, make sure that the blocks for this field/owner respect the field's translation setting
-            if ($query->ownerId) {
-                $this->_applyFieldTranslationSetting($owner, $field);
+            // If we're duplicating an element, or the owner was a preexisting element,
+            // make sure that the blocks for this field/owner respect the field's translation setting
+            if ($owner->duplicateOf || $query->ownerId) {
+                $this->_applyFieldTranslationSetting($owner->duplicateOf ?? $owner, $field);
             }
 
-            // If the query is set to fetch blocks of a different owner, we're probably duplicating an element
-            if ($query->ownerId && $query->ownerId != $owner->id) {
-                // Make sure this owner doesn't already have blocks
-                $newQuery = clone $query;
-                $newQuery->ownerId = $owner->id;
-                if (!$newQuery->exists()) {
-                    // Duplicate the blocks for the new owner
-                    foreach ($blocks as $block) {
-                        $elementsService->duplicateElement($block, [
-                            'ownerId' => $owner->id,
-                            'ownerSiteId' => $field->localizeBlocks ? $owner->siteId : null
-                        ]);
-                    }
-                }
-            } else {
-                $blockIds = [];
-                $collapsedBlockIds = [];
+            $blockIds = [];
+            $collapsedBlockIds = [];
 
-                // Only propagate the blocks if the owner isn't being propagated
-                $propagate = !$owner->propagating;
+            // Only propagate the blocks if the owner isn't being propagated
+            $propagate = !$owner->propagating;
 
-                foreach ($blocks as $block) {
-                    if ($duplicateBlocks) {
-                        $block = $elementsService->duplicateElement($block, [
-                            'ownerId' => $owner->id,
-                            'ownerSiteId' => ($field->localizeBlocks ? $owner->siteId : null),
-                            'siteId' => $owner->siteId,
-                            'propagating' => false,
-                        ]);
-                    } else {
-                        $block->ownerId = $owner->id;
-                        $block->ownerSiteId = ($field->localizeBlocks ? $owner->siteId : null);
-                        $block->propagating = $owner->propagating;
-                        $elementsService->saveElement($block, false, $propagate);
-                    }
-
-                    $blockIds[] = $block->id;
-
-                    // Tell the browser to collapse this block?
-                    if ($block->collapsed) {
-                        $collapsedBlockIds[] = $block->id;
-                    }
-                }
-
-                // Delete any blocks that shouldn't be there anymore
-                $deleteBlocksQuery = MatrixBlock::find()
-                    ->anyStatus()
-                    ->ownerId($owner->id)
-                    ->fieldId($field->id)
-                    ->where(['not', ['elements.id' => $blockIds]]);
-
-                if ($field->localizeBlocks) {
-                    $deleteBlocksQuery->ownerSiteId($owner->siteId);
+            foreach ($blocks as $block) {
+                if ($duplicateBlocks) {
+                    $block = $elementsService->duplicateElement($block, [
+                        'ownerId' => $owner->id,
+                        'ownerSiteId' => $field->localizeBlocks ? $owner->siteId : null,
+                        'siteId' => $owner->siteId,
+                        'propagating' => false,
+                    ]);
                 } else {
-                    $deleteBlocksQuery->siteId($owner->siteId);
+                    $block->ownerId = $owner->id;
+                    $block->ownerSiteId = ($field->localizeBlocks ? $owner->siteId : null);
+                    $block->propagating = $owner->propagating;
+                    $elementsService->saveElement($block, false, $propagate);
                 }
 
-                foreach ($deleteBlocksQuery->all() as $deleteBlock) {
-                    Craft::$app->getElements()->deleteElement($deleteBlock);
+                $blockIds[] = $block->id;
+
+                // Tell the browser to collapse this block?
+                if ($block->collapsed) {
+                    $collapsedBlockIds[] = $block->id;
                 }
+            }
+
+            // Delete any blocks that shouldn't be there anymore
+            $deleteBlocksQuery = MatrixBlock::find()
+                ->anyStatus()
+                ->ownerId($owner->id)
+                ->fieldId($field->id)
+                ->where(['not', ['elements.id' => $blockIds]]);
+
+            if ($field->localizeBlocks) {
+                $deleteBlocksQuery->ownerSiteId($owner->siteId);
+            } else {
+                $deleteBlocksQuery->siteId($owner->siteId);
+            }
+
+            foreach ($deleteBlocksQuery->all() as $deleteBlock) {
+                $elementsService->deleteElement($deleteBlock);
             }
 
             $transaction->commit();

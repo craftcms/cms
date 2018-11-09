@@ -202,13 +202,11 @@ class MatrixBlock extends Element
             return [$this->ownerSiteId];
         }
 
-        $owner = $this->getOwner();
-
-        if ($owner) {
+        if (($owner = $this->getOwner()) || $this->duplicateOf) {
             // Just send back an array of site IDs -- don't pass along enabledByDefault configs
             $siteIds = [];
 
-            foreach (ElementHelper::supportedSitesForElement($owner) as $siteInfo) {
+            foreach (ElementHelper::supportedSitesForElement($owner ?? $this->duplicateOf) as $siteInfo) {
                 $siteIds[] = $siteInfo['siteId'];
             }
 
