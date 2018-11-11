@@ -176,6 +176,7 @@ class ElementHelperTest extends Unit
                     'id' => '1'
                 ]
             ], 'criteria1'],
+            [[], 'criteria2'],
             [null, '*/criteria1'],
         ];
     }

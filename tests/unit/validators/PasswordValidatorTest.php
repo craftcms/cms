@@ -93,7 +93,6 @@ class PasswordValidatorTest extends Unit
         }
 
     }
-
     public function customConfigData()
     {
         return [
@@ -107,5 +106,53 @@ class PasswordValidatorTest extends Unit
         ];
     }
 
+    /**
+     * @dataProvider forceDiffValidation
+     * @param $mustValidate
+     * @param $input
+     * @param $currentPassword
+     */
+    public function testForceDiffValidation($mustValidate, $input, $currentPassword)
+    {
+        $this->passwordValidator->forceDifferent = true;
+        $this->passwordValidator->currentPassword = \Craft::$app->getSecurity()->hashPassword($currentPassword);
+        $this->model->exampleParam = $input;
+        $this->passwordValidator->validateAttribute($this->model, 'exampleParam');
+
+        if ($mustValidate) {
+            $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());
+        } else {
+            $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+        }
+    }
+    public function forceDiffValidation()
+    {
+        return [
+            [false, 'test', 'test'],
+            [false, '', ''],
+            // Not 6 chars
+            [false, 'test', 'difftest'],
+            [true, 'onetwothreefourfivesix', 'onetwothreefourfivesixseven'],
+            // Spaces?
+            [true, '      ', '         '],
+
+        ];
+    }
+
+    /**
+     * @dataProvider isEmptyData
+     * @param $result
+     * @param $input
+     */
+    public function testIsEmpty($result, $input)
+    {
+
+    }
+    public function isEmptyData()
+    {
+        return [
+
+        ];
+    }
 
 }
