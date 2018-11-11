@@ -74,8 +74,9 @@ class ElementHelperTest extends Unit
     }
     public function doesuriHaveSlugTagData()
     {
-
         return [
+            [false, ''],
+            [true, '{slug}'],
             [true, 'entry/slug'],
             [true, 'entry/{slug}'],
             [false, 'entry/{notASlug}'],

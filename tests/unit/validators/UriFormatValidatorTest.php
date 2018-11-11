@@ -47,13 +47,29 @@ class UriFormatValidatorTest extends Unit
      * @param $mustValidate
      * @param $input
      */
-    public function testValidateAttribute($mustValidate, $input)
+    public function testValidateAttribute($mustValidate, $input, $requireSlug = false)
     {
+        $this->model->exampleParam = $input;
+        $this->uriFormatValidator->requireSlug = $requireSlug;
 
+        $validatorResult = $this->uriFormatValidator->validateAttribute($this->model, 'exampleParam');
+
+        $this->assertNull($validatorResult);
+
+        if ($mustValidate) {
+            $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());
+        } else {
+            $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+        }
     }
     public function validateAttributeData()
     {
         return [
+            [true, ''],
+            [true, '', true],
+            [true, 'test', false],
+            [true, 'slug', true],
+            [false, 'entry/{test}/test', true],
 
         ];
     }
