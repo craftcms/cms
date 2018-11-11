@@ -1,16 +1,17 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: gieltettelaarlaptop
- * Date: 03/11/2018
- * Time: 15:30
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craftunit\validators;
 
 use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\test\mockclasses\ToStringTest;
 use craft\validators\UserPasswordValidator;
+use yii\base\ErrorException;
 
 
 /**
@@ -144,15 +145,30 @@ class PasswordValidatorTest extends Unit
      * @param $result
      * @param $input
      */
-    public function testIsEmpty($result, $input)
+    public function testIsEmpty($result, $input, $isEmptyVal)
     {
-
+        $this->passwordValidator->isEmpty = $isEmptyVal;
+        $isEmpty = $this->passwordValidator->isEmpty($input);
+        $this->assertSame($result, $isEmpty);
     }
     public function isEmptyData()
     {
+        $toString = new ToStringTest('im a test');
         return [
-
+            ['im a test', '', self::class.'::testReturn' ],
         ];
+    }
+    public function testToStringExpectException()
+    {
+        $passval = $this->passwordValidator;
+        $this->tester->expectException(ErrorException::class, function () use ($passval) {
+            $passval->isEmpty = 'craft_increment';
+            $passval->isEmpty(1);
+        });
+    }
+    public static function testReturn()
+    {
+        return 'im a test';
     }
 
 }
