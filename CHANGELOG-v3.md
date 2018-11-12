@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added the `seq()` Twig function, for outputting sequential numbers.
+- Added `craft\helpers\Sequence`.
+
 ### Changed
 - Control Panel templates can now customize `#main-form` HTML attributes by overriding the `mainFormAttributes` block. ([#1665](https://github.com/craftcms/cms/issues/1665))
 - The default PostgreSQL backup command no longer includes database owner, privilege or ACL information in the backup.
