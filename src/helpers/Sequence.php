@@ -8,15 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\db\Query;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\i18n\Locale;
-use craft\web\twig\variables\Paginate;
-use yii\base\BaseObject;
-use yii\base\UnknownMethodException;
 use yii\db\Exception;
 
 /**
