@@ -5,6 +5,7 @@
 ### Changed
 - Control Panel templates can now customize `#main-form` HTML attributes by overriding the `mainFormAttributes` block. ([#1665](https://github.com/craftcms/cms/issues/1665))
 - The default PostgreSQL backup command no longer includes database owner, privilege or ACL information in the backup.
+- Craft now attempts to reset OPcache after installing/uninstalling things with Composer. ([#3460](https://github.com/craftcms/cms/issues/3460))
 
 ### Fixed
 - Fixed an error that could occur when duplicating an element with a Matrix field with “Manage blocks on a per-site basis” disabled.

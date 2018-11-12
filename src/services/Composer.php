@@ -155,6 +155,11 @@ class Composer extends Component
             throw $exception ?? new \Exception('An error occurred');
         }
 
+        // Invalidate opcache
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
+
         if ($this->updateComposerClassMap) {
             // Generate a new composer-classes.php
             spl_autoload_unregister([$this, 'logComposerClass']);
@@ -236,6 +241,11 @@ class Composer extends Component
         if ($status !== 0) {
             file_put_contents($jsonPath, $backup);
             throw $exception ?? new \Exception('An error occurred');
+        }
+
+        // Invalidate opcache
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
         }
     }
 
