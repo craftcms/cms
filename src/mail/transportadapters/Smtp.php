@@ -9,6 +9,7 @@ namespace craft\mail\transportadapters;
 
 use Craft;
 use craft\helpers\StringHelper;
+use craft\validators\StringValidator;
 use yii\base\Exception;
 
 /**
@@ -112,6 +113,7 @@ class Smtp extends BaseTransportAdapter
     {
         return [
             [['host', 'port', 'timeout'], 'required'],
+            [['host'], StringValidator::class, 'trim' => true],
             [
                 ['username', 'password'],
                 'required',

@@ -9,6 +9,7 @@ namespace craft\mail\transportadapters;
 
 use Craft;
 use craft\helpers\StringHelper;
+use craft\validators\StringValidator;
 use yii\base\Exception;
 
 /**
@@ -88,6 +89,7 @@ class Gmail extends BaseTransportAdapter
     {
         return [
             [['username', 'password', 'timeout'], 'required'],
+            [['username', 'password'], StringValidator::class, 'trim' => true],
             [['timeout'], 'number', 'integerOnly' => true],
         ];
     }
