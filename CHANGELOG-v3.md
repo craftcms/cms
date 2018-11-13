@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.31 - 2018-11-13
 
 ### Added
 - Added the `seq()` Twig function, for outputting sequential numbers.
