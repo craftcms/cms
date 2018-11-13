@@ -150,6 +150,16 @@ class Composer extends Component
         // Change the working directory back
         chdir($wd);
 
+        if ($status !== 0) {
+            file_put_contents($jsonPath, $backup);
+            throw $exception ?? new \Exception('An error occurred');
+        }
+
+        // Invalidate opcache
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
+
         if ($this->updateComposerClassMap) {
             // Generate a new composer-classes.php
             spl_autoload_unregister([$this, 'logComposerClass']);
@@ -160,11 +170,6 @@ class Composer extends Component
             }
             $contents .= "];\n";
             FileHelper::writeToFile(dirname(__DIR__) . '/config/composer-classes.php', $contents);
-        }
-
-        if ($status !== 0) {
-            file_put_contents($jsonPath, $backup);
-            throw $exception ?? new \Exception('An error occurred');
         }
     }
 
@@ -236,6 +241,11 @@ class Composer extends Component
         if ($status !== 0) {
             file_put_contents($jsonPath, $backup);
             throw $exception ?? new \Exception('An error occurred');
+        }
+
+        // Invalidate opcache
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
         }
     }
 

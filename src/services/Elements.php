@@ -123,6 +123,14 @@ class Elements extends Component
      */
     const EVENT_AFTER_PERFORM_ACTION = 'afterPerformAction';
 
+    // Static
+    // =========================================================================
+
+    /**
+     * @var array Stores a mapping of element IDs to their duplicated element ID(s).
+     */
+    public static $duplicatedElementIds = [];
+
     // Properties
     // =========================================================================
 
@@ -563,6 +571,7 @@ class Elements extends Component
         /** @var Element $mainClone */
         $mainClone = clone $element;
         $mainClone->setAttributes($newAttributes);
+        $mainClone->duplicateOf = $element;
         $mainClone->id = null;
         $mainClone->contentId = null;
 
@@ -580,6 +589,10 @@ class Elements extends Component
                 throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
             }
 
+            // Map it
+            static::$duplicatedElementIds[$element->id] = $mainClone->id;
+
+            // Propagate it
             foreach ($supportedSites as $siteInfo) {
                 if ($siteInfo['siteId'] != $mainClone->siteId) {
                     $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
@@ -591,7 +604,10 @@ class Elements extends Component
                     /** @var Element $siteClone */
                     $siteClone = clone $siteElement;
                     $siteClone->setAttributes($newAttributes);
+                    $siteClone->duplicateOf = $siteElement;
+                    $siteClone->propagating = true;
                     $siteClone->id = $mainClone->id;
+                    $siteClone->siteId = $siteInfo['siteId'];
                     $siteClone->contentId = null;
 
                     if (!$this->saveElement($siteClone, false, false)) {
@@ -606,6 +622,9 @@ class Elements extends Component
 
             throw $e;
         }
+
+        // Clean up our tracks
+        $mainClone->duplicateOf = null;
 
         return $mainClone;
     }

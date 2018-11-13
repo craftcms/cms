@@ -15,6 +15,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
@@ -717,6 +718,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
             new \Twig_SimpleFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new \Twig_SimpleFunction('round', [$this, 'roundFunction']),
+            new \Twig_SimpleFunction('seq', [Sequence::class, 'next']),
             new \Twig_SimpleFunction('shuffle', [$this, 'shuffleFunction']),
             new \Twig_SimpleFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
             new \Twig_SimpleFunction('svg', [$this, 'svgFunction']),

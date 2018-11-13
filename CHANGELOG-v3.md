@@ -1,5 +1,26 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.31 - 2018-11-13
+
+### Added
+- Added the `seq()` Twig function, for outputting sequential numbers.
+- Added `craft\helpers\Sequence`.
+
+### Changed
+- Control Panel templates can now customize `#main-form` HTML attributes by overriding the `mainFormAttributes` block. ([#1665](https://github.com/craftcms/cms/issues/1665))
+- The default PostgreSQL backup command no longer includes database owner, privilege or ACL information in the backup.
+- Craft now attempts to reset OPcache after installing/uninstalling things with Composer. ([#3460](https://github.com/craftcms/cms/issues/3460))
+- Gmail and SMTP mail transport types now trim whitespace off of their Username, Password, and Host Name settings. ([#3459](https://github.com/craftcms/cms/issues/3459))
+
+### Fixed
+- Fixed an error that could occur when duplicating an element with a Matrix field with “Manage blocks on a per-site basis” disabled.
+- Fixed a bug where Matrix blocks wouldn’t retain their content translations when an entry was duplicated from the Edit Entry page.
+- Fixed a bug where system message modals could have the wrong language selected by default. ([#3440](https://github.com/craftcms/cms/issues/3440))
+- Fixed a bug where an Internal Server Error would occur if a `users/login` request was missing the `loginName` or `password` parameters. ([#3458](https://github.com/craftcms/cms/issues/3458))
+- Fixed a bug where `craft\validators\StringValidator` was trimming whitespace off of strings _after_ performing string length validation.
+- Fixed an infinite recursion bug that could occur if `config/general.php` had any deprecated config settings, and the database connection settings were invalid.
+- Fixed an error that occurred when saving a new entry or category, if its URI format referenced the `level` attribute. ([#3465](https://github.com/craftcms/cms/issues/3465))
+
 ## 3.0.30.2 - 2018-11-08
 
 ### Fixed

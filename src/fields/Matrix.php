@@ -22,6 +22,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\MatrixBlockType;
+use craft\services\Elements;
 use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\assets\matrixsettings\MatrixSettingsAsset;
@@ -869,6 +870,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             foreach (array_keys($value) as $blockId) {
                 if (is_numeric($blockId) && $blockId != 0) {
                     $ids[] = $blockId;
+
+                    // If that block was duplicated earlier in this request, check for that as well.
+                    if (isset(Elements::$duplicatedElementIds[$blockId])) {
+                        $ids[] = Elements::$duplicatedElementIds[$blockId];
+                    }
                 }
             }
 
@@ -908,6 +914,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             }
 
             $blockType = $blockTypes[$blockData['type']];
+
+            // If this is a preexisting block but we don't have a record of it,
+            // check to see if it was recently duplicated.
+            if (
+                strpos($blockId, 'new') !== 0 &&
+                !isset($oldBlocksById[$blockId]) &&
+                isset(Elements::$duplicatedElementIds[$blockId])
+            ) {
+                $blockId = Elements::$duplicatedElementIds[$blockId];
+            }
 
             // Is this new? (Or has it been deleted?)
             if (strpos($blockId, 'new') === 0 || !isset($oldBlocksById[$blockId])) {
