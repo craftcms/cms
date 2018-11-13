@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleaed
+
+### Fixed
+- Fixed an error that occurred when querying for Matrix blocks if both the `with` and `indexBy` parameters were set.
+
 ## 3.0.31 - 2018-11-13
 
 ### Added
