@@ -425,6 +425,9 @@ class Category extends Element
      */
     public function beforeSave(bool $isNew): bool
     {
+        // Set the structure ID for Element::attributes() and afterSave()
+        $this->structureId = $this->getGroup()->structureId;
+
         if ($this->_hasNewParent()) {
             if ($this->newParentId) {
                 $parentCategory = Craft::$app->getCategories()->getCategoryById($this->newParentId, $this->siteId);
@@ -448,8 +451,6 @@ class Category extends Element
      */
     public function afterSave(bool $isNew)
     {
-        $group = $this->getGroup();
-
         // Get the category record
         if (!$isNew) {
             $record = CategoryRecord::findOne($this->id);
@@ -468,9 +469,9 @@ class Category extends Element
         // Has the parent changed?
         if ($this->_hasNewParent()) {
             if (!$this->newParentId) {
-                Craft::$app->getStructures()->appendToRoot($group->structureId, $this);
+                Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
             } else {
-                Craft::$app->getStructures()->append($group->structureId, $this, $this->getParent());
+                Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent());
             }
         }
 

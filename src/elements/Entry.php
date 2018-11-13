@@ -983,6 +983,11 @@ EOD;
             throw new Exception("The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
         }
 
+        // Set the structure ID for Element::attributes() and afterSave()
+        if ($section->type === Section::TYPE_STRUCTURE) {
+            $this->structureId = $section->structureId;
+        }
+
         // Has the entry been assigned to a new parent?
         if ($this->_hasNewParent()) {
             if ($this->newParentId) {
@@ -1047,9 +1052,9 @@ EOD;
             // Has the parent changed?
             if ($this->_hasNewParent()) {
                 if (!$this->newParentId) {
-                    Craft::$app->getStructures()->appendToRoot($section->structureId, $this);
+                    Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
                 } else {
-                    Craft::$app->getStructures()->append($section->structureId, $this, $this->getParent());
+                    Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent());
                 }
             }
 
