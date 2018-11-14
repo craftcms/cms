@@ -1666,6 +1666,11 @@ where PHPâ€™s [flush()](http://php.net/manual/en/function.flush.php) method wonâ
 
 If disabled, an alternate queue runner *must* be set up separately.
 
+For an example of how you would do it from a cron job that ran every minute:
+
+```text
+*/1 * * * * /path/to/project/root/craft queue/run
+```
 
 ### `sanitizeSvgUploads`
 

@@ -249,8 +249,7 @@ class Plugins extends Component
         unset($row);
 
         // Sort plugins by their names
-        $names = array_column($this->_plugins, 'name');
-        array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $this->_plugins);
+        ArrayHelper::multisort($this->_plugins, 'name', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
 
         $this->_loadingPlugins = false;
         $this->_pluginsLoaded = true;
@@ -841,15 +840,13 @@ class Plugins extends Component
 
         // Get the info arrays
         $info = [];
-        $names = [];
 
         foreach (array_keys($this->_composerPluginInfo) as $handle) {
             $info[$handle] = $this->getPluginInfo($handle);
-            $names[] = $info[$handle]['name'];
         }
 
         // Sort plugins by their names
-        array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $info);
+        ArrayHelper::multisort($info, 'name', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
 
         return $info;
     }

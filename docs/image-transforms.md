@@ -86,4 +86,4 @@ All of the same settings available to CP-defined transforms are also available t
 * If `mode` is set to `'crop'`, you can pass a `position` property, set to either `'top-left'`, `'top-center'`, `'top-right'`, `'center-left'`, `'center-center'`, `'center-right'`, `'bottom-left'`, `'bottom-center'`, or `'bottom-right'`.
 * `width` and `height` can be set to integers or omitted.
 * `quality` can be set to a number between 0 and 100, or omitted.
-* `format` can be set to `'jpg'`, `'gif'`, `'png'`, or `'Auto'`.
+* `format` can be set to `'jpg'`, `'gif'`, `'png'`, or omitted.

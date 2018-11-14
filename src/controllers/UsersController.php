@@ -104,6 +104,7 @@ class UsersController extends Controller
      * Displays the login template, and handles login post requests.
      *
      * @return Response|null
+     * @throws BadRequestHttpException
      */
     public function actionLogin()
     {
@@ -117,8 +118,8 @@ class UsersController extends Controller
             return null;
         }
 
-        $loginName = Craft::$app->getRequest()->getBodyParam('loginName');
-        $password = Craft::$app->getRequest()->getBodyParam('password');
+        $loginName = Craft::$app->getRequest()->getRequiredBodyParam('loginName');
+        $password = Craft::$app->getRequest()->getRequiredBodyParam('password');
         $rememberMe = (bool)Craft::$app->getRequest()->getBodyParam('rememberMe');
 
         // Does a user exist with that username/email?
