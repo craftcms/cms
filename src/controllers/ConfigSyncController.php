@@ -20,7 +20,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 /**
- * ConfigSyncController handles the Project Config sync workflow
+ * ConfigSyncController handles the Project Config Sync workflow
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1
