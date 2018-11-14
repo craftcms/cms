@@ -57,6 +57,12 @@ class GeneralConfig extends BaseObject
     public $aliases = [];
     /**
      * @var bool Whether admins should be allowed to make administrative changes to the system.
+     *
+     * If this is disabled, the Settings and Plugin Store sections will be hidden,
+     * the Craft edition and Craft/plugin versions will be locked, and the project config will become read-only.
+     *
+     * Therefore you should only disable this in production environments when [[useProjectConfigFile]] is enabled,
+     * and you have a deployment workflow that runs `composer install` automatically on deploy.
      */
     public $allowAdminChanges = true;
     /**
@@ -738,8 +744,9 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether the project config should be saved out to `config/project.yaml`.
      *
-     * If set to true, any changes to the project config will be duplicated in `config/project.yaml`,
-     * and any changes to `config/project.yaml` will be applied to the system.
+     * If set to `true`, a hard copy of your system’s project config will be saved in `config/project.yaml`,
+     * and any changes to `config/project.yaml` will be applied back to the system, making it possible for
+     * multiple environments to share the same project config despite having separate databases.
      */
     public $useProjectConfigFile = false;
     /**

@@ -115,6 +115,31 @@ Defined by
 Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
 
 
+### `allowAdminChanges`
+
+Allowed types
+
+:   [boolean](http://php.net/language.types.boolean)
+
+Default value
+
+:   `true`
+
+Defined by
+
+:   [GeneralConfig::$allowAdminChanges](api:craft\config\GeneralConfig::$allowAdminChanges)
+
+
+
+Whether admins should be allowed to make administrative changes to the system.
+
+If this is disabled, the Settings and Plugin Store sections will be hidden,
+the Craft edition and Craft/plugin versions will be locked, and the project config will become read-only.
+
+Therefore you should only disable this in production environments when [$useProjectConfigFile](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-useprojectconfigfile) is enabled,
+and you have a deployment workflow that runs `composer install` automatically on deploy.
+
+
 ### `allowSimilarTags`
 
 Allowed types
@@ -151,6 +176,8 @@ Defined by
 
 
 Whether Craft should allow system and plugin updates in the Control Panel, and plugin installation from the Plugin Store.
+
+This setting will automatically be disabled if [$allowAdminChanges](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-allowadminchanges) is enabled.
 
 
 ### `allowUppercaseInSlug`
@@ -615,7 +642,7 @@ Allowed types
 
 Default value
 
-:   `null`
+:   `1`
 
 Defined by
 
@@ -969,7 +996,7 @@ See [yii\web\Request::$ipHeaders](https://www.yiiframework.com/doc/api/2.0/yii-w
 If not set, the default [craft\web\Request::$ipHeaders](https://docs.craftcms.com/api/v3/craft-web-request.html#property-ipheaders) value will be used.
 
 
-### `isSystemOn`
+### `isSystemLive`
 
 Allowed types
 
@@ -981,11 +1008,11 @@ Default value
 
 Defined by
 
-:   [GeneralConfig::$isSystemOn](api:craft\config\GeneralConfig::$isSystemOn)
+:   [GeneralConfig::$isSystemLive](api:craft\config\GeneralConfig::$isSystemLive)
 
 
 
-Whether the site is currently online or not. If set to `true` or `false`, it will take precedence over the
+Whether the site is currently live. If set to `true` or `false`, it will take precedence over the
 System Status setting in Settings → General.
 
 
@@ -1666,11 +1693,6 @@ where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won�
 
 If disabled, an alternate queue runner *must* be set up separately.
 
-For an example of how you would do it from a cron job that ran every minute:
-
-```text
-*/1 * * * * /path/to/project/root/craft queue/run
-```
 
 ### `sanitizeSvgUploads`
 
@@ -1893,6 +1915,29 @@ Defined by
 The character(s) that should be used to separate words in slugs.
 
 
+### `softDeleteDuration`
+
+Allowed types
+
+:   `mixed`
+
+Default value
+
+:   `2592000`
+
+Defined by
+
+:   [GeneralConfig::$softDeleteDuration](api:craft\config\GeneralConfig::$softDeleteDuration)
+
+
+
+The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection.
+
+Set to `0` if you don’t ever want to delete soft-deleted items.
+
+See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
+
+
 ### `suppressTemplateErrors`
 
 Allowed types
@@ -1973,7 +2018,7 @@ Defined by
 
 
 
-The query string parameter name that tokens should be set to.
+The request parameter name that tokens should be set to.
 
 
 ### `transformGifs`
@@ -2119,6 +2164,29 @@ Defined by
 Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
 
 Note that this setting only takes effect if [$omitScriptNameInUrls](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-omitscriptnameinurls) is set to false.
+
+
+### `useProjectConfigFile`
+
+Allowed types
+
+:   [boolean](http://php.net/language.types.boolean)
+
+Default value
+
+:   `false`
+
+Defined by
+
+:   [GeneralConfig::$useProjectConfigFile](api:craft\config\GeneralConfig::$useProjectConfigFile)
+
+
+
+Whether the project config should be saved out to `config/project.yaml`.
+
+If set to `true`, a hard copy of your system’s project config will be saved in `config/project.yaml`,
+and any changes to `config/project.yaml` will be applied back to the system, making it possible for
+multiple environments to share the same project config despite having separate databases.
 
 
 ### `useSecureCookies`
