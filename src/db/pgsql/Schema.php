@@ -143,6 +143,9 @@ class Schema extends \yii\db\pgsql\Schema
             ' --username={user}' .
             ' --if-exists' .
             ' --clean' .
+            ' --no-owner' .
+            ' --no-privileges' .
+            ' --no-acl' .
             ' --file="{file}"' .
             ' --schema={schema}' .
             implode('', $defaultTableIgnoreList);

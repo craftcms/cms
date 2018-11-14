@@ -250,8 +250,7 @@ class Plugins extends Component
         unset($row);
 
         // Sort plugins by their names
-        $names = array_column($this->_plugins, 'name');
-        array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $this->_plugins);
+        ArrayHelper::multisort($this->_plugins, 'name', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
 
         $this->_loadingPlugins = false;
         $this->_pluginsLoaded = true;
@@ -523,9 +522,11 @@ class Plugins extends Component
         }
 
         // Add the plugin to the project config
-        $projectConfig->set($configKey . '.edition', $edition);
-        $projectConfig->set($configKey . '.enabled', true);
-        $projectConfig->set($configKey . '.schemaVersion', $plugin->schemaVersion);
+        if (!$projectConfig->get($configKey, true)) {
+            $projectConfig->set($configKey . '.edition', $edition);
+            $projectConfig->set($configKey . '.enabled', true);
+            $projectConfig->set($configKey . '.schemaVersion', $plugin->schemaVersion);
+        }
 
         $this->_enabledPluginInfo[$handle] = $info;
         $this->_registerPlugin($plugin);
@@ -598,7 +599,10 @@ class Plugins extends Component
         }
 
         // Remove the plugin from the project config
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_PLUGINS_KEY . '.' . $handle);
+        $projectConfig = Craft::$app->getProjectConfig();
+        if ($projectConfig->get(self::CONFIG_PLUGINS_KEY . '.' . $handle, true)) {
+            Craft::$app->getProjectConfig()->remove(self::CONFIG_PLUGINS_KEY . '.' . $handle);
+        }
 
         $this->_unregisterPlugin($plugin);
         unset($this->_enabledPluginInfo[$handle]);
@@ -759,9 +763,9 @@ class Plugins extends Component
 
         $configData = $this->_getPluginConfigData($handle);
 
-        $row['settings'] = $configData['settings'];
-        $row['enabled'] = $configData['enabled'];
-        $row['licenseKey'] = $configData['licenseKey'];
+        $row['settings'] = $configData['settings'] ?? [];
+        $row['enabled'] = $configData['enabled'] ?? false;
+        $row['licenseKey'] = $configData['licenseKey'] ?? null;
 
         $row['installDate'] = DateTimeHelper::toDateTime($row['installDate']);
 
@@ -858,15 +862,13 @@ class Plugins extends Component
 
         // Get the info arrays
         $info = [];
-        $names = [];
 
         foreach (array_keys($this->_composerPluginInfo) as $handle) {
             $info[$handle] = $this->getPluginInfo($handle);
-            $names[] = $info[$handle]['name'];
         }
 
         // Sort plugins by their names
-        array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $info);
+        ArrayHelper::multisort($info, 'name', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
 
         return $info;
     }
@@ -1190,8 +1192,8 @@ class Plugins extends Component
                 }
 
                 // Clean up the row data
-                $row['settings'] = $configData['settings'];
-                $row['licenseKey'] = $configData['licenseKey'];
+                $row['settings'] = $configData['settings'] ?? [];
+                $row['licenseKey'] = $configData['licenseKey'] ?? null;
                 $row['enabled'] = true;
 
                 $this->_disabledPluginInfo[$handle] = $row;

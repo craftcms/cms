@@ -57,19 +57,16 @@ class StringValidator extends \yii\validators\StringValidator
      */
     public function validateAttribute($model, $attribute)
     {
+        $value = $model->$attribute;
+
+        if (is_string($value) && $this->trim) {
+            $model->$attribute = $value = trim($value);
+        }
+
         parent::validateAttribute($model, $attribute);
 
-        $value = $model->$attribute;
-        if (!is_string($value)) {
-            return;
-        }
-
-        if ($this->disallowMb4 && !Craft::$app->getDb()->getSupportsMb4() && StringHelper::containsMb4($value)) {
+        if (is_string($value) && $this->disallowMb4 && !Craft::$app->getDb()->getSupportsMb4() && StringHelper::containsMb4($value)) {
             $this->addError($model, $attribute, $this->containsMb4);
-        }
-
-        if ($this->trim) {
-            $model->$attribute = trim($value);
         }
     }
 

@@ -99,7 +99,7 @@ class MatrixBlock extends Element
         list($blockTypeHandle, $fieldHandle) = $handleParts;
 
         // Get the block type
-        $matrixFieldId = $sourceElements[0]->fieldId;
+        $matrixFieldId = ArrayHelper::firstValue($sourceElements)->fieldId;
         $blockTypes = ArrayHelper::index(Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixFieldId), 'handle');
 
         if (!isset($blockTypes[$blockTypeHandle])) {
@@ -202,13 +202,11 @@ class MatrixBlock extends Element
             return [$this->ownerSiteId];
         }
 
-        $owner = $this->getOwner();
-
-        if ($owner) {
+        if (($owner = $this->getOwner()) || $this->duplicateOf) {
             // Just send back an array of site IDs -- don't pass along enabledByDefault configs
             $siteIds = [];
 
-            foreach (ElementHelper::supportedSitesForElement($owner) as $siteInfo) {
+            foreach (ElementHelper::supportedSitesForElement($owner ?? $this->duplicateOf) as $siteInfo) {
                 $siteIds[] = $siteInfo['siteId'];
             }
 

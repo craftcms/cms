@@ -109,6 +109,30 @@ Rounds off a number to the closest integer.
 {{ round(42.9) }} → 43
 ```
 
+## `seq( name, length, next )`
+
+Outputs the next or current number in a sequence, defined by `name`:
+
+```twig
+<p>This entry has been read {{ seq('hits:' ~ entry.id) }} times.</p>
+```
+
+Each time the function is called, the given sequence will be automatically incremented.
+
+You can optionally have the number be zero-padded to a certain length.
+
+```twig
+{{ now|date('Y') ~ '-' ~ seq('orderNumber:' ~ now|date('Y'), 5) }}
+{# outputs: 2018-00001 #}
+```
+
+To view the current number in the sequence without incrementing it, set the `next` argument to `false`.
+
+```twig
+<h5><a href="{{ entry.url }}">{{ entry.title }}</a></h5>
+<p>{{ seq('hits:' ~ entry.id, next=false) }} views</p>
+```
+
 ## `shuffle( array )`
 
 Randomizes the order of the elements within an array.
