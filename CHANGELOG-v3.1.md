@@ -9,7 +9,7 @@
 - Control Panel settings that define a template path now autosuggest existing template files.
 - Added cross-domain support for Live Preview. ([#1521](https://github.com/craftcms/cms/issues/1521))
 - Custom fields can now opt out of being included in elements’ search keywords. ([#2600](https://github.com/craftcms/cms/issues/2600))
-- Added the `disableAdminFunctions` config setting.
+- Added the `allowAdminChanges` config setting.
 - Added the `softDeleteDuration` config setting.
 - Added the `useProjectConfigFile` config setting.
 - Added the `gc` console command, which can be used to run garbage collection tasks.

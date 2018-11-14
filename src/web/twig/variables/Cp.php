@@ -150,7 +150,7 @@ class Cp extends Component
 
         if (
             Craft::$app->getUser()->getIsAdmin() &&
-            !Craft::$app->getConfig()->getGeneral()->disableAdminFunctions
+            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
         ) {
             $navItems[] = [
                 'url' => 'settings',

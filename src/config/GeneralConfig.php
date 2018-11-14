@@ -56,9 +56,13 @@ class GeneralConfig extends BaseObject
      */
     public $aliases = [];
     /**
+     * @var bool Whether admins should be allowed to make administrative changes to the system.
+     */
+    public $allowAdminChanges = true;
+    /**
      * @var bool Whether Craft should allow system and plugin updates in the Control Panel, and plugin installation from the Plugin Store.
      *
-     * This setting will automatically be disabled if [[disableAdminFunctions]] is enabled.
+     * This setting will automatically be disabled if [[allowAdminChanges]] is enabled.
      */
     public $allowUpdates = true;
     /**
@@ -249,10 +253,6 @@ class GeneralConfig extends BaseObject
      * @var bool Whether the system should run in [Dev Mode](https://craftcms.com/support/dev-mode).
      */
     public $devMode = false;
-    /**
-     * @var bool Whether administrative features should be disabled.
-     */
-    public $disableAdminFunctions = false;
     /**
      * @var bool Whether to use a cookie to persist the CSRF token if [[enableCsrfProtection]] is enabled. If false, the CSRF token
      * will be stored in session under the 'csrfTokenName' config setting name. Note that while storing CSRF tokens in

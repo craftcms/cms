@@ -466,7 +466,7 @@ class App
     {
         return [
             'class' => ProjectConfigService::class,
-            'readOnly' => Craft::$app->getConfig()->getGeneral()->disableAdminFunctions,
+            'readOnly' => !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
         ];
     }
 
