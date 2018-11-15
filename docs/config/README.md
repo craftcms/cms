@@ -1,10 +1,8 @@
 # Configuration Overview
 
+There are several ways to configure Craft depending on your needs.
+
 [[toc]]
-
-## PHP Constants
-
-Your `web/index.php` file can define certain [PHP constants](php-constants.md), which Craft’s bootstrap script will check for while loading and configuring Craft.
 
 ## General Config Settings
 
@@ -19,76 +17,6 @@ return [
 ## Database Connection Settings
 
 Craft supports several [database connection settings](db-settings.md). You can override their default values in your `config/db.php` file.
-
-## Data Caching Config
-
-By default, Craft will store data caches in the `storage/runtime/cache/` folder. You can configure Craft to use an alternative [cache storage](https://www.yiiframework.com/doc/guide/2.0/en/caching-data#supported-cache-storage) by overriding the `cache` application component from `config/app.php`.
-
-```php
-<?php
-return [
-    'components' => [
-        'cache' => [
-            'class' => yii\caching\ApcCache::class,
-            'useApcu' => true,
-        ],
-    ],
-];
-```
-
-### Examples
-
-Here are a couple common examples of cache storage configurations:
-
-#### Memcached
-
-```php
-<?php
-return [
-    'components' => [
-        'cache' => [
-            'class' => yii\caching\MemCache::class,
-            'useMemcached' => true,
-            'username' => getenv('MEMCACHED_USERNAME'),
-            'password' => getenv('MEMCACHED_PASSWORD'),
-            'defaultDuration' => 86400,
-            'servers' => [
-                [
-                    'host' => 'localhost',
-                    'persistent' => true,
-                    'port' => 11211,
-                    'retryInterval' => 15,
-                    'status' => true,
-                    'timeout' => 15,
-                    'weight' => 1,
-                ],
-            ],
-        ],
-    ],
-];
-```
-
-#### Redis
-
-To use Redis cache storage, you will first need to install the [yii2-redis](https://github.com/yiisoft/yii2-redis) library. Then configure Craft’s `cache` component to use it:
-
-```php
-<?php
-return [
-    'components' => [
-        'cache' => [
-            'class' => yii\redis\Cache::class,
-            'defaultDuration' => 86400,
-            'redis' => [
-                'hostname' => 'localhost',
-                'port' => 6379,
-                'password' => getenv('REDIS_PASSWORD'),
-                'database' => 0,
-            ],
-        ],
-    ],
-];
-``` 
 
 ## Guzzle Config
 
@@ -194,76 +122,10 @@ return [
 
 You can define custom [URL rules](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#url-rules) in `config/routes.php`. See [Routing](../routing.md) for more details.
 
-## Application Config
+## PHP Constants
 
-You can customize Craft’s entire [application configuration](https://www.yiiframework.com/doc/guide/2.0/en/structure-applications#application-configurations) from `config/app.php`. Any items returned by that array will get merged into the main application configuration array.
+You can configure core settings like system file paths and the active environment by defining certain [PHP constants](php-constants.md) in `web/index.php`.
 
-### Mailer Component
+## Application Configuration
 
-To override the `mailer` component config (which is responsible for sending emails), do this in `config/app.php`:
-
-```php
-<?php
-
-return [
-    'components' => [
-        'mailer' => function() {
-            // Get the stored email settings
-            $settings = Craft::$app->systemSettings->getEmailSettings();
-
-            // Override the transport adapter class
-            $settings->transportType = craft\mailgun\MailgunAdapter::class;
-
-            // Override the transport adapter settings
-            $settings->transportSettings = [
-                'domain' => 'foo.com',
-                'apiKey' => 'key-xxxxxxxxxx',
-            ];
-
-            // Create a Mailer component config with these settings
-            $config = craft\helpers\App::mailerConfig($settings);
-            
-            // Instantiate and return it
-            return Craft::createObject($config);
-        },
-
-        // ...
-    ],
-
-    // ...
-];
-```
-
-::: tip
-Any changes you make to the Mailer component from `config/app.php` will not be reflected when testing email settings from Settings → Email.
-:::
-
-### Queue Component
-
-Craft’s job queue is powered by the [Yii2 Queue Extension](https://github.com/yiisoft/yii2-queue). By default Craft will use a [custom queue driver](craft\queue\Queue) based on the extension’s [DB driver](https://github.com/yiisoft/yii2-queue/blob/master/docs/guide/driver-db.md), but you can switch to a different driver by overriding Craft’s `queue` component from `config/app.php`:
-
-```php
-<?php
-
-return [
-    'components' => [
-        'queue' => [
-            'class' => \yii\queue\redis\Queue::class,
-            'redis' => 'redis', // Redis connection component or its config
-            'channel' => 'queue', // Queue channel key
-        ], 
-    ],
-    
-    // ...
-];
-```
-
-Available drivers are listed in the [Yii2 Queue Extension documentation](https://github.com/yiisoft/yii2-queue/tree/master/docs/guide).
-
-::: warning
-Only drivers that implement <api:craft\queue\QueueInterface> will be visible within the Control Panel.
-:::
-
-::: tip
-If your queue driver supplies its own worker, set the <config:runQueueAutomatically> config setting to `false` in `config/general.php`.  
-:::
+You can customize Craft’s [application configuration](app.md) from `config/app.php`, such as overriding component configs, or adding new modules and components.
