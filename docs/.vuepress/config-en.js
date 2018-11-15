@@ -185,6 +185,7 @@ module.exports = {
                     'config/db-settings',
                     'config/environments',
                     'config/php-constants',
+                    'config/app',
                 ]
             },
             {
