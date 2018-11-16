@@ -73,6 +73,7 @@ module.exports = {
                     'template-roots',
                     'extending-twig',
                     'template-hooks',
+                    'environmental-settings',
                     // 'front-end-controllers',
                 ]
             }

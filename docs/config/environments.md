@@ -25,6 +25,10 @@ To set these settings to an environment variable, type `$` followed by the envir
 
 Only the environment variable’s name will be stored in your database or project config, so this is a great way to set setting values that may change per-environment, or contain sensitive information.
 
+::: tip
+Plugins can support for environment variables in their settings as well. See [Environmental Settings](../extend/environmental-settings.md) to learn how.
+:::
+
 ## Config Files
 
 You can set your [general config settings](config-settings.md), [database connection settings](db-settings.md), and other PHP config files to environment variables using PHP’s [getenv()](http://php.net/manual/en/function.getenv.php) function:
