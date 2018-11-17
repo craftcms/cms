@@ -148,32 +148,18 @@ module.exports = {
                 children: [
                     '',
                     'coc',
-                    'how-to-use-the-documentation'
+                    'directory-structure',
                 ]
             },
             {
-                title: 'Installing Craft',
+                title: 'Installing & Updating',
                 collapsable: false,
                 children: [
                     'requirements',
-                    'installation'
-                ]
-            },
-            {
-                title: 'Updating Craft',
-                collapsable: false,
-                children: [
-                    'upgrade',
+                    'installation',
                     'updating',
-                    'changes-in-craft-3'
-                ]
-            },
-            {
-                title: 'Getting Started',
-                collapsable: false,
-                children: [
-                    'the-pieces-of-craft',
-                    'directory-structure'
+                    'upgrade',
+                    'changes-in-craft-3',
                 ]
             },
             {
@@ -209,6 +195,28 @@ module.exports = {
                 ]
             },
             {
+                title: 'Field Types',
+                collapsable: false,
+                children: [
+                    'assets-fields',
+                    'categories-fields',
+                    'checkboxes-fields',
+                    'color-fields',
+                    'date-time-fields',
+                    'dropdown-fields',
+                    'entries-fields',
+                    'lightswitch-fields',
+                    'matrix-fields',
+                    'multi-select-fields',
+                    'number-fields',
+                    'plain-text-fields',
+                    'radio-buttons-fields',
+                    'table-fields',
+                    'tags-fields',
+                    'users-fields',
+                ]
+            },
+            {
                 title: 'Development',
                 collapsable: false,
                 children: [
@@ -217,7 +225,7 @@ module.exports = {
                 ]
             },
             {
-                title: 'Advanced',
+                title: 'More',
                 collapsable: false,
                 children: [
                     'content-migrations',
