@@ -1,20 +1,13 @@
 # Server Requirements
 
-These are the requirements to successfully install and properly run Craft.
-
-## Checking Your Server
-
-Before you install Craft, it's important that you check that your server will meet the requirements. Review the requirements below or use the [Craft Server Check](https://github.com/craftcms/server-check) script to quickly check whether you meet the requirements.
-
-_Not in charge of the server? Send a link to this page to your server administrator._
-
-## Server Requirements
+::: tip
+You can use the [Craft Server Check](https://github.com/craftcms/server-check) script to quickly find out if your server meet’s Craft’s requirements.
+:::
 
 Craft requires the following:
 
 * PHP 7.0+
-* MySQL 5.5+ with InnoDB (or MariaDB 5.5+), or PostgreSQL 9.5+
-* A web server (Apache, Nginx, IIS)
+* MySQL 5.5+ with InnoDB, MariaDB 5.5+, or PostgreSQL 9.5+
 * At least 256MB of memory allocated to PHP
 * At least 200MB of free disk space
 
@@ -52,7 +45,7 @@ Some shared hosting environments will disable certain common PHP methods and con
 
 The database user you tell Craft to connect with must have the following privileges:
 
-#### MySQL, MariaDB
+#### MySQL/MariaDB
 
 * `SELECT`
 * `INSERT`
@@ -75,20 +68,22 @@ The database user you tell Craft to connect with must have the following privile
 * `REFERENCES`
 * `CONNECT`
 
-## CP Browser Requirements
+## Control Panel Browser Requirements
 
 Craft’s Control Panel requires a modern browser:
 
-### Windows and macOS
+#### Windows and macOS
 
 * Chrome 29 or later
 * Firefox 28 or later
 * Safari 9.0 or later
 * Microsoft Edge
 
-### Mobile
+#### Mobile
 
 * iOS: Safari 9.1 or later
 * Android: Chrome 4.4 or later
 
-Note: Craft’s Control Panel browser requirements have nothing to do with your actual website. If you’re a glutton for punishment and want your website to look flawless on IE 6, that’s your choice.
+::: tip
+Craft’s Control Panel browser requirements have nothing to do with your actual website. If you’re a glutton for punishment and want your website to look flawless on IE 6, that’s your choice.
+:::
