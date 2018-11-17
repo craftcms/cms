@@ -1,4 +1,4 @@
-# Updating
+# Updating Instructions
 
 When an update is available, users with the permission to update Craft will see a badge in the CP next to the Utilities navigation item in the sidebar. Click on Utilities and then choose Updates. You can also use the Updates widget on the Control Panel dashboard, which is installed by default.  
 
