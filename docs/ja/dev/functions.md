@@ -108,6 +108,30 @@
 {{ round(42.9) }} → 43
 ```
 
+## `seq( name, length, next )`
+
+`name` で定義されたシーケンスの次または現在の番号を出力します。
+
+```twig
+<p>This entry has been read {{ seq('hits:' ~ entry.id) }} times.</p>
+```
+
+ファンクションが呼び出されるたびに、与えられたシーケンスは自動的にインクリメントされます。
+
+オプションで特定の長さにゼロ詰めした数値にすることができます。
+
+```twig
+{{ now|date('Y') ~ '-' ~ seq('orderNumber:' ~ now|date('Y'), 5) }}
+{# outputs: 2018-00001 #}
+```
+
+インクリメントせずにシーケンスの現在の数字を表示するには、`next` 引数に `false` をセットします。
+
+```twig
+<h5><a href="{{ entry.url }}">{{ entry.title }}</a></h5>
+<p>{{ seq('hits:' ~ entry.id, next=false) }} views</p>
+```
+
 ## `shuffle( array )`
 
 配列内のエレメントの順序をランダム化します。

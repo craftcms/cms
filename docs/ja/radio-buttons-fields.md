@@ -8,33 +8,50 @@
 
 * **ラジオボタンのオプション** – フィールドで利用可能なラジオボタンを定義します。オプションの値とラベルを別々に設定したり、デフォルトで選択状態にしておくものを選択できます。
 
-## フィールド
+## テンプレートの実例
 
-ラジオボタンフィールドでは、フィールド設定で定義されたラジオボタンのオプションがラジオグループとして表示されます。
-
-## テンプレート記法
-
-選択されたオプションの値を次のように出力できます。
+#### 選択されたラジオボタンの値を出力
 
 ```twig
-{{ entry.radioFieldHandle }}
+{{ entry.radioFieldHandle }} or {{ entry.radioFieldHandle.value }}
 ```
 
-選択されたオプションのラベルを次のように出力できます。
+#### 選択されたラジオボタンのラベルを出力
 
 ```twig
 {{ entry.radioFieldHandle.label }}
 ```
 
-または、選択されたものだけでなく、利用可能なすべてのオプションをループすることもできます。
+#### 利用可能なすべてのラジオボタンをループ
 
 ```twig
+{% for option in entry.radioFieldHandle.options %}
+    Label:    {{ option.label }}
+    Value:    {{ option }} or {{ option.value }}
+    Selected: {{ option.selected ? 'Yes' : 'No' }}
+{% endfor %}
+```
+
+#### 投稿フォーム
+
+```twig
+{% set field = craft.app.fields.getFieldByHandle('radioFieldhandle') %}
+
 <ul>
-    {% for option in entry.radioFieldHandle.options %}
-        <li>{{ option }}</li>
+    {% for option in field.options %}
+
+        {% set selected = entry is defined
+            ? entry.radioFieldHandle.value == option.value
+            : option.default %}
+
+        <li><label>
+            <input type="radio"
+                name="fields[radioFieldHandle]"
+                value="{{ option.value }}"
+                {% if selected %}checked{% endif %}>
+            {{ option.label }}
+        </label></li>
     {% endfor %}
 </ul>
 ```
-
-いずれの場合も、オプションのラベルを出力するには `{{ option.label }}` と記述します。オプションが選択されているかどうかは `option.selected` で知ることができます。
 
