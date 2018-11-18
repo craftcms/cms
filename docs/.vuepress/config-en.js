@@ -34,7 +34,6 @@ module.exports = {
                     'plugin-guide',
                     'updating-plugins',
                     'plugin-settings',
-                    'plugin-migrations',
                     'changelogs-and-updates',
                     'plugin-store',
                 ]
@@ -65,6 +64,7 @@ module.exports = {
                 title: 'More',
                 collapsable: false,
                 children: [
+                    'migrations',
                     'user-permissions',
                     'translation-categories',
                     'asset-bundles',
@@ -229,7 +229,6 @@ module.exports = {
                 title: 'More',
                 collapsable: false,
                 children: [
-                    'content-migrations',
                     'reference-tags',
                 ]
             },
