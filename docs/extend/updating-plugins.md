@@ -940,9 +940,9 @@ You may need to give your plugin a migration path for Craft 2 installations, so 
 First you must determine whether Craft is going to consider your plugin to be an **update** or a **new installation**. If your plugin handle hasn’t changed (besides going from `UpperCamelCase` to `kebab-case`), Craft will see your new version as an **update**. But if your handle did change in a more significant way, Craft isn’t going to recognize it, and will consider it a completely new plugin.
 
 
-If the handle (basically) stayed the same, create a new [migration](plugin-migrations.md) named something like “`craft3_upgrade`”. Your upgrade code will go in its `safeUp()` method just like any other migration.
+If the handle (basically) stayed the same, create a new [migration](migrations.md) named something like “`craft3_upgrade`”. Your upgrade code will go in its `safeUp()` method just like any other migration.
 
-If the handle has changed, you’ll need to put your upgrade code in your [Install migration](plugin-migrations.md#install-migrations) instead. Use this as a starting point:
+If the handle has changed, you’ll need to put your upgrade code in your [Install migration](migrations.md#plugin-install-migrations) instead. Use this as a starting point:
 
 ```php
 <?php
