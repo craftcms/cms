@@ -56,7 +56,7 @@ class Product extends Element
 
 There will be things your elements need to store about themselves that don’t fit into the columns in the `elements` database table. So you’ll need to create a new table to hold that info.
 
-Create an [install migration](plugin-migrations.md#install-migrations) (if you don’t already have one), and add this to its `safeUp()` method:
+Create an [install migration](migrations.md#plugin-install-migrations) (if you don’t already have one), and add this to its `safeUp()` method:
 
 ```php
 if (!$this->db->tableExists('{{%products}}')) {

@@ -218,7 +218,7 @@ module.exports = {
                 title: '高度な話題',
                 collapsable: false,
                 children: [
-                    'content-migrations',
+                    'project-migrations',
                     'reference-tags',
                 ]
             },
