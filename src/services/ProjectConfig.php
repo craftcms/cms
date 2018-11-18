@@ -638,10 +638,12 @@ class ProjectConfig extends Component
      * @param callable $handler The handler method.
      * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
+     * @return static self reference
      */
-    public function onAdd(string $path, $handler, $data = null)
+    public function onAdd(string $path, $handler, $data = null): self
     {
         $this->registerChangeEventHandler(self::EVENT_ADD_ITEM, $path, $handler, $data);
+        return $this;
     }
 
     /**
@@ -668,10 +670,12 @@ class ProjectConfig extends Component
      * @param callable $handler The handler method.
      * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
+     * @return static self reference
      */
-    public function onUpdate(string $path, $handler, $data = null)
+    public function onUpdate(string $path, $handler, $data = null): self
     {
         $this->registerChangeEventHandler(self::EVENT_UPDATE_ITEM, $path, $handler, $data);
+        return $this;
     }
 
     /**
@@ -697,10 +701,12 @@ class ProjectConfig extends Component
      * @param callable $handler The handler method.
      * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
+     * @return static self reference
      */
-    public function onRemove(string $path, $handler, $data = null)
+    public function onRemove(string $path, $handler, $data = null): self
     {
         $this->registerChangeEventHandler(self::EVENT_REMOVE_ITEM, $path, $handler, $data);
+        return $this;
     }
 
     /**
