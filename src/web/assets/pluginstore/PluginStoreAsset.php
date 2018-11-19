@@ -29,10 +29,15 @@ class PluginStoreAsset extends AssetBundle
         ];
 
         $this->css = [
-            'css/main.css',
+            'css/app.css',
         ];
+
         $this->js = [
-            'js/main.js',
+            'js/chunk-vendors.js',
+            'js/app.js',
+
+            // hmr
+            // 'https://localhost:8080/app.js'
         ];
 
         parent::init();

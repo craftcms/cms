@@ -113,19 +113,5 @@
 {% endblock %}
 
 {% set content %}
-
-    <template v-if="supportsES6">
-        <template v-if="pluginStoreDataLoaded && !pluginStoreDataError">
-            <router-view></router-view>
-        </template>
-        <template v-else>
-            <status-message :error="pluginStoreDataError" :message="statusMessage"></status-message>
-        </template>
-
-        <modal :show.sync="showModal" :plugin-id="pluginId"></modal>
-    </template>
-    <template v-else>
-        <p>{{ 'The Plugin Store requires a modern browser with ES6 support.' }}</p>
-    </template>
-
+    <div id="app"></div>
 {% endset %}

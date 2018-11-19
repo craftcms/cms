@@ -3,6 +3,7 @@
 @import "modal";
 @import "./upgrade-craft";
 
+
 /* General */
 
 $sidebarWidth: 225px;
@@ -26,6 +27,7 @@ $minLargeScreenWidth: 1824px;
 .input.errors .select:not(.selectize) select {
   box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px $errorColor, 0 1px 1px rgba(0, 0, 0, 0.1);
 }
+
 
 /* Lightswitch */
 
@@ -89,6 +91,7 @@ $minLargeScreenWidth: 1824px;
     border-radius: 50%;
   }
 }
+
 
 /* Plugin Store actions */
 
@@ -161,6 +164,7 @@ $minLargeScreenWidth: 1824px;
     }
   }
 }
+
 
 /* Graphic & Status */
 
@@ -348,6 +352,7 @@ ul.categories {
   }
 }
 
+
 /* Category Selector */
 
 .category-selector-btn {
@@ -449,6 +454,7 @@ ul.categories {
   }
 }
 
+
 /* Plugin card */
 
 .plugin-card {
@@ -482,6 +488,7 @@ ul.categories {
   }
 }
 
+
 /* Plugin icon */
 
 .plugin-icon,
@@ -514,11 +521,13 @@ ul.categories {
   border-radius: 4px;
 }
 
+
 /* Plugin search */
 
 #container {
   position: static !important; /* #container hack required for modal overlays */
 }
+
 
 /* License status */
 
@@ -548,6 +557,7 @@ ul.categories {
     }
   }
 }
+
 
 /* Developer card */
 
@@ -585,6 +595,7 @@ ul.categories {
     }
   }
 }
+
 
 /* Edition Badge */
 
