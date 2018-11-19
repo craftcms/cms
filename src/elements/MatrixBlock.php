@@ -99,7 +99,7 @@ class MatrixBlock extends Element
         list($blockTypeHandle, $fieldHandle) = $handleParts;
 
         // Get the block type
-        $matrixFieldId = $sourceElements[0]->fieldId;
+        $matrixFieldId = ArrayHelper::firstValue($sourceElements)->fieldId;
         $blockTypes = ArrayHelper::index(Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixFieldId), 'handle');
 
         if (!isset($blockTypes[$blockTypeHandle])) {

@@ -158,7 +158,7 @@ Craft がサポートするコンフィグ設定の完全なリストは、次�
 
 デフォルト値
 
-:   `['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jp2', 'jpeg', 'jpg', 'jpx', 'js', 'm2t', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'wma', 'wmv', 'xls', 'xlsx', 'zip']`
+:   `['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jp2', 'jpeg', 'jpg', 'jpx', 'js', 'json', 'm2t', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'wma', 'wmv', 'xls', 'xlsx', 'zip']`
 
 定義元
 
@@ -241,7 +241,13 @@ Craft がサポートするコンフィグ設定の完全なリストは、次�
 
 :   [GeneralConfig::$baseCpUrl](api:craft\config\GeneralConfig::$baseCpUrl)
 
-コントロールパネルの URL を生成する際に、Craft が使用するベース URL。空白の場合、自動的に決定されます。
+コントロールパネルの URL を生成する際に、Craft が使用するベース URL。
+
+空白の場合、自動的に決定されます。
+
+::: tip
+ベース CP URL に [CP トリガーワード](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-cptrigger)（例：`/admin`）を **含めない** でください。
+:::
 
 ### `blowfishHashCost`
 
@@ -552,7 +558,7 @@ JPG と PNG ファイルを保存する際に、Craft が使用する品質レ�
 
 デフォルトでは、フロントエンドの一般ユーザー登録で「パスワード」フィールドを送信する必要があります。`true` をセットすると、最初の登録フォームでパスワードを必要としなくなります。
 
-メールアドレスの確認が有効になっている場合、通知メールに記載されたリンクをクリックしたときにパスワードをセットできます。そうでなければ、「パスワードを忘れた」際のワークフローを経由することがパスワードをセットできる唯一の方法となります。
+メールアドレスの確認が有効になっている場合、新しいユーザーは通知メールに記載されたリンクをクリックしてパスワードを設定できます。そうでなければ「パスワードを忘れた」際のワークフローを経由することがパスワードを設定できる唯一の方法となります。
 
 ### `devMode`
 
@@ -671,6 +677,24 @@ Craft 経由で送信されるすべてのフォームで、不可視項目に�
 :   [GeneralConfig::$extraAllowedFileExtensions](api:craft\config\GeneralConfig::$extraAllowedFileExtensions)
 
 コンフィグ設定 [$allowedFileExtensions](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-allowedfileextensions) にマージされるファイル拡張子のリスト。
+
+### `extraAppLocales`
+
+許可される型
+
+:   [string](http://php.net/language.types.string)[], [null](http://php.net/language.types.null)
+
+デフォルト値
+
+:   `null`
+
+定義元
+
+:   [GeneralConfig::$extraAppLocales](api:craft\config\GeneralConfig::$extraAppLocales)
+
+アプリケーションがサポートすべき追加のロケール ID のリストで、ユーザーが優先言語として選択できる必要があります。
+
+サーバーに Intl PHP エクステンションがあるか、対応する[ロケールデータ](https://github.com/craftcms/locales)を `config/locales/` フォルダに保存している場合のみ、この設定を使用してください。
 
 ### `filenameWordSeparator`
 
@@ -1377,6 +1401,12 @@ HTTP リクエストを通して、Craft が保留中のキュージョブを自
 
 無効にした場合、代わりのキューランナーを別途セットアップ*しなければなりません*。
 
+1分ごとに実行される cron ジョブをどのように設定するかの例です。
+
+```text
+*/1 * * * * /path/to/project/root/craft queue/run
+```
+
 ### `sanitizeSvgUploads`
 
 許可される型
@@ -1774,7 +1804,7 @@ Craft が URL を生成する際、`PATH_INFO` を使用してパスを指定す
 
 `Cookie を作成するために Craft::cookieConfig()` を使用した際、Craft が保存する Cookie に "secure" フラグをセットするかどうか。
 
-有効な値は `true`、`false`、および、`'auto'` です。デフォルトは `'auto'` で、現在のアクセスが `https://` 越しの場合に、secure フラグがセットされます。`true` はプロトコルに関係なく常にフラグをセットし、`false` は自動的にフラグをセットすることはありません。
+有効な値は `true`、`false`、および、`'auto'` です。デフォルトは `'auto'` で、現在のアクセスが `https://` 越しの場合に secure フラグがセットされます。`true` はプロトコルに関係なく常にフラグをセットし、`false` は自動的にフラグをセットすることはありません。
 
 ### `useSslOnTokenizedUrls`
 

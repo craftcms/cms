@@ -1,10 +1,8 @@
 # コンフィギュレーションの概要
 
+必要に応じて Craft を設定するには、いくつかの方法があります。
+
 [[toc]]
-
-## PHP 定数
-
-`web/index.php` ファイルには、Craft の読み込みと環境設定を行なう際に、Craft の起動スクリプトがチェックする [PHP 定数](php-constants.md)を定義することができます。
 
 ## 一般設定
 
@@ -19,76 +17,6 @@ return [
 ## データベース接続設定
 
 Craft は、いくつかの[データベース接続設定](db-settings.md)をサポートしています。`config/db.php` ファイルでデフォルト値を上書きすることができます。
-
-## データキャッシュ設定
-
-デフォルトでは、Craft は `storage/runtime/cache/` フォルダにデータキャッシュを蓄積します。`config/app.php` で `cache` アプリケーションコンポーネントを上書きすることによって代替の[キャッシュストレージ](https://www.yiiframework.com/doc/guide/2.0/en/caching-data#supported-cache-storage)を使うよう Craft を設定できます。
-
-```php
-<?php
-return [
-    'components' => [
-        'cache' => [
-            'class' => yii\caching\ApcCache::class,
-            'useApcu' => true,
-        ],
-    ],
-];
-```
-
-### 実例
-
-キャッシュストレージ設定の一般的な例です。
-
-#### Memcached
-
-```php
-<?php
-return [
-    'components' => [
-        'cache' => [
-            'class' => yii\caching\MemCache::class,
-            'useMemcached' => true,
-            'username' => getenv('MEMCACHED_USERNAME'),
-            'password' => getenv('MEMCACHED_PASSWORD'),
-            'defaultDuration' => 86400,
-            'servers' => [
-                [
-                    'host' => 'localhost',
-                    'persistent' => true,
-                    'port' => 11211,
-                    'retryInterval' => 15,
-                    'status' => true,
-                    'timeout' => 15,
-                    'weight' => 1,
-                ],
-            ],
-        ],
-    ],
-];
-```
-
-#### Redis
-
-Redis キャッシュストレージを利用するには、あらかじめ [yii2-redis](https://github.com/yiisoft/yii2-redis) ライブラリをインストールする必要があります。次に、Craft の `cache` コンポーネントでそれを利用するよう設定します。
-
-```php
-<?php
-return [
-    'components' => [
-        'cache' => [
-            'class' => yii\redis\Cache::class,
-            'defaultDuration' => 86400,
-            'redis' => [
-                'hostname' => 'localhost',
-                'port' => 6379,
-                'password' => getenv('REDIS_PASSWORD'),
-                'database' => 0,
-            ],
-        ],
-    ],
-];
-```
 
 ## Guzzle 設定
 
@@ -156,16 +84,16 @@ Craft のいくつかの設定やファンクションでは、基本ファイ�
 必要であれば、`.env` ファイルや環境設定のどこかで、環境変数のエイリアス値をセットすることができます。
 
 ```bash
-ASSET_BASE_URL=http://my-project.com/assets
-ASSET_BASE_PATH=/path/to/web/assets
+ASSETS_BASE_URL=http://my-project.com/assets
+ASSETS_BASE_PATH=/path/to/web/assets
 ```
 
 [getenv()](http://php.net/manual/en/function.getenv.php) を使用して、エイリアスの定義にセットすることができます。
 
 ```php
 'aliases' => [
-    '@assetBaseUrl' => getenv('ASSET_BASE_URL'),
-    '@assetBasePath' => getenv('ASSET_BASE_PATH'),
+    '@assetBaseUrl' => getenv('ASSETS_BASE_URL'),
+    '@assetBasePath' => getenv('ASSETS_BASE_PATH'),
 ],
 ```
 
@@ -194,69 +122,11 @@ return [
 
 `config/routes.php` にカスタムの [URL ルール](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#url-rules) を定義することができます。詳細については、[ルーティング](../routing.md) を参照してください。
 
+## PHP 定数
+
+`web/index.php` に特定の [PHP 定数](php-constants.md) を定義することで、システムファイルパスやアクティブな環境などのコア設定を設定できます。
+
 ## アプリケーション設定
 
-`config/app.php` から、Craft のすべての[アプリケーション設定](https://www.yiiframework.com/doc/guide/2.0/en/structure-applications#application-configurations)をカスタマイズできます。配列として返された項目は、 メインのアプリケーション設定の配列にマージされます。
-
-### Mailer コンポーネント
-
-（メール送信を担っている）`mailer` コンポーネントの設定を上書きするために、`config/app.php` を調整します。
-
-```php
-<?php
-
-return [
-    'components' => [
-        'mailer' => function() {
-            // Get the stored email settings
-            $settings = Craft::$app->systemSettings->getEmailSettings();
-
-            // Override the transport adapter class
-            $settings->transportType = craft\mailgun\MailgunAdapter::class;
-
-            // Override the transport adapter settings
-            $settings->transportSettings = [
-                'domain' => 'foo.com',
-                'apiKey' => 'key-xxxxxxxxxx',
-            ];
-
-            return craft\helpers\MailerHelper::createMailer($settings);
-        },
-
-        // ...
-    ],
-
-    // ...
-];
-```
-
-### Queue コンポーネント
-
-Craft のジョブキューは [Yii2 Queue Extension](https://github.com/yiisoft/yii2-queue) によって動いています。デフォルトでは、Craft はエクステンションの [DB driver](https://github.com/yiisoft/yii2-queue/blob/master/docs/guide/driver-db.md) をベースとする [custom queue driver](craft\queue\Queue) を使用しますが、`config/app.php` から Craft の `queue` コンポーネントを上書きすることによって、別のドライバに切り替えることができます。
-
-```php
-<?php
-
-return [
-    'components' => [
-        'queue' => [
-            'class' => \yii\queue\redis\Queue::class,
-            'redis' => 'redis', // Redis connection component or its config
-            'channel' => 'queue', // Queue channel key
-        ], 
-    ],
-    
-    // ...
-];
-```
-
-利用可能なドライバは、[Yii2 Queue Extension documentation](https://github.com/yiisoft/yii2-queue/tree/master/docs/guide) に記載されています。
-
-::: warning
-<api:craft\queue\QueueInterface> を実装しているドライバだけがコントロールパネル内に表示されます。
-:::
-
-::: tip
-キュードライバが独自のワーカーを提供している場合、`config/general.php` の <config:runQueueAutomatically> コンフィグ設定を `false` に設定します。
-:::
+`config/app.php` から、コンポーネント設定を上書きしたり新しいモジュールやコンポーネントを追加するような Craft の [アプリケーション設定](app.md) をカスタマイズできます。
 
