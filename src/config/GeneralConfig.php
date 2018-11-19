@@ -56,9 +56,19 @@ class GeneralConfig extends BaseObject
      */
     public $aliases = [];
     /**
+     * @var bool Whether admins should be allowed to make administrative changes to the system.
+     *
+     * If this is disabled, the Settings and Plugin Store sections will be hidden,
+     * the Craft edition and Craft/plugin versions will be locked, and the project config will become read-only.
+     *
+     * Therefore you should only disable this in production environments when [[useProjectConfigFile]] is enabled,
+     * and you have a deployment workflow that runs `composer install` automatically on deploy.
+     */
+    public $allowAdminChanges = true;
+    /**
      * @var bool Whether Craft should allow system and plugin updates in the Control Panel, and plugin installation from the Plugin Store.
      *
-     * This setting will automatically be disabled if [[disableAdminFunctions]] is enabled.
+     * This setting will automatically be disabled if [[allowAdminChanges]] is enabled.
      */
     public $allowUpdates = true;
     /**
@@ -249,10 +259,6 @@ class GeneralConfig extends BaseObject
      * @var bool Whether the system should run in [Dev Mode](https://craftcms.com/support/dev-mode).
      */
     public $devMode = false;
-    /**
-     * @var bool Whether administrative features should be disabled.
-     */
-    public $disableAdminFunctions = false;
     /**
      * @var bool Whether to use a cookie to persist the CSRF token if [[enableCsrfProtection]] is enabled. If false, the CSRF token
      * will be stored in session under the 'csrfTokenName' config setting name. Note that while storing CSRF tokens in
@@ -738,8 +744,9 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether the project config should be saved out to `config/project.yaml`.
      *
-     * If set to true, any changes to the project config will be duplicated in `config/project.yaml`,
-     * and any changes to `config/project.yaml` will be applied to the system.
+     * If set to `true`, a hard copy of your system’s project config will be saved in `config/project.yaml`,
+     * and any changes to `config/project.yaml` will be applied back to the system, making it possible for
+     * multiple environments to share the same project config despite having separate databases.
      */
     public $useProjectConfigFile = false;
     /**

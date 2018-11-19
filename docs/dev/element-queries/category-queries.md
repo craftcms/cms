@@ -1053,6 +1053,31 @@ $categories = \craft\elements\Category::find()
 :::
 
 
+### `trashed`
+
+Narrows the query results to only categories that have been soft-deleted.
+
+
+
+
+
+::: code
+```twig
+{# Fetch trashed categories #}
+{% set categories = {twig-function}
+    .trashed()
+    .all() %}
+```
+
+```php
+// Fetch trashed categories
+$categories = \craft\elements\Category::find()
+    ->trashed()
+    ->all();
+```
+:::
+
+
 ### `uid`
 
 Narrows the query results based on the categories’ UIDs.

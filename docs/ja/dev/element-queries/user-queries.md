@@ -618,7 +618,7 @@ $elements = ElementClass::find()
 ```twig
 {# Fetch active and locked elements #}
 {% set elements = {twig-function}
-    .status(['active', 'locked')
+    .status(['active', 'locked'])
     .all() %}
 ```
 

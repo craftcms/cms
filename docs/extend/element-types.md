@@ -56,7 +56,7 @@ class Product extends Element
 
 There will be things your elements need to store about themselves that don’t fit into the columns in the `elements` database table. So you’ll need to create a new table to hold that info.
 
-Create an [install migration](plugin-migrations.md#install-migrations) (if you don’t already have one), and add this to its `safeUp()` method:
+Create an [install migration](migrations.md#plugin-install-migrations) (if you don’t already have one), and add this to its `safeUp()` method:
 
 ```php
 if (!$this->db->tableExists('{{%products}}')) {
@@ -446,6 +446,12 @@ protected static function defineActions(string $source = null): array
     ];
 }
 ```
+
+### Restore Action
+
+All element types are [soft-deletable](soft-deletes.md) out of the box, however it’s up to each element type to decide whether they should be restorable.
+
+To make an element restorable, just add the <api:craft\elements\actions\Restore> action to the array returned by your static `defineActions()` method. Craft will automatically hide it during normal index views, and show it when someone is searching for `is:trashed`. 
 
 ### Sort Options
 

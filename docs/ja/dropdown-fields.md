@@ -8,39 +8,47 @@
 
 * **セレクトボックスのオプション** – フィールドで利用可能なオプションを定義します。オプションの値とラベルを別々に設定したり、デフォルトで選択状態にしておくものを選択できます。
 
-## フィールド
+## テンプレートの実例
 
-セレクトボックスフィールドでは、フィールド設定で定義されたセレクトボックスのオプションがドロップダウン形式で表示されます。
-
-## テンプレート記法
-
-選択されたオプションの値を次のように出力できます。
+#### 選択されたオプションの値を出力
 
 ```twig
-{{ entry.dropdownFieldHandle }}
+{{ entry.dropdownFieldHandle }} or {{ entry.dropdownFieldHandle.value }}
 ```
 
-選択されたオプションのラベルを次のように出力できます。
+#### 選択されたオプションのラベルを出力
 
 ```twig
 {{ entry.dropdownFieldHandle.label }}
 ```
 
-または、選択されたものだけでなく、利用可能なすべてのオプションをループすることもできます。
+#### 利用可能なすべてのオブションをループ
 
 ```twig
-<ul>
-    {% for option in entry.dropdownFieldHandle.options %}
-        <li>{{ option }}</li>
-    {% endfor %}
-</ul>
+{% for option in entry.dropdownFieldHandle.options %}
+    Label:    {{ option.label }}
+    Value:    {{ option }} or {{ option.value }}
+    Selected: {{ option.selected ? 'Yes' : 'No' }}
+{% endfor %}
 ```
 
-いずれの場合も、オプションのラベルを出力するには `{{ option.label }}` と記述します。オプションが選択されているかどうかは `option.selected` で知ることができます。
-
-例えば、変数に割り当てるなどフィールドの値を直接出力しない場合、次のように `dropdownFieldHandle.value` を利用する必要があります。
+#### 投稿フォーム
 
 ```twig
-{% set dropdownValue = entry.dropdownFieldHandle.value %}
+{% set field = craft.app.fields.getFieldByHandle('dropdownFieldHandle') %}
+
+<select name="fields[dropdownFieldHandle]">
+    {% for option in field.options %}
+
+        {% set selected = entry is defined
+            ? entry.dropdownFieldHandle.value == option.value
+            : option.default %}
+
+        <option value="{{ option.value }}"
+                {% if selected %}selected{% endif %}>
+            {{ option.label }}
+        </option>
+    {% endfor %}
+</select>
 ```
 

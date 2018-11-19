@@ -240,7 +240,7 @@ class Application extends \yii\web\Application
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
         }
 
-        // Check if project configuration needs to apply some changes here
+        // Check if there are any pending changes in project.yaml
         if ($projectConfig->getAreChangesPending()) {
             return $this->_processConfigSyncLogic($request) ?: $this->getResponse();
         }

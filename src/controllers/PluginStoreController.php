@@ -59,7 +59,7 @@ class PluginStoreController extends Controller
         ];
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $allowUpdates = $generalConfig->allowUpdates && !$generalConfig->disableAdminFunctions;
+        $allowUpdates = $generalConfig->allowUpdates && $generalConfig->allowAdminChanges;
 
         $view = $this->getView();
         $view->registerJsFile('https://js.stripe.com/v2/');

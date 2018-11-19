@@ -393,4 +393,12 @@ class MigrateController extends BaseMigrateController
     {
         $this->getMigrator()->removeMigrationHistory($version);
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function truncateDatabase()
+    {
+        $this->getMigrator()->truncateHistory();
+    }
 }

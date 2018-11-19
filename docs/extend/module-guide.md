@@ -55,7 +55,7 @@ That will tell Composer to update its class autoloader script based on your new 
 
 ## Update the application config
 
-You can add your module to your project’s [application configuration](../config/README.md#application-config) by listing it in the [modules](api:yii\base\Module::modules) and [bootstrap](api:yii\base\Application::bootstrap) arrays. For example, if your module ID is `foo` and its Module class name is `foo\Module`, this is what you should add to `config/app.php`:
+You can add your module to your project’s [application configuration](../config/app.md) by listing it in the [modules](api:yii\base\Module::modules) and [bootstrap](api:yii\base\Application::bootstrap) arrays. For example, if your module ID is `foo` and its Module class name is `foo\Module`, this is what you should add to `config/app.php`:
 
 ```php
 return [

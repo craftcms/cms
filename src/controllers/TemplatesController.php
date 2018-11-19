@@ -106,7 +106,7 @@ class TemplatesController extends Controller
     }
 
     /**
-     * Renders the Project Config sync kickoff template.
+     * Renders the Project Config Sync kickoff template.
      *
      * @return Response
      */

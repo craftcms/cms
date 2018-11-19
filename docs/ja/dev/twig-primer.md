@@ -50,14 +50,14 @@ Twig には3種類のタグがあります。
 これらの例は、正しくありません。
 
 ```twig
-{% set entry = craft.entries.section( {{ sectionId }} ).first() %}
+{% set entry = craft.entries.section( {{ sectionId }} ).one() %}
 {% set entry = craft.entries.section( {% if filterBySection %} sectionId {% endif %} ) %}
 ```
 
 こちらは正しいです。
 
 ```twig
-{% set entry = craft.entries.section( sectionId ).first() %}
+{% set entry = craft.entries.section( sectionId ).one() %}
 {% set entry = craft.entries.section( filterBySection ? sectionId : null ) %}
 ```
 

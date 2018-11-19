@@ -116,7 +116,7 @@ class Routes extends Component
     }
 
     /**
-     * Returns the routes defined in the Project Config.
+     * Returns the routes defined in the project config.
      *
      * @return array
      */
