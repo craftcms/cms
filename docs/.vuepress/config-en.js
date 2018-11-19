@@ -34,6 +34,7 @@ module.exports = {
                     'plugin-guide',
                     'updating-plugins',
                     'plugin-settings',
+                    'project-config',
                     'changelogs-and-updates',
                     'plugin-store',
                 ]
@@ -229,6 +230,7 @@ module.exports = {
                 title: 'More',
                 collapsable: false,
                 children: [
+                    'project-config',
                     'reference-tags',
                 ]
             },
