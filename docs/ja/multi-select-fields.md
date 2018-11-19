@@ -6,41 +6,62 @@
 
 マルチセレクトボックスフィールドの設定は、次の通りです。
 
-* **マルチセレクトボックスのオプション** – フィールドで利用可能なオプションを定義します。オプションの値とラベルを別々に設定したり、デフォルトでチェックしておくものを選択できます。
+* **マルチセレクトボックスのオプション** – フィールドで利用可能なオプションを定義します。オプションの値とラベルを別々に設定したり、デフォルトで選択状態にしておくものを選択できます。
 
-## フィールド
+## テンプレートの実例
 
-マルチセレクトボックスフィールドでは、フィールド設定で定義されたマルチセレクトボックスのオプションが複数選択形式で表示されます。
-
-## テンプレート記法
-
-選択されたオプションを次のようにループすることができます。
+#### 選択されたオプションをループ
 
 ```twig
-<ul>
-    {% for option in entry.multiselectFieldHandle %}
-        <li>{{ option }}</li>
-    {% endfor %}
-</ul>
+{% for option in entry.multiselectFieldHandle %}
+    Label: {{ option.label }}
+    Value: {{ option }} or {{ option.value }}
+{% endfor %}
 ```
 
-または、選択されたものだけでなく、利用可能なすべてのオプションをループすることもできます。
+#### 利用可能なすべてのオブションをループ
 
 ```twig
-<ul>
-    {% for option in entry.multiselectFieldHandle.options %}
-        <li>{{ option }}</li>
-    {% endfor %}
-</ul>
+{% for option in entry.multiselectFieldHandle.options %}
+    Label:    {{ option.label }}
+    Value:    {{ option }} or {{ option.value }}
+    Selected: {{ option.selected ? 'Yes' : 'No' }}
+{% endfor %}
 ```
 
-いずれの場合も、オプションのラベルを出力するには `{{ option.label }}` と記述します。オプションが選択されているかどうかは `option.selected` で知ることができます。
-
-オプションのループのスコープ外でも、次のように特定のオプションが選択されているかを知ることができます。
+#### いずれかのオプションが選択されているかを確認
 
 ```twig
-{% if entry.multiselectFieldHandle.contains('tequilla') %}
-    <p>Really?</p>
-{% endif %}
+{% if entry.multiselectFieldHandle|length %}
+```
+
+#### 特定のオプションが選択されているかを確認
+
+```twig
+{% if entry.multiselectFieldHandle.contains('optionValue') %}
+```
+
+#### 投稿フォーム
+
+```twig
+{% set field = craft.app.fields.getFieldByHandle('multiselectFieldHandle') %}
+
+{# Include a hidden input first so Craft knows to update the
+   existing value, if no options are selected. #}
+<input type="hidden" name="fields[multiselectFieldHandle]" value="">
+
+<select multiple name="fields[multiselectFieldHandle][]">
+    {% for option in field.options %}
+
+        {% set selected = entry is defined
+            ? entry.multiselectFieldHandle.contains(option.value)
+            : option.default %}
+
+        <option value="{{ option.value }}"
+                {% if selected %}selected{% endif %}>
+            {{ option.label }}
+        </option>
+    {% endfor %}
+</select>
 ```
 
