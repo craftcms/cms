@@ -9,6 +9,7 @@
 
 ### Changed
 - Edit Entry pages now show the entry’s site in the revision menu label so long as the section is enabled for multiple sites, even if “Propagate entries across all enabled sites?” isn’t checked. ([#3471](https://github.com/craftcms/cms/issues/3471))
+- Exact-match search terms (using `::`) now disable `subLeft` and `subRight` attributes by default, regardless of the `defaultSearchTermOptions` config setting says. ([#3474](https://github.com/craftcms/cms/issues/3474))
 
 ### Fixed
 - Fixed an error that occurred when querying for Matrix blocks if both the `with` and `indexBy` parameters were set.
