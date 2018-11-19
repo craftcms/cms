@@ -86,5 +86,5 @@ CP で定義されたトランスフォームで利用可能なすべて設定�
 * `mode` に `'crop'` をセットした場合、`position` プロパティに `'top-left'`、`'top-center'`、 `'top-right'`、`'center-left'`、`'center-center'`、`'center-right'`、`'bottom-left'`、`'bottom-center'`、または `'bottom-right'` のいずれかをセットして渡すことができます。
 * `width` と `height` は、整数をセットするか、省略できます。
 * `quality` は、0 から 100 の間の数値をセットするか、省略できます。
-* `format` には、`'jpg'`、`'gif'`、`'png'`、または `'Auto'` をセットできます。
+* `format` には、`'jpg'`、`'gif'`、`'png'` をセットするか、省略できます。
 

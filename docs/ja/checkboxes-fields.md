@@ -8,56 +8,63 @@
 
 * **チェックボックスのオプション** – フィールドで利用可能なチェックボックスを定義します。オプションの値とラベルを別々に設定したり、デフォルトでチェックしておくものを選択できます。
 
-## フィールド
+## テンプレートの実例
 
-チェックボックスフィールドでは、フィールド設定で定義された各チェックボックスのオプションが表示されます。
+#### 選択されたチェックボックスをループ
 
-## テンプレート記法
+```twig
+{% for option in entry.checkboxFieldHandle %}
+    Label: {{ option.label }}
+    Value: {{ option }} or {{ option.value }}
+{% endfor %}
+```
 
-チェックボックスを1つしかもたつ、それが選択されているかを知りたい場合、`length` フィルタを利用して確認できます。
+#### 利用可能なすべてのチェックボックスをループ
+
+```twig
+{% for option in entry.checkboxFieldHandle.options %}
+    Label:   {{ option.label }}
+    Value:   {{ option }} or {{ option.value }}
+    Checked: {{ option.selected ? 'Yes' : 'No' }}
+{% endfor %}
+```
+
+#### いずれかのチェックボックスが選択されているかを確認
 
 ```twig
 {% if entry.checkboxFieldHandle|length %}
 ```
 
-選択されたオプションを次のようにループすることができます。
+#### 特定のチェックボックスが選択されているかを確認
 
 ```twig
-<ul>
-    {% for option in entry.checkboxFieldHandle %}
-        <li>{{ option }}</li>
-    {% endfor %}
-</ul>
+{% if entry.checkboxFieldHandle.contains('optionValue') %}
 ```
 
-または、選択されたものだけでなく、利用可能なすべてのオプションをループすることもできます。
+#### 投稿フォーム
 
 ```twig
-<ul>
-    {% for option in entry.checkboxFieldHandle.options %}
-        <li>{{ option }}</li>
-    {% endfor %}
-</ul>
-```
+{% set field = craft.app.fields.getFieldByHandle('checkboxFieldhandle') %}
 
-いずれの場合も、オプションのラベルを出力するには `{{ option.label }}` と記述します。オプションが選択されているかどうかは `option.selected` で知ることができます。
-
-オプションのループのスコープ外でも、次のように特定のオプションが選択されているかを知ることができます。
-
-```twig
-{% if entry.checkboxFieldHandle.contains('tequila') %}
-    <p>Really?</p>
-{% endif %}
-```
-
-フロントエンドの[エントリフォーム](dev/examples/entry-form.md)にチェックボックスフィールドを含める場合、チェックボックスの前に不可視項目を含め、チェックボックスがチェックされなかった場合でも、空の値が送信されるようにしてください。
-
-```twig
+{# Include a hidden input first so Craft knows to update the
+   existing value, if no checkboxes are checked. #}
 <input type="hidden" name="fields[checkboxFieldhandle]" value="">
 
 <ul>
-    <li><input type="checkbox" name="fields[checkboxFieldHandle][]" value="foo">{{ checkboxOption.label }}</li>
-    <li><input type="checkbox" name="fields[checkboxFieldHandle][]" value="bar">{{ checkboxOption.label }}</li>
+    {% for option in field.options %}
+
+        {% set checked = entry is defined
+            ? entry.checkboxFieldhandle.contains(option.value)
+            : option.default %}
+
+        <li><label>
+            <input type="checkbox"
+                name="fields[checkboxFieldHandle][]"
+                value="{{ option.value }}"
+                {% if checked %}checked{% endif %}>
+            {{ option.label }}
+        </label></li>
+    {% endfor %}
 </ul>
 ```
 

@@ -217,13 +217,16 @@ class EntriesController extends BaseEntriesController
         $variables['bodyClass'] = 'edit-entry site--' . $site->handle;
 
         // Page title w/ revision label
-        $variables['showSites'] = (
+        $variables['showSiteLabel'] = (
             Craft::$app->getIsMultiSite() &&
-            count($section->getSiteSettings()) > 1 &&
+            count($section->getSiteSettings()) > 1
+        );
+        $variables['showSites'] = (
+            $variables['showSiteLabel'] &&
             ($section->propagateEntries || $entry->id === null)
         );
 
-        if ($variables['showSites']) {
+        if ($variables['showSiteLabel']) {
             $variables['revisionLabel'] = Craft::t('site', $entry->getSite()->name) . ' – ';
         } else {
             $variables['revisionLabel'] = '';

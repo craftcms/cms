@@ -374,6 +374,21 @@ class MigrationManager extends Component
     }
 
     /**
+     * Truncates the migration history.
+     */
+    public function truncateHistory()
+    {
+        Craft::$app->getDb()->createCommand()
+            ->delete(
+                $this->migrationTable,
+                [
+                    'type' => $this->type,
+                    'pluginId' => $this->pluginId,
+                ])
+            ->execute();
+    }
+
+    /**
      * Returns whether a given migration has been applied.
      *
      * @param string $name The migration name
