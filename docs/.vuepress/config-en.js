@@ -36,6 +36,7 @@ module.exports = {
                     'plugin-settings',
                     'project-config',
                     'changelogs-and-updates',
+                    'plugin-editions',
                     'plugin-store',
                 ]
             },
