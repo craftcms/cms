@@ -74,6 +74,7 @@ module.exports = {
                     'template-roots',
                     'extending-twig',
                     'template-hooks',
+                    'soft-deletes',
                     'environmental-settings',
                     // 'front-end-controllers',
                 ]
@@ -231,6 +232,7 @@ module.exports = {
                 collapsable: false,
                 children: [
                     'project-config',
+                    'gc',
                     'reference-tags',
                 ]
             },
