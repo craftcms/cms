@@ -12,7 +12,6 @@ use craft\base\ElementInterface;
 use craft\errors\InvalidTypeException;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
-use yii\web\ForbiddenHttpException;
 
 /**
  * The BaseElementsController class provides some common methods for [[ElementsController]] and [[ElementIndexesController]].

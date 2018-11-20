@@ -9,6 +9,7 @@ namespace craft\web\twig;
 
 use Craft;
 use craft\base\MissingComponentInterface;
+use craft\base\PluginInterface;
 use craft\elements\Asset;
 use craft\elements\db\ElementQuery;
 use craft\helpers\ArrayHelper;
@@ -44,7 +45,6 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use enshrined\svgSanitize\Sanitizer;
-use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -719,6 +719,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('floor', 'floor'),
             new \Twig_SimpleFunction('getenv', 'getenv'),
             new \Twig_SimpleFunction('parseEnv', [Craft::class, 'parseEnv']),
+            new \Twig_SimpleFunction('plugin', [$this, 'pluginFunction']),
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
             new \Twig_SimpleFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new \Twig_SimpleFunction('round', [$this, 'roundFunction']),
@@ -774,6 +775,17 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function expressionFunction($expression, $params = [], $config = []): Expression
     {
         return new Expression($expression, $params, $config);
+    }
+
+    /**
+     * Returns a plugin instance by its handle.
+     *
+     * @param string $handle The plugin handle
+     * @return PluginInterface|null The plugin, or `null` if it's not installed
+     */
+    public function pluginFunction(string $handle)
+    {
+        return Craft::$app->getPlugins()->getPlugin($handle);
     }
 
     /**
@@ -902,7 +914,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         // Namespace class names and IDs
         if (
             $namespace && (
-            strpos($svg, 'id=') !== false || strpos($svg, 'class=') !== false)
+                strpos($svg, 'id=') !== false || strpos($svg, 'class=') !== false)
         ) {
             $ns = StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 10) . '-';
             $ids = [];

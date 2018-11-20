@@ -49,7 +49,6 @@ class m180517_173000_user_photo_volume_to_uid extends Migration
                 ], [
                     'category' => 'users'
                 ], [], false);
-
             }
         }
     }

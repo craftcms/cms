@@ -33,7 +33,6 @@ use craft\services\Security;
 use craft\services\Sites;
 use craft\services\Tags;
 use craft\services\UserGroups;
-use craft\services\UserPermissions;
 use craft\services\Users;
 use craft\services\Volumes;
 use craft\web\Application as WebApplication;

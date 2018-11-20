@@ -8,11 +8,8 @@
 namespace craft\behaviors;
 
 use Craft;
-use craft\base\FieldInterface;
 use craft\helpers\StringHelper;
-use craft\models\FieldLayout;
 use yii\base\Behavior;
-use yii\base\InvalidConfigException;
 use yii\base\Model;
 use yii\validators\UrlValidator;
 

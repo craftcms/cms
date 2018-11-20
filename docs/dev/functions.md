@@ -69,6 +69,10 @@ Outputs any scripts and styles that were registered for the “end body” posit
 </body>
 ```
 
+## `expression( expression, params, config )`
+
+Creates and returns a new <api:yii\db\Expression> object, for use in database queries.
+
 ## `floor( num )`
 
 Rounds a number down.
@@ -85,6 +89,10 @@ Returns the value of an environment variable.
 {{ getenv('MAPS_API_KEY') }}
 ```
 
+## `parseEnv( str )`
+
+Checks if a string references an environment variable (`$VARIABLE_NAME`) and/or an alias (`@aliasName`), and returns the referenced value.
+
 ## `head()`
 
 Outputs any scripts and styles that were registered for the “head” position. It should be placed right before your `</head>` tag. 
@@ -94,6 +102,14 @@ Outputs any scripts and styles that were registered for the “head” position.
     <title>{{ siteName }}</title>
     {{ head() }}
 </head>
+```
+
+## `plugin( handle )`
+
+Returns a plugin instance by its handle, or `null` if no plugin is installed and enabled with that handle.
+
+```twig
+{{ plugin('commerce').version }}
 ```
 
 ## `redirectInput( url )`

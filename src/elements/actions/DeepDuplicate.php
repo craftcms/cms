@@ -7,13 +7,6 @@
 
 namespace craft\elements\actions;
 
-use Craft;
-use craft\base\Element;
-use craft\base\ElementAction;
-use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\helpers\ArrayHelper;
-
 /**
  * DeepDuplicate represents a "Duplicate (with descendants)" element action.
  *

@@ -128,9 +128,11 @@ class Assets extends BaseRelationField
     {
         $rules = parent::rules();
 
-        $rules[] = [['allowedKinds'], 'required', 'when' => function(self $field): bool {
-            return (bool)$field->restrictFiles;
-        }];
+        $rules[] = [
+            ['allowedKinds'], 'required', 'when' => function(self $field): bool {
+                return (bool)$field->restrictFiles;
+            }
+        ];
 
         return $rules;
     }

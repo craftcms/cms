@@ -16,7 +16,6 @@ use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
 use yii\base\Component;
 use yii\base\ErrorException;
-use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 
 /**
