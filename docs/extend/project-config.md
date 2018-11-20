@@ -59,6 +59,7 @@ use craft\events\ConfigEvent;
 
 public function handleChangedProductType(ConfigEvent $event)
 {
+    // Get the UID that was matched in the config path
     $uid = $event->tokenMatches[0];
     
     // Does this product type exist?
@@ -67,35 +68,64 @@ public function handleChangedProductType(ConfigEvent $event)
         ->from('{{%producttypes}}')
         ->where(['uid' => $uid])
         ->scalar();
-        
-    if ($id) {
-        Craft::$app->db->createCommand()
-            ->update('{{%producttypes}}', [
-                'name' => $event->newValue['name'],
-                // ...
-            ], ['id' => $id])
-            ->execute();
-    } else {
+
+    $isNew = empty($id);
+
+    // Insert or update its row
+    if ($isNew) {
         Craft::$app->db->createCommand()
             ->insert('{{%producttypes}}', [
                 'name' => $event->newValue['name'],
                 // ...
             ])
             ->execute();
+    } else {
+        Craft::$app->db->createCommand()
+            ->update('{{%producttypes}}', [
+                'name' => $event->newValue['name'],
+                // ...
+            ], ['id' => $id])
+            ->execute();
+    }
+
+    // Fire an 'afterSaveProductType' event?
+    if ($this->hasEventHandlers('afterSaveProductType')) {
+        $productType = $this->getProductTypeByUid($uid);
+        $this->trigger('afterSaveProductType', new ProducTypeEvent([
+            'productType' => $productType,
+            'isNew' => $isNew,
+        ]));
     }
 }
 
 public function handleDeletedProductType(ConfigEvent $event)
 {
+    // Get the UID that was matched in the config path
     $uid = $event->tokenMatches[0];
-    
+
+    // Get the product type
+    $productType = $this->getProductTypeByUid($uid);
+
+    // If that came back empty, we're done!
+    if (!$productType) {
+        return;
+    }
+
+    // Delete its row
     Craft::$app->db->createCommand()
-        ->delete('{{%producttypes}}', ['uid' => $uid])
+        ->delete('{{%producttypes}}', ['id' => $productType->id])
         ->execute();
+
+    // Fire an 'afterDeleteProductType' event?
+    if ($this->hasEventHandlers('afterDeleteProductType')) {
+        $this->trigger('afterDeleteProductType', new ProducTypeEvent([
+            'productType' => $productType,
+        ]));
+    }
 }
 ```
 
-At this point, if product types were to be added or removed from the project config manually, those changes should be syncing with the database.
+At this point, if product types were to be added or removed from the project config manually, those changes should be syncing with the database, and any `afterSaveProductType` and `afterDeleteProductType` event listeners will be triggered. 
 
 ::: tip
 If your component config references another component config, you can ensure that the other config changes are processed first by calling [ProjectConfig::processConfigChanges()](api:craft\services\ProjectConfig::processConfigChanges()) within your handler method.
@@ -118,14 +148,24 @@ use craft\helpers\StringHelper;
 
 public function saveProductType($productType)
 {
+    $isNew = empty($productType->id);
+
+    // Generate a UID for the teh product type if it's new
+    if ($isNew) {
+        $productType->uid = StringHelper::UUID();
+    }
+
+    // Fire a 'beforeSaveProductType' event?
+    if ($this->hasEventHandlers('beforeSaveProductType')) {
+        $this->trigger('beforeSaveProductType', new ProducTypeEvent([
+            'productType' => $productType,
+            'isNew' => $isNew,
+        ]));
+    }
+
     // Make sure it validates
     if (!$productType->validate()) {
         return false;
-    }
-
-    // Make sure the product type has a UID
-    if (!$productType->uid) {
-        $productType->uid = StringHelper::UUID();
     }
 
     // Save it to the project config
@@ -137,8 +177,8 @@ public function saveProductType($productType)
 
     // Now set the ID on the product type in case the
     // caller needs to know it
-    if (!$productType->id) {
-        $productType->id = \craft\helpers\Db::idByUid('{{%producttypes}}', $productType->uid);
+    if ($isNew) {
+        $productType->id = Db::idByUid('{{%producttypes}}', $productType->uid);
     }
 
     return true;
@@ -146,6 +186,14 @@ public function saveProductType($productType)
 
 public function deleteProductType($productType)
 {
+    // Fire a 'beforeDeleteProductType' event?
+    if ($this->hasEventHandlers('beforeDeleteProductType')) {
+        $this->trigger('beforeDeleteProductType', new ProducTypeEvent([
+            'productType' => $productType,
+        ]));
+    }
+
+    // Remove it from the project config
     $path = "product-types.{$productType->uid}";
     Craft::$app->projectConfig->remove($path);
 }
