@@ -8,6 +8,7 @@
 - Control Panel settings that support environment variables now autosuggest environment variable names (and aliases when applicable) while typing.
 - Control Panel settings that define a template path now autosuggest existing template files.
 - Added cross-domain support for Live Preview. ([#1521](https://github.com/craftcms/cms/issues/1521))
+- Plugins can now have multiple editions.
 - Custom fields can now opt out of being included in elements’ search keywords. ([#2600](https://github.com/craftcms/cms/issues/2600))
 - Added the `allowAdminChanges` config setting.
 - Added the `softDeleteDuration` config setting.
@@ -28,6 +29,8 @@
 - Added `craft\base\Field::EVENT_BEFORE_ELEMENT_RESTORE`.
 - Added `craft\base\FieldInterface::afterElementRestore()`.
 - Added `craft\base\FieldInterface::beforeElementRestore()`.
+- Added `craft\base\Plugin::editions()`.
+- Added `craft\base\Plugin::is()`.
 - Added `craft\behaviors\EnvAttributeParserBehavior`.
 - Added `craft\controllers\LivePreviewController`.
 - Added `craft\db\Command::restore()`.
