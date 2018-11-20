@@ -842,50 +842,6 @@ class Fields extends Component
             return false;
         }
 
-        $fieldRecord = $this->_getFieldRecord($field);
-
-        // Create/alter the content table column
-        $contentTable = Craft::$app->getContent()->contentTable;
-        $oldColumnName = $this->oldFieldColumnPrefix . $fieldRecord->getOldHandle();
-        $newColumnName = Craft::$app->getContent()->fieldColumnPrefix . $field->handle;
-
-        if ($field::hasContentColumn()) {
-            $columnType = $field->getContentColumnType();
-
-            // Make sure we're working with the latest data in the case of a renamed field.
-            Craft::$app->getDb()->schema->refresh();
-
-            if (Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)) {
-                Craft::$app->getDb()->createCommand()
-                    ->alterColumn($contentTable, $oldColumnName, $columnType)
-                    ->execute();
-                if ($oldColumnName !== $newColumnName) {
-                    Craft::$app->getDb()->createCommand()
-                        ->renameColumn($contentTable, $oldColumnName, $newColumnName)
-                        ->execute();
-                }
-            } else if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
-                Craft::$app->getDb()->createCommand()
-                    ->alterColumn($contentTable, $newColumnName, $columnType)
-                    ->execute();
-            } else {
-                Craft::$app->getDb()->createCommand()
-                    ->addColumn($contentTable, $newColumnName, $columnType)
-                    ->execute();
-            }
-        } else {
-            // Did the old field have a column we need to remove?
-            if (
-                !$isNewField &&
-                $fieldRecord->getOldHandle() &&
-                Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)
-            ) {
-                Craft::$app->getDb()->createCommand()
-                    ->dropColumn($contentTable, $oldColumnName)
-                    ->execute();
-            }
-        }
-
         // Clear the translation key format if not using a custom translation method
         if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
             $field->translationKeyFormat = null;
