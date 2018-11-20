@@ -34,6 +34,7 @@ class StringValidator extends \yii\validators\StringValidator
 
     /**
      * @var bool whether the string should be trimmed of whitespace
+     * @deprecated in 3.0.32. Use Yii’s `'trim'` validator instead.
      */
     public $trim = false;
 
@@ -49,6 +50,10 @@ class StringValidator extends \yii\validators\StringValidator
 
         if ($this->containsMb4 === null) {
             $this->containsMb4 = Craft::t('app', '{attribute} cannot contain emoji.');
+        }
+
+        if ($this->trim) {
+            Craft::$app->getDeprecator()->log(__CLASS__ . '::trim', __CLASS__ . '::trim has been deprecated. Use Yii’s \'trim\' validator instead.');
         }
     }
 
