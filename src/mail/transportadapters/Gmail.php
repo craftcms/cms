@@ -88,8 +88,8 @@ class Gmail extends BaseTransportAdapter
     public function rules()
     {
         return [
+            [['username', 'password'], 'trim'],
             [['username', 'password', 'timeout'], 'required'],
-            [['username', 'password'], StringValidator::class, 'trim' => true],
             [['timeout'], 'number', 'integerOnly' => true],
         ];
     }
