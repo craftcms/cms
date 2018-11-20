@@ -3,7 +3,7 @@
 @charset "UTF-8";
 @import "../../../../../../lib/craftcms-sass/mixins";
 @import "modal";
-@import "./upgrade-craft";
+@import "upgrade-craft";
 
 h1 {
   font-size: 24px;
@@ -209,7 +209,7 @@ only screen and (min-resolution: 1.5dppx) {
   @apply .flex;
 
   .ps-grid-sidebar {
-    width: 20%;
+    @apply .w-1/5;
     margin-right: 40px;
   }
 
@@ -224,8 +224,8 @@ only screen and (min-resolution: 1.5dppx) {
   margin: 0 -10px;
 
   .ps-grid-box {
+    @apply .w-1/3;
     box-sizing: border-box;
-    width: 33.3333333333%;
     margin-bottom: 20px;
 
     .plugin-card {
@@ -239,7 +239,7 @@ only screen and (min-resolution: 1.5dppx) {
 
   &.ps-grid-plugins-4 {
     .ps-grid-box {
-      width: 25%;
+      @apply .w-1/4;
     }
   }
 }
@@ -248,7 +248,7 @@ only screen and (min-resolution: 1.5dppx) {
   .psd-grid-box {
     &.ps-grid-plugins-4 {
       .ps-grid-box {
-        width: 33.3333333333%;
+        @apply .w-1/3;
       }
     }
   }
@@ -257,12 +257,12 @@ only screen and (min-resolution: 1.5dppx) {
 @media only screen and (min-width: $minLargeScreenWidth) {
   .ps-grid-plugins {
     .ps-grid-box {
-      width: 25%;
+      @apply .w-1/4;
     }
 
     &.ps-grid-plugins-4 {
       .ps-grid-box {
-        width: 20%;
+        @apply .w-1/5;
       }
     }
   }
@@ -271,13 +271,13 @@ only screen and (min-resolution: 1.5dppx) {
 @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
   .ps-grid-wrapper.has-sidebar {
     .ps-grid-box {
-      width: 100%;
+      @apply .w-full;
     }
   }
 
   .ps-grid-plugins {
     .ps-grid-box {
-      width: 50%;
+      @apply .w-1/2;
     }
   }
 }
@@ -285,7 +285,7 @@ only screen and (min-resolution: 1.5dppx) {
 @media only screen and (max-width: 673px) {
   .ps-grid-plugins {
     .ps-grid-box {
-      width: 100%;
+      @apply .w-full;
     }
   }
 }
