@@ -32,6 +32,7 @@
     "@vue/cli-service": "^3.0.3",
     "node-sass": "^4.9.0",
     "sass-loader": "^7.0.1",
+    "tailwindcss": "^0.7.2",
     "vue-template-compiler": "^2.5.17"
   }
 }
