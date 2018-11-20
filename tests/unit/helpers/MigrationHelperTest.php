@@ -40,8 +40,16 @@ class MigrationHelperTest extends Unit
 
     }
 
-    private function createForeignKey($source, $target)
+
+    private function setupForeignKeys()
     {
-        MigrationHelper::restoreForeignKey()
+        $this->createForeignKey('craftunit_test1', 'craftunit_test2', 'test', 'test');
+        $this->createForeignKey('craftunit_test2', 'craftunit_test3', 'test', 'test');
+        $this->createForeignKey('craftunit_test3', 'craftunit_test3', 'test', 'test');
+    }
+
+    private function createForeignKey($sourceTable, $targetTable, $sourceCol, $targetCol, $update = 'NO ACTION', $delete = 'CASCADE')
+    {
+        MigrationHelper::restoreForeignKey($sourceTable, $sourceCol, $targetTable, $targetCol, $update, $delete);
     }
 }
