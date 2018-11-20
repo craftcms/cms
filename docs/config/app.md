@@ -4,6 +4,10 @@ You can customize Craft’s entire [Yii application configuration](https://www.y
 
 You can also customize Craft’s application configuration for only web requests or console requests from `config/app.web.php` and `config/app.console.php`.
 
+::: tip
+Craft’s default configuration is defined by [src/config/app.php](https://github.com/craftcms/cms/blob/master/src/config/app.php), [app.web.php](https://github.com/craftcms/cms/blob/master/src/config/app.web.php), and [app.console.php](https://github.com/craftcms/cms/blob/master/src/config/app.console.php). Refer to these files when you need to override existing application components.
+:::
+
 [[toc]]
 
 ## Cache Component
