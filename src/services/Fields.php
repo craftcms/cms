@@ -307,17 +307,6 @@ class Fields extends Component
 
         $group->uid = $uid;
 
-        // Update our cache of it
-        $this->_groupsById[$group->id] = $group;
-
-        // Fire an 'afterSaveFieldGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([
-                'group' => $group,
-                'isNew' => $isNewGroup,
-            ]));
-        }
-
         return true;
     }
 
@@ -340,6 +329,16 @@ class Fields extends Component
 
         $groupRecord->name = $data['name'];
         $groupRecord->save(false);
+
+        $this->_fetchedAllGroups = false;
+
+        // Fire an 'afterSaveFieldGroup' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([
+                'group' => $this->getGroupById($groupRecord->id),
+                'isNew' => $isNewGroup,
+            ]));
+        }
     }
 
     /**
@@ -356,10 +355,20 @@ class Fields extends Component
             return;
         }
 
+        $this->_fetchedAllGroups = false;
+        $group = $this->getGroupById($groupRecord->id);
+
         $groupRecord->delete();
 
         // Delete our cache of it
         unset($this->_groupsById[$groupRecord->id]);
+
+        // Fire an 'afterDeleteFieldGroup' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_FIELD_GROUP, new FieldGroupEvent([
+                'group' => $group
+            ]));
+        }
     }
 
     /**
@@ -414,13 +423,6 @@ class Fields extends Component
         }
 
         Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid);
-
-        // Fire an 'afterDeleteFieldGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_FIELD_GROUP, new FieldGroupEvent([
-                'group' => $group
-            ]));
-        }
 
         return true;
     }
