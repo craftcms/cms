@@ -69,6 +69,10 @@ Outputs any scripts and styles that were registered for the “end body” posit
 </body>
 ```
 
+## `expression( expression, params, config )`
+
+Creates and returns a new <api:yii\db\Expression> object, for use in database queries.
+
 ## `floor( num )`
 
 Rounds a number down.
@@ -84,6 +88,10 @@ Returns the value of an environment variable.
 ```twig
 {{ getenv('MAPS_API_KEY') }}
 ```
+
+## `parseEnv( str )`
+
+Checks if a string references an environment variable (`$VARIABLE_NAME`) and/or an alias (`@aliasName`), and returns the referenced value.
 
 ## `head()`
 
