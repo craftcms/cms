@@ -32,11 +32,21 @@ class Plugin extends \craft\base\Plugin;
 
 Your feature toggles can call your plugin’s [is()](api:craft\base\Plugin::is()) method.
 
+::: code
+
 ```php
 if (Plugin::getInstance()->is(Plugin::EDITION_STANDARD) {
-    // Standard edition-only code goes here
+    // Standard edition-only code goes here...
 }
 ```
+
+```twig
+{% if plugin('plugin-handle').is('standard') %}
+    {# Standard edition-only code goes here... #}
+{% endif %}
+```
+
+:::
 
 `is()` accepts two arguments, `$edition` and `$operator`.
 
