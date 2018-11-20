@@ -1,9 +1,10 @@
 /* Plugin Store Modal */
 
 #pluginstore-modal {
-  @apply .absolute .pin-t .pin-l .z-20;
+  @apply .absolute .pin-t .pin-l;
   max-width: 850px;
   max-height: 650px;
+  z-index: 20000;
 
   .pluginstore-modal-flex {
     @apply .absolute .pin .flex .flex-col;
