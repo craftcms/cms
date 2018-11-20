@@ -55,6 +55,10 @@ Operator | Tests if the active edition is ____ the given edition
 `==` or `eq` | …equal to… (same as default behavior)
 `!=`, `<>`, or `ne` | …not equal to…
 
+::: tip
+Changing editions should always be a lossless operation; no plugin data should change as a result of the edition change. Editions can change back and forth at any time, and plugins should have no problem rolling with it.
+:::
+
 ## Testing
 
 You can toggle the active edition by changing the `plugins.<plugin-handle>.edition` property in `config/project.yaml`.
