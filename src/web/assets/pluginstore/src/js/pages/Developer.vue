@@ -2,25 +2,13 @@
     <div>
         <div class="ps-grid-wrapper has-sidebar">
             <div class="ps-grid-sidebar">
-                <div class="developer-card">
+                <div class="text-center">
                     <template v-if="loading || !developer">
-                        <div class="spinner"></div>
+                        <div class="spinner mt-8"></div>
                     </template>
 
                     <template v-else>
-                        <div class="avatar">
-                            <img :src="developer.photoUrl" />
-                        </div>
-
-                        <ul>
-                            <li><strong>{{ developer.developerName }}</strong></li>
-                            <li>{{ developer.location }}</li>
-                        </ul>
-
-                        <ul class="links">
-                            <li><a class="btn" :href="developer.developerUrl">{{ "Website"|t('app') }}</a></li>
-                            <li><a class="btn" :href="developer.developerUrl">{{ "Contact"|t('app') }}</a></li>
-                        </ul>
+                        <developer-card :developer="developer"></developer-card>
                     </template>
                 </div>
             </div>
@@ -35,6 +23,7 @@
 <script>
     import {mapState} from 'vuex'
     import PluginIndex from '../components/PluginIndex'
+    import DeveloperCard from '../components/DeveloperCard'
 
     export default {
 
@@ -47,6 +36,7 @@
 
         components: {
             PluginIndex,
+            DeveloperCard,
         },
 
         computed: {

@@ -9,6 +9,9 @@ h1 {
   font-size: 24px;
 }
 
+.no-line-height {
+  line-height: 0;
+}
 
 /* General */
 
@@ -526,43 +529,6 @@ ul.categories {
 
     &:before {
       border-color: $noticeColor;
-    }
-  }
-}
-
-
-/* Developer card */
-
-.developer-card {
-  @apply .text-center;
-
-  .spinner {
-    margin-top: 48px;
-  }
-
-  .avatar {
-    @apply .inline-block .overflow-hidden;
-    width: 120px;
-    height: 120px;
-    border-radius: 100%;
-    background: #fafafa;
-    margin-top: 24px;
-    margin-bottom: 12px;
-
-    img {
-      @apply .w-full;
-    }
-  }
-
-  ul.links {
-    margin-top: 36px;
-
-    li {
-      margin-bottom: 1em;
-
-      a {
-        @apply .block;
-      }
     }
   }
 }
