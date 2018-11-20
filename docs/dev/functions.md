@@ -104,6 +104,14 @@ Outputs any scripts and styles that were registered for the “head” position.
 </head>
 ```
 
+## `plugin( handle )`
+
+Returns a plugin instance by its handle, or `null` if no plugin is installed and enabled with that handle.
+
+```twig
+{{ plugin('commerce').version }}
+```
+
 ## `redirectInput( url )`
 
 Shortcut for typing `<input type="hidden" name="redirect" value="{{ url|hash }}">`.
