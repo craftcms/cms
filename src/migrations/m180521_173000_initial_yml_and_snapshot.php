@@ -8,9 +8,7 @@ use craft\db\Query;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * m180521_173000_initial_yml_and_snapshot migration.

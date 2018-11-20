@@ -7,16 +7,12 @@
 
 namespace craft\controllers;
 
-use Composer\IO\BufferIO;
-use Composer\Semver\Comparator;
-use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
 use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
 use craft\services\Plugins;
 use yii\base\NotSupportedException;
-use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 /**

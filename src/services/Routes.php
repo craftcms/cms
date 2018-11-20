@@ -8,15 +8,10 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query;
-use craft\errors\RouteNotFoundException;
 use craft\events\DeleteSiteEvent;
 use craft\events\RouteEvent;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
-use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\records\Route as RouteRecord;
 use yii\base\Component;
 
 /**
@@ -307,6 +302,6 @@ class Routes extends Component
             $max = max($max, $route['sortOrder']);
         }
 
-        return (int) $max + 1;
+        return (int)$max + 1;
     }
 }

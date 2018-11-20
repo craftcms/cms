@@ -18,7 +18,6 @@ use craft\mail\Mailer;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\TransportAdapterInterface;
-use craft\models\Info;
 use craft\models\MailSettings;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;

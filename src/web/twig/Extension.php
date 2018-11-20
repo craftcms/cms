@@ -45,7 +45,6 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use enshrined\svgSanitize\Sanitizer;
-use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -915,7 +914,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         // Namespace class names and IDs
         if (
             $namespace && (
-            strpos($svg, 'id=') !== false || strpos($svg, 'class=') !== false)
+                strpos($svg, 'id=') !== false || strpos($svg, 'class=') !== false)
         ) {
             $ns = StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 10) . '-';
             $ids = [];

@@ -280,12 +280,12 @@ class AssetTransforms extends Component
             $transformRecord->save(false);
 
             $transaction->commit();
-
         } catch (\Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
     }
+
     /**
      * Deletes an asset transform by its ID.
      *
@@ -902,7 +902,7 @@ class AssetTransforms extends Component
                     // Fetch a list of existing temp files for this image.
                     $files = FileHelper::findFiles($tempPath, [
                         'only' => [
-                            $prefix . '*' .  '.' . $extension
+                            $prefix . '*' . '.' . $extension
                         ]
                     ]);
 

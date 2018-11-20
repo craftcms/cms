@@ -7,9 +7,6 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
-use yii\base\Event;
-
 /**
  * Delete element event class.
  *
