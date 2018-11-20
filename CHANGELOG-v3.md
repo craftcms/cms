@@ -1,13 +1,22 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.32 - 2018-11-20
 
 ### Added
 - The `seq()` Twig function now has a `next` argument, which can be set to `false` to have it return the current number in the sequence without incrementing it. ([#3466](https://github.com/craftcms/cms/issues/3466))
+- Added `craft\db\MigrationManager::truncateHistory()`.
 - Added `craft\helpers\Sequence::current()`.
+
+### Changed
+- Edit Entry pages now show the entry’s site in the revision menu label so long as the section is enabled for multiple sites, even if “Propagate entries across all enabled sites?” isn’t checked. ([#3471](https://github.com/craftcms/cms/issues/3471))
+- Exact-match search terms (using `::`) now disable `subLeft` and `subRight` attributes by default, regardless of the `defaultSearchTermOptions` config setting says. ([#3474](https://github.com/craftcms/cms/issues/3474))
+
+### Deprecated
+- Deprecated `craft\validators\StringValidator::$trim`. Yii’s `'trim'` validator should be used instead.
 
 ### Fixed
 - Fixed an error that occurred when querying for Matrix blocks if both the `with` and `indexBy` parameters were set.
+- Fixed an error that occurred when running the `migrate/fresh` console command. ([#3472](https://github.com/craftcms/cms/issues/3472))
 
 ## 3.0.31 - 2018-11-13
 
