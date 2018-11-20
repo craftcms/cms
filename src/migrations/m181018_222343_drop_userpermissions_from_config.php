@@ -18,7 +18,7 @@ class m181018_222343_drop_userpermissions_from_config extends Migration
         $projectConfig = Craft::$app->getProjectConfig();
 
         // Don't make the same config changes twice
-        $schemaVersion = $projectConfig->get('system.schemaVersion', true) ?? $projectConfig->get('schemaVersion', true);
+        $schemaVersion = $projectConfig->get('system.schemaVersion', true);
         if (version_compare($schemaVersion, '3.1.4', '>=')) {
             return;
         }
