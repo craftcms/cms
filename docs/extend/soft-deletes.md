@@ -3,7 +3,7 @@
 Modules and plugins can add soft delete support to their components by following this guide.
 
 ::: tip
-All element types support soft deletes out of the box. See the [Element Types](element-types.md#restore-action) for information on how to make them restorable.
+All element types support soft deletes out of the box. See [Element Types](element-types.md#restore-action) for information on how to make them restorable.
 :::
 
 ## Prepare the Database Table
