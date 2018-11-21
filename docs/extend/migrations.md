@@ -147,3 +147,303 @@ When a plugin has an Install migration, its `safeUp()` method will be called whe
 ::: tip
 It is *not* a plugin’s responsibility to manage its row in the `plugins` database table. Craft takes care of that for you.
 :::
+
+## Examples
+
+**Fields**
+
+Values required to build each field type can be found at `craftcms/cms/src/fields`
+
+```php
+// Variable to keep track of created ids in case safeDown() is called
+private $fieldIds = [];
+
+public function safeUp()
+{
+    // Query to get the group id
+    $groupId = null;
+    if ($group = (new \craft\db\Query)
+            ->select('id')
+            ->from('fieldgroups')
+            ->where(['name' => 'Products'])
+            ->one()) {
+        $groupId = $group['id'];       
+    }
+
+    // Add an Entry Field
+    try {
+    
+        // Get the Entry Type for this Entry field
+        $sectionId = 0;
+        foreach (Craft::$app->getSections()->getSectionByHandle('sectionHandle')->getEntryTypes() as $entryType) {
+            if ($entryType->handle == 'entryTypeHandle') {
+                $sectionId = $entryType->sectionId;
+                break;
+            }
+        }
+        
+        // Make sure the field doesn't already exist
+        if (!Craft::$app->getFields()->getFieldByHandle('myField')) {
+        
+            // Build the field
+            $field = new \craft\fields\Entries([
+                'groupId' => $groupId,
+                'name' => 'My Field',
+                'handle' => 'myField',
+                'limit' => 1,
+                'sources' => ['section:' . $sectionId]
+            ]);
+
+            // Add the new field
+            Craft::$app->getFields()->saveField($field);
+            
+            // Save the id
+            $this->fieldIds[] = $field->id;
+        }
+        
+    } catch (\Throwable $e) {
+        echo $e->getMessage();
+        return false;
+    }
+    
+    // Add a Numeric Field
+    try {
+    
+        // Make sure the field doesn't already exist
+        if (!Craft::$app->getFields()->getFieldByHandle('myNumber')) {
+        
+            // Build the field
+            $field = new \craft\fields\Number([
+                'groupId' => $groupId,
+                'name' => 'My Number',
+                'handle' => 'myNumber',
+                'min' => 0,
+                'decimals' => 2
+            ]);
+
+            // Add the new field
+            Craft::$app->getFields()->saveField($field);
+            
+            // Save the id
+            $this->fieldIds[] = $field->id;
+        }
+    } catch (\Throwable $e) {
+        echo $e->getMessage();
+        return false;
+    }
+    
+    // Add a Lightswitch field
+    try {
+        
+        // Make sure the field doesn't already exist
+        if (!Craft::$app->getFields()->getFieldByHandle('isOn')) {
+        
+            // Build the field
+            $field = new \craft\fields\Lightswitch([
+                'groupId' => $groupId,
+                'name' => 'Is On',
+                'handle' => 'isOn',
+                'default' => 'on'
+            ]);
+
+            // Add the new field
+            Craft::$app->getFields()->saveField($field);
+            
+            // Save the id
+            $this->fieldIds[] = $field->id;
+        }
+    } catch (\Throwable $e) {
+        echo $e->getMessage();
+        return false;
+    }
+    
+    return true;
+}
+
+public function safeDown()
+{
+    $return = true;
+
+    foreach ($fieldIds as $fieldId) {
+        try {
+            Craft::$app->getFields()->deleteFieldById($fieldId);
+        } catch (\Throwable $e) {
+            echo $e->getMessage();
+            $return = $false;
+        }
+    }
+    
+    return $return;
+}
+```
+
+**Sections and Entry Types**
+
+```php
+// Variables to keep track of created ids in case safeDown() is called
+private $sectionIds = [];
+private $entryTypeIds = [];
+
+public function safeUp()
+{
+    // Fetch or add a section
+    try {
+            
+        // Check to see if section already exists
+        if (!$section = Craft::$app->getSections()->getSectionByHandle('mySection')) {
+        
+            $siteSettings = new \craft\models\Section_SiteSettings([
+                'siteId' => Craft::$app->getSites()->currentSite->id,
+                'hasUrls' => false
+            ]);
+            
+            // Build section
+            $section = new Section([
+                'name' => 'My Section',
+                'handle' => 'mySection',
+                'type' => 'channel'
+            ]);
+            
+            // Assign settings to new section
+            $section->setSiteSettings([$siteSettings]);
+            
+            // Save the section
+            Craft::$app->getSections()->saveSection($section);
+            
+            // Save the id
+            $this->sectionIds[] = $section->id;
+        }
+    } catch (\Throwable $e) {
+        echo $e->getMessage();
+        return false;
+    }
+    
+    // Crete Entry Type
+    try {
+        if (!Craft::$app->getSections()->getEntryTypesByHandle('myEntryType')) {
+            
+            // Build Entry Type
+            $entryType = new EntryType([
+                'name' => 'My Entry Typw',
+                'handle' => 'myEntryType',
+                'hasTitleField' => true,
+                'titleLabel' => 'Title',
+                'sectionId' => $section->id
+            ]);
+    
+            // Save Entry Type
+            Craft::$app->getSections()->saveEntryType($retailerProducts);
+            
+            // Save the id
+            $this->entryTypeIds[] = $entryType->id;
+        }
+    } catch (\Throwable $e) {
+        echo $e->getMessage();
+        return false;
+    }
+    
+    return true;
+}
+
+public function safeDown()
+{
+    $return = true;
+
+    foreach ($this->entryTypeIds as $entryTypeId) {
+        try {
+            Craft::$app->getSections()->deleteEntryTypeById($entryTypeId);
+        } catch (\Throwable $e) {
+            echo $e->getMessage();
+            $return = false;
+        }
+    }
+
+    foreach ($this->sectionIds as $sectionId) {
+        try {
+            Craft::$app->getSections()->deleteSectionById($sectionId);
+        } catch (\Throwable $e) {
+            echo $e->getMessage();
+            $return = false;
+        }
+    }
+    
+    return $return;
+}
+```
+
+**Add Fields to Entry Type**
+
+```php
+public function safeUp()
+{
+    try {
+    
+        // Find the entry type if it exists
+        foreach (Craft::$app->getSections()->getSectionByHandle('sectionHandle')->getEntryTypes() as $entryType) {
+            if ($entryType->handle == 'entryTypeHandle') {
+                
+                // Define fields to be added to entry type (they must already all exist by this point)
+                $fields = [
+                    [ 'handle' => 'myField', 'required' => true ],
+                    [ 'handle' => 'myNumber', 'required' => true ],
+                    [ 'handle' => 'isOn', 'required' => true ],
+                ];
+    
+                // Build the Field Records array
+                $fieldRecords = [];
+                
+                foreach ($fields as $index => $field) {
+    
+                    /** @var \craft\fields\Entries $f */
+                    if ($f = Craft::$app->getFields()->getFieldByHandle($field['handle'])) {
+                        $fieldRecord = new \craft\records\FieldLayoutField([
+                            'id' => $f->id,
+                            'required' => $field['required'],
+                            'sortOrder' => $index
+                        ]);
+                        $fieldRecords[] = $fieldRecord;
+                    }
+                }
+                
+                // Create a new tab
+                $fieldLayoutTab = new \craft\models\FieldLayoutTab([
+                    'name' => 'My Tab',
+                    'sortOrder' => 1,
+                    'layoutId' => $entryType->getFieldLayoutId()
+                ]);
+
+                // Add fields to tab
+                $fieldLayoutTab->setFields($fieldRecords);
+
+                // Create a new Field Layout
+                $fieldLayout = new \craft\models\FieldLayout();
+                $fieldLayout->type = \craft\elements\Entry::class;
+                $fieldLayout->setTabs([$fieldLayoutTab]);
+                $fieldLayout->id = $entryType->getFieldLayoutId();
+
+                // Save Layout
+                Craft::$app->getFields()->saveLayout($fieldLayout);
+
+                // Save Entry Type
+                Craft::$app->getSections()->saveEntryType($entryType);
+                
+                // There may be many Entry Types in one section, so break after you get the one you need
+                break;
+            }
+        }
+        
+    } catch (\Throwable $e) {
+        echo $e->getMessage();
+        return false;
+    }
+    
+    return true;
+}
+
+public function safeDown()
+{
+    // In this scenario, the Entry Type and Layout already exist so there is really nothing to roll back
+    return true;
+}
+
+```
