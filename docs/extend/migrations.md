@@ -298,7 +298,7 @@ public function safeUp()
             ]);
             
             // Build section
-            $section = new Section([
+            $section = new \craft\models\Section([
                 'name' => 'My Section',
                 'handle' => 'mySection',
                 'type' => 'channel'
@@ -323,7 +323,7 @@ public function safeUp()
         if (!Craft::$app->getSections()->getEntryTypesByHandle('myEntryType')) {
             
             // Build Entry Type
-            $entryType = new EntryType([
+            $entryType = new \craft\models\EntryType([
                 'name' => 'My Entry Typw',
                 'handle' => 'myEntryType',
                 'hasTitleField' => true,
