@@ -298,7 +298,8 @@ class Matrix extends Component
 
                 $field->context = 'matrixBlockType:' . $blockTypeUid;
 
-                if (!$fieldsService->saveField($field, false)) {
+                $fieldConfigPath = 'matrixBlockTypes.' . $blockTypeUid . '.fields.{uid}';
+                if (!$fieldsService->saveField($field, false, $fieldConfigPath)) {
                     throw new Exception('An error occurred while saving this Matrix block type.');
                 }
 
