@@ -434,12 +434,7 @@ ul.categories {
 /* Plugin card */
 
 .plugin-card {
-  @apply .flex;
-  padding: 20px;
-  border: 1px solid #E3E5E8;
-  border-radius: 5px;
   box-sizing: border-box;
-  position: relative;
 
   &:hover {
     @apply .cursor-pointer;
