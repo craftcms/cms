@@ -22,10 +22,10 @@
                         <template v-if="pluginSnippet.editions[0].price != null && pluginSnippet.editions[0].price !== '0.00'">
                             <template v-if="isInstalled(pluginSnippet)">
                                 <template v-if="pluginHasLicenseKey(pluginSnippet.handle)">
-                                    <div class="license-status installed" data-icon="check">{{ "Installed"|t('app') }}</div>
+                                    <license-status status="installed" :description="$options.filters.t('Installed', 'app')"></license-status>
                                 </template>
                                 <template v-else>
-                                    <div class="license-status installed" data-icon="check">{{ "Installed as a trial"|t('app') }}</div>
+                                    <license-status status="installed" :description="$options.filters.t('Installed as a trial', 'app')"></license-status>
 
                                     <a v-if="isInCart(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
                                     <a v-else @click="chooseEdition(pluginSnippet)" class="btn submit" :title="buyBtnTitle">{{ pluginSnippet.editions[0].price|currency }}</a>
@@ -119,6 +119,7 @@
 <script>
     import {mapState, mapGetters, mapActions} from 'vuex'
     import Step from '../Step'
+    import LicenseStatus from '../../LicenseStatus'
 
     export default {
 
@@ -126,6 +127,7 @@
 
         components: {
             Step,
+            LicenseStatus,
         },
 
         data() {
