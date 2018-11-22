@@ -298,12 +298,12 @@ class Matrix extends Component
                     $field->name = '__blank__';
                 }
 
+                if (!$field->uid) {
+                    $field->uid = StringHelper::UUID();
+                }
+
                 $field->context = 'matrixBlockType:' . $blockTypeUid;
                 $configData['fields'][$field->uid] = $field->createFieldConfig();
-
-                if (!$fieldsService->saveField($field, false)) {
-                    throw new Exception('An error occurred while saving this Matrix block type.');
-                }
 
                 $field->sortOrder = ++$sortOrder;
                 $fieldLayoutFields[] = $field;
