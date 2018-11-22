@@ -4,7 +4,7 @@ import api from '../../api/cart';
  * State
  */
 const state = {
-    searchQuery: 'test query'
+    searchQuery: ''
 }
 
 /**

@@ -36,7 +36,7 @@
         methods: {
 
             showPlugin(plugin) {
-                this.$root.showPlugin(plugin)
+                this.$router.push({path: '/plugins/' + plugin.handle})
             },
 
         },

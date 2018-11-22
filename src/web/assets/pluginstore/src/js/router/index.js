@@ -9,6 +9,7 @@ import Buy from '../pages/Buy'
 import Tests from '../pages/Tests'
 import NotFound from '../pages/NotFound'
 import Search from '../pages/Search'
+import PluginsHandle from '../pages/plugins/_handle'
 
 Vue.use(VueRouter)
 
@@ -50,6 +51,11 @@ export default new VueRouter({
             path: '/buy/:pluginHandle',
             name: 'Buy',
             component: Buy,
+        },
+        {
+            path: '/plugins/:pluginHandle',
+            name: 'PluginsHandle',
+            component: PluginsHandle,
         },
         {
             path: '/search',
