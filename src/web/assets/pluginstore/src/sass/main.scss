@@ -331,6 +331,10 @@ ul.categories {
         background: #fafafa;
         border-color: #eee;
       }
+
+      &.router-link-active {
+        @apply .bg-grey-lighter;
+      }
     }
   }
 
