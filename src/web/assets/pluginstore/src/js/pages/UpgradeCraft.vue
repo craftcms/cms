@@ -124,3 +124,129 @@
         },
     }
 </script>
+
+<style lang="scss" scoped>
+    @import "../../../../../../../lib/craftcms-sass/mixins";
+
+    #upgrade-craft {
+        .logo {
+            @apply .tw-inline-block;
+            margin: 0 auto 24px !important;
+            font-weight: 500;
+            font-size: 18px;
+            color: $submitColor;
+            letter-spacing: 3.3px;
+            line-height: 14px;
+            border: 1px solid $submitColor;
+            border-radius: 3px;
+            padding: 10px 6.7px 9px 10px;
+            text-transform: uppercase;
+        }
+    }
+
+    #upgrade-craft-compare table {
+        table-layout: fixed;
+
+        th,
+        td {
+            @apply .tw-w-1/3;
+        }
+
+        th.feature {
+            font-weight: normal;
+            color: $mediumTextColor;
+        }
+
+        thead {
+            th {
+                @apply .tw-font-normal;
+                font-size: 13px;
+                line-height: 18px;
+            }
+
+            tr {
+                &.logos th {
+                    padding-bottom: 14px;
+
+                    .logo {
+                        @apply .tw-mb-0;
+                    }
+
+                    p {
+                        @apply .tw-whitespace-normal;
+                        max-width: 250px;
+                    }
+                }
+
+                &.license-statuses td {
+                    @apply .tw-pt-0;
+                    padding-bottom: 14px;
+                }
+            }
+
+            tr.price {
+                th,
+                td {
+                    @apply .tw-relative;
+                    padding-top: 14px;
+                }
+
+                td {
+                    &:before {
+                        @apply .tw-absolute .tw-block .tw-pin-t;
+                        width: 24px;
+                        height: 1px;
+                        content: '.';
+                        font-size: 0;
+                        background: $hairlineColor;
+                    }
+
+                    .listedprice {
+                        @include margin-right(5px);
+                        text-decoration: line-through;
+                        color: $lightTextColor;
+                    }
+                }
+
+                th:before {
+                    @include left(0);
+                }
+
+                td:before {
+                    @include left(14px);
+                }
+            }
+        }
+
+        tbody {
+            th,
+            td {
+                @apply .tw-w-1/3;
+            }
+
+            tr:first-child {
+                th,
+                td {
+                    @apply .tw-border-t-0;
+                }
+            }
+
+            th.group {
+                padding-top: 30px;
+                border-bottom-style: solid;
+                color: $mediumTextColor;
+
+                &:before {
+                    margin-top: -2px;
+                    width: 24px;
+                    font-size: 17px;
+                }
+            }
+
+            tr.buybtns td {
+                @apply .tw-border-b-0;
+                padding-top: 14px;
+            }
+        }
+    }
+</style>

@@ -37,3 +37,34 @@
 
     }
 </script>
+
+<style lang="scss" scoped>
+
+    /* Plugin card */
+
+    .plugin-card {
+        box-sizing: border-box;
+
+        &:hover {
+            @apply .tw-cursor-pointer;
+            background: #fafafa;
+        }
+
+        .plugin-icon {
+            margin-right: 14px;
+        }
+
+        .installed {
+            @apply .tw-absolute;
+            top: 14px;
+            right: 18px;
+            color: #ccc;
+        }
+    }
+
+    .ps-grid-plugins {
+        .plugin-card {
+            @apply .tw-h-full;
+        }
+    }
+</style>

@@ -18,7 +18,7 @@
                     </th>
                     <td v-for="edition in editions">
                         <div>
-                            <div class="edition-badge">{{edition.name}}</div>
+                            <edition-badge :name="edition.name"></edition-badge>
                         </div>
                         <div>
                             <template v-if="edition.price > 0">{{edition.price|currency}}</template>
@@ -95,6 +95,8 @@
 </template>
 
 <script>
+    import EditionBadge from '../../EditionBadge'
+
     export default {
 
         props: ['pluginId'],
@@ -108,6 +110,7 @@
 
         components: {
             Step: require('../Step'),
+            EditionBadge,
         },
 
         computed: {
@@ -166,3 +169,14 @@
         }
     }
 </script>
+
+<style lang="scss" scoped>
+    table.choose-edition {
+        thead {
+            th,
+            td {
+                padding-bottom: 14px;
+            }
+        }
+    }
+</style>

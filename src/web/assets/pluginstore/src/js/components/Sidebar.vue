@@ -47,3 +47,63 @@
 
     }
 </script>
+
+<style lang="scss" scoped>
+    @import "../../sass/variables";
+
+
+    /* Categories */
+
+    ul.categories {
+        li {
+            position: relative;
+
+            &:before,
+            &:last-child:after {
+                @apply .tw-absolute .tw-pin-l .tw-pin-r;
+                content: '';
+            }
+
+            &:before {
+                @apply .tw-pin-t;
+            }
+
+            &:last-child:after {
+                @apply .tw-pin-b;
+            }
+
+            a {
+                @apply .tw-block .tw-relative;
+                padding: 10px;
+                padding-left: 31px;
+
+                img {
+                    @apply .tw-absolute .tw-pin-l;
+                    top: 7px;
+                    width: 24px;
+                }
+
+                &:hover {
+                    @apply .tw-no-underline .tw-z-10;
+                    background: #fafafa;
+                    border-color: #eee;
+                }
+
+                &.router-link-active {
+                    @apply .bg-grey-lighter;
+                }
+            }
+        }
+
+        li:hover + li:before {
+            border-color: transparent;
+        }
+    }
+
+
+    @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+        .categories-wrapper {
+            @apply .tw-hidden;
+        }
+    }
+</style>

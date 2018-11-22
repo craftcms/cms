@@ -51,3 +51,103 @@
 
     }
 </script>
+
+<style lang="scss" scoped>
+    @import "../../../../../../../lib/craftcms-sass/mixins";
+    @import "../../sass/variables";
+
+
+    /* Category Selector Btn */
+
+    .category-selector-btn {
+        @apply .tw-hidden .tw-relative;
+        background: $lightBgColor;
+        border: 1px solid $hairlineColor;
+        padding: 10px 20px;
+        border-radius: 4px;
+        margin-bottom: 24px;
+        color: $secondarySubmitColor;
+
+        &:before {
+            @include icon;
+            @apply .tw-absolute .tw-pin-r;
+            top: calc(50% - 10px);
+            font-size: 16px;
+            width: 43px;
+            line-height: 20px;
+            content: 'downangle';
+        }
+
+        &:hover {
+            @apply .tw-no-underline;
+        }
+    }
+
+
+    /* Category Selector */
+
+    .category-selector {
+        @apply .tw-hidden .tw-flex-col .tw-fixed .tw-pin-t .tw-pin-l .tw-bg-white .tw-z-20;
+        width: 100vw;
+        height: 100vh;
+        box-sizing: border-box;
+
+        .category-selector-header {
+            a {
+                @apply .tw-block .tw-text-black;
+                padding: 14px 24px;
+                background: #fafafa;
+                border-bottom: 1px solid #eee;
+
+                &:hover {
+                    @apply .tw-no-underline;
+                }
+            }
+        }
+
+        .category-selector-body {
+            @apply .tw-overflow-auto .tw-h-full;
+            box-sizing: border-box;
+
+            ul.categories {
+                li {
+                    &:first-child a {
+                        border-top: 0;
+                    }
+
+                    &:first-child:before {
+                        @apply .tw-hidden;
+                    }
+
+                    &:before,
+                    &:after {
+                        left: 1rem;
+                        right: 1rem;
+                    }
+
+                    a {
+                        padding-left: 55px;
+
+                        img {
+                            left: 24px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+        .category-selector-btn {
+            @apply .tw-block;
+        }
+
+        .category-selector {
+            @apply .tw-flex;
+        }
+
+        .categories-wrapper {
+            @apply .tw-hidden;
+        }
+    }
+</style>
