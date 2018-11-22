@@ -1550,6 +1550,7 @@ class Fields extends Component
             $field->oldHandle = $fieldRecord->getOldHandle();
         }
 
+        $field->id = $fieldRecord->id;
         $field->afterSave($isNewField);
 
         // Fire an 'afterSaveField' event
