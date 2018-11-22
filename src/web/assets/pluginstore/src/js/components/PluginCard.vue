@@ -1,5 +1,5 @@
 <template>
-    <div v-if="plugin" class="plugin-card relative flex flex-no-wrap items-start p-6 border-b border-grey-light border-solid" @click="$emit('click')">
+    <div v-if="plugin" class="plugin-card tw-relative tw-flex tw-flex-no-wrap tw-items-start tw-p-6 tw-border-b tw-border-grey-light tw-border-solid" @click="$emit('click')">
         <div class="plugin-icon">
             <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
             <img v-else :src="defaultPluginSvg" height="32" />

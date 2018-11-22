@@ -1,31 +1,31 @@
 /* Plugin Store Modal */
 
 #pluginstore-modal {
-  @apply .absolute .pin-t .pin-l;
+  @apply .tw-absolute .tw-pin-t .tw-pin-l;
   max-width: 850px;
   max-height: 650px;
   z-index: 20000;
 
   .pluginstore-modal-flex {
-    @apply .absolute .pin .flex .flex-col;
+    @apply .tw-absolute .tw-pin .tw-flex .tw-flex-col;
 
     header {
       .btn-left {
-        @apply .absolute;
+        @apply .tw-absolute;
         top: 28px;
         left: 24px;
       }
 
       h1 {
-        @apply .text-center;
+        @apply .tw-text-center;
       }
     }
 
     .pluginstore-modal-main {
-      @apply .relative .flex .flex-grow .mb-0 .min-h-0;
+      @apply .tw-relative .tw-flex .tw-flex-grow .tw-mb-0 .tw-min-h-0;
 
       .pluginstore-modal-content {
-        @apply .overflow-auto .flex-grow;
+        @apply .tw-overflow-auto .tw-flex-grow;
         padding: 24px;
       }
     }
@@ -35,10 +35,10 @@
 
   &.step-plugin-details {
     .plugin-details {
-      @apply .relative .flex .flex-grow .flex-col .min-h-0;
+      @apply .tw-relative .tw-flex .tw-flex-grow .tw-flex-col .tw-min-h-0;
 
       .plugin-details-header {
-        @apply .flex .flex-no-shrink;
+        @apply .tw-flex .tw-flex-no-shrink;
         border-bottom: 1px solid #eee;
         padding: 24px;
 
@@ -47,7 +47,7 @@
         }
 
         .description {
-          @apply .flex-grow;
+          @apply .tw-flex-grow;
           margin-left: 14px;
         }
 
@@ -60,7 +60,7 @@
         }
 
         .buttons {
-          @apply .whitespace-no-wrap;
+          @apply .tw-whitespace-no-wrap;
           @include margin(0, 0, 0, 24px);
 
           a {
@@ -75,34 +75,34 @@
       }
 
       .plugin-details-body {
-        @apply .relative .flex .flex-grow .min-h-0 .w-full;
+        @apply .tw-relative .tw-flex .tw-flex-grow .tw-min-h-0 .tw-w-full;
         flex-basis: 100%;
 
         .plugin-details-loading {
-          @apply .absolute;
+          @apply .tw-absolute;
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
         }
 
         .plugin-description {
-          @apply .flex-grow .min-w-0 .overflow-auto .w-full;
+          @apply .tw-flex-grow .tw-min-w-0 .tw-overflow-auto .tw-w-full;
           padding: 24px;
           flex-basis: 100%;
 
           img {
-            @apply .max-w-full;
+            @apply .tw-max-w-full;
           }
 
           pre {
-            @apply .overflow-auto;
+            @apply .tw-overflow-auto;
             background: #eee;
             padding: 24px;
           }
         }
 
         .plugin-sidebar {
-          @apply .overflow-auto;
+          @apply .tw-overflow-auto;
           flex: 0 0 260px;
           width: 260px;
           background: #fafafa;
@@ -117,21 +117,21 @@
               margin-bottom: 14px;
 
               li {
-                @apply .flex;
+                @apply .tw-flex;
                 border-bottom: 1px solid #eee;
                 padding: 7px 0;
 
                 &:last-child {
-                  @apply .border-b-0;
+                  @apply .tw-border-b-0;
                 }
 
                 & span,
                 & strong {
-                  @apply .flex-grow;
+                  @apply .tw-flex-grow;
                 }
 
                 & strong {
-                  @apply .text-right;
+                  @apply .tw-text-right;
                 }
               }
             }
@@ -146,7 +146,7 @@
           margin-top: 24px;
 
           img {
-            @apply .w-full;
+            @apply .tw-w-full;
             margin-bottom: 24px;
           }
         }
@@ -158,26 +158,26 @@
 
   &.step-payment {
     .blocks {
-      @apply .flex;
+      @apply .tw-flex;
       margin: 0 -20px;
 
       .block {
-        @apply .flex-grow .w-1/2;
+        @apply .tw-flex-grow .tw-w-1/2;
         padding: 0 20px;
       }
     }
 
     .multiselectrow {
-      @apply .flex;
+      @apply .tw-flex;
 
       .input {
-        @apply .w-1/2;
+        @apply .tw-w-1/2;
 
         .select {
-          @apply .w-full;
+          @apply .tw-w-full;
 
           select {
-            @apply .w-full;
+            @apply .tw-w-full;
           }
         }
       }
@@ -188,7 +188,7 @@
 
   &.step-thank-you {
     &.pluginstore-modal .pluginstore-modal-flex .pluginstore-modal-main .pluginstore-modal-content {
-      @apply .flex .p-0 .justify-center .items-center;
+      @apply .tw-flex .tw-p-0 .tw-justify-center .tw-items-center;
     }
 
     h2 {
@@ -196,12 +196,12 @@
     }
 
     #thank-you-message {
-      @apply .text-center;
+      @apply .tw-text-center;
       padding: 48px 24px;
     }
 
     #graphic {
-      @apply .inline-block;
+      @apply .tw-inline-block;
       width: 48px;
       height: 48px;
       background-repeat: no-repeat;

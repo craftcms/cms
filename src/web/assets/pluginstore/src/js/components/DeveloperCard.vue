@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="avatar inline-block overflow-hidden rounded-full bg-grey mt-4 mb-2 no-line-height">
+        <div class="avatar tw-inline-block tw-overflow-hidden tw-rounded-full tw-bg-grey tw-mt-4 tw-mb-2 no-line-height">
             <img :src="developer.photoUrl" width="120" height="120" />
         </div>
 
