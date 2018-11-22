@@ -290,6 +290,8 @@ class Matrix extends Component
             $contentService->fieldContext = 'matrixBlockType:' . $blockTypeUid;
             $contentService->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
 
+            $configData['fields'] = [];
+
             foreach ($blockType->getFields() as $field) {
                 // Hack to allow blank field names
                 if (!$field->name) {
@@ -297,9 +299,9 @@ class Matrix extends Component
                 }
 
                 $field->context = 'matrixBlockType:' . $blockTypeUid;
+                $configData['fields'][$field->uid] = $field->createFieldConfig();
 
-                $fieldConfigPath = 'matrixBlockTypes.' . $blockTypeUid . '.fields.{uid}';
-                if (!$fieldsService->saveField($field, false, $fieldConfigPath)) {
+                if (!$fieldsService->saveField($field, false)) {
                     throw new Exception('An error occurred while saving this Matrix block type.');
                 }
 
@@ -371,9 +373,15 @@ class Matrix extends Component
             $blockTypeRecord->sortOrder = $data['sortOrder'];
             $blockTypeRecord->uid = $blockTypeUid;
 
-            if (!empty($data['fieldLayouts'])) {
-                $fields = Craft::$app->getFields();
+            $fields = Craft::$app->getFields();
 
+            if (!empty($data['fields'])) {
+                foreach ($data['fields'] as $fieldUid => $fieldData) {
+                    $fields->saveFieldFromConfig($fieldUid, $fieldData, 'matrixBlockType:'.$blockTypeUid);
+                }
+            }
+
+            if (!empty($data['fieldLayouts'])) {
                 // Delete the field layout
                 $fields->deleteLayoutById($blockTypeRecord->fieldLayoutId);
 
