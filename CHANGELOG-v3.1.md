@@ -24,6 +24,7 @@
 - Added `craft\base\Element::EVENT_BEFORE_RESTORE`.
 - Added `craft\base\ElementInterface::afterRestore()`.
 - Added `craft\base\ElementInterface::beforeRestore()`.
+- Added `craft\base\Field::createFieldConfig()`.
 - Added `craft\base\Field::EVENT_AFTER_ELEMENT_RESTORE`.
 - Added `craft\base\Field::EVENT_BEFORE_ELEMENT_RESTORE`.
 - Added `craft\base\FieldInterface::afterElementRestore()`.

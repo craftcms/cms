@@ -445,6 +445,34 @@ abstract class Field extends SavableComponent implements FieldInterface
         return Craft::$app->getFields()->getGroupById($this->groupId);
     }
 
+    /**
+     * Create a field config array for this field.
+     *
+     * @return array
+     */
+    public function createFieldConfig(): array
+    {
+        $configData = [
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'instructions' => $this->instructions,
+            'searchable' => $this->searchable,
+            'translationMethod' => $this->translationMethod,
+            'translationKeyFormat' => $this->translationKeyFormat,
+            'type' => \get_class($this),
+            'settings' => $this->getSettings(),
+            'contentColumnType' => $this->getContentColumnType(),
+        ];
+
+        if ($this->groupId && $group = $this->getGroup()) {
+            $configData['fieldGroup'] = $group->uid;
+        } else {
+            $configData['fieldGroup'] = null;
+        }
+
+        return $configData;
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
