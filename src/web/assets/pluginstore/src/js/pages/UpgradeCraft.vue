@@ -1,6 +1,7 @@
 <template>
     <div ref="upgradecraft" v-if="cart" id="upgrade-craft">
         <div id="upgrade-craft-compare" class="body">
+            <h1>{{ "Upgrade Craft CMS"|t('app') }}</h1>
             <table class="data fullwidth">
                 <thead>
                 <tr class="logos">
@@ -112,17 +113,6 @@
                 editions: state => state.craft.editions,
             }),
 
-        },
-
-        created() {
-            this.$root.crumbs = [
-                {
-                    label: this.$options.filters.t("Plugin Store", 'app'),
-                    path: '/',
-                }
-            ]
-
-            this.$root.pageTitle = this.$options.filters.t('Upgrade Craft CMS', 'app')
         },
 
         mounted() {

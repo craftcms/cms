@@ -1,5 +1,6 @@
 <template>
     <div>
+        <h1 v-if="developer">{{developer.developerName}}</h1>
         <div class="ps-grid-wrapper has-sidebar">
             <div class="ps-grid-sidebar">
                 <div class="text-center">
@@ -56,7 +57,6 @@
 
             this.$store.dispatch('pluginStore/getDeveloper', developerId)
                 .then(developer => {
-                    this.$root.pageTitle = this.$options.filters.escapeHtml(developer.developerName)
                     this.$root.loading = false
                     this.loading = false
                 })
@@ -64,13 +64,6 @@
                     this.$root.loading = false
                     this.loading = false
                 })
-
-            this.$root.crumbs = [
-                {
-                    label: this.$options.filters.t("Plugin Store", 'app'),
-                    path: '/',
-                }
-            ]
         },
 
     }

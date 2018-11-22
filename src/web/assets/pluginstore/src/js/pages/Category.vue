@@ -1,5 +1,6 @@
 <template>
     <div v-if="category">
+        <h1>{{category.title}}</h1>
         <plugin-index :plugins="plugins" :columns="4"></plugin-index>
     </div>
 </template>
@@ -28,13 +29,7 @@
             }),
 
             category() {
-                let category = this.getCategoryById(this.categoryId)
-
-                if (category) {
-                    this.$root.pageTitle = category.title
-                }
-
-                return category
+                return this.getCategoryById(this.categoryId)
             },
 
             plugins() {
@@ -52,13 +47,6 @@
         },
 
         created() {
-            this.$root.crumbs = [
-                {
-                    label: this.$options.filters.t("Plugin Store", 'app'),
-                    path: '/',
-                }
-            ]
-
             this.categoryId = this.$route.params.id
         },
 

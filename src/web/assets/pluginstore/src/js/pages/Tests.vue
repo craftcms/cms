@@ -37,15 +37,6 @@
             },
         },
 
-        created() {
-            this.$root.crumbs = [
-                {
-                    label: this.$options.filters.t("Plugin Store", 'app'),
-                    path: '/',
-                }
-            ]
-        },
-
         mounted() {
             this.modal = new Garnish.Modal(this.$refs.garnishmodalcontent, {
                 autoShow: false,

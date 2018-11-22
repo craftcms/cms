@@ -41,13 +41,7 @@
 
         },
 
-        created() {
-            this.$root.pageTitle = this.$options.filters.t("Plugin Store", 'app')
-        },
-
         mounted() {
-            this.$root.crumbs = null
-
             // show a plugin?
             const pluginHandle = this.$route.params.pluginHandle
             if (pluginHandle) {

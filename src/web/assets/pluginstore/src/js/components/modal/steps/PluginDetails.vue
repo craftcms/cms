@@ -243,13 +243,11 @@
 
             viewDeveloper(plugin) {
                 this.$root.closeModal()
-                this.$root.pageTitle = this.$options.filters.escapeHtml(plugin.developerName)
                 this.$router.push({path: '/developer/' + plugin.developerId})
             },
 
             viewCategory(category) {
                 this.$root.closeModal()
-                this.$root.pageTitle = category.name
                 this.$router.push({path: '/categories/' + category.id})
             },
 

@@ -1,5 +1,6 @@
 <template>
     <div v-if="featuredPlugin">
+        <h1>{{featuredPlugin.title}}</h1>
         <plugin-grid :columns="4" :plugins="getPluginsByIds(featuredPlugin.plugins)"></plugin-grid>
     </div>
 </template>
@@ -22,24 +23,9 @@
             }),
 
             featuredPlugin() {
-                let featuredPlugin = this.getFeaturedPlugin(this.$route.params.id)
-
-                if (featuredPlugin) {
-                    this.$root.pageTitle = this.$options.filters.escapeHtml(featuredPlugin.title)
-                }
-
-                return featuredPlugin
+                return this.getFeaturedPlugin(this.$route.params.id)
             }
 
-        },
-
-        created() {
-            this.$root.crumbs = [
-                {
-                    label: this.$options.filters.t("Plugin Store", 'app'),
-                    path: '/',
-                }
-            ]
         },
 
     }
