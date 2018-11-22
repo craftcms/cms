@@ -214,6 +214,11 @@ class Fields extends Component
      */
     private $_layoutsByType;
 
+    /**
+     * @var array
+     */
+    private $_savingFields = [];
+
     // Public Methods
     // =========================================================================
 
@@ -830,12 +835,10 @@ class Fields extends Component
      *
      * @param FieldInterface $field The Field to be saved
      * @param bool $runValidation Whether the field should be validated
-     * @param string|null $configPath The location that the field should be saved to in the project config.
-     * If the field's context isn't global and this is null, then the field won't be saved to the project config at all.
      * @return bool Whether the field was saved successfully
      * @throws \Throwable if reasons
      */
-    public function saveField(FieldInterface $field, bool $runValidation = true, string $configPath = null): bool
+    public function saveField(FieldInterface $field, bool $runValidation = true): bool
     {
         /** @var Field $field */
         $isNewField = $field->getIsNew();
@@ -862,23 +865,8 @@ class Fields extends Component
             $field->translationKeyFormat = null;
         }
 
-        $groupRecord = $this->_getGroupRecord($field->groupId);
-        $groupUid = $groupRecord->uid;
-
         $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'fieldGroup' => $groupUid,
-            'name' => $field->name,
-            'handle' => $field->handle,
-            'context' => $field->context,
-            'instructions' => $field->instructions,
-            'searchable' => $field->searchable,
-            'translationMethod' => $field->translationMethod,
-            'translationKeyFormat' => $field->translationKeyFormat,
-            'type' => \get_class($field),
-            'settings' => $field->getSettings(),
-            'contentColumnType' => $field->getContentColumnType(),
-        ];
+        $configData = $field->createFieldConfig();
 
         if ($isNewField) {
             $uid = StringHelper::UUID();
@@ -886,17 +874,16 @@ class Fields extends Component
             $uid = $field->uid;
         }
 
-        if ($field->context === 'global' && $configPath === null) {
-            $configPath = self::CONFIG_FIELDS_KEY . '.{uid}';
-        }
+        // Store with all the populated data for future reference.
+        $this->_savingFields[$uid] = $field;
 
-        // Only store field data in the project config if we have a config path
-        if ($configPath !== null) {
-            $configPath = str_replace('{uid}', $uid, $configPath);
+        // Only store field data in the project config for global context
+        if ($field->context === 'global') {
+            $configPath = self::CONFIG_FIELDS_KEY . '.' . $uid;
             $projectConfig->set($configPath, $configData);
         } else {
             // Otherwise just save it to the DB
-            $this->_storeField($uid, $configData, $field->context);
+            $this->saveFieldFromConfig($uid, $configData, $field->context);
         }
 
         if ($isNewField) {
@@ -925,7 +912,7 @@ class Fields extends Component
 
         $data = $event->newValue;
         $fieldUid = $event->tokenMatches[0];
-        $this->_storeField($fieldUid, $data, 'global');
+        $this->saveFieldFromConfig($fieldUid, $data, 'global');
     }
 
     /**
@@ -1453,6 +1440,127 @@ class Fields extends Component
         Craft::$app->saveInfo($info);
     }
 
+    /**
+     * Stores a field in the database.
+     *
+     * @param string $fieldUid
+     * @param array $data
+     * @param string $context
+     */
+    public function saveFieldFromConfig(string $fieldUid, array $data, string $context)
+    {
+        $groupUid = $data['fieldGroup'];
+
+        // Ensure we have the field group in place first
+        if ($groupUid) {
+            Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_FIELDGROUP_KEY . '.' . $groupUid);
+        }
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+
+        try {
+            $fieldRecord = $this->_getFieldRecord($fieldUid);
+            $groupRecord = $this->_getGroupRecord($groupUid);
+            $isNewField = $fieldRecord->isNewRecord;
+            $fieldtype = $data['type'];
+
+            // Create/alter the content table column
+            $contentTable = Craft::$app->getContent()->contentTable;
+            $oldColumnName = $this->oldFieldColumnPrefix . $fieldRecord->getOldHandle();
+            $newColumnName = Craft::$app->getContent()->fieldColumnPrefix . $data['handle'];
+
+            if ($fieldtype::hasContentColumn()) {
+                $columnType = $data['contentColumnType'];
+
+                // Make sure we're working with the latest data in the case of a renamed field.
+                Craft::$app->getDb()->schema->refresh();
+
+                if (Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)) {
+                    Craft::$app->getDb()->createCommand()
+                        ->alterColumn($contentTable, $oldColumnName, $columnType)
+                        ->execute();
+                    if ($oldColumnName !== $newColumnName) {
+                        Craft::$app->getDb()->createCommand()
+                            ->renameColumn($contentTable, $oldColumnName, $newColumnName)
+                            ->execute();
+                    }
+                } else if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
+                    Craft::$app->getDb()->createCommand()
+                        ->alterColumn($contentTable, $newColumnName, $columnType)
+                        ->execute();
+                } else {
+                    Craft::$app->getDb()->createCommand()
+                        ->addColumn($contentTable, $newColumnName, $columnType)
+                        ->execute();
+                }
+            } else {
+                // Did the old field have a column we need to remove?
+                if (
+                    !$isNewField &&
+                    $fieldRecord->getOldHandle() &&
+                    Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)
+                ) {
+                    Craft::$app->getDb()->createCommand()
+                        ->dropColumn($contentTable, $oldColumnName)
+                        ->execute();
+                }
+            }
+
+            // Clear the translation key format if not using a custom translation method
+            if ($data['translationMethod'] !== Field::TRANSLATION_METHOD_CUSTOM) {
+                $data['translationKeyFormat'] = null;
+            }
+
+            $fieldRecord->uid = $fieldUid;
+            $fieldRecord->groupId = $groupRecord->id;
+            $fieldRecord->name = $data['name'];
+            $fieldRecord->handle = $data['handle'];
+            $fieldRecord->context = $context;
+            $fieldRecord->instructions = $data['instructions'];
+            $fieldRecord->searchable = $data['searchable'] ?? false;
+            $fieldRecord->translationMethod = $data['translationMethod'];
+            $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
+            $fieldRecord->type = $data['type'];
+            $fieldRecord->settings = $data['settings'] ?? null;
+
+            $fieldRecord->save(false);
+
+            $transaction->commit();
+
+            // Update the field version
+            $this->updateFieldVersion();
+
+            // Tell the current ContentBehavior class about the field
+            ContentBehavior::$fieldHandles[$fieldRecord->handle] = true;
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+
+            throw $e;
+        }
+
+        // Clear caches
+        $this->refreshFields();
+
+        // For CP save requests, make sure we have all the custom data already saved on the object.
+        /** @var Field $field */
+        $field = $this->_savingFields[$fieldUid] ?? $this->getFieldById($fieldRecord->id);
+
+        if (!$isNewField) {
+            // Save the old field handle on the model in case the field type needs to do something with it.
+            $field->oldHandle = $fieldRecord->getOldHandle();
+        }
+
+        $field->afterSave($isNewField);
+
+        // Fire an 'afterSaveField' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_FIELD, new FieldEvent([
+                'field' => $field,
+                'isNew' => $isNewField,
+            ]));
+        }
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -1564,126 +1672,5 @@ class Fields extends Component
     private function _getFieldRecord(string $uid): FieldRecord
     {
         return FieldRecord::findOne(['uid' => $uid]) ?? new FieldRecord();
-    }
-
-    /**
-     * Stores a field in the database.
-     *
-     * @param string $fieldUid
-     * @param array $data
-     * @param string $context
-     */
-    private function _storeField(string $fieldUid, array $data, string $context)
-    {
-        $groupUid = $data['fieldGroup'];
-
-        // Ensure we have the field group in place first
-        if ($groupUid) {
-            Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_FIELDGROUP_KEY . '.' . $groupUid);
-        }
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
-        try {
-            $fieldRecord = $this->_getFieldRecord($fieldUid);
-            $groupRecord = $this->_getGroupRecord($groupUid);
-            $isNewField = $fieldRecord->isNewRecord;
-            $fieldtype = $data['type'];
-
-            // Create/alter the content table column
-            $contentTable = Craft::$app->getContent()->contentTable;
-            $oldColumnName = $this->oldFieldColumnPrefix . $fieldRecord->getOldHandle();
-            $newColumnName = Craft::$app->getContent()->fieldColumnPrefix . $data['handle'];
-
-            if ($fieldtype::hasContentColumn()) {
-                $columnType = $data['contentColumnType'];
-
-                // Make sure we're working with the latest data in the case of a renamed field.
-                Craft::$app->getDb()->schema->refresh();
-
-                if (Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)) {
-                    Craft::$app->getDb()->createCommand()
-                        ->alterColumn($contentTable, $oldColumnName, $columnType)
-                        ->execute();
-                    if ($oldColumnName !== $newColumnName) {
-                        Craft::$app->getDb()->createCommand()
-                            ->renameColumn($contentTable, $oldColumnName, $newColumnName)
-                            ->execute();
-                    }
-                } else if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
-                    Craft::$app->getDb()->createCommand()
-                        ->alterColumn($contentTable, $newColumnName, $columnType)
-                        ->execute();
-                } else {
-                    Craft::$app->getDb()->createCommand()
-                        ->addColumn($contentTable, $newColumnName, $columnType)
-                        ->execute();
-                }
-            } else {
-                // Did the old field have a column we need to remove?
-                if (
-                    !$isNewField &&
-                    $fieldRecord->getOldHandle() &&
-                    Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)
-                ) {
-                    Craft::$app->getDb()->createCommand()
-                        ->dropColumn($contentTable, $oldColumnName)
-                        ->execute();
-                }
-            }
-
-            // Clear the translation key format if not using a custom translation method
-            if ($data['translationMethod'] !== Field::TRANSLATION_METHOD_CUSTOM) {
-                $data['translationKeyFormat'] = null;
-            }
-
-            $fieldRecord->uid = $fieldUid;
-            $fieldRecord->groupId = $groupRecord->id;
-            $fieldRecord->name = $data['name'];
-            $fieldRecord->handle = $data['handle'];
-            $fieldRecord->context = $context;
-            $fieldRecord->instructions = $data['instructions'];
-            $fieldRecord->searchable = $data['searchable'];
-            $fieldRecord->translationMethod = $data['translationMethod'];
-            $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
-            $fieldRecord->type = $data['type'];
-            $fieldRecord->settings = $data['settings'] ?? null;
-
-            $fieldRecord->save(false);
-
-            $transaction->commit();
-
-            // Update the field version
-            $this->updateFieldVersion();
-
-            // Tell the current ContentBehavior class about the field
-            ContentBehavior::$fieldHandles[$fieldRecord->handle] = true;
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-
-        // Clear caches
-        $this->refreshFields();
-
-        // Get the new field
-        /** @var Field $field */
-        $field = $this->getFieldById($fieldRecord->id);
-
-        if (!$isNewField) {
-            // Save the old field handle on the model in case the field type needs to do something with it.
-            $field->oldHandle = $fieldRecord->getOldHandle();
-        }
-
-        $field->afterSave($isNewField);
-
-        // Fire an 'afterSaveField' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_FIELD, new FieldEvent([
-                'field' => $field,
-                'isNew' => $isNewField,
-            ]));
-        }
     }
 }
