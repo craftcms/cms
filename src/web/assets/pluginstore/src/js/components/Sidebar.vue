@@ -1,5 +1,9 @@
 <template>
     <div class="ps-grid-sidebar categories-wrapper">
+        <plugin-search></plugin-search>
+
+        <category-selector></category-selector>
+
         <h2>{{ "Categories"|t('app') }}</h2>
         <ul class="categories">
             <li v-if="CraftEdition < CraftPro || licensedEdition < CraftPro">
@@ -20,8 +24,15 @@
 
 <script>
     import {mapState} from 'vuex'
+    import CategorySelector from './CategorySelector'
+    import PluginSearch from './PluginSearch'
 
     export default {
+
+        components: {
+            CategorySelector,
+            PluginSearch,
+        },
 
         computed: {
 
