@@ -307,7 +307,7 @@ class ProjectConfig extends Component
         // Ensure that new data is processed
         unset($this->_parsedChanges[$path]);
 
-        return $this->processConfigChanges($path);
+        return $this->processConfigChanges($path, true);
     }
 
     /**
@@ -424,8 +424,9 @@ class ProjectConfig extends Component
      * Processes changes in `config/project.yaml` for a given path.
      *
      * @param string $path The config item path
+     * @param bool $triggerUpdate is set to true and no changes are detected, an update event will be triggered, anyway.
      */
-    public function processConfigChanges(string $path)
+    public function processConfigChanges(string $path, bool $triggerUpdate = false)
     {
         if (!empty($this->_parsedChanges[$path])) {
             return;
@@ -450,6 +451,8 @@ class ProjectConfig extends Component
             Json::encode($oldValue) !== Json::encode($newValue)
         ) {
             // Fire an 'updateItem' event
+            $this->trigger(self::EVENT_UPDATE_ITEM, $event);
+        } else if ($triggerUpdate) {
             $this->trigger(self::EVENT_UPDATE_ITEM, $event);
         } else {
             return;
