@@ -913,7 +913,7 @@ class Fields extends Component
             $projectConfig->set($configPath, $configData);
         } else {
             // Otherwise just save it to the DB
-            $this->saveFieldFromConfig($uid, $configData, $field->context);
+            $this->saveFieldInternal($uid, $configData, $field->context);
         }
 
         if ($isNewField) {
@@ -943,7 +943,7 @@ class Fields extends Component
         $data = $event->newValue;
         $fieldUid = $event->tokenMatches[0];
 
-        $this->saveFieldFromConfig($fieldUid, $data, 'global');
+        $this->saveFieldInternal($fieldUid, $data, 'global');
     }
 
     /**
@@ -987,7 +987,7 @@ class Fields extends Component
         if ($field->context === 'global') {
             Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDS_KEY . '.' . $field->uid);
         } else {
-            $this->removeField($field->uid);
+            $this->deleteFieldInternal($field->uid);
         }
 
         return true;
@@ -1006,16 +1006,16 @@ class Fields extends Component
 
         $fieldUid = $event->tokenMatches[0];
 
-        $this->removeField($fieldUid);
+        $this->deleteFieldInternal($fieldUid);
     }
 
     /**
-     * Remove a field from database.
+     * Deletes a field from the database.
      *
      * @param $fieldUid
      * @throws \Throwable if database error
      */
-    public function removeField($fieldUid)
+    public function deleteFieldInternal($fieldUid)
     {
         try {
             $fieldRecord = $this->_getFieldRecord($fieldUid);
@@ -1494,13 +1494,13 @@ class Fields extends Component
     }
 
     /**
-     * Stores a field in the database.
+     * Saves a field to the database.
      *
      * @param string $fieldUid
      * @param array $data
      * @param string $context
      */
-    public function saveFieldFromConfig(string $fieldUid, array $data, string $context)
+    public function saveFieldInternal(string $fieldUid, array $data, string $context)
     {
         $groupUid = $data['fieldGroup'];
 

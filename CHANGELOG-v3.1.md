@@ -54,7 +54,9 @@
 - Added `craft\services\Elements::EVENT_AFTER_RESTORE_ELEMENT`.
 - Added `craft\services\Elements::EVENT_BEFORE_RESTORE_ELEMENT`.
 - Added `craft\services\Fields::createFieldConfig()`.
+- Added `craft\services\Fields::deleteFieldInternal()`.
 - Added `craft\services\Fields::restoreLayoutById()`.
+- Added `craft\services\Fields::saveFieldInternal()`.
 - Added `craft\services\Gc` for handling garbage collection tasks.
 - Added `craft\services\ProjectConfig`.
 - Added `craft\services\Routes::deleteRouteByUid()`
