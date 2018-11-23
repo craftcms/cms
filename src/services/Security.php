@@ -29,15 +29,7 @@ class Security extends \yii\base\Security
      * @var string[] Keywords used to reference sensitive data
      * @see redactIfSensitive()
      */
-    public $sensitiveKeywords = [
-        'key',
-        'pass',
-        'password',
-        'pw',
-        'secret',
-        'tok',
-        'token',
-    ];
+    public $sensitiveKeywords = [];
 
     /**
      * @var mixed
