@@ -24,7 +24,6 @@
 - Added `craft\base\Element::EVENT_BEFORE_RESTORE`.
 - Added `craft\base\ElementInterface::afterRestore()`.
 - Added `craft\base\ElementInterface::beforeRestore()`.
-- Added `craft\base\Field::createFieldConfig()`.
 - Added `craft\base\Field::EVENT_AFTER_ELEMENT_RESTORE`.
 - Added `craft\base\Field::EVENT_BEFORE_ELEMENT_RESTORE`.
 - Added `craft\base\FieldInterface::afterElementRestore()`.
@@ -54,6 +53,7 @@
 - Added `craft\services\Elements::restoreElement()`.
 - Added `craft\services\Elements::EVENT_AFTER_RESTORE_ELEMENT`.
 - Added `craft\services\Elements::EVENT_BEFORE_RESTORE_ELEMENT`.
+- Added `craft\services\Fields::createFieldConfig()`.
 - Added `craft\services\Fields::restoreLayoutById()`.
 - Added `craft\services\Gc` for handling garbage collection tasks.
 - Added `craft\services\ProjectConfig`.

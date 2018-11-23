@@ -261,7 +261,7 @@ class Matrix extends Component
                 }
 
                 $field->context = 'matrixBlockType:' . $blockTypeUid;
-                $configData['fields'][$field->uid] = $field->createFieldConfig();
+                $configData['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
 
                 $field->sortOrder = ++$sortOrder;
                 $fieldLayoutFields[] = $field;

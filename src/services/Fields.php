@@ -831,6 +831,36 @@ class Fields extends Component
     }
 
     /**
+     * Creates a field config array for the given field.
+     *
+     * @param FieldInterface $field
+     * @return array
+     */
+    public function createFieldConfig(FieldInterface $field): array
+    {
+        /** @var Field $field */
+        $config = [
+            'name' => $field->name,
+            'handle' => $field->handle,
+            'instructions' => $field->instructions,
+            'searchable' => $field->searchable,
+            'translationMethod' => $field->translationMethod,
+            'translationKeyFormat' => $field->translationKeyFormat,
+            'type' => get_class($field),
+            'settings' => $field->getSettings(),
+            'contentColumnType' => $field->getContentColumnType(),
+        ];
+
+        if ($field->groupId) {
+            $config['fieldGroup'] = $this->getGroupById($field->groupId)->uid;
+        } else {
+            $config['fieldGroup'] = null;
+        }
+
+        return $config;
+    }
+
+    /**
      * Saves a field.
      *
      * @param FieldInterface $field The Field to be saved
@@ -866,7 +896,7 @@ class Fields extends Component
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $configData = $field->createFieldConfig();
+        $configData = $this->createFieldConfig($field);
 
         if ($isNewField) {
             $uid = StringHelper::UUID();
