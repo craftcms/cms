@@ -1348,7 +1348,7 @@ class User extends Element implements IdentityInterface
                 ];
 
                 foreach ($userRefs as $table => $column) {
-                    Craft::$app->getDb()->createCommand()
+                    $db->createCommand()
                         ->update(
                             $table,
                             [
