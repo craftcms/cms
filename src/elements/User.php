@@ -1329,6 +1329,10 @@ class User extends Element implements IdentityInterface
      */
     public function beforeDelete(): bool
     {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
         // Do all this stuff within a transaction
         $db = Craft::$app->getDb();
         $transaction = $db->beginTransaction();
@@ -1354,7 +1358,7 @@ class User extends Element implements IdentityInterface
                 ];
 
                 foreach ($userRefs as $table => $column) {
-                    Craft::$app->getDb()->createCommand()
+                    $db->createCommand()
                         ->update(
                             $table,
                             [
@@ -1381,11 +1385,6 @@ class User extends Element implements IdentityInterface
                 foreach ($results as $result) {
                     Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
                 }
-            }
-
-            if (!parent::beforeDelete()) {
-                $transaction->rollBack();
-                return false;
             }
 
             $transaction->commit();

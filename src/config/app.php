@@ -94,6 +94,15 @@ return [
         ],
         'security' => [
             'class' => craft\services\Security::class,
+            'sensitiveKeywords' => [
+                'key',
+                'pass',
+                'password',
+                'pw',
+                'secret',
+                'tok',
+                'token',
+            ],
         ],
         'structures' => [
             'class' => craft\services\Structures::class,
