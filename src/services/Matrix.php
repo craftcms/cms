@@ -360,6 +360,7 @@ class Matrix extends Component
 
         $blockTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
+        $previousData = $event->oldValue;
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -375,10 +376,19 @@ class Matrix extends Component
 
             $fields = Craft::$app->getFields();
 
-            if (!empty($data['fields'])) {
-                foreach ($data['fields'] as $fieldUid => $fieldData) {
-                    $fields->saveFieldFromConfig($fieldUid, $fieldData, 'matrixBlockType:'.$blockTypeUid);
+            $oldFields = $previousData['fields'] ?? [];
+            $newFields = $data['fields'] ?? [];
+
+            // Remove fields that this block type no longer has
+            foreach ($oldFields as $fieldUid => $fieldData) {
+                if (!array_key_exists($fieldUid, $newFields)) {
+                    $fields->removeField($fieldUid);
                 }
+            }
+
+            // (Re)save all the fields that now exist for this block.
+            foreach ($newFields as $fieldUid => $fieldData) {
+                $fields->saveFieldFromConfig($fieldUid, $fieldData, 'matrixBlockType:'.$blockTypeUid);
             }
 
             if (!empty($data['fieldLayouts'])) {
