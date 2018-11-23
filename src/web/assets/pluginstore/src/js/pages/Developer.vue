@@ -1,8 +1,8 @@
 <template>
     <div>
         <h1 v-if="developer">{{developer.developerName}}</h1>
-        <div class="ps-grid-wrapper has-sidebar">
-            <div class="ps-grid-sidebar">
+        <div class="ps-wrapper has-sidebar">
+            <div class="ps-sidebar">
                 <div class="text-center">
                     <template v-if="loading || !developer">
                         <div class="spinner mt-8"></div>
@@ -14,7 +14,7 @@
                 </div>
             </div>
 
-            <div class="ps-grid-main">
+            <div class="ps-main">
                 <plugin-index :plugins="plugins" columns="3"></plugin-index>
             </div>
         </div>

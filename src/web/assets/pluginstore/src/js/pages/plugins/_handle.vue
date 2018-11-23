@@ -1,9 +1,9 @@
 <template>
     <div v-if="pluginSnippet" class="plugin-details">
         <div class="plugin-details-header">
-            <div class="plugin-icon-large">
-                <img v-if="pluginSnippet.iconUrl" :src="pluginSnippet.iconUrl" height="60" />
-                <img v-else :src="defaultPluginSvg" height="60" />
+            <div class="plugin-icon">
+                <img v-if="pluginSnippet.iconUrl" :src="pluginSnippet.iconUrl" />
+                <img v-else :src="defaultPluginSvg" />
             </div>
 
             <div class="description">
@@ -286,8 +286,12 @@
             border-bottom: 1px solid #eee;
             padding: 24px;
 
-            .plugin-icon-large {
-                margin-right: 14px;
+            .plugin-icon {
+                img {
+                    max-width: none;
+                    width: 80px;
+                    height: 80px;
+                }
             }
 
             .description {

@@ -1,5 +1,5 @@
 <template>
-    <div class="ps-grid-sidebar categories-wrapper">
+    <div class="ps-sidebar categories-wrapper">
         <plugin-search></plugin-search>
 
         <category-selector></category-selector>
@@ -55,6 +55,8 @@
     /* Categories */
 
     ul.categories {
+        @apply .tw--mx-6;
+
         li {
             position: relative;
 
@@ -73,13 +75,10 @@
             }
 
             a {
-                @apply .tw-block .tw-relative;
-                padding: 10px;
-                padding-left: 31px;
+                @apply .tw-block .tw-relative .tw-px-6 .tw-py-2;
 
                 img {
-                    @apply .tw-absolute .tw-pin-l;
-                    top: 7px;
+                    @apply .align-middle;
                     width: 24px;
                 }
 
@@ -90,7 +89,7 @@
                 }
 
                 &.router-link-active {
-                    @apply .bg-grey-lighter;
+                    @apply .bg-grey-light;
                 }
             }
         }

@@ -1,8 +1,8 @@
 <template>
     <div v-if="plugin" class="plugin-card tw-relative tw-flex tw-flex-no-wrap tw-items-start tw-p-6 tw-border-b tw-border-grey-light tw-border-solid" @click="$emit('click')">
         <div class="plugin-icon">
-            <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
-            <img v-else :src="defaultPluginSvg" height="32" />
+            <img v-if="plugin.iconUrl" :src="plugin.iconUrl" />
+            <img v-else :src="defaultPluginSvg" />
         </div>
 
         <div>
@@ -52,6 +52,11 @@
 
         .plugin-icon {
             margin-right: 14px;
+
+            img {
+                width: 60px;
+                height: 60px;
+            }
         }
 
         .installed {

@@ -1,16 +1,3 @@
-.ps-grid-wrapper {
-  @apply .tw-flex;
-
-  .ps-grid-sidebar {
-    @apply .tw-w-1/5;
-    margin-right: 40px;
-  }
-
-  .ps-grid-main {
-    @apply .tw-flex-1;
-  }
-}
-
 .ps-grid-plugins {
   @apply .tw-flex .tw-flex-wrap;
   box-sizing: border-box;
@@ -32,19 +19,13 @@
 
   &.ps-grid-plugins-4 {
     .ps-grid-box {
-      @apply .tw-w-1/4;
+      @apply .tw-w-1/3;
     }
   }
 }
 
 @media only screen and (max-width: $minFullUiWidth - 1px) {
-  .psd-grid-box {
-    &.ps-grid-plugins-4 {
-      .ps-grid-box {
-        @apply .tw-w-1/3;
-      }
-    }
-  }
+  //
 }
 
 @media only screen and (min-width: $minLargeScreenWidth) {
@@ -62,7 +43,7 @@
 }
 
 @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
-  .ps-grid-wrapper.has-sidebar {
+  .ps-wrapper.has-sidebar {
     .ps-grid-box {
       @apply .tw-w-full;
     }

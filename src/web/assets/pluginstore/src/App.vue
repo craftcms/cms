@@ -1,12 +1,10 @@
 <template>
-    <div>
+    <div class="ps-wrapper has-sidebar">
         <template v-if="$root.pluginStoreDataLoaded && !$root.pluginStoreDataError">
-            <div class="ps-grid-wrapper has-sidebar">
-                <sidebar></sidebar>
+            <sidebar></sidebar>
 
-                <div class="ps-grid-main">
-                    <router-view></router-view>
-                </div>
+            <div class="ps-main">
+                <router-view></router-view>
             </div>
         </template>
         <template v-else>

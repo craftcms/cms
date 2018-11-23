@@ -1,5 +1,5 @@
 <template>
-    <div v-if="category">
+    <div v-if="category" class="ps-container">
         <h1>{{category.title}}</h1>
         <plugin-index :plugins="plugins" :columns="4"></plugin-index>
     </div>
