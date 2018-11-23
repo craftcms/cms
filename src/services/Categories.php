@@ -725,20 +725,22 @@ class Categories extends Component
         $categoryGroups = $projectConfig->get(self::CONFIG_CATEGORYROUP_KEY);
 
         // Loop through the categories and see if the UID exists in the field layouts.
-        foreach ($categoryGroups as &$categoryGroup) {
-            if (!empty($categoryGroup['fieldLayouts'])) {
-                foreach ($categoryGroup['fieldLayouts'] as &$layout) {
-                    if (!empty($layout['tabs'])) {
-                        foreach ($layout['tabs'] as &$tab) {
-                            if (!empty($tab['fields'])) {
-                                // Remove the straggler.
-                                if (array_key_exists($fieldUid, $tab['fields'])) {
-                                    unset($tab['fields'][$fieldUid]);
-                                    $fieldPruned = true;
-                                    // If last field, just remove field layouts entry altogether.
-                                    if (empty($tab['fields'])) {
-                                        unset($categoryGroup['fieldLayouts']);
-                                        break 2;
+        if (is_array($categoryGroups)) {
+            foreach ($categoryGroups as &$categoryGroup) {
+                if (!empty($categoryGroup['fieldLayouts'])) {
+                    foreach ($categoryGroup['fieldLayouts'] as &$layout) {
+                        if (!empty($layout['tabs'])) {
+                            foreach ($layout['tabs'] as &$tab) {
+                                if (!empty($tab['fields'])) {
+                                    // Remove the straggler.
+                                    if (array_key_exists($fieldUid, $tab['fields'])) {
+                                        unset($tab['fields'][$fieldUid]);
+                                        $fieldPruned = true;
+                                        // If last field, just remove field layouts entry altogether.
+                                        if (empty($tab['fields'])) {
+                                            unset($categoryGroup['fieldLayouts']);
+                                            break 2;
+                                        }
                                     }
                                 }
                             }

@@ -528,20 +528,22 @@ class Globals extends Component
         $globalSets = $projectConfig->get(self::CONFIG_GLOBALSETS_KEY);
 
         // Loop through the tag groups and see if the UID exists in the field layouts.
-        foreach ($globalSets as &$globalSet) {
-            if (!empty($globalSet['fieldLayouts'])) {
-                foreach ($globalSet['fieldLayouts'] as &$layout) {
-                    if (!empty($layout['tabs'])) {
-                        foreach ($layout['tabs'] as &$tab) {
-                            if (!empty($tab['fields'])) {
-                                // Remove the straggler.
-                                if (array_key_exists($fieldUid, $tab['fields'])) {
-                                    unset($tab['fields'][$fieldUid]);
-                                    $fieldPruned = true;
-                                    // If last field, just remove field layouts entry altogether.
-                                    if (empty($tab['fields'])) {
-                                        unset($globalSet['fieldLayouts']);
-                                        break 2;
+        if (is_array($globalSets)) {
+            foreach ($globalSets as &$globalSet) {
+                if (!empty($globalSet['fieldLayouts'])) {
+                    foreach ($globalSet['fieldLayouts'] as &$layout) {
+                        if (!empty($layout['tabs'])) {
+                            foreach ($layout['tabs'] as &$tab) {
+                                if (!empty($tab['fields'])) {
+                                    // Remove the straggler.
+                                    if (array_key_exists($fieldUid, $tab['fields'])) {
+                                        unset($tab['fields'][$fieldUid]);
+                                        $fieldPruned = true;
+                                        // If last field, just remove field layouts entry altogether.
+                                        if (empty($tab['fields'])) {
+                                            unset($globalSet['fieldLayouts']);
+                                            break 2;
+                                        }
                                     }
                                 }
                             }
