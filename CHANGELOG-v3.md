@@ -5,6 +5,10 @@
 ### Changed
 - Setting `components.security.sensitiveKeywords` in `config/app.php` will now append keywords to the default array `craft\services\Security::$sensitiveKeywords` array, rather than completely overriding it.
 
+### Fixed
+- Fixed a bug where a Matrix fields’ block types and content table could be deleted even if something set `$isValid` to `false` on the `beforeDelete` event.
+- Fixed a bug where a global sets’ field layout could be deleted even if something set `$isValid` to `false` on the `beforeDelete` event.
+
 ## 3.0.32 - 2018-11-20
 
 ### Added
