@@ -912,6 +912,7 @@ class Fields extends Component
 
         $data = $event->newValue;
         $fieldUid = $event->tokenMatches[0];
+
         $this->saveFieldFromConfig($fieldUid, $data, 'global');
     }
 
@@ -953,13 +954,10 @@ class Fields extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDS_KEY . '.' . $field->uid);
-
-        // Fire an 'afterDeleteField' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_FIELD, new FieldEvent([
-                'field' => $field,
-            ]));
+        if ($field->context === 'global') {
+            Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDS_KEY . '.' . $field->uid);
+        } else {
+            $this->removeField($field->uid);
         }
 
         return true;
@@ -977,11 +975,29 @@ class Fields extends Component
         }
 
         $fieldUid = $event->tokenMatches[0];
-        $fieldRecord = $this->_getFieldRecord($fieldUid);
+
+        $this->removeField($fieldUid);
+    }
+
+    /**
+     * Remove a field from database.
+     *
+     * @param $fieldUid
+     * @throws \Throwable if database error
+     */
+    public function removeField($fieldUid)
+    {
+        try {
+            $fieldRecord = $this->_getFieldRecord($fieldUid);
+        } catch (FieldNotFoundException $exception) {
+            return;
+        }
 
         if (!$fieldRecord->id) {
             return;
         }
+
+        $field = $this->getFieldById($fieldRecord->id);
 
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -1007,6 +1023,13 @@ class Fields extends Component
         } catch (\Throwable $e) {
             $transaction->rollBack();
             throw $e;
+        }
+
+        // Fire an 'afterDeleteField' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_FIELD, new FieldEvent([
+                'field' => $field,
+            ]));
         }
 
         // Clear caches
