@@ -324,6 +324,7 @@ class Matrix extends Component
         try {
 
             // Store the current contexts.
+            $originalContentTable = $contentService->contentTable;
             $originalFieldContext = $contentService->fieldContext;
             $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
             $originalOldFieldColumnPrefix = $fieldsService->oldFieldColumnPrefix;
@@ -341,6 +342,7 @@ class Matrix extends Component
             // Make sure that alterations, if any, occur in the correct context.
             $contentService->fieldContext = 'matrixBlockType:' . $blockTypeUid;
             $contentService->fieldColumnPrefix = 'field_' . $blockTypeRecord->handle . '_';
+            $contentService->contentTable = $this->defineContentTableName($fieldsService->getFieldById($blockTypeRecord->fieldId));
             $fieldsService->oldFieldColumnPrefix = 'field_' . $blockTypeRecord->handle . '_';
 
             $oldFields = $previousData['fields'] ?? [];
@@ -363,6 +365,7 @@ class Matrix extends Component
 
             $contentService->fieldContext = $originalFieldContext;
             $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+            $contentService->contentTable = $originalContentTable;
             $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
 
             if (!empty($data['fieldLayouts'])) {
