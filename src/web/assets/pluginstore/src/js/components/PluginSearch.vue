@@ -1,19 +1,13 @@
 <template>
-    <div>
-        <div class="toolbar">
-            <div class="flex">
-                <form @submit.prevent="search()" class="flex-grow texticon search icon clearable">
-                    <input class="text fullwidth" id="sQuery" name="sQuery" type="text" :placeholder="'Search plugins'|t('app')" v-model="sQuery">
-                    <div class="clear" :class="{ hidden: sQuery.length == 0 }" @click="sQuery = ''" title="Clear"></div>
-                </form>
+    <div class="tw-mb-4">
+        <form @submit.prevent="search()" class="tw-w-full texticon search icon clearable">
+            <input class="text fullwidth" id="searchQuery" name="searchQuery" type="text" :placeholder="'Search plugins'|t('app')" v-model="searchQuery">
+            <div class="clear" :class="{ hidden: searchQuery.length == 0 }" @click="searchQuery = ''" title="Clear"></div>
+        </form>
 
-                <template v-if="sort">
-                    <sort-menu-btn :attributes="sortMenuBtnAttributes" :value="sort" @update:value="val => $emit('update:sort', val)"></sort-menu-btn>
-                </template>
-
-                <div class="spinner" v-bind:class="{ invisible: !showSpinner }"></div>
-            </div>
-        </div>
+        <template v-if="sort">
+            <sort-menu-btn :attributes="sortMenuBtnAttributes" :value="sort" @update:value="val => $emit('update:sort', val)"></sort-menu-btn>
+        </template>
     </div>
 </template>
 
@@ -22,29 +16,28 @@
 
     export default {
 
+        props: ['sort'],
+
         components: {
             SortMenuBtn,
         },
 
-        props: ['sort'],
-
         data() {
             return {
-                sQuery: '',
-                showSpinner: false,
-
+                searchQuery: '',
                 selectedAttribute: null,
                 selectedDirection: null,
-
                 sortMenuBtnAttributes: null,
             }
         },
 
         methods: {
+
             search() {
-                this.$store.commit('app/updateSearchQuery', this.sQuery)
+                this.$store.commit('app/updateSearchQuery', this.searchQuery)
                 this.$router.push({path: '/search'})
             }
+
         },
 
         mounted() {
