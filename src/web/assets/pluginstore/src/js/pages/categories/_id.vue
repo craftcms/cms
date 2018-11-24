@@ -1,7 +1,13 @@
 <template>
     <div v-if="category" class="ps-container">
         <h1>{{category.title}}</h1>
-        <plugin-index :plugins="plugins" :columns="4"></plugin-index>
+        
+        <template v-if="loading">
+            <div class="spinner"></div>
+        </template>
+        <template v-else>
+            <plugin-index :plugins="plugins" :columns="4"></plugin-index>
+        </template>
     </div>
 </template>
 
@@ -17,7 +23,9 @@
 
         data() {
             return {
-                categoryId: null,
+                category: null,
+                loading: true,
+                plugins: [],
             }
         },
 
@@ -28,27 +36,17 @@
                 getPluginsByCategory: 'pluginStore/getPluginsByCategory',
             }),
 
-            category() {
-                return this.getCategoryById(this.categoryId)
-            },
-
-            plugins() {
-                return this.getPluginsByCategory(this.categoryId)
-            }
-
         },
 
-        watch: {
+        mounted() {
+            const categoryId = this.$route.params.id
+            this.category = this.getCategoryById(categoryId)
 
-            '$route.params.id': function(id) {
-                this.categoryId = id
-            }
-
-        },
-
-        created() {
-            this.categoryId = this.$route.params.id
-        },
+            setTimeout(function() {
+                this.plugins = this.getPluginsByCategory(categoryId)
+                this.loading = false
+            }.bind(this), 1)
+        }
 
     }
 </script>

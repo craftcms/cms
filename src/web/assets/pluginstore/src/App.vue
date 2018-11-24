@@ -4,7 +4,7 @@
             <sidebar></sidebar>
 
             <div class="ps-main">
-                <router-view></router-view>
+                <router-view :key="$route.fullPath"></router-view>
             </div>
         </template>
         <template v-else>

@@ -18,6 +18,10 @@
 
   .ps-main {
     @apply .tw-flex-1 .overflow-auto .tw-flex;
+
+    .ps-container {
+      @apply .tw-flex-1;
+    }
   }
 }
 
