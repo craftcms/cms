@@ -209,99 +209,96 @@ class Matrix extends Component
      * Saves a block type.
      *
      * @param MatrixBlockType $blockType The block type to be saved.
-     * @param bool $validate Whether the block type should be validated before being saved.
+     * @param bool $runValidation Whether the block type should be validated before being saved.
      * Defaults to `true`.
      * @return bool
      * @throws Exception if an error occurs when saving the block type
      * @throws \Throwable if reasons
      */
-    public function saveBlockType(MatrixBlockType $blockType, bool $validate = true): bool
+    public function saveBlockType(MatrixBlockType $blockType, bool $runValidation = true): bool
     {
-        if (!$validate || $this->validateBlockType($blockType)) {
-
-            $fieldsService = Craft::$app->getFields();
-            $contentService = Craft::$app->getContent();
-
-
-            /** @var Field $parentField */
-            $parentField = $fieldsService->getFieldById($blockType->fieldId);
-            $isNewBlockType = $blockType->getIsNew();
-
-            if ($isNewBlockType) {
-                $blockTypeUid = StringHelper::UUID();
-            } else {
-                $blockTypeUid = $blockType->uid;
-            }
-
-            $projectConfig = Craft::$app->getProjectConfig();
-
-            $configData = [
-                'field' => $parentField->uid,
-                'name' => $blockType->name,
-                'handle' => $blockType->handle,
-                'sortOrder' => $blockType->sortOrder,
-            ];
-
-            // Now, take care of the field layout for this block type
-            // -------------------------------------------------------------
-            $fieldLayoutFields = [];
-            $sortOrder = 0;
-
-            $configData['fields'] = [];
-
-            foreach ($blockType->getFields() as $field) {
-                /** @var Field $field */
-                // Hack to allow blank field names
-                if (!$field->name) {
-                    $field->name = '__blank__';
-                }
-
-                if (!$field->uid) {
-                    $field->uid = StringHelper::UUID();
-                }
-
-                $field->context = 'matrixBlockType:' . $blockTypeUid;
-                $configData['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
-
-                $field->sortOrder = ++$sortOrder;
-                $fieldLayoutFields[] = $field;
-            }
-
-
-            $fieldLayoutTab = new FieldLayoutTab();
-            $fieldLayoutTab->name = 'Content';
-            $fieldLayoutTab->sortOrder = 1;
-            $fieldLayoutTab->setFields($fieldLayoutFields);
-
-            $fieldLayout = $blockType->getFieldLayout();
-
-            if ($fieldLayout->uid) {
-                $layoutUid = $fieldLayout->uid;
-            } else {
-                $layoutUid = StringHelper::UUID();
-                $fieldLayout->uid = $layoutUid;
-            }
-
-            $fieldLayout->setTabs([$fieldLayoutTab]);
-            $fieldLayout->setFields($fieldLayoutFields);
-
-            $fieldLayoutConfig = $fieldLayout->getConfig();
-
-            $configData['fieldLayouts'] = [
-                $layoutUid => $fieldLayoutConfig
-            ];
-
-            $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockTypeUid;
-            $projectConfig->set($configPath, $configData);
-
-            if ($isNewBlockType) {
-                $blockType->id = Db::idByUid('{{%matrixblocktypes}}', $blockTypeUid);
-            }
-
-            return true;
+        if ($runValidation && !$blockType->validate()) {
+            return false;
         }
 
-        return false;
+        $fieldsService = Craft::$app->getFields();
+
+        /** @var Field $parentField */
+        $parentField = $fieldsService->getFieldById($blockType->fieldId);
+        $isNewBlockType = $blockType->getIsNew();
+
+        if ($isNewBlockType) {
+            $blockTypeUid = StringHelper::UUID();
+        } else {
+            $blockTypeUid = $blockType->uid;
+        }
+
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        $configData = [
+            'field' => $parentField->uid,
+            'name' => $blockType->name,
+            'handle' => $blockType->handle,
+            'sortOrder' => $blockType->sortOrder,
+        ];
+
+        // Now, take care of the field layout for this block type
+        // -------------------------------------------------------------
+        $fieldLayoutFields = [];
+        $sortOrder = 0;
+
+        $configData['fields'] = [];
+
+        foreach ($blockType->getFields() as $field) {
+            /** @var Field $field */
+            // Hack to allow blank field names
+            if (!$field->name) {
+                $field->name = '__blank__';
+            }
+
+            if (!$field->uid) {
+                $field->uid = StringHelper::UUID();
+            }
+
+            $field->context = 'matrixBlockType:' . $blockTypeUid;
+            $configData['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
+
+            $field->sortOrder = ++$sortOrder;
+            $fieldLayoutFields[] = $field;
+        }
+
+
+        $fieldLayoutTab = new FieldLayoutTab();
+        $fieldLayoutTab->name = 'Content';
+        $fieldLayoutTab->sortOrder = 1;
+        $fieldLayoutTab->setFields($fieldLayoutFields);
+
+        $fieldLayout = $blockType->getFieldLayout();
+
+        if ($fieldLayout->uid) {
+            $layoutUid = $fieldLayout->uid;
+        } else {
+            $layoutUid = StringHelper::UUID();
+            $fieldLayout->uid = $layoutUid;
+        }
+
+        $fieldLayout->setTabs([$fieldLayoutTab]);
+        $fieldLayout->setFields($fieldLayoutFields);
+
+        $fieldLayoutConfig = $fieldLayout->getConfig();
+
+        $configData['fieldLayouts'] = [
+            $layoutUid => $fieldLayoutConfig
+        ];
+
+        $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockTypeUid;
+        $projectConfig->set($configPath, $configData);
+
+        if ($isNewBlockType) {
+            $blockType->id = Db::idByUid('{{%matrixblocktypes}}', $blockTypeUid);
+        }
+
+        return true;
     }
 
     /**
