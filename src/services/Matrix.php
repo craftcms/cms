@@ -841,7 +841,7 @@ class Matrix extends Component
         if (is_string($blockType)) {
             $blockTypeRecord = MatrixBlockTypeRecord::findOne(['uid' => $blockType]) ?? new MatrixBlockTypeRecord();
 
-            if ($blockTypeRecord->getIsNewRecord()) {
+            if (!$blockTypeRecord->getIsNewRecord()) {
                 $this->_blockTypeRecordsById[$blockTypeRecord->id] = $blockTypeRecord;
             }
 
@@ -852,15 +852,17 @@ class Matrix extends Component
             return new MatrixBlockTypeRecord();
         }
 
-        if ($this->_blockTypeRecordsById !== null && array_key_exists($blockType->id, $this->_blockTypeRecordsById)) {
+        if (isset($this->_blockTypeRecordsById[$blockType->id])) {
             return $this->_blockTypeRecordsById[$blockType->id];
         }
 
-        if (($this->_blockTypeRecordsById[$blockType->id] = MatrixBlockTypeRecord::findOne($blockType->id)) === null) {
+         $blockTypeRecord = MatrixBlockTypeRecord::findOne($blockType->id);
+
+        if ($blockTypeRecord === null) {
             throw new MatrixBlockTypeNotFoundException('Invalid block type ID: ' . $blockType->id);
         }
 
-        return $this->_blockTypeRecordsById[$blockType->id];
+        return $this->_blockTypeRecordsById[$blockType->id] = $blockTypeRecord;
     }
 
     /**
