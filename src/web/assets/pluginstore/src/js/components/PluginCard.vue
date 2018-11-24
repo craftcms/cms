@@ -1,6 +1,6 @@
 <template>
-    <div v-if="plugin" class="plugin-card tw-relative tw-flex tw-flex-no-wrap tw-items-start tw-p-6 tw-border-b tw-border-grey-light tw-border-solid" @click="$emit('click')">
-        <div class="plugin-icon">
+    <div v-if="plugin" class="plugin-card tw-relative tw-flex tw-flex-no-wrap tw-items-start tw-py-6 tw-border-b tw-border-grey-light tw-border-solid" @click="$emit('click')">
+        <div class="plugin-icon tw-mr-4">
             <img v-if="plugin.iconUrl" :src="plugin.iconUrl" />
             <img v-else :src="defaultPluginSvg" />
         </div>
@@ -39,20 +39,20 @@
 </script>
 
 <style lang="scss" scoped>
-
-    /* Plugin card */
+    @import "../../../../../../../lib/craftcms-sass/mixins";
 
     .plugin-card {
         box-sizing: border-box;
 
         &:hover {
             @apply .tw-cursor-pointer;
-            background: #fafafa;
+
+            strong {
+                color: $linkColor;
+            }
         }
 
         .plugin-icon {
-            margin-right: 14px;
-
             img {
                 width: 60px;
                 height: 60px;
