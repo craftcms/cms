@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Changed
+- Table fields with a fixed number of rows no longer show Delete buttons or the “Add a row” button. ([#3488](https://github.com/craftcms/cms/issues/3488))
+- Table fields that are fixed to a single row no longer show the Reorder button. ([#3488](https://github.com/craftcms/cms/issues/3488))
 - Setting `components.security.sensitiveKeywords` in `config/app.php` will now append keywords to the default array `craft\services\Security::$sensitiveKeywords` array, rather than completely overriding it.
 
 ### Fixed
