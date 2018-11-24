@@ -6,7 +6,7 @@
 
 <script>
     import {mapGetters} from 'vuex'
-    import StatusMessage from '../components/StatusMessage'
+    import StatusMessage from '../../components/StatusMessage'
 
     export default {
 
@@ -82,7 +82,7 @@
             this.statusMessage = this.$options.filters.t("Loading Plugin Store…", 'app')
 
             // retrieve plugin
-            const pluginHandle = this.$route.params.pluginHandle
+            const pluginHandle = this.$route.params.handle
             const plugin = this.$store.getters['pluginStore/getPluginByHandle'](pluginHandle)
 
             if (this.$root.pluginStoreDataLoaded && this.$root.craftIdDataLoaded && this.$root.cartDataLoaded) {

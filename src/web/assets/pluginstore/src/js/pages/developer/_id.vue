@@ -32,7 +32,7 @@
 
 <script>
     import {mapState} from 'vuex'
-    import PluginIndex from '../components/PluginIndex'
+    import PluginIndex from '../../components/PluginIndex'
 
     export default {
 

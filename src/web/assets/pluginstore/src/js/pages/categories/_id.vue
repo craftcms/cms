@@ -7,7 +7,7 @@
 
 <script>
     import {mapGetters} from 'vuex'
-    import PluginIndex from '../components/PluginIndex'
+    import PluginIndex from '../../components/PluginIndex'
 
     export default {
 

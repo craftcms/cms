@@ -266,7 +266,7 @@
         },
 
         mounted() {
-            const pluginHandle = this.$route.params.pluginHandle
+            const pluginHandle = this.$route.params.handle
             const plugin = this.$store.getters['pluginStore/getPluginByHandle'](pluginHandle)
 
             this.loadPlugin(plugin.id)
