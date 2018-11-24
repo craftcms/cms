@@ -4,7 +4,6 @@
 
         <category-selector></category-selector>
 
-        <h2>{{ "Categories"|t('app') }}</h2>
         <ul class="categories">
             <li v-if="CraftEdition < CraftPro || licensedEdition < CraftPro">
                 <router-link to="/upgrade-craft">
