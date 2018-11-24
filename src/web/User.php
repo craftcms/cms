@@ -289,8 +289,19 @@ class User extends \yii\web\User
      */
     public function startElevatedSession(string $password): bool
     {
-        // Get the current user
-        $user = $this->getIdentity();
+        $session = Craft::$app->getSession();
+
+        // If the current user is being impersonated by an admin, get the admin instead
+        if ($previousUserId = $session->get(UserElement::IMPERSONATE_KEY)) {
+            $user = UserElement::find()
+                ->addSelect(['users.password'])
+                ->id($previousUserId)
+                ->admin(true)
+                ->one();
+        } else {
+            // Get the current user
+            $user = $this->getIdentity();
+        }
 
         if (!$user) {
             return false;
@@ -310,7 +321,6 @@ class User extends \yii\web\User
         }
 
         // Set the elevated session expiration date
-        $session = Craft::$app->getSession();
         $timeout = time() + $generalConfig->elevatedSessionDuration;
         $session->set($this->elevatedSessionTimeoutParam, $timeout);
 
