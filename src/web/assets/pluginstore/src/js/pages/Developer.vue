@@ -82,6 +82,7 @@
             width: 120px;
             height: 120px;
         }
+        
         h1 {
             @apply .tw-border-b-0;
         }
