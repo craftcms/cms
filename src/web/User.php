@@ -371,8 +371,12 @@ class User extends \yii\web\User
     protected function afterLogin($identity, $cookieBased, $duration)
     {
         /** @var UserElement $identity */
-        // Save the username cookie
-        $this->sendUsernameCookie($identity);
+        $session = Craft::$app->getSession();
+
+        // Save the username cookie if they're not being impersonated
+        if ($session->get(UserElement::IMPERSONATE_KEY) === null) {
+            $this->sendUsernameCookie($identity);
+        }
 
         // Delete any stale session rows
         $this->_deleteStaleSessions();
@@ -381,7 +385,6 @@ class User extends \yii\web\User
         $this->saveDebugPreferencesToSession();
 
         // Clear out the elevated session, if there is one
-        $session = Craft::$app->getSession();
         $session->remove($this->elevatedSessionTimeoutParam);
 
         // Update the user record
