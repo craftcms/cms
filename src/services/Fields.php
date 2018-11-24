@@ -124,6 +124,11 @@ class Fields extends Component
     const EVENT_BEFORE_DELETE_FIELD = 'beforeDeleteField';
 
     /**
+     * @event FieldEvent The event that is triggered before a field delete is applied to the database.
+     */
+    const EVENT_BEFORE_APPLY_FIELD_DELETE = 'beforeApplyFieldDelete';
+
+    /**
      * @event FieldEvent The event that is triggered after a field is deleted.
      */
     const EVENT_AFTER_DELETE_FIELD = 'afterDeleteField';
@@ -1030,9 +1035,18 @@ class Fields extends Component
         /** @var Field $field */
         $field = $this->getFieldById($fieldRecord->id);
 
+        // Fire a 'beforeApplyFieldDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_DELETE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_FIELD_DELETE, new FieldEvent([
+                'field' => $field,
+            ]));
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
+            $field->beforeApplyDelete();
+
             // De we need to delete the content column?
             $contentTable = Craft::$app->getContent()->contentTable;
             $fieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;

@@ -28,6 +28,7 @@
 - Added `craft\base\Field::EVENT_BEFORE_ELEMENT_RESTORE`.
 - Added `craft\base\FieldInterface::afterElementRestore()`.
 - Added `craft\base\FieldInterface::beforeElementRestore()`.
+- Added `craft\base\SavableComponentInterface::beforeApplyDelete()`.
 - Added `craft\behaviors\EnvAttributeParserBehavior`.
 - Added `craft\controllers\LivePreviewController`.
 - Added `craft\db\Command::restore()`.
@@ -59,6 +60,7 @@
 - Added `craft\services\Fields::deleteFieldInternal()`.
 - Added `craft\services\Fields::restoreLayoutById()`.
 - Added `craft\services\Fields::saveFieldInternal()`.
+- Added `craft\services\Fields::EVENT_BEFORE_APPLY_FIELD_DELETE`.
 - Added `craft\services\Gc` for handling garbage collection tasks.
 - Added `craft\services\ProjectConfig`.
 - Added `craft\services\Routes::deleteRouteByUid()`
