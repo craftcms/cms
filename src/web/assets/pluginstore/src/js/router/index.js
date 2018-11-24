@@ -8,7 +8,7 @@ import FeaturedId from '../pages/featured/_id'
 import BuyHandle from '../pages/buy/_handle'
 import Tests from '../pages/tests'
 import NotFound from '../pages/_not-found'
-import Search from '../pages/search/index'
+import Search from '../pages/search'
 import PluginsHandle from '../pages/plugins/_handle'
 
 Vue.use(VueRouter)
