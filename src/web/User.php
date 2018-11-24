@@ -370,7 +370,7 @@ class User extends \yii\web\User
      */
     protected function afterLogin($identity, $cookieBased, $duration)
     {
-        /** @var \craft\elements\User $identity */
+        /** @var UserElement $identity */
         // Save the username cookie
         $this->sendUsernameCookie($identity);
 
