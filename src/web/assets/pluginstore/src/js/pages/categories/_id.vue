@@ -1,7 +1,7 @@
 <template>
     <div v-if="category" class="ps-container">
         <h1>{{category.title}}</h1>
-        
+
         <template v-if="loading">
             <div class="spinner"></div>
         </template>
@@ -38,7 +38,7 @@
 
         },
 
-        mounted() {
+        created() {
             const categoryId = this.$route.params.id
             this.category = this.getCategoryById(categoryId)
 
