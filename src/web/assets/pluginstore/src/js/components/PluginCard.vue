@@ -7,7 +7,7 @@
 
         <div>
             <strong>{{ plugin.name }}</strong>
-            <div>{{ plugin.shortDescription }}</div>
+            <div v-shave="{ height: 45 }">{{ plugin.shortDescription }}</div>
 
             <p v-if="plugin.editions[0].price != null && plugin.editions[0].price !== '0.00'" class="light">{{ plugin.editions[0].price|currency }}</p>
             <p class="light" v-else>Free</p>
