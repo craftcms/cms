@@ -1,11 +1,11 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Index from '../pages/index'
-import Category from '../pages/categories/_id'
+import CategoriesId from '../pages/categories/_id'
 import UpgradeCraft from '../pages/upgrade-craft'
-import Developer from '../pages/developer/_id'
-import FeaturedPlugins from '../pages/featured/_id'
-import BuyPluginHandle from '../pages/buy/_handle'
+import DeveloperId from '../pages/developer/_id'
+import FeaturedId from '../pages/featured/_id'
+import BuyHandle from '../pages/buy/_handle'
 import Tests from '../pages/tests'
 import NotFound from '../pages/_not-found'
 import Search from '../pages/search/index'
@@ -24,8 +24,8 @@ export default new VueRouter({
         },
         {
             path: '/categories/:id',
-            name: 'Category',
-            component: Category,
+            name: 'CategoriesId',
+            component: CategoriesId,
         },
         {
             path: '/upgrade-craft',
@@ -34,18 +34,18 @@ export default new VueRouter({
         },
         {
             path: '/developer/:id',
-            name: 'Developer',
-            component: Developer,
+            name: 'DeveloperId',
+            component: DeveloperId,
         },
         {
             path: '/featured/:id',
-            name: 'FeaturedPlugins',
-            component: FeaturedPlugins,
+            name: 'FeaturedId',
+            component: FeaturedId,
         },
         {
             path: '/buy/:handle',
-            name: 'BuyPluginHandle',
-            component: BuyPluginHandle,
+            name: 'BuyHandle',
+            component: BuyHandle,
         },
         {
             path: '/plugins/:handle',
