@@ -366,14 +366,19 @@ class Matrix extends Component
             $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
 
             if (!empty($data['fieldLayouts'])) {
-                // Delete the field layout
-                $fieldsService->deleteLayoutById($blockTypeRecord->fieldLayoutId);
-
-                //Create the new layout
+                //Create the layout
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+
+                // If there is a layout id, just re-use that.
+                if ($blockTypeRecord->fieldLayoutId) {
+                    $layout->id = $blockTypeRecord->fieldLayoutId;
+                }
+
                 $layout->type = MatrixBlock::class;
                 $layout->uid = key($data['fieldLayouts']);
                 $fieldsService->saveLayout($layout);
+
+                // In case this was a new field layout, save the id.
                 $blockTypeRecord->fieldLayoutId = $layout->id;
             } else {
                 $blockTypeRecord->fieldLayoutId = null;
