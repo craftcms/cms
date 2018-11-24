@@ -4,6 +4,10 @@ h1 {
   font-size: 24px;
 }
 
+.ps-wrapper h1 {
+  @apply .tw-border-b .tw-border-solid .tw-border-grey-light .tw-py-2;
+}
+
 .no-line-height {
   line-height: 0;
 }

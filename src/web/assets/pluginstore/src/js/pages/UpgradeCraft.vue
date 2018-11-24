@@ -1,8 +1,8 @@
 <template>
-    <div ref="upgradecraft" v-if="cart" id="upgrade-craft">
+    <div ref="upgradecraft" v-if="cart" id="upgrade-craft" class="ps-container">
         <div id="upgrade-craft-compare" class="body">
             <h1>{{ "Upgrade Craft CMS"|t('app') }}</h1>
-            <table class="data fullwidth">
+            <table class="data fullwidth tw-mt-6">
                 <thead>
                 <tr class="logos">
                     <th>
@@ -159,7 +159,7 @@
 
         thead {
             th {
-                @apply .tw-font-normal;
+                @apply .tw-font-normal .tw-pt-0;
                 font-size: 13px;
                 line-height: 18px;
             }
