@@ -351,13 +351,13 @@ class Matrix extends Component
             // Remove fields that this block type no longer has
             foreach ($oldFields as $fieldUid => $fieldData) {
                 if (!array_key_exists($fieldUid, $newFields)) {
-                    $fieldsService->deleteFieldInternal($fieldUid);
+                    $fieldsService->applyFieldDelete($fieldUid);
                 }
             }
 
             // (Re)save all the fields that now exist for this block.
             foreach ($newFields as $fieldUid => $fieldData) {
-                $fieldsService->saveFieldInternal($fieldUid, $fieldData, 'matrixBlockType:'.$blockTypeUid);
+                $fieldsService->applyFieldSave($fieldUid, $fieldData, 'matrixBlockType:'.$blockTypeUid);
             }
 
             // Refresh the schema cache

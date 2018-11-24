@@ -913,7 +913,7 @@ class Fields extends Component
             $projectConfig->set($configPath, $configData);
         } else {
             // Otherwise just save it to the DB
-            $this->saveFieldInternal($uid, $configData, $field->context);
+            $this->applyFieldSave($uid, $configData, $field->context);
         }
 
         if ($isNewField) {
@@ -943,7 +943,7 @@ class Fields extends Component
         $data = $event->newValue;
         $fieldUid = $event->tokenMatches[0];
 
-        $this->saveFieldInternal($fieldUid, $data, 'global');
+        $this->applyFieldSave($fieldUid, $data, 'global');
     }
 
     /**
@@ -987,7 +987,7 @@ class Fields extends Component
         if ($field->context === 'global') {
             Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDS_KEY . '.' . $field->uid);
         } else {
-            $this->deleteFieldInternal($field->uid);
+            $this->applyFieldDelete($field->uid);
         }
 
         return true;
@@ -1006,16 +1006,16 @@ class Fields extends Component
 
         $fieldUid = $event->tokenMatches[0];
 
-        $this->deleteFieldInternal($fieldUid);
+        $this->applyFieldDelete($fieldUid);
     }
 
     /**
-     * Deletes a field from the database.
+     * Applies a field delete to the database.
      *
      * @param $fieldUid
      * @throws \Throwable if database error
      */
-    public function deleteFieldInternal($fieldUid)
+    public function applyFieldDelete($fieldUid)
     {
         try {
             $fieldRecord = $this->_getFieldRecord($fieldUid);
@@ -1495,13 +1495,13 @@ class Fields extends Component
     }
 
     /**
-     * Saves a field to the database.
+     * Applies a field save to the database.
      *
      * @param string $fieldUid
      * @param array $data
      * @param string $context
      */
-    public function saveFieldInternal(string $fieldUid, array $data, string $context)
+    public function applyFieldSave(string $fieldUid, array $data, string $context)
     {
         $groupUid = $data['fieldGroup'];
 

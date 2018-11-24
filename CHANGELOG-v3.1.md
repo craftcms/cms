@@ -53,6 +53,8 @@
 - Added `craft\services\Elements::restoreElement()`.
 - Added `craft\services\Elements::EVENT_AFTER_RESTORE_ELEMENT`.
 - Added `craft\services\Elements::EVENT_BEFORE_RESTORE_ELEMENT`.
+- Added `craft\services\Fields::applyFieldDelete()`.
+- Added `craft\services\Fields::applyFieldSave()`.
 - Added `craft\services\Fields::createFieldConfig()`.
 - Added `craft\services\Fields::deleteFieldInternal()`.
 - Added `craft\services\Fields::restoreLayoutById()`.
