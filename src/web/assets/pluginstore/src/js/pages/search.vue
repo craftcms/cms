@@ -1,17 +1,29 @@
 <template>
     <div class="ps-container">
         <h1>Showing results for “{{searchQuery}}”</h1>
-        <plugin-grid :plugins="pluginsToRender" :columns="4"></plugin-grid>
+        <template v-if="loading">
+            <div class="spinner"></div>
+        </template>
+        <template v-else>
+            <plugin-grid :plugins="searchResults" :columns="4"></plugin-grid>
+        </template>
     </div>
 </template>
 
 <script>
     import {mapState} from 'vuex'
-    import filter from 'lodash/filter'
     import includes from 'lodash/includes'
+    import filter from 'lodash/filter'
     import PluginGrid from '../components/PluginGrid'
 
     export default {
+
+        data() {
+            return {
+                loading: true,
+                searchResults: [],
+            }
+        },
 
         components: {
             PluginGrid,
@@ -24,7 +36,11 @@
                 searchQuery: state => state.app.searchQuery,
             }),
 
-            pluginsToRender() {
+        },
+
+        methods: {
+
+            performSearch() {
                 let searchQuery = this.searchQuery
 
                 if (!searchQuery) {
@@ -68,7 +84,29 @@
                     }
                 })
             },
+
+            search() {
+                this.loading = true
+
+                setTimeout(function() {
+                    this.searchResults = this.performSearch()
+                    this.loading = false
+                }.bind(this), 1)
+            }
+
         },
+
+        watch: {
+
+            searchQuery() {
+                this.search()
+            }
+
+        },
+
+        mounted() {
+            this.search()
+        }
 
     }
 </script>
