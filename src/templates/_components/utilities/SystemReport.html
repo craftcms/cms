@@ -29,6 +29,23 @@
         <p>{{ 'No plugins are enabled.'|t('app') }}</p>
     {% endif %}
 
+    <h2>{{ 'Modules'|t('app') }}</h2>
+
+    {% if modules|length %}
+        <table class="data fullwidth fixed-layout">
+            <tbody>
+                {% for id, module in modules %}
+                    <tr>
+                        <th class="light">{{ id }}</th>
+                        <td>{{ module.id is defined ? className(module) : module }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>{{ 'No modules are installed.'|t('app') }}</p>
+    {% endif %}
+
     <h2>{{ "Requirements"|t('app') }}</h2>
 
     <table class="data fullwidth">
