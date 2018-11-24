@@ -56,18 +56,16 @@
         },
 
         mounted() {
-            let developerId = this.$route.params.id
-
+            const developerId = this.$route.params.id
             this.loading = true
-
             this.plugins = this.$store.getters['pluginStore/getPluginsByDeveloperId'](developerId)
 
             this.$store.dispatch('pluginStore/getDeveloper', developerId)
-                .then(developer => {
+                .then(() => {
                     this.$root.loading = false
                     this.loading = false
                 })
-                .catch(response => {
+                .catch(() => {
                     this.$root.loading = false
                     this.loading = false
                 })
@@ -76,15 +74,15 @@
     }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
     .developer-card {
         .avatar {
             width: 120px;
             height: 120px;
         }
-        
+
         h1 {
-            @apply .tw-border-b-0;
+            border-bottom: 0;
         }
     }
 </style>
