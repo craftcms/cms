@@ -1027,6 +1027,7 @@ class Fields extends Component
             return;
         }
 
+        /** @var Field $field */
         $field = $this->getFieldById($fieldRecord->id);
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -1047,7 +1048,7 @@ class Fields extends Component
                 ->delete('{{%fields}}', ['id' => $fieldRecord->id])
                 ->execute();
 
-            $fieldRecord->afterDelete();
+            $field->afterDelete();
 
             $transaction->commit();
         } catch (\Throwable $e) {
