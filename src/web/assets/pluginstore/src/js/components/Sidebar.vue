@@ -51,9 +51,6 @@
 <style lang="scss" scoped>
     @import "../../sass/variables";
 
-
-    /* Categories */
-
     ul.categories {
         @apply .tw--mx-6;
 
@@ -98,7 +95,6 @@
             border-color: transparent;
         }
     }
-
 
     @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
         .categories-wrapper {
