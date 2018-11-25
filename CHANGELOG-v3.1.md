@@ -50,6 +50,7 @@
 - Added `craft\models\FieldLayout::createFromConfig()`.
 - Added `craft\models\FieldLayout::getConfig()`.
 - Added `craft\models\Site::getBaseUrl()`.
+- Added `craft\services\AssetTransforms::getTransformByUid()`.
 - Added `craft\services\Categories::getGroupByUid()`.
 - Added `craft\services\Elements::restoreElement()`.
 - Added `craft\services\Elements::EVENT_AFTER_RESTORE_ELEMENT`.

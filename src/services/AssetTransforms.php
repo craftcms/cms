@@ -167,7 +167,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Returns an asset transform by its id.
+     * Returns an asset transform by its ID.
      *
      * @param int $id
      * @return AssetTransform|null
@@ -176,6 +176,21 @@ class AssetTransforms extends Component
     {
         $result = $this->_createTransformQuery()
             ->where(['id' => $id])
+            ->one();
+
+        return $result ? new AssetTransform($result) : null;
+    }
+
+    /**
+     * Returns an asset transform by its UID.
+     *
+     * @param string $uid
+     * @return AssetTransform|null
+     */
+    public function getTransformByUid(string $uid)
+    {
+        $result = $this->_createTransformQuery()
+            ->where(['uid' => $uid])
             ->one();
 
         return $result ? new AssetTransform($result) : null;
