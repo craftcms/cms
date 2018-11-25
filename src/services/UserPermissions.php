@@ -310,11 +310,10 @@ class UserPermissions extends Component
         // Filter out any orphaned permissions
         $permissions = $this->_filterOrphanedPermissions($permissions);
 
-        if (!empty($permissions)) {
-            $group = Craft::$app->getUserGroups()->getGroupById($groupId);
-            $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->uid . '.permissions';
-            Craft::$app->getProjectConfig()->set($path, $permissions);
-        }
+        /** @var UserGroup $group */
+        $group = Craft::$app->getUserGroups()->getGroupById($groupId);
+        $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->uid . '.permissions';
+        Craft::$app->getProjectConfig()->set($path, $permissions);
 
         // Cache the new permissions
         $this->_permissionsByGroupId[$groupId] = $permissions;
