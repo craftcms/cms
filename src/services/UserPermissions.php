@@ -20,6 +20,7 @@ use craft\events\RegisterUserPermissionsEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\CategoryGroup;
 use craft\models\Section;
+use craft\models\UserGroup;
 use craft\records\UserPermission as UserPermissionRecord;
 use yii\base\Component;
 
@@ -315,9 +316,6 @@ class UserPermissions extends Component
         $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->uid . '.permissions';
         Craft::$app->getProjectConfig()->set($path, $permissions);
 
-        // Cache the new permissions
-        $this->_permissionsByGroupId[$groupId] = $permissions;
-
         return true;
     }
 
@@ -416,6 +414,8 @@ class UserPermissions extends Component
         ProjectConfigHelper::ensureAllUserGroupsProcessed();
         $uid = $event->tokenMatches[0];
         $permissions = $event->newValue;
+
+        /** @var UserGroup $userGroup */
         $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
 
         // Delete any existing group permissions
@@ -439,6 +439,9 @@ class UserPermissions extends Component
                     $groupPermissionVals)
                 ->execute();
         }
+
+        // Update caches
+        $this->_permissionsByGroupId[$userGroup->id] = $permissions;
     }
 
     // Private Methods

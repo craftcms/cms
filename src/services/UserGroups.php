@@ -47,6 +47,11 @@ class UserGroups extends Component
     const EVENT_BEFORE_DELETE_USER_GROUP = 'beforeDeleteUserGroup';
 
     /**
+     * @event UserGroupEvent The event that is triggered before a user group delete is applied to the database.
+     */
+    const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
+
+    /**
      * @event UserGroupEvent The event that is triggered after a user group is saved.
      */
     const EVENT_AFTER_DELETE_USER_GROUP = 'afterDeleteUserGroup';
@@ -215,13 +220,12 @@ class UserGroups extends Component
         $projectConfig = Craft::$app->getProjectConfig();
 
         if ($isNewGroup) {
-            $groupUid = StringHelper::UUID();
-        } else {
-            $groupUid = $group->uid;
-            // Re-save the existing permissions, it's not our place to touch that.
+            $group->uid = StringHelper::UUID();
+        } else if (!$group->uid) {
+            $group->uid = Db::uidById('{{%usergroups}}', $group->id);
         }
 
-        $configPath = self::CONFIG_USERPGROUPS_KEY . '.' . $groupUid;
+        $configPath = self::CONFIG_USERPGROUPS_KEY . '.' . $group->uid;
 
         // Save everything except permissions. Not ours to touch.
         $configData = [
@@ -233,15 +237,7 @@ class UserGroups extends Component
 
         // Now that we have a group ID, save it on the model
         if ($isNewGroup) {
-            $group->id = Db::idByUid('{{%usergroups}}', $groupUid);
-        }
-
-        // Fire an 'afterSaveUserGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_USER_GROUP, new UserGroupEvent([
-                'userGroup' => $group,
-                'isNew' => $isNewGroup,
-            ]));
+            $group->id = Db::idByUid('{{%usergroups}}', $group->uid);
         }
 
         return true;
@@ -262,6 +258,8 @@ class UserGroups extends Component
         $data = $event->newValue;
 
         $groupRecord = UserGroupRecord::findOne(['uid' => $uid]) ?? new UserGroupRecord();
+        $isNewGroup = $groupRecord->getIsNewRecord();
+
         $groupRecord->name = $data['name'];
         $groupRecord->handle = $data['handle'];
         $groupRecord->uid = $uid;
@@ -270,6 +268,14 @@ class UserGroups extends Component
 
         // Prevent permission information from being saved. Allowing it would prevent the appropriate event from firing.
         $event->newValue['permissions'] = $event->oldValue['permissions'] ?? [];
+
+        // Fire an 'afterSaveUserGroup' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $this->getGroupById($groupRecord->id),
+                'isNew' => $isNewGroup,
+            ]));
+        }
     }
 
     /**
@@ -281,9 +287,25 @@ class UserGroups extends Component
     {
         $uid = $event->tokenMatches[0];
 
+        $group = $this->getAssignableGroups($uid);
+
+        // Fire a 'beforeApplyGroupDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_GROUP_DELETE, new UserGroupEvent([
+                'userGroup' => $group,
+            ]));
+        }
+
         Craft::$app->getDb()->createCommand()
             ->delete('{{%usergroups}}', ['uid' => $uid])
             ->execute();
+
+        // Fire an 'afterDeleteUserGroup' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_USER_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group,
+            ]));
+        }
     }
 
     /**
@@ -329,14 +351,6 @@ class UserGroups extends Component
         }
 
         Craft::$app->getProjectConfig()->remove(self::CONFIG_USERPGROUPS_KEY . '.' . $group->uid);
-
-        // Fire an 'afterDeleteUserGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_USER_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_USER_GROUP, new UserGroupEvent([
-                'userGroup' => $group
-            ]));
-        }
-
         return true;
     }
 

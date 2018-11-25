@@ -337,13 +337,9 @@ class Globals extends Component
         }
 
         if ($isNewSet) {
-            $globalSetUid = StringHelper::UUID();
-        } else {
-            $globalSetUid = Db::uidById('{{%globalsets}}', $globalSet->id);
-        }
-
-        if (!$globalSetUid) {
-            throw new GlobalSetNotFoundException("No tag group exists with the ID '{$globalSet->id}'");
+            $globalSet->uid = StringHelper::UUID();
+        } else if (!$globalSet->uid) {
+            $globalSet->uid = Db::uidById('{{%globalsets}}', $globalSet->id);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -368,19 +364,11 @@ class Globals extends Component
             ];
         }
 
-        $configPath = self::CONFIG_GLOBALSETS_KEY . '.' . $globalSetUid;
+        $configPath = self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid;
         $projectConfig->set($configPath, $configData);
 
         if ($isNewSet) {
-            $globalSet->id = Db::idByUid('{{%globalsets}}', $globalSetUid);
-        }
-
-        // Fire an 'afterSaveGlobalSet' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GLOBAL_SET)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_SET, new GlobalSetEvent([
-                'globalSet' => $globalSet,
-                'isNew' => $isNewSet
-            ]));
+            $globalSet->id = Db::idByUid('{{%globalsets}}', $globalSet->uid);
         }
 
         return true;
@@ -403,6 +391,7 @@ class Globals extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $globalSetRecord = $this->_getGlobalSetRecord($globalSetUid);
+            $isNewSet = $globalSetRecord->getIsNewRecord();
 
             $globalSetRecord->name = $data['name'];
             $globalSetRecord->handle = $data['handle'];
@@ -449,6 +438,22 @@ class Globals extends Component
             $transaction->rollBack();
             throw $e;
         }
+
+        // Clear caches
+        unset(
+            $this->_allGlobalSetIds,
+            $this->_editableGlobalSetIds,
+            $this->_allGlobalSets,
+            $this->_globalSetsById[$globalSetRecord->id]
+        );
+
+        // Fire an 'afterSaveGlobalSet' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GLOBAL_SET)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_SET, new GlobalSetEvent([
+                'globalSet' => $this->getSetById($globalSetRecord->id),
+                'isNew' => $isNewSet
+            ]));
+        }
     }
 
     /**
@@ -471,7 +476,6 @@ class Globals extends Component
         }
 
         Craft::$app->getProjectConfig()->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid);
-
         return true;
     }
 

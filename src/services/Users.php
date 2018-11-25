@@ -1049,7 +1049,6 @@ class Users extends Component
         $uid = StringHelper::UUID();
 
         $projectConfig->set(self::CONFIG_USERLAYOUT_KEY, [$uid => $fieldLayoutConfig]);
-
         return true;
     }
 

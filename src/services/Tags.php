@@ -51,6 +51,11 @@ class Tags extends Component
     const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
 
     /**
+     * @event TagGroupEvent The event that is triggered before a tag group delete is applied to the database.
+     */
+    const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
+
+    /**
      * @event TagGroupEvent The event that is triggered after a tag group is deleted.
      */
     const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
@@ -237,13 +242,9 @@ class Tags extends Component
         }
 
         if ($isNewTagGroup) {
-            $tagGroupUid = StringHelper::UUID();
-        } else {
-            $tagGroupUid = Db::uidById('{{%taggroups}}', $tagGroup->id);
-        }
-
-        if (!$tagGroupUid) {
-            throw new TagGroupNotFoundException("No tag group exists with the ID '{$tagGroup->id}'");
+            $tagGroup->uid = StringHelper::UUID();
+        } else if (!$tagGroup->uid) {
+            $tagGroup->uid = Db::uidById('{{%taggroups}}', $tagGroup->id);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -268,22 +269,11 @@ class Tags extends Component
             ];
         }
 
-        $configPath = self::CONFIG_TAGGROUP_KEY . '.' . $tagGroupUid;
+        $configPath = self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid;
         $projectConfig->set($configPath, $configData);
 
         if ($isNewTagGroup) {
-            $tagGroup->id = Db::idByUid('{{%taggroups}}', $tagGroupUid);
-        }
-
-        // Might as well update our cache of the tag group while we have it.
-        $this->_tagGroupsById[$tagGroup->id] = $tagGroup;
-
-        // Fire an 'afterSaveGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new TagGroupEvent([
-                'tagGroup' => $tagGroup,
-                'isNew' => $isNewTagGroup,
-            ]));
+            $tagGroup->id = Db::idByUid('{{%taggroups}}', $tagGroup->uid);
         }
 
         return true;
@@ -305,6 +295,7 @@ class Tags extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $tagGroupRecord = $this->_getTagGroupRecord($tagGroupUid);
+            $isNewTagGroup = $tagGroupRecord->getIsNewRecord();
 
             $tagGroupRecord->name = $data['name'];
             $tagGroupRecord->handle = $data['handle'];
@@ -335,6 +326,22 @@ class Tags extends Component
         } catch (\Throwable $e) {
             $transaction->rollBack();
             throw $e;
+        }
+
+        // Clear caches
+        unset(
+            $this->_allTagGroupIds,
+            $this->_tagGroupsById[$tagGroupRecord->id],
+            $this->_tagGroupsByUid[$tagGroupRecord->uid],
+        );
+        $this->_fetchedAllTagGroups = false;
+
+        // Fire an 'afterSaveGroup' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new TagGroupEvent([
+                'tagGroup' => $this->getTagGroupById($tagGroupRecord->id),
+                'isNew' => $isNewTagGroup,
+            ]));
         }
     }
 
@@ -381,14 +388,6 @@ class Tags extends Component
         }
 
         Craft::$app->getProjectConfig()->remove(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid);
-
-        // Fire an 'afterDeleteGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new TagGroupEvent([
-                'tagGroup' => $tagGroup
-            ]));
-        }
-
         return true;
     }
 
@@ -404,6 +403,16 @@ class Tags extends Component
 
         if (!$tagGroupRecord->id) {
             return;
+        }
+
+        /** @var TagGroup $tagGroup */
+        $tagGroup = $this->getTagGroupById($tagGroupRecord->id);
+
+        // Fire a 'beforeApplyGroupDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_GROUP_DELETE, new TagGroupEvent([
+                'tagGroup' => $tagGroup,
+            ]));
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -437,6 +446,20 @@ class Tags extends Component
         } catch (\Throwable $e) {
             $transaction->rollBack();
             throw $e;
+        }
+
+        // Clear caches
+        unset(
+            $this->_allTagGroupIds,
+            $this->_tagGroupsById[$tagGroupRecord->id],
+            $this->_tagGroupsByUid[$tagGroupRecord->uid],
+        );
+
+        // Fire an 'afterDeleteGroup' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new TagGroupEvent([
+                'tagGroup' => $tagGroup
+            ]));
         }
     }
 

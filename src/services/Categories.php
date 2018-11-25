@@ -57,6 +57,11 @@ class Categories extends Component
     const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
 
     /**
+     * @event CategoryGroupEvent The event that is triggered before a category group delete is applied to the database.
+     */
+    const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
+
+    /**
      * @event CategoryGroupEvent The event that is triggered after a category group is deleted.
      */
     const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
@@ -317,7 +322,7 @@ class Categories extends Component
         }
 
         if ($isNewCategoryGroup) {
-            $categoryGroupUid = StringHelper::UUID();
+            $group->uid = StringHelper::UUID();
             $structureUid = StringHelper::UUID();
         } else {
             $existingGroupRecord = CategoryGroupRecord::find()
@@ -328,7 +333,7 @@ class Categories extends Component
                 throw new CategoryGroupNotFoundException("No category group exists with the ID '{$group->id}'");
             }
 
-            $categoryGroupUid = $existingGroupRecord->uid;
+            $group->uid = $existingGroupRecord->uid;
             $structureUid = Db::uidById('{{%structures}}', $existingGroupRecord->structureId);
         }
 
@@ -383,22 +388,11 @@ class Categories extends Component
             ];
         }
 
-        $configPath = self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid;
+        $configPath = self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid;
         $projectConfig->set($configPath, $configData);
 
         if ($isNewCategoryGroup) {
-            $group->id = Db::idByUid('{{%categorygroups}}', $categoryGroupUid);
-        }
-
-        // Might as well update our cache of the category group while we have it.
-        $this->_categoryGroupsById[$group->id] = $group;
-
-        // Fire an 'afterSaveGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new CategoryGroupEvent([
-                'categoryGroup' => $group,
-                'isNew' => $isNewCategoryGroup,
-            ]));
+            $group->id = Db::idByUid('{{%categorygroups}}', $group->uid);
         }
 
         return true;
@@ -429,11 +423,11 @@ class Categories extends Component
 
             // Basic data
             $groupRecord = $this->_getCategoryGroupRecord($categoryGroupUid);
+            $isNewCategoryGroup = $groupRecord->getIsNewRecord();
+
             $groupRecord->name = $data['name'];
             $groupRecord->handle = $data['handle'];
             $groupRecord->uid = $categoryGroupUid;
-
-            $isNewRecord = $groupRecord->getIsNewRecord();
 
             // Structure
             $structure = Craft::$app->getStructures()->getStructureByUid($structureUid) ?? new Structure();
@@ -470,7 +464,7 @@ class Categories extends Component
             $sitesNowWithoutUrls = [];
             $sitesWithNewUriFormats = [];
 
-            if (!$isNewRecord) {
+            if (!$isNewCategoryGroup) {
                 // Get the old category group site settings
                 $allOldSiteSettingsRecords = CategoryGroup_SiteSettingsRecord::find()
                     ->where(['groupId' => $groupRecord->id])
@@ -484,7 +478,7 @@ class Categories extends Component
                 $siteId = $siteIdMap[$siteUid];
 
                 // Was this already selected?
-                if (!$isNewRecord && isset($allOldSiteSettingsRecords[$siteId])) {
+                if (!$isNewCategoryGroup && isset($allOldSiteSettingsRecords[$siteId])) {
                     $siteSettingsRecord = $allOldSiteSettingsRecords[$siteId];
                 } else {
                     $siteSettingsRecord = new CategoryGroup_SiteSettingsRecord();
@@ -515,7 +509,7 @@ class Categories extends Component
                 $siteSettingsRecord->save(false);
             }
 
-            if (!$isNewRecord) {
+            if (!$isNewCategoryGroup) {
                 // Drop any site settings that are no longer being used, as well as the associated category/element
                 // site rows
                 $affectedSiteUids = array_keys($siteData);
@@ -532,7 +526,7 @@ class Categories extends Component
             // Finally, deal with the existing categories...
             // -----------------------------------------------------------------
 
-            if (!$isNewRecord) {
+            if (!$isNewCategoryGroup) {
                 // Get all of the category IDs in this group
                 $categoryIds = Category::find()
                     ->groupId($groupRecord->id)
@@ -579,6 +573,22 @@ class Categories extends Component
             $transaction->rollBack();
             throw $e;
         }
+
+        // Clear caches
+        unset(
+            $this->_allGroupIds,
+            $this->_editableGroupIds,
+            $this->_categoryGroupsById[$groupRecord->id]
+        );
+        $this->_fetchedAllCategoryGroups = false;
+
+        // Fire an 'afterSaveGroup' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new CategoryGroupEvent([
+                'categoryGroup' => $this->getGroupById($groupRecord->id),
+                'isNew' => $isNewCategoryGroup,
+            ]));
+        }
     }
 
     /**
@@ -619,14 +629,6 @@ class Categories extends Component
         }
 
         Craft::$app->getProjectConfig()->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid);
-
-        // Fire an 'afterDeleteGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new CategoryGroupEvent([
-                'categoryGroup' => $group
-            ]));
-        }
-
         return true;
     }
 
@@ -675,6 +677,16 @@ class Categories extends Component
             return;
         }
 
+        /** @var CategoryGroup $group */
+        $group = $this->getGroupById($categoryGroupRecord->id);
+
+        // Fire a 'beforeApplyGroupDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_GROUP_DELETE, new CategoryGroupEvent([
+                'categoryGroup' => $group,
+            ]));
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the field layout
@@ -706,6 +718,20 @@ class Categories extends Component
         } catch (\Throwable $e) {
             $transaction->rollBack();
             throw $e;
+        }
+
+        // Clear caches
+        unset(
+            $this->_allGroupIds,
+            $this->_editableGroupIds,
+            $this->_categoryGroupsById[$group->id]
+        );
+
+        // Fire an 'afterDeleteGroup' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new CategoryGroupEvent([
+                'categoryGroup' => $group,
+            ]));
         }
     }
 

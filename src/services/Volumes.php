@@ -77,6 +77,11 @@ class Volumes extends Component
     const EVENT_BEFORE_DELETE_VOLUME = 'beforeDeleteVolume';
 
     /**
+     * @event VolumeEvent The event that is triggered before a volume delete is applied to the database.
+     */
+    const EVENT_BEFORE_APPLY_VOLUME_DELETE = 'beforeApplyVolumeDelete';
+
+    /**
      * @event VolumeEvent The event that is triggered after a Asset volume is deleted.
      */
     const EVENT_AFTER_DELETE_VOLUME = 'afterDeleteVolume';
@@ -410,12 +415,12 @@ class Volumes extends Component
         }
 
         if ($isNewVolume) {
-            $volumeUid = StringHelper::UUID();
+            $volume->uid = StringHelper::UUID();
             $volume->sortOrder = (new Query())
                     ->from(['{{%volumes}}'])
                     ->max('[[sortOrder]]') + 1;
-        } else {
-            $volumeUid = $volume->uid;
+        } else if (!$volume->uid) {
+            $volume->uid = Db::uidById('{{%volumes}}', $volume->id);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -447,29 +452,11 @@ class Volumes extends Component
         }
 
 
-        $configPath = self::CONFIG_VOLUME_KEY . '.' . $volumeUid;
+        $configPath = self::CONFIG_VOLUME_KEY . '.' . $volume->uid;
         $projectConfig->set($configPath, $configData);
 
         if ($isNewVolume) {
-            $volume->id = Db::idByUid('{{%volumes}}', $volumeUid);
-        }
-
-        $volume->afterSave($isNewVolume);
-
-        // Update our caches
-        $this->_volumesById[$volume->id] = $volume;
-        $this->_volumesByHandle[$volume->handle] = $volume;
-
-        if ($this->_viewableVolumeIds !== null && Craft::$app->user->checkPermission('viewVolume:' . $volume->uid)) {
-            $this->_viewableVolumeIds[] = $volume->id;
-        }
-
-        // Fire an 'afterSaveVolume' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_VOLUME)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_VOLUME, new VolumeEvent([
-                'volume' => $volume,
-                'isNew' => $isNewVolume
-            ]));
+            $volume->id = Db::idByUid('{{%volumes}}', $volume->uid);
         }
 
         return true;
@@ -491,6 +478,7 @@ class Volumes extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $volumeRecord = $this->_getVolumeRecord($volumeUid);
+            $isNewVolume = $volumeRecord->getIsNewRecord();
 
             $volumeRecord->name = $data['name'];
             $volumeRecord->handle = $data['handle'];
@@ -539,6 +527,30 @@ class Volumes extends Component
         } catch (\Throwable $e) {
             $transaction->rollBack();
             throw $e;
+        }
+
+        // Clear caches
+        unset(
+            $this->_allVolumeIds,
+            $this->_viewableVolumeIds,
+            $this->_viewableVolumes,
+            $this->_publicVolumeIds,
+            $this->_publicVolumes,
+            $this->_volumesById[$volumeRecord->id],
+            $this->_volumesByHandle[$volumeRecord->handle],
+        );
+        $this->_fetchedAllVolumes = false;
+
+        /** @var Volume $volume */
+        $volume = $this->getVolumeById($volumeRecord->id);
+        $volume->afterSave($isNewVolume);
+
+        // Fire an 'afterSaveVolume' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_VOLUME)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_VOLUME, new VolumeEvent([
+                'volume' => $this->getVolumeById($volumeRecord->id),
+                'isNew' => $isNewVolume
+            ]));
         }
     }
 
@@ -686,16 +698,6 @@ class Volumes extends Component
         }
 
         Craft::$app->getProjectConfig()->remove(self::CONFIG_VOLUME_KEY . '.' . $volume->uid);
-
-        $volume->afterDelete();
-
-        // Fire an 'afterDeleteVolume' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_VOLUME)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_VOLUME, new VolumeEvent([
-                'volume' => $volume
-            ]));
-        }
-
         return true;
     }
 
@@ -713,10 +715,22 @@ class Volumes extends Component
             return;
         }
 
+        /** @var Volume $volume */
+        $volume = $this->getVolumeById($volumeRecord->id);
+
+        // Fire a 'beforeApplyVolumeDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_VOLUME_DELETE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_VOLUME_DELETE, new VolumeEvent([
+                'volume' => $volume,
+            ]));
+        }
+
         $db = Craft::$app->getDb();
         $transaction = $db->beginTransaction();
 
         try {
+            $volume->beforeApplyDelete();
+
             // Delete the field layout
             $fieldLayoutId = (new Query())
                 ->select(['fieldLayoutId'])
@@ -744,10 +758,31 @@ class Volumes extends Component
                 ->delete('{{%volumes}}', ['id' => $volumeRecord->id])
                 ->execute();
 
+            $volume->afterDelete();
+
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
             throw $e;
+        }
+
+        // Clear caches
+        unset(
+            $this->_allVolumeIds,
+            $this->_viewableVolumeIds,
+            $this->_viewableVolumes,
+            $this->_publicVolumeIds,
+            $this->_publicVolumes,
+            $this->_volumesById[$volumeRecord->id],
+            $this->_volumesByHandle[$volumeRecord->handle],
+        );
+        $this->_fetchedAllVolumes = false;
+
+        // Fire an 'afterDeleteVolume' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_VOLUME)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_VOLUME, new VolumeEvent([
+                'volume' => $volume
+            ]));
         }
     }
 

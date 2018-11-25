@@ -81,6 +81,11 @@ class AssetTransforms extends Component
     const EVENT_BEFORE_DELETE_TRANSFORMS = 'beforeDeleteTransforms';
 
     /**
+     * @event AssetTransformEvent The event that is triggered before a transform delete is applied to the database.
+     */
+    const EVENT_BEFORE_APPLY_TRANSFORM_DELETE = 'beforeApplyTransformDelete';
+
+    /**
      * @event AssetTransformImageEvent The event that is triggered after deleting generated transforms.
      */
     const EVENT_AFTER_DELETE_TRANSFORMS = 'afterDeleteTransforms';
@@ -222,9 +227,9 @@ class AssetTransforms extends Component
         }
 
         if ($isNewTransform) {
-            $transformUid = StringHelper::UUID();
-        } else {
-            $transformUid = Db::uidById('{{%assettransforms}}', $transform->id);
+            $transform->uid = StringHelper::UUID();
+        } else if (!$transform->uid) {
+            $transform->uid = Db::uidById('{{%assettransforms}}', $transform->id);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -241,19 +246,11 @@ class AssetTransforms extends Component
             'width' => $transform->width
         ];
 
-        $configPath = self::CONFIG_TRANSFORM_KEY . '.' . $transformUid;
+        $configPath = self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid;
         $projectConfig->set($configPath, $configData);
 
         if ($isNewTransform) {
-            $transform->id = Db::idByUid('{{%assettransforms}}', $transformUid);
-        }
-
-        // Fire an 'afterSaveAssetTransform' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
-                'assetTransform' => $transform,
-                'isNew' => $transform,
-            ]));
+            $transform->id = Db::idByUid('{{%assettransforms}}', $transform->uid);
         }
 
         return true;
@@ -272,6 +269,8 @@ class AssetTransforms extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $transformRecord = $this->_getTransformRecord($transformUid);
+            $isNewTransform = $transformRecord->getIsNewRecord();
+
             $transformRecord->name = $data['name'];
             $transformRecord->handle = $data['handle'];
 
@@ -298,6 +297,18 @@ class AssetTransforms extends Component
         } catch (\Throwable $e) {
             $transaction->rollBack();
             throw $e;
+        }
+
+        // Clear caches
+        unset($this->_transformsByHandle[$transformRecord->handle]);
+        $this->_fetchedAllTransforms = false;
+
+        // Fire an 'afterSaveAssetTransform' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
+                'assetTransform' => $this->getTransformById($transformRecord->id),
+                'isNew' => $isNewTransform,
+            ]));
         }
     }
 
@@ -347,14 +358,6 @@ class AssetTransforms extends Component
         }
 
         Craft::$app->getProjectConfig()->remove(self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid);
-
-        // Fire an 'afterDeleteAssetTransform' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
-                'assetTransform' => $transform
-            ]));
-        }
-
         return true;
     }
 
@@ -367,11 +370,35 @@ class AssetTransforms extends Component
     {
         $transformUid = $event->tokenMatches[0];
 
+        $transform = $this->getTransformByUid($transformUid);
+
+        if (!$transform) {
+            return;
+        }
+
+        // Fire a 'beforeApplyTransformDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE, new AssetTransformEvent([
+                'transform' => $transform,
+            ]));
+        }
+
         Craft::$app->getDb()->createCommand()
             ->delete(
                 '{{%assettransforms}}',
                 ['uid' => $transformUid])
             ->execute();
+
+        // Clear caches
+        unset($this->_transformsByHandle[$transform->handle]);
+        $this->_fetchedAllTransforms = false;
+
+        // Fire an 'afterDeleteAssetTransform' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
+                'assetTransform' => $transform
+            ]));
+        }
     }
 
     /**

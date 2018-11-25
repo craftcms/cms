@@ -99,6 +99,11 @@ class Fields extends Component
     const EVENT_AFTER_SAVE_FIELD_GROUP = 'afterSaveFieldGroup';
 
     /**
+     * @event FieldGroupEvent The event that is triggered before a field group delete is applied to the database.
+     */
+    const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
+
+    /**
      * @event FieldGroupEvent The event that is triggered before a field group is deleted.
      */
     const EVENT_BEFORE_DELETE_FIELD_GROUP = 'beforeDeleteFieldGroup';
@@ -308,19 +313,16 @@ class Fields extends Component
         ];
 
         if ($isNewGroup) {
-            $uid = StringHelper::UUID();
-        } else {
-            $groupRecord = $this->_getGroupRecord($group->id);
-            $uid = $groupRecord->uid;
+            $group->uid = StringHelper::UUID();
+        } else if (!$group->uid) {
+            $group->uid = Db::uidById('{{%fieldgroups}}', $group->id);
         }
 
-        $projectConfig->set(self::CONFIG_FIELDGROUP_KEY . '.' . $uid, $configData);
+        $projectConfig->set(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid, $configData);
 
         if ($isNewGroup) {
-            $group->id = Db::idByUid('{{%fieldgroups}}', $uid);
+            $group->id = Db::idByUid('{{%fieldgroups}}', $group->uid);
         }
-
-        $group->uid = $uid;
 
         return true;
     }
@@ -340,15 +342,18 @@ class Fields extends Component
         $uid = $event->tokenMatches[0];
 
         $groupRecord = $this->_getGroupRecord($uid);
+        $isNewGroup = $groupRecord->getIsNewRecord();
 
         // If this is a new group, set the UID we want.
-        if (!$groupRecord->id) {
+        if ($isNewGroup) {
             $groupRecord->uid = $uid;
         }
 
         $groupRecord->name = $data['name'];
         $groupRecord->save(false);
 
+        // Update caches
+        unset($this->_groupsById[$groupRecord->id]);
         $this->_fetchedAllGroups = false;
 
         // Fire an 'afterSaveFieldGroup' event
@@ -374,16 +379,22 @@ class Fields extends Component
         $uid = $event->tokenMatches[0];
         $groupRecord = $this->_getGroupRecord($uid);
 
-        if (!$groupRecord->id) {
+        if ($groupRecord->getIsNewRecord()) {
             return;
         }
 
-        $this->_fetchedAllGroups = false;
         $group = $this->getGroupById($groupRecord->id);
+
+        // Fire a 'beforeApplyGroupDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_GROUP_DELETE, new FieldGroupEvent([
+                'group' => $group,
+            ]));
+        }
 
         $groupRecord->delete();
 
-        // Delete our cache of it
+        // Update caches
         unset($this->_groupsById[$groupRecord->id]);
 
         // Fire an 'afterDeleteFieldGroup' event
@@ -446,7 +457,6 @@ class Fields extends Component
         }
 
         Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid);
-
         return true;
     }
 
@@ -900,34 +910,28 @@ class Fields extends Component
             $field->translationKeyFormat = null;
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
         $configData = $this->createFieldConfig($field);
 
         if ($isNewField) {
-            $uid = StringHelper::UUID();
-        } else {
-            $uid = $field->uid;
+            $field->uid = StringHelper::UUID();
+        } else if (!$field->uid) {
+            $field->uid = Db::uidById('{{%fields}}', $field->id);
         }
 
         // Store with all the populated data for future reference.
-        $this->_savingFields[$uid] = $field;
+        $this->_savingFields[$field->uid] = $field;
 
         // Only store field data in the project config for global context
         if ($field->context === 'global') {
-            $configPath = self::CONFIG_FIELDS_KEY . '.' . $uid;
-            $projectConfig->set($configPath, $configData);
+            $configPath = self::CONFIG_FIELDS_KEY . '.' . $field->uid;
+            Craft::$app->getProjectConfig()->set($configPath, $configData);
         } else {
             // Otherwise just save it to the DB
-            $this->applyFieldSave($uid, $configData, $field->context);
+            $this->applyFieldSave($field->uid, $configData, $field->context);
         }
 
         if ($isNewField) {
-            $field->id = Db::idByUid('{{%fields}}', $uid);
-            $field->uid = $uid;
-        } else {
-            /** @var Field $newField */
-            $newField = $this->getFieldById($field->id);
-            $field->oldHandle = $newField->oldHandle;
+            $field->id = Db::idByUid('{{%fields}}', $field->uid);
         }
 
         return true;
@@ -1070,13 +1074,6 @@ class Fields extends Component
             throw $e;
         }
 
-        // Fire an 'afterDeleteField' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_FIELD, new FieldEvent([
-                'field' => $field,
-            ]));
-        }
-
         // Clear caches
         unset(
             $this->_fieldsById[$fieldRecord->id],
@@ -1091,6 +1088,13 @@ class Fields extends Component
 
         // Update the field version
         $this->updateFieldVersion();
+
+        // Fire an 'afterDeleteField' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_FIELD, new FieldEvent([
+                'field' => $field,
+            ]));
+        }
     }
 
     /**
@@ -1529,15 +1533,17 @@ class Fields extends Component
         try {
             $fieldRecord = $this->_getFieldRecord($fieldUid);
             $groupRecord = $this->_getGroupRecord($groupUid);
-            $isNewField = $fieldRecord->isNewRecord;
-            $fieldtype = $data['type'];
+            $isNewField = $fieldRecord->getIsNewRecord();
+
+            /** @var Field $class */
+            $class = $data['type'];
 
             // Create/alter the content table column
             $contentTable = Craft::$app->getContent()->contentTable;
             $oldColumnName = $this->oldFieldColumnPrefix . $fieldRecord->getOldHandle();
             $newColumnName = Craft::$app->getContent()->fieldColumnPrefix . $data['handle'];
 
-            if ($fieldtype::hasContentColumn()) {
+            if ($class::hasContentColumn()) {
                 $columnType = $data['contentColumnType'];
 
                 // Make sure we're working with the latest data in the case of a renamed field.
@@ -1594,12 +1600,6 @@ class Fields extends Component
             $fieldRecord->save(false);
 
             $transaction->commit();
-
-            // Update the field version
-            $this->updateFieldVersion();
-
-            // Tell the current ContentBehavior class about the field
-            ContentBehavior::$fieldHandles[$fieldRecord->handle] = true;
         } catch (\Throwable $e) {
             $transaction->rollBack();
 
@@ -1609,16 +1609,29 @@ class Fields extends Component
         // Clear caches
         $this->refreshFields();
 
+        // Update the field version
+        $this->updateFieldVersion();
+
+        // Tell the current ContentBehavior class about the field
+        ContentBehavior::$fieldHandles[$fieldRecord->handle] = true;
+
         // For CP save requests, make sure we have all the custom data already saved on the object.
         /** @var Field $field */
-        $field = $this->_savingFields[$fieldUid] ?? $this->getFieldById($fieldRecord->id);
+        if (isset($this->_savingFields[$fieldUid])) {
+            $field = $this->_savingFields[$fieldUid];
+
+            if ($isNewField) {
+                $field->id = $fieldRecord->id;
+            }
+        } else {
+            $field = $this->getFieldById($fieldRecord->id);
+        }
 
         if (!$isNewField) {
             // Save the old field handle on the model in case the field type needs to do something with it.
             $field->oldHandle = $fieldRecord->getOldHandle();
         }
 
-        $field->id = $fieldRecord->id;
         $field->afterSave($isNewField);
 
         // Fire an 'afterSaveField' event

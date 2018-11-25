@@ -51,7 +51,9 @@
 - Added `craft\models\FieldLayout::getConfig()`.
 - Added `craft\models\Site::getBaseUrl()`.
 - Added `craft\services\AssetTransforms::getTransformByUid()`.
+- Added `craft\services\AssetTransforms::EVENT_BEFORE_APPLY_TRANSFORM_DELETE`.
 - Added `craft\services\Categories::getGroupByUid()`.
+- Added `craft\services\Categories::EVENT_BEFORE_APPLY_GROUP_DELETE`.
 - Added `craft\services\Elements::restoreElement()`.
 - Added `craft\services\Elements::EVENT_AFTER_RESTORE_ELEMENT`.
 - Added `craft\services\Elements::EVENT_BEFORE_RESTORE_ELEMENT`.
@@ -62,11 +64,19 @@
 - Added `craft\services\Fields::restoreLayoutById()`.
 - Added `craft\services\Fields::saveFieldInternal()`.
 - Added `craft\services\Fields::EVENT_BEFORE_APPLY_FIELD_DELETE`.
+- Added `craft\services\Fields::EVENT_BEFORE_APPLY_GROUP_DELETE`.
 - Added `craft\services\Gc` for handling garbage collection tasks.
 - Added `craft\services\ProjectConfig`.
 - Added `craft\services\Routes::deleteRouteByUid()`
 - Added `craft\services\Sections::getSectionByUid()`.
+- Added `craft\services\Sections::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE`.
+- Added `craft\services\Sections::EVENT_BEFORE_APPLY_SECTION_DELETE`.
 - Added `craft\services\Sites::restoreSiteById()`.
+- Added `craft\services\Sites::EVENT_BEFORE_APPLY_GROUP_DELETE`.
+- Added `craft\services\Sites::EVENT_BEFORE_APPLY_SITE_DELETE`.
+- Added `craft\services\Tags::EVENT_BEFORE_APPLY_GROUP_DELETE`.
+- Added `craft\services\UserGroups::EVENT_BEFORE_APPLY_GROUP_DELETE`.
+- Added `craft\services\Volumes::EVENT_BEFORE_APPLY_VOLUME_DELETE`.
 - Added `craft\web\Controller::requireCpRequest()`.
 - Added `craft\web\Controller::requireSiteRequest()`.
 - Added `craft\web\twig\variables\Cp::getEnvSuggestions()`.
