@@ -332,7 +332,7 @@ class Tags extends Component
         unset(
             $this->_allTagGroupIds,
             $this->_tagGroupsById[$tagGroupRecord->id],
-            $this->_tagGroupsByUid[$tagGroupRecord->uid],
+            $this->_tagGroupsByUid[$tagGroupRecord->uid]
         );
         $this->_fetchedAllTagGroups = false;
 
@@ -452,7 +452,7 @@ class Tags extends Component
         unset(
             $this->_allTagGroupIds,
             $this->_tagGroupsById[$tagGroupRecord->id],
-            $this->_tagGroupsByUid[$tagGroupRecord->uid],
+            $this->_tagGroupsByUid[$tagGroupRecord->uid]
         );
 
         // Fire an 'afterDeleteGroup' event

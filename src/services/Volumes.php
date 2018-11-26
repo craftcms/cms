@@ -537,7 +537,7 @@ class Volumes extends Component
             $this->_publicVolumeIds,
             $this->_publicVolumes,
             $this->_volumesById[$volumeRecord->id],
-            $this->_volumesByHandle[$volumeRecord->handle],
+            $this->_volumesByHandle[$volumeRecord->handle]
         );
         $this->_fetchedAllVolumes = false;
 
@@ -774,7 +774,7 @@ class Volumes extends Component
             $this->_publicVolumeIds,
             $this->_publicVolumes,
             $this->_volumesById[$volumeRecord->id],
-            $this->_volumesByHandle[$volumeRecord->handle],
+            $this->_volumesByHandle[$volumeRecord->handle]
         );
         $this->_fetchedAllVolumes = false;
 
