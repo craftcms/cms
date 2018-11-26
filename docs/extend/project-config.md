@@ -111,6 +111,13 @@ public function handleDeletedProductType(ConfigEvent $event)
         return;
     }
 
+    // Fire a 'beforeApplyProductTypeDelete' event?
+    if ($this->hasEventHandlers('beforeApplyProductTypeDelete')) {
+        $this->trigger('beforeApplyProductTypeDelete', new ProducTypeEvent([
+            'productType' => $productType,
+        ]));
+    }
+
     // Delete its row
     Craft::$app->db->createCommand()
         ->delete('{{%producttypes}}', ['id' => $productType->id])
@@ -125,7 +132,7 @@ public function handleDeletedProductType(ConfigEvent $event)
 }
 ```
 
-At this point, if product types were to be added or removed from the project config manually, those changes should be syncing with the database, and any `afterSaveProductType` and `afterDeleteProductType` event listeners will be triggered. 
+At this point, if product types were to be added or removed from the project config manually, those changes should be syncing with the database, and any `afterSaveProductType`, `beforeApplyProductTypeDelete`, and `afterDeleteProductType` event listeners will be triggered. 
 
 ::: tip
 If your component config references another component config, you can ensure that the other config changes are processed first by calling [ProjectConfig::processConfigChanges()](api:craft\services\ProjectConfig::processConfigChanges()) within your handler method.
@@ -150,9 +157,11 @@ public function saveProductType($productType)
 {
     $isNew = empty($productType->id);
 
-    // Generate a UID for the teh product type if it's new
+    // Ensure the product type has a UID
     if ($isNew) {
         $productType->uid = StringHelper::UUID();
+    } else if (!$productType->uid) {
+        $productType->uid = Db::uidById('{{%producttypes}}', $productType->id);
     }
 
     // Fire a 'beforeSaveProductType' event?
