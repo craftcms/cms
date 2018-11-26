@@ -575,11 +575,9 @@ class Categories extends Component
         }
 
         // Clear caches
-        unset(
-            $this->_allGroupIds,
-            $this->_editableGroupIds,
-            $this->_categoryGroupsById[$groupRecord->id]
-        );
+        $this->_allGroupIds = null;
+        $this->_editableGroupIds = null;
+        unset($this->_categoryGroupsById[$groupRecord->id]);
         $this->_fetchedAllCategoryGroups = false;
 
         // Fire an 'afterSaveGroup' event
@@ -721,11 +719,9 @@ class Categories extends Component
         }
 
         // Clear caches
-        unset(
-            $this->_allGroupIds,
-            $this->_editableGroupIds,
-            $this->_categoryGroupsById[$group->id]
-        );
+        $this->_allGroupIds = null;
+        $this->_editableGroupIds = null;
+        unset($this->_categoryGroupsById[$group->id]);
 
         // Fire an 'afterDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {

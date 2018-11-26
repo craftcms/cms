@@ -440,12 +440,10 @@ class Globals extends Component
         }
 
         // Clear caches
-        unset(
-            $this->_allGlobalSetIds,
-            $this->_editableGlobalSetIds,
-            $this->_allGlobalSets,
-            $this->_globalSetsById[$globalSetRecord->id]
-        );
+        $this->_allGlobalSetIds = null;
+        $this->_editableGlobalSetIds = null;
+        $this->_allGlobalSets = null;
+        unset($this->_globalSetsById[$globalSetRecord->id]);
 
         // Fire an 'afterSaveGlobalSet' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GLOBAL_SET)) {

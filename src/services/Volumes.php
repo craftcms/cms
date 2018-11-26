@@ -530,12 +530,12 @@ class Volumes extends Component
         }
 
         // Clear caches
+        $this->_allVolumeIds = null;
+        $this->_viewableVolumeIds = null;
+        $this->_viewableVolumes = null;
+        $this->_publicVolumeIds = null;
+        $this->_publicVolumes = null;
         unset(
-            $this->_allVolumeIds,
-            $this->_viewableVolumeIds,
-            $this->_viewableVolumes,
-            $this->_publicVolumeIds,
-            $this->_publicVolumes,
             $this->_volumesById[$volumeRecord->id],
             $this->_volumesByHandle[$volumeRecord->handle]
         );
@@ -767,12 +767,12 @@ class Volumes extends Component
         }
 
         // Clear caches
+        $this->_allVolumeIds = null;
+        $this->_viewableVolumeIds = null;
+        $this->_viewableVolumes = null;
+        $this->_publicVolumeIds = null;
+        $this->_publicVolumes = null;
         unset(
-            $this->_allVolumeIds,
-            $this->_viewableVolumeIds,
-            $this->_viewableVolumes,
-            $this->_publicVolumeIds,
-            $this->_publicVolumes,
             $this->_volumesById[$volumeRecord->id],
             $this->_volumesByHandle[$volumeRecord->handle]
         );

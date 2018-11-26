@@ -329,8 +329,8 @@ class Tags extends Component
         }
 
         // Clear caches
+        $this->_allTagGroupIds = null;
         unset(
-            $this->_allTagGroupIds,
             $this->_tagGroupsById[$tagGroupRecord->id],
             $this->_tagGroupsByUid[$tagGroupRecord->uid]
         );
@@ -449,8 +449,8 @@ class Tags extends Component
         }
 
         // Clear caches
+        $this->_allTagGroupIds = null;
         unset(
-            $this->_allTagGroupIds,
             $this->_tagGroupsById[$tagGroupRecord->id],
             $this->_tagGroupsByUid[$tagGroupRecord->uid]
         );

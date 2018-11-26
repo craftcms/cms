@@ -779,11 +779,9 @@ class Sections extends Component
         }
 
         // Clear caches
-        unset(
-            $this->_allSectionIds,
-            $this->_editableSectionIds,
-            $this->_sectionsById[$sectionRecord->id]
-        );
+        $this->_allSectionIds = null;
+        $this->_editableSectionIds = null;
+        unset($this->_sectionsById[$sectionRecord->id]);
         $this->_fetchedAllSections = false;
 
         // Fire an 'afterSaveSection' event
@@ -927,11 +925,9 @@ class Sections extends Component
         }
 
         // Clear caches
-        unset(
-            $this->_allSectionIds,
-            $this->_editableSectionIds,
-            $this->_sectionsById[$section->id]
-        );
+        $this->_allSectionIds = null;
+        $this->_editableSectionIds = null;
+        unset($this->_sectionsById[$section->id]);
 
         // Fire an 'afterDeleteSection' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SECTION)) {
