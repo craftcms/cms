@@ -15,6 +15,7 @@
 - Fixed a bug where a global sets’ field layout could be deleted even if something set `$isValid` to `false` on the `beforeDelete` event.
 - Fixed a bug where after impersonating another user, the Login page would show the impersonated user’s username rather than the admin’s.
 - Fixed a bug where `craft\services\Sections::getAllSections()` could return stale results if a new section had been added recently. ([#3484](https://github.com/craftcms/cms/issues/3484))
+- Fixed a bug where “View entry” and “View category” element actions weren’t available when viewing a specific section or category group.
 
 ### Security
 - Updated jQuery File Upload to 9.28.0.
