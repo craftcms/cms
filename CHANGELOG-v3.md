@@ -15,6 +15,9 @@
 - Fixed a bug where after impersonating another user, the Login page would show the impersonated user’s username rather than the admin’s.
 - Fixed a bug where `craft\services\Sections::getAllSections()` could return stale results if a new section had been added recently. ([#3484](https://github.com/craftcms/cms/issues/3484))
 
+### Security
+- Updated jQuery File Upload to 9.28.0.
+
 ## 3.0.32 - 2018-11-20
 
 ### Added
