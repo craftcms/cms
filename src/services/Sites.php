@@ -723,10 +723,10 @@ class Sites extends Component
         // Ensure we have the site group in place first
         Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
 
-        if (Craft::$app->getIsInstalled()) {
-            // Did the primary site just change?
+        // Did the primary site just change?
+        try {
             $oldPrimarySiteId = $this->getPrimarySite()->id;
-        } else {
+        } catch (SiteNotFoundException $e) {
             $oldPrimarySiteId = null;
         }
 
