@@ -290,6 +290,7 @@ class AssetTransforms extends Component
             $transformRecord->quality = $data['quality'];
             $transformRecord->interlace = $data['interlace'];
             $transformRecord->format = $data['format'];
+            $transformRecord->uid = $transformUid;
 
             $transformRecord->save(false);
 
