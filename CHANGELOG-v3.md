@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+### Changed
+- Table fields with a fixed number of rows no longer show Delete buttons or the “Add a row” button. ([#3488](https://github.com/craftcms/cms/issues/3488))
+- Table fields that are fixed to a single row no longer show the Reorder button. ([#3488](https://github.com/craftcms/cms/issues/3488))
+- Setting `components.security.sensitiveKeywords` in `config/app.php` will now append keywords to the default array `craft\services\Security::$sensitiveKeywords` array, rather than completely overriding it.
+- When performing an action that requires an elevated session while impersonating another user, admin must now enter their own password instead of the impersonated user’s. ([#3487](https://github.com/craftcms/cms/issues/3487))
+- The System Report utility now lists any custom modules that are installed. ([#3490](https://github.com/craftcms/cms/issues/3490))
+- Control Panel charts now give preference to `ar-SA` for Arabic locales, `de-DE` for German locales, `en-US` for English locales, `es-ES` for Spanish locales, or `fr-FR` for French locales, if data for the exact application locale doesn’t exist. ([#3492](https://github.com/craftcms/cms/pull/3492))
+- “Create a new child entry” and “Create a new child category” element actions now open an edit page for the same site that was selected on the index page. ([#3496](https://github.com/craftcms/cms/issues/3496))
+- The Craft Support widget now sends `composer.json` and `composer.lock` files when contacting Craft Support.
+- It’s now possible to create element select inputs that include a site selection menu by passing `showSiteMenu: true` when including the `_includes/forms/elementSelect.html` Control Panel include template. ([#3494](https://github.com/craftcms/cms/pull/3494))
+
+### Fixed
+- Fixed a bug where a Matrix fields’ block types and content table could be deleted even if something set `$isValid` to `false` on the `beforeDelete` event.
+- Fixed a bug where a global sets’ field layout could be deleted even if something set `$isValid` to `false` on the `beforeDelete` event.
+- Fixed a bug where after impersonating another user, the Login page would show the impersonated user’s username rather than the admin’s.
+- Fixed a bug where `craft\services\Sections::getAllSections()` could return stale results if a new section had been added recently. ([#3484](https://github.com/craftcms/cms/issues/3484))
+- Fixed a bug where “View entry” and “View category” element actions weren’t available when viewing a specific section or category group.
+
+### Security
+- Updated jQuery File Upload to 9.28.0.
+
+## 3.0.32 - 2018-11-20
+
 ### Added
 - The `seq()` Twig function now has a `next` argument, which can be set to `false` to have it return the current number in the sequence without incrementing it. ([#3466](https://github.com/craftcms/cms/issues/3466))
 - Added `craft\db\MigrationManager::truncateHistory()`.
@@ -10,6 +33,9 @@
 ### Changed
 - Edit Entry pages now show the entry’s site in the revision menu label so long as the section is enabled for multiple sites, even if “Propagate entries across all enabled sites?” isn’t checked. ([#3471](https://github.com/craftcms/cms/issues/3471))
 - Exact-match search terms (using `::`) now disable `subLeft` and `subRight` attributes by default, regardless of the `defaultSearchTermOptions` config setting says. ([#3474](https://github.com/craftcms/cms/issues/3474))
+
+### Deprecated
+- Deprecated `craft\validators\StringValidator::$trim`. Yii’s `'trim'` validator should be used instead.
 
 ### Fixed
 - Fixed an error that occurred when querying for Matrix blocks if both the `with` and `indexBy` parameters were set.

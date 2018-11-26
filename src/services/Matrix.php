@@ -209,141 +209,96 @@ class Matrix extends Component
      * Saves a block type.
      *
      * @param MatrixBlockType $blockType The block type to be saved.
-     * @param bool $validate Whether the block type should be validated before being saved.
+     * @param bool $runValidation Whether the block type should be validated before being saved.
      * Defaults to `true`.
      * @return bool
      * @throws Exception if an error occurs when saving the block type
      * @throws \Throwable if reasons
      */
-    public function saveBlockType(MatrixBlockType $blockType, bool $validate = true): bool
+    public function saveBlockType(MatrixBlockType $blockType, bool $runValidation = true): bool
     {
-        if (!$validate || $this->validateBlockType($blockType)) {
-
-            $fieldsService = Craft::$app->getFields();
-            $contentService = Craft::$app->getContent();
-
-            // Store the current contexts.
-            $originalFieldContext = $contentService->fieldContext;
-            $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-            $originalOldFieldColumnPrefix = $fieldsService->oldFieldColumnPrefix;
-
-            /** @var Field $parentField */
-            $parentField = $fieldsService->getFieldById($blockType->fieldId);
-            $isNewBlockType = $blockType->getIsNew();
-
-            if ($isNewBlockType) {
-                $blockTypeUid = StringHelper::UUID();
-            } else {
-                $blockTypeUid = $blockType->uid;
-            }
-
-            $projectConfig = Craft::$app->getProjectConfig();
-
-            $configData = [
-                'field' => $parentField->uid,
-                'name' => $blockType->name,
-                'handle' => $blockType->handle,
-                'sortOrder' => $blockType->sortOrder,
-            ];
-
-            // Process the fields
-            if (!$isNewBlockType) {
-                // Get the old block type fields
-                $result = $this->_createBlockTypeQuery()
-                    ->where(['id' => $blockType->id])
-                    ->one();
-
-                $oldBlockType = new MatrixBlockType($result);
-
-                // Make sure that deletions, if any, occur in the correct context.
-                $contentService->fieldContext = 'matrixBlockType:' . $blockTypeUid;
-                $contentService->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
-                $fieldsService->oldFieldColumnPrefix = 'field_' . $blockType->handle . '_';
-
-                $oldFieldsByUid = [];
-
-                foreach ($oldBlockType->getFields() as $field) {
-                    /** @var Field $field */
-                    $oldFieldsByUid[$field->uid] = $field;
-                }
-
-                // Figure out which ones are still around
-                foreach ($blockType->getFields() as $field) {
-                    unset($oldFieldsByUid[$field->uid]);
-                }
-
-                // Drop the old fields that aren't around anymore
-                foreach ($oldFieldsByUid as $field) {
-                    $fieldsService->deleteField($field);
-                }
-
-                // Refresh the schema cache
-                Craft::$app->getDb()->getSchema()->refresh();
-            }
-
-            // Now, take care of the field layout for this block type
-            // -------------------------------------------------------------
-            $fieldLayoutFields = [];
-            $sortOrder = 0;
-
-            // Resetting the fieldContext here might be redundant if this isn't a new blocktype but whatever
-            $contentService->fieldContext = 'matrixBlockType:' . $blockTypeUid;
-            $contentService->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
-
-            foreach ($blockType->getFields() as $field) {
-                // Hack to allow blank field names
-                if (!$field->name) {
-                    $field->name = '__blank__';
-                }
-
-                $field->context = 'matrixBlockType:' . $blockTypeUid;
-
-                if (!$fieldsService->saveField($field, false)) {
-                    throw new Exception('An error occurred while saving this Matrix block type.');
-                }
-
-                $field->sortOrder = ++$sortOrder;
-                $fieldLayoutFields[] = $field;
-            }
-
-            $contentService->fieldContext = $originalFieldContext;
-            $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-            $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
-
-            $fieldLayoutTab = new FieldLayoutTab();
-            $fieldLayoutTab->name = 'Content';
-            $fieldLayoutTab->sortOrder = 1;
-            $fieldLayoutTab->setFields($fieldLayoutFields);
-
-            if (isset($oldBlockType)) {
-                $fieldLayout = $oldBlockType->getFieldLayout();
-                $layoutUid = $fieldLayout->uid;
-            } else {
-                $fieldLayout = new FieldLayout();
-                $layoutUid = StringHelper::UUID();
-                $fieldLayout->uid = $layoutUid;
-            }
-
-            $fieldLayout->setTabs([$fieldLayoutTab]);
-            $fieldLayout->setFields($fieldLayoutFields);
-
-            $fieldLayoutConfig = $fieldLayout->getConfig();
-
-            $configData['fieldLayouts'] = [
-                $layoutUid => $fieldLayoutConfig
-            ];
-
-            $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockTypeUid;
-            $projectConfig->set($configPath, $configData);
-
-            if ($isNewBlockType) {
-                $blockType->id = Db::idByUid('{{%matrixblocktypes}}', $blockTypeUid);
-            }
-
-            return true;
+        if ($runValidation && !$blockType->validate()) {
+            return false;
         }
 
-        return false;
+        $fieldsService = Craft::$app->getFields();
+
+        /** @var Field $parentField */
+        $parentField = $fieldsService->getFieldById($blockType->fieldId);
+        $isNewBlockType = $blockType->getIsNew();
+
+        if ($isNewBlockType) {
+            $blockType->uid = StringHelper::UUID();
+        } else if (!$blockType->uid) {
+            $blockType->uid = Db::uidById('{{%matrixblocktypes}}', $blockType->id);
+        }
+
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        $configData = [
+            'field' => $parentField->uid,
+            'name' => $blockType->name,
+            'handle' => $blockType->handle,
+            'sortOrder' => $blockType->sortOrder,
+        ];
+
+        // Now, take care of the field layout for this block type
+        // -------------------------------------------------------------
+        $fieldLayoutFields = [];
+        $sortOrder = 0;
+
+        $configData['fields'] = [];
+
+        foreach ($blockType->getFields() as $field) {
+            /** @var Field $field */
+            // Hack to allow blank field names
+            if (!$field->name) {
+                $field->name = '__blank__';
+            }
+
+            if (!$field->uid) {
+                $field->uid = StringHelper::UUID();
+            }
+
+            $field->context = 'matrixBlockType:' . $blockType->uid;
+            $configData['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
+
+            $field->sortOrder = ++$sortOrder;
+            $fieldLayoutFields[] = $field;
+        }
+
+
+        $fieldLayoutTab = new FieldLayoutTab();
+        $fieldLayoutTab->name = 'Content';
+        $fieldLayoutTab->sortOrder = 1;
+        $fieldLayoutTab->setFields($fieldLayoutFields);
+
+        $fieldLayout = $blockType->getFieldLayout();
+
+        if ($fieldLayout->uid) {
+            $layoutUid = $fieldLayout->uid;
+        } else {
+            $layoutUid = StringHelper::UUID();
+            $fieldLayout->uid = $layoutUid;
+        }
+
+        $fieldLayout->setTabs([$fieldLayoutTab]);
+        $fieldLayout->setFields($fieldLayoutFields);
+
+        $fieldLayoutConfig = $fieldLayout->getConfig();
+
+        $configData['fieldLayouts'] = [
+            $layoutUid => $fieldLayoutConfig
+        ];
+
+        $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid;
+        $projectConfig->set($configPath, $configData);
+
+        if ($isNewBlockType) {
+            $blockType->id = Db::idByUid('{{%matrixblocktypes}}', $blockType->uid);
+        }
+
+        return true;
     }
 
     /**
@@ -357,9 +312,20 @@ class Matrix extends Component
 
         $blockTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
+        $previousData = $event->oldValue;
+
+        $fieldsService = Craft::$app->getFields();
+        $contentService = Craft::$app->getContent();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
+
         try {
+            // Store the current contexts.
+            $originalContentTable = $contentService->contentTable;
+            $originalFieldContext = $contentService->fieldContext;
+            $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+            $originalOldFieldColumnPrefix = $fieldsService->oldFieldColumnPrefix;
+
             // Get the block type record
             $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
 
@@ -370,17 +336,49 @@ class Matrix extends Component
             $blockTypeRecord->sortOrder = $data['sortOrder'];
             $blockTypeRecord->uid = $blockTypeUid;
 
+            // Make sure that alterations, if any, occur in the correct context.
+            $contentService->fieldContext = 'matrixBlockType:' . $blockTypeUid;
+            $contentService->fieldColumnPrefix = 'field_' . $blockTypeRecord->handle . '_';
+            $contentService->contentTable = $this->defineContentTableName($fieldsService->getFieldById($blockTypeRecord->fieldId));
+            $fieldsService->oldFieldColumnPrefix = 'field_' . $blockTypeRecord->handle . '_';
+
+            $oldFields = $previousData['fields'] ?? [];
+            $newFields = $data['fields'] ?? [];
+
+            // Remove fields that this block type no longer has
+            foreach ($oldFields as $fieldUid => $fieldData) {
+                if (!array_key_exists($fieldUid, $newFields)) {
+                    $fieldsService->applyFieldDelete($fieldUid);
+                }
+            }
+
+            // (Re)save all the fields that now exist for this block.
+            foreach ($newFields as $fieldUid => $fieldData) {
+                $fieldsService->applyFieldSave($fieldUid, $fieldData, 'matrixBlockType:'.$blockTypeUid);
+            }
+
+            // Refresh the schema cache
+            Craft::$app->getDb()->getSchema()->refresh();
+
+            $contentService->fieldContext = $originalFieldContext;
+            $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+            $contentService->contentTable = $originalContentTable;
+            $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
+
             if (!empty($data['fieldLayouts'])) {
-                $fields = Craft::$app->getFields();
-
-                // Delete the field layout
-                $fields->deleteLayoutById($blockTypeRecord->fieldLayoutId);
-
-                //Create the new layout
+                //Create the layout
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+
+                // If there is a layout id, just re-use that.
+                if ($blockTypeRecord->fieldLayoutId) {
+                    $layout->id = $blockTypeRecord->fieldLayoutId;
+                }
+
                 $layout->type = MatrixBlock::class;
                 $layout->uid = key($data['fieldLayouts']);
-                $fields->saveLayout($layout);
+                $fieldsService->saveLayout($layout);
+
+                // In case this was a new field layout, save the id.
                 $blockTypeRecord->fieldLayoutId = $layout->id;
             } else {
                 $blockTypeRecord->fieldLayoutId = null;
@@ -393,6 +391,13 @@ class Matrix extends Component
             $transaction->rollBack();
             throw $e;
         }
+
+        // Clear caches
+        unset(
+            $this->_blockTypesById[$blockTypeRecord->id],
+            $this->_blockTypesByFieldId[$blockTypeRecord->fieldId]
+        );
+        $this->_fetchedAllBlockTypesForFieldId[$blockTypeRecord->fieldId] = false;
     }
 
     /**
@@ -400,12 +405,38 @@ class Matrix extends Component
      *
      * @param MatrixBlockType $blockType The block type.
      * @return bool Whether the block type was deleted successfully.
-     * @throws \Throwable if reasons
      */
     public function deleteBlockType(MatrixBlockType $blockType): bool
     {
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid);
+        return true;
+    }
+
+    /**
+     * Handle block type change
+     *
+     * @param ConfigEvent $event
+     * @throws \Throwable if reasons
+     */
+    public function handleDeletedBlockType(ConfigEvent $event)
+    {
+        $blockTypeUid = $event->tokenMatches[0];
+        $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
+
+        if (!$blockTypeRecord->id) {
+            return;
+        }
+
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
+
         try {
+            $blockType = $this->getBlockTypeById($blockTypeRecord->id);
+
+            if (!$blockType) {
+                return;
+            }
+
             // First delete the blocks of this type
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
                 $blocks = MatrixBlock::find()
@@ -422,6 +453,7 @@ class Matrix extends Component
             $contentService = Craft::$app->getContent();
             $fieldsService = Craft::$app->getFields();
             $originalContentTable = $contentService->contentTable;
+
             /** @var MatrixField $matrixField */
             $matrixField = $fieldsService->getFieldById($blockType->fieldId);
             $contentService->contentTable = $matrixField->contentTable;
@@ -439,36 +471,6 @@ class Matrix extends Component
             Craft::$app->getContent()->fieldColumnPrefix = $originalFieldColumnPrefix;
             $contentService->contentTable = $originalContentTable;
 
-            Craft::$app->getProjectConfig()->remove(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid);
-
-            $transaction->commit();
-
-            return true;
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-    }
-
-    /**
-     * Handle block type change
-     *
-     * @param ConfigEvent $event
-     */
-    public function handleDeletedBlockType(ConfigEvent $event)
-    {
-        $blockTypeUid = $event->tokenMatches[0];
-        $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
-
-        if (!$blockTypeRecord->id) {
-            return;
-        }
-
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
-
-        try {
             // Delete the field layout
             $fieldLayoutId = (new Query())
                 ->select(['fieldLayoutId'])
@@ -480,7 +482,7 @@ class Matrix extends Component
             Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
 
             // Finally delete the actual block type
-            Craft::$app->getDb()->createCommand()
+            $db->createCommand()
                 ->delete('{{%matrixblocktypes}}', ['id' => $blockTypeRecord->id])
                 ->execute();
 
@@ -489,6 +491,14 @@ class Matrix extends Component
             $transaction->rollBack();
             throw $e;
         }
+
+        // Clear caches
+        unset(
+            $this->_blockTypesById[$blockTypeRecord->id],
+            $this->_blockTypesByFieldId[$blockTypeRecord->fieldId],
+            $this->_blockTypeRecordsById[$blockTypeRecord->id]
+        );
+        $this->_fetchedAllBlockTypesForFieldId[$blockTypeRecord->fieldId] = false;
     }
 
     /**
@@ -849,7 +859,7 @@ class Matrix extends Component
         if (is_string($blockType)) {
             $blockTypeRecord = MatrixBlockTypeRecord::findOne(['uid' => $blockType]) ?? new MatrixBlockTypeRecord();
 
-            if ($blockTypeRecord->getIsNewRecord()) {
+            if (!$blockTypeRecord->getIsNewRecord()) {
                 $this->_blockTypeRecordsById[$blockTypeRecord->id] = $blockTypeRecord;
             }
 
@@ -860,15 +870,17 @@ class Matrix extends Component
             return new MatrixBlockTypeRecord();
         }
 
-        if ($this->_blockTypeRecordsById !== null && array_key_exists($blockType->id, $this->_blockTypeRecordsById)) {
+        if (isset($this->_blockTypeRecordsById[$blockType->id])) {
             return $this->_blockTypeRecordsById[$blockType->id];
         }
 
-        if (($this->_blockTypeRecordsById[$blockType->id] = MatrixBlockTypeRecord::findOne($blockType->id)) === null) {
+         $blockTypeRecord = MatrixBlockTypeRecord::findOne($blockType->id);
+
+        if ($blockTypeRecord === null) {
             throw new MatrixBlockTypeNotFoundException('Invalid block type ID: ' . $blockType->id);
         }
 
-        return $this->_blockTypeRecordsById[$blockType->id];
+        return $this->_blockTypeRecordsById[$blockType->id] = $blockTypeRecord;
     }
 
     /**

@@ -699,11 +699,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function beforeDelete(): bool
+    public function beforeApplyDelete()
     {
         Craft::$app->getMatrix()->deleteMatrixField($this);
-
-        return parent::beforeDelete();
+        parent::beforeApplyDelete();
     }
 
     /**

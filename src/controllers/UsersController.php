@@ -172,9 +172,10 @@ class UsersController extends Controller
         $request = Craft::$app->getRequest();
 
         $userId = $request->getBodyParam('userId');
-        $originalUserId = $userSession->getId();
 
-        $session->set(User::IMPERSONATE_KEY, $originalUserId);
+        // Save the original user ID to the session now so User::findIdentity()
+        // knows not to worry if the user isn't active yet
+        $session->set(User::IMPERSONATE_KEY, $userSession->getId());
 
         if (!$userSession->loginByUserId($userId)) {
             $session->remove(User::IMPERSONATE_KEY);

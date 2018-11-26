@@ -64,6 +64,9 @@
     "bower-asset/punycode": "1.3.*",
     "bower-asset/yii2-pjax": "~2.0.1"
   },
+  "conflict": {
+    "league/oauth2-client": "2.4.0"
+  },
   "suggest": {
     "ext-imagick": "Adds support for more image processing formats and options.",
     "ext-iconv": "Adds support for more character encodings than PHP’s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8.",

@@ -60,6 +60,11 @@ class Sections extends Component
     const EVENT_BEFORE_DELETE_SECTION = 'beforeDeleteSection';
 
     /**
+     * @event SectionEvent The event that is triggered before a section delete is applied to the database.
+     */
+    const EVENT_BEFORE_APPLY_SECTION_DELETE = 'beforeApplySectionDelete';
+
+    /**
      * @event SectionEvent The event that is triggered after a section is deleted.
      */
     const EVENT_AFTER_DELETE_SECTION = 'afterDeleteSection';
@@ -78,6 +83,11 @@ class Sections extends Component
      * @event EntryTypeEvent The event that is triggered before an entry type is deleted.
      */
     const EVENT_BEFORE_DELETE_ENTRY_TYPE = 'beforeDeleteEntryType';
+
+    /**
+     * @event EntryTypeEvent The event that is triggered before an entry type delete is applied to the database.
+     */
+    const EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE = 'beforeApplyEntryTypeDelete';
 
     /**
      * @event EntryTypeEvent The event that is triggered after an entry type is deleted.
@@ -494,18 +504,9 @@ class Sections extends Component
         }
 
         if ($isNewSection) {
-            $sectionUid = StringHelper::UUID();
-        } else {
-            /** @var SectionRecord $sectionRecord */
-            $sectionRecord = SectionRecord::find()
-                ->where(['id' => $section->id])
-                ->one();
-
-            if (!$sectionRecord) {
-                throw new SectionNotFoundException("No section exists with the ID '{$section->id}'");
-            }
-
-            $sectionUid = $sectionRecord->uid;
+            $section->uid = StringHelper::UUID();
+        } else if (!$section->uid) {
+            $section->uid = Db::uidById('{{%sections}}', $section->id);
         }
 
         // Main section settings
@@ -525,10 +526,11 @@ class Sections extends Component
         ];
 
         if ($section->type === Section::TYPE_STRUCTURE) {
-            if ($isNewSection || !$sectionRecord->structureId) {
-                $structureUid = StringHelper::UUID();
-            } else {
+            $sectionRecord = $this->_getSectionRecord($section->uid);
+            if ($sectionRecord->structureId) {
                 $structureUid = Db::uidById('{{%structures}}', $sectionRecord->structureId);
+            } else {
+                $structureUid = StringHelper::UUID();
             }
 
             $configData['structure'] = [
@@ -539,7 +541,7 @@ class Sections extends Component
 
         // Load the existing entry type info
         if (!$isNewSection) {
-            $configData[self::CONFIG_ENTRYTYPES_KEY] = $projectConfig->get(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.' . self::CONFIG_ENTRYTYPES_KEY);
+            $configData[self::CONFIG_ENTRYTYPES_KEY] = $projectConfig->get(self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.' . self::CONFIG_ENTRYTYPES_KEY);
         }
 
         // Get the site settings
@@ -559,11 +561,11 @@ class Sections extends Component
             ];
         }
 
-        $configPath = self::CONFIG_SECTIONS_KEY . '.' . $sectionUid;
+        $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid;
         $projectConfig->set($configPath, $configData);
 
         if ($isNewSection) {
-            $section->id = Db::idByUid('{{%sections}}', $sectionUid);
+            $section->id = Db::idByUid('{{%sections}}', $section->uid);
         }
 
         // Make sure there's at least one entry type for this section
@@ -596,17 +598,6 @@ class Sections extends Component
             }
 
             $this->saveEntryType($entryType);
-        }
-
-        // Might as well update our cache of the section while we have it.
-        $this->_sectionsById[$section->id] = $section;
-
-        // Fire an 'afterSaveSection' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SECTION)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
-                'section' => $section,
-                'isNew' => $isNewSection
-            ]));
         }
 
         return true;
@@ -786,6 +777,20 @@ class Sections extends Component
             $transaction->rollBack();
             throw $e;
         }
+
+        // Clear caches
+        $this->_allSectionIds = null;
+        $this->_editableSectionIds = null;
+        unset($this->_sectionsById[$sectionRecord->id]);
+        $this->_fetchedAllSections = false;
+
+        // Fire an 'afterSaveSection' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SECTION)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
+                'section' => $this->getSectionById($sectionRecord->id),
+                'isNew' => $isNewSection
+            ]));
+        }
     }
 
     /**
@@ -830,19 +835,11 @@ class Sections extends Component
         // Fire a 'beforeDeleteSection' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_SECTION)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
-                'section' => $section
+                'section' => $section,
             ]));
         }
 
         Craft::$app->getProjectConfig()->remove(self::CONFIG_SECTIONS_KEY . '.' . $section->uid);
-
-        // Fire an 'afterDeleteSection' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SECTION)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_SECTION, new SectionEvent([
-                'section' => $section
-            ]));
-        }
-
         return true;
     }
 
@@ -858,6 +855,16 @@ class Sections extends Component
 
         if (!$sectionRecord->id) {
             return;
+        }
+
+        /** @var Section $section */
+        $section = $this->getSectionById($sectionRecord->id);
+
+        // Fire a 'beforeApplySectionDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_SECTION_DELETE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_SECTION_DELETE, new SectionEvent([
+                'section' => $section,
+            ]));
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -915,6 +922,18 @@ class Sections extends Component
         } catch (\Throwable $e) {
             $transaction->rollBack();
             throw $e;
+        }
+
+        // Clear caches
+        $this->_allSectionIds = null;
+        $this->_editableSectionIds = null;
+        unset($this->_sectionsById[$section->id]);
+
+        // Fire an 'afterDeleteSection' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SECTION)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_SECTION, new SectionEvent([
+                'section' => $section,
+            ]));
         }
     }
 
@@ -1059,12 +1078,12 @@ class Sections extends Component
         }
 
         if ($isNewEntryType) {
-            $entryTypeUid = StringHelper::UUID();
+            $entryType->uid = StringHelper::UUID();
+
             $maxSortOrder = (new Query())
                 ->from(['{{%entrytypes}}'])
                 ->where(['sectionId' => $entryType->sectionId])
                 ->max('[[sortOrder]]');
-
             $sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
         } else {
             $entryTypeRecord = EntryTypeRecord::findOne($entryType->id);
@@ -1073,7 +1092,7 @@ class Sections extends Component
                 throw new EntryTypeNotFoundException("No entry type exists with the ID '{$entryType->id}'");
             }
 
-            $entryTypeUid = $entryTypeRecord->uid;
+            $entryType->uid = $entryTypeRecord->uid;
             $sortOrder = $entryTypeRecord->sortOrder;
         }
 
@@ -1105,19 +1124,11 @@ class Sections extends Component
             ];
         }
 
-        $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid;
+        $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryType->uid;
         $projectConfig->set($configPath, $configData);
 
         if ($isNewEntryType) {
-            $entryType->id = Db::idByUid('{{%entrytypes}}', $entryTypeUid);
-        }
-
-        // Fire an 'afterSaveEntryType' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ENTRY_TYPE)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE, new EntryTypeEvent([
-                'entryType' => $entryType,
-                'isNew' => $isNewEntryType,
-            ]));
+            $entryType->id = Db::idByUid('{{%entrytypes}}', $entryType->uid);
         }
 
         return true;
@@ -1149,7 +1160,7 @@ class Sections extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            $isNewEntryType = !(bool)$entryTypeRecord->id;
+            $isNewEntryType = $entryTypeRecord->getIsNewRecord();
 
             $entryTypeRecord->name = $data['name'];
             $entryTypeRecord->handle = $data['handle'];
@@ -1184,6 +1195,12 @@ class Sections extends Component
             throw $e;
         }
 
+        // Clear caches
+        unset($this->_entryTypesById[$entryTypeRecord->id]);
+
+        /** @var EntryType $entryType */
+        $entryType = $this->getEntryTypeById($entryTypeRecord->id);
+
         if (!$isNewEntryType) {
             // Re-save the entries of this type
             $allSiteSettings = $section->getSiteSettings();
@@ -1193,13 +1210,13 @@ class Sections extends Component
 
                 Craft::$app->getQueue()->push(new ResaveElements([
                     'description' => Craft::t('app', 'Resaving {type} entries', [
-                        'type' => ($section->type !== Section::TYPE_SINGLE ? $section->name . ' - ' : '') . $entryTypeRecord->name,
+                        'type' => ($section->type !== Section::TYPE_SINGLE ? $section->name . ' - ' : '') . $entryType->name,
                     ]),
                     'elementType' => Entry::class,
                     'criteria' => [
                         'siteId' => $siteIds[0],
                         'sectionId' => $section->id,
-                        'typeId' => $entryTypeRecord->id,
+                        'typeId' => $entryType->id,
                         'status' => null,
                         'enabledForSite' => false,
                     ]
@@ -1208,14 +1225,14 @@ class Sections extends Component
                 foreach ($allSiteSettings as $siteId => $siteSettings) {
                     Craft::$app->getQueue()->push(new ResaveElements([
                         'description' => Craft::t('app', 'Resaving {type} entries ({site})', [
-                            'type' => $entryTypeRecord->name,
+                            'type' => $entryType->name,
                             'site' => $siteSettings->getSite()->name,
                         ]),
                         'elementType' => Entry::class,
                         'criteria' => [
                             'siteId' => $siteId,
                             'sectionId' => $section->id,
-                            'typeId' => $entryTypeRecord->id,
+                            'typeId' => $entryType->id,
                             'status' => null,
                             'enabledForSite' => false,
                         ]
@@ -1227,6 +1244,14 @@ class Sections extends Component
             $allSiteUids = array_keys($siteSettings);
             $sectionRecord = $this->_getSectionRecord($sectionUid);
             $this->_onSaveSingle($sectionRecord, true, $allSiteUids);
+        }
+
+        // Fire an 'afterSaveEntryType' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ENTRY_TYPE)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE, new EntryTypeEvent([
+                'entryType' => $entryType,
+                'isNew' => $isNewEntryType,
+            ]));
         }
     }
 
@@ -1314,14 +1339,6 @@ class Sections extends Component
         $sectionUid = $section->uid;
 
         Craft::$app->getProjectConfig()->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid);
-
-        // Fire an 'afterDeleteEntryType' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ENTRY_TYPE)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE, new EntryTypeEvent([
-                'entryType' => $entryType,
-            ]));
-        }
-
         return true;
     }
 
@@ -1337,6 +1354,16 @@ class Sections extends Component
 
         if (!$entryTypeRecord->id) {
             return;
+        }
+
+        /** @var EntryType $entryType */
+        $entryType = $this->getEntryTypeById($entryTypeRecord->id);
+
+        // Fire a 'beforeApplyEntryTypeDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE, new EntryTypeEvent([
+                'entryType' => $entryType,
+            ]));
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -1369,7 +1396,18 @@ class Sections extends Component
             $transaction->rollBack();
             throw $e;
         }
+
+        // Clear caches
+        unset($this->_entryTypesById[$entryType->id]);
+
+        // Fire an 'afterDeleteEntryType' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ENTRY_TYPE)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE, new EntryTypeEvent([
+                'entryType' => $entryType,
+            ]));
+        }
     }
+
     // Private Methods
     // =========================================================================
 

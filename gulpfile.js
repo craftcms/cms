@@ -1,7 +1,6 @@
 // TODO: following deps are still manual:
 // - colorpicker
 // - datepicker-i18n
-// - fileupload
 // - jquery-touch-events
 // - jquery-ui
 // - qunit
@@ -19,6 +18,7 @@ var uglify = require('gulp-uglify');
 var libPath = 'lib/';
 
 var jsDeps = [
+    { srcGlob: 'node_modules/blueimp-file-upload/js/jquery.fileupload.js', dest: libPath+'fileupload' },
     { srcGlob: 'node_modules/bootstrap/dist/js/bootstrap.js', dest: libPath+'bootstrap/js' },
     { srcGlob: 'node_modules/d3/build/d3.js', dest: libPath+'d3' },
     { srcGlob: 'node_modules/element-resize-detector/dist/element-resize-detector.js', dest: libPath+'element-resize-detector' },

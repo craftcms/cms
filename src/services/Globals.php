@@ -337,13 +337,9 @@ class Globals extends Component
         }
 
         if ($isNewSet) {
-            $globalSetUid = StringHelper::UUID();
-        } else {
-            $globalSetUid = Db::uidById('{{%globalsets}}', $globalSet->id);
-        }
-
-        if (!$globalSetUid) {
-            throw new GlobalSetNotFoundException("No tag group exists with the ID '{$globalSet->id}'");
+            $globalSet->uid = StringHelper::UUID();
+        } else if (!$globalSet->uid) {
+            $globalSet->uid = Db::uidById('{{%globalsets}}', $globalSet->id);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -368,19 +364,11 @@ class Globals extends Component
             ];
         }
 
-        $configPath = self::CONFIG_GLOBALSETS_KEY . '.' . $globalSetUid;
+        $configPath = self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid;
         $projectConfig->set($configPath, $configData);
 
         if ($isNewSet) {
-            $globalSet->id = Db::idByUid('{{%globalsets}}', $globalSetUid);
-        }
-
-        // Fire an 'afterSaveGlobalSet' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GLOBAL_SET)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_SET, new GlobalSetEvent([
-                'globalSet' => $globalSet,
-                'isNew' => $isNewSet
-            ]));
+            $globalSet->id = Db::idByUid('{{%globalsets}}', $globalSet->uid);
         }
 
         return true;
@@ -403,6 +391,7 @@ class Globals extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $globalSetRecord = $this->_getGlobalSetRecord($globalSetUid);
+            $isNewSet = $globalSetRecord->getIsNewRecord();
 
             $globalSetRecord->name = $data['name'];
             $globalSetRecord->handle = $data['handle'];
@@ -449,6 +438,20 @@ class Globals extends Component
             $transaction->rollBack();
             throw $e;
         }
+
+        // Clear caches
+        $this->_allGlobalSetIds = null;
+        $this->_editableGlobalSetIds = null;
+        $this->_allGlobalSets = null;
+        unset($this->_globalSetsById[$globalSetRecord->id]);
+
+        // Fire an 'afterSaveGlobalSet' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GLOBAL_SET)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_SET, new GlobalSetEvent([
+                'globalSet' => $this->getSetById($globalSetRecord->id),
+                'isNew' => $isNewSet
+            ]));
+        }
     }
 
     /**
@@ -471,7 +474,6 @@ class Globals extends Component
         }
 
         Craft::$app->getProjectConfig()->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid);
-
         return true;
     }
 
@@ -528,20 +530,22 @@ class Globals extends Component
         $globalSets = $projectConfig->get(self::CONFIG_GLOBALSETS_KEY);
 
         // Loop through the tag groups and see if the UID exists in the field layouts.
-        foreach ($globalSets as &$globalSet) {
-            if (!empty($globalSet['fieldLayouts'])) {
-                foreach ($globalSet['fieldLayouts'] as &$layout) {
-                    if (!empty($layout['tabs'])) {
-                        foreach ($layout['tabs'] as &$tab) {
-                            if (!empty($tab['fields'])) {
-                                // Remove the straggler.
-                                if (array_key_exists($fieldUid, $tab['fields'])) {
-                                    unset($tab['fields'][$fieldUid]);
-                                    $fieldPruned = true;
-                                    // If last field, just remove field layouts entry altogether.
-                                    if (empty($tab['fields'])) {
-                                        unset($globalSet['fieldLayouts']);
-                                        break 2;
+        if (is_array($globalSets)) {
+            foreach ($globalSets as &$globalSet) {
+                if (!empty($globalSet['fieldLayouts'])) {
+                    foreach ($globalSet['fieldLayouts'] as &$layout) {
+                        if (!empty($layout['tabs'])) {
+                            foreach ($layout['tabs'] as &$tab) {
+                                if (!empty($tab['fields'])) {
+                                    // Remove the straggler.
+                                    if (array_key_exists($fieldUid, $tab['fields'])) {
+                                        unset($tab['fields'][$fieldUid]);
+                                        $fieldPruned = true;
+                                        // If last field, just remove field layouts entry altogether.
+                                        if (empty($tab['fields'])) {
+                                            unset($globalSet['fieldLayouts']);
+                                            break 2;
+                                        }
                                     }
                                 }
                             }

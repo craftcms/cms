@@ -67,6 +67,11 @@ class Sites extends Component
     const EVENT_BEFORE_DELETE_SITE_GROUP = 'beforeDeleteSiteGroup';
 
     /**
+     * @event SiteGroupEvent The event that is triggered before a site group delete is applied to the database.
+     */
+    const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
+
+    /**
      * @event SiteGroupEvent The event that is triggered after a site group is deleted.
      */
     const EVENT_AFTER_DELETE_SITE_GROUP = 'afterDeleteSiteGroup';
@@ -102,6 +107,11 @@ class Sites extends Component
      * You may set [[SiteEvent::isValid]] to `false` to prevent the site from getting deleted.
      */
     const EVENT_BEFORE_DELETE_SITE = 'beforeDeleteSite';
+
+    /**
+     * @event DeleteSiteEvent The event that is triggered before a site delete is applied to the database.
+     */
+    const EVENT_BEFORE_APPLY_SITE_DELETE = 'beforeApplySiteDelete';
 
     /**
      * @event DeleteSiteEvent The event that is triggered after a site is deleted.
@@ -264,27 +274,16 @@ class Sites extends Component
         ];
 
         if ($isNewGroup) {
-            $uid = StringHelper::UUID();
-        } else {
-            $groupRecord = $this->_getGroupRecord($group->id);
-            $uid = $groupRecord->uid;
+            $group->uid = StringHelper::UUID();
+        } else if (!$group->uid) {
+            $group->uid = Db::uidById('{{%sitegroups}}', $group->id);
         }
 
-        $projectConfig->set(self::CONFIG_SITEGROUP_KEY . '.' . $uid, $configData);
+        $projectConfig->set(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, $configData);
 
-        // Now that we have an ID, save it on the model & models
+        // Now that we have an ID, save it on the model
         if ($isNewGroup) {
-            $group->id = Db::idByUid('{{%sitegroups}}', $uid);
-        }
-
-        $group->uid = $uid;
-
-        // Fire an 'afterSaveSiteGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_SITE_GROUP, new SiteGroupEvent([
-                'group' => $group,
-                'isNew' => $isNewGroup,
-            ]));
+            $group->id = Db::idByUid('{{%sitegroups}}', $group->uid);
         }
 
         return true;
@@ -301,6 +300,7 @@ class Sites extends Component
         $uid = $event->tokenMatches[0];
 
         $groupRecord = $this->_getGroupRecord($uid);
+        $isNewGroup = $groupRecord->getIsNewRecord();
 
         // If this is a new group, set the UID we want.
         if (!$groupRecord->id) {
@@ -309,6 +309,18 @@ class Sites extends Component
 
         $groupRecord->name = $data['name'];
         $groupRecord->save(false);
+
+        // Clear caches
+        unset($this->_groupsById[$groupRecord->id]);
+        $this->_fetchedAllGroups = false;
+
+        // Fire an 'afterSaveSiteGroup' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_SITE_GROUP, new SiteGroupEvent([
+                'group' => $this->getGroupById($groupRecord->id),
+                'isNew' => $isNewGroup,
+            ]));
+        }
     }
 
     /**
@@ -325,10 +337,26 @@ class Sites extends Component
             return;
         }
 
+        $group = $this->getGroupById($groupRecord->id);
+
+        // Fire a 'beforeApplyGroupDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_GROUP_DELETE, new SiteGroupEvent([
+                'group' => $group,
+            ]));
+        }
+
         $groupRecord->softDelete();
 
-        // Delete our cache of it
+        // Clear caches
         unset($this->_groupsById[$groupRecord->id]);
+
+        // Fire an 'afterDeleteSiteGroup' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_SITE_GROUP, new SiteGroupEvent([
+                'group' => $group,
+            ]));
+        }
     }
 
     /**
@@ -378,17 +406,6 @@ class Sites extends Component
         }
 
         Craft::$app->getProjectConfig()->remove(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid);
-
-        // Delete our cache of it
-        unset($this->_groupsById[$group->id]);
-
-        // Fire an 'afterDeleteSiteGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_SITE_GROUP, new SiteGroupEvent([
-                'group' => $group
-            ]));
-        }
-
         return true;
     }
 
@@ -671,35 +688,21 @@ class Sites extends Component
         ];
 
         if ($isNewSite) {
-            $uid = StringHelper::UUID();
+            $site->uid = StringHelper::UUID();
             $configData['sortOrder'] = ((int)(new Query())
                     ->from(['{{%sites}}'])
                     ->where(['dateDeleted' => null])
                     ->max('[[sortOrder]]')) + 1;
-        } else {
-            $uid = Db::uidById('{{%sites}}', $site->id);
+        } else if (!$site->uid) {
+            $site->uid = Db::uidById('{{%sites}}', $site->id);
         }
 
-        $configPath = self::CONFIG_SITES_KEY . '.' . $uid;
+        $configPath = self::CONFIG_SITES_KEY . '.' . $site->uid;
         $projectConfig->set($configPath, $configData);
 
         // Now that we have a site ID, save it on the model
         if ($isNewSite) {
-            $site->id = Db::idByUid('{{%sites}}', $uid);
-            $site->uid = $uid;
-        }
-
-        // Update our cache of the site
-        $this->_sitesById[$site->id] = $site;
-        $this->_sitesByHandle[$site->handle] = $site;
-
-        // Fire an 'afterSaveSite' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_SITE, new SiteEvent([
-                'site' => $site,
-                'isNew' => $isNewSite,
-                'oldPrimarySiteId' => $oldPrimarySiteId,
-            ]));
+            $site->id = Db::idByUid('{{%sites}}', $site->uid);
         }
 
         return true;
@@ -720,6 +723,13 @@ class Sites extends Component
         // Ensure we have the site group in place first
         Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
 
+        // Did the primary site just change?
+        try {
+            $oldPrimarySiteId = $this->getPrimarySite()->id;
+        } catch (SiteNotFoundException $e) {
+            $oldPrimarySiteId = null;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
@@ -739,31 +749,29 @@ class Sites extends Component
             $siteRecord->sortOrder = $data['sortOrder'];
             $siteRecord->save(false);
 
-            // Force a reload with the fresh data.
-            if ($siteRecord->primary && $this->_primarySite === null) {
-                $this->_sitesById = null;
-                $this->_loadAllSites();
-            }
-
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
 
-        if (!empty($this->_sitesById)) {
-            // Did the primary site just change?
-            $oldPrimarySiteId = $this->getPrimarySite()->id;
-
-            if ($data['primary'] && $siteRecord->id != $oldPrimarySiteId) {
-                $this->_processNewPrimarySite($oldPrimarySiteId, $siteRecord->id);
-            }
-        }
-
-        // Refresh sites
+        // Clear caches
         $this->_refreshAllSites();
 
-        if ($isNewSite && !empty($oldPrimarySiteId)) {
+        /** @var Site $site */
+        $site = $this->getSiteById($siteRecord->id);
+
+        // Is this the current site?
+        if ($this->_currentSite !== null && $this->_currentSite->id == $site->id) {
+            $this->_currentSite = $site;
+        }
+
+        // Did the primary site just change?
+        if ($oldPrimarySiteId && $data['primary'] && $site->id != $oldPrimarySiteId) {
+            $this->_processNewPrimarySite($oldPrimarySiteId, $site->id);
+        }
+
+        if ($isNewSite && $oldPrimarySiteId) {
             // TODO: Move this code into element/category modules
             // Create site settings for each of the category groups
             $allSiteSettings = (new Query())
@@ -778,7 +786,7 @@ class Sites extends Component
                 foreach ($allSiteSettings as $siteSettings) {
                     $newSiteSettings[] = [
                         $siteSettings['groupId'],
-                        $siteRecord->id,
+                        $site->id,
                         $siteSettings['uriFormat'],
                         $siteSettings['template'],
                         $siteSettings['hasUrls']
@@ -812,9 +820,18 @@ class Sites extends Component
                         'status' => null,
                         'enabledForSite' => false
                     ],
-                    'siteId' => $siteRecord->id,
+                    'siteId' => $site->id,
                 ]));
             }
+        }
+
+        // Fire an 'afterSaveSite' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_SITE, new SiteEvent([
+                'site' => $site,
+                'isNew' => $isNewSite,
+                'oldPrimarySiteId' => $oldPrimarySiteId,
+            ]));
         }
     }
 
@@ -1070,15 +1087,6 @@ class Sites extends Component
         }
 
         Craft::$app->getProjectConfig()->remove(self::CONFIG_SITES_KEY . '.' . $site->uid);
-
-        // Fire an 'afterDeleteSite' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_SITE, new DeleteSiteEvent([
-                'site' => $site,
-                'transferContentTo' => $transferContentTo,
-            ]));
-        }
-
         return true;
     }
 
@@ -1099,6 +1107,16 @@ class Sites extends Component
             return;
         }
 
+        /** @var Site $site */
+        $site = $this->getSiteById($siteRecord->id);
+
+        // Fire a 'beforeApplySiteDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_SITE_DELETE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_SITE_DELETE, new DeleteSiteEvent([
+                'site' => $site,
+            ]));
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
@@ -1114,6 +1132,18 @@ class Sites extends Component
 
         // Refresh sites
         $this->_refreshAllSites();
+
+        // Was this the current site?
+        if ($this->_currentSite !== null && $this->_currentSite->id == $site->id) {
+            $this->setCurrentSite($this->_primarySite);
+        }
+
+        // Fire an 'afterDeleteSite' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_SITE, new DeleteSiteEvent([
+                'site' => $site,
+            ]));
+        }
     }
 
     /**
@@ -1257,6 +1287,7 @@ class Sites extends Component
                 'uid',
             ])
             ->from(['{{%sitegroups}}'])
+            ->where(['dateDeleted' => null])
             ->orderBy(['name' => SORT_ASC]);
     }
 

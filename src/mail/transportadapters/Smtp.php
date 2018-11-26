@@ -110,8 +110,8 @@ class Smtp extends BaseTransportAdapter
     public function rules()
     {
         return [
+            [['host'], 'trim'],
             [['host', 'port', 'timeout'], 'required'],
-            [['host'], StringValidator::class, 'trim' => true],
             [
                 ['username', 'password'],
                 'required',

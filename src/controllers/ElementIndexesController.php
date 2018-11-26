@@ -72,11 +72,13 @@ class ElementIndexesController extends BaseElementsController
     // =========================================================================
 
     /**
-     * Initializes the application component.
+     * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
 
         $this->_elementType = $this->elementType();
         $this->_context = $this->context();
@@ -88,6 +90,8 @@ class ElementIndexesController extends BaseElementsController
         if ($this->_context === 'index' && $this->_sourceKey !== null) {
             $this->_actions = $this->_availableActions();
         }
+
+        return true;
     }
 
     /**

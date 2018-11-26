@@ -365,6 +365,17 @@ class DashboardController extends Controller
                 $zip->addFromString('license.key', $licenseKey);
             }
 
+            // Composer files
+            try {
+                $composerService = Craft::$app->getComposer();
+                $zip->addFile($composerService->getJsonPath(), 'composer.json');
+                if (($composerLockPath = $composerService->getLockPath()) !== null) {
+                    $zip->addFile($composerLockPath, 'composer.lock');
+                }
+            } catch (Exception $e) {
+                // that's fine
+            }
+
             // Logs
             if ($getHelpModel->attachLogs) {
                 $logPath = Craft::$app->getPath()->getLogPath();
