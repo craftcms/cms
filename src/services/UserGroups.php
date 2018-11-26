@@ -287,7 +287,7 @@ class UserGroups extends Component
     {
         $uid = $event->tokenMatches[0];
 
-        $group = $this->getAssignableGroups($uid);
+        $group = $this->getGroupByUid($uid);
 
         // Fire a 'beforeApplyGroupDelete' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
