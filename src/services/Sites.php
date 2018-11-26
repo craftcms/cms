@@ -1287,6 +1287,7 @@ class Sites extends Component
                 'uid',
             ])
             ->from(['{{%sitegroups}}'])
+            ->where(['dateDeleted' => null])
             ->orderBy(['name' => SORT_ASC]);
     }
 
