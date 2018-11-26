@@ -421,22 +421,31 @@ class Table extends Field
         }
         unset($column);
 
+        if (!is_array($value)) {
+            $value = [];
+        }
+
         // Explicitly set each cell value to an array with a 'value' key
         $checkForErrors = $element && $element->hasErrors($this->handle);
-        if (is_array($value)) {
-            foreach ($value as &$row) {
-                foreach ($this->columns as $colId => $col) {
-                    if (isset($row[$colId])) {
-                        $hasErrors = $checkForErrors && !$this->_validateCellValue($col['type'], $row[$colId]);
-                        $row[$colId] = [
-                            'value' => $row[$colId],
-                            'hasErrors' => $hasErrors,
-                        ];
-                    }
+        foreach ($value as &$row) {
+            foreach ($this->columns as $colId => $col) {
+                if (isset($row[$colId])) {
+                    $hasErrors = $checkForErrors && !$this->_validateCellValue($col['type'], $row[$colId]);
+                    $row[$colId] = [
+                        'value' => $row[$colId],
+                        'hasErrors' => $hasErrors,
+                    ];
                 }
             }
         }
         unset($row);
+
+        // Make sure the value contains at least the minimum number of rows
+        if ($this->minRows) {
+            for ($i = count($value); $i < $this->minRows; $i++) {
+                $value[] = [];
+            }
+        }
 
         $view = Craft::$app->getView();
         $id = $view->formatInputId($this->handle);

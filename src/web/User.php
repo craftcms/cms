@@ -288,8 +288,19 @@ class User extends \yii\web\User
      */
     public function startElevatedSession(string $password): bool
     {
-        // Get the current user
-        $user = $this->getIdentity();
+        $session = Craft::$app->getSession();
+
+        // If the current user is being impersonated by an admin, get the admin instead
+        if ($previousUserId = $session->get(UserElement::IMPERSONATE_KEY)) {
+            $user = UserElement::find()
+                ->addSelect(['users.password'])
+                ->id($previousUserId)
+                ->admin(true)
+                ->one();
+        } else {
+            // Get the current user
+            $user = $this->getIdentity();
+        }
 
         if (!$user) {
             return false;
@@ -309,7 +320,6 @@ class User extends \yii\web\User
         }
 
         // Set the elevated session expiration date
-        $session = Craft::$app->getSession();
         $timeout = time() + $generalConfig->elevatedSessionDuration;
         $session->set($this->elevatedSessionTimeoutParam, $timeout);
 
@@ -369,15 +379,18 @@ class User extends \yii\web\User
      */
     protected function afterLogin($identity, $cookieBased, $duration)
     {
-        /** @var \craft\elements\User $identity */
-        // Save the username cookie
-        $this->sendUsernameCookie($identity);
+        /** @var UserElement $identity */
+        $session = Craft::$app->getSession();
+
+        // Save the username cookie if they're not being impersonated
+        if ($session->get(UserElement::IMPERSONATE_KEY) === null) {
+            $this->sendUsernameCookie($identity);
+        }
 
         // Save the Debug preferences to the session
         $this->saveDebugPreferencesToSession();
 
         // Clear out the elevated session, if there is one
-        $session = Craft::$app->getSession();
         $session->remove($this->elevatedSessionTimeoutParam);
 
         // Update the user record

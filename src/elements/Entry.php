@@ -19,6 +19,7 @@ use craft\elements\actions\NewChild;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SetStatus;
 use craft\elements\actions\View;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
@@ -227,6 +228,18 @@ class Entry extends Element
      */
     protected static function defineActions(string $source = null): array
     {
+        // Get the selected site
+        $controller = Craft::$app->controller;
+        if ($controller instanceof ElementIndexesController) {
+            /** @var ElementQuery $elementQuery */
+            $elementQuery = $controller->getElementQuery();
+        } else {
+            $elementQuery = null;
+        }
+        $site = $elementQuery && $elementQuery->siteId
+            ? Craft::$app->getSites()->getSiteById($elementQuery->siteId)
+            : Craft::$app->getSites()->getCurrentSite();
+
         // Get the section(s) we need to check permissions on
         switch ($source) {
             case '*':
@@ -297,12 +310,8 @@ class Entry extends Element
 
             if (!$showViewAction) {
                 // They are viewing a specific section. See if it has URLs for the requested site
-                $controller = Craft::$app->controller;
-                if ($controller instanceof ElementIndexesController) {
-                    $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->getCurrentSite()->id;
-                    if (isset($sections[0]->siteSettings[$siteId]) && $sections[0]->siteSettings[$siteId]->hasUrls) {
-                        $showViewAction = true;
-                    }
+                if (isset($sections[0]->siteSettings[$site->id]) && $sections[0]->siteSettings[$site->id]->hasUrls) {
+                    $showViewAction = true;
                 }
             }
 
@@ -326,11 +335,17 @@ class Entry extends Element
                     $structure = Craft::$app->getStructures()->getStructureById($section->structureId);
 
                     if ($structure) {
+                        $newChildUrl = 'entries/' . $section->handle . '/new';
+
+                        if (Craft::$app->getIsMultiSite()) {
+                            $newChildUrl .= '/' . $site->handle;
+                        }
+
                         $actions[] = $elementsService->createAction([
                             'type' => NewChild::class,
                             'label' => Craft::t('app', 'Create a new child entry'),
                             'maxLevels' => $structure->maxLevels,
-                            'newChildUrl' => 'entries/' . $section->handle . '/new',
+                            'newChildUrl' => $newChildUrl,
                         ]);
                     }
                 }
