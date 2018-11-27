@@ -514,6 +514,9 @@ class Sections extends Component
             $section->propagateEntries = true;
         }
 
+        // Assemble the section config
+        // -----------------------------------------------------------------
+
         $projectConfig = Craft::$app->getProjectConfig();
 
         $configData = [
@@ -561,6 +564,9 @@ class Sections extends Component
             ];
         }
 
+        // Save the section config
+        // -----------------------------------------------------------------
+
         $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid;
         $projectConfig->set($configPath, $configData);
 
@@ -598,6 +604,35 @@ class Sections extends Component
             }
 
             $this->saveEntryType($entryType);
+            $section->setEntryTypes([$entryType]);
+        }
+
+        // Special handling for Single sections
+        // -----------------------------------------------------------------
+
+        if ($section->type === Section::TYPE_SINGLE) {
+            // Ensure & get the single entry
+            $entry = $this->_ensureSingleEntry($section, $isNewSection);
+
+            // Deal with the section's entry types
+            if (!$isNewSection) {
+                foreach ($this->getEntryTypesBySectionId($section->id) as $entryType) {
+                    if ($entryType->id == $entry->typeId) {
+                        // This is *the* entry's type. Make sure its name & handle match the section's
+                        if (
+                            ($entryType->name !== ($entryType->name = $section->name)) ||
+                            ($entryType->handle !== ($entryType->handle = $section->handle))
+                        ) {
+                            $this->saveEntryType($entryType);
+                        }
+
+                        $section->setEntryTypes([$entryType]);
+                    } else {
+                        // We don't need this one anymore
+                        $this->deleteEntryType($entryType);
+                    }
+                }
+            }
         }
 
         return true;
@@ -708,19 +743,16 @@ class Sections extends Component
                 }
             }
 
-            // Now, regardless of whether the section type changed or not, let the section type make sure
-            // everything is cool
+            // If the section was just converted to a Structure,
+            // add the existing entries to the structure
             // -----------------------------------------------------------------
 
-            switch ($sectionRecord->type) {
-                case Section::TYPE_SINGLE:
-                    $this->_onSaveSingle($sectionRecord, $isNewSection, array_keys($siteSettingData));
-                    break;
-                case Section::TYPE_STRUCTURE:
-                    if (!$isNewSection && $isNewStructure) {
-                        $this->_populateNewStructure($sectionRecord, $oldSectionRecord, array_keys($allOldSiteSettingsRecords));
-                    }
-                    break;
+            if (
+                $sectionRecord->type === Section::TYPE_STRUCTURE &&
+                !$isNewSection &&
+                $isNewStructure
+            ) {
+                $this->_populateNewStructure($sectionRecord, $oldSectionRecord, array_keys($allOldSiteSettingsRecords));
             }
 
             // Finally, deal with the existing entries...
@@ -1201,7 +1233,10 @@ class Sections extends Component
         /** @var EntryType $entryType */
         $entryType = $this->getEntryTypeById($entryTypeRecord->id);
 
-        if (!$isNewEntryType) {
+        // If this is for a Single section, ensure its entry exists
+        if ($section->type === Section::TYPE_SINGLE) {
+            $this->_ensureSingleEntry($section);
+        } else if (!$isNewEntryType) {
             // Re-save the entries of this type
             $allSiteSettings = $section->getSiteSettings();
 
@@ -1239,11 +1274,6 @@ class Sections extends Component
                     ]));
                 }
             }
-        } else if ($section->type === Section::TYPE_SINGLE) {
-            $siteSettings = Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.siteSettings', true);
-            $allSiteUids = array_keys($siteSettings);
-            $sectionRecord = $this->_getSectionRecord($sectionUid);
-            $this->_onSaveSingle($sectionRecord, true, $allSiteUids);
         }
 
         // Fire an 'afterSaveEntryType' event
@@ -1436,18 +1466,20 @@ class Sections extends Component
     }
 
     /**
-     * Performs some Single-specific tasks when a section is saved.
+     * Ensures that the given Single section has its one and only entry, and returns it.
      *
-     * @param SectionRecord $section
+     * @param Section $section
      * @param bool $isNewSection
-     * @param array $allSiteUids
+     * @return Entry The
      * @see saveSection()
      * @throws Exception if reasons
      */
-    private function _onSaveSingle(SectionRecord $section, bool $isNewSection, array $allSiteUids)
+    private function _ensureSingleEntry(Section $section, bool $isNewSection = false): Entry
     {
         // Get all the entries that currently exist for this section
         // ---------------------------------------------------------------------
+
+        $allSiteUids = array_keys(Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.siteSettings'));
 
         if (!$isNewSection) {
             $entryData = (new Query())
@@ -1476,9 +1508,9 @@ class Sections extends Component
         /** @var EntryType[] $entryTypes */
         $entryTypes = ArrayHelper::index($this->getEntryTypesBySectionId($section->id), 'id');
 
-        // If there are no entry types, just hope that they are on the way via yml.
+        // There should always be at least one entry type by the time this is called
         if (empty($entryTypes)) {
-            return;
+            throw new Exception('No entry types exist for section ' . $section->id);
         }
 
         // Get/save the entry
@@ -1526,23 +1558,7 @@ class Sections extends Component
             }
         }
 
-        // Delete any other entry types in the section
-        // ---------------------------------------------------------------------
-
-        foreach ($entryTypes as $entryType) {
-            if ($entryType->id != $entry->typeId) {
-                $this->deleteEntryType($entryType);
-            }
-        }
-
-        // Update the remaining entry type's name and handle, if this isn't a new section
-        // ---------------------------------------------------------------------
-
-        if (!$isNewSection) {
-            $entryTypes[$entry->typeId]->name = $section->name;
-            $entryTypes[$entry->typeId]->handle = $section->handle;
-            $this->saveEntryType($entryTypes[$entry->typeId]);
-        }
+        return $entry;
     }
 
     /**
