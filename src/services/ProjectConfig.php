@@ -469,14 +469,12 @@ class ProjectConfig extends Component
         } else if (!$oldValue && $newValue) {
             // Fire an 'addItem' event
             $this->trigger(self::EVENT_ADD_ITEM, $event);
-        } else if (
+        } else if ($triggerUpdate || (
             $newValue !== null &&
             $oldValue !== null &&
             Json::encode($oldValue) !== Json::encode($newValue)
-        ) {
+        )) {
             // Fire an 'updateItem' event
-            $this->trigger(self::EVENT_UPDATE_ITEM, $event);
-        } else if ($triggerUpdate) {
             $this->trigger(self::EVENT_UPDATE_ITEM, $event);
         } else {
             return;
