@@ -1,10 +1,14 @@
 # Plugin Editions
 
-The Plugin Store will soon allow plugins to define up to three editions for themselves, which will work similarly to Craft’s two editions (Solo and Pro).
+The Plugin Store will soon add **limited** support for multi-edition plugins, which will work similarly to Craft’s two editions (Solo and Pro).
 
 - Plugins that support mulitple editions are still comprised of a single Composer package.
 - Plugins’ active edition is recorded in the [project config](../project-config.md).
 - Plugins can implement feature toggles by checking their active edition.
+
+::: warning
+Not every plugin can or should support editions. [Contact](https://craftcms.com/contact) Pixel & Tonic before you begin adding edition support to make sure it will be allowed for your plugin.
+:::
 
 ## Define the Editions
 
