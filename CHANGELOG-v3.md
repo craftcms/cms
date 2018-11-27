@@ -20,6 +20,7 @@
 - Fixed a bug where `craft\services\Sections::getAllSections()` could return stale results if a new section had been added recently. ([#3484](https://github.com/craftcms/cms/issues/3484))
 - Fixed a bug where “View entry” and “View category” element actions weren’t available when viewing a specific section or category group.
 - Fix a bug where Craft would attempt to index transforms.
+- Fix a bug where asset indexing was subject to race condition which could lead to inconsistent results. ([#3450](https://github.com/craftcms/cms/issues/3450))
 
 ### Security
 - Updated jQuery File Upload to 9.28.0.
