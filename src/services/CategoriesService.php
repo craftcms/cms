@@ -53,7 +53,7 @@ class CategoriesService extends BaseApplicationComponent
 		{
 			if ($this->_fetchedAllCategoryGroups)
 			{
-				$this->_allGroupIds = array_keys($this->_categoryGroupsById);
+				$this->_allGroupIds = array_keys(array_filter($this->_categoryGroupsById));
 			}
 			else
 			{
@@ -118,17 +118,17 @@ class CategoriesService extends BaseApplicationComponent
 
 		if ($indexBy == 'id')
 		{
-			return $this->_categoryGroupsById;
+			return array_filter($this->_categoryGroupsById);
 		}
 		else if (!$indexBy)
 		{
-			return array_values($this->_categoryGroupsById);
+			return array_filter(array_values($this->_categoryGroupsById));
 		}
 		else
 		{
 			$groups = array();
 
-			foreach ($this->_categoryGroupsById as $group)
+			foreach (array_filter($this->_categoryGroupsById) as $group)
 			{
 				$groups[$group->$indexBy] = $group;
 			}
@@ -898,16 +898,16 @@ class CategoriesService extends BaseApplicationComponent
 			{
 				// Did we just skip any categories?
 				if ($category->level != 1 && (
-					($i == 0) ||
-					(!$category->isSiblingOf($prevCategory) && !$category->isChildOf($prevCategory))
-				))
+						($i == 0) ||
+						(!$category->isSiblingOf($prevCategory) && !$category->isChildOf($prevCategory))
+					))
 				{
 					// Merge in all of the category's ancestors
 					$ancestorIds = $category
-                        ->getAncestors()
-					    ->status(null)
-                        ->localeEnabled(false)
-                        ->ids();
+						->getAncestors()
+						->status(null)
+						->localeEnabled(false)
+						->ids();
 
 					$completeIds = array_merge($completeIds, $ancestorIds);
 				}
