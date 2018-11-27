@@ -49,6 +49,7 @@
 - Added `craft\helpers\ProjectConfig`.
 - Added `craft\models\FieldLayout::createFromConfig()`.
 - Added `craft\models\FieldLayout::getConfig()`.
+- Added `craft\models\Section::setEntryTypes()`.
 - Added `craft\models\Site::getBaseUrl()`.
 - Added `craft\services\AssetTransforms::getTransformByUid()`.
 - Added `craft\services\AssetTransforms::EVENT_BEFORE_APPLY_TRANSFORM_DELETE`.
