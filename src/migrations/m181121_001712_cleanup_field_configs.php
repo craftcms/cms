@@ -25,7 +25,9 @@ class m181121_001712_cleanup_field_configs extends Migration
         }
 
         $fieldsService = Craft::$app->getFields();
+        $matrixService = Craft::$app->getMatrix();
         $fieldsService->ignoreProjectConfigChanges = true;
+        $matrixService->ignoreProjectConfigChanges = true;
 
         $fieldConfigs = $projectConfig->get('fields') ?? [];
 
@@ -47,6 +49,7 @@ class m181121_001712_cleanup_field_configs extends Migration
         }
 
         $fieldsService->ignoreProjectConfigChanges = false;
+        $matrixService->ignoreProjectConfigChanges = false;
     }
 
     /**

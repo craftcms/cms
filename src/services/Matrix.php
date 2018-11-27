@@ -46,6 +46,11 @@ class Matrix extends Component
     // =========================================================================
 
     /**
+     * @var bool Whether to ignore changes to the project config.
+     */
+    public $ignoreProjectConfigChanges = false;
+
+    /**
      * @var
      */
     private $_blockTypesById;
@@ -308,6 +313,10 @@ class Matrix extends Component
      */
     public function handleChangedBlockType(ConfigEvent $event)
     {
+        if ($this->ignoreProjectConfigChanges) {
+            return;
+        }
+
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
         $blockTypeUid = $event->tokenMatches[0];
@@ -420,6 +429,10 @@ class Matrix extends Component
      */
     public function handleDeletedBlockType(ConfigEvent $event)
     {
+        if ($this->ignoreProjectConfigChanges) {
+            return;
+        }
+
         $blockTypeUid = $event->tokenMatches[0];
         $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
 
