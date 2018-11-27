@@ -240,12 +240,16 @@ class ProjectConfig extends Component
      * @param bool $getFromYaml whether data should be fetched from `config/project.yaml` instead of the stored config. Defaults to `false`.
      * @return mixed The config item value
      */
-    public function get(string $path, $getFromYaml = false)
+    public function get(string $path = null, $getFromYaml = false)
     {
         if ($getFromYaml) {
             $source = $this->_getConfigurationFromYaml();
         } else {
             $source = $this->_getStoredConfig();
+        }
+
+        if ($path === null) {
+            return $source;
         }
 
         return $this->_traverseDataArray($source, $path);

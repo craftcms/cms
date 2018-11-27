@@ -22,6 +22,7 @@ use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use DateTime;
+use Symfony\Component\Yaml\Yaml;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -375,6 +376,10 @@ class DashboardController extends Controller
             } catch (Exception $e) {
                 // that's fine
             }
+
+            // project.yaml
+            $projectConfig = Craft::$app->getProjectConfig()->get();
+            $zip->addFromString('project.yaml', Yaml::dump($projectConfig, 20, 2));
 
             // Logs
             if ($getHelpModel->attachLogs) {

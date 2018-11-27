@@ -681,7 +681,7 @@ class GeneralConfig extends BaseObject
      */
     public $translationDebugOutput = false;
     /**
-     * @var string The request parameter name that tokens should be set to.
+     * @var string The query string parameter name that Craft tokens should be set to.
      */
     public $tokenParam = 'token';
     /**

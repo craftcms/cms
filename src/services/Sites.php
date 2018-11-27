@@ -299,7 +299,7 @@ class Sites extends Component
         $data = $event->newValue;
         $uid = $event->tokenMatches[0];
 
-        $groupRecord = $this->_getGroupRecord($uid);
+        $groupRecord = $this->_getGroupRecord($uid, true);
         $isNewGroup = $groupRecord->getIsNewRecord();
 
         // If this is a new group, set the UID we want.
@@ -308,7 +308,12 @@ class Sites extends Component
         }
 
         $groupRecord->name = $data['name'];
-        $groupRecord->save(false);
+
+        if ($groupRecord->dateDeleted) {
+            $groupRecord->restore();
+        } else {
+            $groupRecord->save(false);
+        }
 
         // Clear caches
         unset($this->_groupsById[$groupRecord->id]);
@@ -733,7 +738,7 @@ class Sites extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            $siteRecord = $this->_getSiteRecord($siteUid);
+            $siteRecord = $this->_getSiteRecord($siteUid, true);
             $isNewSite = $siteRecord->getIsNewRecord();
             $groupRecord = $this->_getGroupRecord($groupUid);
 
@@ -747,7 +752,12 @@ class Sites extends Component
             $siteRecord->baseUrl = $data['baseUrl'];
             $siteRecord->primary = $data['primary'];
             $siteRecord->sortOrder = $data['sortOrder'];
-            $siteRecord->save(false);
+
+            if ($siteRecord->dateDeleted) {
+                $siteRecord->restore();
+            } else {
+                $siteRecord->save(false);
+            }
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -1295,34 +1305,38 @@ class Sites extends Component
      * Gets a site group record or creates a new one.
      *
      * @param mixed $criteria ID or UID of the site group.
+     * @param bool $withTrashed Whether to include trashed site groups in search
      * @return SiteGroupRecord
      */
-    private function _getGroupRecord($criteria): SiteGroupRecord
+    private function _getGroupRecord($criteria, bool $withTrashed = false): SiteGroupRecord
     {
+        $query = $withTrashed ? SiteGroupRecord::findWithTrashed() : SiteGroupRecord::find();
         if (is_numeric($criteria)) {
-            $groupRecord = SiteGroupRecord::findOne($criteria);
-        } else if (\is_string($criteria)) {
-            $groupRecord = SiteGroupRecord::findOne(['uid' => $criteria]);
+            $query->andWhere(['id' => $criteria]);
+        } else if (is_string($criteria)) {
+            $query->andWhere(['uid' => $criteria]);
         }
 
-        return $groupRecord ?? new SiteGroupRecord();
+        return $query->one() ?? new SiteGroupRecord();
     }
 
     /**
      * Gets a site record or creates a new one.
      *
      * @param mixed $criteria ID or UID of the site group.
-     * @return SiteGroupRecord
+     * @param bool $withTrashed Whether to include trashed sites in search
+     * @return SiteRecord
      */
-    private function _getSiteRecord($criteria): SiteRecord
+    private function _getSiteRecord($criteria, bool $withTrashed = false): SiteRecord
     {
+        $query = $withTrashed ? SiteRecord::findWithTrashed() : SiteRecord::find();
         if (is_numeric($criteria)) {
-            $siteRecord = SiteRecord::findOne($criteria);
+            $query->andWhere(['id' => $criteria]);
         } else if (\is_string($criteria)) {
-            $siteRecord = SiteRecord::findOne(['uid' => $criteria]);
+            $query->andWhere(['uid' => $criteria]);
         }
 
-        return $siteRecord ?? new SiteRecord();
+        return $query->one() ?? new SiteRecord();
     }
 
     /**

@@ -379,7 +379,9 @@ class Request extends \yii\web\Request
      */
     public function getToken()
     {
-        return $this->getParam(Craft::$app->getConfig()->getGeneral()->tokenParam);
+        $param = Craft::$app->getConfig()->getGeneral()->tokenParam;
+        return $this->getQueryParam($param)
+            ?? $this->getHeaders()->get('X-Craft-Token');
     }
 
     /**
@@ -1161,8 +1163,8 @@ class Request extends \yii\web\Request
         $configService = Craft::$app->getConfig();
         $generalConfig = $configService->getGeneral();
 
-        // If there's a token in the query string, then that should take precedence over everything else
-        if (!$this->getParam($generalConfig->tokenParam)) {
+        // If there's a token on the request, then that should take precedence over everything else
+        if ($this->getToken() === null) {
             $firstSegment = $this->getSegment(1);
 
             // Is this an action request?
