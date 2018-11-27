@@ -278,8 +278,6 @@ class ProjectConfig extends Component
             throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
         }
 
-        $pathParts = explode('.', $path);
-
         $targetFilePath = null;
 
         if (!$this->_timestampUpdated) {
@@ -290,7 +288,7 @@ class ProjectConfig extends Component
         if ($this->_useConfigFile()) {
             $configMap = $this->_getStoredConfigMap();
 
-            $topNode = array_shift($pathParts);
+            $topNode = explode('.', $path, 2)[0];
             $targetFilePath = $configMap[$topNode] ?? Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
 
             $config = $this->_parseYamlFile($targetFilePath);
@@ -445,7 +443,7 @@ class ProjectConfig extends Component
         $currentStoredConfig = $this->_getStoredConfig();
         $this->_traverseDataArray($currentStoredConfig, $path, $newValue);
         $this->_storedConfig = $currentStoredConfig;
-        
+
         $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
 
         if ($oldValue && !$newValue) {
