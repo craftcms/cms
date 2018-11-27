@@ -167,8 +167,13 @@ class UtilitiesController extends Controller
 
         // Initial request
         if (!empty($params['start'])) {
-            $batches = [];
+
             $sessionId = Craft::$app->getAssetIndexer()->getIndexingSessionId();
+
+            $response = [
+                'volumes' => [],
+                'sessionId' => $sessionId
+            ];
 
             // Selection of volumes or all volumes?
             if (is_array($params['volumes'])) {
@@ -197,7 +202,10 @@ class UtilitiesController extends Controller
                     $skippedFiles = $indexList['skippedFiles'];
                 }
 
-                $batch = [];
+                $response['volumes'][] = [
+                    'volumeId' =>$volumeId,
+                    'total' => $indexList['total'],
+                ];
 
                 for ($i = 0; $i < $indexList['total']; $i++) {
                     $batch[] = [
@@ -214,22 +222,12 @@ class UtilitiesController extends Controller
                 $batches[] = $batch;
             }
 
-            $batches[] = [
-                [
-                    'params' => [
-                        'overview' => true,
-                        'sessionId' => $sessionId,
-                    ]
-                ]
-            ];
-
             Craft::$app->getSession()->set('assetsVolumesBeingIndexed', $volumeIds);
             Craft::$app->getSession()->set('assetsMissingFolders', $missingFolders);
             Craft::$app->getSession()->set('assetsSkippedFiles', $skippedFiles);
 
             return $this->asJson([
-                'batches' => $batches,
-                'total' => $grandTotal
+                'indexingData' => $response,
             ]);
         }
 
@@ -250,13 +248,9 @@ class UtilitiesController extends Controller
             $responseArray = [];
 
             if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles)) {
-                $responseArray['confirm'] = $this->getView()->renderTemplate('assets/_missing_items',
-                    [
-                        'missingFiles' => $missingFiles,
-                        'missingFolders' => $missingFolders,
-                        'skippedFiles' => $skippedFiles
-                    ]);
-                $responseArray['params'] = ['finish' => 1];
+                return $this->asJson([
+                    'confirm' => $this->getView()->renderTemplate('assets/_missing_items', compact('missingFiles', 'missingFolders', 'skippedFiles')),
+                ]);
             }
 
             // Clean up stale indexing data (all sessions that have all recordIds set)
@@ -277,16 +271,6 @@ class UtilitiesController extends Controller
                         '{{%assetindexdata}}',
                         ['not', ['sessionId' => $sessionsInProgress]])
                     ->execute();
-            }
-
-            if (!empty($responseArray)) {
-                return $this->asJson([
-                    'batches' => [
-                        [
-                            $responseArray
-                        ]
-                    ]
-                ]);
             }
         } else if (!empty($params['finish'])) {
             if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
@@ -309,13 +293,12 @@ class UtilitiesController extends Controller
             if (!empty($params['deleteFolder']) && is_array($params['deleteFolder'])) {
                 Craft::$app->getAssets()->deleteFoldersByIds($params['deleteFolder'], false);
             }
-
-            return $this->asJson([
-                'finished' => 1
-            ]);
         }
 
-        return $this->asJson([]);
+        return $this->asJson([
+            'finished' => 1
+        ]);
+
     }
 
     /**

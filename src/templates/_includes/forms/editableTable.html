@@ -1,10 +1,11 @@
 {%- set static = static ?? false %}
-{%- set staticRows = static or (staticRows ?? false) %}
 {%- set cols = cols ?? [] %}
 {%- set rows = rows ?? [] %}
 {%- set initJs = not static and (initJs ?? true) -%}
-{%- set minRows = minRows ?? 'null' %}
-{%- set maxRows = maxRows ?? 'null' %}
+{%- set minRows = minRows ?? null %}
+{%- set maxRows = maxRows ?? null %}
+{%- set staticRows = static or (staticRows ?? false) or (minRows == 1 and maxRows == 1 and rows|length == 1) %}
+{%- set fixedRows = not staticRows and (minRows and minRows == maxRows and minRows == rows|length) %}
 
 {% if not static %}
     <input type="hidden" name="{{ name }}" value="">
@@ -23,7 +24,7 @@
                 </th>
             {% endfor %}
             {% if not staticRows %}
-                <th colspan="2"></th>
+                <th colspan="{{ fixedRows ? 1 : 2 }}"></th>
             {% endif %}
         </tr>
     </thead>
@@ -94,13 +95,13 @@
                 {% endfor %}
                 {% if not staticRows %}
                     <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}"></a></td>
-                    <td class="thin action"><a class="delete icon" title="{{ 'Delete'|t('app') }}"></a></td>
+                    {% if not fixedRows %}<td class="thin action"><a class="delete icon" title="{{ 'Delete'|t('app') }}"></a></td>{% endif %}
                 {% endif %}
             </tr>
         {% endfor %}
     </tbody>
 </table>
-{% if not staticRows %}
+{% if not staticRows and not fixedRows %}
     <div class="btn add icon">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t('app') }}</div>
 {% endif %}
 

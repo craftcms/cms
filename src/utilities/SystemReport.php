@@ -59,6 +59,7 @@ class SystemReport extends Utility
         return Craft::$app->getView()->renderTemplate('_components/utilities/SystemReport', [
             'appInfo' => self::_appInfo(),
             'plugins' => Craft::$app->getPlugins()->getAllPlugins(),
+            'modules' => Craft::$app->getModules(),
             'requirements' => self::_requirementResults(),
         ]);
     }

@@ -349,9 +349,9 @@ class User extends Element implements IdentityInterface
     public static function findIdentity($id)
     {
         $user = static::find()
+            ->addSelect(['users.password'])
             ->id($id)
             ->anyStatus()
-            ->addSelect(['users.password'])
             ->one();
 
         if ($user === null) {
@@ -363,11 +363,14 @@ class User extends Element implements IdentityInterface
             return $user;
         }
 
-        // If the previous user was an admin and we're impersonating the current user.
+        // If the current user is being impersonated by an admin, ignore their status
         if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY)) {
-            $previousUser = Craft::$app->getUsers()->getUserById($previousUserId);
+            $previousUser = static::find()
+                ->id($previousUserId)
+                ->admin()
+                ->one();
 
-            if ($previousUser && $previousUser->admin) {
+            if ($previousUser) {
                 return $user;
             }
         }
@@ -1319,6 +1322,10 @@ class User extends Element implements IdentityInterface
      */
     public function beforeDelete(): bool
     {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
         // Do all this stuff within a transaction
         $db = Craft::$app->getDb();
         $transaction = $db->beginTransaction();
@@ -1344,7 +1351,7 @@ class User extends Element implements IdentityInterface
                 ];
 
                 foreach ($userRefs as $table => $column) {
-                    Craft::$app->getDb()->createCommand()
+                    $db->createCommand()
                         ->update(
                             $table,
                             [
@@ -1371,11 +1378,6 @@ class User extends Element implements IdentityInterface
                 foreach ($results as $result) {
                     Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
                 }
-            }
-
-            if (!parent::beforeDelete()) {
-                $transaction->rollBack();
-                return false;
             }
 
             $transaction->commit();

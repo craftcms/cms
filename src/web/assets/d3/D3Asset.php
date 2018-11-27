@@ -19,6 +19,17 @@ use craft\web\View;
 class D3Asset extends AssetBundle
 {
     /**
+     * @var array The default language format files to use
+     */
+    private $_defaultLanguages = [
+        'ar' => 'ar-SA',
+        'de' => 'de-DE',
+        'en' => 'en-US',
+        'es' => 'es-ES',
+        'fr' => 'fr-FR',
+    ];
+
+    /**
      * @inheritdoc
      */
     public function init()
@@ -56,12 +67,22 @@ class D3Asset extends AssetBundle
      */
     public function formatDef(string $dir): string
     {
+        // Do we have locale data for that exact language?
         if (($def = $this->_def($dir, Craft::$app->language)) !== null) {
             return $def;
         }
 
-        // Find the first file in the directory that starts with the language ID
         $language = Craft::$app->getLocale()->getLanguageID();
+
+        // Do we have a default for this language ID?
+        if (
+            isset($this->_defaultLanguages[$language]) &&
+            ($def = $this->_def($dir, $this->_defaultLanguages[$language])) !== null
+        ) {
+            return $def;
+        }
+
+        // Find the first file in the directory that starts with the language ID
         $handle = opendir($dir);
         while (($file = readdir($handle)) !== false) {
             if (strncmp($file, $language, 2) === 0) {

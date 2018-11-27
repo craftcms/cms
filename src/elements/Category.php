@@ -19,6 +19,7 @@ use craft\elements\actions\NewChild;
 use craft\elements\actions\SetStatus;
 use craft\elements\actions\View;
 use craft\elements\db\CategoryQuery;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
@@ -135,6 +136,18 @@ class Category extends Element
      */
     protected static function defineActions(string $source = null): array
     {
+        // Get the selected site
+        $controller = Craft::$app->controller;
+        if ($controller instanceof ElementIndexesController) {
+            /** @var ElementQuery $elementQuery */
+            $elementQuery = $controller->getElementQuery();
+        } else {
+            $elementQuery = null;
+        }
+        $site = $elementQuery && $elementQuery->siteId
+            ? Craft::$app->getSites()->getSiteById($elementQuery->siteId)
+            : Craft::$app->getSites()->getCurrentSite();
+
         // Get the group we need to check permissions on
         if (preg_match('/^group:(\d+)$/', $source, $matches)) {
             $group = Craft::$app->getCategories()->getGroupById($matches[1]);
@@ -149,15 +162,11 @@ class Category extends Element
 
             // View
             // They are viewing a specific category group. See if it has URLs for the requested site
-            $controller = Craft::$app->controller;
-            if ($controller instanceof ElementIndexesController) {
-                $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->getCurrentSite()->id;
-                if (isset($group->siteSettings[$siteId]) && $group->siteSettings[$siteId]->hasUrls) {
-                    $actions[] = Craft::$app->getElements()->createAction([
-                        'type' => View::class,
-                        'label' => Craft::t('app', 'View category'),
-                    ]);
-                }
+            if (isset($group->siteSettings[$site->id]) && $group->siteSettings[$site->id]->hasUrls) {
+                $actions[] = Craft::$app->getElements()->createAction([
+                    'type' => View::class,
+                    'label' => Craft::t('app', 'View category'),
+                ]);
             }
 
             // Edit
@@ -170,11 +179,17 @@ class Category extends Element
             $structure = Craft::$app->getStructures()->getStructureById($group->structureId);
 
             if ($structure) {
+                $newChildUrl = 'categories/' . $group->handle . '/new';
+
+                if (Craft::$app->getIsMultiSite()) {
+                    $newChildUrl .= '/' . $site->handle;
+                }
+
                 $actions[] = Craft::$app->getElements()->createAction([
                     'type' => NewChild::class,
                     'label' => Craft::t('app', 'Create a new child category'),
                     'maxLevels' => $structure->maxLevels,
-                    'newChildUrl' => 'categories/' . $group->handle . '/new',
+                    'newChildUrl' => $newChildUrl,
                 ]);
             }
 

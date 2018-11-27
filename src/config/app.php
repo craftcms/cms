@@ -3,7 +3,7 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0.32',
+    'version' => '3.0.33',
     'schemaVersion' => '3.0.94',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
@@ -91,6 +91,15 @@ return [
         ],
         'security' => [
             'class' => craft\services\Security::class,
+            'sensitiveKeywords' => [
+                'key',
+                'pass',
+                'password',
+                'pw',
+                'secret',
+                'tok',
+                'token',
+            ],
         ],
         'structures' => [
             'class' => craft\services\Structures::class,

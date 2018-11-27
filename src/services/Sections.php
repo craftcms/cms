@@ -697,6 +697,15 @@ class Sections extends Component
             throw $e;
         }
 
+        // Update caches
+        if ($isNewSection) {
+            $this->_allSectionIds = null;
+            $this->_editableSectionIds = null;
+            $this->_fetchedAllSections = false;
+        } else {
+            $this->_sectionsById[$section->id] = $section;
+        }
+
         // Fire an 'afterSaveSection' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SECTION)) {
             $this->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
