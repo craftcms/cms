@@ -125,6 +125,12 @@ class ProjectConfig extends Component
     private $_storedConfig;
 
     /**
+     * @var array The currently-loaded config, possibly with pending changes
+     * that will be stored in the database & project.yaml at the end of the request
+     */
+    private $_loadedConfig;
+
+    /**
      * @var array A list of already parsed change paths
      */
     private $_parsedChanges = [];
@@ -245,7 +251,7 @@ class ProjectConfig extends Component
      * ```
      *
      * @param string $path The config item path
-     * @param bool $getFromYaml whether data should be fetched from `config/project.yaml` instead of the stored config. Defaults to `false`.
+     * @param bool $getFromYaml whether data should be fetched from `config/project.yaml` instead of the loaded config. Defaults to `false`.
      * @return mixed The config item value
      */
     public function get(string $path = null, $getFromYaml = false)
@@ -253,7 +259,7 @@ class ProjectConfig extends Component
         if ($getFromYaml) {
             $source = $this->_getConfigurationFromYaml();
         } else {
-            $source = $this->_getStoredConfig();
+            $source = $this->_getLoadedConfig();
         }
 
         if ($path === null) {
@@ -340,12 +346,12 @@ class ProjectConfig extends Component
      */
     public function regenerateYamlFromConfig()
     {
-        $storedConfig = $this->_getStoredConfig();
+        $loadedConfig = $this->_getLoadedConfig();
 
         $basePath = Craft::$app->getPath()->getConfigPath();
         $baseFile = $basePath . '/' . self::CONFIG_FILENAME;
 
-        $this->_saveConfig($storedConfig, $baseFile);
+        $this->_saveConfig($loadedConfig, $baseFile);
         $this->updateParsedConfigTimesAfterRequest();
     }
 
@@ -453,13 +459,14 @@ class ProjectConfig extends Component
 
         $this->_parsedChanges[$path] = true;
 
-        $oldValue = $this->get($path);
+        $storedConfig = $this->_getStoredConfig();
+        $oldValue = $this->_traverseDataArray($storedConfig, $path);
         $newValue = $this->get($path, true);
 
         // Memoize the new config data
-        $currentStoredConfig = $this->_getStoredConfig();
-        $this->_traverseDataArray($currentStoredConfig, $path, $newValue);
-        $this->_storedConfig = $currentStoredConfig;
+        $currentLoadedConfig = $this->_getLoadedConfig();
+        $this->_traverseDataArray($currentLoadedConfig, $path, $newValue);
+        $this->_loadedConfig = $currentLoadedConfig;
 
         $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
 
@@ -802,7 +809,7 @@ class ProjectConfig extends Component
             $generatedConfig = array_merge(...$fileConfigs);
         } else {
             if (empty($this->_parsedConfigs[self::CONFIG_KEY])) {
-                $this->_parsedConfigs[self::CONFIG_KEY] = $this->_getStoredConfig();
+                $this->_parsedConfigs[self::CONFIG_KEY] = $this->_getLoadedConfig();
             }
             $generatedConfig = $this->_parsedConfigs[self::CONFIG_KEY];
         }
@@ -854,18 +861,34 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Get the stored config.
+     * Returns the loaded config.
+     *
+     * @return array
+     */
+    private function _getLoadedConfig(): array
+    {
+        // _loadedConfig will be set if we've made any changes in this request
+        if ($this->_loadedConfig !== null) {
+            return $this->_loadedConfig;
+        }
+
+        // Otherwise just return whatever's in the DB
+        return $this->_getStoredConfig();
+    }
+
+    /**
+     * Returns the stored config.
      *
      * @return array
      */
     private function _getStoredConfig(): array
     {
-        if (empty($this->_storedConfig)) {
-            $configData = Craft::$app->getInfo()->config;
-            $this->_storedConfig = $configData ? unserialize($configData, ['allowed_classes' => false]) : [];
+        if ($this->_storedConfig !== null) {
+            return $this->_storedConfig;
         }
 
-        return $this->_storedConfig;
+        $info = Craft::$app->getInfo();
+        return $this->_storedConfig = $info->config ? unserialize($info->config, ['allowed_classes' => false]) : [];
     }
 
     /**
@@ -879,7 +902,7 @@ class ProjectConfig extends Component
         $changedItems = [];
 
         $configData = $this->_getConfigurationFromYaml();
-        $currentConfig = $this->_getStoredConfig();
+        $currentConfig = $this->_getLoadedConfig();
 
         $flatConfig = [];
         $flatCurrent = [];
