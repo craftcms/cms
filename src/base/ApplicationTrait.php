@@ -380,7 +380,7 @@ trait ApplicationTrait
     public function requireEdition(int $edition, bool $orBetter = true)
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if ($this->getIsInstalled()) {
+        if ($this->getIsInstalled() && !$this->getProjectConfig()->getIsApplyingYamlChanges()) {
             $installedEdition = $this->getEdition();
 
             if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {

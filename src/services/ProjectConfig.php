@@ -27,6 +27,7 @@ use yii\web\ServerErrorHttpException;
  * An instance of the ProjectConfig service is globally accessible in Craft via [[\craft\base\ApplicationTrait::ProjectConfig()|`Craft::$app->projectConfig`]].
  *
  * @property-read bool $areChangesPending Whether `project.yaml` has any pending changes that need to be applied to the project config
+ * @property-read bool $isApplyingYamlChanges
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1
  */
@@ -124,6 +125,12 @@ class ProjectConfig extends Component
     private $_storedConfig;
 
     /**
+     * @var array The currently-loaded config, possibly with pending changes
+     * that will be stored in the database & project.yaml at the end of the request
+     */
+    private $_loadedConfig;
+
+    /**
      * @var array A list of already parsed change paths
      */
     private $_parsedChanges = [];
@@ -170,6 +177,13 @@ class ProjectConfig extends Component
      * @see saveModifiedConfigData()
      */
     private $_waitingToSaveModifiedConfigData = false;
+
+    /**
+     * @var bool Whether project.yaml changes are currently being applied.
+     * @see applyYamlChanges()
+     * @see getIsApplyingYamlChanges()
+     */
+    private $_applyingYamlChanges = false;
 
     /**
      * @var bool Whether we're saving project configs to project.yaml
@@ -237,7 +251,7 @@ class ProjectConfig extends Component
      * ```
      *
      * @param string $path The config item path
-     * @param bool $getFromYaml whether data should be fetched from `config/project.yaml` instead of the stored config. Defaults to `false`.
+     * @param bool $getFromYaml whether data should be fetched from `config/project.yaml` instead of the loaded config. Defaults to `false`.
      * @return mixed The config item value
      */
     public function get(string $path = null, $getFromYaml = false)
@@ -245,7 +259,7 @@ class ProjectConfig extends Component
         if ($getFromYaml) {
             $source = $this->_getConfigurationFromYaml();
         } else {
-            $source = $this->_getStoredConfig();
+            $source = $this->_getLoadedConfig();
         }
 
         if ($path === null) {
@@ -278,8 +292,6 @@ class ProjectConfig extends Component
             throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
         }
 
-        $pathParts = explode('.', $path);
-
         $targetFilePath = null;
 
         if (!$this->_timestampUpdated) {
@@ -290,7 +302,7 @@ class ProjectConfig extends Component
         if ($this->_useConfigFile()) {
             $configMap = $this->_getStoredConfigMap();
 
-            $topNode = array_shift($pathParts);
+            $topNode = explode('.', $path, 2)[0];
             $targetFilePath = $configMap[$topNode] ?? Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
 
             $config = $this->_parseYamlFile($targetFilePath);
@@ -334,12 +346,12 @@ class ProjectConfig extends Component
      */
     public function regenerateYamlFromConfig()
     {
-        $storedConfig = $this->_getStoredConfig();
+        $loadedConfig = $this->_getLoadedConfig();
 
         $basePath = Craft::$app->getPath()->getConfigPath();
         $baseFile = $basePath . '/' . self::CONFIG_FILENAME;
 
-        $this->_saveConfig($storedConfig, $baseFile);
+        $this->_saveConfig($loadedConfig, $baseFile);
         $this->updateParsedConfigTimesAfterRequest();
     }
 
@@ -348,47 +360,56 @@ class ProjectConfig extends Component
      */
     public function applyYamlChanges()
     {
-        try {
-            $changes = $this->_getPendingChanges();
+        $this->_applyingYamlChanges = true;
 
-            Craft::info('Looking for pending changes', __METHOD__);
+        $changes = $this->_getPendingChanges();
 
-            // If we're parsing all the changes, we better work the actual config map.
-            $this->_configMap = $this->_generateConfigMap();
+        Craft::info('Looking for pending changes', __METHOD__);
 
-            if (!empty($changes['removedItems'])) {
-                Craft::info('Parsing ' . count($changes['removedItems']) . ' removed configuration items', __METHOD__);
-                foreach ($changes['removedItems'] as $itemPath) {
-                    $this->processConfigChanges($itemPath);
-                }
+        // If we're parsing all the changes, we better work the actual config map.
+        $this->_configMap = $this->_generateConfigMap();
+
+        if (!empty($changes['removedItems'])) {
+            Craft::info('Parsing ' . count($changes['removedItems']) . ' removed configuration items', __METHOD__);
+            foreach ($changes['removedItems'] as $itemPath) {
+                $this->processConfigChanges($itemPath);
             }
-
-            if (!empty($changes['changedItems'])) {
-                Craft::info('Parsing ' . count($changes['changedItems']) . ' changed configuration items', __METHOD__);
-                foreach ($changes['changedItems'] as $itemPath) {
-                    $this->processConfigChanges($itemPath);
-                }
-            }
-
-            if (!empty($changes['newItems'])) {
-                Craft::info('Parsing ' . count($changes['newItems']) . ' new configuration items', __METHOD__);
-                foreach ($changes['newItems'] as $itemPath) {
-                    $this->processConfigChanges($itemPath);
-                }
-            }
-
-            Craft::info('Finalizing configuration parsing', __METHOD__);
-
-            // Fire an 'afterApplyChanges' event
-            if ($this->hasEventHandlers(self::EVENT_AFTER_APPLY_CHANGES)) {
-                $this->trigger(self::EVENT_AFTER_APPLY_CHANGES);
-            }
-
-            $this->updateParsedConfigTimesAfterRequest();
-            $this->_updateConfigMap = true;
-        } catch (\Throwable $e) {
-            throw $e;
         }
+
+        if (!empty($changes['changedItems'])) {
+            Craft::info('Parsing ' . count($changes['changedItems']) . ' changed configuration items', __METHOD__);
+            foreach ($changes['changedItems'] as $itemPath) {
+                $this->processConfigChanges($itemPath);
+            }
+        }
+
+        if (!empty($changes['newItems'])) {
+            Craft::info('Parsing ' . count($changes['newItems']) . ' new configuration items', __METHOD__);
+            foreach ($changes['newItems'] as $itemPath) {
+                $this->processConfigChanges($itemPath);
+            }
+        }
+
+        Craft::info('Finalizing configuration parsing', __METHOD__);
+
+        // Fire an 'afterApplyChanges' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_APPLY_CHANGES)) {
+            $this->trigger(self::EVENT_AFTER_APPLY_CHANGES);
+        }
+
+        $this->updateParsedConfigTimesAfterRequest();
+        $this->_updateConfigMap = true;
+        $this->_applyingYamlChanges = false;
+    }
+
+    /**
+     * Returns whether project.yaml changes are currently being applied
+     *
+     * @return bool
+     */
+    public function getIsApplyingYamlChanges(): bool
+    {
+        return $this->_applyingYamlChanges;
     }
 
     /**
@@ -438,8 +459,14 @@ class ProjectConfig extends Component
 
         $this->_parsedChanges[$path] = true;
 
-        $oldValue = $this->get($path);
+        $storedConfig = $this->_getStoredConfig();
+        $oldValue = $this->_traverseDataArray($storedConfig, $path);
         $newValue = $this->get($path, true);
+
+        // Memoize the new config data
+        $currentLoadedConfig = $this->_getLoadedConfig();
+        $this->_traverseDataArray($currentLoadedConfig, $path, $newValue);
+        $this->_loadedConfig = $currentLoadedConfig;
 
         $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
 
@@ -449,14 +476,12 @@ class ProjectConfig extends Component
         } else if (!$oldValue && $newValue) {
             // Fire an 'addItem' event
             $this->trigger(self::EVENT_ADD_ITEM, $event);
-        } else if (
+        } else if ($triggerUpdate || (
             $newValue !== null &&
             $oldValue !== null &&
             Json::encode($oldValue) !== Json::encode($newValue)
-        ) {
+        )) {
             // Fire an 'updateItem' event
-            $this->trigger(self::EVENT_UPDATE_ITEM, $event);
-        } else if ($triggerUpdate) {
             $this->trigger(self::EVENT_UPDATE_ITEM, $event);
         } else {
             return;
@@ -784,7 +809,7 @@ class ProjectConfig extends Component
             $generatedConfig = array_merge(...$fileConfigs);
         } else {
             if (empty($this->_parsedConfigs[self::CONFIG_KEY])) {
-                $this->_parsedConfigs[self::CONFIG_KEY] = $this->_getStoredConfig();
+                $this->_parsedConfigs[self::CONFIG_KEY] = $this->_getLoadedConfig();
             }
             $generatedConfig = $this->_parsedConfigs[self::CONFIG_KEY];
         }
@@ -836,18 +861,34 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Get the stored config.
+     * Returns the loaded config.
+     *
+     * @return array
+     */
+    private function _getLoadedConfig(): array
+    {
+        // _loadedConfig will be set if we've made any changes in this request
+        if ($this->_loadedConfig !== null) {
+            return $this->_loadedConfig;
+        }
+
+        // Otherwise just return whatever's in the DB
+        return $this->_getStoredConfig();
+    }
+
+    /**
+     * Returns the stored config.
      *
      * @return array
      */
     private function _getStoredConfig(): array
     {
-        if (empty($this->_storedConfig)) {
-            $configData = Craft::$app->getInfo()->config;
-            $this->_storedConfig = $configData ? unserialize($configData, ['allowed_classes' => false]) : [];
+        if ($this->_storedConfig !== null) {
+            return $this->_storedConfig;
         }
 
-        return $this->_storedConfig;
+        $info = Craft::$app->getInfo();
+        return $this->_storedConfig = $info->config ? unserialize($info->config, ['allowed_classes' => false]) : [];
     }
 
     /**
@@ -861,7 +902,7 @@ class ProjectConfig extends Component
         $changedItems = [];
 
         $configData = $this->_getConfigurationFromYaml();
-        $currentConfig = $this->_getStoredConfig();
+        $currentConfig = $this->_getLoadedConfig();
 
         $flatConfig = [];
         $flatCurrent = [];

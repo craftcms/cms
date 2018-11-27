@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.33 - 2018-11-27
 
 ### Changed
 - Table fields with a fixed number of rows no longer show Delete buttons or the “Add a row” button. ([#3488](https://github.com/craftcms/cms/issues/3488))
@@ -10,6 +10,7 @@
 - The System Report utility now lists any custom modules that are installed. ([#3490](https://github.com/craftcms/cms/issues/3490))
 - Control Panel charts now give preference to `ar-SA` for Arabic locales, `de-DE` for German locales, `en-US` for English locales, `es-ES` for Spanish locales, or `fr-FR` for French locales, if data for the exact application locale doesn’t exist. ([#3492](https://github.com/craftcms/cms/pull/3492))
 - “Create a new child entry” and “Create a new child category” element actions now open an edit page for the same site that was selected on the index page. ([#3496](https://github.com/craftcms/cms/issues/3496))
+- The default `allowedFileExtensions` config setting value now includes `webp`.
 - The Craft Support widget now sends `composer.json` and `composer.lock` files when contacting Craft Support.
 - It’s now possible to create element select inputs that include a site selection menu by passing `showSiteMenu: true` when including the `_includes/forms/elementSelect.html` Control Panel include template. ([#3494](https://github.com/craftcms/cms/pull/3494))
 
@@ -19,6 +20,8 @@
 - Fixed a bug where after impersonating another user, the Login page would show the impersonated user’s username rather than the admin’s.
 - Fixed a bug where `craft\services\Sections::getAllSections()` could return stale results if a new section had been added recently. ([#3484](https://github.com/craftcms/cms/issues/3484))
 - Fixed a bug where “View entry” and “View category” element actions weren’t available when viewing a specific section or category group.
+- Fixed a bug where Craft would attempt to index image transforms.
+- Fixed a bug where the Asset Indexes utility could report that asset files were missing even though they weren’t. ([#3450](https://github.com/craftcms/cms/issues/3450))
 
 ### Security
 - Updated jQuery File Upload to 9.28.0.
