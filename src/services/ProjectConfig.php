@@ -27,6 +27,7 @@ use yii\web\ServerErrorHttpException;
  * An instance of the ProjectConfig service is globally accessible in Craft via [[\craft\base\ApplicationTrait::ProjectConfig()|`Craft::$app->projectConfig`]].
  *
  * @property-read bool $areChangesPending Whether `project.yaml` has any pending changes that need to be applied to the project config
+ * @property-read bool $isApplyingYamlChanges
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1
  */
@@ -170,6 +171,13 @@ class ProjectConfig extends Component
      * @see saveModifiedConfigData()
      */
     private $_waitingToSaveModifiedConfigData = false;
+
+    /**
+     * @var bool Whether project.yaml changes are currently being applied.
+     * @see applyYamlChanges()
+     * @see getIsApplyingYamlChanges()
+     */
+    private $_applyingYamlChanges = false;
 
     /**
      * @var bool Whether we're saving project configs to project.yaml
@@ -346,6 +354,8 @@ class ProjectConfig extends Component
      */
     public function applyYamlChanges()
     {
+        $this->_applyingYamlChanges = true;
+
         $changes = $this->_getPendingChanges();
 
         Craft::info('Looking for pending changes', __METHOD__);
@@ -383,6 +393,17 @@ class ProjectConfig extends Component
 
         $this->updateParsedConfigTimesAfterRequest();
         $this->_updateConfigMap = true;
+        $this->_applyingYamlChanges = false;
+    }
+
+    /**
+     * Returns whether project.yaml changes are currently being applied
+     *
+     * @return bool
+     */
+    public function getIsApplyingYamlChanges(): bool
+    {
+        return $this->_applyingYamlChanges;
     }
 
     /**
