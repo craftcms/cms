@@ -346,47 +346,43 @@ class ProjectConfig extends Component
      */
     public function applyYamlChanges()
     {
-        try {
-            $changes = $this->_getPendingChanges();
+        $changes = $this->_getPendingChanges();
 
-            Craft::info('Looking for pending changes', __METHOD__);
+        Craft::info('Looking for pending changes', __METHOD__);
 
-            // If we're parsing all the changes, we better work the actual config map.
-            $this->_configMap = $this->_generateConfigMap();
+        // If we're parsing all the changes, we better work the actual config map.
+        $this->_configMap = $this->_generateConfigMap();
 
-            if (!empty($changes['removedItems'])) {
-                Craft::info('Parsing ' . count($changes['removedItems']) . ' removed configuration items', __METHOD__);
-                foreach ($changes['removedItems'] as $itemPath) {
-                    $this->processConfigChanges($itemPath);
-                }
+        if (!empty($changes['removedItems'])) {
+            Craft::info('Parsing ' . count($changes['removedItems']) . ' removed configuration items', __METHOD__);
+            foreach ($changes['removedItems'] as $itemPath) {
+                $this->processConfigChanges($itemPath);
             }
-
-            if (!empty($changes['changedItems'])) {
-                Craft::info('Parsing ' . count($changes['changedItems']) . ' changed configuration items', __METHOD__);
-                foreach ($changes['changedItems'] as $itemPath) {
-                    $this->processConfigChanges($itemPath);
-                }
-            }
-
-            if (!empty($changes['newItems'])) {
-                Craft::info('Parsing ' . count($changes['newItems']) . ' new configuration items', __METHOD__);
-                foreach ($changes['newItems'] as $itemPath) {
-                    $this->processConfigChanges($itemPath);
-                }
-            }
-
-            Craft::info('Finalizing configuration parsing', __METHOD__);
-
-            // Fire an 'afterApplyChanges' event
-            if ($this->hasEventHandlers(self::EVENT_AFTER_APPLY_CHANGES)) {
-                $this->trigger(self::EVENT_AFTER_APPLY_CHANGES);
-            }
-
-            $this->updateParsedConfigTimesAfterRequest();
-            $this->_updateConfigMap = true;
-        } catch (\Throwable $e) {
-            throw $e;
         }
+
+        if (!empty($changes['changedItems'])) {
+            Craft::info('Parsing ' . count($changes['changedItems']) . ' changed configuration items', __METHOD__);
+            foreach ($changes['changedItems'] as $itemPath) {
+                $this->processConfigChanges($itemPath);
+            }
+        }
+
+        if (!empty($changes['newItems'])) {
+            Craft::info('Parsing ' . count($changes['newItems']) . ' new configuration items', __METHOD__);
+            foreach ($changes['newItems'] as $itemPath) {
+                $this->processConfigChanges($itemPath);
+            }
+        }
+
+        Craft::info('Finalizing configuration parsing', __METHOD__);
+
+        // Fire an 'afterApplyChanges' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_APPLY_CHANGES)) {
+            $this->trigger(self::EVENT_AFTER_APPLY_CHANGES);
+        }
+
+        $this->updateParsedConfigTimesAfterRequest();
+        $this->_updateConfigMap = true;
     }
 
     /**
