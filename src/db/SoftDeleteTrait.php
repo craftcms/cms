@@ -70,6 +70,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @since 3.1
  *
  * @property ActiveRecord $this
+ * @property string|null $dateDeleted Date deleted
  * @mixin SoftDeleteBehavior
  */
 trait SoftDeleteTrait
