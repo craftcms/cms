@@ -379,6 +379,7 @@ class DashboardController extends Controller
 
             // project.yaml
             $projectConfig = Craft::$app->getProjectConfig()->get();
+            $projectConfig = Craft::$app->getSecurity()->redactIfSensitive('', $projectConfig);
             $zip->addFromString('project.yaml', Yaml::dump($projectConfig, 20, 2));
 
             // Logs
