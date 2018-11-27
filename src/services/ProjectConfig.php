@@ -441,6 +441,11 @@ class ProjectConfig extends Component
         $oldValue = $this->get($path);
         $newValue = $this->get($path, true);
 
+        // Memoize the new config data
+        $currentStoredConfig = $this->_getStoredConfig();
+        $this->_traverseDataArray($currentStoredConfig, $path, $newValue);
+        $this->_storedConfig = $currentStoredConfig;
+        
         $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
 
         if ($oldValue && !$newValue) {
