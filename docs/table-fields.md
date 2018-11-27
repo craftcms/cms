@@ -31,7 +31,7 @@ Calling a Table field in your templates will return an array of the rows. Each r
     <h3>Whiskeys</h3>
 
     <ul>
-        {% for row in entry.whiskeyTableHandle.all() %}
+        {% for row in entry.whiskeyTableHandle %}
             <li>{{ row.whiskey }} - {{ row.description }} - {{ row.proof }}</li>
         {% endfor %}
     </ul>
