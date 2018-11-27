@@ -20,8 +20,8 @@
 - Fixed a bug where after impersonating another user, the Login page would show the impersonated user’s username rather than the admin’s.
 - Fixed a bug where `craft\services\Sections::getAllSections()` could return stale results if a new section had been added recently. ([#3484](https://github.com/craftcms/cms/issues/3484))
 - Fixed a bug where “View entry” and “View category” element actions weren’t available when viewing a specific section or category group.
-- Fix a bug where Craft would attempt to index transforms.
-- Fix a bug where the Asset Indexes utility could report that asset files were missing even though they weren’t. ([#3450](https://github.com/craftcms/cms/issues/3450))
+- Fixed a bug where Craft would attempt to index image transforms.
+- Fixed a bug where the Asset Indexes utility could report that asset files were missing even though they weren’t. ([#3450](https://github.com/craftcms/cms/issues/3450))
 
 ### Security
 - Updated jQuery File Upload to 9.28.0.
