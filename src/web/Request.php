@@ -379,7 +379,9 @@ class Request extends \yii\web\Request
      */
     public function getToken()
     {
-        return $this->getParam(Craft::$app->getConfig()->getGeneral()->tokenParam);
+        $param = Craft::$app->getConfig()->getGeneral()->tokenParam;
+        return $this->getQueryParam($param)
+            ?? $this->getHeaders()->get('X-Craft-Token');
     }
 
     /**

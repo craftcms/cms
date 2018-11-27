@@ -2018,7 +2018,7 @@ Defined by
 
 
 
-The request parameter name that tokens should be set to.
+The query string parameter name that Craft tokens should be set to.
 
 
 ### `transformGifs`

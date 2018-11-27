@@ -1,4 +1,4 @@
-/*!   - 2018-10-24 */
+/*!   - 2018-11-26 */
 (function($){
 
 /** global: Craft */
@@ -15536,6 +15536,7 @@ Craft.LivePreview = Garnish.Base.extend(
         $fieldPlaceholder: null,
 
         previewUrl: null,
+        token: null,
         basePostData: null,
         inPreviewMode: false,
         fields: null,
@@ -15645,7 +15646,7 @@ Craft.LivePreview = Garnish.Base.extend(
                 return;
             }
 
-            if (!this.basePostData[Craft.tokenParam]) {
+            if (!this.token) {
                 this.createToken();
                 return;
             }
@@ -15723,7 +15724,7 @@ Craft.LivePreview = Garnish.Base.extend(
                 previewAction: this.settings.previewAction
             }, $.proxy(function(response, textStatus) {
                 if (textStatus === 'success') {
-                    this.basePostData[Craft.tokenParam] = response.token;
+                    this.token = response.token;
                     this.enter();
                 }
             }, this));
@@ -15854,6 +15855,9 @@ Craft.LivePreview = Garnish.Base.extend(
                     url: this.previewUrl,
                     method: 'POST',
                     data: $.extend({}, postData, this.basePostData),
+                    headers: {
+                        'X-Craft-Token': this.token
+                    },
                     xhrFields: {
                         withCredentials: true
                     },

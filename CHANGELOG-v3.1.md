@@ -95,7 +95,7 @@
 - All users now have the ability to delete their own user accounts. ([#3013](https://github.com/craftcms/cms/issues/3013))
 - System user permissions now reference things by their UIDs rather than IDs (e.g. `editEntries:<UID>` rather than `editEntries:<ID>`).
 - Animated gif thumbnails are no longer animated. ([#3110](https://github.com/craftcms/cms/issues/3110))
-- Token params can now live in either the query string or the POST request body.
+- Craft Tokens can now be sent either as a query string param (named after the `tokenParam` config setting) or an `X-Craft-Token` header.
 - Element types that support Live Preview must now hash the `previewAction` value for `Craft.LivePreview`.
 - Live Preview now loads each new preview into its own `<iframe>` element. ([#3366](https://github.com/craftcms/cms/issues/3366))
 - `craft\services\Routes::saveRoute()` now expects site and route UIDs instead of IDs.
