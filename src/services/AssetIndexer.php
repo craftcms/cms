@@ -131,8 +131,13 @@ class AssetIndexer extends Component
                 $path = $value['path'];
                 $segments = explode('/', $path);
 
-                foreach ($segments as $segment) {
-                    if (isset($segment[0]) && $segment[0] === '_' && $value['type'] === 'dir') {
+                $segmentCount = count($segments);
+
+                for ($segmentIndex = 0; $segmentIndex < $segmentCount; $segmentIndex++) {
+                    $currentSegment = $segments[$segmentIndex];
+
+                    // Skip if segment begins with an underscrore and (this is a directory or not the last segment)
+                    if ($currentSegment[0] === '_' && ($value['type'] === 'dir' || $segmentIndex + 1 < $segmentCount)) {
                         return false;
                     }
                 }
