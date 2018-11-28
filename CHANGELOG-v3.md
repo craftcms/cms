@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where section changes could be saved to the database even if an error occurred later on that prevented the changes from being committed to the project config.
+
 ## 3.1.0-beta.1 - 2018-11-27
 
 ### Added

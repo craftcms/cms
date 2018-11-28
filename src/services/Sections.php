@@ -564,75 +564,87 @@ class Sections extends Component
             ];
         }
 
-        // Save the section config
-        // -----------------------------------------------------------------
+        // Do everything that follows in a transaction so no DB changes will be
+        // saved if an exception occurs that ends up preventing the project config
+        // changes from getting saved
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
-        $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid;
-        $projectConfig->set($configPath, $configData);
+        try {
+            // Save the section config
+            // -----------------------------------------------------------------
 
-        if ($isNewSection) {
-            $section->id = Db::idByUid('{{%sections}}', $section->uid);
-        }
+            $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid;
+            $projectConfig->set($configPath, $configData);
 
-        // Make sure there's at least one entry type for this section
-        // -----------------------------------------------------------------
-
-        if (!$isNewSection) {
-            $entryTypeExists = (new Query())
-                ->select(['id'])
-                ->from(['{{%entrytypes}}'])
-                ->where(['sectionId' => $section->id])
-                ->exists();
-        } else {
-            $entryTypeExists = false;
-        }
-
-        if (!$entryTypeExists) {
-            $entryType = new EntryType();
-            $entryType->sectionId = $section->id;
-            $entryType->name = $section->name;
-            $entryType->handle = $section->handle;
-
-            if ($section->type === Section::TYPE_SINGLE) {
-                $entryType->hasTitleField = false;
-                $entryType->titleLabel = null;
-                $entryType->titleFormat = '{section.name|raw}';
-            } else {
-                $entryType->hasTitleField = true;
-                $entryType->titleLabel = Craft::t('app', 'Title');
-                $entryType->titleFormat = null;
+            if ($isNewSection) {
+                $section->id = Db::idByUid('{{%sections}}', $section->uid);
             }
 
-            $this->saveEntryType($entryType);
-            $section->setEntryTypes([$entryType]);
-        }
+            // Make sure there's at least one entry type for this section
+            // -----------------------------------------------------------------
 
-        // Special handling for Single sections
-        // -----------------------------------------------------------------
-
-        if ($section->type === Section::TYPE_SINGLE) {
-            // Ensure & get the single entry
-            $entry = $this->_ensureSingleEntry($section, $isNewSection);
-
-            // Deal with the section's entry types
             if (!$isNewSection) {
-                foreach ($this->getEntryTypesBySectionId($section->id) as $entryType) {
-                    if ($entryType->id == $entry->typeId) {
-                        // This is *the* entry's type. Make sure its name & handle match the section's
-                        if (
-                            ($entryType->name !== ($entryType->name = $section->name)) ||
-                            ($entryType->handle !== ($entryType->handle = $section->handle))
-                        ) {
-                            $this->saveEntryType($entryType);
-                        }
+                $entryTypeExists = (new Query())
+                    ->select(['id'])
+                    ->from(['{{%entrytypes}}'])
+                    ->where(['sectionId' => $section->id])
+                    ->exists();
+            } else {
+                $entryTypeExists = false;
+            }
 
-                        $section->setEntryTypes([$entryType]);
-                    } else {
-                        // We don't need this one anymore
-                        $this->deleteEntryType($entryType);
+            if (!$entryTypeExists) {
+                $entryType = new EntryType();
+                $entryType->sectionId = $section->id;
+                $entryType->name = $section->name;
+                $entryType->handle = $section->handle;
+
+                if ($section->type === Section::TYPE_SINGLE) {
+                    $entryType->hasTitleField = false;
+                    $entryType->titleLabel = null;
+                    $entryType->titleFormat = '{section.name|raw}';
+                } else {
+                    $entryType->hasTitleField = true;
+                    $entryType->titleLabel = Craft::t('app', 'Title');
+                    $entryType->titleFormat = null;
+                }
+
+                $this->saveEntryType($entryType);
+                $section->setEntryTypes([$entryType]);
+            }
+
+            // Special handling for Single sections
+            // -----------------------------------------------------------------
+
+            if ($section->type === Section::TYPE_SINGLE) {
+                // Ensure & get the single entry
+                $entry = $this->_ensureSingleEntry($section, $isNewSection);
+
+                // Deal with the section's entry types
+                if (!$isNewSection) {
+                    foreach ($this->getEntryTypesBySectionId($section->id) as $entryType) {
+                        if ($entryType->id == $entry->typeId) {
+                            // This is *the* entry's type. Make sure its name & handle match the section's
+                            if (
+                                ($entryType->name !== ($entryType->name = $section->name)) ||
+                                ($entryType->handle !== ($entryType->handle = $section->handle))
+                            ) {
+                                $this->saveEntryType($entryType);
+                            }
+
+                            $section->setEntryTypes([$entryType]);
+                        } else {
+                            // We don't need this one anymore
+                            $this->deleteEntryType($entryType);
+                        }
                     }
                 }
             }
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
 
         return true;
