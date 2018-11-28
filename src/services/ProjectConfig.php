@@ -470,17 +470,15 @@ class ProjectConfig extends Component
 
         $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
 
-        if ($oldValue && !$newValue) {
+        if ($newValue === null) {
             // Fire a 'removeItem' event
             $this->trigger(self::EVENT_REMOVE_ITEM, $event);
-        } else if (!$oldValue && $newValue) {
+        } else if ($oldValue === null) {
             // Fire an 'addItem' event
             $this->trigger(self::EVENT_ADD_ITEM, $event);
-        } else if ($triggerUpdate || (
-            $newValue !== null &&
-            $oldValue !== null &&
+        } else if ($triggerUpdate ||
             Json::encode($oldValue) !== Json::encode($newValue)
-        )) {
+        ) {
             // Fire an 'updateItem' event
             $this->trigger(self::EVENT_UPDATE_ITEM, $event);
         } else {
