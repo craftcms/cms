@@ -1534,7 +1534,6 @@ class Fields extends Component
             $fieldRecord = $this->_getFieldRecord($fieldUid);
             $groupRecord = $this->_getGroupRecord($groupUid);
             $isNewField = $fieldRecord->getIsNewRecord();
-            $fieldRecord->storeOldHandle();
 
             /** @var Field $class */
             $class = $data['type'];
