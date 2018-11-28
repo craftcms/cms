@@ -348,7 +348,9 @@ class Matrix extends Component
             // Make sure that alterations, if any, occur in the correct context.
             $contentService->fieldContext = 'matrixBlockType:' . $blockTypeUid;
             $contentService->fieldColumnPrefix = 'field_' . $blockTypeRecord->handle . '_';
-            $contentService->contentTable = $this->defineContentTableName($fieldsService->getFieldById($blockTypeRecord->fieldId));
+            /** @var MatrixField $matrixField */
+            $matrixField = $fieldsService->getFieldById($blockTypeRecord->fieldId);
+            $contentService->contentTable = $matrixField->contentTable;
             $fieldsService->oldFieldColumnPrefix = 'field_' . $blockTypeRecord->handle . '_';
 
             $oldFields = $previousData['fields'] ?? [];
