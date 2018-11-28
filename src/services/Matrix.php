@@ -575,7 +575,8 @@ class Matrix extends Component
             $transaction = $db->beginTransaction();
             try {
                 // Create the content table first since the block type fields will need it
-                $oldContentTable = $matrixField->getOldContentTable();
+                $configPath = Fields::CONFIG_FIELDS_KEY . '.' . $matrixField->uid . '.settings.contentTable';
+                $oldContentTable = Craft::$app->getProjectConfig()->get($configPath);
                 $newContentTable = $matrixField->contentTable;
 
                 // Do we need to create/rename the content table?

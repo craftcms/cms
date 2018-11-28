@@ -25,6 +25,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\MatrixBlockType;
 use craft\services\Elements;
+use craft\services\Fields;
 use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\assets\matrixsettings\MatrixSettingsAsset;
@@ -93,11 +94,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      * @var MatrixBlockType[]|null The block types' fields
      */
     private $_blockTypeFields;
-
-    /**
-     * @var string Old content table name
-     */
-    private $_oldContentTable;
 
     // Public Methods
     // =========================================================================
@@ -650,17 +646,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         ];
     }
 
-    /**
-     * Returns the field's old content table name.
-     *
-     * @return string|null
-     * @since 3.0.23
-     */
-    public function getOldContentTable()
-    {
-        return $this->_oldContentTable;
-    }
-
     // Events
     // -------------------------------------------------------------------------
 
@@ -673,15 +658,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             return false;
         }
 
-        // Set the new content table name
-        if ($this->id) {
-            $currentField = Craft::$app->getFields()->getFieldById($this->id);
-            if ($currentField) {
-                /** @var Matrix $currentField */
-                $this->_oldContentTable = $this->contentTable = $currentField->contentTable ?? null;
-            }
-        }
+        // Set the old content table before
+        $configPath = Fields::CONFIG_FIELDS_KEY . '.' . $this->uid . '.settings.contentTable';
+        $this->contentTable = Craft::$app->getProjectConfig()->get($configPath);
 
+        // Now see if we need a new one
         $this->contentTable = Craft::$app->getMatrix()->defineContentTableName($this);
 
         return true;

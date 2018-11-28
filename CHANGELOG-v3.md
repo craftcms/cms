@@ -5,10 +5,14 @@
 ### Changed
 - Renamed `craft\services\ProjectConfig::getAreChangesPending()` to `areChangesPending()`, and gave it an optional `$path` argument.
 
+### Removed
+- Removed `craft\fields\Matrix::getOldContentTable()`.
+
 ### Fixed
 - Fixed an error that occurred when creating a new Single section.
 - Fixed a bug where converting a Channel or Structure section to a Single section via `project.yaml` wouldn’t ensure that one (and only one) entry exists for the section, if the section’s entry type didn’t change as well.
 - Fixed a bug where section changes could be saved to the database even if an error occurred later on that prevented the changes from being committed to the project config.
+- Fixed a bug where Matrix fields could lose track of their content tables.
 - Fixed a bug where “removing” a nonexistent item from the project config would trigger an `update` event rather than `remove`.
 - Fixed a bug where some migration changes weren’t getting applied correctly.
 

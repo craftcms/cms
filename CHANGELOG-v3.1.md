@@ -106,6 +106,7 @@
 - `craft\services\Routes::updateRouteOrder()` now expects route UIDs instead of IDs.
 
 ### Removed
+- Removed `craft\fields\Matrix::getOldContentTable()`.
 - Removed `craft\services\Routes::deleteRouteById()`
 
 ### Deprecated
