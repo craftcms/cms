@@ -3,9 +3,11 @@
 ## Unreleased
 
 ### Changed
+- Entries, categories, and users can now be restored within the Control Panel by selecting “Trashed” from the status menu on element index pages, and clicking the “Restore” button.
 - Renamed `craft\services\ProjectConfig::getAreChangesPending()` to `areChangesPending()`, and gave it an optional `$path` argument.
 
 ### Removed
+- Removed support for searching for `is:trashed` on element index pages.
 - Removed `craft\fields\Matrix::getOldContentTable()`.
 
 ### Fixed

@@ -3214,6 +3214,19 @@ ul.tree,
   }
 }
 
+.menubtn,
+.menu {
+  span.icon {
+    display: inline-block;
+    margin-top: -1px;
+    width: 10px;
+    margin-right: 10px;
+    text-align: center;
+    font-size: 14px;
+    color: $lightTextColor;
+  }
+}
+
 .menu ul li a:not(.sel):not(.disabled):hover,
 .menu ul li a:not(.sel):not(.disabled):hover .light,
 .menu:not(:hover) ul li a:not(.disabled).hover,

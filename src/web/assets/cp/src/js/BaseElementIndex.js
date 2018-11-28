@@ -41,7 +41,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $search: null,
         searching: false,
         searchText: null,
-        searchQuery: null,
         trashed: false,
         $clearSearchBtn: null,
 
@@ -551,7 +550,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var criteria = $.extend({
                 status: this.status,
                 siteId: this.siteId,
-                search: this.searchQuery,
+                search: this.searchText,
                 limit: this.settings.batchSize,
                 trashed: this.trashed ? 1 : 0
             }, this.settings.criteria);
@@ -612,25 +611,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         updateElementsIfSearchTextChanged: function() {
             if (this.searchText !== (this.searchText = this.searching ? this.$search.val() : null)) {
-                this.searchQuery = this.getSearchQuery(this.searchText);
                 this.updateElements();
             }
-        },
-
-        getSearchQuery: function (searchText) {
-            this.trashed = searchText && searchText.match(/\bis:trashed\b/) ? true : false;
-            if (this.trashed) {
-                searchText = searchText.replace(/\bis:trashed\b/, '');
-            }
-
-            if (searchText) {
-                searchText = searchText
-                    .replace(/ {2,}/, ' ')
-                    .replace(/^ /, '')
-                    .replace(/ $/, '');
-            }
-
-            return searchText || null;
         },
 
         showActionTriggers: function() {
@@ -852,7 +834,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             if (this.searching) {
                 // Clear the search value without causing it to update elements
                 this.searchText = null;
-                this.searchQuery = null;
                 this.$search.val('');
                 this.stopSearching();
             }
@@ -1293,7 +1274,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $option = $(ev.selectedOption).addClass('sel');
             this.$statusMenuBtn.html($option.html());
 
-            this.status = $option.data('status');
+            if (Garnish.hasAttr($option, 'data-trashed')) {
+                this.trashed = true;
+                this.status = null;
+            } else {
+                this.trashed = false;
+                this.status = $option.data('status');
+            }
+
             this.updateElements();
         },
 
