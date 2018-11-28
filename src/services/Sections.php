@@ -618,7 +618,7 @@ class Sections extends Component
 
             if ($section->type === Section::TYPE_SINGLE) {
                 // Ensure & get the single entry
-                $entry = $this->_ensureSingleEntry($section, $isNewSection);
+                $entry = $this->_ensureSingleEntry($section);
 
                 // Deal with the section's entry types
                 if (!$isNewSection) {
@@ -1481,38 +1481,33 @@ class Sections extends Component
      * Ensures that the given Single section has its one and only entry, and returns it.
      *
      * @param Section $section
-     * @param bool $isNewSection
      * @return Entry The
      * @see saveSection()
      * @throws Exception if reasons
      */
-    private function _ensureSingleEntry(Section $section, bool $isNewSection = false): Entry
+    private function _ensureSingleEntry(Section $section): Entry
     {
         // Get all the entries that currently exist for this section
         // ---------------------------------------------------------------------
 
         $allSiteUids = array_keys(Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.siteSettings'));
 
-        if (!$isNewSection) {
-            $entryData = (new Query())
-                ->select([
-                    'e.id',
-                    'typeId',
-                    'siteId' => (new Query())
-                        ->select('es.siteId')
-                        ->from('{{%elements_sites}} es')
-                        ->innerJoin('{{%sites}} s', '[[s.id]] = [[es.siteId]]')
-                        ->where('[[es.elementId]] = [[e.id]]')
-                        ->andWhere(['in', 's.uid', $allSiteUids])
-                        ->limit(1)
-                ])
-                ->from(['{{%entries}} e'])
-                ->where(['e.sectionId' => $section->id])
-                ->orderBy(['e.id' => SORT_ASC])
-                ->all();
-        } else {
-            $entryData = [];
-        }
+        $entryData = (new Query())
+            ->select([
+                'e.id',
+                'typeId',
+                'siteId' => (new Query())
+                    ->select('es.siteId')
+                    ->from('{{%elements_sites}} es')
+                    ->innerJoin('{{%sites}} s', '[[s.id]] = [[es.siteId]]')
+                    ->where('[[es.elementId]] = [[e.id]]')
+                    ->andWhere(['in', 's.uid', $allSiteUids])
+                    ->limit(1)
+            ])
+            ->from(['{{%entries}} e'])
+            ->where(['e.sectionId' => $section->id])
+            ->orderBy(['e.id' => SORT_ASC])
+            ->all();
 
         // Get the section's entry types
         // ---------------------------------------------------------------------
