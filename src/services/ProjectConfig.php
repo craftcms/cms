@@ -26,7 +26,6 @@ use yii\web\ServerErrorHttpException;
  * Project config service.
  * An instance of the ProjectConfig service is globally accessible in Craft via [[\craft\base\ApplicationTrait::ProjectConfig()|`Craft::$app->projectConfig`]].
  *
- * @property-read bool $areChangesPending Whether `project.yaml` has any pending changes that need to be applied to the project config
  * @property-read bool $isApplyingYamlChanges
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1
@@ -415,9 +414,11 @@ class ProjectConfig extends Component
     /**
      * Returns whether `project.yaml` has any pending changes that need to be applied to the project config.
      *
+     * @param string|null $path A specific config path that should be checked for pending changes.
+     * If this is null, then `true` will be returned if there are *any* pending changes in `project.yaml.`.
      * @return bool
      */
-    public function getAreChangesPending(): bool
+    public function areChangesPending(string $path = null): bool
     {
         // TODO remove after next breakpoint
         if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
@@ -430,17 +431,26 @@ class ProjectConfig extends Component
             $this->saveModifiedConfigData();
         }
 
-        if ($this->_useConfigFile() && $this->_areConfigFilesModified()) {
-            $changes = $this->_getPendingChanges();
-
-            foreach ($changes as $changeType) {
-                if (!empty($changeType)) {
-                    return true;
-                }
-            }
-
-            $this->updateParsedConfigTimes();
+        if (!$this->_useConfigFile() || !$this->_areConfigFilesModified()) {
+            return false;
         }
+
+        if ($path !== null) {
+            $storedConfig = $this->_getStoredConfig();
+            $oldValue = $this->_traverseDataArray($storedConfig, $path);
+            $newValue = $this->get($path, true);
+            return Json::encode($oldValue) !== Json::encode($newValue);
+        }
+
+        $changes = $this->_getPendingChanges();
+
+        foreach ($changes as $changeType) {
+            if (!empty($changeType)) {
+                return true;
+            }
+        }
+
+        $this->updateParsedConfigTimes();
 
         return false;
     }
@@ -463,11 +473,6 @@ class ProjectConfig extends Component
         $oldValue = $this->_traverseDataArray($storedConfig, $path);
         $newValue = $this->get($path, true);
 
-        // Memoize the new config data
-        $currentLoadedConfig = $this->_getLoadedConfig();
-        $this->_traverseDataArray($currentLoadedConfig, $path, $newValue);
-        $this->_loadedConfig = $currentLoadedConfig;
-
         $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
 
         if ($newValue === null) {
@@ -484,6 +489,11 @@ class ProjectConfig extends Component
         } else {
             return;
         }
+
+        // Memoize the new config data
+        $currentLoadedConfig = $this->_getLoadedConfig();
+        $this->_traverseDataArray($currentLoadedConfig, $path, $newValue);
+        $this->_loadedConfig = $currentLoadedConfig;
 
         $this->updateStoredConfigAfterRequest();
         $this->updateParsedConfigTimesAfterRequest();

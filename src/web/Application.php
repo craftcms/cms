@@ -210,7 +210,7 @@ class Application extends \yii\web\Application
         $projectConfig = $this->getProjectConfig();
 
         // Make sure schema required by config files aligns with what we have.
-        if ($projectConfig->getAreChangesPending() && !$projectConfig->getAreConfigSchemaVersionsCompatible()) {
+        if ($projectConfig->areChangesPending() && !$projectConfig->getAreConfigSchemaVersionsCompatible()) {
             return $this->_handleIncompatibleConfig($request);
         }
 
@@ -241,7 +241,7 @@ class Application extends \yii\web\Application
         }
 
         // Check if there are any pending changes in project.yaml
-        if ($projectConfig->getAreChangesPending()) {
+        if ($projectConfig->areChangesPending()) {
             return $this->_processConfigSyncLogic($request) ?: $this->getResponse();
         }
 

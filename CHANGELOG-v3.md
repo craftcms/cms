@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Renamed `craft\services\ProjectConfig::getAreChangesPending()` to `areChangesPending()`, and gave it an optional `$path` argument.
+
 ### Fixed
 - Fixed an error that occurred when creating a new Single section.
 - Fixed a bug where section changes could be saved to the database even if an error occurred later on that prevented the changes from being committed to the project config.
