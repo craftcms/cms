@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.1.0-beta.2 - 2018-11-27
+## 3.1.0-beta.2 - 2018-11-28
 
 ### Changed
 - Entries, categories, and users can now be restored within the Control Panel by selecting “Trashed” from the status menu on element index pages, and clicking the “Restore” button.
