@@ -828,10 +828,22 @@ class Sections extends Component
         unset($this->_sectionsById[$sectionRecord->id]);
         $this->_fetchedAllSections = false;
 
+        /** @var Section $section */
+        $section = $this->getSectionById($sectionRecord->id);
+
+        // If this is a Single and no entry type changes need to be processed,
+        // ensure that the section has its one and only entry
+        if (
+            $section->type === Section::TYPE_SINGLE &&
+            !Craft::$app->getProjectConfig()->areChangesPending($event->path . '.' . self::CONFIG_ENTRYTYPES_KEY)
+        ) {
+            $this->_ensureSingleEntry($section);
+        }
+
         // Fire an 'afterSaveSection' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SECTION)) {
             $this->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
-                'section' => $this->getSectionById($sectionRecord->id),
+                'section' => $section,
                 'isNew' => $isNewSection
             ]));
         }
