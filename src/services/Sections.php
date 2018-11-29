@@ -1502,7 +1502,13 @@ class Sections extends Component
         // Get all the entries that currently exist for this section
         // ---------------------------------------------------------------------
 
-        $allSiteUids = array_keys(Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.siteSettings'));
+        $siteSettings = Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.siteSettings');
+
+        if (empty($siteSettings)) {
+            throw new Exception('No site settings exist for section ' . $section->id);
+        }
+
+        $allSiteUids = array_keys($siteSettings);
 
         $entryData = (new Query())
             ->select([
