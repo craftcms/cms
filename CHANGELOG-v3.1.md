@@ -92,6 +92,7 @@
 ### Changed
 - The `defaultWeekStartDay` config setting is now set to `1` (Monday) by default, to conform with the ISO 8601 standard.
 - Renamed the `isSystemOn` config setting to `isSystemLive`.
+- The `svg()` function now supports a `class` argument, which will add a class name to the root `<svg>` node. ([#3174](https://github.com/craftcms/cms/issues/3174))
 - `info` buttons can now also have a `warning` class.
 - User permission definitions can now include `info` and/or `warning` keys.
 - The old “Administrate users” permission has been renamed to “Moderate users”.
