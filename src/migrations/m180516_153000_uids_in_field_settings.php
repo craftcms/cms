@@ -145,7 +145,7 @@ class m180516_153000_uids_in_field_settings extends Migration
                         foreach ($settings['sources'] as $source) {
                             $source = explode(':', $source);
                             if (count($source) > 1) {
-                                $newSources[] = $source[0] . ':' . $folders[$source[1]] ?? null;
+                                $newSources[] = $source[0] . ':' . ($folders[$source[1]] ?? $source[1]);
                             } else {
                                 $newSources[] = $source[0];
                             }
@@ -162,7 +162,7 @@ class m180516_153000_uids_in_field_settings extends Migration
                         foreach ($settings['sources'] as $source) {
                             $source = explode(':', $source);
                             if (count($source) > 1) {
-                                $newSources[] = $source[0] . ':' . $sections[$source[1]] ?? null;
+                                $newSources[] = $source[0] . ':' . ($sections[$source[1]] ?? $source[1]);
                             } else {
                                 $newSources[] = $source[0];
                             }
@@ -180,7 +180,7 @@ class m180516_153000_uids_in_field_settings extends Migration
                             $source = explode(':', $source);
 
                             if (count($source) > 1) {
-                                $newSources[] = $source[0] . ':' . $userGroups[$source[1]] ?? null;
+                                $newSources[] = $source[0] . ':' . ($userGroups[$source[1]] ?? $source[1]);
                             } else {
                                 $newSources[] = $source[0];
                             }
@@ -192,12 +192,12 @@ class m180516_153000_uids_in_field_settings extends Migration
                     break;
                 case 'craft\fields\Categories':
                     $source = explode(':', $settings['source']);
-                    $settings['source'] = $source[0] . ':' . $categoryGroups[$source[1]] ?? null;
+                    $settings['source'] = $source[0] . ':' . ($categoryGroups[$source[1]] ?? $source[1]);
 
                     break;
                 case 'craft\fields\Tags':
                     $source = explode(':', $settings['source']);
-                    $settings['source'] = $source[0] . ':' . $tagGroups[$source[1]] ?? null;
+                    $settings['source'] = $source[0] . ':' . ($tagGroups[$source[1]] ?? $source[1]);
 
                     break;
             }
