@@ -27,6 +27,39 @@ class MyModel extends Model
 }
 ```
 
+## Validation
+
+If your environmental settings require special validation rules, you can have the validators check the parsed values rather than the raw values using <api:craft\behaviors\EnvAttributeParserBehavior>.
+
+```php
+use Craft;
+use craft\base\Model;
+use craft\behaviors\EnvAttributeParserBehavior;
+
+class MyModel extends Model
+{
+    public function behaviors()
+    {
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => ['secretKey'],
+            ],
+        ];
+    }
+    
+    public function rules()
+    {
+        return [
+            ['secretKey', 'required'],
+            ['secretKey', 'string', 'length' => 50],
+        ];
+    }
+    
+    // ...
+}
+```
+
 ## Autosuggest Inputs
 
 To guide users when entering your setting’s value in the Control Panel, give your setting an autosuggest input.
