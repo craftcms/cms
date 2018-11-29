@@ -4,14 +4,14 @@
 
 ### Changed
 - The `svg()` function now supports a `class` argument, which will add a class name to the root `<svg>` node. ([#3174](https://github.com/craftcms/cms/issues/3174))
-- When deleting a field, it is now removed from the user field layout configuration if in use.
 
 ### Fixed
 - Fixed an error that occurred on Control Panel pages with a Template setting, if the `templates/` folder didn’t exist. ([#3505](https://github.com/craftcms/cms/issues/3505))
 - Fixed an error that could occur after updating to Craft 3.1 that prevented migrations from running. ([#3295](https://github.com/craftcms/cms/issues/3295))
 - Fixed an error that could occur when running a migration. ([#3504](https://github.com/craftcms/cms/issues/3504))
 - Fixed an error that occurred when creating a new Single section. ([#3506](https://github.com/craftcms/cms/issues/3506))
-- Fixed an error that occurred when deleting a field and a layout using that field via project configuration simultaneously.
+- Fixed an error that could occur if a field and a field layout that used the field had both been removed from `project.yaml`.
+- Fixed a bug where the user field layout wouldn’t get updated if a field it was referencing was deleted.
 
 ## 3.1.0-beta.2 - 2018-11-28
 
