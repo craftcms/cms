@@ -7,7 +7,7 @@
 
 ### Fixed
 - Fixed an error that occurred on Control Panel pages with a Template setting, if the `templates/` folder didn’t exist. ([#3505](https://github.com/craftcms/cms/issues/3505))
-- Fixed a bug where a migration that converts IDs to UIDs in field settings could fail. ([#3504](https://github.com/craftcms/cms/issues/3504))
+- Fixed an error that could occur when running a migration. ([#3504](https://github.com/craftcms/cms/issues/3504))
 
 ## 3.1.0-beta.2 - 2018-11-28
 
