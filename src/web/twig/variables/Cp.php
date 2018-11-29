@@ -366,6 +366,11 @@ class Cp extends Component
     {
         // Get all the template files sorted by path length
         $root = Craft::$app->getPath()->getSiteTemplatesPath();
+
+        if (!is_dir($root)) {
+            return [];
+        }
+
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root));
         /** @var \SplFileInfo[] $files */
         $files = [];
