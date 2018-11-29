@@ -3661,6 +3661,7 @@ input.checkbox:focus + label:before,
 .input.errors > .text,
 .input.errors > .border-box,
 .input.errors > .passwordwrapper > .text,
+.input.errors > .autosuggest-container .text,
 .text.error {
   border: 1px solid $errorColor !important;
 }

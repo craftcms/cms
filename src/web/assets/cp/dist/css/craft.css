@@ -1309,7 +1309,7 @@ body.rtl .checkboxfield.has-instructions .instructions { padding-right: 20px; }
 .text.small { padding: 3px; }
 .text input { margin: 0; padding: 0; border: none; outline: none; background: none; }
 
-.input.errors > .text, .input.errors > .border-box, .input.errors > .passwordwrapper > .text, .text.error { border: 1px solid #da5a47 !important; }
+.input.errors > .text, .input.errors > .border-box, .input.errors > .passwordwrapper > .text, .input.errors > .autosuggest-container .text, .text.error { border: 1px solid #da5a47 !important; }
 
 .texticon { position: relative; cursor: text; min-width: 130px; }
 .texticon.icon:before { position: absolute; top: 9px; color: #b9bfc6; }
