@@ -15,8 +15,11 @@
     </div>
 </template>
 
+<style lang="scss">
+    @import './sass/main.scss';
+</style>
+
 <script>
-    import './sass/main.scss'
     import Sidebar from './js/components/Sidebar'
     import Modal from './js/components/modal/Modal'
     import StatusMessage from './js/components/StatusMessage'
