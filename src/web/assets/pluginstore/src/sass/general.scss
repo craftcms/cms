@@ -1,5 +1,9 @@
 /* General */
 
+hr {
+  @apply .border-grey-lighter;
+}
+
 h1 {
   font-size: 24px;
 }
