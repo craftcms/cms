@@ -1,5 +1,5 @@
 <template>
-    <div class="ps-wrapper has-sidebar">
+    <div class="ps-wrapper">
         <template v-if="$root.pluginStoreDataLoaded && !$root.pluginStoreDataError">
             <sidebar></sidebar>
 

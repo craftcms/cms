@@ -41,12 +41,6 @@
 }
 
 @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
-  .ps-wrapper.has-sidebar {
-    .ps-grid-box {
-      @apply .tw-w-full;
-    }
-  }
-
   .ps-grid-plugins {
     .ps-grid-box {
       @apply .tw-w-1/2;
