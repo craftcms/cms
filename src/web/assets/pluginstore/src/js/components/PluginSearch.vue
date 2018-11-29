@@ -1,7 +1,7 @@
 <template>
     <div class="tw-mb-4">
         <form @submit.prevent="search()" class="tw-w-full texticon search icon clearable">
-            <input class="text fullwidth" id="searchQuery" name="searchQuery" type="text" :placeholder="'Search plugins'|t('app')" v-model="searchQuery">
+            <input autocomplete="off" class="text fullwidth" id="searchQuery" name="searchQuery" type="text" :placeholder="'Search plugins'|t('app')" v-model="searchQuery">
             <div class="clear" :class="{ hidden: searchQuery.length == 0 }" @click="searchQuery = ''" title="Clear"></div>
         </form>
 
