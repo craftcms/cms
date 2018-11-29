@@ -182,7 +182,7 @@ The `siteUrl()` function has the following arguments:
 * **`scheme`** – Which scheme the URL should use (`'http'` or `'https'`). The default value depends on whether the current request is served over SSL or not. If not, then the scheme in your Site URL will be used; if so, then `https` will be used.
 * **`siteId`** – The ID of the site that the URL should point to. By default the current site will be used.
 
-## `svg( svg, sanitize, namespace )`
+## `svg( svg, sanitize, namespace, class )`
 
 Outputs an SVG document.
 
@@ -214,6 +214,12 @@ By default, if you pass an asset or raw markup into the function, the SVG will b
 
 ```
 {{ svg(image, sanitize=false, namespace=false) }}
+```
+
+You can also specify a custom class name that should be added to the root `<svg>` node using the `class` argument:
+
+```twig
+{{ svg('@webroot/icons/lemon.svg', class='lemon-icon') }}
 ```
 
 ## `url( path, params, scheme, mustShowScriptName )`

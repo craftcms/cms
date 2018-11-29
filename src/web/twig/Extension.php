@@ -873,9 +873,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param bool|null $namespace Whether class names and IDs within the SVG
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default the SVG will only be namespaced if an asset or markup is passed in.
+     * @param string|null $class A CSS class name that should be added to the `<svg>` element.
      * @return \Twig_Markup|string
      */
-    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null)
+    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, string $class = null)
     {
         if ($svg instanceof Asset) {
             try {
@@ -925,9 +926,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             }, $svg);
             $svg = preg_replace_callback('/\bclass=([\'"])([^\'"]+)\\1/i', function($matches) use ($ns, &$classes) {
                 $newClasses = [];
-                foreach (preg_split('/\s+/', $matches[2]) as $class) {
-                    $classes[] = $class;
-                    $newClasses[] = $ns . $class;
+                foreach (preg_split('/\s+/', $matches[2]) as $c) {
+                    $classes[] = $c;
+                    $newClasses[] = $ns . $c;
                 }
                 return 'class=' . $matches[1] . implode(' ', $newClasses) . $matches[1];
             }, $svg);
@@ -935,9 +936,16 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
                 $quotedId = preg_quote($id, '\\');
                 $svg = preg_replace("/#{$quotedId}\b(?!\-)/", "#{$ns}{$id}", $svg);
             }
-            foreach ($classes as $class) {
-                $quotedClass = preg_quote($class, '\\');
-                $svg = preg_replace("/\.{$quotedClass}\b(?!\-)/", ".{$ns}{$class}", $svg);
+            foreach ($classes as $c) {
+                $quotedClass = preg_quote($c, '\\');
+                $svg = preg_replace("/\.{$quotedClass}\b(?!\-)/", ".{$ns}{$c}", $svg);
+            }
+        }
+
+        if ($class !== null) {
+            $svg = preg_replace('/(<svg\b[^>]+\bclass=([\'"])[^\'"]+)(\\2)/i', "$1 {$class}$3", $svg, 1, $count);
+            if ($count === 0) {
+                $svg = preg_replace('/<svg\b/i', "$0 class=\"{$class}\"", $svg, 1);
             }
         }
 
