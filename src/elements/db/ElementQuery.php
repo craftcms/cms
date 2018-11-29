@@ -1098,10 +1098,14 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->_applyStatusParam($class);
         }
 
-        if ($this->trashed === false) {
-            $this->subQuery->andWhere(['elements.dateDeleted' => null]);
-        } else if ($this->trashed === true) {
-            $this->subQuery->andWhere(['not', ['elements.dateDeleted' => null]]);
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.1.0', '>=')) {
+            if ($this->trashed === false) {
+                $this->subQuery->andWhere(['elements.dateDeleted' => null]);
+            } else if ($this->trashed === true) {
+                $this->subQuery->andWhere(['not', ['elements.dateDeleted' => null]]);
+            }
         }
 
         if ($this->dateCreated) {
@@ -1520,6 +1524,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
+        // todo: remove this after the next breakpoint
+        if (Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            return [];
+        }
+
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = 'global';
