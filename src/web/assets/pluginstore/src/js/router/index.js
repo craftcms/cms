@@ -9,7 +9,7 @@ import BuyHandle from '../pages/buy/_handle'
 import Tests from '../pages/tests'
 import NotFound from '../pages/_not-found'
 import Search from '../pages/search'
-import PluginsHandle from '../pages/plugins/_handle'
+import PluginsHandle from '../pages/plugins/_handle/index-alt'
 
 Vue.use(VueRouter)
 

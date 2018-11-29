@@ -114,7 +114,7 @@
 
 <script>
     import {mapState, mapGetters, mapActions} from 'vuex'
-    import LicenseStatus from '../../components/LicenseStatus'
+    import LicenseStatus from '../../../components/LicenseStatus'
 
     export default {
 
