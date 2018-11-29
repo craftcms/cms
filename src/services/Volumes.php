@@ -797,38 +797,22 @@ class Volumes extends Component
         $field = $event->field;
         $fieldUid = $field->uid;
 
-        $fieldPruned = false;
         $projectConfig = Craft::$app->getProjectConfig();
         $volumes = $projectConfig->get(self::CONFIG_VOLUME_KEY);
 
+        // Loop through the volumes and prune the UID from field layouts.
         if (is_array($volumes)) {
-            // Loop through the volumes and see if the UID exists in the field layouts.
-            foreach ($volumes as &$volume) {
+            foreach ($volumes as $volumeUid => $volume) {
                 if (!empty($volume['fieldLayouts'])) {
-                    foreach ($volume['fieldLayouts'] as &$layout) {
+                    foreach ($volume['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
-                            foreach ($layout['tabs'] as &$tab) {
-                                if (!empty($tab['fields'])) {
-                                    // Remove the straggler.
-                                    if (array_key_exists($fieldUid, $tab['fields'])) {
-                                        unset($tab['fields'][$fieldUid]);
-                                        $fieldPruned = true;
-                                        // If last field, just remove field layouts entry altogether.
-                                        if (empty($tab['fields'])) {
-                                            unset($volume['fieldLayouts']);
-                                            break 2;
-                                        }
-                                    }
-                                }
+                            foreach ($layout['tabs'] as $tabUid => $tab) {
+                                $projectConfig->remove(self::CONFIG_VOLUME_KEY . '.' . $volumeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
                             }
                         }
                     }
                 }
             }
-        }
-
-        if ($fieldPruned) {
-            $projectConfig->set(self::CONFIG_VOLUME_KEY, $volumes);
         }
     }
 

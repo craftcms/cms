@@ -17,6 +17,7 @@ use craft\errors\InvalidSubpathException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
 use craft\events\ConfigEvent;
+use craft\events\FieldEvent;
 use craft\events\UserAssignGroupEvent;
 use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
@@ -1050,6 +1051,33 @@ class Users extends Component
 
         $projectConfig->set(self::CONFIG_USERLAYOUT_KEY, [$uid => $fieldLayoutConfig]);
         return true;
+    }
+
+
+    /**
+     * Prune a deleted field from user group layout.
+     *
+     * @param FieldEvent $event
+     */
+    public function pruneDeletedField(FieldEvent $event)
+    {
+        /** @var Field $field */
+        $field = $event->field;
+        $fieldUid = $field->uid;
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        $fieldLayouts = $projectConfig->get(self::CONFIG_USERLAYOUT_KEY);
+
+        // Loop through the volumes and prune the UID from field layouts.
+        if (is_array($fieldLayouts)) {
+            foreach ($fieldLayouts as $layoutUid => $layout) {
+                if (!empty($layout['tabs'])) {
+                    foreach ($layout['tabs'] as $tabUid => $tab) {
+                        $projectConfig->remove(self::CONFIG_USERLAYOUT_KEY . '.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                    }
+                }
+            }
+        }
     }
 
     // Private Methods
