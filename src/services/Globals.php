@@ -525,38 +525,22 @@ class Globals extends Component
         $field = $event->field;
         $fieldUid = $field->uid;
 
-        $fieldPruned = false;
         $projectConfig = Craft::$app->getProjectConfig();
         $globalSets = $projectConfig->get(self::CONFIG_GLOBALSETS_KEY);
 
-        // Loop through the tag groups and see if the UID exists in the field layouts.
+        // Loop through the global sets and prune the UID from field layouts.
         if (is_array($globalSets)) {
-            foreach ($globalSets as &$globalSet) {
+            foreach ($globalSets as $globalSetUid => $globalSet) {
                 if (!empty($globalSet['fieldLayouts'])) {
-                    foreach ($globalSet['fieldLayouts'] as &$layout) {
+                    foreach ($globalSet['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
-                            foreach ($layout['tabs'] as &$tab) {
-                                if (!empty($tab['fields'])) {
-                                    // Remove the straggler.
-                                    if (array_key_exists($fieldUid, $tab['fields'])) {
-                                        unset($tab['fields'][$fieldUid]);
-                                        $fieldPruned = true;
-                                        // If last field, just remove field layouts entry altogether.
-                                        if (empty($tab['fields'])) {
-                                            unset($globalSet['fieldLayouts']);
-                                            break 2;
-                                        }
-                                    }
-                                }
+                            foreach ($layout['tabs'] as $tabUid => $tab) {
+                                $projectConfig->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSetUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
                             }
                         }
                     }
                 }
             }
-        }
-
-        if ($fieldPruned) {
-            $projectConfig->set(self::CONFIG_GLOBALSETS_KEY, $globalSets);
         }
     }
 

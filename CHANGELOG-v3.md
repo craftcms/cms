@@ -11,6 +11,7 @@
 - Fixed an error that could occur after updating to Craft 3.1 that prevented migrations from running. ([#3295](https://github.com/craftcms/cms/issues/3295))
 - Fixed an error that could occur when running a migration. ([#3504](https://github.com/craftcms/cms/issues/3504))
 - Fixed an error that occurred when creating a new Single section. ([#3506](https://github.com/craftcms/cms/issues/3506))
+- Fixed an error that occurred when deleting a field and a layout using that field via project configuration simultaneously.
 
 ## 3.1.0-beta.2 - 2018-11-28
 
