@@ -4,6 +4,7 @@
 
 ### Changed
 - The `svg()` function now supports a `class` argument, which will add a class name to the root `<svg>` node. ([#3174](https://github.com/craftcms/cms/issues/3174))
+- When deleting a field, it is now removed from the user field layout configuration if in use.
 
 ### Fixed
 - Fixed an error that occurred on Control Panel pages with a Template setting, if the `templates/` folder didn’t exist. ([#3505](https://github.com/craftcms/cms/issues/3505))
