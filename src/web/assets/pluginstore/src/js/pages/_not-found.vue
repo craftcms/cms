@@ -1,15 +1,18 @@
 <template>
-    <div>
-        <div id="graphic" class="spinner big error"></div>
-        <div id="status">{{ statusMessage }}</div>
-    </div>
-
+    <status-message :error="true" :message="message"></status-message>
 </template>
 
 <script>
+    import StatusMessage from '../components/StatusMessage'
+
     export default {
+
+        components: {
+            StatusMessage
+        },
+
         computed: {
-            statusMessage() {
+            message() {
                 return this.$options.filters.t("Page not found.", 'app')
             }
         }

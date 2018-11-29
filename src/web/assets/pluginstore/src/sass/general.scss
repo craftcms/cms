@@ -99,28 +99,13 @@ h1 {
 
 /* Graphic & Status */
 
-#graphic {
+.graphic {
   &.error {
-    background-image: url(../images/error.png);
+    background-image: url(~@/images/error.png);
   }
 
   &.success {
-    background-image: url(../images/success.png);
-  }
-}
-
-#content {
-  #graphic {
-    @apply .tw-block;
-    margin: 200px auto 0;
-  }
-
-  #status {
-    @apply .tw-text-center;
-    margin: 20px auto 250px;
-    font-size: 16px;
-    line-height: 20px;
-    color: #666;
+    background-image: url(~@/images/success.png);
   }
 }
 
@@ -129,13 +114,13 @@ only screen and (-moz-min-device-pixel-ratio: 1.5),
 only screen and (-o-min-device-pixel-ratio: 3/2),
 only screen and (min-device-pixel-ratio: 1.5),
 only screen and (min-resolution: 1.5dppx) {
-  #graphic {
+  .graphic {
     &.error {
-      background-image: url(../images/error_2x.png);
+      background-image: url(~@/images/error_2x.png);
       background-size: 48px;
     }
     &.success {
-      background-image: url(../images/success_2x.png);
+      background-image: url(~@/images/success_2x.png);
       background-size: 48px;
     }
   }
