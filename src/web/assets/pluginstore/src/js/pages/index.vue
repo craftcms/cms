@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="ps-container">
         <template v-if="featuredPlugins">
             <template v-for="featuredPlugin in featuredPlugins">
                 <router-link class="right" :to="'/featured/'+featuredPlugin.id">{{ "See all"|t('app') }}</router-link>
