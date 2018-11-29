@@ -12,6 +12,7 @@
 - Fixed an error that occurred when creating a new Single section. ([#3506](https://github.com/craftcms/cms/issues/3506))
 - Fixed an error that could occur if a field and a field layout that used the field had both been removed from `project.yaml`.
 - Fixed a bug where the user field layout wouldn’t get updated if a field it was referencing was deleted.
+- Fixed an error that could occur when saving environmental settings. ([#3503](https://github.com/craftcms/cms/issues/3503))
 
 ## 3.1.0-beta.2 - 2018-11-28
 

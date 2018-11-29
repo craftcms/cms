@@ -72,7 +72,7 @@ class EnvAttributeParserBehavior extends Behavior
 
         foreach ($this->attributes as $attribute) {
             $value = $this->owner->$attribute;
-            if (($parsed = Craft::parseEnv($value)) !== $value) {
+            if (is_string($value) && ($parsed = Craft::parseEnv($value)) !== $value) {
                 $this->_values[$attribute] = $value;
                 $this->owner->$attribute = $parsed;
 
