@@ -17,4 +17,14 @@ module.exports = {
              cert: fs.readFileSync('../../../../../../ssl/pluginstore.dev.crt'),
          },
      }
+    chainWebpack: config => {
+         config.module
+             .rule('images')
+             .use('url-loader')
+                .tap(options => {
+                    options.limit = -1
+                    options.fallback.options.name = 'images/[name].[ext]'
+                    return options
+                })
+    }
  }
