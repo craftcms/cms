@@ -67,12 +67,16 @@ class Craft extends Yii
      * $value2 = Craft::parseEnv('@webroot');
      * ```
      *
-     * @param string $str
-     * @return string The parsed value, or the original value if it didn’t
+     * @param string|null $str
+     * @return string|null The parsed value, or the original value if it didn’t
      * reference an environment variable and/or alias.
      */
-    public static function parseEnv(string $str): string
+    public static function parseEnv(string $str = null)
     {
+        if ($str === null) {
+            return null;
+        }
+
         if (preg_match('/^\$(\w+)$/', $str, $matches)) {
             $str = getenv($matches[1]) ?: $str;
         }
