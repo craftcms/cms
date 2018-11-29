@@ -5,6 +5,9 @@
 ### Added
 - The `svg()` function now supports a `class` argument, which will add a class name to the root `<svg>` node. ([#3174](https://github.com/craftcms/cms/issues/3174))
 
+### Fixed
+- Fixed a bug where a migration that converts IDs to UIDs in field settings could fail. ([#3504](https://github.com/craftcms/cms/issues/3504))
+
 ## 3.1.0-beta.2 - 2018-11-28
 
 ### Changed
