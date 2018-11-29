@@ -81,7 +81,9 @@ class EnvAttributeParserBehavior extends Behavior
                         $validator->defaultScheme = null;
                     }
 
-                    $validator->message = StringHelper::ensureRight($validator->message, ' ({value})');
+                    if (is_string($validator->message)) {
+                        $validator->message = StringHelper::ensureRight($validator->message, ' ({value})');
+                    }
                 }
             }
         }
