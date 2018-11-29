@@ -212,7 +212,7 @@ You can pass the following things into it:
 
 By default, if you pass an asset or raw markup into the function, the SVG will be sanitized of potentially malicious scripts using [svg-sanitizer](https://github.com/darylldoyle/svg-sanitizer), and any IDs or class names within the document will be namespaced so they don’t conflict with other IDs or class names in the DOM. You can disable those behaviors using the `sanitize` and `namespace` arguments:
 
-```
+```twig
 {{ svg(image, sanitize=false, namespace=false) }}
 ```
 
