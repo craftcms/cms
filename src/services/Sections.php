@@ -834,6 +834,7 @@ class Sections extends Component
         // If this is a Single and no entry type changes need to be processed,
         // ensure that the section has its one and only entry
         if (
+            !$isNewSection &&
             $section->type === Section::TYPE_SINGLE &&
             !Craft::$app->getProjectConfig()->areChangesPending($event->path . '.' . self::CONFIG_ENTRYTYPES_KEY)
         ) {
