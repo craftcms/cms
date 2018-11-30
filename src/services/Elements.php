@@ -1102,6 +1102,8 @@ class Elements extends Component
             throw $e;
         }
 
+        $element->trashed = false;
+
         // Fire an 'afterRestoreElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE_ELEMENT)) {
             $this->trigger(self::EVENT_AFTER_RESTORE_ELEMENT, new ElementEvent([
