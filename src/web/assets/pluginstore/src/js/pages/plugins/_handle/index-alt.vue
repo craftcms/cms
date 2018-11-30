@@ -224,7 +224,7 @@
             }),
 
             chooseEdition() {
-                this.$root.modalStep = 'plugin-edition'
+                this.$root.openModal('plugin-edition')
             },
 
             buyPlugin(plugin) {
@@ -276,7 +276,7 @@
         mounted() {
             const pluginHandle = this.$route.params.handle
             const plugin = this.$store.getters['pluginStore/getPluginByHandle'](pluginHandle)
-
+            this.$root.pluginId = plugin.id
             this.loadPlugin(plugin.id)
         }
 

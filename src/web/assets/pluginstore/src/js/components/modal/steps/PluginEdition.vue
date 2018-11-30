@@ -1,7 +1,6 @@
 <template>
     <step>
         <template slot="header">
-            <div class="btn-left"><a @click="$emit('back')">← Back</a></div>
             <h1>Choose an edition</h1>
         </template>
 
@@ -95,6 +94,7 @@
 </template>
 
 <script>
+    import Step from '../Step'
     import EditionBadge from '../../EditionBadge'
 
     export default {
@@ -109,7 +109,7 @@
         },
 
         components: {
-            Step: require('../Step'),
+            Step,
             EditionBadge,
         },
 
