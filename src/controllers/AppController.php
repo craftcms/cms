@@ -116,8 +116,9 @@ class AppController extends Controller
     /**
      * Creates a DB backup (if configured to do so) and runs any pending Craft, plugin, & content migrations in one go.
      *
-     * This action can be used as a post-deploy webhook with site deployment services (like [DeployBot](https://deploybot.com/))
-     * to minimize site downtime after a deployment.
+     * This action can be used as a post-deploy webhook with site deployment
+     * services (like [DeployBot](https://deploybot.com/)) to minimize site
+     * downtime after a deployment.
      *
      * @throws ServerErrorException if something went wrong
      */
@@ -145,7 +146,8 @@ class AppController extends Controller
         Craft::$app->enableMaintenanceMode();
 
         // Backup the DB?
-        $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $backup = $generalConfig->getBackupOnUpdate();
         if ($backup) {
             try {
                 $backupPath = $db->backup();
@@ -155,13 +157,21 @@ class AppController extends Controller
             }
         }
 
-        // Run the migrations
+        $transaction = $db->beginTransaction();
+
         try {
+            // Run the migrations
             $updatesService->runMigrations($handles);
-        } catch (MigrationException $e) {
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+
+            // MySQL may have implicitly committed the transaction
+            $restored = $db->getIsPgsql();
+
             // Do we have a backup?
-            $restored = false;
-            if (!empty($backupPath)) {
+            if (!$restored && !empty($backupPath)) {
                 // Attempt a restore
                 try {
                     $db->restore($backupPath);
