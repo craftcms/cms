@@ -3,7 +3,7 @@
   box-sizing: border-box;
 
   .ps-grid-box {
-    @apply .tw-w-1/3;
+    @apply .tw-w-full;
     box-sizing: border-box;
 
     .plugin-card {
@@ -14,33 +14,9 @@
       }
     }
   }
-
-  &.ps-grid-plugins-4 {
-    .ps-grid-box {
-      @apply .tw-w-1/3;
-    }
-  }
 }
 
-@media only screen and (max-width: $minFullUiWidth - 1px) {
-  //
-}
-
-@media only screen and (min-width: $minLargeScreenWidth) {
-  .ps-grid-plugins {
-    .ps-grid-box {
-      @apply .tw-w-1/4;
-    }
-
-    &.ps-grid-plugins-4 {
-      .ps-grid-box {
-        @apply .tw-w-1/5;
-      }
-    }
-  }
-}
-
-@media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+@media only screen and (min-width: 600px) {
   .ps-grid-plugins {
     .ps-grid-box {
       @apply .tw-w-1/2;
@@ -48,10 +24,18 @@
   }
 }
 
-@media only screen and (max-width: 673px) {
+@media only screen and (min-width: 1500px) {
   .ps-grid-plugins {
     .ps-grid-box {
-      @apply .tw-w-full;
+      @apply .tw-w-1/3;
+    }
+  }
+}
+
+@media only screen and (min-width: $minLargeScreenWidth) {
+  .ps-grid-plugins {
+    .ps-grid-box {
+      @apply .tw-w-1/4;
     }
   }
 }

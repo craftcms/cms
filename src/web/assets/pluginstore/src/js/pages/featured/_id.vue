@@ -1,7 +1,7 @@
 <template>
     <div v-if="featuredPlugin">
         <h1>{{featuredPlugin.title}}</h1>
-        <plugin-grid :columns="4" :plugins="getPluginsByIds(featuredPlugin.plugins)"></plugin-grid>
+        <plugin-grid :plugins="getPluginsByIds(featuredPlugin.plugins)"></plugin-grid>
     </div>
 </template>
 

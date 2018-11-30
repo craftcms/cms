@@ -2,12 +2,12 @@
     <div class="ps-container">
         <h1>Showing results for “{{searchQuery}}”</h1>
         <sort-menu-btn :attributes="sortMenuBtnAttributes" :value.sync="sort"></sort-menu-btn>
-        
+
         <template v-if="loading">
             <div class="spinner"></div>
         </template>
         <template v-else>
-            <plugin-grid :plugins="searchResults" :columns="4"></plugin-grid>
+            <plugin-grid :plugins="searchResults"></plugin-grid>
         </template>
     </div>
 </template>

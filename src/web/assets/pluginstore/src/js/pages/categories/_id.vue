@@ -6,7 +6,7 @@
             <div class="spinner"></div>
         </template>
         <template v-else>
-            <plugin-index :plugins="plugins" :columns="4"></plugin-index>
+            <plugin-index :plugins="plugins"></plugin-index>
         </template>
     </div>
 </template>

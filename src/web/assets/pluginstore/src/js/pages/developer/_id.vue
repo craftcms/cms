@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <plugin-index :plugins="plugins" columns="3"></plugin-index>
+        <plugin-index :plugins="plugins"></plugin-index>
     </div>
 </template>
 

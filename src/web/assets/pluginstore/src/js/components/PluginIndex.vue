@@ -2,7 +2,7 @@
     <div>
         <!--<plugin-search @showResults="showingSearchResults = true" @hideResults="showingSearchResults = false" :plugins="pluginsToRender" :sort.sync="sort"></plugin-search>-->
 
-        <plugin-grid v-if="!showingSearchResults" :plugins="pluginsToRender" :columns="columns"></plugin-grid>
+        <plugin-grid v-if="!showingSearchResults" :plugins="pluginsToRender"></plugin-grid>
     </div>
 </template>
 
@@ -18,7 +18,7 @@
             PluginSearch,
         },
 
-        props: ['plugins', 'columns'],
+        props: ['plugins'],
 
         data() {
             return {
