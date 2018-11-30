@@ -1,8 +1,15 @@
 <template>
     <div class="tw-mb-4">
-        <form @submit.prevent="search()" class="tw-w-full texticon search icon clearable">
-            <input autocomplete="off" class="text fullwidth" id="searchQuery" name="searchQuery" type="text" :placeholder="'Search plugins'|t('app')" v-model="searchQuery">
-            <div class="clear" :class="{ hidden: searchQuery.length == 0 }" @click="searchQuery = ''" title="Clear"></div>
+        <form @submit.prevent="search()">
+            <div class="tw-w-full texticon search icon clearable">
+                <text-input
+                        id="searchQuery"
+                        v-model="searchQuery"
+                        :placeholder="'Search plugins'|t('app')"
+                        class="text"
+                        ></text-input>
+                <div class="clear" :class="{ hidden: searchQuery.length == 0 }" @click="searchQuery = ''" title="Clear"></div>
+            </div>
         </form>
 
         <template v-if="sort">
