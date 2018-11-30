@@ -11,30 +11,15 @@
                 <div class="clear" :class="{ hidden: searchQuery.length == 0 }" @click="searchQuery = ''" title="Clear"></div>
             </div>
         </form>
-
-        <template v-if="sort">
-            <sort-menu-btn :attributes="sortMenuBtnAttributes" :value="sort" @update:value="val => $emit('update:sort', val)"></sort-menu-btn>
-        </template>
     </div>
 </template>
 
 <script>
-    import SortMenuBtn from './SortMenuBtn'
-
     export default {
-
-        props: ['sort'],
-
-        components: {
-            SortMenuBtn,
-        },
 
         data() {
             return {
                 searchQuery: '',
-                selectedAttribute: null,
-                selectedDirection: null,
-                sortMenuBtnAttributes: null,
             }
         },
 
@@ -48,15 +33,6 @@
             }
 
         },
-
-        mounted() {
-            this.sortMenuBtnAttributes = {
-                activeInstalls: this.$options.filters.t("Popularity", 'app'),
-                lastUpdate: this.$options.filters.t("Last Update", 'app'),
-                name: this.$options.filters.t("Name", 'app'),
-                price: this.$options.filters.t("Price", 'app'),
-            }
-        }
 
     }
 </script>

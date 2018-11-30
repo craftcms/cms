@@ -1,6 +1,8 @@
 <template>
     <div class="ps-container">
         <h1>Showing results for “{{searchQuery}}”</h1>
+        <sort-menu-btn :attributes="sortMenuBtnAttributes" :value.sync="sort"></sort-menu-btn>
+        
         <template v-if="loading">
             <div class="spinner"></div>
         </template>
@@ -15,6 +17,7 @@
     import includes from 'lodash/includes'
     import filter from 'lodash/filter'
     import PluginGrid from '../components/PluginGrid'
+    import SortMenuBtn from '../components/SortMenuBtn'
 
     export default {
 
@@ -22,11 +25,19 @@
             return {
                 loading: true,
                 searchResults: [],
+                sort: {
+                    attribute: 'activeInstalls',
+                    sort: 'desc',
+                },
+                selectedAttribute: null,
+                selectedDirection: null,
+                sortMenuBtnAttributes: null,
             }
         },
 
         components: {
             PluginGrid,
+            SortMenuBtn,
         },
 
         computed: {
@@ -109,6 +120,13 @@
                 this.$router.push({path: '/'})
             } else {
                 this.search()
+            }
+
+            this.sortMenuBtnAttributes = {
+                activeInstalls: this.$options.filters.t("Popularity", 'app'),
+                lastUpdate: this.$options.filters.t("Last Update", 'app'),
+                name: this.$options.filters.t("Name", 'app'),
+                price: this.$options.filters.t("Price", 'app'),
             }
         }
 
