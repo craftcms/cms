@@ -114,7 +114,8 @@ class AppController extends Controller
     }
 
     /**
-     * Creates a DB backup (if configured to do so) and runs any pending Craft, plugin, & content migrations in one go.
+     * Creates a DB backup (if configured to do so), runs any pending Craft,
+     * plugin, & content migrations, and syncs `project.yaml` changes in one go.
      *
      * This action can be used as a post-deploy webhook with site deployment
      * services (like [DeployBot](https://deploybot.com/)) to minimize site
@@ -162,6 +163,11 @@ class AppController extends Controller
         try {
             // Run the migrations
             $updatesService->runMigrations($handles);
+
+            // Sync project.yaml?
+            if ($generalConfig->useProjectConfigFile) {
+                Craft::$app->getProjectConfig()->applyYamlChanges();
+            }
 
             $transaction->commit();
         } catch (\Throwable $e) {
