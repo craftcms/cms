@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.0-beta.4 - 2018-11-30
 
 ### Changed
 - If a global set is deleted and then recreated via `project.yaml`, its original element will now be restored if it hasn’t been hard-deleted yet.
