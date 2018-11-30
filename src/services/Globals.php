@@ -418,16 +418,32 @@ class Globals extends Component
             // Make sure there's an element for it.
             $setId = Db::idByUid('{{%globalsets}}', $globalSetUid);
 
+            $elementsService = Craft::$app->getElements();
+
             if (!$setId) {
                 $element = new GlobalSet();
             } else {
-                $element = GlobalSet::findOne($setId);
+                $element = GlobalSet::find()
+                    ->id($setId)
+                    ->trashed(null)
+                    ->one();
+
+                // If it's trashed, attempt to restore it, otherwise create a new element
+                if ($element->trashed) {
+                    $element->fieldLayoutId = $globalSetRecord->fieldLayoutId;
+                    if (
+                        !$elementsService->saveElement($element) ||
+                        !$elementsService->restoreElement($element)
+                    ) {
+                        $element = new GlobalSet();
+                    }
+                }
             }
 
             $element->name = $globalSetRecord->name;
             $element->handle = $globalSetRecord->handle;
             $element->fieldLayoutId = $globalSetRecord->fieldLayoutId;
-            Craft::$app->getElements()->saveElement($element, false);
+            $elementsService->saveElement($element, false);
 
             // Save the volume
             $globalSetRecord->id = $element->id;

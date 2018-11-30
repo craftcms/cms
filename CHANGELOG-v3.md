@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- If a global set is deleted and then recreated via `project.yaml`, its original element will now be restored if it hasn’t been hard-deleted yet.
+
 ### Fixed
 - Fixed a bug where new installs were always showing soft-deleted elements.
 
