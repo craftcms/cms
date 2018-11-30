@@ -105,7 +105,11 @@
         },
 
         mounted() {
-            this.search()
+            if (!this.searchQuery) {
+                this.$router.push({path: '/'})
+            } else {
+                this.search()
+            }
         }
 
     }
