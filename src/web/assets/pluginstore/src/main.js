@@ -8,6 +8,7 @@ import Modal from './js/components/modal/Modal'
 import StatusMessage from './js/components/StatusMessage'
 import App from './App'
 import './js/plugins/shave'
+import './js/plugins/craftcomponents'
 
 Vue.filter('currency', currency)
 Vue.filter('escapeHtml', escapeHtml)
