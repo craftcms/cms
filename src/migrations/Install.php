@@ -97,6 +97,7 @@ class Install extends Migration
             'edition' => App::editionHandle(Craft::Solo),
             'name' => $this->site->name,
             'live' => true,
+            'schemaVersion' => Craft::$app->schemaVersion,
             'timeZone' => 'America/Los_Angeles',
         ]);
         echo " done\n";
@@ -1044,8 +1045,5 @@ class Install extends Migration
         $this->site->groupId = $siteGroup->id;
         $this->site->primary = true;
         Craft::$app->getSites()->saveSite($this->site);
-
-        // Save schema version to config
-        Craft::$app->getProjectConfig()->set(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, Craft::$app->schemaVersion);
     }
 }

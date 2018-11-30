@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where new installs were always showing soft-deleted elements.
+
 ## 3.1.0-beta.3 - 2018-11-29
 
 ### Changed
