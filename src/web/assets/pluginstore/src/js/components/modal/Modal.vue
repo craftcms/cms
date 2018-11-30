@@ -63,9 +63,7 @@
         methods: {
 
             back() {
-                if(this.modalStep === 'plugin-edition') {
-                    this.$root.modalStep = 'plugin-details';
-                } else if (this.identityMode === 'craftid' || this.modalStep === 'identity') {
+                if (this.identityMode === 'craftid' || this.modalStep === 'identity') {
                     this.$root.openModal('cart')
                 } else {
                     this.$root.openModal('identity')
