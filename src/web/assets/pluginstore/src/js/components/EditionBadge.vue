@@ -14,7 +14,7 @@
     @import "../../../../../../../lib/craftcms-sass/mixins";
 
     .edition-badge {
-        @apply .tw-inline-block;
+        @apply .inline-block;
         margin: 0 auto 24px !important;
         font-weight: 500;
         font-size: 14px;

@@ -9,7 +9,7 @@ h1 {
 }
 
 .ps-wrapper h1 {
-  @apply .tw-border-b .tw-border-solid .tw-border-grey-light .tw-py-2;
+  @apply .border-b .border-solid .border-grey-light .py-2;
 }
 
 .no-line-height {
@@ -17,11 +17,11 @@ h1 {
 }
 
 #main-container {
-  @apply .tw-relative;
+  @apply .relative;
 }
 
 #main-content #content {
-  @apply .tw-relative;
+  @apply .relative;
 }
 
 .input.success input {
@@ -36,7 +36,7 @@ h1 {
 /* Plugin Store actions */
 
 #pluginstore-actions {
-  @apply .tw-flex .tw-justify-between .tw-items-center;
+  @apply .flex .justify-between .items-center;
 
   & > * {
     margin-left: 18px !important;
@@ -44,7 +44,7 @@ h1 {
 
   #cart-button {
     svg {
-      @apply .tw-inline-block;
+      @apply .inline-block;
       width: 18px;
       height: 18px;
       vertical-align: middle;
@@ -62,7 +62,7 @@ h1 {
 
     .badge {
       @include margin(0, 0, 0, -6px);
-      @apply .tw-relative .tw-inline-block .tw-flex-shrink .tw-text-white;
+      @apply .relative .inline-block .flex-shrink .text-white;
       top: -1px;
       padding: 0 6px;
       font-size: 11px;
@@ -75,12 +75,12 @@ h1 {
 
   #craftid-account {
     &:hover {
-      @apply .tw-no-underline;
+      @apply .no-underline;
     }
 
     .photo {
       svg {
-        @apply .tw-align-middle;
+        @apply .align-middle;
         margin-right: 2px;
         width: 22px;
         height: 22px;
@@ -89,13 +89,13 @@ h1 {
     }
 
     &:hover .label {
-      @apply .tw-no-underline;
+      @apply .no-underline;
     }
   }
 
   #craftid-connect-form {
     .ssl-status {
-      @apply .tw-inline-block;
+      @apply .inline-block;
     }
   }
 }
@@ -155,7 +155,7 @@ only screen and (min-resolution: 1.5dppx) {
 }
 
 .plugin-icon .default-icon {
-  @apply .tw-inline-block .tw-overflow-hidden;
+  @apply .inline-block .overflow-hidden;
   background: #eee;
   width: 32px;
   height: 32px;

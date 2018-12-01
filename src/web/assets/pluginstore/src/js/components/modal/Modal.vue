@@ -89,31 +89,31 @@
 
 <style lang="scss">
     #pluginstore-modal {
-        @apply .tw-absolute .tw-pin-t .tw-pin-l;
+        @apply .absolute .pin-t .pin-l;
         max-width: 850px;
         max-height: 650px;
         z-index: 20000;
 
         .pluginstore-modal-flex {
-            @apply .tw-absolute .tw-pin .tw-flex .tw-flex-col;
+            @apply .absolute .pin .flex .flex-col;
 
             header {
                 .btn-left {
-                    @apply .tw-absolute;
+                    @apply .absolute;
                     top: 28px;
                     left: 24px;
                 }
 
                 h1 {
-                    @apply .tw-text-center;
+                    @apply .text-center;
                 }
             }
 
             .pluginstore-modal-main {
-                @apply .tw-relative .tw-flex .tw-flex-grow .tw-mb-0 .tw-min-h-0;
+                @apply .relative .flex .flex-grow .mb-0 .min-h-0;
 
                 .pluginstore-modal-content {
-                    @apply .tw-overflow-auto .tw-flex-grow;
+                    @apply .overflow-auto .flex-grow;
                     padding: 24px;
                 }
             }
@@ -124,26 +124,26 @@
 
         &.step-payment {
             .blocks {
-                @apply .tw-flex;
+                @apply .flex;
                 margin: 0 -20px;
 
                 .block {
-                    @apply .tw-flex-grow .tw-w-1/2;
+                    @apply .flex-grow .w-1/2;
                     padding: 0 20px;
                 }
             }
 
             .multiselectrow {
-                @apply .tw-flex;
+                @apply .flex;
 
                 .input {
-                    @apply .tw-w-1/2;
+                    @apply .w-1/2;
 
                     .select {
-                        @apply .tw-w-full;
+                        @apply .w-full;
 
                         select {
-                            @apply .tw-w-full;
+                            @apply .w-full;
                         }
                     }
                 }
@@ -154,7 +154,7 @@
 
         &.step-thank-you {
             &.pluginstore-modal .pluginstore-modal-flex .pluginstore-modal-main .pluginstore-modal-content {
-                @apply .tw-flex .tw-p-0 .tw-justify-center .tw-items-center;
+                @apply .flex .p-0 .justify-center .items-center;
             }
 
             h2 {
@@ -162,12 +162,12 @@
             }
 
             #thank-you-message {
-                @apply .tw-text-center;
+                @apply .text-center;
                 padding: 48px 24px;
             }
 
             #graphic {
-                @apply .tw-inline-block;
+                @apply .inline-block;
                 width: 48px;
                 height: 48px;
                 background-repeat: no-repeat;

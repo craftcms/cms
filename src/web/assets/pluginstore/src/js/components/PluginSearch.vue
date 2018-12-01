@@ -1,7 +1,7 @@
 <template>
-    <div class="tw-mb-4">
+    <div class="mb-4">
         <form @submit.prevent="search()">
-            <div class="tw-w-full texticon search icon clearable">
+            <div class="w-full texticon search icon clearable">
                 <text-input
                         id="searchQuery"
                         v-model="searchQuery"

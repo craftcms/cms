@@ -279,10 +279,10 @@
     @import "../../../../lib/craftcms-sass/mixins";
 
     .plugin-details {
-        @apply .tw-relative .tw-flex .tw-flex-grow .tw-flex-col .tw-min-h-0;
+        @apply .relative .flex .flex-grow .flex-col .min-h-0;
 
         .plugin-details-header {
-            @apply .tw-flex .tw-flex-no-shrink;
+            @apply .flex .flex-no-shrink;
             border-bottom: 1px solid #eee;
             padding: 24px;
 
@@ -295,7 +295,7 @@
             }
 
             .description {
-                @apply .tw-flex-grow;
+                @apply .flex-grow;
                 margin-left: 14px;
             }
 
@@ -308,7 +308,7 @@
             }
 
             .buttons {
-                @apply .tw-whitespace-no-wrap;
+                @apply .whitespace-no-wrap;
                 @include margin(0, 0, 0, 24px);
 
                 a {
@@ -323,34 +323,34 @@
         }
 
         .plugin-details-body {
-            @apply .tw-relative .tw-flex .tw-flex-grow .tw-min-h-0 .tw-w-full;
+            @apply .relative .flex .flex-grow .min-h-0 .w-full;
             flex-basis: 100%;
 
             .plugin-details-loading {
-                @apply .tw-absolute;
+                @apply .absolute;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
             }
 
             .plugin-description {
-                @apply .tw-flex-grow .tw-min-w-0 .tw-overflow-auto .tw-w-full;
+                @apply .flex-grow .min-w-0 .overflow-auto .w-full;
                 padding: 24px;
                 flex-basis: 100%;
 
                 img {
-                    @apply .tw-max-w-full;
+                    @apply .max-w-full;
                 }
 
                 pre {
-                    @apply .tw-overflow-auto;
+                    @apply .overflow-auto;
                     background: #eee;
                     padding: 24px;
                 }
             }
 
             .plugin-sidebar {
-                @apply .tw-overflow-auto;
+                @apply .overflow-auto;
                 flex: 0 0 260px;
                 width: 260px;
                 background: #fafafa;
@@ -365,21 +365,21 @@
                         margin-bottom: 14px;
 
                         li {
-                            @apply .tw-flex;
+                            @apply .flex;
                             border-bottom: 1px solid #eee;
                             padding: 7px 0;
 
                             &:last-child {
-                                @apply .tw-border-b-0;
+                                @apply .border-b-0;
                             }
 
                             & span,
                             & strong {
-                                @apply .tw-flex-grow;
+                                @apply .flex-grow;
                             }
 
                             & strong {
-                                @apply .tw-text-right;
+                                @apply .text-right;
                             }
                         }
                     }
@@ -394,7 +394,7 @@
                 margin-top: 24px;
 
                 img {
-                    @apply .tw-w-full;
+                    @apply .w-full;
                     margin-bottom: 24px;
                 }
             }

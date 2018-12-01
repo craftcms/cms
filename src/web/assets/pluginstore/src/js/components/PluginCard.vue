@@ -1,6 +1,6 @@
 <template>
-    <div v-if="plugin" class="plugin-card tw-relative tw-flex tw-flex-no-wrap tw-items-start tw-py-6 tw-border-b tw-border-grey-light tw-border-solid" @click="$emit('click')">
-        <div class="plugin-icon tw-mr-4">
+    <div v-if="plugin" class="plugin-card relative flex flex-no-wrap items-start py-6 border-b border-grey-light border-solid" @click="$emit('click')">
+        <div class="plugin-icon mr-4">
             <img v-if="plugin.iconUrl" :src="plugin.iconUrl" />
             <img v-else :src="defaultPluginSvg" />
         </div>
@@ -45,7 +45,7 @@
         box-sizing: border-box;
 
         &:hover {
-            @apply .tw-cursor-pointer;
+            @apply .cursor-pointer;
 
             strong {
                 color: $linkColor;
@@ -60,7 +60,7 @@
         }
 
         .installed {
-            @apply .tw-absolute;
+            @apply .absolute;
             top: 14px;
             right: 18px;
             color: #ccc;
@@ -69,7 +69,7 @@
 
     .ps-grid-plugins {
         .plugin-card {
-            @apply .tw-h-full;
+            @apply .h-full;
         }
     }
 </style>

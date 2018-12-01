@@ -51,27 +51,27 @@
     @import "../../sass/variables";
 
     ul.categories {
-        @apply .tw--mx-6;
+        @apply .-mx-6;
 
         li {
             position: relative;
 
             &:before,
             &:last-child:after {
-                @apply .tw-absolute .tw-pin-l .tw-pin-r;
+                @apply .absolute .pin-l .pin-r;
                 content: '';
             }
 
             &:before {
-                @apply .tw-pin-t;
+                @apply .pin-t;
             }
 
             &:last-child:after {
-                @apply .tw-pin-b;
+                @apply .pin-b;
             }
 
             a {
-                @apply .tw-block .tw-relative .tw-px-6 .tw-py-2;
+                @apply .block .relative .px-6 .py-2;
 
                 img {
                     @apply .align-middle;
@@ -79,7 +79,7 @@
                 }
 
                 &:hover {
-                    @apply .tw-no-underline .tw-z-10;
+                    @apply .no-underline .z-10;
                     background: #fafafa;
                     border-color: #eee;
                 }
@@ -97,7 +97,7 @@
 
     @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
         .categories-wrapper {
-            @apply .tw-hidden;
+            @apply .hidden;
         }
     }
 </style>

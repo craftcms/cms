@@ -2,7 +2,7 @@
     <div ref="upgradecraft" v-if="cart" id="upgrade-craft" class="ps-container">
         <div id="upgrade-craft-compare" class="body">
             <h1>{{ "Upgrade Craft CMS"|t('app') }}</h1>
-            <table class="data fullwidth tw-mt-6">
+            <table class="data fullwidth mt-6">
                 <thead>
                 <tr class="logos">
                     <th>
@@ -130,7 +130,7 @@
 
     #upgrade-craft {
         .logo {
-            @apply .tw-inline-block;
+            @apply .inline-block;
             margin: 0 auto 24px !important;
             font-weight: 500;
             font-size: 18px;
@@ -149,7 +149,7 @@
 
         th,
         td {
-            @apply .tw-w-1/3;
+            @apply .w-1/3;
         }
 
         th.feature {
@@ -159,7 +159,7 @@
 
         thead {
             th {
-                @apply .tw-font-normal .tw-pt-0;
+                @apply .font-normal .pt-0;
                 font-size: 13px;
                 line-height: 18px;
             }
@@ -169,17 +169,17 @@
                     padding-bottom: 14px;
 
                     .logo {
-                        @apply .tw-mb-0;
+                        @apply .mb-0;
                     }
 
                     p {
-                        @apply .tw-whitespace-normal;
+                        @apply .whitespace-normal;
                         max-width: 250px;
                     }
                 }
 
                 &.license-statuses td {
-                    @apply .tw-pt-0;
+                    @apply .pt-0;
                     padding-bottom: 14px;
                 }
             }
@@ -187,13 +187,13 @@
             tr.price {
                 th,
                 td {
-                    @apply .tw-relative;
+                    @apply .relative;
                     padding-top: 14px;
                 }
 
                 td {
                     &:before {
-                        @apply .tw-absolute .tw-block .tw-pin-t;
+                        @apply .absolute .block .pin-t;
                         width: 24px;
                         height: 1px;
                         content: '.';
@@ -221,13 +221,13 @@
         tbody {
             th,
             td {
-                @apply .tw-w-1/3;
+                @apply .w-1/3;
             }
 
             tr:first-child {
                 th,
                 td {
-                    @apply .tw-border-t-0;
+                    @apply .border-t-0;
                 }
             }
 
@@ -244,7 +244,7 @@
             }
 
             tr.buybtns td {
-                @apply .tw-border-b-0;
+                @apply .border-b-0;
                 padding-top: 14px;
             }
         }

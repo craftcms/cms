@@ -22,16 +22,16 @@
 
 <style lang="scss" scoped>
     .pluginstore-lightswitch {
-        @apply .tw-relative .tw-block .tw-select-none;
+        @apply .relative .block .select-none;
         width: 34px;
         height: 22px;
 
         input {
-            @apply .tw-absolute .tw-opacity-0;
+            @apply .absolute .opacity-0;
         }
 
         .slider {
-            @apply .tw-absolute .tw-pin .tw-cursor-pointer;
+            @apply .absolute .pin .cursor-pointer;
             background-color: #9da5af;
             -webkit-transition: .4s;
             transition: .4s;
@@ -39,7 +39,7 @@
         }
 
         .slider:before {
-            @apply .tw-absolute .tw-bg-white;
+            @apply .absolute .bg-white;
             content: "";
             height: 20px;
             width: 20px;

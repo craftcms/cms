@@ -1,13 +1,13 @@
 <template>
     <div class="ps-container">
-        <div class="developer-card tw-flex tw-border-b tw-border-solid tw-border-grey-light tw-pb-6 tw-items-center">
-            <div class="avatar tw-inline-block tw-overflow-hidden tw-rounded-full tw-bg-grey tw-mr-6 no-line-height">
+        <div class="developer-card flex border-b border-solid border-grey-light pb-6 items-center">
+            <div class="avatar inline-block overflow-hidden rounded-full bg-grey mr-6 no-line-height">
                 <template v-if="!loading && developer">
                     <img :src="developer.photoUrl" width="120" height="120" />
                 </template>
             </div>
 
-            <div class="tw-flex-1">
+            <div class="flex-1">
                 <template v-if="loading || !developer">
                     <div class="spinner mt-8"></div>
                 </template>
@@ -19,8 +19,8 @@
                     </ul>
 
                     <ul>
-                        <li class="tw-mr-4 tw-inline-block"><a class="btn block" :href="developer.developerUrl">{{ "Website"|t('app') }}</a></li>
-                        <li class="tw-mr-4 tw-inline-block"><a class="btn block" :href="developer.developerUrl">{{ "Contact"|t('app') }}</a></li>
+                        <li class="mr-4 inline-block"><a class="btn block" :href="developer.developerUrl">{{ "Website"|t('app') }}</a></li>
+                        <li class="mr-4 inline-block"><a class="btn block" :href="developer.developerUrl">{{ "Contact"|t('app') }}</a></li>
                     </ul>
                 </template>
             </div>

@@ -17,11 +17,11 @@
 
 <style lang="scss" scoped>
     .status-message {
-        @apply .tw-flex-1 .tw-flex .tw-items-center .justify-center;
+        @apply .flex-1 .flex .items-center .justify-center;
 
         div {
             .graphic {
-                @apply .tw-block .tw-mx-auto .tw-mb-6;
+                @apply .block .mx-auto .mb-6;
             }
             .message {
                 @apply .text-center;

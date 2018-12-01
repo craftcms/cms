@@ -10,21 +10,21 @@
 }
 
 .ps-wrapper {
-  @apply .tw-flex .tw-flex-1;
+  @apply .flex .flex-1;
 
   .ps-sidebar {
-    @apply .tw-max-w-sm .tw-bg-grey-lightest .tw-px-6 .tw-py-6 .overflow-auto;
+    @apply .max-w-sm .bg-grey-lightest .px-6 .py-6 .overflow-auto;
   }
 
   .ps-main {
-    @apply .tw-flex-1 .overflow-auto .tw-flex;
+    @apply .flex-1 .overflow-auto .flex;
 
     .ps-container {
-      @apply .tw-flex-1;
+      @apply .flex-1;
     }
   }
 }
 
 .ps-container {
-  @apply .tw-px-8 .tw-py-6;
+  @apply .px-8 .py-6;
 }

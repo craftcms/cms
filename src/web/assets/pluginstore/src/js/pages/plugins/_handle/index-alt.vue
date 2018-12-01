@@ -1,18 +1,18 @@
 <template>
     <div v-if="pluginSnippet" class="plugin-details ps-container">
-        <div class="plugin-details-header tw-border-b tw-border-solid tw-border-grey-lighter tw-flex tw-mb-6 tw-pb-6 tw-items-center">
-            <div class="plugin-icon tw-mr-6">
+        <div class="plugin-details-header border-b border-solid border-grey-lighter flex mb-6 pb-6 items-center">
+            <div class="plugin-icon mr-6">
                 <img v-if="pluginSnippet.iconUrl" :src="pluginSnippet.iconUrl" width="100" />
                 <img v-else :src="defaultPluginSvg" width="100" />
             </div>
 
-            <div class="description tw-flex-1">
+            <div class="description flex-1">
                 <h2>{{ pluginSnippet.name }}</h2>
                 <p>{{ pluginSnippet.shortDescription }}</p>
                 <p><a @click="viewDeveloper(pluginSnippet)">{{ pluginSnippet.developerName }}</a></p>
             </div>
 
-            <div v-if="cart" class="buttons tw-flex-no-shrink">
+            <div v-if="cart" class="buttons flex-no-shrink">
                 <template v-if="pluginSnippet.editions[0].price != null && pluginSnippet.editions[0].price !== '0.00'">
                     <template v-if="isInstalled(pluginSnippet)">
                         <template v-if="pluginHasLicenseKey(pluginSnippet.handle)">
@@ -80,7 +80,7 @@
 
                 <hr>
 
-                <h2 class="tw-mb-4">Informations</h2>
+                <h2 class="mb-4">Informations</h2>
                 <div class="plugin-infos">
                     <ul class="plugin-meta">
                         <li><span>{{ "Version"|t('app') }}</span> <strong>{{ plugin.version }}</strong></li>
@@ -289,10 +289,10 @@
     /* Screenshots */
 
     .screenshots {
-        @apply .tw-overflow-auto .tw-flex .tw--mx-4;
+        @apply .overflow-auto .flex .-mx-4;
 
         .screenshot {
-            @apply .tw-px-4 .tw-flex-no-shrink .tw-flex-no-grow;
+            @apply .px-4 .flex-no-shrink .flex-no-grow;
             flex-basis: 50%;
         }
     }
@@ -308,14 +308,14 @@
     /* Plugin Meta */
 
     ul.plugin-meta {
-        @apply .tw--mx-4 .tw-flex .tw-flex-wrap;
+        @apply .-mx-4 .flex .flex-wrap;
 
         li {
-            @apply .tw-mb-8 .tw-px-4 .tw-flex-no-shrink .tw-flex-no-grow;
+            @apply .mb-8 .px-4 .flex-no-shrink .flex-no-grow;
             flex-basis: 50%;
 
             span {
-                @apply .tw-block .tw-text-grey;
+                @apply .block .text-grey;
             }
         }
     }

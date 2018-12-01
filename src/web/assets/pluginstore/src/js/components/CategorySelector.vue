@@ -60,7 +60,7 @@
     /* Category Selector Btn */
 
     .category-selector-btn {
-        @apply .tw-hidden .tw-relative;
+        @apply .hidden .relative;
         background: $lightBgColor;
         border: 1px solid $hairlineColor;
         padding: 10px 20px;
@@ -70,7 +70,7 @@
 
         &:before {
             @include icon;
-            @apply .tw-absolute .tw-pin-r;
+            @apply .absolute .pin-r;
             top: calc(50% - 10px);
             font-size: 16px;
             width: 43px;
@@ -79,7 +79,7 @@
         }
 
         &:hover {
-            @apply .tw-no-underline;
+            @apply .no-underline;
         }
     }
 
@@ -87,26 +87,26 @@
     /* Category Selector */
 
     .category-selector {
-        @apply .tw-hidden .tw-flex-col .tw-fixed .tw-pin-t .tw-pin-l .tw-bg-white .tw-z-20;
+        @apply .hidden .flex-col .fixed .pin-t .pin-l .bg-white .z-20;
         width: 100vw;
         height: 100vh;
         box-sizing: border-box;
 
         .category-selector-header {
             a {
-                @apply .tw-block .tw-text-black;
+                @apply .block .text-black;
                 padding: 14px 24px;
                 background: #fafafa;
                 border-bottom: 1px solid #eee;
 
                 &:hover {
-                    @apply .tw-no-underline;
+                    @apply .no-underline;
                 }
             }
         }
 
         .category-selector-body {
-            @apply .tw-overflow-auto .tw-h-full;
+            @apply .overflow-auto .h-full;
             box-sizing: border-box;
 
             ul.categories {
@@ -116,7 +116,7 @@
                     }
 
                     &:first-child:before {
-                        @apply .tw-hidden;
+                        @apply .hidden;
                     }
 
                     &:before,
@@ -139,15 +139,15 @@
 
     @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
         .category-selector-btn {
-            @apply .tw-block;
+            @apply .block;
         }
 
         .category-selector {
-            @apply .tw-flex;
+            @apply .flex;
         }
 
         .categories-wrapper {
-            @apply .tw-hidden;
+            @apply .hidden;
         }
     }
 </style>
