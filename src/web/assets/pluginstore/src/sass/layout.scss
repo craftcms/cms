@@ -13,7 +13,8 @@
   @apply .flex .flex-1;
 
   .ps-sidebar {
-    @apply .max-w-sm .bg-grey-lightest .px-6 .py-6 .overflow-auto;
+    @apply .bg-grey-lightest .px-6 .py-6 .overflow-auto .w-full;
+    max-width: 250px;
   }
 
   .ps-main {
