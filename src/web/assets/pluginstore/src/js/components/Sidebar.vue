@@ -1,5 +1,5 @@
 <template>
-    <div class="ps-sidebar categories-wrapper">
+    <div class="ps-sidebar">
         <plugin-search></plugin-search>
 
         <category-selector></category-selector>
@@ -51,53 +51,12 @@
     @import "../../sass/variables";
 
     ul.categories {
-        @apply .-mx-6;
-
-        li {
-            position: relative;
-
-            &:before,
-            &:last-child:after {
-                @apply .absolute .pin-l .pin-r;
-                content: '';
-            }
-
-            &:before {
-                @apply .pin-t;
-            }
-
-            &:last-child:after {
-                @apply .pin-b;
-            }
-
-            a {
-                @apply .block .relative .px-6 .py-2;
-
-                img {
-                    @apply .align-middle;
-                    width: 24px;
-                }
-
-                &:hover {
-                    @apply .no-underline .z-10;
-                    background: #fafafa;
-                    border-color: #eee;
-                }
-
-                &.router-link-active {
-                    @apply .bg-grey-light;
-                }
-            }
-        }
-
-        li:hover + li:before {
-            border-color: transparent;
-        }
+        @apply .hidden;
     }
 
-    @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
-        .categories-wrapper {
-            @apply .hidden;
+    @media only screen and (min-width: $minHorizontalUiWidth) {
+        ul.categories {
+            @apply .block;
         }
     }
 </style>

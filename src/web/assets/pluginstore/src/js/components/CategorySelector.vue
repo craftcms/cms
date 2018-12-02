@@ -16,7 +16,7 @@
                         </router-link>
                     </li>
                     <li v-for="category in categories">
-                        <router-link :to="'/categories/'+category.id">
+                        <router-link :to="'/categories/'+category.id" @click.native="showCategorySelector = false">
                             <img :src="category.iconUrl" />
                             {{ category.title }}
                         </router-link>
@@ -65,7 +65,6 @@
         border: 1px solid $hairlineColor;
         padding: 10px 20px;
         border-radius: 4px;
-        margin-bottom: 24px;
         color: $secondarySubmitColor;
 
         &:before {
@@ -144,10 +143,6 @@
 
         .category-selector {
             @apply .flex;
-        }
-
-        .categories-wrapper {
-            @apply .hidden;
         }
     }
 </style>

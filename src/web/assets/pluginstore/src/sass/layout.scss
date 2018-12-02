@@ -10,11 +10,10 @@
 }
 
 .ps-wrapper {
-  @apply .flex .flex-1;
+  @apply .flex .flex-1 .flex-col;
 
   .ps-sidebar {
-    @apply .bg-grey-lightest .px-6 .py-6 .overflow-auto .w-full;
-    max-width: 250px;
+    @apply .bg-grey-lightest .px-6 .py-6 .w-full .border-b .border-solid .border-grey-light;
   }
 
   .ps-main {
@@ -28,4 +27,20 @@
 
 .ps-container {
   @apply .px-10 .py-6;
+}
+
+@media only screen and (min-width: $minHorizontalUiWidth) {
+  .ps-wrapper {
+    @apply .flex-row;
+    
+    .ps-sidebar {
+      @apply .border-b-0 .border-r .overflow-auto;
+      max-width: 225px;
+
+
+      .categories {
+        display: block;
+      }
+    }
+  }
 }
