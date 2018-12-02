@@ -15,7 +15,6 @@
 
 <script>
     import {mapState} from 'vuex'
-    import TextInput from './inputs/TextInput'
     import Cleave from 'vue-cleave'
 
     export default {

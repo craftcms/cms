@@ -101,7 +101,6 @@
 <script>
     import {mapState, mapGetters, mapActions} from 'vuex'
     import Step from '../Step'
-    import SelectInput from '../../inputs/SelectInput'
 
     export default {
 
@@ -113,7 +112,6 @@
 
         components: {
             Step,
-            SelectInput,
         },
 
         computed: {

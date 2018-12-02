@@ -105,21 +105,11 @@
     import {mapState} from 'vuex'
     import Step from '../Step'
     import CreditCard from '../../CreditCard'
-    import CheckboxField from '../../fields/CheckboxField'
-    import TextareaField from '../../fields/TextareaField'
-    import TextField from '../../fields/TextField'
-    import SelectInput from '../../inputs/SelectInput'
-    import TextInput from '../../inputs/TextInput'
 
     export default {
         components: {
             Step,
             CreditCard,
-            CheckboxField,
-            TextareaField,
-            TextField,
-            SelectInput,
-            TextInput,
         },
 
         data() {

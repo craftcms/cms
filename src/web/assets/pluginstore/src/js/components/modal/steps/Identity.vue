@@ -23,7 +23,7 @@
                 <p><label><input type="radio" value="guest" v-model="identityMode" /> {{ "Continue as guest"|t('app') }}</label></p>
 
                 <template v-if="identityMode === 'guest'">
-                    <text-field id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError"></text-field>
+                    <text-field class="text" id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError"></text-field>
                     <input type="submit" :value="$options.filters.t('Continue', 'app')" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
                 </template>
 
@@ -35,13 +35,11 @@
 
 <script>
     import {mapState} from 'vuex'
-    import TextField from '../../fields/TextField'
     import Step from '../Step'
 
     export default {
 
         components: {
-            TextField,
             Step,
         },
 
