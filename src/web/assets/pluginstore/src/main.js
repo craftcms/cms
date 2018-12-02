@@ -178,7 +178,14 @@ Garnish.$doc.ready(function() {
 
             let $this = this
 
+            // Header Title
+            this.$headerTitle = $('#header h1');
+            this.$headerTitle.on('click', function() {
+                $this.$router.push({path: '/'})
+            })
+
             // Cart button
+
             this.$cartButton = $('#cart-button')
 
             this.$cartButton.on('click', (e) => {
