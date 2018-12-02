@@ -1,6 +1,6 @@
 <template>
     <div v-if="pluginSnippet" class="plugin-details ps-container">
-        <div class="plugin-details-header border-b border-solid border-grey-lighter flex mb-6 pb-6 items-center">
+        <div class="plugin-details-header border-b border-solid border-grey-lighter tw-flex mb-6 pb-6 items-center">
             <div class="plugin-icon mr-6">
                 <img v-if="pluginSnippet.iconUrl" :src="pluginSnippet.iconUrl" width="100" />
                 <img v-else :src="defaultPluginSvg" width="100" />
@@ -286,6 +286,7 @@
 <style lang="scss">
     @import "../../../../sass/variables";
 
+
     /* Screenshots */
 
     .screenshots {
@@ -304,6 +305,7 @@
             }
         }
     }
+
 
     /* Plugin Meta */
 

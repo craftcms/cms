@@ -4,9 +4,9 @@
 @import "../../../../../../lib/craftcms-sass/mixins";
 @import "~@benjamindavid/craftcomponents/src/sass/components.scss";
 @import "variables";
+@import "tailwind";
 @import "layout";
 @import "grids";
 @import "general";
-
 
 @tailwind utilities;

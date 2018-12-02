@@ -1,6 +1,6 @@
 <template>
     <div class="ps-container">
-        <div class="developer-card flex border-b border-solid border-grey-light pb-6 items-center">
+        <div class="developer-card tw-flex border-b border-solid border-grey-light pb-6 items-center">
             <div class="avatar inline-block overflow-hidden rounded-full bg-grey mr-6 no-line-height">
                 <template v-if="!loading && developer">
                     <img :src="developer.photoUrl" width="120" height="120" />
