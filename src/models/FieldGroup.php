@@ -54,7 +54,7 @@ class FieldGroup extends Model
     {
         return [
             [['id'], 'number', 'integerOnly' => true],
-            [['name'], 'string', 'max' => 255],
+            [['name'], 'string', 'max' => 255, 'encoding' => '8bit'],
             [['name'], UniqueValidator::class, 'targetClass' => FieldGroupRecord::class],
             [['name'], 'required'],
         ];

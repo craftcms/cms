@@ -65,7 +65,7 @@ class FieldLayoutTab extends Model
     {
         return [
             [['id', 'layoutId'], 'number', 'integerOnly' => true],
-            [['name'], 'string', 'max' => 255],
+            [['name'], 'string', 'max' => 255, 'encoding' => '8bit'],
             [['sortOrder'], 'string', 'max' => 4],
         ];
     }

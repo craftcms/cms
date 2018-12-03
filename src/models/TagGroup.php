@@ -84,7 +84,7 @@ class TagGroup extends Model
             [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
             [['name', 'handle'], UniqueValidator::class, 'targetClass' => TagGroupRecord::class],
             [['name', 'handle'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
+            [['name', 'handle'], 'string', 'max' => 255, 'encoding' => '8bit'],
         ];
     }
 

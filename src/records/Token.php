@@ -33,7 +33,7 @@ class Token extends ActiveRecord
     public function rules()
     {
         return [
-            [['usageLimit', 'usageCount'], 'number', 'min' => 0, 'max' => 255, 'integerOnly' => true],
+            [['usageLimit', 'usageCount'], 'number', 'min' => 0, 'max' => 255, 'encoding' => '8bit', 'integerOnly' => true],
             [['expiryDate'], DateTimeValidator::class],
             [['token'], 'unique'],
             [['token', 'expiryDate'], 'required'],

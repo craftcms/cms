@@ -646,7 +646,7 @@ class User extends Element implements IdentityInterface
         $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId'], 'number', 'integerOnly' => true];
         $rules[] = [['email', 'unverifiedEmail'], 'email'];
-        $rules[] = [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
+        $rules[] = [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255, 'encoding' => '8bit'];
         $rules[] = [['username', 'firstName', 'lastName', 'verificationCode'], 'string', 'max' => 100];
         $rules[] = [['username', 'email'], 'required'];
         $rules[] = [['username'], UsernameValidator::class];

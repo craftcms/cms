@@ -101,7 +101,7 @@ class CategoryGroup extends Model
             [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
             [['name', 'handle'], UniqueValidator::class, 'targetClass' => CategoryGroupRecord::class],
             [['name', 'handle', 'siteSettings'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
+            [['name', 'handle'], 'string', 'max' => 255, 'encoding' => '8bit'],
             [['siteSettings'], 'validateSiteSettings'],
         ];
     }

@@ -106,7 +106,7 @@ class EntryType extends Model
         $rules = [
             [['id', 'sectionId', 'fieldLayoutId'], 'number', 'integerOnly' => true],
             [['name', 'handle'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
+            [['name', 'handle'], 'string', 'max' => 255, 'encoding' => '8bit'],
             [
                 ['handle'],
                 HandleValidator::class,
