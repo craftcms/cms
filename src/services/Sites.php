@@ -781,6 +781,11 @@ class Sites extends Component
             $this->_processNewPrimarySite($oldPrimarySiteId, $site->id);
         }
 
+        // If the primary site is changing and the current site was the old primary, let's mark the new primary site as the current site.
+        if ($this->_currentSite !== null && $this->_currentSite->id === $oldPrimarySiteId && $this->_currentSite->id !== $site->id && $data['primary']) {
+            $this->_currentSite = $site;
+        }
+
         if ($isNewSite && $oldPrimarySiteId) {
             // TODO: Move this code into element/category modules
             // Create site settings for each of the category groups

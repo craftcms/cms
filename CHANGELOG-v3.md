@@ -8,6 +8,9 @@
 ### Changed
 - The `app/migrate` web action now applies pending `project.yaml` changes, if the `useProjectConfigFile` config setting is enabled.
 
+### Fixed
+- Fixed a bug where restoring elements belonging to deleted sites via `project.yaml` would throw an error.
+
 ## 3.1.0-beta.4 - 2018-11-30
 
 ### Changed
