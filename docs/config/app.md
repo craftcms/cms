@@ -63,7 +63,7 @@ To use Redis cache storage, you will first need to install the [yii2-redis](http
 return [
     'components' => [
         'redis' => [
-            'class' => \yii\redis\Connection::class,
+            'class' => yii\redis\Connection::class,
             'hostname' => 'localhost',
             'port' => 6379,
             'password' => getenv('REDIS_PASSWORD'),
@@ -85,15 +85,15 @@ In a load-balanced environment, you may want to override the default session com
 return [
     'components' => [
         'redis' => [
-            'class' => \yii\redis\Connection::class,
+            'class' => yii\redis\Connection::class,
             'hostname' => 'localhost',
             'port' => 6379,
             'password' => getenv('REDIS_PASSWORD'),
         ],
         'session' => [
-            'class' => \yii\redis\Session::class,
+            'class' => yii\redis\Session::class,
             'as session' => [
-                'class' => \craft\behaviors\SessionBehavior::class,
+                'class' => craft\behaviors\SessionBehavior::class,
             ],
         ],
     ],
