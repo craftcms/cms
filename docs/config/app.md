@@ -104,7 +104,6 @@ return [
 `as session` is a [Yii configuration concept](https://www.yiiframework.com/doc/guide/2.0/en/concept-configurations#configuration-format) attaches a given behavior to an object.
 :::
 
-
 ## Mailer Component
 
 To override the `mailer` component config (which is responsible for sending emails), do this in `config/app.php`:
