@@ -78,7 +78,7 @@ return [
 
 ## Session Component
 
-In a load-balanced environment, you may want to override the default session component to store them in a centralized location (e.g. Redis):
+In a load-balanced environment, you may want to override the default `session` component to store PHP session data in a centralized location (e.g. Redis):
 
 ```php
 <?php
@@ -92,16 +92,14 @@ return [
         ],
         'session' => [
             'class' => yii\redis\Session::class,
-            'as session' => [
-                'class' => craft\behaviors\SessionBehavior::class,
-            ],
+            'as session' => craft\behaviors\SessionBehavior::class,
         ],
     ],
 ];
 ```
 
 ::: tip
-`as session` is a [Yii configuration concept](https://www.yiiframework.com/doc/guide/2.0/en/concept-configurations#configuration-format) attaches a given behavior to an object.
+The `session` component **must** be configured with the <api:craft\behaviors\SessionBehavior> behavior, which adds methods to the component that the system relies on.
 :::
 
 ## Mailer Component
