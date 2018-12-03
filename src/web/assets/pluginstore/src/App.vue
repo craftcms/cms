@@ -1,5 +1,7 @@
 <template>
     <div class="ps-wrapper">
+        <screenshot-modal v-if="showingScreenshotModal"></screenshot-modal>
+
         <template v-if="$root.pluginStoreDataLoaded && !$root.pluginStoreDataError">
             <sidebar></sidebar>
 
@@ -20,9 +22,11 @@
 </style>
 
 <script>
+    import {mapState} from 'vuex'
     import Sidebar from './js/components/Sidebar'
     import Modal from './js/components/modal/Modal'
     import StatusMessage from './js/components/StatusMessage'
+    import ScreenshotModal from './js/components/ScreenshotModal'
 
     export default {
 
@@ -30,7 +34,16 @@
             Sidebar,
             Modal,
             StatusMessage,
+            ScreenshotModal,
         },
+
+        computed: {
+
+            ...mapState({
+                showingScreenshotModal: state => state.app.showingScreenshotModal,
+            }),
+
+        }
 
     }
 </script>

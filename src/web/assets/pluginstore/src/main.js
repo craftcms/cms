@@ -9,6 +9,7 @@ import StatusMessage from './js/components/StatusMessage'
 import App from './App'
 import './js/plugins/shave'
 import './js/plugins/craftcomponents'
+import './js/plugins/swiper'
 
 Vue.filter('currency', currency)
 Vue.filter('escapeHtml', escapeHtml)

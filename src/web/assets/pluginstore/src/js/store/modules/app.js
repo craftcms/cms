@@ -4,7 +4,9 @@ import api from '../../api/cart';
  * State
  */
 const state = {
-    searchQuery: ''
+    searchQuery: '',
+    showingScreenshotModal: false,
+    screenshotModalImages: null,
 }
 
 /**
@@ -28,6 +30,14 @@ const mutations = {
 
     updateSearchQuery(state, searchQuery) {
         state.searchQuery = searchQuery
+    },
+
+    updateShowingScreenshotModal(state, show) {
+        state.showingScreenshotModal = show
+    },
+
+    updateScreenshotModalImages(state, images) {
+        state.screenshotModalImages = images
     },
 
 }

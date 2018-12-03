@@ -65,11 +65,7 @@
         <div class="plugin-details-body">
             <template v-if="!loading">
                 <template v-if="plugin.screenshotUrls.length">
-                    <div class="screenshots">
-                        <div class="screenshot" v-for="screenshotUrl in plugin.screenshotUrls">
-                            <img :src="screenshotUrl" />
-                        </div>
-                    </div>
+                    <plugin-screenshots :images="plugin.screenshotUrls"></plugin-screenshots>
 
                     <hr>
                 </template>
@@ -122,6 +118,7 @@
     import {mapState, mapGetters, mapActions} from 'vuex'
     import LicenseStatus from '../../../components/LicenseStatus'
     import StatusMessage from '../../../components/StatusMessage'
+    import PluginScreenshots from '../../../components/PluginScreenshots'
 
     export default {
 
@@ -130,6 +127,7 @@
         components: {
             LicenseStatus,
             StatusMessage,
+            PluginScreenshots,
         },
 
         data() {
@@ -285,26 +283,6 @@
 
 <style lang="scss">
     @import "../../../../sass/variables";
-
-
-    /* Screenshots */
-
-    .screenshots {
-        @apply .overflow-auto .flex .-mx-4;
-
-        .screenshot {
-            @apply .px-4 .flex-no-shrink .flex-no-grow;
-            flex-basis: 50%;
-        }
-    }
-
-    @media only screen and (min-width: 1400px) {
-        .screenshots {
-            .screenshot {
-                flex-basis: 33.3333%;
-            }
-        }
-    }
 
 
     /* Plugin Meta */
