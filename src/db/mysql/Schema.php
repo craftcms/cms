@@ -323,9 +323,12 @@ SQL;
             'host=' . $dbConfig->server . PHP_EOL .
             'port=' . $dbConfig->port;
 
+        $unixSocketDefaultPath = ini_get('pdo_mysql.default_socket');
         if ($dbConfig->unixSocket) {
             $contents .= PHP_EOL . 'socket=' . $dbConfig->unixSocket;
-        }
+        } else if ($unixSocketDefaultPath) {
+            $contents .= PHP_EOL . 'socket=' . $unixSocketDefaultPath;
+	    }
 
         FileHelper::writeToFile($filePath, $contents);
 
