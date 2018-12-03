@@ -78,7 +78,7 @@ return [
 
 ## Session Component
 
-In a load-balanced environment, you may want to override the default session component to store them in a centralized store (e.g. Redis):
+In a load-balanced environment, you may want to override the default session component to store them in a centralized location (e.g. Redis):
 
 ```php
 <?php
@@ -99,6 +99,11 @@ return [
     ],
 ];
 ```
+
+::: tip
+`as session` is a [Yii configuration concept](https://www.yiiframework.com/doc/guide/2.0/en/concept-configurations#configuration-format) attaches a given behavior to an object.
+:::
+
 
 ## Mailer Component
 
