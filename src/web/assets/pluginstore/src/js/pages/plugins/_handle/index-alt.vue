@@ -64,7 +64,7 @@
 
         <div class="plugin-details-body">
             <template v-if="!loading">
-                <template v-if="plugin.screenshotUrls.length">
+                <template v-if="plugin.screenshotUrls && plugin.screenshotUrls.length">
                     <plugin-screenshots :images="plugin.screenshotUrls"></plugin-screenshots>
 
                     <hr>

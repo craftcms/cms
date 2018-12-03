@@ -3,7 +3,7 @@
         <a class="close" @click="close">&times;</a>
 
         <div v-if="screenshotModalImages" class="carousel" ref="carousel">
-            <div v-swiper:mySwiper="swiperOption" :instanceName="identifier" ref="swiper" class="swiper">
+            <div v-swiper:swiper="swiperOption" :instanceName="identifier" ref="swiper">
                 <div class="swiper-wrapper">
                     <div class="swiper-slide" v-for="(imageUrl, key) in screenshotModalImages" :key="key">
                         <div class="screenshot">
@@ -95,6 +95,9 @@
         mounted: function () {
             window.addEventListener('resize', this.handleResize)
             this.handleResize()
+            this.swiper.on('beforeDestroy', function() {
+                this.swiper.destroy(false, false)
+            })
         },
 
         beforeDestroy: function () {

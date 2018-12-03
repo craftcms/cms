@@ -1,6 +1,8 @@
 <template>
     <div class="ps-wrapper">
-        <screenshot-modal v-if="showingScreenshotModal"></screenshot-modal>
+        <transition name="fade">
+            <screenshot-modal v-if="showingScreenshotModal"></screenshot-modal>
+        </transition>
 
         <template v-if="$root.pluginStoreDataLoaded && !$root.pluginStoreDataError">
             <sidebar></sidebar>
@@ -47,3 +49,12 @@
 
     }
 </script>
+
+<style style="scss">
+    .fade-enter-active, .fade-leave-active {
+        transition: opacity .3s;
+    }
+    .fade-enter, .fade-leave-to {
+        opacity: 0;
+    }
+</style>
