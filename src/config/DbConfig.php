@@ -227,10 +227,14 @@ class DbConfig extends BaseObject
      */
     public function updateDsn()
     {
+        $unixSocketDefaultPath = ini_get('pdo_mysql.default_socket');
+
         if (!$this->database) {
             $this->dsn = null;
         } else if ($this->driver === self::DRIVER_MYSQL && $this->unixSocket) {
             $this->dsn = "{$this->driver}:unix_socket={$this->unixSocket};dbname={$this->database};";
+        } else if ($this->driver === self::DRIVER_MYSQL && $unixSocketDefaultPath) {
+            $this->dsn = "{$this->driver}:unix_socket={$unixSocketDefaultPath};dbname={$this->database};";
         } else {
             $this->dsn = "{$this->driver}:host={$this->server};dbname={$this->database};port={$this->port};";
         }
