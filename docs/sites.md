@@ -73,18 +73,17 @@ You can change the Primary site once you create additional sites. Craft will aut
 
 Each site has a Base URL, which Craft uses as the starting point when generating dynamic links to entries and other site content.
 
-Sites can all share the same domain name, such as `https://craftcms.com` and `https//craftcms.com/beta`, or they can have different domains, like `https://www.craftcms.com` and `https://beta.craftcms.com` .
+Mutiple sites can share the same host name, such as `https://craftcms.com/` and `https://craftcms.com/de/`, or they can have different host names, such as `https://craftcms.com/` and `https://de.craftcms.com/`.
 
-If you want to create a site that will live at a completely different domain name, just make sure that its DNS record is pointing to your server, and make sure the web server is configured to point traffic for that domain to your `web/` directory.
+If you want to create a site with a different host name, you must configure your server to handle traffic for it. The host name can either point to the same web root as your current site (e.g. `web/`), or you may want to give it its own separate web root. If you do the latter, make sure you copy your `.htaccess` and `index.php` files into the new web root.
 
 ::: tip
 If you have multiple sites using different root domains like `https://site-a.com` and `https://site-b.com`, with the way Craft’s [license enforcements works](https://craftcms.com/support/license-enforcement), you’ll want to pick one of the domains to access the Craft Control Panel from for _all_ of the sites.
 :::
 
-::: tip
-Craft doesn’t require you to create additional `web/` directories for new sites, though it’s fine if you need to.
+::: warning
+Don’t ever use the `@web` alias when defining your sites’ Base URLs. It could introduce a [cache poisoning](https://www.owasp.org/index.php/Cache_Poisoning) vulnerability, and Craft won’t be able to reliably determine which site is being requested.
 :::
-
 
 ## Propagating Entries Across All Enabled Sites
 
