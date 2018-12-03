@@ -8,6 +8,10 @@ h1 {
   font-size: 24px;
 }
 
+p {
+  @apply .mb-4;
+}
+
 .ps-wrapper h1 {
   @apply .border-b .border-solid .border-grey-light .py-2;
 }
