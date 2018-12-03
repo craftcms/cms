@@ -6,6 +6,10 @@ You can define one or more sites at different domains, using a different set of 
 
 The multi-site feature in Craft is for sites with the same publishing team. You manage the multi-site content at the entry level, with the ability to enable Sections you want included in a site.
 
+::: tip
+In some cases, especially using Valet for local development, you can run into issues serving multiple sites if the primary site URL is set with @web. We recommend creating a site alias instead.
+:::
+
 ## Creating a Site
 
 Every Craft installation starts with one default site. The site name is what you defined at time of installation, and the handle is `default`.
