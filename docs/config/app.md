@@ -62,19 +62,43 @@ To use Redis cache storage, you will first need to install the [yii2-redis](http
 <?php
 return [
     'components' => [
+        'redis' => [
+            'class' => \yii\redis\Connection::class,
+            'hostname' => 'localhost',
+            'port' => 6379,
+            'password' => getenv('REDIS_PASSWORD'),
+        ],
         'cache' => [
             'class' => yii\redis\Cache::class,
             'defaultDuration' => 86400,
-            'redis' => [
-                'hostname' => 'localhost',
-                'port' => 6379,
-                'password' => getenv('REDIS_PASSWORD'),
-                'database' => 0,
-            ],
         ],
     ],
 ];
 ``` 
+
+## Session Component
+
+In a load-balanced environment, you may want to override the default session component to store them in a centralized store (e.g. Redis):
+
+```php
+<?php
+return [
+    'components' => [
+        'redis' => [
+            'class' => \yii\redis\Connection::class,
+            'hostname' => 'localhost',
+            'port' => 6379,
+            'password' => getenv('REDIS_PASSWORD'),
+        ],
+        'session' => [
+            'class' => \yii\redis\Session::class,
+            'as session' => [
+                'class' => \craft\behaviors\SessionBehavior::class,
+            ],
+        ],
+    ],
+];
+```
 
 ## Mailer Component
 
