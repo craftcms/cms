@@ -5,14 +5,13 @@
         </template>
 
         <template slot="main">
-
             <table v-if="pluginSnippet" class="data fullwidth choose-edition">
                 <thead>
                 <tr>
                     <th>
-                        <div class="plugin-icon-md">
-                            <img v-if="pluginSnippet.iconUrl" :src="pluginSnippet.iconUrl" height="48" />
-                            <img v-else :src="defaultPluginSvg" height="48" />
+                        <div class="plugin-icon">
+                            <img v-if="pluginSnippet.iconUrl" :src="pluginSnippet.iconUrl" width="100" height="100" />
+                            <img v-else :src="defaultPluginSvg" width="100" height="100" />
                         </div>
                     </th>
                     <td v-for="edition in editions">
@@ -31,9 +30,6 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <th class="group" colspan="4">{{ "Features"|t('app') }}</th>
-                </tr>
                 <tr>
                     <th class="feature" scope="row">{{ "Content Modeling"|t('app') }} <span class="info">{{ "Includes Sections, Global sets, Category groups, Tag groups, Asset volumes, Custom fields, Entry versioning, and Entry drafts"|t('app') }}</span></th>
                     <td><span data-icon="check"></span></td>
@@ -63,9 +59,6 @@
                     <td></td>
                     <td><span data-icon="check"></span></td>
                     <td><span data-icon="check"></span></td>
-                </tr>
-                <tr>
-                    <th class="group" colspan="4">{{ "Support"|t('app') }}</th>
                 </tr>
                 <tr>
                     <th class="feature" scope="row">{{ "Security & Bug Fixes"|t('app') }}</th>
@@ -177,6 +170,12 @@
             td {
                 padding-bottom: 14px;
             }
+        }
+    }
+
+    .plugin-icon {
+        img {
+            max-width: none;
         }
     }
 </style>
