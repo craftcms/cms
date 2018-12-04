@@ -110,7 +110,7 @@ class Section extends Model
             [['type'], 'in', 'range' => ['single', 'channel', 'structure']],
             [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class],
             [['name', 'handle', 'type', 'siteSettings'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255, 'encoding' => '8bit'],
+            [['name', 'handle'], 'string', 'max' => 255],
             [['siteSettings'], 'validateSiteSettings'],
         ];
     }

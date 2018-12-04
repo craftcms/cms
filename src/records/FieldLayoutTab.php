@@ -34,7 +34,7 @@ class FieldLayoutTab extends ActiveRecord
     {
         return [
             [['name'], 'required'],
-            [['name'], 'string', 'max' => 255, 'encoding' => '8bit'],
+            [['name'], 'string', 'max' => 255],
         ];
     }
 

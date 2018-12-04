@@ -157,7 +157,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix);
 
         $rules = [
-            [['name'], 'string', 'max' => 255, 'encoding' => '8bit'],
+            [['name'], 'string', 'max' => 255],
             [['handle'], 'string', 'max' => $maxHandleLength],
             [['name', 'handle', 'translationMethod'], 'required'],
             [['groupId'], 'number', 'integerOnly' => true],

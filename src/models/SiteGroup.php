@@ -54,7 +54,7 @@ class SiteGroup extends Model
     {
         return [
             [['id'], 'number', 'integerOnly' => true],
-            [['name'], 'string', 'max' => 255, 'encoding' => '8bit'],
+            [['name'], 'string', 'max' => 255],
             [['name'], UniqueValidator::class, 'targetClass' => SiteGroupRecord::class],
             [['name'], 'required'],
         ];

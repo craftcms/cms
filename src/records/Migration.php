@@ -36,7 +36,7 @@ class Migration extends ActiveRecord
             [['applyTime'], DateTimeValidator::class],
             [['version'], 'unique'],
             [['version', 'applyTime'], 'required'],
-            [['version'], 'string', 'max' => 255, 'encoding' => '8bit'],
+            [['version'], 'string', 'max' => 255],
         ];
     }
 

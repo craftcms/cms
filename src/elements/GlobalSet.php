@@ -116,7 +116,7 @@ class GlobalSet extends Element
     {
         $rules = parent::rules();
         $rules[] = [['fieldLayoutId'], 'number', 'integerOnly' => true];
-        $rules[] = [['name', 'handle'], 'string', 'max' => 255, 'encoding' => '8bit'];
+        $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['name', 'handle'], 'required'];
 
         $rules[] = [

@@ -119,7 +119,7 @@ class Site extends Model
         $rules = [
             [['groupId', 'name', 'handle', 'language'], 'required'],
             [['id', 'groupId'], 'number', 'integerOnly' => true],
-            [['name', 'handle', 'baseUrl'], 'string', 'max' => 255, 'encoding' => '8bit'],
+            [['name', 'handle', 'baseUrl'], 'string', 'max' => 255],
             [['language'], LanguageValidator::class, 'onlySiteLanguages' => false],
             [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
             [['baseUrl'], UrlValidator::class, 'allowAlias' => true, 'defaultScheme' => 'http'],

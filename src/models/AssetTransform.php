@@ -108,8 +108,9 @@ class AssetTransform extends Model
         return [
             [['id', 'width', 'height', 'quality'], 'number', 'integerOnly' => true],
             [['dimensionChangeTime'], DateTimeValidator::class],
+            [['handle'], 'string', 'max' => 255],
             [['name', 'handle', 'mode', 'position'], 'required'],
-            [['handle'], 'string', 'max' => 255, 'encoding' => '8bit'],
+            [['handle'], 'string', 'max' => 255],
             [
                 ['mode'],
                 'in',

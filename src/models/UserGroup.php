@@ -63,7 +63,7 @@ class UserGroup extends Model
         return [
             [['id'], 'number', 'integerOnly' => true],
             [['name', 'handle'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255, 'encoding' => '8bit'],
+            [['name', 'handle'], 'string', 'max' => 255],
             [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
             [['name', 'handle'], UniqueValidator::class, 'targetClass' => UserGroupRecord::class],
         ];
