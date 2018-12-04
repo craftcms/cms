@@ -258,7 +258,7 @@
 
             {% if canPublish %}
                 {{ forms.lightswitchField({
-                    label: craft.app.getIsMultiSite() ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
+                    label: showSites and section.propagateEntries ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
                     id: 'enabled',
                     name: 'enabled',
                     on: entry.enabled,
@@ -267,7 +267,7 @@
                 }) }}
             {% endif %}
 
-            {% if showSites %}
+            {% if showSites and section.propagateEntries %}
                 {{ forms.lightswitchField({
                     fieldClass: not entry.enabled ? 'hidden',
                     label: "Enabled for {site}"|t('app', { site: entry.site.name|t('site') }),

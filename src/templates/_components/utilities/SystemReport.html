@@ -34,10 +34,10 @@
     {% if modules|length %}
         <table class="data fullwidth fixed-layout">
             <tbody>
-                {% for id, module in modules %}
+                {% for id, class in modules %}
                     <tr>
                         <th class="light">{{ id }}</th>
-                        <td>{{ module.id is defined ? className(module) : module }}</td>
+                        <td>{{ class }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

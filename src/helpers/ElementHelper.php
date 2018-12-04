@@ -92,18 +92,14 @@ class ElementHelper
             $testUri = self::_renderUriFormat($uriFormat, $element);
 
             // Make sure we're not over our max length.
-            if (strlen($testUri) > 255) {
+            if (mb_strlen($testUri) > 255) {
                 // See how much over we are.
-                $overage = strlen($testUri) - 255;
+                $overage = mb_strlen($testUri) - 255;
 
                 // Do we have anything left to chop off?
-                if (strlen($overage) > strlen($element->slug) - strlen($slugWordSeparator . $i)) {
+                if ($overage < mb_strlen($element->slug)) {
                     // Chop off the overage amount from the slug
-                    $testSlug = $element->slug;
-                    $testSlug = substr($testSlug, 0, -$overage);
-
-                    // Update the slug
-                    $element->slug = $testSlug;
+                    $element->slug = mb_substr($element->slug, 0, -$overage);
 
                     // Let's try this again.
                     $i--;

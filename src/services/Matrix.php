@@ -29,6 +29,7 @@ use craft\models\FieldLayoutTab;
 use craft\models\MatrixBlockType;
 use craft\records\MatrixBlockType as MatrixBlockTypeRecord;
 use craft\web\assets\matrix\MatrixAsset;
+use craft\web\View;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -713,7 +714,7 @@ class Matrix extends Component
             Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
 
             foreach ($collapsedBlockIds as $blockId) {
-                Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId(' . $blockId . ');');
+                Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId(' . $blockId . ');', View::POS_END);
             }
         }
     }
