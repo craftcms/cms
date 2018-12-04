@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.34 - 2018-12-04
 
 ### Fixed
 - Fixed a bug where new Matrix blocks wouldn’t remember that they were supposed to be collapsed if “Save and continue editing” was clicked. ([#3499](https://github.com/craftcms/cms/issues/3499))
