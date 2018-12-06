@@ -2,7 +2,10 @@
     <div class="plugin-editions-edition">
         <div class="description">
             <h4 class="edition-name">{{edition.name}}</h4>
-            <ul>
+            <div class="price">
+                {{edition.price|currency}}
+            </div>
+            <ul v-if="edition.features.length > 0">
                 <li v-for="feature in edition.features">
                     <font-awesome-icon icon="check"></font-awesome-icon>
                     {{feature.name}}
@@ -18,9 +21,7 @@
 
         <div class="action">
             <div class="buttons">
-                <btn type="primary" @click="addEditionToCart(edition.handle)" block large>
-                    {{edition.price|currency}}
-                </btn>
+                <btn type="primary" @click="addEditionToCart(edition.handle)" block large>{{ "Add to cart"|t('app') }}</btn>
                 <div class="spinner" v-if="loading"></div>
             </div>
 
@@ -70,43 +71,45 @@
 
 <style lang="scss">
     .plugin-editions-edition {
-        @apply .border .border-grey-light .border-solid .p-8 .rounded .flex .flex-col .text-center;
+        @apply .border .border-grey-light .border-solid .p-8 .rounded .text-center .flex .flex-col;
 
         .description {
             @apply .flex-1;
-        }
 
-        .action {
-            @apply .pt-8;
-        }
+            .edition-name {
+                @apply .border-b .border-grey-light .border-solid .text-grey-dark .inline-block .py-1 .uppercase .text-lg .font-bold;
+            }
 
-        .edition-name {
-            @apply .text-black .inline-block .py-1 .uppercase .mb-8 .text-lg .font-bold;
-        }
+            .price {
+                @apply .text-3xl .font-bold .py-8;
+            }
 
-        .buttons {
-            position: relative;
-            .spinner {
-                position: absolute;
-                top: 6px;
-                right: -28px;
+            ul {
+                @apply .text-left .mb-8;
+
+                li {
+                    @apply .py-2 .border-b .border-grey-lighter .border-solid;
+
+                    &:first-child {
+                        @apply .border-t;
+                    }
+
+                    svg[data-icon="info-circle"] {
+                        path {
+                            fill: #ccc;
+                        }
+                    }
+                }
             }
         }
 
-        ul {
-            @apply .text-left;
-
-            li {
-                @apply .py-2 .border-b .border-grey-lighter .border-solid;
-
-                &:first-child {
-                    @apply .border-t;
-                }
-
-                svg[data-icon="info-circle"] {
-                    path {
-                        fill: #ccc;
-                    }
+        .actions {
+            .buttons {
+                position: relative;
+                .spinner {
+                    position: absolute;
+                    top: 6px;
+                    right: -28px;
                 }
             }
         }

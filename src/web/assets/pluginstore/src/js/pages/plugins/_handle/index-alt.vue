@@ -36,7 +36,7 @@
                 <hr>
 
                 <div class="py-8">
-                    <h2 class="mb-8 text-center text-xl">Pricing</h2>
+                    <h2 class="mb-8 py-4 text-center text-2xl">Pricing</h2>
                     <plugin-editions :plugin="plugin"></plugin-editions>
                 </div>
 
