@@ -10,6 +10,7 @@
 
 ### Fixed
 - Fixed a bug where restoring elements belonging to deleted sites via `project.yaml` would throw an error.
+- Fixed a bug where pre-determined layout UIDs were not respected when saving a field layout.
 
 ## 3.1.0-beta.4 - 2018-11-30
 
