@@ -12,51 +12,10 @@
                 <p><a @click="viewDeveloper(pluginSnippet)">{{ pluginSnippet.developerName }}</a></p>
             </div>
 
-            <div v-if="cart" class="buttons flex-no-shrink">
-                <template v-if="pluginSnippet.editions[0].price != null && pluginSnippet.editions[0].price !== '0.00'">
-                    <template v-if="isInstalled(pluginSnippet)">
-                        <template v-if="pluginHasLicenseKey(pluginSnippet.handle)">
-                            <license-status status="installed" :description="$options.filters.t('Installed', 'app')"></license-status>
-                        </template>
-                        <template v-else>
-                            <license-status status="installed" :description="$options.filters.t('Installed as a trial', 'app')"></license-status>
+            <template v-if="cart">
+                <plugin-actions :plugin="plugin"></plugin-actions>
+            </template>
 
-                            <a v-if="isInCart(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
-                            <a v-else @click="chooseEdition(pluginSnippet)" class="btn submit" :title="buyBtnTitle">{{ pluginSnippet.editions[0].price|currency }}</a>
-                        </template>
-                    </template>
-
-                    <template v-else>
-                        <template v-if="allowUpdates">
-                            <form method="post">
-                                <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
-                                <input type="hidden" name="action" value="pluginstore/install">
-                                <input type="hidden" name="packageName" :value="pluginSnippet.packageName">
-                                <input type="hidden" name="handle" :value="pluginSnippet.handle">
-                                <input type="hidden" name="version" :value="pluginSnippet.version">
-                                <input type="submit" class="btn" :value="'Try'|t('app')">
-                            </form>
-
-                            <a v-if="isInCart(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
-                            <a v-else @click="chooseEdition(pluginSnippet)" class="btn submit" :title="buyBtnTitle">{{ pluginSnippet.editions[0].price|currency }}</a>
-                        </template>
-                    </template>
-                </template>
-                <div v-else>
-                    <a v-if="isInstalled(pluginSnippet)" class="btn submit disabled">{{ "Installed"|t('app') }}</a>
-
-                    <div v-else-if="allowUpdates">
-                        <form method="post">
-                            <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
-                            <input type="hidden" name="action" value="pluginstore/install">
-                            <input type="hidden" name="packageName" :value="pluginSnippet.packageName">
-                            <input type="hidden" name="handle" :value="pluginSnippet.handle">
-                            <input type="hidden" name="version" :value="pluginSnippet.version">
-                            <input type="submit" class="btn submit" :value="'Install'|t('app')">
-                        </form>
-                    </div>
-                </div>
-            </div>
             <div>
                 <div v-if="actionsLoading" class="spinner"></div>
             </div>
@@ -77,7 +36,6 @@
                 <hr>
 
                 <h2 class="mb-4">Editions</h2>
-
                 <plugin-editions :plugin="plugin"></plugin-editions>
 
                 <hr>
@@ -125,6 +83,7 @@
     import StatusMessage from '../../../components/StatusMessage'
     import PluginScreenshots from '../../../components/PluginScreenshots'
     import PluginEditions from '../../../components/PluginEditions'
+    import PluginActions from '../../../components/PluginActions'
 
     export default {
 
@@ -135,6 +94,7 @@
             StatusMessage,
             PluginScreenshots,
             PluginEditions,
+            PluginActions,
         },
 
         data() {
@@ -157,8 +117,6 @@
 
             ...mapGetters({
                 activeTrialPlugins: 'activeTrialPlugins',
-                isInCart: 'cart/isInCart',
-                isInstalled: 'pluginStore/isInstalled',
                 pluginHasLicenseKey: 'craft/pluginHasLicenseKey',
             }),
 
@@ -166,12 +124,6 @@
                 if (this.plugin.longDescription && this.plugin.longDescription.length > 0) {
                     return this.plugin.longDescription
                 }
-            },
-
-            buyBtnTitle() {
-                return this.$root.$options.filters.t('Buy now for {price}', 'app', {
-                    price: this.$root.$options.filters.currency(this.pluginSnippet.editions[0].price)
-                });
             },
 
             developerUrl() {
@@ -198,18 +150,6 @@
                 const date = new Date(this.plugin.lastUpdate.replace(/\s/, 'T'))
                 return Craft.formatDate(date)
             },
-
-            csrfTokenName() {
-                return Craft.csrfTokenName
-            },
-
-            csrfTokenValue() {
-                return Craft.csrfTokenValue
-            },
-
-            allowUpdates() {
-                return window.allowUpdates
-            }
 
         },
 
