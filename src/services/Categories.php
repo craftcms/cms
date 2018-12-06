@@ -412,7 +412,6 @@ class Categories extends Component
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-
         $db = Craft::$app->getDb();
         $transaction = $db->beginTransaction();
 
@@ -742,11 +741,10 @@ class Categories extends Component
         $field = $event->field;
         $fieldUid = $field->uid;
 
-        $fieldPruned = false;
         $projectConfig = Craft::$app->getProjectConfig();
         $categoryGroups = $projectConfig->get(self::CONFIG_CATEGORYROUP_KEY);
 
-        // Loop through the tag groups and prune the UID from field layouts.
+        // Loop through the category groups and prune the UID from field layouts.
         if (is_array($categoryGroups)) {
             foreach ($categoryGroups as $categoryGroupUid => $categoryGroup) {
                 if (!empty($categoryGroup['fieldLayouts'])) {
