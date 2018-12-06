@@ -76,6 +76,12 @@
 
                 <hr>
 
+                <h2 class="mb-4">Editions</h2>
+
+                <plugin-editions :plugin="plugin"></plugin-editions>
+
+                <hr>
+
                 <h2 class="mb-4">Informations</h2>
                 <div class="plugin-infos">
                     <ul class="plugin-meta">
@@ -105,7 +111,6 @@
                     <li v-if="plugin.documentationUrl"><a :href="plugin.documentationUrl" class="btn fullwidth" rel="noopener" target="_blank">{{ "Documentation"|t('app') }}</a></li>
                     <li v-if="plugin.changelogUrl"><a :href="plugin.changelogUrl" class="btn fullwidth" rel="noopener" target="_blank">{{ "Changelog"|t('app') }}</a></li>
                 </ul>
-
             </template>
             <template v-else>
                 <div class="plugin-details-loading spinner"></div>
@@ -119,6 +124,7 @@
     import LicenseStatus from '../../../components/LicenseStatus'
     import StatusMessage from '../../../components/StatusMessage'
     import PluginScreenshots from '../../../components/PluginScreenshots'
+    import PluginEditions from '../../../components/PluginEditions'
 
     export default {
 
@@ -128,6 +134,7 @@
             LicenseStatus,
             StatusMessage,
             PluginScreenshots,
+            PluginEditions,
         },
 
         data() {
@@ -323,4 +330,5 @@
             }
         }
     }
+
 </style>
