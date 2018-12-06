@@ -8,9 +8,27 @@
         <div>
             <strong>{{ plugin.name }}</strong>
             <div v-shave="{ height: 45 }">{{ plugin.shortDescription }}</div>
-
-            <p v-if="plugin.editions[0].price != null && plugin.editions[0].price !== '0.00'" class="light">{{ plugin.editions[0].price|currency }}</p>
-            <p class="light" v-else>Free</p>
+            
+            <p class="light">
+                <template v-if="priceRange.min !== priceRange.max">
+                    <template v-if="priceRange.min > 0">
+                        {{priceRange.min|currency}}
+                    </template>
+                    <template v-else>
+                        Free
+                    </template>
+                    -
+                    {{priceRange.max|currency}}
+                </template>
+                <template v-else>
+                    <template v-if="priceRange.min > 0">
+                        {{priceRange.min|currency}}
+                    </template>
+                    <template v-else>
+                        Free
+                    </template>
+                </template>
+            </p>
 
             <div v-if="isInstalled(plugin)" class="installed" data-icon="check"></div>
         </div>
@@ -33,7 +51,41 @@
             ...mapGetters({
                 isInstalled: 'pluginStore/isInstalled',
             }),
-        }
+
+            priceRange() {
+                const editions = this.plugin.editions
+
+                let min = null
+                let max = null
+
+                for(let i = 0; i < editions.length; i++) {
+                    const edition = editions[i];
+                    const price = parseInt(edition.price)
+
+                    if(min === null) {
+                        min = price
+                    }
+
+                    if(max === null) {
+                        max = price
+                    }
+
+                    if(price < min) {
+                        min = price
+                    }
+
+                    if(price > max) {
+                        max = price
+                    }
+                }
+
+                return {
+                    min,
+                    max
+                }
+            }
+
+        },
 
     }
 </script>
