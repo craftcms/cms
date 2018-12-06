@@ -19,6 +19,9 @@
   },
   "dependencies": {
     "@benjamindavid/craftcomponents": "file:../../../../../craftcomponents",
+    "@fortawesome/fontawesome-svg-core": "^1.2.8",
+    "@fortawesome/free-solid-svg-icons": "^5.5.0",
+    "@fortawesome/vue-fontawesome": "^0.1.3",
     "accounting": "^0.4.1",
     "lodash": "^4.17.10",
     "vue": "^2.5.17",

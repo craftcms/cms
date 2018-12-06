@@ -10,6 +10,7 @@ import App from './App'
 import './js/plugins/shave'
 import './js/plugins/craftcomponents'
 import './js/plugins/swiper'
+import './js/plugins/font-awesome'
 
 Vue.filter('currency', currency)
 Vue.filter('escapeHtml', escapeHtml)
