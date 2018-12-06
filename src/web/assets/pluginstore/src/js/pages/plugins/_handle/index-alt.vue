@@ -35,8 +35,10 @@
 
                 <hr>
 
-                <h2 class="mb-4">Editions</h2>
-                <plugin-editions :plugin="plugin"></plugin-editions>
+                <div class="py-8">
+                    <h2 class="mb-8 text-center text-xl">Pricing</h2>
+                    <plugin-editions :plugin="plugin"></plugin-editions>
+                </div>
 
                 <hr>
 
@@ -113,11 +115,6 @@
                 plugins: state => state.pluginStore.plugins,
                 cart: state => state.cart.cart,
                 defaultPluginSvg: state => state.craft.defaultPluginSvg,
-            }),
-
-            ...mapGetters({
-                activeTrialPlugins: 'activeTrialPlugins',
-                pluginHasLicenseKey: 'craft/pluginHasLicenseKey',
             }),
 
             longDescription() {

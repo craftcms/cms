@@ -20,7 +20,7 @@
 
 <style lang="scss">
     .plugin-editions {
-        @apply .flex .-mx-4;
+        @apply .flex .-mx-4 .justify-center;
 
         .plugin-editions-edition {
             @apply .w-1/3 .mx-4;

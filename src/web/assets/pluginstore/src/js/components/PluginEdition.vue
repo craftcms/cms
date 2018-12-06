@@ -21,7 +21,7 @@
                 <btn type="primary" @click="addEditionToCart(edition.handle)" block large>
                     {{edition.price|currency}}
                 </btn>
-                <div class="spinner ml-4" v-if="loading"></div>
+                <div class="spinner" v-if="loading"></div>
             </div>
 
             <p class="mt-4 text-grey-dark mb-0">
@@ -70,7 +70,7 @@
 
 <style lang="scss">
     .plugin-editions-edition {
-        @apply .border .border-grey-light .border-solid .p-8 .rounded .flex .flex-col;
+        @apply .border .border-grey-light .border-solid .p-8 .rounded .flex .flex-col .text-center;
 
         .description {
             @apply .flex-1;
@@ -81,12 +81,27 @@
         }
 
         .edition-name {
-            @apply .border-b .border-grey-dark .text-grey-dark .border-solid .inline-block .py-1 .uppercase .mb-4 .text-lg .font-normal;
+            @apply .text-black .inline-block .py-1 .uppercase .mb-8 .text-lg .font-bold;
+        }
+
+        .buttons {
+            position: relative;
+            .spinner {
+                position: absolute;
+                top: 6px;
+                right: -28px;
+            }
         }
 
         ul {
+            @apply .text-left;
+
             li {
-                @apply .my-2;
+                @apply .py-2 .border-b .border-grey-lighter .border-solid;
+
+                &:first-child {
+                    @apply .border-t;
+                }
 
                 svg[data-icon="info-circle"] {
                     path {

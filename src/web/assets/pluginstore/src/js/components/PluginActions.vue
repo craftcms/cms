@@ -59,6 +59,7 @@
             ...mapGetters({
                 isInstalled: 'pluginStore/isInstalled',
                 isInCart: 'cart/isInCart',
+                pluginHasLicenseKey: 'craft/pluginHasLicenseKey',
             }),
 
             buyBtnTitle() {
