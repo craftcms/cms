@@ -248,6 +248,7 @@ JS;
             'limitAutoSlugsToAscii' => (bool)$generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),
             'omitScriptNameInUrls' => (bool)$generalConfig->omitScriptNameInUrls,
+            'alwaysPreserveURI' => (bool)$generalConfig->alwaysPreserveURI,
             'orientation' => $orientation,
             'path' => $request->getPathInfo(),
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
