@@ -58,7 +58,7 @@ Take this simple single-environment config:
 // -- config/general.php --
 return [
     'omitScriptNameInUrls' => true,
-    'siteUrl' => 'https://examle.com',
+    'siteUrl' => 'https://example.com',
 ];
 ```
 
@@ -70,7 +70,7 @@ return [
     // Global settings
     '*' => [
         'omitScriptNameInUrls' => true,
-        'siteUrl' => 'https://examle.com',
+        'siteUrl' => 'https://example.com',
     ],
 ];
 ```
