@@ -12,12 +12,10 @@
                 <p><a @click="viewDeveloper(pluginSnippet)">{{ pluginSnippet.developerName }}</a></p>
             </div>
 
-            <template v-if="cart">
-                <plugin-actions :plugin="plugin"></plugin-actions>
-            </template>
+            <plugin-actions v-if="cart" :plugin="plugin"></plugin-actions>
 
-            <div>
-                <div v-if="actionsLoading" class="spinner"></div>
+            <div v-if="actionsLoading">
+                <div class="spinner"></div>
             </div>
         </div>
 
@@ -25,22 +23,26 @@
             <template v-if="!loading">
                 <template v-if="plugin.screenshotUrls && plugin.screenshotUrls.length">
                     <plugin-screenshots :images="plugin.screenshotUrls"></plugin-screenshots>
+                    
+                    <hr>
+                </template>
+
+                <template v-if="longDescription">
+                    <div class="plugin-description">
+                        <div v-html="longDescription" class="readable"></div>
+                    </div>
 
                     <hr>
                 </template>
 
-                <div class="plugin-description">
-                    <div v-html="longDescription" class="readable"></div>
-                </div>
+                <template v-if="!isPluginFree(plugin)">
+                    <div class="py-8">
+                        <h2 class="mb-8 py-4 text-center text-2xl">Pricing</h2>
+                        <plugin-editions :plugin="plugin"></plugin-editions>
+                    </div>
 
-                <hr>
-
-                <div class="py-8">
-                    <h2 class="mb-8 py-4 text-center text-2xl">Pricing</h2>
-                    <plugin-editions :plugin="plugin"></plugin-editions>
-                </div>
-
-                <hr>
+                    <hr>
+                </template>
 
                 <h2 class="mb-4">Informations</h2>
                 <div class="plugin-infos">
@@ -58,10 +60,6 @@
                             </strong>
                         </li>
                         <li><span>{{ "License"|t('app') }}</span> <strong>{{ licenseLabel }}</strong></li>
-                        <li v-if="pluginSnippet.editions[0].renewalPrice">
-                            <span>{{ "Renewal price"|t('app') }}</span>
-                            <strong>{{ "{price}/year"|t('app', { price: $root.$options.filters.currency(pluginSnippet.editions[0].renewalPrice) }) }}</strong>
-                        </li>
                     </ul>
                 </div>
 
@@ -80,7 +78,7 @@
 </template>
 
 <script>
-    import {mapState, mapActions} from 'vuex'
+    import {mapState, mapGetters, mapActions} from 'vuex'
     import PluginScreenshots from '../../../components/PluginScreenshots'
     import PluginEditions from '../../../components/PluginEditions'
     import PluginActions from '../../../components/PluginActions'
@@ -111,6 +109,10 @@
                 plugins: state => state.pluginStore.plugins,
                 cart: state => state.cart.cart,
                 defaultPluginSvg: state => state.craft.defaultPluginSvg,
+            }),
+
+            ...mapGetters({
+                isPluginFree: 'pluginStore/isPluginFree',
             }),
 
             longDescription() {
@@ -160,28 +162,6 @@
             ...mapActions({
                 addToCart: 'cart/addToCart'
             }),
-
-            chooseEdition() {
-                this.$root.openModal('plugin-edition')
-            },
-
-            buyPlugin(plugin) {
-                this.actionsLoading = true
-
-                const item = {
-                    type: 'plugin-edition',
-                    plugin: plugin.handle,
-                    edition: plugin.editions[0].handle,
-                    autoRenew: false,
-                    cmsLicenseKey: window.cmsLicenseKey,
-                }
-
-                this.$store.dispatch('cart/addToCart', [item])
-                    .then(() => {
-                        this.actionsLoading = false
-                        this.$root.openModal('cart')
-                    })
-            },
 
             viewDeveloper(plugin) {
                 this.$root.closeModal()
