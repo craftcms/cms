@@ -1,6 +1,6 @@
 <template>
     <div v-if="plugin" class="buttons flex-no-shrink">
-        <template v-if="plugin.editions[0].price != null && plugin.editions[0].price !== '0.00'">
+        <template v-if="plugin.editions[0].price != null && parseFloat(plugin.editions[0].price) !== 0">
             <template v-if="isInstalled(plugin)">
                 <template v-if="pluginHasLicenseKey(plugin.handle)">
                     <license-status status="installed" :description="$options.filters.t('Installed', 'app')"></license-status>
