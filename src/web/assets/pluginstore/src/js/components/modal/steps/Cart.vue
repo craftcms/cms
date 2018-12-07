@@ -38,6 +38,9 @@
                                 </td>
                                 <td>
                                     {{ item.plugin.name}}
+                                    <div>
+                                        <code>{{item.lineItem.purchasable.name}}</code>
+                                    </div>
                                 </td>
                             </template>
 
