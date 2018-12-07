@@ -1,5 +1,5 @@
 <template>
-    <div class="buttons flex-no-shrink">
+    <div v-if="plugin" class="buttons flex-no-shrink">
         <template v-if="plugin.editions[0].price != null && plugin.editions[0].price !== '0.00'">
             <template v-if="isInstalled(plugin)">
                 <template v-if="pluginHasLicenseKey(plugin.handle)">
@@ -47,12 +47,16 @@
 </template>
 
 <script>
-    import {mapState, mapGetters, mapActions} from 'vuex'
+    import {mapGetters} from 'vuex'
+    import LicenseStatus from './LicenseStatus'
 
     export default {
 
         props: ['plugin'],
 
+        components: {
+            LicenseStatus,
+        },
 
         computed: {
 

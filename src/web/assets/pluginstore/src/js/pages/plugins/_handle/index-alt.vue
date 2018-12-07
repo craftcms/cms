@@ -80,9 +80,7 @@
 </template>
 
 <script>
-    import {mapState, mapGetters, mapActions} from 'vuex'
-    import LicenseStatus from '../../../components/LicenseStatus'
-    import StatusMessage from '../../../components/StatusMessage'
+    import {mapState, mapActions} from 'vuex'
     import PluginScreenshots from '../../../components/PluginScreenshots'
     import PluginEditions from '../../../components/PluginEditions'
     import PluginActions from '../../../components/PluginActions'
@@ -92,8 +90,6 @@
         props: ['pluginId'],
 
         components: {
-            LicenseStatus,
-            StatusMessage,
             PluginScreenshots,
             PluginEditions,
             PluginActions,
