@@ -44,13 +44,17 @@
                                 </td>
                             </template>
 
-                            <td><select-input v-model="itemUpdates[itemKey]" :options="itemUpdateOptions[itemKey]" /></td>
-                            <td class="rightalign"><strong>{{ item.lineItem.total|currency }}</strong></td>
+                            <td>
+                                <select-field v-model="itemUpdates[itemKey]" :options="itemUpdateOptions(itemKey)" />
+                            </td>
+                            <td class="rightalign">
+                                <strong>{{ itemTotal(itemKey)|currency }}</strong>
+                            </td>
                             <td class="thin"><a class="delete icon" role="button" @click="removeFromCart(itemKey)"></a></td>
                         </tr>
                         <tr>
                             <th class="rightalign" colspan="3">Total Price</th>
-                            <td class="rightalign"><strong>{{ cart.totalPrice|currency }}</strong></td>
+                            <td class="rightalign"><strong>{{ total|currency }}</strong></td>
                             <td class="thin"></td>
                         </tr>
                         </tbody>
@@ -142,48 +146,16 @@
                 })
             },
 
-            itemUpdateOptions() {
-                let options = []
+            total() {
+                let total = 0
 
-                if (this.cartItems) {
-                    this.cartItems.forEach(function(item, itemKey) {
-                        const renewalPrice = item.lineItem.purchasable.renewalPrice
-                        const years = 5
-                        options[itemKey] = []
+                this.cartItems.forEach(function(item, key) {
+                    total += this.itemTotal(key)
+                }.bind(this))
 
-                        for (let i = 1; i <= years; i++) {
-                            const currentDate = new Date()
-                            const year = currentDate.getFullYear()
-                            const month = currentDate.getMonth()
-                            const day = currentDate.getDay()
-                            const date = new Date(year + i, month, day)
-                            const formattedDate = Craft.formatDate(date)
-                            const price = renewalPrice * (i - 1);
+                return total
+            },
 
-                            let formattedPrice
-
-                            if(price > 0) {
-                                formattedPrice = '+' + this.$options.filters.currency(renewalPrice * (i - 1))
-                            } else {
-                                formattedPrice = this.$options.filters.t("Free", 'app')
-                            }
-
-                            const label = this.$options.filters.t("Updates Until {date} ({price})", 'app', {
-                                year: i,
-                                date: formattedDate,
-                                price: formattedPrice,
-                            })
-
-                            options[itemKey].push({
-                                label: label,
-                                value: i,
-                            })
-                        }
-                    }.bind(this))
-                }
-
-                return options
-            }
         },
 
         methods: {
@@ -227,15 +199,63 @@
                 } else {
                     this.$root.openModal('identity')
                 }
-            }
+            },
+
+            itemUpdateOptions(itemKey) {
+                const item = this.cartItems[itemKey]
+                const renewalPrice = item.lineItem.purchasable.renewalPrice
+                const itemUpdate = this.itemUpdates[itemKey]
+                const years = 5
+                let options = []
+
+                for (let i = 1; i <= years; i++) {
+                    const currentDate = new Date()
+                    const year = currentDate.getFullYear() + i
+                    const month = currentDate.getMonth()
+                    const day = currentDate.getDay()
+                    const date = new Date(year, month, day)
+                    const price = renewalPrice * (i - itemUpdate);
+
+                    let label = "Updates Until " + Craft.formatDate(date)
+
+                    if (price !== 0) {
+                        let sign = '';
+
+                        if (price > 0) {
+                            sign = '+';
+                        }
+
+                        label += " (" + sign + this.$options.filters.currency(price) + ")"
+                    }
+
+                    options.push({
+                        label: label,
+                        value: i,
+                    })
+                }
+
+                return options
+            },
+
+            itemTotal(itemKey) {
+                if (typeof this.itemUpdates[itemKey] === 'undefined') {
+                    return 0;
+                }
+
+                const purchasable = this.cartItems[itemKey].lineItem.purchasable
+                const price = parseInt(purchasable.price)
+                const renewalsTotal = parseInt(purchasable.renewalPrice) * (this.itemUpdates[itemKey] - 1)
+                // const quantity = this.itemQuantity[itemKey]
+                const quantity = 1
+
+                return (price + renewalsTotal) * quantity
+            },
 
         },
 
         mounted() {
-            this.itemUpdates = {}
-
-            this.cartItems.forEach(function(item, itemKey) {
-                this.itemUpdates[itemKey] = 1
+            this.cartItems.forEach(function(item, key) {
+                this.$set(this.itemUpdates, key, 1)
             }.bind(this))
         }
 
