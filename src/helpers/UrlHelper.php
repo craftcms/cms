@@ -427,10 +427,14 @@ class UrlHelper
 
         $host = $url;
 
-        // Trim off the URI
-        $uriPos = strpos($host, '/', $slashes + 2);
-        if ($uriPos !== false) {
-            $host = substr($host, 0, $uriPos);
+        // Trim off the URI if not specified otherwise in config
+        if(Craft::$app->getConfig()->getGeneral()->alwaysPreserveURI){
+            $host = rtrim($host, '/');
+        }else{
+            $uriPos = strpos($host, '/', $slashes + 2);
+            if ($uriPos !== false) {
+                $host = substr($host, 0, $uriPos);
+            }
         }
 
         return $host;
