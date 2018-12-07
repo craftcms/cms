@@ -38,8 +38,8 @@
                                 </td>
                                 <td>
                                     {{ item.plugin.name}}
-                                    <div>
-                                        <code>{{item.lineItem.purchasable.name}}</code>
+                                    <div class="text-grey-dark">
+                                        <code>{{item.lineItem.purchasable.handle}}</code>
                                     </div>
                                 </td>
                             </template>
