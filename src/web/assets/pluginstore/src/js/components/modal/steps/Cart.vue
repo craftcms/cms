@@ -245,7 +245,6 @@
                 const purchasable = this.cartItems[itemKey].lineItem.purchasable
                 const price = parseInt(purchasable.price)
                 const renewalsTotal = parseInt(purchasable.renewalPrice) * (this.itemUpdates[itemKey] - 1)
-                // const quantity = this.itemQuantity[itemKey]
                 const quantity = 1
 
                 return (price + renewalsTotal) * quantity
