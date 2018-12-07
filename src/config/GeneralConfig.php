@@ -395,6 +395,10 @@ class GeneralConfig extends BaseObject
      */
     public $omitScriptNameInUrls = false;
     /**
+     * @var bool Whether Craft should keep the path as is.
+     */
+    public $alwaysPreserveURI = false;
+    /**
      * @var bool Whether Craft should optimize images for reduced file sizes without noticeably reducing image quality.
      * (Only supported when ImageMagick is used.)
      * @see imageDriver
