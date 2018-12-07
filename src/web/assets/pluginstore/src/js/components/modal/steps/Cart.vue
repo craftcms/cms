@@ -33,7 +33,7 @@
                             <template v-else="item.lineItem.purchasable.type === 'plugin-edition'">
                                 <td class="thin">
                                     <div class="plugin-icon">
-                                        <img v-if="item.plugin.iconUrl" :src="item.plugin.iconUrl" height="32" />
+                                        <img v-if="item.plugin.iconUrl" :src="item.plugin.iconUrl" width="32" height="32" />
                                     </div>
                                 </td>
                                 <td>
@@ -236,3 +236,11 @@
 
     }
 </script>
+
+<style lang="scss">
+    .plugin-icon {
+        img {
+            max-width: none;
+        }
+    }
+</style>
