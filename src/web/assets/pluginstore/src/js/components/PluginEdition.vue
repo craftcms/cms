@@ -3,8 +3,19 @@
         <div class="description">
             <h4 class="edition-name">{{edition.name}}</h4>
             <div class="price">
-                {{edition.price|currency}}
+                <template v-if="!isPluginEditionFree(edition)">
+                    {{edition.price|currency}}
+                </template>
+                <template v-else>
+                    {{ "Free"|t('app') }}
+                </template>
             </div>
+
+            <p v-if="!isPluginEditionFree(edition)" class="py-6 text-grey-dark">
+                Price includes 1 year of updates.<br />
+                {{ edition.renewalPrice|currency }}/year per site for updates after that.
+            </p>
+
             <ul v-if="edition.features.length > 0">
                 <li v-for="feature in edition.features">
                     <font-awesome-icon icon="check"></font-awesome-icon>
@@ -19,21 +30,18 @@
             </ul>
         </div>
 
-        <div class="action">
+        <div class="actions">
             <div class="buttons">
-                <btn type="primary" @click="addEditionToCart(edition.handle)" block large>{{ "Add to cart"|t('app') }}</btn>
+                <btn type="primary" :disabled="isPluginEditionFree(edition)" @click="addEditionToCart(edition.handle)" block large>{{ "Add to cart"|t('app') }}</btn>
                 <div class="spinner" v-if="loading"></div>
             </div>
-
-            <p class="mt-4 text-grey-dark mb-0">
-                Price includes 1 year of updates.<br />
-                {{ edition.renewalPrice|currency }}/year per site for updates after that.
-            </p>
         </div>
     </div>
 </template>
 
 <script>
+    import {mapGetters} from 'vuex'
+
     export default {
 
         props: ['plugin', 'edition'],
@@ -42,6 +50,14 @@
             return {
                 loading: false,
             }
+        },
+
+        computed: {
+
+            ...mapGetters({
+                isPluginEditionFree: 'pluginStore/isPluginEditionFree',
+            }),
+
         },
 
         methods: {
@@ -81,7 +97,7 @@
             }
 
             .price {
-                @apply .text-3xl .font-bold .py-8;
+                @apply .text-3xl .font-bold .mt-8;
             }
 
             ul {

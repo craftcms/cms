@@ -99,6 +99,12 @@ const getters = {
         }
     },
 
+    isPluginEditionFree(state) {
+        return edition => {
+            return parseFloat(edition.price) === 0
+        }
+    },
+
 }
 
 /**

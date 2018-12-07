@@ -23,7 +23,7 @@
             <template v-if="!loading">
                 <template v-if="plugin.screenshotUrls && plugin.screenshotUrls.length">
                     <plugin-screenshots :images="plugin.screenshotUrls"></plugin-screenshots>
-                    
+
                     <hr>
                 </template>
 
