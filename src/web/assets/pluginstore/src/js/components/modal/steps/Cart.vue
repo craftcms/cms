@@ -39,7 +39,7 @@
                                 <td>
                                     {{ item.plugin.name}}
                                     <div class="text-grey-dark">
-                                        <code>{{item.lineItem.purchasable.handle}}</code>
+                                        {{item.lineItem.purchasable.name}}
                                     </div>
                                 </td>
                             </template>
@@ -56,7 +56,9 @@
                         </tbody>
                     </table>
 
-                    <p><a @click="payment()" class="btn submit">{{ "Checkout"|t('app') }}</a></p>
+                    <div class="py-4">
+                        <a @click="payment()" class="btn submit">{{ "Checkout"|t('app') }}</a>
+                    </div>
                 </template>
 
                 <div v-else>
