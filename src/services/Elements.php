@@ -179,8 +179,12 @@ class Elements extends Component
      * Defaults to the current site.
      * @return ElementInterface|null The matching element, or `null`.
      */
-    public function getElementById(int $elementId, string $elementType = null, int $siteId = null)
+    public function getElementById($elementId, string $elementType = null, int $siteId = null)
     {
+        if(!is_int($elementId)) {
+            $elementId = intval($elementId);
+        }
+        
         if (!$elementId) {
             return null;
         }
