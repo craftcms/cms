@@ -37,7 +37,7 @@
             swiperOption() {
                 return {
                     initialSlide: 0,
-                    loop: true,
+                    loop: false,
                     pagination: {
                         el: '.swiper-pagination-' + this.identifier,
                         clickable: true
@@ -51,6 +51,7 @@
         methods: {
 
             close() {
+                this.$refs.mySwiper.swiper.destroy(true, false)
                 this.$store.commit('app/updateShowingScreenshotModal', false)
             },
 
@@ -140,7 +141,7 @@
             left: 100px;
 
             .swiper-container {
-                @apply .flex;
+                @apply .flex .overflow-visible;
 
                 .swiper-wrapper {
                     @apply .flex .flex-1 .w-auto .h-auto;
@@ -161,6 +162,7 @@
             }
 
             .swiper-pagination {
+                @apply .w-full;
                 bottom: -60px;
 
                 .swiper-pagination-bullet {
