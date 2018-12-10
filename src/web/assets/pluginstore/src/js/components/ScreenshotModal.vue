@@ -1,19 +1,17 @@
 <template>
-    <div id="screenshot-modal" ref="screenshotModal">
+    <div id="screenshot-modal" ref="screenshotModal" @keydown.esc="close">
         <a class="close" @click="close">&times;</a>
 
         <div v-if="screenshotModalImages" class="carousel" ref="carousel">
-            <div v-swiper:swiper="swiperOption" :instanceName="identifier" ref="swiper">
-                <div class="swiper-wrapper">
-                    <div class="swiper-slide" v-for="(imageUrl, key) in screenshotModalImages" :key="key">
-                        <div class="screenshot">
-                            <img :src="imageUrl" />
-                        </div>
+            <swiper :options="swiperOption" :instanceName="identifier" ref="mySwiper">
+                <swiper-slide v-for="(imageUrl, key) in screenshotModalImages" :key="key">
+                    <div class="screenshot">
+                        <img :src="imageUrl" />
                     </div>
-                </div>
-            </div>
+                </swiper-slide>
 
-            <div :class="'swiper-pagination swiper-pagination-' + identifier" slot="pagination"></div>
+                <div :class="'swiper-pagination swiper-pagination-' + identifier" slot="pagination"></div>
+            </swiper>
         </div>
     </div>
 </template>
@@ -44,7 +42,7 @@
                         el: '.swiper-pagination-' + this.identifier,
                         clickable: true
                     },
-                    keyboard: true
+                    keyboard: true,
                 }
             }
 
@@ -57,6 +55,7 @@
             },
 
             handleResize() {
+
                 if (this.screenshotModalImages.length === 0) {
                     return
                 }
@@ -88,6 +87,12 @@
                     let imageElement = imageElements[i]
                     imageElement.style.maxHeight = maxHeight + 'px'
                 }
+            },
+
+            handleEscapeKey(e) {
+                if (e.keyCode === 27) {
+                    this.close()
+                }
             }
 
         },
@@ -95,13 +100,15 @@
         mounted: function () {
             window.addEventListener('resize', this.handleResize)
             this.handleResize()
-            this.swiper.on('beforeDestroy', function() {
-                this.swiper.destroy(false, false)
-            })
+        },
+
+        created() {
+            window.addEventListener('keydown', this.handleEscapeKey)
         },
 
         beforeDestroy: function () {
             window.removeEventListener('resize', this.handleResize)
+            window.removeEventListener('keydown', this.handleEscapeKey)
         }
 
     }
@@ -154,7 +161,7 @@
             }
 
             .swiper-pagination {
-                @apply .w-full .relative .py-4 .mb-4;
+                bottom: -60px;
 
                 .swiper-pagination-bullet {
                     @apply .mx-2;
