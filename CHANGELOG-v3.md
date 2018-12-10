@@ -5,6 +5,9 @@
 ### Added
 - Added `craft\models\Section::getHasMultiSiteEntries()`.
 
+### Changed
+- Field types that extend `craft\fields\BaseRelationField` now pass their `$sortable` property value to the `BaseElementSelectInput` JavaScript class by default. ([#3542](https://github.com/craftcms/cms/pull/3542))
+
 ### Fixed
 - Fixed a bug where the “Disabled for Site” entry status option was visible for sections where site propagation was disabled. ([#3519](https://github.com/craftcms/cms/issues/3519))
 - Fixed a bug where saving an entry that was disabled for a site would retain its site status even if site propagation had been disabled for the section.
