@@ -694,6 +694,7 @@ JS;
             'limit' => $this->allowLimit ? $this->limit : null,
             'viewMode' => $this->viewMode(),
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
+            'sortable' => $this->sortable,
         ];
     }
 
