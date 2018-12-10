@@ -30,9 +30,14 @@
             </ul>
         </div>
 
-        <div class="actions">
+        <div v-if="cart" class="actions">
             <div class="buttons">
-                <btn type="primary" :disabled="isPluginEditionFree(edition)" @click="addEditionToCart(edition.handle)" block large>{{ "Add to cart"|t('app') }}</btn>
+                <template v-if="isInCart(plugin)">
+                    <btn type="primary" @click="$root.openModal('cart')" block large>{{ "Already in your cart"|t('app') }}</btn>
+                </template>
+                <template v-else>
+                    <btn type="primary" :disabled="isPluginEditionFree(edition) || isInCart(plugin)" @click="addEditionToCart(edition.handle)" block large>{{ "Add to cart"|t('app') }}</btn>
+                </template>
                 <div class="spinner" v-if="loading"></div>
             </div>
         </div>
@@ -40,7 +45,7 @@
 </template>
 
 <script>
-    import {mapGetters} from 'vuex'
+    import {mapState, mapGetters} from 'vuex'
 
     export default {
 
@@ -54,8 +59,13 @@
 
         computed: {
 
+            ...mapState({
+                cart: state => state.cart.cart,
+            }),
+
             ...mapGetters({
                 isPluginEditionFree: 'pluginStore/isPluginEditionFree',
+                isInCart: 'cart/isInCart',
             }),
 
         },
