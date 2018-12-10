@@ -20,8 +20,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn('{{%info}}', 'config', $this->mediumText()->null());
-        $this->addColumn('{{%info}}', 'configMap', $this->mediumText()->null());
+        $this->addColumn('{{%info}}', 'config', $this->mediumText()->null()->after('maintenance'));
+        $this->addColumn('{{%info}}', 'configMap', $this->mediumText()->null()->after('configMap'));
 
         $configData = $this->_getProjectConfigData();
 
