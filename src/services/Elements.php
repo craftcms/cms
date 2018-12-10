@@ -817,7 +817,7 @@ class Elements extends Component
             foreach ($structureElements as $structureElement) {
                 // Make sure the persisting element isn't already a part of that structure
                 $persistingElementIsInStructureToo = (new Query())
-                    ->from(['{{%structureElements}}'])
+                    ->from(['{{%structureelements}}'])
                     ->where([
                         'structureId' => $structureElement['structureId'],
                         'elementId' => $prevailingElementId

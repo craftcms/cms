@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 2.x
 
+## Unreleased
+
+### Fixed
+- Fixed a SQL error that could occur when merging two elements together if MySQL was set to a case-sensitive collation. ([#3539](https://github.com/craftcms/cms/issues/3539))
+
 ## 2.7.4 - 2018-11-27
 
 ### Fixed
