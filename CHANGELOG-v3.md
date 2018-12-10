@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\models\Section::getHasMultiSiteEntries()`.
+
+### Fixed
+- Fixed a bug where the “Disabled for Site” entry status option was visible for sections where site propagation was disabled. ([#3519](https://github.com/craftcms/cms/issues/3519))
+
 ## 3.0.34 - 2018-12-04
 
 ### Fixed

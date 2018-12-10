@@ -263,6 +263,7 @@ class Entry extends Element
         if (!empty($sections)) {
             $userSessionService = Craft::$app->getUser();
             $canSetStatus = true;
+            $allowDisabledForSite = true;
             $canEdit = false;
 
             foreach ($sections as $section) {
@@ -277,6 +278,10 @@ class Entry extends Element
                     $canSetStatus = false;
                 }
 
+                if (!$section->getHasMultiSiteEntries()) {
+                    $allowDisabledForSite = false;
+                }
+
                 // Show the Edit action if they can publish changes to *any* of the sections
                 // (the trigger will disable itself for entries that aren't editable)
                 if ($canPublishEntries) {
@@ -288,7 +293,7 @@ class Entry extends Element
             if ($canSetStatus) {
                 $actions[] = [
                     'type' => SetStatus::class,
-                    'allowDisabledForSite' => true,
+                    'allowDisabledForSite' => $allowDisabledForSite,
                 ];
             }
 
