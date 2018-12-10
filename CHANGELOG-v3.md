@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where the “Disabled for Site” entry status option was visible for sections where site propagation was disabled. ([#3519](https://github.com/craftcms/cms/issues/3519))
+- Fixed a bug where saving an entry that was disabled for a site would retain its site status even if site propagation had been disabled for the section.
 
 ## 3.0.34 - 2018-12-04
 
