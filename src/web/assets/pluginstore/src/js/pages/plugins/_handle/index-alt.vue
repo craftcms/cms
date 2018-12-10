@@ -65,6 +65,10 @@
 
                 <hr>
 
+                <plugin-changelog></plugin-changelog>
+
+                <hr>
+
                 <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)" class="plugin-meta-links">
                     <li v-if="plugin.documentationUrl"><a :href="plugin.documentationUrl" class="btn fullwidth" rel="noopener" target="_blank">{{ "Documentation"|t('app') }}</a></li>
                     <li v-if="plugin.changelogUrl"><a :href="plugin.changelogUrl" class="btn fullwidth" rel="noopener" target="_blank">{{ "Changelog"|t('app') }}</a></li>
@@ -82,6 +86,7 @@
     import PluginScreenshots from '../../../components/PluginScreenshots'
     import PluginEditions from '../../../components/PluginEditions'
     import PluginActions from '../../../components/PluginActions'
+    import PluginChangelog from '../../../components/PluginChangelog'
 
     export default {
 
@@ -91,6 +96,7 @@
             PluginScreenshots,
             PluginEditions,
             PluginActions,
+            PluginChangelog,
         },
 
         data() {
