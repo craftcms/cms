@@ -37,7 +37,6 @@
 
                 <template v-if="!isPluginFree(plugin)">
                     <div class="py-8">
-                        <h2 class="mb-8 py-4 text-center text-2xl">Pricing</h2>
                         <plugin-editions :plugin="plugin"></plugin-editions>
                     </div>
 
