@@ -1042,7 +1042,12 @@ class Fields extends Component
             ->where(['layoutId' => $layoutId])
             ->all();
 
+        $isMysql = Craft::$app->getDb()->getIsMysql();
+
         foreach ($tabs as $key => $value) {
+            if ($isMysql) {
+                $value['name'] = html_entity_decode($value['name'], ENT_QUOTES | ENT_HTML5);
+            }
             $tabs[$key] = new FieldLayoutTab($value);
         }
 
@@ -1249,8 +1254,12 @@ class Fields extends Component
         foreach ($layout->getTabs() as $tab) {
             $tabRecord = new FieldLayoutTabRecord();
             $tabRecord->layoutId = $layout->id;
-            $tabRecord->name = $tab->name;
             $tabRecord->sortOrder = $tab->sortOrder;
+            if (Craft::$app->getDb()->getIsMysql()) {
+                $tabRecord->name = StringHelper::encodeMb4($tab->name);
+            } else {
+                $tabRecord->name = $tab->name;
+            }
             $tabRecord->save(false);
             $tab->id = $tabRecord->id;
 

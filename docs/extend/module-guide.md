@@ -32,14 +32,14 @@ Use [pluginfactory.io](https://pluginfactory.io/) to create your module’s scaf
 
 ## Set up class autoloading
 
-Next up, you need to tell Composer how to find your module’s classes by setting the [`autoload`](https://getcomposer.org/doc/04-schema.md#autoload) field in your project’s `composer.json` file. For example, if your module’s namespace is `foo`, and it’s located at `modules/foo/`, this is what you should add:
+Next up, you need to tell Composer how to find your module’s classes by setting the [`autoload`](https://getcomposer.org/doc/04-schema.md#autoload) field in your project’s `composer.json` file. For example, if your module’s namespace is `bar`, and it’s located at `modules/foo/`, this is what you should add:
 
 ```json
 {
   // ...
   "autoload": {
     "psr-4": {
-      "foo\\": "modules/foo/"
+      "bar\\": "modules/foo/"
     }
   }
 }
@@ -81,7 +81,7 @@ Use this template as a starting point for your `Module.php` file:
 
 ```php
 <?php
-namespace foo;
+namespace bar;
 
 class Module extends \yii\base\Module
 {
@@ -94,7 +94,7 @@ class Module extends \yii\base\Module
 }
 ```
 
-Replace `foo` with your module’s actual namespace.
+Replace `bar` with your module’s actual namespace.
 
 ## Further Reading
 
