@@ -3,14 +3,14 @@
         <a class="close" @click="close">&times;</a>
 
         <div v-if="screenshotModalImages" class="carousel" ref="carousel">
-            <swiper :options="swiperOption" :instanceName="identifier" ref="mySwiper">
+            <swiper :options="swiperOption" ref="screenshotModalSwiper">
                 <swiper-slide v-for="(imageUrl, key) in screenshotModalImages" :key="key">
                     <div class="screenshot">
                         <img :src="imageUrl" />
                     </div>
                 </swiper-slide>
 
-                <div :class="'swiper-pagination swiper-pagination-' + identifier" slot="pagination"></div>
+                <div class="swiper-pagination" slot="pagination"></div>
             </swiper>
         </div>
     </div>
@@ -23,7 +23,6 @@
 
         data() {
             return {
-                identifier: 'screenshot-modal-carousel',
                 ratio: '4:3'
             }
         },
@@ -35,12 +34,16 @@
                 screenshotModalImageKey: state => state.app.screenshotModalImageKey,
             }),
 
+            swiper() {
+                return this.$refs.screenshotModalSwiper.swiper
+            },
+
             swiperOption() {
                 return {
                     initialSlide: 0,
                     loop: false,
                     pagination: {
-                        el: '.swiper-pagination-' + this.identifier,
+                        el: '.swiper-pagination',
                         clickable: true
                     },
                     keyboard: true,
@@ -52,7 +55,6 @@
         methods: {
 
             close() {
-                this.$refs.mySwiper.swiper.destroy(true, false)
                 this.$store.commit('app/updateShowingScreenshotModal', false)
             },
 
@@ -100,7 +102,7 @@
         },
 
         mounted: function () {
-            this.$refs.mySwiper.swiper.slideTo(this.screenshotModalImageKey, 0)
+            this.swiper.slideTo(this.screenshotModalImageKey, 0)
             window.addEventListener('resize', this.handleResize)
             this.handleResize()
         },
@@ -110,6 +112,7 @@
         },
 
         beforeDestroy: function () {
+            this.swiper.destroy(true, false)
             window.removeEventListener('resize', this.handleResize)
             window.removeEventListener('keydown', this.handleEscapeKey)
         }
@@ -143,7 +146,7 @@
             left: 100px;
 
             .swiper-container {
-                @apply .flex .overflow-visible;
+                @apply .flex .overflow-hidden;
 
                 .swiper-wrapper {
                     @apply .flex .flex-1 .w-auto .h-auto;
@@ -157,6 +160,7 @@
 
                             img {
                                 @apply .max-w-full .max-h-full;
+                                padding-bottom: 50px;
                             }
                         }
                     }
@@ -165,7 +169,7 @@
 
             .swiper-pagination {
                 @apply .w-full;
-                bottom: -60px;
+                bottom: 0;
 
                 .swiper-pagination-bullet {
                     @apply .mx-2;
