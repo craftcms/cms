@@ -68,10 +68,22 @@
 
                 <hr>
 
-                <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)" class="plugin-meta-links">
-                    <li v-if="plugin.documentationUrl"><a :href="plugin.documentationUrl" class="btn fullwidth" rel="noopener" target="_blank">{{ "Documentation"|t('app') }}</a></li>
-                    <li v-if="plugin.changelogUrl"><a :href="plugin.changelogUrl" class="btn fullwidth" rel="noopener" target="_blank">{{ "Changelog"|t('app') }}</a></li>
-                </ul>
+                <div class="mb-8">
+                    <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)">
+                        <li v-if="plugin.documentationUrl" class="py-2">
+                            <a :href="plugin.documentationUrl" rel="noopener" target="_blank">
+                                <font-awesome-icon icon="link"></font-awesome-icon>
+                                {{ "Documentation"|t('app') }}
+                            </a>
+                        </li>
+                        <li v-if="plugin.changelogUrl" class="py-2">
+                            <a :href="plugin.changelogUrl" rel="noopener" target="_blank">
+                                <font-awesome-icon icon="link"></font-awesome-icon>
+                                {{ "Changelog"|t('app') }}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </template>
             <template v-else>
                 <div class="plugin-details-loading spinner"></div>

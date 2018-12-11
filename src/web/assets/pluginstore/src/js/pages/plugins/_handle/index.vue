@@ -383,10 +383,6 @@
                             }
                         }
                     }
-
-                    ul.plugin-meta-links li {
-                        padding: 7px 0;
-                    }
                 }
             }
 
