@@ -7,6 +7,7 @@ const state = {
     searchQuery: '',
     showingScreenshotModal: false,
     screenshotModalImages: null,
+    screenshotModalImageKey: 0,
 }
 
 /**
@@ -38,6 +39,10 @@ const mutations = {
 
     updateScreenshotModalImages(state, images) {
         state.screenshotModalImages = images
+    },
+
+    updateScreenshotModalImageKey(state, key) {
+        state.screenshotModalImageKey = key
     },
 
 }

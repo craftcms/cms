@@ -32,6 +32,7 @@
 
             ...mapState({
                 screenshotModalImages: state => state.app.screenshotModalImages,
+                screenshotModalImageKey: state => state.app.screenshotModalImageKey,
             }),
 
             swiperOption() {
@@ -99,6 +100,7 @@
         },
 
         mounted: function () {
+            this.$refs.mySwiper.swiper.slideTo(this.screenshotModalImageKey, 0)
             window.addEventListener('resize', this.handleResize)
             this.handleResize()
         },
