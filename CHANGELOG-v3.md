@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.35 - 2018-12-11
 
 ### Added
 - Added `craft\models\Section::getHasMultiSiteEntries()`.
