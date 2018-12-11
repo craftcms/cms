@@ -1,6 +1,6 @@
 <template>
     <div class="screenshots">
-        <a class="screenshot" v-for="(image, key) in images" @click="zoomImage(key)">
+        <a class="screenshot" v-for="(image, key) in images" @click="zoomImage(key)" :key="key">
             <img :src="image" />
         </a>
     </div>
