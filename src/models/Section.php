@@ -22,6 +22,7 @@ use craft\validators\UniqueValidator;
  * @since 3.0
  * @property Section_SiteSettings[] $siteSettings Site-specific settings
  * @property EntryType[] $entryTypes Entry types
+ * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
 class Section extends Model
 {
@@ -246,5 +247,19 @@ class Section extends Model
     public function setEntryTypes(array $entryTypes)
     {
         $this->_entryTypes = $entryTypes;
+    }
+
+    /**
+     * Returns whether entries in this section support multiple sites.
+     *
+     * @return bool
+     */
+    public function getHasMultiSiteEntries(): bool
+    {
+        return (
+            Craft::$app->getIsMultiSite() &&
+            count($this->getSiteSettings()) > 1 &&
+            $this->propagateEntries
+        );
     }
 }

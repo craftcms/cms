@@ -109,7 +109,7 @@ class Categories extends Component
         }
 
         if ($this->_fetchedAllCategoryGroups) {
-            return $this->_allGroupIds = array_keys($this->_categoryGroupsById);
+            return $this->_allGroupIds = array_keys(array_filter($this->_categoryGroupsById));
         }
 
         return $this->_allGroupIds = (new Query())
@@ -148,7 +148,7 @@ class Categories extends Component
     public function getAllGroups(): array
     {
         if ($this->_fetchedAllCategoryGroups) {
-            return array_values($this->_categoryGroupsById);
+            return array_values(array_filter($this->_categoryGroupsById));
         }
 
         $this->_categoryGroupsById = [];

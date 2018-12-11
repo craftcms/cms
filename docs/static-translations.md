@@ -4,7 +4,7 @@ Most websites and apps will have some UI messages that are hard-coded into the t
 
 If you’re building a multilingual site or app, then these messages will need to be translatable just like your CMS-driven content.
 
-To do that, Craft employs Yii’s [Message Translations](https://www.yiiframework.com/doc/guide/1.1/en/topics.i18n#message-translation) feature, and pre-defines a special translation category, `site`, for front-end messages. 
+To do that, Craft employs Yii’s [Message Translations](https://www.yiiframework.com/doc/guide/2.0/en/tutorial-i18n#message-translation) feature, and pre-defines a special translation category, `site`, for front-end messages. 
 
 ## Prep Your Messages
 
