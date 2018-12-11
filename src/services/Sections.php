@@ -1226,6 +1226,7 @@ class Sections extends Component
             $entryTypeRecord->titleFormat = $data['titleFormat'];
             $entryTypeRecord->sortOrder = $data['sortOrder'];
             $entryTypeRecord->sectionId = $section->id;
+            $entryTypeRecord->uid = $entryTypeUid;
 
             if (!empty($data['fieldLayouts'])) {
                 $fields = Craft::$app->getFields();
