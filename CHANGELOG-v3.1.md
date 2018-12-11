@@ -14,6 +14,7 @@
 - Added the `softDeleteDuration` config setting.
 - Added the `useProjectConfigFile` config setting.
 - Added the `gc` console command, which can be used to run garbage collection tasks.
+- Added the `project-config/sync` console command. ([#3510](https://github.com/craftcms/cms/issues/3510))
 - Added the `trashed` element query param, which can be used to query for elements that have been soft-deleted.
 - Added the `expression()` Twig function, for creating new `yii\db\Expression` objects in templates. ([#3289](https://github.com/craftcms/cms/pull/3289))
 - Added the `parseEnv()` Twig function.
@@ -92,6 +93,7 @@
 ### Changed
 - The `defaultWeekStartDay` config setting is now set to `1` (Monday) by default, to conform with the ISO 8601 standard.
 - Renamed the `isSystemOn` config setting to `isSystemLive`.
+- The `app/migrate` web action now applies pending `project.yaml` changes, if the `useProjectConfigFile` config setting is enabled.
 - The `svg()` function now supports a `class` argument, which will add a class name to the root `<svg>` node. ([#3174](https://github.com/craftcms/cms/issues/3174))
 - `info` buttons can now also have a `warning` class.
 - User permission definitions can now include `info` and/or `warning` keys.
