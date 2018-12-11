@@ -12,6 +12,7 @@
 - Fixed a bug where restoring elements belonging to deleted sites via `project.yaml` would throw an error.
 - Fixed a bug where pre-determined layout UIDs were not respected when saving a field layout.
 - Fixed a bug where creating a new entry type would save it with an incorrect UID.
+- Fixed a bug where renaming a volume would not rename the top folder. ([#3534](https://github.com/craftcms/cms/issues/3534))
 
 ## 3.1.0-beta.4 - 2018-11-30
 

@@ -517,11 +517,12 @@ class Volumes extends Component
                 $topFolder = new VolumeFolder([
                     'volumeId' => $volumeRecord->id,
                     'parentId' => null,
-                    'name' => $volumeRecord->name,
                     'path' => ''
                 ]);
-                $topFolder->save();
             }
+
+            $topFolder->name = $volumeRecord->name;
+            $assets->storeFolderRecord($topFolder);
 
             $transaction->commit();
         } catch (\Throwable $e) {
