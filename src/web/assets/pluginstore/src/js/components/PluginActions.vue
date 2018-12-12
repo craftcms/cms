@@ -1,37 +1,55 @@
 <template>
-    <div v-if="plugin" class="buttons flex-no-shrink">
+    <div v-if="plugin" class="plugin-actions">
         <template v-if="!hasFreeEdition(plugin)">
             <template v-if="isInstalled(plugin)">
+                <!-- Installed -->
                 <template v-if="pluginHasLicenseKey(plugin.handle)">
                     <license-status status="installed" :description="$options.filters.t('Installed', 'app')"></license-status>
                 </template>
                 <template v-else>
+                    <!-- Installed as trial -->
                     <license-status status="installed" :description="$options.filters.t('Installed as a trial', 'app')"></license-status>
 
+                    <!-- Added to cart -->
                     <a v-if="isInCart(plugin)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
+
+                    <!-- Add to cart -->
                     <a v-else @click="chooseEdition(plugin)" class="btn submit" :title="buyBtnTitle">{{ plugin.editions[0].price|currency }}</a>
                 </template>
             </template>
 
             <template v-else>
                 <template v-if="allowUpdates">
-                    <form method="post">
+                    <!-- Already in cart -->
+                    <template v-if="isInCart(plugin, edition)">
+                        <btn outline type="primary" @click="$root.openModal('cart')" block large>
+                            <font-awesome-icon icon="check"></font-awesome-icon>
+                            {{ "Already in your cart"|t('app') }}
+                        </btn>
+                    </template>
+
+                    <!-- Add to cart -->
+                    <template v-else>
+                        <btn type="primary" :disabled="isPluginEditionFree(edition)" @click="addEditionToCart(edition.handle)" block large>{{ "Add to cart"|t('app') }}</btn>
+                    </template>
+
+                    <!-- Try -->
+                    <form method="post" class="mt-3">
                         <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
                         <input type="hidden" name="action" value="pluginstore/install">
                         <input type="hidden" name="packageName" :value="plugin.packageName">
                         <input type="hidden" name="handle" :value="plugin.handle">
                         <input type="hidden" name="version" :value="plugin.version">
-                        <input type="submit" class="btn" :value="'Try'|t('app')">
+                        <btn-input :value="'Try'|t('app')" block large></btn-input>
                     </form>
-
-                    <a v-if="isInCart(plugin)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
-                    <a v-else @click="chooseEdition(plugin)" class="btn submit" :title="buyBtnTitle">{{ plugin.editions[0].price|currency }}</a>
                 </template>
             </template>
         </template>
         <div v-else>
+            <!-- Installed -->
             <a v-if="isInstalled(plugin)" class="btn submit disabled">{{ "Installed"|t('app') }}</a>
 
+            <!-- Install -->
             <div v-else-if="allowUpdates">
                 <form method="post">
                     <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
@@ -43,6 +61,8 @@
                 </form>
             </div>
         </div>
+
+        <div class="spinner" v-if="loading"></div>
     </div>
 </template>
 
@@ -52,10 +72,16 @@
 
     export default {
 
-        props: ['plugin'],
+        props: ['plugin', 'edition'],
 
         components: {
             LicenseStatus,
+        },
+
+        data() {
+            return {
+                loading: false,
+            }
         },
 
         computed: {
@@ -65,6 +91,7 @@
                 hasFreeEdition: 'pluginStore/hasFreeEdition',
                 isInCart: 'cart/isInCart',
                 pluginHasLicenseKey: 'craft/pluginHasLicenseKey',
+                isPluginEditionFree: 'pluginStore/isPluginEditionFree',
             }),
 
             buyBtnTitle() {
@@ -91,7 +118,40 @@
                 return Craft.csrfTokenValue
             },
 
+        },
+
+        methods: {
+
+            addEditionToCart(editionHandle) {
+                this.loading = true
+
+                const item = {
+                    type: 'plugin-edition',
+                    plugin: this.plugin.handle,
+                    edition: editionHandle,
+                    autoRenew: false,
+                    cmsLicenseKey: window.cmsLicenseKey,
+                }
+
+                this.$store.dispatch('cart/addToCart', [item])
+                    .then(() => {
+                        this.loading = false
+                        this.$root.openModal('cart')
+                    })
+            },
+
         }
 
     }
 </script>
+
+<style lang="scss">
+    .plugin-actions {
+        position: relative;
+        .spinner {
+            position: absolute;
+            bottom: -32px;
+            left: 50%;
+        }
+    }
+</style>

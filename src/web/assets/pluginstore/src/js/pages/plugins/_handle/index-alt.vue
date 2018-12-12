@@ -12,8 +12,6 @@
                 <p><a @click="viewDeveloper(pluginSnippet)">{{ pluginSnippet.developerName }}</a></p>
             </div>
 
-            <plugin-actions v-if="cart" :plugin="plugin"></plugin-actions>
-
             <div v-if="actionsLoading">
                 <div class="spinner"></div>
             </div>
@@ -96,7 +94,6 @@
     import {mapState, mapGetters, mapActions} from 'vuex'
     import PluginScreenshots from '../../../components/PluginScreenshots'
     import PluginEditions from '../../../components/PluginEditions'
-    import PluginActions from '../../../components/PluginActions'
     import PluginChangelog from '../../../components/PluginChangelog'
 
     export default {
@@ -106,7 +103,6 @@
         components: {
             PluginScreenshots,
             PluginEditions,
-            PluginActions,
             PluginChangelog,
         },
 
@@ -124,7 +120,6 @@
                 categories: state => state.pluginStore.categories,
                 plugin: state => state.pluginStore.plugin,
                 plugins: state => state.pluginStore.plugins,
-                cart: state => state.cart.cart,
                 defaultPluginSvg: state => state.craft.defaultPluginSvg,
             }),
 

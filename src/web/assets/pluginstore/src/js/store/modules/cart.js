@@ -20,8 +20,18 @@ const state = {
 const getters = {
 
     isInCart(state) {
-        return plugin => {
-            return state.cart.lineItems.find(lineItem => lineItem.purchasable.pluginId == plugin.id)
+        return (plugin, edition) => {
+            return state.cart.lineItems.find(lineItem => {
+                if (lineItem.purchasable.pluginId !== plugin.id) {
+                    return false
+                }
+
+                if (edition && lineItem.purchasable.handle !== edition.handle) {
+                    return false
+                }
+
+                return true
+            })
         }
     },
 
