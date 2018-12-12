@@ -58,7 +58,7 @@ $createFolder = function($path) {
             // Set a 503 response header so things like Varnish won't cache a bad page.
             http_response_code(503);
 
-            exit('Tried to create a folder at '.$path.', but could not.');
+            exit('Tried to create a folder at '.$path.', but could not.' . PHP_EOL);
         }
 
         // Because setting permission with mkdir is a crapshoot.
@@ -75,7 +75,7 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
         // Set a 503 response header so things like Varnish won't cache a bad page.
         http_response_code(503);
 
-        exit(($realPath !== false ? $realPath : $path).' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
+        exit(($realPath !== false ? $realPath : $path).' doesn\'t exist or isn\'t writable by PHP. Please fix that.' . PHP_EOL);
     }
 
     if ($writableToo) {
@@ -83,7 +83,7 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
             // Set a 503 response header so things like Varnish won't cache a bad page.
             http_response_code(503);
 
-            exit($realPath.' isn\'t writable by PHP. Please fix that.');
+            exit($realPath.' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
         }
     }
 };
@@ -110,36 +110,39 @@ $environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME
 // Validate the paths
 // -----------------------------------------------------------------------------
 
-// Validate permissions on the license key file path (default config/) and storage/
-if (defined('CRAFT_LICENSE_KEY_PATH')) {
-    $licensePath = dirname(CRAFT_LICENSE_KEY_PATH);
-    $licenseKeyName = basename(CRAFT_LICENSE_KEY_PATH);
-} else {
-    $licensePath = $configPath;
-    $licenseKeyName = 'license.key';
-}
+if (!defined('CRAFT_LICENSE_KEY')) {
+    // Validate permissions on the license key file path (default config/) and storage/
+    if (defined('CRAFT_LICENSE_KEY_PATH')) {
+        $licensePath = dirname(CRAFT_LICENSE_KEY_PATH);
+        $licenseKeyName = basename(CRAFT_LICENSE_KEY_PATH);
+    } else {
+        $licensePath = $configPath;
+        $licenseKeyName = 'license.key';
+    }
 
-// Make sure the license folder exists.
-if (!is_dir($licensePath) && !file_exists($licensePath)) {
-    $createFolder($licensePath);
-}
+    // Make sure the license folder exists.
+    if (!is_dir($licensePath) && !file_exists($licensePath)) {
+        $createFolder($licensePath);
+    }
 
-$ensureFolderIsReadable($licensePath);
+    $ensureFolderIsReadable($licensePath);
 
-if ($appType === 'web') {
-    $licenseFullPath = $licensePath.'/'.$licenseKeyName;
+    if ($appType === 'web') {
+        $licenseFullPath = $licensePath.'/'.$licenseKeyName;
 
-    // If the license key doesn't exist yet, make sure the folder is readable and we can write a temp one.
-    if (!file_exists($licenseFullPath)) {
-        // Try and write out a temp license key file.
-        @file_put_contents($licenseFullPath, 'temp');
+        // If the license key doesn't exist yet, make sure the folder is readable and we can write a temp one.
+        if (!file_exists($licenseFullPath)) {
+            // Try and write out a temp license key file.
+            @file_put_contents($licenseFullPath, 'temp');
 
-        // See if it worked.
-        if (!file_exists($licenseFullPath) || (file_exists($licenseFullPath) && file_get_contents($licenseFullPath) !== 'temp')) {
-            exit($licensePath.' isn\'t writable by PHP. Please fix that.');
+            // See if it worked.
+            if (!file_exists($licenseFullPath) || (file_exists($licenseFullPath) && file_get_contents($licenseFullPath) !== 'temp')) {
+                exit($licensePath.' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
+            }
         }
     }
 }
+
 
 $ensureFolderIsReadable($storagePath, true);
 

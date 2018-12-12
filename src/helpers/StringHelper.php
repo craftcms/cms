@@ -9,6 +9,8 @@ namespace craft\helpers;
 
 use Craft;
 use Stringy\Stringy as BaseStringy;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * This helper class provides various multi-byte aware string related manipulation and encoding methods.
@@ -22,14 +24,6 @@ class StringHelper extends \yii\helpers\StringHelper
     // =========================================================================
 
     const UTF8 = 'UTF-8';
-
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var
-     */
-    private static $_asciiCharMap;
 
     // Public Methods
     // =========================================================================
@@ -225,6 +219,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Returns the index of the first occurrence of $needle in the string, and false if not found.
+     *
      * Accepts an optional offset from which to begin the search.
      *
      * @param string $str The string to check the index of.
@@ -239,6 +234,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Returns the index of the last occurrence of $needle in the string,and false if not found.
+     *
      * Accepts an optional offset from which to begin the search. Offsets may be negative to count from
      * the last character in the string.
      *
@@ -430,7 +426,7 @@ class StringHelper extends \yii\helpers\StringHelper
             return '';
         }
 
-        $string = array_shift($words).implode('', array_map([
+        $string = array_shift($words) . implode('', array_map([
                 static::class,
                 'upperCaseFirst'
             ], $words));
@@ -483,7 +479,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function split(string $string, string $delimiter = ','): array
     {
-        return preg_split('/\s*'.preg_quote($delimiter, '/').'\s*/', $string, -1, PREG_SPLIT_NO_EMPTY);
+        return preg_split('/\s*' . preg_quote($delimiter, '/') . '\s*/', $string, -1, PREG_SPLIT_NO_EMPTY);
     }
 
     /**
@@ -555,7 +551,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * Generates a random string of latin alphanumeric characters that defaults to a $length of 36. If $extendedChars is
      * set to true, additional symbols can be included in the string. Note that the generated string is *not* a
      * cryptographically secure string. If you need a cryptographically secure string, use
-     * [[\craft\services\Security::generateRandomString()|<code>Craft::$app->security->generateRandomString()</code>]].
+     * [[\craft\services\Security::generateRandomString()|`Craft::$app->security->generateRandomString()`]].
      *
      * @param int $length The length of the random string. Defaults to 36.
      * @param bool $extendedChars Whether to include symbols in the random string.
@@ -575,7 +571,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Generates a random string of characters. Note that the generated string is *not* a
      * cryptographically secure string. If you need a cryptographically secure string, use
-     * [[\craft\services\Security::generateRandomString()|<code>Craft::$app->security->generateRandomString()</code>]].
+     * [[\craft\services\Security::generateRandomString()|`Craft::$app->security->generateRandomString()`]].
      *
      * @param string $validChars A string containing the valid characters
      * @param int $length The length of the random string
@@ -845,25 +841,44 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
-     * Returns ASCII character mappings, merging in any custom defined mappings from the 'customAsciiCharMappings'
-     * config setting.
+     * Returns ASCII character mappings, merging in any custom defined mappings from the
+     * [[\craft\config\GeneralConfig::customAsciiCharMappings|customAsciiCharMappings]] config setting.
      *
+     * @param bool $flat Whether the mappings should be returned as a flat array (é => e)
+     * @param string|null $language Whether to include language-specific mappings (only applied if $flat is true)
      * @return array The fully merged ASCII character mappings.
      */
-    public static function asciiCharMap(): array
+    public static function asciiCharMap(bool $flat = false, string $language = null): array
     {
-        if (self::$_asciiCharMap !== null) {
-            return self::$_asciiCharMap;
+        $map = (new Stringy())->getAsciiCharMap();
+
+        if (!$flat) {
+            return $map;
         }
 
-        // Get the map from Stringy.
-        self::$_asciiCharMap = (new Stringy(''))->getAsciiCharMap();
-
-        foreach (Craft::$app->getConfig()->getGeneral()->customAsciiCharMappings as $asciiChar => $values) {
-            self::$_asciiCharMap[$asciiChar] = $values;
+        $flatMap = [];
+        foreach ($map as $ascii => $chars) {
+            foreach ($chars as $char) {
+                $flatMap[$char] = $ascii;
+            }
         }
 
-        return self::$_asciiCharMap;
+        // Include language specific replacements (unless the ASCII chars have custom mappings)
+        if ($language !== null) {
+            $langSpecific = Stringy::getLangSpecificCharsArray($language);
+            if (!empty($langSpecific)) {
+                $generalConfig = Craft::$app->getConfig()->getGeneral();
+                $customChars = !empty($generalConfig->customAsciiCharMappings) ? call_user_func_array('array_merge', $generalConfig->customAsciiCharMappings) : [];
+                $customChars = array_flip($customChars);
+                foreach ($langSpecific[0] as $i => $char) {
+                    if (!isset($customChars[$char])) {
+                        $flatMap[$char] = $langSpecific[1][$i];
+                    }
+                }
+            }
+        }
+
+        return $flatMap;
     }
 
     /**
@@ -875,7 +890,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toAscii(string $str): string
     {
-        return (string)BaseStringy::create($str)->toAscii();
+        return (string)BaseStringy::create($str)->toAscii(Craft::$app->language);
     }
 
     /**
@@ -883,11 +898,13 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str the string
      * @return string
+     * @throws InvalidConfigException on OpenSSL not loaded
+     * @throws Exception on OpenSSL error
      * @see decdec()
      */
     public static function encenc(string $str): string
     {
-        return 'base64:'.base64_encode('crypt:'.Craft::$app->getSecurity()->encryptByKey($str));
+        return 'base64:' . base64_encode('crypt:' . Craft::$app->getSecurity()->encryptByKey($str));
     }
 
     /**
@@ -895,6 +912,8 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string.
      * @return string
+     * @throws InvalidConfigException on OpenSSL not loaded
+     * @throws Exception on OpenSSL error
      */
     public static function decdec(string $str): string
     {
@@ -962,7 +981,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function encoding(string $string): string
     {
-        return static::toLowerCase(mb_detect_encoding($string, mb_detect_order(), true));
+        return mb_strtolower(mb_detect_encoding($string, mb_detect_order(), true));
     }
 
     /**
@@ -995,7 +1014,7 @@ class StringHelper extends \yii\helpers\StringHelper
                     // get the correct hex encoding.
                     $unpacked = unpack('H*', mb_convert_encoding($match[0], 'UTF-32', 'UTF-8'));
 
-                    return isset($unpacked[1]) ? '&#x'.ltrim($unpacked[1], '0').';' : '';
+                    return isset($unpacked[1]) ? '&#x' . ltrim($unpacked[1], '0') . ';' : '';
                 }
 
                 return $match[0];
@@ -1019,9 +1038,12 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     private static function _prepStringForCasing(string $string, bool $lower = true, bool $removePunctuation = true): array
     {
+        // Convert CamelCase to multiple words
+        $string = preg_replace('/(?<=[a-z])[A-Z]/u', ' \0', $string);
+
         if ($lower) {
             // Make it lowercase
-            $string = static::toLowerCase($string);
+            $string = mb_strtolower($string);
         }
 
         if ($removePunctuation) {

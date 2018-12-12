@@ -10,9 +10,11 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\base\Field;
+use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\UploadFailedException;
+use craft\events\DefineUserContentSummaryEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
@@ -62,6 +64,22 @@ class UsersController extends Controller
      */
     const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
 
+    /**
+     * @event DefineUserContentSummaryEvent The event that is triggered when defining a summary of content owned by a user(s), before they are deleted
+     *
+     * ---
+     * ```php
+     * use craft\controllers\UsersController;
+     * use craft\events\DefineUserContentSummaryEvent;
+     * use yii\base\Event;
+     *
+     * Event::on(UsersController::class, UsersController::EVENT_DEFINE_CONTENT_SUMMARY, function(DefineUserContentSummaryEvent $e) {
+     *     $e->contentSummary[] = 'A pair of sneakers';
+     * });
+     * ```
+     */
+    const EVENT_DEFINE_CONTENT_SUMMARY = 'defineContentSummary';
+
     // Properties
     // =========================================================================
 
@@ -86,6 +104,7 @@ class UsersController extends Controller
      * Displays the login template, and handles login post requests.
      *
      * @return Response|null
+     * @throws BadRequestHttpException
      */
     public function actionLogin()
     {
@@ -102,8 +121,8 @@ class UsersController extends Controller
         // First, a little house-cleaning for expired, pending users.
         Craft::$app->getUsers()->purgeExpiredPendingUsers();
 
-        $loginName = Craft::$app->getRequest()->getBodyParam('loginName');
-        $password = Craft::$app->getRequest()->getBodyParam('password');
+        $loginName = (string)Craft::$app->getRequest()->getRequiredBodyParam('loginName');
+        $password = (string)Craft::$app->getRequest()->getRequiredBodyParam('password');
         $rememberMe = (bool)Craft::$app->getRequest()->getBodyParam('rememberMe');
 
         // Does a user exist with that username/email?
@@ -156,14 +175,15 @@ class UsersController extends Controller
         $request = Craft::$app->getRequest();
 
         $userId = $request->getBodyParam('userId');
-        $originalUserId = $userService->getId();
 
-        $session->set(User::IMPERSONATE_KEY, $originalUserId);
+        // Save the original user ID to the session now so User::findIdentity()
+        // knows not to worry if the user isn't active yet
+        $session->set(User::IMPERSONATE_KEY, $userService->getId());
 
         if (!$userService->loginByUserId($userId)) {
             $session->remove(User::IMPERSONATE_KEY);
             $session->setError(Craft::t('app', 'There was a problem impersonating this user.'));
-            Craft::error($userService->getIdentity()->username.' tried to impersonate userId: '.$userId.' but something went wrong.', __METHOD__);
+            Craft::error($userService->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
 
             return null;
         }
@@ -207,6 +227,7 @@ class UsersController extends Controller
 
     /**
      * Starts an elevated user session.
+     *
      * return Response
      */
     public function actionStartElevatedSession()
@@ -409,8 +430,7 @@ class UsersController extends Controller
             return $this->redirect($url);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app',
-            'Couldn’t update password.'));
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t update password.'));
 
         $errors = $userToProcess->getErrors('newPassword');
 
@@ -528,7 +548,7 @@ class UsersController extends Controller
                         /** @var User|null $user */
                         $user = User::find()
                             ->id($userId)
-                            ->status(null)
+                            ->anyStatus()
                             ->addSelect('users.passwordResetRequired')
                             ->one();
 
@@ -684,8 +704,10 @@ class UsersController extends Controller
         if (!$isNewUser) {
             if ($user->getIsCurrent()) {
                 $title = Craft::t('app', 'My Account');
+            } else if ($name = trim($user->getName())) {
+                $title = Craft::t('app', '{user}’s Account', ['user' => $name]);
             } else {
-                $title = Craft::t('app', '{user}’s Account', ['user' => $user->getName()]);
+                $title = Craft::t('app', 'Edit User');
             }
         } else {
             $title = Craft::t('app', 'Register a new user');
@@ -700,32 +722,29 @@ class UsersController extends Controller
             ]
         ];
 
-        // Only show custom fields if it's Craft Pro
-        if ($edition === Craft::Pro) {
-            foreach ($user->getFieldLayout()->getTabs() as $index => $tab) {
-                // Skip if the tab doesn't have any fields
-                if (empty($tab->getFields())) {
-                    continue;
-                }
+        foreach ($user->getFieldLayout()->getTabs() as $index => $tab) {
+            // Skip if the tab doesn't have any fields
+            if (empty($tab->getFields())) {
+                continue;
+            }
 
-                // Do any of the fields on this tab have errors?
-                $hasErrors = false;
+            // Do any of the fields on this tab have errors?
+            $hasErrors = false;
 
-                if ($user->hasErrors()) {
-                    foreach ($tab->getFields() as $field) {
-                        /** @var Field $field */
-                        if ($hasErrors = $user->hasErrors($field->handle)) {
-                            break;
-                        }
+            if ($user->hasErrors()) {
+                foreach ($tab->getFields() as $field) {
+                    /** @var Field $field */
+                    if ($hasErrors = $user->hasErrors($field->handle . '.*')) {
+                        break;
                     }
                 }
-
-                $tabs['profile'.$index] = [
-                    'label' => Craft::t('site', $tab->name),
-                    'url' => '#'.$tab->getHtmlId(),
-                    'class' => $hasErrors ? 'error' : null
-                ];
             }
+
+            $tabs['profile' . $index] = [
+                'label' => Craft::t('site', $tab->name),
+                'url' => '#profile-' . $tab->getHtmlId(),
+                'class' => $hasErrors ? 'error' : null
+            ];
         }
 
         // Show the permission tab for the users that can change them on Craft Pro editions
@@ -792,10 +811,11 @@ class UsersController extends Controller
         }
 
         try {
-            $client = Craft::$app->getPluginStore()->getClient();
+            $client = Craft::$app->getApi()->client;
 
             if ($craftIdToken) {
-                $craftIdAccountResponse = $client->request('GET', 'account');
+                $options = Craft::$app->getPluginStore()->getApiRequestOptions();
+                $craftIdAccountResponse = $client->get('account', $options);
                 $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
 
                 if (isset($craftIdAccount['error'])) {
@@ -811,6 +831,9 @@ class UsersController extends Controller
         // Load the resources and render the page
         // ---------------------------------------------------------------------
 
+        // Body class
+        $bodyClass = 'edit-user';
+
         $this->getView()->registerAssetBundle(EditUserAsset::class);
 
         $userIdJs = Json::encode($user->id);
@@ -818,13 +841,14 @@ class UsersController extends Controller
         $settingsJs = Json::encode([
             'deleteModalRedirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
         ]);
-        $this->getView()->registerJs('new Craft.AccountSettingsForm('.$userIdJs.', '.$isCurrentJs.', '.$settingsJs.');', View::POS_END);
+        $this->getView()->registerJs('new Craft.AccountSettingsForm(' . $userIdJs . ', ' . $isCurrentJs . ', ' . $settingsJs . ');', View::POS_END);
 
         return $this->renderTemplate('users/_edit', compact(
             'user',
             'isNewUser',
             'statusLabel',
             'actions',
+            'bodyClass',
             'title',
             'tabs',
             'selectedTab',
@@ -836,6 +860,7 @@ class UsersController extends Controller
 
     /**
      * Provides an endpoint for saving a user account.
+     *
      * This action accounts for the following scenarios:
      * - An admin registering a new user account.
      * - An admin editing an existing user account.
@@ -853,7 +878,6 @@ class UsersController extends Controller
     {
         $this->requirePostRequest();
 
-        $edition = Craft::$app->getEdition();
         $request = Craft::$app->getRequest();
         $userComponent = Craft::$app->getUser();
         $currentUser = $userComponent->getIdentity();
@@ -870,7 +894,7 @@ class UsersController extends Controller
         if ($userId) {
             $user = User::find()
                 ->id($userId)
-                ->status(null)
+                ->anyStatus()
                 ->addSelect(['users.password', 'users.passwordResetRequired'])
                 ->one();
 
@@ -960,7 +984,7 @@ class UsersController extends Controller
             (!empty($newEmail) || $user->newPassword !== null) &&
             !$this->_verifyElevatedSession()
         ) {
-            Craft::warning('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', __METHOD__);
+            Craft::warning('Tried to change the email or password for userId: ' . $user->id . ', but the current password does not match what the user supplied.', __METHOD__);
             $user->addError('currentPassword', Craft::t('app', 'Incorrect current password.'));
         }
 
@@ -977,9 +1001,9 @@ class UsersController extends Controller
         $user->firstName = $request->getBodyParam('firstName', $user->firstName);
         $user->lastName = $request->getBodyParam('lastName', $user->lastName);
 
-        // If email verification is required, then new users will be saved in a pending state,
+        // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
-        if ($isNewUser && $requireEmailVerification) {
+        if ($isNewUser) {
             $user->pending = true;
         }
 
@@ -1015,7 +1039,11 @@ class UsersController extends Controller
             $user->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!$user->validate(null, false)) {
+        // Manually validate the user so we can pass $clearErrors=false
+        if (
+            !$user->validate(null, false) ||
+            !Craft::$app->getElements()->saveElement($user, false)
+        ) {
             Craft::info('User not saved due to validation error.', __METHOD__);
 
             if ($thisIsPublicRegistration) {
@@ -1040,8 +1068,11 @@ class UsersController extends Controller
             return null;
         }
 
-        // Save the user (but no need to re-validate)
-        Craft::$app->getElements()->saveElement($user, false);
+        // If this is a new user and email verification isn't required,
+        // go ahead and activate them now.
+        if ($isNewUser && !$requireEmailVerification) {
+            Craft::$app->getUsers()->activateUser($user);
+        }
 
         // Save their preferences too
         $preferences = [
@@ -1189,7 +1220,7 @@ class UsersController extends Controller
                 FileHelper::unlink($fileLocation);
             }
 
-            Craft::error('There was an error uploading the photo: '.$exception->getMessage(), __METHOD__);
+            Craft::error('There was an error uploading the photo: ' . $exception->getMessage(), __METHOD__);
 
             return $this->asErrorJson(Craft::t('app', 'There was an error uploading your photo: {error}', [
                 'error' => $exception->getMessage()
@@ -1242,7 +1273,7 @@ class UsersController extends Controller
 
         $user = User::find()
             ->id($userId)
-            ->status(null)
+            ->anyStatus()
             ->addSelect(['users.password'])
             ->one();
 
@@ -1345,6 +1376,38 @@ class UsersController extends Controller
         Craft::$app->getSession()->setNotice(Craft::t('app', 'User suspended.'));
 
         return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * Returns a summary of the content that is owned by a given user ID(s).
+     *
+     * @return Response|null
+     */
+    public function actionUserContentSummary(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireLogin();
+        $this->requirePermission('deleteUsers');
+
+        $userIds = Craft::$app->getRequest()->getRequiredBodyParam('userId');
+        $summary = [];
+
+        $entryCount = (new Query())
+            ->from(['{{%entries}}'])
+            ->where(['authorId' => $userIds])
+            ->count();
+
+        if ($entryCount) {
+            $summary[] = $entryCount == 1 ? Craft::t('app', '1 entry') : Craft::t('app', '{num} entries', ['num' => $entryCount]);
+        }
+
+        // Fire a 'defineUserContentSummary' event
+        $event = new DefineUserContentSummaryEvent([
+            'contentSummary' => $summary,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_CONTENT_SUMMARY, $event);
+
+        return $this->asJson($event->contentSummary);
     }
 
     /**
@@ -1789,7 +1852,7 @@ class UsersController extends Controller
                         // Make sure the current user is in the group or has permission to assign it
                         if (
                             !$currentUser->isInGroup($groupId) &&
-                            !$currentUser->can('assignUserGroup:'.$groupId)
+                            !$currentUser->can('assignUserGroup:' . $groupId)
                         ) {
                             throw new ForbiddenHttpException("Your account doesn't have permission to assign user group {$groupId} to a user.");
                         }
@@ -1817,7 +1880,7 @@ class UsersController extends Controller
         /** @var User|null $userToProcess */
         $userToProcess = User::find()
             ->uid($uid)
-            ->status(null)
+            ->anyStatus()
             ->addSelect(['users.password', 'users.unverifiedEmail'])
             ->one();
 

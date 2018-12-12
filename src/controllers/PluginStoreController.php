@@ -61,11 +61,11 @@ class PluginStoreController extends Controller
         $view = $this->getView();
         $view->registerJsFile('https://js.stripe.com/v2/');
         $view->registerJsFile('https://js.stripe.com/v3/');
-        $view->registerJs('window.craftApiEndpoint = "'.Craft::$app->getPluginStore()->craftApiEndpoint.'";', View::POS_BEGIN);
-        $view->registerJs('window.pluginStoreAppBaseUrl = "'.$pluginStoreAppBaseUrl.'";', View::POS_BEGIN);
-        $view->registerJs('window.cmsInfo = '.Json::encode($cmsInfo).';', View::POS_BEGIN);
-        $view->registerJs('window.allowUpdates = '.Json::encode(Craft::$app->getConfig()->getGeneral()->allowUpdates).';', View::POS_BEGIN);
-        $view->registerJs('window.cmsLicenseKey = '.Json::encode(App::licenseKey()).';', View::POS_BEGIN);
+        $view->registerJs('window.craftApiEndpoint = "' . Craft::$app->getPluginStore()->craftApiEndpoint . '";', View::POS_BEGIN);
+        $view->registerJs('window.pluginStoreAppBaseUrl = "' . $pluginStoreAppBaseUrl . '";', View::POS_BEGIN);
+        $view->registerJs('window.cmsInfo = ' . Json::encode($cmsInfo) . ';', View::POS_BEGIN);
+        $view->registerJs('window.allowUpdates = ' . Json::encode(Craft::$app->getConfig()->getGeneral()->allowUpdates) . ';', View::POS_BEGIN);
+        $view->registerJs('window.cmsLicenseKey = ' . Json::encode(App::licenseKey()) . ';', View::POS_BEGIN);
 
         $view->registerAssetBundle(PluginStoreAsset::class);
 
@@ -124,12 +124,12 @@ class PluginStoreController extends Controller
         $client = Craft::createGuzzleClient();
 
         try {
-            $url = Craft::$app->getPluginStore()->craftIdEndpoint.'/oauth/revoke';
+            $url = Craft::$app->getPluginStore()->craftIdEndpoint . '/oauth/revoke';
             $options = ['query' => ['accessToken' => $token->accessToken]];
             $client->request('GET', $url, $options);
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Disconnected from id.craftcms.com.'));
         } catch (\Exception $e) {
-            Craft::error('Couldn’t revoke token: '.$e->getMessage());
+            Craft::error('Couldn’t revoke token: ' . $e->getMessage());
             Craft::$app->getSession()->setError(Craft::t('app', 'Disconnected from id.craftcms.com with errors, check the logs.'));
         }
 
@@ -157,7 +157,7 @@ class PluginStoreController extends Controller
             'redirectUrl' => $redirectUrl
         ];
 
-        $this->getView()->registerJs('new Craft.PluginStoreOauthCallback('.Json::encode($options).');');
+        $this->getView()->registerJs('new Craft.PluginStoreOauthCallback(' . Json::encode($options) . ');');
 
         return $this->renderTemplate('plugin-store/_special/oauth/callback');
     }
@@ -270,6 +270,7 @@ class PluginStoreController extends Controller
         // Logos
         $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/craft.svg');
         $data['poweredByStripe'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/powered_by_stripe.svg');
+        $data['defaultPluginSvg'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/default-plugin.svg');
 
         return $this->asJson($data);
     }

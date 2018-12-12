@@ -21,7 +21,7 @@ use yii\base\InvalidArgumentException;
 
 /**
  * Updates service.
- * An instance of the Updates service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUpdates()|<code>Craft::$app->updates</code>]].
+ * An instance of the Updates service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUpdates()|`Craft::$app->updates`]].
  *
  * @property bool $isCraftDbMigrationNeeded Whether Craft needs to run any database migrations
  * @property bool $isCraftSchemaVersionCompatible Whether the uploaded DB schema is equal to or greater than the installed schema
@@ -142,6 +142,7 @@ class Updates extends Component
 
     /**
      * Returns a list of things with updated schema versions.
+     *
      * Craft CMS will be represented as "craft", plugins will be represented by their handles, and content will be represented as "content".
      *
      * @param bool $includeContent Whether pending content migrations should be considered
@@ -204,20 +205,15 @@ class Updates extends Component
             foreach ($handles as $handle) {
                 if ($handle === 'craft') {
                     Craft::$app->getMigrator()->up();
-                    $versionUpdated = Craft::$app->getUpdates()->updateCraftVersionInfo();
+                    Craft::$app->getUpdates()->updateCraftVersionInfo();
                 } else if ($handle === 'content') {
                     Craft::$app->getContentMigrator()->up();
-                    $versionUpdated = true;
                 } else {
                     /** @var Plugin $plugin */
                     $plugin = Craft::$app->getPlugins()->getPlugin($handle);
                     $name = $plugin->name;
                     $plugin->getMigrator()->up();
-                    $versionUpdated = Craft::$app->getUpdates()->setNewPluginInfo($plugin);
-                }
-
-                if (!$versionUpdated) {
-                    throw new Exception("Couldn't set new version info for $name.");
+                    Craft::$app->getUpdates()->setNewPluginInfo($plugin);
                 }
             }
 
@@ -233,7 +229,7 @@ class Updates extends Component
         } catch (InvalidArgumentException $e) {
             // the directory doesn't exist
         } catch (ErrorException $e) {
-            Craft::error('Could not delete compiled templates: '.$e->getMessage());
+            Craft::error('Could not delete compiled templates: ' . $e->getMessage());
             Craft::$app->getErrorHandler()->logException($e);
         }
     }

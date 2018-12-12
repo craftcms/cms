@@ -26,9 +26,9 @@ class MigrationHelper
      *
      * @param string $tableName
      * @param string|string[] $columns
-     * @return bool
+     * @return string|null The foreign key name, or null if it doesn't exist
      */
-    public static function doesForeignKeyExist(string $tableName, $columns): bool
+    public static function findForeignKey(string $tableName, $columns)
     {
         $db = Craft::$app->getDb();
         $schema = $db->getSchema();
@@ -39,7 +39,7 @@ class MigrationHelper
         }
         $table = $db->getTableSchema($tableName);
 
-        foreach ($table->foreignKeys as $num => $fk) {
+        foreach ($table->foreignKeys as $name => $fk) {
             $fkColumns = [];
 
             foreach ($fk as $count => $value) {
@@ -50,12 +50,23 @@ class MigrationHelper
 
             // Could be a composite key, so make sure all required values exist!
             if (count(array_intersect($fkColumns, $columns)) === count($columns)) {
-                return true;
+                return $name;
             }
         }
 
+        return null;
+    }
 
-        return false;
+    /**
+     * Returns whether a foreign key exists.
+     *
+     * @param string $tableName
+     * @param string|string[] $columns
+     * @return bool
+     */
+    public static function doesForeignKeyExist(string $tableName, $columns): bool
+    {
+        return static::findForeignKey($tableName, $columns) !== null;
     }
 
     /**
@@ -167,10 +178,10 @@ class MigrationHelper
             $transaction = $db->beginTransaction();
             try {
                 if ($migration !== null) {
-                    $migration->renameSequence($rawOldName.'_id_seq', $rawNewName.'_id_seq');
+                    $migration->renameSequence($rawOldName . '_id_seq', $rawNewName . '_id_seq');
                 } else {
                     $db->createCommand()
-                        ->renameSequence($rawOldName.'_id_seq', $rawNewName.'_id_seq')
+                        ->renameSequence($rawOldName . '_id_seq', $rawNewName . '_id_seq')
                         ->execute();
                 }
                 $transaction->commit();
@@ -545,21 +556,15 @@ class MigrationHelper
         $schema = $db->getSchema();
         $rawTableName = $schema->getRawTableName($tableName);
         $table = $db->getTableSchema($rawTableName);
-        $otherColumns = [];
 
         foreach ($table->getColumnNames() as $columnName) {
             $fks = static::findForeignKeysTo($rawTableName, $columnName);
 
             foreach ($fks as $otherTable => $row) {
-                foreach ($row as $columnInfo) {
-                    foreach ($columnInfo as $count => $value) {
-                        if ($count !== 0) {
-                            $otherColumns[] = $count;
-                        }
-                    }
+                foreach ($row as $fk) {
+                    $otherColumns = static::_getColumnsForFK($fk, true);
+                    static::dropForeignKeyIfExists($otherTable, $otherColumns, $migration);
                 }
-
-                static::dropForeignKeyIfExists($otherTable, $otherColumns, $migration);
             }
         }
     }
@@ -576,7 +581,7 @@ class MigrationHelper
         $db = $migration ? $migration->db : Craft::$app->getDb();
         $schema = $db->getSchema();
         $tableName = $schema->getRawTableName($tableName);
-        $foreignKeyName = $db->getForeignKeyName($tableName, $columns);
+        $foreignKeyName = static::findForeignKey($tableName, $columns);
 
         if ($migration !== null) {
             $migration->dropForeignKey($foreignKeyName, $tableName);

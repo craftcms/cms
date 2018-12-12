@@ -8,7 +8,7 @@
                 </div>
 
                 <template v-if="sort">
-                    <sort-menu-btn :attributes="sortMenuBtnAttributes" :value="sort" @update:value="val => $emit('update:sort', val)" />
+                    <sort-menu-btn :attributes="sortMenuBtnAttributes" :value="sort" @update:value="val => $emit('update:sort', val)"></sort-menu-btn>
                 </template>
 
                 <div class="spinner" v-bind:class="{ invisible: !showSpinner }"></div>
@@ -22,12 +22,14 @@
 <script>
     import filter from 'lodash/filter'
     import includes from 'lodash/includes'
+    import PluginGrid from './PluginGrid'
+    import SortMenuBtn from './SortMenuBtn'
 
     export default {
 
         components: {
-            PluginGrid: require('./PluginGrid'),
-            SortMenuBtn: require('./SortMenuBtn'),
+            PluginGrid,
+            SortMenuBtn,
         },
 
         props: ['plugins', 'sort'],

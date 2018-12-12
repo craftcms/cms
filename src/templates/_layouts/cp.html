@@ -83,7 +83,7 @@
                     {% if hasSystemIcon %}
                         <img src="{{ craft.rebrand.icon.url }}" alt="">
                     {% else %}
-                        {{ svg('@app/icons/circle-c-outline.svg') }}
+                        {{ svg('@app/icons/circle-c-outline.svg', namespace=true) }}
                     {% endif %}
                 </div>
                 <div id="system-name">
@@ -101,7 +101,7 @@
 
             <div class="menu" data-align="left">
                 <ul>
-                    <li><a href="{{ siteUrl }}" target="_blank">{{ 'View site'|t('app') }}</a></li>
+                    <li><a href="{{ siteUrl }}" rel="noopener" target="_blank">{{ 'View site'|t('app') }}</a></li>
                 </ul>
                 <hr>
                 <ul>
@@ -118,7 +118,9 @@
                             <a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
                                 <span class="icon icon-mask">
                                     {%- if item.icon is defined -%}
-                                        {{ (svg(item.icon) ?: "<span data-icon='#{item.icon}'></span>")|raw }}
+                                        {{ svg(item.icon, sanitize=true, namespace=true) }}
+                                    {%- elseif item.fontIcon is defined -%}
+                                        <span data-icon="{{ item.fontIcon }}"></span>
                                     {%- else -%}
                                         {% include "_includes/defaulticon.svg" with { label: item.label } %}
                                     {%- endif -%}
@@ -213,7 +215,7 @@
             <main id="main" role="main">
 
                 {% if fullPageForm -%}
-                    <form id="main-form" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect|hash }}"{% endif %} data-confirm-unload>
+                    <form {% block mainFormAttributes %}id="main-form" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect|hash }}"{% endif %} data-confirm-unload novalidate{% endblock %}>
                         {{- csrfInput() }}
                 {%- endif %}
 

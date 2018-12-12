@@ -27,7 +27,7 @@ class m170306_150500_asset_temporary_uploads extends Migration
         $assets = (new Query())
             ->select(['assets.id', 'assets.filename', 'assets.folderId', 'volumeFolders.path'])
             ->from('{{%assets}} assets')
-            ->innerJoin('{{%volumefolders}} volumeFolders', $folderId.' = '.$volumeFoldersId)
+            ->innerJoin('{{%volumefolders}} volumeFolders', $folderId . ' = ' . $volumeFoldersId)
             ->where(['assets.volumeId' => null])
             ->all($this->db);
 
@@ -45,7 +45,7 @@ class m170306_150500_asset_temporary_uploads extends Migration
                 $folderCache[$topFolderPath] = (new Query())->select('id')
                     ->from('{{%volumefolders}}')
                     ->where(['volumeId' => null])
-                    ->andWhere(['path' => $topFolderPath.'/'])
+                    ->andWhere(['path' => $topFolderPath . '/'])
                     ->scalar($this->db);
             }
 
@@ -56,9 +56,9 @@ class m170306_150500_asset_temporary_uploads extends Migration
                 $previousFolderList[$asset['folderId']] = $asset['path'];
             }
 
-            $basePath = Craft::$app->getPath()->getAssetsPath().DIRECTORY_SEPARATOR.'tempuploads'.DIRECTORY_SEPARATOR;
-            $from = $basePath.str_replace('/', DIRECTORY_SEPARATOR, $asset['path']).$asset['filename'];
-            $to = $basePath.$topFolderPath.DIRECTORY_SEPARATOR.$asset['filename'];
+            $basePath = Craft::$app->getPath()->getAssetsPath() . DIRECTORY_SEPARATOR . 'tempuploads' . DIRECTORY_SEPARATOR;
+            $from = $basePath . str_replace('/', DIRECTORY_SEPARATOR, $asset['path']) . $asset['filename'];
+            $to = $basePath . $topFolderPath . DIRECTORY_SEPARATOR . $asset['filename'];
 
             // Track what needs to be changed
             $updatedProperties = [
@@ -83,14 +83,14 @@ class m170306_150500_asset_temporary_uploads extends Migration
                     $increment++;
 
                     if ($increment < 50) {
-                        $newFilename = $filename.'_'.$increment.'.'.$extension;
+                        $newFilename = $filename . '_' . $increment . '.' . $extension;
                     } else {
-                        $newFilename = uniqid('assets', false).'.'.$extension;
+                        $newFilename = uniqid('assets', false) . '.' . $extension;
                     }
-                } while (file_exists($basePath.$topFolderPath.DIRECTORY_SEPARATOR.$newFilename));
+                } while (file_exists($basePath . $topFolderPath . DIRECTORY_SEPARATOR . $newFilename));
 
                 $updatedProperties['filename'] = $newFilename;
-                $to = $basePath.$topFolderPath.DIRECTORY_SEPARATOR.$newFilename;
+                $to = $basePath . $topFolderPath . DIRECTORY_SEPARATOR . $newFilename;
             }
 
             // Copy instead of move here to be extra safe. Copies left behind on no errors will be removed a few lines down anwyay.
@@ -106,10 +106,10 @@ class m170306_150500_asset_temporary_uploads extends Migration
         $this->delete('{{%volumefolders}}', ['id' => array_keys($previousFolderList)]);
 
         // And directories
-        $basePath = Craft::$app->getPath()->getAssetsPath().DIRECTORY_SEPARATOR.'tempuploads'.DIRECTORY_SEPARATOR;
+        $basePath = Craft::$app->getPath()->getAssetsPath() . DIRECTORY_SEPARATOR . 'tempuploads' . DIRECTORY_SEPARATOR;
 
         foreach ($previousFolderList as $folderPath) {
-            FileHelper::removeDirectory($basePath.$folderPath);
+            FileHelper::removeDirectory($basePath . $folderPath);
         }
 
         return true;

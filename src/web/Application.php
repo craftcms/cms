@@ -39,7 +39,7 @@ use yii\web\Response;
 /**
  * Craft Web Application class
  *
- * An instance of the Web Application class is globally accessible to web requests in Craft via [[\Craft::$app|<code>Craft::$app</code>]].
+ * An instance of the Web Application class is globally accessible to web requests in Craft via [[\Craft::$app|`Craft::$app`]].
  *
  * @property Request $request The request component
  * @property \craft\web\Response $response The response component
@@ -65,7 +65,16 @@ class Application extends \yii\web\Application
     // =========================================================================
 
     /**
-     * @event \yii\base\Event The event that is triggered after the application has been initialized
+     * @event \yii\base\Event The event that is triggered after the application has been fully initialized
+     *
+     * ---
+     * ```php
+     * use craft\web\Application;
+     *
+     * Craft::$app->on(Application::EVENT_INIT, function() {
+     *     // ...
+     * });
+     * ```
      */
     const EVENT_INIT = 'init';
 
@@ -94,11 +103,10 @@ class Application extends \yii\web\Application
     public function init()
     {
         $this->state = self::STATE_INIT;
-        // Important that we call $this->_init() before parent::init(), so that it's run before bootstrap()
-        // in case bootstrap() ends up loading a module that loads Twig, configuring Twig with the wrong timezone
-        $this->_init();
+        $this->_preInit();
         parent::init();
         $this->ensureResourcePathExists();
+        $this->_postInit();
         $this->debugBootstrap();
     }
 
@@ -129,7 +137,7 @@ class Application extends \yii\web\Application
             try {
                 new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
             } catch (\IntlException $e) {
-                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: ".intl_get_error_message());
+                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
         }
@@ -166,7 +174,7 @@ class Application extends \yii\web\Application
         // Send the X-Powered-By header?
         if ($this->getConfig()->getGeneral()->sendPoweredByHeader) {
             $original = $headers->get('X-Powered-By');
-            $headers->set('X-Powered-By', $original.($original ? ',' : '').$this->name);
+            $headers->set('X-Powered-By', $original . ($original ? ',' : '') . $this->name);
         } else {
             // In case PHP is already setting one
             header_remove('X-Powered-By');
@@ -215,7 +223,7 @@ class Application extends \yii\web\Application
             } catch (InvalidArgumentException $e) {
                 // the directory doesn't exist
             } catch (ErrorException $e) {
-                Craft::error('Could not delete compiled templates: '.$e->getMessage());
+                Craft::error('Could not delete compiled templates: ' . $e->getMessage());
                 Craft::$app->getErrorHandler()->logException($e);
             }
         }
@@ -248,7 +256,7 @@ class Application extends \yii\web\Application
                 /** @var Plugin|null $plugin */
                 $plugin = $this->getPlugins()->getPlugin($firstSeg);
 
-                if ($plugin && !$user->checkPermission('accessPlugin-'.$plugin->id)) {
+                if ($plugin && !$user->checkPermission('accessPlugin-' . $plugin->id)) {
                     throw new ForbiddenHttpException();
                 }
             }
@@ -296,8 +304,8 @@ class Application extends \yii\web\Application
 
         // Override the @bower and @npm aliases if using asset-packagist.org
         // todo: remove this whenever Yii is updated with support for asset-packagist.org
-        $altBowerPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'bower-asset';
-        $altNpmPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'npm-asset';
+        $altBowerPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'bower-asset';
+        $altNpmPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'npm-asset';
         if (is_dir($altBowerPath)) {
             Craft::setAlias('@bower', $altBowerPath);
         }
@@ -307,11 +315,11 @@ class Application extends \yii\web\Application
 
         // Override where Yii should find its asset deps
         $libPath = Craft::getAlias('@lib');
-        Craft::setAlias('@bower/bootstrap/dist', $libPath.'/bootstrap');
-        Craft::setAlias('@bower/jquery/dist', $libPath.'/jquery');
-        Craft::setAlias('@bower/inputmask/dist', $libPath.'/inputmask');
-        Craft::setAlias('@bower/punycode', $libPath.'/punycode');
-        Craft::setAlias('@bower/yii2-pjax', $libPath.'/yii2-pjax');
+        Craft::setAlias('@bower/bootstrap/dist', $libPath . '/bootstrap');
+        Craft::setAlias('@bower/jquery/dist', $libPath . '/jquery');
+        Craft::setAlias('@bower/inputmask/dist', $libPath . '/inputmask');
+        Craft::setAlias('@bower/punycode', $libPath . '/punycode');
+        Craft::setAlias('@bower/yii2-pjax', $libPath . '/yii2-pjax');
     }
 
     /**
@@ -345,7 +353,7 @@ class Application extends \yii\web\Application
         @FileHelper::createDirectory($resourceBasePath);
 
         if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
-            throw new InvalidConfigException($resourceBasePath.' doesn’t exist or isn’t writable by PHP.');
+            throw new InvalidConfigException($resourceBasePath . ' doesn’t exist or isn’t writable by PHP.');
         }
     }
 
@@ -359,15 +367,16 @@ class Application extends \yii\web\Application
             return;
         }
 
-        $isCpRequest = $this->getRequest()->getIsCpRequest();
+        $request = $this->getRequest();
         if (
-            ($isCpRequest && !$session->get('enableDebugToolbarForCp')) ||
-            (!$isCpRequest && !$session->get('enableDebugToolbarForSite'))
+            $request->getIsLivePreview() ||
+            ($request->getIsCpRequest() && !$session->get('enableDebugToolbarForCp')) ||
+            (!$request->getIsCpRequest() && !$session->get('enableDebugToolbarForSite'))
         ) {
             return;
         }
 
-        $svg = rawurlencode(file_get_contents(dirname(__DIR__).'/icons/c.svg'));
+        $svg = rawurlencode(file_get_contents(dirname(__DIR__) . '/icons/c.svg'));
         DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,{$svg}");
 
         $this->setModule('debug', [
@@ -379,10 +388,10 @@ class Application extends \yii\web\Application
                 'router' => [
                     'class' => RouterPanel::class,
                     'categories' => [
-                        UrlManager::class.'::_getMatchedElementRoute',
-                        UrlManager::class.'::_getMatchedUrlRoute',
-                        UrlManager::class.'::_getTemplateRoute',
-                        UrlManager::class.'::_getTokenRoute',
+                        UrlManager::class . '::_getMatchedElementRoute',
+                        UrlManager::class . '::_getMatchedUrlRoute',
+                        UrlManager::class . '::_getTemplateRoute',
+                        UrlManager::class . '::_getTokenRoute',
                     ]
                 ],
                 'request' => RequestPanel::class,
@@ -425,7 +434,7 @@ class Application extends \yii\web\Application
         // Does this look like a resource request?
         $resourceBaseUri = parse_url(Craft::getAlias($this->getConfig()->getGeneral()->resourceBaseUrl), PHP_URL_PATH);
         $pathInfo = $request->getPathInfo();
-        if (strpos('/'.$pathInfo, $resourceBaseUri.'/') !== 0) {
+        if (strpos('/' . $pathInfo, $resourceBaseUri . '/') !== 0) {
             return;
         }
 
@@ -448,8 +457,8 @@ class Application extends \yii\web\Application
         }
 
         // Publish the directory
-        $filePath = substr($resourceUri, strlen($hash)+1);
-        $publishedPath = $this->getAssetManager()->getPublishedPath(Craft::getAlias($sourcePath), true).DIRECTORY_SEPARATOR.$filePath;
+        $filePath = substr($resourceUri, strlen($hash) + 1);
+        $publishedPath = $this->getAssetManager()->getPublishedPath(Craft::getAlias($sourcePath), true) . DIRECTORY_SEPARATOR . $filePath;
         $this->getResponse()
             ->sendFile($publishedPath, null, ['inline' => true]);
         $this->end();
@@ -473,13 +482,21 @@ class Application extends \yii\web\Application
             $this->_unregisterDebugModule();
         }
 
-        // Are they requesting an installer template/action specifically?
-        if ($isCpRequest && $request->getSegment(1) === 'install' && !$isInstalled) {
-            $action = $request->getSegment(2) ?: 'index';
-
-            return $this->runAction('install/'.$action);
+        // Are they requesting the installer?
+        if ($isCpRequest && $request->getSegment(1) === 'install') {
+            // Is Craft already installed?
+            if ($isInstalled) {
+                // Redirect to the Dashboard
+                $this->getResponse()->redirect('dashboard');
+                $this->end();
+            } else {
+                // Show the installer
+                $action = $request->getSegment(2) ?: 'index';
+                return $this->runAction('install/' . $action);
+            }
         }
 
+        // Is this an installer action request?
         if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login')) {
             $actionSegs = $request->getActionSegments();
             if (isset($actionSegs[0]) && $actionSegs[0] === 'install') {
@@ -487,17 +504,20 @@ class Application extends \yii\web\Application
             }
         }
 
-        // Should they be?
+        // Should they be accessing the installer?
         if (!$isInstalled) {
-            // Give it to them if accessing the CP
-            if ($isCpRequest) {
+            if (!$isCpRequest) {
+                throw new ServiceUnavailableHttpException();
+            }
+
+            // Redirect to the installer if Dev Mode is enabled
+            if (Craft::$app->getConfig()->getGeneral()->devMode) {
                 $url = UrlHelper::url('install');
                 $this->getResponse()->redirect($url);
                 $this->end();
-            } // Otherwise return a 503
-            else {
-                throw new ServiceUnavailableHttpException();
             }
+
+            throw new ServiceUnavailableHttpException(Craft::t('app', 'Craft isn’t installed yet.'));
         }
 
         return null;
@@ -516,7 +536,7 @@ class Application extends \yii\web\Application
             $route = implode('/', $request->getActionSegments());
 
             try {
-                Craft::trace("Route requested: '$route'", __METHOD__);
+                Craft::debug("Route requested: '$route'", __METHOD__);
                 $this->requestedRoute = $route;
 
                 return $this->runAction($route, $_GET);
@@ -529,24 +549,41 @@ class Application extends \yii\web\Application
     }
 
     /**
+     * Returns whether this is a special case request (something dealing with user sessions or updating)
+     * where system status / CP permissions shouldn't be taken into effect.
+     *
      * @param Request $request
      * @return bool
      */
     private function _isSpecialCaseActionRequest(Request $request): bool
     {
-        $segments = $request->getActionSegments();
+        $actionSegs = $request->getActionSegments();
+
+        if (empty($actionSegs)) {
+            return false;
+        }
 
         return (
-            $segments === ['app', 'migrate'] ||
-            $segments === ['users', 'login'] ||
-            $segments === ['users', 'logout'] ||
-            $segments === ['users', 'set-password'] ||
-            $segments === ['users', 'verify-email'] ||
-            $segments === ['users', 'forgot-password'] ||
-            $segments === ['users', 'send-password-reset-email'] ||
-            $segments === ['users', 'save-user'] ||
-            $segments === ['users', 'get-remaining-session-time'] ||
-            $segments[0] === 'updater'
+            $actionSegs === ['app', 'migrate'] ||
+            $actionSegs === ['users', 'login'] ||
+            $actionSegs === ['users', 'forgot-password'] ||
+            $actionSegs === ['users', 'send-password-reset-email'] ||
+            $actionSegs === ['users', 'get-remaining-session-time'] ||
+            (
+                $request->getIsSingleActionRequest() &&
+                (
+                    $actionSegs === ['users', 'logout'] ||
+                    $actionSegs === ['users', 'set-password'] ||
+                    $actionSegs === ['users', 'verify-email']
+                )
+            ) ||
+            (
+                $request->getIsCpRequest() &&
+                (
+                    $actionSegs[0] === 'update' ||
+                    $actionSegs[0] === 'manualupdate'
+                )
+            )
         );
     }
 
@@ -641,7 +678,7 @@ class Application extends \yii\web\Application
      */
     private function _enforceSystemStatusPermissions(Request $request)
     {
-        if (!$this->_checkSystemStatusPermissions()) {
+        if (!$this->_checkSystemStatusPermissions($request)) {
             $error = null;
 
             if (!$this->getUser()->getIsGuest()) {
@@ -653,7 +690,7 @@ class Application extends \yii\web\Application
                     $logoutUrl = UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->getLogoutPath());
                 }
 
-                $error .= ' ['.Craft::t('app', 'Log out?').']('.$logoutUrl.')';
+                $error .= ' [' . Craft::t('app', 'Log out?') . '](' . $logoutUrl . ')';
             } else {
                 // If this is a CP request, redirect to the Login page
                 if ($this->getRequest()->getIsCpRequest()) {
@@ -670,55 +707,16 @@ class Application extends \yii\web\Application
     /**
      * Returns whether the user has permission to be accessing the site/CP while it's offline, if it is.
      *
+     * @param Request $request
      * @return bool
      */
-    private function _checkSystemStatusPermissions(): bool
+    private function _checkSystemStatusPermissions(Request $request): bool
     {
-        if ($this->getIsSystemOn()) {
+        if ($this->getIsSystemOn() || $this->_isSpecialCaseActionRequest($request)) {
             return true;
         }
 
-        $request = $this->getRequest();
-        $actionTrigger = $this->getConfig()->getGeneral()->actionTrigger;
-
-        if ($request->getIsCpRequest() ||
-
-            // Special case because we hide the cpTrigger in emails.
-            $request->getPathInfo() === $actionTrigger.'/users/set-password' ||
-            $request->getPathInfo() === $actionTrigger.'/users/verify-email' ||
-            // Special case because this might be a request with a user that has "Access the site when the system is off"
-            // permissions and is in the process of logging in while the system is off.
-            $request->getActionSegments() == ['users', 'login']
-        ) {
-            if ($this->getUser()->checkPermission('accessCpWhenSystemIsOff')) {
-                return true;
-            }
-
-            if ($request->getSegment(1) === 'manualupdate') {
-                return true;
-            }
-
-            $actionSegs = $request->getActionSegments();
-            $singleAction = $request->getIsSingleActionRequest();
-
-            if ($actionSegs && (
-                    $actionSegs === ['users', 'login'] ||
-                    ($actionSegs === ['users', 'logout'] && $singleAction) ||
-                    ($actionSegs === ['users', 'verify-email'] && $singleAction) ||
-                    ($actionSegs === ['users', 'set-password'] && $singleAction) ||
-                    $actionSegs === ['users', 'forgot-password'] ||
-                    $actionSegs === ['users', 'send-password-reset-email'] ||
-                    $actionSegs[0] === 'update'
-                )
-            ) {
-                return true;
-            }
-        } else {
-            if ($this->getUser()->checkPermission('accessSiteWhenSystemIsOff')) {
-                return true;
-            }
-        }
-
-        return false;
+        $permission = $request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
+        return $this->getUser()->checkPermission($permission);
     }
 }

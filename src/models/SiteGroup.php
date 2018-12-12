@@ -40,6 +40,16 @@ class SiteGroup extends Model
     /**
      * @inheritdoc
      */
+    public function attributeLabels()
+    {
+        return [
+            'name' => Craft::t('app', 'Name'),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         return [
@@ -57,7 +67,7 @@ class SiteGroup extends Model
      */
     public function __toString(): string
     {
-        return (string)$this->name;
+        return (string)$this->name ?: static::class;
     }
 
     /**

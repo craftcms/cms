@@ -52,6 +52,10 @@ class DeleteStaleTemplateCaches extends BaseJob
             $this->elementId = (array)$this->elementId;
         }
 
+        // Delete any expired template caches
+        $templateCachesService = Craft::$app->getTemplateCaches();
+        $templateCachesService->deleteExpiredCaches();
+
         $query = (new Query())
             ->select(['cacheId', 'query'])
             ->from(['{{%templatecachequeries}}'])
@@ -87,7 +91,7 @@ class DeleteStaleTemplateCaches extends BaseJob
 
         // Actually delete the caches now
         if (!empty($deleteCacheIds)) {
-            Craft::$app->getTemplateCaches()->deleteCacheById(array_keys($deleteCacheIds));
+            $templateCachesService->deleteCacheById(array_keys($deleteCacheIds));
         }
     }
 

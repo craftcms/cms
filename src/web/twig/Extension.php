@@ -9,11 +9,13 @@ namespace craft\web\twig;
 
 use Craft;
 use craft\base\MissingComponentInterface;
+use craft\elements\Asset;
 use craft\elements\db\ElementQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
@@ -42,6 +44,7 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use enshrined\svgSanitize\Sanitizer;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -291,70 +294,70 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Uppercases the first character of a multibyte string.
      *
-     * @param string $string The multibyte string.
+     * @param mixed $string The multibyte string.
      * @return string The string with the first character converted to upercase.
      */
-    public function ucfirstFilter(string $string): string
+    public function ucfirstFilter($string): string
     {
-        return StringHelper::upperCaseFirst($string);
+        return StringHelper::upperCaseFirst((string)$string);
     }
 
     /**
      * Lowercases the first character of a multibyte string.
      *
-     * @param string $string The multibyte string.
+     * @param mixed $string The multibyte string.
      * @return string The string with the first character converted to lowercase.
      */
-    public function lcfirstFilter(string $string): string
+    public function lcfirstFilter($string): string
     {
-        return StringHelper::lowercaseFirst($string);
+        return StringHelper::lowercaseFirst((string)$string);
     }
 
     /**
      * kebab-cases a string.
      *
-     * @param string $string The string
+     * @param mixed $string The string
      * @param string $glue The string used to glue the words together (default is a hyphen)
      * @param bool $lower Whether the string should be lowercased (default is true)
      * @param bool $removePunctuation Whether punctuation marks should be removed (default is true)
      * @return string The kebab-cased string
      */
-    public function kebabFilter(string $string, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string
+    public function kebabFilter($string, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string
     {
-        return StringHelper::toKebabCase($string, $glue, $lower, $removePunctuation);
+        return StringHelper::toKebabCase((string)$string, $glue, $lower, $removePunctuation);
     }
 
     /**
      * camelCases a string.
      *
-     * @param string $string The string
+     * @param mixed $string The string
      * @return string
      */
-    public function camelFilter(string $string): string
+    public function camelFilter($string): string
     {
-        return StringHelper::toCamelCase($string);
+        return StringHelper::toCamelCase((string)$string);
     }
 
     /**
      * PascalCases a string.
      *
-     * @param string $string The string
+     * @param mixed $string The string
      * @return string
      */
-    public function pascalFilter(string $string): string
+    public function pascalFilter($string): string
     {
-        return StringHelper::toPascalCase($string);
+        return StringHelper::toPascalCase((string)$string);
     }
 
     /**
      * snake_cases a string.
      *
-     * @param string $string The string
+     * @param mixed $string The string
      * @return string
      */
-    public function snakeFilter(string $string): string
+    public function snakeFilter($string): string
     {
-        return StringHelper::toSnakeCase($string);
+        return StringHelper::toSnakeCase((string)$string);
     }
 
 
@@ -385,37 +388,35 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Returns an array without certain values.
      *
-     * @param array $arr
+     * @param mixed $arr
      * @param mixed $exclude
      * @return array
      */
-    public function withoutFilter(array $arr, $exclude): array
+    public function withoutFilter($arr, $exclude): array
     {
-        $filteredArray = [];
+        $arr = (array)$arr;
 
         if (!is_array($exclude)) {
-            $exclude = (array)$exclude;
+            $exclude = [$exclude];
         }
 
-        foreach ($arr as $key => $value) {
-            if (!in_array($value, $exclude, false)) {
-                $filteredArray[$key] = $value;
-            }
+        foreach ($exclude as $value) {
+            ArrayHelper::removeValue($arr, $value);
         }
 
-        return $filteredArray;
+        return $arr;
     }
 
     /**
      * Parses a string for reference tags.
      *
-     * @param string $str
+     * @param mixed $str
      * @param int|null $siteId
      * @return \Twig_Markup
      */
-    public function parseRefsFilter(string $str, int $siteId = null): \Twig_Markup
+    public function parseRefsFilter($str, int $siteId = null): \Twig_Markup
     {
-        $str = Craft::$app->getElements()->parseRefs($str, $siteId);
+        $str = Craft::$app->getElements()->parseRefs((string)$str, $siteId);
 
         return TemplateHelper::raw($str);
     }
@@ -452,24 +453,31 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param DateTimeInterface|DateInterval|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
-     * @param bool $translate Whether the formatted date string should be translated
+     * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return mixed|string
      */
-    public function dateFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, bool $translate = true)
+    public function dateFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, string $locale = null)
     {
-        // Should we be using the app's formatter?
-        if (!($date instanceof \DateInterval) && ($format === null || in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true))) {
-            $date = \twig_date_converter($env, $date, $timezone);
-            $value = Craft::$app->getFormatter()->asDate($date, $format);
-        } else {
-            $value = \twig_date_format_filter($env, $date, $format, $timezone);
+        if ($date instanceof \DateInterval) {
+            return \twig_date_format_filter($env, $date, $format, $timezone);
         }
 
-        if ($translate) {
-            $value = DateTimeHelper::translateDate($value);
+        // Is this a custom PHP date format?
+        if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
+            if (strpos($format, 'icu:') === 0) {
+                $format = substr($format, 4);
+            } else {
+                $format = StringHelper::ensureLeft($format, 'php:');
+            }
         }
 
-        return $value;
+        $date = \twig_date_converter($env, $date, $timezone);
+        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
+        $fmtTimeZone = $formatter->timeZone;
+        $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
+        $formatted = $formatter->asDate($date, $format);
+        $formatter->timeZone = $fmtTimeZone;
+        return $formatted;
     }
 
     /**
@@ -505,24 +513,27 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param DateTimeInterface|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
-     * @param bool $translate Whether the formatted date string should be translated
+     * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return mixed|string
      */
-    public function timeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, bool $translate = true)
+    public function timeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, string $locale = null)
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
-            $format = StringHelper::ensureLeft($format, 'php:');
+            if (strpos($format, 'icu:') === 0) {
+                $format = substr($format, 4);
+            } else {
+                $format = StringHelper::ensureLeft($format, 'php:');
+            }
         }
 
         $date = \twig_date_converter($env, $date, $timezone);
-        $value = Craft::$app->getFormatter()->asTime($date, $format);
-
-        if ($translate) {
-            $value = DateTimeHelper::translateDate($value);
-        }
-
-        return $value;
+        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
+        $fmtTimeZone = $formatter->timeZone;
+        $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
+        $formatted = $formatter->asTime($date, $format);
+        $formatter->timeZone = $fmtTimeZone;
+        return $formatted;
     }
 
     /**
@@ -532,35 +543,38 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param DateTimeInterface|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
-     * @param bool $translate Whether the formatted date string should be translated
+     * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return mixed|string
      */
-    public function datetimeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, bool $translate = true)
+    public function datetimeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, string $locale = null)
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
-            $format = StringHelper::ensureLeft($format, 'php:');
+            if (strpos($format, 'icu:') === 0) {
+                $format = substr($format, 4);
+            } else {
+                $format = StringHelper::ensureLeft($format, 'php:');
+            }
         }
 
         $date = \twig_date_converter($env, $date, $timezone);
-        $value = Craft::$app->getFormatter()->asDatetime($date, $format);
-
-        if ($translate) {
-            $value = DateTimeHelper::translateDate($value);
-        }
-
-        return $value;
+        $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
+        $fmtTimeZone = $formatter->timeZone;
+        $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
+        $formatted = $formatter->asDatetime($date, $format);
+        $formatter->timeZone = $fmtTimeZone;
+        return $formatted;
     }
 
     /**
      * Encrypts and base64-encodes a string.
      *
-     * @param string $str the string
+     * @param mixed $str the string
      * @return string
      */
-    public function encencFilter(string $str): string
+    public function encencFilter($str): string
     {
-        return StringHelper::encenc($str);
+        return StringHelper::encenc((string)$str);
     }
 
     /**
@@ -584,7 +598,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
         $groups = [];
 
-        $template = '{'.$item.'}';
+        $template = '{' . $item . '}';
 
         foreach ($arr as $key => $object) {
             $value = Craft::$app->getView()->renderObjectTemplate($template, $object);
@@ -630,30 +644,30 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Escapes commas and asterisks in a string so they are not treated as special characters in
      * [[Db::parseParam()]].
      *
-     * @param string $value The param value.
+     * @param mixed $value The param value.
      * @return string The escaped param value.
      */
-    public function literalFilter(string $value): string
+    public function literalFilter($value): string
     {
-        return Db::escapeParam($value);
+        return Db::escapeParam((string)$value);
     }
 
     /**
      * Parses text through Markdown.
      *
-     * @param string $markdown The markdown text to parse
+     * @param mixed $markdown The markdown text to parse
      * @param string|null $flavor The markdown flavor to use. Can be 'original', 'gfm' (GitHub-Flavored Markdown),
      * 'gfm-comment' (GFM with newlines converted to `<br>`s),
      * or 'extra' (Markdown Extra). Default is 'original'.
      * @param bool $inlineOnly Whether to only parse inline elements, omitting any `<p>` tags.
      * @return \Twig_Markup
      */
-    public function markdownFilter(string $markdown, string $flavor = null, bool $inlineOnly = false): \Twig_Markup
+    public function markdownFilter($markdown, string $flavor = null, bool $inlineOnly = false): \Twig_Markup
     {
         if ($inlineOnly) {
-            $html = Markdown::processParagraph($markdown, $flavor);
+            $html = Markdown::processParagraph((string)$markdown, $flavor);
         } else {
-            $html = Markdown::process($markdown, $flavor);
+            $html = Markdown::process((string)$markdown, $flavor);
         }
 
         return TemplateHelper::raw($html);
@@ -662,7 +676,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Duplicates an array and sorts it with [[\craft\helpers\ArrayHelper::multisort()]].
      *
-     * @param array $array the array to be sorted. The array will be modified after calling this method.
+     * @param mixed $array the array to be sorted. The array will be modified after calling this method.
      * @param string|\Closure|array $key the key(s) to be sorted by. This refers to a key name of the sub-array
      * elements, a property name of the objects, or an anonymous function returning the values for comparison
      * purpose. The anonymous function signature should be: `function($item)`.
@@ -677,7 +691,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @throws InvalidArgumentException if the $direction or $sortFlag parameters do not have
      * correct number of elements as that of $key.
      */
-    public function multisortFilter(array $array, $key, $direction = SORT_ASC, $sortFlag = SORT_REGULAR): array
+    public function multisortFilter($array, $key, $direction = SORT_ASC, $sortFlag = SORT_REGULAR): array
     {
         // Prevent multisort() from modifying the original array
         $array = array_merge($array);
@@ -705,6 +719,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
             new \Twig_SimpleFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new \Twig_SimpleFunction('round', [$this, 'roundFunction']),
+            new \Twig_SimpleFunction('seq', [$this, 'seqFunction']),
             new \Twig_SimpleFunction('shuffle', [$this, 'shuffleFunction']),
             new \Twig_SimpleFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
             new \Twig_SimpleFunction('svg', [$this, 'svgFunction']),
@@ -730,7 +745,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         if ($generalConfig->enableCsrfProtection === true) {
-            return TemplateHelper::raw('<input type="hidden" name="'.$generalConfig->csrfTokenName.'" value="'.Craft::$app->getRequest()->getCsrfToken().'">');
+            return TemplateHelper::raw('<input type="hidden" name="' . $generalConfig->csrfTokenName . '" value="' . Craft::$app->getRequest()->getCsrfToken() . '">');
         }
 
         return null;
@@ -755,7 +770,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      */
     public function redirectInputFunction(string $url): \Twig_Markup
     {
-        return TemplateHelper::raw('<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData($url).'">');
+        return TemplateHelper::raw('<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData($url) . '">');
     }
 
     /**
@@ -772,6 +787,25 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         Craft::$app->getDeprecator()->log('round()', 'The round() function has been deprecated. Use Twig’s |round filter instead.');
 
         return round($value, $precision, $mode);
+    }
+
+    /**
+     * Returns the next number in a given sequence, or the current number in the sequence.
+     *
+     * @param string $name The sequence name.
+     * @param int|null $length The minimum string length that should be returned. (Numbers that are too short will be left-padded with `0`s.)
+     * @param bool $next Whether the next number in the sequence should be returned (and the sequence should be incremented).
+     * If set to `false`, the current number in the sequence will be returned instead.
+     * @return integer|string
+     * @throws \Throwable if reasons
+     * @throws \yii\db\Exception
+     */
+    public function seqFunction(string $name, int $length = null, bool $next = true)
+    {
+        if ($next) {
+            return Sequence::next($name, $length);
+        }
+        return Sequence::current($name, $length);
     }
 
     /**
@@ -804,22 +838,44 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     }
 
     /**
-     * Returns the (sanitized) contents of a given SVG file, namespacing any of its IDs in the process.
+     * Returns the contents of a given SVG file.
      *
-     * @param string $svg The SVG file path or contents
-     * @param bool $sanitize Whether the file should be sanitized first
+     * @param string|Asset $svg An SVG asset, a file path, or raw SVG markup
+     * @param bool|null $sanitize Whether the SVG should be sanitized of potentially
+     * malicious scripts. By default the SVG will only be sanitized if an asset
+     * or markup is passed in. (File paths are assumed to be safe.)
+     * @param bool|null $namespace Whether class names and IDs within the SVG
+     * should be namespaced to avoid conflicts with other elements in the DOM.
+     * By default the SVG will only be namespaced if an asset or markup is passed in.
      * @return \Twig_Markup|string
      */
-    public function svgFunction(string $svg, bool $sanitize = true)
+    public function svgFunction($svg, bool $sanitize = null, bool $namespace = null)
     {
-        // If we can't find an <svg> tag, it's probably a file path
-        if (stripos($svg, '<svg') === false) {
+        if ($svg instanceof Asset) {
+            try {
+                $svg = $svg->getContents();
+            } catch (\Throwable $e) {
+                Craft::error("Could not get the contents of {$svg->getPath()}: {$e->getMessage()}", __METHOD__);
+                Craft::$app->getErrorHandler()->logException($e);
+                return '';
+            }
+        } else if (stripos($svg, '<svg') === false) {
+            // No <svg> tag, so it's probably a file path
             $svg = Craft::getAlias($svg);
             if (!is_file($svg) || !FileHelper::isSvg($svg)) {
+                Craft::warning("Could not get the contents of {$svg}: The file doesn't exist", __METHOD__);
                 return '';
             }
             $svg = file_get_contents($svg);
+
+            // This came from a file path, so pretty good chance that the SVG can be trusted.
+            $sanitize = $sanitize ?? false;
+            $namespace = $namespace ?? false;
         }
+
+        // Sanitize and namespace the SVG by default
+        $sanitize = $sanitize ?? true;
+        $namespace = $namespace ?? true;
 
         // Sanitize?
         if ($sanitize) {
@@ -829,17 +885,33 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         // Remove the XML declaration
         $svg = preg_replace('/<\?xml.*?\?>/', '', $svg);
 
-        // Namespace any IDs
-        if (strpos($svg, 'id=') !== false) {
-            $namespace = StringHelper::randomString(10).'-';
+        // Namespace class names and IDs
+        if (
+            $namespace && (
+            strpos($svg, 'id=') !== false || strpos($svg, 'class=') !== false)
+        ) {
+            $ns = StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 10) . '-';
             $ids = [];
-            $svg = preg_replace_callback('/\bid=([\'"])([^\'"]+)\\1/i', function($matches) use ($namespace, &$ids) {
+            $classes = [];
+            $svg = preg_replace_callback('/\bid=([\'"])([^\'"]+)\\1/i', function($matches) use ($ns, &$ids) {
                 $ids[] = $matches[2];
-                return "id={$matches[1]}{$namespace}{$matches[2]}{$matches[1]}";
+                return "id={$matches[1]}{$ns}{$matches[2]}{$matches[1]}";
+            }, $svg);
+            $svg = preg_replace_callback('/\bclass=([\'"])([^\'"]+)\\1/i', function($matches) use ($ns, &$classes) {
+                $newClasses = [];
+                foreach (preg_split('/\s+/', $matches[2]) as $class) {
+                    $classes[] = $class;
+                    $newClasses[] = $ns . $class;
+                }
+                return 'class=' . $matches[1] . implode(' ', $newClasses) . $matches[1];
             }, $svg);
             foreach ($ids as $id) {
                 $quotedId = preg_quote($id, '\\');
-                $svg = preg_replace("/#{$quotedId}\b(?!\-)/", "#{$namespace}{$id}", $svg);
+                $svg = preg_replace("/#{$quotedId}\b(?!\-)/", "#{$ns}{$id}", $svg);
+            }
+            foreach ($classes as $class) {
+                $quotedClass = preg_quote($class, '\\');
+                $svg = preg_replace("/\.{$quotedClass}\b(?!\-)/", ".{$ns}{$class}", $svg);
             }
         }
 

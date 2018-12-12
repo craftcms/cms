@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'Delete {site}',
     'Delete…' => 'Delete…',
     'Deleting stale template caches' => 'Deleting stale template caches',
-    'Deprecation Errors' => 'Deprecation Errors',
+    'Deprecation Warnings' => 'Deprecation Warnings',
     'Descending' => 'Descending',
     'Description' => 'Description',
     'Deselect All' => 'Deselect All',
@@ -1196,7 +1196,7 @@ return [
 
 Thanks for creating an account with {{siteName}}! To activate your account, click the following link:
 
-{{link}}
+<{{link}}>
 
 If you weren’t expecting this email, just ignore it.',
     'account_activation_heading' => 'When someone creates an account:',
@@ -1214,7 +1214,7 @@ If you weren’t expecting this email, just ignore it.',
 
 To reset your {{siteName}} password, click on this link:
 
-{{link}}
+<{{link}}>
 
 If you weren’t expecting this email, just ignore it.',
     'forgot_password_heading' => 'When someone forgets their password:',
@@ -1248,7 +1248,7 @@ Here are the settings you used:
 
 Please verify your new email address by clicking on this link:
 
-{{link}}
+<{{link}}>
 
 If you weren’t expecting this email, just ignore it.',
     'verify_new_email_heading' => 'When someone changes their email address:',

@@ -85,7 +85,7 @@ class Section_SiteSettings extends Model
         }
 
         if (($this->_section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
-            throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
+            throw new InvalidConfigException('Invalid section ID: ' . $this->sectionId);
         }
 
         return $this->_section;
@@ -114,7 +114,7 @@ class Section_SiteSettings extends Model
         }
 
         if (($site = Craft::$app->getSites()->getSiteById($this->siteId)) === null) {
-            throw new InvalidConfigException('Invalid site ID: '.$this->siteId);
+            throw new InvalidConfigException('Invalid site ID: ' . $this->siteId);
         }
 
         return $site;

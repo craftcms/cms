@@ -72,37 +72,12 @@ class Connection extends \yii\db\Connection
      *
      * @param DbConfig $config
      * @return static
+     * @deprecated in 3.0.18. Use [[App::dbConfig()]] instead.
      */
     public static function createFromConfig(DbConfig $config): Connection
     {
-        if ($config->driver === DbConfig::DRIVER_MYSQL) {
-            $schemaConfig = [
-                'class' => MysqlSchema::class,
-            ];
-        } else {
-            $schemaConfig = [
-                'class' => PgsqlSchema::class,
-                'defaultSchema' => $config->schema,
-            ];
-        }
-
-        return Craft::createObject([
-            'class' => static::class,
-            'driverName' => $config->driver,
-            'dsn' => $config->dsn,
-            'username' => $config->user,
-            'password' => $config->password,
-            'charset' => $config->charset,
-            'tablePrefix' => $config->tablePrefix,
-            'schemaMap' => [
-                $config->driver => $schemaConfig,
-            ],
-            'commandMap' => [
-                $config->driver => Command::class,
-            ],
-            'attributes' => $config->attributes,
-            'enableSchemaCache' => !YII_DEBUG,
-        ]);
+        $config = App::dbConfig($config);
+        return Craft::createObject($config);
     }
 
     // Properties
@@ -186,25 +161,25 @@ class Connection extends \yii\db\Connection
 
             if ($this->getIsMysql()) {
                 if (!extension_loaded('pdo')) {
-                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'), 0, $e);
+                    throw new DbConnectException('Craft CMS requires the PDO extension to operate.', 0, $e);
                 }
                 if (!extension_loaded('pdo_mysql')) {
-                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'), 0, $e);
+                    throw new DbConnectException('Craft CMS requires the PDO_MYSQL driver to operate.', 0, $e);
                 }
             } else {
                 if (!extension_loaded('pdo')) {
-                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'), 0, $e);
+                    throw new DbConnectException('Craft CMS requires the PDO extension to operate.', 0, $e);
                 }
                 if (!extension_loaded('pdo_pgsql')) {
-                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_PGSQL driver to operate.'), 0, $e);
+                    throw new DbConnectException('Craft CMS requires the PDO_PGSQL driver to operate.', 0, $e);
                 }
             }
 
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'), 0, $e);
+            throw new DbConnectException('Craft CMS can’t connect to the database with the credentials in config/db.php.', 0, $e);
         } catch (\Throwable $e) {
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'), 0, $e);
+            throw new DbConnectException('Craft CMS can’t connect to the database with the credentials in config/db.php.', 0, $e);
         }
     }
 
@@ -220,10 +195,10 @@ class Connection extends \yii\db\Connection
     public function backup(): string
     {
         // Determine the backup file path
-        $currentVersion = 'v'.Craft::$app->getVersion();
+        $currentVersion = 'v' . Craft::$app->getVersion();
         $systemName = FileHelper::sanitizeFilename($this->_getFixedSystemName(), ['asciiOnly' => true]);
-        $filename = ($systemName ? $systemName.'_' : '').gmdate('ymd_His').'_'.strtolower(StringHelper::randomString(10)).'_'.$currentVersion.'.sql';
-        $file = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
+        $filename = ($systemName ? $systemName . '_' : '') . gmdate('ymd_His') . '_' . strtolower(StringHelper::randomString(10)) . '_' . $currentVersion . '.sql';
+        $file = Craft::$app->getPath()->getDbBackupPath() . '/' . mb_strtolower($filename);
 
         $this->backupTo($file);
 
@@ -380,7 +355,7 @@ class Connection extends \yii\db\Connection
         if (is_string($columns)) {
             $columns = StringHelper::split($columns);
         }
-        $name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
+        $name = $this->tablePrefix . $table . '_' . implode('_', $columns) . '_pk';
 
         return $this->trimObjectName($name);
     }
@@ -398,7 +373,7 @@ class Connection extends \yii\db\Connection
         if (is_string($columns)) {
             $columns = StringHelper::split($columns);
         }
-        $name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
+        $name = $this->tablePrefix . $table . '_' . implode('_', $columns) . '_fk';
 
         return $this->trimObjectName($name);
     }
@@ -419,7 +394,7 @@ class Connection extends \yii\db\Connection
         if (is_string($columns)) {
             $columns = StringHelper::split($columns);
         }
-        $name = $this->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').($foreignKey ? '_fk' : '_idx');
+        $name = $this->tablePrefix . $table . '_' . implode('_', $columns) . ($unique ? '_unq' : '') . ($foreignKey ? '_fk' : '_idx');
 
         return $this->trimObjectName($name);
     }

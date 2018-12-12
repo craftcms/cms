@@ -1,9 +1,13 @@
+let detect = require('feature-detect-es6')
+
 import Vue from 'vue'
 import {currency} from './filters/currency'
 import {escapeHtml, formatNumber, t} from './filters/craft'
 import router from './router'
 import store from './store'
 import {mapState} from 'vuex'
+import Modal from './components/modal/Modal'
+import StatusMessage from './components/StatusMessage'
 
 Vue.filter('currency', currency)
 Vue.filter('escapeHtml', escapeHtml)
@@ -19,7 +23,8 @@ Garnish.$doc.ready(function() {
         store,
 
         components: {
-            GlobalModal: require('./components/GlobalModal')
+            Modal,
+            StatusMessage,
         },
 
         data() {
@@ -47,15 +52,23 @@ Garnish.$doc.ready(function() {
                 craftId: state => state.craft.craftId,
             }),
 
+            supportsES6() {
+                if (detect.all('promises')){
+                    return true;
+                }
+
+                return false;
+            }
+
         },
 
         watch: {
 
-            cart() {
+            cart(cart) {
                 let totalQty = 0
 
-                if (this.cart) {
-                    totalQty = this.cart.totalQty
+                if (cart) {
+                    totalQty = cart.totalQty
                 }
 
                 $('.badge', this.$cartButton).html(totalQty)
@@ -125,20 +138,21 @@ Garnish.$doc.ready(function() {
             showPlugin(plugin) {
                 this.plugin = plugin
                 this.pluginId = plugin.id
-                this.openGlobalModal('plugin-details')
+                this.openModal('plugin-details')
             },
 
-            openGlobalModal(modalStep) {
+            openModal(modalStep) {
                 this.modalStep = modalStep
 
                 this.showModal = true
             },
 
-            closeGlobalModal() {
+            closeModal() {
                 this.showModal = false
             },
 
-            updateCraftId(craftId) {
+            updateCraftId(craftIdJson) {
+                const craftId = JSON.parse(craftIdJson);
                 this.$store.dispatch('updateCraftId', {craftId})
                 this.$emit('craftIdUpdated')
             },
@@ -223,7 +237,7 @@ Garnish.$doc.ready(function() {
 
             this.$cartButton.on('click', (e) => {
                 e.preventDefault()
-                $this.openGlobalModal('cart')
+                $this.openModal('cart')
             })
 
             this.$cartButton.keydown(e => {
@@ -231,7 +245,7 @@ Garnish.$doc.ready(function() {
                     case 13: // Enter
                     case 32: // Space
                         e.preventDefault()
-                        $this.openGlobalModal('cart')
+                        $this.openModal('cart')
                         break
 
                 }

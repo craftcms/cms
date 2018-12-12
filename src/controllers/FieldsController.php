@@ -119,6 +119,8 @@ class FieldsController extends Controller
         // The field
         // ---------------------------------------------------------------------
 
+        $missingFieldPlaceholder = null;
+
         /** @var Field $field */
         if ($field === null && $fieldId !== null) {
             $field = $fieldsService->getFieldById($fieldId);
@@ -128,12 +130,8 @@ class FieldsController extends Controller
             }
 
             if ($field instanceof MissingField) {
-                $expectedType = $field->expectedType;
-                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                $missingFieldPlaceholder = $field->getPlaceholderHtml();
                 $field = $field->createFallback(PlainText::class);
-                $field->addError('type', Craft::t('app', 'The field type “{type}” could not be found.', [
-                    'type' => $expectedType
-                ]));
             }
         }
 
@@ -171,7 +169,7 @@ class FieldsController extends Controller
                 $compatible = in_array($class, $compatibleFieldTypes, true);
                 $fieldTypeOptions[] = [
                     'value' => $class,
-                    'label' => $class::displayName().($compatible ? '' : ' ⚠️'),
+                    'label' => $class::displayName() . ($compatible ? '' : ' ⚠️'),
                 ];
             }
         }
@@ -221,12 +219,12 @@ class FieldsController extends Controller
             ],
             [
                 'label' => Craft::t('site', $fieldGroup->name),
-                'url' => UrlHelper::url('settings/fields/'.$groupId)
+                'url' => UrlHelper::url('settings/fields/' . $groupId)
             ],
         ];
 
         if ($fieldId !== null) {
-            $title = $field->name;
+            $title = trim($field->name) ?: Craft::t('app', 'Edit Field');
         } else {
             $title = Craft::t('app', 'Create a new field');
         }
@@ -236,6 +234,7 @@ class FieldsController extends Controller
             'field',
             'allFieldTypes',
             'fieldTypeOptions',
+            'missingFieldPlaceholder',
             'supportedTranslationMethods',
             'compatibleFieldTypes',
             'groupId',
@@ -267,7 +266,7 @@ class FieldsController extends Controller
             'instructions' => $request->getBodyParam('instructions'),
             'translationMethod' => $request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $request->getBodyParam('translationKeyFormat'),
-            'settings' => $request->getBodyParam('types.'.$type),
+            'settings' => $request->getBodyParam('types.' . $type),
         ]);
 
         if (!$fieldsService->saveField($field)) {

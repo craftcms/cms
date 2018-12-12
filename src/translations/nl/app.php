@@ -100,7 +100,7 @@ return [
     'Are you sure you want to delete “{name}” and all its tags?' => 'Weet u zeker dat u \'{name}\' wilt verwijderen en al zijn tags?',
     'Are you sure you want to delete “{name}”?' => 'Weet je zeker dat je “{name}” wilt verwijderen?',
     'Are you sure you want to transfer your license to this domain?' => 'Weet je zeker dat je je licentie naar dit domein wilt overdragen?',
-    'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.' => 'Weet u zeker dat u {plugin} wilt deïstalleren? U verliest alle bijbehorende data.',
+    'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.' => 'Weet u zeker dat u {plugin} wilt deïnstalleren? U verliest alle bijbehorende data.',
     'Ascending' => 'Oplopend',
     'Ask on Stack Exchange' => 'Vragen op Stack Exchange',
     'Asset' => 'Bestand',
@@ -349,7 +349,7 @@ return [
     'Delete {site}' => '{site} verwijderen',
     'Delete…' => 'Verwijderen…',
     'Deleting stale template caches' => 'Verwijderen verouderde caches van sjablonen',
-    'Deprecation Errors' => 'Deprecation-fouten',
+    'Deprecation Warnings' => 'Deprecation-fouten',
     'Descending' => 'Aflopend',
     'Description' => 'Beschrijving',
     'Deselect All' => 'Deselecteer alles',
@@ -474,7 +474,7 @@ return [
     'Global Set Name' => 'Globale set-naam',
     'Global Sets' => 'Globale sets',
     'Global set saved.' => 'Globale set bewaard.',
-    'Globals' => 'Algemeen',
+    'Globals' => 'Globalen',
     'Go to Craft CMS' => 'Naar Craft CMS',
     'Go to Updates' => 'Ga naar updates',
     'Got it' => 'Ik snap het',
@@ -668,7 +668,7 @@ return [
     'No blocks.' => 'Geen blokken.',
     'No category groups exist yet.' => 'Nog geen categorie groepen aanwezig.',
     'No content migrations.' => 'Geen migraties van content.',
-    'No deprecation errors to report!' => 'Geen deprectation-fouten te melden!',
+    'No deprecation errors to report!' => 'Geen deprecation-fouten te melden!',
     'No entries exist yet.' => 'Er bestaat nog geen inhoud.',
     'No entry types exist for this section.' => 'Er bestaat geen berichttype voor deze rubriek.',
     'No fields exist yet.' => 'Er bestaan nog geen velden.',
@@ -831,6 +831,7 @@ return [
     'Save and add another' => 'Bewaren en nog een toevoegen',
     'Save and continue editing' => 'Bewaren en bewerking voortzetten',
     'Save as a draft' => 'Opslaan als concept',
+    'Save as a new asset' => 'Opslaan als een nieuw bestand',
     'Save as a new category' => 'Opslaan als een nieuwe categorie',
     'Save as a new entry' => 'Opslaan als een nieuw item',
     'Save draft' => 'Opslaan concept',
@@ -890,7 +891,7 @@ return [
     'Similar issues on GitHub' => 'Vergelijkbare issues op GitHub',
     'Similar questions on Stack Exchange' => 'Vergelijkbare vragen op Stack Exchange',
     'Single-line text' => 'Enkele-lijn tekst',
-    'Singles' => 'Eenmalig',
+    'Singles' => 'Losstaand',
     'Site' => 'Website',
     'Site Icon' => 'Site icoon',
     'Site Settings' => 'Website-instellingen',
@@ -1196,7 +1197,7 @@ return [
 
 Bedankt voor het maken van een account op {{siteName}}! Klik op de volgende link om je account te activeren:
 
-{{link}}
+<{{link}}>
 
 Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'account_activation_heading' => 'Als iemand een account aanmaakt:',
@@ -1214,7 +1215,7 @@ Als je deze email niet verwachtte, kun je hem gewoon negeren.',
 
 Klik op de volgende link om je wachtwoord voor {{siteName}} te resetten:
 
-{{link}}
+<{{link}}>
 
 Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'forgot_password_heading' => 'Als iemand zijn wachtwoord vergeet:',
@@ -1248,7 +1249,7 @@ Hier zijn de gebruikte instellingen:
 
 Klik op deze link om je nieuwe emailadres te bevestigen:
 
-{{link}}
+<{{link}}>
 
 Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'verify_new_email_heading' => 'Als iemand zijn email-adres wijzigt:',

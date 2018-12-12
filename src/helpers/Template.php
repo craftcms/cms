@@ -90,12 +90,9 @@ class Template
     {
         /** @var ElementQuery $query */
         $currentPage = Craft::$app->getRequest()->getPageNum();
-        $limit = $query->limit;
 
-        // Get the total result count, without applying the limit
-        $query->limit = null;
-        $total = (int)$query->count();
-        $query->limit = $limit;
+        // Get the total result count
+        $total = (int)$query->count() - ($query->offset ?? 0);
 
         // Bail out early if there are no results. Also avoids a divide by zero bug in the calculation of $totalPages
         if ($total === 0) {
@@ -103,9 +100,7 @@ class Template
         }
 
         // If they specified limit as null or 0 (for whatever reason), just assume it's all going to be on one page.
-        if (!$limit) {
-            $limit = $total;
-        }
+        $limit = $query->limit ?: $total;
 
         $totalPages = (int)ceil($total / $limit);
 
@@ -263,16 +258,16 @@ class Template
                 $value = $object->format($format);
             }
             if (!isset($filter)) {
-                $filter = 'date(\''.addslashes($format).'\')';
+                $filter = 'date(\'' . addslashes($format) . '\')';
             }
         }
 
         $key = "DateTime::{$item}()";
         /** @noinspection PhpUndefinedVariableInspection */
-        $message = "DateTime::{$item}".($type === \Twig_Template::METHOD_CALL ? '()' : '')." is deprecated. Use the |{$filter} filter instead.";
+        $message = "DateTime::{$item}" . ($type === \Twig_Template::METHOD_CALL ? '()' : '') . " is deprecated. Use the |{$filter} filter instead.";
 
         if ($item === 'iso8601') {
-            $message = rtrim($message, '.').', or consider using the |atom filter, which will give you an actual ISO-8601 string (unlike the old .iso8601() method).';
+            $message = rtrim($message, '.') . ', or consider using the |atom filter, which will give you an actual ISO-8601 string (unlike the old .iso8601() method).';
         }
 
         Craft::$app->getDeprecator()->log($key, $message);

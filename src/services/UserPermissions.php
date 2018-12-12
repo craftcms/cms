@@ -23,7 +23,7 @@ use yii\base\Component;
 
 /**
  * User Permissions service.
- * An instance of the User Permissions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUserPermissions()|<code>Craft::$app->userPermissions</code>]].
+ * An instance of the User Permissions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUserPermissions()|`Craft::$app->userPermissions`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -86,7 +86,7 @@ class UserPermissions extends Component
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
             if ($plugin->hasCpSection) {
-                $general['accessCp']['nested']['accessPlugin-'.$plugin->id] = [
+                $general['accessCp']['nested']['accessPlugin-' . $plugin->id] = [
                     'label' => Craft::t('app', 'Access {plugin}', ['plugin' => $plugin->name])
                 ];
             }
@@ -127,7 +127,7 @@ class UserPermissions extends Component
             ];
 
             foreach (Craft::$app->getUserGroups()->getAllGroups() as $userGroup) {
-                $userPermissions['editUsers']['nested']['assignUserGroups']['nested']['assignUserGroup:'.$userGroup->id] = [
+                $userPermissions['editUsers']['nested']['assignUserGroups']['nested']['assignUserGroup:' . $userGroup->id] = [
                     'label' => Craft::t('app', 'Assign users to “{group}”', [
                         'group' => Craft::t('site', $userGroup->name)
                     ])
@@ -145,7 +145,7 @@ class UserPermissions extends Component
             $sites = Craft::$app->getSites()->getAllSites();
 
             foreach ($sites as $site) {
-                $permissions[$label]['editSite:'.$site->id] = [
+                $permissions[$label]['editSite:' . $site->id] = [
                     'label' => Craft::t('app', 'Edit “{title}”',
                         ['title' => Craft::t('site', $site->name)])
                 ];
@@ -430,7 +430,7 @@ class UserPermissions extends Component
      */
     private function _getSingleEntryPermissions(Section $section): array
     {
-        $suffix = ':'.$section->id;
+        $suffix = ':' . $section->id;
 
         return [
             "editEntries{$suffix}" => [
@@ -464,7 +464,7 @@ class UserPermissions extends Component
      */
     private function _getEntryPermissions(Section $section): array
     {
-        $suffix = ':'.$section->id;
+        $suffix = ':' . $section->id;
 
         return [
             "editEntries{$suffix}" => [
@@ -517,7 +517,7 @@ class UserPermissions extends Component
         $permissions = [];
 
         foreach ($globalSets as $globalSet) {
-            $permissions['editGlobalSet:'.$globalSet->id] = [
+            $permissions['editGlobalSet:' . $globalSet->id] = [
                 'label' => Craft::t('app', 'Edit “{title}”',
                     ['title' => Craft::t('site', $globalSet->name)])
             ];
@@ -537,7 +537,7 @@ class UserPermissions extends Component
         $permissions = [];
 
         foreach ($groups as $group) {
-            $permissions['editCategories:'.$group->id] = [
+            $permissions['editCategories:' . $group->id] = [
                 'label' => Craft::t('app', 'Edit “{title}”',
                     ['title' => Craft::t('site', $group->name)])
             ];
@@ -549,16 +549,16 @@ class UserPermissions extends Component
     /**
      * Returns the array source permissions.
      *
-     * @param int $sourceId
+     * @param int $volumeId
      * @return array
      */
-    private function _getVolumePermissions(int $sourceId): array
+    private function _getVolumePermissions(int $volumeId): array
     {
-        $suffix = ':'.$sourceId;
+        $suffix = ':' . $volumeId;
 
         return [
             "viewVolume{$suffix}" => [
-                'label' => Craft::t('app', 'View source'),
+                'label' => Craft::t('app', 'View volume'),
                 'nested' => [
                     "saveAssetInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Upload files'),
@@ -585,7 +585,7 @@ class UserPermissions extends Component
 
         foreach (Craft::$app->getUtilities()->getAllUtilityTypes() as $class) {
             /** @var UtilityInterface $class */
-            $permissions['utility:'.$class::id()] = [
+            $permissions['utility:' . $class::id()] = [
                 'label' => $class::displayName()
             ];
         }

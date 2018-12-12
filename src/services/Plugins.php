@@ -21,6 +21,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use yii\base\Component;
 use yii\db\Exception;
 use yii\helpers\Inflector;
@@ -28,7 +29,7 @@ use yii\web\HttpException;
 
 /**
  * The Plugins service provides APIs for managing plugins.
- * An instance of the Plugins service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPlugins()|<code>Craft::$app->plugins</code>]].
+ * An instance of the Plugins service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getPlugins()|`Craft::$app->plugins`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -144,7 +145,7 @@ class Plugins extends Component
     {
         $this->_composerPluginInfo = [];
 
-        $path = Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'craftcms'.DIRECTORY_SEPARATOR.'plugins.php';
+        $path = Craft::$app->getVendorPath() . DIRECTORY_SEPARATOR . 'craftcms' . DIRECTORY_SEPARATOR . 'plugins.php';
 
         if (file_exists($path)) {
             /** @var array $plugins */
@@ -206,7 +207,12 @@ class Plugins extends Component
                 if (!Craft::$app->getIsInMaintenanceMode() && $this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
 
                     /** @var Plugin $plugin */
-                    if ($plugin->minVersionRequired && version_compare($row['version'], $plugin->minVersionRequired, '<')) {
+                    if (
+                        $plugin->minVersionRequired &&
+                        strpos($row['version'], 'dev-') !== 0 &&
+                        !StringHelper::endsWith($row['version'], '-dev') &&
+                        version_compare($row['version'], $plugin->minVersionRequired, '<')
+                    ) {
                         throw new HttpException(200, Craft::t('app', 'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.', [
                             'version' => $plugin->minVersionRequired,
                             'targetVersion' => $plugin->version,
@@ -229,8 +235,7 @@ class Plugins extends Component
         unset($row);
 
         // Sort plugins by their names
-        $names = array_column($this->_plugins, 'name');
-        array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $this->_plugins);
+        ArrayHelper::multisort($this->_plugins, 'name', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
 
         $this->_loadingPlugins = false;
         $this->_pluginsLoaded = true;
@@ -290,6 +295,7 @@ class Plugins extends Component
 
     /**
      * Returns the plugin handle that contains the given class, if any.
+     *
      * The plugin may not actually be installed.
      *
      * @param string $class
@@ -303,14 +309,14 @@ class Plugins extends Component
         // Figure out the path to the folder that contains this class
         try {
             // Add a trailing slash so we don't get false positives
-            $classPath = FileHelper::normalizePath(dirname((new \ReflectionClass($class))->getFileName())).DIRECTORY_SEPARATOR;
+            $classPath = FileHelper::normalizePath(dirname((new \ReflectionClass($class))->getFileName())) . DIRECTORY_SEPARATOR;
         } catch (\ReflectionException $e) {
             return $this->_classPluginHandles[$class] = null;
         }
 
         // Find the plugin that contains this path (if any)
         foreach ($this->_composerPluginInfo as $handle => $info) {
-            if (isset($info['basePath']) && strpos($classPath, $info['basePath'].DIRECTORY_SEPARATOR) === 0) {
+            if (isset($info['basePath']) && strpos($classPath, $info['basePath'] . DIRECTORY_SEPARATOR) === 0) {
                 return $this->_classPluginHandles[$class] = $handle;
             }
         }
@@ -589,12 +595,18 @@ class Plugins extends Component
             ]));
         }
 
+        if (!$plugin->beforeSaveSettings()) {
+            return false;
+        }
+
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%plugins}}',
                 ['settings' => Json::encode($plugin->getSettings())],
                 ['handle' => $plugin->id])
             ->execute();
+
+        $plugin->afterSaveSettings();
 
         // Fire an 'afterSavePluginSettings' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_PLUGIN_SETTINGS)) {
@@ -794,15 +806,13 @@ class Plugins extends Component
 
         // Get the info arrays
         $info = [];
-        $names = [];
 
         foreach (array_keys($this->_composerPluginInfo) as $handle) {
             $info[$handle] = $this->getPluginInfo($handle);
-            $names[] = $info[$handle]['name'];
         }
 
         // Sort plugins by their names
-        array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $info);
+        ArrayHelper::multisort($info, 'name', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
 
         return $info;
     }
@@ -847,7 +857,7 @@ class Plugins extends Component
             switch ($status) {
                 case LicenseKeyStatus::Mismatched:
                     $info['licenseStatusMessage'] = Craft::t('app', 'This license is tied to another Craft install. Visit {url} to resolve.', [
-                        'url' => '<a href="https://id.craftcms.com" target="_blank">id.craftcms.com</a>',
+                        'url' => '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>',
                     ]);
                     break;
                 case LicenseKeyStatus::Astray:
@@ -916,7 +926,7 @@ class Plugins extends Component
             }
         }
 
-        $iconPath = ($basePath !== false) ? $basePath.DIRECTORY_SEPARATOR.'icon.svg' : false;
+        $iconPath = ($basePath !== false) ? $basePath . DIRECTORY_SEPARATOR . 'icon.svg' : false;
 
         if ($iconPath === false || !is_file($iconPath) || !FileHelper::isSvg($iconPath)) {
             $iconPath = Craft::getAlias('@app/icons/default-plugin.svg');
@@ -938,6 +948,7 @@ class Plugins extends Component
 
     /**
      * Sets a plugin’s license key.
+     *
      * Note this should *not* be used to store license keys generated by third party stores.
      *
      * @param string $handle The plugin’s handle
@@ -1066,6 +1077,7 @@ class Plugins extends Component
 
     /**
      * Registers a plugin internally and as an application module.
+     *
      * This should only be called for enabled plugins
      *
      * @param PluginInterface $plugin The plugin
@@ -1104,8 +1116,8 @@ class Plugins extends Component
             'class' => MigrationManager::class,
             'type' => MigrationManager::TYPE_PLUGIN,
             'pluginId' => $id,
-            'migrationNamespace' => ($ns ? $ns.'\\' : '').'migrations',
-            'migrationPath' => $plugin->getBasePath().DIRECTORY_SEPARATOR.'migrations',
+            'migrationNamespace' => ($ns ? $ns . '\\' : '') . 'migrations',
+            'migrationPath' => $plugin->getBasePath() . DIRECTORY_SEPARATOR . 'migrations',
         ]);
     }
 

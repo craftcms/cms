@@ -223,6 +223,7 @@
     {% if config.labelId is not defined or not config.labelId %}
         {% set config = config|merge({ labelId: 'label'~random() }) %}
     {% endif %}
+    {% set config = config|merge({ fieldClass: 'lightswitch-field ' ~ (config.fieldClass ?? '') }) %}
     {{ forms.field(config, forms.lightswitch(config)) }}
 {% endmacro %}
 

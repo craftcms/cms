@@ -19,6 +19,6 @@
 
 {%- js %}
     $('#{{ id|namespaceInputId|e('js') }}').datepicker($.extend({
-        defaultDate: new Date({% if value %}{{ value|date('Y') }}, {{ value|date('n')-1 }}, {{ value|date('j') }}{% endif %})
+        defaultDate: new Date({% if value %}{{ value.format('Y') }}, {{ value.format('n')-1 }}, {{ value.format('j') }}{% endif %})
     }, Craft.datepickerOptions));
 {%- endjs %}

@@ -72,7 +72,7 @@
                 this.addToCart([item])
                     .then(() => {
                         this.loading = false
-                        this.$root.openGlobalModal('cart')
+                        this.$root.openModal('cart')
                     })
                     .catch(() => {
                         this.loading = false

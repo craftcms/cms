@@ -92,10 +92,23 @@ class Site extends Model
     {
         // Normalize the base URL
         if (isset($config['baseUrl'])) {
-            $config['baseUrl'] = rtrim($config['baseUrl'], '/').'/';
+            $config['baseUrl'] = rtrim($config['baseUrl'], '/') . '/';
         }
 
         parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels()
+    {
+        return [
+            'baseUrl' => Craft::t('app', 'Base URL'),
+            'handle' => Craft::t('app', 'Handle'),
+            'language' => Craft::t('app', 'Language'),
+            'name' => Craft::t('app', 'Name'),
+        ];
     }
 
     /**
@@ -126,7 +139,7 @@ class Site extends Model
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->name);
+        return Craft::t('site', $this->name) ?: static::class;
     }
 
     /**
@@ -142,7 +155,7 @@ class Site extends Model
         }
 
         if (($group = Craft::$app->getSites()->getGroupById($this->groupId)) === null) {
-            throw new InvalidConfigException('Invalid site group ID: '.$this->groupId);
+            throw new InvalidConfigException('Invalid site group ID: ' . $this->groupId);
         }
 
         return $group;
@@ -167,6 +180,6 @@ class Site extends Model
     public function overrideBaseUrl(string $baseUrl)
     {
         $this->originalBaseUrl = (string)$this->baseUrl;
-        $this->baseUrl = rtrim($baseUrl, '/').'/';
+        $this->baseUrl = rtrim($baseUrl, '/') . '/';
     }
 }

@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'Usuń witrynę {site}',
     'Delete…' => 'Usuń...',
     'Deleting stale template caches' => 'Usuwanie buforów przestarzałych szablonów',
-    'Deprecation Errors' => 'Błędy przestarzałości',
+    'Deprecation Warnings' => 'Błędy przestarzałości',
     'Descending' => 'Malejąco',
     'Description' => 'Opis',
     'Deselect All' => 'Odznacz wszystko',
@@ -1196,7 +1196,7 @@ return [
 
 Dziękujemy za utworzenie konta na {{siteName}}! Aby je aktywować, kliknij poniższy link:
 
-{{link}}
+<{{link}}>
 
 Jeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.',
     'account_activation_heading' => 'Kiedy ktoś zakłada konto:',
@@ -1214,7 +1214,7 @@ Jeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.',
 
 Aby zresetować hasło na {{siteName}}, kliknij poniższy link:
 
-{{link}}
+<{{link}}>
 
 Jeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.',
     'forgot_password_heading' => 'Gdy ktoś zapomni swojego hasła:',
@@ -1248,7 +1248,7 @@ Zostały użyte poniższe ustawienia:
 
 Proszę zweryfikuj swój nowy adres e-mail poprzez kliknięcie w poniższy link:
 
-{{link}}
+<{{link}}>
 
 Jeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.',
     'verify_new_email_heading' => 'Gdy ktoś zmienia swój adres e-mail:',

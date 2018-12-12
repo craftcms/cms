@@ -88,4 +88,19 @@ interface PluginInterface
      * @see Cp::nav()
      */
     public function getCpNavItem();
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * Performs actions before the plugin’s settings are saved.
+     *
+     * @return bool Whether the plugin’s settings should be saved.
+     */
+    public function beforeSaveSettings(): bool;
+
+    /**
+     * Performs actions after the plugin’s settings are saved.
+     */
+    public function afterSaveSettings();
 }

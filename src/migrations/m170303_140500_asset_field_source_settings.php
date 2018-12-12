@@ -39,7 +39,7 @@ class m170303_140500_asset_field_source_settings extends Migration
                 ->scalar($this->db);
 
             // If the folder does not exist, set an invalid id to trigger field error when viewing
-            return $folderId ? 'folder:'.$folderId : 'folder:0';
+            return $folderId ? 'folder:' . $folderId : 'folder:0';
         };
 
         foreach ($fields as $field) {

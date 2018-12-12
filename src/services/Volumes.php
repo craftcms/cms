@@ -35,6 +35,23 @@ class Volumes extends Component
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering volume types.
+     *
+     * Volume types must implement [[VolumeInterface]]. [[Volume]] provides a base implementation.
+     *
+     * See [Volume Types](https://docs.craftcms.com/v3/volume-types.html) for documentation on creating volume types.
+     * ---
+     * ```php
+     * use craft\events\RegisterComponentTypesEvent;
+     * use craft\services\Volumes;
+     * use yii\base\Event;
+     *
+     * Event::on(Volumes::class,
+     *     Volumes::EVENT_REGISTER_VOLUME_TYPES,
+     *     function(RegisterComponentTypesEvent $event) {
+     *         $event->types[] = MyVolumeType::class;
+     *     }
+     * );
+     * ```
      */
     const EVENT_REGISTER_VOLUME_TYPES = 'registerVolumeTypes';
 
@@ -168,7 +185,7 @@ class Volumes extends Component
         $this->_viewableVolumeIds = [];
 
         foreach ($this->getAllVolumeIds() as $volumeId) {
-            if (Craft::$app->user->checkPermission('viewVolume:'.$volumeId)) {
+            if (Craft::$app->user->checkPermission('viewVolume:' . $volumeId)) {
                 $this->_viewableVolumeIds[] = $volumeId;
             }
         }
@@ -191,7 +208,7 @@ class Volumes extends Component
 
         foreach ($this->getAllVolumes() as $volume) {
             /** @var Volume $volume */
-            if (Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
+            if (Craft::$app->user->checkPermission('viewVolume:' . $volume->id)) {
                 $this->_viewableVolumes[] = $volume;
             }
         }
@@ -438,7 +455,7 @@ class Volumes extends Component
         $this->_volumesById[$volume->id] = $volume;
         $this->_volumesByHandle[$volume->handle] = $volume;
 
-        if ($this->_viewableVolumeIds !== null && Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
+        if ($this->_viewableVolumeIds !== null && Craft::$app->user->checkPermission('viewVolume:' . $volume->id)) {
             $this->_viewableVolumeIds[] = $volume->id;
         }
 
@@ -607,8 +624,7 @@ class Volumes extends Component
         try {
             // Delete the assets
             $assets = Asset::find()
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->volumeId($volume->id)
                 ->all();
 
@@ -616,6 +632,9 @@ class Volumes extends Component
                 $asset->keepFileOnDelete = true;
                 Craft::$app->getElements()->deleteElement($asset);
             }
+
+            // Delete the field layout.
+            Craft::$app->getFields()->deleteLayoutById($volume->fieldLayoutId);
 
             // Nuke the asset volume.
             $db->createCommand()

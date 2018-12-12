@@ -18,7 +18,7 @@ use yii\base\Component;
 
 /**
  * The ElementIndexes service provides APIs for managing element indexes.
- * An instance of ElementIndexes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElementIndexes()|<code>Craft::$app->elementIndexes</code>]].
+ * An instance of ElementIndexes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElementIndexes()|`Craft::$app->elementIndexes`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -219,7 +219,7 @@ class ElementIndexes extends Component
             // Mix in custom fields
             foreach ($this->getAvailableTableFields($elementType) as $field) {
                 /** @var Field $field */
-                $attributes['field:'.$field->id] = ['label' => Craft::t('site', $field->name)];
+                $attributes['field:' . $field->id] = ['label' => Craft::t('site', $field->name)];
             }
         }
 

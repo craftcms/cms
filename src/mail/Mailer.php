@@ -17,7 +17,7 @@ use yii\mail\MessageInterface;
 
 /**
  * The Mailer component provides APIs for sending email in Craft.
- * An instance of the Mailer component is globally accessible in Craft via [[\craft\web\Application::mailer|<code>Craft::$app->mailer</code>]].
+ * An instance of the Mailer component is globally accessible in Craft via [[\craft\web\Application::mailer|`Craft::$app->mailer`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -42,6 +42,7 @@ class Mailer extends \yii\swiftmailer\Mailer
 
     /**
      * Composes a new email based on a given key.
+     *
      * Craft has four predefined email keys: account_activation, verify_new_email, forgot_password, and test_email.
      * Plugins can register additional email keys using the
      * [registerEmailMessages](http://craftcms.com/docs/plugins/hooks-reference#registerEmailMessages) hook, and
@@ -74,6 +75,7 @@ class Mailer extends \yii\swiftmailer\Mailer
 
     /**
      * Sends the given email message.
+     *
      * This method will log a message about the email being sent.
      * If [[useFileTransport]] is true, it will save the email as a file under [[fileTransportPath]].
      * Otherwise, it will call [[sendMessage()]] to send the email to its recipient(s).
@@ -85,6 +87,13 @@ class Mailer extends \yii\swiftmailer\Mailer
     public function send($message)
     {
         if ($message instanceof Message && $message->key !== null) {
+            if ($message->language === null) {
+                // Default to the current language
+                $message->language = Craft::$app->getRequest()->getIsSiteRequest()
+                    ? Craft::$app->language
+                    : Craft::$app->getSites()->getPrimarySite()->language;
+            }
+
             $systemMessage = Craft::$app->getSystemMessages()->getMessage($message->key, $message->language);
             $subjectTemplate = $systemMessage->subject;
             $textBodyTemplate = $systemMessage->body;
@@ -96,9 +105,7 @@ class Mailer extends \yii\swiftmailer\Mailer
 
             // Use the message language
             $language = Craft::$app->language;
-            if ($message->language !== null) {
-                Craft::$app->language = $message->language;
-            }
+            Craft::$app->language = $message->language;
 
             $settings = Craft::$app->getSystemSettings()->getEmailSettings();
             $variables = ($message->variables ?: []) + [
@@ -120,18 +127,27 @@ class Mailer extends \yii\swiftmailer\Mailer
                 $template = '_special/email';
             }
 
-            $htmlBody = $view->renderTemplate($template, array_merge($variables, [
-                'body' => Template::raw(Markdown::process($textBody)),
-            ]));
+            $e = null;
+            try {
+                $htmlBody = $view->renderTemplate($template, array_merge($variables, [
+                    'body' => Template::raw(Markdown::process($textBody)),
+                ]));
+            } catch (\Throwable $e) {
+                // Clean up before throwing
+            }
+
+            // Set things back to normal
+            Craft::$app->language = $language;
+            $view->setTemplateMode($templateMode);
+
+            if ($e !== null) {
+                throw $e;
+            }
 
             $message
                 ->setSubject($subject)
                 ->setHtmlBody($htmlBody)
                 ->setTextBody($textBody);
-
-            // Set things back to normal
-            Craft::$app->language = $language;
-            $view->setTemplateMode($templateMode);
         }
 
         // Set the default sender if there isn't one already
@@ -158,8 +174,12 @@ class Mailer extends \yii\swiftmailer\Mailer
         try {
             return parent::send($message);
         } catch (Swift_TransportException $e) {
-            Craft::error('Error sending email: '.$e->getMessage());
-            Craft::$app->getErrorHandler()->logException($e);
+            $message = $e->getMessage();
+
+            // Remove the stack trace to get rid of any sensitive info. Note that Swiftmailer includes a debug
+            // backlog in the exception message. :-/
+            $message = substr($message, 0, strpos($message, 'Stack trace:') - 1);
+            Craft::$app->getErrorHandler()->logException(new Swift_TransportException($message, $e->getCode()));
             return false;
         }
     }

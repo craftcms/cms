@@ -1340,6 +1340,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          */
         onSave: function() {
             this.settings.onSave();
+            this.trigger('save');
         },
 
         /**

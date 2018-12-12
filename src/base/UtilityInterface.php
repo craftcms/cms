@@ -20,6 +20,7 @@ interface UtilityInterface extends ComponentInterface
 
     /**
      * Returns the utility’s unique identifier.
+     *
      * The ID should be in `kebab-case`, as it will be visible in the URL (`admin/utilities/the-handle`).
      *
      * @return string
@@ -35,6 +36,7 @@ interface UtilityInterface extends ComponentInterface
 
     /**
      * Returns the number that should be shown in the utility’s nav item badge.
+     *
      * If `0` is returned, no badge will be shown
      *
      * @return int

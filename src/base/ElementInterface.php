@@ -46,6 +46,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns whether elements of this type can have their own slugs and URIs.
+     *
      * Note that individual elements must also return a URI format from [[getUriFormat()]] if they are to actually get a URI.
      *
      * @return bool Whether elements of this type can have their own slugs and URIs.
@@ -55,6 +56,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns whether elements of this type store content on a per-site basis.
+     *
      * If this returns `true`, the element’s [[getSupportedSites()]] method will
      * be responsible for defining which sites its content should be stored in.
      *
@@ -64,6 +66,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns whether elements of this type have statuses.
+     *
      * If this returns `true`, the element index template will show a Status menu by default, and your elements will
      * get status indicator icons next to them.
      * Use [[statuses()]] to customize which statuses the elements might have.
@@ -75,6 +78,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Creates an [[ElementQueryInterface]] instance for query purpose.
+     *
      * The returned [[ElementQueryInterface]] instance can be further customized by calling
      * methods defined in [[ElementQueryInterface]] before `one()` or `all()` is called to return
      * populated [[ElementInterface]] instances. For example,
@@ -121,6 +125,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns a single element instance by a primary key or a set of element criteria parameters.
+     *
      * The method accepts:
      *
      *  - an int: query by a single ID value and return the corresponding element (or null if not found).
@@ -148,6 +153,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns a list of elements that match the specified ID(s) or a set of element criteria parameters.
+     *
      * The method accepts:
      *
      *  - an int: query by a single ID value and return an array containing the corresponding element
@@ -184,6 +190,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns all of the possible statuses that elements of this type may have.
+     *
      * This method will be called when populating the Status menu on element indexes, for element types whose
      * [[hasStatuses()]] method returns `true`. It will also be called when [[\craft\elements\db\ElementQuery]] is querying for
      * elements, to ensure that its “status” parameter is set to a valid status.
@@ -201,6 +208,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns the source definitions that elements of this type may belong to.
+     *
      * This defines what will show up in the source list on element indexes and element selector modals.
      * Each item in the array should be set to an array that has the following keys:
      * - **`key`** – The source’s key. This is the string that will be passed into the $source argument of [[actions()]],
@@ -231,6 +239,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns the available element actions for a given source (if one is provided).
+     *
      * The actions can either be represented by their class handle (e.g. 'SetStatus'), or by an
      * [[ElementActionInterface]] instance.
      *
@@ -241,6 +250,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Defines which element attributes should be searchable.
+     *
      * This method should return an array of attribute names that can be accessed on your elements.
      * [[\craft\services\Search]] will call this method when it is indexing keywords for one of your elements,
      * and for each attribute it returns, it will fetch the corresponding property’s value on the element.
@@ -278,28 +288,32 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns the sort options for the element type.
-     * This method should return an array, where the keys reference database column names that should be sorted on,
-     * and where the values define the user-facing labels.
+     *
+     * This method should return an array, where each item is a sub-array with the following keys:
+     *
+     * - `label` – The sort option label
+     * - `orderBy` – A comma-delimited string of columns to order the query by
+     * - `attribute` _(optional)_ – The [[tableAttributes()|table attribute]] name that this option is associated with
      *
      * ```php
      * return [
-     *     'columnName1' => Craft::t('app', 'Attribute Label 1'),
-     *     'columnName2' => Craft::t('app', 'Attribute Label 2'),
+     *     [
+     *         'label' => Craft::t('app', 'Attribute Label'),
+     *         'orderBy' => 'columnName',
+     *         'attribute' => 'attributeName'
+     *     ],
      * ];
      * ```
      *
-     * If you want to sort by multilple columns simultaneously, you can specify multiple column names in the key,
-     * separated by commas.
+     * A shorthand syntax is also supported, if there is no corresponding table attribute, or the table attribute
+     * has the exact same name as the column.
      *
      * ```php
      * return [
-     *     'columnName1, columnName2 asc' => Craft::t('app', 'Attribute Label 1'),
-     *     'columnName3'                  => Craft::t('app', 'Attribute Label 2'),
+     *     'columnName' => Craft::t('app', 'Attribute Label'),
      * ];
      * ```
      *
-     * If you do that, you can specify the sort direction for the subsequent columns (`asc` or `desc`. There is no point
-     * in specifying the sort direction for the first column, though, since the end user has full control over that.
      * Note that this method will only get called once for the entire index; not each time that a new source is
      * selected.
      *
@@ -309,6 +323,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Defines all of the available columns that can be shown in table views.
+     *
      * This method should return an array whose keys map to attribute names and database columns that can be sorted
      * against when querying for elements, and whose values make up the table’s column headers.
      * The *first* item that this array returns will just identify the database column name, and the table column’s
@@ -323,6 +338,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns the list of table attribute keys that should be shown by default.
+     *
      * This method should return an array where each element in the array maps to one of the keys of the array returned
      * by [[tableAttributes()]].
      *
@@ -333,6 +349,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns an array that maps source-to-target element IDs based on the given sub-property handle.
+     *
      * This method aids in the eager-loading of elements when performing an element query. The returned array should
      * contain the following keys:
      * - `elementType` – the fully qualified class name of the element type that should be eager-loaded
@@ -366,8 +383,9 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns the sites this element is associated with.
+     *
      * The function can either return an array of site IDs, or an array of sub-arrays,
-     * each with the keys 'siteId' (int) and 'enabledByDefault' (bool).
+     * each with the keys `siteId` (int) and `enabledByDefault` (boolean).
      *
      * @return int[]|array
      */
@@ -375,6 +393,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns the URI format used to generate this element’s URI.
+     *
      * Note that element types that can have URIs must return `true` from [[hasUris()]].
      *
      * @return string|null
@@ -720,6 +739,7 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns the HTML that should be shown for a given attribute in Table View.
+     *
      * This method can be used to completely customize what actually shows up within the table’s body for a given
      * attribute, rather than simply showing the attribute’s raw value.
      * For example, if your elements have an “email” attribute that you want to wrap in a `mailto:` link, your

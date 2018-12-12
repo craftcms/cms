@@ -88,6 +88,12 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public static function supportedTranslationMethods(): array
     {
+        if (!static::hasContentColumn()) {
+            return [
+                self::TRANSLATION_METHOD_NONE,
+            ];
+        }
+
         return [
             self::TRANSLATION_METHOD_NONE,
             self::TRANSLATION_METHOD_SITE,
@@ -115,11 +121,10 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return string
      */
-    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
-            return (string)Craft::t('site', $this->name);
+            return (string)Craft::t('site', $this->name) ?: static::class;
         } catch (\Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
@@ -171,28 +176,37 @@ abstract class Field extends SavableComponent implements FieldInterface
                 ['handle'],
                 HandleValidator::class,
                 'reservedWords' => [
+                    'ancestors',
                     'archived',
                     'attributeLabel',
+                    'attributes',
                     'children',
                     'contentTable',
                     'dateCreated',
                     'dateUpdated',
+                    'descendants',
                     'enabled',
+                    'enabledForSite',
+                    'error',
+                    'errors',
+                    'fieldValue',
                     'id',
                     'level',
                     'lft',
                     'link',
-                    'enabledForSite',
                     'name', // global set-specific
                     'next',
-                    'next',
+                    'nextSibling',
                     'owner',
+                    'parent',
                     'parents',
                     'postDate', // entry-specific
                     'prev',
+                    'prevSibling',
                     'ref',
                     'rgt',
                     'root',
+                    'scenario',
                     'searchScore',
                     'siblings',
                     'site',
@@ -321,7 +335,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @param mixed $value
      * @return bool
-     * @deprecated in 3.0.0-RC15. Use isEmpty() instead.
+     * @deprecated in 3.0.0-RC15. Use [[isValueEmpty()]] instead.
      */
     public function isEmpty($value): bool
     {
@@ -388,10 +402,20 @@ abstract class Field extends SavableComponent implements FieldInterface
 
             $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value));
+            $query->subQuery->andWhere(Db::parseParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $handle, $value));
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function modifyElementIndexQuery(ElementQueryInterface $query)
+    {
+        if ($this instanceof EagerLoadingFieldInterface) {
+            $query->andWith($this->handle);
+        }
     }
 
     /**
@@ -503,7 +527,7 @@ abstract class Field extends SavableComponent implements FieldInterface
             return null;
         }
 
-        return ($namespace ? $namespace.'.' : '').$this->handle;
+        return ($namespace ? $namespace . '.' : '') . $this->handle;
     }
 
     /**

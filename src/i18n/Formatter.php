@@ -14,7 +14,6 @@ use DateTimeZone;
 use NumberFormatter;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\helpers\FormatConverter;
 
 /**
  * @inheritdoc
@@ -87,6 +86,30 @@ class Formatter extends \yii\i18n\Formatter
             $format = $this->dateTimeFormats[$format]['date'];
         }
 
+        if (strncmp($format, 'php:', 4) === 0) {
+            $format = substr($format, 4);
+            // special cases for PHP format characters not supported by ICU
+            $split = preg_split('/(?<!\\\\)(S|w|t|L|B|u|I|Z|U|A|a)/', $format, -1, PREG_SPLIT_DELIM_CAPTURE);
+            $formatted = '';
+            foreach (array_filter($split) as $i => $seg) {
+                if ($i % 2 === 0) {
+                    $formatted .= $this->asDate($value, FormatConverter::convertDatePhpToIcu($seg));
+                } else {
+                    switch ($seg) {
+                        case 'A':
+                            $formatted .= mb_strtoupper($this->asDate($value, FormatConverter::convertDatePhpToIcu($seg)));
+                            break;
+                        case 'a':
+                            $formatted .= mb_strtolower($this->asDate($value, FormatConverter::convertDatePhpToIcu($seg)));
+                            break;
+                        default:
+                            $formatted .= $value->format($seg);
+                    }
+                }
+            }
+            return $formatted;
+        }
+
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             return parent::asDate($value, $format);
         }
@@ -110,6 +133,10 @@ class Formatter extends \yii\i18n\Formatter
 
         if (isset($this->dateTimeFormats[$format]['time'])) {
             $format = $this->dateTimeFormats[$format]['time'];
+        }
+
+        if (strncmp($format, 'php:', 4) === 0) {
+            $format = FormatConverter::convertDatePhpToIcu(substr($format, 4));
         }
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
@@ -137,6 +164,10 @@ class Formatter extends \yii\i18n\Formatter
             $format = $this->dateTimeFormats[$format]['datetime'];
         }
 
+        if (strncmp($format, 'php:', 4) === 0) {
+            $format = FormatConverter::convertDatePhpToIcu(substr($format, 4));
+        }
+
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             return parent::asDatetime($value, $format);
         }
@@ -146,6 +177,7 @@ class Formatter extends \yii\i18n\Formatter
 
     /**
      * Formats the value as a human-readable timestamp.
+     *
      * - If $value is from today, "Today" or the formatted time will be returned, depending on whether $value contains time information
      * - If $value is from yesterday, "Yesterday" will be returned
      * - If $value is within the past 7 days, the weekday will be returned
@@ -196,6 +228,7 @@ class Formatter extends \yii\i18n\Formatter
 
     /**
      * Formats the value as a currency number.
+     *
      * This function does not requires the [PHP intl extension](http://php.net/manual/en/book.intl.php) to be installed
      * to work but it is highly recommended to install it to get good formatting results.
      *
@@ -244,7 +277,7 @@ class Formatter extends \yii\i18n\Formatter
 
         $decimals = $omitDecimals ? 0 : 2;
 
-        return $currency.$this->asDecimal($value, $decimals, $options, $textOptions);
+        return $currency . $this->asDecimal($value, $decimals, $options, $textOptions);
     }
 
     /**
@@ -264,6 +297,7 @@ class Formatter extends \yii\i18n\Formatter
 
     /**
      * Formats a given date/time.
+     *
      * Code mostly copied from [[parent::formatDateTimeValue()]], with the exception that translatable strings
      * in the date/time format will be returned in the correct locale.
      *
@@ -297,11 +331,6 @@ class Formatter extends \yii\i18n\Formatter
             return $this->nullDisplay;
         }
 
-        if (strpos($format, 'php:') === 0) {
-            $format = substr($format, 4);
-            $format = FormatConverter::convertDatePhpToIcu($format);
-        }
-
         if ($timeZone != null) {
             $timestamp->setTimezone(new DateTimeZone($timeZone));
         }
@@ -319,15 +348,15 @@ class Formatter extends \yii\i18n\Formatter
             $month = $timestamp->format('n') - 1;
 
             if ($this->standAloneMonthNames !== null) {
-                $tr['LLLLL'] = '\''.$this->standAloneMonthNames['abbreviated'][$month].'\'';
-                $tr['LLLL'] = '\''.$this->standAloneMonthNames['full'][$month].'\'';
-                $tr['LLL'] = '\''.$this->standAloneMonthNames['medium'][$month].'\'';
+                $tr['LLLLL'] = '\'' . $this->standAloneMonthNames['abbreviated'][$month] . '\'';
+                $tr['LLLL'] = '\'' . $this->standAloneMonthNames['full'][$month] . '\'';
+                $tr['LLL'] = '\'' . $this->standAloneMonthNames['medium'][$month] . '\'';
             }
 
             if ($this->monthNames !== null) {
-                $tr['MMMMM'] = '\''.$this->monthNames['abbreviated'][$month].'\'';
-                $tr['MMMM'] = '\''.$this->monthNames['full'][$month].'\'';
-                $tr['MMM'] = '\''.$this->monthNames['medium'][$month].'\'';
+                $tr['MMMMM'] = '\'' . $this->monthNames['abbreviated'][$month] . '\'';
+                $tr['MMMM'] = '\'' . $this->monthNames['full'][$month] . '\'';
+                $tr['MMM'] = '\'' . $this->monthNames['medium'][$month] . '\'';
             }
         }
 
@@ -335,31 +364,31 @@ class Formatter extends \yii\i18n\Formatter
             $day = $timestamp->format('w');
 
             if ($this->standAloneWeekDayNames !== null) {
-                $tr['cccccc'] = '\''.$this->standAloneWeekDayNames['short'][$day].'\'';
-                $tr['ccccc'] = '\''.$this->standAloneWeekDayNames['abbreviated'][$day].'\'';
-                $tr['cccc'] = '\''.$this->standAloneWeekDayNames['full'][$day].'\'';
-                $tr['ccc'] = '\''.$this->standAloneWeekDayNames['medium'][$day].'\'';
+                $tr['cccccc'] = '\'' . $this->standAloneWeekDayNames['short'][$day] . '\'';
+                $tr['ccccc'] = '\'' . $this->standAloneWeekDayNames['abbreviated'][$day] . '\'';
+                $tr['cccc'] = '\'' . $this->standAloneWeekDayNames['full'][$day] . '\'';
+                $tr['ccc'] = '\'' . $this->standAloneWeekDayNames['medium'][$day] . '\'';
             }
 
             if ($this->weekDayNames !== null) {
-                $tr['EEEEEE'] = '\''.$this->weekDayNames['short'][$day].'\'';
-                $tr['EEEEE'] = '\''.$this->weekDayNames['abbreviated'][$day].'\'';
-                $tr['EEEE'] = '\''.$this->weekDayNames['full'][$day].'\'';
-                $tr['EEE'] = '\''.$this->weekDayNames['medium'][$day].'\'';
-                $tr['EE'] = '\''.$this->weekDayNames['medium'][$day].'\'';
-                $tr['E'] = '\''.$this->weekDayNames['medium'][$day].'\'';
+                $tr['EEEEEE'] = '\'' . $this->weekDayNames['short'][$day] . '\'';
+                $tr['EEEEE'] = '\'' . $this->weekDayNames['abbreviated'][$day] . '\'';
+                $tr['EEEE'] = '\'' . $this->weekDayNames['full'][$day] . '\'';
+                $tr['EEE'] = '\'' . $this->weekDayNames['medium'][$day] . '\'';
+                $tr['EE'] = '\'' . $this->weekDayNames['medium'][$day] . '\'';
+                $tr['E'] = '\'' . $this->weekDayNames['medium'][$day] . '\'';
 
-                $tr['eeeeee'] = '\''.$this->weekDayNames['short'][$day].'\'';
-                $tr['eeeee'] = '\''.$this->weekDayNames['abbreviated'][$day].'\'';
-                $tr['eeee'] = '\''.$this->weekDayNames['full'][$day].'\'';
-                $tr['eee'] = '\''.$this->weekDayNames['medium'][$day].'\'';
+                $tr['eeeeee'] = '\'' . $this->weekDayNames['short'][$day] . '\'';
+                $tr['eeeee'] = '\'' . $this->weekDayNames['abbreviated'][$day] . '\'';
+                $tr['eeee'] = '\'' . $this->weekDayNames['full'][$day] . '\'';
+                $tr['eee'] = '\'' . $this->weekDayNames['medium'][$day] . '\'';
             }
         }
 
-        $amPmName = $timestamp->format('a').'Name';
+        $amPmName = $timestamp->format('a') . 'Name';
 
         if ($this->$amPmName !== null) {
-            $tr['a'] = '\''.$this->$amPmName.'\'';
+            $tr['a'] = '\'' . $this->$amPmName . '\'';
         }
 
         if (!empty($tr)) {

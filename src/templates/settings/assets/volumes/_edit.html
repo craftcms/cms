@@ -67,9 +67,10 @@
                 name: 'type',
                 options: volumeTypeOptions,
                 value: className(volume),
-                errors: volume.getErrors('type') ?? null,
                 toggle: true
             }) }}
+
+            {{ missingVolumePlaceholder|raw }}
 
             {% for volumeType in volumeTypes %}
                 {% set isCurrent = (volumeType == className(volume)) %}

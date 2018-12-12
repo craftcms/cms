@@ -94,7 +94,7 @@ class Globals
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {
-                throw new Exception('Invalid site handle: '.$siteHandle);
+                throw new Exception('Invalid site handle: ' . $siteHandle);
             }
 
             $siteId = $site->id;
@@ -121,7 +121,7 @@ class Globals
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {
-                throw new Exception('Invalid site handle: '.$siteHandle);
+                throw new Exception('Invalid site handle: ' . $siteHandle);
             }
 
             $siteId = $site->id;

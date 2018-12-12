@@ -114,6 +114,6 @@ class QueueLogBehavior extends VerboseBehavior
      */
     private function _formattedDuration(): string
     {
-        return sprintf('%.3f', microtime(true) - $this->_jobStartedAt).'s';
+        return sprintf('%.3f', microtime(true) - $this->_jobStartedAt) . 's';
     }
 }

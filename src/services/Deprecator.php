@@ -20,7 +20,7 @@ use yii\base\Component;
 
 /**
  * Deprecator service.
- * An instance of the Deprecator service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDeprecator()|<code>Craft::$app->deprecator</code>]].
+ * An instance of the Deprecator service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDeprecator()|`Craft::$app->deprecator`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -29,6 +29,15 @@ class Deprecator extends Component
 {
     // Properties
     // =========================================================================
+
+    /**
+     * @var string|false Whether deprecation errors should be logged in the database ('db'),
+     * error logs ('logs'), or not at all (false).
+     *
+     * Changing this will prevent deprecation errors from showing up in the "Deprecation Warnings" utility
+     * or in the "Deprecated" panel in the Debug Toolbar.
+     */
+    public $logTarget = 'db';
 
     /**
      * @var string
@@ -53,25 +62,39 @@ class Deprecator extends Component
      *
      * @param string $key
      * @param string $message
-     * @return bool
+     * @param string|null $file
+     * @param int|null $line
      */
-    public function log(string $key, string $message): bool
+    public function log(string $key, string $message, string $file = null, int $line = null)
     {
-        if (!Craft::$app->getIsInstalled()) {
-            Craft::warning($message, 'deprecation-error');
+        if ($this->logTarget === false) {
+            return;
+        }
 
-            return false;
+        // todo: maybe remove the Craft version check after the next breakpoint
+        // (depending on whether the minimum version warning shows up before any config deprecation errors)
+        if (
+            $this->logTarget === 'logs' ||
+            !Craft::$app->getIsInstalled() ||
+            version_compare(Craft::$app->getInfo()->version, '3.0.0-alpha.2910', '<')
+        ) {
+            Craft::warning($message, 'deprecation-error');
+            return;
         }
 
         // Get the debug backtrace
         $traces = debug_backtrace();
-        list($file, $line) = $this->_findOrigin($traces);
-        $fingerprint = $file.($line ? ':'.$line : '');
-        $index = $key.'-'.$fingerprint;
+
+        if ($file === null) {
+            list($file, $line) = $this->_findOrigin($traces);
+        }
+
+        $fingerprint = $file . ($line ? ':' . $line : '');
+        $index = $key . '-' . $fingerprint;
 
         // Don't log the same key/fingerprint twice in the same request
         if (isset($this->_requestLogs[$index])) {
-            return true;
+            return;
         }
 
         $log = $this->_requestLogs[$index] = new DeprecationError([
@@ -102,8 +125,6 @@ class Deprecator extends Component
             ->execute();
 
         $log->id = $db->getLastInsertID();
-
-        return true;
     }
 
     /**
@@ -345,6 +366,7 @@ class Deprecator extends Component
 
     /**
      * Converts an array of method arguments to a string.
+     *
      * Adapted from [[\yii\web\ErrorHandler::argumentsToString()]], but this one's less destructive
      *
      * @param array $args
@@ -372,12 +394,12 @@ class Deprecator extends Component
                 $strValue = $value ? 'true' : 'false';
             } else if (is_string($value)) {
                 if (strlen($value) > 64) {
-                    $strValue = '"'.StringHelper::substr($value, 0, 64).'..."';
+                    $strValue = '"' . StringHelper::substr($value, 0, 64) . '..."';
                 } else {
-                    $strValue = '"'.$value.'"';
+                    $strValue = '"' . $value . '"';
                 }
             } else if (is_array($value)) {
-                $strValue = '['.$this->_argsToString($value).']';
+                $strValue = '[' . $this->_argsToString($value) . ']';
             } else if ($value === null) {
                 $strValue = 'null';
             } else if (is_resource($value)) {
@@ -387,9 +409,9 @@ class Deprecator extends Component
             }
 
             if (is_string($key)) {
-                $strArgs[] = '"'.$key.'" => '.$strValue;
+                $strArgs[] = '"' . $key . '" => ' . $strValue;
             } else if ($isAssoc) {
-                $strArgs[] = $key.' => '.$strValue;
+                $strArgs[] = $key . ' => ' . $strValue;
             } else {
                 $strArgs[] = $strValue;
             }

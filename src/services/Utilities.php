@@ -24,7 +24,7 @@ use yii\base\Component;
 
 /**
  * The Utilities service provides APIs for managing utilities.
- * An instance of the Utilities service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUtilities()|<code>Craft::$app->utilities()</code>]].
+ * An instance of the Utilities service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUtilities()|`Craft::$app->utilities()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -36,6 +36,23 @@ class Utilities extends Component
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering utility types.
+     *
+     * Utility types must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
+     *
+     * See [Utility Types](https://docs.craftcms.com/v3/utility-types.html) for documentation on creating utility types.
+     * ---
+     * ```php
+     * use craft\events\RegisterComponentTypesEvent;
+     * use craft\services\Utilities;
+     * use yii\base\Event;
+     *
+     * Event::on(Utilities::class,
+     *     Utilities::EVENT_REGISTER_UTILITY_TYPES,
+     *     function(RegisterComponentTypesEvent $event) {
+     *         $event->types[] = MyUtilityType::class;
+     *     }
+     * );
+     * ```
      */
     const EVENT_REGISTER_UTILITY_TYPES = 'registerUtilityTypes';
 
@@ -101,7 +118,7 @@ class Utilities extends Component
     public function checkAuthorization(string $class): bool
     {
         /** @var string|UtilityInterface $class */
-        return Craft::$app->getUser()->checkPermission('utility:'.$class::id());
+        return Craft::$app->getUser()->checkPermission('utility:' . $class::id());
     }
 
     /**

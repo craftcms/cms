@@ -126,15 +126,15 @@ class UrlHelper
         }
 
         if (static::isProtocolRelativeUrl($url)) {
-            return $scheme.':'.$url;
+            return $scheme . ':' . $url;
         }
 
         if (static::isRootRelativeUrl($url)) {
             // Prepend the current request's scheme and host name
-            $url = static::siteHost().$url;
+            $url = static::siteHost() . $url;
         }
 
-        return preg_replace('/^https?:/', $scheme.':', $url);
+        return preg_replace('/^https?:/', $scheme . ':', $url);
     }
 
     /**
@@ -167,7 +167,7 @@ class UrlHelper
         $request = Craft::$app->getRequest();
 
         if ($request->getIsCpRequest()) {
-            $path = Craft::$app->getConfig()->getGeneral()->cpTrigger.($path ? '/'.$path : '');
+            $path = Craft::$app->getConfig()->getGeneral()->cpTrigger . ($path ? '/' . $path : '');
             $cpUrl = true;
         } else {
             $cpUrl = false;
@@ -192,7 +192,7 @@ class UrlHelper
     public static function cpUrl(string $path = '', $params = null, string $scheme = null): string
     {
         $path = trim($path, '/');
-        $path = Craft::$app->getConfig()->getGeneral()->cpTrigger.($path ? '/'.$path : '');
+        $path = Craft::$app->getConfig()->getGeneral()->cpTrigger . ($path ? '/' . $path : '');
 
         return self::_createUrl($path, $params, $scheme, true);
     }
@@ -217,7 +217,7 @@ class UrlHelper
             $site = $sites->getSiteById($siteId);
 
             if (!$site) {
-                throw new Exception('Invalid site ID: '.$siteId);
+                throw new Exception('Invalid site ID: ' . $siteId);
             }
 
             // Swap the current site
@@ -246,7 +246,7 @@ class UrlHelper
      */
     public static function actionUrl(string $path = '', $params = null, string $scheme = null): string
     {
-        $path = Craft::$app->getConfig()->getGeneral()->actionTrigger.'/'.trim($path, '/');
+        $path = Craft::$app->getConfig()->getGeneral()->actionTrigger . '/' . trim($path, '/');
 
         return static::url($path, $params, $scheme, true);
     }
@@ -331,7 +331,7 @@ class UrlHelper
         try {
             $currentSite = Craft::$app->getSites()->getCurrentSite();
             if ($currentSite->baseUrl) {
-                return rtrim(Craft::getAlias($currentSite->baseUrl), '/').'/';
+                return rtrim(Craft::getAlias($currentSite->baseUrl), '/') . '/';
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
@@ -354,7 +354,7 @@ class UrlHelper
         // Is a custom base CP URL being defined in the config?
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if ($generalConfig->baseCpUrl) {
-            return rtrim($generalConfig->baseCpUrl, '/').'/';
+            return rtrim($generalConfig->baseCpUrl, '/') . '/';
         }
 
         // Use the request's base URL as a fallback
@@ -373,7 +373,7 @@ class UrlHelper
             return '/';
         }
 
-        return rtrim($request->getHostInfo().$request->getBaseUrl(), '/').'/';
+        return rtrim($request->getHostInfo() . $request->getBaseUrl(), '/') . '/';
     }
 
     /**
@@ -487,7 +487,7 @@ class UrlHelper
 
         // Were there already any query string params in the path?
         if (($qpos = mb_strpos($path, '?')) !== false) {
-            $params = substr($path, $qpos + 1).($params ? '&'.$params : '');
+            $params = substr($path, $qpos + 1) . ($params ? '&' . $params : '');
             $path = substr($path, 0, $qpos);
         }
 
@@ -504,27 +504,31 @@ class UrlHelper
         if ($showScriptName) {
             if ($request->getIsConsoleRequest()) {
                 // No way to know for sure, so just guess
-                $baseUrl = '/'.$request->getScriptFilename();
+                $baseUrl = '/' . $request->getScriptFilename();
             } else {
-                $baseUrl = static::host().$request->getScriptUrl();
+                $baseUrl = static::host() . $request->getScriptUrl();
             }
         } else if ($cpUrl) {
             $baseUrl = static::baseCpUrl();
-
-            if ($scheme !== null) {
-                // Make sure we're using the right scheme
-                $baseUrl = static::urlWithScheme($baseUrl, $scheme);
-            }
         } else {
             $baseUrl = static::baseSiteUrl();
+        }
+
+        if ($scheme === null && !static::isAbsoluteUrl($baseUrl)) {
+            $scheme = !$request->getIsConsoleRequest() && $request->getIsSecureConnection() ? 'https' : 'http';
+        }
+
+        if ($scheme !== null) {
+            // Make sure we're using the right scheme
+            $baseUrl = static::urlWithScheme($baseUrl, $scheme);
         }
 
         // Put it all together
         if (!$showScriptName || $generalConfig->usePathInfo) {
             if ($path) {
-                $url = rtrim($baseUrl, '/').'/'.trim($path, '/');
+                $url = rtrim($baseUrl, '/') . '/' . trim($path, '/');
 
-                if (!$cpUrl && $generalConfig->addTrailingSlashesToUrls) {
+                if (!$cpUrl && $generalConfig->addTrailingSlashesToUrls && !preg_match('/\.[^\/]+$/', $url)) {
                     $url .= '/';
                 }
             } else {
@@ -535,12 +539,12 @@ class UrlHelper
 
             if ($path) {
                 $pathParam = $generalConfig->pathParam;
-                $params = $pathParam.'='.$path.($params ? '&'.$params : '');
+                $params = $pathParam . '=' . $path . ($params ? '&' . $params : '');
             }
         }
 
         if ($params) {
-            $url .= '?'.$params;
+            $url .= '?' . $params;
         }
 
         if ($fragment) {
@@ -562,7 +566,7 @@ class UrlHelper
         if (is_array($params)) {
             // See if there's an anchor
             if (isset($params['#'])) {
-                $fragment = '#'.$params['#'];
+                $fragment = '#' . $params['#'];
                 unset($params['#']);
             }
 

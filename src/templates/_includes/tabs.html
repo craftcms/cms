@@ -3,7 +3,13 @@
         {% for tabId, tab in tabs %}
             {% if tab %}
                 {% set tabIsSelected = ((selectedTab is not defined and loop.first) or (selectedTab is defined and selectedTab == tabId)) -%}
-                <li><a id="tab-{{ tabId }}" class="tab{% if tabIsSelected %} sel{% endif %}{% if tab.class is defined %} {{ tab.class }}{% endif %}" href="{{ tab.url }}" title="{{ tab.label }}">{{ tab.label }}</a></li>
+                {% set class = tab.class ?? '' -%}
+                <li>
+                    <a id="tab-{{ tabId }}" class="tab{% if tabIsSelected %} sel{% endif %} {{ class }}" href="{{ tab.url }}" title="{{ tab.label }}">
+                        {{ tab.label }}
+                        {% if class == 'error' %}<span data-icon="alert"></span>{% endif %}
+                    </a>
+                </li>
             {% endif %}
         {% endfor %}
     </ul>

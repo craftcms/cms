@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'Eliminar {site}',
     'Delete…' => 'Excluir…',
     'Deleting stale template caches' => 'Deletando caches velhos de templates',
-    'Deprecation Errors' => 'Erros de descontinuação',
+    'Deprecation Warnings' => 'Erros de descontinuação',
     'Descending' => 'Descendente',
     'Description' => 'Descrição',
     'Deselect All' => 'Desmarcar todos',
@@ -1196,7 +1196,7 @@ return [
 
 Obrigado por criar uma conta em {{siteName}}! Para ativar sua conta, clique no link a seguir:
 
-{{link}}
+<{{link}}>
 
 Se você não estava esperando esse e-mail, ignore-o.',
     'account_activation_heading' => 'Quando alguém cria uma conta:',
@@ -1214,7 +1214,7 @@ Se você não estava esperando esse e-mail, ignore-o.',
 
 Para resetar sua senha em {{siteName}}, clique nesse link:
 
-{{link}}
+<{{link}}>
 
 Se você não estava esperando esse e-mail, ignore-o.',
     'forgot_password_heading' => 'Quando alguém esquece de sua senha:',
@@ -1248,7 +1248,7 @@ Aqui estão as configurações que você usou:
 
 Por favor, verifique o seu novo endereço de e-mail, clicando neste link:
 
-{{link}}
+<{{link}}>
 
 Se você não solicitou este e-mail, simplesmente ignore.',
     'verify_new_email_heading' => 'Quando alguém muda seu endereço de e-mail:',

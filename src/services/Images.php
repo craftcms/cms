@@ -16,13 +16,12 @@ use craft\helpers\Image as ImageHelper;
 use craft\image\Raster;
 use craft\image\Svg;
 use enshrined\svgSanitize\Sanitizer;
-use Imagine\Imagick\Imagick;
 use yii\base\Component;
 use yii\base\Exception;
 
 /**
  * Service for image operations.
- * An instance of the Images service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getImages()|<code>Craft::$app->images</code>]].
+ * An instance of the Images service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getImages()|`Craft::$app->images`]].
  *
  * @property bool $isGd Whether image manipulations will be performed using GD or not
  * @property bool $isImagick Whether image manipulations will be performed using Imagick or not
@@ -41,6 +40,13 @@ class Images extends Component
 
     // Properties
     // =========================================================================
+
+    /**
+     * Image formats that can be manipulated.
+     *
+     * @var array
+     */
+    public $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
 
     /**
      * Image driver.
@@ -106,7 +112,7 @@ class Images extends Component
 
         $version = App::extensionVersion('imagick');
         try {
-            $version .= ' (ImageMagick '.$this->getImageMagickApiVersion().')';
+            $version .= ' (ImageMagick ' . $this->getImageMagickApiVersion() . ')';
         } catch (\Throwable $e) {
         }
         return $version;
@@ -119,29 +125,7 @@ class Images extends Component
      */
     public function getSupportedImageFormats(): array
     {
-        if ($this->getIsImagick()) {
-            return array_map('strtolower', Imagick::queryFormats());
-        }
-
-        $output = [];
-        $map = [
-            IMG_JPG => ['jpg', 'jpeg'],
-            IMG_GIF => ['gif'],
-            IMG_PNG => ['png'],
-        ];
-
-        // IMG_WEBP was added in PHP 7.0.10
-        if (defined('IMG_WEBP')) {
-            $map[IMG_WEBP] = ['webp'];
-        }
-
-        foreach ($map as $key => $extensions) {
-            if (imagetypes() & $key) {
-                $output = array_merge($output, $extensions);
-            }
-        }
-
-        return $output;
+        return $this->supportedImageFormats;
     }
 
     /**
@@ -218,9 +202,10 @@ class Images extends Component
 
     /**
      * Determines if there is enough memory to process this image.
+     *
      * The code was adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155. It will first
      * attempt to do it with available memory. If that fails, Craft will bump the memory to amount defined by the
-     * [phpMaxMemoryLimit](http://craftcms.com/docs/config-settings#phpMaxMemoryLimit) config setting, then try again.
+     * [[\craft\config\GeneralConfig::phpMaxMemoryLimit|phpMaxMemoryLimit]] config setting, then try again.
      *
      * @param string $filePath The path to the image file.
      * @param bool $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
@@ -298,6 +283,10 @@ class Images extends Component
             return;
         }
 
+        if (FileHelper::isGif($filePath) && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+            return;
+        }
+
         try {
             if (Craft::$app->getConfig()->getGeneral()->rotateImagesOnUploadByExifData) {
                 $cleanedByRotation = $this->rotateImageByExifData($filePath);
@@ -305,7 +294,7 @@ class Images extends Component
 
             $cleanedByStripping = $this->stripOrientationFromExifData($filePath);
         } catch (\Throwable $e) {
-            Craft::error('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), __METHOD__);
+            Craft::error('Tried to rotate or strip EXIF data from image and failed: ' . $e->getMessage(), __METHOD__);
         }
 
         // Image has already been cleaned if it had exif/orientation data

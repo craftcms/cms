@@ -28,6 +28,6 @@
     }, Craft.timepickerOptions));
 
     {% if value and value.format is defined %}
-        $timePicker.timepicker('setTime', {{ value|date('G') }}*3600 + {{ value|date('i') }}*60 + {{ value|date('s') }});
+        $timePicker.timepicker('setTime', {{ value.format('G') }}*3600 + {{ value.format('i') }}*60 + {{ value.format('s') }});
     {% endif %}
 {%- endjs %}

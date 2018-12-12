@@ -88,6 +88,19 @@ class EntryType extends Model
     /**
      * @inheritdoc
      */
+    public function attributeLabels()
+    {
+        return [
+            'handle' => Craft::t('app', 'Handle'),
+            'name' => Craft::t('app', 'Name'),
+            'titleFormat' => Craft::t('app', 'Title Format'),
+            'titleLabel' => Craft::t('app', 'Title Field Label'),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = [
@@ -131,7 +144,7 @@ class EntryType extends Model
      */
     public function __toString(): string
     {
-        return (string)$this->handle;
+        return (string)$this->handle ?: static::class;
     }
 
     /**
@@ -141,7 +154,7 @@ class EntryType extends Model
      */
     public function getCpEditUrl(): string
     {
-        return UrlHelper::cpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
+        return UrlHelper::cpUrl('settings/sections/' . $this->sectionId . '/entrytypes/' . $this->id);
     }
 
     /**
@@ -157,7 +170,7 @@ class EntryType extends Model
         }
 
         if (($section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
-            throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
+            throw new InvalidConfigException('Invalid section ID: ' . $this->sectionId);
         }
 
         return $section;

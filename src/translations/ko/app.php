@@ -349,7 +349,7 @@ return [
     'Delete {site}' => '{site} 삭제',
     'Delete…' => '삭제 중...',
     'Deleting stale template caches' => '오래된 템플릿 캐시 삭제',
-    'Deprecation Errors' => '사용 중단 오류',
+    'Deprecation Warnings' => '사용 중단 오류',
     'Descending' => '내림차순',
     'Description' => '설명',
     'Deselect All' => '전체 선택 해제',
@@ -1196,7 +1196,7 @@ return [
 
 {{siteName}}에서 계정을 생성해 주셔서 감사합니다! 계정을 활성화시키려면, 다음 링크를 클릭해 주세요:
 
-{{link}}
+<{{link}}>
 
 본 이메일에 관해서 모르신다면, 그냥 무시해 주세요.',
     'account_activation_heading' => '누군가 계정을 생성했을 때:',
@@ -1214,7 +1214,7 @@ return [
 
 {{siteName}}의 비밀번호를 재설정하려면, 이 링크를 클릭하세요:
 
-{{link}}
+<{{link}}>
 
 본 이메일을 기다리지 않으셨다면, 그냥 무시해 주세요.',
     'forgot_password_heading' => '누군가 자신의 비밀번호를 잊어버리면:',
@@ -1248,7 +1248,7 @@ return [
 
 다음 링크를 클릭하여 새로운 이메일 주소를 확인해 주세요:
 
-{{link}}
+<{{link}}>
 
 이 이메일에 관해 모르신다면, 그냥 무시해 주세요.',
     'verify_new_email_heading' => '누군가 자신의 이메일 주소를 변경했을 때:',

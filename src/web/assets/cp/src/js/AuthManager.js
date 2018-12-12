@@ -149,7 +149,7 @@ Craft.AuthManager = Garnish.Base.extend(
                     closeOtherModals: false,
                     hideOnEsc: false,
                     hideOnShadeClick: false,
-                    shadeClass: 'modal-shade dark',
+                    shadeClass: 'modal-shade dark logoutwarningmodalshade',
                     onFadeIn: function() {
                         if (!Garnish.isMobileBrowser(true)) {
                             // Auto-focus the renew button
@@ -253,7 +253,7 @@ Craft.AuthManager = Garnish.Base.extend(
                     closeOtherModals: false,
                     hideOnEsc: false,
                     hideOnShadeClick: false,
-                    shadeClass: 'modal-shade dark',
+                    shadeClass: 'modal-shade dark loginmodalshade',
                     onFadeIn: $.proxy(function() {
                         if (!Garnish.isMobileBrowser(true)) {
                             // Auto-focus the password input

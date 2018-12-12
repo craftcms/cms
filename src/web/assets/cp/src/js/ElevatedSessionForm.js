@@ -43,10 +43,17 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
             // Are we only interested in certain inputs?
             if (this.inputs) {
                 var inputsChanged = false;
+                var $input;
 
                 for (var i = 0; i < this.inputs.length; i++) {
+                    $input = this.inputs[i].input;
+                    // Is this a password input?
+                    if ($input.data('passwordInput')) {
+                        $input = $input.data('passwordInput').$currentInput;
+                    }
+
                     // Has this input's value changed?
-                    if (Garnish.getInputPostVal(this.inputs[i].input) !== this.inputs[i].val) {
+                    if (Garnish.getInputPostVal($input) !== this.inputs[i].val) {
                         inputsChanged = true;
                         break;
                     }

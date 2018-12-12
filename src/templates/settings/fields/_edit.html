@@ -62,9 +62,10 @@
         name: 'type',
         options: fieldTypeOptions,
         value: className(field),
-        errors: field.getErrors('type') ?? null,
         toggle: true
     }) }}
+
+    {{ missingFieldPlaceholder|raw }}
 
     {% if craft.app.getIsMultiSite() %}
         {% set translationMethods = field.supportedTranslationMethods %}

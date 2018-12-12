@@ -8,7 +8,6 @@
 namespace craft\composer;
 
 use Composer\Package\Archiver;
-use Craft;
 
 /**
  * Composer Factory
@@ -23,6 +22,10 @@ class Factory extends \Composer\Factory
      * to avoid unnecessary server requirements.
      *
      * Full class names used when the parent implementation referenced classes relative to its own namespace.
+     *
+     * @param \Composer\Config $config
+     * @param \Composer\Downloader\DownloadManager|null $dm
+     * @return Archiver\ArchiveManager
      */
     public function createArchiveManager(\Composer\Config $config, \Composer\Downloader\DownloadManager $dm = null)
     {

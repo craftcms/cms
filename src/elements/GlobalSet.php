@@ -93,7 +93,7 @@ class GlobalSet extends Element
      */
     public function __toString(): string
     {
-        return (string)$this->name;
+        return (string)$this->name ?: static::class;
     }
 
     /**
@@ -149,11 +149,11 @@ class GlobalSet extends Element
      */
     public function getCpEditUrl()
     {
-        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->getCurrentSite()->id) {
-            return UrlHelper::cpUrl('globals/'.$this->getSite()->handle.'/'.$this->handle);
+        if (Craft::$app->getIsMultiSite()) {
+            return UrlHelper::cpUrl('globals/' . $this->getSite()->handle . '/' . $this->handle);
         }
 
-        return UrlHelper::cpUrl('globals/'.$this->handle);
+        return UrlHelper::cpUrl('globals/' . $this->handle);
     }
 
     // Events
@@ -164,10 +164,14 @@ class GlobalSet extends Element
      */
     public function beforeDelete(): bool
     {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
         if (($fieldLayout = $this->getFieldLayout()) !== null) {
             Craft::$app->getFields()->deleteLayout($fieldLayout);
         }
 
-        return parent::beforeDelete();
+        return true;
     }
 }

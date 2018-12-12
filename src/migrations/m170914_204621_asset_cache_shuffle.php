@@ -17,15 +17,15 @@ class m170914_204621_asset_cache_shuffle extends Migration
     public function safeUp()
     {
         $basePath = Craft::$app->getPath()->getAssetsPath();
-        $oldBasePath = $basePath.DIRECTORY_SEPARATOR.'cache';
+        $oldBasePath = $basePath . DIRECTORY_SEPARATOR . 'cache';
 
         if (!file_exists($oldBasePath)) {
             return;
         }
 
         foreach (['icons', 'sources'] as $dir) {
-            $oldPath = $oldBasePath.DIRECTORY_SEPARATOR.$dir;
-            $newPath = $basePath.DIRECTORY_SEPARATOR.$dir;
+            $oldPath = $oldBasePath . DIRECTORY_SEPARATOR . $dir;
+            $newPath = $basePath . DIRECTORY_SEPARATOR . $dir;
 
             if (file_exists($oldPath) && !file_exists($newPath)) {
                 rename($oldPath, $newPath);

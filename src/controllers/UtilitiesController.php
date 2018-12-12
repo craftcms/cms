@@ -57,7 +57,7 @@ class UtilitiesController extends Controller
         /** @var string|UtilityInterface $firstUtility */
         $firstUtility = reset($utilities);
 
-        return $this->redirect('utilities/'.$firstUtility::id());
+        return $this->redirect('utilities/' . $firstUtility::id());
     }
 
     /**
@@ -74,12 +74,12 @@ class UtilitiesController extends Controller
         $utilitiesService = Craft::$app->getUtilities();
 
         if (($class = $utilitiesService->getUtilityTypeById($id)) === null) {
-            throw new NotFoundHttpException('Invalid utility ID: '.$id);
+            throw new NotFoundHttpException('Invalid utility ID: ' . $id);
         }
 
         /** @var UtilityInterface $class */
         if ($utilitiesService->checkAuthorization($class) === false) {
-            throw new ForbiddenHttpException('User not permitted to access the "'.$class::displayName().'".');
+            throw new ForbiddenHttpException('User not permitted to access the "' . $class::displayName() . '".');
         }
 
         $this->getView()->registerAssetBundle(UtilitiesAsset::class);
@@ -96,7 +96,7 @@ class UtilitiesController extends Controller
      * View stack trace for a deprecator log entry.
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Errors utility
+     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Warnings utility
      */
     public function actionGetDeprecationErrorTracesModal(): Response
     {
@@ -118,7 +118,7 @@ class UtilitiesController extends Controller
      * Deletes all deprecation errors.
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Errors utility
+     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Warnings utility
      */
     public function actionDeleteAllDeprecationErrors(): Response
     {
@@ -137,7 +137,7 @@ class UtilitiesController extends Controller
      * Deletes a deprecation error.
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Errors utility
+     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Warnings utility
      */
     public function actionDeleteDeprecationError(): Response
     {
@@ -167,23 +167,28 @@ class UtilitiesController extends Controller
 
         // Initial request
         if (!empty($params['start'])) {
-            $batches = [];
+
             $sessionId = Craft::$app->getAssetIndexer()->getIndexingSessionId();
 
-            // Selection of sources or all sources?
-            if (is_array($params['sources'])) {
-                $sourceIds = $params['sources'];
+            $response = [
+                'volumes' => [],
+                'sessionId' => $sessionId
+            ];
+
+            // Selection of volumes or all volumes?
+            if (is_array($params['volumes'])) {
+                $volumeIds = $params['volumes'];
             } else {
-                $sourceIds = Craft::$app->getVolumes()->getViewableVolumeIds();
+                $volumeIds = Craft::$app->getVolumes()->getViewableVolumeIds();
             }
 
             $missingFolders = [];
             $skippedFiles = [];
             $grandTotal = 0;
 
-            foreach ($sourceIds as $sourceId) {
+            foreach ($volumeIds as $volumeId) {
                 // Get the indexing list
-                $indexList = Craft::$app->getAssetIndexer()->prepareIndexList($sessionId, $sourceId);
+                $indexList = Craft::$app->getAssetIndexer()->prepareIndexList($sessionId, $volumeId);
 
                 if (!empty($indexList['error'])) {
                     return $this->asJson($indexList);
@@ -197,13 +202,16 @@ class UtilitiesController extends Controller
                     $skippedFiles = $indexList['skippedFiles'];
                 }
 
-                $batch = [];
+                $response['volumes'][] = [
+                    'volumeId' =>$volumeId,
+                    'total' => $indexList['total'],
+                ];
 
                 for ($i = 0; $i < $indexList['total']; $i++) {
                     $batch[] = [
                         'params' => [
                             'sessionId' => $sessionId,
-                            'sourceId' => $sourceId,
+                            'volumeId' => $volumeId,
                             'total' => $indexList['total'],
                             'process' => 1,
                             'cacheImages' => $params['cacheImages']
@@ -214,28 +222,18 @@ class UtilitiesController extends Controller
                 $batches[] = $batch;
             }
 
-            $batches[] = [
-                [
-                    'params' => [
-                        'overview' => true,
-                        'sessionId' => $sessionId,
-                    ]
-                ]
-            ];
-
-            Craft::$app->getSession()->set('assetsSourcesBeingIndexed', $sourceIds);
+            Craft::$app->getSession()->set('assetsVolumesBeingIndexed', $volumeIds);
             Craft::$app->getSession()->set('assetsMissingFolders', $missingFolders);
             Craft::$app->getSession()->set('assetsSkippedFiles', $skippedFiles);
 
             return $this->asJson([
-                'batches' => $batches,
-                'total' => $grandTotal
+                'indexingData' => $response,
             ]);
         }
 
         if (!empty($params['process'])) {
             // Index the file
-            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['sourceId'], $params['cacheImages']);
+            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['volumeId'], $params['cacheImages']);
 
             return $this->asJson([
                 'success' => true
@@ -250,13 +248,9 @@ class UtilitiesController extends Controller
             $responseArray = [];
 
             if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles)) {
-                $responseArray['confirm'] = $this->getView()->renderTemplate('assets/_missing_items',
-                    [
-                        'missingFiles' => $missingFiles,
-                        'missingFolders' => $missingFolders,
-                        'skippedFiles' => $skippedFiles
-                    ]);
-                $responseArray['params'] = ['finish' => 1];
+                return $this->asJson([
+                    'confirm' => $this->getView()->renderTemplate('assets/_missing_items', compact('missingFiles', 'missingFolders', 'skippedFiles')),
+                ]);
             }
 
             // Clean up stale indexing data (all sessions that have all recordIds set)
@@ -278,16 +272,6 @@ class UtilitiesController extends Controller
                         ['not', ['sessionId' => $sessionsInProgress]])
                     ->execute();
             }
-
-            if (!empty($responseArray)) {
-                return $this->asJson([
-                    'batches' => [
-                        [
-                            $responseArray
-                        ]
-                    ]
-                ]);
-            }
         } else if (!empty($params['finish'])) {
             if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
                 Craft::$app->getDb()->createCommand()
@@ -296,8 +280,7 @@ class UtilitiesController extends Controller
 
                 /** @var Asset[] $assets */
                 $assets = Asset::find()
-                    ->status(null)
-                    ->enabledForSite(false)
+                    ->anyStatus()
                     ->id($params['deleteAsset'])
                     ->all();
 
@@ -310,13 +293,12 @@ class UtilitiesController extends Controller
             if (!empty($params['deleteFolder']) && is_array($params['deleteFolder'])) {
                 Craft::$app->getAssets()->deleteFoldersByIds($params['deleteFolder'], false);
             }
-
-            return $this->asJson([
-                'finished' => 1
-            ]);
         }
 
-        return $this->asJson([]);
+        return $this->asJson([
+            'finished' => 1
+        ]);
+
     }
 
     /**
@@ -350,7 +332,7 @@ class UtilitiesController extends Controller
                 } catch (InvalidArgumentException $e) {
                     // the directory doesn't exist
                 } catch (\Throwable $e) {
-                    Craft::warning("Could not clear the directory {$action}: ".$e->getMessage(), __METHOD__);
+                    Craft::warning("Could not clear the directory {$action}: " . $e->getMessage(), __METHOD__);
                 }
             } else if (isset($cacheOption['params'])) {
                 call_user_func_array($action, $cacheOption['params']);
@@ -380,7 +362,7 @@ class UtilitiesController extends Controller
         try {
             $backupPath = Craft::$app->getDb()->backup();
         } catch (\Throwable $e) {
-            throw new Exception('Could not create backup: '.$e->getMessage());
+            throw new Exception('Could not create backup: ' . $e->getMessage());
         }
 
         if (!is_file($backupPath)) {
@@ -391,20 +373,20 @@ class UtilitiesController extends Controller
             return $this->asJson(['success' => true]);
         }
 
-        $zipPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.pathinfo($backupPath, PATHINFO_FILENAME).'.zip';
+        $zipPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . pathinfo($backupPath, PATHINFO_FILENAME) . '.zip';
 
         if (is_file($zipPath)) {
             try {
                 FileHelper::unlink($zipPath);
             } catch (ErrorException $e) {
-                Craft::warning("Unable to delete the file \"{$zipPath}\": ".$e->getMessage(), __METHOD__);
+                Craft::warning("Unable to delete the file \"{$zipPath}\": " . $e->getMessage(), __METHOD__);
             }
         }
 
         $zip = new ZipArchive();
 
         if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-            throw new Exception('Cannot create zip at '.$zipPath);
+            throw new Exception('Cannot create zip at ' . $zipPath);
         }
 
         $filename = pathinfo($backupPath, PATHINFO_BASENAME);
@@ -428,7 +410,7 @@ class UtilitiesController extends Controller
         $this->requirePermission('utility:db-backup');
 
         $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
-        $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename.'.zip';
+        $filePath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $filename . '.zip';
 
         if (!is_file($filePath) || !Path::ensurePathIsContained($filePath)) {
             throw new NotFoundHttpException(Craft::t('app', 'Invalid backup name: {filename}', [
@@ -509,8 +491,7 @@ class UtilitiesController extends Controller
 
         $query = $class::find()
             ->id($params['id'])
-            ->status(null)
-            ->enabledForSite(false);
+            ->anyStatus();
 
         foreach ($siteIds as $siteId) {
             $query->siteId($siteId);

@@ -1,27 +1,29 @@
-<p align="center"><a href="https://craftcms.com/" target="_blank"><img width="312" height="90" src="https://craftcms.com/craftcms.svg" alt="Craft CMS"></a></p>
+<p align="center"><a href="https://craftcms.com/" rel="noopener" target="_blank"><img width="312" height="90" src="https://craftcms.com/craftcms.svg" alt="Craft CMS"></a></p>
 
 ## About Craft CMS
 
-Craft is a content-first CMS that aims to make life enjoyable for developers and content managers alike. It is optimized for bespoke web and application development, offering developers a clean slate to build out exactly what they want, rather than wrestling with a theme.
+Craft is a flexible, user-friendly CMS for creating custom digital experiences on the web and beyond.
 
-Learn more about Craft at [craftcms.com](https://craftcms.com).
+It features:
 
-## How to Install Craft 3
+- An intuitive, user-friendly Control Panel for content creation and administrative tasks.
+- A clean-slate approach to content modeling and [front-end development](https://docs.craftcms.com/v3/dev/) that doesn’t make any assumptions about your content or how it should be consumed.
+- A built-in Plugin Store with hundreds of free and commercial [plugins](https://plugins.craftcms.com/), all just a click away.
+- A robust framework for [module and plugin development](https://docs.craftcms.com/v3/extend/).
+- An active, vibrant [community](https://craftcms.com/community).
 
-See the Craft 3 documentation for [installation](https://docs.craftcms.com/v3/installation.html) and [updating](https://docs.craftcms.com/v3/upgrade.html) instructions.
+You can learn all about it at [craftcms.com](https://craftcms.com), and documentation is available at [docs.craftcms.com](https://docs.craftcms.com/v3/).
+
+## Tech Specs
+
+Craft is a self-hosted PHP 7 application, built on [Yii 2](https://www.yiiframework.com/). It can connect to MySQL and PostgreSQL for content storage. Templating is powered by [Twig](https://twig.symfony.com).
 
 ## Resources
 
-#### Official Resources
-- [Craft 3 Documentation](https://docs.craftcms.com/v3/)
-- [Craft 3 Class Reference](https://docs.craftcms.com/api/v3/)
-- [Craft 3 Plugins](https://plugins.craftcms.com)
-- [Demo site](https://demo.craftcms.com/)
-- [Craft Slack](https://craftcms.com/community#slack)
-- [Craft CMS Stack Exchange](http://craftcms.stackexchange.com/)
+We highly recommend you check out these resources as you’re getting started with Craft:
 
-#### Community Resources
-- [Mijingo](https://mijingo.com/craft) – Video courses and other learning resources
-- [Envato Tuts+](https://webdesign.tutsplus.com/categories/craft-cms/courses) – Video courses
-- [Straight Up Craft](http://straightupcraft.com/) – Articles, tutorials, and more
-- [pluginfactory.io](https://pluginfactory.io/) – Craft plugin scaffold generator
+- **[Craft Slack](https://craftcms.com/slack)** – one of the most friendly and helpful Slacks on the planet.
+- **[Up and Running with Craft 3](https://craftquest.io/courses/craft-cms-3-tutorials)** – free 4 1/2-hour video course by [CraftQuest](https://craftquest.io).
+- **[Craft CMS 3 Orientation Guide](https://nystudio107.com/blog/craft-cms-3-orientation-guide-welcome)** – intro to Craft and the community by [nystudio107](https://nystudio107.com).
+- **[Craft CMS Stack Exchange](http://craftcms.stackexchange.com/)** – community-run Q&A for Craft developers.
+- **[Craft Link List](http://craftlinklist.com/)** – bimonthly newsletter about the Craft ecosystem.

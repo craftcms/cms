@@ -20,14 +20,14 @@ class SitesAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
         ];
 
         $this->js = [
-            'sites'.$this->dotJs(),
+            'sites' . $this->dotJs(),
         ];
 
         parent::init();

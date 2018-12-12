@@ -349,7 +349,7 @@ return [
     'Delete {site}' => '{site} löschen',
     'Delete…' => 'Löschen',
     'Deleting stale template caches' => 'Cache abgelaufener Templates löschen',
-    'Deprecation Errors' => 'Veralteter Code',
+    'Deprecation Warnings' => 'Veralteter Code',
     'Descending' => 'Absteigend',
     'Description' => 'Beschreibung',
     'Deselect All' => 'Gesamte Auswahl aufheben',
@@ -905,7 +905,7 @@ return [
     'Sources' => 'Quellen',
     'Square' => 'Quadrat',
     'Square SVG file recommended. The logo will be displayed at {size} by {size}.' => 'Quadratische SVG-Datei empfohlen Das Logo wird in der Größe {size} x {size} angezeigt.',
-    'Stack Trace' => 'Stapelspur',
+    'Stack Trace' => 'Stack Trace',
     'Staff Picks' => 'Auswahl unserer Mitarbeiter',
     'Status' => 'Status',
     'Status updated, with some failures due to validation errors.' => 'Status wurde – aufgrund von Validierungsfehlern nicht vollständig erfolgreich – aktualisiert.',
@@ -1196,7 +1196,7 @@ return [
 
 danke für das Einrichten eines Benutzerkontos auf {{siteName}}. Um Ihr Konto zu aktivieren, klicken Sie bitte auf den folgenden Link:
 
-{{link}}
+<{{link}}>
 
 Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'account_activation_heading' => 'Wenn jemand ein Benutzerkonto anlegt:',
@@ -1214,7 +1214,7 @@ Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
 
 um Ihr Passwort für {{siteName}} zurückzusetzen, klicken Sie bitte auf den folgenden Link:
 
-{{link}}
+<{{link}}>
 
 Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'forgot_password_heading' => 'Wenn jemand sein Passwort vergisst:',
@@ -1248,7 +1248,7 @@ Hier sind die von Ihnen verwendeten Einstellungen:
 
 bitte bestätigen Sie Ihre neue E-Mail-Adresse, indem Sie auf folgenden Link klicken:
 
-{{link}}
+<{{link}}>
 
 Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'verify_new_email_heading' => 'Wenn jemand seine Emailadresse ändert:',
@@ -1257,6 +1257,7 @@ Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'weeks' => 'Wochen',
     '{attribute} "{value}" has already been taken.' => '{attribute} "{value}" ist bereits vergeben.',
     '{attribute} cannot contain emoji.' => '{attribute} darf kein Emoji enthalten.',
+    '{attribute} cannot contain spaces.' => '{attribute} darf keine Leerzeichen enthalten.',
     '{attribute} is not a valid URI' => '{attribute} ist kein gültiger URI',
     '{attribute} isn’t a valid hex color value.' => '{attribute} ist kein gültiger Hex-Farbwert.',
     '{attribute} must be an array.' => '{attribute} muss ein Array sein.',

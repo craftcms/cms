@@ -38,7 +38,7 @@ class m160912_230520_require_entry_type_id extends Migration
             $caseSql = 'case';
 
             foreach ($results as $result) {
-                $caseSql .= ' when % = '.$this->db->quoteValue($result['sectionId']).' then '.$this->db->quoteValue($result['typeId']);
+                $caseSql .= ' when % = ' . $this->db->quoteValue($result['sectionId']) . ' then ' . $this->db->quoteValue($result['typeId']);
             }
 
             $caseSql .= ' end';
@@ -62,7 +62,7 @@ class m160912_230520_require_entry_type_id extends Migration
 
         if (!empty($typelessEntryIds)) {
             $this->delete('{{%elements}}', ['id' => $typelessEntryIds]);
-            echo "    > Deleted the following entries, because they didn't have an entry type: ".implode(',', $typelessEntryIds)."\n";
+            echo "    > Deleted the following entries, because they didn't have an entry type: " . implode(',', $typelessEntryIds) . "\n";
         }
 
         // Make typeId required

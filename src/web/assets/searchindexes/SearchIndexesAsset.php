@@ -20,14 +20,14 @@ class SearchIndexesAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
         ];
 
         $this->js = [
-            'SearchIndexesUtility'.$this->dotJs(),
+            'SearchIndexesUtility' . $this->dotJs(),
         ];
 
         parent::init();

@@ -27,4 +27,9 @@ class SiteEvent extends CancelableEvent
      * @var bool Whether the site is brand new
      */
     public $isNew = false;
+
+    /**
+     * @var int|null The old primary site ID
+     */
+    public $oldPrimarySiteId;
 }

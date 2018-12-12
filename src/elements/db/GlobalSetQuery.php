@@ -15,12 +15,18 @@ use yii\db\Connection;
 
 /**
  * GlobalSetQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
+ *
  * @method GlobalSet[]|array all($db = null)
  * @method GlobalSet|array|null one($db = null)
  * @method GlobalSet|array|null nth(int $n, Connection $db = null)
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
+ * @supports-site-params
+ * @replace {element} global set
+ * @replace {elements} global sets
+ * @replace {twig-method} craft.globalSets()
+ * @replace {myElement} myGlobalSet
+ * @replace {element-class} \craft\elements\GlobalSet
  */
 class GlobalSetQuery extends ElementQuery
 {
@@ -32,11 +38,13 @@ class GlobalSetQuery extends ElementQuery
 
     /**
      * @var bool Whether to only return global sets that the user has permission to edit.
+     * @used-by editable()
      */
     public $editable = false;
 
     /**
      * @var string|string[]|null The handle(s) that the resulting global sets must have.
+     * @used-by handle()
      */
     public $handle;
 
@@ -57,10 +65,11 @@ class GlobalSetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[editable]] property.
+     * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @uses $editable
      */
     public function editable(bool $value = true)
     {
@@ -69,10 +78,36 @@ class GlobalSetQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[handle]] property.
+     * Narrows the query results based on the global sets’ handles.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `'foo'` | with a handle of `foo`.
+     * | `'not foo'` | not with a handle of `foo`.
+     * | `['foo', 'bar']` | with a handle of `foo` or `bar`.
+     * | `['not', 'foo', 'bar']` | not with a handle of `foo` or `bar`.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch the {element} with a handle of 'foo' #}
+     * {% set {element-var} = {twig-method}
+     *     .handle('foo')
+     *     .one() %}
+     * ```
+     *
+     * ```php
+     * // Fetch the {element} with a handle of 'foo'
+     * ${element-var} = {php-method}
+     *     ->handle('foo')
+     *     ->one();
+     * ```
      *
      * @param string|string[]|null $value The property value
      * @return static self reference
+     * @uses $handle
      */
     public function handle($value)
     {

@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'Odstrániť {site}',
     'Delete…' => 'Zmazať...',
     'Deleting stale template caches' => 'Odstraňovanie zastaraného cache šablón',
-    'Deprecation Errors' => 'Deprecation Chyby',
+    'Deprecation Warnings' => 'Deprecation Chyby',
     'Descending' => 'Zostupne',
     'Description' => 'Popis',
     'Deselect All' => 'Zrušiť výber',
@@ -1196,7 +1196,7 @@ return [
 
 Vďaka za vytvorenie účtu na {{siteName}}! Pre jeho aktiváciu prosím klikni na nasledujúci odkaz:
 
-{{link}}
+<{{link}}>
 
 Ak si tento email neočakával, jednoducho ho ignoruj.',
     'account_activation_heading' => 'Keď niekto vytvorí účet:',
@@ -1214,7 +1214,7 @@ Ak si tento email neočakával, jednoducho ho ignoruj.',
 
 Na obnovenie svojho {{siteName}} hesla, klikni na tento odkaz:
 
-{{link}}
+<{{link}}>
 
 Ak si tento email neočakával, proste ho ignoruj.',
     'forgot_password_heading' => 'Keď niekto zabudne svoje heslo:',
@@ -1248,7 +1248,7 @@ Tu sú použité nastavenia:
 
 Prosím, potvrď svoju novú emailovú adresu kliknutím na tento odkaz:
 
-{{link}}
+<{{link}}>
 
 Ak si tento email neočakával, jednoducho ho ignoruj.',
     'verify_new_email_heading' => 'Keď niekto zmení svoju emailovú adresu:',

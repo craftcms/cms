@@ -5,7 +5,7 @@
 {% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
 {% set params = parentIdParam ? { parentId: parentIdParam } : null %}
 
-<div id="revision-btn" class="btn menubtn"{% if showSites %} data-icon="world"{% endif %}>{{ revisionLabel }}</div>
+<div id="revision-btn" class="btn menubtn"{% if showSiteLabel %} data-icon="world"{% endif %}>{{ revisionLabel }}</div>
 
 <div class="menu">
     {% if showSites %}
@@ -64,7 +64,7 @@
         {% endif %}
 
         {% if section.enableVersioning %}
-            {% set versions = craft.app.entryRevisions.getVersionsByEntryId(entry.id, entry.siteId) %}
+            {% set versions = craft.app.entryRevisions.getVersionsByEntryId(entry.id, entry.siteId, 10) %}
             {% if versions %}
                 <h6>{{ "Recent Versions"|t('app') }}</h6>
                 <ul class="padded">
