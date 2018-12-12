@@ -246,6 +246,8 @@ class UsersController extends BaseController
 			}
 		}
 
+		$loginName = null;
+
 		if (!isset($user))
 		{
 			$loginName = craft()->request->getPost('loginName');
@@ -267,6 +269,12 @@ class UsersController extends BaseController
 			}
 		}
 
+		// If no one is logged in and preventUserEnumeration is enabled, clear out the login errors
+		if (!$existingUser && craft()->config->get('preventUserEnumeration'))
+		{
+			$errors = array();
+		}
+
 		if (!empty($user))
 		{
 			if (!craft()->users->sendPasswordResetEmail($user))
@@ -275,9 +283,7 @@ class UsersController extends BaseController
 			}
 		}
 
-		// If there haven't been any errors, or there were, and it's not one logged in user editing another
-		// and we want to pretend like there wasn't any errors...
-		if (empty($errors) || (count($errors) > 0 && !$existingUser && craft()->config->get('preventUserEnumeration')))
+		if (empty($errors))
 		{
 			if (craft()->request->isAjaxRequest())
 			{
