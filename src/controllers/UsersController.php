@@ -498,12 +498,18 @@ class UsersController extends BaseController
 	 *
 	 * @param array       $variables
 	 * @param string|null $account
+	 * @param array       $variables
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditUser(array $variables = array(), $account = null)
+	public function actionEditUser(array $variables = array(), $account = null, array $variables = array())
 	{
+		if (!empty($variables['errors']))
+		{
+			craft()->userSession->setError(reset($variables['errors']));
+		}
+
 		// Determine which user account we're editing
 		// ---------------------------------------------------------------------
 
