@@ -498,12 +498,11 @@ class UsersController extends BaseController
 	 *
 	 * @param array       $variables
 	 * @param string|null $account
-	 * @param array       $variables
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditUser(array $variables = array(), $account = null, array $variables = array())
+	public function actionEditUser(array $variables = array(), $account = null)
 	{
 		if (!empty($variables['errors']))
 		{
