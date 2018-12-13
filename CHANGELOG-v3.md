@@ -7,6 +7,7 @@
 
 ### Changed
 - The `app/migrate` web action now applies pending `project.yaml` changes, if the `useProjectConfigFile` config setting is enabled.
+- Project Config map now uses relative file paths with aliases instead of absolute paths. ([#3546](https://github.com/craftcms/cms/issues/3546))
 
 ### Fixed
 - Fixed a bug where restoring elements belonging to deleted sites via `project.yaml` would throw an error.

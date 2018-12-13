@@ -572,7 +572,13 @@ class ProjectConfig extends Component
             $info = Craft::$app->getInfo();
 
             if ($this->_updateConfigMap && $this->_useConfigFile()) {
-                $info->configMap = Json::encode($this->_generateConfigMap());
+                $configMap = $this->_generateConfigMap();
+
+                foreach ($configMap as &$filePath) {
+                    $filePath = Craft::alias($filePath);
+                }
+
+                $info->configMap = Json::encode($configMap);
             }
 
             if ($this->_updateConfig) {
@@ -865,7 +871,13 @@ class ProjectConfig extends Component
             return $this->_configMap;
         }
 
-        return $this->_configMap = Json::decode(Craft::$app->getInfo()->configMap) ?? [];
+        $configMap = Json::decode(Craft::$app->getInfo()->configMap) ?? [];
+
+        foreach ($configMap as &$filePath) {
+            $filePath = Craft::getAlias($filePath);
+        }
+
+        return $this->_configMap = $configMap;
     }
 
     /**
