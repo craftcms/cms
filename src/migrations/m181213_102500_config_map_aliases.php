@@ -7,9 +7,9 @@ use craft\db\Migration;
 use craft\helpers\Json;
 
 /**
- * m181213_102500_remove_absolue_paths_from_configmap migration.
+ * m181213_102500_config_map_aliases migration.
  */
-class m181213_102500_remove_absolue_paths_from_configmap extends Migration
+class m181213_102500_config_map_aliases extends Migration
 {
     /**
      * @inheritdoc
@@ -35,7 +35,7 @@ class m181213_102500_remove_absolue_paths_from_configmap extends Migration
      */
     public function safeDown()
     {
-        echo "m181213_102500_remove_absolue_paths_from_configmap cannot be reverted.\n";
+        echo "m181213_102500_config_map_aliases cannot be reverted.\n";
         return false;
     }
 }
