@@ -50,9 +50,6 @@ class ProjectConfig extends Component
     // Key to use for schema version storage.
     const CONFIG_SCHEMA_VERSION_KEY = 'system.schemaVersion';
 
-    // Maximum amount of configuration backups to use
-    const MAX_CONFIG_BACKUPS = 50;
-
     // TODO move this to UID validator class
     // TODO update StringHelper::isUUID() to use that
     // Regexp patterns
@@ -115,6 +112,11 @@ class ProjectConfig extends Component
 
     // Properties
     // =========================================================================
+
+    /**
+     * @var int The maximum number of project.yaml backups to store in storage/config-backups/
+     */
+    public $maxBackups = 50;
 
     /**
      * @var bool Whether the project config is read-only.
@@ -1160,34 +1162,21 @@ class ProjectConfig extends Component
      */
     private function _storeYamlHistory(array $fileData)
     {
-        $storageData = implode("\n" . '===================' . "\n", $fileData);
-
-        // most recent version will have no suffix
-        $maxCopies = self::MAX_CONFIG_BACKUPS - 1;
-
-        $backupFolder = Craft::$app->getPath()->getStoragePath() . '/configs';
-
-        if (!is_dir($backupFolder) && !mkdir($backupFolder) && !is_dir($backupFolder)) {
-            throw new \RuntimeException(sprintf('Directory "%s" was not created', $backupFolder));
-        }
-
-        $basePath = $backupFolder . '/project.yaml';
-        $lastFile = $basePath . '.' . $maxCopies;
-
-        // Remove the last file
-        if (file_exists($lastFile)) {
-            @unlink(@$lastFile);
-        }
+        $basePath = Craft::$app->getPath()->getConfigBackupPath() . '/' . self::CONFIG_FILENAME;
 
         // Go through all of them and move them forward.
-        for ($i = $maxCopies; $i >= 0; --$i) {
-            $thisFile = $basePath . ($i == 0 ? '' : '.' . $i);
+        for ($i = $this->maxBackups; $i > 0; $i--) {
+            $thisFile = $basePath . ($i == 1 ? '' : '.' . ($i - 1));
             if (file_exists($thisFile)) {
-                $nextFile = $basePath . '.' . ($i + 1);
-                @copy($thisFile, $nextFile);
+                if ($i === $this->maxBackups) {
+                    @unlink($thisFile);
+                } else {
+                    @rename($thisFile, "$basePath.$i");
+                }
             }
         }
 
+        $storageData = implode("\n===================\n", $fileData);
         file_put_contents($basePath, $storageData);
     }
 }

@@ -90,6 +90,23 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the `storage/configs/` directory.
+     *
+     * @param bool $create Whether the directory should be created if it doesn't exist
+     * @return string
+     */
+    public function getConfigBackupPath(bool $create = true): string
+    {
+        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'config-backups';
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+        }
+
+        return $path;
+    }
+
+    /**
      * Returns the path to the `storage/rebrand/` directory.
      *
      * @param bool $create Whether the directory should be created if it doesn't exist

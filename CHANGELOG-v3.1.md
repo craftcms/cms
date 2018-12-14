@@ -71,6 +71,7 @@
 - Added `craft\services\Fields::EVENT_BEFORE_APPLY_FIELD_DELETE`.
 - Added `craft\services\Fields::EVENT_BEFORE_APPLY_GROUP_DELETE`.
 - Added `craft\services\Gc` for handling garbage collection tasks.
+- Added `craft\services\Path::getConfigBackupPath()`.
 - Added `craft\services\ProjectConfig`.
 - Added `craft\services\Routes::deleteRouteByUid()`
 - Added `craft\services\Sections::getSectionByUid()`.

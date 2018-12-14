@@ -4,18 +4,20 @@
 
 ### Added
 - Added a new `project-config/sync` console command. ([#3510](https://github.com/craftcms/cms/issues/3510))
-- Project Config now keeps a backup of last 50 `project.yaml` files used in `storage/configs`.
+- Craft now keeps a backup of last 50 `project.yaml` files in `storage/config-backups/`.
+- Added `craft\services\Path::getConfigBackupPath()`.
+- Added `craft\services\ProjectConfig::$maxBackups`.
 
 ### Changed
 - The `app/migrate` web action now applies pending `project.yaml` changes, if the `useProjectConfigFile` config setting is enabled.
-- Project Config map now uses relative file paths with aliases instead of absolute paths. ([#3546](https://github.com/craftcms/cms/issues/3546))
 
 ### Fixed
 - Fixed a bug where restoring elements belonging to deleted sites via `project.yaml` would throw an error.
-- Fixed a bug where pre-determined layout UIDs were not respected when saving a field layout.
-- Fixed a bug where creating a new entry type would save it with an incorrect UID.
-- Fixed a bug where renaming a volume would not rename the top folder. ([#3534](https://github.com/craftcms/cms/issues/3534))
-- Fixed a bug where non-admin users could not perform any actions in asset manager.
+- Fixed a bug where preset layout UIDs were not preserved when saving field layouts.
+- Fixed a bug where preset entry type UIDs were not preserved when saving entry types.
+- Fixed a bug where renaming a volume would not rename its root folder. ([#3534](https://github.com/craftcms/cms/issues/3534))
+- Fixed a bug where some asset permissions weren’t being enforced properly.
+- Fixed a bug where Craft was storing absolute file paths in the `info.configMap` table column. ([#3546](https://github.com/craftcms/cms/issues/3546))
 
 ## 3.1.0-beta.4 - 2018-11-30
 
