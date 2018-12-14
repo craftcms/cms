@@ -4,10 +4,7 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\db\Query;
-use craft\helpers\ArrayHelper;
-use craft\services\Sections;
-use yii\helpers\Json;
+use craft\helpers\Json;
 
 /**
  * m181213_102500_remove_absolue_paths_from_configmap migration.

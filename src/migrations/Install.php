@@ -12,6 +12,7 @@ use craft\db\Migration;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\helpers\App;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\FieldGroup;
@@ -1025,7 +1026,7 @@ class Install extends Migration
             'maintenance' => false,
             'fieldVersion' => StringHelper::randomString(12),
             'config' => serialize([]),
-            'configMap' => json_encode([])
+            'configMap' => Json::encode([]),
         ]));
         echo " done\n";
 
