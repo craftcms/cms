@@ -50,6 +50,9 @@ class ProjectConfig extends Component
     // Key to use for schema version storage.
     const CONFIG_SCHEMA_VERSION_KEY = 'system.schemaVersion';
 
+    // Maximum amount of configuration backups to use
+    const MAX_CONFIG_BACKUPS = 50;
+
     // TODO move this to UID validator class
     // TODO update StringHelper::isUUID() to use that
     // Regexp patterns
@@ -561,11 +564,17 @@ class ProjectConfig extends Component
             // Save modified yaml files
             $fileList = array_keys($this->_modifiedYamlFiles);
 
+            $savedData = [];
+
             foreach ($fileList as $filePath) {
                 $data = $this->_parsedConfigs[$filePath];
                 $traverseAndClean($data);
-                FileHelper::writeToFile($filePath, Yaml::dump($data, 20, 2));
+                $yamlData = Yaml::dump($data, 20, 2);
+                FileHelper::writeToFile($filePath, $yamlData);
+                $savedData[$filePath] = $yamlData;
             }
+
+            $this->_storeYamlHistory($savedData);
         }
 
         if (($this->_updateConfigMap && $this->_useConfigFile()) || $this->_updateConfig) {
@@ -1141,5 +1150,44 @@ class ProjectConfig extends Component
 
             return $this->_traverseDataArray($data[$nextSegment], $path, $value, $delete);
         }
+    }
+
+    /**
+     * Store yaml history
+     *
+     * @param array $fileData
+     * @throws Exception
+     */
+    private function _storeYamlHistory(array $fileData)
+    {
+        $storageData = implode("\n" . '===================' . "\n", $fileData);
+
+        // most recent version will have no suffix
+        $maxCopies = self::MAX_CONFIG_BACKUPS - 1;
+
+        $backupFolder = Craft::$app->getPath()->getStoragePath() . '/configs';
+
+        if (!is_dir($backupFolder) && !mkdir($backupFolder) && !is_dir($backupFolder)) {
+            throw new \RuntimeException(sprintf('Directory "%s" was not created', $backupFolder));
+        }
+
+        $basePath = $backupFolder . '/project.yaml';
+        $lastFile = $basePath . '.' . $maxCopies;
+
+        // Remove the last file
+        if (file_exists($lastFile)) {
+            @unlink(@$lastFile);
+        }
+
+        // Go through all of them and move them forward.
+        for ($i = $maxCopies; $i >= 0; --$i) {
+            $thisFile = $basePath . ($i == 0 ? '' : '.' . $i);
+            if (file_exists($thisFile)) {
+                $nextFile = $basePath . '.' . ($i + 1);
+                @copy($thisFile, $nextFile);
+            }
+        }
+
+        file_put_contents($basePath, $storageData);
     }
 }

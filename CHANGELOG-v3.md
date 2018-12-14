@@ -4,6 +4,7 @@
 
 ### Added
 - Added a new `project-config/sync` console command. ([#3510](https://github.com/craftcms/cms/issues/3510))
+- Project Config now keeps a backup of last 50 `project.yaml` files used in `storage/configs`.
 
 ### Changed
 - The `app/migrate` web action now applies pending `project.yaml` changes, if the `useProjectConfigFile` config setting is enabled.
