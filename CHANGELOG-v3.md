@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that occurred when updating to 3.1.0-beta.5 from an earlier 3.1 release. ([#3560](https://github.com/craftcms/cms/issues/3560))
+
 ## 3.1.0-beta.5 - 2018-12-14
 
 ### Added

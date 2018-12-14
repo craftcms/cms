@@ -23,7 +23,7 @@ class m181213_102500_config_map_aliases extends Migration
             $filePath = Craft::alias($filePath);
         }
 
-        $info->configMap = $configMap;
+        $info->configMap = Json::encode($configMap);
 
         Craft::$app->saveInfo($info);
 
