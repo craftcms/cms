@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.1.0-beta.5 - 2018-11-14
+## 3.1.0-beta.5 - 2018-12-14
 
 ### Added
 - Added a new `project-config/sync` console command. ([#3510](https://github.com/craftcms/cms/issues/3510))
