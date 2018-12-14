@@ -20,12 +20,10 @@
                 <li v-for="feature in edition.features">
                     <font-awesome-icon icon="check"></font-awesome-icon>
                     {{feature.name}}
-                    <font-awesome-icon icon="info-circle" />
-                    <!--
-                    <template v-if="feature.description">
-                        — {{feature.description}}
-                    </template>
-                    -->
+                    <font-awesome-icon icon="info-circle" v-tooltip.right="{
+                        content: feature.description,
+                        autoHide: false,
+                    }" />
                 </li>
             </ul>
         </div>
@@ -37,7 +35,11 @@
 <script>
     import {mapState, mapGetters} from 'vuex'
     import PluginActions from './PluginActions'
+    import Vue from 'vue'
+    import VTooltip from 'v-tooltip'
 
+    Vue.use(VTooltip)
+    VTooltip.options.autoHide = false
     export default {
 
         props: ['plugin', 'edition'],
