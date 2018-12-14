@@ -508,21 +508,24 @@ class Volumes extends Component
             $volumeRecord->save(false);
 
             $assets = Craft::$app->getAssets();
-            $topFolder = $assets->findFolder([
+            $rootFolder = $assets->findFolder([
                 'volumeId' => $volumeRecord->id,
                 'parentId' => ':empty:'
             ]);
 
-            if ($topFolder === null) {
-                $topFolder = new VolumeFolder([
+            if ($rootFolder === null) {
+                $rootFolderRecord = new VolumeFolder([
                     'volumeId' => $volumeRecord->id,
                     'parentId' => null,
-                    'path' => ''
+                    'path' => '',
+                    'name' => $volumeRecord->name
                 ]);
-            }
 
-            $topFolder->name = $volumeRecord->name;
-            $assets->storeFolderRecord($topFolder);
+                $rootFolderRecord->save();
+            } else {
+                $rootFolder->name = $volumeRecord->name;
+                $assets->storeFolderRecord($rootFolder);
+            }
 
             $transaction->commit();
         } catch (\Throwable $e) {
