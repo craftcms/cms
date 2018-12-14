@@ -382,6 +382,13 @@ class DashboardController extends Controller
             $projectConfig = Craft::$app->getSecurity()->redactIfSensitive('', $projectConfig);
             $zip->addFromString('project.yaml', Yaml::dump($projectConfig, 20, 2));
 
+            // project.yaml backups
+            $configBackupPath = Craft::$app->getPath()->getConfigBackupPath(false);
+            $zip->addGlob($configBackupPath.'/*', 0, [
+                'remove_all_path' => true,
+                'add_path' => 'config-backups/',
+            ]);
+
             // Logs
             if ($getHelpModel->attachLogs) {
                 $logPath = Craft::$app->getPath()->getLogPath();
