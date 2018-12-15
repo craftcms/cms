@@ -20,10 +20,14 @@
                 <li v-for="feature in edition.features">
                     <font-awesome-icon icon="check"></font-awesome-icon>
                     {{feature.name}}
-                    <font-awesome-icon icon="info-circle" v-tooltip.right="{
-                        content: feature.description,
-                        autoHide: false,
-                    }" />
+
+                    <v-popover placement="right">
+                        <font-awesome-icon icon="info-circle" />
+
+                        <template slot="popover">
+                            {{feature.description}}
+                        </template>
+                    </v-popover>
                 </li>
             </ul>
         </div>
@@ -93,6 +97,8 @@
 </script>
 
 <style lang="scss">
+    @import "../../../../../../../lib/craftcms-sass/mixins";
+
     .plugin-editions-edition {
         @apply .border .border-grey-light .border-solid .p-8 .rounded .text-center .flex .flex-col;
 
@@ -124,6 +130,25 @@
                     }
                 }
             }
+        }
+    }
+
+    div.v-popover {
+        display: inline-block;
+        line-height: 0;
+
+        &:hover, &.open {
+            @apply .cursor-pointer;
+
+            svg[data-icon="info-circle"] {
+                path {
+                    fill: $linkColor !important;
+                }
+            }
+        }
+
+        & > span {
+            outline: none;
         }
     }
 </style>

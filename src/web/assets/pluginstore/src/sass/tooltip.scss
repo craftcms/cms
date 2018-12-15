@@ -11,65 +11,65 @@
     height: 0;
     border-style: solid;
     position: absolute;
-    margin: 5px;
+    margin: 12px;
     border-color: white;
   }
 
   &[x-placement^="top"] {
-    margin-bottom: 5px;
+    margin-bottom: 12px;
 
     .tooltip-arrow {
-      border-width: 5px 5px 0 5px;
+      border-width: 12px 12px 0 12px;
       border-left-color: transparent !important;
       border-right-color: transparent !important;
       border-bottom-color: transparent !important;
-      bottom: -5px;
-      left: calc(50% - 5px);
+      bottom: -12px;
+      left: calc(50% - 12px);
       margin-top: 0;
       margin-bottom: 0;
     }
   }
 
   &[x-placement^="bottom"] {
-    margin-top: 5px;
+    margin-top: 12px;
 
     .tooltip-arrow {
-      border-width: 0 5px 5px 5px;
+      border-width: 0 12px 12px 12px;
       border-left-color: transparent !important;
       border-right-color: transparent !important;
       border-top-color: transparent !important;
-      top: -5px;
-      left: calc(50% - 5px);
+      top: -12px;
+      left: calc(50% - 12px);
       margin-top: 0;
       margin-bottom: 0;
     }
   }
 
   &[x-placement^="right"] {
-    margin-left: 10px;
+    margin-left: 12px;
 
     .tooltip-arrow {
-      border-width: 10px 10px 10px 0;
+      border-width: 12px 12px 12px 0;
       border-left-color: transparent !important;
       border-top-color: transparent !important;
       border-bottom-color: transparent !important;
-      left: -10px;
-      top: calc(50% - 10px);
+      left: -12px;
+      top: calc(50% - 12px);
       margin-left: 0;
       margin-right: 0;
     }
   }
 
   &[x-placement^="left"] {
-    margin-right: 5px;
+    margin-right: 12px;
 
     .tooltip-arrow {
-      border-width: 5px 0 5px 5px;
+      border-width: 12px 0 12px 12px;
       border-top-color: transparent !important;
       border-right-color: transparent !important;
       border-bottom-color: transparent !important;
-      right: -5px;
-      top: calc(50% - 5px);
+      right: -12px;
+      top: calc(50% - 12px);
       margin-left: 0;
       margin-right: 0;
     }
