@@ -1,8 +1,7 @@
 <template>
     <div class="hidden">
         <div ref="pluginstoremodal" id="pluginstore-modal" class="pluginstore-modal modal" :class="'step-'+modalStep">
-            <plugin-edition v-if="modalStep === 'plugin-edition'" :pluginId="pluginId"></plugin-edition>
-            <cart v-else-if="modalStep === 'cart'" @continue-shopping="$root.closeModal()"></cart>
+            <cart v-if="modalStep === 'cart'" @continue-shopping="$root.closeModal()"></cart>
             <identity v-else-if="modalStep === 'identity'" @back="back()"></identity>
             <payment v-else-if="modalStep === 'payment'" @back="back()"></payment>
             <thank-you v-else-if="modalStep === 'thank-you'"></thank-you>
@@ -12,7 +11,6 @@
 
 <script>
     import {mapState} from 'vuex'
-    import PluginEdition from './steps/PluginEdition'
     import Payment from './steps/Payment'
     import Cart from './steps/Cart'
     import Identity from './steps/Identity'
@@ -21,7 +19,6 @@
     export default {
 
         components: {
-            PluginEdition,
             Cart,
             Identity,
             Payment,
