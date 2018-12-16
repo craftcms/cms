@@ -43,12 +43,15 @@
                     <th class="group" colspan="3">{{ "Features"|t('app') }}</th>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "Content Modeling"|t('app') }} <span class="info">{{ "Includes Sections, Global sets, Category groups, Tag groups, Asset volumes, Custom fields, Entry versioning, and Entry drafts"|t('app') }}</span></th>
+                    <th class="feature" scope="row">
+                        {{ "Content Modeling"|t('app') }}
+                        <info-hud>{{ "Includes Sections, Global sets, Category groups, Tag groups, Asset volumes, Custom fields, Entry versioning, and Entry drafts"|t('app') }}</info-hud>
+                    </th>
                     <td><span data-icon="check"></span></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "Multi-site Multi-lingual"|t('app') }} <span class="info">{{ "Includes Multiple locales, Section and entry locale targeting, Content translations"|t('app') }}</span></th>
+                    <th class="feature" scope="row">{{ "Multi-site Multi-lingual"|t('app') }} <info-hud>{{ "Includes Multiple locales, Section and entry locale targeting, Content translations"|t('app') }}</info-hud></th>
                     <td><span data-icon="check"></span></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
@@ -58,12 +61,12 @@
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "User Accounts"|t('app') }} <span class="info">{{ "Includes User accounts, User groups, User permissions, Public user registration"|t('app') }}</span></th>
+                    <th class="feature" scope="row">{{ "User Accounts"|t('app') }} <info-hud>{{ "Includes User accounts, User groups, User permissions, Public user registration"|t('app') }}</info-hud></th>
                     <td></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
                 <tr>
-                    <th class="feature" scope="row">{{ "System Branding"|t('app') }} <span class="info">{{ "Includes Custom login screen logo, Custom site icon, Custom HTML email template, Custom email message wording"|t('app') }}</span></th>
+                    <th class="feature" scope="row">{{ "System Branding"|t('app') }} <info-hud>{{ "Includes Custom login screen logo, Custom site icon, Custom HTML email template, Custom email message wording"|t('app') }}</info-hud></th>
                     <td></td>
                     <td><span data-icon="check"></span></td>
                 </tr>
@@ -95,12 +98,14 @@
     import {mapState} from 'vuex'
     import StatusBadge from '../components/upgradecraft/StatusBadge'
     import BuyBtn from '../components/upgradecraft/BuyBtn'
+    import InfoHud from '../components/InfoHud'
 
     export default {
 
         components: {
             StatusBadge,
             BuyBtn,
+            InfoHud,
         },
 
         computed: {
