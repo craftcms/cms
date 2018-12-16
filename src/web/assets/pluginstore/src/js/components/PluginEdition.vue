@@ -21,13 +21,9 @@
                     <font-awesome-icon icon="check"></font-awesome-icon>
                     {{feature.name}}
 
-                    <v-popover placement="right">
-                        <font-awesome-icon icon="info-circle" />
-
-                        <template slot="popover">
-                            {{feature.description}}
-                        </template>
-                    </v-popover>
+                    <info-hud>
+                        {{feature.description}}
+                    </info-hud>
                 </li>
             </ul>
         </div>
@@ -39,17 +35,15 @@
 <script>
     import {mapState, mapGetters} from 'vuex'
     import PluginActions from './PluginActions'
-    import Vue from 'vue'
-    import VTooltip from 'v-tooltip'
+    import InfoHud from './InfoHud'
 
-    Vue.use(VTooltip)
-    VTooltip.options.autoHide = false
     export default {
 
         props: ['plugin', 'edition'],
 
         components: {
             PluginActions,
+            InfoHud,
         },
 
         data() {
@@ -97,8 +91,6 @@
 </script>
 
 <style lang="scss">
-    @import "../../../../../../../lib/craftcms-sass/mixins";
-
     .plugin-editions-edition {
         @apply .border .border-grey-light .border-solid .p-8 .rounded .text-center .flex .flex-col;
 
@@ -130,25 +122,6 @@
                     }
                 }
             }
-        }
-    }
-
-    div.v-popover {
-        display: inline-block;
-        line-height: 0;
-
-        &:hover, &.open {
-            @apply .cursor-pointer;
-
-            svg[data-icon="info-circle"] {
-                path {
-                    fill: $linkColor !important;
-                }
-            }
-        }
-
-        & > span {
-            outline: none;
         }
     }
 </style>
