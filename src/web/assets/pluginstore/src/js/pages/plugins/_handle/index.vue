@@ -1,108 +1,86 @@
 <template>
-    <div v-if="pluginSnippet" class="plugin-details">
-        <div class="plugin-details-header">
-            <div class="plugin-icon">
-                <img v-if="pluginSnippet.iconUrl" :src="pluginSnippet.iconUrl" />
-                <img v-else :src="defaultPluginSvg" />
+    <div v-if="pluginSnippet" class="plugin-details ps-container">
+        <div class="plugin-details-header border-b border-solid border-grey-lighter tw-flex mb-6 pb-6 items-center">
+            <div class="plugin-icon mr-6">
+                <img v-if="pluginSnippet.iconUrl" :src="pluginSnippet.iconUrl" width="100" />
+                <img v-else :src="defaultPluginSvg" width="100" />
             </div>
 
-            <div class="description">
+            <div class="description flex-1">
                 <h2>{{ pluginSnippet.name }}</h2>
-
                 <p>{{ pluginSnippet.shortDescription }}</p>
-
-                <p>
-                    <a @click="viewDeveloper(pluginSnippet)">{{ pluginSnippet.developerName }}</a>
-                </p>
+                <p><a @click="viewDeveloper(pluginSnippet)">{{ pluginSnippet.developerName }}</a></p>
             </div>
 
-            <div v-if="cart" class="buttons">
-                <template v-if="pluginSnippet.editions[0].price != null && pluginSnippet.editions[0].price !== '0.00'">
-                    <template v-if="isInstalled(pluginSnippet)">
-                        <template v-if="pluginHasLicenseKey(pluginSnippet.handle)">
-                            <license-status status="installed" :description="$options.filters.t('Installed', 'app')"></license-status>
-                        </template>
-                        <template v-else>
-                            <license-status status="installed" :description="$options.filters.t('Installed as a trial', 'app')"></license-status>
-
-                            <a v-if="isInCart(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
-                            <a v-else @click="chooseEdition(pluginSnippet)" class="btn submit" :title="buyBtnTitle">{{ pluginSnippet.editions[0].price|currency }}</a>
-                        </template>
-                    </template>
-
-                    <template v-else>
-                        <template v-if="allowUpdates">
-                            <form method="post">
-                                <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
-                                <input type="hidden" name="action" value="pluginstore/install">
-                                <input type="hidden" name="packageName" :value="pluginSnippet.packageName">
-                                <input type="hidden" name="handle" :value="pluginSnippet.handle">
-                                <input type="hidden" name="version" :value="pluginSnippet.version">
-                                <input type="submit" class="btn" :value="'Try'|t('app')">
-                            </form>
-
-                            <a v-if="isInCart(pluginSnippet)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
-                            <a v-else @click="chooseEdition(pluginSnippet)" class="btn submit" :title="buyBtnTitle">{{ pluginSnippet.editions[0].price|currency }}</a>
-                        </template>
-                    </template>
-                </template>
-                <div v-else>
-                    <a v-if="isInstalled(pluginSnippet)" class="btn submit disabled">{{ "Installed"|t('app') }}</a>
-
-                    <div v-else-if="allowUpdates">
-                        <form method="post">
-                            <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
-                            <input type="hidden" name="action" value="pluginstore/install">
-                            <input type="hidden" name="packageName" :value="pluginSnippet.packageName">
-                            <input type="hidden" name="handle" :value="pluginSnippet.handle">
-                            <input type="hidden" name="version" :value="pluginSnippet.version">
-                            <input type="submit" class="btn submit" :value="'Install'|t('app')">
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <div v-if="actionsLoading" class="spinner"></div>
+            <div v-if="actionsLoading">
+                <div class="spinner"></div>
             </div>
         </div>
 
         <div class="plugin-details-body">
             <template v-if="!loading">
-                <div class="plugin-description">
-                    <div v-html="longDescription" class="readable"></div>
+                <template v-if="plugin.screenshotUrls && plugin.screenshotUrls.length">
+                    <plugin-screenshots :images="plugin.screenshotUrls"></plugin-screenshots>
 
-                    <div class="screenshots">
-                        <img v-for="screenshotUrl in plugin.screenshotUrls" :src="screenshotUrl" />
+                    <hr>
+                </template>
+
+                <template v-if="longDescription">
+                    <div class="plugin-description">
+                        <div v-html="longDescription" class="readable"></div>
                     </div>
+
+                    <hr>
+                </template>
+
+                <template v-if="!isPluginFree(plugin)">
+                    <div class="py-8">
+                        <plugin-editions :plugin="plugin"></plugin-editions>
+                    </div>
+
+                    <hr>
+                </template>
+
+                <h2 class="mb-4">Informations</h2>
+                <div class="plugin-infos">
+                    <ul class="plugin-meta">
+                        <li><span>{{ "Version"|t('app') }}</span> <strong>{{ plugin.version }}</strong></li>
+                        <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ lastUpdate }}</strong></li>
+                        <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls | formatNumber }}</strong></li>
+                        <li><span>{{ "Compatibility"|t('app') }}</span> <strong>{{ plugin.compatibility }}</strong></li>
+                        <li v-if="pluginCategories.length > 0">
+                            <span>{{ "Categories"|t('app') }}</span>
+                            <strong>
+                                <template v-for="category, key in pluginCategories">
+                                    <a @click="viewCategory(category)">{{ category.title }}</a><template v-if="key < (pluginCategories.length - 1)">, </template>
+                                </template>
+                            </strong>
+                        </li>
+                        <li><span>{{ "License"|t('app') }}</span> <strong>{{ licenseLabel }}</strong></li>
+                    </ul>
                 </div>
 
-                <div class="plugin-sidebar">
-                    <div class="plugin-meta">
-                        <ul class="plugin-meta-data">
-                            <li><span>{{ "Version"|t('app') }}</span> <strong>{{ plugin.version }}</strong></li>
-                            <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ lastUpdate }}</strong></li>
-                            <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls | formatNumber }}</strong></li>
-                            <li><span>{{ "Compatibility"|t('app') }}</span> <strong>{{ plugin.compatibility }}</strong></li>
-                            <li v-if="pluginCategories.length > 0">
-                                <span>{{ "Categories"|t('app') }}</span>
-                                <strong>
-                                    <template v-for="category, key in pluginCategories">
-                                        <a @click="viewCategory(category)">{{ category.title }}</a><template v-if="key < (pluginCategories.length - 1)">, </template>
-                                    </template>
-                                </strong>
-                            </li>
-                            <li><span>{{ "License"|t('app') }}</span> <strong>{{ licenseLabel }}</strong></li>
-                            <li v-if="pluginSnippet.editions[0].renewalPrice">
-                                <span>{{ "Renewal price"|t('app') }}</span>
-                                <strong>{{ "{price}/year"|t('app', { price: $root.$options.filters.currency(pluginSnippet.editions[0].renewalPrice) }) }}</strong>
-                            </li>
-                        </ul>
+                <hr>
 
-                        <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)" class="plugin-meta-links">
-                            <li v-if="plugin.documentationUrl"><a :href="plugin.documentationUrl" class="btn fullwidth" rel="noopener" target="_blank">{{ "Documentation"|t('app') }}</a></li>
-                            <li v-if="plugin.changelogUrl"><a :href="plugin.changelogUrl" class="btn fullwidth" rel="noopener" target="_blank">{{ "Changelog"|t('app') }}</a></li>
-                        </ul>
-                    </div>
+                <plugin-changelog></plugin-changelog>
+
+                <hr>
+
+                <div class="mb-8">
+                    <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)">
+                        <li v-if="plugin.documentationUrl" class="py-2">
+                            <a :href="plugin.documentationUrl" rel="noopener" target="_blank">
+                                <font-awesome-icon icon="link"></font-awesome-icon>
+                                {{ "Documentation"|t('app') }}
+                            </a>
+                        </li>
+                        <li v-if="plugin.changelogUrl" class="py-2">
+                            <a :href="plugin.changelogUrl" rel="noopener" target="_blank">
+                                <font-awesome-icon icon="link"></font-awesome-icon>
+                                {{ "Changelog"|t('app') }}
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </template>
             <template v-else>
@@ -114,14 +92,18 @@
 
 <script>
     import {mapState, mapGetters, mapActions} from 'vuex'
-    import LicenseStatus from '../../../components/LicenseStatus'
+    import PluginScreenshots from '../../../components/PluginScreenshots'
+    import PluginEditions from '../../../components/PluginEditions'
+    import PluginChangelog from '../../../components/PluginChangelog'
 
     export default {
 
         props: ['pluginId'],
 
         components: {
-            LicenseStatus,
+            PluginScreenshots,
+            PluginEditions,
+            PluginChangelog,
         },
 
         data() {
@@ -138,27 +120,17 @@
                 categories: state => state.pluginStore.categories,
                 plugin: state => state.pluginStore.plugin,
                 plugins: state => state.pluginStore.plugins,
-                cart: state => state.cart.cart,
                 defaultPluginSvg: state => state.craft.defaultPluginSvg,
             }),
 
             ...mapGetters({
-                activeTrialPlugins: 'activeTrialPlugins',
-                isInCart: 'cart/isInCart',
-                isInstalled: 'pluginStore/isInstalled',
-                pluginHasLicenseKey: 'craft/pluginHasLicenseKey',
+                isPluginFree: 'pluginStore/isPluginFree',
             }),
 
             longDescription() {
                 if (this.plugin.longDescription && this.plugin.longDescription.length > 0) {
                     return this.plugin.longDescription
                 }
-            },
-
-            buyBtnTitle() {
-                return this.$root.$options.filters.t('Buy now for {price}', 'app', {
-                    price: this.$root.$options.filters.currency(this.pluginSnippet.editions[0].price)
-                });
             },
 
             developerUrl() {
@@ -186,18 +158,6 @@
                 return Craft.formatDate(date)
             },
 
-            csrfTokenName() {
-                return Craft.csrfTokenName
-            },
-
-            csrfTokenValue() {
-                return Craft.csrfTokenValue
-            },
-
-            allowUpdates() {
-                return window.allowUpdates
-            }
-
         },
 
         watch: {
@@ -214,28 +174,6 @@
             ...mapActions({
                 addToCart: 'cart/addToCart'
             }),
-
-            chooseEdition() {
-                this.$root.modalStep = 'plugin-edition'
-            },
-
-            buyPlugin(plugin) {
-                this.actionsLoading = true
-
-                const item = {
-                    type: 'plugin-edition',
-                    plugin: plugin.handle,
-                    edition: plugin.editions[0].handle,
-                    autoRenew: false,
-                    cmsLicenseKey: window.cmsLicenseKey,
-                }
-
-                this.$store.dispatch('cart/addToCart', [item])
-                    .then(() => {
-                        this.actionsLoading = false
-                        this.$root.openModal('cart')
-                    })
-            },
 
             viewDeveloper(plugin) {
                 this.$root.closeModal()
@@ -268,132 +206,54 @@
         mounted() {
             const pluginHandle = this.$route.params.handle
             const plugin = this.$store.getters['pluginStore/getPluginByHandle'](pluginHandle)
-
+            this.$root.pluginId = plugin.id
             this.loadPlugin(plugin.id)
         }
 
     }
 </script>
 
-<style lang="scss" scoped>
-    @import "../../../../lib/craftcms-sass/mixins";
+<style lang="scss">
+    @import "../../../../sass/variables";
 
-    .plugin-details {
-        @apply .relative .flex .flex-grow .flex-col .min-h-0;
 
-        .plugin-details-header {
-            @apply .flex .flex-no-shrink;
-            border-bottom: 1px solid #eee;
-            padding: 24px;
+    /* Plugin Meta */
 
-            .plugin-icon {
-                img {
-                    max-width: none;
-                    width: 80px;
-                    height: 80px;
-                }
-            }
+    ul.plugin-meta {
+        @apply .-mx-4 .flex .flex-wrap;
 
-            .description {
-                @apply .flex-grow;
-                margin-left: 14px;
-            }
+        li {
+            @apply .mb-8 .px-4 .flex-no-shrink .flex-no-grow;
+            flex-basis: 50%;
 
-            .description h2 {
-                margin-bottom: 10px;
-            }
-
-            .description p {
-                margin: 0.4em 0;
-            }
-
-            .buttons {
-                @apply .whitespace-no-wrap;
-                @include margin(0, 0, 0, 24px);
-
-                a {
-                    margin-left: 7px;
-                }
-
-                .license-status {
-                    margin-top: 6px;
-                    margin-right: 14px;
-                }
-            }
-        }
-
-        .plugin-details-body {
-            @apply .relative .flex .flex-grow .min-h-0 .w-full;
-            flex-basis: 100%;
-
-            .plugin-details-loading {
-                @apply .absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-            }
-
-            .plugin-description {
-                @apply .flex-grow .min-w-0 .overflow-auto .w-full;
-                padding: 24px;
-                flex-basis: 100%;
-
-                img {
-                    @apply .max-w-full;
-                }
-
-                pre {
-                    @apply .overflow-auto;
-                    background: #eee;
-                    padding: 24px;
-                }
-            }
-
-            .plugin-sidebar {
-                @apply .overflow-auto;
-                flex: 0 0 260px;
-                width: 260px;
-                background: #fafafa;
-                border-left: 1px solid #eee;
-
-                .plugin-meta {
-                    border-radius: 4px;
-                    padding: 24px;
-
-                    ul.plugin-meta-data {
-                        border-bottom: 1px solid #eee;
-                        margin-bottom: 14px;
-
-                        li {
-                            @apply .flex;
-                            border-bottom: 1px solid #eee;
-                            padding: 7px 0;
-
-                            &:last-child {
-                                @apply .border-b-0;
-                            }
-
-                            & span,
-                            & strong {
-                                @apply .flex-grow;
-                            }
-
-                            & strong {
-                                @apply .text-right;
-                            }
-                        }
-                    }
-                }
-            }
-
-            .screenshots {
-                margin-top: 24px;
-
-                img {
-                    @apply .w-full;
-                    margin-bottom: 24px;
-                }
+            span {
+                @apply .block .text-grey;
             }
         }
     }
+
+    @media only screen and (min-width: 672px) {
+        ul.plugin-meta {
+            li {
+                flex-basis: 33.3333%;
+            }
+        }
+    }
+
+    @media only screen and (min-width: 1400px) {
+        ul.plugin-meta {
+            li {
+                flex-basis: 25%;
+            }
+        }
+    }
+
+    @media only screen and (min-width: $minLargeScreenWidth) {
+        ul.plugin-meta {
+            li {
+                flex-basis: 20%;
+            }
+        }
+    }
+
 </style>
