@@ -639,10 +639,12 @@ class UserQuery extends ElementQuery
                 ];
             case User::STATUS_PENDING:
                 return [
+                    'users.suspended' => false,
                     'users.pending' => true,
                 ];
             case User::STATUS_LOCKED:
                 return [
+                    'users.suspended' => false,
                     'users.locked' => true,
                 ];
             case User::STATUS_SUSPENDED:
