@@ -193,6 +193,9 @@
 ### Security
 - It’s no longer possible to spoof Live Preview requests.
 
+### Fixed
+- Fixed a bug where elements that belonged to more than one structure would be returned twice in element queries.
+
 ## 3.0.35 - 2018-12-11
 
 ### Added

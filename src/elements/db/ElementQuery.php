@@ -1772,11 +1772,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             ]);
 
         if ($this->structureId) {
-            $this->query
-                ->innerJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[subquery.elementsId]]');
-            $this->subQuery
-                ->innerJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[elements.id]]')
-                ->andWhere(['structureelements.structureId' => $this->structureId]);
+            $joinCondition = ['and',
+                '[[structureelements.elementId]] = [[subquery.elementsId]]',
+                ['structureelements.structureId' => $this->structureId],
+            ];
+            $this->query->innerJoin('{{%structureelements}} structureelements', $joinCondition);
+            $this->subQuery->innerJoin('{{%structureelements}} structureelements', $joinCondition);
         } else {
             $this->query
                 ->addSelect(['structureelements.structureId'])
