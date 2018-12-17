@@ -680,7 +680,7 @@ class Sections extends Component
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
             $sectionRecord->propagateEntries = (bool)$data['propagateEntries'];
 
-            $structure = $structureData ? (Craft::$app->getStructures()->getStructureByUid($structureData['uid']) ?? new Structure()) : new Structure();
+            $structure = $structureData ? (Craft::$app->getStructures()->getStructureByUid($structureData['uid']) ?? new Structure(['uid' => $structureData['uid']])) : new Structure();
 
             $isNewSection = $sectionRecord->getIsNewRecord();
             $isNewStructure = !(bool)$structure->id;
