@@ -607,7 +607,7 @@ class UsersController extends BaseController
 			{
 				case UserStatus::Pending:
 				{
-					$variables['statusLabel'] = Craft::t('Unverified');
+					$variables['statusLabel'] = Craft::t('Pending');
 
 					$statusActions[] = array('action' => 'users/sendActivationEmail', 'label' => Craft::t('Send activation email'));
 

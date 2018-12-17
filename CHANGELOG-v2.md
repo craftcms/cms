@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Suspended users are no longer shown when viewing pending or locked users. ([#3556](https://github.com/craftcms/cms/issues/3556))
+
 ### Fixed
 - Fixed a SQL error that could occur when merging two elements together if MySQL was set to a case-sensitive collation. ([#3539](https://github.com/craftcms/cms/issues/3539))
 - Fixed a bug where element indexes wouldn’t return to the previous sort selection after the search input was cleared. ([#3548](https://github.com/craftcms/cms/issues/3548))

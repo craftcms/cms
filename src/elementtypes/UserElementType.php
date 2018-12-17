@@ -353,12 +353,12 @@ class UserElementType extends BaseElementType
 
 			case UserStatus::Pending:
 			{
-				return 'users.pending = 1';
+				return 'users.suspended = 0 AND users.pending = 1';
 			}
 
 			case UserStatus::Locked:
 			{
-				return 'users.locked = 1';
+				return 'users.suspended = 0 AND users.locked = 1';
 			}
 
 			case UserStatus::Suspended:
