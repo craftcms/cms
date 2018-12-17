@@ -603,7 +603,7 @@ class UsersController extends Controller
         if ($edition === Craft::Pro && !$isNewUser) {
             switch ($user->getStatus()) {
                 case User::STATUS_PENDING:
-                    $statusLabel = Craft::t('app', 'Unverified');
+                    $statusLabel = Craft::t('app', 'Pending');
                     $statusActions[] = [
                         'action' => 'users/send-activation-email',
                         'label' => Craft::t('app', 'Send activation email')
