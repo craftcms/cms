@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+### Added
+- Added the `{{ actionInput() }}` global Twig function. ([#3566](https://github.com/craftcms/cms/issues/3566))
+
 ### Changed
 - Suspended users are no longer shown when viewing pending or locked users. ([#3556](https://github.com/craftcms/cms/issues/3556))
-
 
 ## 3.0.35 - 2018-12-11
 
