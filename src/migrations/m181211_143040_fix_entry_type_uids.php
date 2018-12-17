@@ -36,6 +36,10 @@ class m181211_143040_fix_entry_type_uids extends Migration
         // Get the section data from the project config
         $pcSections = $projectConfig->get(Sections::CONFIG_SECTIONS_KEY);
 
+        if (empty($pcSections)) {
+            return;
+        }
+
         // For each section, make sure the DB and project config UIDs match up
         foreach ($pcSections as $sectionUid => $pcSection) {
             $pcEntryTypes = $pcSection['entryTypes'] ?? [];
