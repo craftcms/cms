@@ -11,6 +11,9 @@
 ### Fixed
 - Fixed a bug where elements that belonged to more than one structure would be returned twice in element queries.
 
+### Security
+- Fixed a self-XSS vulnerability in the Recent Entries widget.
+
 ## 3.0.35 - 2018-12-11
 
 ### Added

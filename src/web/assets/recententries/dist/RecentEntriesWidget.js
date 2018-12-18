@@ -37,11 +37,13 @@
                 this.$tbody.prepend(
                     '<tr>' +
                     '<td>' +
-                    '<a href="' + entry.url + '">' + entry.title + '</a> ' +
+                    '<a href="' + entry.url + '">' + Craft.escapeHtml(entry.title) + '</a> ' +
                     '<span class="light">' +
-                    (entry.dateCreated ? Craft.formatDate(entry.dateCreated) : '') +
-                    (entry.dateCreated && entry.username && Craft.edition == Craft.Pro ? ', ' : '') +
-                    (entry.username && Craft.edition == Craft.Pro ? entry.username : '') +
+                    Craft.escapeHtml(
+                        (entry.dateCreated ? Craft.formatDate(entry.dateCreated) : '') +
+                        (entry.dateCreated && entry.username && Craft.edition == Craft.Pro ? ', ' : '') +
+                        (entry.username && Craft.edition == Craft.Pro ? entry.username : '')
+                    ) +
                     '</span>' +
                     '</td>' +
                     '</tr>'
