@@ -13,4 +13,5 @@ return [
     'siteUrl' => 'https://test.craftcms.dev/',
     'slugWordSeparator' => '--',
     'allowUppercaseInSlug' => true,
+    'securityKey' => getenv('SECURITY_KEY')
 ];

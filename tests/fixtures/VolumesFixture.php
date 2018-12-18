@@ -7,6 +7,7 @@
 namespace craftunit\fixtures;
 
 use craft\records\Volume;
+use craft\test\Fixture;
 use yii\test\ActiveFixture;
 
 /**
@@ -17,7 +18,7 @@ use yii\test\ActiveFixture;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0
  */
-class VolumesFixture extends ActiveFixture
+class VolumesFixture extends Fixture
 {
     public $modelClass = Volume::class;
     public $dataFile = __DIR__.'/data/volumes.php';

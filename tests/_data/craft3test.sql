@@ -23,6 +23,72 @@ SET time_zone = "+00:00";
 --
 
 -- --------------------------------------------------------
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `craft_assetindexdata`;
+DROP TABLE IF EXISTS `craft_assets`;
+DROP TABLE IF EXISTS `craft_assettransformindex`;
+DROP TABLE IF EXISTS `craft_assettransforms`;
+DROP TABLE IF EXISTS `craft_categories`;
+DROP TABLE IF EXISTS `craft_categorygroups`;
+DROP TABLE IF EXISTS `craft_categorygroups_sites`;
+DROP TABLE IF EXISTS `craft_content`;
+DROP TABLE IF EXISTS `craft_craftidtokens`;
+DROP TABLE IF EXISTS `craft_deprecationerrors`;
+DROP TABLE IF EXISTS `craft_elementindexsettings`;
+DROP TABLE IF EXISTS `craft_elements`;
+DROP TABLE IF EXISTS `craft_elements_sites`;
+DROP TABLE IF EXISTS `craft_entries`;
+DROP TABLE IF EXISTS `craft_entrydrafts`;
+DROP TABLE IF EXISTS `craft_entrytypes`;
+DROP TABLE IF EXISTS `craft_entryversions`;
+DROP TABLE IF EXISTS `craft_fieldgroups`;
+DROP TABLE IF EXISTS `craft_fieldlayoutfields`;
+DROP TABLE IF EXISTS `craft_fieldlayouts`;
+DROP TABLE IF EXISTS `craft_fieldlayouttabs`;
+DROP TABLE IF EXISTS `craft_fields`;
+DROP TABLE IF EXISTS `craft_globalsets`;
+DROP TABLE IF EXISTS `craft_info`;
+DROP TABLE IF EXISTS `craft_matrixblocks`;
+DROP TABLE IF EXISTS `craft_matrixblocktypes`;
+DROP TABLE IF EXISTS `craft_migrations`;
+DROP TABLE IF EXISTS `craft_plugins`;
+DROP TABLE IF EXISTS `craft_queue`;
+DROP TABLE IF EXISTS `craft_relations`;
+DROP TABLE IF EXISTS `craft_resourcepaths`;
+DROP TABLE IF EXISTS `craft_routes`;
+DROP TABLE IF EXISTS `craft_searchindex`;
+DROP TABLE IF EXISTS `craft_sections`;
+DROP TABLE IF EXISTS `craft_sections_sites`;
+DROP TABLE IF EXISTS `craft_sessions`;
+DROP TABLE IF EXISTS `craft_shunnedmessages`;
+DROP TABLE IF EXISTS `craft_sitegroups`;
+DROP TABLE IF EXISTS `craft_sites`;
+DROP TABLE IF EXISTS `craft_structureelements`;
+DROP TABLE IF EXISTS `craft_structures`;
+DROP TABLE IF EXISTS `craft_systemmessages`;
+DROP TABLE IF EXISTS `craft_systemsettings`;
+DROP TABLE IF EXISTS `craft_taggroups`;
+DROP TABLE IF EXISTS `craft_tags`;
+DROP TABLE IF EXISTS `craft_templatecacheelements`;
+DROP TABLE IF EXISTS `craft_templatecachequeries`;
+DROP TABLE IF EXISTS `craft_templatecaches`;
+DROP TABLE IF EXISTS `craft_tokens`;
+DROP TABLE IF EXISTS `craft_usergroups`;
+DROP TABLE IF EXISTS `craft_usergroups_users`;
+DROP TABLE IF EXISTS `craft_userpermissions`;
+DROP TABLE IF EXISTS `craft_userpermissions_usergroups`;
+DROP TABLE IF EXISTS `craft_userpermissions_users`;
+DROP TABLE IF EXISTS `craft_userpreferences`;
+DROP TABLE IF EXISTS `craft_users`;
+DROP TABLE IF EXISTS `craft_volumefolders`;
+DROP TABLE IF EXISTS `craft_volumes`;
+DROP TABLE IF EXISTS `craft_widgets`;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+
 
 --
 -- Table structure for table `craft_assetindexdata`

@@ -15,5 +15,9 @@ class Fixture extends ActiveFixture
 {
     public function unload() {
 
+        $table = $this->getTableSchema();
+        foreach ($this->getData() as $toBeDeletedRow) {
+            $this->db->createCommand()->delete($table->fullName, $toBeDeletedRow)->execute();
+        }
     }
 }
