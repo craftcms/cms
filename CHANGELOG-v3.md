@@ -13,6 +13,7 @@
 
 ### Security
 - Fixed a self-XSS vulnerability in the Recent Entries widget.
+- Fixed a self-XSS vulnerability in the Feed widget.
 
 ## 3.0.35 - 2018-12-11
 
