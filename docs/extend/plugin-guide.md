@@ -105,7 +105,7 @@ Here’s a full list of the properties that can go in that `extra` object:
 - `components` – Object defining any [component configs] that should be present on the plugin.
 
 ::: tip
-While not strictly required by Composer, we recommend you explicitly set the `version` in your `composer.json` because it makes a couple things easier on your when developing the plugin. Don’t forget to keep it updated though!
+While not strictly required by Composer, we recommend you explicitly set the `version` in your `composer.json` because it makes a couple things easier on you when developing the plugin. Don’t forget to keep it updated though!
 :::
 
 ::: warning

@@ -309,6 +309,11 @@ class UsersController extends Controller
             }
         }
 
+        // If no one is logged in and preventUserEnumeration is enabled, clear out the login errors
+        if (!$existingUser && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+            $errors = [];
+        }
+
         if (!empty($user)) {
             try {
                 $emailSent = Craft::$app->getUsers()->sendPasswordResetEmail($user);
@@ -321,9 +326,7 @@ class UsersController extends Controller
             }
         }
 
-        // If there haven't been any errors, or there were, and it's not one logged in user editing another
-        // and we want to pretend like there wasn't any errors...
-        if (empty($errors) || (count($errors) > 0 && !$existingUser && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration)) {
+        if (empty($errors)) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 return $this->asJson(['success' => true]);
             }
@@ -511,12 +514,17 @@ class UsersController extends Controller
      *
      * @param int|string|null $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
      * @param User|null $user The user being edited, if there were any validation errors.
+     * @param array|null $errors Any errors that occurred as a result of the previous action.
      * @return Response
      * @throws NotFoundHttpException if the requested user cannot be found
      * @throws BadRequestHttpException if there’s a mismatch between|null $userId and|null $user
      */
-    public function actionEditUser($userId = null, User $user = null): Response
+    public function actionEditUser($userId = null, User $user = null, array $errors = null): Response
     {
+        if (!empty($errors)) {
+            Craft::$app->getSession()->setError(reset($errors));
+        }
+
         // Determine which user account we're editing
         // ---------------------------------------------------------------------
 
@@ -595,7 +603,7 @@ class UsersController extends Controller
         if ($edition === Craft::Pro && !$isNewUser) {
             switch ($user->getStatus()) {
                 case User::STATUS_PENDING:
-                    $statusLabel = Craft::t('app', 'Unverified');
+                    $statusLabel = Craft::t('app', 'Pending');
                     $statusActions[] = [
                         'action' => 'users/send-activation-email',
                         'label' => Craft::t('app', 'Send activation email')

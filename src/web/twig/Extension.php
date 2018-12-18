@@ -708,6 +708,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     {
         return [
             new \Twig_SimpleFunction('alias', [Craft::class, 'getAlias']),
+            new \Twig_SimpleFunction('actionInput', [$this, 'actionInputFunction']),
             new \Twig_SimpleFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
             new \Twig_SimpleFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new \Twig_SimpleFunction('ceil', 'ceil'),
@@ -771,6 +772,16 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function redirectInputFunction(string $url): \Twig_Markup
     {
         return TemplateHelper::raw('<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData($url) . '">');
+    }
+
+    /**
+     * Returns an action input wrapped in a \Twig_Markup object, suitable for use in a front-end form.
+     *
+     * @return \Twig_Markup|null
+     */
+    public function actionInputFunction($actionPath)
+    {
+        return TemplateHelper::raw('<input type="hidden" name="action" value="' . $actionPath . '">');
     }
 
     /**

@@ -559,7 +559,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 source: this.instanceState.selectedSource,
                 criteria: criteria,
                 disabledElementIds: this.settings.disabledElementIds,
-                viewState: this.getSelectedSourceState()
+                viewState: $.extend({}, this.getSelectedSourceState())
             };
 
             // Possible that the order/sort isn't entirely accurate if we're sorting by Score
@@ -924,14 +924,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         setStoredSortOptionsForSource: function() {
-            // Default to whatever's first
-            this.setSortAttribute();
-            this.setSortDirection('asc');
-
             var sortAttr = this.getSelectedSourceState('order'),
                 sortDir = this.getSelectedSourceState('sort');
 
-            if (!sortAttr) {
+            if (!sortAttr || !sortDir) {
                 // Get the default
                 sortAttr = this.getDefaultSort();
 
