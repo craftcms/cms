@@ -139,6 +139,7 @@ class Composer extends Component
             ->setUpdate()
             ->setUpdateWhitelist($whitelist)
             ->setDumpAutoloader()
+            ->setRunScripts(false)
             ->setOptimizeAutoloader(true);
 
         try {
@@ -228,6 +229,7 @@ class Composer extends Component
                 ->setUpdate()
                 ->setUpdateWhitelist($packages)
                 ->setDumpAutoloader()
+                ->setRunScripts(false)
                 ->setOptimizeAutoloader(true);
 
             $status = $installer->run();
