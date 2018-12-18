@@ -7,7 +7,7 @@
 
 ### Changed
 - Suspended users are no longer shown when viewing pending or locked users. ([#3556](https://github.com/craftcms/cms/issues/3556))
-- The Control Panel’s  Composer installer now prevents scripts defined in `composer.json` from running. ([#3574](https://github.com/craftcms/cms/issues/3574))
+- The Control Panel’s Composer installer now prevents scripts defined in `composer.json` from running. ([#3574](https://github.com/craftcms/cms/issues/3574))
 
 ### Fixed
 - Fixed a bug where elements that belonged to more than one structure would be returned twice in element queries.
