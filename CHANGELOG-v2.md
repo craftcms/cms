@@ -11,6 +11,9 @@
 - Fixed a bug where password-reset email send errors weren’t being properly reported on the login page if the `preventUserEnumeration` config setting was enabled.
 - Fixed a bug where Edit User pages weren’t reporting email send errors when the “Send password reset email” option was chosen. ([#3549](https://github.com/craftcms/cms/issues/3549))
 
+### Security
+- Fixed a self-XSS vulnerability in the Recent Entries widget.
+
 ## 2.7.4 - 2018-11-27
 
 ### Fixed
