@@ -1,17 +1,16 @@
 <?php
 /**
- * @link      https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * Created by PhpStorm.
+ * User: gieltettelaarlaptop
+ * Date: 03/11/2018
+ * Time: 15:30
  */
 
 namespace craftunit\validators;
 
 use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
-use craft\test\mockclasses\ToStringTest;
 use craft\validators\UserPasswordValidator;
-use yii\base\ErrorException;
 
 
 /**
@@ -94,6 +93,7 @@ class PasswordValidatorTest extends Unit
         }
 
     }
+
     public function customConfigData()
     {
         return [
@@ -107,68 +107,5 @@ class PasswordValidatorTest extends Unit
         ];
     }
 
-    /**
-     * @dataProvider forceDiffValidation
-     * @param $mustValidate
-     * @param $input
-     * @param $currentPassword
-     */
-    public function testForceDiffValidation($mustValidate, $input, $currentPassword)
-    {
-        $this->passwordValidator->forceDifferent = true;
-        $this->passwordValidator->currentPassword = \Craft::$app->getSecurity()->hashPassword($currentPassword);
-        $this->model->exampleParam = $input;
-        $this->passwordValidator->validateAttribute($this->model, 'exampleParam');
-
-        if ($mustValidate) {
-            $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());
-        } else {
-            $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
-        }
-    }
-    public function forceDiffValidation()
-    {
-        return [
-            [false, 'test', 'test'],
-            [false, '', ''],
-            // Not 6 chars
-            [false, 'test', 'difftest'],
-            [true, 'onetwothreefourfivesix', 'onetwothreefourfivesixseven'],
-            // Spaces?
-            [true, '      ', '         '],
-
-        ];
-    }
-
-    /**
-     * @dataProvider isEmptyData
-     * @param $result
-     * @param $input
-     */
-    public function testIsEmpty($result, $input, $isEmptyVal)
-    {
-        $this->passwordValidator->isEmpty = $isEmptyVal;
-        $isEmpty = $this->passwordValidator->isEmpty($input);
-        $this->assertSame($result, $isEmpty);
-    }
-    public function isEmptyData()
-    {
-        $toString = new ToStringTest('im a test');
-        return [
-            ['im a test', '', self::class.'::testReturn' ],
-        ];
-    }
-    public function testToStringExpectException()
-    {
-        $passval = $this->passwordValidator;
-        $this->tester->expectException(ErrorException::class, function () use ($passval) {
-            $passval->isEmpty = 'craft_increment';
-            $passval->isEmpty(1);
-        });
-    }
-    public static function testReturn()
-    {
-        return 'im a test';
-    }
 
 }

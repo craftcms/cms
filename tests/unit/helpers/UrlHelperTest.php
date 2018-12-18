@@ -8,9 +8,7 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
-use craft\db\Query;
 use craft\helpers\UrlHelper;
-use craftunit\fixtures\SitesFixture;
 use yii\base\Exception;
 
 /**
@@ -32,16 +30,8 @@ class UrlHelperTest extends Unit
     protected $baseUrl;
     protected $baseUrlWithScript;
     protected $cpTrigger;
-/* TODO: Add siteUrl tests with fixtures. Have to fix some issues with this first.
-    public function _fixtures()
-    {
-        return [
-            'fixtures' => [
-                'class' => SitesFixture::class,
-            ],
-        ];
-    }
-*/
+
+
     protected function _before()
     {
         $generalConfig = \Craft::$app->getConfig()->getGeneral();

@@ -92,6 +92,9 @@ class HandleValidatorTest extends Unit
         } else {
             $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
+
+        $this->model->clearErrors();
+        $this->model->exampleParam = null;
     }
 
     public function handleValidationData()
