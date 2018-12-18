@@ -28,12 +28,12 @@ modules:
       configFile: 'tests/_craft/config/test.php'
       entryUrl: 'https://test.craftcms.dev/'
       entryScript: 'index.php'
+      cleanup: true
   enabled:
     - Db:
         dsn: "%TEST_DB_DRIVER%:host=127.0.0.1;dbname=%TEST_DB_NAME%"
         user: '%TEST_DB_USER%'
         password: '%TEST_DB_PASS%'
         dump: 'tests/_data/craft3test.sql'
-        populate: true
-        cleanup: true
-        reconnect: true
+        populate: true # Reload before the test suite is started
+        cleanup: false #Dont reload the sql file for each test.
