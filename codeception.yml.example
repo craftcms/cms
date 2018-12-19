@@ -8,16 +8,33 @@ paths:
 settings:
     bootstrap: _bootstrap.php
     colors: true
+coverage:
+    enabled: true
+    include:
+      - src/*
+    exclude:
+      - tests/_support/_generated/*
+      - src/config/*
+      - src/icons/*
+      - src/test/*
+      - src/migrations/*
+      - src/templates/*
+      - src/translations/*
+      - src/migration.php.template
+params:
+  - tests/.env
 modules:
   config:
     Yii2:
-      configFile: 'tests/_craft/config/test.php'
+      configFile: 'path'
+      entryUrl: 'https://test.craftcms.dev/'
+      entryScript: 'index.php'
+      cleanup: true
   enabled:
-    - Db:
-        dsn: 'mysql:host=localhost;dbname=craft3test'
-        user: 'root'
-        password: ''
-        dump: 'tests/_data/dump.sql'
-        populate: true
-        cleanup: true
-        reconnect: true
+    - \craft\test\Db:
+        dsn: "%TEST_DB_DRIVER%:host=127.0.0.1;dbname=%TEST_DB_NAME%"
+        user: '%TEST_DB_USER%'
+        password: '%TEST_DB_PASS%'
+        dump: 'tests/_data/craft3test.sql'
+        populate: true # Reload before the test suite is started
+        cleanup: false #Dont reload the sql file for each test.

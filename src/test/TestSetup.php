@@ -11,6 +11,7 @@ use craft\db\MigrationManager;
 use craft\helpers\MigrationHelper;
 use craft\migrations\Install;
 use craft\models\Site;
+use craft\web\UploadedFile;
 use yii\db\Exception;
 
 /**
@@ -23,10 +24,25 @@ use yii\db\Exception;
  */
 class TestSetup
 {
-    public function __construct(Connection $connection, MigrationManager $migrationManager)
+    public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->migrationManager = $migrationManager;
+        $site = new Site([
+            'name' => 'Craft test site',
+            'handle' => 'default',
+            'hasUrls' => true,
+            'baseUrl' => 'https://craftcms.com',
+            'language' => 'en-US',
+            'primary' => true,
+        ]);
+
+        $this->migration = new Install([
+            'db' => $connection,
+            'username' => 'craftcms',
+            'password' => 'craftcms2018!!',
+            'email' => 'support@craftcms.com',
+            'site' => $site,
+        ]);
     }
 
     /**
@@ -35,11 +51,53 @@ class TestSetup
     private $connection;
 
     /**
-     * @var MigrationManager
+     * @var Install
      */
-    private $migrationManager;
+    private $migration;
 
+    /**
+     * @var bool
+     */
     private $hasBeenCleansed = false;
+
+    /**
+     * Creates a craft object to play with. Ensures the Craft::$app service locator is working.
+     * @return mixed
+     * @throws \yii\base\InvalidConfigException
+     */
+    public static function warmCraft()
+    {
+        $app = require dirname(__DIR__, 2).'/tests/_craft/config/test.php';
+        $app['isInstalled'] = false;
+
+        return \Craft::createObject($app)->getDb();
+    }
+
+    /**
+     * Taken from the Yii2 Module $i->_after
+     */
+    public static function tearDownCraft()
+    {
+        $_SESSION = [];
+        $_FILES = [];
+        $_GET = [];
+        $_POST = [];
+        $_COOKIE = [];
+        $_REQUEST = [];
+
+        if (isset(\Craft::$app) && \Craft::$app->has('session', true)) {
+            \Craft::$app->session->close();
+        }
+
+        UploadedFile::reset();
+        if (method_exists(\yii\base\Event::class, 'offAll')) {
+            \yii\base\Event::offAll();
+        }
+        \Craft::setLogger(null);
+
+        \Craft::$app = null;
+
+    }
 
     /**
      * @return bool
@@ -48,9 +106,18 @@ class TestSetup
     public function clenseDb()
     {
         $tables = $this->connection->schema->getTableNames();
-        foreach ($tables as $table) {
-            // TODO: Current dropTable uses the getDb() service locator. Figure out a way to make this dependant on the injected Connection class.
-            MigrationHelper::dropTable($table);
+
+        if ($this->connection->getIsMysql()) {
+            $this->connection->createCommand("SET foreign_key_checks = 0")->execute();
+            $tables = $this->connection->schema->getTableNames();
+
+            foreach ($tables as $table) {
+                $this->connection->createCommand()->dropTable($table)->execute();
+            }
+
+            $this->connection->createCommand("SET foreign_key_checks = 1")->execute();
+        } else {
+            // TODO: Drop all in pgsql
         }
 
         $tables = $this->connection->schema->getTableNames();
@@ -71,22 +138,7 @@ class TestSetup
             throw new Exception('Not allowed to setup the DB if it hasnt been cleansed');
         }
 
-        $site = new Site([
-            'name' => 'Craft test site',
-            'handle' => 'default',
-            'hasUrls' => true,
-            'baseUrl' => 'https://craftcms.com',
-            'language' => 'en-US',
-        ]);
-
-        $migration = new Install([
-            'username' => 'craftcms',
-            'password' => 'craftcms2018!!',
-            'email' => 'support@craftcms.com',
-            'site' => $site,
-        ]);
-
-        return $this->migrationManager->migrateUp($migration);
+        return $this->migration->safeUp();
     }
 
 }

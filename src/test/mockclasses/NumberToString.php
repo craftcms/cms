@@ -11,6 +11,7 @@ namespace craft\test\mockclasses;
 /**
  * Class NumberToString.
  *
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0

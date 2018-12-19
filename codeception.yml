@@ -16,7 +16,7 @@ coverage:
       - tests/_support/_generated/*
       - src/config/*
       - src/icons/*
-      - src/test
+      - src/test/*
       - src/migrations/*
       - src/templates/*
       - src/translations/*
@@ -31,7 +31,7 @@ modules:
       entryScript: 'index.php'
       cleanup: true
   enabled:
-    - Db:
+    - \craft\test\Db:
         dsn: "%TEST_DB_DRIVER%:host=127.0.0.1;dbname=%TEST_DB_NAME%"
         user: '%TEST_DB_USER%'
         password: '%TEST_DB_PASS%'
