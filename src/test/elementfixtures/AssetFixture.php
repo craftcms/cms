@@ -12,8 +12,11 @@ use craft\elements\Asset;
 /**
  * Class AssetFixture.
  *
+ * Credit to: https://github.com/robuust/craft-fixtures
+ *
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0
  */

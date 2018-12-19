@@ -16,8 +16,11 @@ use craft\base\Element;
  * Class ElementFixture is a base class for setting up fixtures for Craft 3's element types.
  * Based on https://github.com/robuust/craft-fixtures/blob/master/src/base/ElementFixture.php
  *
+ * Credit to: https://github.com/robuust/craft-fixtures
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author  Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0
  */
 abstract class ElementFixture extends ActiveFixture
