@@ -211,6 +211,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('index', [ArrayHelper::class, 'index']),
             new \Twig_SimpleFilter('indexOf', [$this, 'indexOfFilter']),
             new \Twig_SimpleFilter('intersect', 'array_intersect'),
+            new \Twig_SimpleFilter('json_decode', [$this, 'jsonDecodeFilter']),
             new \Twig_SimpleFilter('json_encode', [$this, 'jsonEncodeFilter']),
             new \Twig_SimpleFilter('kebab', [$this, 'kebabFilter']),
             new \Twig_SimpleFilter('lcfirst', [$this, 'lcfirstFilter']),
@@ -360,6 +361,21 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         return StringHelper::toSnakeCase((string)$string);
     }
 
+    /**
+     * JSON decodes a variable.
+     *
+     * @param string $value The value to JSON decode.
+     * @param bool|null $assoc Whether to convert into associative array. We're overriding the default to true, because
+     * that is far more useful in Twig.
+     * @param int $depth The maximum depth
+     * @param int|null $options Either null or a bitmask consisting of JSON_BIGINT_AS_STRING, JSON_OBJECT_AS_ARRAY,
+     * JSON_THROW_ON_ERROR
+     * @return mixed The JSON decoded value.
+     */
+    public function jsonDecodeFilter(string $value, bool $assoc = true, int $depth = 512, int $options = null)
+    {
+        return json_decode($value, $assoc, $depth, $options);
+    }
 
     /**
      * This method will JSON encode a variable. We're overriding Twig's default implementation to set some stricter
