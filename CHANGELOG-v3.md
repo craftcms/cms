@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where preset structure UIDs were not preserved when saving structure sections. ([#3525](https://github.com/craftcms/cms/issues/3525))
+- Fixed a bug that prevented choosing a parent entry for structure entries. ([#3562](https://github.com/craftcms/cms/issues/3562))
 
 ## 3.1.0-beta.5.1 - 2018-12-14
 
