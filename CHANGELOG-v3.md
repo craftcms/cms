@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Changed
-- Pressing the <kbd>Return</kbd> key (or <kbd>Ctrl<kbd>/<kbd>Command</kbd> + <kbd>Return</kbd>) when a textual cell is focused in an editable table will now change the focus to the same cell in the next row (after creating a new row if necessary.) ([#3576](https://github.com/craftcms/cms/issues/3576))
+- Pressing the <kbd>Return</kbd> key (or <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd>) when a textual cell is focused in an editable table will now change the focus to the same cell in the next row (after creating a new row if necessary.) ([#3576](https://github.com/craftcms/cms/issues/3576))
 
 ### Fixed
 - Fixed a bug where the “Edit” button on asset editor HUDs didn’t launch the Image Editor if the asset was being edited on another element type’s index page. ([#3575](https://github.com/craftcms/cms/issues/3575))
