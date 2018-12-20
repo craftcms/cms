@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where the “Edit” button on asset editor HUDs didn’t launch the Image Editor if the asset was being edited on another element type’s index page. ([#3575](https://github.com/craftcms/cms/issues/3575))
+
 ## 3.0.36 - 2018-12-18
 
 ### Added
