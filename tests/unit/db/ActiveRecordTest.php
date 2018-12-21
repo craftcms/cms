@@ -7,16 +7,12 @@
 namespace craftunit\db;
 
 
-use Codeception\Lib\Framework;
 use Codeception\Test\Unit;
-use craft\config\DbConfig;
 use craft\db\ActiveRecord;
-use craft\db\Connection;
-use craft\helpers\App;
-use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\records\Session;
-use craft\test\TestSetup;
+use craft\records\Volume;
+use craft\test\mockclasses\serializable\Serializable;
 
 /**
  * Unit tests for the ActiveRecord class craft cms implements
@@ -34,7 +30,7 @@ class ActiveRecordTest extends Unit
     public $tester;
     public function testIsCraftAr()
     {
-
+        $this->assertInstanceOf(ActiveRecord::class, new Volume());
         $this->assertInstanceOf(ActiveRecord::class, new Session());
     }
 
@@ -74,9 +70,69 @@ class ActiveRecordTest extends Unit
         $this->assertTrue(StringHelper::isUUID($sesh->uid));
     }
 
+    /**
+     * @dataProvider dataForDbPrepare
+     */
+    public function testPrepValForDb($result, $input)
+    {
+        $vol = new Volume();
+        $vol->name = 'NaN';
+        $vol->handle = 'NaN';
+        $vol->name = 'nan';
+        $vol->type = \craft\volumes\Local::class;
+        $vol->settings = $input;
+
+        $save = $vol->save();
+
+        $this->assertTrue($save);
+        $this->assertSame($result, $vol->settings);
+    }
+
+    public function dataForDbPrepare()
+    {
+        $jsonableArray = ['JsonArray' => 'SomeArray'];
+        $jsonableClass = new \stdClass();
+        $jsonableClass->name = 'name';
+        $serializable = new Serializable();
+
+        $excpectedDateTime = new \DateTime('2018-06-06 18:00:00');
+        $excpectedDateTime->setTimezone(new \DateTimeZone('UTC'));
+
+        $dateTime = new \DateTime('2018-06-06 18:00:00');
+
+        return [
+            [$excpectedDateTime->format('Y-m-d H:i:s'), $dateTime],
+            ['{"name":"name"}', $jsonableClass],
+            ['{"JsonArray":"SomeArray"}', $jsonableArray],
+            ['Serialized data', $serializable],
+            [false, false],
+        ];
+    }
+    /**
+     * Test that values cannot be overrriden
+     *
+     * @throws \Exception
+     */
     public function testOverrides()
     {
+        $utcTz = new \DateTimeZone('UTC');
+        $oneDayAgo = new \DateTime('-1 day', $utcTz);
+        $now =  new \DateTime('now', $utcTz);
 
+        $sesh = new Session();
+        $sesh->userId = 1;
+        $sesh->token = 'test';
+        $sesh->dateCreated = $oneDayAgo;
+        $sesh->dateUpdated = $oneDayAgo;
+        $sesh->uid = '00000000-0000-0000-0000-000000000000';
+        $save = $sesh->save();
+
+        $this->assertTrue($save);
+
+        $this->assertSame($now->format('Y-m-d H:i:s'), $sesh->dateCreated);
+        $this->assertSame($now->format('Y-m-d H:i:s'), $sesh->dateUpdated);
+        $this->assertTrue(StringHelper::isUUID($sesh->uid));
+        $this->assertNotSame('00000000-0000-0000-0000-000000000000', $sesh->uid);
     }
 
     public function ensureSesh() : Session
