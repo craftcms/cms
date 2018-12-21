@@ -25,11 +25,12 @@ params:
   - tests/.env
 modules:
   config:
-    Yii2:
+    \craft\test\Craft:
       configFile: 'tests/_craft/config/test.php'
       entryUrl: 'https://test.craftcms.dev/'
       entryScript: 'index.php'
-      cleanup: true
+      cleanup: true # Should tests and fixtures be cleaned
+      transaction: true # Wrap in transaction
   enabled:
     - \craft\test\Db:
         dsn: "%TEST_DB_DRIVER%:host=127.0.0.1;dbname=%TEST_DB_NAME%"

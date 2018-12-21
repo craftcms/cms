@@ -5,6 +5,6 @@
 class_name: UnitTester
 modules:
     enabled:
-        - Yii2
+        - \craft\test\Craft
         - Asserts
         - \Helper\Unit

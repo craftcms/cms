@@ -7,7 +7,7 @@
 class_name: AcceptanceTester
 modules:
     enabled:
-        - Yii2:
+        - \craft\test\Craft:
             part: init
             cleanup: false # don't wrap test in transaction
             entryScript: index-test.php

@@ -70,7 +70,7 @@ class TestSetup
         $app = require dirname(__DIR__, 2).'/tests/_craft/config/test.php';
         $app['isInstalled'] = false;
 
-        return \Craft::createObject($app)->getDb();
+        return \Craft::createObject($app);
     }
 
     /**
