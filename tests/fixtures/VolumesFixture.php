@@ -7,6 +7,7 @@
 namespace craftunit\fixtures;
 
 use craft\records\Volume;
+use craft\services\Volumes;
 use craft\test\Fixture;
 use yii\test\ActiveFixture;
 
@@ -24,4 +25,11 @@ class VolumesFixture extends Fixture
     public $dataFile = __DIR__.'/data/volumes.php';
 
     const BASE_URL = 'https://cdn.test.craftcms.dev/';
+
+    public function load()
+    {
+        parent::load();
+
+        \Craft::$app->set('volumes', new Volumes());
+    }
 }
