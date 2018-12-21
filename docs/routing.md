@@ -125,7 +125,7 @@ Craft also supports special tokens that you can use within the regular expressio
 
 - `{handle}` – matches a field handle, volume handle, etc.
 - `{slug}` – matches an entry slug, category slug, etc.  
-- `{uid}` – matches a UID in the 8-4-4-4-12 format found in most Craft tables’ `uid` column.  
+- `{uid}` – matches a UUID. 
 
 ```php
 return [
