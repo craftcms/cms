@@ -9,6 +9,7 @@ namespace craftunit\search;
 use Codeception\Test\Unit;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
+use craft\search\SearchQueryTermGroup;
 
 /**
  * Unit tests for SearcTest
@@ -27,13 +28,54 @@ class SearchQueryTest extends Unit
         'attribute' => null,
         'phrase' => null
     ];
-    
+
+    public function testQueryGroupData() {
+        $search = new SearchQuery('i live OR die');
+
+        $options = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $options['term'] = 'i';
+
+        $this->ensureIdenticalSearchTermObjects(new SearchQueryTerm($options), $search->getTokens()[0]);
+
+        $this->assertInstanceOf(SearchQueryTermGroup::class, $search->getTokens()[1]);
+
+        $options['term'] = 'live';
+        $this->ensureIdenticalSearchTermObjects(new SearchQueryTerm($options), $search->getTokens()[1]->terms[0]);
+
+        $options['term'] = 'die';
+        $this->ensureIdenticalSearchTermObjects(new SearchQueryTerm($options), $search->getTokens()[1]->terms[1]);
+    }
 
     public function testOnlyOr()
     {
         $search = new SearchQuery('OR');
 
         $this->assertSame([], $search->getTokens());
+    }
+
+    /*
+     * Test that additional default _termOptions are respected
+     */
+    public function testAdditionalDefaultTerms()
+    {
+        $search = new SearchQuery('search', [
+            'exclude' => true,
+            'exact' => true,
+            'subLeft' => true,
+            'subRight' => true,
+            'attribute' => [],
+            'phrase' => [],
+        ]);
+
+        $this->ensureIdenticalSearchTermObjects($search->getTokens()[0], new SearchQueryTerm([
+            'exclude' => true,
+            'exact' => true,
+            'subLeft' => true,
+            'subRight' => true,
+            'attribute' => [],
+            'term' => 'search',
+            'phrase' => [],
+        ]));
     }
 
     /**
@@ -61,19 +103,37 @@ class SearchQueryTest extends Unit
         $this->ensureIdenticalSearchTermObjects($searchDefaults, $tokens);
     }
 
-
     /**
      *
      */
     public function searchQueryData()
     {
-        $quotedPhraseConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
         // The $searchQueryTerm->term property will not contain the "" double quotes and will have ['phrase'] set to true
+        $quotedPhraseConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
         $quotedPhraseConfig['phrase'] = true;
         $quotedPhraseConfig['term'] = 'Hello';
 
+
+        $excludeTermConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $excludeTermConfig['exclude'] = true;
+        $excludeTermConfig['term'] = 'Hello';
+
+
+        $subtermLeft = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $subtermLeft['subLeft'] = true;
+        $subtermLeft['term'] = 'Hello';
+
+        $subTermRight = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $subTermRight['term'] = 'Hello';
+
         return [
             ['i said "Hello"', ['Hello' => $quotedPhraseConfig], 3],
+            ['i said \'Hello\'', ['Hello' => $quotedPhraseConfig], 3],
+            ['i said -Hello', ['Hello' => $excludeTermConfig], 3],
+            ['i said *Hello', ['Hello' => $subtermLeft], 3],
+            ['i said Hello*', ['Hello' => $subTermRight], 3],
+            ['i said *Hello*', ['Hello' => $subtermLeft], 3],
+
             ['i have spaces and lines', null, 5]
         ];
     }
@@ -122,6 +182,14 @@ class SearchQueryTest extends Unit
         }
     }
 
+    /**
+     * Essentially a function that sees if the $key exists in the $config options and returns that. If it doesnt exist it returns
+     * self::DEFAULT_SEARCH_QUERY_TERM_CONFIG
+     *
+     * @param string|null $key
+     * @param array|null $configOptions
+     * @return array|mixed
+     */
     public function getConfigFromOptions(string $key = null, array $configOptions = null)
     {
         if (!$configOptions) {
@@ -135,6 +203,11 @@ class SearchQueryTest extends Unit
         return $configOptions[$key];
     }
 
+    /**
+     * Compare two searchQueryTerm objects to make sure they are the same.
+     * @param SearchQueryTerm $one
+     * @param SearchQueryTerm $two
+     */
     public function ensureIdenticalSearchTermObjects(SearchQueryTerm $one, SearchQueryTerm $two)
     {
         $this->assertSame([
