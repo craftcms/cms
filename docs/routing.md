@@ -91,7 +91,7 @@ The following tokens are available to the URI setting:
 * `month` – Numeric representation of a month (1-12 or 01-12)
 * `number` – Any positive integer
 * `page` – Any positive integer
-* `uid` – A UID compatible with those generated for most records
+* `uid` – A UUID (universally unique ID)
 * `slug` – Any string of characters, except for a forward slash (/)
 * `tag` – Any string of characters, except for a forward slash (/)
 * `year` – Four consecutive digits
