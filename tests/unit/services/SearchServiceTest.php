@@ -18,6 +18,9 @@ use craftunit\fixtures\UsersFixture;
 /**
  * Unit tests for SearchServiceTest
  *
+ * Searching and some of the commands run in this test are documented here:
+ * https://docs.craftcms.com/v3/searching.html#supported-syntaxes
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
@@ -66,7 +69,11 @@ class SearchServiceTest extends Unit
             [['user1', 'user2', 'user3'], ['user1', 'user2', 'user3'], 'user', true, 1, false],
             [['user4'], ['user1', 'user2', 'user3', 'user4'], 'user someemail', true, 1, false],
             [[], ['user1', 'user2', 'user3'], 'user someemail', true, 1, false ],
+
+            // Ironically you cant directly search via email address....
             [[], [], 'user1@crafttest.com', true, 1, false],
+
+            // This should work. If you want an empty slug you should try: -body:*
             [[], [], 'slug:', true, 1, false],
             [[], [], 'slug:""', true, 1, false],
 
@@ -98,7 +105,11 @@ class SearchServiceTest extends Unit
     public function filterScoresData()
     {
         return [
-            [[['identifier' => 'user1', 'score' => 13.333333333333332]], ['user1'], 'user', true, 1],
+            [
+                [
+                    ['identifier' => 'user1', 'score' => 13.333333333333332]
+                ], ['user1'], 'user', true, 1
+            ],
             [
                 [
                     ['identifier' => 'user4', 'score' => 118.33333333333333],
@@ -152,6 +163,7 @@ class SearchServiceTest extends Unit
 
 
     /*
+     * Creates a new User(); and runs indexElementAttributes on it to see how its property values are stored in the database.
      * TODO: test with fields and multisite using entries
      */
     public function testIndexElementAttributes()
@@ -164,10 +176,12 @@ class SearchServiceTest extends Unit
         $user->id = '666';
 
 
+        // Index them.
         \Craft::$app->getSearch()->indexElementAttributes($user);
 
         $searchIndex = (new Query())->select('*')->from('{{%searchindex}}')->where(['elementId' => $user->id])->all();
 
+        // Compare the indexed values with what we expect them to be.
         $this->assertSame(' testindexelementattributes1 test com ', $this->getSearchIndexValueByAttribute('email', $searchIndex));
         $this->assertSame(' john smith ', $this->getSearchIndexValueByAttribute('firstname', $searchIndex));
         $this->assertSame(' wil k er son ', $this->getSearchIndexValueByAttribute('lastname', $searchIndex));

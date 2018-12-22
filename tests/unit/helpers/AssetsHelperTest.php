@@ -33,14 +33,31 @@ class AssetsHelperTest extends Unit
     protected $tester;
 
 
-      public function _fixtures()
-      {
-          return [
-              'assets' => [
-                  'class' => AssetsFixture::class
-              ]
-          ];
-      }
+    public function _fixtures()
+    {
+        return [
+            'assets' => [
+                'class' => AssetsFixture::class
+            ]
+        ];
+    }
+
+    /**
+     * @param $result
+     * @param $input
+     */
+   // public function testUrlGeneration($result, $asset, $volume)
+    //{
+     //   Assets::generateUrl();
+    //}
+
+    public function urlGenerationData()
+    {
+        return [
+            ['url', 'assetParams', ]
+        ];
+    }
+
 
     /**
      * @param $result

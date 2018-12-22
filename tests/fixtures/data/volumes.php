@@ -9,7 +9,7 @@ return [
         'url' => null,
         'hasUrls' => true,
         'settings' => json_encode([
-            'path' => dirname(__FILE__, 3).'/_data/assets/volume-folder-1',
+            'path' => dirname(__FILE__, 3).'/_data/assets/volume-folder-1/',
             'url' => \craftunit\fixtures\VolumesFixture::BASE_URL
         ]),
         'sortOrder' => 5,

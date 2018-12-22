@@ -6,6 +6,8 @@
  */
 namespace craftunit\fixtures;
 
+use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use craft\records\Volume;
 use craft\services\Volumes;
 use craft\test\Fixture;
@@ -31,5 +33,16 @@ class VolumesFixture extends Fixture
         parent::load();
 
         \Craft::$app->set('volumes', new Volumes());
+    }
+
+    public function unload()
+    {
+        // Clear the dir
+        foreach ($this->getData() as $data) {
+            $settings = Json::decodeIfJson($data['settings']);
+            FileHelper::clearDirectory($settings['path']);
+        }
+
+        parent::unload();
     }
 }

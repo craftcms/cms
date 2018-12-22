@@ -14,6 +14,9 @@ use craft\search\SearchQueryTermGroup;
 /**
  * Unit tests for SearcTest
  *
+ * Searching and some of the commands run in this test are documented here:
+ * https://docs.craftcms.com/v3/searching.html#supported-syntaxes
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
@@ -178,7 +181,7 @@ class SearchQueryTest extends Unit
         if ($sizeOfArray !== null){
             $this->assertCount($sizeOfArray, $search->getTokens());
         }
-        
+
         // Loop through the given tokens.
         foreach ($search->getTokens() as $index => $token) {
 
