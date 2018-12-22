@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the System Messages utility for editing system messages, replacing the Settings → Email → System Messages page. ([#3421](https://github.com/craftcms/cms/issues/3421))
+
 ### Fixed
 - Fixed a bug where preset structure UIDs were not preserved when saving structure sections. ([#3525](https://github.com/craftcms/cms/issues/3525))
 - Fixed a bug that prevented choosing a parent entry for structure entries. ([#3562](https://github.com/craftcms/cms/issues/3562))

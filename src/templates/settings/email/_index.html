@@ -1,18 +1,13 @@
 {% requireAdmin %}
 
-{% extends (CraftEdition == CraftPro ? "settings/email/_layout" : "_layouts/cp") %}
+{% extends "_layouts/cp" %}
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 {% set fullPageForm = true %}
-
-{% if CraftEdition == CraftPro %}
-    {% set selectedNavItem = 'settings' %}
-{% else %}
-    {% set title = "Email Settings"|t('app') %}
-{% endif %}
+{% set title = "Email Settings"|t('app') %}
 
 {% import "_includes/forms" as forms %}
 
