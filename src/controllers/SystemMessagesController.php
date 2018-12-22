@@ -33,7 +33,7 @@ class SystemMessagesController extends Controller
     public function init()
     {
         // All email message actions require an admin
-        $this->requireAdmin();
+        $this->requirePermission('utility:system-messages');
     }
 
     /**
