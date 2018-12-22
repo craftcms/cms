@@ -16,8 +16,8 @@ class m151209_000000_move_logo extends Migration
     public function safeUp()
     {
         $pathService = Craft::$app->getPath();
-        $from = $pathService->getStoragePath().DIRECTORY_SEPARATOR.'logo';
-        $to = $pathService->getRebrandPath().DIRECTORY_SEPARATOR.'logo';
+        $from = $pathService->getStoragePath() . DIRECTORY_SEPARATOR . 'logo';
+        $to = $pathService->getRebrandPath() . DIRECTORY_SEPARATOR . 'logo';
 
         if (is_dir($to) && is_dir($from)) {
             echo "    > Moving {$from} to {$to} ... ";

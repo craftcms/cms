@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\behaviors\ContentBehavior;
+use craft\behaviors\ElementQueryBehavior;
 use craft\db\Query;
 use craft\errors\FieldGroupNotFoundException;
 use craft\errors\FieldNotFoundException;
@@ -33,13 +34,12 @@ use craft\fields\MissingField;
 use craft\fields\MultiSelect as MultiSelectField;
 use craft\fields\Number as NumberField;
 use craft\fields\PlainText as PlainTextField;
-use craft\fields\PositionSelect as PositionSelectField;
 use craft\fields\RadioButtons as RadioButtonsField;
-use craft\fields\RichText as RichTextField;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Url as UrlField;
 use craft\fields\Users as UsersField;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -51,17 +51,15 @@ use craft\records\FieldGroup as FieldGroupRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use craft\records\FieldLayoutField as FieldLayoutFieldRecord;
 use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
-use yii\base\Application;
 use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class Fields service.
- *
- * An instance of the Fields service is globally accessible in Craft via [[Application::fields `Craft::$app->getFields()`]].
+ * Fields service.
+ * An instance of the Fields service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getFields()|`Craft::$app->fields`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Fields extends Component
 {
@@ -70,6 +68,23 @@ class Fields extends Component
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering field types.
+     *
+     * Field types must implement [[FieldInterface]]. [[Field]] provides a base implementation.
+     *
+     * See [Field Types](https://docs.craftcms.com/v3/field-types.html) for documentation on creating field types.
+     * ---
+     * ```php
+     * use craft\events\RegisterComponentTypesEvent;
+     * use craft\services\Fields;
+     * use yii\base\Event;
+     *
+     * Event::on(Fields::class,
+     *     Fields::EVENT_REGISTER_FIELD_TYPES,
+     *     function(RegisterComponentTypesEvent $event) {
+     *         $event->types[] = MyFieldType::class;
+     *     }
+     * );
+     * ```
      */
     const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
 
@@ -191,12 +206,6 @@ class Fields extends Component
      */
     private $_layoutsByType;
 
-    /**
-     * @var bool Whether we’re listening for the request end, to update the field version
-     * @see updateFieldVersionAfterRequest()
-     */
-    private $_listeningForRequestEnd = false;
-
     // Public Methods
     // =========================================================================
 
@@ -231,7 +240,6 @@ class Fields extends Component
      * Returns a field group by its ID.
      *
      * @param int $groupId The field group’s ID
-     *
      * @return FieldGroup|null The field group, or null if it doesn’t exist
      */
     public function getGroupById(int $groupId)
@@ -248,26 +256,21 @@ class Fields extends Component
             ->where(['id' => $groupId])
             ->one();
 
-        if (!$result) {
-            return $this->_groupsById[$groupId] = null;
-        }
-
-        return $this->_groupsById[$groupId] = new FieldGroup($result);
+        return $this->_groupsById[$groupId] = $result ? new FieldGroup($result) : null;
     }
 
     /**
      * Saves a field group.
      *
-     * @param FieldGroup $group         The field group to be saved
-     * @param bool       $runValidation Whether the group should be validated
-     *
+     * @param FieldGroup $group The field group to be saved
+     * @param bool $runValidation Whether the group should be validated
      * @return bool Whether the field group was saved successfully
      */
     public function saveGroup(FieldGroup $group, bool $runValidation = true): bool
     {
         $isNewGroup = !$group->id;
 
-        // Fire a 'beforeSaveFieldLayout' event
+        // Fire a 'beforeSaveFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_GROUP, new FieldGroupEvent([
                 'group' => $group,
@@ -289,7 +292,10 @@ class Fields extends Component
             $group->id = $groupRecord->id;
         }
 
-        // Fire an 'afterSaveFieldLayout' event
+        // Update our cache of it
+        $this->_groupsById[$group->id] = $group;
+
+        // Fire an 'afterSaveFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_GROUP)) {
             $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([
                 'group' => $group,
@@ -304,7 +310,6 @@ class Fields extends Component
      * Deletes a field group by its ID.
      *
      * @param int $groupId The field group’s ID
-     *
      * @return bool Whether the field group was deleted successfully
      */
     public function deleteGroupById(int $groupId): bool
@@ -322,7 +327,6 @@ class Fields extends Component
      * Deletes a field group.
      *
      * @param FieldGroup $group The field group
-     *
      * @return bool Whether the field group was deleted successfully
      */
     public function deleteGroup(FieldGroup $group): bool
@@ -394,9 +398,7 @@ class Fields extends Component
             MultiSelectField::class,
             NumberField::class,
             PlainTextField::class,
-            PositionSelectField::class,
             RadioButtonsField::class,
-            RichTextField::class,
             TableField::class,
             TagsField::class,
             UrlField::class,
@@ -433,15 +435,20 @@ class Fields extends Component
     /**
      * Returns all field types whose column types are considered compatible with a given field.
      *
-     * @param FieldInterface $field          The current field to base compatible fields on
-     * @param bool           $includeCurrent Whether $field's class should be included
-     *
+     * @param FieldInterface $field The current field to base compatible fields on
+     * @param bool $includeCurrent Whether $field's class should be included
      * @return string[] The compatible field type classes
      */
     public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): array
     {
+        /** @var Field $field */
         if (!$field::hasContentColumn()) {
             return $includeCurrent ? [get_class($field)] : [];
+        }
+
+        // If the field has any validation errors and has an ID, swap it with the saved field
+        if (!$field->getIsNew() && $field->hasErrors()) {
+            $field = $this->getFieldById($field->id);
         }
 
         $types = [];
@@ -480,7 +487,6 @@ class Fields extends Component
      * Creates a field with a given config.
      *
      * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
-     *
      * @return FieldInterface The field
      */
     public function createField($config): FieldInterface
@@ -507,7 +513,6 @@ class Fields extends Component
      * Returns all fields within a field context(s).
      *
      * @param string|string[]|null $context The field context(s) to fetch fields from. Defaults to {@link ContentService::$fieldContext}.
-     *
      * @return FieldInterface[] The fields
      */
     public function getAllFields($context = null): array
@@ -581,7 +586,6 @@ class Fields extends Component
      * Returns a field by its ID.
      *
      * @param int $fieldId The field’s ID
-     *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldById(int $fieldId)
@@ -609,8 +613,17 @@ class Fields extends Component
     /**
      * Returns a field by its handle.
      *
-     * @param string $handle The field’s handle
+     * ---
      *
+     * ```php
+     * $body = Craft::$app->fields->getFieldByHandle('body');
+     * ```
+     * ```twig
+     * {% set body = craft.app.fields.getFieldByHandle('body') %}
+     * {{ body.instructions }}
+     * ```
+     *
+     * @param string $handle The field’s handle
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldByHandle(string $handle)
@@ -644,9 +657,8 @@ class Fields extends Component
     /**
      * Returns whether a field exists with a given handle and context.
      *
-     * @param string      $handle  The field handle
+     * @param string $handle The field handle
      * @param string|null $context The field context (defauts to ContentService::$fieldContext)
-     *
      * @return bool Whether a field with that handle exists
      */
     public function doesFieldWithHandleExist(string $handle, string $context = null): bool
@@ -675,7 +687,6 @@ class Fields extends Component
      * Returns all the fields in a given group.
      *
      * @param int $groupId The field group’s ID
-     *
      * @return FieldInterface[] The fields
      */
     public function getFieldsByGroupId(int $groupId): array
@@ -697,7 +708,6 @@ class Fields extends Component
      * Returns all of the fields used by a given element type.
      *
      * @param string $elementType
-     *
      * @return FieldInterface[] The fields
      */
     public function getFieldsByElementType(string $elementType): array
@@ -720,9 +730,8 @@ class Fields extends Component
     /**
      * Saves a field.
      *
-     * @param FieldInterface $field         The Field to be saved
-     * @param bool           $runValidation Whether the field should be validated
-     *
+     * @param FieldInterface $field The Field to be saved
+     * @param bool $runValidation Whether the field should be validated
      * @return bool Whether the field was saved successfully
      * @throws \Throwable if reasons
      */
@@ -754,8 +763,8 @@ class Fields extends Component
 
             // Create/alter the content table column
             $contentTable = Craft::$app->getContent()->contentTable;
-            $oldColumnName = $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle();
-            $newColumnName = Craft::$app->getContent()->fieldColumnPrefix.$field->handle;
+            $oldColumnName = $this->oldFieldColumnPrefix . $fieldRecord->getOldHandle();
+            $newColumnName = Craft::$app->getContent()->fieldColumnPrefix . $field->handle;
 
             if ($field::hasContentColumn()) {
                 $columnType = $field->getContentColumnType();
@@ -851,8 +860,8 @@ class Fields extends Component
         // Tell the current ContentBehavior class about the field
         ContentBehavior::$fieldHandles[$field->handle] = true;
 
-        // Update the field version at the end of the request
-        $this->updateFieldVersionAfterRequest();
+        // Update the field version
+        $this->updateFieldVersion();
 
         // Fire an 'afterSaveField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
@@ -869,7 +878,6 @@ class Fields extends Component
      * Deletes a field by its ID.
      *
      * @param int $fieldId The field’s ID
-     *
      * @return bool Whether the field was deleted successfully
      */
     public function deleteFieldById(int $fieldId): bool
@@ -887,7 +895,6 @@ class Fields extends Component
      * Deletes a field.
      *
      * @param FieldInterface $field The field
-     *
      * @return bool Whether the field was deleted successfully
      * @throws \Throwable if reasons
      */
@@ -911,9 +918,9 @@ class Fields extends Component
             $contentTable = Craft::$app->getContent()->contentTable;
             $fieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
 
-            if (Craft::$app->getDb()->columnExists($contentTable, $fieldColumnPrefix.$field->handle)) {
+            if (Craft::$app->getDb()->columnExists($contentTable, $fieldColumnPrefix . $field->handle)) {
                 Craft::$app->getDb()->createCommand()
-                    ->dropColumn($contentTable, $fieldColumnPrefix.$field->handle)
+                    ->dropColumn($contentTable, $fieldColumnPrefix . $field->handle)
                     ->execute();
             }
 
@@ -921,6 +928,18 @@ class Fields extends Component
             Craft::$app->getDb()->createCommand()
                 ->delete('{{%fields}}', ['id' => $field->id])
                 ->execute();
+
+            // Clear caches
+            unset(
+                $this->_fieldsById[$field->id],
+                $this->_fieldsByContextAndHandle[$field->context][$field->handle],
+                $this->_allFieldsInContext[$field->context],
+                $this->_fieldsWithContent[$field->context]
+            );
+
+            if (isset($this->_allFieldHandlesByContext[$field->context])) {
+                ArrayHelper::removeValue($this->_allFieldHandlesByContext[$field->context], $field->handle);
+            }
 
             $field->afterDelete();
 
@@ -931,8 +950,8 @@ class Fields extends Component
             throw $e;
         }
 
-        // Update the field version at the end of the request
-        $this->updateFieldVersionAfterRequest();
+        // Update the field version
+        $this->updateFieldVersion();
 
         // Fire an 'afterDeleteField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
@@ -944,6 +963,23 @@ class Fields extends Component
         return true;
     }
 
+    /**
+     * Refreshes the internal field cache.
+     *
+     * This should be called whenever a field is updated or deleted directly in
+     * the database, rather than going through this service.
+     */
+    public function refreshFields()
+    {
+        $this->_fieldRecordsById = null;
+        $this->_fieldsById = null;
+        $this->_allFieldHandlesByContext = null;
+        $this->_allFieldsInContext = null;
+        $this->_fieldsByContextAndHandle = null;
+        $this->_fieldsWithContent = null;
+        $this->updateFieldVersion();
+    }
+
     // Layouts
     // -------------------------------------------------------------------------
 
@@ -951,7 +987,6 @@ class Fields extends Component
      * Returns a field layout by its ID.
      *
      * @param int $layoutId The field layout’s ID
-     *
      * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutById(int $layoutId)
@@ -964,18 +999,13 @@ class Fields extends Component
             ->where(['id' => $layoutId])
             ->one();
 
-        if (!$result) {
-            return $this->_layoutsById[$layoutId] = null;
-        }
-
-        return $this->_layoutsById[$layoutId] = new FieldLayout($result);
+        return $this->_layoutsById[$layoutId] = $result ? new FieldLayout($result) : null;
     }
 
     /**
      * Returns a field layout by its associated element type.
      *
      * @param string $type The associated element type
-     *
      * @return FieldLayout The field layout
      */
     public function getLayoutByType(string $type): FieldLayout
@@ -1004,7 +1034,6 @@ class Fields extends Component
      * Returns a layout's tabs by its ID.
      *
      * @param int $layoutId The field layout’s ID
-     *
      * @return FieldLayoutTab[] The field layout’s tabs
      */
     public function getLayoutTabsById(int $layoutId): array
@@ -1013,7 +1042,12 @@ class Fields extends Component
             ->where(['layoutId' => $layoutId])
             ->all();
 
+        $isMysql = Craft::$app->getDb()->getIsMysql();
+
         foreach ($tabs as $key => $value) {
+            if ($isMysql) {
+                $value['name'] = html_entity_decode($value['name'], ENT_QUOTES | ENT_HTML5);
+            }
             $tabs[$key] = new FieldLayoutTab($value);
         }
 
@@ -1021,10 +1055,32 @@ class Fields extends Component
     }
 
     /**
+     * Returns the field IDs grouped by layout IDs, for a given set of layout IDs.
+     *
+     * @param int[] $layoutIds The field layout IDs
+     * @return array
+     */
+    public function getFieldIdsByLayoutIds(array $layoutIds): array
+    {
+        $results = (new Query())
+            ->select(['flf.layoutId', 'fields.id'])
+            ->from(['{{%fields}} fields'])
+            ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')
+            ->where(['flf.layoutId' => $layoutIds])
+            ->all();
+
+        $fieldIdsByLayoutId = [];
+        foreach ($results as $result) {
+            $fieldIdsByLayoutId[$result['layoutId']][] = $result['id'];
+        }
+
+        return $fieldIdsByLayoutId;
+    }
+
+    /**
      * Returns the fields in a field layout, identified by its ID.
      *
      * @param int $layoutId The field layout’s ID
-     *
      * @return FieldInterface[] The fields
      */
     public function getFieldsByLayoutId(int $layoutId): array
@@ -1055,19 +1111,18 @@ class Fields extends Component
      * Assembles a field layout from post data.
      *
      * @param string|null $namespace The namespace that the form data was posted in, if any
-     *
      * @return FieldLayout The field layout
      */
     public function assembleLayoutFromPost(string $namespace = null): FieldLayout
     {
-        $paramPrefix = ($namespace ? rtrim($namespace, '.').'.' : '');
+        $paramPrefix = ($namespace ? rtrim($namespace, '.') . '.' : '');
         $request = Craft::$app->getRequest();
 
-        $postedFieldLayout = $request->getBodyParam($paramPrefix.'fieldLayout', []);
-        $requiredFields = $request->getBodyParam($paramPrefix.'requiredFields', []);
+        $postedFieldLayout = $request->getBodyParam($paramPrefix . 'fieldLayout', []);
+        $requiredFields = $request->getBodyParam($paramPrefix . 'requiredFields', []);
 
         $fieldLayout = $this->assembleLayout($postedFieldLayout, $requiredFields);
-        $fieldLayout->id = $request->getBodyParam($paramPrefix.'fieldLayoutId');
+        $fieldLayout->id = $request->getBodyParam($paramPrefix . 'fieldLayoutId');
 
         return $fieldLayout;
     }
@@ -1076,8 +1131,7 @@ class Fields extends Component
      * Assembles a field layout.
      *
      * @param array $postedFieldLayout The post data for the field layout
-     * @param array $requiredFields    The field IDs that should be marked as required in the field layout
-     *
+     * @param array $requiredFields The field IDs that should be marked as required in the field layout
      * @return FieldLayout The field layout
      */
     public function assembleLayout(array $postedFieldLayout, array $requiredFields = []): FieldLayout
@@ -1143,9 +1197,8 @@ class Fields extends Component
     /**
      * Saves a field layout.
      *
-     * @param FieldLayout $layout        The field layout
-     * @param bool        $runValidation Whether the layout should be validated
-     *
+     * @param FieldLayout $layout The field layout
+     * @param bool $runValidation Whether the layout should be validated
      * @return bool Whether the field layout was saved successfully
      * @throws Exception if $layout->id is set to an invalid layout ID
      */
@@ -1179,7 +1232,7 @@ class Fields extends Component
 
             // Get the current layout
             if (($layoutRecord = FieldLayoutRecord::findOne($layout->id)) === null) {
-                throw new Exception('Invalid field layout ID: '.$layout->id);
+                throw new Exception('Invalid field layout ID: ' . $layout->id);
             }
         } else {
             $layoutRecord = new FieldLayoutRecord();
@@ -1201,8 +1254,12 @@ class Fields extends Component
         foreach ($layout->getTabs() as $tab) {
             $tabRecord = new FieldLayoutTabRecord();
             $tabRecord->layoutId = $layout->id;
-            $tabRecord->name = $tab->name;
             $tabRecord->sortOrder = $tab->sortOrder;
+            if (Craft::$app->getDb()->getIsMysql()) {
+                $tabRecord->name = StringHelper::encodeMb4($tab->name);
+            } else {
+                $tabRecord->name = $tab->name;
+            }
             $tabRecord->save(false);
             $tab->id = $tabRecord->id;
 
@@ -1212,7 +1269,7 @@ class Fields extends Component
                 $fieldRecord->layoutId = $layout->id;
                 $fieldRecord->tabId = $tab->id;
                 $fieldRecord->fieldId = $field->id;
-                $fieldRecord->required = $field->required;
+                $fieldRecord->required = (bool)$field->required;
                 $fieldRecord->sortOrder = $field->sortOrder;
                 $fieldRecord->save(false);
             }
@@ -1233,7 +1290,6 @@ class Fields extends Component
      * Deletes a field layout(s) by its ID.
      *
      * @param int|int[] $layoutId The field layout’s ID
-     *
      * @return bool Whether the field layout was deleted successfully
      */
     public function deleteLayoutById($layoutId): bool
@@ -1257,7 +1313,6 @@ class Fields extends Component
      * Deletes a field layout.
      *
      * @param FieldLayout $layout The field layout
-     *
      * @return bool Whether the field layout was deleted successfully
      */
     public function deleteLayout(FieldLayout $layout): bool
@@ -1286,7 +1341,6 @@ class Fields extends Component
      * Deletes field layouts associated with a given element type.
      *
      * @param string $type The element type
-     *
      * @return bool Whether the field layouts were deleted successfully
      */
     public function deleteLayoutsByType(string $type): bool
@@ -1299,23 +1353,16 @@ class Fields extends Component
     }
 
     /**
-     * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
-     */
-    public function updateFieldVersionAfterRequest()
-    {
-        if ($this->_listeningForRequestEnd) {
-            return;
-        }
-
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'updateFieldVersion']);
-        $this->_listeningForRequestEnd = true;
-    }
-
-    /**
-     * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
+     * Sets a new field version, so the ContentBehavior and ElementQueryBehavior classes
+     * will get regenerated on the next request.
      */
     public function updateFieldVersion()
     {
+        // Make sure that ContentBehavior and ElementQueryBehavior have already been loaded,
+        // so the field version change won't be detected until the next request
+        class_exists(ContentBehavior::class);
+        class_exists(ElementQueryBehavior::class);
+
         $info = Craft::$app->getInfo();
         $info->fieldVersion = StringHelper::randomString(12);
         Craft::$app->saveInfo($info);
@@ -1363,7 +1410,7 @@ class Fields extends Component
                 'fields.settings'
             ])
             ->from(['{{%fields}} fields'])
-            ->orderBy(['fields.name' => SORT_ASC]);
+            ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
     }
 
     /**
@@ -1403,7 +1450,6 @@ class Fields extends Component
      * Gets a field group record or creates a new one.
      *
      * @param FieldGroup $group
-     *
      * @return FieldGroupRecord
      * @throws FieldGroupNotFoundException if $group->id is invalid
      */
@@ -1426,7 +1472,6 @@ class Fields extends Component
      * Returns a field record for a given model.
      *
      * @param FieldInterface $field
-     *
      * @return FieldRecord
      * @throws FieldNotFoundException if $field->id is invalid
      */
@@ -1442,7 +1487,7 @@ class Fields extends Component
         }
 
         if (($this->_fieldRecordsById[$field->id] = FieldRecord::findOne($field->id)) === null) {
-            throw new FieldNotFoundException('Invalid field ID: '.$field->id);
+            throw new FieldNotFoundException('Invalid field ID: ' . $field->id);
         }
 
         return $this->_fieldRecordsById[$field->id];

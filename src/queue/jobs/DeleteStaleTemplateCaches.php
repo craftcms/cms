@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\queue\jobs;
@@ -16,7 +16,7 @@ use craft\queue\BaseJob;
  * DeleteStaleTemplateCaches job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class DeleteStaleTemplateCaches extends BaseJob
 {
@@ -51,6 +51,10 @@ class DeleteStaleTemplateCaches extends BaseJob
         if (!is_array($this->elementId)) {
             $this->elementId = (array)$this->elementId;
         }
+
+        // Delete any expired template caches
+        $templateCachesService = Craft::$app->getTemplateCaches();
+        $templateCachesService->deleteExpiredCaches();
 
         $query = (new Query())
             ->select(['cacheId', 'query'])
@@ -87,7 +91,7 @@ class DeleteStaleTemplateCaches extends BaseJob
 
         // Actually delete the caches now
         if (!empty($deleteCacheIds)) {
-            Craft::$app->getTemplateCaches()->deleteCacheById(array_keys($deleteCacheIds));
+            $templateCachesService->deleteCacheById(array_keys($deleteCacheIds));
         }
     }
 

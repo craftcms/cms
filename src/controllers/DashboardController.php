@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -24,6 +24,7 @@ use craft\web\UploadedFile;
 use DateTime;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use ZipArchive;
@@ -31,11 +32,10 @@ use ZipArchive;
 /**
  * The DashboardController class is a controller that handles various dashboard related actions including managing
  * widgets, getting [[\craft\widgets\Feed]] feeds and sending [[\craft\widgets\CraftSupport]] support ticket requests.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class DashboardController extends Controller
 {
@@ -114,29 +114,21 @@ class DashboardController extends Controller
 
             $variables['widgets'][] = $info;
 
-            $allWidgetJs .= 'new Craft.Widget("#widget'.$widget->id.'", '.
-                Json::encode($info['settingsHtml']).', '.
-                'function(){'.$info['settingsJs'].'}'.
+            $allWidgetJs .= 'new Craft.Widget("#widget' . $widget->id . '", ' .
+                Json::encode($info['settingsHtml']) . ', ' .
+                'function(){' . $info['settingsJs'] . '}' .
                 ");\n";
 
             if (!empty($widgetJs)) {
                 // Allow any widget JS to execute *after* we've created the Craft.Widget instance
-                $allWidgetJs .= $widgetJs."\n";
+                $allWidgetJs .= $widgetJs . "\n";
             }
         }
 
         // Include all the JS and CSS stuff
         $view->registerAssetBundle(DashboardAsset::class);
-        $view->registerJs('window.dashboard = new Craft.Dashboard('.Json::encode($widgetTypeInfo).');');
+        $view->registerJs('window.dashboard = new Craft.Dashboard(' . Json::encode($widgetTypeInfo) . ');');
         $view->registerJs($allWidgetJs);
-        $view->registerTranslations('app', [
-            '1 column',
-            '{num} columns',
-            '{type} Settings',
-            'Widget saved.',
-            'Couldn’t save widget.',
-            'You don’t have any widgets yet.',
-        ]);
 
         $variables['widgetTypes'] = $widgetTypeInfo;
 
@@ -177,7 +169,6 @@ class DashboardController extends Controller
      * Saves a widget’s settings.
      *
      * @return Response
-     *
      * @throws BadRequestHttpException
      */
     public function actionSaveWidgetSettings(): Response
@@ -198,7 +189,7 @@ class DashboardController extends Controller
         }
 
         // Create a new widget model with the new settings
-        $settings = $request->getBodyParam('widget'.$widget->id.'-settings');
+        $settings = $request->getBodyParam('widget' . $widget->id . '-settings');
 
         $widget = $dashboardService->createWidget([
             'id' => $widget->id,
@@ -297,9 +288,9 @@ class DashboardController extends Controller
      * Creates a new support ticket for the CraftSupport widget.
      *
      * @return Response
-     * @throws \yii\base\ErrorException
-     * @throws \yii\web\BadRequestHttpException
-     * @throws \yii\base\InvalidParamException
+     * @throws ErrorException
+     * @throws BadRequestHttpException
+     * @throws InvalidArgumentException
      */
     public function actionSendSupportRequest(): Response
     {
@@ -310,15 +301,15 @@ class DashboardController extends Controller
         $request = Craft::$app->getRequest();
         $widgetId = $request->getBodyParam('widgetId');
         $namespace = $request->getBodyParam('namespace');
-        $namespace = $namespace ? $namespace.'.' : '';
+        $namespace = $namespace ? $namespace . '.' : '';
 
         $getHelpModel = new CraftSupport();
-        $getHelpModel->fromEmail = $request->getBodyParam($namespace.'fromEmail');
-        $getHelpModel->message = trim($request->getBodyParam($namespace.'message'));
-        $getHelpModel->attachLogs = (bool)$request->getBodyParam($namespace.'attachLogs');
-        $getHelpModel->attachDbBackup = (bool)$request->getBodyParam($namespace.'attachDbBackup');
-        $getHelpModel->attachTemplates = (bool)$request->getBodyParam($namespace.'attachTemplates');
-        $getHelpModel->attachment = UploadedFile::getInstanceByName($namespace.'attachAdditionalFile');
+        $getHelpModel->fromEmail = $request->getBodyParam($namespace . 'fromEmail');
+        $getHelpModel->message = trim($request->getBodyParam($namespace . 'message'));
+        $getHelpModel->attachLogs = (bool)$request->getBodyParam($namespace . 'attachLogs');
+        $getHelpModel->attachDbBackup = (bool)$request->getBodyParam($namespace . 'attachDbBackup');
+        $getHelpModel->attachTemplates = (bool)$request->getBodyParam($namespace . 'attachTemplates');
+        $getHelpModel->attachment = UploadedFile::getInstanceByName($namespace . 'attachAdditionalFile');
 
         if (!$getHelpModel->validate()) {
             return $this->renderTemplate('_components/widgets/CraftSupport/response', [
@@ -331,9 +322,9 @@ class DashboardController extends Controller
         $user = Craft::$app->getUser()->getIdentity();
 
         // Add some extra info about this install
-        $message = $getHelpModel->message."\n\n".
-            "------------------------------\n\n".
-            'Craft '.Craft::$app->getEditionName().' '.Craft::$app->getVersion();
+        $message = $getHelpModel->message . "\n\n" .
+            "------------------------------\n\n" .
+            'Craft ' . Craft::$app->getEditionName() . ' ' . Craft::$app->getVersion();
 
         /** @var Plugin[] $plugins */
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
@@ -342,13 +333,13 @@ class DashboardController extends Controller
             $pluginNames = [];
 
             foreach ($plugins as $plugin) {
-                $pluginNames[] = $plugin->name.' '.$plugin->getVersion().' ('.$plugin->developer.')';
+                $pluginNames[] = $plugin->name . ' ' . $plugin->getVersion() . ' (' . $plugin->developer . ')';
             }
 
-            $message .= "\nPlugins: ".implode(', ', $pluginNames);
+            $message .= "\nPlugins: " . implode(', ', $pluginNames);
         }
 
-        $message .= "\nDomain: ".Craft::$app->getRequest()->getHostInfo();
+        $message .= "\nDomain: " . Craft::$app->getRequest()->getHostInfo();
 
         $requestParamDefaults = [
             'sFirstName' => $user->getFriendlyName(),
@@ -360,19 +351,29 @@ class DashboardController extends Controller
         $requestParams = $requestParamDefaults;
 
         // Create the SupportAttachment zip
-        $zipPath = Craft::$app->getPath()->getTempPath().'/'.StringHelper::UUID().'.zip';
+        $zipPath = Craft::$app->getPath()->getTempPath() . '/' . StringHelper::UUID() . '.zip';
         try {
             // Create the zip
             $zip = new ZipArchive();
 
             if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-                throw new Exception('Cannot create zip at '.$zipPath);
+                throw new Exception('Cannot create zip at ' . $zipPath);
             }
 
             // License key
-            $licenseKeyPath = Craft::$app->getPath()->getLicenseKeyPath();
-            if (is_file($licenseKeyPath)) {
-                $zip->addFile($licenseKeyPath, 'license.key');
+            if (($licenseKey = App::licenseKey()) !== null) {
+                $zip->addFromString('license.key', $licenseKey);
+            }
+
+            // Composer files
+            try {
+                $composerService = Craft::$app->getComposer();
+                $zip->addFile($composerService->getJsonPath(), 'composer.json');
+                if (($composerLockPath = $composerService->getLockPath()) !== null) {
+                    $zip->addFile($composerLockPath, 'composer.lock');
+                }
+            } catch (Exception $e) {
+                // that's fine
             }
 
             // Logs
@@ -387,12 +388,12 @@ class DashboardController extends Controller
                             'recursive' => false
                         ]);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to find log files in \"{$logPath}\": ".$e->getMessage(), __METHOD__);
+                        Craft::warning("Unable to find log files in \"{$logPath}\": " . $e->getMessage(), __METHOD__);
                         $logFiles = [];
                     }
 
                     foreach ($logFiles as $logFile) {
-                        $zip->addFile($logFile, 'logs/'.pathinfo($logFile, PATHINFO_BASENAME));
+                        $zip->addFile($logFile, 'logs/' . pathinfo($logFile, PATHINFO_BASENAME));
                     }
                 }
             }
@@ -404,7 +405,7 @@ class DashboardController extends Controller
                 try {
                     Craft::$app->getDb()->backup();
                 } catch (\Throwable $e) {
-                    $noteError = "\n\nError backing up database: ".$e->getMessage();
+                    $noteError = "\n\nError backing up database: " . $e->getMessage();
                     $requestParamDefaults['tNote'] .= $noteError;
                     $requestParams['tNote'] .= $noteError;
                 }
@@ -429,7 +430,7 @@ class DashboardController extends Controller
                         if (pathinfo($backupFile, PATHINFO_EXTENSION) !== 'sql') {
                             continue;
                         }
-                        $zip->addFile($backupFile, 'backups/'.pathinfo($backupFile, PATHINFO_BASENAME));
+                        $zip->addFile($backupFile, 'backups/' . pathinfo($backupFile, PATHINFO_BASENAME));
                     }
                 }
             }
@@ -441,7 +442,7 @@ class DashboardController extends Controller
                     $templateFiles = FileHelper::findFiles($templatesPath);
                     foreach ($templateFiles as $templateFile) {
                         // Preserve the directory structure within the templates folder
-                        $zip->addFile($templateFile, 'templates'.substr($templateFile, strlen($templatesPath)));
+                        $zip->addFile($templateFile, 'templates' . substr($templateFile, strlen($templatesPath)));
                     }
                 }
             }
@@ -453,15 +454,15 @@ class DashboardController extends Controller
 
             // Close and attach the zip
             $zip->close();
-            $requestParams['File1_sFilename'] = 'SupportAttachment-'.FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->name).'.zip';
+            $requestParams['File1_sFilename'] = 'SupportAttachment-' . FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->name) . '.zip';
             $requestParams['File1_sFileMimeType'] = 'application/zip';
             $requestParams['File1_bFileBody'] = base64_encode(file_get_contents($zipPath));
         } catch (\Throwable $e) {
-            Craft::warning('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), __METHOD__);
+            Craft::warning('Tried to attach debug logs to a support request and something went horribly wrong: ' . $e->getMessage(), __METHOD__);
 
             // There was a problem zipping, so reset the params and just send the email without the attachment.
             $requestParams = $requestParamDefaults;
-            $requestParams['tNote'] .= "\n\nError attaching zip: ".$e->getMessage();
+            $requestParams['tNote'] .= "\n\nError attaching zip: " . $e->getMessage();
         }
 
         $requestParams = array_merge($requestParams, ['method' => 'request.create', 'output' => 'xml']);
@@ -487,7 +488,7 @@ class DashboardController extends Controller
 
         // Delete the zip file
         if (is_file($zipPath)) {
-            FileHelper::removeFile($zipPath);
+            FileHelper::unlink($zipPath);
         }
 
         return $this->renderTemplate('_components/widgets/CraftSupport/response', [
@@ -504,7 +505,6 @@ class DashboardController extends Controller
      * Returns the info about a widget required to display its body and settings in the Dashboard.
      *
      * @param WidgetInterface $widget
-     *
      * @return array|false
      */
     private function _getWidgetInfo(WidgetInterface $widget)
@@ -521,7 +521,7 @@ class DashboardController extends Controller
         }
 
         // Get the settings HTML + JS
-        $view->setNamespace('widget'.$widget->id.'-settings');
+        $view->setNamespace('widget' . $widget->id . '-settings');
         $view->startJsBuffer();
         $settingsHtml = $view->namespaceInputs((string)$widget->getSettingsHtml());
         $settingsJs = $view->clearJsBuffer(false);
@@ -542,7 +542,7 @@ class DashboardController extends Controller
             'title' => $widget->getTitle(),
             'name' => $widget->displayName(),
             'bodyHtml' => $widgetBodyHtml,
-            'settingsHtml' => (string)$settingsHtml,
+            'settingsHtml' => $settingsHtml,
             'settingsJs' => (string)$settingsJs,
         ];
     }
@@ -551,7 +551,6 @@ class DashboardController extends Controller
      * Returns a widget type’s SVG icon.
      *
      * @param WidgetInterface $widget
-     *
      * @return string
      */
     private function _getWidgetIconSvg(WidgetInterface $widget): string
@@ -564,13 +563,11 @@ class DashboardController extends Controller
 
         if (!is_file($iconPath)) {
             Craft::warning("Widget icon file doesn't exist: {$iconPath}", __METHOD__);
-
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
-        if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
+        if (!FileHelper::isSvg($iconPath)) {
             Craft::warning("Widget icon file is not an SVG: {$iconPath}", __METHOD__);
-
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
@@ -581,7 +578,6 @@ class DashboardController extends Controller
      * Returns the default icon SVG for a given widget type.
      *
      * @param WidgetInterface $widget
-     *
      * @return string
      */
     private function _getDefaultWidgetIconSvg(WidgetInterface $widget): string
@@ -595,7 +591,6 @@ class DashboardController extends Controller
      * Attempts to save a widget and responds with JSON.
      *
      * @param WidgetInterface $widget
-     *
      * @return Response
      */
     private function _saveAndReturnWidget(WidgetInterface $widget): Response
@@ -613,18 +608,18 @@ class DashboardController extends Controller
                 'headHtml' => $view->getHeadHtml(),
                 'footHtml' => $view->getBodyHtml(),
             ]);
-        } else {
-            $allErrors = [];
-
-            foreach ($widget->getErrors() as $attribute => $errors) {
-                foreach ($errors as $error) {
-                    $allErrors[] = $error;
-                }
-            }
-
-            return $this->asJson([
-                'errors' => $allErrors
-            ]);
         }
+
+        $allErrors = [];
+
+        foreach ($widget->getErrors() as $attribute => $errors) {
+            foreach ($errors as $error) {
+                $allErrors[] = $error;
+            }
+        }
+
+        return $this->asJson([
+            'errors' => $allErrors
+        ]);
     }
 }

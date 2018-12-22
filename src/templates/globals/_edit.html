@@ -1,18 +1,15 @@
 {% extends "_layouts/cp" %}
-{% set title = "Globals"|t('app') %}
+{% set title = globalSet.name|t('site') %}
+{% set fullPageForm = true %}
 
+{% hook "cp.globals.edit" %}
 
-{% block pageTitle %}
-    {{ parent() }}
-
+{% block contextMenu %}
     {% if craft.app.getIsMultiSite() %}
-        <div class="select">
-            <select onchange="document.location.href='{{ url('globals/{site}/'~globalSet.handle) }}'.replace('{site}', this.value);">
-                {% for site in craft.app.sites.getEditableSites() %}
-                    <option value="{{ site.handle }}"{% if site.id == globalSet.siteId %} selected{% endif %}>{{ site.name|t('site') }}</option>
-                {% endfor %}
-            </select>
-        </div>
+        {% include "_elements/sitemenu" with {
+            selectedSiteId: globalSet.siteId,
+            urlFormat: "globals/{handle}/#{globalSet.handle}"
+        } %}
     {% endif %}
 {% endblock %}
 
@@ -29,25 +26,26 @@
 
 
 {% block content %}
-    <form method="post" accept-charset="UTF-8" data-saveshortcut data-confirm-unload>
-        <input type="hidden" name="action" value="globals/save-content">
-        <input type="hidden" name="setId" value="{{ globalSet.id }}">
-        <input type="hidden" name="siteId" value="{{ globalSet.siteId }}">
-        {{ csrfInput() }}
+    <input type="hidden" name="action" value="globals/save-content">
+    <input type="hidden" name="setId" value="{{ globalSet.id }}">
+    <input type="hidden" name="siteId" value="{{ globalSet.siteId }}">
+    {{ csrfInput() }}
 
-        {% if globalSet.getFieldLayout().getFields() | length %}
-            <div>
-                {% include "_includes/fields" with {
-                    fields: globalSet.getFieldLayout().getFields(),
-                    element: globalSet
-                } only %}
-            </div>
+    {% if globalSet.getFieldLayout().getFields() | length %}
+        <div>
+            {% for tab in globalSet.getFieldLayout().getTabs() %}
+                <div id="{{ tab.getHtmlId() }}"{% if not loop.first %} class="hidden"{% endif %}>
+                    {% include "_includes/fields" with {
+                        fields:  tab.getFields(),
+                        element: globalSet
+                    } only %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        {{ "This global set doesn’t have any fields assigned to it in its field layout."|t('app') }}
+    {% endif %}
 
-            <div class="buttons">
-                <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
-            </div>
-        {% else %}
-            {{ "This global set doesn’t have any fields assigned to it in its field layout."|t('app') }}
-        {% endif %}
-    </form>
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.globals.edit.content" %}
 {% endblock %}

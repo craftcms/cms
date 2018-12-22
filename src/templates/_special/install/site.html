@@ -1,30 +1,45 @@
 {% import "_includes/forms" as forms %}
 
-<div id="site" class="modal">
+<div id="site" class="screen hidden" data-inputs="name,baseUrl,language">
+    <div class="icon">{{ worldIcon|raw }}</div>
     <h1>{{ "Setup your site"|t('app') }}</h1>
 
-    <form id="siteform" accept-charset="UTF-8">
+    <form accept-charset="UTF-8">
         {{ csrfInput() }}
-        {{ forms.textField({ label: "System Name"|t('app'), id: 'systemName', value: defaultSystemName, maxlength: 255 }) }}
-        {{ forms.textField({ label: "Base URL"|t('app'), id: 'siteUrl', value: defaultSiteUrl, maxlength: 255 }) }}
+
+        {{ forms.textField({
+            first: true,
+            label: "System Name"|t('app'),
+            id: 'site-name',
+            value: defaultSystemName,
+            maxlength: 255
+        }) }}
+
+        {{ forms.textField({
+            label: "Base URL"|t('app'),
+            id: 'site-baseUrl',
+            value: defaultSiteUrl,
+            maxlength: 255
+        }) }}
 
         {% set languageInput %}
             <div class="select">
-                <select id="siteLanguage">
+                <select id="site-language">
                     {% for locale in craft.app.i18n.getAllLocales() %}
                         <option value="{{ locale.id }}"{% if locale.id == craft.app.language %} selected{% endif %}>{{ locale.id }} ({{ locale.getDisplayName(craft.app.language) }})</option>
                     {% endfor %}
                 </select>
             </div>
         {% endset %}
-        {{ forms.field({ label: "Language"|t('app'), id: 'siteLanguage' }, languageInput) }}
+        {{ forms.field({
+            label: "Language"|t('app'),
+            id: 'site-language'
+        }, languageInput) }}
 
         <div class="buttons">
-            <div id="sitesubmit" class="btn big submit">{{ "Finish up"|t('app') }}
+            <div class="btn big submit">{{ "Finish up"|t('app') }}
                 <input type="submit" tabindex="-1">
             </div>
         </div>
     </form>
-
-    {% include "_special/install/dots" with {dot: 2} %}
 </div>

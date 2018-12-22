@@ -1,13 +1,6 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 
-{% block pageTitle %}
-    {{ parent() }}
-    {% if entry.id %}
-        {% include "entries/_revisions" %}
-    {% endif %}
-{% endblock %}
-
 {% set sectionHandle = section.handle %}
 {% set isSingle = section.type == 'single' %}
 {% set isVersion = className(entry) == 'craft\\models\\EntryVersion' %}
@@ -24,7 +17,29 @@
 {% hook "cp.entries.edit" %}
 
 
-{% block saveButton %}
+{% block header %}
+    {{ block('pageTitle') }}
+    {{ block('contextMenu') }}
+    <div class="flex-grow"></div>
+    {% if showPreviewBtn or shareUrl is defined %}
+        {% if showPreviewBtn %}
+            <div class="btn livepreviewbtn">{{ "Live Preview"|t('app') }}</div>
+        {% endif %}
+        {% if shareUrl is defined %}
+            <a href="{{ shareUrl }}" class="btn sharebtn" rel="noopener" target="_blank">{{ 'Share'|t('app') }}</a>
+        {% endif %}
+        <div class="flex-grow"></div>
+    {% endif %}
+    {{ block('actionButton') }}
+{% endblock %}
+
+{% block contextMenu %}
+    {% if entry.id or showSiteLabel %}
+        {% include "entries/_revisions" %}
+    {% endif %}
+{% endblock %}
+
+{% block actionButton %}
     {% if isDraft %}
 
         <input type="hidden" name="action" value="entry-revisions/save-draft">
@@ -53,7 +68,7 @@
                         <ul>
                             <li><a class="formsubmit"
                                    data-action="entry-revisions/publish-draft"
-                                   data-redirect="{{ entry.getCpEditUrl()|hash }}">
+                                   data-redirect="{{ (entry.getCpEditUrl()~'#')|hash }}">
                                     {{ "Publish draft"|t('app') }}
                                 </a></li>
                         </ul>
@@ -68,7 +83,7 @@
                             <li><a class="formsubmit"
                                    data-action="entry-revisions/delete-draft"
                                    data-confirm="{{ 'Are you sure you want to delete this draft?'|t('app') }}"
-                                   data-redirect="{{ entry.getCpEditUrl()|hash }}">
+                                   data-redirect="{{ (entry.getCpEditUrl()~'#')|hash }}">
                                     {{ 'Delete draft'|t('app') }}
                                 </a></li>
                         </ul>
@@ -119,15 +134,22 @@
                     {% endif %}
 
                     {% if not isSingle %}
-                        <li><a class="formsubmit" data-redirect="{{ ('entries/'~sectionHandle~'/new'~(nextEntryParams ? '?'~nextEntryParams|join('&')))|hash }}">{{ "Save and add another"|t('app') }}</a></li>
+                        <li><a class="formsubmit" data-redirect="{{ (nextEntryUrl~(nextEntryParams ? '?'~nextEntryParams|join('&'))~'#')|hash }}">{{ "Save and add another"|t('app') }}</a></li>
                     {% endif %}
 
-                    <li><a class="formsubmit" data-action="entry-revisions/save-draft" data-redirect="{{ (baseCpEditUrl~'/drafts/{draftId}')|hash }}">{{ 'Save as a draft'|t('app') }}</a></li>
+                    <li><a class="formsubmit" data-action="entry-revisions/save-draft" data-redirect="{{ (baseCpEditUrl~'/drafts/{draftId}#')|hash }}">{{ 'Save as a draft'|t('app') }}</a></li>
 
                     {% if not isSingle and entry.id %}
-                        <li><a class="formsubmit" data-param="duplicate" data-value="1" data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new entry"|t('app') }}</a></li>
+                        <li><a class="formsubmit" data-param="duplicate" data-value="1" data-redirect="{{ (continueEditingUrl~'#')|hash }}">{{ "Save as a new entry"|t('app') }}</a></li>
                     {% endif %}
                 </ul>
+
+                {% if not isSingle and not isVersion and canDeleteEntry %}
+                    <hr>
+                    <ul>
+                        <li><a class="formsubmit error" data-action="entries/delete-entry" data-confirm="{{ 'Are you sure you want to delete this entry?'|t('app') }}" data-redirect="{{ 'entries#'|hash }}">{{ 'Delete'|t('app') }}</a></li>
+                    </ul>
+                {% endif %}
             </div>
         </div>
 
@@ -142,195 +164,150 @@
 {% endblock %}
 
 
-{% block main %}
-        {% if not isVersion %}
-            <input type="hidden" name="sectionId" value="{{ section.id }}">
-            {% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
-            {% if craft.app.getIsMultiSite() %}<input type="hidden" name="siteId" value="{{ entry.siteId }}">{% endif %}
-        {% else %}
-            <input type="hidden" name="versionId" value="{{ entry.versionId }}">
+{% block content %}
+    {% if not isVersion %}
+        <input type="hidden" name="sectionId" value="{{ section.id }}">
+        {% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
+        {% if craft.app.getIsMultiSite() %}<input type="hidden" name="siteId" value="{{ entry.siteId }}">{% endif %}
+    {% else %}
+        <input type="hidden" name="versionId" value="{{ entry.versionId }}">
+    {% endif %}
+
+    <div id="fields">
+        {% include "entries/_fields" with {
+            static: isVersion
+        } %}
+    </div>
+
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.entries.edit.content" %}
+{% endblock %}
+
+{% block details %}
+    {% if not isSingle or canPublish %}
+        <div id="settings" class="meta">
+
+            {% if not isSingle %}
+                {% if showEntryTypes %}
+                    {{ forms.selectField({
+                        label: "Entry Type"|t('app'),
+                        id: 'entryType',
+                        name: 'typeId',
+                        value: entryType.id,
+                        options: entryTypeOptions
+                    }) }}
+                {% endif %}
+
+                {{ forms.textField({
+                    label: "Slug"|t('app'),
+                    siteId: entry.siteId,
+                    id: 'slug',
+                    name: 'slug',
+                    value: entry.slug,
+                    placeholder: "Enter slug"|t('app'),
+                    errors: (not isVersion ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
+                    disabled: isVersion
+                }) }}
+
+                {% if parentOptionCriteria is defined %}
+                    {{ forms.elementSelectField({
+                        label: "Parent"|t('app'),
+                        id: 'parentId',
+                        name: 'parentId',
+                        elementType: elementType,
+                        selectionLabel: "Choose"|t('app'),
+                        sources: ['section:'~section.id],
+                        criteria: parentOptionCriteria,
+                        limit: 1,
+                        elements: (parent is defined and parent ? [parent]),
+                        errors: entry.getErrors('parent')
+                    }) }}
+                {% endif %}
+
+                {% if CraftEdition == CraftPro and currentUser.can('editPeerEntries'~permissionSuffix) %}
+                    {{ forms.elementSelectField({
+                        label: "Author"|t('app'),
+                        id: 'author',
+                        name: 'author',
+                        elementType: userElementType,
+                        selectionLabel: "Choose"|t('app'),
+                        criteria: authorOptionCriteria,
+                        limit: 1,
+                        elements: (author is defined and author ? [author])
+                    }) }}
+                {% endif %}
+
+                {{ forms.dateTimeField({
+                    label: "Post Date"|t('app'),
+                    id: 'postDate',
+                    name: 'postDate',
+                    value: (entry.postDate ? entry.postDate : null),
+                    errors: entry.getErrors('postDate'),
+                    disabled: isVersion
+                }) }}
+
+                {{ forms.dateTimeField({
+                    label: "Expiry Date"|t('app'),
+                    id: 'expiryDate',
+                    name: 'expiryDate',
+                    value: (entry.expiryDate ? entry.expiryDate : null),
+                    errors: entry.getErrors('expiryDate'),
+                    disabled: isVersion
+                }) }}
+            {% endif %}
+
+            {% if canPublish %}
+                {{ forms.lightswitchField({
+                    label: showSites and section.propagateEntries ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
+                    id: 'enabled',
+                    name: 'enabled',
+                    on: entry.enabled,
+                    disabled: isVersion,
+                    toggle: 'enabledForSite-field'
+                }) }}
+            {% endif %}
+
+            {% if showSites and section.propagateEntries %}
+                {{ forms.lightswitchField({
+                    fieldClass: not entry.enabled ? 'hidden',
+                    label: "Enabled for {site}"|t('app', { site: entry.site.name|t('site') }),
+                    id: 'enabledForSite',
+                    name: 'enabledForSite',
+                    on: entry.enabledForSite,
+                    disabled: isVersion
+                }) }}
+            {% endif %}
+        </div><!-- #settings -->
+
+        {% if entry.id %}
+            <div class="meta read-only">
+                <div class="data">
+                    <h5 class="heading">{{ "Created at"|t('app') }}</h5>
+                    <div class="value">{{ entry.dateCreated|datetime('short') }}</div>
+                </div>
+                <div class="data">
+                    <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
+                    <div class="value">{{ entry.dateUpdated|datetime('short') }}</div>
+                </div>
+                {% if entry.revisionNotes %}
+                    <div class="data">
+                        <h5 class="heading">{{ "Notes"|t('app') }}</h5>
+                        <div class="value">{{ entry.revisionNotes }}</div>
+                    </div>
+                {% endif %}
+            </div>
         {% endif %}
 
-        <div class="grid first" data-max-cols="3">
-            <div class="item" data-position="left" data-colspan="2">
-                <div id="fields" class="pane">
-                    {% include "_includes/tabs" %}
-                    {% include "entries/_fields" with {
-                        static: isVersion
-                    } %}
-                </div>
-            </div><!--/item-->
+    {% endif %}
 
-            <div class="item" data-position="right">
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.entries.edit.details" %}
 
-                {% if showPreviewBtn %}
-                    {% include "_includes/previewbtns" %}
-                {% endif %}
-
-                {% if craft.app.getIsMultiSite() and section.getSiteSettings() | length > 1 %}
-                    <ul id="sites" class="pane">
-                        {% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
-                        {% for siteId in siteIds %}
-                            {% set site = craft.app.sites.getSiteById(siteId) %}
-                            <li{% if siteId == entry.siteId %} class="sel"{% endif %}>
-                                {%- if siteId == entry.siteId -%}
-                                    {{ site.name|t('site') }}
-                                    {{ forms.lightswitch({
-                                        name: 'enabledForSite',
-                                        on:   entry.enabledForSite,
-                                        small: true,
-                                        disabled: isVersion
-                                    }) }}
-                                {%- else -%}
-                                    {% set siteEntryUrl = url(
-                                        'entries/'~sectionHandle~'/'~craft.app.request.getSegment(3)~'/'~site.handle,
-                                        (parentIdParam ? { parentId: parentIdParam })
-                                    ) -%}
-                                    <a href="{{ siteEntryUrl }}">{{ site.name|t('site') }}</a>
-                                    <div class="status {{ siteId in enabledSiteIds ? 'enabled' : 'disabled' }}"></div>
-                                {%- endif -%}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-
-                {% if not isSingle or canPublish %}
-                    <div id="settings" class="pane meta">
-
-                        {% if not isSingle %}
-                            {% if showEntryTypes %}
-                                {{ forms.selectField({
-                                    label: "Entry Type"|t('app'),
-                                    id: 'entryType',
-                                    name: 'typeId',
-                                    value: entryType.id,
-                                    options: entryTypeOptions
-                                }) }}
-                            {% endif %}
-
-                            {{ forms.textField({
-                                label: "Slug"|t('app'),
-                                siteId: entry.siteId,
-                                id: 'slug',
-                                name: 'slug',
-                                value: entry.slug,
-                                placeholder: "Enter slug"|t('app'),
-                                errors: (not isVersion ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
-                                disabled: isVersion
-                            }) }}
-
-                            {% if parentOptionCriteria is defined %}
-                                {{ forms.elementSelectField({
-                                    label: "Parent"|t('app'),
-                                    id: 'parentId',
-                                    name: 'parentId',
-                                    elementType: elementType,
-                                    selectionLabel: "Choose"|t('app'),
-                                    sources: ['section:'~section.id],
-                                    criteria: parentOptionCriteria,
-                                    limit: 1,
-                                    elements: (parent is defined and parent ? [parent]),
-                                    errors: entry.getErrors('parent')
-                                }) }}
-                            {% endif %}
-
-                            {% if CraftEdition == CraftPro and currentUser.can('editPeerEntries'~permissionSuffix) %}
-                                {{ forms.elementSelectField({
-                                    label: "Author"|t('app'),
-                                    id: 'author',
-                                    name: 'author',
-                                    elementType: userElementType,
-                                    selectionLabel: "Choose"|t('app'),
-                                    criteria: authorOptionCriteria,
-                                    limit: 1,
-                                    elements: (author is defined and author ? [author])
-                                }) }}
-                            {% endif %}
-
-                            {{ forms.dateTimeField({
-                                label: "Post Date"|t('app'),
-                                id: 'postDate',
-                                name: 'postDate',
-                                value: (entry.postDate ? entry.postDate : null),
-                                errors: entry.getErrors('postDate'),
-                                disabled: isVersion
-                            }) }}
-
-                            {{ forms.dateTimeField({
-                                label: "Expiry Date"|t('app'),
-                                id: 'expiryDate',
-                                name: 'expiryDate',
-                                value: (entry.expiryDate ? entry.expiryDate : null),
-                                errors: entry.getErrors('expiryDate'),
-                                disabled: isVersion
-                            }) }}
-                        {% endif %}
-
-                        {% if canPublish or (not isVersion and canDeleteEntry) %}
-
-                            {% set statusInput %}
-                                {% if canPublish %}
-                                    <div class="left">
-                                        {{ forms.lightswitch({
-                                            id: 'enabled',
-                                            name: 'enabled',
-                                            on: entry.enabled,
-                                            disabled: isVersion
-                                        }) }}
-                                    </div>
-                                {% endif %}
-
-                                {% if not isSingle and not isVersion and canDeleteEntry %}
-                                    <div class="right">
-                                        <input type="button" class="btn small formsubmit" value="{{ 'Delete'|t('app') }}" data-action="entries/delete-entry"
-                                            data-confirm="{{ 'Are you sure you want to delete this entry?'|t('app') }}"
-                                            data-redirect="{{ 'entries'|hash }}">
-                                    </div>
-                                {% endif %}
-                            {% endset %}
-
-                            {{ forms.field({
-                                label: (canPublish ? "Enabled"|t('app')),
-                                id: 'enabled'
-                            }, statusInput) }}
-                        {% endif %}
-
-                    </div><!--/pane-->
-
-                    {% if entry.id %}
-                        <div class="pane lightpane meta">
-                            <div class="data">
-                                <h5 class="heading">{{ "Date Created"|t('app') }}</h5>
-                                <div class="value">{{ entry.dateCreated|datetime('short') }}</div>
-                            </div>
-                            <div class="data">
-                                <h5 class="heading">{{ "Date Updated"|t('app') }}</h5>
-                                <div class="value">{{ entry.dateUpdated|datetime('short') }}</div>
-                            </div>
-                            {% if entry.revisionNotes %}
-                                <div class="data">
-                                    <h5 class="heading">{{ "Version Notes"|t('app') }}</h5>
-                                        <div class="value">{{ entry.revisionNotes }}</div>
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-
-                {% endif %}
-
-                {# Give plugins a chance to add other panes here #}
-                {% hook "cp.entries.edit.right-pane" %}
-
-                {% if (
-                    not isDraft and not isVersion and canSave and
-                    section.enableVersioning
-                ) %}
-                    <hr>
-                    <input type="text" name="revisionNotes" class="fullwidth textline" placeholder="{{ 'Notes about your changes'|t('app') }}" autocomplete="off">
-                {% endif %}
-
-            </div><!--/item-->
-        </div><!--/grid-->
+    {% if not isDraft and not isVersion and canSave and section.enableVersioning %}
+        <div class="meta">
+            <textarea id="revision-notes" name="revisionNotes" class="text fullwidth" placeholder="{{ 'Notes about your changes'|t('app') }}" autocomplete="off"></textarea>
+        </div>
+    {% endif %}
 {% endblock %}
 
 

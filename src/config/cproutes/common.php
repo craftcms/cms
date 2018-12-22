@@ -70,4 +70,7 @@ return [
     'settings/users' => ['template' => 'settings/users/fields'],
     'utilities' => 'utilities',
     'utilities/<id:[\w\-]+>' => 'utilities/show-utility',
+    'plugin-store' => 'plugin-store',
+    'plugin-store/callback' => 'plugin-store/callback',
+    'plugin-store/<url:(.*)>' => 'plugin-store',
 ];

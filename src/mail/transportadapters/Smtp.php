@@ -1,19 +1,22 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\mail\transportadapters;
 
 use Craft;
+use craft\helpers\StringHelper;
+use craft\validators\StringValidator;
+use yii\base\Exception;
 
 /**
  * Smtp implements a SMTP transport adapter into Craft’s mailer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Smtp extends BaseTransportAdapter
 {
@@ -72,6 +75,24 @@ class Smtp extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->password) {
+            try {
+                $this->password = StringHelper::decdec($this->password);
+            } catch (Exception $e) {
+                Craft::error('Could not decode SMTP password: ' . $e->getMessage());
+                Craft::$app->getErrorHandler()->logException($e);
+                $this->password = null;
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels()
     {
         return [
@@ -91,6 +112,7 @@ class Smtp extends BaseTransportAdapter
     public function rules()
     {
         return [
+            [['host'], 'trim'],
             [['host', 'port', 'timeout'], 'required'],
             [
                 ['username', 'password'],

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -18,11 +18,10 @@ use yii\web\Response;
 /**
  * The AssetTransformsController class is a controller that handles various actions related to asset transformations,
  * such as creating, editing and deleting transforms.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class AssetTransformsController extends Controller
 {
@@ -56,9 +55,8 @@ class AssetTransformsController extends Controller
     /**
      * Edit an asset transform.
      *
-     * @param string|null         $transformHandle The transform’s handle, if any.
-     * @param AssetTransform|null $transform       The transform being edited, if there were any validation errors.
-     *
+     * @param string|null $transformHandle The transform’s handle, if any.
+     * @param AssetTransform|null $transform The transform being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested transform cannot be found
      */
@@ -78,9 +76,16 @@ class AssetTransformsController extends Controller
 
         $this->getView()->registerAssetBundle(EditTransformAsset::class);
 
+        if ($transform->id) {
+            $title = trim($transform->name) ?: Craft::t('app', 'Edit Image Transform');
+        } else {
+            $title = Craft::t('app', 'Create a new image transform');
+        }
+
         return $this->renderTemplate('settings/assets/transforms/_settings', [
             'handle' => $transformHandle,
-            'transform' => $transform
+            'transform' => $transform,
+            'title' => $title,
         ]);
     }
 
@@ -103,6 +108,7 @@ class AssetTransformsController extends Controller
         $transform->mode = $request->getBodyParam('mode');
         $transform->position = $request->getBodyParam('position');
         $transform->quality = $request->getBodyParam('quality');
+        $transform->interlace = $request->getBodyParam('interlace');
         $transform->format = $request->getBodyParam('format');
 
         if (empty($transform->format)) {
@@ -164,7 +170,7 @@ class AssetTransformsController extends Controller
 
         $transformId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-        Craft::$app->getAssetTransforms()->deleteTransform($transformId);
+        Craft::$app->getAssetTransforms()->deleteTransformById($transformId);
 
         return $this->asJson(['success' => true]);
     }

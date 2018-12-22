@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -13,31 +13,32 @@ use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\ImageException;
+use craft\errors\InvalidSubpathException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
-use craft\events\UserEvent;
 use craft\events\UserAssignGroupEvent;
+use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Image;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\records\User as UserRecord;
 use DateTime;
 use yii\base\Component;
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
 
 /**
  * The Users service provides APIs for managing users.
- *
- * An instance of the Users service is globally accessible in Craft via [[Application::users `Craft::$app->getUsers()`]].
+ * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->users`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Users extends Component
 {
@@ -139,11 +140,10 @@ class Users extends Component
      * Returns a user by their ID.
      *
      * ```php
-     * $user = Craft::$app->getUsers()->getUserById($userId);
+     * $user = Craft::$app->users->getUserById($userId);
      * ```
      *
      * @param int $userId The user’s ID.
-     *
      * @return User|null The user with the given ID, or `null` if a user could not be found.
      */
     public function getUserById(int $userId)
@@ -156,56 +156,67 @@ class Users extends Component
      * Returns a user by their username or email.
      *
      * ```php
-     * $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+     * $user = Craft::$app->users->getUserByUsernameOrEmail($loginName);
      * ```
      *
      * @param string $usernameOrEmail The user’s username or email.
-     *
      * @return User|null The user with the given username/email, or `null` if a user could not be found.
      */
     public function getUserByUsernameOrEmail(string $usernameOrEmail)
     {
-        return User::find()
-            ->where([
-                'or',
-                ['username' => $usernameOrEmail],
-                ['email' => $usernameOrEmail]
-            ])
+        $query = User::find()
             ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->status(null)
-            ->one() ?: null;
+            ->anyStatus();
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $query
+                ->where([
+                    'username' => $usernameOrEmail,
+                ])
+                ->orWhere([
+                    'email' => $usernameOrEmail,
+                ]);
+        } else {
+            // Postgres is case-sensitive
+            $query
+                ->where([
+                    'lower([[username]])' => mb_strtolower($usernameOrEmail),
+                ])
+                ->orWhere([
+                    'lower([[email]])' => mb_strtolower($usernameOrEmail),
+                ]);
+        }
+
+        return $query->one();
     }
 
     /**
      * Returns a user by their UID.
      *
      * ```php
-     * $user = Craft::$app->getUsers()->getUserByUid($userUid);
+     * $user = Craft::$app->users->getUserByUid($userUid);
      * ```
      *
      * @param string $uid The user’s UID.
-     *
      * @return User|null The user with the given UID, or `null` if a user could not be found.
      */
     public function getUserByUid(string $uid)
     {
         return User::find()
             ->uid($uid)
-            ->status(null)
-            ->enabledForSite(false)
-            ->one() ?: null;
+            ->anyStatus()
+            ->one();
     }
 
     /**
      * Returns whether a verification code is valid for the given user.
      *
      * This method first checks if the code has expired past the
-     * [verificationCodeDuration](http://craftcms.com/docs/config-settings#verificationCodeDuration) config
+     * [[\craft\config\GeneralConfig::verificationCodeDuration|verificationCodeDuration]] config
      * setting. If it is still valid, then, the checks the validity of the contents of the code.
      *
-     * @param User   $user The user to check the code for.
+     * @param User $user The user to check the code for.
      * @param string $code The verification code to check for.
-     *
      * @return bool Whether the code is still valid.
      */
     public function isVerificationCodeValidForUser(User $user, string $code): bool
@@ -225,18 +236,18 @@ class Users extends Component
             $userRecord->verificationCode = null;
             $userRecord->save();
 
-            Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' is expired.', __METHOD__);
+            Craft::warning('The verification code (' . $code . ') given for userId: ' . $user->id . ' is expired.', __METHOD__);
             return false;
         }
 
         try {
             $valid = Craft::$app->getSecurity()->validatePassword($code, $userRecord->verificationCode);
-        } catch (InvalidParamException $e) {
+        } catch (InvalidArgumentException $e) {
             $valid = false;
         }
 
         if (!$valid) {
-            Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.', __METHOD__);
+            Craft::warning('The verification code (' . $code . ') given for userId: ' . $user->id . ' does not match the hash in the database.', __METHOD__);
             return false;
         }
 
@@ -247,7 +258,6 @@ class Users extends Component
      * Returns a user’s preferences.
      *
      * @param int|null $userId The user’s ID
-     *
      * @return array The user’s preferences
      */
     public function getUserPreferences(int $userId = null): array
@@ -269,10 +279,8 @@ class Users extends Component
     /**
      * Saves a user’s preferences.
      *
-     * @param User  $user        The user
+     * @param User $user The user
      * @param array $preferences The user’s new preferences
-     *
-     * @return void
      */
     public function saveUserPreferences(User $user, array $preferences)
     {
@@ -283,8 +291,23 @@ class Users extends Component
                 '{{%userpreferences}}',
                 ['userId' => $user->id],
                 ['preferences' => Json::encode($preferences)],
+                [],
                 false)
             ->execute();
+    }
+
+    /**
+     * Returns one of a user’s preferences by its key.
+     *
+     * @param int|null $userId The user’s ID
+     * @param string $key The preference’s key
+     * @param mixed $default The default value, if the preference hasn’t been set
+     * @return mixed The user’s preference
+     */
+    public function getUserPreference(int $userId = null, string $key, $default = null)
+    {
+        $preferences = $this->getUserPreferences($userId);
+        return $preferences[$key] ?? $default;
     }
 
     /**
@@ -293,7 +316,6 @@ class Users extends Component
      * A new verification code will generated for the user overwriting any existing one.
      *
      * @param User $user The user to send the activation email to.
-     *
      * @return bool Whether the email was sent successfully.
      */
     public function sendActivationEmail(User $user): bool
@@ -317,7 +339,6 @@ class Users extends Component
      * A new verification code will generated for the user overwriting any existing one.
      *
      * @param User $user The user to send the activation email to.
-     *
      * @return bool Whether the email was sent successfully.
      */
     public function sendNewEmailVerifyEmail(User $user): bool
@@ -336,7 +357,6 @@ class Users extends Component
      * A new verification code will generated for the user overwriting any existing one.
      *
      * @param User $user The user to send the forgot password email to.
-     *
      * @return bool Whether the email was sent successfully.
      */
     public function sendPasswordResetEmail(User $user): bool
@@ -353,7 +373,6 @@ class Users extends Component
      * Sets a new verification code on a user, and returns their new Email Verification URL.
      *
      * @param User $user The user that should get the new Email Verification URL.
-     *
      * @return string The new Email Verification URL.
      */
     public function getEmailVerifyUrl(User $user): string
@@ -365,7 +384,6 @@ class Users extends Component
      * Sets a new verification code on a user, and returns their new Password Reset URL.
      *
      * @param User $user The user that should get the new Password Reset URL
-     *
      * @return string The new Password Reset URL.
      */
     public function getPasswordResetUrl(User $user): string
@@ -376,11 +394,9 @@ class Users extends Component
     /**
      * Crops and saves a user’s photo.
      *
-     * @param User   $user         the user.
+     * @param User $user the user.
      * @param string $fileLocation the local image path on server
-     * @param string $filename     name of the file to use, defaults to filename of $imagePath
-     *
-     * @return void
+     * @param string $filename name of the file to use, defaults to filename of $imagePath
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo Volume is not provided or is invalid
      */
@@ -400,16 +416,26 @@ class Users extends Component
                 'The volume set for user photo storage is not valid.'));
         }
 
+        $subpath = (string)Craft::$app->getSystemSettings()->getSetting('users', 'photoSubpath');
+
+        if ($subpath) {
+            try {
+                $subpath = Craft::$app->getView()->renderObjectTemplate($subpath, $user);
+            } catch (\Throwable $e) {
+                throw new InvalidSubpathException($subpath);
+            }
+        }
+
         /** @var Volume $volume */
-        $assets = Craft::$app->getAssets();
+        $assetsService = Craft::$app->getAssets();
 
         // If the photo exists, just replace the file.
         if ($user->photoId) {
             // No longer a new file.
-            $assets->replaceAssetFile($assets->getAssetById($user->photoId), $fileLocation, $filenameToUse);
+            $assetsService->replaceAssetFile($assetsService->getAssetById($user->photoId), $fileLocation, $filenameToUse);
         } else {
-            $folderId = $volumes->ensureTopFolder($volume);
-            $filenameToUse = $assets->getNameReplacementInFolder($filenameToUse, $folderId);
+            $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume);
+            $filenameToUse = $assetsService->getNameReplacementInFolder($filenameToUse, $folderId);
 
             $photo = new Asset();
             $photo->setScenario(Asset::SCENARIO_CREATE);
@@ -417,7 +443,6 @@ class Users extends Component
             $photo->filename = $filenameToUse;
             $photo->newFolderId = $folderId;
             $photo->volumeId = $volumeId;
-            $photo->fieldLayoutId = $volume->fieldLayoutId;
 
             // Save photo.
             $elementsService = Craft::$app->getElements();
@@ -432,7 +457,6 @@ class Users extends Component
      * Deletes a user’s photo.
      *
      * @param User $user The user
-     *
      * @return bool Whether the user’s photo was deleted successfully
      */
     public function deleteUserPhoto(User $user): bool
@@ -444,8 +468,6 @@ class Users extends Component
      * Handles a valid login for a user.
      *
      * @param User $user The user
-     *
-     * @return void
      */
     public function handleValidLogin(User $user)
     {
@@ -470,8 +492,6 @@ class Users extends Component
      * Handles an invalid login for a user.
      *
      * @param User $user The user
-     *
-     * @return void
      */
     public function handleInvalidLogin(User $user)
     {
@@ -526,7 +546,6 @@ class Users extends Component
      * Activates a user, bypassing email verification.
      *
      * @param User $user The user.
-     *
      * @return bool Whether the user was activated successfully.
      * @throws \Throwable if reasons
      */
@@ -545,12 +564,12 @@ class Users extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $userRecord = $this->_getUserRecordById($user->id);
-            $userRecord->setActive();
+            $userRecord->pending = false;
             $userRecord->verificationCode = null;
             $userRecord->verificationCodeIssuedDate = null;
             $userRecord->save();
 
-            $user->setActive();
+            $user->pending = false;
 
             // If they have an unverified email address, now is the time to set it to their primary email address
             $this->verifyEmailForUser($user);
@@ -576,7 +595,6 @@ class Users extends Component
      * and clear the unverified one.
      *
      * @param User $user
-     *
      * @return bool
      */
     public function verifyEmailForUser(User $user): bool
@@ -612,7 +630,6 @@ class Users extends Component
      * Unlocks a user, bypassing the cooldown phase.
      *
      * @param User $user The user.
-     *
      * @return bool Whether the user was unlocked successfully.
      * @throws \Throwable if reasons
      */
@@ -662,7 +679,6 @@ class Users extends Component
      * Suspends a user.
      *
      * @param User $user The user.
-     *
      * @return bool Whether the user was suspended successfully.
      * @throws \Throwable if reasons
      */
@@ -705,7 +721,6 @@ class Users extends Component
      * Unsuspends a user.
      *
      * @param User $user The user.
-     *
      * @return bool Whether the user was unsuspended successfully.
      * @throws \Throwable if reasons
      */
@@ -751,10 +766,9 @@ class Users extends Component
     /**
      * Shuns a message for a user.
      *
-     * @param int           $userId     The user’s ID.
-     * @param string        $message    The message to be shunned.
+     * @param int $userId The user’s ID.
+     * @param string $message The message to be shunned.
      * @param DateTime|null $expiryDate When the message should be un-shunned. Defaults to `null` (never un-shun).
-     *
      * @return bool Whether the message was shunned successfully.
      */
     public function shunMessageForUser(int $userId, string $message, DateTime $expiryDate = null): bool
@@ -777,9 +791,8 @@ class Users extends Component
     /**
      * Un-shuns a message for a user.
      *
-     * @param int    $userId  The user’s ID.
+     * @param int $userId The user’s ID.
      * @param string $message The message to un-shun.
-     *
      * @return bool Whether the message was un-shunned successfully.
      */
     public function unshunMessageForUser(int $userId, string $message): bool
@@ -799,9 +812,8 @@ class Users extends Component
     /**
      * Returns whether a message is shunned for a user.
      *
-     * @param int    $userId  The user’s ID.
+     * @param int $userId The user’s ID.
      * @param string $message The message to check.
-     *
      * @return bool Whether the user has shunned the message.
      */
     public function hasUserShunnedMessage(int $userId, string $message): bool
@@ -827,7 +839,6 @@ class Users extends Component
      * Sets a new verification code on the user's record.
      *
      * @param User $user The user.
-     *
      * @return string The user’s brand new verification code.
      */
     public function setVerificationCodeOnUser(User $user): string
@@ -843,11 +854,9 @@ class Users extends Component
      * Deletes any pending users that have shown zero sense of urgency and are just taking up space.
      *
      * This method will check the
-     * [purgePendingUsersDuration](http://craftcms.com/docs/config-settings#purgePendingUsersDuration) config
+     * [[\craft\config\GeneralConfig::purgePendingUsersDuration|purgePendingUsersDuration]] config
      * setting, and if it is set to a valid duration, it will delete any user accounts that were created that duration
      * ago, and have still not activated their account.
-     *
-     * @return void
      */
     public function purgeExpiredPendingUsers()
     {
@@ -866,7 +875,7 @@ class Users extends Component
             ->from(['{{%users}}'])
             ->where([
                 'and',
-                ['pending' => '1'],
+                ['pending' => true],
                 ['<', 'verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]
             ])
             ->column();
@@ -883,9 +892,8 @@ class Users extends Component
     /**
      * Assigns a user to a given list of user groups.
      *
-     * @param int   $userId   The user’s ID
+     * @param int $userId The user’s ID
      * @param int[] $groupIds The groups’ IDs. Pass an empty array to remove a user from all groups.
-     *
      * @return bool Whether the users were successfully assigned to the groups.
      */
     public function assignUserToGroups(int $userId, array $groupIds): bool
@@ -955,7 +963,6 @@ class Users extends Component
      * This method is called toward the end of a public registration request.
      *
      * @param User $user The user that was just registered.
-     *
      * @return bool Whether the user was assigned to the default group.
      */
     public function assignUserToDefaultGroup(User $user): bool
@@ -998,7 +1005,6 @@ class Users extends Component
      * Gets a user record by its ID.
      *
      * @param int $userId
-     *
      * @return UserRecord
      * @throws UserNotFoundException if $userId is invalid
      */
@@ -1016,14 +1022,17 @@ class Users extends Component
     /**
      * Sets a user record up for a new verification code without saving it.
      *
-     * @param  UserRecord $userRecord
-     *
+     * @param UserRecord $userRecord
      * @return string
      */
     private function _setVerificationCodeOnUserRecord(UserRecord $userRecord): string
     {
         $securityService = Craft::$app->getSecurity();
         $unhashedCode = $securityService->generateRandomString(32);
+
+        // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
+        $unhashedCode = str_replace('_', StringHelper::randomString(1), $unhashedCode);
+
         $hashedCode = $securityService->hashPassword($unhashedCode);
         $userRecord->verificationCode = $hashedCode;
         $userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
@@ -1035,7 +1044,6 @@ class Users extends Component
      * Determines if a user is within their invalid login window.
      *
      * @param UserRecord $userRecord
-     *
      * @return bool
      */
     private function _isUserInsideInvalidLoginWindow(UserRecord $userRecord): bool
@@ -1056,9 +1064,8 @@ class Users extends Component
     /**
      * Sets a new verification code on a user, and returns their new verification URL
      *
-     * @param User   $user   The user that should get the new Password Reset URL
+     * @param User $user The user that should get the new Password Reset URL
      * @param string $action The UsersController action that the URL should point to
-     *
      * @return string The new Password Reset URL.
      * @see getPasswordResetUrl()
      * @see getEmailVerifyUrl()
@@ -1070,26 +1077,30 @@ class Users extends Component
         $userRecord->save();
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $path = $generalConfig->actionTrigger.'/users/'.$action;
+        $path = $generalConfig->actionTrigger . '/users/' . $action;
         $params = [
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
         ];
 
-        $protocol = UrlHelper::getProtocolForTokenizedUrl();
+        $scheme = UrlHelper::getSchemeForTokenizedUrl();
 
         if ($user->can('accessCp')) {
             // Only use getCpUrl() if the base CP URL has been explicitly set,
             // so UrlHelper won't use HTTP_HOST
             if ($generalConfig->baseCpUrl) {
-                return UrlHelper::cpUrl($path, $params, $protocol);
+                return UrlHelper::cpUrl($path, $params, $scheme);
             }
 
-            $path = $generalConfig->cpTrigger.'/'.$path;
+            $path = $generalConfig->cpTrigger . '/' . $path;
         }
 
-        // todo: should we factor in the user's preferred language (as we did in v2)?
-        $siteId = Craft::$app->getSites()->getPrimarySite()->id;
-        return UrlHelper::siteUrl($path, $params, $protocol, $siteId);
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        } else {
+            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        }
+
+        return UrlHelper::siteUrl($path, $params, $scheme, $siteId);
     }
 }

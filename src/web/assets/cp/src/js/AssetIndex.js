@@ -423,9 +423,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         folderId = this._getFolderIdFromSourceKey($a.data('key')),
                         $source = this._getSourceByFolderId(folderId);
 
-                    // Make sure it's not already in the target folder
+                    // Make sure it's not already in the target folder and use this single folder Id.
                     if (this._getFolderIdFromSourceKey(this._getParentSource($source).data('key')) != targetFolderId) {
                         folderIds.push(folderId);
+                        break;
                     }
                 }
 
@@ -651,7 +652,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 var $parentSource = $($parentSources[i]);
 
                 if (!$parentSource.hasClass('expanded')) {
-                    $parentSource.children('.toggle').click();
+                    $parentSource.children('.toggle').trigger('click');
                 }
             }
 
@@ -678,7 +679,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             var options = {
                 url: Craft.getActionUrl('assets/save-asset'),
                 fileInput: this.$uploadInput,
-                dropZone: this.$main
+                dropZone: this.$container
             };
 
             options.events = {
@@ -700,7 +701,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     return;
                 }
                 if (!this.isIndexBusy) {
-                    this.$uploadButton.parent().find('input[name=assets-upload]').click();
+                    this.$uploadButton.parent().find('input[name=assets-upload]').trigger('click');
                 }
             }, this));
 
@@ -833,6 +834,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                     this.promptHandler.addPrompt(response);
                 }
+
+                Craft.cp.runQueue();
             }
             else {
                 if (response.error) {
@@ -855,10 +858,23 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 }
                 else {
                     if (doReload) {
-                        this.updateElements();
+                        this._updateAfterUpload();
                     }
                 }
             }
+        },
+
+        /**
+         * Update the elements after an upload, setting sort to dateModified descending, if not using index.
+         * 
+         * @private
+         */
+        _updateAfterUpload: function () {
+            if (this.settings.context !== 'index') {
+                this.setSortAttribute('dateModified');
+                this.setSortDirection('desc');
+            }
+            this.updateElements();
         },
 
         /**
@@ -876,7 +892,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             var finalCallback = function() {
                 this.setIndexAvailable();
                 this.progressBar.hideProgressBar();
-                this.updateElements();
+                this._updateAfterUpload();
             }.bind(this);
 
             this.progressBar.setItemCount(returnData.length);
@@ -943,6 +959,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.base();
         },
 
+        /**
+         * Do the after-update initializations
+         * @private
+         */
         _onUpdateElements: function(append, $newElements) {
             if (this.settings.context === 'index') {
                 if (!append) {
@@ -965,6 +985,58 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             }
 
             this.base(append, $newElements);
+
+            this.removeListener(this.$elements, 'keydown');
+            this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
+            this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
+        },
+
+        /**
+         * Handle a keypress
+         * @private
+         */
+        _onKeyDown: function(ev) {
+            if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
+                if (Craft.PreviewFileModal.openInstance) {
+                    Craft.PreviewFileModal.openInstance.selfDestruct();
+                } else {
+                    var $element = this.view.elementSelect.$focusedItem.find('.element');
+
+                    if ($element.length) {
+                        this._loadPreview($element);
+                    }
+                }
+
+                ev.stopPropagation();
+                return false;
+            }
+        },
+
+        /**
+         * Handle element being focused
+         * @private
+         */
+        _onElementFocus: function (ev) {
+            var $element = $(ev.item).find('.element');
+
+            if (Craft.PreviewFileModal.openInstance && $element.length) {
+                this._loadPreview($element);
+            }
+        },
+
+        /**
+         * Load the preview for an Asset element
+         * @private
+         */
+        _loadPreview: function($element) {
+            var settings = {};
+
+            if ($element.data('image-width')) {
+                settings.startingWidth = $element.data('image-width');
+                settings.startingHeight = $element.data('image-height');
+            }
+
+            new Craft.PreviewFileModal($element.data('id'), this.view.elementSelect, settings);
         },
 
         /**
@@ -1098,7 +1170,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             // Collapse any temp-expanded drop targets that aren't parents of this one
             this._collapseExtraExpandedFolders(this._getFolderIdFromSourceKey(this.dropTargetFolder.data('key')));
 
-            this.dropTargetFolder.siblings('.toggle').click();
+            this.dropTargetFolder.siblings('.toggle').trigger('click');
 
             // Keep a record of that
             this._tempExpandedFolders.push(this.dropTargetFolder);
@@ -1106,7 +1178,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         _collapseFolder: function($source) {
             if ($source.parent().hasClass('expanded')) {
-                $source.siblings('.toggle').click();
+                $source.siblings('.toggle').trigger('click');
             }
         },
 
@@ -1281,6 +1353,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         },
 
         _positionProgressBar: function() {
+            if (!this.progressBar) {
+                this.progressBar = new Craft.ProgressBar(this.$main, true);
+            }
+
             var $container = $(),
                 scrollTop = 0,
                 offset = 0;
@@ -1288,8 +1364,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             if (this.settings.context === 'index') {
                 $container = this.progressBar.$progressBar.closest('#content');
                 scrollTop = Garnish.$win.scrollTop();
-            }
-            else {
+            } else {
                 $container = this.progressBar.$progressBar.closest('.main');
                 scrollTop = this.$main.scrollTop();
             }
@@ -1300,8 +1375,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             if ($container.height() > windowHeight) {
                 offset = (windowHeight / 2) - 6 + diff;
-            }
-            else {
+            } else {
                 offset = ($container.height() / 2) - 6;
             }
 

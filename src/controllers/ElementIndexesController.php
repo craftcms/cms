@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -22,11 +22,10 @@ use yii\web\Response;
 
 /**
  * The ElementIndexesController class is a controller that handles various element index related actions.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ElementIndexesController extends BaseElementsController
 {
@@ -72,13 +71,13 @@ class ElementIndexesController extends BaseElementsController
     // =========================================================================
 
     /**
-     * Initializes the application component.
-     *
-     * @return void
+     * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
 
         $this->_elementType = $this->elementType();
         $this->_context = $this->context();
@@ -90,6 +89,8 @@ class ElementIndexesController extends BaseElementsController
         if ($this->_context === 'index' && $this->_sourceKey !== null) {
             $this->_actions = $this->_availableActions();
         }
+
+        return true;
     }
 
     /**
@@ -311,28 +312,23 @@ class ElementIndexesController extends BaseElementsController
         $collapsedElementIds = $request->getParam('collapsedElementIds');
 
         if ($collapsedElementIds) {
-            // Get the actual elements
-            $collapsedElementQuery = clone $query;
-            /** @var Element[] $collapsedElements */
-            $collapsedElements = $collapsedElementQuery
-                ->id($collapsedElementIds)
-                ->offset(0)
+            $descendantQuery = (clone $query)
+                ->offset(null)
                 ->limit(null)
-                ->orderBy(['lft' => SORT_ASC])
+                ->orderBy(null)
                 ->positionedAfter(null)
                 ->positionedBefore(null)
+                ->anyStatus();
+
+            // Get the actual elements
+            /** @var Element[] $collapsedElements */
+            $collapsedElements = (clone $descendantQuery)
+                ->id($collapsedElementIds)
+                ->orderBy(['lft' => SORT_ASC])
                 ->all();
 
             if (!empty($collapsedElements)) {
                 $descendantIds = [];
-
-                $descendantQuery = clone $query;
-                $descendantQuery
-                    ->offset(0)
-                    ->limit(null)
-                    ->orderBy(null)
-                    ->positionedAfter(null)
-                    ->positionedBefore(null);
 
                 foreach ($collapsedElements as $element) {
                     // Make sure we haven't already excluded this one, because its ancestor is collapsed as well
@@ -340,10 +336,11 @@ class ElementIndexesController extends BaseElementsController
                         continue;
                     }
 
-                    $descendantQuery->descendantOf($element);
-                    foreach ($descendantQuery->ids() as $id) {
-                        $descendantIds[] = $id;
-                    }
+                    $elementDescendantIds = (clone $descendantQuery)
+                        ->descendantOf($element)
+                        ->ids();
+
+                    $descendantIds = array_merge($descendantIds, $elementDescendantIds);
                 }
 
                 if (!empty($descendantIds)) {
@@ -359,8 +356,7 @@ class ElementIndexesController extends BaseElementsController
      * Returns the element data to be returned to the client.
      *
      * @param bool $includeContainer Whether the element container should be included in the response data
-     * @param bool $includeActions   Whether info about the available actions should be included in the response data
-     *
+     * @param bool $includeActions Whether info about the available actions should be included in the response data
      * @return array
      */
     private function _elementResponseData(bool $includeContainer, bool $includeActions): array
@@ -421,6 +417,9 @@ class ElementIndexesController extends BaseElementsController
                     unset($actions[$i]);
                 }
             }
+
+            /** @var ElementActionInterface $action */
+            $action->setElementType($elementType);
         }
 
         return array_values($actions);

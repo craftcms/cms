@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -13,15 +13,14 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class TagGroup record.
  *
- * @property int         $id            ID
- * @property int         $fieldLayoutId Field layout ID
- * @property string      $name          Name
- * @property string      $handle        Handle
- * @property FieldLayout $fieldLayout   Field layout
- * @property Tag[]       $tags          Tags
- *
+ * @property int $id ID
+ * @property int $fieldLayoutId Field layout ID
+ * @property string $name Name
+ * @property string $handle Handle
+ * @property FieldLayout $fieldLayout Field layout
+ * @property Tag[] $tags Tags
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class TagGroup extends ActiveRecord
 {
@@ -30,7 +29,6 @@ class TagGroup extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

@@ -5,7 +5,7 @@ use craft\models\DeprecationError;
 
 /** @var $panel craft\debug\DeprecatedPanel */
 ?>
-<h1>Deprecation Errors</h1>
+<h1>Deprecation Warnings</h1>
 <?php
 
 array_walk($panel->data, function(&$log) {
@@ -21,7 +21,8 @@ $logs = $panel->data;
     <p>No deprecation errors were logged on this request.</p>
 <?php else: ?>
     <div class="table-responsive">
-        <table class="table table-condensed table-bordered table-striped table-hover" style="table-layout: fixed;">
+        <table class="table table-condensed table-bordered table-striped table-hover"
+               style="table-layout: fixed;">
             <thead>
             <tr>
                 <th style="nowrap"><?= Craft::t('app', 'Message') ?></th>
@@ -33,7 +34,7 @@ $logs = $panel->data;
             <?php foreach ($logs as $log): ?>
                 <tr>
                     <td><?= htmlentities($log->message, null, 'UTF-8') ?></td>
-                    <td><code><?= str_replace('/', '/<wbr>', htmlentities($log->file, null, 'UTF-8')).($log->line ? ':'.$log->line : '') ?></code></td>
+                    <td><?= str_replace('/', '/<wbr>', htmlentities($log->file, null, 'UTF-8')).($log->line ? ':'.$log->line : '') ?></td>
                     <td><a href="<?= $panel->getUrl().'&trace='.$log->id ?>"><?= Craft::t('app', 'Stack Trace') ?></a></td>
                 </tr>
             <?php endforeach; ?>

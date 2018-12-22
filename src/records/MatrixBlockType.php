@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -14,17 +14,16 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class MatrixBlockType record.
  *
- * @property int         $id            ID
- * @property int         $fieldId       Field ID
- * @property int         $fieldLayoutId Field layout ID
- * @property string      $name          Name
- * @property string      $handle        Handle
- * @property int         $sortOrder     Sort order
- * @property Field       $field         Field
- * @property FieldLayout $fieldLayout   Field layout
- *
+ * @property int $id ID
+ * @property int $fieldId Field ID
+ * @property int $fieldLayoutId Field layout ID
+ * @property string $name Name
+ * @property string $handle Handle
+ * @property int $sortOrder Sort order
+ * @property Field $field Field
+ * @property FieldLayout $fieldLayout Field layout
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MatrixBlockType extends ActiveRecord
 {
@@ -67,7 +66,6 @@ class MatrixBlockType extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

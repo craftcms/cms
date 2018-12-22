@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -16,11 +16,10 @@ use yii\web\Response;
 /**
  * The PluginsController class is a controller that handles various plugin related tasks such installing, uninstalling,
  * enabling, disabling and saving plugin settings in the control panel.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class PluginsController extends Controller
 {
@@ -77,9 +76,8 @@ class PluginsController extends Controller
     /**
      * Edits a plugin’s settings.
      *
-     * @param string               $handle The plugin’s handle
+     * @param string $handle The plugin’s handle
      * @param PluginInterface|null $plugin The plugin, if there were validation errors
-     *
      * @return mixed
      * @throws NotFoundHttpException if the requested plugin cannot be found
      */
@@ -93,6 +91,40 @@ class PluginsController extends Controller
         }
 
         return $plugin->getSettingsResponse();
+    }
+
+    /**
+     * Enables a plugin.
+     *
+     * @return Response
+     */
+    public function actionEnablePlugin(): Response
+    {
+        $this->requirePostRequest();
+        $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
+        if (Craft::$app->getPlugins()->enablePlugin($pluginHandle)) {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin enabled.'));
+        } else {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t enable plugin.'));
+        }
+        return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * Disables a plugin.
+     *
+     * @return Response
+     */
+    public function actionDisablePlugin(): Response
+    {
+        $this->requirePostRequest();
+        $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
+        if (Craft::$app->getPlugins()->disablePlugin($pluginHandle)) {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin disabled.'));
+        } else {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t disable plugin.'));
+        }
+        return $this->redirectToPostedUrl();
     }
 
     /**

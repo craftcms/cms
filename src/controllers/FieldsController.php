@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -23,11 +23,10 @@ use yii\web\ServerErrorHttpException;
 /**
  * The FieldsController class is a controller that handles various field and field group related tasks such as saving
  * and deleting both fields and field groups.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class FieldsController extends Controller
 {
@@ -104,10 +103,9 @@ class FieldsController extends Controller
     /**
      * Edits a field.
      *
-     * @param int|null            $fieldId The field’s ID, if editing an existing field
-     * @param FieldInterface|null $field   The field being edited, if there were any validation errors
-     * @param int|null            $groupId The default group ID that the field should be saved in
-     *
+     * @param int|null $fieldId The field’s ID, if editing an existing field
+     * @param FieldInterface|null $field The field being edited, if there were any validation errors
+     * @param int|null $groupId The default group ID that the field should be saved in
      * @return Response
      * @throws NotFoundHttpException if the requested field/field group cannot be found
      * @throws ServerErrorHttpException if no field groups exist
@@ -121,6 +119,8 @@ class FieldsController extends Controller
         // The field
         // ---------------------------------------------------------------------
 
+        $missingFieldPlaceholder = null;
+
         /** @var Field $field */
         if ($field === null && $fieldId !== null) {
             $field = $fieldsService->getFieldById($fieldId);
@@ -130,12 +130,8 @@ class FieldsController extends Controller
             }
 
             if ($field instanceof MissingField) {
-                $expectedType = $field->expectedType;
-                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                $missingFieldPlaceholder = $field->getPlaceholderHtml();
                 $field = $field->createFallback(PlainText::class);
-                $field->addError('type', Craft::t('app', 'The field type “{type}” could not be found.', [
-                    'type' => $expectedType
-                ]));
             }
         }
 
@@ -160,19 +156,20 @@ class FieldsController extends Controller
         // ---------------------------------------------------------------------
 
         if (!$field->id) {
-            $allowedFieldTypes = $allFieldTypes;
+            $compatibleFieldTypes = $allFieldTypes;
         } else {
-            $allowedFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
+            $compatibleFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
         }
 
-        /** @var string[]|FieldInterface[] $allowedFieldTypes */
+        /** @var string[]|FieldInterface[] $compatibleFieldTypes */
         $fieldTypeOptions = [];
 
-        foreach ($allowedFieldTypes as $class) {
+        foreach ($allFieldTypes as $class) {
             if ($class === get_class($field) || $class::isSelectable()) {
+                $compatible = in_array($class, $compatibleFieldTypes, true);
                 $fieldTypeOptions[] = [
                     'value' => $class,
-                    'label' => $class::displayName()
+                    'label' => $class::displayName() . ($compatible ? '' : ' ⚠️'),
                 ];
             }
         }
@@ -222,28 +219,29 @@ class FieldsController extends Controller
             ],
             [
                 'label' => Craft::t('site', $fieldGroup->name),
-                'url' => UrlHelper::url('settings/fields/'.$groupId)
+                'url' => UrlHelper::url('settings/fields/' . $groupId)
             ],
         ];
 
         if ($fieldId !== null) {
-            $title = $field->name;
+            $title = trim($field->name) ?: Craft::t('app', 'Edit Field');
         } else {
             $title = Craft::t('app', 'Create a new field');
         }
 
-        return $this->renderTemplate('settings/fields/_edit', [
-            'fieldId' => $fieldId,
-            'field' => $field,
-            'fieldTypeOptions' => $fieldTypeOptions,
-            'supportedTranslationMethods' => $supportedTranslationMethods,
-            'allowedFieldTypes' => $allowedFieldTypes,
-            'groupId' => $groupId,
-            'groupOptions' => $groupOptions,
-            'crumbs' => $crumbs,
-            'title' => $title,
-            'docsUrl' => 'http://craftcms.com/docs/fields#field-layouts',
-        ]);
+        return $this->renderTemplate('settings/fields/_edit', compact(
+            'fieldId',
+            'field',
+            'allFieldTypes',
+            'fieldTypeOptions',
+            'missingFieldPlaceholder',
+            'supportedTranslationMethods',
+            'compatibleFieldTypes',
+            'groupId',
+            'groupOptions',
+            'crumbs',
+            'title'
+        ));
     }
 
     /**
@@ -268,7 +266,7 @@ class FieldsController extends Controller
             'instructions' => $request->getBodyParam('instructions'),
             'translationMethod' => $request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $request->getBodyParam('translationKeyFormat'),
-            'settings' => $request->getBodyParam('types.'.$type),
+            'settings' => $request->getBodyParam('types.' . $type),
         ]);
 
         if (!$fieldsService->saveField($field)) {

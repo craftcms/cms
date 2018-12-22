@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\widgets;
@@ -16,7 +16,7 @@ use craft\web\assets\newusers\NewUsersAsset;
  * NewUsers represents a New Users dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class NewUsers extends Widget
 {
@@ -74,7 +74,7 @@ class NewUsers extends Widget
             $userGroup = Craft::$app->getUserGroups()->getGroupById($groupId);
 
             if ($userGroup) {
-                return Craft::t('app', 'New Users').' – '.Craft::t('app', $userGroup->name);
+                return Craft::t('app', 'New Users') . ' – ' . Craft::t('app', $userGroup->name);
             }
         }
 
@@ -95,7 +95,7 @@ class NewUsers extends Widget
 
         $view = Craft::$app->getView();
         $view->registerAssetBundle(NewUsersAsset::class);
-        $view->registerJs('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
+        $view->registerJs('new Craft.NewUsersWidget(' . $this->id . ', ' . Json::encode($options) . ');');
 
         return '';
     }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -14,7 +14,7 @@ use craft\helpers\UrlHelper;
  * Paginate variable class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Paginate
 {
@@ -53,7 +53,6 @@ class Paginate
      * Returns the URL to a specific page
      *
      * @param int $page
-     *
      * @return string|null
      */
     public function getPageUrl(int $page)
@@ -85,7 +84,7 @@ class Paginate
                         $path .= '/';
                     }
 
-                    $path .= $pageTrigger.$page;
+                    $path .= $pageTrigger . $page;
                 }
             }
 
@@ -139,7 +138,6 @@ class Paginate
      * Returns previous page URLs up to a certain distance from the current page.
      *
      * @param int|null $dist
-     *
      * @return array
      */
     public function getPrevUrls(int $dist = null): array
@@ -157,7 +155,6 @@ class Paginate
      * Returns next page URLs up to a certain distance from the current page.
      *
      * @param int|null $dist
-     *
      * @return array
      */
     public function getNextUrls(int $dist = null): array
@@ -176,7 +173,6 @@ class Paginate
      *
      * @param int $start
      * @param int $end
-     *
      * @return array
      */
     public function getRangeUrls(int $start, int $end): array

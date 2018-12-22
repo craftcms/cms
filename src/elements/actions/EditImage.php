@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements\actions;
@@ -15,7 +15,7 @@ use craft\helpers\Json;
  * EditImage represents an Edit Image action
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EditImage extends ElementAction
 {
@@ -26,17 +26,6 @@ class EditImage extends ElementAction
      * @var string The trigger label
      */
     public $label;
-
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function isDestructive(): bool
-    {
-        return true;
-    }
 
     // Public Methods
     // =========================================================================
@@ -64,7 +53,7 @@ class EditImage extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $type = Json::encode(static::className());
+        $type = Json::encode(static::class);
 
         $js = <<<EOT
 (function()

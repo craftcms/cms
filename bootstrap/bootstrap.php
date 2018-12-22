@@ -2,14 +2,18 @@
 /**
  * Craft bootstrap file.
  *
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 use craft\helpers\ArrayHelper;
-use craft\helpers\FileHelper;
 use craft\services\Config;
+use yii\base\ErrorException;
+
+// Get the last error at the earliest opportunity, so we can catch max_input_vars errors
+// see https://stackoverflow.com/a/21601349/1688568
+$lastError = error_get_last();
 
 // Setup
 // -----------------------------------------------------------------------------
@@ -54,7 +58,7 @@ $createFolder = function($path) {
             // Set a 503 response header so things like Varnish won't cache a bad page.
             http_response_code(503);
 
-            exit('Tried to create a folder at '.$path.', but could not.');
+            exit('Tried to create a folder at '.$path.', but could not.' . PHP_EOL);
         }
 
         // Because setting permission with mkdir is a crapshoot.
@@ -71,7 +75,7 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
         // Set a 503 response header so things like Varnish won't cache a bad page.
         http_response_code(503);
 
-        exit(($realPath !== false ? $realPath : $path).' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
+        exit(($realPath !== false ? $realPath : $path).' doesn\'t exist or isn\'t writable by PHP. Please fix that.' . PHP_EOL);
     }
 
     if ($writableToo) {
@@ -79,7 +83,7 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
             // Set a 503 response header so things like Varnish won't cache a bad page.
             http_response_code(503);
 
-            exit($realPath.' isn\'t writable by PHP. Please fix that.');
+            exit($realPath.' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
         }
     }
 };
@@ -106,26 +110,39 @@ $environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME
 // Validate the paths
 // -----------------------------------------------------------------------------
 
-// Validate permissions on config/ and storage/
-$ensureFolderIsReadable($configPath);
+if (!defined('CRAFT_LICENSE_KEY')) {
+    // Validate permissions on the license key file path (default config/) and storage/
+    if (defined('CRAFT_LICENSE_KEY_PATH')) {
+        $licensePath = dirname(CRAFT_LICENSE_KEY_PATH);
+        $licenseKeyName = basename(CRAFT_LICENSE_KEY_PATH);
+    } else {
+        $licensePath = $configPath;
+        $licenseKeyName = 'license.key';
+    }
 
-if ($appType === 'web') {
-    $licensePath = $configPath.'/license.key';
+    // Make sure the license folder exists.
+    if (!is_dir($licensePath) && !file_exists($licensePath)) {
+        $createFolder($licensePath);
+    }
 
-    // If license.key doesn't exist yet, make sure the config folder is readable and we can write a temp one.
-    if (!file_exists($licensePath)) {
-        // Make sure config is at least readable.
-        $ensureFolderIsReadable($configPath);
+    $ensureFolderIsReadable($licensePath);
 
-        // Try and write out a temp license.key file.
-        @file_put_contents($licensePath, 'temp');
+    if ($appType === 'web') {
+        $licenseFullPath = $licensePath.'/'.$licenseKeyName;
 
-        // See if it worked.
-        if (!file_exists($licensePath) || (file_exists($licensePath) && file_get_contents($licensePath) !== 'temp')) {
-            exit($licensePath.' isn\'t writable by PHP. Please fix that.');
+        // If the license key doesn't exist yet, make sure the folder is readable and we can write a temp one.
+        if (!file_exists($licenseFullPath)) {
+            // Try and write out a temp license key file.
+            @file_put_contents($licenseFullPath, 'temp');
+
+            // See if it worked.
+            if (!file_exists($licenseFullPath) || (file_exists($licenseFullPath) && file_get_contents($licenseFullPath) !== 'temp')) {
+                exit($licensePath.' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
+            }
         }
     }
 }
+
 
 $ensureFolderIsReadable($storagePath, true);
 
@@ -142,20 +159,22 @@ ini_set('log_errors', 1);
 ini_set('error_log', $storagePath.'/logs/phperrors.log');
 error_reporting(E_ALL);
 
-// Determine if Craft is running in Dev Mode
+// Load the general config
 // -----------------------------------------------------------------------------
 
-// Initialize the Config service
 $configService = new Config();
 $configService->env = $environment;
 $configService->configDir = $configPath;
 $configService->appDefaultsDir = dirname(__DIR__).DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults';
+$generalConfig = $configService->getConfigFromFile('general');
 
-// We need to special case devMode in the config because YII_DEBUG has to be set as early as possible.
+// Determine if Craft is running in Dev Mode
+// -----------------------------------------------------------------------------
+
 if ($appType === 'console') {
     $devMode = true;
 } else {
-    $devMode = ArrayHelper::getValue($configService->getConfigFromFile('general'), 'devMode', false);
+    $devMode = ArrayHelper::getValue($generalConfig, 'devMode', false);
 }
 
 if ($devMode) {
@@ -180,7 +199,7 @@ defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156)
 $cmsPath = $vendorPath.'/craftcms/cms';
 $libPath = $cmsPath.'/lib';
 $srcPath = $cmsPath.'/src';
-require $vendorPath.'/yiisoft/yii2/Yii.php';
+require $srcPath.'/Yii.php';
 require $srcPath.'/Craft.php';
 
 // Move Yii's autoloader to the end (Composer's is faster when optimized)
@@ -197,6 +216,16 @@ Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
 
+// Set any custom aliases
+$customAliases = $generalConfig['aliases'] ?? $generalConfig['environmentVariables'] ?? null;
+if (is_array($customAliases)) {
+    foreach ($customAliases as $name => $value) {
+        if (is_string($value)) {
+            Craft::setAlias($name, $value);
+        }
+    }
+}
+
 // Load the config
 $components = [
     'config' => $configService,
@@ -208,9 +237,10 @@ $config = ArrayHelper::merge(
         'env' => $environment,
         'components' => $components,
     ],
-    require "{$srcPath}/config/app/main.php",
-    require "{$srcPath}/config/app/{$appType}.php",
-    $configService->getConfigFromFile('app')
+    require "{$srcPath}/config/app.php",
+    require "{$srcPath}/config/app.{$appType}.php",
+    $configService->getConfigFromFile('app'),
+    $configService->getConfigFromFile("app.{$appType}")
 );
 
 if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
@@ -218,41 +248,12 @@ if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
 }
 
 // Initialize the application
-$class = "craft\\{$appType}\\Application";
-/** @var $app craft\web\Application|craft\console\Application */
-$app = new $class($config);
+/** @var \craft\web\Application|craft\console\Application $app */
+$app = Craft::createObject($config);
 
-if ($appType === 'web') {
-    // See if the resource base path exists and is writable
-    $resourceBasePath = Craft::getAlias($app->config->getGeneral()->resourceBasePath);
-    @FileHelper::createDirectory($resourceBasePath);
-
-    if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
-        exit($resourceBasePath.' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
-    }
-
-    // See if we should enable the Debug module
-    $session = $app->getSession();
-
-    if ($session->getHasSessionId() || $session->getIsActive()) {
-        $isCpRequest = $app->getRequest()->getIsCpRequest();
-
-        $enableDebugToolbarForCp = $session->get('enableDebugToolbarForCp');
-        $enableDebugToolbarForSite = $session->get('enableDebugToolbarForSite');
-
-        if ($enableDebugToolbarForCp || $enableDebugToolbarForSite) {
-            // The actual toolbar will always get loaded from "site" action requests, even if being displayed in the CP
-            if (!$isCpRequest) {
-                \yii\debug\Module::setYiiLogo("data:image/svg+xml;utf8,<svg width='30px' height='30px' viewBox='0 0 30 30' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g fill='#DA5B47'><path d='M21.5549104,8.56198524 C21.6709104,8.6498314 21.7812181,8.74275447 21.8889104,8.83706217 L23.6315258,7.47013909 L23.6858335,7.39952371 C23.4189104,7.12998524 23.132295,6.87506217 22.8224489,6.64075447 C18.8236796,3.62275447 12.7813719,4.88598524 9.32737193,9.46275447 C5.87321809,14.0393699 6.31475655,20.195216 10.3135258,23.2138314 C13.578295,25.6779852 18.2047565,25.287216 21.6732181,22.5699852 L21.6693719,22.5630622 L20.0107565,21.2621391 C17.4407565,22.9144468 14.252295,23.0333699 11.9458335,21.2927545 C8.87414116,18.9746006 8.53506424,14.245216 11.188295,10.7293699 C13.8419873,7.21398524 18.4832181,6.24367755 21.5549104,8.56198524'></path></g></svg>");
-            }
-
-            if (($isCpRequest && $enableDebugToolbarForCp) || (!$isCpRequest && $enableDebugToolbarForSite)) {
-                /** @var yii\debug\Module $module */
-                $module = $app->getModule('debug');
-                $module->bootstrap($app);
-            }
-        }
-    }
+// If there was a max_input_vars error, kill the request before we start processing it with incomplete data
+if ($lastError && strpos($lastError['message'], 'max_input_vars') !== false) {
+    throw new ErrorException($lastError['message']);
 }
 
 return $app;

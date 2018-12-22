@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -13,21 +13,31 @@ use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\helpers\Template;
 use craft\models\DeprecationError;
+use craft\web\twig\Extension;
 use yii\base\Component;
 
 /**
- * Class Deprecator service.
- *
- * An instance of the Deprecator service is globally accessible in Craft via [[Application::deprecator `Craft::$app->getDeprecator()`]].
+ * Deprecator service.
+ * An instance of the Deprecator service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDeprecator()|`Craft::$app->deprecator`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Deprecator extends Component
 {
     // Properties
     // =========================================================================
+
+    /**
+     * @var string|false Whether deprecation errors should be logged in the database ('db'),
+     * error logs ('logs'), or not at all (false).
+     *
+     * Changing this will prevent deprecation errors from showing up in the "Deprecation Warnings" utility
+     * or in the "Deprecated" panel in the Debug Toolbar.
+     */
+    public $logTarget = 'db';
 
     /**
      * @var string
@@ -52,26 +62,39 @@ class Deprecator extends Component
      *
      * @param string $key
      * @param string $message
-     *
-     * @return bool
+     * @param string|null $file
+     * @param int|null $line
      */
-    public function log(string $key, string $message): bool
+    public function log(string $key, string $message, string $file = null, int $line = null)
     {
-        if (!Craft::$app->getIsInstalled()) {
-            Craft::warning($message, 'deprecation-error');
+        if ($this->logTarget === false) {
+            return;
+        }
 
-            return false;
+        // todo: maybe remove the Craft version check after the next breakpoint
+        // (depending on whether the minimum version warning shows up before any config deprecation errors)
+        if (
+            $this->logTarget === 'logs' ||
+            !Craft::$app->getIsInstalled() ||
+            version_compare(Craft::$app->getInfo()->version, '3.0.0-alpha.2910', '<')
+        ) {
+            Craft::warning($message, 'deprecation-error');
+            return;
         }
 
         // Get the debug backtrace
-        $traces = $traces = debug_backtrace();
-        list($file, $line) = $this->_findOrigin($traces);
-        $fingerprint = $file.($line ? ':'.$line : '');
-        $index = $key.'-'.$fingerprint;
+        $traces = debug_backtrace();
+
+        if ($file === null) {
+            list($file, $line) = $this->_findOrigin($traces);
+        }
+
+        $fingerprint = $file . ($line ? ':' . $line : '');
+        $index = $key . '-' . $fingerprint;
 
         // Don't log the same key/fingerprint twice in the same request
         if (isset($this->_requestLogs[$index])) {
-            return true;
+            return;
         }
 
         $log = $this->_requestLogs[$index] = new DeprecationError([
@@ -102,8 +125,6 @@ class Deprecator extends Component
             ->execute();
 
         $log->id = $db->getLastInsertID();
-
-        return true;
     }
 
     /**
@@ -132,7 +153,6 @@ class Deprecator extends Component
      * Get 'em all.
      *
      * @param int|null $limit
-     *
      * @return DeprecationError[]
      */
     public function getLogs(int $limit = null): array
@@ -159,7 +179,6 @@ class Deprecator extends Component
      * Returns a log by its ID.
      *
      * @param int $logId
-     *
      * @return DeprecationError|null
      */
     public function getLogById(int $logId)
@@ -168,18 +187,13 @@ class Deprecator extends Component
             ->where(['id' => $logId])
             ->one();
 
-        if ($log !== false) {
-            return new DeprecationError($log);
-        }
-
-        return null;
+        return $log ? new DeprecationError($log) : null;
     }
 
     /**
      * Deletes a log by its ID.
      *
      * @param int $id
-     *
      * @return bool
      */
     public function deleteLogById(int $id): bool
@@ -233,7 +247,6 @@ class Deprecator extends Component
      * Returns the file and line number that should be associated with the error.
      *
      * @param array $traces debug_backtrace() results leading up to [[log()]]
-     *
      * @return array [file, line]
      */
     private function _findOrigin(array $traces): array
@@ -248,7 +261,13 @@ class Deprecator extends Component
         } else if ($this->_isTemplateAttributeCall($traces, 2)) {
             // special case for "deprecated" date functions the Template helper pretends still exist
             $templateTrace = 2;
-        } else if (isset($traces[1]['class'], $traces[1]['function']) && $traces[1]['class'] === ElementQuery::class && $traces[1]['function'] === 'getIterator') {
+        } else if (
+            isset($traces[1]['class'], $traces[1]['function']) &&
+            (
+                ($traces[1]['class'] === ElementQuery::class && $traces[1]['function'] === 'getIterator') ||
+                ($traces[1]['class'] === Extension::class && $traces[1]['function'] === 'groupFilter')
+            )
+        ) {
             // special case for deprecated looping through element queries
             $templateTrace = 1;
         }
@@ -282,8 +301,7 @@ class Deprecator extends Component
      * Returns whether the given trace is a call to [[\craft\heplers\Template::attribute()]]
      *
      * @param array $traces debug_backtrace() results leading up to [[log()]]
-     * @param int   $index  The trace index to check
-     *
+     * @param int $index The trace index to check
      * @return bool
      */
     private function _isTemplateAttributeCall(array $traces, int $index): bool
@@ -294,7 +312,7 @@ class Deprecator extends Component
         $t = $traces[$index];
         return (
             isset($t['class'], $t['function']) &&
-            $t['class'] === \craft\helpers\Template::class &&
+            $t['class'] === Template::class &&
             $t['function'] === 'attribute'
         );
     }
@@ -303,7 +321,6 @@ class Deprecator extends Component
      * Returns a simplified version of the stack trace.
      *
      * @param array $traces debug_backtrace() results leading up to [[log()]]
-     *
      * @return array
      */
     private function _cleanTraces(array $traces): array
@@ -328,8 +345,7 @@ class Deprecator extends Component
      * Returns the Twig template that should be associated with the deprecation error, if any.
      *
      * @param \Twig_Template $template
-     * @param int|null       $actualCodeLine
-     *
+     * @param int|null $actualCodeLine
      * @return int|null
      */
     private function _findTemplateLine(\Twig_Template $template, int $actualCodeLine = null)
@@ -354,7 +370,6 @@ class Deprecator extends Component
      * Adapted from [[\yii\web\ErrorHandler::argumentsToString()]], but this one's less destructive
      *
      * @param array $args
-     *
      * @return string
      */
     private function _argsToString(array $args): string
@@ -379,12 +394,12 @@ class Deprecator extends Component
                 $strValue = $value ? 'true' : 'false';
             } else if (is_string($value)) {
                 if (strlen($value) > 64) {
-                    $strValue = '"'.StringHelper::substr($value, 0, 64).'..."';
+                    $strValue = '"' . StringHelper::substr($value, 0, 64) . '..."';
                 } else {
-                    $strValue = '"'.$value.'"';
+                    $strValue = '"' . $value . '"';
                 }
             } else if (is_array($value)) {
-                $strValue = '['.$this->_argsToString($value).']';
+                $strValue = '[' . $this->_argsToString($value) . ']';
             } else if ($value === null) {
                 $strValue = 'null';
             } else if (is_resource($value)) {
@@ -394,9 +409,9 @@ class Deprecator extends Component
             }
 
             if (is_string($key)) {
-                $strArgs[] = '"'.$key.'" => '.$strValue;
+                $strArgs[] = '"' . $key . '" => ' . $strValue;
             } else if ($isAssoc) {
-                $strArgs[] = $key.' => '.$strValue;
+                $strArgs[] = $key . ' => ' . $strValue;
             } else {
                 $strArgs[] = $strValue;
             }

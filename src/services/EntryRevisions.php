@@ -1,13 +1,14 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Field;
 use craft\db\Query;
 use craft\elements\Entry;
@@ -25,12 +26,11 @@ use yii\base\Component;
 use yii\base\InvalidConfigException;
 
 /**
- * Class EntryRevisions service.
- *
- * An instance of the EntryRevisions service is globally accessible in Craft via [[Application::entryRevisions `Craft::$app->getEntryRevisions()`]].
+ * Entry Revisions service.
+ * An instance of the Entry Revisions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getEntryRevisions()|`Craft::$app->entryRevisions`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class EntryRevisions extends Component
 {
@@ -84,7 +84,6 @@ class EntryRevisions extends Component
      * Returns a draft by its ID.
      *
      * @param int $draftId
-     *
      * @return EntryDraft|null
      */
     public function getDraftById(int $draftId)
@@ -109,10 +108,9 @@ class EntryRevisions extends Component
     /**
      * Returns drafts of a given entry.
      *
-     * @param int      $entryId
+     * @param int $entryId
      * @param int|null $siteId
-     * @param bool     $withContent Whether the field content should be included on the drafts
-     *
+     * @param bool $withContent Whether the field content should be included on the drafts
      * @return EntryDraft[]
      */
     public function getDraftsByEntryId(int $entryId, int $siteId = null, bool $withContent = false): array
@@ -150,9 +148,8 @@ class EntryRevisions extends Component
     /**
      * Returns the drafts of a given entry that are editable by the current user.
      *
-     * @param int      $entryId
+     * @param int $entryId
      * @param int|null $siteId
-     *
      * @return EntryDraft[]
      */
     public function getEditableDraftsByEntryId(int $entryId, int $siteId = null): array
@@ -164,7 +161,10 @@ class EntryRevisions extends Component
             $allDrafts = $this->getDraftsByEntryId($entryId, $siteId);
 
             foreach ($allDrafts as $draft) {
-                if ($draft->creatorId == $user->id || $user->can('editPeerEntryDrafts:'.$draft->sectionId)) {
+                if (
+                    ($draft->creatorId && $draft->creatorId == $user->id) ||
+                    $user->can('editPeerEntryDrafts:' . $draft->sectionId)
+                ) {
                     $editableDrafts[] = $draft;
                 }
             }
@@ -176,9 +176,8 @@ class EntryRevisions extends Component
     /**
      * Saves a draft.
      *
-     * @param EntryDraft $draft         The draft to be saved
-     * @param bool       $runValidation Whether to perform validation
-     *
+     * @param EntryDraft $draft The draft to be saved
+     * @param bool $runValidation Whether to perform validation
      * @return bool
      */
     public function saveDraft(EntryDraft $draft, bool $runValidation = true): bool
@@ -234,9 +233,8 @@ class EntryRevisions extends Component
     /**
      * Publishes a draft.
      *
-     * @param EntryDraft $draft         The draft to be published
-     * @param bool       $runValidation Whether to perform validation
-     *
+     * @param EntryDraft $draft The draft to be published
+     * @param bool $runValidation Whether to perform validation
      * @return bool
      */
     public function publishDraft(EntryDraft $draft, bool $runValidation = true): bool
@@ -258,6 +256,10 @@ class EntryRevisions extends Component
             ]));
         }
 
+        if ($draft->enabled && $draft->enabledForSite) {
+            $draft->setScenario(Element::SCENARIO_LIVE);
+        }
+
         if ($runValidation && !$draft->validate()) {
             Craft::info('Draft not published due to validation error.', __METHOD__);
             return false;
@@ -268,6 +270,11 @@ class EntryRevisions extends Component
 
         // Delete the draft
         $this->deleteDraft($draft);
+
+        // Should we save a new version?
+        if ($draft->getSection()->enableVersioning) {
+            $this->saveVersion($draft);
+        }
 
         // Fire an 'afterPublishDraft' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_PUBLISH_DRAFT)) {
@@ -283,7 +290,6 @@ class EntryRevisions extends Component
      * Deletes a draft by it's model.
      *
      * @param EntryDraft $draft The draft to be deleted
-     *
      * @return bool Whether the draft was deleted successfully
      */
     public function deleteDraft(EntryDraft $draft): bool
@@ -312,7 +318,6 @@ class EntryRevisions extends Component
      * Returns a version by its ID.
      *
      * @param int $versionId
-     *
      * @return EntryVersion|null
      */
     public function getVersionById(int $versionId)
@@ -337,9 +342,8 @@ class EntryRevisions extends Component
     /**
      * Returns whether an entry has any versions stored.
      *
-     * @param int      $entryId        The entry ID to search for
-     * @param int|null $siteId         The site ID to search for
-     *
+     * @param int $entryId The entry ID to search for
+     * @param int|null $siteId The site ID to search for
      * @return bool
      */
     public function doesEntryHaveVersions(int $entryId, int $siteId = null): bool
@@ -356,12 +360,11 @@ class EntryRevisions extends Component
     /**
      * Returns versions by an entry ID.
      *
-     * @param int      $entryId        The entry ID to search for.
-     * @param int|null $siteId         The site ID to search for.
-     * @param int|null $limit          The limit on the number of versions to retrieve.
-     * @param bool     $includeCurrent Whether to include the current "top" version of the entry.
-     * @param bool     $withContent    Whether the field content should be included on the versions
-     *
+     * @param int $entryId The entry ID to search for.
+     * @param int|null $siteId The site ID to search for.
+     * @param int|null $limit The limit on the number of versions to retrieve.
+     * @param bool $includeCurrent Whether to include the current "top" version of the entry.
+     * @param bool $withContent Whether the field content should be included on the versions
      * @return EntryVersion[]
      */
     public function getVersionsByEntryId(int $entryId, int $siteId = null, int $limit = null, bool $includeCurrent = false, bool $withContent = false): array
@@ -378,7 +381,7 @@ class EntryRevisions extends Component
 
         $results = $this->_getRevisionsQuery()
             ->where(['entryId' => $entryId, 'siteId' => $siteId])
-            ->orderBy(['dateCreated' => SORT_DESC])
+            ->orderBy(['id' => SORT_DESC])
             ->offset($includeCurrent ? 0 : 1)
             ->limit($limit)
             ->all();
@@ -402,16 +405,29 @@ class EntryRevisions extends Component
      * Saves a new version.
      *
      * @param Entry $entry
-     *
      * @return bool
      */
     public function saveVersion(Entry $entry): bool
     {
         // Get the total number of existing versions for this entry/site
-        $totalVersions = (new Query())
+        $versionQuery = (new Query())
             ->from(['{{%entryversions}}'])
-            ->where(['entryId' => $entry->id, 'siteId' => $entry->siteId])
-            ->count('[[id]]');
+            ->where(['entryId' => $entry->id, 'siteId' => $entry->siteId]);
+        $totalVersions = $versionQuery->count('[[id]]');
+        $revisionData = $this->_getRevisionData($entry);
+
+        if ($totalVersions) {
+            $lastVersionData = $versionQuery
+                ->select(['data'])
+                ->orderBy(['id' => SORT_DESC])
+                ->scalar();
+            $lastVersionData = Json::decode($lastVersionData);
+
+            // If nothing changed, then we're done here
+            if (!$this->compareRevisionData($lastVersionData, $revisionData)) {
+                return true;
+            }
+        }
 
         $versionRecord = new EntryVersionRecord();
         $versionRecord->entryId = $entry->id;
@@ -419,7 +435,7 @@ class EntryRevisions extends Component
         $versionRecord->creatorId = $entry->revisionCreatorId ?? Craft::$app->getUser()->getIdentity()->id ?? $entry->authorId;
         $versionRecord->siteId = $entry->siteId;
         $versionRecord->num = $totalVersions + 1;
-        $versionRecord->data = $this->_getRevisionData($entry);
+        $versionRecord->data = $revisionData;
         $versionRecord->notes = $entry->revisionNotes;
 
         return $versionRecord->save();
@@ -429,8 +445,7 @@ class EntryRevisions extends Component
      * Reverts an entry to a version.
      *
      * @param EntryVersion $version
-     * @param bool         $runValidation Whether to perform validation
-     *
+     * @param bool $runValidation Whether to perform validation
      * @return bool
      */
     public function revertEntryToVersion(EntryVersion $version, bool $runValidation = true): bool
@@ -448,6 +463,10 @@ class EntryRevisions extends Component
             $this->trigger(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION, new VersionEvent([
                 'version' => $version,
             ]));
+        }
+
+        if ($version->enabled && $version->enabledForSite) {
+            $version->setScenario(Element::SCENARIO_LIVE);
         }
 
         if ($runValidation && !$version->validate()) {
@@ -468,6 +487,21 @@ class EntryRevisions extends Component
         return true;
     }
 
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * Compares two revisions' data and returns whether it has changed.
+     *
+     * @param array $revisionA
+     * @param array $revisionB
+     * @return bool whether it looks like something has changed
+     */
+    protected function compareRevisionData(array $revisionA, array $revisionB): bool
+    {
+        return $revisionA !== $revisionB;
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -475,7 +509,6 @@ class EntryRevisions extends Component
      * Returns a draft record.
      *
      * @param EntryDraft $draft
-     *
      * @return EntryDraftRecord
      * @throws EntryDraftNotFoundException if $draft->draftId is invalid
      */
@@ -485,7 +518,7 @@ class EntryRevisions extends Component
             $draftRecord = EntryDraftRecord::findOne($draft->draftId);
 
             if (!$draftRecord) {
-                throw new EntryDraftNotFoundException('Invalid entry draft ID: '.$draft->draftId);
+                throw new EntryDraftNotFoundException('Invalid entry draft ID: ' . $draft->draftId);
             }
         } else {
             $draftRecord = new EntryDraftRecord();
@@ -502,7 +535,6 @@ class EntryRevisions extends Component
      * Returns an array of all the revision data for a draft or version.
      *
      * @param Entry $revision
-     *
      * @return array
      */
     private function _getRevisionData(Entry $revision): array
@@ -535,9 +567,7 @@ class EntryRevisions extends Component
      * Updates a revision model with entry properties that aren't saved in the revision tables.
      *
      * @param BaseEntryRevisionModel $revision
-     * @param Entry                  $entry
-     *
-     * @return void
+     * @param Entry $entry
      */
     private function _configureRevisionWithEntryProperties(BaseEntryRevisionModel $revision, Entry $entry)
     {
@@ -554,9 +584,6 @@ class EntryRevisions extends Component
             // Nope. Use the entry's current type instead
             $revision->typeId = $entry->typeId;
         }
-
-        // Set the field layout ID based on the entry type
-        $revision->fieldLayoutId = $revision->getType()->fieldLayoutId;
     }
 
     /**

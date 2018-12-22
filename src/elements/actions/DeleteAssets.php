@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements\actions;
@@ -17,7 +17,7 @@ use yii\base\Exception;
  * DeleteAssets represents a Delete Assets element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class DeleteAssets extends ElementAction
 {
@@ -29,7 +29,7 @@ class DeleteAssets extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Delete…');
+        return Craft::t('app', 'Delete');
     }
 
     /**
@@ -49,11 +49,7 @@ class DeleteAssets extends ElementAction
     }
 
     /**
-     * Performs the action on any elements that match the given criteria.
-     *
-     * @param ElementQueryInterface $query The element query defining which elements the action should affect.
-     *
-     * @return bool Whether the action was performed successfully.
+     * @inheritdoc
      */
     public function performAction(ElementQueryInterface $query): bool
     {
@@ -62,7 +58,7 @@ class DeleteAssets extends ElementAction
                 /**
                  * @var Asset $asset
                  */
-                if (Craft::$app->getUser()->checkPermission('deleteFilesAndFoldersInVolume:'.$asset->volumeId)) {
+                if (Craft::$app->getUser()->checkPermission('deleteFilesAndFoldersInVolume:' . $asset->volumeId)) {
                     Craft::$app->getElements()->deleteElement($asset);
                 }
             }

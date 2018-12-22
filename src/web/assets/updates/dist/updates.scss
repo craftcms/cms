@@ -1,41 +1,142 @@
 @charset "UTF-8";
-@import "../../shared";
+@import "../../../../../lib/craftcms-sass/mixins";
 
-#content #graphic { display: block; margin: 200px auto 0; }
-#content #graphic.error { background-image: url(images/error.png); }
-#content #graphic.success { background-image: url(images/success.png); }
+#content {
+  #graphic {
+    display: block;
+    margin: 200px auto 0;
 
-#content #status { margin: 20px auto 250px; text-align: center; font-size: 16px; line-height: 20px; color: #666; }
+    &.success {
+      background-image: url(images/success.png);
+    }
 
-#content .update + .update { margin-top: 24px; }
+    &.error {
+      background-image: url(images/error.png);
+    }
+  }
 
-#content .update .update-header { @include display-flex; @include align-items(center); padding-bottom: 10px; border-bottom: 1px solid $hairlineColor; margin-bottom: 16px; }
-#content .update .update-header .readable { @include flex-grow(1); margin: 0; }
-#content .update .update-header .buttons { margin: 0; }
+  #status {
+    margin: 20px auto 250px;
+    text-align: center;
+    font-size: 16px;
+    line-height: 20px;
+    color: #666;
+  }
 
-#content .update blockquote.ineligible { border: none; background: $warningcolor; color: #110902;
-  &:before { content: 'ban'; color: #110902; }
+  .update {
+    & + .update {
+      margin-top: 24px;
+    }
+
+    .update-header {
+      display: flex;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid $hairlineColor;
+      margin-bottom: 16px;
+
+      .readable {
+        flex-grow: 1;
+        margin: 0;
+      }
+
+      .buttons {
+        margin: 0;
+      }
+    }
+
+    blockquote.ineligible {
+      border: none;
+      background: $warningColor;
+      color: #110902;
+      &:before {
+        content: 'ban';
+        color: #110902;
+      }
+    }
+
+    .releases {
+      position: relative;
+
+      .release {
+        padding: 0;
+
+        &.critical {
+          h2 {
+            color: $red;
+          }
+
+          .critical {
+            display: inline-block;
+            vertical-align: text-bottom;
+            @include margin-left(7px);
+            border-radius: 3px;
+            padding: 0 5px;
+            font-size: 14px;
+            line-height: 24px;
+            color: #fff;
+            font-weight: normal;
+            background: #d6301a;
+            text-transform: uppercase;
+          }
+        }
+
+        .release-info {
+          display: flex;
+          margin: 0;
+          padding: 20px 24px;
+
+          &.fieldtoggle {
+            @include padding-left(44px);
+
+            &:before {
+              @include left(20px);
+              top: 23px;
+              font-size: 23px;
+              color: $mediumTextColor;
+            }
+          }
+
+          h2 {
+            margin: 0;
+            line-height: 24px;
+          }
+
+          .date {
+            flex-grow: 1;
+            @include margin-left(14px);
+            font-size: 24px;
+            line-height: 24px;
+            color: $lightTextColor;
+          }
+        }
+
+        .release-notes {
+          // Keep this LTR since the actual release notes are only LTR
+          direction: ltr;
+          padding: 0 24px 20px;
+        }
+      }
+    }
+  }
 }
 
-#content .update .releases { position: relative; }
-#content .update .releases .release { padding: 0; }
-#content .update .releases .release .fieldtoggle { @include display-flex; margin: 0; @include padding(20px, 24px, 20px, 44px); }
-#content .update .releases .release .fieldtoggle:before { @include left(20px); top: 23px; font-size: 23px; color: $mediumtextcolor; }
-#content .update .releases .release .fieldtoggle h2 { margin: 0; line-height: 24px; }
-#content .update .releases .release .fieldtoggle .date { @include flex-grow(1); @include margin-left(14px); font-size: 24px; line-height: 24px; color: $lighttextcolor; }
-/* Keep this LTR since the actual release notes are only LTR */
-#content .update .releases .release .release-notes { direction: ltr; padding: 0 24px 20px; }
-#content .update .releases .show-all-notes { display: block; margin-top: 7px; }
-
-#content .update .releases .release.critical h2 { color: $errorcolor; }
-#content .update .releases .release.critical .critical { display: inline-block; vertical-align: text-bottom; @include margin-left(7px); border-radius: 3px; padding: 0 5px; font-size: 14px; line-height: 24px; color: #fff; font-weight: normal; background: #d6301a; text-transform: uppercase; }
-
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-       only screen and (   -moz-min-device-pixel-ratio: 1.5),
-       only screen and (     -o-min-device-pixel-ratio: 3/2),
-       only screen and (        min-device-pixel-ratio: 1.5),
-       only screen and (        min-resolution: 1.5dppx)
-{
-    #content #graphic.error { background-image: url(images/error_2x.png); background-size: 48px; }
-    #content #graphic.success { background-image: url(images/success_2x.png); background-size: 48px; }
+only screen and (-moz-min-device-pixel-ratio: 1.5),
+only screen and (-o-min-device-pixel-ratio: 3/2),
+only screen and (min-device-pixel-ratio: 1.5),
+only screen and (min-resolution: 1.5dppx) {
+  #content {
+    #graphic {
+      &.success {
+        background-image: url(images/success_2x.png);
+        background-size: 48px;
+      }
+
+      &.error {
+        background-image: url(images/error_2x.png);
+        background-size: 48px;
+      }
+    }
+  }
 }

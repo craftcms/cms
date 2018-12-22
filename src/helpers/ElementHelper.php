@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -18,7 +18,7 @@ use yii\base\Exception;
  * Class ElementHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ElementHelper
 {
@@ -29,7 +29,6 @@ class ElementHelper
      * Creates a slug based on a given string.
      *
      * @param string $str
-     *
      * @return string
      */
     public static function createSlug(string $str): string
@@ -49,7 +48,6 @@ class ElementHelper
      * Sets the URI on an element using a given URL format, tweaking its slug if necessary to ensure it's unique.
      *
      * @param ElementInterface $element
-     *
      * @throws OperationAbortedException if a unique URI could not be found
      */
     public static function setUniqueUri(ElementInterface $element)
@@ -85,7 +83,7 @@ class ElementHelper
             $testSlug = $element->slug;
 
             if ($i > 0) {
-                $testSlug .= $slugWordSeparator.$i;
+                $testSlug .= $slugWordSeparator . $i;
             }
 
             $originalSlug = $element->slug;
@@ -94,18 +92,14 @@ class ElementHelper
             $testUri = self::_renderUriFormat($uriFormat, $element);
 
             // Make sure we're not over our max length.
-            if (strlen($testUri) > 255) {
+            if (mb_strlen($testUri) > 255) {
                 // See how much over we are.
-                $overage = strlen($testUri) - 255;
+                $overage = mb_strlen($testUri) - 255;
 
                 // Do we have anything left to chop off?
-                if (strlen($overage) > strlen($element->slug) - strlen($slugWordSeparator.$i)) {
+                if ($overage < mb_strlen($element->slug)) {
                     // Chop off the overage amount from the slug
-                    $testSlug = $element->slug;
-                    $testSlug = substr($testSlug, 0, -$overage);
-
-                    // Update the slug
-                    $element->slug = $testSlug;
+                    $element->slug = mb_substr($element->slug, 0, -$overage);
 
                     // Let's try this again.
                     $i--;
@@ -134,14 +128,21 @@ class ElementHelper
     /**
      * Renders and normalizes a given element URI Format.
      *
-     * @param string           $uriFormat
+     * @param string $uriFormat
      * @param ElementInterface $element
-     *
      * @return string
      */
     private static function _renderUriFormat(string $uriFormat, ElementInterface $element): string
     {
-        $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
+        /** @var Element $element */
+        $variables = [];
+
+        // If the URI format contains {id} but the element doesn't have one yet, preserve the {id} tag
+        if (!$element->id && strpos($uriFormat, '{id') !== false) {
+            $variables['id'] = $element->tempId = 'id-' . StringHelper::randomString(10);
+        }
+
+        $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element, $variables);
 
         // Remove any leading/trailing/double slashes
         $uri = preg_replace('/^\/+|(?<=\/)\/+|\/+$/', '', $uri);
@@ -152,9 +153,8 @@ class ElementHelper
     /**
      * Tests a given element URI for uniqueness.
      *
-     * @param string           $testUri
+     * @param string $testUri
      * @param ElementInterface $element
-     *
      * @return bool
      */
     private static function _isUniqueUri(string $testUri, ElementInterface $element): bool
@@ -164,8 +164,18 @@ class ElementHelper
             ->from(['{{%elements_sites}}'])
             ->where([
                 'siteId' => $element->siteId,
-                'uri' => $testUri
             ]);
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $query->andWhere([
+                'uri' => $testUri,
+            ]);
+        } else {
+            // Postgres is case-sensitive
+            $query->andWhere([
+                'lower([[uri]])' => mb_strtolower($testUri),
+            ]);
+        }
 
         if ($element->id) {
             $query->andWhere(['not', ['elementId' => $element->id]]);
@@ -178,15 +188,11 @@ class ElementHelper
      * Returns whether a given URL format has a proper {slug} tag.
      *
      * @param string $uriFormat
-     *
      * @return bool
      */
     public static function doesUriFormatHaveSlugTag(string $uriFormat): bool
     {
-        $element = (object)['slug' => StringHelper::randomString()];
-        $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
-
-        return StringHelper::contains($uri, $element->slug);
+        return (bool)preg_match('/\bslug\b/', $uriFormat);
     }
 
     /**
@@ -195,7 +201,6 @@ class ElementHelper
      * Each site is represented as an array with 'siteId' and 'enabledByDefault' keys.
      *
      * @param ElementInterface $element
-     *
      * @return array
      * @throws Exception if any of the element's supported sites are invalid
      */
@@ -209,7 +214,7 @@ class ElementHelper
                     'siteId' => $site,
                 ];
             } else if (!isset($site['siteId'])) {
-                throw new Exception('Missing "siteId" key in '.get_class($element).'::getSupportedSites()');
+                throw new Exception('Missing "siteId" key in ' . get_class($element) . '::getSupportedSites()');
             }
             $sites[] = array_merge([
                 'enabledByDefault' => true,
@@ -223,7 +228,6 @@ class ElementHelper
      * Returns whether the given element is editable by the current user, taking user permissions into account.
      *
      * @param ElementInterface $element
-     *
      * @return bool
      */
     public static function isElementEditable(ElementInterface $element): bool
@@ -231,7 +235,7 @@ class ElementHelper
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteId'])) {
+                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteId'])) {
                         return true;
                     }
                 }
@@ -247,7 +251,6 @@ class ElementHelper
      * Returns the editable site IDs for a given element, taking user permissions into account.
      *
      * @param ElementInterface $element
-     *
      * @return array
      */
     public static function editableSiteIdsForElement(ElementInterface $element): array
@@ -257,7 +260,7 @@ class ElementHelper
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteId'])) {
+                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteId'])) {
                         $siteIds[] = $siteInfo['siteId'];
                     }
                 }
@@ -274,8 +277,6 @@ class ElementHelper
      * and "prev" elements on them.
      *
      * @param ElementInterface[] $elements The array of elements.
-     *
-     * @return void
      */
     public static function setNextPrevOnElements(array $elements)
     {
@@ -301,10 +302,9 @@ class ElementHelper
     /**
      * Returns an element type's source definition based on a given source key/path and context.
      *
-     * @param string      $elementType The element type class
-     * @param string      $sourceKey   The source key/path
-     * @param string|null $context     The context
-     *
+     * @param string $elementType The element type class
+     * @param string $sourceKey The source key/path
+     * @param string|null $context The context
      * @return array|null The source definition, or null if it cannot be found
      */
     public static function findSource(string $elementType, string $sourceKey, string $context = null)

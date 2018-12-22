@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 use craft\behaviors\ContentBehavior;
@@ -17,11 +17,10 @@ use yii\web\Request;
 
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
- *
  * It encapsulates [[Yii]] and ultimately [[yii\BaseYii]], which provides the actual implementation.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Craft extends Yii
 {
@@ -29,9 +28,17 @@ class Craft extends Yii
     // =========================================================================
 
     // Edition constants
+    const Solo = 0;
+    const Pro = 1;
+
+    /**
+     * @deprecated in 3.0.0. Use [[Solo]] instead.
+     */
     const Personal = 0;
+    /**
+     * @deprecated in 3.0.0. Use [[Pro]] instead.
+     */
     const Client = 1;
-    const Pro = 2;
 
     // Properties
     // =========================================================================
@@ -52,11 +59,9 @@ class Craft extends Yii
     /**
      * Displays a variable.
      *
-     * @param mixed $var       The variable to be dumped.
-     * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
-     * @param bool  $highlight Whether the result should be syntax-highlighted. Defaults to true.
-     *
-     * @return void
+     * @param mixed $var The variable to be dumped.
+     * @param int $depth The maximum depth that the dumper should go into the variable. Defaults to 10.
+     * @param bool $highlight Whether the result should be syntax-highlighted. Defaults to true.
      */
     public static function dump($var, int $depth = 10, bool $highlight = true)
     {
@@ -66,25 +71,22 @@ class Craft extends Yii
     /**
      * Displays a variable and ends the request. (“Dump and die”)
      *
-     * @param mixed $var       The variable to be dumped.
-     * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
-     * @param bool  $highlight Whether the result should be syntax-highlighted. Defaults to true.
-     *
-     * @return void
+     * @param mixed $var The variable to be dumped.
+     * @param int $depth The maximum depth that the dumper should go into the variable. Defaults to 10.
+     * @param bool $highlight Whether the result should be syntax-highlighted. Defaults to true.
      * @throws ExitException if the application is in testing mode
      */
     public static function dd($var, int $depth = 10, bool $highlight = true)
     {
         VarDumper::dump($var, $depth, $highlight);
-        static::$app->end();
+        exit();
     }
 
     /**
      * Generates and returns a cookie config.
      *
-     * @param array        $config  Any config options that should be included in the config.
+     * @param array $config Any config options that should be included in the config.
      * @param Request|null $request The request object
-     *
      * @return array The cookie config array.
      */
     public static function cookieConfig(array $config = [], Request $request = null): array
@@ -117,8 +119,6 @@ class Craft extends Yii
      * Class autoloader.
      *
      * @param string $className
-     *
-     * @return void
      */
     public static function autoload($className)
     {
@@ -129,8 +129,8 @@ class Craft extends Yii
         $storedFieldVersion = static::$app->getInfo()->fieldVersion;
         $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
 
-        $contentBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ContentBehavior.php';
-        $elementQueryBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php';
+        $contentBehaviorFile = $compiledClassesPath . DIRECTORY_SEPARATOR . 'ContentBehavior.php';
+        $elementQueryBehaviorFile = $compiledClassesPath . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php';
 
         $isContentBehaviorFileValid = self::_loadFieldAttributesFile($contentBehaviorFile, $storedFieldVersion);
         $isElementQueryBehaviorFileValid = self::_loadFieldAttributesFile($elementQueryBehaviorFile, $storedFieldVersion);
@@ -139,9 +139,9 @@ class Craft extends Yii
             return;
         }
 
-        if (Craft::$app->getIsInstalled()) {
+        if (self::$app->getIsInstalled()) {
             // Properties are case-sensitive, so get all the binary-unique field handles
-            if (Craft::$app->getDb()->getIsMysql()) {
+            if (self::$app->getDb()->getIsMysql()) {
                 $column = new Expression('binary [[handle]] as [[handle]]');
             } else {
                 $column = 'handle';
@@ -174,7 +174,7 @@ EOD;
             }
 
             self::_writeFieldAttributesFile(
-                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentBehavior.php.template',
+                static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ContentBehavior.php.template',
                 ['{VERSION}', '/* HANDLES */', '/* PROPERTIES */'],
                 [$storedFieldVersion, implode("\n", $handles), implode("\n\n", $properties)],
                 $contentBehaviorFile
@@ -191,7 +191,7 @@ EOD;
             }
 
             self::_writeFieldAttributesFile(
-                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php.template',
+                static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php.template',
                 ['{VERSION}', '{METHOD_DOCS}'],
                 [$storedFieldVersion, implode("\n", $methods)],
                 $elementQueryBehaviorFile
@@ -203,7 +203,6 @@ EOD;
      * Creates a Guzzle client configured with the given array merged with any default values in config/guzzle.php.
      *
      * @param array $config Guzzle client config settings
-     *
      * @return Client
      */
     public static function createGuzzleClient(array $config = []): Client
@@ -211,12 +210,12 @@ EOD;
         // Set the Craft header by default.
         $defaultConfig = [
             'headers' => [
-                'User-Agent' => 'Craft/'.Craft::$app->getVersion().' '.\GuzzleHttp\default_user_agent()
+                'User-Agent' => 'Craft/' . self::$app->getVersion() . ' ' . \GuzzleHttp\default_user_agent()
             ],
         ];
 
         // Grab the config from config/guzzle.php that is used on every Guzzle request.
-        $guzzleConfig = Craft::$app->getConfig()->getConfigFromFile('guzzle');
+        $guzzleConfig = self::$app->getConfig()->getConfigFromFile('guzzle');
 
         // Merge default into guzzle config.
         $guzzleConfig = array_replace_recursive($guzzleConfig, $defaultConfig);
@@ -232,7 +231,6 @@ EOD;
      *
      * @param string $path
      * @param string $storedFieldVersion
-     *
      * @return bool
      */
     private static function _loadFieldAttributesFile(string $path, string $storedFieldVersion): bool
@@ -257,10 +255,10 @@ EOD;
     /**
      * Writes a field attributes file.
      *
-     * @param string   $templatePath
+     * @param string $templatePath
      * @param string[] $search
      * @param string[] $replace
-     * @param string   $destinationPath
+     * @param string $destinationPath
      */
     private static function _writeFieldAttributesFile(string $templatePath, array $search, array $replace, string $destinationPath)
     {

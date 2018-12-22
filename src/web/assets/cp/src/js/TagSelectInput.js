@@ -44,11 +44,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             this.$spinner = this.$addTagInput.next();
 
             this.addListener(this.$addTagInput, 'textchange', $.proxy(function() {
-                var val = this.$addTagInput.val();
-                if (val !== (val = val.trim())) {
-                    this.$addTagInput.val(val).data('garnish-textchange-value', val);
-                }
-
                 if (this.searchTimeout) {
                     clearTimeout(this.searchTimeout);
                 }
@@ -124,6 +119,11 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                 };
 
                 Craft.postActionRequest('tags/search-for-tags', data, $.proxy(function(response, textStatus) {
+                    // Just in case
+                    if (this.searchMenu) {
+                        this.killSearchMenu();
+                    }
+
                     this.$spinner.addClass('hidden');
 
                     if (textStatus === 'success') {
@@ -209,7 +209,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
             this.killSearchMenu();
             this.$addTagInput.val('');
-            this.$addTagInput.focus();
+            this.$addTagInput.trigger('focus');
 
             if (!id) {
                 // We need to create the tag first

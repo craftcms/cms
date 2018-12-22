@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\nodes;
@@ -13,7 +13,7 @@ use Craft;
  * Class RequireAdminNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class RequireAdminNode extends \Twig_Node
 {
@@ -27,6 +27,6 @@ class RequireAdminNode extends \Twig_Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write(Craft::class."::\$app->controller->requireAdmin();\n");
+            ->write(Craft::class . "::\$app->controller->requireAdmin();\n");
     }
 }

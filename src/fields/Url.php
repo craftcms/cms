@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
-use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\validators\UrlValidator;
 use yii\db\Schema;
@@ -20,7 +19,7 @@ use yii\db\Schema;
  * Url represents a URL field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Url extends Field implements PreviewableFieldInterface
 {
@@ -34,6 +33,14 @@ class Url extends Field implements PreviewableFieldInterface
     {
         return Craft::t('app', 'URL');
     }
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var string|null The input’s placeholder text
+     */
+    public $placeholder;
 
     // Public Methods
     // =========================================================================
@@ -49,12 +56,30 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
+    public function getSettingsHtml()
+    {
+        return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+            [
+                'label' => Craft::t('app', 'Placeholder Text'),
+                'instructions' => Craft::t('app', 'The text that will be shown if the field doesn’t have a value.'),
+                'id' => 'placeholder',
+                'name' => 'placeholder',
+                'value' => $this->placeholder,
+                'errors' => $this->getErrors('placeholder'),
+            ]
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'type' => 'url',
             'id' => $this->handle,
             'name' => $this->handle,
+            'placeholder' => Craft::t('site', $this->placeholder),
             'value' => $value,
         ]);
     }

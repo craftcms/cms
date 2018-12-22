@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -25,11 +25,10 @@ use yii\db\Schema;
 
 /**
  * Handles search operations.
- *
- * An instance of the Search service is globally accessible in Craft via [[Application::search `Craft::$app->getSearch()`]].
+ * An instance of the Search service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSearch()|`Craft::$app->search`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Search extends Component
 {
@@ -50,6 +49,11 @@ class Search extends Component
     // =========================================================================
 
     /**
+     * @var int The minimum word length that keywords must be in order to use a full-text search.
+     */
+    public $minFullTextWordLength;
+
+    /**
      * @var
      */
     private $_tokens;
@@ -65,9 +69,10 @@ class Search extends Component
     private $_groups;
 
     /**
-     * @var int Because the `keywords` column in the search index table is a B-TREE index on Postgres,
-     *          you can get an "index row size exceeds maximum for index" error with a lot of data. This value
-     *          is a hard limit to truncate search index data for a single row in Postgres.
+     * @var int Because the `keywords` column in the search index table is a
+     * B-TREE index on Postgres, you can get an "index row size exceeds maximum
+     * for index" error with a lot of data. This value is a hard limit to
+     * truncate search index data for a single row in Postgres.
      */
     public $maxPostgresKeywordLength = 2450;
 
@@ -75,10 +80,25 @@ class Search extends Component
     // =========================================================================
 
     /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->minFullTextWordLength === null) {
+            if (Craft::$app->getDb()->getIsMysql()) {
+                $this->minFullTextWordLength = 4;
+            } else {
+                $this->minFullTextWordLength = 1;
+            }
+        }
+    }
+
+    /**
      * Indexes the attributes of a given element defined by its element type.
      *
      * @param ElementInterface $element
-     *
      * @return bool Whether the indexing was a success.
      * @throws \craft\errors\SiteNotFoundException
      */
@@ -105,11 +125,10 @@ class Search extends Component
     /**
      * Indexes the field values for a given element and site.
      *
-     * @param int   $elementId The ID of the element getting indexed.
-     * @param int   $siteId    The site ID of the content getting indexed.
-     * @param array $fields    The field values, indexed by field ID.
-     *
-     * @return bool  Whether the indexing was a success.
+     * @param int $elementId The ID of the element getting indexed.
+     * @param int $siteId The site ID of the content getting indexed.
+     * @param array $fields The field values, indexed by field ID.
+     * @return bool Whether the indexing was a success.
      * @throws \craft\errors\SiteNotFoundException
      */
     public function indexElementFields(int $elementId, int $siteId, array $fields): bool
@@ -124,12 +143,11 @@ class Search extends Component
     /**
      * Filters a list of element IDs by a given search query.
      *
-     * @param int[]                    $elementIds   The list of element IDs to filter by the search query.
-     * @param string|array|SearchQuery $query        The search query (either a string or a SearchQuery instance)
-     * @param bool                     $scoreResults Whether to order the results based on how closely they match the query.
-     * @param int|null                 $siteId       The site ID to filter by.
-     * @param bool                     $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
-     *
+     * @param int[] $elementIds The list of element IDs to filter by the search query.
+     * @param string|array|SearchQuery $query The search query (either a string or a SearchQuery instance)
+     * @param bool $scoreResults Whether to order the results based on how closely they match the query.
+     * @param int|null $siteId The site ID to filter by.
+     * @param bool $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
      * @return array The filtered list of element IDs.
      */
     public function filterElementIdsByQuery(array $elementIds, $query, bool $scoreResults = true, int $siteId = null, bool $returnScores = false): array
@@ -246,38 +264,38 @@ class Search extends Component
     /**
      * Indexes keywords for a specific element attribute/field.
      *
-     * @param int      $elementId
-     * @param string   $attribute
-     * @param string   $fieldId
+     * @param int $elementId
+     * @param string $attribute
+     * @param string $fieldId
      * @param int|null $siteId
-     * @param string   $dirtyKeywords
-     *
-     * @return void
+     * @param string $dirtyKeywords
      * @throws \craft\errors\SiteNotFoundException
      */
     private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId = null, string $dirtyKeywords)
     {
-        $attribute = StringHelper::toLowerCase($attribute);
+        $attribute = strtolower($attribute);
         $driver = Craft::$app->getDb()->getDriverName();
 
-        if ($siteId === null) {
-            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        if ($siteId !== null) {
+            $site = Craft::$app->getSites()->getSiteById($siteId);
+        } else {
+            $site = Craft::$app->getSites()->getPrimarySite();
         }
 
         // Clean 'em up
-        $cleanKeywords = SearchHelper::normalizeKeywords($dirtyKeywords);
+        $cleanKeywords = SearchHelper::normalizeKeywords($dirtyKeywords, [], true, $site->language);
 
         // Save 'em
         $keyColumns = [
             'elementId' => $elementId,
             'attribute' => $attribute,
             'fieldId' => $fieldId,
-            'siteId' => $siteId
+            'siteId' => $site->id,
         ];
 
         if ($cleanKeywords !== null && $cleanKeywords !== false && $cleanKeywords !== '') {
             // Add padding around keywords
-            $cleanKeywords = ' '.$cleanKeywords.' ';
+            $cleanKeywords = ' ' . $cleanKeywords . ' ';
         }
 
         if ($driver === DbConfig::DRIVER_PGSQL) {
@@ -302,6 +320,7 @@ class Search extends Component
                 '{{%searchindex}}',
                 $keyColumns,
                 $keywordColumns,
+                [],
                 false)
             ->execute();
     }
@@ -310,7 +329,6 @@ class Search extends Component
      * Calculate score for a result.
      *
      * @param array $row A single result from the search query.
-     *
      * @return float The total score for this row.
      */
     private function _scoreRow(array $row): float
@@ -340,10 +358,9 @@ class Search extends Component
     /**
      * Calculate score for a row/term combination.
      *
-     * @param  SearchQueryTerm $term   The SearchQueryTerm to score.
-     * @param  array           $row    The result row to score against.
-     * @param  float|int       $weight Optional weight for this term.
-     *
+     * @param SearchQueryTerm $term The SearchQueryTerm to score.
+     * @param array $row The result row to score against.
+     * @param float|int $weight Optional weight for this term.
      * @return float The total score for this term/row combination.
      */
     private function _scoreTerm(SearchQueryTerm $term, array $row, $weight = 1): float
@@ -356,7 +373,7 @@ class Search extends Component
 
         // Account for substrings
         if (!$term->subLeft) {
-            $keywords = ' '.$keywords;
+            $keywords = ' ' . $keywords;
         }
 
         if (!$term->subRight) {
@@ -396,7 +413,6 @@ class Search extends Component
      * Get the complete where clause for current tokens
      *
      * @param int|null $siteId The site ID to search within
-     *
      * @return string|false
      */
     private function _getWhereClause(int $siteId = null)
@@ -432,10 +448,9 @@ class Search extends Component
     /**
      * Generates partial WHERE clause for search from given tokens
      *
-     * @param array    $tokens
-     * @param bool     $inclusive
+     * @param array $tokens
+     * @param bool $inclusive
      * @param int|null $siteId
-     *
      * @return string|false
      * @throws \Throwable
      */
@@ -459,7 +474,7 @@ class Search extends Component
             } // No SQL but keywords, save them for later
             else if ($keywords !== null && $keywords !== '') {
                 if ($inclusive && Craft::$app->getDb()->getIsMysql()) {
-                    $keywords = '+'.$keywords;
+                    $keywords = '+' . $keywords;
                 }
 
                 $words[] = $keywords;
@@ -494,8 +509,7 @@ class Search extends Component
      * or returns keywords to use in a full text search clause
      *
      * @param SearchQueryTerm $term
-     * @param int|null        $siteId
-     *
+     * @param int|null $siteId
      * @return array
      * @throws \Throwable
      */
@@ -549,12 +563,12 @@ class Search extends Component
 
                         // Add quotes for exact match
                         if ($isMysql && StringHelper::contains($keywords, ' ')) {
-                            $keywords = '"'.$keywords.'"';
+                            $keywords = '"' . $keywords . '"';
                         }
 
                         // Determine prefix for the full-text keyword
                         if ($term->exclude) {
-                            $keywords = '-'.$keywords;
+                            $keywords = '-' . $keywords;
                         }
 
                         // Only create an SQL clause if there's a subselect. Otherwise, return the keywords.
@@ -567,11 +581,11 @@ class Search extends Component
                         if ($term->exact) {
                             // Create exact clause from term
                             $operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
-                            $keywords = ($term->subLeft ? '%' : ' ').$keywords.($term->subRight ? '%' : ' ');
+                            $keywords = ($term->subLeft ? '%' : ' ') . $keywords . ($term->subRight ? '%' : ' ');
                         } else {
                             // Create LIKE clause from term
                             $operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
-                            $keywords = ($term->subLeft ? '%' : '% ').$keywords.($term->subRight ? '%' : ' %');
+                            $keywords = ($term->subLeft ? '%' : '% ') . $keywords . ($term->subRight ? '%' : ' %');
                         }
 
                         // Generate the SQL
@@ -588,7 +602,7 @@ class Search extends Component
 
         // If we have a where clause in the subselect, add the keyword bit to it.
         if ($subSelect !== null && $sql !== null) {
-            $sql = $this->_sqlSubSelect($subSelect.' AND '.$sql, $siteId);
+            $sql = $this->_sqlSubSelect($subSelect . ' AND ' . $sql, $siteId);
 
             // We need to reset keywords even if the subselect ended up in no results.
             $keywords = null;
@@ -601,7 +615,6 @@ class Search extends Component
      * Normalize term from tokens, keep a record for cache.
      *
      * @param string $term
-     *
      * @return string
      */
     private function _normalizeTerm(string $term): string
@@ -619,7 +632,6 @@ class Search extends Component
      * Get the fieldId for given attribute or 0 for unmatched.
      *
      * @param string $attribute
-     *
      * @return int
      */
     private function _getFieldIdFromAttribute(string $attribute): int
@@ -635,10 +647,9 @@ class Search extends Component
     /**
      * Get SQL bit for simple WHERE clause
      *
-     * @param string $key  The attribute.
+     * @param string $key The attribute.
      * @param string $oper The operator.
-     * @param string $val  The value.
-     *
+     * @param string $val The value.
      * @return string
      */
     private function _sqlWhere(string $key, string $oper, string $val): string
@@ -651,10 +662,9 @@ class Search extends Component
     /**
      * Get SQL necessary for a full text search.
      *
-     * @param mixed  $val  String or Array of keywords
-     * @param bool   $bool Use In Boolean Mode or not
+     * @param mixed $val String or Array of keywords
+     * @param bool $bool Use In Boolean Mode or not
      * @param string $glue If multiple values are passed in as an array, the operator to combine them (AND or OR)
-     *
      * @return string
      * @throws \Throwable
      */
@@ -678,6 +688,12 @@ class Search extends Component
                     $val[$key] = $temp;
                 }
             }
+        } else {
+            // If where here, it's a single string with punctuation that's been stripped out (i.e. "multi-site").
+            // We can assume "and".
+            if (StringHelper::contains($val, ' ')) {
+                $val = StringHelper::replace($val, ' ', ' & ');
+            }
         }
 
         return sprintf("%s @@ '%s'::tsquery", Craft::$app->getDb()->quoteColumnName('keywords_vector'), (is_array($val) ? implode($glue, $val) : $val));
@@ -686,9 +702,8 @@ class Search extends Component
     /**
      * Get SQL bit for sub-selects.
      *
-     * @param string   $where
+     * @param string $where
      * @param int|null $siteId
-     *
      * @return string|false
      */
     private function _sqlSubSelect(string $where, int $siteId = null)
@@ -705,7 +720,7 @@ class Search extends Component
         $elementIds = $query->column();
 
         if (!empty($elementIds)) {
-            return Craft::$app->getDb()->quoteColumnName('elementId').' IN ('.implode(', ', $elementIds).')';
+            return Craft::$app->getDb()->quoteColumnName('elementId') . ' IN (' . implode(', ', $elementIds) . ')';
         }
 
         return false;
@@ -714,22 +729,20 @@ class Search extends Component
     /**
      * Whether or not to do a full text search or not.
      *
-     * @param string          $keywords
+     * @param string $keywords
      * @param SearchQueryTerm $term
-     *
      * @return bool
      */
     private function _doFullTextSearch(string $keywords, SearchQueryTerm $term): bool
     {
-        return $keywords !== '' && !$term->subLeft && !$term->exact && !$term->exclude;
+        return $keywords !== '' && !$term->subLeft && !$term->exact && !$term->exclude && strlen($keywords) >= $this->minFullTextWordLength;
     }
 
     /**
      * This method will return PostgreSQL specific SQL necessary to find an exact phrase search.
      *
-     * @param string $val   The phrase or exact value to search for.
-     * @param bool   $exact Whether this should be an exact match or not.
-     *
+     * @param string $val The phrase or exact value to search for.
+     * @param bool $exact Whether this should be an exact match or not.
      * @return string The SQL to perform the search.
      */
     private function _sqlPhraseExactMatch(string $val, bool $exact = false): string
@@ -737,20 +750,19 @@ class Search extends Component
         $ftVal = explode(' ', $val);
         $ftVal = implode(' & ', $ftVal);
 
-        $likeVal = !$exact ? '%'.$val.'%' : $val;
+        $likeVal = !$exact ? '%' . $val . '%' : $val;
 
         return sprintf("%s @@ '%s'::tsquery AND %s LIKE '%s'", Craft::$app->getDb()->quoteColumnName('keywords_vector'), $ftVal, Craft::$app->getDb()->quoteColumnName('keywords'), $likeVal);
     }
 
     /**
      * @param string $cleanKeywords The string of space separated search keywords.
-     * @param int    $maxSize       The maximum size the keywords string should be.
-     *
+     * @param int $maxSize The maximum size the keywords string should be.
      * @return string The (possibly) truncated keyword string.
      */
     private function _truncateSearchIndexKeywords(string $cleanKeywords, int $maxSize): string
     {
-        $cleanKeywordsLength = mb_strlen($cleanKeywords);
+        $cleanKeywordsLength = strlen($cleanKeywords);
 
         // Give ourselves a little wiggle room.
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */

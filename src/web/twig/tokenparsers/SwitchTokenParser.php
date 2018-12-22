@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\tokenparsers;
@@ -11,11 +11,10 @@ use craft\web\twig\nodes\SwitchNode;
 
 /**
  * Class SwitchTokenParser that parses {% switch %} tags.
- *
  * Based on the rejected Twig pull request: https://github.com/fabpot/Twig/pull/185
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SwitchTokenParser extends \Twig_TokenParser
 {
@@ -98,7 +97,6 @@ class SwitchTokenParser extends \Twig_TokenParser
 
     /**
      * @param \Twig_Token $token
-     *
      * @return bool
      */
     public function decideIfFork(\Twig_Token $token): bool
@@ -108,7 +106,6 @@ class SwitchTokenParser extends \Twig_TokenParser
 
     /**
      * @param \Twig_Token $token
-     *
      * @return bool
      */
     public function decideIfEnd(\Twig_Token $token): bool

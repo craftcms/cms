@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\nodes;
@@ -11,7 +11,7 @@ namespace craft\web\twig\nodes;
  * Represents a nav node.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class NavNode extends \Twig_Node_For
 {
@@ -31,13 +31,13 @@ class NavNode extends \Twig_Node_For
      *
      * @param \Twig_Node_Expression_AssignName $keyTarget
      * @param \Twig_Node_Expression_AssignName $valueTarget
-     * @param \Twig_Node_Expression            $seq
-     * @param \Twig_Node                       $upperBody
-     * @param \Twig_Node|null                  $lowerBody
-     * @param \Twig_Node|null                  $indent
-     * @param \Twig_Node|null                  $outdent
-     * @param null                             $lineno
-     * @param null                             $tag
+     * @param \Twig_Node_Expression $seq
+     * @param \Twig_Node $upperBody
+     * @param \Twig_Node|null $lowerBody
+     * @param \Twig_Node|null $indent
+     * @param \Twig_Node|null $outdent
+     * @param $lineno
+     * @param $tag
      */
     public function __construct(\Twig_Node_Expression_AssignName $keyTarget, \Twig_Node_Expression_AssignName $valueTarget, \Twig_Node_Expression $seq, \Twig_Node $upperBody, \Twig_Node $lowerBody = null, \Twig_Node $indent = null, \Twig_Node $outdent = null, $lineno, $tag = null)
     {

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -12,6 +12,7 @@ use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\Controller;
 use ErrorException;
+use yii\base\UserException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -23,11 +24,10 @@ use yii\web\ServerErrorHttpException;
 /**
  * The TemplatesController class is a controller that handles various template rendering related tasks for both the
  * control panel and front-end of a Craft site.
- *
  * Note that all actions in the controller are open to do not require an authenticated Craft session in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class TemplatesController extends Controller
 {
@@ -59,8 +59,7 @@ class TemplatesController extends Controller
      * Renders a template.
      *
      * @param string $template
-     * @param array  $variables
-     *
+     * @param array $variables
      * @return Response
      * @throws NotFoundHttpException if the requested template cannot be found
      */
@@ -68,7 +67,7 @@ class TemplatesController extends Controller
     {
         // Does that template exist?
         if (!$this->getView()->doesTemplateExist($template)) {
-            throw new NotFoundHttpException('Template not found');
+            throw new NotFoundHttpException('Template not found: ' . $template);
         }
 
         // Merge any additional route params
@@ -114,6 +113,12 @@ class TemplatesController extends Controller
     {
         // Run the requirements checker
         $reqCheck = new \RequirementsChecker();
+        $dbConfig = Craft::$app->getConfig()->getDb();
+        $reqCheck->dsn = $dbConfig->dsn;
+        $reqCheck->dbDriver = $dbConfig->driver;
+        $reqCheck->dbUser = $dbConfig->user;
+        $reqCheck->dbPassword = $dbConfig->password;
+
         $reqCheck->checkCraft();
 
         if ($reqCheck->result['summary']['errors'] > 0) {
@@ -123,7 +128,7 @@ class TemplatesController extends Controller
 
                 foreach ($reqCheck->getResult()['requirements'] as $req) {
                     if ($req['error'] === true) {
-                        $message .= $req['memo'].'<br />';
+                        $message .= $req['memo'] . '<br />';
                     }
                 }
 
@@ -158,15 +163,21 @@ class TemplatesController extends Controller
             $statusCode = '500';
         }
 
+        if (!$exception instanceof UserException) {
+            $message = Craft::t('app', 'Server Error');
+        } else {
+            $message = $exception->getMessage();
+        }
+
         if (Craft::$app->getRequest()->getIsSiteRequest()) {
             $prefix = Craft::$app->getConfig()->getGeneral()->errorTemplatePrefix;
 
-            if ($this->getView()->doesTemplateExist($prefix.$statusCode)) {
-                $template = $prefix.$statusCode;
-            } else if ($statusCode == 503 && $this->getView()->doesTemplateExist($prefix.'offline')) {
-                $template = $prefix.'offline';
-            } else if ($this->getView()->doesTemplateExist($prefix.'error')) {
-                $template = $prefix.'error';
+            if ($this->getView()->doesTemplateExist($prefix . $statusCode)) {
+                $template = $prefix . $statusCode;
+            } else if ($statusCode == 503 && $this->getView()->doesTemplateExist($prefix . 'offline')) {
+                $template = $prefix . 'offline';
+            } else if ($this->getView()->doesTemplateExist($prefix . 'error')) {
+                $template = $prefix . 'error';
             }
         }
 
@@ -183,7 +194,7 @@ class TemplatesController extends Controller
         }
 
         $variables = array_merge([
-            'message' => $exception->getMessage(),
+            'message' => $message,
             'code' => $exception->getCode(),
             'file' => $exception->getFile(),
             'line' => $exception->getLine(),

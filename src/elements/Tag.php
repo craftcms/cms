@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -19,8 +19,9 @@ use yii\base\InvalidConfigException;
 /**
  * Tag represents a tag element.
  *
+ * @property TagGroup $group the tag's group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Tag extends Element
 {
@@ -62,6 +63,14 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
+    public static function hasUris(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function isLocalized(): bool
     {
         return true;
@@ -69,7 +78,6 @@ class Tag extends Element
 
     /**
      * @inheritdoc
-     *
      * @return TagQuery The newly created [[TagQuery]] instance.
      */
     public static function find(): ElementQueryInterface
@@ -86,7 +94,7 @@ class Tag extends Element
 
         foreach (Craft::$app->getTags()->getAllTagGroups() as $tagGroup) {
             $sources[] = [
-                'key' => 'taggroup:'.$tagGroup->id,
+                'key' => 'taggroup:' . $tagGroup->id,
                 'label' => Craft::t('site', $tagGroup->name),
                 'criteria' => ['groupId' => $tagGroup->id]
             ];
@@ -109,6 +117,16 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
+    public function extraFields()
+    {
+        $names = parent::extraFields();
+        $names[] = 'group';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
@@ -126,19 +144,27 @@ class Tag extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
+    }
+
+    /**
      * Returns the tag's group.
      *
      * @return TagGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
-    public function getGroup()
+    public function getGroup(): TagGroup
     {
         if ($this->groupId === null) {
             throw new InvalidConfigException('Tag is missing its group ID');
         }
 
         if (($group = Craft::$app->getTags()->getTagGroupById($this->groupId)) === null) {
-            throw new InvalidConfigException('Invalid tag group ID: '.$this->groupId);
+            throw new InvalidConfigException('Invalid tag group ID: ' . $this->groupId);
         }
 
         return $group;
@@ -176,17 +202,6 @@ class Tag extends Element
 
     /**
      * @inheritdoc
-     */
-    public function beforeSave(bool $isNew): bool
-    {
-        // Make sure the field layout is set correctly
-        $this->fieldLayoutId = $this->getGroup()->fieldLayoutId;
-
-        return parent::beforeSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
      * @throws Exception if reasons
      */
     public function afterSave(bool $isNew)
@@ -196,7 +211,7 @@ class Tag extends Element
             $record = TagRecord::findOne($this->id);
 
             if (!$record) {
-                throw new Exception('Invalid tag ID: '.$this->id);
+                throw new Exception('Invalid tag ID: ' . $this->id);
             }
         } else {
             $record = new TagRecord();

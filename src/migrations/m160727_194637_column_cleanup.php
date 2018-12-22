@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 
 /**
@@ -16,27 +15,8 @@ class m160727_194637_column_cleanup extends Migration
     public function safeUp()
     {
         // Disable FK checks
-        $this->execute(Craft::$app->getDb()->getSchema()->getQueryBuilder()->checkIntegrity(false));
-
-        // Normalize the sortOrder columns
-        $sortOrderTables = [
-            '{{%entrytypes}}',
-            '{{%fieldlayoutfields}}',
-            '{{%fieldlayouttabs}}',
-            '{{%locales}}',
-            '{{%matrixblocks}}',
-            '{{%matrixblocktypes}}',
-            '{{%relations}}',
-            '{{%routes}}',
-            '{{%volumes}}',
-            '{{%widgets}}',
-        ];
-
-        $type = $this->smallInteger()->unsigned();
-
-        foreach ($sortOrderTables as $table) {
-            $this->alterColumn($table, 'sortOrder', $type);
-        }
+        $queryBuilder = $this->db->getSchema()->getQueryBuilder();
+        $this->execute($queryBuilder->checkIntegrity(false));
 
         $this->alterColumn('{{%assetindexdata}}', 'volumeId', $this->integer()->notNull());
         $this->alterColumn('{{%assetindexdata}}', 'offset', $this->integer()->notNull());
@@ -52,12 +32,9 @@ class m160727_194637_column_cleanup extends Migration
         $this->alterColumn('{{%structureelements}}', 'lft', $this->integer()->notNull()->unsigned());
         $this->alterColumn('{{%structureelements}}', 'rgt', $this->integer()->notNull()->unsigned());
         $this->alterColumn('{{%taggroups}}', 'fieldLayoutId', $this->integer());
-        $this->alterColumn('{{%tokens}}', 'usageLimit', $this->smallInteger()->unsigned());
-        $this->alterColumn('{{%tokens}}', 'usageCount', $this->smallInteger()->unsigned());
-        $this->alterColumn('{{%users}}', 'invalidLoginCount', $this->smallInteger()->unsigned());
 
         // Re-enable FK checks
-        $this->execute(Craft::$app->getDb()->getSchema()->getQueryBuilder()->checkIntegrity(true));
+        $this->execute($queryBuilder->checkIntegrity(true));
     }
 
     /**

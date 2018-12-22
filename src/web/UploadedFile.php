@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -13,7 +13,7 @@ use Craft;
  * UploadedFile represents the information for an uploaded file.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UploadedFile extends \yii\web\UploadedFile
 {
@@ -21,18 +21,25 @@ class UploadedFile extends \yii\web\UploadedFile
     // =========================================================================
 
     /**
-     * Returns an instance of the specified uploaded file.  The name can be a plain string or a string like an array
+     * Returns an instance of the specified uploaded file. The name can be a plain string or a string like an array
      * element (e.g. 'Post[imageFile]', or 'Post[0][imageFile]').
      *
-     * @param string $name The name of the file input field.
-     *
-     * @return UploadedFile|null The instance of the uploaded file. null is returned if no file is uploaded for the
-     *                           specified name.
+     * @param string $name The name of the file input field
+     * @param bool $ensureTempFileExists Whether to only return the instance if its temp files still exists
+     * @return static|null The instance of the uploaded file. null is returned if no file is uploaded for the
+     * specified name.
      */
-    public static function getInstanceByName($name)
+    public static function getInstanceByName($name, bool $ensureTempFileExists = true)
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return parent::getInstanceByName(self::_normalizeName($name));
+        /** @var static $instance */
+        $instance = parent::getInstanceByName(self::_normalizeName($name));
+        if ($instance === null) {
+            return null;
+        }
+        if ($ensureTempFileExists && !is_uploaded_file($instance->tempName)) {
+            return null;
+        }
+        return $instance;
     }
 
     /**
@@ -41,16 +48,17 @@ class UploadedFile extends \yii\web\UploadedFile
      * If multiple files were uploaded and saved as 'Files[0]', 'Files[1]', 'Files[n]'..., you can have them all by
      * passing 'Files' as array name.
      *
-     * @param string $name                  The name of the array of files
-     * @param bool   $lookForSingleInstance If set to true, will look for a single instance of the given name.
-     *
+     * @param string $name The name of the array of files
+     * @param bool $lookForSingleInstance If set to true, will look for a single instance of the given name.
+     * @param bool $ensureTempFilesExist Whether only instances whose temp files still exist should be returned.
      * @return UploadedFile[] The array of UploadedFile objects. Empty array is returned if no adequate upload was
-     *                        found. Please note that this array will contain all files from all subarrays regardless
-     *                        how deeply nested they are.
+     * found. Please note that this array will contain all files from all subarrays regardless
+     * how deeply nested they are.
      */
-    public static function getInstancesByName($name, $lookForSingleInstance = true): array
+    public static function getInstancesByName($name, $lookForSingleInstance = true, $ensureTempFilesExist = true): array
     {
         $name = self::_normalizeName($name);
+        /** @var static[] $instances */
         $instances = parent::getInstancesByName($name);
 
         if (empty($instances) && $lookForSingleInstance) {
@@ -61,15 +69,23 @@ class UploadedFile extends \yii\web\UploadedFile
             }
         }
 
+        if ($ensureTempFilesExist) {
+            array_filter($instances, function(UploadedFile $instance): bool {
+                return is_uploaded_file($instance->tempName);
+            });
+
+            // Reset the keys
+            $instances = array_values($instances);
+        }
+
         return $instances;
     }
 
     /**
      * Saves the uploaded file to a temp location.
      *
-     * @param bool $deleteTempFile    whether to delete the temporary file after saving.
-     *                                If true, you will not be able to save the uploaded file again in the current request.
-     *
+     * @param bool $deleteTempFile whether to delete the temporary file after saving.
+     * If true, you will not be able to save the uploaded file again in the current request.
      * @return string|false the path to the temp file, or false if the file wasn't saved successfully
      * @see error
      */
@@ -79,8 +95,8 @@ class UploadedFile extends \yii\web\UploadedFile
             return false;
         }
 
-        $tempFilename = uniqid(pathinfo($this->name, PATHINFO_FILENAME), true).'.'.pathinfo($this->name, PATHINFO_EXTENSION);
-        $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+        $tempFilename = uniqid(pathinfo($this->name, PATHINFO_FILENAME), true) . '.' . pathinfo($this->name, PATHINFO_EXTENSION);
+        $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
 
         if (!$this->saveAs($tempPath, $deleteTempFile)) {
             return false;
@@ -98,14 +114,13 @@ class UploadedFile extends \yii\web\UploadedFile
      * ex: fields.assetsField => fields[assetsField]
      *
      * @param string $name The name to normalize.
-     *
      * @return string
      */
     private static function _normalizeName(string $name): string
     {
         if (($pos = strpos($name, '.')) !== false) {
             // Convert dot notation to the normal format ex: fields.assetsField => fields[assetsField]
-            $name = substr($name, 0, $pos).'['.str_replace('.', '][', substr($name, $pos + 1)).']';
+            $name = substr($name, 0, $pos) . '[' . str_replace('.', '][', substr($name, $pos + 1)) . ']';
         }
 
         return $name;

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\variables;
@@ -15,8 +15,8 @@ use yii\base\Exception;
 /**
  * Class EntryRevisions variable.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  * @deprecated in 3.0
  */
 class EntryRevisions
@@ -30,9 +30,8 @@ class EntryRevisions
     /**
      * Returns entry drafts by an entry ID.
      *
-     * @param int         $entryId
+     * @param int $entryId
      * @param string|null $siteHandle
-     *
      * @return EntryDraft[]
      * @throws Exception if|null $siteHandle is invalid
      */
@@ -44,7 +43,7 @@ class EntryRevisions
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {
-                throw new Exception('Invalid site handle: '.$siteHandle);
+                throw new Exception('Invalid site handle: ' . $siteHandle);
             }
 
             $siteId = $site->id;
@@ -58,9 +57,8 @@ class EntryRevisions
     /**
      * Returns the drafts of a given entry that are editable by the current user.
      *
-     * @param int         $entryId
+     * @param int $entryId
      * @param string|null $siteHandle
-     *
      * @return EntryDraft[]
      * @throws Exception if|null $siteHandle is invalid
      */
@@ -72,7 +70,7 @@ class EntryRevisions
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {
-                throw new Exception('Invalid site handle: '.$siteHandle);
+                throw new Exception('Invalid site handle: ' . $siteHandle);
             }
 
             $siteId = $site->id;
@@ -87,7 +85,6 @@ class EntryRevisions
      * Returns an entry draft by its offset.
      *
      * @param int $draftId
-     *
      * @return EntryDraft|null
      */
     public function getDraftById(int $draftId)
@@ -103,9 +100,8 @@ class EntryRevisions
     /**
      * Returns entry versions by an entry ID.
      *
-     * @param int    $entryId
+     * @param int $entryId
      * @param string $siteHandle
-     *
      * @return EntryVersion[]
      * @throws Exception if $siteHandle is invalid
      */
@@ -117,7 +113,7 @@ class EntryRevisions
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {
-                throw new Exception('Invalid site handle: '.$siteHandle);
+                throw new Exception('Invalid site handle: ' . $siteHandle);
             }
 
             $siteId = $site->id;
@@ -132,7 +128,6 @@ class EntryRevisions
      * Returns an entry version by its ID.
      *
      * @param int $versionId
-     *
      * @return EntryVersion|null
      */
     public function getVersionById(int $versionId)

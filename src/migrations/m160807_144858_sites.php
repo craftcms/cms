@@ -15,7 +15,6 @@ use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
 use craft\helpers\StringHelper;
 use craft\validators\HandleValidator;
-use yii\base\InvalidParamException;
 use yii\db\Expression;
 
 /**
@@ -59,6 +58,10 @@ class m160807_144858_sites extends Migration
      */
     public function safeUp()
     {
+        // In case this was run in a previous update attempt
+        $this->execute($this->db->getQueryBuilder()->checkIntegrity(false, '', '{{%sites}}'));
+        $this->dropTableIfExists('{{%sites}}');
+
         // Create the sites table
         // ---------------------------------------------------------------------
 
@@ -103,7 +106,7 @@ class m160807_144858_sites extends Migration
             $language = $this->locale2language($locale);
 
             $this->insert('{{%sites}}', [
-                'name' => $siteInfo['siteName'],
+                'name' => "{$siteInfo['siteName']} ({$language})",
                 'handle' => $siteHandle,
                 'language' => $language,
                 'hasUrls' => 1,
@@ -114,13 +117,13 @@ class m160807_144858_sites extends Migration
             $siteId = $this->db->getLastInsertID();
             $siteIdsByLocale[$locale] = $siteId;
 
-            $this->caseSql .= ' when % = '.$this->db->quoteValue($locale).' then '.$this->db->quoteValue($siteId);
-            $languageCaseSql .= ' when [[language]] = '.$this->db->quoteValue($locale).' then '.$this->db->quoteValue($language);
+            $this->caseSql .= ' when % = ' . $this->db->quoteValue($locale) . ' then ' . $this->db->quoteValue($siteId);
+            $languageCaseSql .= ' when [[language]] = ' . $this->db->quoteValue($locale) . ' then ' . $this->db->quoteValue($language);
 
-            $localePermission = 'editlocale:'.$locale;
-            $sitePermission = 'editsite:'.$siteId;
+            $localePermission = 'editlocale:' . $locale;
+            $sitePermission = 'editsite:' . $siteId;
             $localePermissions[] = $localePermission;
-            $permissionsCaseSql .= ' when [[name]] = '.$this->db->quoteValue($localePermission).' then '.$this->db->quoteValue($sitePermission);
+            $permissionsCaseSql .= ' when [[name]] = ' . $this->db->quoteValue($localePermission) . ' then ' . $this->db->quoteValue($sitePermission);
         }
 
         $this->caseSql .= ' end';
@@ -188,7 +191,7 @@ class m160807_144858_sites extends Migration
         // ---------------------------------------------------------------------
 
         $searchTable = $this->db->getSchema()->getRawTableName('{{%searchindex}}');
-        $this->execute('alter table '.$this->db->quoteTableName($searchTable).' drop primary key, add primary key(elementId, attribute, fieldId, siteId)');
+        $this->execute('alter table ' . $this->db->quoteTableName($searchTable) . ' drop primary key, add primary key(elementId, attribute, fieldId, siteId)');
 
         // Drop the old FKs
         // ---------------------------------------------------------------------
@@ -320,11 +323,11 @@ class m160807_144858_sites extends Migration
                 MigrationHelper::dropForeignKey($refTable, $columns, $this);
 
                 $originalRefTable = StringHelper::removeLeft($refTable, Craft::$app->getConfig()->getDb()->tablePrefix);
-                $originalRefTable = Craft::$app->getDb()->getTableSchema('{{%'.$originalRefTable.'}}');
+                $originalRefTable = Craft::$app->getDb()->getTableSchema('{{%' . $originalRefTable . '}}');
 
                 // Add a new *__siteId column + FK for each column in this FK that points to locales.locale
                 foreach ($columns as $refColumn) {
-                    $newColumn = $refColumn.'__siteId';
+                    $newColumn = $refColumn . '__siteId';
                     $isNotNull = !$originalRefTable->getColumn($refColumn)->allowNull;
                     $this->addSiteColumn($refTable, $newColumn, $isNotNull, $refColumn);
                     $this->addForeignKey(null, $refTable, [$newColumn], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
@@ -371,7 +374,7 @@ class m160807_144858_sites extends Migration
                 ->all($this->db);
 
             foreach ($results as $result) {
-                $uriFormat = '{% if object.level == 1 %}'.$result['uriFormat'].'{% else %}'.$result['nestedUrlFormat'].'{% endif %}';
+                $uriFormat = '{% if object.level == 1 %}' . $result['uriFormat'] . '{% else %}' . $result['nestedUrlFormat'] . '{% endif %}';
                 $this->update($tables['i18n'], ['uriFormat' => $uriFormat], ['id' => $result['id']], [], false);
             }
 
@@ -379,8 +382,8 @@ class m160807_144858_sites extends Migration
             $this->dropColumn($tables['i18n'], 'nestedUrlFormat');
 
             // Create hasUrls and template columns in the i18n table
-            $this->addColumn($tables['i18n'], 'hasUrls', $this->boolean()->notNull()->defaultValue(true));
-            $this->addColumn($tables['i18n'], 'template', $this->string(500));
+            $this->addColumn($tables['i18n'], 'hasUrls', $this->boolean()->after('siteId')->notNull()->defaultValue(true));
+            $this->addColumn($tables['i18n'], 'template', $this->string(500)->after('uriFormat'));
 
             // Move the hasUrls and template values into the i18n table
             $results = (new Query())
@@ -403,17 +406,8 @@ class m160807_144858_sites extends Migration
         // Field translation methods
         // ---------------------------------------------------------------------
 
-        $this->addColumn(
-            '{{%fields}}',
-            'translationMethod',
-            $this->enum('translationMethod', ['none', 'language', 'site', 'custom'])->notNull()->defaultValue('none')
-        );
-
-        $this->addColumn(
-            '{{%fields}}',
-            'translationKeyFormat',
-            $this->text()
-        );
+        $this->addColumn('{{%fields}}', 'translationMethod', $this->enum('translationMethod', ['none', 'language', 'site', 'custom'])->after('instructions')->notNull()->defaultValue('none'));
+        $this->addColumn('{{%fields}}', 'translationKeyFormat', $this->text()->after('translationMethod'));
 
         $this->update(
             '{{%fields}}',
@@ -421,7 +415,7 @@ class m160807_144858_sites extends Migration
                 'translationMethod' => 'site',
             ],
             [
-                'translatable' => '1',
+                'translatable' => true,
             ],
             [], false);
 
@@ -446,12 +440,16 @@ class m160807_144858_sites extends Migration
             ->all($this->db);
 
         foreach ($fields as $field) {
-            try {
-                $settings = Json::decode($field['settings']);
-            } catch (InvalidParamException $e) {
-                echo 'Field '.$field['id'].' ('.$field['type'].') settings were invalid JSON: '.$field['settings']."\n";
 
-                return false;
+            if ($field['settings'] === null) {
+                echo 'Field ' . $field['id'] . ' (' . $field['type'] . ') settings were null' . "\n";
+                $settings = [];
+            } else {
+                $settings = Json::decodeIfJson($field['settings']);
+                if (!is_array($settings)) {
+                    echo 'Field ' . $field['id'] . ' (' . $field['type'] . ') settings were invalid JSON: ' . $field['settings'] . "\n";
+                    $settings = [];
+                }
             }
 
             $localized = ($field['translationMethod'] === 'site');
@@ -459,6 +457,7 @@ class m160807_144858_sites extends Migration
             if ($field['type'] === 'craft\fields\Matrix') {
                 $settings['localizeBlocks'] = $localized;
             } else {
+                // Exception: Cannot use a scalar value as an array
                 $settings['localizeRelations'] = $localized;
 
                 // targetLocale => targetSiteId
@@ -501,8 +500,6 @@ class m160807_144858_sites extends Migration
      * Updates the 'locale' setting in Recent Entries widgets
      *
      * @param array $siteIdsByLocale Mapping of site IDs to the locale IDs they used to be
-     *
-     * @return void
      */
     public function updateRecentEntriesWidgets(array $siteIdsByLocale)
     {
@@ -539,13 +536,13 @@ class m160807_144858_sites extends Migration
      *
      * @param string $table
      * @param string $column
-     * @param bool   $isNotNull
+     * @param bool $isNotNull
      * @param string $localeColumn
      */
     protected function addSiteColumn(string $table, string $column, bool $isNotNull, string $localeColumn)
     {
         // Ignore NOT NULL for now
-        $type = $this->integer();
+        $type = $this->integer()->after($localeColumn);
         $this->addColumn($table, $column, $type);
 
         // Set the values
@@ -567,17 +564,16 @@ class m160807_144858_sites extends Migration
      * Returns a site handle based on a given locale.
      *
      * @param string $locale
-     *
      * @return string
      */
     protected function locale2handle(string $locale): string
     {
         // Make sure it's a valid handle
-        if (!preg_match('/^'.HandleValidator::$handlePattern.'$/', $locale) || in_array(StringHelper::toLowerCase($locale), HandleValidator::$baseReservedWords, true)) {
+        if (!preg_match('/^' . HandleValidator::$handlePattern . '$/', $locale) || in_array(strtolower($locale), HandleValidator::$baseReservedWords, true)) {
             $localeParts = array_filter(preg_split('/[^a-zA-Z0-9]/', $locale));
 
             // Prefix with a random string so there's no chance of a conflict with other locales
-            return StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 7).($localeParts ? '_'.implode('_', $localeParts) : '');
+            return StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 7) . ($localeParts ? '_' . implode('_', $localeParts) : '');
         }
 
         return $locale;
@@ -587,7 +583,6 @@ class m160807_144858_sites extends Migration
      * Returns a language code based on a given locale.
      *
      * @param string $locale
-     *
      * @return string
      */
     protected function locale2language(string $locale): string
@@ -598,7 +593,7 @@ class m160807_144858_sites extends Migration
         $localeParts = array_filter(preg_split('/[^a-zA-Z]+/', $locale));
 
         if (!empty($localeParts)) {
-            $language = $localeParts[0].(isset($localeParts[1]) ? '-'.strtoupper($localeParts[1]) : '');
+            $language = $localeParts[0] . (isset($localeParts[1]) ? '-' . strtoupper($localeParts[1]) : '');
             $allLanguages = Craft::$app->getI18n()->getAllLocaleIds();
 
             if (in_array($language, $allLanguages, true)) {

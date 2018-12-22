@@ -1,14 +1,15 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\db\Query;
 use craft\helpers\ArrayHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
@@ -18,9 +19,9 @@ use craft\validators\UniqueValidator;
  * Section model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
- *
+ * @since 3.0
  * @property Section_SiteSettings[] $siteSettings Site-specific settings
+ * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
 class Section extends Model
 {
@@ -70,17 +71,34 @@ class Section extends Model
     public $enableVersioning = true;
 
     /**
-     * @var
+     * @var bool Propagate entries
+     */
+    public $propagateEntries = true;
+
+    /**
+     * @var Section_SiteSettings[]|null
      */
     private $_siteSettings;
 
     /**
-     * @var
+     * @var EntryType[]|null
      */
     private $_entryTypes;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels()
+    {
+        return [
+            'handle' => Craft::t('app', 'Handle'),
+            'name' => Craft::t('app', 'Name'),
+            'type' => Craft::t('app', 'Section Type'),
+        ];
+    }
 
     /**
      * @inheritdoc
@@ -94,25 +112,34 @@ class Section extends Model
             [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class],
             [['name', 'handle', 'type', 'siteSettings'], 'required'],
             [['name', 'handle'], 'string', 'max' => 255],
+            [['siteSettings'], 'validateSiteSettings'],
         ];
     }
 
     /**
-     * @inheritdoc
+     * Validates the site settings.
      */
-    public function validate($attributeNames = null, $clearErrors = true)
+    public function validateSiteSettings()
     {
-        $validates = parent::validate($attributeNames, $clearErrors);
+        // If this is an existing section, make sure they aren't moving it to a
+        // completely different set of sites in one fell swoop
+        if ($this->id) {
+            $currentSiteIds = (new Query())
+                ->select(['siteId'])
+                ->from(['{{%sections_sites}}'])
+                ->where(['sectionId' => $this->id])
+                ->column();
 
-        if ($attributeNames === null || in_array('siteSettings', $attributeNames, true)) {
-            foreach ($this->getSiteSettings() as $siteSettings) {
-                if (!$siteSettings->validate(null, $clearErrors)) {
-                    $validates = false;
-                }
+            if (empty(array_intersect($currentSiteIds, array_keys($this->getSiteSettings())))) {
+                $this->addError('siteSettings', Craft::t('app', 'At least one currently-enabled site must remain enabled.'));
             }
         }
 
-        return $validates;
+        foreach ($this->getSiteSettings() as $i => $siteSettings) {
+            if (!$siteSettings->validate()) {
+                $this->addModelErrors($siteSettings, "siteSettings[{$i}]");
+            }
+        }
     }
 
     /**
@@ -122,11 +149,11 @@ class Section extends Model
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->name);
+        return Craft::t('site', $this->name) ?: static::class;
     }
 
     /**
-     * Returns the section's site-specific settings.
+     * Returns the section's site-specific settings, indexed by site ID.
      *
      * @return Section_SiteSettings[]
      */
@@ -140,8 +167,8 @@ class Section extends Model
             return [];
         }
 
-        // Set them with setSiteSettings() so setSection() gets called on them
-        $this->setSiteSettings(ArrayHelper::index(Craft::$app->getSections()->getSectionSiteSettings($this->id), 'siteId'));
+        // Set them with setSiteSettings() so they get indexed by site ID and setSection() gets called on them
+        $this->setSiteSettings(Craft::$app->getSections()->getSectionSiteSettings($this->id));
 
         return $this->_siteSettings;
     }
@@ -149,13 +176,11 @@ class Section extends Model
     /**
      * Sets the section's site-specific settings.
      *
-     * @param Section_SiteSettings[] $siteSettings
-     *
-     * @return void
+     * @param Section_SiteSettings[] $siteSettings Array of Section_SiteSettings objects.
      */
     public function setSiteSettings(array $siteSettings)
     {
-        $this->_siteSettings = $siteSettings;
+        $this->_siteSettings = ArrayHelper::index($siteSettings, 'siteId');
 
         foreach ($this->_siteSettings as $settings) {
             $settings->setSection($this);
@@ -163,17 +188,25 @@ class Section extends Model
     }
 
     /**
+     * Returns the site IDs that are enabled for the section.
+     *
+     * @return int[]
+     */
+    public function getSiteIds(): array
+    {
+        return array_keys($this->getSiteSettings());
+    }
+
+    /**
      * Adds site-specific errors to the model.
      *
      * @param array $errors
-     * @param int   $siteId
-     *
-     * @return void
+     * @param int $siteId
      */
     public function addSiteSettingsErrors(array $errors, int $siteId)
     {
         foreach ($errors as $attribute => $siteErrors) {
-            $key = $attribute.'-'.$siteId;
+            $key = $attribute . '-' . $siteId;
             foreach ($siteErrors as $error) {
                 $this->addError($key, $error);
             }
@@ -198,5 +231,19 @@ class Section extends Model
         $this->_entryTypes = Craft::$app->getSections()->getEntryTypesBySectionId($this->id);
 
         return $this->_entryTypes;
+    }
+
+    /**
+     * Returns whether entries in this section support multiple sites.
+     *
+     * @return bool
+     */
+    public function getHasMultiSiteEntries(): bool
+    {
+        return (
+            Craft::$app->getIsMultiSite() &&
+            count($this->getSiteSettings()) > 1 &&
+            $this->propagateEntries
+        );
     }
 }

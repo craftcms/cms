@@ -1,7 +1,6 @@
 {% extends "_layouts/cp" %}
 
 {% set fullPageForm = true %}
-{% set docsUrl = 'http://craftcms.com/docs/categories' %}
 
 {% import "_includes/forms" as forms %}
 
@@ -23,7 +22,6 @@
             errors: categoryGroup.getErrors('name'),
             autofocus: true,
             required: true,
-            translatable: true
         }) }}
 
         {{ forms.textField({
@@ -95,7 +93,7 @@
                 template: {
                     type: 'singleline',
                     heading: "Template"|t('app'),
-                    info: "Which template should be loaded when an entry’s URL is requested."|t('app'),
+                    info: "Which template should be loaded when a category’s URL is requested."|t('app'),
                     code: true
                 },
             },

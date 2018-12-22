@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -14,13 +14,14 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\i18n\Locale;
 use craft\web\twig\variables\Paginate;
-use yii\base\Object;
+use yii\base\BaseObject;
+use yii\base\UnknownMethodException;
 
 /**
  * Class Template
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Template
 {
@@ -31,18 +32,15 @@ class Template
      * Returns the attribute value for a given array/object.
      *
      * @param \Twig_Environment $env
-     * @param \Twig_Source      $source
-     * @param mixed             $object            The object or array from where to get the item
-     * @param mixed             $item              The item to get from the array or object
-     * @param array             $arguments         An array of arguments to pass if the item is an object method
-     * @param string            $type              The type of attribute (@see Twig_Template constants)
-     * @param bool              $isDefinedTest     Whether this is only a defined check
-     * @param bool              $ignoreStrictCheck Whether to ignore the strict attribute check or not
-     *
+     * @param \Twig_Source $source
+     * @param mixed $object The object or array from where to get the item
+     * @param mixed $item The item to get from the array or object
+     * @param array $arguments An array of arguments to pass if the item is an object method
+     * @param string $type The type of attribute (@see Twig_Template constants)
+     * @param bool $isDefinedTest Whether this is only a defined check
+     * @param bool $ignoreStrictCheck Whether to ignore the strict attribute check or not
      * @return mixed The attribute value, or a Boolean when $isDefinedTest is true, or null when the attribute is not set and $ignoreStrictCheck is true
-     *
      * @throws \Twig_Error_Runtime if the attribute does not exist and Twig is running in strict mode and $isDefinedTest is false
-     *
      * @internal
      */
     public static function attribute(\Twig_Environment $env, \Twig_Source $source, $object, $item, array $arguments = [], string $type = \Twig_Template::ANY_CALL, bool $isDefinedTest = false, bool $ignoreStrictCheck = false)
@@ -53,7 +51,7 @@ class Template
 
         if (
             $type !== \Twig_Template::METHOD_CALL &&
-            $object instanceof Object &&
+            $object instanceof BaseObject &&
             $object->canGetProperty($item)
         ) {
             return $isDefinedTest ? true : $object->$item;
@@ -71,36 +69,38 @@ class Template
             return $value;
         }
 
-        return \twig_get_attribute($env, $source, $object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
+        try {
+            return \twig_get_attribute($env, $source, $object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
+        } catch (UnknownMethodException $e) {
+            // Copy twig_get_attribute()'s BadMethodCallException handling
+            if ($ignoreStrictCheck || !$env->isStrictVariables()) {
+                return null;
+            }
+            throw new \Twig_Error_Runtime($e->getMessage(), -1, $source);
+        }
     }
 
     /**
      * Paginates an element query's results
      *
      * @param ElementQueryInterface $query
-     *
      * @return array
      */
     public static function paginateCriteria(ElementQueryInterface $query): array
     {
         /** @var ElementQuery $query */
         $currentPage = Craft::$app->getRequest()->getPageNum();
-        $limit = $query->limit;
 
-        // Get the total result count, without applying the limit
-        $query->limit = null;
-        $total = (int)$query->count();
-        $query->limit = $limit;
-        
+        // Get the total result count
+        $total = (int)$query->count() - ($query->offset ?? 0);
+
         // Bail out early if there are no results. Also avoids a divide by zero bug in the calculation of $totalPages
         if ($total === 0) {
             return [new Paginate(), $query->all()];
         }
 
         // If they specified limit as null or 0 (for whatever reason), just assume it's all going to be on one page.
-        if (!$limit) {
-            $limit = $total;
-        }
+        $limit = $query->limit ?: $total;
 
         $totalPages = (int)ceil($total / $limit);
 
@@ -133,10 +133,11 @@ class Template
         $paginateVariable->currentPage = $currentPage;
         $paginateVariable->totalPages = $totalPages;
 
-        // Copy the criteria, set the offset, and get the elements
-        $query = clone $query;
+        // Fetch the elements
+        $originalOffset = $query->offset;
         $query->offset = (int)$offset;
         $elements = $query->all();
+        $query->offset = $originalOffset;
 
         return [$paginateVariable, $elements];
     }
@@ -145,7 +146,6 @@ class Template
      * Returns a string wrapped in a \Twig_Markup object
      *
      * @param string $value
-     *
      * @return \Twig_Markup
      */
     public static function raw(string $value): \Twig_Markup
@@ -160,8 +160,6 @@ class Template
      * Includes an element in any active template caches.
      *
      * @param ElementInterface $element
-     *
-     * @return void
      */
     private static function _includeElementInTemplateCaches(ElementInterface $element)
     {
@@ -178,9 +176,8 @@ class Template
      * Adds (deprecated) support for the old Craft\DateTime methods.
      *
      * @param \DateTime $object
-     * @param string    $item
-     * @param string    $type
-     *
+     * @param string $item
+     * @param string $type
      * @return string|false
      */
     private static function _dateTimeAttribute(\DateTime $object, string $item, string $type)
@@ -261,13 +258,17 @@ class Template
                 $value = $object->format($format);
             }
             if (!isset($filter)) {
-                $filter = 'date(\''.$format.'\')';
+                $filter = 'date(\'' . addslashes($format) . '\')';
             }
         }
 
         $key = "DateTime::{$item}()";
         /** @noinspection PhpUndefinedVariableInspection */
-        $message = "DateTime::{$item}".($type === \Twig_Template::METHOD_CALL ? '()' : '')." is deprecated. Use the |{$filter} filter instead.";
+        $message = "DateTime::{$item}" . ($type === \Twig_Template::METHOD_CALL ? '()' : '') . " is deprecated. Use the |{$filter} filter instead.";
+
+        if ($item === 'iso8601') {
+            $message = rtrim($message, '.') . ', or consider using the |atom filter, which will give you an actual ISO-8601 string (unlike the old .iso8601() method).';
+        }
 
         Craft::$app->getDeprecator()->log($key, $message);
         /** @noinspection PhpUndefinedVariableInspection */

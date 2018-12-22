@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web;
@@ -12,9 +12,8 @@ use craft\helpers\ArrayHelper;
 
 /**
  * @inheritdoc
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UrlRule extends \yii\web\UrlRule
 {
@@ -66,7 +65,7 @@ class UrlRule extends \yii\web\UrlRule
                 // Reference: http://www.regular-expressions.info/unicode.html
                 self::$_regexTokens = [
                     '{handle}' => '(?:[a-zA-Z][a-zA-Z0-9_]*)',
-                    '{slug}' => '(?:[\p{L}\p{N}\p{M}'.preg_quote(implode($slugChars), '/').']+)',
+                    '{slug}' => '(?:[\p{L}\p{N}\p{M}' . preg_quote(implode($slugChars), '/') . ']+)',
                 ];
             }
 

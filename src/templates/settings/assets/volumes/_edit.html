@@ -1,7 +1,6 @@
 {% extends "_layouts/cp" %}
 
 {% set fullPageForm = true %}
-{% set docsUrl = 'http://craftcms.com/docs/assets' %}
 
 {% import "_includes/forms" as forms %}
 
@@ -21,7 +20,6 @@
                 errors: (volume is defined ? volume.getErrors('name') : null),
                 autofocus: true,
                 required: true,
-                translatable: true
             }) }}
 
             {{ forms.textField({
@@ -45,9 +43,10 @@
             <div id="url-field" class="{% if not volume.hasUrls %}hidden{% endif %}">
                 {{ forms.textField({
                     label: "Base URL"|t('app'),
-                    instructions: "The base URL to the assets in this volume. An absolute URL ({ex1}) or protocol-relative URL ({ex2}) is recommended."|t('app', {
+                    instructions: "The base URL to the assets in this volume. An absolute URL ({ex1}) or protocol-relative URL ({ex2}) is recommended. It can begin with an alias, such as {ex3}."|t('app', {
                         ex1: '“`http://example.com/path/to/folder`”',
-                        ex2: '“`//example.com/path/to/folder”`'
+                        ex2: '“`//example.com/path/to/folder”`',
+                        ex3: '`@web`'
                     }),
                     id: 'url',
                     class: 'ltr volume-url',
@@ -68,9 +67,10 @@
                 name: 'type',
                 options: volumeTypeOptions,
                 value: className(volume),
-                errors: volume.getErrors('type') ?? null,
                 toggle: true
             }) }}
+
+            {{ missingVolumePlaceholder|raw }}
 
             {% for volumeType in volumeTypes %}
                 {% set isCurrent = (volumeType == className(volume)) %}

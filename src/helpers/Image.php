@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -15,7 +15,7 @@ use craft\image\Svg;
  * Class Image
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Image
 {
@@ -32,11 +32,10 @@ class Image
     /**
      * Calculates a missing target dimension for an image.
      *
-     * @param  int|float|null $targetWidth
-     * @param  int|float|null $targetHeight
-     * @param  int|float      $sourceWidth
-     * @param  int|float      $sourceHeight
-     *
+     * @param int|float|null $targetWidth
+     * @param int|float|null $targetHeight
+     * @param int|float $sourceWidth
+     * @param int|float $sourceHeight
      * @return int[] Array of the width and height.
      */
     public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight): array
@@ -56,13 +55,17 @@ class Image
      * Returns whether an image extension is considered manipulatable.
      *
      * @param string $extension
-     *
      * @return bool
      */
     public static function canManipulateAsImage(string $extension): bool
     {
         $formats = Craft::$app->getImages()->getSupportedImageFormats();
-        $formats[] = 'svg';
+
+        $alwaysManipulatable = ['svg'];
+        $neverManipulatable = ['pdf', 'json', 'html', 'htm'];
+
+        $formats = array_merge($formats, $alwaysManipulatable);
+        $formats = array_diff($formats, $neverManipulatable);
 
         return in_array(strtolower($extension), $formats);
     }
@@ -83,12 +86,10 @@ class Image
      * Adapted from https://github.com/ktomk/Miscellaneous/tree/master/get_png_imageinfo.
      *
      * @param string $file The path to the PNG file.
-     *
-     * @author  Tom Klingenberg <lastflood.net>
+     * @author Tom Klingenberg <lastflood.net>
      * @license Apache 2.0
      * @version 0.1.0
-     * @link    http://www.libpng.org/pub/png/spec/iso/index-object.html#11IHDR
-     *
+     * @link http://www.libpng.org/pub/png/spec/iso/index-object.html#11IHDR
      * @return array|bool Info embedded in the PNG file, or `false` if it wasn’t found.
      */
     public static function pngImageInfo(string $file)
@@ -149,22 +150,19 @@ class Image
      * Returns whether an image can have EXIF information embedded.
      *
      * @param string $filePath the file path to check.
-     *
      * @return bool
      */
     public static function canHaveExifData(string $filePath): bool
     {
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
-        return in_array(StringHelper::toLowerCase($extension), ['jpg', 'jpeg', 'tiff'], true);
+        return in_array(strtolower($extension), ['jpg', 'jpeg', 'tiff'], true);
     }
 
     /**
      * Clean an image provided by path from all malicious code and the like.
      *
      * @param string $imagePath
-     *
-     * @return void
      */
     public static function cleanImageByPath(string $imagePath)
     {
@@ -179,27 +177,27 @@ class Image
      * Returns the size of an image based on its file path.
      *
      * @param string $filePath The path to the image
-     *
-     * @return int[]
+     * @return array [width, height]
      */
     public static function imageSize(string $filePath): array
     {
-        if (pathinfo($filePath, PATHINFO_EXTENSION) === 'svg') {
-            $svg = file_get_contents($filePath);
+        try {
+            if (FileHelper::isSvg($filePath)) {
+                $svg = file_get_contents($filePath);
+                return static::parseSvgSize($svg);
+            }
 
-            return static::parseSvgSize($svg);
+            $image = Craft::$app->getImages()->loadImage($filePath);
+            return [$image->getWidth(), $image->getHeight()];
+        } catch (\Throwable $exception) {
+            return [0, 0];
         }
-
-        $image = Craft::$app->getImages()->loadImage($filePath);
-
-        return [$image->getWidth(), $image->getHeight()];
     }
 
     /**
      * Determines image dimensions by a stream pointing to the start of the image.
      *
      * @param resource $stream
-     *
      * @return array|false
      * @throws \TypeError
      */
@@ -216,7 +214,7 @@ class Image
         // JPG 2 byte signature 0xFF 0xD8
 
         // It's much easier to work with a HEX string here, because of variable signature lengths
-        $signature = StringHelper::toUpperCase(bin2hex(stream_get_contents($stream, 2)));
+        $signature = mb_strtoupper(bin2hex(stream_get_contents($stream, 2)));
 
         try {
             switch ($signature) {
@@ -267,7 +265,7 @@ class Image
                     break;
                 // Maybe PNG
                 case '8950':
-                    $signature .= StringHelper::toUpperCase(bin2hex(stream_get_contents($stream, 6)));
+                    $signature .= mb_strtoupper(bin2hex(stream_get_contents($stream, 6)));
 
                     // Make sure it's PNG
                     if ($signature !== '89504E470D0A1A0A') {
@@ -302,8 +300,7 @@ class Image
      * Parses SVG data and determines its size (normalized to pixels).
      *
      * @param string $svg The SVG data
-     *
-     * @return array [$width, $height]
+     * @return array [width, height]
      */
     public static function parseSvgSize(string $svg): array
     {
@@ -319,12 +316,13 @@ class Image
             $height = floor(
                 $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3])
             );
-        } elseif (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
+        } else if (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
             $width = floor($viewboxMatch[3]);
             $height = floor($viewboxMatch[4]);
         } else {
-            $width = null;
-            $height = null;
+            // Just pretend it's 100x100
+            $width = 100;
+            $height = 100;
         }
 
         return [$width, $height];
@@ -337,7 +335,6 @@ class Image
      * Returns the multiplier that should be used to convert an image size unit to pixels.
      *
      * @param string $unit
-     *
      * @return float The multiplier
      */
     private static function _getSizeUnitMultiplier(string $unit): float

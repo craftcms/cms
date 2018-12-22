@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\helpers;
@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Serializable;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
+use craft\db\Query;
 use yii\base\Exception;
 use yii\db\Schema;
 
@@ -18,7 +19,7 @@ use yii\db\Schema;
  * Class Db
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Db
 {
@@ -46,7 +47,6 @@ class Db
         Schema::TYPE_FLOAT,
         Schema::TYPE_DOUBLE,
         Schema::TYPE_DECIMAL,
-        Schema::TYPE_BOOLEAN,
     ];
 
     /**
@@ -90,7 +90,6 @@ class Db
      * Prepares an array or object’s values to be sent to the database.
      *
      * @param mixed $values The values to be prepared
-     *
      * @return array The prepared values
      */
     public static function prepareValuesForDb($values): array
@@ -109,7 +108,6 @@ class Db
      * Prepares a value to be sent to the database.
      *
      * @param mixed $value The value to be prepared
-     *
      * @return mixed The prepped value
      */
     public static function prepareValueForDb($value)
@@ -136,7 +134,6 @@ class Db
      * Prepares a date to be sent to the database.
      *
      * @param mixed $date The date to be prepared
-     *
      * @return string|null The prepped date, or `null` if it could not be prepared
      */
     public static function prepareDateForDb($date)
@@ -159,7 +156,6 @@ class Db
      * Returns the minimum number allowed for a given column type.
      *
      * @param string $columnType
-     *
      * @return int|false The min allowed number, or false if it can't be determined
      */
     public static function getMinAllowedValueForNumericColumn($columnType)
@@ -178,7 +174,6 @@ class Db
      * Returns the maximum number allowed for a given column type.
      *
      * @param string $columnType
-     *
      * @return int|false The max allowed number, or false if it can't be determined
      */
     public static function getMaxAllowedValueForNumericColumn($columnType)
@@ -199,7 +194,6 @@ class Db
      * @param int|null $min
      * @param int|null $max
      * @param int|null $decimals
-     *
      * @return string
      * @throws Exception if no column types can contain this
      */
@@ -222,13 +216,13 @@ class Db
 
         // Decimal or int?
         if ($decimals > 0) {
-            return Schema::TYPE_DECIMAL."({$length},{$decimals})";
+            return Schema::TYPE_DECIMAL . "({$length},{$decimals})";
         }
 
         // Figure out the smallest possible int column type that will fit our min/max
         foreach (self::$_integerSizeRanges as $type => list($typeMin, $typeMax)) {
             if ($min >= $typeMin && $max <= $typeMax) {
-                return $type."({$length})";
+                return $type . "({$length})";
             }
         }
 
@@ -238,9 +232,8 @@ class Db
     /**
      * Returns the maximum number of bytes a given textual column type can hold for a given database.
      *
-     * @param string          $columnType The textual column type to check
-     * @param Connection|null $db         The database connection
-     *
+     * @param string $columnType The textual column type to check
+     * @param Connection|null $db The database connection
      * @return int|null|false The storage capacity of the column type in bytes, null if unlimited, or false or it can't be determined.
      */
     public static function getTextualColumnStorageCapacity(string $columnType, Connection $db = null)
@@ -290,9 +283,8 @@ class Db
     /**
      * Given a length of a piece of content, returns the underlying database column type to use for saving.
      *
-     * @param int             $contentLength
+     * @param int $contentLength
      * @param Connection|null $db The database connection
-     *
      * @return string
      * @throws Exception if using an unsupported connection type
      */
@@ -326,7 +318,6 @@ class Db
      * Parses a column type definition and returns just the column type, if it can be determined.
      *
      * @param string $columnType
-     *
      * @return string|null
      */
     public static function parseColumnType($columnType)
@@ -342,7 +333,6 @@ class Db
      * Parses a column type definition and returns just the column length/size.
      *
      * @param string $columnType
-     *
      * @return int|null
      */
     public static function parseColumnLength($columnType)
@@ -358,7 +348,6 @@ class Db
      * Returns a simplified version of a given column type.
      *
      * @param string $columnType
-     *
      * @return string
      */
     public static function getSimplifiedColumnType($columnType)
@@ -385,7 +374,6 @@ class Db
      *
      * @param string $typeA
      * @param string $typeB
-     *
      * @return bool
      */
     public static function areColumnTypesCompatible($typeA, $typeB)
@@ -397,7 +385,6 @@ class Db
      * Returns whether the given column type is numeric.
      *
      * @param string $columnType
-     *
      * @return bool
      */
     public static function isNumericColumnType(string $columnType): bool
@@ -409,7 +396,6 @@ class Db
      * Returns whether the given column type is textual.
      *
      * @param string $columnType
-     *
      * @return bool
      */
     public static function isTextualColumnType(string $columnType): bool
@@ -422,7 +408,6 @@ class Db
      * [[Db::parseParam()]].
      *
      * @param string $value The param value.
-     *
      * @return string The escaped param value.
      */
     public static function escapeParam(string $value): string
@@ -436,25 +421,23 @@ class Db
      * If the `$value` is a string, it will automatically be converted to an array, split on any commas within the
      * string (via [[ArrayHelper::toArray()]]). If that is not desired behavior, you can escape the comma
      * with a backslash before it.
-     *
      * The first value can be set to either `'and'` or `'or'` to define whether *all* of the values must match, or
      * *any*. If it’s neither `'and'` nor `'or'`, then `'or'` will be assumed.
-     *
      * Values can begin with the operators `'not '`, `'!='`, `'<='`, `'>='`, `'<'`, `'>'`, or `'='`. If they don’t,
      * `'='` will be assumed.
-     *
      * Values can also be set to either `':empty:'` or `':notempty:'` if you want to search for empty or non-empty
      * database values. (An “empty” value is either NULL or an empty string of text).
      *
-     * @param string           $column The database column that the param is targeting.
-     * @param string|int|array $value  The param value(s).
-     *
+     * @param string $column The database column that the param is targeting.
+     * @param string|int|array $value The param value(s).
+     * @param string $defaultOperator The default operator to apply to the values
+     * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
+     * @param bool $caseInsensitive Whether the resulting condition should be case-insensitive
      * @return mixed
      */
-    public static function parseParam(string $column, $value)
+    public static function parseParam(string $column, $value, string $defaultOperator = '=', $caseInsensitive = false)
     {
-        // Need to do a strict check here in case $value = true
-        if ($value === 'not ') {
+        if (is_string($value) && preg_match('/^not\s*$/', $value)) {
             return '';
         }
 
@@ -464,22 +447,40 @@ class Db
             return '';
         }
 
-        $firstVal = StringHelper::toLowerCase(reset($value));
+        $firstVal = strtolower(reset($value));
+        $negate = false;
 
-        if ($firstVal === 'and' || $firstVal === 'or') {
-            $glue = array_shift($value);
-        } else {
-            $glue = 'or';
+        switch ($firstVal) {
+            case 'and':
+            case 'or':
+                $glue = $firstVal;
+                array_shift($value);
+                break;
+            case 'not':
+                $glue = 'and';
+                $negate = true;
+                array_shift($value);
+                break;
+            default:
+                $glue = 'or';
         }
 
         $condition = [$glue];
         $isMysql = Craft::$app->getDb()->getIsMysql();
 
+        // Only PostgreSQL supports case-sensitive strings
+        if ($isMysql) {
+            $caseInsensitive = false;
+        }
+
+        $inVals = [];
+        $notInVals = [];
+
         foreach ($value as $val) {
             self::_normalizeEmptyValue($val);
-            $operator = self::_parseParamOperator($val);
+            $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
-            if (StringHelper::toLowerCase($val) === ':empty:') {
+            if (is_string($val) && strtolower($val) === ':empty:') {
                 if ($operator === '=') {
                     if ($isMysql) {
                         $condition[] = [
@@ -511,7 +512,10 @@ class Db
                         ];
                     }
                 }
-            } else {
+                continue;
+            }
+
+            if (is_string($val)) {
                 // Trim any whitespace from the value
                 $val = trim($val);
 
@@ -527,15 +531,52 @@ class Db
                 $val = str_replace('\*', '*', $val);
 
                 if ($like) {
-                    $condition[] = [
-                        $operator === '=' ? 'like' : 'not like',
-                        $column,
-                        $val,
-                        false
-                    ];
-                } else {
-                    $condition[] = [$operator, $column, $val];
+                    if ($caseInsensitive) {
+                        $operator = $operator === '=' ? 'ilike' : 'not ilike';
+                    } else {
+                        $operator = $operator === '=' ? 'like' : 'not like';
+                    }
+                    $condition[] = [$operator, $column, $val, false];
+                    continue;
                 }
+
+                if ($caseInsensitive) {
+                    $val = mb_strtolower($val);
+                }
+            }
+
+            // ['or', 1, 2, 3] => IN (1, 2, 3)
+            if ($glue == 'or' && $operator === '=') {
+                $inVals[] = $val;
+                continue;
+            }
+
+            // ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3)
+            if ($glue == 'and' && $operator === '!=') {
+                $notInVals[] = $val;
+                continue;
+            }
+
+            if ($caseInsensitive) {
+                $condition[] = [$operator, "lower([[{$column}]])", $val];
+            } else {
+                $condition[] = [$operator, $column, $val];
+            }
+        }
+
+        if (!empty($inVals)) {
+            if ($caseInsensitive) {
+                $condition[] = ['in', "lower([[{$column}]])", $inVals];
+            } else {
+                $condition[] = ['in', $column, $inVals];
+            }
+        }
+
+        if (!empty($notInVals)) {
+            if ($caseInsensitive) {
+                $condition[] = ['not in', "lower([[{$column}]])", $notInVals];
+            } else {
+                $condition[] = ['not in', $column, $notInVals];
             }
         }
 
@@ -545,12 +586,13 @@ class Db
     /**
      * Normalizes date params and then sends them off to parseParam().
      *
-     * @param string                 $column
+     * @param string $column
      * @param string|array|\DateTime $value
-     *
+     * @param string $defaultOperator The default operator to apply to the values
+     * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @return mixed
      */
-    public static function parseDateParam(string $column, $value)
+    public static function parseDateParam(string $column, $value, string $defaultOperator = '=')
     {
         $normalizedValues = [];
 
@@ -560,7 +602,7 @@ class Db
             return '';
         }
 
-        if ($value[0] === 'and' || $value[0] === 'or') {
+        if (in_array($value[0], ['and', 'or', 'not'], true)) {
             $normalizedValues[] = $value[0];
             array_shift($value);
         }
@@ -576,16 +618,12 @@ class Db
                 continue;
             }
 
-            if (is_string($val)) {
-                $operator = self::_parseParamOperator($val);
-            } else {
-                $operator = '=';
-            }
+            $operator = self::_parseParamOperator($val, $defaultOperator);
 
             // Assume that date params are set in the system timezone
             $val = DateTimeHelper::toDateTime($val, true);
 
-            $normalizedValues[] = $operator.static::prepareDateForDb($val);
+            $normalizedValues[] = $operator . static::prepareDateForDb($val);
         }
 
         return static::parseParam($column, $normalizedValues);
@@ -594,9 +632,8 @@ class Db
     /**
      * Returns whether a given DB connection’s schema supports a column type.
      *
-     * @param string          $type
+     * @param string $type
      * @param Connection|null $db
-     *
      * @return bool
      */
     public static function isTypeSupported(string $type, Connection $db = null): bool
@@ -611,6 +648,37 @@ class Db
         return isset($schema->typeMap[$type]);
     }
 
+    /**
+     * Executes a DELETE command, but only if there are any rows to delete.
+     *
+     * @param string $table the table where the data will be deleted from.
+     * @param string|array $condition the condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params the parameters to be bound to the command
+     * @param Connection|null $db
+     * @return int number of rows affected by the execution.
+     * @throws \yii\db\Exception execution failed
+     */
+    public static function deleteIfExists(string $table, $condition = '', array $params = [], Connection $db = null): int
+    {
+        if ($db === null) {
+            $db = Craft::$app->getDb();
+        }
+
+        $exists = (new Query())
+            ->from($table)
+            ->where($condition, $params)
+            ->exists($db);
+
+        if (!$exists) {
+            return 0;
+        }
+
+        return $db->createCommand()
+            ->delete($table, $condition, $params)
+            ->execute();
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -618,13 +686,16 @@ class Db
      * Converts a given param value to an array.
      *
      * @param mixed $value
-     *
      * @return array
      */
     private static function _toArray($value): array
     {
         if ($value === null) {
             return [];
+        }
+
+        if ($value instanceof \DateTime) {
+            return [$value];
         }
 
         if (is_string($value)) {
@@ -654,13 +725,13 @@ class Db
     /**
      * Normalizes “empty” values.
      *
-     * @param string &$value The param value.
+     * @param mixed &$value The param value.
      */
-    private static function _normalizeEmptyValue(string &$value)
+    private static function _normalizeEmptyValue(&$value)
     {
         if ($value === null) {
             $value = ':empty:';
-        } else if (StringHelper::toLowerCase($value) === ':notempty:') {
+        } else if (is_string($value) && strtolower($value) === ':notempty:') {
             $value = 'not :empty:';
         }
     }
@@ -668,25 +739,49 @@ class Db
     /**
      * Extracts the operator from a DB param and returns it.
      *
-     * @param string &$value Te param value.
-     *
-     * @return string The operator.
+     * @param mixed &$value Te param value.
+     * @param string $default The default operator to use
+     * @param bool $negate Whether to reverse whatever the selected operator is
+     * @return string The operator ('!=', '<=', '>=', '<', '>', or '=')
      */
-    private static function _parseParamOperator(string &$value): string
+    private static function _parseParamOperator(&$value, string $default, bool $negate = false): string
     {
-        foreach (self::$_operators as $testOperator) {
-            // Does the value start with this operator?
-            if (strpos(StringHelper::toLowerCase($value), $testOperator) === 0) {
-                $value = mb_substr($value, strlen($testOperator));
+        $op = null;
 
-                if ($testOperator === 'not ') {
-                    return '!=';
+        if (is_string($value)) {
+            $lcValue = strtolower($value);
+            foreach (self::$_operators as $operator) {
+                $len = strlen($operator);
+                // Does the value start with this operator?
+                if (strncmp($lcValue, $operator, $len) === 0) {
+                    $value = mb_substr($value, $len);
+                    $op = $operator === 'not ' ? '!=' : $operator;
+                    break;
                 }
-
-                return $testOperator;
             }
         }
 
-        return '=';
+        if ($op === null) {
+            $op = $default === 'not' || $default === 'not ' ? '!=' : $default;
+        }
+
+        if ($negate) {
+            switch ($op) {
+                case '!=':
+                    return '=';
+                case '<=':
+                    return '>';
+                case '>=':
+                    return '<';
+                case '<':
+                    return '>=';
+                case '>':
+                    return '<=';
+                case '=':
+                    return '!=';
+            }
+        }
+
+        return $op;
     }
 }

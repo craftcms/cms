@@ -1,7 +1,1 @@
-{
-"version": 3,
-"mappings": "AA4CA,mBAAmB;AA8DnB,WAAW;AAoJX,eAAe;AC3Pf,eAAgB,GAAE,gBAAgB,EAAE,2BAA2B,EAAE,iBAAiB,EAAE,SAAS,EAAE,mBAAmB,EAAE,OAAO;;AAE3H,aAAc,GAAE,KAAK,EAAE,IAAI,EAAE,MAAM,EAAE,IAAI,EAAE,QAAQ,EAAE,IAAI;;AACzD,oBAAqB,GAAE,KAAK,EDOV,OAAmB;;ACLrC,8PAKA,GACI,eAAgB,GAAE,gBAAgB,EAAE,8BAA8B,EAAE,eAAe,EAAE,IAAI",
-"sources": ["../../_shared.scss","deprecator.scss"],
-"names": [],
-"file": "deprecator.css"
-}
+{"version":3,"sources":["deprecator.scss","../../../../../lib/craftcms-sass/_mixins.scss"],"names":[],"mappings":"AAGA,kBACE,8CAA6C,CAC7C,6BAA4B,CAC5B,6BAA4B,EAAA;;AAG9B,gBACE,YAAW,CACX,aAAY,CACZ,eAAc,EAAA;;AAGhB,uBACE,eCOmC,EAAA;;ADJrC,6MAKE,kBACE,iDAAgD,CAChD,sBAAqB,EAAA,EAAA","file":"deprecator.css"}

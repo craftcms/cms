@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -14,16 +14,15 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Route record.
  *
- * @property int    $id         ID
- * @property int    $siteId     Site ID
- * @property string $uriParts   URI parts
+ * @property int $id ID
+ * @property int $siteId Site ID
+ * @property string $uriParts URI parts
  * @property string $uriPattern URI pattern
- * @property string $template   Template
- * @property int    $sortOrder  Sort order
- * @property Site   $site       Site
- *
+ * @property string $template Template
+ * @property int $sortOrder Sort order
+ * @property Site $site Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Route extends ActiveRecord
 {
@@ -43,7 +42,6 @@ class Route extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

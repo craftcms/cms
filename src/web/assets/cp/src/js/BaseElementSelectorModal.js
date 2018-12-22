@@ -52,7 +52,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             else {
                 // Auto-focus the Search box
                 if (!Garnish.isMobileBrowser(true)) {
-                    this.elementIndex.$search.focus();
+                    this.elementIndex.$search.trigger('focus');
                 }
             }
 
@@ -129,8 +129,9 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
             for (var i = 0; i < $selectedElements.length; i++) {
                 var $element = $($selectedElements[i]);
+                var elementInfo = Craft.getElementInfo($element);
 
-                info.push(Craft.getElementInfo($element));
+                info.push(elementInfo);
             }
 
             return info;

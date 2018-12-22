@@ -11,8 +11,6 @@
     { label: "User Groups"|t('app'), url: url('settings/users') }
 ] %}
 
-{% set docsUrl = 'http://craftcms.com/docs/users#user-groups' %}
-
 
 {% if group is not defined and groupId is defined %}
     {% set group = craft.app.userGroups.getGroupById(groupId) %}
@@ -26,7 +24,7 @@
 {% if isNewGroup %}
     {% set title = "Create a new user group"|t('app') %}
 {% else %}
-    {% set title = group.name %}
+    {% set title = group.name|trim ?: 'Edit User Group'|t('app') %}
 {% endif %}
 
 
@@ -45,7 +43,6 @@
         errors: (group is defined ? group.getErrors('name') : null),
         autofocus: true,
         required: true,
-        translatable: true
     }) }}
 
     {{ forms.textField({
@@ -73,7 +70,7 @@
     {% endif %}
 
     {% if not isNewGroup %}
-        new Craft.ElevatedSessionForm('#container', [
+        new Craft.ElevatedSessionForm('#main-form', [
             '#permissions input[type="checkbox"]:not(:checked)'
         ]);
     {% endif %}

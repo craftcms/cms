@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -23,11 +23,10 @@ use yii\web\Response;
 /**
  * The ElementsController class is a controller that handles various element related actions including retrieving and
  * saving element and their corresponding HTML.
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class ElementsController extends BaseElementsController
 {
@@ -119,9 +118,13 @@ class ElementsController extends BaseElementsController
         Craft::configure($element, $params);
 
         // Set the custom field values
-        $element->setFieldValuesFromRequest($namespace.'.fields');
+        $element->setFieldValuesFromRequest($namespace . '.fields');
 
         // Now save it
+        if ($element->enabled && $element->enabledForSite) {
+            $element->setScenario(Element::SCENARIO_LIVE);
+        }
+
         if (Craft::$app->getElements()->saveElement($element)) {
             $response = [
                 'success' => true,
@@ -168,8 +171,7 @@ class ElementsController extends BaseElementsController
             $categories = Category::find()
                 ->id($categoryIds)
                 ->siteId($request->getParam('siteId'))
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->all();
 
             // Fill in the gaps
@@ -229,7 +231,8 @@ class ElementsController extends BaseElementsController
         $elementsService = Craft::$app->getElements();
 
         $elementId = $request->getBodyParam('elementId');
-        $siteId = $request->getBodyParam('siteId') ?: Craft::$app->getSites()->currentSite->id;
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $siteId = $request->getBodyParam('siteId') ?: Craft::$app->getSites()->getCurrentSite()->id;
 
         // Determine the element type
         $elementType = $request->getBodyParam('elementType');
@@ -253,20 +256,14 @@ class ElementsController extends BaseElementsController
         }
 
         // Instantiate the element
-        if ($elementId !== null) {
-            $element = $elementsService->getElementById($elementId, $elementType, $siteId);
-
-            if (!$element) {
-                throw new BadRequestHttpException('No element exists with the ID '.$elementId);
-            }
-        } else {
-            $element = new $elementType();
-        }
+        /** @var Element $element */
+        $attributes = $request->getBodyParam('attributes', []);
+        $element = $this->_getEditorElementInternal($elementId, $elementType, $siteId, $attributes);
 
         /** @var Element $element */
         // Make sure the user is allowed to edit this site
         $userService = Craft::$app->getUser();
-        if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userService->checkPermission('editSite:'.$element->siteId)) {
+        if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userService->checkPermission('editSite:' . $siteId)) {
             // Find the first site the user does have permission to edit
             $elementSiteIds = [];
             $newSiteId = null;
@@ -276,7 +273,7 @@ class ElementsController extends BaseElementsController
             }
 
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                if (in_array($siteId, $elementSiteIds, false) && $userService->checkPermission('editSite:'.$siteId)) {
+                if (in_array($siteId, $elementSiteIds, false) && $userService->checkPermission('editSite:' . $siteId)) {
                     $newSiteId = $siteId;
                     break;
                 }
@@ -291,16 +288,11 @@ class ElementsController extends BaseElementsController
             $siteId = $newSiteId;
 
             if ($elementId !== null) {
-                $element = $elementsService->getElementById($elementId, $elementType, $siteId);
+                $element = $this->_getEditorElementInternal($elementId, $elementType, $siteId, $attributes);
             } else {
                 $element->siteId = $siteId;
             }
         }
-
-        // Populate it with any posted attributes
-        $attributes = $request->getBodyParam('attributes', []);
-        $attributes['siteId'] = $siteId;
-        Craft::configure($element, $attributes);
 
         // Make sure it's editable
         // (ElementHelper::isElementEditable() is overkill here since we've already verified the user can edit the element's site)
@@ -312,11 +304,40 @@ class ElementsController extends BaseElementsController
     }
 
     /**
+     * Returns the editor element populated with the posted attributes.
+     *
+     * @param int|null $elementId
+     * @param string $elementType
+     * @param int $siteId
+     * @param array $attributes
+     * @return ElementInterface
+     * @throws BadRequestHttpException
+     */
+    private function _getEditorElementInternal(int $elementId = null, string $elementType, int $siteId, array $attributes): ElementInterface
+    {
+        /** @var Element $element */
+        if ($elementId !== null) {
+            $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);
+
+            if (!$element) {
+                throw new BadRequestHttpException('No element exists with the ID ' . $elementId);
+            }
+        } else {
+            $element = new $elementType();
+        }
+
+        // Populate it with any posted attributes
+        Craft::configure($element, $attributes);
+        $element->siteId = $siteId;
+
+        return $element;
+    }
+
+    /**
      * Returns the editor HTML response for a given element.
      *
      * @param ElementInterface $element
-     * @param bool             $includeSites
-     *
+     * @param bool $includeSites
      * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit content in any of the sites supported by this element
      */
@@ -350,21 +371,21 @@ class ElementsController extends BaseElementsController
 
         $response['siteId'] = $element->siteId;
 
-        $namespace = 'editor_'.StringHelper::randomString(10);
+        $namespace = 'editor_' . StringHelper::randomString(10);
         $this->getView()->setNamespace($namespace);
 
-        $response['html'] = '<input type="hidden" name="namespace" value="'.$namespace.'">';
+        $response['html'] = '<input type="hidden" name="namespace" value="' . $namespace . '">';
 
         if ($element->id !== null) {
-            $response['html'] .= '<input type="hidden" name="elementId" value="'.$element->id.'">';
+            $response['html'] .= '<input type="hidden" name="elementId" value="' . $element->id . '">';
         }
 
         if ($element->siteId !== null) {
-            $response['html'] .= '<input type="hidden" name="siteId" value="'.$element->siteId.'">';
+            $response['html'] .= '<input type="hidden" name="siteId" value="' . $element->siteId . '">';
         }
 
-        $response['html'] .= '<div class="meta">'.
-            $this->getView()->namespaceInputs((string)$element->getEditorHtml()).
+        $response['html'] .= '<div class="meta">' .
+            $this->getView()->namespaceInputs((string)$element->getEditorHtml()) .
             '</div>';
 
         $view = $this->getView();

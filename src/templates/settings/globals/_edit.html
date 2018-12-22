@@ -1,8 +1,6 @@
 {% extends "_layouts/cp" %}
 {% set fullPageForm = true %}
 
-{% set docsUrl = 'http://craftcms.com/docs/globals' %}
-
 {% import "_includes/forms" as forms %}
 
 
@@ -23,7 +21,6 @@
             errors: globalSet.getErrors('name'),
             autofocus: true,
             required: true,
-            translatable: true
         }) }}
 
         {{ forms.textField({
@@ -42,7 +39,6 @@
     <div id="set-fieldlayout" class="hidden">
         {% include "_includes/fieldlayoutdesigner" with {
             fieldLayout: globalSet.getFieldLayout(),
-            customizableTabs: false,
             tab: 'fieldlayout'
         } only %}
     </div>

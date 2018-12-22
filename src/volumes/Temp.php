@@ -3,21 +3,25 @@
 namespace craft\volumes;
 
 use Craft;
-use craft\helpers\UrlHelper;
 
 /**
  * The temporary volume class. Handles the implementation of a temporary volume
  * Craft.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://craftcms.com/license Craft License Agreement
- * @see        http://craftcms.com
- * @package    craft.app.volumes
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license http://craftcms.com/license Craft License Agreement
+ * @see http://craftcms.com
+ * @package craft.app.volumes
+ * @since 3.0
  */
 class Temp extends Local
 {
+    /**
+     * @inheritdoc
+     */
+    public $hasUrls = false;
+
     // Static
     // =========================================================================
 
@@ -39,16 +43,10 @@ class Temp extends Local
     {
         parent::init();
 
-        $this->hasUrls = true;
-
         if ($this->path !== null) {
             $this->path = rtrim($this->path, '/');
         } else {
             $this->path = Craft::$app->getPath()->getTempAssetUploadsPath();
-        }
-
-        if ($this->url === null) {
-            $this->url = UrlHelper::actionUrl('assets/download-temp-asset', ['path' => '']);
         }
 
         if ($this->name === null) {
@@ -62,13 +60,5 @@ class Temp extends Local
     public function getSettingsHtml()
     {
         return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getRootUrl()
-    {
-        return $this->url;
     }
 }

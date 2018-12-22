@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\widgets;
@@ -15,7 +15,7 @@ use craft\web\assets\updateswidget\UpdatesWidgetAsset;
  * Updates represents an Updates dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Updates extends Widget
 {
@@ -73,15 +73,7 @@ class Updates extends Widget
 
         if (!$cached || !Craft::$app->getUpdates()->getTotalAvailableUpdates()) {
             $view->registerAssetBundle(UpdatesWidgetAsset::class);
-            $view->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
-
-            $view->registerTranslations('app', [
-                'One update available!',
-                '{total} updates available!',
-                'Go to Updates',
-                'Congrats! You’re up-to-date.',
-                'Check again',
-            ]);
+            $view->registerJs('new Craft.UpdatesWidget(' . $this->id . ', ' . ($cached ? 'true' : 'false') . ');');
         }
 
         if ($cached) {
@@ -89,8 +81,8 @@ class Updates extends Widget
                 [
                     'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates()
                 ]);
-        } else {
-            return '<p class="centeralign">'.Craft::t('app', 'Checking for updates…').'</p>';
         }
+
+        return '<p class="centeralign">' . Craft::t('app', 'Checking for updates…') . '</p>';
     }
 }

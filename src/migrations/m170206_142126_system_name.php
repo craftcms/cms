@@ -21,7 +21,7 @@ class m170206_142126_system_name extends Migration
 
         $systemName = Craft::$app->getSites()->getPrimarySite()->name;
 
-        $this->addColumn('{{%info}}', 'name', $this->string());
+        $this->addColumn('{{%info}}', 'name', $this->string()->after('timezone'));
         $this->update('{{%info}}', ['name' => $systemName]);
         $this->alterColumn('{{%info}}', 'name', $this->string()->notNull());
 

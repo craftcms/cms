@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -18,7 +18,7 @@ use yii\base\InvalidConfigException;
  * Section_SiteSettings model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Section_SiteSettings extends Model
 {
@@ -85,7 +85,7 @@ class Section_SiteSettings extends Model
         }
 
         if (($this->_section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
-            throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
+            throw new InvalidConfigException('Invalid section ID: ' . $this->sectionId);
         }
 
         return $this->_section;
@@ -95,12 +95,29 @@ class Section_SiteSettings extends Model
      * Sets the section.
      *
      * @param Section $section
-     *
-     * @return void
      */
     public function setSection(Section $section)
     {
         $this->_section = $section;
+    }
+
+    /**
+     * Returns the site.
+     *
+     * @return Site
+     * @throws InvalidConfigException if [[siteId]] is missing or invalid
+     */
+    public function getSite(): Site
+    {
+        if (!$this->siteId) {
+            throw new InvalidConfigException('Section site settings model is missing its site ID');
+        }
+
+        if (($site = Craft::$app->getSites()->getSiteById($this->siteId)) === null) {
+            throw new InvalidConfigException('Invalid site ID: ' . $this->siteId);
+        }
+
+        return $site;
     }
 
     /**

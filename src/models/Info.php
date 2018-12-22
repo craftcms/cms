@@ -1,19 +1,20 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
 
+use Craft;
 use craft\base\Model;
 
 /**
  * Class Info model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Info extends Model
 {
@@ -38,7 +39,7 @@ class Info extends Model
     /**
      * @var int Edition
      */
-    public $edition = \Craft::Personal;
+    public $edition = Craft::Solo;
 
     /**
      * @var string System name

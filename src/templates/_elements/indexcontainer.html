@@ -18,6 +18,11 @@
 {% endif %}
 {% set sortOptions = elementInstance.sortOptions() %}
 
+{% macro sortOptionLabel(sortOption) %}
+    {{ sortOption.label ?? sortOption  }}
+{% endmacro %}
+{% from _self import sortOptionLabel %}
+
 <div class="main">
     <div class="toolbar">
         <div class="flex">
@@ -27,32 +32,17 @@
                     <div class="menu">
                         <ul class="padded">
                             <li><a data-status="" class="sel"><span class="status"></span>{{ "All"|t('app') }}</a></li>
-                            {% for status, label in elementInstance.statuses() %}
-                                <li><a data-status="{{ status }}"><span class="status {{ status }}"></span>{{ label }}</a></li>
+                            {% for status, info in elementInstance.statuses() %}
+                                {% set label = info.label ?? info %}
+                                {% set color = info.color ?? '' %}
+                                <li><a data-status="{{ status }}"><span class="status {{ status }} {{ color }}"></span>{{ label }}</a></li>
                             {% endfor %}
                         </ul>
                     </div>
                 </div>
             {% endif %}
             {% if showSiteMenu %}
-                {% set editableSites = craft.app.sites.getEditableSites() %}
-                {% if editableSites|length %}
-                    {% if craft.app.sites.currentSite.id in craft.app.sites.getEditableSiteIds() %}
-                        {% set initialSite = craft.app.sites.currentSite %}
-                    {% else %}
-                        {% set initialSite = editableSites|first %}
-                    {% endif %}
-                    <div>
-                        <div class="btn menubtn sitemenubtn">{{ initialSite ? initialSite.name|t('site') }}</div>
-                        <div class="menu">
-                            <ul class="padded">
-                                {% for site in editableSites %}
-                                    <li><a{% if initialSite and site.id == initialSite.id %} class="sel"{% endif %} data-site-id="{{ site.id }}">{{ site.name|t('site') }}</a></li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                {% endif %}
+                {% include "_elements/sitemenu" %}
             {% endif %}
             <div class="flex-grow texticon search icon clearable">
                 {{ text({
@@ -61,11 +51,11 @@
                 <div class="clear hidden" title="{{ 'Clear'|t('app') }}"></div>
             </div>
             <div>
-                <div class="btn menubtn sortmenubtn"{% if sortOptions %} title="{{ 'Sort by {attribute}'|t('app', { attribute: sortOptions|first }) }}"{% endif %} data-icon="asc">{{ sortOptions ? sortOptions|first }}</div>
+                <div class="btn menubtn sortmenubtn"{% if sortOptions %} title="{{ 'Sort by {attribute}'|t('app', { attribute: sortOptionLabel(sortOptions|first) }) }}"{% endif %} data-icon="asc">{{ sortOptions ? sortOptionLabel(sortOptions|first) }}</div>
                 <div class="menu">
                     <ul class="padded sort-attributes">
-                        {% for key, label in sortOptions %}
-                            <li><a{% if loop.first %} class="sel"{% endif %} data-attr="{{ key }}">{{ label }}</a></li>
+                        {% for key, sortOption in sortOptions %}
+                            <li><a{% if loop.first %} class="sel"{% endif %} data-attr="{{ sortOption.attribute ?? sortOption.orderBy ?? key }}">{{ sortOptionLabel(sortOption) }}</a></li>
                         {% endfor %}
                     </ul>
                     <hr>

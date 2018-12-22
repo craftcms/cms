@@ -1,10 +1,15 @@
 {% import "_includes/forms" as forms %}
 
+{%- set class = [
+    'nicetext',
+    (field.code ? 'code' : null)
+]|filter|join(' ') %}
+
 {% set config = {
     id: name,
     name: name,
     value: value,
-    class: 'nicetext',
+    class: class,
     maxlength: field.charLimit,
     showCharsLeft: true,
     placeholder: field.placeholder|t('site'),

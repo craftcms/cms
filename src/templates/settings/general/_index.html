@@ -10,7 +10,7 @@
 
 {% macro configWarning(setting, file) -%}
     {{ "This is being overridden by the {setting} config setting."|t('app', {
-        setting: '<a href="http://craftcms.com/docs/config-settings#'~setting~'" target="_blank">'~setting~'</a>'
+        setting: '<a href="https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-'~setting|lower~'" rel="noopener" target="_blank">'~setting~'</a>'
     })|raw }}
 {%- endmacro %}
 
@@ -47,7 +47,7 @@
         options: timezoneOptions
     }) }}
 
-    {% if CraftEdition >= CraftClient %}
+    {% if CraftEdition == CraftPro %}
         <hr>
 
         {% do view.registerTranslations('app', [
@@ -55,7 +55,6 @@
         ]) %}
 
         {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
-        {% do view.registerAssetBundle("craft\\web\\assets\\imageeditor\\ImageEditorAsset") %}
 
         {{ forms.field({
             label: "Login Page Logo"|t('app'),

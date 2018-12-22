@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -13,16 +13,15 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class VolumeFolder record.
  *
- * @property int          $id       ID
- * @property int          $parentId Parent ID
- * @property int          $volumeId Volume ID
- * @property string       $name     Name
- * @property string       $path     Path
- * @property VolumeFolder $parent   Parent
- * @property Volume       $volume   Volume
- *
+ * @property int $id ID
+ * @property int $parentId Parent ID
+ * @property int $volumeId Volume ID
+ * @property string $name Name
+ * @property string $path Path
+ * @property VolumeFolder $parent Parent
+ * @property Volume $volume Volume
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class VolumeFolder extends ActiveRecord
 {
@@ -42,7 +41,6 @@ class VolumeFolder extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string
@@ -57,7 +55,7 @@ class VolumeFolder extends ActiveRecord
      */
     public function getParent(): ActiveQueryInterface
     {
-        return $this->hasOne(VolumeFolder::class, ['id' => 'parentId']);
+        return $this->hasOne(__CLASS__, ['id' => 'parentId']);
     }
 
     /**

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\assets\systemmessages;
@@ -20,7 +20,7 @@ class SystemMessagesAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
@@ -31,7 +31,7 @@ class SystemMessagesAsset extends AssetBundle
         ];
 
         $this->js = [
-            'system_messages'.$this->dotJs(),
+            'system_messages' . $this->dotJs(),
         ];
 
         parent::init();

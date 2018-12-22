@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -16,12 +16,11 @@ use craft\records\SystemMessage as EmailMessageRecord;
 use yii\base\Component;
 
 /**
- * SystemMessages service.
- *
- * An instance of the SystemMessages service is globally accessible in Craft via [[Application::systemMessages `Craft::$app->getSystemMessages()`]].
+ * System Messages service.
+ * An instance of the System Messages service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSystemMessages()|`Craft::$app->systemMessages`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class SystemMessages extends Component
 {
@@ -105,7 +104,6 @@ class SystemMessages extends Component
      * Returns a default system email messages by its key, without subject/body overrides.
      *
      * @param string $key
-     *
      * @return SystemMessage|null
      */
     public function getDefaultMessage(string $key)
@@ -117,13 +115,12 @@ class SystemMessages extends Component
      * Returns all of the system email messages in a given language, with subject/body overrides.
      *
      * @param string|null $language
-     *
      * @return SystemMessage[]
      */
     public function getAllMessages(string $language = null): array
     {
         if ($language === null) {
-            $language = Craft::$app->language;
+            $language = Craft::$app->getSites()->getPrimarySite()->language;
         }
 
         // Start with the defaults
@@ -155,9 +152,8 @@ class SystemMessages extends Component
     /**
      * Returns a system email messages in a given language by its key, with subject/body overrides.
      *
-     * @param string      $key
+     * @param string $key
      * @param string|null $language
-     *
      * @return SystemMessage|null
      */
     public function getMessage(string $key, string $language = null)
@@ -168,20 +164,19 @@ class SystemMessages extends Component
         }
 
         if ($language === null) {
-            $language = Craft::$app->language;
+            $language = Craft::$app->getSites()->getPrimarySite()->language;
         }
 
         // Fetch the customization (if there is one)
         $override = $this->_createMessagesQuery()
             ->select(['subject', 'body'])
             ->where(['key' => $key, 'language' => $language])
-            ->indexBy(null)
             ->one();
 
         // Combine them to create the final message
         $message = clone $default;
 
-        if ($override !== false) {
+        if ($override) {
             $message->subject = $override['subject'];
             $message->body = $override['body'];
         }
@@ -193,8 +188,7 @@ class SystemMessages extends Component
      * Saves the subject/body overrides for a system email message.
      *
      * @param SystemMessage $message
-     * @param string|null   $language
-     *
+     * @param string|null $language
      * @return bool
      */
     public function saveMessage(SystemMessage $message, string $language = null): bool
@@ -234,7 +228,6 @@ class SystemMessages extends Component
      *
      * @param string $key
      * @param string $language
-     *
      * @return EmailMessageRecord
      */
     private function _getMessageRecord(string $key, string $language): EmailMessageRecord

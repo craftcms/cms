@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\nodes;
@@ -14,7 +14,7 @@ use yii\base\NotSupportedException;
  * Class RegisterResourceNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class RegisterResourceNode extends \Twig_Node implements \Twig_NodeCaptureInterface
 {
@@ -58,22 +58,27 @@ class RegisterResourceNode extends \Twig_Node implements \Twig_NodeCaptureInterf
             // Figure out what the position's PHP value is
             switch ($position) {
                 case 'head':
+                case 'POS_HEAD':
                     $positionPhp = View::POS_HEAD;
                     break;
                 case 'beginBody':
+                case 'POS_BEGIN':
                     $positionPhp = View::POS_BEGIN;
                     break;
                 case 'endBody':
+                case 'POS_END':
                     $positionPhp = View::POS_END;
                     break;
                 case 'ready':
+                case 'POS_READY':
                     $positionPhp = View::POS_READY;
                     break;
                 case 'load':
+                case 'POS_LOAD':
                     $positionPhp = View::POS_LOAD;
                     break;
                 default:
-                    throw new NotSupportedException($position.' is not a valid position');
+                    throw new NotSupportedException($position . ' is not a valid position');
             }
         }
 

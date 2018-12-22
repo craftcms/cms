@@ -14,16 +14,37 @@
 
     <h2>{{ "Plugins"|t('app') }}</h2>
 
-    <table class="data fullwidth fixed-layout">
-        <tbody>
-            {% for plugin in plugins %}
-                <tr>
-                    <th class="light">{{ plugin.name }}</th>
-                    <td>{{ plugin.version }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    {% if plugins|length %}
+        <table class="data fullwidth fixed-layout">
+            <tbody>
+                {% for plugin in plugins %}
+                    <tr>
+                        <th class="light">{{ plugin.name }}</th>
+                        <td>{{ plugin.version }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>{{ 'No plugins are enabled.'|t('app') }}</p>
+    {% endif %}
+
+    <h2>{{ 'Modules'|t('app') }}</h2>
+
+    {% if modules|length %}
+        <table class="data fullwidth fixed-layout">
+            <tbody>
+                {% for id, class in modules %}
+                    <tr>
+                        <th class="light">{{ id }}</th>
+                        <td>{{ class }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>{{ 'No modules are installed.'|t('app') }}</p>
+    {% endif %}
 
     <h2>{{ "Requirements"|t('app') }}</h2>
 

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\records;
@@ -13,13 +13,12 @@ use yii\db\ActiveQueryInterface;
 /**
  * Category record.
  *
- * @property int           $id      ID
- * @property int           $groupId Group ID
- * @property Element       $element Element
- * @property CategoryGroup $group   Group
- *
+ * @property int $id ID
+ * @property int $groupId Group ID
+ * @property Element $element Element
+ * @property CategoryGroup $group Group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Category extends ActiveRecord
 {
@@ -28,7 +27,6 @@ class Category extends ActiveRecord
 
     /**
      * @inheritdoc
-     *
      * @return string
      */
     public static function tableName(): string

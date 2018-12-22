@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -16,11 +16,10 @@ use yii\web\ForbiddenHttpException;
 
 /**
  * The BaseElementsController class provides some common methods for [[ElementsController]] and [[ElementIndexesController]].
- *
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 abstract class BaseElementsController extends Controller
 {
@@ -30,7 +29,6 @@ abstract class BaseElementsController extends Controller
     /**
      * Initializes the application component.
      *
-     * @return void
      * @throws ForbiddenHttpException if this is not a Control Panel request
      */
     public function init()

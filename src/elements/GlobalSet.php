@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
@@ -21,9 +21,8 @@ use craft\validators\UniqueValidator;
  * GlobalSet represents a global set element.
  *
  * @mixin FieldLayoutBehavior
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class GlobalSet extends Element
 {
@@ -64,7 +63,6 @@ class GlobalSet extends Element
 
     /**
      * @inheritdoc
-     *
      * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
      */
     public static function find(): ElementQueryInterface
@@ -95,7 +93,7 @@ class GlobalSet extends Element
      */
     public function __toString(): string
     {
-        return (string)$this->name;
+        return (string)$this->name ?: static::class;
     }
 
     /**
@@ -106,9 +104,8 @@ class GlobalSet extends Element
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
             'class' => FieldLayoutBehavior::class,
-            'elementType' => GlobalSet::class
+            'elementType' => __CLASS__
         ];
-
         return $behaviors;
     }
 
@@ -152,7 +149,11 @@ class GlobalSet extends Element
      */
     public function getCpEditUrl()
     {
-        return UrlHelper::cpUrl('globals/'.$this->handle);
+        if (Craft::$app->getIsMultiSite()) {
+            return UrlHelper::cpUrl('globals/' . $this->getSite()->handle . '/' . $this->handle);
+        }
+
+        return UrlHelper::cpUrl('globals/' . $this->handle);
     }
 
     // Events
@@ -163,10 +164,14 @@ class GlobalSet extends Element
      */
     public function beforeDelete(): bool
     {
-        if ($this->fieldLayoutId !== null) {
-            Craft::$app->getFields()->deleteLayoutById($this->fieldLayoutId);
+        if (!parent::beforeDelete()) {
+            return false;
         }
 
-        return parent::beforeDelete();
+        if (($fieldLayout = $this->getFieldLayout()) !== null) {
+            Craft::$app->getFields()->deleteLayout($fieldLayout);
+        }
+
+        return true;
     }
 }

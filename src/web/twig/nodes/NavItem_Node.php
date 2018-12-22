@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\nodes;
@@ -13,7 +13,7 @@ use craft\helpers\Template;
  * Internal node used by the nav node.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class NavItem_Node extends \Twig_Node
 {
@@ -24,11 +24,11 @@ class NavItem_Node extends \Twig_Node
      * NavItem_Node constructor.
      *
      * @param \Twig_Node_Expression_AssignName $valueTarget
-     * @param \Twig_Node|null                  $indent
-     * @param \Twig_Node|null                  $outdent
-     * @param \Twig_Node|null                  $lowerBody
-     * @param                                  $lineno
-     * @param null                             $tag
+     * @param \Twig_Node|null $indent
+     * @param \Twig_Node|null $outdent
+     * @param \Twig_Node|null $lowerBody
+     * @param $lineno
+     * @param $tag
      */
     public function __construct(\Twig_Node_Expression_AssignName $valueTarget, \Twig_Node $indent = null, \Twig_Node $outdent = null, \Twig_Node $lowerBody = null, $lineno, $tag = null)
     {
@@ -47,9 +47,9 @@ class NavItem_Node extends \Twig_Node
     {
         $compiler
             // Get this item's level
-            ->write('$_thisItemLevel = (int)'.Template::class.'::attribute($this->env, $this->getSourceContext(), ')
+            ->write('$_thisItemLevel = (int)' . Template::class . '::attribute($this->env, $this->getSourceContext(), ')
             ->subcompile($this->getNode('value_target'))
-            ->raw(', \'level\', [], '.\Twig_Template::class."::ANY_CALL, false, true);\n")
+            ->raw(', \'level\', [], ' . \Twig_Template::class . "::ANY_CALL, false, true);\n")
             // Was there a previous item?
             ->write("if (isset(\$_contextsByLevel)) {\n")
             ->indent()

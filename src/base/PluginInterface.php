@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
@@ -12,11 +12,10 @@ use craft\web\twig\variables\Cp;
 
 /**
  * PluginInterface defines the common interface to be implemented by plugin classes.
- *
  * A class implementing this interface should also use [[PluginTrait]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 interface PluginInterface
 {
@@ -89,4 +88,19 @@ interface PluginInterface
      * @see Cp::nav()
      */
     public function getCpNavItem();
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * Performs actions before the plugin’s settings are saved.
+     *
+     * @return bool Whether the plugin’s settings should be saved.
+     */
+    public function beforeSaveSettings(): bool;
+
+    /**
+     * Performs actions after the plugin’s settings are saved.
+     */
+    public function afterSaveSettings();
 }

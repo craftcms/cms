@@ -6,12 +6,12 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\elements\Asset;
+use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\volumes\Local;
 use yii\base\Exception;
 
@@ -30,13 +30,13 @@ class m160804_110002_userphotos_to_assets extends Migration
      */
     public function safeUp()
     {
-        $this->_basePath = Craft::$app->getPath()->getStoragePath().DIRECTORY_SEPARATOR.'userphotos';
+        $this->_basePath = Craft::$app->getPath()->getStoragePath() . DIRECTORY_SEPARATOR . 'userphotos';
 
         // Make sure the userphotos folder actually exists
         FileHelper::createDirectory($this->_basePath);
 
         echo "    > Removing __default__ folder\n";
-        FileHelper::removeDirectory($this->_basePath.DIRECTORY_SEPARATOR.'__default__');
+        FileHelper::removeDirectory($this->_basePath . DIRECTORY_SEPARATOR . '__default__');
 
         echo "    > Changing the relative path from username/original.ext to original.ext\n";
         $affectedUsers = $this->_moveUserphotos();
@@ -52,7 +52,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         echo "    > Updating Users table to drop the photo column and add photoId column.\n";
         $this->dropColumn('{{%users}}', 'photo');
-        $this->addColumn('{{%users}}', 'photoId', $this->integer()->null());
+        $this->addColumn('{{%users}}', 'photoId', $this->integer()->after('username')->null());
         $this->addForeignKey(null, '{{%users}}', ['photoId'], '{{%assets}}', ['id'], 'SET NULL', null);
 
         echo "    > Setting the photoId value\n";
@@ -97,7 +97,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             if ($subDir === '.' || $subDir === '..') {
                 continue;
             }
-            $path = $this->_basePath.DIRECTORY_SEPARATOR.$subDir;
+            $path = $this->_basePath . DIRECTORY_SEPARATOR . $subDir;
             if (is_file($path)) {
                 continue;
             }
@@ -114,7 +114,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             }
 
             // Make sure the original file still exists
-            $sourcePath = $this->_basePath.DIRECTORY_SEPARATOR.$subDir.DIRECTORY_SEPARATOR.'original'.DIRECTORY_SEPARATOR.$user['photo'];
+            $sourcePath = $this->_basePath . DIRECTORY_SEPARATOR . $subDir . DIRECTORY_SEPARATOR . 'original' . DIRECTORY_SEPARATOR . $user['photo'];
             if (!is_file($sourcePath)) {
                 continue;
             }
@@ -124,10 +124,10 @@ class m160804_110002_userphotos_to_assets extends Migration
 
             $baseFilename = pathinfo($user['photo'], PATHINFO_FILENAME);
             $extension = pathinfo($user['photo'], PATHINFO_EXTENSION);
-            $filename = $baseFilename.'.'.$extension;
+            $filename = $baseFilename . '.' . $extension;
 
-            while (is_file($this->_basePath.DIRECTORY_SEPARATOR.$filename)) {
-                $filename = $baseFilename.'_'.++$counter.'.'.$extension;
+            while (is_file($this->_basePath . DIRECTORY_SEPARATOR . $filename)) {
+                $filename = $baseFilename . '_' . ++$counter . '.' . $extension;
             }
 
             // In case the filename changed
@@ -136,7 +136,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             // Store for reference
             $affectedUsers[] = $user;
 
-            $targetPath = $this->_basePath.DIRECTORY_SEPARATOR.$filename;
+            $targetPath = $this->_basePath . DIRECTORY_SEPARATOR . $filename;
 
             // Move the file to the new location
             rename($sourcePath, $targetPath);
@@ -164,9 +164,9 @@ class m160804_110002_userphotos_to_assets extends Migration
             ->where(['handle' => $handle])
             ->one($this->db);
 
-        while (!empty($existingVolume)) {
-            $handle = 'userPhotos'.++$counter;
-            $name = 'User Photos '.$counter;
+        while ($existingVolume !== null) {
+            $handle = 'userPhotos' . ++$counter;
+            $name = 'User Photos ' . $counter;
             $existingVolume = (new Query())
                 ->select(['id'])
                 ->from(['{{%volumes}}'])
@@ -189,7 +189,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             'handle' => $handle,
             'hasUrls' => false,
             'url' => null,
-            'settings' => Json::encode(['path' => $this->_basePath]),
+            'settings' => Json::encode(['path' => '@storage/userphotos']),
             'fieldLayoutId' => null,
             'sortOrder' => $maxSortOrder + 1
         ];
@@ -218,8 +218,6 @@ class m160804_110002_userphotos_to_assets extends Migration
      * Set the photo volume setting for users.
      *
      * @param int $volumeId
-     *
-     * @return void
      */
     private function _setUserphotoVolume(int $volumeId)
     {
@@ -233,9 +231,8 @@ class m160804_110002_userphotos_to_assets extends Migration
      * Convert matching user photos to Assets in a Volume and add that information
      * to the array passed in.
      *
-     * @param int   $volumeId
+     * @param int $volumeId
      * @param array $userList
-     *
      * @return array $userList
      */
     private function _convertPhotosToAssets(int $volumeId, array $userList): array
@@ -259,7 +256,7 @@ class m160804_110002_userphotos_to_assets extends Migration
         $changes = [];
 
         foreach ($userList as $user) {
-            $filePath = $this->_basePath.DIRECTORY_SEPARATOR.$user['photo'];
+            $filePath = $this->_basePath . DIRECTORY_SEPARATOR . $user['photo'];
 
             $assetExists = (new Query())
                 ->select(['assets.id'])
@@ -269,7 +266,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'assets.folderId' => $folderId,
                     'filename' => $user['photo']
                 ])
-                ->one($this->db);
+                ->exists($this->db);
 
             if (!$assetExists && is_file($filePath)) {
                 $elementData = [
@@ -298,7 +295,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     $contentData = [
                         'elementId' => $elementId,
                         'locale' => $locale,
-                        'title' => StringHelper::toTitleCase(pathinfo($user['photo'], PATHINFO_FILENAME))
+                        'title' => AssetsHelper::filename2Title(pathinfo($user['photo'], PATHINFO_FILENAME))
                     ];
                     $db->createCommand()
                         ->insert('{{%content}}', $contentData)
@@ -311,7 +308,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'volumeId' => $volumeId,
                     'folderId' => $folderId,
                     'filename' => $user['photo'],
-                    'kind' => 'image',
+                    'kind' => Asset::KIND_IMAGE,
                     'size' => filesize($filePath),
                     'width' => $imageSize[0],
                     'height' => $imageSize[1],
@@ -332,8 +329,6 @@ class m160804_110002_userphotos_to_assets extends Migration
      * Set photo ID values for the user array passed in.
      *
      * @param array $userlist userId => assetId
-     *
-     * @return void
      */
     private function _setPhotoIdValues(array $userlist)
     {
@@ -352,7 +347,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      */
     private function _removeSubdirectories()
     {
-        $subDirs = glob($this->_basePath.DIRECTORY_SEPARATOR.'*', GLOB_ONLYDIR);
+        $subDirs = glob($this->_basePath . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
 
         foreach ($subDirs as $dir) {
             FileHelper::removeDirectory($dir);

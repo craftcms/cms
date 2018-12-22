@@ -5,11 +5,15 @@
         {
             $bg: null,
             $screens: null,
+            $dots: null,
             $currentScreen: null,
+            $currentDot: null,
 
-            $accountSubmitBtn: null,
-            $siteSubmitBtn: null,
+            $dbDriverInput: null,
+            $dbPortInput: null,
 
+            modal: null,
+            currentScreen: null,
             loading: false,
 
             /**
@@ -17,121 +21,149 @@
              */
             init: function() {
                 this.$bg = $('#bg');
-                this.$screens = Garnish.$bod.children('.modal');
+                this.$screens = $('#screens').children();
+                this.$dbDriverInput = $('#db-driver');
+                this.$dbPortInput = $('#db-port');
 
-                this.addListener($('#beginbtn'), 'activate', 'showAccountScreen');
+                this.updateDbPortInput();
+
+                this.addListener(this.$screens.find('form'), 'submit', 'handleScreenSubmit');
+                this.addListener(this.$screens.find('.btn.submit'), 'activate', 'handleScreenSubmit');
+
+                this.addListener($('#beginbtn'), 'activate', 'showModal');
+                this.addListener(this.$dbDriverInput, 'change', 'updateDbPortInput');
             },
 
-            showAccountScreen: function(event) {
-                this.showScreen(1, $.proxy(function() {
-                    $('#beginbtn').remove();
-                    this.$accountSubmitBtn = $('#accountsubmit');
-                    this.addListener(this.$accountSubmitBtn, 'activate', 'validateAccount');
-                    this.addListener($('#accountform'), 'submit', 'validateAccount');
-                }, this));
+            showModal: function() {
+                if (!this.modal) {
+                    this.modal = new Garnish.Modal($('#install-modal').removeClass('hidden'), {
+                        shadeClass: ''
+                    });
+                    this.gotoScreen(1);
+                } else {
+                    this.modal.show();
+                }
             },
 
-            validateAccount: function(event) {
-                event.preventDefault();
+            updateDbPortInput: function() {
+                var driver = this.$dbDriverInput.val();
+                var port = this.$dbPortInput.val();
+                var defaultPort = Craft.Installer.defaultDbPorts[driver];
 
-                var inputs = ['username', 'email', 'password'];
-                this.validate('account', inputs, $.proxy(this, 'showSiteScreen'));
+                this.$dbPortInput.attr('placeholder', defaultPort);
+                if (port == defaultPort) {
+                    this.$dbPortInput.val('');
+                }
             },
 
-            showSiteScreen: function() {
-                this.showScreen(2, $.proxy(function() {
-                    this.$siteSubmitBtn = $('#sitesubmit');
-                    this.addListener(this.$siteSubmitBtn, 'activate', 'validateSite');
-                    this.addListener($('#siteform'), 'submit', 'validateSite');
-                }, this));
+            handleScreenSubmit: function(ev) {
+                ev.preventDefault();
+
+                var inputs = this.getScreenInputNames(this.$currentScreen);
+                if (inputs) {
+                    this.validate(this.$currentScreen.attr('id'), inputs);
+                } else {
+                    this.gotoNextScreen();
+                }
             },
 
-            validateSite: function(event) {
-                event.preventDefault();
+            getScreenInputNames: function($screen) {
+                var inputsStr = $screen.attr('data-inputs');
+                return inputsStr ? inputsStr.split(',') : null;
+            },
 
-                var inputs = ['systemName', 'siteUrl', 'siteLanguage'];
-                this.validate('site', inputs, $.proxy(this, 'showInstallScreen'));
+            getInputData: function(what, inputs, includePrefix) {
+                var data = {};
+                for (var i = 0; i < inputs.length; i++) {
+                    var input = inputs[i],
+                        $input = $('#' + what + '-' + input);
+                    data[(includePrefix ? what + '-' : '') + input] = Garnish.getInputPostVal($input);
+                }
+                return data;
             },
 
             showInstallScreen: function() {
-                this.showScreen(3, $.proxy(function() {
-                    var inputs = ['username', 'email', 'password', 'systemName', 'siteUrl', 'siteLanguage'];
+                var data = {};
+                var $screen;
+                var inputs;
+                for (var i = 1; i < this.$screens.length - 1; i++) {
+                    $screen = this.$screens.eq(i);
+                    inputs = this.getScreenInputNames($screen);
+                    $.extend(data, this.getInputData($screen.attr('id'), inputs, true));
+                }
 
-                    var data = {};
-
-                    for (var i = 0; i < inputs.length; i++) {
-                        var input = inputs[i],
-                            $input = $('#' + input);
-
-                        data[input] = Garnish.getInputPostVal($input);
-                    }
-
-                    Craft.postActionRequest('install/install', data, $.proxy(this, 'allDone'), {
-                        complete: $.noop
-                    });
-
-                }, this));
+                Craft.postActionRequest('install/install', data, $.proxy(this, 'allDone'), {
+                    complete: $.noop
+                });
             },
 
             allDone: function(response, textStatus) {
+                $('#spinner').remove();
+                var $h1 = this.$currentScreen.find('h1:first');
+
                 if (textStatus === 'success' && response.success) {
-                    this.$currentScreen.find('h1:first').text(Craft.t('app', 'All done!'));
+                    $h1.text(Craft.t('app', 'Craft is installed! 🎉'));
 
-                    var $buttons = $('<div class="buttons"/>'),
-                        $go = $('<div class="btn big submit">' + Craft.t('app', 'Go to Craft CMS') + '</div>').appendTo($buttons);
 
-                    $('#spinner').replaceWith($buttons);
-
-                    this.addListener($go, 'click', function() {
-                        this.showScreen(30, null, 1000);
-
-                        setTimeout(function() {
-                            window.location.href = Craft.getUrl('dashboard');
-                        }, Craft.Installer.duration);
-                    });
+                    setTimeout(function() {
+                        window.location.href = Craft.getUrl('dashboard');
+                    }, 1000);
                 }
                 else {
-                    this.$currentScreen.find('h1:first').text('Oops.');
+                    $h1.text('Install failed 😞');
+                    $('<p/>', {text: 'Please check your logs for more info.'})
+                        .insertAfter($h1);
                 }
             },
 
-            showScreen: function(i, callback, bgDuration) {
-                if (!bgDuration) {
-                    bgDuration = Craft.Installer.duration;
+            gotoNextScreen: function() {
+                this.gotoScreen(this.currentScreen + 1);
+            },
+
+            gotoScreen: function(i) {
+                // Show the dots (unless it's the license screen)
+                if (i === 1) {
+                    if (this.$dots) {
+                        this.$dots.hide();
+                    }
+                } else {
+                    if (!this.$dots) {
+                        this.$dots = $();
+                        for (var j = 0; j < this.$screens.length; j++) {
+                            this.$dots = this.$dots.add($('<div/>').appendTo($('#dots')));
+                        }
+                    } else {
+                        this.$dots.show();
+                    }
                 }
 
-                // Slide the BG
-                this.$bg.velocity({left: '-' + (i * 5) + '%'}, bgDuration);
-
-                // Slide out the old screen
-                var windowWidth = Garnish.$win.width(),
-                    centeredLeftPos = Math.floor(windowWidth / 2);
-
+                // Hide the current screen
                 if (this.$currentScreen) {
-                    this.$currentScreen
-                        .css('left', centeredLeftPos)
-                        .velocity({left: -400}, Craft.Installer.duration);
+                    this.$currentScreen.addClass('hidden');
+                    if (this.$currentDot) {
+                        this.$currentDot.removeClass('sel');
+                    }
                 }
 
                 // Slide in the new screen
-                this.$currentScreen = $(this.$screens[i - 1])
-                    .css({
-                        display: 'block',
-                        left: windowWidth + 400
-                    })
-                    .velocity({left: centeredLeftPos}, Craft.Installer.duration, $.proxy(function() {
-                        // Relax the screen
-                        this.$currentScreen.css('left', '50%');
+                this.currentScreen = i;
+                this.$currentScreen = this.$screens.eq(i - 1)
+                    .removeClass('hidden');
+                if (this.$dots) {
+                    this.$currentDot = this.$dots.eq(i - 1)
+                        .addClass('sel');
+                }
 
-                        // Give focus to the first input
-                        this.focusFirstInput();
-
-                        // Call the callback
-                        callback();
-                    }, this));
+                // Is this the install screen?
+                if (i === this.$screens.length) {
+                    this.showInstallScreen();
+                } else if (i !== 1) {
+                    // Give focus to the first input
+                    this.$currentScreen.find('input[type=text]:first').trigger('focus');
+                }
             },
 
-            validate: function(what, inputs, callback) {
+            validate: function(what, inputs) {
                 // Prevent double-clicks
                 if (this.loading) {
                     return;
@@ -140,19 +172,14 @@
                 this.loading = true;
 
                 // Clear any previous error lists
-                $('#' + what + 'form').find('.errors').remove();
+                this.$currentScreen.find('.input').removeClass('errors');
+                this.$currentScreen.find('ul.errors').remove();
 
-                var $submitBtn = this['$' + what + 'SubmitBtn'];
+                var $submitBtn = this.$currentScreen.find('.btn.submit');
                 $submitBtn.addClass('sel loading');
 
                 var action = 'install/validate-' + what;
-
-                var data = {};
-                for (var i = 0; i < inputs.length; i++) {
-                    var input = inputs[i],
-                        $input = $('#' + input);
-                    data[input] = Garnish.getInputPostVal($input);
-                }
+                var data = this.getInputData(what, inputs, false);
 
                 Craft.postActionRequest(action, data, $.proxy(function(response, textStatus) {
                     this.loading = false;
@@ -160,33 +187,30 @@
 
                     if (textStatus === 'success') {
                         if (response.validates) {
-                            callback();
+                            this.gotoNextScreen();
                         }
                         else {
+                            var $errors = $('<ul/>', {'class': 'errors'})
+                                .insertBefore($('#' + what).find('.buttons'));
+
                             for (var input in response.errors) {
                                 if (!response.errors.hasOwnProperty(input)) {
                                     continue;
                                 }
 
-                                var errors = response.errors[input],
-                                    $input = $('#' + input),
-                                    $field = $input.closest('.field'),
-                                    $ul = $('<ul class="errors"/>').appendTo($field);
-
-                                for (var i = 0; i < errors.length; i++) {
-                                    var error = errors[i];
-                                    $('<li>' + error + '</li>').appendTo($ul);
+                                for (var i = 0; i < response.errors[input].length; i++) {
+                                    $('<li>' + response.errors[input][i] + '</li>').appendTo($errors);
                                 }
 
-                                if (!$input.is(':focus')) {
-                                    $input.addClass('error');
-                                    ($.proxy(function($input) {
-                                        this.addListener($input, 'focus', function() {
-                                            $input.removeClass('error');
-                                            this.removeListener($input, 'focus');
-                                        });
-                                    }, this))($input);
-                                }
+                                var $input = $('#' + what + '-' + input + '-field').children('.input');
+                                $input.addClass('errors');
+                                ($.proxy(function($input) {
+                                    var $elements = $input.find('select,input');
+                                    this.addListener($elements, 'focus,blur,textchange,change', function() {
+                                        $input.removeClass('errors');
+                                        this.removeListener($elements, 'focus,blur,textchange,change');
+                                    });
+                                }, this))($input);
                             }
 
                             Garnish.shake(this.$currentScreen);
@@ -194,17 +218,12 @@
                     }
 
                 }, this));
-            },
-
-            focusFirstInput: function() {
-                setTimeout($.proxy(function() {
-                    this.$currentScreen.find('input:first').focus();
-                }, this), Craft.Installer.duration);
             }
-
-        },
-        {
-            duration: 300
+        }, {
+            defaultDbPorts: {
+                'mysql': 3306,
+                'pgsql': 5432
+            }
         });
 
     Garnish.$win.on('load', function() {

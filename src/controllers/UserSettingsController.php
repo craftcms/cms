@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\controllers;
@@ -16,11 +16,10 @@ use yii\web\Response;
 /**
  * The UserSettingsController class is a controller that handles various user group and user settings related tasks such as
  * creating, editing and deleting user groups and saving Craft user settings.
- *
  * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class UserSettingsController extends Controller
 {
@@ -129,6 +128,7 @@ class UserSettingsController extends Controller
         $settings = $systemSettingsService->getSettings('users');
 
         $settings['photoVolumeId'] = Craft::$app->getRequest()->getBodyParam('photoVolumeId');
+        $settings['photoSubpath'] = Craft::$app->getRequest()->getBodyParam('photoSubpath');
 
         if (Craft::$app->getEdition() === Craft::Pro) {
             $settings['requireEmailVerification'] = (bool)Craft::$app->getRequest()->getBodyParam('requireEmailVerification');

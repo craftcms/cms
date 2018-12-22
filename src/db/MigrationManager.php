@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\db;
@@ -22,7 +22,7 @@ use yii\di\Instance;
  * MigrationManager manages a set of migrations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class MigrationManager extends Component
 {
@@ -83,7 +83,7 @@ class MigrationManager extends Component
         }
 
         if (!in_array($this->type, [self::TYPE_APP, self::TYPE_PLUGIN, self::TYPE_CONTENT], true)) {
-            throw new InvalidConfigException('Invalid migration type: '.$this->type);
+            throw new InvalidConfigException('Invalid migration type: ' . $this->type);
         }
 
         if ($this->type == self::TYPE_PLUGIN && $this->pluginId === null) {
@@ -103,7 +103,6 @@ class MigrationManager extends Component
      * Creates a new migration instance.
      *
      * @param string $name The migration name
-     *
      * @return MigrationInterface|\yii\db\Migration The migration instance
      * @throws Exception if the migration folder doesn't exist
      */
@@ -113,8 +112,8 @@ class MigrationManager extends Component
             throw new Exception("Can't instantiate migrations because the migration folder doesn't exist");
         }
 
-        $file = $this->migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
-        $class = $this->migrationNamespace.'\\'.$name;
+        $file = $this->migrationPath . DIRECTORY_SEPARATOR . $name . '.php';
+        $class = $this->migrationNamespace . '\\' . $name;
         require_once $file;
 
         return new $class;
@@ -123,10 +122,8 @@ class MigrationManager extends Component
     /**
      * Upgrades the application by applying new migrations.
      *
-     * @param int $limit             The number of new migrations to be applied. If 0, it means
-     *                               applying all available new migrations.
-     *
-     * @return void
+     * @param int $limit The number of new migrations to be applied. If 0, it means
+     * applying all available new migrations.
      * @throws MigrationException on migrate failure
      */
     public function up(int $limit = 0)
@@ -150,9 +147,9 @@ class MigrationManager extends Component
         $n = count($migrationNames);
 
         if ($n === $total) {
-            $logMessage = "Total $n new ".($n === 1 ? 'migration' : 'migrations').' to be applied:';
+            $logMessage = "Total $n new " . ($n === 1 ? 'migration' : 'migrations') . ' to be applied:';
         } else {
-            $logMessage = "Total $n out of $total new ".($total === 1 ? 'migration' : 'migrations').' to be applied:';
+            $logMessage = "Total $n out of $total new " . ($total === 1 ? 'migration' : 'migrations') . ' to be applied:';
         }
 
         foreach ($migrationNames as $migrationName) {
@@ -177,9 +174,7 @@ class MigrationManager extends Component
      * Downgrades the application by reverting old migrations.
      *
      * @param int $limit The number of migrations to be reverted. Defaults to 1,
-     *                   meaning the last applied migration will be reverted. If set to 0, all migrations will be reverted.
-     *
-     * @return void
+     * meaning the last applied migration will be reverted. If set to 0, all migrations will be reverted.
      * @throws MigrationException on migrate failure
      */
     public function down(int $limit = 1)
@@ -195,7 +190,7 @@ class MigrationManager extends Component
         }
 
         $n = count($migrationNames);
-        $logMessage = "Total $n ".($n === 1 ? 'migration' : 'migrations').' to be reverted:';
+        $logMessage = "Total $n " . ($n === 1 ? 'migration' : 'migrations') . ' to be reverted:';
 
         foreach ($migrationNames as $migrationName) {
             $logMessage .= "\n\t$migrationName";
@@ -219,8 +214,6 @@ class MigrationManager extends Component
      * Upgrades with the specified migration.
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
-     *
-     * @return void
      * @throws InvalidConfigException if $migration is invalid
      * @throws MigrationException on migrate failure
      */
@@ -256,10 +249,10 @@ class MigrationManager extends Component
         }
         $time = microtime(true) - $start;
 
-        $log = ($success ? 'Applied ' : 'Failed to apply ').$migrationName.' (time: '.sprintf('%.3f', $time).'s).';
+        $log = ($success ? 'Applied ' : 'Failed to apply ') . $migrationName . ' (time: ' . sprintf('%.3f', $time) . 's).';
         if (!$isConsoleRequest) {
             $output = ob_get_clean();
-            $log .= " Output:\n".$output;
+            $log .= " Output:\n" . $output;
         }
 
         if (!$success) {
@@ -275,8 +268,6 @@ class MigrationManager extends Component
      * Downgrades with the specified migration.
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to revert, or the migration itself
-     *
-     * @return void
      * @throws InvalidConfigException if $migration is invalid
      * @throws MigrationException on migrate failure
      */
@@ -312,10 +303,10 @@ class MigrationManager extends Component
         }
         $time = microtime(true) - $start;
 
-        $log = ($success ? 'Reverted ' : 'Failed to revert ').$migrationName.' (time: '.sprintf('%.3f', $time).'s).';
+        $log = ($success ? 'Reverted ' : 'Failed to revert ') . $migrationName . ' (time: ' . sprintf('%.3f', $time) . 's).';
         if (!$isConsoleRequest) {
             $output = ob_get_clean();
-            $log .= " Output:\n".$output;
+            $log .= " Output:\n" . $output;
         }
 
         if (!$success) {
@@ -331,7 +322,6 @@ class MigrationManager extends Component
      * Returns the migration history.
      *
      * @param int $limit The maximum number of records in the history to be returned. `null` for "no limit".
-     *
      * @return array The migration history
      */
     public function getMigrationHistory(int $limit = 0): array
@@ -384,10 +374,24 @@ class MigrationManager extends Component
     }
 
     /**
+     * Truncates the migration history.
+     */
+    public function truncateHistory()
+    {
+        Craft::$app->getDb()->createCommand()
+            ->delete(
+                $this->migrationTable,
+                [
+                    'type' => $this->type,
+                    'pluginId' => $this->pluginId,
+                ])
+            ->execute();
+    }
+
+    /**
      * Returns whether a given migration has been applied.
      *
      * @param string $name The migration name
-     *
      * @return bool Whether the migration has been applied
      */
     public function hasRun(string $name): bool
@@ -419,7 +423,7 @@ class MigrationManager extends Component
                 continue;
             }
 
-            $path = $this->migrationPath.DIRECTORY_SEPARATOR.$file;
+            $path = $this->migrationPath . DIRECTORY_SEPARATOR . $file;
 
             if (preg_match('/^(m\d{6}_\d{6}_.*?)\.php$/', $file, $matches) && is_file($path) && !isset($history[$matches[1]])) {
                 $migrations[] = $matches[1];
@@ -439,7 +443,6 @@ class MigrationManager extends Component
      * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
-     *
      * @return array
      */
     private function _normalizeMigration($migration): array
@@ -463,7 +466,10 @@ class MigrationManager extends Component
     private function _createMigrationQuery(): Query
     {
         // TODO: Remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo()->version, '3.0', '<')) {
+        if (
+            version_compare(Craft::$app->getInfo()->version, '3.0', '<') &&
+            Craft::$app->getDb()->columnExists($this->migrationTable, 'version', true)
+        ) {
             $query = (new Query())
                 ->select(['version as name', 'applyTime'])
                 ->from([$this->migrationTable])

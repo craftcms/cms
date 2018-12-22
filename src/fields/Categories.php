@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
@@ -17,7 +17,7 @@ use craft\helpers\ElementHelper;
  * Categories represents a Categories field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Categories extends BaseRelationField
 {
@@ -81,9 +81,9 @@ class Categories extends BaseRelationField
         if (is_array($value)) {
             /** @var Category[] $categories */
             $categories = Category::find()
-                ->id($value)
-                ->status(null)
-                ->enabledForSite(false)
+                ->siteId($this->targetSiteId($element))
+                ->id(array_values(array_filter($value)))
+                ->anyStatus()
                 ->all();
 
             // Fill in any gaps
@@ -112,7 +112,7 @@ class Categories extends BaseRelationField
         }
 
         if (empty($source)) {
-            return '<p class="error">'.Craft::t('app', 'This field is not set to a valid category group.').'</p>';
+            return '<p class="error">' . Craft::t('app', 'This field is not set to a valid category group.') . '</p>';
         }
 
         return parent::getInputHtml($value, $element);

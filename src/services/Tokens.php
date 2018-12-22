@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.com/license
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\services;
@@ -19,11 +19,10 @@ use yii\db\Expression;
 
 /**
  * The Tokens service.
- *
- * An instance of the Tokens service is globally accessible in Craft via [[Application::tokens `Craft::$app->getTokens()`]].
+ * An instance of the Tokens service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTokens()|`Craft::$app->tokens`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @since 3.0
  */
 class Tokens extends Component
 {
@@ -41,14 +40,14 @@ class Tokens extends Component
     /**
      * Creates a new token and returns it.
      *
-     * @param mixed         $route      Where matching requests should be routed to. If you want them to be routed to a
-     *                                  controller action, pass:
-     *                                  `['action' => "controller/action", 'params' => ['foo' => 'bar']]`.
-     * @param int|null      $usageLimit The maximum number of times this token can be used. Defaults to no limit.
-     * @param DateTime|null $expiryDate The date that the token expires. Defaults to the 'defaultTokenDuration' config
-     *                                  setting.
-     *
-     * @return string|false             The generated token, or `false` if there was an error.
+     * @param mixed $route Where matching requests should be routed to. If you
+     * want them to be routed to a controller action, pass:
+     * `['action' => "controller/action", 'params' => ['foo' => 'bar']]`.
+     * @param int|null $usageLimit The maximum number of times this token can be
+     * used. Defaults to no limit.
+     * @param DateTime|null $expiryDate The date that the token expires.
+     * Defaults to the 'defaultTokenDuration' config setting.
+     * @return string|false The generated token, or `false` if there was an error.
      */
     public function createToken($route, int $usageLimit = null, DateTime $expiryDate = null)
     {
@@ -82,7 +81,6 @@ class Tokens extends Component
      * Searches for a token, and possibly returns a route for the request.
      *
      * @param string $token
-     *
      * @return array|false
      */
     public function getTokenRoute(string $token)
@@ -95,36 +93,35 @@ class Tokens extends Component
             ->where(['token' => $token])
             ->one();
 
-        if ($result) {
-            // Usage limit enforcement (for future requests)
-            if ($result['usageLimit']) {
-                // Does it have any more life after this?
-                if ($result['usageCount'] < $result['usageLimit'] - 1) {
-                    // Increment its count
-                    $this->incrementTokenUsageCountById($result['id']);
-                } else {
-                    // Just delete it
-                    $this->deleteTokenById($result['id']);
-                }
-            }
-
-            // Figure out where we should route the request
-            $route = $result['route'];
-
-            // Might be JSON, might not be
-            $route = Json::decodeIfJson($route);
-
-            return $route;
+        if (!$result) {
+            return false;
         }
 
-        return false;
+        // Usage limit enforcement (for future requests)
+        if ($result['usageLimit']) {
+            // Does it have any more life after this?
+            if ($result['usageCount'] < $result['usageLimit'] - 1) {
+                // Increment its count
+                $this->incrementTokenUsageCountById($result['id']);
+            } else {
+                // Just delete it
+                $this->deleteTokenById($result['id']);
+            }
+        }
+
+        // Figure out where we should route the request
+        $route = $result['route'];
+
+        // Might be JSON, might not be
+        $route = Json::decodeIfJson($route);
+
+        return $route;
     }
 
     /**
      * Increments a token's usage count.
      *
      * @param int $tokenId
-     *
      * @return bool
      */
     public function incrementTokenUsageCountById(int $tokenId): bool
@@ -147,7 +144,6 @@ class Tokens extends Component
      * Deletes a token by its ID.
      *
      * @param int $tokenId
-     *
      * @return bool
      */
     public function deleteTokenById(int $tokenId): bool
