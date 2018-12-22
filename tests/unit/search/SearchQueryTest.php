@@ -126,6 +126,19 @@ class SearchQueryTest extends Unit
         $subTermRight = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
         $subTermRight['term'] = 'Hello';
 
+        $attributeConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $attributeConfig['term'] = 'test';
+        $attributeConfig['phrase'] = true;
+        $attributeConfig['attribute'] = 'body';
+        $attributeConfig['exact'] = true;
+
+        $emptyConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $emptyConfig['term'] = '';
+        $emptyConfig['exclude'] = true;
+        $emptyConfig['subRight'] = false;
+        $emptyConfig['subLeft'] = true;
+        $emptyConfig['attribute'] = 'body';
+
         return [
             ['i said "Hello"', ['Hello' => $quotedPhraseConfig], 3],
             ['i said \'Hello\'', ['Hello' => $quotedPhraseConfig], 3],
@@ -133,6 +146,8 @@ class SearchQueryTest extends Unit
             ['i said *Hello', ['Hello' => $subtermLeft], 3],
             ['i said Hello*', ['Hello' => $subTermRight], 3],
             ['i said *Hello*', ['Hello' => $subtermLeft], 3],
+            ['i said body::"test"', ['test' => $attributeConfig], 3],
+            ['i said -body:*', ['index2' => $emptyConfig], 3],
 
             ['i have spaces and lines', null, 5]
         ];
@@ -163,12 +178,18 @@ class SearchQueryTest extends Unit
         if ($sizeOfArray !== null){
             $this->assertCount($sizeOfArray, $search->getTokens());
         }
-
+        
         // Loop through the given tokens.
         foreach ($search->getTokens() as $index => $token) {
 
-            // Get wether the data provider gave us custom config options for this term
-            $config = $this->getConfigFromOptions($token->term, $configOptions);
+            // If token term is an empty sring we try to find a config option by index+index_number
+            $searchTerm = $token->term;
+            if (!$searchTerm || $searchTerm === '') {
+                $searchTerm = 'index'.$index.'';
+            }
+
+            // Get wether the data provider gave us custom config options for this term based on the above searchParam
+            $config = $this->getConfigFromOptions($searchTerm, $configOptions);
 
             // Setup the token objects for comparison based on the config above and the term of the token
             $whatItShouldBe = $createDefaultFromString($token->term, $config);
