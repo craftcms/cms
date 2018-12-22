@@ -36,7 +36,7 @@ class Craft extends Yii2
          * DB event listeners are registered. Moving the order of these listeners to the top of the _before function means the conneciton
          * is registered.
          *
-         * What i need to investigate is whether iam doing something wrong in the src/tests/_craft/config/test.php or this is PR 'worthy'
+         * What i need to investigate is whether iam doing something wrong in the src/tests/_craft/config/test.php or if this is PR 'worthy'
          * For now: Remounting the DB object using Craft::$app->set() after the event listeners are called works perfectly fine.
          */
         $db = \Craft::createObject(
@@ -50,5 +50,17 @@ class Craft extends Yii2
             ])));
 
         \Craft::$app->set('db', $db);
+    }
+
+
+    public function _after(TestInterface $test)
+    {
+        // https://github.com/yiisoft/yii2/issues/11633 || The (possibly) MyISAM {{%searchindex}} table doesnt support transactions.
+        // So we manually delete any rows in there except if the element id is 1 (The user added when creating the DB)
+        parent::_after($test);
+
+        \Craft::$app->getDb()->createCommand()
+            ->delete('{{%searchindex}}', 'elementId != 1')
+            ->execute();
     }
 }

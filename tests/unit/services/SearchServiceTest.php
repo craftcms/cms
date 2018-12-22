@@ -10,6 +10,7 @@ use Codeception\Test\Unit;
 use craft\db\Query;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\helpers\ArrayHelper;
 use craftunit\fixtures\EntriesFixture;
 use craftunit\fixtures\SitesFixture;
 use craftunit\fixtures\UsersFixture;
@@ -31,6 +32,7 @@ class SearchServiceTest extends Unit
             ]
         ];
     }
+
 
     /**
      * @dataProvider filterElementIdByQueryData
@@ -64,10 +66,12 @@ class SearchServiceTest extends Unit
             [['user1', 'user2', 'user3'], ['user1', 'user2', 'user3'], 'user', true, 1, false],
             [['user4'], ['user1', 'user2', 'user3', 'user4'], 'user someemail', true, 1, false],
             [[], ['user1', 'user2', 'user3'], 'user someemail', true, 1, false ],
+            [[], [], 'user1@crafttest.com', true, 1, false],
+            [[], [], 'slug:', true, 1, false],
+            [[], [], 'slug:""', true, 1, false],
 
             // User4 goes first as it has both user and someemail keywords
             [['user4', 'user1', 'user2', 'user3'], ['user1', 'user2', 'user3', 'user4'], 'user OR someemail', true, 1, false],
-            // TODO: [[], ['user1', 'user2', 'user3', 'user4'],'user OR someemail', false, 1, false],
             [['user4', 'user1'], ['user1', 'user2', 'user3', 'user4'],'someemail OR -firstName:*', true, 1, false],
         ];
     }
@@ -111,7 +115,28 @@ class SearchServiceTest extends Unit
                     ['identifier' => 'user3', 'score' => 13.333333333333332]
                 ], [], 'user', true, 1
             ],
-
+            [
+                [
+                    ['identifier' => 'user4', 'score' => 1.6666666666666665],
+                    ['identifier' => 'user1', 'score' => 0.0],
+                ],['user1', 'user2', 'user3', 'user4'],'someemail OR -firstName:*', true, 1
+            ],
+            [
+                [
+                    ['identifier' => 'user4', 'score' => 60.833333333333336],
+                    ['identifier' => 'user1', 'score' => 6.666666666666666],
+                    ['identifier' => 'user2', 'score' => 6.666666666666666],
+                    ['identifier' => 'user3', 'score' => 6.666666666666666]
+                ], ['user1', 'user2', 'user3', 'user4'], 'user OR someemail', true, 1
+            ],
+            [
+                [
+                    ['identifier' => 'user4', 'score' => 0.0],
+                    ['identifier' => 'user1', 'score' => 0.0],
+                    ['identifier' => 'user2', 'score' => 0.0],
+                    ['identifier' => 'user3', 'score' => 0.0]
+                ], ['user1', 'user2', 'user3', 'user4'], '-slug:*', true, 1
+            ]
         ];
     }
 
@@ -125,6 +150,51 @@ class SearchServiceTest extends Unit
         $this->assertSame($result, $filtered);
     }
 
+
+    /*
+     * TODO: test with fields and multisite using entries
+     */
+    public function testIndexElementAttributes()
+    {
+        $user = new User();
+        $user->username = 'testIndexElementAttributes1';
+        $user->email = 'testIndexElementAttributes1@test.com';
+        $user->firstName = 'john smith';
+        $user->lastName = 'WIL K ER SON!';
+        $user->id = '666';
+
+
+        \Craft::$app->getSearch()->indexElementAttributes($user);
+
+        $searchIndex = (new Query())->select('*')->from('{{%searchindex}}')->where(['elementId' => $user->id])->all();
+
+        $this->assertSame(' testindexelementattributes1 test com ', $this->getSearchIndexValueByAttribute('email', $searchIndex));
+        $this->assertSame(' john smith ', $this->getSearchIndexValueByAttribute('firstname', $searchIndex));
+        $this->assertSame(' wil k er son ', $this->getSearchIndexValueByAttribute('lastname', $searchIndex));
+        $this->assertSame(' john smith wil k er son ', $this->getSearchIndexValueByAttribute('fullname', $searchIndex));
+    }
+
+    /**
+     * @param $attributeName
+     * @param $searchIndex
+     * @return array
+     */
+    private function getSearchIndexValueByAttribute($attributeName, $searchIndex) : string
+    {
+        foreach (ArrayHelper::filterByValue($searchIndex, 'attribute', $attributeName) as $array) {
+            if (isset($array['keywords'])) {
+                return $array['keywords'];
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * @param array $usernameOrEmails
+     * @param bool $typecastToInt
+     * @return array
+     */
     private function usernameEmailArrayToIdList(array $usernameOrEmails, bool $typecastToInt = true)
     {
         $ids = [];
@@ -137,6 +207,10 @@ class SearchServiceTest extends Unit
         return $ids;
     }
 
+    /**
+     * @param array $usernameOrEmailsAndScores
+     * @return array
+     */
     private function scoreList(array $usernameOrEmailsAndScores)
     {
         $ids = [];
@@ -148,6 +222,10 @@ class SearchServiceTest extends Unit
         return $ids;
     }
 
+    /**
+     * @param string $emailOrUsername
+     * @return User|null
+     */
     private function getUserIdByEmailOrUserName(string $emailOrUsername)
     {
         return \Craft::$app->getUsers()->getUserByUsernameOrEmail($emailOrUsername);
