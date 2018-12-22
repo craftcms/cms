@@ -15,6 +15,7 @@ $vendorPath = $basePath.'/vendor';
 $config = ArrayHelper::merge(
     [
         'components' => [
+
             'config' => [
                 'class' => Config::class,
                 'configDir' => __DIR__,

@@ -62,6 +62,11 @@ use yii\mutex\Mutex;
 class AppTest extends Unit
 {
     /**
+     * @var \UnitTester
+     */
+    public $tester;
+
+    /**
      * @param $instance
      * @param $maps
      * @throws \yii\base\InvalidConfigException
@@ -125,7 +130,6 @@ class AppTest extends Unit
             [Users::class, ['getUsers', 'users']],
             [Utilities::class, ['getUtilities', 'utilities']],
             [Volumes::class, ['getVolumes', 'volumes']],
-
         ];
     }
 }

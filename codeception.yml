@@ -38,4 +38,4 @@ modules:
         password: '%TEST_DB_PASS%'
         dump: 'tests/_data/craft3test.sql'
         populate: true # Reload before the test suite is started
-        cleanup: false #Dont reload the sql file for each test.
+        cleanup: false #Dont reload the DB for each test.

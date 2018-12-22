@@ -13,3 +13,12 @@ node_modules/
 vendor/
 /composer.lock
 /bower_components
+/product.jpg
+/src/.idea/codeStyles/Project.xml
+/src/.idea/dbnavigator.xml
+/src/.idea/encodings.xml
+/src/.idea/misc.xml
+/src/.idea/modules.xml
+/src/.idea/src.iml
+/src/.idea/vcs.xml
+/src/.idea/workspace.xml
