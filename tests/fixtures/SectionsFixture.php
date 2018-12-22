@@ -8,6 +8,7 @@
 
 namespace craftunit\fixtures;
 
+use craft\db\Query;
 use craft\records\Section as SectionRecord;
 use craft\records\Section;
 use craft\services\Sections;
@@ -28,6 +29,8 @@ class SectionsFixture extends Fixture
 
     public function load()
     {
-        \Craft::$app->set('sections', \Craft::createObject(['class' => Sections::class]));
+        parent::load();
+
+        \Craft::$app->set('sections', new Sections());
     }
 }

@@ -8,17 +8,17 @@
 
 namespace craftunit\fixtures;
 
-use \craft\test\elementfixtures\EntriesFixture as BaseEntriesFixture;
+
+use craft\test\elementfixtures\UserFixture;
 
 /**
- * Unit tests for ElementsFixture
+ * Unit tests for UsersFixture
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
  */
-class EntriesFixture extends BaseEntriesFixture
+class UsersFixture extends UserFixture
 {
-    public $dataFile = __DIR__.'/data/entries.php';
-    public $depends = [SectionsFixture::class, EntryTypeFixture::class];
+    public $dataFile = __DIR__.'/data/users.php';
 }
