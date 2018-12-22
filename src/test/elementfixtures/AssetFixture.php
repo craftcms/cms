@@ -28,7 +28,6 @@ abstract class AssetFixture extends ElementFixture
     public $modelClass = Asset::class;
 
     /**
-     * TODO: Cant we just call parent::load() here?
      * {@inheritdoc}
      */
     public function load(): void
@@ -41,11 +40,8 @@ abstract class AssetFixture extends ElementFixture
                 $element->$handle = $value;
             }
 
-            try {
-                $result = Craft::$app->getElements()->saveElement($element);
-            } catch (\PHPUnit\Framework\Exception $e) {
-                break; // do nothing while testing
-            }
+            $result = Craft::$app->getElements()->saveElement($element);
+
             if (!$result) {
                 throw new ErrorException(join(' ', $element->getErrorSummary(true)));
             }
@@ -71,6 +67,7 @@ abstract class AssetFixture extends ElementFixture
         $this->data = [];
     }
 
+
     /**
      * {@inheritdoc}
      */
@@ -89,10 +86,12 @@ abstract class AssetFixture extends ElementFixture
     public function getElement(array $data = null): ?Asset
     {
         $element = parent::getElement($data);
+
         if (is_null($data)) {
             $element->avoidFilenameConflicts = true;
             $element->setScenario(Asset::SCENARIO_REPLACE);
         }
+
         return $element;
     }
 }

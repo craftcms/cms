@@ -110,6 +110,7 @@ abstract class ElementFixture extends ActiveFixture
                 $query = $query->$key($value);
             }
         }
+
         return $query->one();
     }
 }

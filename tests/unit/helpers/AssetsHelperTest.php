@@ -10,6 +10,7 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
+use craft\db\Query;
 use craft\elements\Asset;
 use craft\helpers\Assets;
 use craft\helpers\ConfigHelper;
@@ -45,16 +46,26 @@ class AssetsHelperTest extends Unit
     /**
      * @param $result
      * @param $input
+     * @dataProvider urlGenerationData
      */
-   // public function testUrlGeneration($result, $asset, $volume)
-    //{
-     //   Assets::generateUrl();
-    //}
+    public function testUrlGeneration($resultUrl, $params)
+    {
+        $assetQuery = Asset::find();
+
+        foreach ($params as $key => $value) {
+            $assetQuery->$key = $value;
+        }
+
+        $asset = $assetQuery->one();
+        $volume = $asset->getVolume();
+
+        $this->assertSame($resultUrl, Assets::generateUrl($volume, $asset));
+    }
 
     public function urlGenerationData()
     {
         return [
-            ['url', 'assetParams', ]
+            ['https://cdn.test.craftcms.dev/test-volume-1/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']]
         ];
     }
 

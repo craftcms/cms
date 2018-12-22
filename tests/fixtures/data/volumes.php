@@ -2,7 +2,7 @@
 
 return [
     'basic-volume' => [
-        'id' => '5',
+        'id' => '1000',
         'name' => 'Test volume 1',
         'handle' => 'testVolume1',
         'type' => \craft\volumes\Local::class,

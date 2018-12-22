@@ -6,7 +6,7 @@ return [
     [
         'tempFilePath' => 'product.jpg',
         'filename' => 'product.jpg',
-        'volumeId' => 5,
-        'folderId' => 5,
+        'volumeId' => '1000',
+        'folderId' => '1000',
     ],
 ];
