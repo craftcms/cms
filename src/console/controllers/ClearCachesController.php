@@ -1,11 +1,8 @@
 <?php
 /**
- * Tool plugin for Craft CMS 3.x
- *
- * A multi-tool for Craft CMS
- *
- * @link      https://nystudio107.com
- * @copyright Copyright (c) 2018 nystudio107
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\console\controllers;
@@ -20,9 +17,8 @@ use yii\console\Controller;
 /**
  * Clear caches via the CLI
  *
- * @author    nystudio107
- * @package   Tool
- * @since     1.0.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 class ClearCachesController extends Controller
 {
