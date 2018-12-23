@@ -69,4 +69,62 @@ class ModelTest extends Unit
         $this->assertSame('2018-11-12 20:00:00', $model->exampleDateParam);
     }
 
+    /**
+     * Basic merge test
+     */
+    public function testMergingOfErrors()
+    {
+        $model1 = new ExampleModel();
+        $model2 = new ExampleModel();
+        $model2->addError('exampleParam','thisAintGood');
+
+        $model1->addModelErrors($model2);
+
+        $this->assertCount(1, $model1->getErrors());
+        $this->assertCount(1, $model1->getErrors()['exampleParam']);
+
+        $this->assertSame('thisAintGood', $model1->getErrors()['exampleParam'][0]);
+    }
+
+    /**
+     * What happens if both models have errors
+     */
+    public function testMergingWithExistingParams()
+    {
+        $model1 = new ExampleModel();
+        $model1->addError('exampleParam','thisAintGood');
+
+        $model2 = new ExampleModel();
+        $model2->addError('exampleParam','alsoAintGood');
+
+        $model1->addModelErrors($model2);
+
+        $this->assertCount(1, $model1->getErrors());
+        $this->assertCount(2, $model1->getErrors()['exampleParam']);
+
+        $this->assertSame('thisAintGood', $model1->getErrors()['exampleParam'][0]);
+        $this->assertSame('alsoAintGood', $model1->getErrors()['exampleParam'][1]);
+    }
+
+    /**
+     * Test what happens when we pass in an attribute prefix at addModelErrors
+     */
+    public function testAttributePrefix()
+    {
+        $model1 = new ExampleModel();
+        $model1->addError('exampleParam','thisAintGood');
+
+        $model2 = new ExampleModel();
+        $model2->addError('exampleParam','alsoAintGood');
+
+        $model1->addModelErrors($model2, '-custom-');
+
+        $this->assertCount(2, $model1->getErrors());
+        $this->assertCount(1, $model1->getErrors()['exampleParam']);
+        $this->assertCount(1, $model1->getErrors()['-custom-.exampleParam']);
+
+        $this->assertSame('thisAintGood', $model1->getErrors()['exampleParam'][0]);
+        $this->assertSame('alsoAintGood', $model1->getErrors()['-custom-.exampleParam'][0]);
+    }
+
 }
