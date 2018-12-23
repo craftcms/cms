@@ -16,6 +16,11 @@ use craft\helpers\App;
  * Class DB.
  *
  *
+ * TODO: Now that we have a Craft module that extends the Yii2 module. Shouldnt we just put this code there
+ * and initialize in that module (the _initialize() method). Then we can ignore the DB module in the codeception.yaml and start working
+ * on integrating plugins and modules?
+ *
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0

@@ -21,6 +21,14 @@ use Codeception\TestInterface;
  */
 class Craft extends Yii2
 {
+    /*
+     * TODO: Place the DB setup code in here rather than the DB module.
+     */
+    public function _initialize()
+    {
+        parent::_initialize();
+    }
+
     public function _before(TestInterface $test)
     {
         parent::_before($test);

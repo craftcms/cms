@@ -19,4 +19,20 @@ use craft\base\Model;
 class ExampleModel extends Model
 {
     public $exampleParam;
+    public $exampleDateParam;
+
+    public $dateCreated;
+    public $dateUpdated;
+
+    /**
+     * @return array
+     */
+    public function datetimeAttributes(): array
+    {
+        $attr = parent::datetimeAttributes();
+
+        $attr[] = 'exampleDateParam';
+
+        return $attr;
+    }
 }
