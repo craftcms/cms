@@ -54,7 +54,7 @@ class DynamicAction extends Action
      */
     public function run()
     {
-        $label = $this->controller->ansiFormat(Craft::t('tool', 'Clearing cache:'), Console::FG_GREEN);
+        $label = $this->controller->ansiFormat(Craft::t('app', 'Clearing cache:'), Console::FG_GREEN);
         $name = $this->controller->ansiFormat($this->label, Console::FG_YELLOW);
         echo "$label $name\n";
         if (is_string($this->action)) {
