@@ -110,12 +110,9 @@ class TestSetup
 
         if ($this->connection->getIsMysql()) {
             $this->connection->createCommand("SET foreign_key_checks = 0")->execute();
-            $tables = $this->connection->schema->getTableNames();
-
             foreach ($tables as $table) {
                 $this->connection->createCommand()->dropTable($table)->execute();
             }
-
             $this->connection->createCommand("SET foreign_key_checks = 1")->execute();
         } else {
             // TODO: Drop all in pgsql

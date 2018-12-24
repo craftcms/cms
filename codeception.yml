@@ -11,24 +11,24 @@ settings:
 coverage:
     enabled: true
     include:
-      - src/*
+        - src/*
     exclude:
-      - tests/_support/_generated/*
-      - src/config/*
-      - src/icons/*
-      - src/test/*
-      - src/migrations/*
-      - src/templates/*
-      - src/translations/*
-      - src/migration.php.template
+        - tests/_support/_generated/*
+        - src/config/*
+        - src/icons/*
+        - src/test/*
+        - src/migrations/*
+        - src/templates/*
+        - src/translations/*
+        - src/migration.php.template
 params:
-  - tests/.env
+    - tests/.env
 modules:
-  config:
-    \craft\test\Craft:
-      configFile: 'tests/_craft/config/test.php'
-      entryUrl: 'https://test.craftcms.dev/'
-      entryScript: 'index.php'
-      cleanup: true # Should tests and fixtures be cleaned
-      transaction: true # Wrap in transaction
-      setupDb: true
+    config:
+        \craft\test\Craft:
+            configFile: 'tests/_craft/config/test.php'
+            entryUrl: 'https://test.craftcms.dev/'
+            entryScript: 'index.php'
+            cleanup: true # Should tests and fixtures be cleaned
+            transaction: true # Wrap in transaction
+            setupDb: true

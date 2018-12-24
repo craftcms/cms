@@ -6,6 +6,9 @@
  */
 namespace craftunit\web;
 
+use craft\elements\Asset;
+use craftunit\fixtures\AssetsFixture;
+
 /**
  * Unit tests for the Url Helper class.
  *

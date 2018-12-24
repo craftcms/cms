@@ -8,6 +8,6 @@ class_name: AcceptanceTester
 modules:
     enabled:
         - \craft\test\Craft:
-            part: init
-            cleanup: false # don't wrap test in transaction
-            entryScript: index-test.php
+              part: init
+              cleanup: false # don't wrap test in transaction
+              entryScript: index-test.php

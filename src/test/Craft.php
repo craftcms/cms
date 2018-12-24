@@ -89,11 +89,11 @@ class Craft extends Yii2
         // TODO: Here is where we need to add plugins and migrations to run aswell. To do that we need to rewrite the TestSetup class.
         $testSetup = new TestSetup($conn);
         $testSetup->clenseDb();
+
         $testSetup->setupDb();
 
         // Dont output anything or we get header's already sent exception
-        ob_clean();
-
+        ob_end_clean();
         TestSetup::tearDownCraft();
     }
 

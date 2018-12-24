@@ -9,6 +9,8 @@
 namespace craft\test\fixtures;
 
 
+use craft\behaviors\ContentBehavior;
+use craft\behaviors\ElementQueryBehavior;
 use craft\fields\PlainText;
 use craft\records\Field;
 use craft\services\Fields;
@@ -31,8 +33,9 @@ class FieldFixture extends Fixture
     {
         foreach ($this->getData() as $alias => $row) {
             if (isset($row['fieldType'])) {
-                $field = new $row['fieldType'];
-                unset($field['fieldType']);
+                $class = $row['fieldType'];
+                $field = new $class;
+                unset($row['fieldType']);
             } else {
                 $field = new PlainText();
             }
