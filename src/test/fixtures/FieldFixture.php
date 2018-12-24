@@ -12,6 +12,7 @@ namespace craft\test\fixtures;
 use craft\behaviors\ContentBehavior;
 use craft\behaviors\ElementQueryBehavior;
 use craft\fields\PlainText;
+use craft\helpers\FileHelper;
 use craft\records\Field;
 use craft\services\Fields;
 use craft\test\Craft;
@@ -50,6 +51,8 @@ class FieldFixture extends Fixture
         }
 
         \Craft::$app->set('fields', new Fields());
+
+        // TODO: How do we updated content behavior here?
     }
 
     public function unload()
@@ -58,7 +61,7 @@ class FieldFixture extends Fixture
         foreach ($this->getData() as $toBeDeletedRow) {
             $field = \Craft::$app->getFields()->getFieldByHandle($toBeDeletedRow['handle']);
 
-            if ($field instanceof \craft\base\Field) {
+            if ($field) {
                 if (!\Craft::$app->getFields()->deleteField($field)) {
                     $fieldsThatDidntSave[$field->handle] = $field->name;
                 }
