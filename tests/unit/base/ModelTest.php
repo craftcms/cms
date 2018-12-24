@@ -21,6 +21,30 @@ use craft\test\mockclasses\models\ExampleModel;
  */
 class ModelTest extends Unit
 {
+    /**
+     * @param $result
+     * @param $input
+     * @dataProvider hasErrorsData
+     */
+    public function testHasErrors($result, $input, $searchParam, $paramName)
+    {
+        $model1 = new ExampleModel();
+        $model1->addError($paramName, $input);
+
+        $this->assertSame($result, $model1->hasErrors($searchParam));
+    }
+    public function hasErrorsData()
+    {
+        return [
+            [true, 'error', 'fields.*', 'fields[body]'],
+            [true, 'error', 'fields.*', 'fields.body'],
+            [true, 'error', 'fields.*', 'fields[body'],
+            [true, 'error', 'fields.*', 'fields.[body'],
+            [true, 'error', 'fields.*', 'fields.[body]'],
+
+            [true, 'error', 'exampleParam', 'exampleParam'],
+        ];
+    }
 
     /**
      * Test the DateTimeAttributes function of the base Model
@@ -126,5 +150,4 @@ class ModelTest extends Unit
         $this->assertSame('thisAintGood', $model1->getErrors()['exampleParam'][0]);
         $this->assertSame('alsoAintGood', $model1->getErrors()['-custom-.exampleParam'][0]);
     }
-
 }

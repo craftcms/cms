@@ -73,7 +73,7 @@ class SearchServiceTest extends Unit
             // Ironically you cant directly search via email address....
             [[], [], 'user1@crafttest.com', true, 1, false],
 
-            // This should work. If you want an empty slug you should try: -body:*
+            // This should work. If you want an empty slug you should try: -slug:*
             [[], [], 'slug:', true, 1, false],
             [[], [], 'slug:""', true, 1, false],
 

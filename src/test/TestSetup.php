@@ -17,7 +17,8 @@ use yii\db\Exception;
 /**
  * Class TestSetup.
  *
- *
+ *  TODO:This class will be rewritten to support plugins. The way it currently set's up the install migration
+ *  will be altered.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0
@@ -103,7 +104,7 @@ class TestSetup
      * @return bool
      * @throws Exception
      */
-    public function clenseDb()
+    public function clenseDb() : bool
     {
         $tables = $this->connection->schema->getTableNames();
 
@@ -132,7 +133,7 @@ class TestSetup
     /**
      * @return bool
      */
-    public function setupDb()
+    public function setupDb() : bool
     {
         if ($this->hasBeenCleansed !== true || $this->connection->schema->getTableNames() !== []) {
             throw new Exception('Not allowed to setup the DB if it hasnt been cleansed');
