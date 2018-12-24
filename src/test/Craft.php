@@ -9,8 +9,12 @@
 namespace craft\test;
 
 
+use Codeception\Lib\ModuleContainer;
 use Codeception\Module\Yii2;
 use Codeception\TestInterface;
+use craft\config\DbConfig;
+use craft\helpers\App;
+use Codeception\Lib\Connector\Yii2 as Yii2Connector;
 
 /**
  * Craft module for codeception
@@ -21,12 +25,94 @@ use Codeception\TestInterface;
  */
 class Craft extends Yii2
 {
-    /*
-     * TODO: Place the DB setup code in here rather than the DB module.
+    /**
+     * Application config file must be set.
+     * @var array
+     */
+    protected $addedConfig = [
+        'plugins' => [],
+        'migrations' => [],
+        'modules' => [],
+        'setupDb' => null,
+    ];
+
+    /**
+     * Craft constructor.
+     * We need to merge the config settings here as this is the earliest point in the instance's existance.
+     * Doing it in _initialize() wont work as the config variables have already been added.
+     *
+     * @param ModuleContainer $moduleContainer
+     * @param null $config
+     */
+    public function __construct(ModuleContainer $moduleContainer, $config = null)
+    {
+        // Merge our config with Yii'2 config.
+        $this->config = array_merge(parent::_getConfig(), $this->addedConfig);
+
+        parent::__construct($moduleContainer, $config);
+    }
+
+    /**
+     * @throws \yii\base\InvalidConfigException
+     * @throws \yii\db\Exception
      */
     public function _initialize()
     {
+        // Unless told not to. Lets setup the database.
+        if ($this->_getConfig('setupDb') === true) {
+            $this->setupDb();
+        }
+
         parent::_initialize();
+
+    }
+
+    /**
+     * TODO: Plugin migrations & installations, additional migrations e.t.c.
+     *
+     * @param null $databaseKey
+     * @param null $databaseConfig
+     * @throws \yii\base\InvalidConfigException
+     * @throws \yii\db\Exception
+     */
+    public function setupDb()
+    {
+        // Create a Craft::$app object
+        TestSetup::warmCraft();
+
+        ob_start();
+
+        $conn = \Craft::createObject(App::dbConfig(self::createDbConfig()));
+
+        \Craft::$app->set('db', $conn);
+
+        // TODO: Here is where we need to add plugins and migrations to run aswell. To do that we need to rewrite the TestSetup class.
+        $testSetup = new TestSetup($conn);
+        $testSetup->clenseDb();
+        $testSetup->setupDb();
+
+        // Dont output anything or we get header's already sent exception
+        ob_clean();
+
+        TestSetup::tearDownCraft();
+    }
+
+    /**
+     * Creates a DB config according to the loaded .ENV variables.
+     * @return DbConfig
+     */
+    public static function createDbConfig()
+    {
+        return new DbConfig([
+            'password' => getenv('TEST_DB_PASS'),
+            'user' => getenv('TEST_DB_USER'),
+            'database' => getenv('TEST_DB_NAME'),
+            'tablePrefix' => getenv('TEST_DB_TABLE_PREFIX'),
+            'driver' => getenv('TEST_DB_DRIVER'),
+            'port' => getenv('TEST_DB_PORT'),
+            'schema' => getenv('TEST_DB_SCHEMA'),
+            'server' => getenv('TEST_DB_SERVER'),
+        ]);
     }
 
     public function _before(TestInterface $test)

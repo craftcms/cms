@@ -104,7 +104,7 @@ class TestSetup
      * @return bool
      * @throws Exception
      */
-    public function clenseDb() : bool
+    public function clenseDb()
     {
         $tables = $this->connection->schema->getTableNames();
 
