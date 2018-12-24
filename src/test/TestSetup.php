@@ -131,9 +131,9 @@ class TestSetup
     }
 
     /**
-     * @return bool
+     * @return void
      */
-    public function setupDb() : bool
+    public function setupDb()
     {
         if ($this->hasBeenCleansed !== true || $this->connection->schema->getTableNames() !== []) {
             throw new Exception('Not allowed to setup the DB if it hasnt been cleansed');
