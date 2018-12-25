@@ -83,32 +83,6 @@ class ClearCachesController extends Controller
         }
     }
 
-    // Protected Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected function getActionMethodReflection($action)
-    {
-        if (\array_key_exists($action->id, $this->actions)) {
-            if (is_string($this->actions[$action->id]['action'])) {
-                return new \ReflectionMethod(FileHelper::class, 'clearDirectory');
-            } else {
-                if (is_array($this->actions[$action->id]['action'])) {
-                    return new \ReflectionMethod(
-                        $this->actions[$action->id]['action'][0],
-                        $this->actions[$action->id]['action'][1]
-                    );
-                } else {
-                    return $this->reflection;
-                }
-            }
-        }
-
-        return parent::getActionMethodReflection($action);
-    }
-
     /**
      * @inheritdoc
      */
@@ -133,6 +107,32 @@ class ClearCachesController extends Controller
         }
 
         return $help;
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function getActionMethodReflection($action)
+    {
+        if (\array_key_exists($action->id, $this->actions)) {
+            if (is_string($this->actions[$action->id]['action'])) {
+                return new \ReflectionMethod(FileHelper::class, 'clearDirectory');
+            } else {
+                if (is_array($this->actions[$action->id]['action'])) {
+                    return new \ReflectionMethod(
+                        $this->actions[$action->id]['action'][0],
+                        $this->actions[$action->id]['action'][1]
+                    );
+                } else {
+                    return $this->reflection;
+                }
+            }
+        }
+
+        return parent::getActionMethodReflection($action);
     }
 
     protected function dummyMethod()
