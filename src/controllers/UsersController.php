@@ -30,6 +30,7 @@ use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
+use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -1752,9 +1753,18 @@ class UsersController extends Controller
         }
 
         $currentHashedPassword = $currentUser->password;
-        $currentPassword = Craft::$app->getRequest()->getRequiredParam('password');
 
-        return Craft::$app->getSecurity()->validatePassword($currentPassword, $currentHashedPassword);
+        try {
+            $currentPassword = Craft::$app->getRequest()->getRequiredParam('password');
+        } catch (BadRequestHttpException $e) {
+            return false;
+        }
+
+        try {
+            return Craft::$app->getSecurity()->validatePassword($currentPassword, $currentHashedPassword);
+        } catch (InvalidArgumentException $e) {
+            return false;
+        }
     }
 
     /**
