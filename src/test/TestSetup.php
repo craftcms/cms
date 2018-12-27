@@ -7,6 +7,7 @@
 namespace craft\test;
 
 use craft\db\Connection;
+use craft\db\Migration;
 use craft\db\MigrationManager;
 use craft\helpers\MigrationHelper;
 use craft\migrations\Install;
@@ -28,33 +29,12 @@ class TestSetup
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $site = new Site([
-            'name' => 'Craft test site',
-            'handle' => 'default',
-            'hasUrls' => true,
-            'baseUrl' => 'https://craftcms.com',
-            'language' => 'en-US',
-            'primary' => true,
-        ]);
-
-        $this->migration = new Install([
-            'db' => $connection,
-            'username' => 'craftcms',
-            'password' => 'craftcms2018!!',
-            'email' => 'support@craftcms.com',
-            'site' => $site,
-        ]);
     }
 
     /**
      * @var Connection
      */
     private $connection;
-
-    /**
-     * @var Install
-     */
-    private $migration;
 
     /**
      * @var bool
@@ -128,15 +108,45 @@ class TestSetup
     }
 
     /**
+     * @param Migration $migration
+     * @return false|null
+     * @throws \Throwable
+     */
+    public function setupMigration(Migration $migration)
+    {
+        // Ensure our connection is used
+        $migration->db = $this->connection;
+
+        return $migration->up();
+    }
+
+    /**
      * @return void
      */
-    public function setupDb()
+    public function setupCraftDb()
     {
-        if ($this->hasBeenCleansed !== true || $this->connection->schema->getTableNames() !== []) {
+        if ($this->connection->schema->getTableNames() !== []) {
             throw new Exception('Not allowed to setup the DB if it hasnt been cleansed');
         }
 
-        return $this->migration->safeUp();
+        $site = new Site([
+            'name' => 'Craft test site',
+            'handle' => 'default',
+            'hasUrls' => true,
+            'baseUrl' => 'https://craftcms.com',
+            'language' => 'en-US',
+            'primary' => true,
+        ]);
+
+        $migration = new Install([
+            'db' => $this->connection,
+            'username' => 'craftcms',
+            'password' => 'craftcms2018!!',
+            'email' => 'support@craftcms.com',
+            'site' => $site,
+        ]);
+
+        return $migration->safeUp();
     }
 
 }

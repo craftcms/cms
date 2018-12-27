@@ -11,10 +11,12 @@ namespace craft\test;
 
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module\Yii2;
+use Codeception\Step;
 use Codeception\TestInterface;
 use craft\config\DbConfig;
 use craft\helpers\App;
 use Codeception\Lib\Connector\Yii2 as Yii2Connector;
+use yii\base\Event;
 
 /**
  * Craft module for codeception
@@ -35,6 +37,13 @@ class Craft extends Yii2
         'modules' => [],
         'setupDb' => null,
     ];
+
+    /**
+     * For expecting events code
+     * @var array
+     */
+    protected $triggeredEvents = [];
+    protected $requiredEvents = [];
 
     /**
      * Craft constructor.
@@ -90,7 +99,7 @@ class Craft extends Yii2
         $testSetup = new TestSetup($conn);
         $testSetup->clenseDb();
 
-        $testSetup->setupDb();
+        $testSetup->setupCraftDb();
 
         // Dont output anything or we get header's already sent exception
         ob_end_clean();
@@ -115,6 +124,33 @@ class Craft extends Yii2
         ]);
     }
 
+    /**
+     * Ensure that an event is trigered by the $callback() function.
+     *
+     *
+     * @param string $class
+     * @param string $eventName
+     * @param $callback
+     */
+    public function expectEvent(string $class, string $eventName, $callback)
+    {
+        // Add this event.
+        $requiredEvent = null;
+
+        // Listen to this event and log it.
+        Event::on($class, $eventName, function () use (&$requiredEvent) {
+            $requiredEvent = true;
+        });
+
+        $callback();
+
+        $this->assertTrue($requiredEvent, 'Asserting that an event is triggered');
+    }
+
+    /**
+     * @param TestInterface $test
+     * @throws \yii\base\InvalidConfigException
+     */
     public function _before(TestInterface $test)
     {
         parent::_before($test);
@@ -146,7 +182,10 @@ class Craft extends Yii2
         \Craft::$app->set('db', $db);
     }
 
-
+    /**
+     * @param TestInterface $test
+     * @throws \yii\db\Exception
+     */
     public function _after(TestInterface $test)
     {
         // https://github.com/yiisoft/yii2/issues/11633 || The (possibly) MyISAM {{%searchindex}} table doesnt support transactions.

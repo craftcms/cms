@@ -24,5 +24,10 @@ return [
         'name' => 'Test field',
         'handle' => 'testField5',
         'fieldType' => \craft\fields\Entries::class
+    ],
+    [
+        'name' => 'Test field',
+        'handle' => 'testField6',
+        'fieldType' => \craft\fields\PlainText::class
     ]
 ];
