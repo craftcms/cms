@@ -20,7 +20,7 @@ use yii\helpers\Console;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class DynamicAction extends Action
+class ClearCacheAction extends Action
 {
 
     // Public Properties

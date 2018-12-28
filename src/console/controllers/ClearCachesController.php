@@ -7,7 +7,7 @@
 
 namespace craft\console\controllers;
 
-use craft\console\actions\DynamicAction;
+use craft\console\actions\ClearCacheAction;
 
 use craft\utilities\ClearCaches;
 use craft\helpers\FileHelper;
@@ -51,7 +51,7 @@ class ClearCachesController extends Controller
         $cacheOptions = ClearCaches::cacheOptions();
         foreach ($cacheOptions as $cacheOption) {
             $this->actions[$cacheOption['key']] = [
-                'class' => DynamicAction::class,
+                'class' => ClearCacheAction::class,
                 'action' => $cacheOption['action'],
                 'label' => $cacheOption['label'],
                 'params' => $cacheOption['params'] ?? null,
