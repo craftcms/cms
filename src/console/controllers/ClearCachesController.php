@@ -8,37 +8,38 @@
 namespace craft\console\controllers;
 
 use craft\console\actions\ClearCacheAction;
-
-use craft\utilities\ClearCaches;
 use craft\helpers\FileHelper;
-
+use craft\utilities\ClearCaches;
+use yii\base\InvalidRouteException;
 use yii\console\Controller;
+use yii\console\Exception;
+use yii\console\ExitCode;
 
 /**
  * Clear caches via the CLI
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.37
  */
 class ClearCachesController extends Controller
 {
-    // Private Properties
+    // Properties
     // =========================================================================
+
+    public $allowAnonymous = [];
 
     /**
      * @var array
      */
-    private $actions = [];
+    private $_actions = [];
 
     /**
      * @var \Reflection
      */
-    private $reflection;
+    private $_dummyReflection;
 
-    // Public Properties
+    // Public Methods
     // =========================================================================
-
-    public $allowAnonymous = [];
 
     /**
      * @inheritdoc
@@ -50,7 +51,7 @@ class ClearCachesController extends Controller
         // Set up the actions array
         $cacheOptions = ClearCaches::cacheOptions();
         foreach ($cacheOptions as $cacheOption) {
-            $this->actions[$cacheOption['key']] = [
+            $this->_actions[$cacheOption['key']] = [
                 'class' => ClearCacheAction::class,
                 'action' => $cacheOption['action'],
                 'label' => $cacheOption['label'],
@@ -59,7 +60,7 @@ class ClearCachesController extends Controller
             ];
         }
         // Set up a reflection for this class to handle closures
-        $this->reflection = new \ReflectionMethod($this, 'dummyMethod');
+        $this->_dummyReflection = new \ReflectionMethod($this, 'dummyMethod');
     }
 
     /**
@@ -67,20 +68,22 @@ class ClearCachesController extends Controller
      */
     public function actions()
     {
-        return $this->actions;
+        return $this->_actions;
     }
 
     /**
      * Clear all caches
      *
-     * @throws \yii\base\InvalidRouteException
-     * @throws \yii\console\Exception
+     * @return int
+     * @throws InvalidRouteException
+     * @throws Exception
      */
-    public function actionAll()
+    public function actionAll(): int
     {
-        foreach ($this->actions as $id => $action) {
+        foreach ($this->_actions as $id => $action) {
             $this->runAction($id);
         }
+        return ExitCode::OK;
     }
 
     /**
@@ -89,8 +92,8 @@ class ClearCachesController extends Controller
     public function getActionHelpSummary($action)
     {
         $help = parent::getActionHelpSummary($action);
-        if (empty($help) && \array_key_exists($action->id, $this->actions)) {
-            $help = $this->actions[$action->id]['label'];
+        if (empty($help) && array_key_exists($action->id, $this->_actions)) {
+            $help = $this->_actions[$action->id]['label'];
         }
 
         return $help;
@@ -102,8 +105,8 @@ class ClearCachesController extends Controller
     public function getActionHelp($action)
     {
         $help = parent::getActionHelp($action);
-        if (empty($help) && \array_key_exists($action->id, $this->actions)) {
-            $help = $this->actions[$action->id]['label'];
+        if (empty($help) && array_key_exists($action->id, $this->_actions)) {
+            $help = $this->_actions[$action->id]['label'];
         }
 
         return $help;
@@ -117,17 +120,17 @@ class ClearCachesController extends Controller
      */
     protected function getActionMethodReflection($action)
     {
-        if (\array_key_exists($action->id, $this->actions)) {
-            if (is_string($this->actions[$action->id]['action'])) {
+        if (array_key_exists($action->id, $this->_actions)) {
+            if (is_string($this->_actions[$action->id]['action'])) {
                 return new \ReflectionMethod(FileHelper::class, 'clearDirectory');
             } else {
-                if (is_array($this->actions[$action->id]['action'])) {
+                if (is_array($this->_actions[$action->id]['action'])) {
                     return new \ReflectionMethod(
-                        $this->actions[$action->id]['action'][0],
-                        $this->actions[$action->id]['action'][1]
+                        $this->_actions[$action->id]['action'][0],
+                        $this->_actions[$action->id]['action'][1]
                     );
                 } else {
-                    return $this->reflection;
+                    return $this->_dummyReflection;
                 }
             }
         }

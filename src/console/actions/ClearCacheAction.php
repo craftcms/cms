@@ -9,21 +9,20 @@ namespace craft\console\actions;
 
 use Craft;
 use craft\helpers\FileHelper;
-
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\console\Controller;
+use yii\console\ExitCode;
 use yii\helpers\Console;
 
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.37
  */
 class ClearCacheAction extends Action
 {
-
-    // Public Properties
+    // Properties
     // =========================================================================
 
     /**
@@ -41,38 +40,35 @@ class ClearCacheAction extends Action
      */
     public $params;
 
-    /**
-     * @var Controller
-     */
-    public $controller;
-
     // Public Methods
     // =========================================================================
 
     /**
      * @inheritdoc
+     * @return int
      */
-    public function run()
+    public function run(): int
     {
-        $label = $this->controller->ansiFormat(Craft::t('app', 'Clearing cache:'), Console::FG_GREEN);
-        $name = $this->controller->ansiFormat($this->label, Console::FG_YELLOW);
-        echo "$label $name\n";
+        $label = Console::ansiFormat(Craft::t('app', 'Clearing cache:'), [Console::FG_GREEN]);
+        $name = Console::ansiFormat($this->label, [Console::FG_YELLOW]);
+        Console::output("{$label} {$name}");
+
         if (is_string($this->action)) {
             try {
                 FileHelper::clearDirectory($this->action);
             } catch (InvalidArgumentException $e) {
                 // the directory doesn't exist
             } catch (\Throwable $e) {
-                $error = "Could not clear the directory {$this->label}: ".$e->getMessage();
-                $this->controller->stderr($error.PHP_EOL, Console::FG_RED);
+                $error = "Could not clear the directory {$this->label}: " . $e->getMessage();
+                Console::error(Console::ansiFormat($error, [Console::FG_RED]));
                 Craft::warning($error, __METHOD__);
             }
-        } elseif (isset($this->params)) {
+        } else if (isset($this->params)) {
             try {
                 call_user_func_array($this->action, $this->params);
             } catch (\Throwable $e) {
-                $error = "Error clearing cache {$this->label}: ".$e->getMessage();
-                $this->controller->stderr($error.PHP_EOL, Console::FG_RED);
+                $error = "Error clearing cache {$this->label}: " . $e->getMessage();
+                Console::error(Console::ansiFormat($error, [Console::FG_RED]));
                 Craft::warning($error, __METHOD__);
             }
         } else {
@@ -80,10 +76,12 @@ class ClearCacheAction extends Action
                 $action = $this->action;
                 $action();
             } catch (\Throwable $e) {
-                $error = "Error clearing cache {$this->label}: ".$e->getMessage();
-                $this->controller->stderr($error.PHP_EOL, Console::FG_RED);
+                $error = "Error clearing cache {$this->label}: " . $e->getMessage();
+                Console::error(Console::ansiFormat($error, [Console::FG_RED]));
                 Craft::warning($error, __METHOD__);
             }
         }
+
+        return ExitCode::OK;
     }
 }
