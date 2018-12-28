@@ -13,6 +13,7 @@ use craft\helpers\App;
 use craft\test\TestCase;
 use craft\web\Request;
 use craft\web\User;
+use craftunit\fixtures\SitesFixture;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -24,6 +25,14 @@ use yii\web\BadRequestHttpException;
  */
 class RequestTest extends TestCase
 {
+    public function _fixtures()
+    {
+        return [
+            'sites' => [
+                'class' => SitesFixture::class
+            ]
+        ];
+    }
     /**
      * @var Request
      */
@@ -54,6 +63,7 @@ class RequestTest extends TestCase
 
         $this->assertSame($result, $this->request->isMobileBrowser($detectTablets));
     }
+
     public function isMobileBrowserDataProvider()
     {
         // https://deviceatlas.com/blog/list-of-user-agent-strings
@@ -106,20 +116,24 @@ class RequestTest extends TestCase
             $this->request->getRequiredParam('not-a-param');
         });
     }
+
     public function testGetParamWithBody()
     {
         $this->request->setBodyParams(['bodyTest' => 'RAAA']);
         $this->assertSame('RAAA', $this->request->getParam('bodyTest'));
     }
+
     public function testGetParamWithQuery()
     {
         $this->request->setQueryParams(['queryTest' => 'RAAA']);
         $this->assertSame('RAAA', $this->request->getParam('queryTest'));
     }
+
     public function testGetParamDefault()
     {
         $this->assertSame('default', $this->request->getParam('not-a-param', 'default'));
     }
+
     public function testGetRequiredQueryParam()
     {
         $this->request->setBodyParams(['bodyTest' => 'RAAA']);
@@ -130,6 +144,7 @@ class RequestTest extends TestCase
         $this->request->setQueryParams(['queryTest' => 'RAAA']);
         $this->assertSame('RAAA', $this->request->getRequiredQueryParam('queryTest'));
     }
+
     public function testGetRequiredBodyParam()
     {
         $this->request->setQueryParams(['queryTest' => 'RAAA']);
@@ -154,6 +169,7 @@ class RequestTest extends TestCase
         $this->request->headers->set($headerName, $headerValue);
         $this->assertSame($result, $this->request->getUserIP($filterFlag));
     }
+
     public function getUserIpData()
     {
         return [
@@ -181,6 +197,7 @@ class RequestTest extends TestCase
         $this->request->headers->set('User-Agent', $header);
         $this->assertSame($result, $this->request->getClientOs());
     }
+
     public function getClientOsData()
     {
         return [
@@ -218,13 +235,46 @@ class RequestTest extends TestCase
         $this->assertSame('$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK', $tokenComponents['3']);
     }
 
+    public function testCsrfTokenValidForCurrentUser()
+    {
+        $this->setMockUser();
+        $token = $this->generateCsrfToken();
 
-    public function generateCsrfToken()
+        $this->assertTrue($this->isCsrfValidForUser($token));
+    }
+
+    public function testCsrfTokenValidFailure()
+    {
+        $token = $this->generateCsrfToken();
+
+        $this->assertTrue($this->isCsrfValidForUser($token));
+        $this->assertTrue($this->isCsrfValidForUser('RANDOM'));
+    }
+
+    public function testRequestedSites()
+    {
+        $requestedSite = $this->requestedSite(\Craft::$app->getSites());
+        $this->assertSame('1', $requestedSite->id);
+        $this->assertSame('default', $requestedSite->handle);
+    }
+
+    // Helpers
+    // =========================================================================
+
+    private function requestedSite($siteService)
+    {
+        return $this->invokeMethod($this->request, '_requestedSite', [$siteService]);
+    }
+    private function isCsrfValidForUser($token)
+    {
+        return $this->invokeMethod($this->request, 'csrfTokenValidForCurrentUser', [$token]);
+    }
+    private function generateCsrfToken()
     {
         return $this->invokeMethod($this->request, 'generateCsrfToken');
     }
 
-    public function setMockUser()
+    private function setMockUser()
     {
         \Craft::$app->getUser()->setIdentity(
             \Craft::$app->getUsers()->getUserById('1')
