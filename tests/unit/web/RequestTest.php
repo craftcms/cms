@@ -9,9 +9,10 @@
 namespace craftunit\web;
 
 
-use Codeception\Test\Unit;
 use craft\helpers\App;
+use craft\test\TestCase;
 use craft\web\Request;
+use craft\web\User;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -21,7 +22,7 @@ use yii\web\BadRequestHttpException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
  */
-class RequestTest extends Unit
+class RequestTest extends TestCase
 {
     /**
      * @var Request
@@ -37,7 +38,9 @@ class RequestTest extends Unit
     {
         parent::_before();
 
-        $this->request = new Request();
+        $this->request = new Request([
+            'cookieValidationKey' => 'lashdao8u09ud09u09231uoij098wqe'
+        ]);
     }
 
     /**
@@ -91,6 +94,9 @@ class RequestTest extends Unit
         ];
     }
 
+    // Get & Get Required param testing
+    // =========================================================================
+
     public function testGetRequiredParam()
     {
         $this->request->setBodyParams(['test' => 'RAAA']);
@@ -100,7 +106,6 @@ class RequestTest extends Unit
             $this->request->getRequiredParam('not-a-param');
         });
     }
-
     public function testGetParamWithBody()
     {
         $this->request->setBodyParams(['bodyTest' => 'RAAA']);
@@ -115,7 +120,115 @@ class RequestTest extends Unit
     {
         $this->assertSame('default', $this->request->getParam('not-a-param', 'default'));
     }
+    public function testGetRequiredQueryParam()
+    {
+        $this->request->setBodyParams(['bodyTest' => 'RAAA']);
+        $this->tester->expectThrowable(BadRequestHttpException::class, function () {
+            $this->request->getRequiredQueryParam('bodyTest');
+        });
+
+        $this->request->setQueryParams(['queryTest' => 'RAAA']);
+        $this->assertSame('RAAA', $this->request->getRequiredQueryParam('queryTest'));
+    }
+    public function testGetRequiredBodyParam()
+    {
+        $this->request->setQueryParams(['queryTest' => 'RAAA']);
+        $this->tester->expectThrowable(BadRequestHttpException::class, function () {
+            $this->request->getRequiredBodyParam('queryTest');
+        });
+
+        $this->request->setBodyParams(['bodyTest' => 'RAAA']);
+        $this->assertSame('RAAA', $this->request->getRequiredBodyParam('bodyTest'));
+    }
 
 
+    /**
+     * @param $result
+     * @param $headerName
+     * @param $headerValue
+     * @param int $filterFlag
+     * @dataProvider getUserIpData
+     */
+    public function testGetUserIp($result, $headerName, $headerValue, $filterFlag = 0)
+    {
+        $this->request->headers->set($headerName, $headerValue);
+        $this->assertSame($result, $this->request->getUserIP($filterFlag));
+    }
+    public function getUserIpData()
+    {
+        return [
+            ['123.123.123.123', 'Client-IP', '123.123.123.123'],
+            ['123.123.123.123', 'X-Forwarded-For', '123.123.123.123'],
+            ['123.123.123.123', 'X-Cluster-Client-IP', '123.123.123.123'],
+            ['123.123.123.123', 'Forwarded-For', '123.123.123.123'],
+            ['123.123.123.123', 'Forwarded', '123.123.123.123'],
+            ['1.1.1.1', null, null],
 
+            [null, 'Client-IP', '123.123.123.123', FILTER_FLAG_IPV6],
+            ['1.1.1.1', 'Client-IP', '2001:0db8:85a3:0000:0000:8a2e:0370:7334', FILTER_FLAG_IPV4],
+            ['1.1.1.1', 'Client-IP', '172.16.0.0/12', FILTER_FLAG_NO_PRIV_RANGE],
+            ['1.1.1.1', 'Client-IP', '0.0.0.0/8', FILTER_FLAG_NO_RES_RANGE],
+        ];
+    }
+
+    /**
+     * @param $result
+     * @param $header
+     * @dataProvider getClientOsData
+     */
+    public function testGetClientOs($result, $header)
+    {
+        $this->request->headers->set('User-Agent', $header);
+        $this->assertSame($result, $this->request->getClientOs());
+    }
+    public function getClientOsData()
+    {
+        return [
+            ['Linux', 'Mozilla/5.0 (Linux; Android 6.0; HTC One X10 Build/MRA58K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/61.0.3163.98 Mobile Safari/537.36'],
+            ['Mac', 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1'],
+            ['Windows', 'Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Mobile Safari/537.36 Edge/13.1058'],
+            ['Other', ''],
+        ];
+    }
+
+    public function testGetCsrfToken()
+    {
+        $token = $this->request->getCsrfToken();
+
+        $otherToken = $this->request->getCsrfToken();
+        $this->assertSame($token, $otherToken);
+
+        $this->assertNotSame($token, $this->request->getCsrfToken(true));
+    }
+
+    public function testGenerateCsrfToken()
+    {
+        $token = $this->generateCsrfToken();
+        $this->assertSame(40, strlen($token));
+
+        $this->setMockUser();
+        $newToken = $this->generateCsrfToken();
+        $tokenComponents = explode('|', $newToken);
+
+        $this->assertNotSame($newToken, $token);
+
+        // Ensure that the data we want exists and is according to our desired specs
+        $this->assertSame('1', $tokenComponents['2']);
+        $this->assertSame(40, strlen($tokenComponents['0']));
+        $this->assertSame('$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK', $tokenComponents['3']);
+    }
+
+
+    public function generateCsrfToken()
+    {
+        return $this->invokeMethod($this->request, 'generateCsrfToken');
+    }
+
+    public function setMockUser()
+    {
+        \Craft::$app->getUser()->setIdentity(
+            \Craft::$app->getUsers()->getUserById('1')
+        );
+        \Craft::$app->getUser()->getIdentity()->password = '$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK';
+    }
 }
