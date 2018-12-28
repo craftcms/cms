@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `extraFileKinds` config setting. ([#1584](https://github.com/craftcms/cms/issues/1584))
 - Added the `clear-caches` console command. ([#3588](https://github.com/craftcms/cms/pull/3588))
 
 ### Changed
