@@ -6,8 +6,6 @@
  */
 namespace craftunit\web;
 
-use craft\elements\Asset;
-use craftunit\fixtures\AssetsFixture;
 
 /**
  * Unit tests for the Url Helper class.
@@ -21,6 +19,7 @@ class ViewTest extends \Codeception\Test\Unit
     /**
      * @var \UnitTester
      */
+    protected $tester;
 
     // tests
     public function testNormalizeObjectTemplate()

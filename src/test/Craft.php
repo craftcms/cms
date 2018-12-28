@@ -27,6 +27,9 @@ use yii\base\Event;
  */
 class Craft extends Yii2
 {
+    // Setup work
+    // =========================================================================
+
     /**
      * Application config file must be set.
      * @var array
@@ -125,29 +128,6 @@ class Craft extends Yii2
     }
 
     /**
-     * Ensure that an event is trigered by the $callback() function.
-     *
-     *
-     * @param string $class
-     * @param string $eventName
-     * @param $callback
-     */
-    public function expectEvent(string $class, string $eventName, $callback)
-    {
-        // Add this event.
-        $requiredEvent = null;
-
-        // Listen to this event and log it.
-        Event::on($class, $eventName, function () use (&$requiredEvent) {
-            $requiredEvent = true;
-        });
-
-        $callback();
-
-        $this->assertTrue($requiredEvent, 'Asserting that an event is triggered');
-    }
-
-    /**
      * @param TestInterface $test
      * @throws \yii\base\InvalidConfigException
      */
@@ -195,5 +175,31 @@ class Craft extends Yii2
         \Craft::$app->getDb()->createCommand()
             ->delete('{{%searchindex}}', 'elementId != 1')
             ->execute();
+    }
+
+    // Helper and to-be-directly used in test methods.
+    // =========================================================================
+
+    /**
+     * Ensure that an event is trigered by the $callback() function.
+     *
+     *
+     * @param string $class
+     * @param string $eventName
+     * @param $callback
+     */
+    public function expectEvent(string $class, string $eventName, $callback)
+    {
+        // Add this event.
+        $requiredEvent = null;
+
+        // Listen to this event and log it.
+        Event::on($class, $eventName, function () use (&$requiredEvent) {
+            $requiredEvent = true;
+        });
+
+        $callback();
+
+        $this->assertTrue($requiredEvent, 'Asserting that an event is triggered');
     }
 }
