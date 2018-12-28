@@ -73,7 +73,7 @@ class FileHelperTest extends Unit
 
     public function testClearException()
     {
-        $this->tester->expectException(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
             FileHelper::clearDirectory('not-a-dir');
         });
     }
@@ -131,13 +131,13 @@ class FileHelperTest extends Unit
 
     public function testIsDirEmptyExceptions()
     {
-        $this->tester->expectException(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
             FileHelper::isDirectoryEmpty('aaaaa//notadir');
         });
-        $this->tester->expectException(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
             FileHelper::isDirectoryEmpty(__DIR__ . '/sandbox/isdirempty/dotfile/no/test');
         });
-        $this->tester->expectException(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
             FileHelper::isDirectoryEmpty('ftp://google.com');
         });
     }
@@ -221,7 +221,7 @@ class FileHelperTest extends Unit
 
     public function testGetMimeTypeExceptions()
     {
-        $this->tester->expectException(ErrorException::class, function () {
+        $this->tester->expectThrowable(ErrorException::class, function () {
             FileHelper::getMimeType('notafile');
         });
     }
@@ -342,7 +342,7 @@ class FileHelperTest extends Unit
     }
     public function testWriteToFileExceptions()
     {
-        $this->tester->expectException(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
             FileHelper::writeToFile('notafile/folder', 'somecontent', ['createDirs' => false]);
         });
     }

@@ -82,7 +82,7 @@ class ComponentHelperTest extends Unit
      */
     public function testFailedComponentExceptions(array $settings, $desiredParent, string $requiredException)
     {
-        $this->tester->expectException(
+        $this->tester->expectThrowable(
             $requiredException,
             function () use($settings, $desiredParent){
                 Component::createComponent($settings, $desiredParent);

@@ -120,7 +120,7 @@ class ElementHelperTest extends Unit
     public function testMaxSlugIncrementExceptions()
     {
         \Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = 0;
-        $this->tester->expectException(OperationAbortedException::class, function () {
+        $this->tester->expectThrowable(OperationAbortedException::class, function () {
             $el = new ExampleElement(['uriFormat' => 'test/{slug}']);
             ElementHelper::setUniqueUri($el);
         });
@@ -128,7 +128,7 @@ class ElementHelperTest extends Unit
     public function maxLength()
     {
         // 256 length slug. Oh no we dont.
-        $this->tester->expectException(OperationAbortedException::class, function () {
+        $this->tester->expectThrowable(OperationAbortedException::class, function () {
             $el = new ExampleElement([
                 'uriFormat' => 'test/{slug}',
                 'slug' => 'asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssss22ssss'

@@ -124,7 +124,7 @@ class StringHelperTest extends \Codeception\Test\Unit
     public function testContainsAllExceptions()
     {
         // Test that empty array with a string in it returns an exception.
-        $this->tester->expectException(ErrorException::class, function (){
+        $this->tester->expectThrowable(ErrorException::class, function (){
             StringHelper::containsAll('', ['']);
         });
     }
@@ -177,7 +177,7 @@ class StringHelperTest extends \Codeception\Test\Unit
 
     public function testStringIndexException()
     {
-        $this->tester->expectException(ErrorException::class, function (){
+        $this->tester->expectThrowable(ErrorException::class, function (){
             StringHelper::indexOf('', '');
         });
     }

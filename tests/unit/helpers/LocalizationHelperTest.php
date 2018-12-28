@@ -57,10 +57,10 @@ class LocalizationHelperTest extends Unit
 
     public function testLanugageNormalizationExceptions()
     {
-        $this->tester->expectException(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
             Localization::normalizeLanguage('dutch');
         });
-        $this->tester->expectException(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
             Localization::normalizeLanguage('notalang');
         });
     }

@@ -103,7 +103,7 @@ class DateTimeHelperTest extends Unit
      */
     public function testEmptyArrayReturnsException()
     {
-        $this->tester->expectException(ErrorException::class, function (){
+        $this->tester->expectThrowable(ErrorException::class, function (){
             return DateTimeHelper::toDateTime([]);
         });
     }

@@ -275,7 +275,7 @@ class DbHelperTest extends Unit
      */
     public function testDeleteIfExistsException()
     {
-        $this->tester->expectException(Exception::class, function () {
+        $this->tester->expectThrowable(Exception::class, function () {
             Db::deleteIfExists('iamnotatable12345678900987654321');
         });
     }
