@@ -8,6 +8,7 @@
 namespace craft\console\controllers;
 
 use craft\console\actions\ClearCacheAction;
+use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\utilities\ClearCaches;
 use yii\base\InvalidRouteException;
@@ -69,6 +70,31 @@ class ClearCachesController extends Controller
     public function actions()
     {
         return $this->_actions;
+    }
+
+    /**
+     * Lists the caches that can be cleared.
+     *
+     * @return int
+     */
+    public function actionIndex(): int
+    {
+        $this->stdout("The following caches can be cleared:\n\n", Console::FG_YELLOW);
+
+        $lengths = [];
+        foreach ($this->_actions as $action) {
+            $lengths[] = strlen($action['label']);
+        }
+        $maxLength = max($lengths);
+
+        foreach ($this->_actions as $id => $action) {
+            $this->stdout('- ');
+            $this->stdout(str_pad($id, $maxLength, ' '), Console::FG_YELLOW);
+            $this->stdout('  ' . $action['label'] . PHP_EOL);
+        }
+
+        $this->stdout(PHP_EOL);
+        return ExitCode::OK;
     }
 
     /**
