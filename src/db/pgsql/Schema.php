@@ -10,7 +10,6 @@ namespace craft\db\pgsql;
 use Composer\Util\Platform;
 use Craft;
 use craft\db\TableSchema;
-use craft\helpers\FileHelper;
 use yii\db\Exception;
 
 /**
@@ -136,19 +135,6 @@ class Schema extends \yii\db\pgsql\Schema
             $defaultTableIgnoreList[$key] = " --exclude-table-data '{schema}." . $dbSchema->getRawTableName($ignoreTable) . "'";
         }
 
-<<<<<<< HEAD
-        return 'PGPASSFILE="'.$this->_createDumpConfigFile().'"'.
-            ' pg_dump'.
-            ' --dbname={database}'.
-            ' --host={server}'.
-            ' --port={port}'.
-            ' --username={user}'.
-            ' --no-password'.
-            ' --if-exists'.
-            ' --clean'.
-            ' --file={file}'.
-            ' --schema={schema}'.
-=======
         return $this->_pgpasswordCommand() .
             'pg_dump' .
             ' --dbname={database}' .
@@ -162,7 +148,6 @@ class Schema extends \yii\db\pgsql\Schema
             ' --no-acl' .
             ' --file="{file}"' .
             ' --schema={schema}' .
->>>>>>> upstream/develop
             implode('', $defaultTableIgnoreList);
     }
 
@@ -360,32 +345,6 @@ ORDER BY i.relname, k';
     // =========================================================================
 
     /**
-<<<<<<< HEAD
-     * Creates a temporary PGPASSFILE file based on the DB config settings.
-     *
-     * @return string The path to the pgpass.cfg file
-     */
-    private function _createDumpConfigFile(): string
-    {
-        // We can't use Craft's getTempPath() because on dev environments, the shared
-        // file system may not support chmod 0600 that PGPASSFILE requires (NFS
-        // shares, for instance, depend on the client file modes
-        //$filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.'pgpass.cfg';
-        $filePath = sys_get_temp_dir().DIRECTORY_SEPARATOR.'pgpass.cfg';
-
-        $dbConfig = Craft::$app->getConfig()->getDb();
-        $contents = $dbConfig->server.':'.
-            $dbConfig->port.':'.
-            $dbConfig->database.':'.
-            $dbConfig->user.':'.
-            $dbConfig->password;
-
-        FileHelper::writeToFile($filePath, $contents);
-        chmod($filePath, 0600);
-        clearstatcache();
-
-        return $filePath;
-=======
      * Returns the PGPASSWORD command for backup/restore actions.
      *
      * @return string
@@ -393,6 +352,5 @@ ORDER BY i.relname, k';
     private function _pgpasswordCommand(): string
     {
         return Platform::isWindows() ? 'set PGPASSWORD="{password}" && ' : 'PGPASSWORD="{password}" ';
->>>>>>> upstream/develop
     }
 }
