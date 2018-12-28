@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where the “Edit” button on asset editor HUDs didn’t launch the Image Editor if the asset was being edited on another element type’s index page. ([#3575](https://github.com/craftcms/cms/issues/3575))
+- Fixed an exception that would be thrown when saving a user from a front-end form with a non-empty `email` or `newPassword` param, if the `password` param was missing or empty. ([#3585](https://github.com/craftcms/cms/issues/3585))
 
 ## 3.0.36 - 2018-12-18
 
