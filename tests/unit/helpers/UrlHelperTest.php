@@ -16,6 +16,8 @@ use yii\base\Exception;
 /**
  * Unit tests for the Url Helper class.
  *
+ * TODO: The URL helper test needs some refactoring work to accommodate the new Craft module. It currently will not run.
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
@@ -217,7 +219,8 @@ class UrlHelperTest extends Unit
                 'nav',
                 [
                     'param1' => 'entry1',
-                    'param2' => 'entry2'],
+                    'param2' => 'entry2'
+                ],
                 'https'
             ],
             'test-url-gets-ignored' => [
@@ -453,9 +456,7 @@ class UrlHelperTest extends Unit
     public function urlFunctionDataProvider()
     {
         return [
-            // TODO: Test ssl errors.
             'base' => ['endpoint', 'endpoint',  null,  null, null, true],
-
             'full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
             'full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
             'scheme-override' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
@@ -562,22 +563,18 @@ class UrlHelperTest extends Unit
         }
 
         $this->assertSame('http', UrlHelper::getSchemeForTokenizedUrl());
-        return true;
     }
 
     public function testSchemeForTokenizedBasedOnConfig()
     {
         // Run down the logic to see what we will need to require.
         $config =  \Craft::$app->getConfig()->getGeneral();
-        $useSslOnTokenizedUrls = \Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls;
 
         $config->useSslOnTokenizedUrls = true;
         $this->assertSame('https', UrlHelper::getSchemeForTokenizedUrl());
 
         $config->useSslOnTokenizedUrls = false;
         $this->assertSame('http', UrlHelper::getSchemeForTokenizedUrl());
-
-        $config->useSslOnTokenizedUrls = $useSslOnTokenizedUrls;
     }
 
     /**
