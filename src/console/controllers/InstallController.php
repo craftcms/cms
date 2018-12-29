@@ -12,6 +12,7 @@ use craft\elements\User;
 use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
+use yii\base\Exception;
 use yii\console\Controller;
 use yii\console\ExitCode;
 use yii\helpers\Console;
@@ -123,8 +124,16 @@ class InstallController extends Controller
         $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => [$this, 'validateEmail']]);
         $password = $this->password ?: $this->_passwordPrompt();
         $siteName = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'validator' => [$this, 'validateSiteName']]);
-        $siteUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => '@web', 'validator' => [$this, 'validateSiteUrl']]);
+        $siteUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => getenv('DEFAULT_SITE_URL') ?: null, 'validator' => [$this, 'validateSiteUrl']]);
         $language = $this->language ?: $this->prompt('Site language:', ['validator' => [$this, 'validateLanguage'], 'default' => 'en-US']);
+
+        // Try to save the site URL to a DEFAULT_SITE_URL environment variable
+        try {
+            Craft::$app->getConfig()->setDotEnvVar('DEFAULT_SITE_URL', $siteUrl);
+            $siteUrl = '$DEFAULT_SITE_URL';
+        } catch (Exception $e) {
+            // that's fine, we'll just store the entered URL
+        }
 
         $site = new Site([
             'name' => $siteName,
