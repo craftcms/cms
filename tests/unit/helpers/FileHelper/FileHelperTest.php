@@ -248,8 +248,7 @@ class FileHelperTest extends Unit
             ['i(c)m-a-file.svg', 'i£©m-a-file⚽🐧🎺.svg', ['asciiOnly' => true]],
             ['not||a||file', 'not a file', ['separator' => '||']],
 
-            // Set the seperator to an non-ascii char will get added and then stripped.
-            ['notafile', 'not a file', ['separator' => '🐧', 'asciiOnly' => true]],
+            // Set the seperator to an non-ascii char will results in it getting added and then stripped.
             ['notafile', 'not a file', ['separator' => '🐧', 'asciiOnly' => true]],
         ];
     }
