@@ -96,6 +96,80 @@ class ControllerTest extends Unit
         $this->assertSame('HEADERS', $response->getHeaders()->get('content-type'));
     }
 
+    public function testRedirectToPostedUrl()
+    {
+        $baseUrl = $this->getBaseUrlForRedirect();
+        $redirect = \Craft::$app->getSecurity()->hashData('craft/do/stuff');
+
+        // Default
+        $default = $this->controller->redirectToPostedUrl();
+
+        // Test that with nothing passed in. It defaults to the base. See self::getBaseUrlForRedirect() for more info.
+        $this->assertSame(
+            $baseUrl,
+            $default->headers->get('Location')
+        );
+
+        // What happens when we pass in a param. 
+        \Craft::$app->getRequest()->setBodyParams(['redirect' => $redirect]);
+        $default = $this->controller->redirectToPostedUrl();
+        $this->assertSame($baseUrl.'?p=craft/do/stuff', $default->headers->get('Location'));
+    }
+
+    public function testRedirectToPostedWithSetDefault()
+    {
+        $baseUrl = $this->getBaseUrlForRedirect();
+        $withDefault = $this->controller->redirectToPostedUrl(null, 'craft/do/stuff');
+        $this->assertSame($baseUrl.'?p=craft/do/stuff', $withDefault->headers->get('Location'));
+
+    }
+
+    public function testAsJsonP()
+    {
+        $result = $this->controller->asJsonP(['test' => 'test']);
+        $this->assertSame(Response::FORMAT_JSONP, $result->format);
+        $this->assertSame(['test' => 'test'], $result->data);
+    }
+    public function testAsRaw()
+    {
+        $result = $this->controller->asRaw(['test' => 'test']);
+        $this->assertSame(Response::FORMAT_RAW, $result->format);
+        $this->assertSame(['test' => 'test'], $result->data);
+    }
+    public function testAsErrorJson()
+    {
+        $result = $this->controller->asErrorJson('im an error');
+        $this->assertSame(Response::FORMAT_JSON, $result->format);
+        $this->assertSame(['error' => 'im an error'], $result->data);
+    }
+
+    public function testRedirect()
+    {
+        $this->assertSame(
+            $this->getBaseUrlForRedirect().'?p=do/stuff',
+            $this->controller->redirect('do/stuff')->headers->get('Location')
+        );
+
+        // Based on the entryScript param in the craft module. If nothing is passed in the Craft::$app->getHomeUrl(); will be called
+        // Which will redirect to the $_SERVER['SCRIPT_NAME'] param.
+        $this->assertSame(
+            'index.php',
+            $this->controller->redirect(null)->headers->get('Location')
+        );
+    }
+
+    // Helpers
+    // =========================================================================
+
+    private function determineUrlScheme()
+    {
+        return !\Craft::$app->getRequest()->getIsConsoleRequest() && \Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
+    }
+    private function getBaseUrlForRedirect()
+    {
+        $scheme = $this->determineUrlScheme();
+        return UrlHelper::urlWithScheme(\Craft::$app->getConfig()->getGeneral()->siteUrl.'index.php', $scheme);
+    }
     private function setMockUser()
     {
         \Craft::$app->getUser()->setIdentity(
