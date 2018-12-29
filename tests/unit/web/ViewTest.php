@@ -100,13 +100,57 @@ class ViewTest extends TestCase
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/'],
         ];
     }
-    
+
+
+    /**
+     * @see testDoesTemplateExistsInSite
+     * @param $result
+     * @param $input
+     * @dataProvider privateResolveTemplateData
+     */
+    public function testPrivateResolveTemplate($result, $basePath, $name, $templateExtensions = null, $viewTemplateNameExtensions = null)
+    {
+        // If the data wants to set something custom? Set it as a prop.
+        if ($templateExtensions !== null) {
+            $this->setInaccessibleProperty(\Craft::$app->getView(), '_defaultTemplateExtensions', $templateExtensions);
+        }
+
+        // Same with index names
+        if ($viewTemplateNameExtensions !== null) {
+            $this->setInaccessibleProperty(\Craft::$app->getView(), '_indexTemplateFilenames', $viewTemplateNameExtensions);
+        }
+
+
+        $resolved = $this->resolveTemplate(\Craft::getAlias($basePath), $name);
+        $this->assertSame(\Craft::getAlias($result), $resolved);
+    }
+    public function privateResolveTemplateData()
+    {
+        return [
+            ['@craftunittemplates/template.twig', '@craftunittemplates', 'template'],
+            ['@craftunittemplates/index.html', '@craftunittemplates', 'index'],
+            ['@craftunittemplates/doubleindex/index.html', '@craftunittemplates/doubleindex', 'index'],
+
+            // Index is found by default
+            ['@craftunittemplates/index.html', '@craftunittemplates', ''],
+
+            // Assert that registering custom extensions works.
+            ['@craftunittemplates/dotxml.xml', '@craftunittemplates', 'dotxml', ['xml']],
+            [null, '@craftunittemplates', 'dotxml'],
+            ['@craftunittemplates/dotxml.xml', '@craftunittemplates', 'dotxml.xml',],
+
+            // Allow change in index names
+            ['@craftunittemplates/template.twig', '@craftunittemplates', '', null, ['template']],
+        ];
+    }
+
+
     // Helpers
     // =========================================================================
 
-    private function resolveTemplate()
+    private function resolveTemplate($basePath, $name)
     {
-        return $this->invokeMethod(\Craft::$app->getView(), '_resolveTemplate');
+        return $this->invokeMethod(\Craft::$app->getView(), '_resolveTemplate', [$basePath, $name]);
     }
 
 }
