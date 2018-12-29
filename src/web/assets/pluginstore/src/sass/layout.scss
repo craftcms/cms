@@ -20,7 +20,7 @@
     @apply .flex-1 .overflow-auto .flex;
 
     .ps-container {
-      @apply .flex-1;
+      @apply .flex-1 .max-w-4xl .mx-auto;
     }
   }
 }
