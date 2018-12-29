@@ -87,7 +87,7 @@
         <div id="url-settings" class="nested-fields{% if not site.hasUrls %} hidden{% endif %}">
             {{ forms.autosuggestField({
                 label: "Base URL"|t('app'),
-                instructions: "The base URL for the site."|t('app', {ex: '`@web`'}),
+                instructions: "The base URL for the site."|t('app'),
                 id: 'base-url',
                 class: 'ltr',
                 suggestions: craft.cp.getEnvSuggestions(true),
