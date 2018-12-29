@@ -22,6 +22,51 @@ class TestCase extends Unit
 {
 
     /**
+     * Sets an inaccessible object property to a designated value.
+     * @param $object
+     * @param $propertyName
+     * @param $value
+     * @param bool $revoke whether to make property inaccessible after setting
+     * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L155
+     */
+    protected function setInaccessibleProperty($object, $propertyName, $value, $revoke = true)
+    {
+        $class = new \ReflectionClass($object);
+        while (!$class->hasProperty($propertyName)) {
+            $class = $class->getParentClass();
+        }
+        $property = $class->getProperty($propertyName);
+        $property->setAccessible(true);
+        $property->setValue($object, $value);
+        if ($revoke) {
+            $property->setAccessible(false);
+        }
+    }
+
+    /**
+     * Gets an inaccessible object property.
+     * @param $object
+     * @param $propertyName
+     * @param bool $revoke whether to make property inaccessible after getting
+     * @return mixed
+     * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L176
+     */
+    protected function getInaccessibleProperty($object, $propertyName, $revoke = true)
+    {
+        $class = new \ReflectionClass($object);
+        while (!$class->hasProperty($propertyName)) {
+            $class = $class->getParentClass();
+        }
+        $property = $class->getProperty($propertyName);
+        $property->setAccessible(true);
+        $result = $property->getValue($object);
+        if ($revoke) {
+            $property->setAccessible(false);
+        }
+        return $result;
+    }
+
+    /**
      * Invokes a inaccessible method.
      * @param $object
      * @param $method

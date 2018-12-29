@@ -110,7 +110,7 @@ class ControllerTest extends Unit
             $default->headers->get('Location')
         );
 
-        // What happens when we pass in a param. 
+        // What happens when we pass in a param.
         \Craft::$app->getRequest()->setBodyParams(['redirect' => $redirect]);
         $default = $this->controller->redirectToPostedUrl();
         $this->assertSame($baseUrl.'?p=craft/do/stuff', $default->headers->get('Location'));

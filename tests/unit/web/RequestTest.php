@@ -9,10 +9,8 @@
 namespace craftunit\web;
 
 
-use craft\helpers\App;
 use craft\test\TestCase;
 use craft\web\Request;
-use craft\web\User;
 use craftunit\fixtures\SitesFixture;
 use yii\web\BadRequestHttpException;
 
@@ -251,16 +249,118 @@ class RequestTest extends TestCase
         $this->assertTrue($this->isCsrfValidForUser('RANDOM'));
     }
 
-    public function testRequestedSites()
+    /**
+     *
+     * @param $result
+     * @param string|null $name
+     * @param $defaultValue
+     * @param array $params
+     * @dataProvider getParamData
+     */
+    public function testGetParam($result, string $name = null, $defaultValue, array $params)
     {
-        $requestedSite = $this->requestedSite(\Craft::$app->getSites());
-        $this->assertSame('1', $requestedSite->id);
-        $this->assertSame('default', $requestedSite->handle);
+        $gotten = $this->getParam($name, $defaultValue, $params);
+        $this->assertSame($result, $gotten);
+    }
+    public function getParamData()
+    {
+        return [
+            [['param1', 'param2', 'param3'], null, null, ['param1', 'param2', 'param3']],
+            ['param1', 0, null, ['param1', 'param2', 'param3']],
+            ['param1', 'key', null, ['key' => 'param1', 'param2', 'param3']],
+            ['val1', 'key.key2', null, ['key' => [ 'key2' => 'val1', 'key3' => 'val2'], 'param2', 'param3']],
+            ['DEFAULT', 'key.notaparam', 'DEFAULT', ['key' => 'param1', 'param2', 'param3']],
+        ];
+    }
+
+
+    // Tests for _checkRequestType
+    // =========================================================================
+    public function testCheckRequestTypeWithTokenParam()
+    {
+        $this->request->setBodyParams([\Craft::$app->getConfig()->getGeneral()->tokenParam => 'something']);
+        $checked = $this->checkRequestType();
+
+        $this->assertTrue($this->getInaccessibleProperty($this->request, '_checkedRequestType'));
+
+        $this->assertFalse($this->getInaccessibleProperty($this->request, '_isActionRequest'));
+        $this->assertFalse($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
+    }
+    public function testCheckRequestTypeWithDirectTrigger()
+    {
+        $this->setInaccessibleProperty($this->request, '_segments', [
+            \Craft::$app->getConfig()->getGeneral()->actionTrigger,
+            'do-stuff'
+        ]);
+
+        $this->checkRequestAndAssertIsSingleAction();
+    }
+
+    public function testCheckRequestTypeWithQueryTrigger()
+    {
+        // We want a CP request
+        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
+        $this->request->setQueryParams(['action' => 'do/stuff']);
+
+        $this->checkRequestAndAssertIsSingleAction();
+    }
+
+    /**
+     * @param $path
+     * @dataProvider checkRequestSpecialPathData
+     */
+    public function testCheckRequestTypeOnCpRequestWithSpecialPathTrigger($path)
+    {
+        // We want a CP request
+        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
+        $this->setInaccessibleProperty($this->request, '_path', $path);
+
+        $this->checkRequestAndAssertIsSingleAction();
+    }
+    public function checkRequestSpecialPathData()
+    {
+        return [
+            ['login'],
+            ['logout'],
+            ['update'],
+        ];
+    }
+
+    public function testCheckRequestTypeOnSiteRequestWithSpecialPathTriggerLogin()
+    {
+        $genConfig = \Craft::$app->getConfig()->getGeneral();
+
+        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
+        $this->setInaccessibleProperty($this->request, '_path', trim($genConfig->getLoginPath(), '/'));
+        $this->checkRequestAndAssertIsSingleAction();
+    }
+    public function testCheckRequestTypeOnSiteRequestWithSpecialPathTriggerLogout()
+    {
+        $genConfig = \Craft::$app->getConfig()->getGeneral();
+
+        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
+        $this->setInaccessibleProperty($this->request, '_path', trim($genConfig->getLogoutPath(), '/'));
+        $this->checkRequestAndAssertIsSingleAction();
+    }
+
+    public function checkRequestAndAssertIsSingleAction()
+    {
+        $this->checkRequestType();
+        $this->assertTrue($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
     }
 
     // Helpers
     // =========================================================================
 
+    private function checkRequestType()
+    {
+        return $this->invokeMethod($this->request, '_checkRequestType');
+    }
+    private function getParam(string $name = null, $defaultValue, array $params)
+    {
+        return $this->invokeMethod($this->request, '_getParam', [$name, $defaultValue, $params]);
+
+    }
     private function requestedSite($siteService)
     {
         return $this->invokeMethod($this->request, '_requestedSite', [$siteService]);

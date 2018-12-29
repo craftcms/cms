@@ -553,6 +553,7 @@ class StringHelperTest extends \Codeception\Test\Unit
     }
 
     /**
+     * TODO: Might need more tests here.
      * @dataProvider convertToUtf8Data
      * @param $result
      * @param $input
@@ -565,6 +566,7 @@ class StringHelperTest extends \Codeception\Test\Unit
     public function convertToUtf8Data()
     {
         return [
+            ['κόσμε', 'κόσμε'],
             ['\x74\x65\x73\x74', '\x74\x65\x73\x74'],
             ['craftcms', 'craftcms'],
             ['😂😁', '😂😁'],
