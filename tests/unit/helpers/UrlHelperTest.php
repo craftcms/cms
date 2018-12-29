@@ -16,8 +16,6 @@ use yii\base\Exception;
 /**
  * Unit tests for the Url Helper class.
  *
- * TODO: The URL helper test needs some refactoring work to accommodate the new Craft module. It currently will not run.
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
@@ -41,9 +39,9 @@ class UrlHelperTest extends Unit
         $this->cpTrigger = $generalConfig->cpTrigger;
         $configSiteUrl = $generalConfig->siteUrl;
 
-        $yii2 = $this->getModule('Yii2');
-        $this->entryScript = $yii2->_getConfig('entryScript');
-        $this->entryUrl = $yii2->_getConfig('entryUrl');
+        $craft = $this->getModule('\craft\test\Craft');
+        $this->entryScript = $craft->_getConfig('entryScript');
+        $this->entryUrl = $craft->_getConfig('entryUrl');
 
         if (!$configSiteUrl) {
             $configSiteUrl = $this->entryUrl;
@@ -71,6 +69,7 @@ class UrlHelperTest extends Unit
     const PROTOCOL_RELATIVE_URL = '//craftcms.com/';
 
     /**
+     * Tests various methods of the UrlHelper which check that a URL confirms to a specification. I.E. Is it protocol relative or absolute
      * @dataProvider protocolRelativeUrlData
      * @dataProvider absoluteUrlData
      * @dataProvider fulUrlData
@@ -83,6 +82,7 @@ class UrlHelperTest extends Unit
     }
 
     /**
+     * Add tests for whether urls are qualified as absolute.
      * @return array
      */
     public function absoluteUrlData()
@@ -98,6 +98,7 @@ class UrlHelperTest extends Unit
     }
 
     /**
+     * Add tests for whether URLS are qualified as a full url.
      * @return array
      */
     public function fulUrlData()
@@ -118,6 +119,7 @@ class UrlHelperTest extends Unit
     }
 
     /**
+     * Add tests for whether URLS are qualified as root relative
      * @return array
      */
     public function protocolRelativeUrlData()
@@ -130,6 +132,7 @@ class UrlHelperTest extends Unit
     }
 
     /**
+     * Test that adding params to urls works under various circumstances
      * @dataProvider urlWithParamsData()
      */
     public function testUrlWithParams($result, $url, $params)
@@ -180,6 +183,10 @@ class UrlHelperTest extends Unit
 
 
     /**
+     * Test that CP Urls are created. We do some hand modification work to construct an 'expected' result based on the cp trigger
+     * config variable. We cant do this (yet)(https://github.com/Codeception/Codeception/issues/4087) as the Craft::$app var and thus
+     * the cpTrigger variable inst easily accessible in the dataProvider methods.
+     *
      * @dataProvider cpUrlCreationData
      */
     public function testCpUrlCreation($result, $inputUrl, $params, $scheme = 'https')
@@ -191,8 +198,10 @@ class UrlHelperTest extends Unit
             $baseUrl = str_replace('https://', 'http://', $this->baseUrlWithScript);
         }
 
+        $expectedUrl = $baseUrl.'?p='.$this->cpTrigger.''.$result.'';
+
         $this->assertSame(
-            $baseUrl.'?p='.$this->cpTrigger.''.$result.'',
+            $expectedUrl,
             UrlHelper::cpUrl($inputUrl, $params, $scheme)
         );
     }
@@ -233,6 +242,8 @@ class UrlHelperTest extends Unit
     }
 
     /**
+     * Tests for various UrlHelper methods that create urls based on a specific format. I.E with token or scheme.
+     * The data providers below determine the result and which method is called.
      * @dataProvider urlWithSchemeProvider
      * @dataProvider urlWithTokenProvider
      * @dataProvider urlWithParamsProvider
@@ -247,6 +258,10 @@ class UrlHelperTest extends Unit
         $this->assertSame($result, UrlHelper::$method($url, $modifier));
     }
 
+    /**
+     * Tests for UrlHelper::stripQueryString() method
+     * @return array
+     */
     public function stripQueryStringProvider()
     {
         return [
@@ -269,7 +284,7 @@ class UrlHelperTest extends Unit
                 'stripQueryString'
             ],
             [
-            self::ABSOLUTE_URL_HTTPS_WWW,
+                self::ABSOLUTE_URL_HTTPS_WWW,
                 self::ABSOLUTE_URL_HTTPS_WWW.'?param1=entry1?param2=entry2',
                 null,
                 'stripQueryString'
@@ -278,6 +293,10 @@ class UrlHelperTest extends Unit
         ];
     }
 
+    /**
+     * Tests for UrlHelper::urlWithParams() method
+     * @return array
+     */
     public function urlWithParamsProvider()
     {
         return [
@@ -320,6 +339,10 @@ class UrlHelperTest extends Unit
         ];
     }
 
+    /**
+     * Tests for UrlHelper::urlWithToken()
+     * @return array
+     */
     public function urlWithTokenProvider()
     {
         $requiredScheme = UrlHelper::getSchemeForTokenizedUrl();
@@ -365,6 +388,10 @@ class UrlHelperTest extends Unit
         ];
     }
 
+    /**
+     * Tests for UrlHelper::urlWithScheme()
+     * @return array
+     */
     public function urlWithSchemeProvider()
     {
         return [
@@ -426,6 +453,9 @@ class UrlHelperTest extends Unit
     }
 
     /**
+     * Tests the UrlHelper::url() method.
+     *
+     *
      * @dataProvider urlFunctionDataProvider
      *
      * @param             $result
@@ -446,7 +476,7 @@ class UrlHelperTest extends Unit
 
         // If no scheme was passed in. We need to set the result to whatever the the url() function will use aswell.
         if ($scheme === null) {
-            $scheme = !\Craft::$app->getRequest()->getIsConsoleRequest() && \Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
+            $scheme = $this->determineUrlScheme();
             $result = $this->urlWithScheme($result, $scheme);
         }
 
@@ -493,13 +523,18 @@ class UrlHelperTest extends Unit
         return $url;
     }
 
+    public function determineUrlScheme()
+    {
+        return !\Craft::$app->getRequest()->getIsConsoleRequest() && \Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
+    }
+
     /**
      * Tests that when a $scheme is not defined when creating a url.
      * It uses the below described method to determine the scheme type and adds this to a url.
      */
     public function testAutomaticProtocolType()
     {
-        $schemeType = !\Craft::$app->getRequest()->getIsConsoleRequest() && \Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
+        $schemeType = $this->determineUrlScheme();
 
         // Dont pass in a scheme type. Ensure it determines this itself.
         $result = UrlHelper::url('someendpoint');
@@ -524,45 +559,11 @@ class UrlHelperTest extends Unit
         $this->assertSame('http://facebook.com', UrlHelper::hostInfo('http://facebook.com'));
         $this->assertSame('ftp://www.craftcms.com', UrlHelper::hostInfo('ftp://www.craftcms.com/why/craft/is/cool/'));
         $this->assertSame('walawalabingbang://gt.com', UrlHelper::hostInfo('walawalabingbang://gt.com/'));
-        $this->assertSame('sftp://volkswagen', UrlHelper::hostInfo('sftp://volkswagen/2/2/2/2/2/2/2/2/2///222////222'));
+        $this->assertSame('sftp://volkswagen', UrlHelper::hostInfo('sftp://volkswagen////222////222'));
 
         // If nothing is passed to the hostInfo() your mileage may vary depending on request type. So we need to know what to expect before hand..
         $expectedValue = \Craft::$app->getRequest()->getIsConsoleRequest() ? '' : \Craft::$app->getRequest()->getHostInfo();
         $this->assertSame($expectedValue, UrlHelper::hostInfo(''));
-    }
-
-    /**
-     * @return bool
-     * @throws \craft\errors\SiteNotFoundException
-     */
-    public function testGetSchemeForTokenUrl()
-    {
-        $this->assertTrue(in_array(UrlHelper::getSchemeForTokenizedUrl(), ['http', 'https']));
-
-        // Run down the logic to see what we will need to require.
-        $useSslOnTokenizedUrls = \Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls;
-
-        // If they've explicitly set `useSslOnTokenizedUrls` to true, require https.
-        if ($useSslOnTokenizedUrls === true) {
-            $this->assertSame('https', UrlHelper::getSchemeForTokenizedUrl());
-            return true;
-        }
-
-        // If they've explicitly set `useSslOnTokenizedUrls` to false, require http.
-        if ($useSslOnTokenizedUrls === false) {
-            $this->assertSame('http', UrlHelper::getSchemeForTokenizedUrl());
-            return true;
-        }
-
-        // If the siteUrl is https or the current request is https, require https://.
-        $scheme = parse_url(UrlHelper::baseSiteUrl(), PHP_URL_SCHEME);
-        $request = \Craft::$app->getRequest();
-        if (($scheme !== false && strtolower($scheme) === 'https') || (!$request->getIsConsoleRequest() && $request->getIsSecureConnection())) {
-            $this->assertSame('https', UrlHelper::getSchemeForTokenizedUrl());
-            return true;
-        }
-
-        $this->assertSame('http', UrlHelper::getSchemeForTokenizedUrl());
     }
 
     public function testSchemeForTokenizedBasedOnConfig()
