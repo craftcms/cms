@@ -11,7 +11,9 @@ $basePath = dirname(dirname(dirname(__DIR__)));
 $srcPath = $basePath.'/src';
 $vendorPath = $basePath.'/vendor';
 
-Craft::setAlias('@craftunit', $srcPath.'/test');
+Craft::setAlias('@craftunitsupport', $srcPath.'/test');
+Craft::setAlias('@craftunittemplates', $basePath.'/tests/_craft/templates');
+Craft::setAlias('@craftunitfixtures', $basePath.'/tests/fixtures');
 
 // Load the config
 $config = ArrayHelper::merge(
