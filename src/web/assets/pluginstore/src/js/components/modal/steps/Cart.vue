@@ -129,6 +129,7 @@
                 cart: state => state.cart.cart,
                 craftLogo: state => state.craft.craftLogo,
                 craftId: state => state.craft.craftId,
+                expiryDateOptions: state => state.pluginStore.expiryDateOptions,
             }),
 
             ...mapGetters({
@@ -205,17 +206,12 @@
                 const item = this.cartItems[itemKey]
                 const renewalPrice = item.lineItem.purchasable.renewalPrice
                 const itemUpdate = this.itemUpdates[itemKey]
-                const years = 5
+
                 let options = []
 
-                for (let i = 1; i <= years; i++) {
-                    const currentDate = new Date()
-                    const year = currentDate.getFullYear() + i
-                    const month = currentDate.getMonth()
-                    const day = currentDate.getDay()
-                    const date = new Date(year, month, day)
-                    const price = renewalPrice * (i - itemUpdate);
-
+                for (let i = 0; i < this.expiryDateOptions.length; i++) {
+                    const date = this.expiryDateOptions[i]
+                    const price = renewalPrice * (i - itemUpdate)
                     let label = "Updates Until " + Craft.formatDate(date)
 
                     if (price !== 0) {
@@ -244,7 +240,7 @@
 
                 const purchasable = this.cartItems[itemKey].lineItem.purchasable
                 const price = parseInt(purchasable.price)
-                const renewalsTotal = parseInt(purchasable.renewalPrice) * (this.itemUpdates[itemKey] - 1)
+                const renewalsTotal = parseInt(purchasable.renewalPrice) * this.itemUpdates[itemKey]
                 const quantity = 1
 
                 return (price + renewalsTotal) * quantity
@@ -254,7 +250,7 @@
 
         mounted() {
             this.cartItems.forEach(function(item, key) {
-                this.$set(this.itemUpdates, key, 1)
+                this.$set(this.itemUpdates, key, 0)
             }.bind(this))
         }
 

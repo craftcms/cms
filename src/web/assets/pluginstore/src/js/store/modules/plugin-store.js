@@ -9,6 +9,7 @@ const state = {
     featuredPlugins: [],
     plugin: null,
     plugins: [],
+    expiryDateOptions: [],
 }
 
 /**
@@ -160,6 +161,7 @@ const mutations = {
         state.categories = response.data.categories
         state.featuredPlugins = response.data.featuredPlugins
         state.plugins = response.data.plugins
+        state.expiryDateOptions = response.data.expiryDateOptions
     },
 
     updatePluginDetails(state, pluginDetails) {
