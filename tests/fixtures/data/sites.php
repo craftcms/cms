@@ -30,4 +30,18 @@ return [
         'dateUpdated' => '2018-08-08 20:00:00',
         'uid' => '09a48e85-2f12-2124-b82c-45b14b13d8ce'
     ],
+    [
+        'id' => '1002',
+        'groupId' => 1,
+        'primary' => false,
+        'name' => 'Test site 3',
+        'handle' => 'testSite3',
+        'language' => 'nl',
+        'hasUrls' => 1,
+        'baseUrl' => 'https://domain.com',
+        'sortOrder' => 4,
+        'dateCreated' => '2018-08-08 20:00:00',
+        'dateUpdated' => '2018-08-08 20:00:00',
+        'uid' => '09a48e85-2f12-2124-b82c-45b14b13d8ce'
+    ],
 ];
