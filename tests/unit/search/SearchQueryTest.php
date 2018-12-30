@@ -165,16 +165,6 @@ class SearchQueryTest extends Unit
     {
         $exploded = explode(' ', $query);
 
-        // Callback that returns the object.
-        $createDefaultFromString = function ($string, $config) {
-            if (!isset($config['term'])) {
-                $config['term'] = $string;
-            }
-
-            return new SearchQueryTerm($config);
-        };
-
-
         $search = new SearchQuery($query);
 
         // If we have to count the array. Count the array.
@@ -195,15 +185,29 @@ class SearchQueryTest extends Unit
             $config = $this->getConfigFromOptions($searchTerm, $configOptions);
 
             // Setup the token objects for comparison based on the config above and the term of the token
-            $whatItShouldBe = $createDefaultFromString($token->term, $config);
+            $whatItShouldBe = $this->createDefaultTokenFromString($token->term, $config);
             $whatItIs = $token;
 
             $this->ensureIdenticalSearchTermObjects($whatItShouldBe, $whatItIs);
 
             // Test that the index of the searchQueryTerm's is in the correct order by comparing to the exploded string.
-            $fromExplodedString = $createDefaultFromString($exploded[$index], $config);
+            $fromExplodedString = $this->createDefaultTokenFromString($exploded[$index], $config);
             $this->ensureIdenticalSearchTermObjects($fromExplodedString, $whatItIs);
         }
+    }
+
+    /**
+     * @param $string
+     * @param $config
+     * @return SearchQueryTerm
+     */
+    public function createDefaultTokenFromString($string, $config) : SearchQueryTerm
+    {
+        if (!isset($config['term'])) {
+            $config['term'] = $string;
+        }
+
+        return new SearchQueryTerm($config);
     }
 
     /**

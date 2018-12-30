@@ -14,7 +14,7 @@ use craft\web\View;
 use craftunit\fixtures\SitesFixture;
 
 /**
- * Unit tests for the Url Helper class.
+ * Unit tests for the View class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -115,9 +115,6 @@ class ViewTest extends TestCase
             ['@craft/templates/index.html', '', View::TEMPLATE_MODE_CP],
             ['@craft/templates/index.html', 'index', View::TEMPLATE_MODE_CP],
             ['@craft/templates/entries/index.html', 'entries', View::TEMPLATE_MODE_CP],
-
-
-
         ];
     }
 
