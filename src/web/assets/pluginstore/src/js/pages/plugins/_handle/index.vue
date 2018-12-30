@@ -1,5 +1,7 @@
 <template>
     <div v-if="pluginSnippet" class="plugin-details ps-container">
+
+        <!-- header -->
         <div class="plugin-details-header border-b border-solid border-grey-lighter tw-flex mb-6 pb-6 items-center">
             <div class="plugin-icon mr-6">
                 <img v-if="pluginSnippet.iconUrl" :src="pluginSnippet.iconUrl" width="100" />
@@ -17,6 +19,7 @@
             </div>
         </div>
 
+        <!-- body -->
         <div class="plugin-details-body">
             <template v-if="!loading">
                 <template v-if="plugin.screenshotUrls && plugin.screenshotUrls.length">
@@ -214,6 +217,8 @@
 </script>
 
 <style lang="scss">
+
+    // Todo: Remove import?
     @import "../../../../sass/variables";
 
 
