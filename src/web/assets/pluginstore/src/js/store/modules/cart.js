@@ -21,6 +21,10 @@ const getters = {
 
     isInCart(state) {
         return (plugin, edition) => {
+            if (!state.cart) {
+                return false
+            }
+
             return state.cart.lineItems.find(lineItem => {
                 if (lineItem.purchasable.pluginId !== plugin.id) {
                     return false
