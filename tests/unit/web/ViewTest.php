@@ -85,8 +85,12 @@ class ViewTest extends TestCase
      * @param $templatePath
      * @dataProvider doesTemplateExistData
      */
-    public function testDoesTemplateExistsInSite($result, $templatePath)
+    public function testDoesTemplateExistsInSite($result, $templatePath, $templateMode = null)
     {
+        if ($templateMode !== null) {
+            \Craft::$app->getView()->setTemplateMode($templateMode);
+        }
+
         $doesIt = \Craft::$app->getView()->resolveTemplate($templatePath);
 
         if ($result === false) {
@@ -104,7 +108,16 @@ class ViewTest extends TestCase
             [false, 'doesntExist'],
             [false, '@craftunittemplates/index.html'],
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/index.twig'],
+            ['@craftunittemplates/testSite3/index.twig', 'testSite3'],
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/'],
+
+            // Cp Paths
+            ['@craft/templates/index.html', '', View::TEMPLATE_MODE_CP],
+            ['@craft/templates/index.html', 'index', View::TEMPLATE_MODE_CP],
+            ['@craft/templates/entries/index.html', 'entries', View::TEMPLATE_MODE_CP],
+
+
+
         ];
     }
 
@@ -126,7 +139,7 @@ class ViewTest extends TestCase
             $this->setInaccessibleProperty(\Craft::$app->getView(), '_indexTemplateFilenames', $viewTemplateNameExtensions);
         }
 
-
+        // Lets test stuff.
         $resolved = $this->resolveTemplate(\Craft::getAlias($basePath), $name);
         $this->assertSame(\Craft::getAlias($result), $resolved);
     }
