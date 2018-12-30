@@ -45,16 +45,16 @@
                             </template>
 
                             <td>
-                                <select-field v-model="itemUpdates[itemKey]" :options="itemUpdateOptions(itemKey)" />
+                                <select-field v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
                             </td>
                             <td class="rightalign">
-                                <strong>{{ itemTotal(itemKey)|currency }}</strong>
+                                <strong>{{ item.lineItem.total|currency }}</strong>
                             </td>
                             <td class="thin"><a class="delete icon" role="button" @click="removeFromCart(itemKey)"></a></td>
                         </tr>
                         <tr>
                             <th class="rightalign" colspan="3">Total Price</th>
-                            <td class="rightalign"><strong>{{ total|currency }}</strong></td>
+                            <td class="rightalign"><strong>{{cart.totalPrice|currency}}</strong></td>
                             <td class="thin"></td>
                         </tr>
                         </tbody>
@@ -115,7 +115,7 @@
 
         data() {
             return {
-                itemUpdates: {}
+                selectedExpiryDates: {}
             }
         },
 
@@ -135,6 +135,7 @@
             ...mapGetters({
                 activeTrialPlugins: 'cart/activeTrialPlugins',
                 cartItems: 'cart/cartItems',
+                cartItemsData: 'cart/cartItemsData',
             }),
 
             pendingActiveTrials() {
@@ -145,16 +146,6 @@
                         })
                     }
                 })
-            },
-
-            total() {
-                let total = 0
-
-                this.cartItems.forEach(function(item, key) {
-                    total += this.itemTotal(key)
-                }.bind(this))
-
-                return total
             },
 
         },
@@ -202,17 +193,17 @@
                 }
             },
 
-            itemUpdateOptions(itemKey) {
+            itemExpiryDateOptions(itemKey) {
                 const item = this.cartItems[itemKey]
                 const renewalPrice = item.lineItem.purchasable.renewalPrice
-                const itemUpdate = this.itemUpdates[itemKey]
 
                 let options = []
 
                 for (let i = 0; i < this.expiryDateOptions.length; i++) {
                     const date = this.expiryDateOptions[i]
-                    const price = renewalPrice * (i - itemUpdate)
                     let label = "Updates Until " + Craft.formatDate(date)
+
+                    const price = renewalPrice * i
 
                     if (price !== 0) {
                         let sign = '';
@@ -226,31 +217,36 @@
 
                     options.push({
                         label: label,
-                        value: i,
+                        value: this.formatDateYYYYMMDD(date),
                     })
                 }
 
                 return options
             },
 
-            itemTotal(itemKey) {
-                if (typeof this.itemUpdates[itemKey] === 'undefined') {
-                    return 0;
-                }
+            formatDateYYYYMMDD(date) {
+                let d = new Date(date),
+                    month = '' + (d.getMonth() + 1),
+                    day = '' + d.getDate(),
+                    year = d.getFullYear()
 
-                const purchasable = this.cartItems[itemKey].lineItem.purchasable
-                const price = parseInt(purchasable.price)
-                const renewalsTotal = parseInt(purchasable.renewalPrice) * this.itemUpdates[itemKey]
-                const quantity = 1
+                if (month.length < 2) month = '0' + month
+                if (day.length < 2) day = '0' + day
 
-                return (price + renewalsTotal) * quantity
+                return [year, month, day].join('-')
             },
 
+            onSelectedExpiryDateChange(itemKey) {
+                // let item = this.cartItemsData[itemKey]
+                // item.options.expiryDate = this.selectedExpiryDates[itemKey]
+                // this.$store.dispatch('cart/updateItem', itemKey, item)
+            }
         },
 
         mounted() {
             this.cartItems.forEach(function(item, key) {
-                this.$set(this.itemUpdates, key, 0)
+                const expiryDate = item.lineItem.options.expiryDate
+                this.$set(this.selectedExpiryDates, key, expiryDate)
             }.bind(this))
         }
 

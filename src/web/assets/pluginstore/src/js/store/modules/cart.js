@@ -75,12 +75,37 @@ const getters = {
         return cartItems
     },
 
+    cartItemsData(state) {
+        return utils.getCartItemsData(state.cart)
+    }
+
 }
 
 /**
  * Actions
  */
 const actions = {
+
+    updateItem({commit, state}, itemKey, item) {
+        return new Promise((resolve, reject) => {
+            const cart = state.cart
+
+            let items = utils.getCartItemsData(cart)
+
+            items[itemKey] = item
+
+            let data = {
+                items,
+            }
+
+            api.updateCart(cart.number, data, response => {
+                commit('updateCart', {response})
+                resolve(response)
+            }, response => {
+                reject(response)
+            })
+        })
+    },
 
     addToCart({commit, state}, newItems) {
         return new Promise((resolve, reject) => {
