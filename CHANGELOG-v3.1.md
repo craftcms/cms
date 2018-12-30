@@ -108,6 +108,7 @@
 - Craft Tokens can now be sent either as a query string param (named after the `tokenParam` config setting) or an `X-Craft-Token` header.
 - Element types that support Live Preview must now hash the `previewAction` value for `Craft.LivePreview`.
 - Live Preview now loads each new preview into its own `<iframe>` element. ([#3366](https://github.com/craftcms/cms/issues/3366))
+- `craft\helpers\ArrayHelper::filterByValue()` now defaults its `$value` argument to `true`.
 - `craft\services\Routes::saveRoute()` now expects site and route UIDs instead of IDs.
 - `craft\services\Routes::updateRouteOrder()` now expects route UIDs instead of IDs.
 

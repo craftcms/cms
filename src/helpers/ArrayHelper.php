@@ -84,7 +84,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
      * @return array the filtered array
      */
-    public static function filterByValue($array, $key, $value, bool $strict = false): array
+    public static function filterByValue($array, $key, $value = true, bool $strict = false): array
     {
         $result = [];
 
