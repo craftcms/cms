@@ -13,7 +13,6 @@ module.exports = {
          },
      },
      devServer: {
-         hotOnly: true,
          proxy: 'https://192.168.1.72:8080',
          public: '192.168.1.72:8080',
          headers: { "Access-Control-Allow-Origin": "*" },
