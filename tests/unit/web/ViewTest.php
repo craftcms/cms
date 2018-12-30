@@ -7,6 +7,8 @@
 namespace craftunit\web;
 
 
+use craft\test\mockclasses\arrayable\ExampleArrayble;
+use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
 use craftunit\fixtures\SitesFixture;
@@ -33,6 +35,14 @@ class ViewTest extends TestCase
      * @var \UnitTester
      */
     protected $tester;
+
+    public function _before()
+    {
+        parent::_before();
+
+        // By default we want to be in site mode.
+        \Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
+    }
 
 
     /**
@@ -64,7 +74,6 @@ class ViewTest extends TestCase
     {
         // Ensure that the current site is the one with the testSite3 handle
         \Craft::$app->getSites()->setCurrentSite(\Craft::$app->getSites()->getSiteByHandle('testSite3'));
-        \Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
 
         $this->assertSame(
             \Craft::getAlias('@craftunittemplates/testSite3/craft.twig'),
@@ -78,8 +87,6 @@ class ViewTest extends TestCase
      */
     public function testDoesTemplateExistsInSite($result, $templatePath)
     {
-        \Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
-
         $doesIt = \Craft::$app->getView()->resolveTemplate($templatePath);
 
         if ($result === false) {
@@ -100,7 +107,6 @@ class ViewTest extends TestCase
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/'],
         ];
     }
-
 
     /**
      * @see testDoesTemplateExistsInSite
@@ -144,6 +150,79 @@ class ViewTest extends TestCase
         ];
     }
 
+    /**
+     * Test that Craft::$app->getView()->renderTemplates(); Seems to work correctly with twig. Doesnt impact global props
+     * and respects passed in variables.
+     * @param $result
+     * @param $template
+     * @param $variables
+     */
+    public function testRenderTemplate()
+    {
+        // Assert that the _renderingTemplate prop goes in and comes out as null.
+        $this->assertSame(null, $this->getInaccessibleProperty(\Craft::$app->getView(), '_renderingTemplate'));
+
+        $result = \Craft::$app->getView()->renderTemplate('withvar', ['name' => 'Giel Tettelaar']);
+
+        $this->assertSame($result, 'Hello iam Giel Tettelaar');
+        $this->assertSame(null, $this->getInaccessibleProperty(\Craft::$app->getView(), '_renderingTemplate'));
+
+        // Test that templates can work without variables.
+        $result = \Craft::$app->getView()->renderTemplate('novar');
+
+        $this->assertSame($result, 'I have no vars');
+    }
+
+    public function testRenderMacro()
+    {
+        \Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        $result = \Craft::$app->getView()->renderTemplateMacro('macros', 'testMacro1', ['arg1' => 'Craft', 'arg2' => 'CMS']);
+        $this->assertSame('Craft-CMS', $result);
+    }
+
+    public function testRenderString()
+    {
+        $result = \Craft::$app->getView()->renderString('{{ arg1 }}-{{ arg2 }}', ['arg1' => 'Craft', 'arg2' => 'CMS']);
+        $this->assertSame('Craft-CMS', $result);
+    }
+
+    /**
+     * @param $result
+     * @param $template
+     * @param $object
+     * @param $variables
+     * @dataProvider renderObjectTemplateData
+     */
+    public function testRenderObjectTemplate($result, $template, $object, array $variables = [])
+    {
+        $res = \Craft::$app->getView()->renderObjectTemplate($template, $object, $variables);
+        $this->assertSame($result, $res);
+    }
+    public function renderObjectTemplateData()
+    {
+        $model = new ExampleModel();
+        $model->exampleParam = 'Example Param';
+
+        $arrayable = new ExampleArrayble();
+        $arrayable->exampleArrayableParam = 'Example param';
+        $arrayable->extraField = 'ExtraField';
+
+        return [
+            // No tags. Then it returns the template
+            ['[[ exampleParam ]]', '[[ exampleParam ]]', $model, ['vars' => 'vars']],
+
+            // Base arrayable test
+            ['Example paramExample param', '{ exampleArrayableParam }{ object.exampleArrayableParam }', $arrayable],
+            ['ExtraFieldExtraField', '{ extraField }{ object.extraField }', $arrayable],
+
+            // Base model test
+            ['Example ParamExample Param', '{{ exampleParam }}{{ object.exampleParam }}', $model],
+            ['Example ParamExample Param', '{ exampleParam }{ object.exampleParam }', $model],
+
+            // Test that model params dont overide variable params.
+            ['IM DIFFERENTExample Param', '{ exampleParam }{ object.exampleParam }', $model, ['exampleParam' => 'IM DIFFERENT']],
+        ];
+    }
 
     // Helpers
     // =========================================================================
