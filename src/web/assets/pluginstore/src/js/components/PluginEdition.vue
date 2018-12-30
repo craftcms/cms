@@ -60,7 +60,6 @@
 
             ...mapGetters({
                 isPluginEditionFree: 'pluginStore/isPluginEditionFree',
-                isInCart: 'cart/isInCart',
             }),
 
         },
