@@ -5,6 +5,8 @@
         </template>
 
         <template slot="main">
+            <h2>{{ "Items in your cart"|t('app') }}</h2>
+
             <template v-if="cart">
                 <template v-if="cartItems.length">
                     <table class="data fullwidth">
@@ -45,15 +47,15 @@
                                 <select-field v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
                                 <div v-if="itemLoading(itemKey)" class="spinner"></div>
                             </td>
-                            <td class="price rightalign">
+                            <td class="price">
                                 <strong>{{ item.lineItem.total|currency }}</strong>
                                 <br />
                                 <a role="button" @click="removeFromCart(itemKey)">Remove</a>
                             </td>
                         </tr>
                         <tr>
-                            <th class="rightalign" colspan="3">Total Price</th>
-                            <td class="rightalign"><strong>{{cart.totalPrice|currency}}</strong></td>
+                            <th class="total-price" colspan="3">Total Price</th>
+                            <td class="total-price"><strong>{{cart.totalPrice|currency}}</strong></td>
                         </tr>
                         </tbody>
                     </table>
@@ -271,7 +273,7 @@
     }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
     .plugin-icon {
         img {
             max-width: none;
@@ -279,8 +281,6 @@
     }
 
     td.expiry-date {
-        @apply .w-1/2;
-
         & > div {
             display: inline-block;
             margin-bottom: 0;
@@ -292,7 +292,36 @@
         }
     }
 
-    td.price {
-        @apply .w-1/4;
+    @media (max-width: 991px) {
+        thead {
+            display: none;
+        }
+
+        tr,
+        td,
+        th {
+            display: block !important;
+            border: 0 !important;
+            padding: 4px 0 !important;
+        }
+
+        tr {
+            border-top: 1px solid #eee !important;
+        }
+    }
+
+    @media (min-width: 992px) {
+        td.expiry-date {
+            @apply .w-1/2;
+        }
+
+        td.price {
+            @apply .w-1/4 .text-right;
+        }
+
+        td.total-price,
+        th.total-price {
+            @apply .text-right;
+        }
     }
 </style>
