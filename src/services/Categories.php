@@ -164,8 +164,6 @@ class Categories extends Component
     }
 
     /**
-            ->orderBy(['name' => SORT_ASC])
-            ->orderBy(['name' => SORT_ASC])
      * Returns a group by its UID.
      *
      * @param string $uid
