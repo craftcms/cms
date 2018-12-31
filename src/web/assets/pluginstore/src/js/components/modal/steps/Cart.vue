@@ -44,10 +44,11 @@
                                 </td>
                             </template>
 
-                            <td>
+                            <td class="expiry-date">
                                 <select-field v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
+                                <div v-if="itemLoading(itemKey)" class="spinner"></div>
                             </td>
-                            <td class="rightalign">
+                            <td class="price rightalign">
                                 <strong>{{ item.lineItem.total|currency }}</strong>
                             </td>
                             <td class="thin"><a class="delete icon" role="button" @click="removeFromCart(itemKey)"></a></td>
@@ -115,7 +116,8 @@
 
         data() {
             return {
-                selectedExpiryDates: {}
+                selectedExpiryDates: {},
+                loadingItems: {},
             }
         },
 
@@ -205,7 +207,7 @@
                         selectedOption = key
                     }
                 })
-                
+
                 for (let i = 0; i < this.expiryDateOptions.length; i++) {
                     const date = this.expiryDateOptions[i]
                     let label = "Updates Until " + Craft.formatDate(date)
@@ -244,9 +246,21 @@
             },
 
             onSelectedExpiryDateChange(itemKey) {
+                this.$set(this.loadingItems, itemKey, true)
                 let item = this.cartItemsData[itemKey]
                 item.expiryDate = this.selectedExpiryDates[itemKey]
                 this.$store.dispatch('cart/updateItem', {itemKey, item})
+                    .then(() => {
+                        this.$delete(this.loadingItems, itemKey)
+                    })
+            },
+
+            itemLoading(itemKey) {
+                if (!this.loadingItems[itemKey]) {
+                    return false
+                }
+
+                return true
             }
         },
 
@@ -265,5 +279,23 @@
         img {
             max-width: none;
         }
+    }
+
+    td.expiry-date {
+        @apply .w-1/2;
+
+        & > div {
+            display: inline-block;
+            margin-bottom: 0;
+        }
+
+        .spinner {
+            @apply .relative .ml-2;
+            top: -2px;
+        }
+    }
+
+    td.price {
+        @apply .w-1/4;
     }
 </style>
