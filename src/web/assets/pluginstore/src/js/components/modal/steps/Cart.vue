@@ -198,12 +198,19 @@
                 const renewalPrice = item.lineItem.purchasable.renewalPrice
 
                 let options = []
+                let selectedOption = 0
 
+                this.expiryDateOptions.forEach((option, key) => {
+                    if (option === item.lineItem.options.expiryDate) {
+                        selectedOption = key
+                    }
+                })
+                
                 for (let i = 0; i < this.expiryDateOptions.length; i++) {
                     const date = this.expiryDateOptions[i]
                     let label = "Updates Until " + Craft.formatDate(date)
 
-                    const price = renewalPrice * i
+                    const price = renewalPrice * (i - selectedOption)
 
                     if (price !== 0) {
                         let sign = '';
@@ -237,11 +244,9 @@
             },
 
             onSelectedExpiryDateChange(itemKey) {
-                if (this.cart) {
-                    let item = this.cartItemsData[itemKey]
-                    item.expiryDate = this.selectedExpiryDates[itemKey]
-                    this.$store.dispatch('cart/updateItem', {itemKey, item})
-                }
+                let item = this.cartItemsData[itemKey]
+                item.expiryDate = this.selectedExpiryDates[itemKey]
+                this.$store.dispatch('cart/updateItem', {itemKey, item})
             }
         },
 
