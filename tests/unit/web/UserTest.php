@@ -11,10 +11,15 @@ namespace craftunit\web;
 
 use Codeception\Stub;
 use Codeception\Test\Unit;
+use craft\db\Query;
 use craft\elements\User;
+use craft\helpers\StringHelper;
 use craft\services\Config;
 use craft\services\Security;
+use craft\test\TestCase;
 use craft\web\Session;
+use craftunit\fixtures\SessionsFixture;
+use yii\web\Cookie;
 
 /**
  * Unit tests for UserTest
@@ -23,8 +28,13 @@ use craft\web\Session;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
  */
-class UserTest extends Unit
+class UserTest extends TestCase
 {
+    /**
+     * @var \UnitTester $tester
+     */
+    public $tester;
+
     /**
      * @var User $userElement
      */
@@ -84,7 +94,6 @@ class UserTest extends Unit
 
         // With a user and authTimeout null it should return -1
         $this->user->setIdentity($this->userElement);
-        $auth = $this->user->authTimeout;
         $this->user->authTimeout = null;
         $this->assertSame(-1, $this->user->getRemainingSessionTime());
     }
@@ -92,6 +101,11 @@ class UserTest extends Unit
     /**
      * Test that the current time() is substracted from the session expiration value.
      * We use a stub to ensure Craft::$app->getSession()->get() always returns 50 PHP sessions are difficult(ish) in testing.
+     *
+     * TODO: >.<: Currently this test can fail because the by the time getRemainingSessionTime gets to line 204 a (half) second may have passed
+     * meaning that it will return 49 seconds remaining instead of 50 (because between setting the session stub and processesing the remaining session time
+     * a second will have passed). Solve this.
+     *
      * @throws \yii\base\InvalidConfigException
      */
     public function testGetRemainingSessionTimeMath()
