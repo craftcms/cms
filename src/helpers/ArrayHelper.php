@@ -100,6 +100,29 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     }
 
     /**
+     * Returns the first value in a given array where a given key (the name of a
+     * sub-array key or sub-object property) is set to a given value.
+     *
+     * @param array|\Traversable $array the array that the value will be searched for in
+     * @param string|\Closure $key the column name or anonymous function which must be set to $value
+     * @param mixed $value the value that $key should be compared with
+     * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
+     * @return mixed the value, or null if it can't be found
+     */
+    public static function firstWhere($array, $key, $value = true, bool $strict = false)
+    {
+        foreach ($array as $i => $element) {
+            $elementValue = static::getValue($element, $key);
+            /** @noinspection TypeUnsafeComparisonInspection */
+            if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {
+                return $element;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Filters empty strings from an array.
      *
      * @param array $arr

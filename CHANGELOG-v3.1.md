@@ -48,6 +48,7 @@
 - Added `craft\helpers\App::editionHandle()`.
 - Added `craft\helpers\App::editionIdByHandle()`.
 - Added `craft\helpers\App::mailSettings()`.
+- Added `craft\helpers\ArrayHelper::firstWhere()`.
 - Added `craft\helpers\Db::idByUid()`.
 - Added `craft\helpers\Db::idsByUids()`.
 - Added `craft\helpers\Db::uidById()`.
