@@ -67,7 +67,7 @@ class UrlRule extends \yii\web\UrlRule
                 self::$_regexTokens = [
                     '{handle}' => '(?:[a-zA-Z][a-zA-Z0-9_]*)',
                     '{slug}' => '(?:[\p{L}\p{N}\p{M}' . preg_quote(implode($slugChars), '/') . ']+)',
-                    '{uid}' => StringHelper::UUID_V4_REGEX,
+                    '{uid}' => StringHelper::UUID_PATTERN,
                 ];
             }
 
