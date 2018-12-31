@@ -25,7 +25,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
     const UTF8 = 'UTF-8';
 
-    const UUID_V4_REGEX = '/^[A-Z0-9]{8}-[A-Z0-9]{4}-4[A-Z0-9]{3}-[89AB][A-Z0-9]{3}-[A-Z0-9]{12}$/i';
+    const UUID_V4_REGEX = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
 
     // Public Methods
     // =========================================================================
@@ -340,7 +340,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isUUID(string $uuid): bool
     {
-        return !empty($uuid) && preg_match(self::UUID_V4_REGEX, $uuid);
+        return !empty($uuid) && preg_match('/^'.self::UUID_V4_REGEX.'$/i', $uuid);
     }
 
     /**
