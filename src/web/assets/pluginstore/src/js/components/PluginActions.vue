@@ -57,7 +57,7 @@
                     <input type="hidden" name="packageName" :value="plugin.packageName">
                     <input type="hidden" name="handle" :value="plugin.handle">
                     <input type="hidden" name="version" :value="plugin.version">
-                    <input type="submit" class="btn submit" :value="'Install'|t('app')">
+                    <btn-input :value="'Install'|t('app')" type="primary" block large></btn-input>
                 </form>
             </div>
         </div>

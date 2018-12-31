@@ -54,13 +54,11 @@
 
                 <hr>
 
-                <template v-if="!isPluginFree(plugin)">
-                    <div class="py-8">
-                        <plugin-editions :plugin="plugin"></plugin-editions>
-                    </div>
+                <div class="py-8">
+                    <plugin-editions :plugin="plugin"></plugin-editions>
+                </div>
 
-                    <hr>
-                </template>
+                <hr>
 
                 <h2 class="mb-4">Informations</h2>
                 <div class="plugin-infos">
@@ -93,7 +91,7 @@
 </template>
 
 <script>
-    import {mapState, mapGetters, mapActions} from 'vuex'
+    import {mapState, mapActions} from 'vuex'
     import PluginScreenshots from '../../../components/PluginScreenshots'
     import PluginEditions from '../../../components/PluginEditions'
     import PluginChangelog from '../../../components/PluginChangelog'
@@ -123,10 +121,6 @@
                 plugin: state => state.pluginStore.plugin,
                 plugins: state => state.pluginStore.plugins,
                 defaultPluginSvg: state => state.craft.defaultPluginSvg,
-            }),
-
-            ...mapGetters({
-                isPluginFree: 'pluginStore/isPluginFree',
             }),
 
             longDescription() {

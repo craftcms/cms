@@ -11,7 +11,7 @@
                 </template>
             </div>
 
-            <p v-if="!isPluginEditionFree(edition)" class="py-6 text-grey-dark">
+            <p v-if="!isPluginEditionFree(edition)" class="-mt-8 py-6 text-grey-dark">
                 Price includes 1 year of updates.<br />
                 {{ edition.renewalPrice|currency }}/year per site for updates after that.
             </p>
@@ -101,7 +101,7 @@
             }
 
             .price {
-                @apply .text-3xl .font-bold .mt-8;
+                @apply .text-3xl .font-bold .my-8;
             }
 
             ul {
