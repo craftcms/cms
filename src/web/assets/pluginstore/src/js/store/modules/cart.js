@@ -339,6 +339,10 @@ const utils = {
     },
 
     getCartItemsData(cart) {
+        if (!cart) {
+            return []
+        }
+
         let lineItems = []
         for (let i = 0; i < cart.lineItems.length; i++) {
             let lineItem = cart.lineItems[i]
