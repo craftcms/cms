@@ -91,6 +91,7 @@ The following tokens are available to the URI setting:
 * `month` – Numeric representation of a month (1-12 or 01-12)
 * `number` – Any positive integer
 * `page` – Any positive integer
+* `uid` – A v4 compatible UUID (universally unique ID)
 * `slug` – Any string of characters, except for a forward slash (/)
 * `tag` – Any string of characters, except for a forward slash (/)
 * `year` – Four consecutive digits
@@ -124,6 +125,7 @@ Craft also supports special tokens that you can use within the regular expressio
 
 - `{handle}` – matches a field handle, volume handle, etc.
 - `{slug}` – matches an entry slug, category slug, etc.  
+- `{uid}` – matches a v4 UUID. 
 
 ```php
 return [
