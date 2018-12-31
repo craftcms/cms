@@ -28,13 +28,31 @@
                     <hr>
                 </template>
 
-                <template v-if="longDescription">
-                    <div class="plugin-description">
-                        <div v-html="longDescription" class="readable"></div>
+                <div class="lg:flex">
+                    <div class="lg:flex-1 lg:pr-8 lg:mr-4">
+                        <div v-if="longDescription" v-html="longDescription" class="readable"></div>
+                        <p v-else>No description.</p>
                     </div>
+                    <div class="lg:pl-8 lg:ml-4">
+                        <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)">
+                            <li v-if="plugin.documentationUrl" class="py-1">
+                                <a :href="plugin.documentationUrl" rel="noopener" target="_blank">
+                                    <font-awesome-icon icon="book"></font-awesome-icon>
+                                    {{ "Documentation"|t('app') }}
+                                </a>
+                            </li>
+                            <li v-if="plugin.changelogUrl" class="py-1">
+                                <a :href="plugin.changelogUrl" rel="noopener" target="_blank">
+                                    <font-awesome-icon icon="info-circle"></font-awesome-icon>
+                                    {{ "Changelog"|t('app') }}
+                                </a>
+                            </li>
+                        </ul>
 
-                    <hr>
-                </template>
+                    </div>
+                </div>
+
+                <hr>
 
                 <template v-if="!isPluginFree(plugin)">
                     <div class="py-8">
@@ -66,25 +84,6 @@
                 <hr>
 
                 <plugin-changelog></plugin-changelog>
-
-                <hr>
-
-                <div class="mb-8">
-                    <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)">
-                        <li v-if="plugin.documentationUrl" class="py-2">
-                            <a :href="plugin.documentationUrl" rel="noopener" target="_blank">
-                                <font-awesome-icon icon="link"></font-awesome-icon>
-                                {{ "Documentation"|t('app') }}
-                            </a>
-                        </li>
-                        <li v-if="plugin.changelogUrl" class="py-2">
-                            <a :href="plugin.changelogUrl" rel="noopener" target="_blank">
-                                <font-awesome-icon icon="link"></font-awesome-icon>
-                                {{ "Changelog"|t('app') }}
-                            </a>
-                        </li>
-                    </ul>
-                </div>
             </template>
             <template v-else>
                 <div class="plugin-details-loading spinner"></div>
