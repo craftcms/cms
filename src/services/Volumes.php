@@ -13,6 +13,7 @@ use craft\events\ConfigEvent;
 use craft\events\FieldEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\VolumeEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -92,44 +93,9 @@ class Volumes extends Component
     // =========================================================================
 
     /**
-     * @var
+     * @var VolumeInterface[]
      */
-    private $_allVolumeIds;
-
-    /**
-     * @var
-     */
-    private $_viewableVolumeIds;
-
-    /**
-     * @var
-     */
-    private $_viewableVolumes;
-
-    /**
-     * @var
-     */
-    private $_publicVolumeIds;
-
-    /**
-     * @var
-     */
-    private $_publicVolumes;
-
-    /**
-     * @var
-     */
-    private $_volumesById;
-
-    /**
-     * @var
-     */
-    private $_volumesByHandle;
-
-    /**
-     * @var bool
-     */
-    private $_fetchedAllVolumes = false;
+    private $_volumes;
 
     /**
      * @var array|null Volume setting overrides
@@ -165,23 +131,11 @@ class Volumes extends Component
     /**
      * Returns all of the volume IDs.
      *
-     * @return array
+     * @return int[]
      */
     public function getAllVolumeIds(): array
     {
-        if ($this->_allVolumeIds !== null) {
-            return $this->_allVolumeIds;
-        }
-
-        if ($this->_fetchedAllVolumes) {
-            return $this->_allVolumeIds = array_keys($this->_volumesById);
-        }
-
-        return $this->_allVolumeIds = (new Query())
-            ->select(['id'])
-            ->from(['{{%volumes}}'])
-            ->orderBy('sortOrder asc')
-            ->column();
+        return ArrayHelper::getColumn($this->getAllVolumes(), 'id', false);
     }
 
     /**
@@ -191,19 +145,7 @@ class Volumes extends Component
      */
     public function getViewableVolumeIds(): array
     {
-        if ($this->_viewableVolumeIds !== null) {
-            return $this->_viewableVolumeIds;
-        }
-
-        $this->_viewableVolumeIds = [];
-
-        foreach ($this->getAllVolumes() as $volume) {
-            if (Craft::$app->user->checkPermission('viewVolume:' . $volume->uid)) {
-                $this->_viewableVolumeIds[] = $volume->id;
-            }
-        }
-
-        return $this->_viewableVolumeIds;
+        return ArrayHelper::getColumn($this->getViewableVolumes(), 'id', false);
     }
 
     /**
@@ -213,20 +155,11 @@ class Volumes extends Component
      */
     public function getViewableVolumes(): array
     {
-        if ($this->_viewableVolumes !== null) {
-            return $this->_viewableVolumes;
-        }
-
-        $this->_viewableVolumes = [];
-
-        foreach ($this->getAllVolumes() as $volume) {
+        $userSession = Craft::$app->getUser();
+        return ArrayHelper::filterByValue($this->getAllVolumes(), function(VolumeInterface $volume) use ($userSession) {
             /** @var Volume $volume */
-            if (Craft::$app->user->checkPermission('viewVolume:' . $volume->uid)) {
-                $this->_viewableVolumes[] = $volume;
-            }
-        }
-
-        return $this->_viewableVolumes;
+            return $userSession->checkPermission('viewVolume:' . $volume->uid);
+        });
     }
 
     /**
@@ -236,20 +169,7 @@ class Volumes extends Component
      */
     public function getPublicVolumeIds(): array
     {
-        if ($this->_publicVolumeIds !== null) {
-            return $this->_publicVolumeIds;
-        }
-
-        $this->_publicVolumeIds = [];
-
-        foreach ($this->getAllVolumes() as $volume) {
-            /** @var Volume $volume */
-            if ($volume->hasUrls) {
-                $this->_publicVolumeIds[] = $volume->id;
-            }
-        }
-
-        return $this->_publicVolumeIds;
+        return ArrayHelper::getColumn($this->getPublicVolumes(), 'id', false);
     }
 
     /**
@@ -259,20 +179,7 @@ class Volumes extends Component
      */
     public function getPublicVolumes(): array
     {
-        if ($this->_publicVolumes !== null) {
-            return $this->_publicVolumes;
-        }
-
-        $this->_publicVolumes = [];
-
-        foreach ($this->getAllVolumes() as $volume) {
-            /** @var Volume $volume */
-            if ($volume->hasUrls) {
-                $this->_publicVolumes[] = $volume;
-            }
-        }
-
-        return $this->_publicVolumes;
+        return ArrayHelper::filterByValue($this->getAllVolumes(), 'hasUrls');
     }
 
     /**
@@ -282,7 +189,7 @@ class Volumes extends Component
      */
     public function getTotalVolumes(): int
     {
-        return count($this->getAllVolumeIds());
+        return count($this->getAllVolumes());
     }
 
     /**
@@ -292,7 +199,7 @@ class Volumes extends Component
      */
     public function getTotalViewableVolumes(): int
     {
-        return count($this->getViewableVolumeIds());
+        return count($this->getViewableVolumes());
     }
 
     /**
@@ -302,24 +209,19 @@ class Volumes extends Component
      */
     public function getAllVolumes(): array
     {
-        if ($this->_fetchedAllVolumes) {
-            return array_values($this->_volumesById);
+        if ($this->_volumes !== null) {
+            return $this->_volumes;
         }
 
-        $this->_volumesById = [];
+        $this->_volumes = [];
         $results = $this->_createVolumeQuery()
             ->all();
 
         foreach ($results as $result) {
-            /** @var Volume $volume */
-            $volume = $this->createVolume($result);
-            $this->_volumesById[$volume->id] = $volume;
-            $this->_volumesByHandle[$volume->handle] = $volume;
+            $this->_volumes[] = $this->createVolume($result);
         }
 
-        $this->_fetchedAllVolumes = true;
-
-        return array_values($this->_volumesById);
+        return $this->_volumes;
     }
 
     /**
@@ -330,19 +232,7 @@ class Volumes extends Component
      */
     public function getVolumeById(int $volumeId)
     {
-        if ($this->_volumesById !== null && array_key_exists($volumeId, $this->_volumesById)) {
-            return $this->_volumesById[$volumeId];
-        }
-
-        if ($this->_fetchedAllVolumes) {
-            return null;
-        }
-
-        $result = $this->_createVolumeQuery()
-            ->where(['id' => $volumeId])
-            ->one();
-
-        return $this->_volumesById[$volumeId] = $result ? $this->createVolume($result) : null;
+        return ArrayHelper::firstWhere($this->getAllVolumes(), 'id', $volumeId);
     }
 
     /**
@@ -353,34 +243,18 @@ class Volumes extends Component
      */
     public function getVolumeByUid(string $volumeUid)
     {
-        $result = $this->_createVolumeQuery()
-            ->where(['uid' => $volumeUid])
-            ->one();
-
-        return $result ? $this->createVolume($result) : null;
+        return ArrayHelper::firstWhere($this->getAllVolumes(), 'uid', $volumeUid);
     }
 
     /**
-     * Returns a volumn by its handle.
+     * Returns a volume by its handle.
      *
      * @param string $handle
      * @return VolumeInterface|null
      */
     public function getVolumeByHandle(string $handle)
     {
-        if ($this->_volumesByHandle !== null && array_key_exists($handle, $this->_volumesByHandle)) {
-            return $this->_volumesByHandle[$handle];
-        }
-
-        if ($this->_fetchedAllVolumes) {
-            return null;
-        }
-
-        $result = $this->_createVolumeQuery()
-            ->where(['handle' => $handle])
-            ->one();
-
-        return $this->_volumesByHandle[$handle] = $result ? $this->createVolume($result) : null;
+        return ArrayHelper::firstWhere($this->getAllVolumes(), 'hanle', $handle, true);
     }
 
     /**
@@ -534,16 +408,7 @@ class Volumes extends Component
         }
 
         // Clear caches
-        $this->_allVolumeIds = null;
-        $this->_viewableVolumeIds = null;
-        $this->_viewableVolumes = null;
-        $this->_publicVolumeIds = null;
-        $this->_publicVolumes = null;
-        unset(
-            $this->_volumesById[$volumeRecord->id],
-            $this->_volumesByHandle[$volumeRecord->handle]
-        );
-        $this->_fetchedAllVolumes = false;
+        $this->_volumes = null;
 
         /** @var Volume $volume */
         $volume = $this->getVolumeById($volumeRecord->id);
@@ -771,16 +636,7 @@ class Volumes extends Component
         }
 
         // Clear caches
-        $this->_allVolumeIds = null;
-        $this->_viewableVolumeIds = null;
-        $this->_viewableVolumes = null;
-        $this->_publicVolumeIds = null;
-        $this->_publicVolumes = null;
-        unset(
-            $this->_volumesById[$volumeRecord->id],
-            $this->_volumesByHandle[$volumeRecord->handle]
-        );
-        $this->_fetchedAllVolumes = false;
+        $this->_volumes = null;
 
         // Fire an 'afterDeleteVolume' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_VOLUME)) {

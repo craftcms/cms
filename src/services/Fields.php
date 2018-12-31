@@ -175,44 +175,14 @@ class Fields extends Component
     public $ignoreProjectConfigChanges = false;
 
     /**
-     * @var
+     * @var FieldGroup[]
      */
-    private $_groupsById;
+    private $_groups;
 
     /**
-     * @var bool
+     * @var Field[]
      */
-    private $_fetchedAllGroups = false;
-
-    /**
-     * @var
-     */
-    private $_fieldRecordsById;
-
-    /**
-     * @var
-     */
-    private $_fieldsById;
-
-    /**
-     * @var
-     */
-    private $_allFieldHandlesByContext;
-
-    /**
-     * @var
-     */
-    private $_allFieldsInContext;
-
-    /**
-     * @var
-     */
-    private $_fieldsByContextAndHandle;
-
-    /**
-     * @var
-     */
-    private $_fieldsWithContent;
+    private $_fields;
 
     /**
      * @var
@@ -242,21 +212,18 @@ class Fields extends Component
      */
     public function getAllGroups(): array
     {
-        if ($this->_fetchedAllGroups) {
-            return array_values($this->_groupsById);
+        if ($this->_groups !== null) {
+            return $this->_groups;
         }
 
-        $this->_groupsById = [];
+        $this->_groups = [];
         $results = $this->_createGroupQuery()->all();
 
         foreach ($results as $result) {
-            $group = new FieldGroup($result);
-            $this->_groupsById[$group->id] = $group;
+            $this->_groups[] = new FieldGroup($result);
         }
 
-        $this->_fetchedAllGroups = true;
-
-        return array_values($this->_groupsById);
+        return $this->_groups;
     }
 
     /**
@@ -267,19 +234,7 @@ class Fields extends Component
      */
     public function getGroupById(int $groupId)
     {
-        if ($this->_groupsById !== null && array_key_exists($groupId, $this->_groupsById)) {
-            return $this->_groupsById[$groupId];
-        }
-
-        if ($this->_fetchedAllGroups) {
-            return null;
-        }
-
-        $result = $this->_createGroupQuery()
-            ->where(['id' => $groupId])
-            ->one();
-
-        return $this->_groupsById[$groupId] = $result ? new FieldGroup($result) : null;
+        return ArrayHelper::firstWhere($this->getAllGroups(), 'id', $groupId);
     }
 
     /**
@@ -353,8 +308,7 @@ class Fields extends Component
         $groupRecord->save(false);
 
         // Update caches
-        unset($this->_groupsById[$groupRecord->id]);
-        $this->_fetchedAllGroups = false;
+        $this->_groups = null;
 
         // Fire an 'afterSaveFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_GROUP)) {
@@ -395,7 +349,7 @@ class Fields extends Component
         $groupRecord->delete();
 
         // Update caches
-        unset($this->_groupsById[$groupRecord->id]);
+        $this->_groups = null;
 
         // Fire an 'afterDeleteFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_GROUP)) {
@@ -603,52 +557,36 @@ class Fields extends Component
     /**
      * Returns all fields within a field context(s).
      *
-     * @param string|string[]|null $context The field context(s) to fetch fields from. Defaults to {@link ContentService::$fieldContext}.
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to {@link ContentService::$fieldContext}.
+     * Set to `false` to get all fields regardless of context.
      * @return FieldInterface[] The fields
      */
     public function getAllFields($context = null): array
     {
-        if ($context === null) {
-            $context = [Craft::$app->getContent()->fieldContext];
-        } else if (!is_array($context)) {
-            $context = (array)$context;
-        }
-
-        $missingContexts = [];
-
-        /** @noinspection ForeachSourceInspection - FP */
-        foreach ($context as $c) {
-            if (!isset($this->_allFieldsInContext[$c])) {
-                $missingContexts[] = $c;
-                $this->_allFieldsInContext[$c] = [];
-            }
-        }
-
-        if (!empty($missingContexts)) {
-            $results = $this->_createFieldQuery()
-                ->where(['fields.context' => $missingContexts])
-                ->all();
-
+        if ($this->_fields === null) {
+            $this->_fields = [];
+            $results = $this->_createFieldQuery()->all();
             foreach ($results as $result) {
-                /** @var Field $field */
-                $field = $this->createField($result);
-
-                $this->_allFieldsInContext[$field->context][] = $field;
-                $this->_fieldsById[$field->id] = $field;
-                $this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
+                $this->_fields[] = $this->createField($result);
             }
         }
 
-        $fields = [];
-
-        /** @noinspection ForeachSourceInspection - FP */
-        foreach ($context as $c) {
-            foreach ($this->_allFieldsInContext[$c] as $field) {
-                $fields[] = $field;
-            }
+        if ($context === false) {
+            return $this->_fields;
         }
 
-        return $fields;
+        if ($context === null) {
+            $context = Craft::$app->getContent()->fieldContext;
+        }
+
+        if (is_string($context)) {
+            return ArrayHelper::filterByValue($this->_fields, 'context', $context, true);
+        }
+
+        return ArrayHelper::filterByValue($this->_fields, function(FieldInterface $field) use ($context) {
+            /** @var Field $field */
+            return in_array($field->context, $context, true);
+        });
     }
 
     /**
@@ -658,19 +596,9 @@ class Fields extends Component
      */
     public function getFieldsWithContent(): array
     {
-        $context = Craft::$app->getContent()->fieldContext;
-
-        if (!isset($this->_fieldsWithContent[$context])) {
-            $this->_fieldsWithContent[$context] = [];
-
-            foreach ($this->getAllFields() as $field) {
-                if ($field::hasContentColumn()) {
-                    $this->_fieldsWithContent[$context][] = $field;
-                }
-            }
-        }
-
-        return $this->_fieldsWithContent[$context];
+        return ArrayHelper::filterByValue($this->getAllFields(), function(FieldInterface $field) {
+            return $field::hasContentColumn();
+        });
     }
 
     /**
@@ -681,24 +609,7 @@ class Fields extends Component
      */
     public function getFieldById(int $fieldId)
     {
-        if ($this->_fieldsById !== null && array_key_exists($fieldId, $this->_fieldsById)) {
-            return $this->_fieldsById[$fieldId];
-        }
-
-        $result = $this->_createFieldQuery()
-            ->where(['fields.id' => $fieldId])
-            ->one();
-
-        if (!$result) {
-            return $this->_fieldsById[$fieldId] = null;
-        }
-
-        /** @var Field $field */
-        $field = $this->createField($result);
-        $this->_fieldsById[$fieldId] = $field;
-        $this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
-
-        return $field;
+        return ArrayHelper::firstWhere($this->getAllFields(false), 'id', $fieldId);
     }
 
     /**
@@ -709,20 +620,7 @@ class Fields extends Component
      */
     public function getFieldByUid(string $fieldUid)
     {
-        $result = $this->_createFieldQuery()
-            ->where(['fields.uid' => $fieldUid])
-            ->one();
-
-        if (!$result) {
-            return null;
-        }
-
-        /** @var Field $field */
-        $field = $this->createField($result);
-        $this->_fieldsById[$field->id] = $field;
-        $this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
-
-        return $field;
+        return ArrayHelper::firstWhere($this->getAllFields(false), 'uid', $fieldUid, true);
     }
 
     /**
@@ -743,30 +641,7 @@ class Fields extends Component
      */
     public function getFieldByHandle(string $handle)
     {
-        $context = Craft::$app->getContent()->fieldContext;
-
-        if (!isset($this->_fieldsByContextAndHandle[$context]) || !array_key_exists($handle, $this->_fieldsByContextAndHandle[$context])) {
-            // Guilty until proven innocent
-            $this->_fieldsByContextAndHandle[$context][$handle] = null;
-
-            if ($this->doesFieldWithHandleExist($handle, $context)) {
-                $result = $this->_createFieldQuery()
-                    ->where([
-                        'fields.handle' => $handle,
-                        'fields.context' => $context
-                    ])
-                    ->one();
-
-                if ($result) {
-                    /** @var Field $field */
-                    $field = $this->createField($result);
-                    $this->_fieldsById[$field->id] = $field;
-                    $this->_fieldsByContextAndHandle[$context][$field->handle] = $field;
-                }
-            }
-        }
-
-        return $this->_fieldsByContextAndHandle[$context][$handle];
+        return ArrayHelper::firstWhere($this->getAllFields(), 'handle', $handle, true);
     }
 
     /**
@@ -778,24 +653,7 @@ class Fields extends Component
      */
     public function doesFieldWithHandleExist(string $handle, string $context = null): bool
     {
-        if ($context === null) {
-            $context = Craft::$app->getContent()->fieldContext;
-        }
-
-        if ($this->_allFieldHandlesByContext === null) {
-            $this->_allFieldHandlesByContext = [];
-
-            $results = (new Query())
-                ->select(['handle', 'context'])
-                ->from(['{{%fields}}'])
-                ->all();
-
-            foreach ($results as $result) {
-                $this->_allFieldHandlesByContext[$result['context']][] = $result['handle'];
-            }
-        }
-
-        return (isset($this->_allFieldHandlesByContext[$context]) && in_array($handle, $this->_allFieldHandlesByContext[$context], true));
+        return ArrayHelper::firstWhere($this->getAllFields($context), 'handle', $handle, true) !== null;
     }
 
     /**
@@ -806,17 +664,7 @@ class Fields extends Component
      */
     public function getFieldsByGroupId(int $groupId): array
     {
-        $results = $this->_createFieldQuery()
-            ->where(['fields.groupId' => $groupId])
-            ->all();
-
-        $fields = [];
-
-        foreach ($results as $result) {
-            $fields[] = $this->createField($result);
-        }
-
-        return $fields;
+        return ArrayHelper::filterByValue($this->getAllFields(false), 'groupId', $groupId);
     }
 
     /**
@@ -1075,16 +923,7 @@ class Fields extends Component
         }
 
         // Clear caches
-        unset(
-            $this->_fieldsById[$fieldRecord->id],
-            $this->_fieldsByContextAndHandle[$fieldRecord->context][$fieldRecord->handle],
-            $this->_allFieldsInContext[$fieldRecord->context],
-            $this->_fieldsWithContent[$fieldRecord->context]
-        );
-
-        if (isset($this->_allFieldHandlesByContext[$fieldRecord->context])) {
-            ArrayHelper::removeValue($this->_allFieldHandlesByContext[$fieldRecord->context], $fieldRecord->handle);
-        }
+        $this->_fields = null;
 
         // Update the field version
         $this->updateFieldVersion();
@@ -1105,12 +944,7 @@ class Fields extends Component
      */
     public function refreshFields()
     {
-        $this->_fieldRecordsById = null;
-        $this->_fieldsById = null;
-        $this->_allFieldHandlesByContext = null;
-        $this->_allFieldsInContext = null;
-        $this->_fieldsByContextAndHandle = null;
-        $this->_fieldsWithContent = null;
+        $this->_fields = null;
         $this->updateFieldVersion();
     }
 

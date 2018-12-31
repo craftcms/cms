@@ -21,6 +21,7 @@ use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
 use craft\events\SiteGroupEvent;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\Site;
@@ -125,16 +126,9 @@ class Sites extends Component
     // =========================================================================
 
     /**
-     * @var bool
-     * @see getAllGroups()
+     * @var SiteGroup[]
      */
-    private $_fetchedAllGroups = false;
-
-    /**
-     * @var
-     * @see getGroupById()
-     */
-    private $_groupsById;
+    private $_groups;
 
     /**
      * @var int[]|null
@@ -200,21 +194,18 @@ class Sites extends Component
      */
     public function getAllGroups(): array
     {
-        if ($this->_fetchedAllGroups) {
-            return array_values($this->_groupsById);
+        if ($this->_groups !== null) {
+            return $this->_groups;
         }
 
-        $this->_groupsById = [];
+        $this->_groups = [];
         $results = $this->_createGroupQuery()->all();
 
         foreach ($results as $result) {
-            $group = new SiteGroup($result);
-            $this->_groupsById[$group->id] = $group;
+            $this->_groups[] = new SiteGroup($result);
         }
 
-        $this->_fetchedAllGroups = true;
-
-        return array_values($this->_groupsById);
+        return $this->_groups;
     }
 
     /**
@@ -225,23 +216,7 @@ class Sites extends Component
      */
     public function getGroupById(int $groupId)
     {
-        if ($this->_groupsById !== null && array_key_exists($groupId, $this->_groupsById)) {
-            return $this->_groupsById[$groupId];
-        }
-
-        if ($this->_fetchedAllGroups) {
-            return null;
-        }
-
-        $result = $this->_createGroupQuery()
-            ->where(['id' => $groupId])
-            ->one();
-
-        if (!$result) {
-            return $this->_groupsById[$groupId] = null;
-        }
-
-        return $this->_groupsById[$groupId] = new SiteGroup($result);
+        return ArrayHelper::firstWhere($this->getAllGroups(), 'id', $groupId);
     }
 
     /**
@@ -316,8 +291,7 @@ class Sites extends Component
         }
 
         // Clear caches
-        unset($this->_groupsById[$groupRecord->id]);
-        $this->_fetchedAllGroups = false;
+        $this->_groups = null;
 
         // Fire an 'afterSaveSiteGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE_GROUP)) {
@@ -354,7 +328,7 @@ class Sites extends Component
         $groupRecord->softDelete();
 
         // Clear caches
-        unset($this->_groupsById[$groupRecord->id]);
+        $this->_groups = null;
 
         // Fire an 'afterDeleteSiteGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE_GROUP)) {

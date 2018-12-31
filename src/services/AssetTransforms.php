@@ -96,14 +96,9 @@ class AssetTransforms extends Component
     // =========================================================================
 
     /**
-     * @var AssetTransform[]|null
+     * @var AssetTransform[]
      */
-    private $_transformsByHandle;
-
-    /**
-     * @var bool
-     */
-    private $_fetchedAllTransforms = false;
+    private $_transforms;
 
     /**
      * @var array
@@ -130,20 +125,17 @@ class AssetTransforms extends Component
      */
     public function getAllTransforms(): array
     {
-        if ($this->_fetchedAllTransforms) {
-            return array_values($this->_transformsByHandle);
+        if ($this->_transforms !== null) {
+            return $this->_transforms;
         }
 
-        $this->_transformsByHandle = [];
+        $this->_transforms = [];
 
         foreach ($this->_createTransformQuery()->all() as $result) {
-            $transform = new AssetTransform($result);
-            $this->_transformsByHandle[$transform->handle] = $transform;
+            $this->_transforms[] = new AssetTransform($result);
         }
 
-        $this->_fetchedAllTransforms = true;
-
-        return array_values($this->_transformsByHandle);
+        return $this->_transforms;
     }
 
     /**
@@ -154,21 +146,7 @@ class AssetTransforms extends Component
      */
     public function getTransformByHandle(string $handle)
     {
-        if ($this->_transformsByHandle !== null && array_key_exists($handle, $this->_transformsByHandle)) {
-            return $this->_transformsByHandle[$handle];
-        }
-
-        // If we've already fetched all transforms we can save ourselves a trip to the DB for transform handles that
-        // don't exist
-        if ($this->_fetchedAllTransforms) {
-            return null;
-        }
-
-        $result = $this->_createTransformQuery()
-            ->where(['handle' => $handle])
-            ->one();
-
-        return $this->_transformsByHandle[$handle] = $result ? new AssetTransform($result) : null;
+        return ArrayHelper::firstWhere($this->getAllTransforms(), 'handle', $handle, true);
     }
 
     /**
@@ -179,11 +157,7 @@ class AssetTransforms extends Component
      */
     public function getTransformById(int $id)
     {
-        $result = $this->_createTransformQuery()
-            ->where(['id' => $id])
-            ->one();
-
-        return $result ? new AssetTransform($result) : null;
+        return ArrayHelper::firstWhere($this->getAllTransforms(), 'id', $id);
     }
 
     /**
@@ -194,11 +168,7 @@ class AssetTransforms extends Component
      */
     public function getTransformByUid(string $uid)
     {
-        $result = $this->_createTransformQuery()
-            ->where(['uid' => $uid])
-            ->one();
-
-        return $result ? new AssetTransform($result) : null;
+        return ArrayHelper::firstWhere($this->getAllTransforms(), 'uid', $uid, true);
     }
 
     /**
@@ -301,8 +271,7 @@ class AssetTransforms extends Component
         }
 
         // Clear caches
-        unset($this->_transformsByHandle[$transformRecord->handle]);
-        $this->_fetchedAllTransforms = false;
+        $this->_transforms = null;
 
         // Fire an 'afterSaveAssetTransform' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM)) {
@@ -391,8 +360,7 @@ class AssetTransforms extends Component
             ->execute();
 
         // Clear caches
-        unset($this->_transformsByHandle[$transform->handle]);
-        $this->_fetchedAllTransforms = false;
+        $this->_transforms = null;
 
         // Fire an 'afterDeleteAssetTransform' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM)) {

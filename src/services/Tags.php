@@ -15,6 +15,7 @@ use craft\errors\TagGroupNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\FieldEvent;
 use craft\events\TagGroupEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
@@ -66,24 +67,9 @@ class Tags extends Component
     // =========================================================================
 
     /**
-     * @var
+     * @var TagGroup[]
      */
-    private $_allTagGroupIds;
-
-    /**
-     * @var
-     */
-    private $_tagGroupsById;
-
-    /**
-     * @var
-     */
-    private $_tagGroupsByUid = [];
-
-    /**
-     * @var bool
-     */
-    private $_fetchedAllTagGroups = false;
+    private $_tagGroups;
 
     // Public Methods
     // =========================================================================
@@ -98,18 +84,7 @@ class Tags extends Component
      */
     public function getAllTagGroupIds(): array
     {
-        if ($this->_allTagGroupIds !== null) {
-            return $this->_allTagGroupIds;
-        }
-
-        if ($this->_fetchedAllTagGroups) {
-            return $this->_allTagGroupIds = array_keys($this->_tagGroupsById);
-        }
-
-        return $this->_allTagGroupIds = (new Query())
-            ->select(['id'])
-            ->from(['{{%taggroups}}'])
-            ->column();
+        return ArrayHelper::getColumn($this->getAllTagGroups(), 'id');
     }
 
     /**
@@ -119,28 +94,26 @@ class Tags extends Component
      */
     public function getAllTagGroups(): array
     {
-        if (!$this->_fetchedAllTagGroups) {
-            $this->_tagGroupsById = TagGroupRecord::find()
-                ->orderBy(['name' => SORT_ASC])
-                ->indexBy('id')
-                ->all();
-
-            foreach ($this->_tagGroupsById as $key => $value) {
-                $tagGroup = new TagGroup($value->toArray([
-                    'id',
-                    'name',
-                    'handle',
-                    'fieldLayoutId',
-                    'uid'
-                ]));
-                $this->_tagGroupsById[$tagGroup->id] = $tagGroup;
-                $this->_tagGroupsByUid[$tagGroup->uid] = $tagGroup;
-            }
-
-            $this->_fetchedAllTagGroups = true;
+        if ($this->_tagGroups !== null) {
+            return $this->_tagGroups;
         }
 
-        return array_values($this->_tagGroupsById);
+        $this->_tagGroups = [];
+        $records = TagGroupRecord::find()
+            ->orderBy(['name' => SORT_ASC])
+            ->all();
+
+        foreach ($records as $record) {
+            $this->_tagGroups[] = new TagGroup($record->toArray([
+                'id',
+                'name',
+                'handle',
+                'fieldLayoutId',
+                'uid',
+            ]));
+        }
+
+        return $this->_tagGroups;
     }
 
     /**
@@ -150,7 +123,7 @@ class Tags extends Component
      */
     public function getTotalTagGroups(): int
     {
-        return count($this->getAllTagGroupIds());
+        return count($this->getAllTagGroups());
     }
 
     /**
@@ -161,19 +134,7 @@ class Tags extends Component
      */
     public function getTagGroupById(int $groupId)
     {
-        if ($this->_tagGroupsById !== null && array_key_exists($groupId, $this->_tagGroupsById)) {
-            return $this->_tagGroupsById[$groupId];
-        }
-
-        if ($this->_fetchedAllTagGroups) {
-            return null;
-        }
-
-        $result = $this->_createTagGroupsQuery()
-            ->where(['id' => $groupId])
-            ->one();
-
-        return $this->_tagGroupsById[$groupId] = $result ? new TagGroup($result) : null;
+        return ArrayHelper::firstWhere($this->getAllTagGroups(), 'id', $groupId);
     }
 
     /**
@@ -184,19 +145,7 @@ class Tags extends Component
      */
     public function getTagGroupByUid(string $groupUid)
     {
-        if ($this->_tagGroupsByUid !== null && array_key_exists($groupUid, $this->_tagGroupsByUid)) {
-            return $this->_tagGroupsByUid[$groupUid];
-        }
-
-        if ($this->_fetchedAllTagGroups) {
-            return null;
-        }
-
-        $result = $this->_createTagGroupsQuery()
-            ->where(['uid' => $groupUid])
-            ->one();
-
-        return $this->_tagGroupsByUid[$groupUid] = $result ? new TagGroup($result) : null;
+        return ArrayHelper::firstWhere($this->getAllTagGroups(), 'uid', $groupUid, true);
     }
 
 
@@ -208,11 +157,7 @@ class Tags extends Component
      */
     public function getTagGroupByHandle(string $groupHandle)
     {
-        $result = $this->_createTagGroupsQuery()
-            ->where(['handle' => $groupHandle])
-            ->one();
-
-        return $result ? new TagGroup($result) : null;
+        return ArrayHelper::firstWhere($this->getAllTagGroups(), 'handle', $groupHandle, true);
     }
 
     /**
@@ -329,12 +274,7 @@ class Tags extends Component
         }
 
         // Clear caches
-        $this->_allTagGroupIds = null;
-        unset(
-            $this->_tagGroupsById[$tagGroupRecord->id],
-            $this->_tagGroupsByUid[$tagGroupRecord->uid]
-        );
-        $this->_fetchedAllTagGroups = false;
+        $this->_tagGroups = null;
 
         // Fire an 'afterSaveGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
@@ -449,11 +389,7 @@ class Tags extends Component
         }
 
         // Clear caches
-        $this->_allTagGroupIds = null;
-        unset(
-            $this->_tagGroupsById[$tagGroupRecord->id],
-            $this->_tagGroupsByUid[$tagGroupRecord->uid]
-        );
+        $this->_tagGroups = null;
 
         // Fire an 'afterDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {

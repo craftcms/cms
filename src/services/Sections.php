@@ -102,24 +102,9 @@ class Sections extends Component
     // =========================================================================
 
     /**
-     * @var
+     * @var Section[]
      */
-    private $_allSectionIds;
-
-    /**
-     * @var
-     */
-    private $_editableSectionIds;
-
-    /**
-     * @var
-     */
-    private $_sectionsById;
-
-    /**
-     * @var bool
-     */
-    private $_fetchedAllSections = false;
+    private $_sections;
 
     /**
      * @var
@@ -148,17 +133,7 @@ class Sections extends Component
      */
     public function getAllSectionIds(): array
     {
-        if ($this->_allSectionIds !== null) {
-            return $this->_allSectionIds;
-        }
-
-        $this->_allSectionIds = [];
-
-        foreach ($this->getAllSections() as $section) {
-            $this->_allSectionIds[] = $section->id;
-        }
-
-        return $this->_allSectionIds;
+        return ArrayHelper::getColumn($this->getAllSections(), 'id', false);
     }
 
     /**
@@ -173,23 +148,11 @@ class Sections extends Component
      * {% set sectionIds = craft.app.sections.editableSectionIds %}
      * ```
      *
-     * @return array All the editable sections’ IDs.
+     * @return int[] All the editable sections’ IDs.
      */
     public function getEditableSectionIds(): array
     {
-        if ($this->_editableSectionIds !== null) {
-            return $this->_editableSectionIds;
-        }
-
-        $this->_editableSectionIds = [];
-
-        foreach ($this->getAllSections() as $section) {
-            if (Craft::$app->getUser()->checkPermission('editEntries:' . $section->uid)) {
-                $this->_editableSectionIds[] = $section->id;
-            }
-        }
-
-        return $this->_editableSectionIds;
+        return ArrayHelper::getColumn($this->getEditableSections(), 'id', false);
     }
 
     /**
@@ -208,23 +171,20 @@ class Sections extends Component
      */
     public function getAllSections(): array
     {
-        if ($this->_fetchedAllSections) {
-            return array_values($this->_sectionsById);
+        if ($this->_sections !== null) {
+            return $this->_sections;
         }
 
         $results = $this->_createSectionQuery()
             ->all();
 
-        $this->_sectionsById = [];
+        $this->_sections = [];
 
         foreach ($results as $result) {
-            $section = new Section($result);
-            $this->_sectionsById[$section->id] = $section;
+            $this->_sections[] = new Section($result);
         }
 
-        $this->_fetchedAllSections = true;
-
-        return array_values($this->_sectionsById);
+        return $this->_sections;
     }
 
     /**
@@ -243,18 +203,11 @@ class Sections extends Component
      */
     public function getEditableSections(): array
     {
-        $editableSectionIds = $this->getEditableSectionIds();
-        $editableSections = [];
-
-        foreach ($this->getAllSections() as $section) {
-            if (in_array($section->id, $editableSectionIds, false)) {
-                $editableSections[] = $section;
-            }
-        }
-
-        return $editableSections;
+        $userSession = Craft::$app->getUser();
+        return ArrayHelper::filterByValue($this->getAllSections(), function(Section $section) use ($userSession) {
+            return $userSession->checkPermission('editEntries:' . $section->uid);
+        });
     }
-
 
     /**
      * Returns all sections of a given type.
@@ -275,15 +228,7 @@ class Sections extends Component
      */
     public function getSectionsByType(string $type): array
     {
-        $sections = [];
-
-        foreach ($this->getAllSections() as $section) {
-            if ($section->type == $type) {
-                $sections[] = $section;
-            }
-        }
-
-        return $sections;
+        return ArrayHelper::filterByValue($this->getAllSections(), 'type', $type, true);
     }
 
     /**
@@ -302,7 +247,7 @@ class Sections extends Component
      */
     public function getTotalSections(): int
     {
-        return count($this->getAllSectionIds());
+        return count($this->getAllSections());
     }
 
     /**
@@ -321,7 +266,7 @@ class Sections extends Component
      */
     public function getTotalEditableSections(): int
     {
-        return count($this->getEditableSectionIds());
+        return count($this->getEditableSections());
     }
 
     /**
@@ -341,25 +286,7 @@ class Sections extends Component
      */
     public function getSectionById(int $sectionId)
     {
-        if (!$sectionId) {
-            return null;
-        }
-
-        if ($this->_sectionsById !== null && array_key_exists($sectionId, $this->_sectionsById)) {
-            return $this->_sectionsById[$sectionId];
-        }
-
-        // If we've already fetched all sections we can save ourselves a trip to
-        // the DB for section IDs that don't exist
-        if ($this->_fetchedAllSections) {
-            return null;
-        }
-
-        $result = $this->_createSectionQuery()
-            ->where(['sections.id' => $sectionId])
-            ->one();
-
-        return $this->_sectionsById[$sectionId] = $result ? new Section($result) : null;
+        return ArrayHelper::firstWhere($this->getAllSections(), 'id', $sectionId);
     }
 
     /**
@@ -379,17 +306,7 @@ class Sections extends Component
      */
     public function getSectionByUid(string $uid)
     {
-        $result = $this->_createSectionQuery()
-            ->where(['sections.uid' => $uid])
-            ->one();
-
-        if (!$result) {
-            return null;
-        }
-
-        $section = new Section($result);
-        $this->_sectionsById[$section->id] = $section;
-        return $section;
+        return ArrayHelper::firstWhere($this->getAllSections(), 'uid', $uid);
     }
 
     /**
@@ -409,17 +326,7 @@ class Sections extends Component
      */
     public function getSectionByHandle(string $sectionHandle)
     {
-        $result = $this->_createSectionQuery()
-            ->where(['sections.handle' => $sectionHandle])
-            ->one();
-
-        if (!$result) {
-            return null;
-        }
-
-        $section = new Section($result);
-        $this->_sectionsById[$section->id] = $section;
-        return $section;
+        return ArrayHelper::firstWhere($this->getAllSections(), 'handle', $sectionHandle);
     }
 
     /**
@@ -823,10 +730,7 @@ class Sections extends Component
         }
 
         // Clear caches
-        $this->_allSectionIds = null;
-        $this->_editableSectionIds = null;
-        unset($this->_sectionsById[$sectionRecord->id]);
-        $this->_fetchedAllSections = false;
+        $this->_sections = null;
 
         /** @var Section $section */
         $section = $this->getSectionById($sectionRecord->id);
@@ -982,9 +886,7 @@ class Sections extends Component
         }
 
         // Clear caches
-        $this->_allSectionIds = null;
-        $this->_editableSectionIds = null;
-        unset($this->_sectionsById[$section->id]);
+        $this->_sections = null;
 
         // Fire an 'afterDeleteSection' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SECTION)) {
