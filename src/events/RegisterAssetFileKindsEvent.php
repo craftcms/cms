@@ -24,6 +24,4 @@ class RegisterAssetFileKindsEvent extends Event
      * @var array The registered asset file kinds
      */
     public $fileKinds = [];
-
-
 }

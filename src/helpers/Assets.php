@@ -273,7 +273,6 @@ class Assets
     public static function getFileKinds(): array
     {
         self::_buildFileKinds();
-
         return self::$_fileKinds;
     }
 
@@ -552,6 +551,9 @@ class Assets
                 ],
             ];
 
+            // Merge with the extraFileKinds setting
+            static::$_fileKinds = ArrayHelper::merge(static::$_fileKinds, Craft::$app->getConfig()->getGeneral()->extraFileKinds);
+
             // Allow plugins to modify file kinds
             $event = new RegisterAssetFileKindsEvent([
                 'fileKinds' => self::$_fileKinds,
@@ -559,6 +561,9 @@ class Assets
 
             Event::trigger(self::class, self::EVENT_REGISTER_FILE_KINDS, $event);
             self::$_fileKinds = $event->fileKinds;
+
+            // Sort by label
+            ArrayHelper::multisort(static::$_fileKinds, 'label');
         }
     }
 
