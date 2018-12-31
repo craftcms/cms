@@ -86,7 +86,7 @@ const getters = {
  */
 const actions = {
 
-    updateItem({commit, state}, itemKey, item) {
+    updateItem({commit, state}, {itemKey, item}) {
         return new Promise((resolve, reject) => {
             const cart = state.cart
 
@@ -349,8 +349,9 @@ const utils = {
                         type: lineItem.purchasable.type,
                         plugin: lineItem.purchasable.plugin.handle,
                         edition: lineItem.purchasable.handle,
-                        autoRenew: lineItem.options.autoRenew,
                         cmsLicenseKey: lineItem.options.cmsLicenseKey,
+                        expiryDate: lineItem.options.expiryDate,
+                        autoRenew: lineItem.options.autoRenew,
                     })
                     break
                 case 'cms-edition':
@@ -358,6 +359,7 @@ const utils = {
                         type: lineItem.purchasable.type,
                         edition: lineItem.purchasable.handle,
                         licenseKey: lineItem.options.licenseKey,
+                        expiryDate: lineItem.options.expiryDate,
                         autoRenew: lineItem.options.autoRenew,
                     })
                     break

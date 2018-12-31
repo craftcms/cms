@@ -237,9 +237,11 @@
             },
 
             onSelectedExpiryDateChange(itemKey) {
-                // let item = this.cartItemsData[itemKey]
-                // item.options.expiryDate = this.selectedExpiryDates[itemKey]
-                // this.$store.dispatch('cart/updateItem', itemKey, item)
+                if (this.cart) {
+                    let item = this.cartItemsData[itemKey]
+                    item.expiryDate = this.selectedExpiryDates[itemKey]
+                    this.$store.dispatch('cart/updateItem', {itemKey, item})
+                }
             }
         },
 
