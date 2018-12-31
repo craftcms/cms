@@ -5,6 +5,7 @@
 ### Added
 - Added the `extraFileKinds` config setting. ([#1584](https://github.com/craftcms/cms/issues/1584))
 - Added the `clear-caches` console command. ([#3588](https://github.com/craftcms/cms/pull/3588))
+- Added `craft\helpers\StringHelper::UUID_PATTERN`.
 
 ### Changed
 - Pressing the <kbd>Return</kbd> key (or <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd>) when a textual cell is focused in an editable table will now change the focus to the same cell in the next row (after creating a new row if necessary.) ([#3576](https://github.com/craftcms/cms/issues/3576))
