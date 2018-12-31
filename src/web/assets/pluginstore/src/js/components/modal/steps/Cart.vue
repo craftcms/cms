@@ -5,8 +5,6 @@
         </template>
 
         <template slot="main">
-            <h2>{{ "Items in your cart"|t('app') }}</h2>
-
             <template v-if="cart">
                 <template v-if="cartItems.length">
                     <table class="data fullwidth">
@@ -15,7 +13,6 @@
                             <th></th>
                             <th>Item</th>
                             <th>Updates</th>
-                            <th></th>
                             <th></th>
                         </tr>
                         </thead>
@@ -37,7 +34,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    {{ item.plugin.name}}
+                                    <strong>{{ item.plugin.name}}</strong>
                                     <div class="text-grey-dark">
                                         {{item.lineItem.purchasable.name}}
                                     </div>
@@ -50,13 +47,13 @@
                             </td>
                             <td class="price rightalign">
                                 <strong>{{ item.lineItem.total|currency }}</strong>
+                                <br />
+                                <a role="button" @click="removeFromCart(itemKey)">Remove</a>
                             </td>
-                            <td class="thin"><a class="delete icon" role="button" @click="removeFromCart(itemKey)"></a></td>
                         </tr>
                         <tr>
                             <th class="rightalign" colspan="3">Total Price</th>
                             <td class="rightalign"><strong>{{cart.totalPrice|currency}}</strong></td>
-                            <td class="thin"></td>
                         </tr>
                         </tbody>
                     </table>
@@ -96,7 +93,7 @@
                                     <div class="default-icon" v-else></div>
                                 </div>
                             </td>
-                            <td>{{ plugin.name }}</td>
+                            <td><strong>{{ plugin.name }}</strong></td>
                             <td><strong>{{ plugin.editions[0].price|currency }}</strong></td>
                             <td class="thin"><a class="btn" @click="addToCart(plugin)">{{ "Add to cart"|t('app') }}</a></td>
                         </template>
