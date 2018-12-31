@@ -36,6 +36,11 @@ class TagQuery extends ElementQuery
     // Properties
     // =========================================================================
 
+    /**
+     * @inheritdoc
+     */
+    protected $defaultOrderBy = ['content.title' => SORT_ASC];
+
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -61,19 +66,6 @@ class TagQuery extends ElementQuery
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($elementType, array $config = [])
-    {
-        // Default orderBy
-        if (!isset($config['orderBy'])) {
-            $config['orderBy'] = 'content.title';
-        }
-
-        parent::__construct($elementType, $config);
-    }
 
     /**
      * @inheritdoc

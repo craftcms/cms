@@ -33,6 +33,11 @@ class GlobalSetQuery extends ElementQuery
     // Properties
     // =========================================================================
 
+    /**
+     * @inheritdoc
+     */
+    protected $defaultOrderBy = ['globalsets.name' => SORT_ASC];
+
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -50,19 +55,6 @@ class GlobalSetQuery extends ElementQuery
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($elementType, array $config = [])
-    {
-        // Default orderBy
-        if (!isset($config['orderBy'])) {
-            $config['orderBy'] = 'name';
-        }
-
-        parent::__construct($elementType, $config);
-    }
 
     /**
      * Sets the [[$editable]] property.
