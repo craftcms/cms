@@ -1,5 +1,7 @@
 /* Plugin Store Modal */
 
+@import "../../../../../../lib/craftcms-sass/mixins";
+
 #pluginstore-modal {
   max-width: 850px;
   max-height: 650px;
@@ -21,7 +23,7 @@
       .btn-left {
         position: absolute;
         top: 28px;
-        left: 24px;
+        @include left(24px);
       }
 
       h1 {
@@ -61,12 +63,12 @@
         padding: 24px;
 
         .plugin-icon-large {
-          margin-right: 14px;
+          @include margin-right(14px);
         }
 
         .description {
           flex-grow: 1;
-          margin-left: 14px;
+          @include margin-left(14px);
         }
 
         .description h2 {
@@ -82,12 +84,12 @@
           white-space: nowrap;
 
           a {
-            margin-left: 7px;
+            @include margin-left(7px);
           }
 
           .license-status {
             margin-top: 6px;
-            margin-right: 14px;
+            @include margin-right(14px);
           }
         }
       }
@@ -130,7 +132,7 @@
           flex: 0 0 260px;
           width: 260px;
           background: #fafafa;
-          border-left: 1px solid #eee;
+          @include border-left(1px solid #eee);
           overflow: auto;
 
           .plugin-meta {
@@ -157,7 +159,7 @@
                 }
 
                 & strong {
-                  text-align: right;
+                  @include alignright;
                 }
               }
             }

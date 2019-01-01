@@ -402,7 +402,8 @@ body.rtl .flex > *:not(:last-child) { margin-left: 7px !important; }
 .flex-grow { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 
 .buttons { display: -webkit-box; display: -ms-flexbox; display: flex; position: relative; margin: 24px 0; }
-.buttons > .btn:not(.hidden) + .btn, .buttons > .btn:not(.hidden) + .btngroup, .buttons > .btngroup:not(.hidden) + .btn, .buttons > .btngroup:not(.hidden) + .btngroup { margin-left: 5px; }
+body.ltr .buttons > .btn:not(.hidden) + .btn, body.ltr .buttons > .btn:not(.hidden) + .btngroup, body.ltr .buttons > .btngroup:not(.hidden) + .btn, body.ltr .buttons > .btngroup:not(.hidden) + .btngroup { margin-left: 5px; }
+body.rtl .buttons > .btn:not(.hidden) + .btn, body.rtl .buttons > .btn:not(.hidden) + .btngroup, body.rtl .buttons > .btngroup:not(.hidden) + .btn, body.rtl .buttons > .btngroup:not(.hidden) + .btngroup { margin-right: 5px; }
 .footer > .buttons { margin: 0; }
 
 .btn { display: inline-block; border-radius: 2px; padding: 6px 12px; border: none; text-align: center; white-space: nowrap; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; cursor: pointer; -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-appearance: none; -moz-appearance: none; appearance: none; -webkit-box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); color: #29323d; }
