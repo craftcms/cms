@@ -6,6 +6,7 @@
 - Routes defined in the Control Panel can now have a `uid` token, and URL rules defined in `config/routes.php` can now have a `{uid}` token. ([#3583](https://github.com/craftcms/cms/pull/3583))
 - Added the `extraFileKinds` config setting. ([#1584](https://github.com/craftcms/cms/issues/1584))
 - Added the `clear-caches` console command. ([#3588](https://github.com/craftcms/cms/pull/3588))
+- Added `craft\feeds\Feeds::getFeed()`.
 - Added `craft\helpers\StringHelper::UUID_PATTERN`.
 
 ### Changed
