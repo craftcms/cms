@@ -468,6 +468,19 @@ td {
   vertical-align: middle;
 }
 
+body.ltr table[dir='rtl'] {
+  th,
+  td {
+    text-align: right;
+  }
+}
+body.rtl table[dir='ltr'] {
+  th,
+  td {
+    text-align: left;
+  }
+}
+
 th.right,
 td.right {
   float: none;

@@ -261,6 +261,10 @@ th, td { vertical-align: middle; }
 body.ltr th, body.ltr td { text-align: left; }
 body.rtl th, body.rtl td { text-align: right; }
 
+body.ltr table[dir='rtl'] th, body.ltr table[dir='rtl'] td { text-align: right; }
+
+body.rtl table[dir='ltr'] th, body.rtl table[dir='ltr'] td { text-align: left; }
+
 th.right, td.right { float: none; }
 body.ltr th.right, body.ltr td.right { text-align: right; }
 body.rtl th.right, body.rtl td.right { text-align: left; }
