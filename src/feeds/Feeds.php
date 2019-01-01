@@ -109,9 +109,10 @@ class Feeds extends Component
             $items = Reader::import($url);
         } catch (RuntimeException $e) {
             Craft::warning('There was a problem parsing the feed: ' . $e->getMessage(), __METHOD__);
-
             return [];
         }
+
+        $timezone = new \DateTimeZone(Craft::$app->getTimeZone());
 
         foreach ($items as $item) {
             /** @var \Zend\Feed\Reader\Entry\EntryInterface $item */
@@ -138,8 +139,8 @@ class Feeds extends Component
                 // See: https://github.com/zendframework/zendframework/issues/2969
                 // and https://github.com/zendframework/zendframework/pull/3570
                 'contributors' => $this->_getItemAuthors($item->getAuthors()),
-                'date' => $date ? new DateTime('@' . $date->format('U')) : null,
-                'dateUpdated' => $dateUpdated ? new DateTime('@' . $dateUpdated->format('U')) : null,
+                'date' => $date ? $date->setTimezone($timezone) : null,
+                'dateUpdated' => $dateUpdated ? $dateUpdated->setTimezone($timezone) : null,
                 'permalink' => $item->getPermalink(),
                 'summary' => $item->getDescription(),
                 'title' => $item->getTitle(),
