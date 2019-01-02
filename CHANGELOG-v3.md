@@ -9,6 +9,7 @@
 
 ### Changed
 - `craft\helpers\ArrayHelper::filterByValue()` now defaults its `$value` argument to `true`.
+- Craft now checks whether it should use an existing `project.yaml` file when being installed. ([#3291](https://github.com/craftcms/cms/issues/3291))
 
 ### Fixed
 - Fixed a bug where preset structure UIDs were not preserved when saving structure sections. ([#3525](https://github.com/craftcms/cms/issues/3525))

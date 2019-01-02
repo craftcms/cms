@@ -14,12 +14,14 @@ use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\FieldGroup;
 use craft\models\Info;
 use craft\models\Site;
 use craft\models\SiteGroup;
 use craft\services\ProjectConfig;
+use craft\services\Sites;
 
 /**
  * Installation Migration
@@ -52,6 +54,11 @@ class Install extends Migration
      */
     public $site;
 
+    /**
+     * @var bool Whether an existing configuration exists.
+     */
+    private $_configExists = false;
+
     // Public Methods
     // =========================================================================
 
@@ -63,6 +70,9 @@ class Install extends Migration
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
+
+        $this->_configExists = Craft::$app->getConfig()->getGeneral()->useProjectConfigFile && file_exists(Craft::$app->getPath()->getConfigPath() . '/' . ProjectConfig::CONFIG_FILENAME);
+
         $this->insertDefaultData();
 
         // Craft, you are installed now.
@@ -92,35 +102,43 @@ class Install extends Migration
             Craft::$app->getUser()->login($user);
         }
 
-        // Save the default system settings
-        echo '    > save the system settings ...';
-        Craft::$app->getProjectConfig()->set('system', [
-            'edition' => App::editionHandle(Craft::Solo),
-            'name' => $this->site->name,
-            'live' => true,
-            'schemaVersion' => Craft::$app->schemaVersion,
-            'timeZone' => 'America/Los_Angeles',
-        ]);
-        echo " done\n";
+        if ($this->_configExists) {
+            // Save the default system settings
+            echo '    > applying existing project config ...';
+            Craft::$app->getProjectConfig()->applyYamlChanges();
 
-        // Save the default email settings
-        echo '    > save the email settings ...';
-        Craft::$app->getProjectConfig()->set('email', [
-            'fromEmail' => $this->email,
-            'fromName' => $this->site->name,
-            'transportType' => Sendmail::class
-        ]);
-        echo " done\n";
+        } else {
+            // Save the default system settings
+            echo '    > save the system settings ...';
+            Craft::$app->getProjectConfig()->set('system', [
+                'edition' => App::editionHandle(Craft::Solo),
+                'name' => $this->site->name,
+                'live' => true,
+                'schemaVersion' => Craft::$app->schemaVersion,
+                'timeZone' => 'America/Los_Angeles',
+            ]);
+            echo " done\n";
 
-        // Save the default user settings
-        echo '    > save the user settings ...';
-        Craft::$app->getProjectConfig()->set('user', [
-            'requireEmailVerification' => true,
-            'allowPublicRegistration' => false,
-            'defaultGroup' => null,
-            'photoVolumeUid' => null,
-            'photoSubpath' => ''
-        ]);
+            // Save the default email settings
+            echo '    > save the email settings ...';
+            Craft::$app->getProjectConfig()->set('email', [
+                'fromEmail' => $this->email,
+                'fromName' => $this->site->name,
+                'transportType' => Sendmail::class
+            ]);
+            echo " done\n";
+
+            // Save the default user settings
+            echo '    > save the user settings ...';
+            Craft::$app->getProjectConfig()->set('user', [
+                'requireEmailVerification' => true,
+                'allowPublicRegistration' => false,
+                'defaultGroup' => null,
+                'photoVolumeUid' => null,
+                'photoSubpath' => ''
+            ]);
+        }
+
         echo " done\n";
     }
 
@@ -1030,21 +1048,26 @@ class Install extends Migration
         ]));
         echo " done\n";
 
-        // Add the "Common" field group
-        Craft::$app->getFields()->saveGroup(new FieldGroup([
-            'name' => 'Common',
-        ]));
+        if ($this->_configExists) {
+            ProjectConfigHelper::ensureAllSitesProcessed();
+        } else {
+            // Add the "Common" field group
+            Craft::$app->getFields()->saveGroup(new FieldGroup([
+                'name' => 'Common',
+            ]));
 
-        // Add the initial site group
-        $sitesService = Craft::$app->getSites();
-        $siteGroup = new SiteGroup([
-            'name' => $this->site->name,
-        ]);
-        $sitesService->saveGroup($siteGroup);
+            // Add the initial site group
+            $sitesService = Craft::$app->getSites();
+            $siteGroup = new SiteGroup([
+                'name' => $this->site->name,
+            ]);
+            $sitesService->saveGroup($siteGroup);
 
-        // Add the default site
-        $this->site->groupId = $siteGroup->id;
-        $this->site->primary = true;
-        Craft::$app->getSites()->saveSite($this->site);
+            // Add the default site
+            $this->site->groupId = $siteGroup->id;
+            $this->site->primary = true;
+
+            Craft::$app->getSites()->saveSite($this->site);
+        }
     }
 }
