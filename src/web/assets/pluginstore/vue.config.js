@@ -12,7 +12,6 @@ module.exports = {
         },
     },
     devServer: {
-        hotOnly: true,
         port: process.env.DEV_SERVER_PORT,
         headers: {"Access-Control-Allow-Origin": "*"},
         https: {
