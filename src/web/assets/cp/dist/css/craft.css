@@ -611,8 +611,9 @@ table thead th.orderable:hover { background-color: #f9f9f9; }
 th.thin, td.thin { width: 0.01% !important; }
 
 /* data */
-body.ltr table.data th:not(:first-child), body.ltr table.data td:not(:first-child) { padding-left: 14px; }
-body.rtl table.data th:not(:first-child), body.rtl table.data td:not(:first-child) { padding-right: 14px; }
+body.ltr table.data:not([dir='rtl']) th:not(:first-child), body.ltr table.data:not([dir='rtl']) td:not(:first-child), body.rtl table.data[dir='ltr'] th:not(:first-child), body.rtl table.data[dir='ltr'] td:not(:first-child) { padding-left: 14px; }
+
+body.rtl table.data:not([dir='ltr']) th:not(:first-child), body.rtl table.data:not([dir='ltr']) td:not(:first-child), body.ltr table.data[dir='rtl'] th:not(:first-child), body.ltr table.data[dir='rtl'] td:not(:first-child) { padding-right: 14px; }
 
 table.data thead th, table.data thead td { padding-top: 4px; padding-bottom: 4px; width: auto; cursor: default; }
 
