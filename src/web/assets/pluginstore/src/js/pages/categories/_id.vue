@@ -1,12 +1,15 @@
 <template>
     <div v-if="category" class="ps-container">
-        <h1>{{category.title}}</h1>
+        <div class="ps-header">
+            <h1>{{category.title}}</h1>
+            <sort-plugins :sortingOptions.sync="sortingOptions"></sort-plugins>
+        </div>
 
         <template v-if="loading">
             <div class="spinner"></div>
         </template>
         <template v-else>
-            <plugin-index :plugins="plugins"></plugin-index>
+            <plugin-index :plugins="pluginsToRender"></plugin-index>
         </template>
     </div>
 </template>
@@ -14,11 +17,14 @@
 <script>
     import {mapGetters} from 'vuex'
     import PluginIndex from '../../components/PluginIndex'
+    import SortPlugins from '../../components/SortPlugins'
+    import PluginsHelper from '../../helpers/plugins'
 
     export default {
 
         components: {
             PluginIndex,
+            SortPlugins,
         },
 
         data() {
@@ -26,6 +32,10 @@
                 category: null,
                 loading: true,
                 plugins: [],
+                sortingOptions: {
+                    attribute: 'activeInstalls',
+                    direction: 'desc',
+                },
             }
         },
 
@@ -35,6 +45,10 @@
                 getCategoryById: 'pluginStore/getCategoryById',
                 getPluginsByCategory: 'pluginStore/getPluginsByCategory',
             }),
+
+            pluginsToRender() {
+                return PluginsHelper.sortPlugins(this.plugins, this.sortingOptions);
+            }
 
         },
 
@@ -46,7 +60,7 @@
                 this.plugins = this.getPluginsByCategory(categoryId)
                 this.loading = false
             }.bind(this), 1)
-        }
+        },
 
     }
 </script>

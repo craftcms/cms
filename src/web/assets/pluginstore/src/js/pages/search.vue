@@ -2,7 +2,7 @@
     <div class="ps-container">
         <div class="ps-header">
             <h1>Showing results for “{{searchQuery}}”</h1>
-            <sort-menu-btn :attributes="sortMenuBtnAttributes" :value.sync="sort"></sort-menu-btn>
+            <sort-plugins :sortingOptions.sync="sortingOptions"></sort-plugins>
         </div>
 
         <template v-if="loading">
@@ -19,7 +19,8 @@
     import includes from 'lodash/includes'
     import filter from 'lodash/filter'
     import PluginGrid from '../components/PluginGrid'
-    import SortMenuBtn from '../components/SortMenuBtn'
+    import SortPlugins from '../components/SortPlugins'
+    import PluginsHelper from '../helpers/plugins'
 
     export default {
 
@@ -27,19 +28,16 @@
             return {
                 loading: true,
                 searchResults: [],
-                sort: {
+                sortingOptions: {
                     attribute: 'activeInstalls',
                     sort: 'desc',
                 },
-                selectedAttribute: null,
-                selectedDirection: null,
-                sortMenuBtnAttributes: null,
             }
         },
 
         components: {
             PluginGrid,
-            SortMenuBtn,
+            SortPlugins,
         },
 
         computed: {
@@ -50,40 +48,9 @@
             }),
 
             pluginsToRender() {
-                const plugins = this.searchResults
+                const plugins = PluginsHelper.sortPlugins(this.searchResults, this.sortingOptions);
 
-                if (!plugins) {
-                    return []
-                }
-
-                let attribute = this.sort.attribute
-                let direction = this.sort.direction
-
-                function compareASC(a, b) {
-                    if (a[attribute] < b[attribute]) {
-                        return -1
-                    }
-                    if (a[attribute] > b[attribute]) {
-                        return 1
-                    }
-                    return 0
-                }
-
-                function compareDESC(a, b) {
-                    if (a[attribute] > b[attribute]) {
-                        return -1
-                    }
-                    if (a[attribute] < b[attribute]) {
-                        return 1
-                    }
-                    return 0
-                }
-
-                if (direction === 'desc') {
-                    plugins.sort(compareDESC)
-                } else {
-                    plugins.sort(compareASC)
-                }
+                console.log('[0c]', plugins[0].name)
 
                 return plugins
             }
@@ -158,13 +125,6 @@
                 this.$router.push({path: '/'})
             } else {
                 this.search()
-            }
-
-            this.sortMenuBtnAttributes = {
-                activeInstalls: this.$options.filters.t("Popularity", 'app'),
-                lastUpdate: this.$options.filters.t("Last Update", 'app'),
-                name: this.$options.filters.t("Name", 'app'),
-                price: this.$options.filters.t("Price", 'app'),
             }
         }
 

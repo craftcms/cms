@@ -52,14 +52,14 @@
                 desc: this.$options.filters.t("Descending", 'app'),
             }
 
-            if (!this.value.direction) {
-                this.$emit('update:value', {
-                    attribute: this.value.attribute,
-                    direction: this.defaultDirection
-                })
-            }
-
             this.$nextTick(() => {
+                if (!this.value.direction) {
+                    this.$emit('update:value', {
+                        attribute: this.value.attribute,
+                        direction: this.defaultDirection
+                    })
+                }
+
                 Craft.initUiElements(this.$refs.sortMenuBtn)
             })
         },
