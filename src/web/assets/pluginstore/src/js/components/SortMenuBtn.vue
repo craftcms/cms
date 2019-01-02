@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div ref="sortMenuBtn">
         <div class="btn menubtn sortmenubtn" :data-icon="value.direction">{{ menuLabel }}</div>
         <div class="menu">
             <ul class="padded sort-attributes">
@@ -21,7 +21,7 @@
         data() {
             return {
                 defaultDirection: 'asc',
-                directions: null,
+                directions: {},
             }
         },
 
@@ -59,7 +59,9 @@
                 })
             }
 
-            Craft.initUiElements()
+            this.$nextTick(() => {
+                Craft.initUiElements(this.$refs.sortMenuBtn)
+            })
         },
 
     }

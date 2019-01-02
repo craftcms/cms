@@ -1,13 +1,15 @@
 <template>
     <div class="ps-container">
-        <h1>Showing results for “{{searchQuery}}”</h1>
-        <sort-menu-btn :attributes="sortMenuBtnAttributes" :value.sync="sort"></sort-menu-btn>
+        <div class="ps-header">
+            <h1>Showing results for “{{searchQuery}}”</h1>
+            <sort-menu-btn :attributes="sortMenuBtnAttributes" :value.sync="sort"></sort-menu-btn>
+        </div>
 
         <template v-if="loading">
             <div class="spinner"></div>
         </template>
         <template v-else>
-            <plugin-grid :plugins="searchResults"></plugin-grid>
+            <plugin-grid :plugins="pluginsToRender"></plugin-grid>
         </template>
     </div>
 </template>
@@ -47,6 +49,45 @@
                 searchQuery: state => state.app.searchQuery,
             }),
 
+            pluginsToRender() {
+                const plugins = this.searchResults
+
+                if (!plugins) {
+                    return []
+                }
+
+                let attribute = this.sort.attribute
+                let direction = this.sort.direction
+
+                function compareASC(a, b) {
+                    if (a[attribute] < b[attribute]) {
+                        return -1
+                    }
+                    if (a[attribute] > b[attribute]) {
+                        return 1
+                    }
+                    return 0
+                }
+
+                function compareDESC(a, b) {
+                    if (a[attribute] > b[attribute]) {
+                        return -1
+                    }
+                    if (a[attribute] < b[attribute]) {
+                        return 1
+                    }
+                    return 0
+                }
+
+                if (direction === 'desc') {
+                    plugins.sort(compareDESC)
+                } else {
+                    plugins.sort(compareASC)
+                }
+
+                return plugins
+            }
+
         },
 
         methods: {
@@ -55,11 +96,8 @@
                 let searchQuery = this.searchQuery
 
                 if (!searchQuery) {
-                    this.$emit('hideResults')
                     return []
                 }
-
-                this.$emit('showResults')
 
                 return filter(this.plugins, o => {
                     if (o.packageName && includes(o.packageName.toLowerCase(), searchQuery.toLowerCase())) {
@@ -103,7 +141,7 @@
                     this.searchResults = this.performSearch()
                     this.loading = false
                 }.bind(this), 1)
-            }
+            },
 
         },
 

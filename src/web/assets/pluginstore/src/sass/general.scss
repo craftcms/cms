@@ -15,8 +15,8 @@ p {
   @apply .mb-4;
 }
 
-.ps-wrapper h1 {
-  @apply .border-b .border-solid .border-grey-light .py-2;
+.ps-header {
+  @apply .border-b .border-solid .border-grey-light .py-2 .flex .justify-between;
 }
 
 .no-line-height {
