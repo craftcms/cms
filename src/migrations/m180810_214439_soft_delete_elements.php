@@ -14,9 +14,11 @@ class m180810_214439_soft_delete_elements extends Migration
      */
     public function safeUp()
     {
-        // Add the dateDeleted column
-        $this->addColumn('{{%elements}}', 'dateDeleted', $this->dateTime()->null()->after('dateUpdated'));
-        $this->createIndex(null, '{{%elements}}', ['dateDeleted'], false);
+        if (!$this->db->columnExists('elements', 'dateDeleted')) {
+            // Add the dateDeleted column
+            $this->addColumn('{{%elements}}', 'dateDeleted', $this->dateTime()->null()->after('dateUpdated'));
+            $this->createIndex(null, '{{%elements}}', ['dateDeleted'], false);
+        }
 
         // Give categories and Structure section entries a way to keep track of their parent IDs
         // in case they are soft-deleted and need to be restored
