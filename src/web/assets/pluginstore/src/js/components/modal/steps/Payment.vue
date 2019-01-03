@@ -332,13 +332,11 @@
                 const states = country.states
                 let options = []
 
-                for (let iso in states) {
-                    if (states.hasOwnProperty(iso)) {
-                        options.push({
-                            label: states[iso],
-                            value: iso,
-                        })
-                    }
+                for (let stateIso in states) {
+                    options.push({
+                        label: states[stateIso],
+                        value: stateIso,
+                    })
                 }
 
                 this.stateOptions = options
