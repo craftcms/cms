@@ -62,8 +62,6 @@ class Install extends Migration
         $this->createIndexes();
         $this->addForeignKeys();
         $this->insertDefaultData();
-
-        echo " done\n";
     }
 
     /**
@@ -961,7 +959,7 @@ class Install extends Migration
     public function insertDefaultData()
     {
         // Populate the info table
-        echo '    > populate the info table ...';
+        echo '    > populating the info table ... ';
         Craft::$app->saveInfo(new Info([
             'version' => Craft::$app->getVersion(),
             'schemaVersion' => Craft::$app->schemaVersion,
@@ -970,17 +968,19 @@ class Install extends Migration
             'config' => serialize([]),
             'configMap' => Json::encode([]),
         ]));
-        echo " done\n";
+        echo "done\n";
 
         if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile && file_exists(Craft::$app->getPath()->getConfigPath() . '/' . ProjectConfig::CONFIG_FILENAME)) {
             // Save the existing system settings
-            echo '    > applying existing project config ...';
+            echo '    > applying existing project config ... ';
             Craft::$app->getProjectConfig()->applyYamlChanges();
+            echo "done\n";
         } else {
             // Save the default system settings
-            echo '    > saving default site data ...';
+            echo '    > saving default site data ... ';
             $configData = $this->_generateInitialConfig();
             Craft::$app->getProjectConfig()->applyConfigChanges($configData);
+            echo "done\n";
         }
 
         // Craft, you are installed now.
@@ -990,7 +990,7 @@ class Install extends Migration
         Craft::$app->language = $this->site->language;
 
         // Save the first user
-        echo '    > save the first user ...';
+        echo '    > saving the first user ... ';
         $user = new User([
             'username' => $this->username,
             'newPassword' => $this->password,
@@ -998,7 +998,7 @@ class Install extends Migration
             'admin' => true
         ]);
         Craft::$app->getElements()->saveElement($user);
-        echo " done\n";
+        echo "done\n";
 
         // Set their preferred language
         Craft::$app->getUsers()->saveUserPreferences($user, [
