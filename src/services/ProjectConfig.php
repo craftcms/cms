@@ -368,42 +368,21 @@ class ProjectConfig extends Component
 
         $changes = $this->_getPendingChanges();
 
-        Craft::info('Looking for pending changes', __METHOD__);
+        $this->_applyChanges($changes);
+    }
 
-        // If we're parsing all the changes, we better work the actual config map.
-        $this->_configMap = $this->_generateConfigMap();
+    /**
+     * Applies given changes to the project config.
+     *
+     * @param array $configData
+     */
+    public function applyConfigChanges(array $configData)
+    {
+        $this->_applyingYamlChanges = true;
 
-        if (!empty($changes['removedItems'])) {
-            Craft::info('Parsing ' . count($changes['removedItems']) . ' removed configuration items', __METHOD__);
-            foreach ($changes['removedItems'] as $itemPath) {
-                $this->processConfigChanges($itemPath);
-            }
-        }
+        $changes = $this->_getPendingChanges($configData);
 
-        if (!empty($changes['changedItems'])) {
-            Craft::info('Parsing ' . count($changes['changedItems']) . ' changed configuration items', __METHOD__);
-            foreach ($changes['changedItems'] as $itemPath) {
-                $this->processConfigChanges($itemPath);
-            }
-        }
-
-        if (!empty($changes['newItems'])) {
-            Craft::info('Parsing ' . count($changes['newItems']) . ' new configuration items', __METHOD__);
-            foreach ($changes['newItems'] as $itemPath) {
-                $this->processConfigChanges($itemPath);
-            }
-        }
-
-        Craft::info('Finalizing configuration parsing', __METHOD__);
-
-        // Fire an 'afterApplyChanges' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_APPLY_CHANGES)) {
-            $this->trigger(self::EVENT_AFTER_APPLY_CHANGES);
-        }
-
-        $this->updateParsedConfigTimesAfterRequest();
-        $this->_updateConfigMap = true;
-        $this->_applyingYamlChanges = false;
+        $this->_applyChanges($changes);
     }
 
     /**
@@ -800,6 +779,51 @@ class ProjectConfig extends Component
     // =========================================================================
 
     /**
+     * Applies changes from a configuration array.
+     *
+     * @param array $changes array nested array with keys `removedItems`, `changedItems` and `newItems`
+     */
+    private function _applyChanges(array $changes): void
+    {
+        Craft::info('Looking for pending changes', __METHOD__);
+
+        // If we're parsing all the changes, we better work the actual config map.
+        $this->_configMap = $this->_generateConfigMap();
+
+        if (!empty($changes['removedItems'])) {
+            Craft::info('Parsing ' . count($changes['removedItems']) . ' removed configuration items', __METHOD__);
+            foreach ($changes['removedItems'] as $itemPath) {
+                $this->processConfigChanges($itemPath);
+            }
+        }
+
+        if (!empty($changes['changedItems'])) {
+            Craft::info('Parsing ' . count($changes['changedItems']) . ' changed configuration items', __METHOD__);
+            foreach ($changes['changedItems'] as $itemPath) {
+                $this->processConfigChanges($itemPath);
+            }
+        }
+
+        if (!empty($changes['newItems'])) {
+            Craft::info('Parsing ' . count($changes['newItems']) . ' new configuration items', __METHOD__);
+            foreach ($changes['newItems'] as $itemPath) {
+                $this->processConfigChanges($itemPath);
+            }
+        }
+
+        Craft::info('Finalizing configuration parsing', __METHOD__);
+
+        // Fire an 'afterApplyChanges' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_APPLY_CHANGES)) {
+            $this->trigger(self::EVENT_AFTER_APPLY_CHANGES);
+        }
+
+        $this->updateParsedConfigTimesAfterRequest();
+        $this->_updateConfigMap = true;
+        $this->_applyingYamlChanges = false;
+    }
+    
+    /**
      * Retrieve a a config file tree with modified times based on the main configuration file.
      *
      * @return array
@@ -925,14 +949,18 @@ class ProjectConfig extends Component
     /**
      * Return a nested array for pending config changes
      *
+     * @param array $configData config data to use. If null, config is fetched from `config/project.yaml`
      * @return array
      */
-    private function _getPendingChanges(): array
+    private function _getPendingChanges(array $configData = null): array
     {
         $newItems = [];
         $changedItems = [];
 
-        $configData = $this->_getConfigurationFromYaml();
+        if ($configData === null) {
+            $configData = $this->_getConfigurationFromYaml();
+        }
+
         $currentConfig = $this->_getLoadedConfig();
 
         $flatConfig = [];

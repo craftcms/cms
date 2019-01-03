@@ -7,6 +7,7 @@
 - The web and CLI installers no longer suggest `@web` for the site URL, and now attempt to save the entered site URL as a `DEFAULT_SITE_URL` environment variable in `.env`. ([#3559](https://github.com/craftcms/cms/issues/3559))
 - The installer now checks whether a `project.yaml` file exists and applies any changes in it. ([#3291](https://github.com/craftcms/cms/issues/3291))
 - Added `craft\helpers\ArrayHelper::firstWhere()`.
+- Added `craft\services\ProjectConfig::applyConfigChanges()`.
 
 ### Changed
 - `craft\helpers\ArrayHelper::filterByValue()` now defaults its `$value` argument to `true`.
