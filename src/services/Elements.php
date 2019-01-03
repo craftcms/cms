@@ -411,7 +411,7 @@ class Elements extends Component
 
         // Set a dummy title if there isn't one already and the element type has titles
         if (!$runValidation && $element::hasContent() && $element::hasTitles() && !$element->validate(['title'])) {
-            $humanClass = ucfirst(App::humanizeClass(get_class($element)));
+            $humanClass = App::humanizeClass(get_class($element));
             if ($isNewElement) {
                 $element->title = Craft::t('app', 'New {class}', ['class' => $humanClass]);
             } else {
