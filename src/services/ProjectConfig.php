@@ -783,7 +783,7 @@ class ProjectConfig extends Component
      *
      * @param array $changes array nested array with keys `removedItems`, `changedItems` and `newItems`
      */
-    private function _applyChanges(array $changes): void
+    private function _applyChanges(array $changes)
     {
         Craft::info('Looking for pending changes', __METHOD__);
 
@@ -822,7 +822,7 @@ class ProjectConfig extends Component
         $this->_updateConfigMap = true;
         $this->_applyingYamlChanges = false;
     }
-    
+
     /**
      * Retrieve a a config file tree with modified times based on the main configuration file.
      *
