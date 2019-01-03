@@ -54,11 +54,6 @@ class Install extends Migration
      */
     public $site;
 
-    /**
-     * @var bool Whether an existing configuration exists.
-     */
-    private $_configExists = false;
-
     // Public Methods
     // =========================================================================
 
@@ -70,74 +65,7 @@ class Install extends Migration
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
-
-        $this->_configExists = Craft::$app->getConfig()->getGeneral()->useProjectConfigFile && file_exists(Craft::$app->getPath()->getConfigPath() . '/' . ProjectConfig::CONFIG_FILENAME);
-
         $this->insertDefaultData();
-
-        // Craft, you are installed now.
-        Craft::$app->setIsInstalled();
-
-        // Set the app language
-        Craft::$app->language = $this->site->language;
-
-        // Save the first user
-        echo '    > save the first user ...';
-        $user = new User([
-            'username' => $this->username,
-            'newPassword' => $this->password,
-            'email' => $this->email,
-            'admin' => true
-        ]);
-        Craft::$app->getElements()->saveElement($user);
-        echo " done\n";
-
-        // Set their preferred language
-        Craft::$app->getUsers()->saveUserPreferences($user, [
-            'language' => $this->site->language,
-        ]);
-
-        // Log them in
-        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
-            Craft::$app->getUser()->login($user);
-        }
-
-        if ($this->_configExists) {
-            // Save the default system settings
-            echo '    > applying existing project config ...';
-            Craft::$app->getProjectConfig()->applyYamlChanges();
-
-        } else {
-            // Save the default system settings
-            echo '    > save the system settings ...';
-            Craft::$app->getProjectConfig()->set('system', [
-                'edition' => App::editionHandle(Craft::Solo),
-                'name' => $this->site->name,
-                'live' => true,
-                'schemaVersion' => Craft::$app->schemaVersion,
-                'timeZone' => 'America/Los_Angeles',
-            ]);
-            echo " done\n";
-
-            // Save the default email settings
-            echo '    > save the email settings ...';
-            Craft::$app->getProjectConfig()->set('email', [
-                'fromEmail' => $this->email,
-                'fromName' => $this->site->name,
-                'transportType' => Sendmail::class
-            ]);
-            echo " done\n";
-
-            // Save the default user settings
-            echo '    > save the user settings ...';
-            Craft::$app->getProjectConfig()->set('user', [
-                'requireEmailVerification' => true,
-                'allowPublicRegistration' => false,
-                'defaultGroup' => null,
-                'photoVolumeUid' => null,
-                'photoSubpath' => ''
-            ]);
-        }
 
         echo " done\n";
     }
@@ -1048,26 +976,96 @@ class Install extends Migration
         ]));
         echo " done\n";
 
-        if ($this->_configExists) {
-            ProjectConfigHelper::ensureAllSitesProcessed();
+        if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile && file_exists(Craft::$app->getPath()->getConfigPath() . '/' . ProjectConfig::CONFIG_FILENAME)) {
+            // Save the existing system settings
+            echo '    > applying existing project config ...';
+            Craft::$app->getProjectConfig()->applyYamlChanges();
         } else {
-            // Add the "Common" field group
-            Craft::$app->getFields()->saveGroup(new FieldGroup([
-                'name' => 'Common',
-            ]));
-
-            // Add the initial site group
-            $sitesService = Craft::$app->getSites();
-            $siteGroup = new SiteGroup([
-                'name' => $this->site->name,
-            ]);
-            $sitesService->saveGroup($siteGroup);
-
-            // Add the default site
-            $this->site->groupId = $siteGroup->id;
-            $this->site->primary = true;
-
-            Craft::$app->getSites()->saveSite($this->site);
+            // Save the default system settings
+            echo '    > saving default site data ...';
+            $configData = $this->_generateDefaultData();
+            Craft::$app->getProjectConfig()->applyConfigChanges($configData);
         }
+
+        // Craft, you are installed now.
+        Craft::$app->setIsInstalled();
+
+        // Set the app language
+        Craft::$app->language = $this->site->language;
+        
+        // Save the first user
+        echo '    > save the first user ...';
+        $user = new User([
+            'username' => $this->username,
+            'newPassword' => $this->password,
+            'email' => $this->email,
+            'admin' => true
+        ]);
+        Craft::$app->getElements()->saveElement($user);
+        echo " done\n";
+
+        // Set their preferred language
+        Craft::$app->getUsers()->saveUserPreferences($user, [
+            'language' => $this->site->language,
+        ]);
+
+        // Log them in
+        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+            Craft::$app->getUser()->login($user);
+        }
+    }
+
+    /**
+     * Generate the default data set for a new install.
+     *
+     * @return array
+     */
+    private function _generateDefaultData(): array
+    {
+        $siteGroupUid = StringHelper::UUID();
+
+        return [
+            'fieldGroups' => [
+                StringHelper::UUID() => [
+                    'name' => 'Common',
+                ],
+            ],
+            'email' => [
+                'fromEmail' => $this->email,
+                'fromName' => $this->site->name,
+                'transportType' => Sendmail::class,
+            ],
+            'siteGroups' => [
+                $siteGroupUid => [
+                    'name' => $this->site->name,
+                ],
+            ],
+            'sites' => [
+                StringHelper::UUID() => [
+                    'baseUrl' => $this->site->baseUrl,
+                    'handle' => $this->site->handle,
+                    'hasUrls' => $this->site->hasUrls,
+                    'language' => $this->site->language,
+                    'name' => $this->site->name,
+                    'primary' => true,
+                    'siteGroup' => $siteGroupUid,
+                    'sortOrder' => 1,
+                ],
+            ],
+            'system' => [
+                'edition' => App::editionHandle(Craft::Solo),
+                'name' => $this->site->name,
+                'live' => true,
+                'schemaVersion' => Craft::$app->schemaVersion,
+                'timeZone' => 'America/Los_Angeles',
+            ],
+            'user' => [
+                'requireEmailVerification' => true,
+                'allowPublicRegistration' => false,
+                'defaultGroup' => null,
+                'photoVolumeUid' => null,
+                'photoSubpath' => '',
+            ]
+        ];
     }
 }
