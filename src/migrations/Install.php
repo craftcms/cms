@@ -14,14 +14,10 @@ use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\mail\transportadapters\Sendmail;
-use craft\models\FieldGroup;
 use craft\models\Info;
 use craft\models\Site;
-use craft\models\SiteGroup;
 use craft\services\ProjectConfig;
-use craft\services\Sites;
 
 /**
  * Installation Migration
@@ -983,7 +979,7 @@ class Install extends Migration
         } else {
             // Save the default system settings
             echo '    > saving default site data ...';
-            $configData = $this->_generateDefaultData();
+            $configData = $this->_generateInitialConfig();
             Craft::$app->getProjectConfig()->applyConfigChanges($configData);
         }
 
@@ -992,7 +988,7 @@ class Install extends Migration
 
         // Set the app language
         Craft::$app->language = $this->site->language;
-        
+
         // Save the first user
         echo '    > save the first user ...';
         $user = new User([
@@ -1015,12 +1011,15 @@ class Install extends Migration
         }
     }
 
+    // Private Methods
+    // =========================================================================
+
     /**
-     * Generate the default data set for a new install.
+     * Generates the initial project config.
      *
      * @return array
      */
-    private function _generateDefaultData(): array
+    private function _generateInitialConfig(): array
     {
         $siteGroupUid = StringHelper::UUID();
 
@@ -1065,7 +1064,7 @@ class Install extends Migration
                 'defaultGroup' => null,
                 'photoVolumeUid' => null,
                 'photoSubpath' => '',
-            ]
+            ],
         ];
     }
 }
