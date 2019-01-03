@@ -16,6 +16,19 @@ export default {
     },
 
     /**
+     * Get Plugin License Info.
+     */
+    getPluginLicenseInfo(cb, cbError) {
+        axios.get(Craft.getActionUrl('app/get-plugin-license-info'))
+            .then(response => {
+                return cb(response)
+            })
+            .catch(response => {
+                return cbError(response)
+            })
+    },
+
+    /**
      * Try edition.
      */
     tryEdition(edition) {
