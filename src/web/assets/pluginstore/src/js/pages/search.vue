@@ -48,11 +48,7 @@
             }),
 
             pluginsToRender() {
-                const plugins = PluginsHelper.sortPlugins(this.searchResults, this.sortingOptions);
-
-                console.log('[0c]', plugins[0].name)
-
-                return plugins
+                return PluginsHelper.sortPlugins(this.searchResults, this.sortingOptions);
             }
 
         },
