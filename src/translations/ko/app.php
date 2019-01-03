@@ -622,7 +622,6 @@ return [
     'Name' => '이름',
     'Never' => '절대 없음',
     'New' => '새로 만들기',
-    'New Element' => '새 요소',
     'New Password' => '새로운 비밀번호',
     'New Tab' => '새로운 탭',
     'New Users' => '새로운 사용자',

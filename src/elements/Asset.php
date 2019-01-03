@@ -1224,7 +1224,7 @@ class Asset extends Element
         }
 
         // Give it a default title based on the file name, if it doesn't have a title yet
-        if (!$this->id && (!$this->title || $this->title === Craft::t('app', 'New Element'))) {
+        if (!$this->id && !$this->title) {
             $this->title = AssetsHelper::filename2Title(pathinfo($this->filename, PATHINFO_FILENAME));
         }
 
