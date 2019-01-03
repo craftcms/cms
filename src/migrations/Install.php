@@ -8,16 +8,20 @@
 namespace craft\migrations;
 
 use Craft;
+use craft\base\Plugin;
 use craft\db\Migration;
 use craft\elements\Asset;
 use craft\elements\User;
+use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\Info;
 use craft\models\Site;
+use craft\services\Plugins;
 use craft\services\ProjectConfig;
+use craft\web\Response;
 
 /**
  * Installation Migration
@@ -970,7 +974,30 @@ class Install extends Migration
         ]));
         echo "done\n";
 
-        if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile && file_exists(Craft::$app->getPath()->getConfigPath() . '/' . ProjectConfig::CONFIG_FILENAME)) {
+        $applyExistingProjectConfig = false;
+
+        if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
+            $configDir = Craft::$app->getPath()->getConfigPath();
+            $configFile = $configDir . '/' . ProjectConfig::CONFIG_FILENAME;
+
+            if (file_exists($configFile)) {
+                try {
+                    $this->_installPlugins();
+                    $applyExistingProjectConfig = true;
+                } catch (\Throwable $e) {
+                    echo "    > can't apply existing project config: {$e->getMessage()}\n";
+                    Craft::$app->getErrorHandler()->logException($e);
+
+                    // Rename project.yaml so we can create a new one
+                    $backupFile = ProjectConfig::CONFIG_FILENAME . '.' . StringHelper::randomString(10);
+                    echo "    > renaming project.yaml to {$backupFile} ... ";
+                    rename($configFile, $configDir . '/' . $backupFile);
+                    echo "done\n";
+                }
+            }
+        }
+
+        if ($applyExistingProjectConfig) {
             // Save the existing system settings
             echo '    > applying existing project config ... ';
             Craft::$app->getProjectConfig()->applyYamlChanges();
@@ -1013,6 +1040,53 @@ class Install extends Migration
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Attempts to install any plugins listed in project.yaml.
+     *
+     * @throws \Throwable if reasons
+     */
+    private function _installPlugins()
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+        $pluginsService = Craft::$app->getPlugins();
+        $pluginConfigs = $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? [];
+
+        // Make sure that all to-be-installed plugins actually exist,
+        // and that they have the same schema as project.yaml
+        foreach ($pluginConfigs as $handle => $config) {
+            $plugin = $pluginsService->createPlugin($handle);
+            $expectedSchemaVersion = $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $handle . '.schemaVersion', true);
+
+            /** @var Plugin|null $plugin */
+            if ($plugin->schemaVersion != $expectedSchemaVersion) {
+                throw new InvalidPluginException($handle, "{$handle} is installed at the wrong schema version ({$plugin->schemaVersion}, but project.yaml lists {$expectedSchemaVersion}).");
+            }
+        }
+
+        // Prevent the plugin from sending any headers, etc.
+        $realResponse = Craft::$app->getResponse();
+        $tempResponse = new Response(['isSent' => true]);
+        Craft::$app->set('response', $tempResponse);
+
+        $e = null;
+
+        try {
+            foreach ($pluginConfigs as $handle => $pluginConfig) {
+                echo "    > installing {$handle} ... ";
+                $pluginsService->installPlugin($handle);
+                echo "done\n";
+            }
+        } catch (\Throwable $e) {
+        }
+
+        // Put the real response back
+        Craft::$app->set('response', $realResponse);
+
+        if ($e !== null) {
+            throw $e;
+        }
+    }
 
     /**
      * Generates the initial project config.
