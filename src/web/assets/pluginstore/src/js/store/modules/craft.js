@@ -17,6 +17,7 @@ const state = {
     licensedEdition: null,
     poweredByStripe: null,
     defaultPluginSvg: null,
+    pluginLicenseInfo: {},
 }
 
 /**
@@ -29,6 +30,7 @@ const getters = {
             if (state.installedPlugins) {
                 return state.installedPlugins.find(plugin => plugin.packageName === p.packageName && plugin.handle === p.handle)
             }
+
             return false
         })
     },
@@ -36,6 +38,22 @@ const getters = {
     pluginHasLicenseKey(state) {
         return pluginHandle => {
             return !!state.installedPlugins.find(plugin => plugin.handle === pluginHandle && plugin.hasLicenseKey)
+        }
+    },
+
+    pluginHasValidLicenseKey(state) {
+        return pluginHandle => {
+            const pluginLicenseInfo = state.pluginLicenseInfo[pluginHandle]
+
+            if (!pluginLicenseInfo) {
+                return false
+            }
+
+            if (pluginLicenseInfo.licenseKeyStatus !== 'valid')  {
+                return false
+            }
+
+            return true
         }
     },
 
@@ -50,6 +68,17 @@ const actions = {
         return new Promise((resolve, reject) => {
             api.getCraftData(response => {
                 commit('updateCraftData', {response})
+                resolve(response)
+            }, response => {
+                reject(response)
+            })
+        })
+    },
+
+    getPluginLicenseInfo({commit}) {
+        return new Promise((resolve, reject) => {
+            api.getPluginLicenseInfo(response => {
+                commit('updatePluginLicenseInfo', {response})
                 resolve(response)
             }, response => {
                 reject(response)
@@ -94,6 +123,10 @@ const mutations = {
         state.licensedEdition = response.data.licensedEdition
         state.poweredByStripe = response.data.poweredByStripe
         state.defaultPluginSvg = response.data.defaultPluginSvg
+    },
+
+    updatePluginLicenseInfo(state, {response}) {
+        state.pluginLicenseInfo = response.data
     },
 
     updateCraftId(state, {craftId}) {

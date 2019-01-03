@@ -40,6 +40,7 @@ Garnish.$doc.ready(function() {
                 pluginStoreDataLoaded: false,
                 pluginStoreDataError: false,
                 craftIdDataLoaded: false,
+                pluginLicenseInfoLoaded: false,
                 cartDataLoaded: false,
                 showModal: false,
                 statusMessage: null,
@@ -133,11 +134,11 @@ Garnish.$doc.ready(function() {
 
             // On data loaded
             this.$on('dataLoaded', function() {
-                if (this.pluginStoreDataLoaded && (!this.craftIdDataLoaded || !this.cartDataLoaded)) {
+                if (this.pluginStoreDataLoaded && (!this.craftIdDataLoaded || !this.cartDataLoaded || !this.pluginLicenseInfoLoaded)) {
                     this.$pluginStoreActionsSpinner.removeClass('hidden')
                 }
 
-                if (this.pluginStoreDataLoaded && this.craftIdDataLoaded && this.cartDataLoaded) {
+                if (this.pluginStoreDataLoaded && this.craftIdDataLoaded && this.cartDataLoaded && this.pluginLicenseInfoLoaded) {
                     // All data loaded
                     this.$pluginStoreActions.removeClass('hidden')
                     this.$pluginStoreActionsSpinner.addClass('hidden')
@@ -172,6 +173,14 @@ Garnish.$doc.ready(function() {
                 .catch(response => {
                     this.craftIdDataLoaded = true
                 })
+
+            // Load plugin license info
+            this.$store.dispatch('craft/getPluginLicenseInfo')
+                .then(response => {
+                    this.pluginLicenseInfoLoaded = true
+                    this.$emit('dataLoaded')
+                })
+
         },
 
         mounted() {

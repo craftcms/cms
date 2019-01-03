@@ -3,18 +3,20 @@
         <template v-if="!hasFreeEdition(plugin)">
             <template v-if="isInstalled(plugin)">
                 <!-- Installed -->
-                <template v-if="pluginHasLicenseKey(plugin.handle)">
+                <template v-if="pluginHasLicenseKey(plugin.handle) && pluginHasValidLicenseKey(plugin.handle)">
                     <license-status status="installed" :description="$options.filters.t('Installed', 'app')"></license-status>
                 </template>
                 <template v-else>
                     <!-- Installed as trial -->
-                    <license-status status="installed" :description="$options.filters.t('Installed as a trial', 'app')"></license-status>
+                    <div class="mb-4">
+                        <license-status status="installed" :description="$options.filters.t('Installed as a trial', 'app')"></license-status>
+                    </div>
 
                     <!-- Added to cart -->
-                    <a v-if="isInCart(plugin)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
+                    <btn v-if="isInCart(plugin)" type="primary" block large disabled>{{ "Added to cart"|t('app') }}</btn>
 
                     <!-- Add to cart -->
-                    <a v-else @click="chooseEdition(plugin)" class="btn submit" :title="buyBtnTitle">{{ plugin.editions[0].price|currency }}</a>
+                    <btn v-else type="primary" @click="addEditionToCart(edition.handle)" block large>{{ "Add to cart"|t('app') }}</btn>
                 </template>
             </template>
 
@@ -91,6 +93,7 @@
                 hasFreeEdition: 'pluginStore/hasFreeEdition',
                 isInCart: 'cart/isInCart',
                 pluginHasLicenseKey: 'craft/pluginHasLicenseKey',
+                pluginHasValidLicenseKey: 'craft/pluginHasValidLicenseKey',
                 isPluginEditionFree: 'pluginStore/isPluginEditionFree',
             }),
 
