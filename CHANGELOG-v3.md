@@ -11,6 +11,7 @@
 - Added `craft\services\ProjectConfig::applyConfigChanges()`.
 
 ### Changed
+- Assets’ default titles now only capitalize the first word extracted from the filename, rather than all the words. ([#2339](https://github.com/craftcms/cms/issues/2339))
 - `craft\db\mysql\Schema::findIndexes()` and `craft\db\pgsql\Schema::findIndexes()` now return arrays with `columns` and `unique` keys.
 - `craft\helpers\ArrayHelper::filterByValue()` now defaults its `$value` argument to `true`.
 - `craft\helpers\MigrationHelper::doesIndexExist()` no longer has a `$foreignKey` argument, and now has an optional `$db` argument.

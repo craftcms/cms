@@ -160,9 +160,7 @@ class Assets
      */
     public static function filename2Title(string $filename): string
     {
-        $filename = mb_strtolower($filename);
-        $filename = str_replace(['.', '_', '-'], ' ', $filename);
-        return StringHelper::toTitleCase($filename);
+        return StringHelper::upperCaseFirst(implode(' ', StringHelper::toWords($filename)));
     }
 
     /**
