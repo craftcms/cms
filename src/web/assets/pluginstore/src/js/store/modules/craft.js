@@ -13,7 +13,6 @@ const state = {
     craftLogo: null,
     currentUser: null,
     editions: null,
-    installedPlugins: [],
     licensedEdition: null,
     poweredByStripe: null,
     defaultPluginSvg: null,
@@ -25,19 +24,31 @@ const state = {
  */
 const getters = {
 
-    installedPlugins: (state, getters, rootState) => {
-        return rootState.pluginStore.plugins.filter(p => {
-            if (state.installedPlugins) {
-                return state.installedPlugins.find(plugin => plugin.packageName === p.packageName && plugin.handle === p.handle)
+    isPluginInstalled(state) {
+        return pluginHandle => {
+            if (!state.pluginLicenseInfo) {
+                return false
             }
 
-            return false
-        })
+            if (!state.pluginLicenseInfo[pluginHandle]) {
+                return false
+            }
+
+            return true
+        }
     },
 
     pluginHasLicenseKey(state) {
         return pluginHandle => {
-            return !!state.installedPlugins.find(plugin => plugin.handle === pluginHandle && plugin.hasLicenseKey)
+            if (!state.pluginLicenseInfo) {
+                return false
+            }
+
+            if (!state.pluginLicenseInfo[pluginHandle]) {
+                return false
+            }
+
+            return !!state.pluginLicenseInfo[pluginHandle].licenseKey
         }
     },
 
@@ -119,7 +130,6 @@ const mutations = {
         state.craftLogo = response.data.craftLogo
         state.currentUser = response.data.currentUser
         state.editions = response.data.editions
-        state.installedPlugins = response.data.installedPlugins
         state.licensedEdition = response.data.licensedEdition
         state.poweredByStripe = response.data.poweredByStripe
         state.defaultPluginSvg = response.data.defaultPluginSvg

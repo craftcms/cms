@@ -1,7 +1,7 @@
 <template>
     <div v-if="plugin" class="plugin-actions">
         <template v-if="!hasFreeEdition(plugin)">
-            <template v-if="isInstalled(plugin)">
+            <template v-if="isPluginInstalled(plugin.handle)">
                 <!-- Installed -->
                 <template v-if="pluginHasLicenseKey(plugin.handle) && pluginHasValidLicenseKey(plugin.handle)">
                     <license-status status="installed" :description="$options.filters.t('Installed', 'app')"></license-status>
@@ -49,7 +49,7 @@
         </template>
         <div v-else>
             <!-- Installed -->
-            <a v-if="isInstalled(plugin)" class="btn submit disabled">{{ "Installed"|t('app') }}</a>
+            <a v-if="isPluginInstalled(plugin.handle)" class="btn submit disabled">{{ "Installed"|t('app') }}</a>
 
             <!-- Install -->
             <div v-else-if="allowUpdates">
@@ -89,7 +89,7 @@
         computed: {
 
             ...mapGetters({
-                isInstalled: 'pluginStore/isInstalled',
+                isPluginInstalled: 'craft/isPluginInstalled',
                 hasFreeEdition: 'pluginStore/hasFreeEdition',
                 isInCart: 'cart/isInCart',
                 pluginHasLicenseKey: 'craft/pluginHasLicenseKey',

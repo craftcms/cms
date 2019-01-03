@@ -53,7 +53,7 @@
 
             isPluginBuyable(plugin) {
                 if (plugin.editions[0].price !== null && plugin.editions[0].price !== '0.00') {
-                    if (this.isInstalled(plugin)) {
+                    if (this.isPluginInstalled(plugin.handle)) {
                         if(!this.pluginHasLicenseKey(plugin.handle)) {
                             return true
                         }
@@ -71,7 +71,7 @@
 
             ...mapGetters({
                 isInCart: 'cart/isInCart',
-                isInstalled: 'pluginStore/isInstalled',
+                isPluginInstalled: 'craft/isPluginInstalled',
                 pluginHasLicenseKey: 'craft/pluginHasLicenseKey',
             }),
 

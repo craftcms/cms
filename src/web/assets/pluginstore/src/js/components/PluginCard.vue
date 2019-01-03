@@ -30,7 +30,7 @@
                 </template>
             </p>
 
-            <div v-if="isInstalled(plugin)" class="installed" data-icon="check"></div>
+            <div v-if="isPluginInstalled(plugin.handle)" class="installed" data-icon="check"></div>
         </div>
     </div>
 </template>
@@ -49,7 +49,7 @@
             }),
 
             ...mapGetters({
-                isInstalled: 'pluginStore/isInstalled',
+                isPluginInstalled: 'craft/isPluginInstalled',
             }),
 
             priceRange() {

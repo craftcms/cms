@@ -48,7 +48,7 @@ const getters = {
     activeTrialPlugins(state, getters, rootState, rootGetters) {
         return rootState.pluginStore.plugins.filter(plugin => {
             if (plugin.editions[0].price > 0 && !rootGetters['craft/pluginHasLicenseKey'](plugin.handle)) {
-                return rootGetters['craft/installedPlugins'].find(installedPlugin => plugin.handle === installedPlugin.handle)
+                return rootGetters['craft/isPluginInstalled'](plugin.handle)
             }
         })
     },
@@ -267,13 +267,13 @@ const actions = {
         api.saveOrderNumber(orderNumber)
     },
 
-    savePluginLicenseKeys({state, rootState}, cart) {
+    savePluginLicenseKeys({state, rootState, rootGetters}, cart) {
         return new Promise((resolve, reject) => {
             let pluginLicenseKeys = []
 
             cart.lineItems.forEach(lineItem => {
                 if (lineItem.purchasable.type === 'plugin-edition') {
-                    if (rootState.craft.installedPlugins.find(installedPlugin => installedPlugin.handle === lineItem.purchasable.plugin.handle)) {
+                    if (rootGetters['craft/isPluginInstalled'](lineItem.purchasable.plugin.handle)) {
                         pluginLicenseKeys.push({
                             handle: lineItem.purchasable.plugin.handle,
                             key: lineItem.options.licenseKey.substr(4)

@@ -29,12 +29,6 @@ const getters = {
         }
     },
 
-    isInstalled(state, getters, rootState, rootGetters) {
-        return plugin => {
-            return rootGetters['craft/installedPlugins'].find(p => p.id == plugin.id)
-        }
-    },
-
     getPluginById(state) {
         return id => {
                 return state.plugins.find(p => p.id == id)
