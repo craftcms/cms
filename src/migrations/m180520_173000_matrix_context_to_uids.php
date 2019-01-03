@@ -15,27 +15,32 @@ class m180520_173000_matrix_context_to_uids extends Migration
      */
     public function safeUp()
     {
-        // Get map of IDs to UIDs
-        $blockPairs = (new Query())
+        // Map Matrix block type IDs to UUIDs
+        $blockTypeUids = (new Query())
             ->select(['id', 'uid'])
             ->from(['{{%matrixblocktypes}}'])
             ->pairs();
 
-        // Get all
+        // Get all the Matrix sub-fields
         $fields = (new Query())
             ->select(['id', 'context'])
             ->from(['{{%fields}}'])
             ->where(['like', 'context', 'matrixBlockType'])
             ->all();
 
-        // Switch out ids for UIDs
-        foreach ($fields as $row) {
-            $context = explode(':', $row['context']);
-            $newContext = $context[0] . ':' . $blockPairs[$context[1]];
+        // Switch out IDs for UUIDs
+        foreach ($fields as $field) {
+            list(, $blockTypeId) = explode(':', $field['context'], 2);
+
+            // Make sure the block type still exists
+            if (!isset($blockTypeUids[$blockTypeId])) {
+                continue;
+            }
+
             $this->update('{{%fields}}', [
-                'context' => $newContext
+                'context' => 'matrixBlockType:' . $blockTypeUids[$blockTypeId]
             ], [
-                'id' => $row['id']
+                'id' => $field['id']
             ], [], false);
         }
     }
