@@ -55,6 +55,7 @@
 - Added `craft\helpers\Db::uidById()`.
 - Added `craft\helpers\Db::uidsByIds()`.
 - Added `craft\helpers\ProjectConfig`.
+- Added `craft\helpers\StringHelper::toWords()`.
 - Added `craft\models\FieldLayout::createFromConfig()`.
 - Added `craft\models\FieldLayout::getConfig()`.
 - Added `craft\models\Section::setEntryTypes()`.

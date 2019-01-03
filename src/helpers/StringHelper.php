@@ -404,7 +404,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toKebabCase(string $string, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string
     {
-        $words = self::_prepStringForCasing($string, $lower, $removePunctuation);
+        $words = self::toWords($string, $lower, $removePunctuation);
 
         return implode($glue, $words);
     }
@@ -420,7 +420,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toCamelCase(string $string): string
     {
-        $words = self::_prepStringForCasing($string);
+        $words = self::toWords($string, true, true);
 
         if (empty($words)) {
             return '';
@@ -445,7 +445,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toPascalCase(string $string): string
     {
-        $words = self::_prepStringForCasing($string);
+        $words = self::toWords($string, true, true);
         $string = implode('', array_map([
             static::class,
             'upperCaseFirst'
@@ -465,7 +465,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toSnakeCase(string $string): string
     {
-        $words = self::_prepStringForCasing($string);
+        $words = self::toWords($string, true, true);
 
         return implode('_', $words);
     }
@@ -1025,18 +1025,18 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
-     * Prepares a string for casing routines.
+     * Returns an array of words extracted from a string
      *
      * @param string $string The string
-     * @param bool $lower
-     * @param bool $removePunctuation Whether punctuation marks should be removed (default is true)
+     * @param bool $lower Whether the returned words should be lowercased
+     * @param bool $removePunctuation Whether punctuation should be removed from the returned words
      * @return string[] The prepped words in the string
      * @see toKebabCase()
      * @see toCamelCase()
      * @see toPascalCase()
      * @see toSnakeCase()
      */
-    private static function _prepStringForCasing(string $string, bool $lower = true, bool $removePunctuation = true): array
+    public static function toWords(string $string, bool $lower = false, bool $removePunctuation = false): array
     {
         // Convert CamelCase to multiple words
         $string = preg_replace('/(?<=[a-z])[A-Z]/u', ' \0', $string);
