@@ -285,11 +285,14 @@
                                     .then(response => {
                                         this.$store.dispatch('craft/getCraftData')
                                             .then(() => {
-                                                this.$store.dispatch('cart/resetCart')
+                                                this.$store.dispatch('craft/getPluginLicenseInfo')
                                                     .then(() => {
-                                                        this.loading = false
-                                                        this.error = false
-                                                        this.$root.modalStep = 'thank-you'
+                                                        this.$store.dispatch('cart/resetCart')
+                                                            .then(() => {
+                                                                this.loading = false
+                                                                this.error = false
+                                                                this.$root.modalStep = 'thank-you'
+                                                            })
                                                     })
                                             })
                                     })
