@@ -19,11 +19,11 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
         $this->_handleDupes('handle');
         $this->_handleDupes('name');
 
-        if (!MigrationHelper::doesIndexExist('{{%usergroups}}', 'handle', true)) {
+        if (!MigrationHelper::doesIndexExist('{{%usergroups}}', 'handle', true, $this->db)) {
             $this->createIndex(null, '{{%usergroups}}', ['handle'], true);
         }
 
-        if (!MigrationHelper::doesIndexExist('{{%usergroups}}', 'name', true)) {
+        if (!MigrationHelper::doesIndexExist('{{%usergroups}}', 'name', true, $this->db)) {
             $this->createIndex(null, '{{%usergroups}}', ['name'], true);
         }
     }
