@@ -1013,6 +1013,18 @@ class Install extends Migration
         // Craft, you are installed now.
         Craft::$app->setIsInstalled();
 
+        if ($applyExistingProjectConfig) {
+            // Update the primary site with the installer settings
+            $sitesService = Craft::$app->getSites();
+            $site = $sitesService->getPrimarySite();
+            $site->baseUrl = $this->site->baseUrl;
+            $site->handle = $this->site->handle;
+            $site->hasUrls = $this->site->hasUrls;
+            $site->language = $this->site->language;
+            $site->name = $this->site->name;
+            $sitesService->saveSite($site);
+        }
+
         // Set the app language
         Craft::$app->language = $this->site->language;
 
