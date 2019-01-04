@@ -41,6 +41,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $search: null,
         searching: false,
         searchText: null,
+        trashed: false,
         $clearSearchBtn: null,
 
         $statusMenuBtn: null,
@@ -550,7 +551,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 status: this.status,
                 siteId: this.siteId,
                 search: this.searchText,
-                limit: this.settings.batchSize
+                limit: this.settings.batchSize,
+                trashed: this.trashed ? 1 : 0
             }, this.settings.criteria);
 
             var params = {
@@ -1268,7 +1270,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $option = $(ev.selectedOption).addClass('sel');
             this.$statusMenuBtn.html($option.html());
 
-            this.status = $option.data('status');
+            if (Garnish.hasAttr($option, 'data-trashed')) {
+                this.trashed = true;
+                this.status = null;
+            } else {
+                this.trashed = false;
+                this.status = $option.data('status');
+            }
+
             this.updateElements();
         },
 

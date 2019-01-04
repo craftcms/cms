@@ -60,6 +60,11 @@ class FolderCriteria extends Model
      */
     public $limit;
 
+    /**
+     * @var string|string[]|null
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 

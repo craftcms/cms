@@ -41,6 +41,11 @@ class UserGroup extends Model
      */
     public $handle;
 
+    /**
+     * @var string|null UID
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 

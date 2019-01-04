@@ -1721,6 +1721,10 @@ JS;
             $html .= ' data-editable';
         }
 
+        if ($element->trashed) {
+            $html .= ' data-trashed';
+        }
+
         $html .= '>';
 
         if ($context['context'] === 'field' && isset($context['name'])) {
@@ -1741,7 +1745,7 @@ JS;
 
         $label = HtmlHelper::encode($element);
 
-        if ($context['context'] === 'index' && ($cpEditUrl = $element->getCpEditUrl())) {
+        if ($context['context'] === 'index' && !$element->trashed && ($cpEditUrl = $element->getCpEditUrl())) {
             $cpEditUrl = HtmlHelper::encode($cpEditUrl);
             $html .= "<a href=\"{$cpEditUrl}\">{$label}</a>";
         } else {

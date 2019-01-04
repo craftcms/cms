@@ -22,7 +22,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
             for (var i = 0; i < Craft.editableCategoryGroups.length; i++) {
                 var group = Craft.editableCategoryGroups[i];
 
-                if (this.getSourceByKey('group:' + group.id)) {
+                if (this.getSourceByKey('group:' + group.uid)) {
                     this.editableGroups.push(group);
                 }
             }
@@ -200,7 +200,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                 }, this),
                 onSaveElement: $.proxy(function(response) {
                     // Make sure the right group is selected
-                    var groupSourceKey = 'group:' + groupId;
+                    var groupSourceKey = 'group:' + group.uid;
 
                     if (this.sourceKey !== groupSourceKey) {
                         this.selectSourceByKey(groupSourceKey);

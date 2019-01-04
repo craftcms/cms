@@ -8,9 +8,8 @@
 namespace craft\mail\transportadapters;
 
 use Craft;
-use craft\helpers\StringHelper;
+use craft\behaviors\EnvAttributeParserBehavior;
 use craft\validators\StringValidator;
-use yii\base\Exception;
 
 /**
  * Smtp implements a SMTP transport adapter into Craft’s mailer.
@@ -75,19 +74,18 @@ class Smtp extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function init()
+    public function behaviors()
     {
-        parent::init();
-
-        if ($this->password) {
-            try {
-                $this->password = StringHelper::decdec($this->password);
-            } catch (Exception $e) {
-                Craft::error('Could not decode SMTP password: ' . $e->getMessage());
-                Craft::$app->getErrorHandler()->logException($e);
-                $this->password = null;
-            }
-        }
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'host',
+                    'username',
+                    'password',
+                ],
+            ]
+        ];
     }
 
     /**
@@ -144,14 +142,14 @@ class Smtp extends BaseTransportAdapter
     {
         $config = [
             'class' => \Swift_SmtpTransport::class,
-            'host' => $this->host,
+            'host' => Craft::parseEnv($this->host),
             'port' => $this->port,
             'timeout' => $this->timeout,
         ];
 
         if ($this->useAuthentication) {
-            $config['username'] = $this->username;
-            $config['password'] = $this->password;
+            $config['username'] = Craft::parseEnv($this->username);
+            $config['password'] = Craft::parseEnv($this->password);
         }
 
         if ($this->encryptionMethod) {

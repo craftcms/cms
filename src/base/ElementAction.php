@@ -73,6 +73,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
      */
     public function getConfirmationMessage()
     {
+        return null;
     }
 
     /**

@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\db\Query;
 use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\Edit;
+use craft\elements\actions\Restore;
 use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
 use craft\elements\db\ElementQueryInterface;
@@ -182,7 +183,7 @@ class User extends Element implements IdentityInterface
 
                 foreach ($groups as $group) {
                     $sources[] = [
-                        'key' => 'group:' . $group->id,
+                        'key' => 'group:' . $group->uid,
                         'label' => Craft::t('site', $group->name),
                         'criteria' => ['groupId' => $group->id],
                         'hasThumbs' => true
@@ -200,14 +201,15 @@ class User extends Element implements IdentityInterface
     protected static function defineActions(string $source = null): array
     {
         $actions = [];
+        $elementsService = Craft::$app->getElements();
 
         // Edit
-        $actions[] = Craft::$app->getElements()->createAction([
+        $actions[] = $elementsService->createAction([
             'type' => Edit::class,
             'label' => Craft::t('app', 'Edit user'),
         ]);
 
-        if (Craft::$app->getUser()->checkPermission('administrateUsers')) {
+        if (Craft::$app->getUser()->checkPermission('moderateUsers')) {
             // Suspend
             $actions[] = SuspendUsers::class;
 
@@ -219,6 +221,14 @@ class User extends Element implements IdentityInterface
             // Delete
             $actions[] = DeleteUsers::class;
         }
+
+        // Restore
+        $actions[] = $elementsService->createAction([
+            'type' => Restore::class,
+            'successMessage' => Craft::t('app', 'Users restored.'),
+            'partialSuccessMessage' => Craft::t('app', 'Some users restored.'),
+            'failMessage' => Craft::t('app', 'Users not restored.'),
+        ]);
 
         return $actions;
     }
@@ -1477,13 +1487,13 @@ class User extends Element implements IdentityInterface
                             return self::AUTH_NO_CP_ACCESS;
                         }
                         if (
-                            Craft::$app->getIsSystemOn() === false &&
+                            Craft::$app->getIsLive() === false &&
                             $this->can('accessCpWhenSystemIsOff') === false
                         ) {
                             return self::AUTH_NO_CP_OFFLINE_ACCESS;
                         }
                     } else if (
-                        Craft::$app->getIsSystemOn() === false &&
+                        Craft::$app->getIsLive() === false &&
                         $this->can('accessSiteWhenSystemIsOff') === false
                     ) {
                         return self::AUTH_NO_SITE_OFFLINE_ACCESS;

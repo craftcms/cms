@@ -21,6 +21,7 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  * @property Section_SiteSettings[] $siteSettings Site-specific settings
+ * @property EntryType[] $entryTypes Entry types
  * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
 class Section extends Model
@@ -74,6 +75,11 @@ class Section extends Model
      * @var bool Propagate entries
      */
     public $propagateEntries = true;
+
+    /**
+     * @var string|null Section's UID
+     */
+    public $uid;
 
     /**
      * @var Section_SiteSettings[]|null
@@ -231,6 +237,16 @@ class Section extends Model
         $this->_entryTypes = Craft::$app->getSections()->getEntryTypesBySectionId($this->id);
 
         return $this->_entryTypes;
+    }
+
+    /**
+     * Sets the section's entry types.
+     *
+     * @param EntryType[] $entryTypes
+     */
+    public function setEntryTypes(array $entryTypes)
+    {
+        $this->_entryTypes = $entryTypes;
     }
 
     /**

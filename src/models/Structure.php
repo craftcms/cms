@@ -32,6 +32,11 @@ class Structure extends Model
      */
     public $maxLevels;
 
+    /**
+     * @var string|null UID
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 

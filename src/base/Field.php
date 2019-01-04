@@ -63,6 +63,17 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     const EVENT_AFTER_ELEMENT_DELETE = 'afterElementDelete';
 
+    /**
+     * @event FieldElementEvent The event that is triggered before the element is restored
+     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting restored.
+     */
+    const EVENT_BEFORE_ELEMENT_RESTORE = 'beforeElementRestore';
+
+    /**
+     * @event FieldElementEvent The event that is triggered after the element is restored
+     */
+    const EVENT_AFTER_ELEMENT_RESTORE = 'afterElementRestore';
+
     // Translation methods
     // -------------------------------------------------------------------------
 
@@ -501,6 +512,33 @@ abstract class Field extends SavableComponent implements FieldInterface
         // Trigger an 'afterElementDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_DELETE)) {
             $this->trigger(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent([
+                'element' => $element,
+            ]));
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementRestore(ElementInterface $element): bool
+    {
+        // Trigger a 'beforeElementRestore' event
+        $event = new FieldElementEvent([
+            'element' => $element,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_ELEMENT_RESTORE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementRestore(ElementInterface $element)
+    {
+        // Trigger an 'afterElementRestore' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_RESTORE)) {
+            $this->trigger(self::EVENT_AFTER_ELEMENT_RESTORE, new FieldElementEvent([
                 'element' => $element,
             ]));
         }

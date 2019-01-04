@@ -201,10 +201,10 @@ class Asset extends Element
     {
         $actions = [];
 
-        if (preg_match('/^folder:(\d+)/', $source, $matches)) {
+        if (preg_match('/^folder:([a-z0-9\-]+)/', $source, $matches)) {
             $folderId = $matches[1];
 
-            $folder = Craft::$app->getAssets()->getFolderById($folderId);
+            $folder = Craft::$app->getAssets()->getFolderByUid($folderId);
             /** @var Volume $volume */
             $volume = $folder->getVolume();
 
@@ -226,10 +226,10 @@ class Asset extends Element
                 ]
             );
 
-            $userSessionService = Craft::$app->getUser();
+            $userSession = Craft::$app->getUser();
             $canDeleteAndSave = (
-                $userSessionService->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->id) &&
-                $userSessionService->checkPermission('saveAssetInVolume:' . $volume->id)
+                $userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid) &&
+                $userSession->checkPermission('saveAssetInVolume:' . $volume->uid)
             );
 
             // Rename File
@@ -238,7 +238,7 @@ class Asset extends Element
             }
 
             // Replace File
-            if ($userSessionService->checkPermission('saveAssetInVolume:' . $volume->id)) {
+            if ($userSession->checkPermission('saveAssetInVolume:' . $volume->uid)) {
                 $actions[] = ReplaceFile::class;
             }
 
@@ -256,7 +256,7 @@ class Asset extends Element
             }
 
             // Delete
-            if ($userSessionService->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->id)) {
+            if ($userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid)) {
                 $actions[] = DeleteAssets::class;
             }
         }
@@ -356,12 +356,13 @@ class Asset extends Element
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true): array
     {
         $source = [
-            'key' => 'folder:' . $folder->id,
+            'key' => 'folder:' . $folder->uid,
             'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'data' => [
-                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:' . $folder->volumeId)
+                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:' . $folder->getVolume()->uid),
+                'folder-id' => $folder->id
             ]
         ];
 
@@ -602,7 +603,7 @@ class Asset extends Element
     public function getIsEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission(
-            'saveAssetInVolume:' . $this->volumeId
+            'saveAssetInVolume:' . $this->getVolume()->uid
         );
     }
 
@@ -1087,11 +1088,14 @@ class Asset extends Element
             }
 
             // Is the image editable, and is the user allowed to edit?
-            $user = Craft::$app->getUser();
+            $userSession = Craft::$app->getUser();
+
+            $volume = $this->getVolume();
+
             $editable = (
                 $this->getSupportsImageEditor() &&
-                $user->checkPermission('deleteFilesAndFoldersInVolume:' . $this->volumeId) &&
-                $user->checkPermission('saveAssetInVolume:' . $this->volumeId)
+                $userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid) &&
+                $userSession->checkPermission('saveAssetInVolume:' . $volume->uid)
             );
 
             $html .= '<div class="image-preview-container' . ($editable ? ' editable' : '') . '">' .
@@ -1222,7 +1226,7 @@ class Asset extends Element
         }
 
         // Give it a default title based on the file name, if it doesn't have a title yet
-        if (!$this->id && (!$this->title || $this->title === Craft::t('app', 'New Element'))) {
+        if (!$this->id && !$this->title) {
             $this->title = AssetsHelper::filename2Title(pathinfo($this->filename, PATHINFO_FILENAME));
         }
 
@@ -1299,6 +1303,16 @@ class Asset extends Element
 
         Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
         parent::afterDelete();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeRestore(): bool
+    {
+        // todo: maybe we can at least see if the file is still around first
+        // Assets can't be restored
+        return false;
     }
 
     // Private Methods

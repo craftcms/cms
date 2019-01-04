@@ -48,6 +48,10 @@ class VolumeFolder extends Model
      */
     public $path;
 
+    /**
+     * @var string|null UID
+     */
+    public $uid;
 
     /**
      * @var VolumeFolder[]|null

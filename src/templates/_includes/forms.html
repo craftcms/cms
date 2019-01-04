@@ -96,6 +96,11 @@
 {% endmacro %}
 
 
+{% macro autosuggest(config) %}
+    {% include "_includes/forms/autosuggest" with config only %}
+{% endmacro %}
+
+
 {# Fields #}
 
 
@@ -238,6 +243,12 @@
 {% macro elementSelectField(config) %}
     {% import _self as forms %}
     {{ forms.field(config, forms.elementSelect(config)) }}
+{% endmacro %}
+
+
+{% macro autosuggestField(config) %}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.autosuggest(config)) }}
 {% endmacro %}
 
 

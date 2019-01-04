@@ -189,4 +189,36 @@ class Command extends \yii\db\Command
 
         return $this->setSql($sql);
     }
+
+    /**
+     * Creates a SQL statement for soft-deleting a row.
+     *
+     * @param string $table The table to be updated.
+     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params The parameters to be bound to the command.
+     * @return static The command object itself.
+     */
+    public function softDelete(string $table, $condition = '', array $params = []): Command
+    {
+        return $this->update($table, [
+            'dateDeleted' => Db::prepareDateForDb(new \DateTime()),
+        ], $condition, $params, false);
+    }
+
+    /**
+     * Creates a SQL statement for restoring a soft-deleted row.
+     *
+     * @param string $table The table to be updated.
+     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params The parameters to be bound to the command.
+     * @return static The command object itself.
+     */
+    public function restore(string $table, $condition = '', array $params = []): Command
+    {
+        return $this->update($table, [
+            'dateDeleted' => null,
+        ], $condition, $params, false);
+    }
 }

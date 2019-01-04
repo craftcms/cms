@@ -14,7 +14,7 @@
 
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
 
-{% set requireEmailVerification = craft.app.systemSettings.getSettings('users').requireEmailVerification %}
+{% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') %}
 
 {% set hiddenInputs %}
     {{ csrfInput() }}
@@ -86,7 +86,7 @@
                     }) }}
                 {% endif %}
 
-            {% elseif user.getIsCurrent() or currentUser.admin or currentUser.can('changeUserEmails') %}
+            {% elseif user.getIsCurrent() or currentUser.admin or currentUser.can('administrateUsers') %}
 
                 {{ forms.textField({
                     label: "Email"|t('app'),

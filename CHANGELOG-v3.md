@@ -3,6 +3,226 @@
 ## Unreleased
 
 ### Added
+- Added the System Messages utility for editing system messages, replacing the Settings → Email → System Messages page. ([#3421](https://github.com/craftcms/cms/issues/3421))
+- The web and CLI installers no longer suggest `@web` for the site URL, and now attempt to save the entered site URL as a `DEFAULT_SITE_URL` environment variable in `.env`. ([#3559](https://github.com/craftcms/cms/issues/3559))
+- The installer now checks whether a `project.yaml` file exists and applies any changes in it. ([#3291](https://github.com/craftcms/cms/issues/3291))
+- Added `craft\helpers\ArrayHelper::firstWhere()`.
+- Added `craft\helpers\StringHelper::toWords()`.
+- Added `craft\services\ProjectConfig::applyConfigChanges()`.
+
+### Changed
+- Assets’ default titles now only capitalize the first word extracted from the filename, rather than all the words. ([#2339](https://github.com/craftcms/cms/issues/2339))
+- `craft\db\mysql\Schema::findIndexes()` and `craft\db\pgsql\Schema::findIndexes()` now return arrays with `columns` and `unique` keys.
+- `craft\helpers\ArrayHelper::filterByValue()` now defaults its `$value` argument to `true`.
+- `craft\helpers\MigrationHelper::doesIndexExist()` no longer has a `$foreignKey` argument, and now has an optional `$db` argument.
+
+### Deprecated
+- Deprecated `craft\helpers\MigrationHelper::dropAllIndexesOnTable()`.
+- Deprecated `craft\helpers\MigrationHelper::dropAllUniqueIndexesOnTable()`.
+- Deprecated `craft\helpers\MigrationHelper::dropIndex()`.
+- Deprecated `craft\helpers\MigrationHelper::restoreForeignKey()`.
+- Deprecated `craft\helpers\MigrationHelper::restoreIndex()`.
+
+### Fixed
+- Fixed a bug where preset structure UIDs were not preserved when saving structure sections. ([#3525](https://github.com/craftcms/cms/issues/3525))
+- Fixed a bug that prevented choosing a parent entry for structure entries. ([#3562](https://github.com/craftcms/cms/issues/3562))
+- Fixed a bug where `craft\helpers\MigrationHelper::dropIndexIfExists()` wasn’t working if the index had an unexpected name.
+- Fixed an error that could occur when updating to Craft 3.1 if there were any orphaned Matrix sub-fields in the database. ([#3592](https://github.com/craftcms/cms/issues/3592))
+
+## 3.1.0-beta.5.1 - 2018-12-14
+
+### Fixed
+- Fixed an error that occurred when updating to 3.1.0-beta.5 from an earlier 3.1 release. ([#3560](https://github.com/craftcms/cms/issues/3560))
+
+## 3.1.0-beta.5 - 2018-12-14
+
+### Added
+- Added a new `project-config/sync` console command. ([#3510](https://github.com/craftcms/cms/issues/3510))
+- Craft now keeps a backup of last 50 `project.yaml` files in `storage/config-backups/`.
+- Added `craft\services\Path::getConfigBackupPath()`.
+- Added `craft\services\ProjectConfig::$maxBackups`.
+
+### Changed
+- The `app/migrate` web action now applies pending `project.yaml` changes, if the `useProjectConfigFile` config setting is enabled.
+
+### Fixed
+- Fixed a bug where restoring elements belonging to deleted sites via `project.yaml` would throw an error.
+- Fixed a bug where preset layout UIDs were not preserved when saving field layouts.
+- Fixed a bug where preset entry type UIDs were not preserved when saving entry types.
+- Fixed a bug where renaming a volume would not rename its root folder. ([#3534](https://github.com/craftcms/cms/issues/3534))
+- Fixed a bug where some asset permissions weren’t being enforced properly.
+- Fixed a bug where Craft was storing absolute file paths in the `info.configMap` table column. ([#3546](https://github.com/craftcms/cms/issues/3546))
+
+## 3.1.0-beta.4 - 2018-11-30
+
+### Changed
+- If a global set is deleted and then recreated via `project.yaml`, its original element will now be restored if it hasn’t been hard-deleted yet.
+
+### Fixed
+- Fixed a bug where new installs were always showing soft-deleted elements.
+
+## 3.1.0-beta.3 - 2018-11-29
+
+### Changed
+- The `svg()` function now supports a `class` argument, which will add a class name to the root `<svg>` node. ([#3174](https://github.com/craftcms/cms/issues/3174))
+- `craft\helpers\App::parseEnv()` now accepts a `null` value for its `$str` argument.
+
+### Fixed
+- Fixed an error that occurred on Control Panel pages with a Template setting, if the `templates/` folder didn’t exist. ([#3505](https://github.com/craftcms/cms/issues/3505))
+- Fixed an error that could occur after updating to Craft 3.1 that prevented migrations from running. ([#3295](https://github.com/craftcms/cms/issues/3295))
+- Fixed an error that could occur when running a migration. ([#3504](https://github.com/craftcms/cms/issues/3504))
+- Fixed an error that occurred when creating a new Single section. ([#3506](https://github.com/craftcms/cms/issues/3506))
+- Fixed an error that could occur if a field and a field layout that used the field had both been removed from `project.yaml`.
+- Fixed a bug where the user field layout wouldn’t get updated if a field it was referencing was deleted.
+- Fixed an error that could occur when saving environmental settings. ([#3503](https://github.com/craftcms/cms/issues/3503))
+
+## 3.1.0-beta.2 - 2018-11-28
+
+### Changed
+- Entries, categories, and users can now be restored within the Control Panel by selecting “Trashed” from the status menu on element index pages, and clicking the “Restore” button.
+- Renamed `craft\services\ProjectConfig::getAreChangesPending()` to `areChangesPending()`, and gave it an optional `$path` argument.
+
+### Removed
+- Removed support for searching for `is:trashed` on element index pages.
+- Removed `craft\fields\Matrix::getOldContentTable()`.
+
+### Fixed
+- Fixed an error that occurred when creating a new Single section.
+- Fixed a bug where converting a Channel or Structure section to a Single section via `project.yaml` wouldn’t ensure that one (and only one) entry exists for the section, if the section’s entry type didn’t change as well.
+- Fixed a bug where section changes could be saved to the database even if an error occurred later on that prevented the changes from being committed to the project config.
+- Fixed a bug where Matrix fields could lose track of their content tables.
+- Fixed a bug where “removing” a nonexistent item from the project config would trigger an `update` event rather than `remove`.
+- Fixed a bug where some migration changes weren’t getting applied correctly.
+
+## 3.1.0-beta.1 - 2018-11-27
+
+### Added
+- Added the Project Config, a portable and centralized configuration for system settings. ([#1429](https://github.com/craftcms/cms/issues/1429)) 
+- Elements, field layouts, sites, and site groups are now soft-deleted. ([#867](https://github.com/craftcms/cms/issues/867))
+- Entries, categories, and users can now be restored within the Control Panel by searching for `is:trashed` and clicking the “Restore” button.
+- Some Site settings (Base URL), volume settings (Base URL and File System Path), and email settings (System Email Address, Sender Name, HTML Email Template, Username, Password, and Host Name) can now be set to environment variables using a `$VARIABLE_NAME` syntax. ([#3219](https://github.com/craftcms/cms/issues/3219))
+- Control Panel settings that support environment variables now autosuggest environment variable names (and aliases when applicable) while typing.
+- Control Panel settings that define a template path now autosuggest existing template files.
+- Added cross-domain support for Live Preview. ([#1521](https://github.com/craftcms/cms/issues/1521))
+- Plugins can now have multiple editions.
+- Custom fields can now opt out of being included in elements’ search keywords. ([#2600](https://github.com/craftcms/cms/issues/2600))
+- Added the `allowAdminChanges` config setting.
+- Added the `softDeleteDuration` config setting.
+- Added the `useProjectConfigFile` config setting.
+- Added the `gc` console command, which can be used to run garbage collection tasks.
+- Added the `trashed` element query param, which can be used to query for elements that have been soft-deleted.
+- Added the `expression()` Twig function, for creating new `yii\db\Expression` objects in templates. ([#3289](https://github.com/craftcms/cms/pull/3289))
+- Added the `parseEnv()` Twig function.
+- Added the `plugin()` Twig function.
+- Added the `_includes/forms/autosuggest.html` include template for the Control Panel. 
+- Added `Craft::parseEnv()`.
+- Added `craft\base\ApplicationTrait::getIsLive()`.
+- Added `craft\base\Element::EVENT_AFTER_RESTORE`.
+- Added `craft\base\Element::EVENT_BEFORE_RESTORE`.
+- Added `craft\base\ElementInterface::afterRestore()`.
+- Added `craft\base\ElementInterface::beforeRestore()`.
+- Added `craft\base\Field::EVENT_AFTER_ELEMENT_RESTORE`.
+- Added `craft\base\Field::EVENT_BEFORE_ELEMENT_RESTORE`.
+- Added `craft\base\FieldInterface::afterElementRestore()`.
+- Added `craft\base\FieldInterface::beforeElementRestore()`.
+- Added `craft\base\Plugin::editions()`.
+- Added `craft\base\Plugin::is()`.
+- Added `craft\base\SavableComponentInterface::beforeApplyDelete()`.
+- Added `craft\behaviors\EnvAttributeParserBehavior`.
+- Added `craft\controllers\LivePreviewController`.
+- Added `craft\db\Command::restore()`.
+- Added `craft\db\Command::softDelete()`.
+- Added `craft\db\Migration::restore()`.
+- Added `craft\db\Migration::softDelete()`.
+- Added `craft\db\SoftDeleteTrait`, which can be used by Active Record classes that wish to support soft deletes.
+- Added `craft\elements\actions\Restore`, which can be included in elements’ `defineActions()` methods to opt into element restoration.
+- Added `craft\events\ConfigEvent`.
+- Added `craft\events\DeleteElementEvent`, which provides a `$hardDelete` property that can be set to `true` to force an element to be immediately hard-deleted. ([#3403](https://github.com/craftcms/cms/pull/3403))
+- Added `craft\helpers\App::editionHandle()`.
+- Added `craft\helpers\App::editionIdByHandle()`.
+- Added `craft\helpers\App::mailSettings()`.
+- Added `craft\helpers\Db::idByUid()`.
+- Added `craft\helpers\Db::idsByUids()`.
+- Added `craft\helpers\Db::uidById()`.
+- Added `craft\helpers\Db::uidsByIds()`.
+- Added `craft\helpers\ProjectConfig`.
+- Added `craft\models\FieldLayout::createFromConfig()`.
+- Added `craft\models\FieldLayout::getConfig()`.
+- Added `craft\models\Section::setEntryTypes()`.
+- Added `craft\models\Site::getBaseUrl()`.
+- Added `craft\services\AssetTransforms::getTransformByUid()`.
+- Added `craft\services\AssetTransforms::EVENT_BEFORE_APPLY_TRANSFORM_DELETE`.
+- Added `craft\services\Categories::getGroupByUid()`.
+- Added `craft\services\Categories::EVENT_BEFORE_APPLY_GROUP_DELETE`.
+- Added `craft\services\Elements::restoreElement()`.
+- Added `craft\services\Elements::EVENT_AFTER_RESTORE_ELEMENT`.
+- Added `craft\services\Elements::EVENT_BEFORE_RESTORE_ELEMENT`.
+- Added `craft\services\Fields::applyFieldDelete()`.
+- Added `craft\services\Fields::applyFieldSave()`.
+- Added `craft\services\Fields::createFieldConfig()`.
+- Added `craft\services\Fields::deleteFieldInternal()`.
+- Added `craft\services\Fields::restoreLayoutById()`.
+- Added `craft\services\Fields::saveFieldInternal()`.
+- Added `craft\services\Fields::EVENT_BEFORE_APPLY_FIELD_DELETE`.
+- Added `craft\services\Fields::EVENT_BEFORE_APPLY_GROUP_DELETE`.
+- Added `craft\services\Gc` for handling garbage collection tasks.
+- Added `craft\services\ProjectConfig`.
+- Added `craft\services\Routes::deleteRouteByUid()`
+- Added `craft\services\Sections::getSectionByUid()`.
+- Added `craft\services\Sections::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE`.
+- Added `craft\services\Sections::EVENT_BEFORE_APPLY_SECTION_DELETE`.
+- Added `craft\services\Sites::restoreSiteById()`.
+- Added `craft\services\Sites::EVENT_BEFORE_APPLY_GROUP_DELETE`.
+- Added `craft\services\Sites::EVENT_BEFORE_APPLY_SITE_DELETE`.
+- Added `craft\services\Tags::EVENT_BEFORE_APPLY_GROUP_DELETE`.
+- Added `craft\services\UserGroups::EVENT_BEFORE_APPLY_GROUP_DELETE`.
+- Added `craft\services\Volumes::EVENT_BEFORE_APPLY_VOLUME_DELETE`.
+- Added `craft\web\Controller::requireCpRequest()`.
+- Added `craft\web\Controller::requireSiteRequest()`.
+- Added `craft\web\twig\variables\Cp::getEnvSuggestions()`.
+- Added `craft\web\twig\variables\Cp::getTemplateSuggestions()`.
+- Added the ActiveRecord Soft Delete Extension for Yii2.
+- Added the Symfony Yaml Component.
+- The bundled Vue asset bundle now includes Vue-autosuggest.
+
+### Changed
+- The `defaultWeekStartDay` config setting is now set to `1` (Monday) by default, to conform with the ISO 8601 standard.
+- Renamed the `isSystemOn` config setting to `isSystemLive`.
+- `info` buttons can now also have a `warning` class.
+- User permission definitions can now include `info` and/or `warning` keys.
+- The old “Administrate users” permission has been renamed to “Moderate users”.
+- The old “Change users’ emails” permission has been renamed to “Administrate users”, and now comes with the ability to activate user accounts and reset their passwords. ([#942](https://github.com/craftcms/cms/issues/942))  
+- All users now have the ability to delete their own user accounts. ([#3013](https://github.com/craftcms/cms/issues/3013))
+- System user permissions now reference things by their UIDs rather than IDs (e.g. `editEntries:<UID>` rather than `editEntries:<ID>`).
+- Animated gif thumbnails are no longer animated. ([#3110](https://github.com/craftcms/cms/issues/3110))
+- Craft Tokens can now be sent either as a query string param (named after the `tokenParam` config setting) or an `X-Craft-Token` header.
+- Element types that support Live Preview must now hash the `previewAction` value for `Craft.LivePreview`.
+- Live Preview now loads each new preview into its own `<iframe>` element. ([#3366](https://github.com/craftcms/cms/issues/3366))
+- `craft\services\Routes::saveRoute()` now expects site and route UIDs instead of IDs.
+- `craft\services\Routes::updateRouteOrder()` now expects route UIDs instead of IDs.
+
+### Removed
+- Removed `craft\services\Routes::deleteRouteById()`
+
+### Deprecated
+- Deprecated `craft\base\ApplicationTrait::getIsSystemOn()`. `getIsLive()` should be used instead.
+- Deprecated `craft\models\Info::getEdition()`. `Craft::$app->getEdition()` should be used instead.
+- Deprecated `craft\models\Info::getName()`. `Craft::$app->projectConfig->get('system.name')` should be used instead.
+- Deprecated `craft\models\Info::getOn()`. `Craft::$app->getIsLive()` should be used instead.
+- Deprecated `craft\models\Info::getTimezone()`. `Craft::$app->getTimeZone()` should be used instead.
+- Deprecated `craft\services\Routes::getDbRoutes()`. `craft\services\Routes::getProjectConfigRoutes()` should be used instead.
+- Deprecated `craft\services\SystemSettings`. `craft\services\ProjectConfig` should be used instead.
+- Deprecated `craft\validators\UrlValidator::$allowAlias`. `craft\behaviors\EnvAttributeParserBehavior` should be used instead.
+
+### Security
+- It’s no longer possible to spoof Live Preview requests.
+
+### Fixed
+- Fixed a bug where elements that belonged to more than one structure would be returned twice in element queries.
+
+## 3.0.37 (Unreleased)
+
+### Added
 - Routes defined in the Control Panel can now have a `uid` token, and URL rules defined in `config/routes.php` can now have a `{uid}` token. ([#3583](https://github.com/craftcms/cms/pull/3583))
 - Added the `extraFileKinds` config setting. ([#1584](https://github.com/craftcms/cms/issues/1584))
 - Added the `clear-caches` console command. ([#3588](https://github.com/craftcms/cms/pull/3588))

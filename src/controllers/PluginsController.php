@@ -43,9 +43,12 @@ class PluginsController extends Controller
     public function actionInstallPlugin(): Response
     {
         $this->requirePostRequest();
-        $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
 
-        if (Craft::$app->getPlugins()->installPlugin($pluginHandle)) {
+        $request = Craft::$app->getRequest();
+        $pluginHandle = $request->getRequiredBodyParam('pluginHandle');
+        $edition = $request->getBodyParam('edition');
+
+        if (Craft::$app->getPlugins()->installPlugin($pluginHandle, $edition)) {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin installed.'));
         } else {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t install plugin.'));

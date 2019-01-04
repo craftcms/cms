@@ -60,6 +60,11 @@ class CategoryGroup extends Model
     public $maxLevels;
 
     /**
+     * @var string|null UID
+     */
+    public $uid;
+
+    /**
      * @var
      */
     private $_siteSettings;

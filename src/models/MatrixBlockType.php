@@ -59,6 +59,11 @@ class MatrixBlockType extends Model
      */
     public $hasFieldErrors = false;
 
+    /**
+     * @var string|mixed
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 

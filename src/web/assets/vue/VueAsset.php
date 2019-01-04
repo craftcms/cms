@@ -26,6 +26,7 @@ class VueAsset extends AssetBundle
             'vue-router/vue-router.js',
             'vuex/vuex.js',
             'axios/axios.js',
+            'vue-autosuggest/vue-autosuggest.js',
         ];
 
         parent::init();
