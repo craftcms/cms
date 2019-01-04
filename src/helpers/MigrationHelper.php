@@ -370,9 +370,9 @@ class MigrationHelper
 
                 $onUpdate = $fk['updateType'];
                 $onDelete = $fk['deleteType'];
-            }
 
-            self::_addForeignKey($sourceTableName, $columns, $refTableName, $refColumns, $onUpdate, $onDelete, $migration);
+                self::_addForeignKey($sourceTableName, $columns, $refTableName, $refColumns, $onUpdate, $onDelete, $migration);
+            }
         }
 
         // Restore indexes.

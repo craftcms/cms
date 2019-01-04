@@ -42,6 +42,11 @@ class MatrixBlockQuery extends ElementQuery
     // Properties
     // =========================================================================
 
+    /**
+     * @inheritdoc
+     */
+    protected $defaultOrderBy = ['matrixblocks.sortOrder' => SORT_ASC];
+
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -87,19 +92,6 @@ class MatrixBlockQuery extends ElementQuery
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($elementType, array $config = [])
-    {
-        // Default orderBy
-        if (!isset($config['orderBy'])) {
-            $config['orderBy'] = 'matrixblocks.sortOrder';
-        }
-
-        parent::__construct($elementType, $config);
-    }
 
     /**
      * @inheritdoc

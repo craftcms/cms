@@ -1066,6 +1066,8 @@ class Asset extends Element
      */
     public function getEditorHtml(): string
     {
+        $view = Craft::$app->getView();
+
         if (!$this->fieldLayoutId) {
             $this->fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
         }
@@ -1110,7 +1112,7 @@ class Asset extends Element
             // NBD
         }
 
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+        $html .= $view->renderTemplateMacro('_includes/forms', 'textField', [
             [
                 'label' => Craft::t('app', 'Filename'),
                 'id' => 'newFilename',
@@ -1123,7 +1125,7 @@ class Asset extends Element
             ]
         ]);
 
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+        $html .= $view->renderTemplateMacro('_includes/forms', 'textField', [
             [
                 'label' => Craft::t('app', 'Title'),
                 'siteId' => $this->siteId,

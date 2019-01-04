@@ -25,6 +25,8 @@ class StringHelper extends \yii\helpers\StringHelper
 
     const UTF8 = 'UTF-8';
 
+    const UUID_PATTERN = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
+
     // Public Methods
     // =========================================================================
 
@@ -330,12 +332,15 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns is the given string matches a v4 UUID pattern.
      *
+     * Version 4 UUIDs have the form xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx where x
+     * is any hexadecimal digit and y is one of 8, 9, A, or B.
+     *
      * @param string $uuid The string to check.
      * @return bool Whether the string matches a v4 UUID pattern.
      */
     public static function isUUID(string $uuid): bool
     {
-        return !empty($uuid) && preg_match('/[A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12}/ui', $uuid);
+        return !empty($uuid) && preg_match('/^'.self::UUID_PATTERN.'$/', $uuid);
     }
 
     /**

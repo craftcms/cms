@@ -220,6 +220,43 @@
 ### Fixed
 - Fixed a bug where elements that belonged to more than one structure would be returned twice in element queries.
 
+## 3.0.37 (Unreleased)
+
+### Added
+- Routes defined in the Control Panel can now have a `uid` token, and URL rules defined in `config/routes.php` can now have a `{uid}` token. ([#3583](https://github.com/craftcms/cms/pull/3583))
+- Added the `extraFileKinds` config setting. ([#1584](https://github.com/craftcms/cms/issues/1584))
+- Added the `clear-caches` console command. ([#3588](https://github.com/craftcms/cms/pull/3588))
+- Added `craft\feeds\Feeds::getFeed()`.
+- Added `craft\helpers\StringHelper::UUID_PATTERN`.
+
+### Changed
+- Pressing the <kbd>Return</kbd> key (or <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd>) when a textual cell is focused in an editable table will now change the focus to the same cell in the next row (after creating a new row if necessary.) ([#3576](https://github.com/craftcms/cms/issues/3576))
+- The Password input in the web-based Craft setup wizard now has a “Show” button like other password inputs.
+- The Feed widget now sets the items’ text direction based on the feed’s language.
+
+### Fixed
+- Fixed a bug where the “Edit” button on asset editor HUDs didn’t launch the Image Editor if the asset was being edited on another element type’s index page. ([#3575](https://github.com/craftcms/cms/issues/3575))
+- Fixed an exception that would be thrown when saving a user from a front-end form with a non-empty `email` or `newPassword` param, if the `password` param was missing or empty. ([#3585](https://github.com/craftcms/cms/issues/3585))
+- Fixed a bug where global set, Matrix block, tag, and user queries weren’t respecting `fixedOrder` params.
+- Fixed a bug where `craft\helpers\MigrationHelper::renameColumn()` was only restoring the last foreign key for each table that had multiple foreign keys referencing the table with the renamed column.
+- Fixed a few RTL language styling issues.
+
+## 3.0.36 - 2018-12-18
+
+### Added
+- Added the `{{ actionInput() }}` global Twig function. ([#3566](https://github.com/craftcms/cms/issues/3566))
+
+### Changed
+- Suspended users are no longer shown when viewing pending or locked users. ([#3556](https://github.com/craftcms/cms/issues/3556))
+- The Control Panel’s Composer installer now prevents scripts defined in `composer.json` from running. ([#3574](https://github.com/craftcms/cms/issues/3574))
+
+### Fixed
+- Fixed a bug where elements that belonged to more than one structure would be returned twice in element queries.
+
+### Security
+- Fixed a self-XSS vulnerability in the Recent Entries widget.
+- Fixed a self-XSS vulnerability in the Feed widget.
+
 ## 3.0.35 - 2018-12-11
 
 ### Added

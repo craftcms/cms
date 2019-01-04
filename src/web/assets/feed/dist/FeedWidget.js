@@ -18,6 +18,9 @@
                     this.$widget.removeClass('loading');
 
                     if (textStatus === 'success') {
+                        this.$widget.find('table')
+                            .attr('dir', response.dir);
+
                         var $tds = this.$widget.find('td');
 
                         for (var i = 0; i < response.items.length; i++) {

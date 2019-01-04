@@ -3,6 +3,17 @@
 In addition to the template functions that [Twig comes with](https://twig.symfony.com/doc/functions/index.html), Craft provides a few of its own:
 
 
+## `actionInput( actionPath )`
+
+A shortcut for outputting a hidden input used to route a POST request to a particular controller and action. This is effectively the same as writing `<input type="hidden" name="action" value="controller/action-name">` directly into a template.
+
+```twig
+<form method="POST">
+    {{ actionInput('users/save-user') }}
+    <!-- ... -->
+</form>
+```
+
 ## `alias( string )`
 
 Passes a string through [Craft::getAlias()](api:yii\BaseYii::getAlias()), which will check if the string begins with an [alias](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases). (See [Configuration](../config/README.md#aliases) for more info.)

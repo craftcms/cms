@@ -108,7 +108,7 @@ $minLargeScreenWidth: 1824px;
       height: 18px;
       vertical-align: middle;
       line-height: 0;
-      margin-right: 3px;
+      @include margin-right(3px);
     }
 
     svg {
@@ -142,7 +142,7 @@ $minLargeScreenWidth: 1824px;
 
     .photo {
       svg {
-        margin-right: 2px;
+        @include margin-right(2px);
         width: 22px;
         height: 22px;
         border-radius: 100%;
@@ -214,7 +214,7 @@ only screen and (min-resolution: 1.5dppx) {
 
   .ps-grid-sidebar {
     width: 20%;
-    margin-right: 40px;
+    @include margin-right(40px);
   }
 
   .ps-grid-main {
@@ -322,15 +322,14 @@ ul.categories {
     a {
       display: block;
       position: relative;
-      padding: 10px;
-      padding-left: 31px;
+      @include padding(10px, 10px, 10px, 31px);
       border-top: 1px solid transparent;
       border-bottom: 1px solid transparent;
 
       img {
         position: absolute;
         top: 7px;
-        left: 0;
+        @include left(0);
         width: 24px;
       }
 
@@ -364,7 +363,7 @@ ul.categories {
     @include icon;
     position: absolute;
     top: calc(50% - 10px);
-    right: 0;
+    @include right(0);
     font-size: 16px;
     width: 43px;
     line-height: 20px;
@@ -381,7 +380,7 @@ ul.categories {
   flex-direction: column;
   position: fixed;
   top: 0;
-  left: 0;
+  @include left(0);
   background: #fff;
   z-index: 1000;
   width: 100vw;
@@ -424,10 +423,10 @@ ul.categories {
         }
 
         a {
-          padding-left: 55px;
+          @include padding-left(55px);
 
           img {
-            left: 24px;
+            @include left(24px);
           }
         }
       }
@@ -465,13 +464,13 @@ ul.categories {
   }
 
   .plugin-icon {
-    margin-right: 14px;
+    @include margin-right(14px);
   }
 
   .installed {
     position: absolute;
     top: 14px;
-    right: 18px;
+    @include right(18px);
     color: #ccc;
   }
 }
@@ -522,7 +521,7 @@ ul.categories {
     width: 17px;
     height: 17px;
     line-height: 17px;
-    margin-right: 5px;
+    @include margin-right(5px);
   }
 
   &.installed {
