@@ -88,6 +88,12 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public static function supportedTranslationMethods(): array
     {
+        if (!static::hasContentColumn()) {
+            return [
+                self::TRANSLATION_METHOD_NONE,
+            ];
+        }
+
         return [
             self::TRANSLATION_METHOD_NONE,
             self::TRANSLATION_METHOD_SITE,
@@ -118,7 +124,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function __toString()
     {
         try {
-            return (string)Craft::t('site', $this->name);
+            return (string)Craft::t('site', $this->name) ?: static::class;
         } catch (\Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }

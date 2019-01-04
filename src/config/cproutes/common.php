@@ -1,5 +1,7 @@
 <?php
 
+use craft\helpers\StringHelper;
+
 return [
     'categories' => 'categories/category-index',
     'categories/<groupHandle:{handle}>' => 'categories/category-index',
@@ -49,6 +51,7 @@ return [
                 'day' => '(?:0?[1-9]|[12][0-9]|3[01])',
                 'number' => '\d+',
                 'page' => '\d+',
+                'uid' => StringHelper::UUID_PATTERN,
                 'slug' => '[^\/]+',
                 'tag' => '[^\/]+',
                 '*' => '[^\/]+',

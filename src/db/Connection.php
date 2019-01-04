@@ -161,25 +161,25 @@ class Connection extends \yii\db\Connection
 
             if ($this->getIsMysql()) {
                 if (!extension_loaded('pdo')) {
-                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'), 0, $e);
+                    throw new DbConnectException('Craft CMS requires the PDO extension to operate.', 0, $e);
                 }
                 if (!extension_loaded('pdo_mysql')) {
-                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'), 0, $e);
+                    throw new DbConnectException('Craft CMS requires the PDO_MYSQL driver to operate.', 0, $e);
                 }
             } else {
                 if (!extension_loaded('pdo')) {
-                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'), 0, $e);
+                    throw new DbConnectException('Craft CMS requires the PDO extension to operate.', 0, $e);
                 }
                 if (!extension_loaded('pdo_pgsql')) {
-                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_PGSQL driver to operate.'), 0, $e);
+                    throw new DbConnectException('Craft CMS requires the PDO_PGSQL driver to operate.', 0, $e);
                 }
             }
 
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'), 0, $e);
+            throw new DbConnectException('Craft CMS can’t connect to the database with the credentials in config/db.php.', 0, $e);
         } catch (\Throwable $e) {
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'), 0, $e);
+            throw new DbConnectException('Craft CMS can’t connect to the database with the credentials in config/db.php.', 0, $e);
         }
     }
 

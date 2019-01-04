@@ -15,6 +15,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
@@ -43,6 +44,7 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use enshrined\svgSanitize\Sanitizer;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -706,6 +708,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     {
         return [
             new \Twig_SimpleFunction('alias', [Craft::class, 'getAlias']),
+            new \Twig_SimpleFunction('actionInput', [$this, 'actionInputFunction']),
             new \Twig_SimpleFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
             new \Twig_SimpleFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new \Twig_SimpleFunction('ceil', 'ceil'),
@@ -717,6 +720,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
             new \Twig_SimpleFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new \Twig_SimpleFunction('round', [$this, 'roundFunction']),
+            new \Twig_SimpleFunction('seq', [$this, 'seqFunction']),
             new \Twig_SimpleFunction('shuffle', [$this, 'shuffleFunction']),
             new \Twig_SimpleFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
             new \Twig_SimpleFunction('svg', [$this, 'svgFunction']),
@@ -771,6 +775,16 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     }
 
     /**
+     * Returns an action input wrapped in a \Twig_Markup object, suitable for use in a front-end form.
+     *
+     * @return \Twig_Markup|null
+     */
+    public function actionInputFunction($actionPath)
+    {
+        return TemplateHelper::raw('<input type="hidden" name="action" value="' . $actionPath . '">');
+    }
+
+    /**
      * Rounds the given value.
      *
      * @param int|float $value
@@ -784,6 +798,25 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         Craft::$app->getDeprecator()->log('round()', 'The round() function has been deprecated. Use Twig’s |round filter instead.');
 
         return round($value, $precision, $mode);
+    }
+
+    /**
+     * Returns the next number in a given sequence, or the current number in the sequence.
+     *
+     * @param string $name The sequence name.
+     * @param int|null $length The minimum string length that should be returned. (Numbers that are too short will be left-padded with `0`s.)
+     * @param bool $next Whether the next number in the sequence should be returned (and the sequence should be incremented).
+     * If set to `false`, the current number in the sequence will be returned instead.
+     * @return integer|string
+     * @throws \Throwable if reasons
+     * @throws \yii\db\Exception
+     */
+    public function seqFunction(string $name, int $length = null, bool $next = true)
+    {
+        if ($next) {
+            return Sequence::next($name, $length);
+        }
+        return Sequence::current($name, $length);
     }
 
     /**

@@ -119,6 +119,8 @@ class SearchQuery
                 list(, $term->attribute, $colons, $token) = $match;
                 if ($colons === '::') {
                     $term->exact = true;
+                    $term->subLeft = false;
+                    $term->subRight = false;
                 }
             }
 

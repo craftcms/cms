@@ -269,19 +269,36 @@ class DashboardController extends Controller
         $url = $request->getRequiredParam('url');
         $limit = $request->getParam('limit');
 
-        $items = Craft::$app->getFeeds()->getFeedItems($url, $limit);
+        $feed = Craft::$app->getFeeds()->getFeed($url);
 
-        foreach ($items as &$item) {
-            if (isset($item['date'])) {
-                /** @var DateTime $date */
-                $date = $item['date'];
-                $item['date'] = $formatter->asTimestamp($date, Locale::LENGTH_SHORT);
+        $locale = null;
+        if ($feed['language'] !== null) {
+            try {
+                $locale = new Locale($feed['language']);
+            } catch (InvalidArgumentException $e) {
+            }
+        }
+        if ($locale === null) {
+            $locale = new Locale('en-US');
+        }
+
+
+        if ($limit) {
+            $feed['items'] = array_slice($feed['items'], 0, $limit);
+        }
+
+        foreach ($feed['items'] as &$item) {
+            if ($item['date'] !== null) {
+                $item['date'] = $formatter->asTimestamp($item['date'], Locale::LENGTH_SHORT);
             } else {
                 unset($item['date']);
             }
         }
 
-        return $this->asJson(['items' => $items]);
+        return $this->asJson([
+            'dir' => $locale->getOrientation(),
+            'items' => $feed['items'],
+        ]);
     }
 
     /**
@@ -363,6 +380,17 @@ class DashboardController extends Controller
             // License key
             if (($licenseKey = App::licenseKey()) !== null) {
                 $zip->addFromString('license.key', $licenseKey);
+            }
+
+            // Composer files
+            try {
+                $composerService = Craft::$app->getComposer();
+                $zip->addFile($composerService->getJsonPath(), 'composer.json');
+                if (($composerLockPath = $composerService->getLockPath()) !== null) {
+                    $zip->addFile($composerLockPath, 'composer.lock');
+                }
+            } catch (Exception $e) {
+                // that's fine
             }
 
             // Logs

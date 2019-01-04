@@ -349,7 +349,7 @@ return [
     'Delete {site}' => '{site} verwijderen',
     'Delete…' => 'Verwijderen…',
     'Deleting stale template caches' => 'Verwijderen verouderde caches van sjablonen',
-    'Deprecation Errors' => 'Deprecation-fouten',
+    'Deprecation Warnings' => 'Deprecation-fouten',
     'Descending' => 'Aflopend',
     'Description' => 'Beschrijving',
     'Deselect All' => 'Deselecteer alles',

@@ -349,7 +349,7 @@ return [
     'Delete {site}' => 'Удалить {site}',
     'Delete…' => 'Удалить...',
     'Deleting stale template caches' => 'Удаление устаревших кэшей шаблона',
-    'Deprecation Errors' => 'Ошибки устаревания',
+    'Deprecation Warnings' => 'Ошибки устаревания',
     'Descending' => 'По убыванию',
     'Description' => 'Описание',
     'Deselect All' => 'Отменить выбор всего',

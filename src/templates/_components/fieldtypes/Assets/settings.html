@@ -92,6 +92,7 @@
                     checked: (option.value in field.allowedKinds)
                 }) }}
             {% endfor %}
+            {{ forms.errorList(field.getErrors('allowedKinds')) }}
         </div>
     {% endblock %}
 

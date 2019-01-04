@@ -266,6 +266,11 @@ class Install extends Migration
             'path' => $this->string()->notNull(),
             'PRIMARY KEY([[hash]])',
         ]);
+        $this->createTable('{{%sequences}}', [
+            'name' => $this->string()->notNull(),
+            'next' => $this->integer()->unsigned()->notNull()->defaultValue(1),
+            'PRIMARY KEY([[name]])',
+        ]);
         $this->createTable('{{%systemmessages}}', [
             'id' => $this->primaryKey(),
             'language' => $this->string()->notNull(),

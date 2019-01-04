@@ -93,7 +93,7 @@ class GlobalSet extends Element
      */
     public function __toString(): string
     {
-        return (string)$this->name;
+        return (string)$this->name ?: static::class;
     }
 
     /**
@@ -164,10 +164,14 @@ class GlobalSet extends Element
      */
     public function beforeDelete(): bool
     {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
         if (($fieldLayout = $this->getFieldLayout()) !== null) {
             Craft::$app->getFields()->deleteLayout($fieldLayout);
         }
 
-        return parent::beforeDelete();
+        return true;
     }
 }

@@ -34,7 +34,7 @@
 {% endblock %}
 
 {% block contextMenu %}
-    {% if entry.id or showSites %}
+    {% if entry.id or showSiteLabel %}
         {% include "entries/_revisions" %}
     {% endif %}
 {% endblock %}
@@ -258,17 +258,19 @@
 
             {% if canPublish %}
                 {{ forms.lightswitchField({
-                    label: "Enabled"|t('app'),
+                    label: showSites and section.propagateEntries ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
                     id: 'enabled',
                     name: 'enabled',
                     on: entry.enabled,
-                    disabled: isVersion
+                    disabled: isVersion,
+                    toggle: 'enabledForSite-field'
                 }) }}
             {% endif %}
 
-            {% if showSites %}
+            {% if showSites and section.propagateEntries %}
                 {{ forms.lightswitchField({
-                    label: "Enabled for site"|t('app'),
+                    fieldClass: not entry.enabled ? 'hidden',
+                    label: "Enabled for {site}"|t('app', { site: entry.site.name|t('site') }),
                     id: 'enabledForSite',
                     name: 'enabledForSite',
                     on: entry.enabledForSite,

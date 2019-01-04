@@ -120,6 +120,8 @@
 
                 this.addListener(this.$container, 'resize', 'setNewBlockBtn');
                 Garnish.$doc.ready($.proxy(this, 'setNewBlockBtn'));
+
+                this.trigger('afterInit');
             },
 
             setNewBlockBtn: function() {
@@ -257,6 +259,10 @@
                     footHtml = this.getParsedBlockHtml(this.blockTypesByHandle[type].footHtml, id);
 
                 $(bodyHtml).appendTo($fieldsContainer);
+
+                this.trigger('blockAdded', {
+                    $block: $block
+                });
 
                 // Animate the block into position
                 $block.css(this.getHiddenBlockCss($block)).velocity({

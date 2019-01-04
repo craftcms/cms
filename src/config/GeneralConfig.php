@@ -63,7 +63,7 @@ class GeneralConfig extends BaseObject
      * @var string[] The file extensions Craft should allow when a user is uploading files.
      * @see extraAllowedFileExtensions
      */
-    public $allowedFileExtensions = ['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jp2', 'jpeg', 'jpg', 'jpx', 'js', 'json', 'm2t', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'wma', 'wmv', 'xls', 'xlsx', 'zip'];
+    public $allowedFileExtensions = ['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jp2', 'jpeg', 'jpg', 'jpx', 'js', 'json', 'm2t', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'webp', 'wma', 'wmv', 'xls', 'xlsx', 'zip'];
     /**
      * @var bool Whether users should be allowed to create similarly-named tags.
      */
@@ -100,8 +100,13 @@ class GeneralConfig extends BaseObject
      */
     public $backupCommand;
     /**
-     * @var string|null The base URL that Craft should use when generating Control Panel URLs. This will be determined
-     * automatically if left blank.
+     * @var string|null The base URL that Craft should use when generating Control Panel URLs.
+     *
+     * It will be determined automatically if left blank.
+     *
+     * ::: tip
+     * The base CP URL should **not** include the [[cpTrigger|CP trigger word]] (e.g. `/admin`).
+     * :::
      */
     public $baseCpUrl;
     /**
@@ -233,7 +238,7 @@ class GeneralConfig extends BaseObject
      * @var bool By default, Craft will require a 'password' field to be submitted on front-end, public
      * user registrations. Setting this to `true` will no longer require it on the initial registration form.
      *
-     * If you have email verification enabled, the will set their password once they've clicked on the
+     * If you have email verification enabled, new users will set their password once they've clicked on the
      * verification link in the email. If you don't, the only way they can set their password is to go
      * through your "forgot password" workflow.
      */
@@ -288,6 +293,25 @@ class GeneralConfig extends BaseObject
      * [locale data](https://github.com/craftcms/locales) into your `config/locales/` folder.
      */
     public $extraAppLocales;
+    /**
+     * @var array List of additional file kinds Craft should support. This array
+     * will get merged with the one defined in [[craft\helpers\Assets::_buildFileKinds()]].
+     *
+     * ```php
+     * 'extraFileKinds' => [
+     *     // merge .psb into list of Photoshop file kinds
+     *     'photoshop' => [
+     *         'extensions' => ['psb'],
+     *     ],
+     *     // register new "Stylesheet" file kind
+     *     'stylesheet' => [
+     *         'label' => 'Stylesheet',
+     *         'extensions' => ['css', 'less', 'pcss', 'sass', 'scss', 'styl'],
+     *     ],
+     * ],
+     * ```
+     */
+    public $extraFileKinds = [];
     /**
      * @var string|bool The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
      */
@@ -552,6 +576,12 @@ class GeneralConfig extends BaseObject
      * where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won’t work.
      *
      * If disabled, an alternate queue runner *must* be set up separately.
+     *
+     * Here is an example of how you would setup a queue runner from a cron job that ran every minute:
+     *
+     * ```text
+     * /1 * * * * /path/to/project/root/craft queue/run
+     * ```
      */
     public $runQueueAutomatically = true;
     /**

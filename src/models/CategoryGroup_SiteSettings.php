@@ -120,8 +120,8 @@ class CategoryGroup_SiteSettings extends Model
     public function attributeLabels()
     {
         return [
-            'uriFormat' => Craft::t('app', 'URI Format'),
             'template' => Craft::t('app', 'Template'),
+            'uriFormat' => Craft::t('app', 'URI Format'),
         ];
     }
 

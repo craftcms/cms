@@ -123,6 +123,14 @@ class Elements extends Component
      */
     const EVENT_AFTER_PERFORM_ACTION = 'afterPerformAction';
 
+    // Static
+    // =========================================================================
+
+    /**
+     * @var array Stores a mapping of element IDs to their duplicated element ID(s).
+     */
+    public static $duplicatedElementIds = [];
+
     // Properties
     // =========================================================================
 
@@ -557,30 +565,36 @@ class Elements extends Component
      */
     public function duplicateElement(ElementInterface $element, array $newAttributes = []): ElementInterface
     {
+        // Create our first clone for the $element's site
         /** @var Element $element */
-        $supportedSites = ElementHelper::supportedSitesForElement($element);
+        $element->getFieldValues();
+        /** @var Element $mainClone */
+        $mainClone = clone $element;
+        $mainClone->setAttributes($newAttributes);
+        $mainClone->duplicateOf = $element;
+        $mainClone->id = null;
+        $mainClone->contentId = null;
 
         // Make sure the element actually supports its own site ID
+        $supportedSites = ElementHelper::supportedSitesForElement($mainClone);
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (!in_array($element->siteId, $supportedSiteIds, false)) {
+        if (!in_array($mainClone->siteId, $supportedSiteIds, false)) {
             throw new Exception('Attempting to duplicate an element in an unsupported site.');
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Start with $element's site
-            /** @var Element $mainClone */
-            $mainClone = clone $element;
-            $mainClone->setAttributes($newAttributes);
-            $mainClone->id = null;
-            $mainClone->contentId = null;
-
             if (!$this->saveElement($mainClone, false, false)) {
                 throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
             }
 
+            // Map it
+            static::$duplicatedElementIds[$element->id] = $mainClone->id;
+
+            // Propagate it
             foreach ($supportedSites as $siteInfo) {
-                if ($siteInfo['siteId'] != $element->siteId) {
+                if ($siteInfo['siteId'] != $mainClone->siteId) {
                     $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
 
                     if ($siteElement === null) {
@@ -590,7 +604,10 @@ class Elements extends Component
                     /** @var Element $siteClone */
                     $siteClone = clone $siteElement;
                     $siteClone->setAttributes($newAttributes);
+                    $siteClone->duplicateOf = $siteElement;
+                    $siteClone->propagating = true;
                     $siteClone->id = $mainClone->id;
+                    $siteClone->siteId = $siteInfo['siteId'];
                     $siteClone->contentId = null;
 
                     if (!$this->saveElement($siteClone, false, false)) {
@@ -605,6 +622,9 @@ class Elements extends Component
 
             throw $e;
         }
+
+        // Clean up our tracks
+        $mainClone->duplicateOf = null;
 
         return $mainClone;
     }
@@ -797,7 +817,7 @@ class Elements extends Component
             foreach ($structureElements as $structureElement) {
                 // Make sure the persisting element isn't already a part of that structure
                 $persistingElementIsInStructureToo = (new Query())
-                    ->from(['{{%structureElements}}'])
+                    ->from(['{{%structureelements}}'])
                     ->where([
                         'structureId' => $structureElement['structureId'],
                         'elementId' => $prevailingElementId

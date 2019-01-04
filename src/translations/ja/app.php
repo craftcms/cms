@@ -349,7 +349,7 @@ return [
     'Delete {site}' => '{site} を削除',
     'Delete…' => '削除中...',
     'Deleting stale template caches' => '古いテンプレートキャッシュを削除中',
-    'Deprecation Errors' => '非推奨エラー',
+    'Deprecation Warnings' => '非推奨エラー',
     'Descending' => '降順',
     'Description' => '説明',
     'Deselect All' => 'すべての選択を解除',

@@ -21,6 +21,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use yii\base\Component;
 use yii\db\Exception;
 use yii\helpers\Inflector;
@@ -209,6 +210,7 @@ class Plugins extends Component
                     if (
                         $plugin->minVersionRequired &&
                         strpos($row['version'], 'dev-') !== 0 &&
+                        !StringHelper::endsWith($row['version'], '-dev') &&
                         version_compare($row['version'], $plugin->minVersionRequired, '<')
                     ) {
                         throw new HttpException(200, Craft::t('app', 'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.', [
@@ -233,8 +235,7 @@ class Plugins extends Component
         unset($row);
 
         // Sort plugins by their names
-        $names = array_column($this->_plugins, 'name');
-        array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $this->_plugins);
+        ArrayHelper::multisort($this->_plugins, 'name', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
 
         $this->_loadingPlugins = false;
         $this->_pluginsLoaded = true;
@@ -805,15 +806,13 @@ class Plugins extends Component
 
         // Get the info arrays
         $info = [];
-        $names = [];
 
         foreach (array_keys($this->_composerPluginInfo) as $handle) {
             $info[$handle] = $this->getPluginInfo($handle);
-            $names[] = $info[$handle]['name'];
         }
 
         // Sort plugins by their names
-        array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $info);
+        ArrayHelper::multisort($info, 'name', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
 
         return $info;
     }

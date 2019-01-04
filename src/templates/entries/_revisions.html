@@ -5,7 +5,7 @@
 {% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
 {% set params = parentIdParam ? { parentId: parentIdParam } : null %}
 
-<div id="revision-btn" class="btn menubtn"{% if showSites %} data-icon="world"{% endif %}>{{ revisionLabel }}</div>
+<div id="revision-btn" class="btn menubtn"{% if showSiteLabel %} data-icon="world"{% endif %}>{{ revisionLabel }}</div>
 
 <div class="menu">
     {% if showSites %}

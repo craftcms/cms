@@ -2,6 +2,56 @@
 
 ## Unreleased
 
+### Changed
+- Suspended users are no longer shown when viewing pending or locked users. ([#3556](https://github.com/craftcms/cms/issues/3556))
+
+### Fixed
+- Fixed a SQL error that could occur when merging two elements together if MySQL was set to a case-sensitive collation. ([#3539](https://github.com/craftcms/cms/issues/3539))
+- Fixed a bug where element indexes wouldn’t return to the previous sort selection after the search input was cleared. ([#3548](https://github.com/craftcms/cms/issues/3548))
+- Fixed a bug where password-reset email send errors weren’t being properly reported on the login page if the `preventUserEnumeration` config setting was enabled.
+- Fixed a bug where Edit User pages weren’t reporting email send errors when the “Send password reset email” option was chosen. ([#3549](https://github.com/craftcms/cms/issues/3549))
+
+### Security
+- Fixed a self-XSS vulnerability in the Recent Entries widget.
+- Fixed a self-XSS vulnerability in the Feed widget.
+
+## 2.7.4 - 2018-11-27
+
+### Fixed
+- Fixed a PHP error that could occur in some cases when calling `CategoriesService::getAllGroupIds()` and `getAllGroups()` when `getGroupById()` had been called previously with an invalid category group ID.
+
+### Security
+- Update jQuery File Upload to 9.28.0.
+
+## 2.7.3 - 2018-10-23
+
+### Changed
+- Single sections’ entry types’ handles are now updated to match their section’s handle whenever the section is saved. ([#2824](https://github.com/craftcms/cms/issues/2824))
+- Animated GIF thumbnails are no longer animated. ([#3110](https://github.com/craftcms/cms/issues/3110))
+- Craft now throws an exception if an asset is uploaded successfully but its record can’t be saved.
+- Updated jQuery Touch Events to 2.0.0.
+- Updated Garnish to 0.1.29.
+
+### Fixed
+- Fixed a bug where the Dev Mode indicator strip wasn’t visible on Chrome/Windows when using a scaled display. ([#3259](https://github.com/craftcms/cms/issues/3259))
+- Fixed bug where an error would be logged if `IOHelper::clearFolder()` was called on an empty folder.
+
+## 2.7.2 - 2018-08-24
+
+### Changed
+- Updated Garnish to 0.1.27.
+
+### Fixed
+- Fixed a PHP error that occurred on servers running PHP 5.4 - 5.5.
+
+## 2.7.1 - 2018-08-23
+
+### Changed
+- Craft now throws an exception when validating a custom field that is missing its field type, rather than allowing a PHP error to occur.
+
+### Fixed
+- Fixed a PHP error that occurred when compiling templates with `{% cache %}` tags, on servers running PHP 7.2.
+
 ## 2.7.0 - 2018-07-31
 
 ### Added

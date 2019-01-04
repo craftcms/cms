@@ -48,6 +48,11 @@ class SystemMessagesController extends Controller
         $request = Craft::$app->getRequest();
         $key = $request->getRequiredBodyParam('key');
         $language = $request->getBodyParam('language');
+
+        if (!$language) {
+            $language = Craft::$app->getSites()->getPrimarySite()->language;
+        }
+
         $message = Craft::$app->getSystemMessages()->getMessage($key, $language);
 
         return $this->asJson([

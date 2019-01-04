@@ -31,6 +31,11 @@ class UserQuery extends ElementQuery
     // Properties
     // =========================================================================
 
+    /**
+     * @inheritdoc
+     */
+    protected $defaultOrderBy = ['users.username' => SORT_ASC];
+
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -140,11 +145,6 @@ class UserQuery extends ElementQuery
      */
     public function __construct($elementType, array $config = [])
     {
-        // Default orderBy
-        if (!isset($config['orderBy'])) {
-            $config['orderBy'] = 'users.username';
-        }
-
         // Default status
         if (!isset($config['status'])) {
             $config['status'] = [User::STATUS_ACTIVE];
@@ -523,7 +523,7 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch active and locked {elements} #}
      * {% set {elements-var} = {twig-function}
-     *     .status(['active', 'locked')
+     *     .status(['active', 'locked'])
      *     .all() %}
      * ```
      *
@@ -635,19 +635,21 @@ class UserQuery extends ElementQuery
                 return [
                     'users.suspended' => false,
                     'users.locked' => false,
-                    'users.pending' => false
+                    'users.pending' => false,
                 ];
             case User::STATUS_PENDING:
                 return [
-                    'users.pending' => true
+                    'users.suspended' => false,
+                    'users.pending' => true,
                 ];
             case User::STATUS_LOCKED:
                 return [
-                    'users.locked' => true
+                    'users.suspended' => false,
+                    'users.locked' => true,
                 ];
             case User::STATUS_SUSPENDED:
                 return [
-                    'users.suspended' => true
+                    'users.suspended' => true,
                 ];
             default:
                 return parent::statusCondition($status);

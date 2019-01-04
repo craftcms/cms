@@ -49,10 +49,7 @@ class DeleteAssets extends ElementAction
     }
 
     /**
-     * Performs the action on any elements that match the given criteria.
-     *
-     * @param ElementQueryInterface $query The element query defining which elements the action should affect.
-     * @return bool Whether the action was performed successfully.
+     * @inheritdoc
      */
     public function performAction(ElementQueryInterface $query): bool
     {

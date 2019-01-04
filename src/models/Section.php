@@ -21,6 +21,7 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  * @property Section_SiteSettings[] $siteSettings Site-specific settings
+ * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
 class Section extends Model
 {
@@ -90,6 +91,18 @@ class Section extends Model
     /**
      * @inheritdoc
      */
+    public function attributeLabels()
+    {
+        return [
+            'handle' => Craft::t('app', 'Handle'),
+            'name' => Craft::t('app', 'Name'),
+            'type' => Craft::t('app', 'Section Type'),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         return [
@@ -136,7 +149,7 @@ class Section extends Model
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->name);
+        return Craft::t('site', $this->name) ?: static::class;
     }
 
     /**
@@ -218,5 +231,19 @@ class Section extends Model
         $this->_entryTypes = Craft::$app->getSections()->getEntryTypesBySectionId($this->id);
 
         return $this->_entryTypes;
+    }
+
+    /**
+     * Returns whether entries in this section support multiple sites.
+     *
+     * @return bool
+     */
+    public function getHasMultiSiteEntries(): bool
+    {
+        return (
+            Craft::$app->getIsMultiSite() &&
+            count($this->getSiteSettings()) > 1 &&
+            $this->propagateEntries
+        );
     }
 }

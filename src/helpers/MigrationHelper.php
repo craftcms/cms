@@ -383,9 +383,9 @@ class MigrationHelper
 
                 $onUpdate = $fk['updateType'];
                 $onDelete = $fk['deleteType'];
-            }
 
-            static::restoreForeignKey($sourceTableName, $columns, $refTableName, $refColumns, $onUpdate, $onDelete, $migration);
+                static::restoreForeignKey($sourceTableName, $columns, $refTableName, $refColumns, $onUpdate, $onDelete, $migration);
+            }
         }
 
         // Restore indexes.
