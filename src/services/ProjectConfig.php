@@ -200,6 +200,11 @@ class ProjectConfig extends Component
      */
     private $_timestampUpdated = false;
 
+    /**
+     * @var array The current changeset being applied, if applying changes by array.
+     */
+    private $_changesBeingApplied = null;
+
     // Public methods
     // =========================================================================
 
@@ -261,7 +266,7 @@ class ProjectConfig extends Component
     public function get(string $path = null, $getFromYaml = false)
     {
         if ($getFromYaml) {
-            $source = $this->_getConfigurationFromYaml();
+            $source = $this->_changesBeingApplied ?? $this->_getConfigurationFromYaml();
         } else {
             $source = $this->_getLoadedConfig();
         }
@@ -382,7 +387,16 @@ class ProjectConfig extends Component
 
         $changes = $this->_getPendingChanges($configData);
 
+        $this->_changesBeingApplied = $configData;
         $this->_applyChanges($changes);
+        $this->_changesBeingApplied = null;
+
+        // Cover an edge-case where we're applying changes, but there's no config file yet
+        $configPath = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
+
+        if ($this->_useConfigFile() && empty($this->_parsedConfigs[$configPath])) {
+            $this->_parsedConfigs[$configPath] = $configData;
+        }
     }
 
     /**
@@ -836,7 +850,9 @@ class ProjectConfig extends Component
 
         clearstatcache();
         foreach ($fileList as $file) {
-            $output[$file] = FileHelper::lastModifiedTime($file);
+            if (file_exists($file)) {
+                $output[$file] = FileHelper::lastModifiedTime($file);
+            }
         }
 
         return $output;
