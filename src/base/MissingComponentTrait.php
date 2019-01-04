@@ -84,7 +84,7 @@ trait MissingComponentTrait
 
             // Special cases for removed 1st party components
             switch ($this->expectedType) {
-                case 'craft\fields\RichText':
+                case 'craft\redactor\Field':
                     $showPlugin = true;
                     $isInstalled = false;
                     $name = 'Redactor';
@@ -92,7 +92,7 @@ trait MissingComponentTrait
                     $iconUrl = 'https://s3-us-west-2.amazonaws.com/plugin-icons.craftcms/redactor.svg';
                     $error = "Support for {$name} fields has been moved to a plugin.";
                     break;
-                case 'craft\volumes\AwsS3':
+                case 'craft\awss3\Volume':
                     $showPlugin = true;
                     $isInstalled = false;
                     $name = 'Amazon S3';
@@ -100,7 +100,7 @@ trait MissingComponentTrait
                     $iconUrl = 'https://s3-us-west-2.amazonaws.com/plugin-icons.craftcms/aws-s3.svg';
                     $error = "Support for {$name} volumes has been moved to a plugin.";
                     break;
-                case 'craft\volumes\GoogleCloud':
+                case 'craft\googlecloud\Volume':
                     $showPlugin = true;
                     $isInstalled = false;
                     $name = 'Google Cloud Storage';
@@ -108,7 +108,7 @@ trait MissingComponentTrait
                     $iconUrl = 'https://s3-us-west-2.amazonaws.com/plugin-icons.craftcms/google-cloud.svg';
                     $error = "Support for {$name} volumes has been moved to a plugin.";
                     break;
-                case 'craft\volumes\Rackspace':
+                case 'craft\rackspace\Volume':
                     $showPlugin = true;
                     $isInstalled = false;
                     $name = 'Rackspace Cloud Files';

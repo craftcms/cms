@@ -21,7 +21,7 @@ class m170414_162429_rich_text_config_setting extends Migration
         $fields = (new Query())
             ->select(['id', 'settings'])
             ->from(['{{%fields}}'])
-            ->where(['type' => 'craft\\fields\\RichText'])
+            ->where(['type' => 'craft\\redactor\\Field'])
             ->all($this->db);
 
         // configFile => redactorConfig
