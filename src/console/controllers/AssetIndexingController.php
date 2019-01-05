@@ -12,16 +12,15 @@ use Craft;
 use yii\helpers\Console;
 use yii\console\Controller;
 
-//use craft\base\Plugin;
 
 /**
  * Manages Craft asset indexing.
  * This command indexes assets on all volumes or specified volumes.
  * ~~~
  * # Indexes all assets on all volumes.
- * craft asset/index-all
+ * craft asset-indexing/all
  * # Indexes all assets on a specified volume (EXAMPLE).
- * craft asset-index-one EXAMPLE
+ * craft asset-indexing/one EXAMPLE
  * ~~~
  *
  * @since 3.1
@@ -45,7 +44,7 @@ class AssetIndexingController extends Controller
      * This command gives a CLI way to index all assets.
      *
      * ```
-     * craft asset/index-all
+     * craft asset-indexing/all
      * ```
      *
      * @param string $name the name of the volume to index. This should only contain
@@ -83,7 +82,7 @@ class AssetIndexingController extends Controller
      * This command gives a CLI way to index all assets.
      *
      * ```
-     * craft asset/index-one EXAMPLE
+     * craft asset-indexing/one EXAMPLE
      * ```
      *
      * @param string $name the name of the volume to index. This should only contain
