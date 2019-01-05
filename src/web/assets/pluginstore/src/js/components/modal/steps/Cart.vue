@@ -23,7 +23,7 @@
                             <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
                                 <td class="thin">
                                     <div class="plugin-icon">
-                                        <img :src="craftLogo" width="32" height="32" />
+                                        <img :src="craftLogo" width="40" height="40" />
                                     </div>
                                 </td>
                                 <td>Craft {{ item.lineItem.purchasable.name }}</td>
@@ -91,7 +91,7 @@
                         <template v-if="plugin">
                             <td class="thin">
                                 <div class="plugin-icon">
-                                    <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
+                                    <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="40" width="40" />
                                     <div class="default-icon" v-else></div>
                                 </div>
                             </td>
