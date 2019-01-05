@@ -262,27 +262,6 @@ class PluginStoreController extends Controller
     }
 
     /**
-     * Saves Craft data.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     */
-    public function actionSaveCraftData(): Response
-    {
-        $this->requirePostRequest();
-
-        $postData = Craft::$app->getRequest()->getParam('craftData');
-
-        $sessionData = [
-            'installedPlugins' => $postData['installedPlugins']
-        ];
-
-        Craft::$app->getSession()->set('pluginStore.craftData', $sessionData);
-
-        return $this->asJson([]);
-    }
-
-    /**
      * Clears Craft data.
      *
      * @return Response
