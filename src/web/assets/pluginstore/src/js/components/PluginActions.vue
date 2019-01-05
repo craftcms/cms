@@ -129,7 +129,6 @@
             },
 
             allowUpdates() {
-                return false
                 return window.allowUpdates
             },
 
