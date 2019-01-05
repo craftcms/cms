@@ -68,18 +68,6 @@ const getters = {
         }
     },
 
-    hasFreeEdition(state) {
-        return plugin => {
-            return plugin.editions.find(edition => {
-                if (parseFloat(edition.price) > 0) {
-                    return false
-                }
-
-                return true
-            })
-        }
-    },
-
     isPluginFree(state) {
         return plugin => {
             if (plugin.editions.length !== 1) {

@@ -47,7 +47,8 @@ const getters = {
 
     activeTrialPlugins(state, getters, rootState, rootGetters) {
         return rootState.pluginStore.plugins.filter(plugin => {
-            if (plugin.editions[0].price > 0 && !rootGetters['craft/pluginHasLicenseKey'](plugin.handle)) {
+            const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](plugin.handle)
+            if (plugin.editions[0].price > 0 && (pluginLicenseInfo && !pluginLicenseInfo.licenseKey)) {
                 return rootGetters['craft/isPluginInstalled'](plugin.handle)
             }
         })

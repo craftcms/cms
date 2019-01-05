@@ -52,17 +52,23 @@
             },
 
             isPluginBuyable(plugin) {
-                if (plugin.editions[0].price !== null && plugin.editions[0].price !== '0.00') {
-                    if (this.isPluginInstalled(plugin.handle)) {
-                        if(!this.pluginHasLicenseKey(plugin.handle)) {
-                            return true
-                        }
-                    } else {
-                        return true
-                    }
+                const price = plugin.editions[0].price
+
+                if (price === null) {
+                    return false
                 }
 
-                return false
+                if (parseFloat(price) === 0) {
+                    return false
+                }
+
+                const pluginLicenseInfo = this.getPluginLicenseInfo(plugin.handle)
+
+                if (this.isPluginInstalled(plugin.handle) && (!pluginLicenseInfo || (pluginLicenseInfo && pluginLicenseInfo.licenseKey))) {
+                    return false
+                }
+
+                return true
             },
 
         },
@@ -72,7 +78,7 @@
             ...mapGetters({
                 isInCart: 'cart/isInCart',
                 isPluginInstalled: 'craft/isPluginInstalled',
-                pluginHasLicenseKey: 'craft/pluginHasLicenseKey',
+                getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
             }),
 
         },

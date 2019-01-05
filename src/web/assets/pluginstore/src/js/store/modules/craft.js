@@ -34,11 +34,15 @@ const getters = {
                 return false
             }
 
+            if (!state.pluginLicenseInfo[pluginHandle].isInstalled) {
+                return false
+            }
+
             return true
         }
     },
 
-    pluginHasLicenseKey(state) {
+    getPluginLicenseInfo(state) {
         return pluginHandle => {
             if (!state.pluginLicenseInfo) {
                 return false
@@ -48,25 +52,9 @@ const getters = {
                 return false
             }
 
-            return !!state.pluginLicenseInfo[pluginHandle].licenseKey
+            return state.pluginLicenseInfo[pluginHandle]
         }
-    },
-
-    pluginHasValidLicenseKey(state) {
-        return pluginHandle => {
-            const pluginLicenseInfo = state.pluginLicenseInfo[pluginHandle]
-
-            if (!pluginLicenseInfo) {
-                return false
-            }
-
-            if (pluginLicenseInfo.licenseKeyStatus !== 'valid')  {
-                return false
-            }
-
-            return true
-        }
-    },
+    }
 
 }
 
