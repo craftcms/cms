@@ -44,7 +44,7 @@
                             </template>
 
                             <td class="expiry-date">
-                                <select-field v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
+                                <select-input v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
                                 <div v-if="itemLoading(itemKey)" class="spinner"></div>
                             </td>
                             <td class="price">
@@ -208,8 +208,11 @@
                 })
 
                 for (let i = 0; i < this.expiryDateOptions.length; i++) {
-                    const date = this.expiryDateOptions[i]
-                    let label = "Updates Until " + Craft.formatDate(date)
+                    const expiryDateOption = this.expiryDateOptions[i]
+                    const date = expiryDateOption[1]
+                    const optionValue = expiryDateOption[0]
+
+                    let label = "Updates Until "  + Craft.formatDate(date)
 
                     const price = renewalPrice * (i - selectedOption)
 
@@ -225,23 +228,11 @@
 
                     options.push({
                         label: label,
-                        value: this.formatDateYYYYMMDD(date),
+                        value: optionValue,
                     })
                 }
 
                 return options
-            },
-
-            formatDateYYYYMMDD(date) {
-                let d = new Date(date),
-                    month = '' + (d.getMonth() + 1),
-                    day = '' + d.getDate(),
-                    year = d.getFullYear()
-
-                if (month.length < 2) month = '0' + month
-                if (day.length < 2) day = '0' + day
-
-                return [year, month, day].join('-')
             },
 
             onSelectedExpiryDateChange(itemKey) {
