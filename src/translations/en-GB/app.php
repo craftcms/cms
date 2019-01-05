@@ -622,6 +622,7 @@ return [
     'Name' => 'Name',
     'Never' => 'Never',
     'New' => 'New',
+    'New Element' => 'New Element',
     'New Password' => 'New Password',
     'New Tab' => 'New Tab',
     'New Users' => 'New Users',
@@ -1168,13 +1169,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Your system isn’t set up to save content for the site “{site}”.',
     'You’re all up-to-date!' => 'You’re all up-to-date!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'You’re running Craft {edition} with a Craft {licensedEdition} license.',
-    'account_activation_body' => 'Hey {{user.friendlyName}},
-
-Thanks for creating an account with {{siteName}}! To activate your account, click the following link:
-
-<{{link}}>
-
-If you weren’t expecting this email, just ignore it.',
+    'account_activation_body' => 'Hey {{user.friendlyName}},Thanks for creating an account with {{siteName}}! To activate your account, click the following link:&lt;{{link}}&gt;If you weren’t expecting this email, just ignore it.',
     'account_activation_heading' => 'When someone creates an account:',
     'account_activation_subject' => 'Activate your account',
     'by {author}' => 'by {author}',
@@ -1186,13 +1181,7 @@ If you weren’t expecting this email, just ignore it.',
     'five' => 'five',
     'folders' => 'folders',
     'folders and files' => 'folders and files',
-    'forgot_password_body' => 'Hey {{user.friendlyName}},
-
-To reset your {{siteName}} password, click on this link:
-
-<{{link}}>
-
-If you weren’t expecting this email, just ignore it.',
+    'forgot_password_body' => 'Hey {{user.friendlyName}},To reset your {{siteName}} password, click on this link:&lt;{{link}}&gt;If you weren’t expecting this email, just ignore it.',
     'forgot_password_heading' => 'When someone forgets their password:',
     'forgot_password_subject' => 'Reset your password',
     'four' => 'four',
@@ -1209,24 +1198,12 @@ If you weren’t expecting this email, just ignore it.',
     'seconds' => 'seconds',
     'seven' => 'seven',
     'six' => 'six',
-    'test_email_body' => 'Hey {{user.friendlyName}},
-
-Congratulations! Craft was successfully able to send an email.
-
-Here are the settings you used:
-
-{{ settings }}',
+    'test_email_body' => 'Hey {{user.friendlyName}},Congratulations! Craft was successfully able to send an email.Here are the settings you used:{{ settings }}',
     'test_email_heading' => 'When you are testing your email settings:',
     'test_email_subject' => 'This is a test email from Craft',
     'three' => 'three',
     'two' => 'two',
-    'verify_new_email_body' => 'Hey {{user.friendlyName}},
-
-Please verify your new email address by clicking on this link:
-
-<{{link}}>
-
-If you weren’t expecting this email, just ignore it.',
+    'verify_new_email_body' => 'Hey {{user.friendlyName}},Please verify your new email address by clicking on this link:&lt;{{link}}&gt;If you weren’t expecting this email, just ignore it.',
     'verify_new_email_heading' => 'When someone changes their email address:',
     'verify_new_email_subject' => 'Verify your new email address',
     'week' => 'week',
@@ -1278,7 +1255,7 @@ If you weren’t expecting this email, just ignore it.',
     'Composer output:' => 'Composer output:',
     'Modules' => 'Modules',
     'Project Config Sync' => 'Project Config Sync',
-    'Which template should be loaded when a category’s URL is requested.' => 'Which template should be loaded when a category’s URL is requested.',
+    'Which template should be loaded when a category’s URL is requested.' => 'The template that should be loaded when a category’s URL is requested.',
     'Edit Entry' => 'Edit Entry',
     'Entries not restored.' => 'Entries not restored.',
     'Some categories restored.' => 'Some categories restored.',
@@ -1307,14 +1284,14 @@ If you weren’t expecting this email, just ignore it.',
     'No modules are installed.' => 'No modules are installed.',
     'Installing {name}' => 'Installing {name}',
     'Edit Global Set' => 'Edit Global Set',
-    'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'Includes activating user accounts, resetting passwords, and changing email addresses.',
+    'Includes activating user accounts, resetting passwords, and changing email addresses.' => 'Includes activating user accounts, resetting passwords and changing email addresses.',
     'Please fix on an environment where administrative changes are allowed.' => 'Please fix on an environment where administrative changes are allowed.',
     'This field is translated for each site group.' => 'This field is translated for each site group.',
     'Save as a new asset' => 'Save as a new asset',
     'Use project.yaml' => 'Use project.yaml',
     'Craft isn’t installed yet.' => 'Craft isn’t installed yet.',
     'Buy now for {price}' => 'Buy now for {price}',
-    'Includes suspending, unsuspending, and unlocking user accounts.' => 'Includes suspending, unsuspending, and unlocking user accounts.',
+    'Includes suspending, unsuspending, and unlocking user accounts.' => 'Includes suspending, unsuspending and unlocking user accounts.',
     'Edit Image Transform' => 'Edit Image Transform',
     'Changes to `project.yaml` must be applied to the loaded project config.' => 'Changes to `project.yaml` must be applied to the loaded project config.',
     'Propagating {class} elements' => 'Propagating {class} elements',
@@ -1336,7 +1313,7 @@ If you weren’t expecting this email, just ignore it.',
     'This field is translated for each site.' => 'This field is translated for each site.',
     'Current Password' => 'Current Password',
     'Templates' => 'Templates',
-    'The license key in use belongs to {domain}' => 'The license key in use belongs to {domain}',
+    'The license key in use belongs to {domain}' => 'The licence key in use belongs to {domain}',
     'Attachment' => 'Attachment',
     'Elements duplicated.' => 'Elements duplicated.',
     'The path to the volume’s directory on the file system.' => 'The path to the volume’s directory on the file system.',
