@@ -28,6 +28,7 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
+
 class PluginStoreController extends Controller
 {
     // Public Methods
