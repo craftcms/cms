@@ -100,18 +100,6 @@
                 return this.$store.getters['craft/isPluginInstalled'](this.plugin.handle)
             },
 
-            buyBtnTitle() {
-                let price = 0
-
-                if (this.plugin) {
-                    price = this.plugin.editions[0].price
-                }
-
-                return this.$root.$options.filters.t('Buy now for {price}', 'app', {
-                    price: this.$root.$options.filters.currency(price)
-                })
-            },
-
             isPluginEditionBuyable() {
                 // A plugin edition is buyable if it’s more expensive than the licensed one
                 if(!this.edition) {
