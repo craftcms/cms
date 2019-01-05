@@ -262,18 +262,6 @@ class PluginStoreController extends Controller
     }
 
     /**
-     * Clears Craft data.
-     *
-     * @return Response
-     */
-    public function actionClearCraftData(): Response
-    {
-        Craft::$app->getSession()->remove('pluginStore.craftData');
-
-        return $this->asJson(true);
-    }
-
-    /**
      * Returns the Plugin Store’s data.
      *
      * @return Response
