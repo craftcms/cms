@@ -939,7 +939,6 @@ class Plugins extends Component
      *
      * @param string $handle
      * @return bool
-     * @throws InvalidPluginException if the plugin isn't installed
      */
     public function hasIssues(string $handle): bool
     {
@@ -955,15 +954,24 @@ class Plugins extends Component
 
         $status = $pluginInfo['licenseKeyStatus'] ?? LicenseKeyStatus::Unknown;
 
-        return (
-            $status !== LicenseKeyStatus::Valid &&
-            $status !== LicenseKeyStatus::Unknown &&
-            (
-                $status !== LicenseKeyStatus::Invalid ||
-                !empty($pluginInfo['licenseKey']) ||
-                !Craft::$app->getCanTestEditions()
-            )
-        );
+        // mismatched = wrong Craft license
+        // astray = updated beyond the allowed version
+        if (in_array($status, [LicenseKeyStatus::Mismatched, LicenseKeyStatus::Astray], true)) {
+            return true;
+        }
+
+        // valid = all good
+        // unknown = no license key but it's free so that's fine
+        if (in_array($status, [LicenseKeyStatus::Valid, LicenseKeyStatus::Unknown], true)) {
+            return false;
+        }
+
+        // It's invalid, then. Give them a pass if they're allowed to test editions
+        if (empty($pluginInfo['licenseKey']) && Craft::$app->getCanTestEditions()) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -1213,14 +1221,16 @@ class Plugins extends Component
      */
     private function _getPluginConfigData(string $handle): array
     {
+        // todo: remove this after the next breakpoint
         if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
             $row = (new Query())->from(['{{%plugins}}'])->where(['handle' => $handle])->one();
             $row['settings'] = Json::decodeIfJson((string)$row['settings']);
-
             return $row;
         }
 
-        $data = Craft::$app->getProjectConfig()->get(self::CONFIG_PLUGINS_KEY . '.' . $handle) ?? Craft::$app->getProjectConfig()->get(self::CONFIG_PLUGINS_KEY . '.' . $handle, true);
+        $projectConfig = Craft::$app->getProjectConfig();
+        $configKey = self::CONFIG_PLUGINS_KEY . '.' . $handle;
+        $data = $projectConfig->get($configKey) ?? $projectConfig->get($configKey, true);
 
         if (!$data) {
             throw new InvalidPluginException($handle);
