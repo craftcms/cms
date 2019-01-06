@@ -349,11 +349,12 @@ class AppController extends Controller
                 if (isset($pluginLicenseInfo['plugin'])) {
                     $pluginInfo = $pluginLicenseInfo['plugin'];
                     $result[$pluginInfo['handle']] = [
+                        'edition' => $pluginLicenseInfo['edition'],
                         'isInstalled' => false,
                         'licenseKey' => $pluginLicenseInfo['key'],
+                        'licensedEdition' => null,
                         'licenseKeyStatus' => LicenseKeyStatus::Valid,
-                        'hasIssues' => false,
-                        'licenseStatusMessage' => null,
+                        'licenseIssues' => [],
                         'name' => $pluginInfo['name'],
                         'description' => $pluginInfo['shortDescription'],
                         'iconUrl' => $pluginInfo['icon']['url'] ?? $defaultIconUrl,
@@ -373,9 +374,9 @@ class AppController extends Controller
             $result[$handle] = [
                 'isInstalled' => true,
                 'licenseKey' => $pluginInfo['licenseKey'],
+                'licensedEdition' => $pluginInfo['licensedEdition'],
                 'licenseKeyStatus' => $pluginInfo['licenseKeyStatus'],
-                'hasIssues' => $pluginInfo['hasIssues'],
-                'licenseStatusMessage' => $pluginInfo['licenseStatusMessage'],
+                'licenseIssues' => $pluginInfo['licenseIssues'],
             ];
         }
 
@@ -408,9 +409,9 @@ class AppController extends Controller
         $info = $pluginsService->getPluginInfo($handle);
         return $this->asJson([
             'licenseKey' => $info['licenseKey'],
+            'licensedEdition' => $info['licensedEdition'],
             'licenseKeyStatus' => $info['licenseKeyStatus'],
-            'hasIssues' => $info['hasIssues'],
-            'licenseStatusMessage' => $info['licenseStatusMessage'],
+            'licenseIssues' => $info['licenseIssues'],
         ]);
     }
 

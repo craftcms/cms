@@ -23,6 +23,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use yii\base\Component;
+use yii\base\InvalidArgumentException;
 use yii\db\Exception;
 use yii\helpers\Inflector;
 use yii\web\HttpException;
@@ -620,6 +621,43 @@ class Plugins extends Component
     }
 
     /**
+     * Switches a plugin’s edition.
+     *
+     * @param string $handle The plugin’s handle
+     * @param string $edition The plugin’s edition
+     * @throws InvalidPluginException if the plugin doesn’t exist
+     * @throws InvalidArgumentException if $edition is invalid
+     * @throws \Throwable if reasons
+     */
+    public function switchEdition(string $handle, string $edition)
+    {
+        $info = $this->getPluginInfo($handle);
+
+        /** @var string|PluginInterface $class */
+        $class = $info['class'];
+
+        if (!in_array($edition, $class::editions(), true)) {
+            throw new InvalidArgumentException('Invalid plugin edition: ' . $edition);
+        }
+
+        // Update the project config
+        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.edition', $edition);
+
+        if (isset($this->_enabledPluginInfo[$handle])) {
+            $this->_enabledPluginInfo[$handle]['edition'] = $edition;
+        } else if (isset($this->_disabledPluginInfo[$handle])) {
+            $this->_disabledPluginInfo[$handle]['edition'] = $edition;
+        }
+
+        // If it's installed, update the instance and our locally stored info
+        $plugin = $this->getPlugin($handle);
+        if ($plugin !== null) {
+            /** @var Plugin $plugin */
+            $plugin->edition = $edition;
+        }
+    }
+
+    /**
      * Saves a plugin's settings.
      *
      * @param PluginInterface $plugin The plugin
@@ -903,33 +941,24 @@ class Plugins extends Component
             'documentationUrl' => null,
         ], $this->_composerPluginInfo[$handle]);
 
+        $edition = $pluginInfo['edition'] ?? 'standard';
+        if ($plugin) {
+            $editions = $plugin::editions();
+            if (!in_array($edition, $editions, true)) {
+                $edition = reset($editions);
+            }
+        }
+
         $info['isInstalled'] = $installed = $pluginInfo !== null;
         $info['isEnabled'] = $plugin !== null;
         $info['moduleId'] = $handle;
+        $info['edition'] = $edition;
+        $info['hasMultipleEditions'] = $plugin ? count($plugin::editions()) > 1 : false;
         $info['hasCpSettings'] = ($plugin !== null && $plugin->hasCpSettings);
-        $info['licenseKey'] = $key = $pluginInfo['licenseKey'] ?? null;
-        $info['licenseKeyStatus'] = $status = $pluginInfo['licenseKeyStatus'] ?? LicenseKeyStatus::Unknown;
-        $info['hasIssues'] = $hasIssues = $installed ? $this->hasIssues($handle) : false;
-
-        if ($hasIssues) {
-            switch ($status) {
-                case LicenseKeyStatus::Mismatched:
-                    $info['licenseStatusMessage'] = Craft::t('app', 'This license is tied to another Craft install. Visit {url} to resolve.', [
-                        'url' => '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>',
-                    ]);
-                    break;
-                case LicenseKeyStatus::Astray:
-                    $info['licenseStatusMessage'] = Craft::t('app', 'This license isn’t allowed to run version {version}.', [
-                        'version' => $this->_composerPluginInfo[$handle]['version'],
-                    ]);
-                    break;
-                default:
-                    $info['licenseStatusMessage'] = $key ? Craft::t('app', 'Your license key is invalid.') : Craft::t('app', 'A license key is required.');
-                    break;
-            }
-        } else {
-            $info['licenseStatusMessage'] = null;
-        }
+        $info['licenseKey'] = $pluginInfo['licenseKey'] ?? null;
+        $info['licenseKeyStatus'] = $pluginInfo['licenseKeyStatus'] ?? LicenseKeyStatus::Unknown;
+        $info['licensedEdition'] = $pluginInfo['licensedEdition'] ?? null;
+        $info['licenseIssues'] = $installed ? $this->getLicenseIssues($handle) : [];
 
         return $info;
     }
@@ -942,36 +971,74 @@ class Plugins extends Component
      */
     public function hasIssues(string $handle): bool
     {
+        return !empty($this->getLicenseIssues($handle));
+    }
+
+    /**
+     * Returns any issues with a plugin license.
+     *
+     * The response will be an array containing a combination of these strings:
+     *
+     * - `wrong_edition` – if the current edition isn't the licensed one, and
+     *   testing editions isn't allowed
+     * - `mismatched` – if the license key is tied to a different Craft license
+     * - `astray` – if the installed version is greater than the highest version
+     *   the license is allowed to run
+     * - `required` – if no license key is present but one is required
+     * - `invalid` – if a license key is present but it’s invalid
+     *
+     * @param string $handle
+     * @return string[]
+     */
+    public function getLicenseIssues(string $handle): array
+    {
         if (isset($this->_enabledPluginInfo[$handle])) {
             $pluginInfo = $this->_enabledPluginInfo[$handle];
         } else {
             $this->_loadDisabledPluginInfo();
             if (!isset($this->_disabledPluginInfo[$handle])) {
-                return false;
+                return [];
             }
             $pluginInfo = $this->_disabledPluginInfo[$handle];
         }
 
         $status = $pluginInfo['licenseKeyStatus'] ?? LicenseKeyStatus::Unknown;
 
-        // mismatched = wrong Craft license
-        // astray = updated beyond the allowed version
-        if (in_array($status, [LicenseKeyStatus::Mismatched, LicenseKeyStatus::Astray], true)) {
-            return true;
+        if ($status === LicenseKeyStatus::Unknown) {
+            // Either we don't know yet, or the plugin is free
+            return [];
         }
 
-        // valid = all good
-        // unknown = no license key but it's free so that's fine
-        if (in_array($status, [LicenseKeyStatus::Valid, LicenseKeyStatus::Unknown], true)) {
-            return false;
+        $issues = [];
+
+        // Make sure they're allowed to run the current edition
+        $canTestEditions = false; //Craft::$app->getCanTestEditions();
+        if (
+            !$canTestEditions &&
+            isset($pluginInfo['edition'], $pluginInfo['licensedEdition']) &&
+            $pluginInfo['edition'] !== $pluginInfo['licensedEdition']
+        ) {
+            $issues[] = 'wrong_edition';
         }
 
-        // It's invalid, then. Give them a pass if they're allowed to test editions
-        if (empty($pluginInfo['licenseKey']) && Craft::$app->getCanTestEditions()) {
-            return false;
+        // General license issues
+        switch ($pluginInfo['licenseKeyStatus']) {
+            case LicenseKeyStatus::Mismatched:
+                $issues[] = 'mismatched';
+                break;
+            case LicenseKeyStatus::Astray:
+                $issues[] = 'astray';
+                break;
+            case LicenseKeyStatus::Invalid:
+                if (!empty($pluginInfo['licenseKey'])) {
+                    $issues[] = 'invalid';
+                } else if (!$canTestEditions) {
+                    $issues[] = 'required';
+                }
+                break;
         }
 
-        return true;
+        return $issues;
     }
 
     /**
@@ -1076,9 +1143,10 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      * @param string|null $licenseKeyStatus The plugin’s license key status
+     * @param string|null $licensedEdition The plugin's licensed edition, if the key is valid
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function setPluginLicenseKeyStatus(string $handle, string $licenseKeyStatus = null)
+    public function setPluginLicenseKeyStatus(string $handle, string $licenseKeyStatus = null, string $licensedEdition = null)
     {
         if (($plugin = $this->getPlugin($handle)) === null) {
             throw new InvalidPluginException($handle);
@@ -1086,15 +1154,16 @@ class Plugins extends Component
 
         /** @var Plugin $plugin */
         Craft::$app->getDb()->createCommand()
-            ->update(
-                '{{%plugins}}',
-                ['licenseKeyStatus' => $licenseKeyStatus],
-                ['handle' => $handle])
+            ->update('{{%plugins}}', [
+                'licenseKeyStatus' => $licenseKeyStatus,
+                'licensedEdition' => $licensedEdition,
+            ], ['handle' => $handle])
             ->execute();
 
         // Update our cache of it
         if (isset($this->_enabledPluginInfo[$handle])) {
             $this->_enabledPluginInfo[$handle]['licenseKeyStatus'] = $licenseKeyStatus;
+            $this->_enabledPluginInfo[$handle]['licensedEdition'] = $licensedEdition;
         }
     }
 
@@ -1115,6 +1184,7 @@ class Plugins extends Component
                 'version',
                 'schemaVersion',
                 'licenseKeyStatus',
+                'licensedEdition',
                 'installDate'
             ])
             ->from(['{{%plugins}}']);
