@@ -12,8 +12,12 @@ body.rtl #plugins tbody .plugin-infos .icon .license-key-status { right: 26px; }
 #plugins tbody .plugin-infos .icon .license-key-status.valid { background-image: url(valid-icon.svg); }
 #plugins tbody .plugin-infos .details { vertical-align: middle; }
 #plugins tbody .plugin-infos .details h2 { margin-bottom: 0; font-size: 1em; }
-body.ltr #plugins tbody .plugin-infos .details h2 .light { margin-left: 6px; }
-body.rtl #plugins tbody .plugin-infos .details h2 .light { margin-right: 6px; }
+#plugins tbody .plugin-infos .details h2 .edition { text-transform: uppercase; border: 1px solid #8f98a3; border-radius: 3px; color: #576575; font-size: 11px; padding: 2px 5px 3px; line-height: 6px; font-weight: normal; letter-spacing: 1.7px; }
+body.ltr #plugins tbody .plugin-infos .details h2 .edition { margin-left: 6px; }
+body.rtl #plugins tbody .plugin-infos .details h2 .edition { margin-right: 6px; }
+#plugins tbody .plugin-infos .details h2 .version { color: #8f98a3; font-weight: normal; }
+body.ltr #plugins tbody .plugin-infos .details h2 .version { margin-left: 6px; }
+body.rtl #plugins tbody .plugin-infos .details h2 .version { margin-right: 6px; }
 #plugins tbody .plugin-infos .details p { margin: 0.2em 0; }
 #plugins tbody .plugin-infos .details p.links a + a { margin-left: 20px; }
 #plugins tbody .plugin-infos .details p.links a span[data-icon] { margin-right: 3px; }

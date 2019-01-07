@@ -366,6 +366,7 @@ class Api extends Component
         }
 
         $pluginLicenseStatuses = [];
+        $pluginLicenseEditions = [];
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
             $pluginLicenseStatuses[$pluginHandle] = LicenseKeyStatus::Unknown;
@@ -377,9 +378,17 @@ class Api extends Component
                 $pluginLicenseStatuses[$pluginHandle] = $pluginLicenseStatus;
             }
         }
+        if ($response->hasHeader('X-Craft-Plugin-License-Editions')) {
+            $pluginLicenseInfo = explode(',', $response->getHeaderLine('X-Craft-Plugin-License-Editions'));
+            foreach ($pluginLicenseInfo as $info) {
+                list($pluginHandle, $pluginLicenseEdition) = explode(':', $info);
+                $pluginLicenseEditions[$pluginHandle] = $pluginLicenseEdition;
+            }
+        }
         foreach ($pluginLicenseStatuses as $pluginHandle => $pluginLicenseStatus) {
+            $pluginLicenseEdition = $pluginLicenseEditions[$pluginHandle] ?? null;
             try {
-                $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus);
+                $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus, $pluginLicenseEdition);
             } catch (InvalidPluginException $pluginException) {
             }
         }

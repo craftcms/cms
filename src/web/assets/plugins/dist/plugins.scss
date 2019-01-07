@@ -72,7 +72,22 @@
           margin-bottom: 0;
           font-size: 1em;
 
-          .light {
+          .edition {
+            @include margin-left(6px);
+            text-transform: uppercase;
+            border: 1px solid $mediumTextColor;
+            border-radius: 3px;
+            color: $mediumDarkTextColor;
+            font-size: 11px;
+            padding: 2px 5px 3px;
+            line-height: 6px;
+            font-weight: normal;
+            letter-spacing: 1.7px;
+          }
+
+          .version {
+            color: $mediumTextColor;
+            font-weight: normal;
             @include margin-left(6px);
           }
         }
