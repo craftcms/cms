@@ -19,8 +19,8 @@ use yii\console\Controller;
  * ~~~
  * # Indexes all assets on all volumes. Optional argument is whether or not to cache images.
  * craft asset-indexing/all
- * # Indexes all assets on a specified volume (EXAMPLE_HANDLE). Second (optional) argument is
- * is whether or not to cache images.
+ * # Indexes all assets on a specified volume (EXAMPLE_HANDLE).
+ * Second (optional) argument is whether or not to cache images.
  * craft asset-indexing/one EXAMPLE_HANDLE
  * ~~~
  *
@@ -74,7 +74,7 @@ class AssetIndexingController extends Controller
      * craft asset-indexing/one EXAMPLE_HANDLE 0
      * ```
      *
-     * @param string $name the name of the volume to index. This should only contain
+     * @param string $name The name of the volume to index. This should only contain
      * letters, digits, and underscores.
      * @param boolean $cacheImages Whether or not to cache images.
      * @return boolean.
