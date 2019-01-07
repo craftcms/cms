@@ -20,6 +20,7 @@
 - Fixed a bug where global set, Matrix block, tag, and user queries weren’t respecting `fixedOrder` params.
 - Fixed a bug where `craft\helpers\MigrationHelper::renameColumn()` was only restoring the last foreign key for each table that had multiple foreign keys referencing the table with the renamed column.
 - Fixed a few RTL language styling issues.
+- Fixed a bug where drap-and-drop uploading would not work for asset fields.
 
 ## 3.0.36 - 2018-12-18
 
