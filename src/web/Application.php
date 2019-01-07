@@ -15,6 +15,7 @@ use craft\debug\DeprecatedPanel;
 use craft\debug\UserPanel;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
+use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use yii\base\Component;
@@ -31,6 +32,7 @@ use yii\debug\panels\MailPanel;
 use yii\debug\panels\ProfilingPanel;
 use yii\debug\panels\RequestPanel;
 use yii\debug\panels\RouterPanel;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -428,6 +430,7 @@ class Application extends \yii\web\Application
      * Processes resource requests.
      *
      * @param Request $request
+     * @throws BadRequestHttpException
      */
     private function _processResourceRequest(Request $request)
     {
@@ -458,6 +461,9 @@ class Application extends \yii\web\Application
 
         // Publish the directory
         $filePath = substr($resourceUri, strlen($hash) + 1);
+        if (!Path::ensurePathIsContained($filePath)) {
+            throw new BadRequestHttpException('Invalid resource path: ' . $filePath);
+        }
         $publishedPath = $this->getAssetManager()->getPublishedPath(Craft::getAlias($sourcePath), true) . DIRECTORY_SEPARATOR . $filePath;
         $this->getResponse()
             ->sendFile($publishedPath, null, ['inline' => true]);

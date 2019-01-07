@@ -26,6 +26,9 @@
 - Fixed a bug where Number fields weren’t enforcing thein Min Value and Max Value settings if set to 0. ([#3598](https://github.com/craftcms/cms/issues/3598))
 - Fixed a SQL error that occurred when uploading assets with filenames that contained emoji characters, if using MySQL. ([#3601](https://github.com/craftcms/cms/issues/3601))
 
+### Security
+- Fixed a directory traversal vulnerability.
+
 ## 3.0.36 - 2018-12-18
 
 ### Added
