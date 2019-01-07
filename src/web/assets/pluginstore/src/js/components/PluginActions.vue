@@ -143,6 +143,10 @@
                     cmsLicenseKey: window.cmsLicenseKey,
                 }
 
+                if (this.pluginLicenseInfo && this.pluginLicenseInfo.licenseKey) {
+                    item.licenseKey = this.pluginLicenseInfo.licenseKey
+                }
+
                 this.$store.dispatch('cart/addToCart', [item])
                     .then(() => {
                         this.loading = false

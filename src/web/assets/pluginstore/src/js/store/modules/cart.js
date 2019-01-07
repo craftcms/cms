@@ -48,10 +48,47 @@ const getters = {
     activeTrialPlugins(state, getters, rootState, rootGetters) {
         return rootState.pluginStore.plugins.filter(plugin => {
             const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](plugin.handle)
-            if (plugin.editions[0].price > 0 && (pluginLicenseInfo && !pluginLicenseInfo.licenseKey)) {
-                return rootGetters['craft/isPluginInstalled'](plugin.handle)
+
+            if (!pluginLicenseInfo) {
+                return false
             }
+
+            if (pluginLicenseInfo.licenseKey && pluginLicenseInfo.currentEdition === pluginLicenseInfo.licensedEdition) {
+                return false
+            }
+
+            if (!rootGetters['craft/isPluginInstalled'](plugin.handle)) {
+                return false
+            }
+
+            return true
         })
+    },
+
+    activeTrialPluginEditions(state, getters, rootState, rootGetters) {
+        const plugins = getters.activeTrialPlugins
+
+        const pluginEditions = {}
+
+        plugins.forEach(plugin => {
+            const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](plugin.handle)
+            const edition = rootGetters['pluginStore/getPluginEdition'](plugin.handle, pluginLicenseInfo.currentEdition)
+            pluginEditions[plugin.handle] = edition
+        })
+
+        return pluginEditions
+    },
+
+    getActiveTrialPluginEdition(state, getters, rootState, rootGetters) {
+        return pluginHandle => {
+            const pluginEditions = getters.activeTrialPluginEditions
+
+            if (!pluginEditions[pluginHandle]) {
+                return null
+            }
+
+            return pluginEditions[pluginHandle]
+        }
     },
 
     cartItems(state, getters, rootState) {
@@ -350,14 +387,23 @@ const utils = {
 
             switch (lineItem.purchasable.type) {
                 case 'plugin-edition':
-                    lineItems.push({
+                    const item = {
                         type: lineItem.purchasable.type,
                         plugin: lineItem.purchasable.plugin.handle,
                         edition: lineItem.purchasable.handle,
-                        cmsLicenseKey: lineItem.options.cmsLicenseKey,
+                        cmsLicenseKey: window.cmsLicenseKey,
                         expiryDate: lineItem.options.expiryDate,
                         autoRenew: lineItem.options.autoRenew,
-                    })
+                    }
+
+                    let licenseKey = lineItem.options.licenseKey
+
+                    if (licenseKey && licenseKey.substr(0, 3) !== 'new') {
+                        item.licenseKey = licenseKey
+                    }
+
+                    lineItems.push(item)
+
                     break
                 case 'cms-edition':
                     lineItems.push({
