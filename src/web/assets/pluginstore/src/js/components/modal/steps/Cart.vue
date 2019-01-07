@@ -96,11 +96,13 @@
                                 </div>
                             </td>
                             <td>
-                                <strong>{{ plugin.name }}</strong><br />
-                                {{activeTrialPluginEditions[plugin.handle].name}}
+                                <strong>{{ plugin.name }}</strong>
+                                <div class="text-grey-dark">
+                                    {{activeTrialPluginEditions[plugin.handle].name}}
+                                </div>
                             </td>
                             <td><strong>{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
-                            <td class="thin"><a class="btn" @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].currentEdition)">{{ "Add to cart"|t('app') }}</a></td>
+                            <td class="thin"><a class="btn" @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)">{{ "Add to cart"|t('app') }}</a></td>
                         </template>
                     </tr>
                     </tbody>
@@ -175,6 +177,7 @@
                     plugin: plugin.handle,
                     edition: editionHandle,
                     autoRenew: false,
+                    expiryDate: '1y',
                     cmsLicenseKey: window.cmsLicenseKey,
                 }
 
@@ -286,7 +289,7 @@
                 const expiryDate = item.lineItem.options.expiryDate
                 this.$set(this.selectedExpiryDates, key, expiryDate)
             }.bind(this))
-        }
+        },
 
     }
 </script>

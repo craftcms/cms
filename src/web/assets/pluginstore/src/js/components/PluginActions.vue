@@ -16,7 +16,7 @@
         </template>
 
         <!-- Install/Try -->
-        <template v-if="!isPluginInstalled || (isPluginInstalled && pluginLicenseInfo.currentEdition !== edition.handle)">
+        <template v-if="!isPluginInstalled || (isPluginInstalled && pluginLicenseInfo.edition !== edition.handle)">
             <form v-if="allowUpdates" method="post">
                 <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
                 <input type="hidden" name="action" value="pluginstore/install">
@@ -28,17 +28,17 @@
                 <btn-input v-if="isPluginEditionFree" :value="'Install'|t('app')" type="primary" block large></btn-input>
 
                 <template v-else>
-                    <template v-if="(isPluginEditionBuyable && pluginLicenseInfo.currentEdition === edition.handle) || (pluginLicenseInfo.licensedEdition === edition.handle && !pluginLicenseInfo.currentEdition)">
+                    <template v-if="(isPluginEditionBuyable && pluginLicenseInfo.edition === edition.handle) || (pluginLicenseInfo.licensedEdition === edition.handle && !pluginLicenseInfo.edition)">
                         <!-- Install (Commercial) -->
                         <btn-input :value="'Install'|t('app')" block large></btn-input>
                     </template>
 
-                    <template v-else-if="isPluginEditionBuyable && pluginLicenseInfo.currentEdition !== edition.handle">
+                    <template v-else-if="isPluginEditionBuyable && pluginLicenseInfo.edition !== edition.handle">
                         <!-- Try -->
                         <btn-input :value="'Try'|t('app')" block large></btn-input>
                     </template>
 
-                    <template v-else-if="pluginLicenseInfo.licensedEdition === edition.handle && pluginLicenseInfo.currentEdition && pluginLicenseInfo.currentEdition !== edition.handle">
+                    <template v-else-if="pluginLicenseInfo.licensedEdition === edition.handle && pluginLicenseInfo.edition && pluginLicenseInfo.edition !== edition.handle">
                         <!-- Reactivate -->
                         <btn-input :value="'Reactivate'|t('app')" block large></btn-input>
                     </template>
@@ -47,7 +47,7 @@
         </template>
 
         <template v-else>
-                <template v-if="pluginLicenseInfo.currentEdition !== pluginLicenseInfo.licensedEdition">
+                <template v-if="pluginLicenseInfo.edition !== pluginLicenseInfo.licensedEdition">
                     <!-- Installed as a trial -->
                     <btn-input :value="'Installed as a trial'|t('app')" block large disabled></btn-input>
                 </template>

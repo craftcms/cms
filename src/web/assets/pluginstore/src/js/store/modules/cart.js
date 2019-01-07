@@ -53,7 +53,7 @@ const getters = {
                 return false
             }
 
-            if (pluginLicenseInfo.licenseKey && pluginLicenseInfo.currentEdition === pluginLicenseInfo.licensedEdition) {
+            if (pluginLicenseInfo.licenseKey && pluginLicenseInfo.edition === pluginLicenseInfo.licensedEdition) {
                 return false
             }
 
@@ -72,7 +72,7 @@ const getters = {
 
         plugins.forEach(plugin => {
             const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](plugin.handle)
-            const edition = rootGetters['pluginStore/getPluginEdition'](plugin.handle, pluginLicenseInfo.currentEdition)
+            const edition = rootGetters['pluginStore/getPluginEdition'](plugin.handle, pluginLicenseInfo.edition)
             pluginEditions[plugin.handle] = edition
         })
 
