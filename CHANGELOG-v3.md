@@ -28,6 +28,7 @@
 
 ### Security
 - Fixed a directory traversal vulnerability.
+- Fixed a remote code execution vulnerability.
 
 ## 3.0.36 - 2018-12-18
 

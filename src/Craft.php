@@ -122,6 +122,12 @@ class Craft extends Yii
      */
     public static function autoload($className)
     {
+        // FileCookieJar is not supported
+        if ($className === 'GuzzleHttp\Cookie\FileCookieJar') {
+            require dirname(__DIR__) . '/lib/guzzle/FileCookieJar.php';
+            return;
+        }
+
         if ($className !== ContentBehavior::class && $className !== ElementQueryBehavior::class) {
             return;
         }
