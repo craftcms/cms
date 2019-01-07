@@ -12,6 +12,7 @@ const state = {
     cart: null,
     stripePublicKey: null,
     identityMode: 'craftid',
+    selectedExpiryDates: {},
 }
 
 /**
@@ -154,6 +155,10 @@ const actions = {
                 const alreadyInCart = items.find(item => item.plugin === newItem.plugin)
 
                 if (!alreadyInCart) {
+                    let selectedExpiryDates = JSON.parse(JSON.stringify(state.selectedExpiryDates))
+                    selectedExpiryDates[items.length] = '1y'
+                    commit('updateSelectedExpiryDates', selectedExpiryDates)
+
                     items.push(newItem)
                 }
             })
@@ -184,6 +189,11 @@ const actions = {
 
             api.updateCart(cart.number, data, response => {
                 commit('updateCart', {response})
+
+                let selectedExpiryDates = JSON.parse(JSON.stringify(state.selectedExpiryDates))
+                delete selectedExpiryDates[lineItemKey]
+                commit('updateSelectedExpiryDates', selectedExpiryDates)
+
                 resolve(response)
             }, response => {
                 reject(response)
@@ -344,6 +354,14 @@ const mutations = {
     updateCart(state, {response}) {
         state.cart = response.cart
         state.stripePublicKey = response.stripePublicKey
+
+        const selectedExpiryDates = {}
+
+        state.cart.lineItems.forEach((lineItem, key) => {
+            selectedExpiryDates[key] = lineItem.options.expiryDate
+        })
+
+        state.selectedExpiryDates = selectedExpiryDates
     },
 
     resetCart(state) {
@@ -352,6 +370,10 @@ const mutations = {
 
     changeIdentityMode(state, mode) {
         state.identityMode = mode
+    },
+
+    updateSelectedExpiryDates(state, selectedExpiryDates) {
+        state.selectedExpiryDates = selectedExpiryDates
     }
 
 }
