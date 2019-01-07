@@ -373,6 +373,7 @@ class AppController extends Controller
         foreach ($info as $handle => $pluginInfo) {
             $result[$handle] = [
                 'isInstalled' => true,
+                'edition' => $pluginInfo['edition'],
                 'licenseKey' => $pluginInfo['licenseKey'],
                 'licensedEdition' => $pluginInfo['licensedEdition'],
                 'licenseKeyStatus' => $pluginInfo['licenseKeyStatus'],
