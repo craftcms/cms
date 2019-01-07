@@ -95,9 +95,12 @@
                                     <div class="default-icon" v-else></div>
                                 </div>
                             </td>
-                            <td><strong>{{ plugin.name }}</strong></td>
-                            <td><strong>{{ plugin.editions[0].price|currency }}</strong></td>
-                            <td class="thin"><a class="btn" @click="addToCart(plugin)">{{ "Add to cart"|t('app') }}</a></td>
+                            <td>
+                                <strong>{{ plugin.name }}</strong><br />
+                                {{activeTrialPluginEditions[plugin.handle].name}}
+                            </td>
+                            <td><strong>{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
+                            <td class="thin"><a class="btn" @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].currentEdition)">{{ "Add to cart"|t('app') }}</a></td>
                         </template>
                     </tr>
                     </tbody>
@@ -131,17 +134,26 @@
                 craftLogo: state => state.craft.craftLogo,
                 craftId: state => state.craft.craftId,
                 expiryDateOptions: state => state.pluginStore.expiryDateOptions,
+                pluginLicenseInfo: state => state.craft.pluginLicenseInfo,
             }),
 
             ...mapGetters({
                 activeTrialPlugins: 'cart/activeTrialPlugins',
                 cartItems: 'cart/cartItems',
                 cartItemsData: 'cart/cartItemsData',
+                getActiveTrialPluginEdition: 'cart/getActiveTrialPluginEdition',
+                activeTrialPluginEditions: 'cart/activeTrialPluginEditions',
+                getPluginEdition: 'pluginStore/getPluginEdition',
+                getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
             }),
 
             pendingActiveTrials() {
                 return this.activeTrialPlugins.filter(p => {
                     if (p) {
+                        if(!this.cart) {
+                            return false
+                        }
+
                         return !this.cart.lineItems.find(item => {
                             return item.purchasable.pluginId == p.id
                         })
@@ -157,13 +169,19 @@
                 removeFromCart: 'cart/removeFromCart'
             }),
 
-            addToCart(plugin) {
+            addToCart(plugin, editionHandle) {
                 const item = {
                     type: 'plugin-edition',
                     plugin: plugin.handle,
-                    edition: plugin.editions[0].handle,
+                    edition: editionHandle,
                     autoRenew: false,
                     cmsLicenseKey: window.cmsLicenseKey,
+                }
+
+                const pluginLicenseInfo = this.getPluginLicenseInfo(plugin.handle)
+
+                if (pluginLicenseInfo && pluginLicenseInfo.licenseKey) {
+                    item.licenseKey = pluginLicenseInfo.licenseKey
                 }
 
                 this.$store.dispatch('cart/addToCart', [item])
@@ -173,14 +191,23 @@
                 let $store = this.$store
                 let items = []
 
-                this.pendingActiveTrials.forEach(activeTrialPlugin => {
-                    items.push({
+                this.pendingActiveTrials.forEach(plugin => {
+                    const edition = this.getActiveTrialPluginEdition(plugin.handle)
+                    const pluginLicenseInfo = this.getPluginLicenseInfo(plugin.handle)
+
+                    const item = {
                         type: 'plugin-edition',
-                        plugin: activeTrialPlugin.handle,
-                        edition: activeTrialPlugin.editions[0].handle,
+                        plugin: plugin.handle,
+                        edition: edition.handle,
                         autoRenew: false,
                         cmsLicenseKey: window.cmsLicenseKey,
-                    })
+                    }
+
+                    if (pluginLicenseInfo.licenseKey) {
+                        item.licenseKey = pluginLicenseInfo.licenseKey
+                    }
+
+                    items.push(item)
                 })
 
                 $store.dispatch('cart/addToCart', items)

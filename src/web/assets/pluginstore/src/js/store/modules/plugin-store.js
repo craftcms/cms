@@ -68,6 +68,18 @@ const getters = {
         }
     },
 
+    getPluginEdition(state, getters) {
+        return (pluginHandle, editionHandle) => {
+            const plugin = getters.getPluginByHandle(pluginHandle)
+
+            if (!plugin) {
+                return false
+            }
+
+            return plugin.editions.find(edition => edition.handle === editionHandle)
+        }
+    },
+
     isPluginFree(state) {
         return plugin => {
             if (plugin.editions.length !== 1) {

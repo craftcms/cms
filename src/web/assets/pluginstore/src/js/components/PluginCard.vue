@@ -6,7 +6,12 @@
         </div>
 
         <div>
-            <strong>{{ plugin.name }}</strong>
+            <strong>
+                {{ plugin.name }}
+                <template v-if="activeTrialPluginEdition">
+                    ({{activeTrialPluginEdition.name}})
+                </template>
+            </strong>
             <div v-shave="{ height: 45 }">{{ plugin.shortDescription }}</div>
             
             <p class="light">
@@ -50,7 +55,12 @@
 
             ...mapGetters({
                 isPluginInstalled: 'craft/isPluginInstalled',
+                getActiveTrialPluginEdition: 'cart/getActiveTrialPluginEdition',
             }),
+
+            activeTrialPluginEdition() {
+                return this.getActiveTrialPluginEdition(this.plugin.handle)
+            },
 
             priceRange() {
                 const editions = this.plugin.editions
