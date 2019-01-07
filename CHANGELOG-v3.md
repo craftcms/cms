@@ -19,6 +19,7 @@
 - Fixed an exception that would be thrown when saving a user from a front-end form with a non-empty `email` or `newPassword` param, if the `password` param was missing or empty. ([#3585](https://github.com/craftcms/cms/issues/3585))
 - Fixed a bug where global set, Matrix block, tag, and user queries weren’t respecting `fixedOrder` params.
 - Fixed a bug where `craft\helpers\MigrationHelper::renameColumn()` was only restoring the last foreign key for each table that had multiple foreign keys referencing the table with the renamed column.
+- Fixed a bug where Date/Time fields could output the wrong date in Live Preview requests. ([#3594](https://github.com/craftcms/cms/issues/3594))
 - Fixed a few RTL language styling issues.
 - Fixed a bug where drap-and-drop uploading would not work for asset fields.
 
