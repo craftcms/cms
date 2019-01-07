@@ -18,28 +18,16 @@ use yii\console\Controller;
  * This command indexes assets on all volumes or specified volumes.
  * ~~~
  * # Indexes all assets on all volumes. Optional argument is whether or not to cache images.
- * Default is true.
- * craft asset-indexing/all false
- * # Indexes all assets on a specified volume (EXAMPLE). Second (optional) argument is
- * is whether or not to cache images. Default is true.
- * craft asset-indexing/one EXAMPLE false
+ * craft asset-indexing/all
+ * # Indexes all assets on a specified volume (EXAMPLE_HANDLE). Second (optional) argument is
+ * is whether or not to cache images.
+ * craft asset-indexing/one EXAMPLE_HANDLE
  * ~~~
  *
  * @since 3.1
  */
 class AssetIndexingController extends Controller
 {
-    // Properties
-    // =========================================================================
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-    }
-
     /**
      * Indexes all assets on all volumes.
      *
@@ -47,13 +35,15 @@ class AssetIndexingController extends Controller
      *
      * ```
      * craft asset-indexing/all
+     * // Index all assets without caching images:
+     * craft asset-indexing/all 0
      * ```
      *
-     * @param boolean $cacheImages whether or not to cache images. Default is true.
+     * @param boolean $cacheImages Whether or not to cache images.
      * @return boolean.
      * @throws \Throwable $e.
      */
-    public function actionAll($cacheImages = true)
+    public function actionAll($cacheImages = 1)
     {
         try {
             if ($volumes = Craft::$app->getVolumes()->getAllVolumes()) {
@@ -83,17 +73,19 @@ class AssetIndexingController extends Controller
      * This command gives a CLI way to index all assets.
      *
      * ```
-     * craft asset-indexing/one EXAMPLE
+     * craft asset-indexing/one EXAMPLE_HANDLE
+     * // Index volume without caching images:
+     * craft asset-indexing/one EXAMPLE_HANDLE 0
      * ```
      *
      * @param string $name the name of the volume to index. This should only contain
      * letters, digits, and underscores.
-     * @param boolean $cacheImages whether or not to cache images. Default is true.
+     * @param boolean $cacheImages Whether or not to cache images.
      * @return boolean.
      * @throws \Throwable $e.
      */
 
-    public function actionOne($name, $cacheImages = true)
+    public function actionOne($name, $cacheImages = 1)
     {
         try {
             if ($volume = Craft::$app->getVolumes()->getVolumeByHandle($name)) {
