@@ -31,8 +31,6 @@ class AssetIndexingController extends Controller
     /**
      * Indexes all assets on all volumes.
      *
-     * This command gives a CLI way to index all assets.
-     *
      * ```
      * craft asset-indexing/all
      * // Index all assets without caching images:
@@ -69,8 +67,6 @@ class AssetIndexingController extends Controller
 
     /**
      * Indexes all assets on one specific volume.
-     *
-     * This command gives a CLI way to index all assets.
      *
      * ```
      * craft asset-indexing/one EXAMPLE_HANDLE
