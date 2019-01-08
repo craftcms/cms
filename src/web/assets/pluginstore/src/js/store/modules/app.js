@@ -11,16 +11,12 @@ const state = {
 /**
  * Getters
  */
-const getters = {
-
-}
+const getters = {}
 
 /**
  * Actions
  */
-const actions = {
-
-}
+const actions = {}
 
 /**
  * Mutations
