@@ -15,6 +15,7 @@
 - `craft\db\mysql\Schema::findIndexes()` and `craft\db\pgsql\Schema::findIndexes()` now return arrays with `columns` and `unique` keys.
 - `craft\helpers\ArrayHelper::filterByValue()` now defaults its `$value` argument to `true`.
 - `craft\helpers\MigrationHelper::doesIndexExist()` no longer has a `$foreignKey` argument, and now has an optional `$db` argument.
+- Changed how asset fields store upload location to be compatible for migration between environments via Project Config.
 
 ### Deprecated
 - Deprecated `craft\helpers\MigrationHelper::dropAllIndexesOnTable()`.
