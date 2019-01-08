@@ -99,6 +99,26 @@ const actions = {
                     reject(response)
                 })
         })
+    },
+
+    /**
+     * Switch plugin edition.
+     */
+    switchPluginEdition({dispatch}, {pluginHandle, edition}) {
+        return new Promise((resolve, reject) => {
+            api.switchPluginEdition(pluginHandle, edition)
+                .then(switchPluginEditionResponse => {
+                    dispatch('getPluginLicenseInfo')
+                        .then(getPluginLicenseInfoResponse => {
+                            resolve({
+                                switchPluginEditionResponse,
+                                getPluginLicenseInfoResponse,
+                            })
+                        })
+                        .catch(response => reject(response))
+                })
+                .catch(response => reject(response))
+        })
     }
 
 }
