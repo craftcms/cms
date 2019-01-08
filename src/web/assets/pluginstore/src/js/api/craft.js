@@ -37,6 +37,19 @@ export default {
                 'X-CSRF-Token': Craft.csrfTokenValue,
             }
         })
+    },
+
+    /**
+     * Switch plugin edition.
+     */
+    switchPluginEdition(pluginHandle, edition) {
+        const data = 'pluginHandle=' + pluginHandle + '&edition=' + edition
+
+        return axios.post(Craft.getActionUrl('plugins/switch-edition'), data, {
+            headers: {
+                'X-CSRF-Token': Craft.csrfTokenValue,
+            },
+        })
     }
 
 }

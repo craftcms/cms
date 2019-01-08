@@ -8,7 +8,7 @@
         <div>
             <strong>
                 {{ plugin.name }}
-                <template v-if="activeTrialPluginEdition">
+                <template v-if="trialMode && activeTrialPluginEdition">
                     ({{activeTrialPluginEdition.name}})
                 </template>
             </strong>
@@ -45,7 +45,7 @@
 
     export default {
 
-        props: ['plugin'],
+        props: ['plugin', 'trialMode'],
 
         computed: {
 

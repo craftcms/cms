@@ -120,7 +120,6 @@
 
         data() {
             return {
-                selectedExpiryDates: {},
                 loadingItems: {},
             }
         },
@@ -148,6 +147,15 @@
                 getPluginEdition: 'pluginStore/getPluginEdition',
                 getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
             }),
+
+            selectedExpiryDates: {
+                get() {
+                    return JSON.parse(JSON.stringify(this.$store.state.cart.selectedExpiryDates))
+                },
+                set(newValue) {
+                    this.$store.commit('cart/updateSelectedExpiryDates', newValue)
+                }
+            },
 
             pendingActiveTrials() {
                 return this.activeTrialPlugins.filter(p => {
@@ -177,7 +185,6 @@
                     plugin: plugin.handle,
                     edition: editionHandle,
                     autoRenew: false,
-                    expiryDate: '1y',
                     cmsLicenseKey: window.cmsLicenseKey,
                 }
 
@@ -282,13 +289,6 @@
 
                 return true
             }
-        },
-
-        mounted() {
-            this.cartItems.forEach(function(item, key) {
-                const expiryDate = item.lineItem.options.expiryDate
-                this.$set(this.selectedExpiryDates, key, expiryDate)
-            }.bind(this))
         },
 
     }

@@ -80,20 +80,6 @@ const getters = {
         }
     },
 
-    isPluginFree(state) {
-        return plugin => {
-            if (plugin.editions.length !== 1) {
-                return false
-            }
-
-            if (parseFloat(plugin.editions[0].price) !== 0) {
-                return false
-            }
-
-            return true
-        }
-    },
-
     isPluginEditionFree(state) {
         return edition => {
             return parseFloat(edition.price) === 0

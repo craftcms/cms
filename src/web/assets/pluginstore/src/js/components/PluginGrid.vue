@@ -2,7 +2,7 @@
     <div>
         <div class="ps-grid-plugins" v-if="plugins && plugins.length > 0">
             <div class="ps-grid-box" v-for="plugin in plugins">
-                <plugin-card :plugin="plugin" @click="showPlugin(plugin)"></plugin-card>
+                <plugin-card :plugin="plugin" @click="showPlugin(plugin)" :trialMode="trialMode"></plugin-card>
             </div>
         </div>
     </div>
@@ -17,7 +17,7 @@
             PluginCard,
         },
 
-        props: ['plugins'],
+        props: ['plugins', 'trialMode'],
 
         methods: {
 

@@ -17,12 +17,22 @@
 
         <!-- Install/Try -->
         <template v-if="!isPluginInstalled || (isPluginInstalled && pluginLicenseInfo.edition !== edition.handle)">
-            <form v-if="allowUpdates" method="post">
+            <form v-if="allowUpdates" method="post" @submit="onSwitchOrInstallSubmit">
                 <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
-                <input type="hidden" name="action" value="pluginstore/install">
-                <input type="hidden" name="packageName" :value="plugin.packageName">
-                <input type="hidden" name="handle" :value="plugin.handle">
-                <input type="hidden" name="version" :value="plugin.version">
+
+                <template v-if="isPluginInstalled">
+                    <!-- Switch -->
+                    <input type="hidden" name="action" value="plugins/switch-edition">
+                    <input type="hidden" name="pluginHandle" :value="plugin.handle">
+                    <input type="hidden" name="edition" :value="edition.handle">
+                </template>
+                <template v-else>
+                    <!-- Install -->
+                    <input type="hidden" name="action" value="pluginstore/install">
+                    <input type="hidden" name="packageName" :value="plugin.packageName">
+                    <input type="hidden" name="handle" :value="plugin.handle">
+                    <input type="hidden" name="version" :value="plugin.version">
+                </template>
 
                 <!-- Install (Free) -->
                 <btn-input v-if="isPluginEditionFree" :value="'Install'|t('app')" type="primary" block large></btn-input>
@@ -57,7 +67,6 @@
                     <btn-input :value="'Installed'|t('app')" block large disabled></btn-input>
                 </template>
         </template>
-
 
         <div class="spinner" v-if="loading"></div>
     </div>
@@ -153,6 +162,29 @@
                         this.$root.openModal('cart')
                     })
             },
+
+            onSwitchOrInstallSubmit($ev) {
+                this.loading = true
+
+                if (this.isPluginInstalled) {
+                    // Switch (prevent form submit)
+
+                    $ev.preventDefault()
+
+                    this.$store.dispatch('craft/switchPluginEdition', {
+                        pluginHandle: this.plugin.handle,
+                        edition: this.edition.handle,
+                    })
+                        .then(response => {
+                            this.loading = false
+                            this.$root.displayNotice("Plugin edition changed.")
+                        })
+
+                    return false
+                }
+
+                // Install (don’t prevent form submit)
+            }
 
         }
 
