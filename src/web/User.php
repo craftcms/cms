@@ -367,11 +367,11 @@ class User extends \yii\web\User
     protected function beforeLogin($identity, $cookieBased, $duration)
     {
         // Only allow the login if the request meets our user agent and IP requirements
-        if ($this->_validateUserAgentAndIp()) {
-            return parent::beforeLogin($identity, $cookieBased, $duration);
+        if (!$this->_validateUserAgentAndIp()) {
+            return false;
         }
 
-        return false;
+        return parent::beforeLogin($identity, $cookieBased, $duration);
     }
 
     /**
@@ -405,21 +405,23 @@ class User extends \yii\web\User
     protected function renewAuthStatus()
     {
         // Only renew if the request meets our user agent and IP requirements
-        if (Craft::$app->getIsInstalled() && $this->_validateUserAgentAndIp()) {
-            // Prevent the user session from getting extended?
-            $request = Craft::$app->getRequest();
-            if ($this->authTimeout !== null && $request->getParam('dontExtendSession')) {
-                $this->absoluteAuthTimeout = $this->authTimeout;
-                $this->authTimeout = null;
-                $absoluteAuthTimeoutParam = $this->absoluteAuthTimeoutParam;
-                $this->absoluteAuthTimeoutParam = $this->authTimeoutParam;
-                parent::renewAuthStatus();
-                $this->authTimeout = $this->absoluteAuthTimeout;
-                $this->absoluteAuthTimeout = null;
-                $this->absoluteAuthTimeoutParam = $absoluteAuthTimeoutParam;
-            } else {
-                parent::renewAuthStatus();
-            }
+        if (!Craft::$app->getIsInstalled() || !$this->_validateUserAgentAndIp()) {
+            return;
+        }
+
+        // Prevent the user session from getting extended?
+        $request = Craft::$app->getRequest();
+        if ($this->authTimeout !== null && $request->getParam('dontExtendSession')) {
+            $this->absoluteAuthTimeout = $this->authTimeout;
+            $this->authTimeout = null;
+            $absoluteAuthTimeoutParam = $this->absoluteAuthTimeoutParam;
+            $this->absoluteAuthTimeoutParam = $this->authTimeoutParam;
+            parent::renewAuthStatus();
+            $this->authTimeout = $this->absoluteAuthTimeout;
+            $this->absoluteAuthTimeout = null;
+            $this->absoluteAuthTimeoutParam = $absoluteAuthTimeoutParam;
+        } else {
+            parent::renewAuthStatus();
         }
     }
 
@@ -488,14 +490,15 @@ class User extends \yii\web\User
      */
     private function _validateUserAgentAndIp(): bool
     {
-        if (Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession) {
-            $request = Craft::$app->getRequest();
+        if (!Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession) {
+            return true;
+        }
 
-            if ($request->getUserAgent() === null || $request->getUserIP() === null) {
-                Craft::warning('Request didn’t meet the user agent and IP requirement for maintaining a user session.', __METHOD__);
+        $request = Craft::$app->getRequest();
 
-                return false;
-            }
+        if ($request->getUserAgent() === null || $request->getUserIP() === null) {
+            Craft::warning('Request didn’t meet the user agent and IP requirement for maintaining a user session.', __METHOD__);
+            return false;
         }
 
         return true;

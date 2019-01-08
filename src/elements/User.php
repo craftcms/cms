@@ -1442,14 +1442,15 @@ class User extends Element implements IdentityInterface
      */
     private function _validateUserAgent(string $userAgent): bool
     {
-        if (Craft::$app->getConfig()->getGeneral()->requireMatchingUserAgentForSession) {
-            $requestUserAgent = Craft::$app->getRequest()->getUserAgent();
+        if (!Craft::$app->getConfig()->getGeneral()->requireMatchingUserAgentForSession) {
+            return true;
+        }
 
-            if ($userAgent !== $requestUserAgent) {
-                Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent (' . $userAgent . ') does not match the current request’s (' . $requestUserAgent . ').', __METHOD__);
+        $requestUserAgent = Craft::$app->getRequest()->getUserAgent();
 
-                return false;
-            }
+        if ($userAgent !== $requestUserAgent) {
+            Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent (' . $userAgent . ') does not match the current request’s (' . $requestUserAgent . ').', __METHOD__);
+            return false;
         }
 
         return true;
