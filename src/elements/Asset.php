@@ -38,6 +38,7 @@ use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
+use craft\validators\StringValidator;
 use craft\volumes\Temp;
 use DateTime;
 use yii\base\ErrorHandler;
@@ -574,6 +575,7 @@ class Asset extends Element
     {
         $rules = parent::rules();
 
+        $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'on' => [self::SCENARIO_CREATE]];
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
