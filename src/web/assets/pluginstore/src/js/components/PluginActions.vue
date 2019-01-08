@@ -177,6 +177,7 @@
                     })
                         .then(response => {
                             this.loading = false
+                            this.$root.displayNotice("Plugin edition changed.")
                         })
 
                     return false
