@@ -235,9 +235,9 @@ The following template functions have been deprecated in Craft 3, and will be co
 | `getHeadHtml()`                                         | `head()`
 | `getFootHtml()`                                         | `endBody()`
 | `getTranslations()`                                     | `view.getTranslations()|json_encode|raw`
-| `craft.categoryGroups.getAllGroupIds()`                 | `craft.app.categoryGroups.allGroupIds`
+| `craft.categoryGroups.getAllGroupIds()`                 | `craft.app.categories.allGroupIds`
 | `craft.categoryGroups.getEditableGroupIds()`            | `craft.app.categories.editableGroupIds`
-| `craft.categoryGroups.getAllGroups()`                   | `craft.app.categoryGroups.allGroups`
+| `craft.categoryGroups.getAllGroups()`                   | `craft.app.categories.allGroups`
 | `craft.categoryGroups.getEditableGroups()`              | `craft.app.categories.editableGroups`
 | `craft.categoryGroups.getTotalGroups()`                 | `craft.app.categories.totalGroups`
 | `craft.categoryGroups.getGroupById(id)`                 | `craft.app.categories.getGroupById(id)`

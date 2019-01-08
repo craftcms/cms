@@ -185,7 +185,7 @@ class Number extends Field implements PreviewableFieldInterface
     public function getElementValidationRules(): array
     {
         return [
-            ['number', 'min' => $this->min ?: null, 'max' => $this->max ?: null],
+            ['number', 'min' => $this->min, 'max' => $this->max],
         ];
     }
 }
