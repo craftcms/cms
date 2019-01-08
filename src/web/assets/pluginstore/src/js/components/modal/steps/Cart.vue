@@ -185,7 +185,6 @@
                     plugin: plugin.handle,
                     edition: editionHandle,
                     autoRenew: false,
-                    expiryDate: '1y',
                     cmsLicenseKey: window.cmsLicenseKey,
                 }
 

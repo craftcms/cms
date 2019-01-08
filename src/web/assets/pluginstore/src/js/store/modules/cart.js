@@ -155,11 +155,9 @@ const actions = {
                 const alreadyInCart = items.find(item => item.plugin === newItem.plugin)
 
                 if (!alreadyInCart) {
-                    let selectedExpiryDates = JSON.parse(JSON.stringify(state.selectedExpiryDates))
-                    selectedExpiryDates[items.length] = '1y'
-                    commit('updateSelectedExpiryDates', selectedExpiryDates)
-
-                    items.push(newItem)
+                    let item = {...newItem}
+                    item.expiryDate = '1y'
+                    items.push(item)
                 }
             })
 
@@ -189,10 +187,6 @@ const actions = {
 
             api.updateCart(cart.number, data, response => {
                 commit('updateCart', {response})
-
-                let selectedExpiryDates = JSON.parse(JSON.stringify(state.selectedExpiryDates))
-                delete selectedExpiryDates[lineItemKey]
-                commit('updateSelectedExpiryDates', selectedExpiryDates)
 
                 resolve(response)
             }, response => {
