@@ -261,6 +261,10 @@ th, td { vertical-align: middle; }
 body.ltr th, body.ltr td { text-align: left; }
 body.rtl th, body.rtl td { text-align: right; }
 
+body.ltr table[dir='rtl'] th, body.ltr table[dir='rtl'] td { text-align: right; }
+
+body.rtl table[dir='ltr'] th, body.rtl table[dir='ltr'] td { text-align: left; }
+
 th.right, td.right { float: none; }
 body.ltr th.right, body.ltr td.right { text-align: right; }
 body.rtl th.right, body.rtl td.right { text-align: left; }
@@ -402,7 +406,8 @@ body.rtl .flex > *:not(:last-child) { margin-left: 7px !important; }
 .flex-grow { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 
 .buttons { display: -webkit-box; display: -ms-flexbox; display: flex; position: relative; margin: 24px 0; }
-.buttons > .btn:not(.hidden) + .btn, .buttons > .btn:not(.hidden) + .btngroup, .buttons > .btngroup:not(.hidden) + .btn, .buttons > .btngroup:not(.hidden) + .btngroup { margin-left: 5px; }
+body.ltr .buttons > .btn:not(.hidden) + .btn, body.ltr .buttons > .btn:not(.hidden) + .btngroup, body.ltr .buttons > .btngroup:not(.hidden) + .btn, body.ltr .buttons > .btngroup:not(.hidden) + .btngroup { margin-left: 5px; }
+body.rtl .buttons > .btn:not(.hidden) + .btn, body.rtl .buttons > .btn:not(.hidden) + .btngroup, body.rtl .buttons > .btngroup:not(.hidden) + .btn, body.rtl .buttons > .btngroup:not(.hidden) + .btngroup { margin-right: 5px; }
 .footer > .buttons { margin: 0; }
 
 .btn { display: inline-block; border-radius: 2px; padding: 6px 12px; border: none; text-align: center; white-space: nowrap; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; cursor: pointer; -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-appearance: none; -moz-appearance: none; appearance: none; -webkit-box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1); color: #29323d; }
@@ -606,8 +611,9 @@ table thead th.orderable:hover { background-color: #f9f9f9; }
 th.thin, td.thin { width: 0.01% !important; }
 
 /* data */
-body.ltr table.data th:not(:first-child), body.ltr table.data td:not(:first-child) { padding-left: 14px; }
-body.rtl table.data th:not(:first-child), body.rtl table.data td:not(:first-child) { padding-right: 14px; }
+body.ltr table.data:not([dir='rtl']) th:not(:first-child), body.ltr table.data:not([dir='rtl']) td:not(:first-child), body.rtl table.data[dir='ltr'] th:not(:first-child), body.rtl table.data[dir='ltr'] td:not(:first-child) { padding-left: 14px; }
+
+body.rtl table.data:not([dir='ltr']) th:not(:first-child), body.rtl table.data:not([dir='ltr']) td:not(:first-child), body.ltr table.data[dir='rtl'] th:not(:first-child), body.ltr table.data[dir='rtl'] td:not(:first-child) { padding-right: 14px; }
 
 table.data thead th, table.data thead td { padding-top: 4px; padding-bottom: 4px; width: auto; cursor: default; }
 

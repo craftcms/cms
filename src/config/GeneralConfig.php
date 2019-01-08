@@ -294,6 +294,25 @@ class GeneralConfig extends BaseObject
      */
     public $extraAppLocales;
     /**
+     * @var array List of additional file kinds Craft should support. This array
+     * will get merged with the one defined in [[craft\helpers\Assets::_buildFileKinds()]].
+     *
+     * ```php
+     * 'extraFileKinds' => [
+     *     // merge .psb into list of Photoshop file kinds
+     *     'photoshop' => [
+     *         'extensions' => ['psb'],
+     *     ],
+     *     // register new "Stylesheet" file kind
+     *     'stylesheet' => [
+     *         'label' => 'Stylesheet',
+     *         'extensions' => ['css', 'less', 'pcss', 'sass', 'scss', 'styl'],
+     *     ],
+     * ],
+     * ```
+     */
+    public $extraFileKinds = [];
+    /**
      * @var string|bool The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
      */
     public $filenameWordSeparator = '-';

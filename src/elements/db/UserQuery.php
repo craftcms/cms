@@ -31,6 +31,11 @@ class UserQuery extends ElementQuery
     // Properties
     // =========================================================================
 
+    /**
+     * @inheritdoc
+     */
+    protected $defaultOrderBy = ['users.username' => SORT_ASC];
+
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -140,11 +145,6 @@ class UserQuery extends ElementQuery
      */
     public function __construct($elementType, array $config = [])
     {
-        // Default orderBy
-        if (!isset($config['orderBy'])) {
-            $config['orderBy'] = 'users.username';
-        }
-
         // Default status
         if (!isset($config['status'])) {
             $config['status'] = [User::STATUS_ACTIVE];

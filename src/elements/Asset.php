@@ -38,6 +38,7 @@ use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
+use craft\validators\StringValidator;
 use craft\volumes\Temp;
 use DateTime;
 use yii\base\ErrorHandler;
@@ -574,6 +575,7 @@ class Asset extends Element
     {
         $rules = parent::rules();
 
+        $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'on' => [self::SCENARIO_CREATE]];
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
@@ -1065,6 +1067,8 @@ class Asset extends Element
      */
     public function getEditorHtml(): string
     {
+        $view = Craft::$app->getView();
+
         if (!$this->fieldLayoutId) {
             $this->fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
         }
@@ -1106,7 +1110,7 @@ class Asset extends Element
             // NBD
         }
 
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+        $html .= $view->renderTemplateMacro('_includes/forms', 'textField', [
             [
                 'label' => Craft::t('app', 'Filename'),
                 'id' => 'newFilename',
@@ -1119,7 +1123,7 @@ class Asset extends Element
             ]
         ]);
 
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+        $html .= $view->renderTemplateMacro('_includes/forms', 'textField', [
             [
                 'label' => Craft::t('app', 'Title'),
                 'siteId' => $this->siteId,

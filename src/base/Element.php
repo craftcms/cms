@@ -1647,6 +1647,9 @@ abstract class Element extends Component implements ElementInterface
             }
 
             $this->setFieldValue($field->handle, $value);
+
+            // Normalize it now in case the system language changes later
+            $this->normalizeFieldValue($field->handle);
         }
     }
 

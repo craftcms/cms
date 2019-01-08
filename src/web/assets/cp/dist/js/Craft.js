@@ -1,4 +1,4 @@
-/*!   - 2018-12-12 */
+/*!   - 2018-12-28 */
 (function($){
 
 /** global: Craft */
@@ -3674,7 +3674,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         },
 
         createElementEditor: function($element) {
-            Craft.createElementEditor(this.elementIndex.elementType, $element, {
+            Craft.createElementEditor($element.data('type'), $element, {
                 elementIndex: this.elementIndex
             });
         },
@@ -12700,7 +12700,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
             return true;
         },
-        addRow: function() {
+        addRow: function(focus) {
             if (!this.canAddRow()) {
                 return;
             }
@@ -12709,17 +12709,21 @@ Craft.EditableTable = Garnish.Base.extend(
                 $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
             $tr.appendTo(this.$tbody);
-            new Craft.EditableTable.Row(this, $tr);
+            var row = new Craft.EditableTable.Row(this, $tr);
             this.sorter.addItems($tr);
 
             // Focus the first input in the row
-            $tr.find('input,textarea,select').first().trigger('focus');
+            if (focus !== false) {
+                $tr.find('input,textarea,select').first().trigger('focus');
+            }
 
             this.rowCount++;
             this.updateAddRowButton();
 
             // onAddRow callback
             this.settings.onAddRow($tr);
+
+            return row;
         },
 
         createRow: function(rowId, columns, baseName, values) {
@@ -12877,6 +12881,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             this.$tr = $(tr);
             this.$tds = this.$tr.children();
 
+            this.$tr.data('editable-table-row', this);
+
             // Get the row ID, sans prefix
             var id = parseInt(this.$tr.attr('data-id').substr(this.table.settings.rowIdPrefix.length));
 
@@ -12909,8 +12915,9 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                         onHeightChange: $.proxy(this, 'onTextareaHeightChange')
                     }));
 
+                    this.addListener($textarea, 'keypress', {tdIndex: i, type: col.type}, 'handleKeypress');
+
                     if (col.type === 'singleline' || col.type === 'number') {
-                        this.addListener($textarea, 'keypress', {type: col.type}, 'validateKeypress');
                         this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
                         $textarea.trigger('textchange');
                     }
@@ -12977,13 +12984,33 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             $.data(ev.currentTarget, 'ignoreNextFocus', true);
         },
 
-        validateKeypress: function(ev) {
+        handleKeypress: function(ev) {
             var keyCode = ev.keyCode ? ev.keyCode : ev.charCode;
+            var ctrl = Garnish.isCtrlKeyPressed(ev);
 
-            if (!Garnish.isCtrlKeyPressed(ev) && (
-                    (keyCode === Garnish.RETURN_KEY) ||
-                    (ev.data.type === 'number' && !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes))
-                )) {
+            // Going to the next row?
+            if (keyCode === Garnish.RETURN_KEY && (ev.data.type !== 'multiline' || ctrl)) {
+                ev.preventDefault();
+                var $nextTr = this.$tr.next('tr');
+                var nextRow;
+
+                if ($nextTr.length) {
+                    nextRow = $nextTr.data('editable-table-row');
+                } else {
+                    nextRow = this.table.addRow(false);
+                }
+
+                // Focus on the same cell in the next row
+                if (nextRow) {
+                    $(ev.currentTarget).trigger('blur');
+                    $('textarea', nextRow.$tds[ev.data.tdIndex]).trigger('focus');
+                }
+
+                return;
+            }
+
+            // Was this an invalid number character?
+            if (ev.data.type === 'number' && !ctrl && !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes)) {
                 ev.preventDefault();
             }
         },
@@ -18116,7 +18143,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
         },
 
         createElementEditor: function($element) {
-            Craft.createElementEditor(this.elementIndex.elementType, $element, {
+            Craft.createElementEditor($element.data('type'), $element, {
                 params: {
                     includeTableAttributesForSource: this.elementIndex.sourceKey
                 },
