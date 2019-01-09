@@ -7,6 +7,9 @@
 - Added `craft\base\Element::EVENT_DEFINE_EAGER_LOADING_MAP`.
 - Added `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_SETTINGS`. ([#3314](https://github.com/craftcms/cms/issues/3314))
 
+### Changed
+- All classes that extend `craft\base\Model` now have `EVENT_INIT` and `EVENT_DEFINE_BEHAVIORS` events; not just classes that extend `craft\base\Component`.
+
 ### Fixed
 - Fixed an error that occurred when updating to 3.1.0-beta.6 if no Matrix fields existed.
 
