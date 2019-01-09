@@ -974,9 +974,10 @@ class Install extends Migration
         ]));
         echo "done\n";
 
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
         $applyExistingProjectConfig = false;
 
-        if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
+        if ($generalConfig->useProjectConfigFile) {
             $configDir = Craft::$app->getPath()->getConfigPath();
             $configFile = $configDir . '/' . ProjectConfig::CONFIG_FILENAME;
 
@@ -1046,7 +1047,7 @@ class Install extends Migration
 
         // Log them in
         if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
-            Craft::$app->getUser()->login($user);
+            Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
         }
     }
 

@@ -1331,7 +1331,7 @@ class User extends Element implements IdentityInterface
 
             // If this is for the current user, recreate their session so they don't get logged out
             if ($this->getIsCurrent()) {
-                Craft::$app->getUser()->switchIdentity($this);
+                Craft::$app->getUser()->switchIdentity($this, Craft::$app->getConfig()->getGeneral()->userSessionDuration);
             }
         }
     }
