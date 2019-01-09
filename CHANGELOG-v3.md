@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `storeUserIps` config setting. ([#3311](https://github.com/craftcms/cms/issues/3311))
+- Added `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_SETTINGS`. ([#3314](https://github.com/craftcms/cms/issues/3314))
 
 ### Fixed
 - Fixed an error that occurred when updating to 3.1.0-beta.6 if no Matrix fields existed.
