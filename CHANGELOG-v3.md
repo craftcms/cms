@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Craft wasn’t saving Dashboard widget sizes properly on PostgreSQL. ([#3609](https://github.com/craftcms/cms/issues/3609))
+
 ## 3.0.37 - 2019-01-08
 
 ### Added

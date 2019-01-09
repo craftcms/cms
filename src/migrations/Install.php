@@ -726,7 +726,7 @@ class Install extends Migration
             'userId' => $this->integer()->notNull(),
             'type' => $this->string()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
-            'colspan' => $this->boolean()->defaultValue(false)->notNull(),
+            'colspan' => $this->tinyInteger(),
             'settings' => $this->text(),
             'enabled' => $this->boolean()->defaultValue(true)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
