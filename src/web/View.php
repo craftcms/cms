@@ -283,7 +283,13 @@ class View extends \yii\web\View
      */
     public function registerTwigExtension(Twig_ExtensionInterface $extension)
     {
-        $this->_twigExtensions[] = $extension;
+        // Make sure this extension isn't already registered
+        $class = get_class($extension);
+        if (isset($this->_twigExtensions[$class])) {
+            return;
+        }
+
+        $this->_twigExtensions[$class] = $extension;
 
         // Add it to any existing Twig environments
         if ($this->_cpTwig !== null) {
