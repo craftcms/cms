@@ -112,7 +112,7 @@ Garnish.$doc.ready(function() {
 
             updateCraftId(craftIdJson) {
                 const craftId = JSON.parse(craftIdJson);
-                this.$store.dispatch('updateCraftId', {craftId})
+                this.$store.dispatch('craft/updateCraftId', {craftId})
                 this.$emit('craftIdUpdated')
             },
 
