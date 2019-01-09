@@ -295,6 +295,8 @@
 </script>
 
 <style lang="scss" scoped>
+    @import "../../../../../../../../../lib/craftcms-sass/mixins";
+
     .plugin-icon {
         img {
             max-width: none;
@@ -337,12 +339,13 @@
         }
 
         td.price {
-            @apply .w-1/4 .text-right;
+            @apply .w-1/4;
+            @include alignright;
         }
 
         td.total-price,
         th.total-price {
-            @apply .text-right;
+            @include alignright;
         }
     }
 </style>

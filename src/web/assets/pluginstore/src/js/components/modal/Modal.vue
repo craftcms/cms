@@ -85,6 +85,8 @@
 </script>
 
 <style lang="scss">
+    @import "../../../../../../../../lib/craftcms-sass/mixins";
+
     #pluginstore-modal {
         @apply .absolute .pin-t .pin-l;
         max-width: 850px;
@@ -98,7 +100,7 @@
                 .btn-left {
                     @apply .absolute;
                     top: 28px;
-                    left: 24px;
+                    @include left(24px);
                 }
 
                 h1 {

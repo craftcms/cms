@@ -53,7 +53,7 @@ p {
   @apply .flex .justify-between .items-center;
 
   & > * {
-    margin-left: 18px !important;
+    @include margin-left(18px);
   }
 
   #cart-button {
@@ -95,7 +95,7 @@ p {
     .photo {
       svg {
         @apply .align-middle;
-        margin-right: 2px;
+        @include margin-right(7px);
         width: 22px;
         height: 22px;
         border-radius: 100%;

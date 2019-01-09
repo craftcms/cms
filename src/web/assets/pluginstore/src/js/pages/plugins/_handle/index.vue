@@ -3,7 +3,7 @@
 
         <!-- header -->
         <div class="plugin-details-header border-b border-solid border-grey-lighter tw-flex mb-6 pb-6 items-center">
-            <div class="plugin-icon mr-6">
+            <div class="plugin-icon">
                 <img v-if="pluginSnippet.iconUrl" :src="pluginSnippet.iconUrl" width="100" />
                 <img v-else :src="defaultPluginSvg" width="100" />
             </div>
@@ -213,6 +213,11 @@
 
     // Todo: Remove import?
     @import "../../../../sass/variables";
+    @import "../../../../../../../../../lib/craftcms-sass/mixins";
+
+    .plugin-icon {
+        @include margin-right(1.5rem); // .mr-6
+    }
 
 
     /* Plugin Meta */

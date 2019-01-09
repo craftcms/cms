@@ -21,6 +21,8 @@
 </script>
 
 <style lang="scss">
+    @import "../../../../../../../lib/craftcms-sass/mixins";
+
     .changelog-release {
         @apply .pt-2 .pb-4 .border-b .border-grey-light .border-solid;
 
@@ -29,7 +31,7 @@
 
             .anchor {
                 @apply .absolute .text-white .p-1 .rounded-full;
-                left: -24px;
+                @include left(-24px);
                 top: 0px;
                 font-size: 14px;
                 transform: rotate(45deg);
@@ -80,7 +82,7 @@
                 @apply .w-full .max-w-xs;
 
                 .anchor {
-                    top: 24px;
+                    top: 20px;
                 }
             }
 
