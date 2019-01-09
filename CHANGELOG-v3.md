@@ -5,6 +5,9 @@
 ### Added
 - Added the `storeUserIps` config setting. ([#3311](https://github.com/craftcms/cms/issues/3311))
 
+### Fixed
+- Fixed an error that occurred when updating to 3.1.0-beta.6 if no Matrix fields existed.
+
 ## 3.1.0-beta.6 - 2019-01-09
 
 ### Added
