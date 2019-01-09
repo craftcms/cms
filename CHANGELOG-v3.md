@@ -24,11 +24,17 @@
 - Deprecated `craft\helpers\MigrationHelper::restoreForeignKey()`.
 - Deprecated `craft\helpers\MigrationHelper::restoreIndex()`.
 
+### Removed
+- Removed `craft\elements\User::authData()`.
+
 ### Fixed
 - Fixed a bug where preset structure UIDs were not preserved when saving structure sections. ([#3525](https://github.com/craftcms/cms/issues/3525))
 - Fixed a bug that prevented choosing a parent entry for structure entries. ([#3562](https://github.com/craftcms/cms/issues/3562))
 - Fixed a bug where `craft\helpers\MigrationHelper::dropIndexIfExists()` wasn’t working if the index had an unexpected name.
 - Fixed an error that could occur when updating to Craft 3.1 if there were any orphaned Matrix sub-fields in the database. ([#3592](https://github.com/craftcms/cms/issues/3592))
+
+### Security
+- Craft now destroys all other sessions associated with a user account when a user changes their password.
 
 ## 3.1.0-beta.5.1 - 2018-12-14
 
