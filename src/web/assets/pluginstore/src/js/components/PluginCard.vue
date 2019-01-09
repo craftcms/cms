@@ -124,7 +124,7 @@
         .installed {
             @apply .absolute;
             top: 14px;
-            right: 18px;
+            @include right(18px);
             color: #ccc;
         }
     }
