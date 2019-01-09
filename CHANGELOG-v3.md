@@ -228,6 +228,11 @@
 ### Fixed
 - Fixed a bug where elements that belonged to more than one structure would be returned twice in element queries.
 
+## 3.0.38 (Unreleased)
+
+### Fixed
+- Fixed a bug where Craft wasn’t saving Dashboard widget sizes properly on PostgreSQL. ([#3609](https://github.com/craftcms/cms/issues/3609))
+
 ## 3.0.37 - 2019-01-08
 
 ### Added
