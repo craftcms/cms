@@ -28,6 +28,7 @@
 - Added `craft\base\ApplicationTrait::getIsLive()`.
 - Added `craft\base\Element::EVENT_AFTER_RESTORE`.
 - Added `craft\base\Element::EVENT_BEFORE_RESTORE`.
+- Added `craft\base\Element::EVENT_DEFINE_EAGER_LOADING_MAP`.
 - Added `craft\base\ElementInterface::afterRestore()`.
 - Added `craft\base\ElementInterface::beforeRestore()`.
 - Added `craft\base\Field::EVENT_AFTER_ELEMENT_RESTORE`.
