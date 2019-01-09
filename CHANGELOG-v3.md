@@ -15,7 +15,6 @@
 - `craft\db\mysql\Schema::findIndexes()` and `craft\db\pgsql\Schema::findIndexes()` now return arrays with `columns` and `unique` keys.
 - `craft\helpers\ArrayHelper::filterByValue()` now defaults its `$value` argument to `true`.
 - `craft\helpers\MigrationHelper::doesIndexExist()` no longer has a `$foreignKey` argument, and now has an optional `$db` argument.
-- Changed how asset fields store upload location to be compatible for migration between environments via Project Config.
 
 ### Deprecated
 - Deprecated `craft\helpers\MigrationHelper::dropAllIndexesOnTable()`.
@@ -28,11 +27,12 @@
 - Removed `craft\elements\User::authData()`.
 
 ### Fixed
-- Fixed a bug where preset structure UIDs were not preserved when saving structure sections. ([#3525](https://github.com/craftcms/cms/issues/3525))
-- Fixed a bug that prevented choosing a parent entry for structure entries. ([#3562](https://github.com/craftcms/cms/issues/3562))
+- Fixed a bug where structure UUIDs were not preserved when saving Structure sections. ([#3525](https://github.com/craftcms/cms/issues/3525))
+- Fixed a bug where it wasn’t possible for Structure section entries to choose a parent entry. ([#3562](https://github.com/craftcms/cms/issues/3562))
 - Fixed a bug where `craft\helpers\MigrationHelper::dropIndexIfExists()` wasn’t working if the index had an unexpected name.
 - Fixed an error that could occur when updating to Craft 3.1 if there were any orphaned Matrix sub-fields in the database. ([#3592](https://github.com/craftcms/cms/issues/3592))
 - Fixed a PHP error that could occur when updating to Craft 3.1 if any plugins or modules were calling `craft\services\Elements::getElementByUri()`.
+- Fixed a bug where Assets fields were storing references to volume folders (which may not exist in the current environment) rather than the volumes themselves in their field settings.
 
 ### Security
 - Craft now destroys all other sessions associated with a user account when a user changes their password.
