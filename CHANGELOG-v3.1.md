@@ -15,6 +15,7 @@
 - Custom fields can now opt out of being included in elements’ search keywords. ([#2600](https://github.com/craftcms/cms/issues/2600))
 - Added the `allowAdminChanges` config setting.
 - Added the `softDeleteDuration` config setting.
+- Added the `storeUserIps` config setting. ([#3311](https://github.com/craftcms/cms/issues/3311))
 - Added the `useProjectConfigFile` config setting.
 - Added the `gc` console command, which can be used to run garbage collection tasks.
 - Added the `project-config/sync` console command. ([#3510](https://github.com/craftcms/cms/issues/3510))

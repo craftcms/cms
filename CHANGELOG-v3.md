@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added the `storeUserIps` config setting. ([#3311](https://github.com/craftcms/cms/issues/3311))
+
 ## 3.1.0-beta.6 - 2019-01-09
 
 ### Added

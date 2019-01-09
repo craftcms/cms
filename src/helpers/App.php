@@ -438,6 +438,7 @@ class App
             'class' => FileTarget::class,
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
+            'includeUserIp' => $generalConfig->storeUserIps,
         ];
 
         if ($isConsoleRequest) {
