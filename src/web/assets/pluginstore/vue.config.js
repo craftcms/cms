@@ -1,4 +1,5 @@
 var fs = require('fs');
+const ManifestPlugin = require('webpack-manifest-plugin')
 
 module.exports = {
     filenameHashing: false,
@@ -10,6 +11,11 @@ module.exports = {
             'vuex': 'Vuex',
             'axios': 'axios'
         },
+        plugins: [
+            new ManifestPlugin({
+                publicPath: '/'
+            }),
+        ]
     },
     devServer: {
         port: process.env.DEV_SERVER_PORT,
@@ -19,7 +25,6 @@ module.exports = {
             cert: process.env.DEV_SERVER_SSL_CERT ? fs.readFileSync(process.env.DEV_SERVER_SSL_CERT) : null,
         },
     },
-
     chainWebpack: config => {
         config.module
             .rule('images')
