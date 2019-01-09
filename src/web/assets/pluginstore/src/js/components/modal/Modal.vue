@@ -133,7 +133,7 @@
             .multiselectrow {
                 @apply .flex;
 
-                .input {
+                & > div {
                     @apply .w-1/2;
 
                     .select {
