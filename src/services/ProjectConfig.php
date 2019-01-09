@@ -490,7 +490,7 @@ class ProjectConfig extends Component
 
         // Memoize the new config data
         $currentLoadedConfig = $this->_getLoadedConfig();
-        $this->_traverseDataArray($currentLoadedConfig, $path, $newValue);
+        $this->_traverseDataArray($currentLoadedConfig, $path, $newValue, $newValue === null);
         $this->_loadedConfig = $currentLoadedConfig;
 
         $this->updateStoredConfigAfterRequest();

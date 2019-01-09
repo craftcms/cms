@@ -1993,8 +1993,9 @@ class UsersController extends Controller
      */
     private function _maybeLoginUserAfterAccountActivation(User $user): bool
     {
-        if (Craft::$app->getConfig()->getGeneral()->autoLoginAfterAccountActivation === true) {
-            return Craft::$app->getUser()->login($user);
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->autoLoginAfterAccountActivation === true) {
+            return Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
         }
 
         return false;

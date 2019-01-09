@@ -679,7 +679,7 @@ class Install extends Migration
             'userId' => $this->integer()->notNull(),
             'type' => $this->string()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
-            'colspan' => $this->boolean()->defaultValue(false)->notNull(),
+            'colspan' => $this->tinyInteger(),
             'settings' => $this->text(),
             'enabled' => $this->boolean()->defaultValue(true)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -975,9 +975,10 @@ class Install extends Migration
         ]));
         echo "done\n";
 
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
         $applyExistingProjectConfig = false;
 
-        if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
+        if ($generalConfig->useProjectConfigFile) {
             $configDir = Craft::$app->getPath()->getConfigPath();
             $configFile = $configDir . '/' . ProjectConfig::CONFIG_FILENAME;
 
@@ -1047,7 +1048,7 @@ class Install extends Migration
 
         // Log them in
         if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
-            Craft::$app->getUser()->login($user);
+            Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
         }
     }
 

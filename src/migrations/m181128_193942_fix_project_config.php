@@ -37,7 +37,7 @@ class m181128_193942_fix_project_config extends Migration
         $matrixFields = (new Query())
             ->select(['uid', 'settings'])
             ->from(['{{%fields}}'])
-            ->where(['type' => Matrix::class])
+            ->where(['type' => Matrix::class, 'context' => 'global'])
             ->all();
 
         foreach ($matrixFields as $matrixField) {

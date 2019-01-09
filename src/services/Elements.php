@@ -240,9 +240,14 @@ class Elements extends Component
             ->from(['{{%elements}} elements'])
             ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
             ->where([
-                'elements.dateDeleted' => null,
                 'elements_sites.siteId' => $siteId,
             ]);
+
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.1.0', '>=')) {
+            $query->andWhere(['elements.dateDeleted' => null]);
+        }
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query->andWhere([
