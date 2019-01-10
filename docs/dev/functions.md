@@ -98,7 +98,7 @@ Returns the value of an environment variable.
 
 ## `head()`
 
-Outputs any scripts and styles that were registered for the “head” position. It should be placed right before your `</head>` tag. 
+Outputs any scripts and styles that were registered for the “head” position. It should be placed right before your `</head>` tag.
 
 ```twig
 <head>

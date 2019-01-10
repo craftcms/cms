@@ -55,7 +55,7 @@ You might want to register your plugin with [Packagist](https://packagist.org/) 
 To release a new version of your plugin, first decide on the version number. The Plugin Store follows the same [Semantic Versioning](https://semver.org/) conventions supported by Composer:
 
 - Versions should have 3 or 4 segments (e.g. `1.2.3` or `1.2.3.4`).
-- Pre-release versions should end with a release identifier (`-alpha.X`, `-beta.X`, or `-RCX`). 
+- Pre-release versions should end with a release identifier (`-alpha.X`, `-beta.X`, or `-RCX`).
 
 Once you’ve decided on a version, follow these steps:
 

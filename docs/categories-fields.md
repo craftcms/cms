@@ -10,7 +10,7 @@ Categories fields have the following settings:
 - **Branch Limit** – The maximum number of category tree branches that can be related with the field at once. (Default is no limit.)
 
   For example, if you have the following category group:
-  
+
   ```
   Food
   ├── Fruit
@@ -34,7 +34,7 @@ On multi-site installs, the following settings will also be available (under “
 - **Relate categories from a specific site?** – Whether to only allow relations to categories from a specific site.
 
   If enabled, a new setting will appear where you can choose which site.
-  
+
   If disabled, related categories will always be pulled from the current site.
 
 - **Manage relations on a per-site basis** – Whether each site should get its own set of related categories.

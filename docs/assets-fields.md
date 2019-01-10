@@ -9,11 +9,11 @@ Assets fields have the following settings:
 - **Restrict uploads to a single folder?** – Whether file uploads/relations should be constrained to a single folder.
 
   If enabled, the following setting will be visible:
-  
+
   - **Upload Location** – The location that files dragged directly onto the field should be saved in.
-  
+
   If disabled, the following settings will be visible:
-  
+
   - **Sources** – Which asset volumes (or other asset index sources) the field should be able to relate assets from.
   - **Default Upload Location** – The default location that files dragged directly onto the field should be saved in.
 
@@ -29,7 +29,7 @@ On multi-site installs, the following settings will also be available (under “
 - **Relate assets from a specific site?** – Whether to only allow relations to assets from a specific site.
 
   If enabled, a new setting will appear where you can choose which site.
-  
+
   If disabled, related assets will always be pulled from the current site.
 
 - **Manage relations on a per-site basis** – Whether each site should get its own set of related assets.

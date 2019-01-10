@@ -95,7 +95,7 @@ return [
 
             // Create a Mailer component config with these settings
             $config = craft\helpers\App::mailerConfig($settings);
-            
+
             // Instantiate and return it
             return Craft::createObject($config);
         },
@@ -119,7 +119,7 @@ return [
             'class' => yii\queue\redis\Queue::class,
             'redis' => 'redis', // Redis connection component or its config
             'channel' => 'queue', // Queue channel key
-        ], 
+        ],
     ],
 ];
 ```
