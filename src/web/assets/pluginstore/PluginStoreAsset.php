@@ -73,6 +73,7 @@ class PluginStoreAsset extends AssetBundle
         ];
 
         $this->css = [
+            $this->getModule($config, 'chunk-vendors.css'),
             $this->getModule($config, 'app.css'),
         ];
 
