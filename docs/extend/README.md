@@ -10,11 +10,11 @@ As Yii’s documentation [puts it](https://www.yiiframework.com/doc/guide/2.0/en
 
 Modules can be simple, serving a single purpose like providing a new [Dashboard widget type](widget-types.md), or they can be complex, introducing entirely new concepts to the system, like an e-commerce application.
 
-**Plugins** are a Craft-specific concept, so you won’t find any mention of it in the Yii docs. They can do everything modules can do (plugins actually _are_ modules, technically), and some other things that make them better for being publicly distributed: 
+**Plugins** are a Craft-specific concept, so you won’t find any mention of it in the Yii docs. They can do everything modules can do (plugins actually _are_ modules, technically), and some other things that make them better for being publicly distributed:
 
 - They can be installed/trialed/purchased from the Craft Plugin Store.
 - They can make database changes when installed, updated, or uninstalled.
-- They get their own settings page within the Settings section of the Control Panel.  
+- They get their own settings page within the Settings section of the Control Panel.
 - They can be enabled/disabled by an admin, without running any Composer commands.
 
-If the thing you want to build would benefit from those features, make it a plugin. Otherwise, a module might be better. 
+If the thing you want to build would benefit from those features, make it a plugin. Otherwise, a module might be better.

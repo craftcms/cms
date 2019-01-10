@@ -30,13 +30,13 @@ As you can see, they are made up three segments:
 3.  `<Property>` _(optional)_ – The element property that the reference tag should return. If omitted, the element’s URL will be returned.
 
     You can refer to the element types’ class references for a list of available properties:
-    
+
     - [api:craft\elements\Entry](craft\elements\Entry#public-properties)
     - [api:craft\elements\Asset](craft\elements\Asset#public-properties)
     - [api:craft\elements\Tag](craft\elements\Tag#public-properties)
     - [api:craft\elements\User](craft\elements\User#public-properties)
     - [api:craft\elements\GlobalSet](craft\elements\GlobalSet#public-properties)
-    
+
     Custom field handles are also supported, for field types with values that can be represented as strings.
 
 ### Examples

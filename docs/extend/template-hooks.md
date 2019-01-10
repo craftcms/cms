@@ -1,6 +1,6 @@
 # Template Hooks
 
-Craft templates can give modules and plugins an opportunity to hook into them using [hook](../dev/tags/hook.md) tags. 
+Craft templates can give modules and plugins an opportunity to hook into them using [hook](../dev/tags/hook.md) tags.
 
 ```twig
 {# Give plugins a chance to make changes here #}

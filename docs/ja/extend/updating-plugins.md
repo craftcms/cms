@@ -34,7 +34,7 @@ Craft 3 プラグインは、`releases.json` ファイルではなく、`CHANGEL
 # go to the plugin directory
 cd /path/to/my-plugin
 
-# create a CHANGELOG.md from its releases.json 
+# create a CHANGELOG.md from its releases.json
 curl https://api.craftcms.com/v1/utils/releases-2-changelog --data-binary @releases.json > CHANGELOG.md
 ```
 
@@ -881,12 +881,12 @@ class MyTask extends BaseTask
     {
         return 'Default description';
     }
-    
+
     public function getTotalSteps()
     {
         return 5;
     }
-    
+
     public function runStep($step)
     {
         // do something...
@@ -904,11 +904,11 @@ class MyJob extends BaseJob
         $totalSteps = 5;
         for ($step = 0; $step < $steps; $step++)
         {
-            $this->setProgress($queue, $step / $totalSteps); 
+            $this->setProgress($queue, $step / $totalSteps);
             // do something...
-        } 
+        }
     }
-    
+
     protected function defaultDescription()
     {
         return 'Default description';
@@ -921,7 +921,7 @@ class MyJob extends BaseJob
 ```php
 // Old:
 craft()->tasks->createTask('MyTask', 'Custom description', array(
-    'mySetting' => 'value', 
+    'mySetting' => 'value',
 ));
 
 // New:
@@ -954,7 +954,7 @@ class Install extends Migration
         if ($this->_upgradeFromCraft2()) {
             return;
         }
-        
+
         // Fresh install code goes here...
     }
 
@@ -966,7 +966,7 @@ class Install extends Migration
             ->from(['{{%plugins}}'])
             ->where(['in', 'handle', ['old-handle', 'oldhandle']])
             ->one();
-        
+
         if (!$row) {
             return false;
         }

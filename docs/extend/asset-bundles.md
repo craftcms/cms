@@ -64,7 +64,7 @@ class MyPluginAsset extends AssetBundle
 ```
 
 ::: tip
-`@ns/prefix` is a placeholder for your plugin’s auto-generated [Yii alias], which will be based on your plugin’s root namespace. It represents the path to your plugin’s `src/` directory.  
+`@ns/prefix` is a placeholder for your plugin’s auto-generated [Yii alias], which will be based on your plugin’s root namespace. It represents the path to your plugin’s `src/` directory.
 :::
 
 ### Registering the Asset Bundle
@@ -102,7 +102,7 @@ Craft will automatically publish the file for you (if it’s not published alrea
 
 If you want the file to be published alongside other files in the same directory, but you only want a single file’s URL, then split its path into two parts: 1) the path to the parent directory that contains all the files you want to publish; and 2) the path to the individual file you want the URL for, relative to that parent directory.
 
-For example, if you had a bunch of icon SVG files in an `icons/` folder within your plugin, and you wanted to publish the `icons/` folder as a whole, but only needed the URL to `shaker.svg`, you would do this:  
+For example, if you had a bunch of icon SVG files in an `icons/` folder within your plugin, and you wanted to publish the `icons/` folder as a whole, but only needed the URL to `shaker.svg`, you would do this:
 
 ```php
 $url = \Craft::$app->assetManager->getPublishedUrl('@ns/prefix/icons', true, 'shaker.svg');

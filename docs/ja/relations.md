@@ -46,9 +46,9 @@ Craft のリレーションを操作する前に、それがテンプレート�
 
 ```twig
 {% if drink.ingredients|length %}
-    
+
     <h3>Ingredients</h3>
-    
+
     <ul>
         {% for ingredient in drink.ingredients %}
             <li>{{ ingredient.title }}</li>
