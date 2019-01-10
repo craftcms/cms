@@ -32,16 +32,12 @@ When you double-click on a related user, a HUD will appear where you can edit th
 
 When [querying for elements](dev/element-queries/README.md) that have a Users field, you can filter the results based on the Users field data using a query param named after your field’s handle.
 
-To only fetch elements that don’t have any related users, set the param to `':empty:'`:
+Possible values include:
 
-```twig
-{# Fetch entries with no related users #}
-{% set entries = craft.entries()
-    .<FieldHandle>(':empty:')
-    .all() %}
-```
-
-To only fetch elements that have at least one related user, set the param to `':notempty:'`:
+| Value | Fetches elements…
+| - | -
+| `':empty:'` | that don’t have any related users.
+| `':notempty:'` | that have at least one related user.
 
 ```twig
 {# Fetch entries with a related user #}
