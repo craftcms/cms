@@ -50,19 +50,17 @@ class ProjectConfig
         static::$_processedFields = true;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $allGroups = $projectConfig->get(Fields::CONFIG_FIELDGROUP_KEY, true);
-        $allFields = $projectConfig->get(Fields::CONFIG_FIELDS_KEY, true);
+        $allGroups = $projectConfig->get(Fields::CONFIG_FIELDGROUP_KEY, true) ?? [];
+        $allFields = $projectConfig->get(Fields::CONFIG_FIELDS_KEY, true) ?? [];
 
         foreach ($allGroups as $groupUid => $groupData) {
             // Ensure group is processed
             $projectConfig->processConfigChanges(Fields::CONFIG_FIELDGROUP_KEY . '.' . $groupUid);
         }
 
-        if (is_array($allFields)) {
-            foreach ($allFields as $fieldUid => $fieldData) {
-                // Ensure field is processed
-                $projectConfig->processConfigChanges(Fields::CONFIG_FIELDS_KEY . '.' . $fieldUid);
-            }
+        foreach ($allFields as $fieldUid => $fieldData) {
+            // Ensure field is processed
+            $projectConfig->processConfigChanges(Fields::CONFIG_FIELDS_KEY . '.' . $fieldUid);
         }
     }
 
@@ -77,8 +75,8 @@ class ProjectConfig
         static::$_processedSites = true;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $allGroups = $projectConfig->get(Sites::CONFIG_SITEGROUP_KEY, true);
-        $allSites = $projectConfig->get(Sites::CONFIG_SITES_KEY, true);
+        $allGroups = $projectConfig->get(Sites::CONFIG_SITEGROUP_KEY, true) ?? [];
+        $allSites = $projectConfig->get(Sites::CONFIG_SITES_KEY, true) ?? [];
 
         foreach ($allGroups as $groupUid => $groupData) {
             // Ensure group is processed
