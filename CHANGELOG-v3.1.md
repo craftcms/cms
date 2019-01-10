@@ -15,6 +15,7 @@
 - Custom fields can now opt out of being included in elements’ search keywords. ([#2600](https://github.com/craftcms/cms/issues/2600))
 - Added the `allowAdminChanges` config setting.
 - Added the `softDeleteDuration` config setting.
+- Added the `storeUserIps` config setting. ([#3311](https://github.com/craftcms/cms/issues/3311))
 - Added the `useProjectConfigFile` config setting.
 - Added the `gc` console command, which can be used to run garbage collection tasks.
 - Added the `project-config/sync` console command. ([#3510](https://github.com/craftcms/cms/issues/3510))
@@ -27,12 +28,14 @@
 - Added `craft\base\ApplicationTrait::getIsLive()`.
 - Added `craft\base\Element::EVENT_AFTER_RESTORE`.
 - Added `craft\base\Element::EVENT_BEFORE_RESTORE`.
+- Added `craft\base\Element::EVENT_DEFINE_EAGER_LOADING_MAP`.
 - Added `craft\base\ElementInterface::afterRestore()`.
 - Added `craft\base\ElementInterface::beforeRestore()`.
 - Added `craft\base\Field::EVENT_AFTER_ELEMENT_RESTORE`.
 - Added `craft\base\Field::EVENT_BEFORE_ELEMENT_RESTORE`.
 - Added `craft\base\FieldInterface::afterElementRestore()`.
 - Added `craft\base\FieldInterface::beforeElementRestore()`.
+- Added `craft\base\Model::EVENT_DEFINE_RULES`.
 - Added `craft\base\Plugin::editions()`.
 - Added `craft\base\Plugin::is()`.
 - Added `craft\base\SavableComponentInterface::beforeApplyDelete()`.
@@ -90,6 +93,7 @@
 - Added `craft\services\Volumes::EVENT_BEFORE_APPLY_VOLUME_DELETE`.
 - Added `craft\web\Controller::requireCpRequest()`.
 - Added `craft\web\Controller::requireSiteRequest()`.
+- Added `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_SETTINGS`. ([#3314](https://github.com/craftcms/cms/issues/3314))
 - Added `craft\web\twig\variables\Cp::getEnvSuggestions()`.
 - Added `craft\web\twig\variables\Cp::getTemplateSuggestions()`.
 - Added the ActiveRecord Soft Delete Extension for Yii2.
@@ -112,6 +116,7 @@
 - Element types that support Live Preview must now hash the `previewAction` value for `Craft.LivePreview`.
 - Live Preview now loads each new preview into its own `<iframe>` element. ([#3366](https://github.com/craftcms/cms/issues/3366))
 - Assets’ default titles now only capitalize the first word extracted from the filename, rather than all the words. ([#2339](https://github.com/craftcms/cms/issues/2339))
+- All classes that extend `craft\base\Model` now have `EVENT_INIT` and `EVENT_DEFINE_BEHAVIORS` events; not just classes that extend `craft\base\Component`.
 - `craft\db\mysql\Schema::findIndexes()` and `craft\db\pgsql\Schema::findIndexes()` now return arrays with `columns` and `unique` keys.
 - `craft\helpers\ArrayHelper::filterByValue()` now defaults its `$value` argument to `true`.
 - `craft\helpers\MigrationHelper::doesIndexExist()` no longer has a `$foreignKey` argument, and now has an optional `$db` argument.

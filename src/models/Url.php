@@ -44,9 +44,9 @@ class Url extends Model
      */
     public function rules()
     {
-        return [
-            [['url'], 'required'],
-            [['url'], 'url'],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['url'], 'required'];
+        $rules[] = [['url'], 'url'];
+        return $rules;
     }
 }

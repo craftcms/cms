@@ -4,8 +4,6 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\db\Query;
-use craft\fields\Assets;
 use craft\services\Fields;
 use craft\services\Matrix;
 
@@ -28,7 +26,7 @@ class m190108_110000_cleanup_project_config extends Migration
         $projectConfig = Craft::$app->getProjectConfig();
 
         // Clean up all the orphan matrix block type from project config
-        $matrixBlockTypes = $projectConfig->get(Matrix::CONFIG_BLOCKTYPE_KEY);
+        $matrixBlockTypes = $projectConfig->get(Matrix::CONFIG_BLOCKTYPE_KEY) ?? [];
 
         foreach ($matrixBlockTypes as $matrixBlockTypeUid => $matrixBlockType) {
             if (empty($matrixBlockType['field'])) {
@@ -37,7 +35,7 @@ class m190108_110000_cleanup_project_config extends Migration
         }
 
         // Clean up all the fields that have no type, such as leftover data for matrix fields that were nested in supertable or the like
-        $fields = $projectConfig->get(Fields::CONFIG_FIELDS_KEY);
+        $fields = $projectConfig->get(Fields::CONFIG_FIELDS_KEY) ?? [];
 
         foreach ($fields as $fieldUid => $field) {
             if (empty($field['type'])) {

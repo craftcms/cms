@@ -340,7 +340,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isUUID(string $uuid): bool
     {
-        return !empty($uuid) && preg_match('/^'.self::UUID_PATTERN.'$/', $uuid);
+        return !empty($uuid) && preg_match('/^' . self::UUID_PATTERN . '$/', $uuid);
     }
 
     /**

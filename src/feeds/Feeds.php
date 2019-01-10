@@ -11,7 +11,6 @@ use Craft;
 use craft\errors\MissingComponentException;
 use craft\helpers\ConfigHelper;
 use craft\models\Url;
-use DateTime;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use Zend\Feed\Reader\Entry\EntryInterface;

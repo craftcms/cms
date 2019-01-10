@@ -45,9 +45,9 @@ class Structure extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'maxLevels'], 'number', 'integerOnly' => true],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'maxLevels'], 'number', 'integerOnly' => true];
+        return $rules;
     }
 
     /**

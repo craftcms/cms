@@ -93,9 +93,9 @@ class DeprecationError extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'line'], 'number', 'integerOnly' => true],
-            [['lastOccurrence'], DateTimeValidator::class],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'line'], 'number', 'integerOnly' => true];
+        $rules[] = [['lastOccurrence'], DateTimeValidator::class];
+        return $rules;
     }
 }

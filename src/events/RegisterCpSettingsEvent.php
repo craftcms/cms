@@ -10,18 +10,18 @@ namespace craft\events;
 use yii\base\Event;
 
 /**
- * RegisterCpNavItemsEvent class.
+ * RegisterCpSettingsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.1
  */
-class RegisterCpNavItemsEvent extends Event
+class RegisterCpSettingsEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var array The registered CP nav items
+     * @var array The registered CP settings
      */
-    public $navItems = [];
+    public $settings = [];
 }
