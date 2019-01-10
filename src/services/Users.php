@@ -482,11 +482,15 @@ class Users extends Component
         // Update the User record
         $userRecord = $this->_getUserRecordById($user->id);
         $userRecord->lastLoginDate = $now;
-        $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
         $userRecord->invalidLoginWindowStart = null;
         $userRecord->invalidLoginCount = null;
         $userRecord->verificationCode = null;
         $userRecord->verificationCodeIssuedDate = null;
+
+        if (Craft::$app->getConfig()->getGeneral()->storeUserIps) {
+            $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
+        }
+
         $userRecord->save();
 
         // Update the User model too
@@ -505,7 +509,10 @@ class Users extends Component
         $now = DateTimeHelper::currentUTCDateTime();
 
         $userRecord->lastInvalidLoginDate = $now;
-        $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
+
+        if (Craft::$app->getConfig()->getGeneral()->storeUserIps) {
+            $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
+        }
 
         // Was that one too many?
         $maxInvalidLogins = Craft::$app->getConfig()->getGeneral()->maxInvalidLogins;

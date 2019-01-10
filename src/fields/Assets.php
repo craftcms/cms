@@ -207,7 +207,7 @@ class Assets extends BaseRelationField
 
         return parent::getSettingsHtml();
     }
-    
+
     /**
      * @inheritdoc
      */
@@ -791,7 +791,7 @@ class Assets extends BaseRelationField
             }
         }
 
-        return (string) $sourceKey;
+        return (string)$sourceKey;
     }
 
     /**
@@ -811,6 +811,6 @@ class Assets extends BaseRelationField
             }
         }
 
-        return (string) $sourceKey;
+        return (string)$sourceKey;
     }
 }

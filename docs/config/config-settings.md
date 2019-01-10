@@ -1978,6 +1978,25 @@ Set to `0` if you don’t ever want to delete soft-deleted items.
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
 
 
+### `storeUserIps`
+
+Allowed types
+
+:   [boolean](http://php.net/language.types.boolean)
+
+Default value
+
+:   `false`
+
+Defined by
+
+:   [GeneralConfig::$storeUserIps](api:craft\config\GeneralConfig::$storeUserIps)
+
+
+
+Whether user IP addresses should be stored/logged by the system.
+
+
 ### `suppressTemplateErrors`
 
 Allowed types

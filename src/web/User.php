@@ -12,7 +12,6 @@ use craft\db\Query;
 use craft\elements\User as UserElement;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;

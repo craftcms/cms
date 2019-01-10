@@ -366,7 +366,7 @@ class Matrix extends Component
 
             // (Re)save all the fields that now exist for this block.
             foreach ($newFields as $fieldUid => $fieldData) {
-                $fieldsService->applyFieldSave($fieldUid, $fieldData, 'matrixBlockType:'.$blockTypeUid);
+                $fieldsService->applyFieldSave($fieldUid, $fieldData, 'matrixBlockType:' . $blockTypeUid);
             }
 
             // Refresh the schema cache
@@ -891,7 +891,7 @@ class Matrix extends Component
             return $this->_blockTypeRecordsById[$blockType->id];
         }
 
-         $blockTypeRecord = MatrixBlockTypeRecord::findOne($blockType->id);
+        $blockTypeRecord = MatrixBlockTypeRecord::findOne($blockType->id);
 
         if ($blockTypeRecord === null) {
             throw new MatrixBlockTypeNotFoundException('Invalid block type ID: ' . $blockType->id);

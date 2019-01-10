@@ -111,15 +111,15 @@ class Section extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true],
-            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['type'], 'in', 'range' => ['single', 'channel', 'structure']],
-            [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class],
-            [['name', 'handle', 'type', 'siteSettings'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
-            [['siteSettings'], 'validateSiteSettings'],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
+        $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
+        $rules[] = [['type'], 'in', 'range' => ['single', 'channel', 'structure']];
+        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
+        $rules[] = [['name', 'handle', 'type', 'siteSettings'], 'required'];
+        $rules[] = [['name', 'handle'], 'string', 'max' => 255];
+        $rules[] = [['siteSettings'], 'validateSiteSettings'];
+        return $rules;
     }
 
     /**

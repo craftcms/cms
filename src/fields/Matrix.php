@@ -105,7 +105,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     {
         $rules = parent::rules();
         $rules[] = [['minBlocks', 'maxBlocks'], 'integer', 'min' => 0];
-
         return $rules;
     }
 

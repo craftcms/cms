@@ -678,6 +678,10 @@ class GeneralConfig extends BaseObject
      */
     public $softDeleteDuration = 2592000;
     /**
+     * @var bool Whether user IP addresses should be stored/logged by the system.
+     */
+    public $storeUserIps = false;
+    /**
      * @var bool Whether Twig runtime errors should be suppressed.
      *
      * If it is set to `true`, the errors will still be logged to Craft’s log files.

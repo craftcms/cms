@@ -309,7 +309,6 @@ class Category extends Element
     {
         $rules = parent::rules();
         $rules[] = [['groupId', 'newParentId'], 'number', 'integerOnly' => true];
-
         return $rules;
     }
 

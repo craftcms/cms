@@ -85,9 +85,9 @@ class MailSettings extends Model
      */
     public function rules()
     {
-        return [
-            [['fromEmail', 'fromName', 'transportType'], 'required'],
-            [['fromEmail'], 'email'],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['fromEmail', 'fromName', 'transportType'], 'required'];
+        $rules[] = [['fromEmail'], 'email'];
+        return $rules;
     }
 }
