@@ -121,7 +121,7 @@ You can set [parameters](dev/element-queries/category-queries.md#parameters) on 
     .all() %}
 ```
 
-### See Also
+## See Also
 
 * [Category Queries](dev/element-queries/category-queries.md)
 * <api:craft\elements\Category>

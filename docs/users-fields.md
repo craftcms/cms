@@ -76,7 +76,7 @@ You can set [parameters](dev/element-queries/user-queries.md#parameters) on the 
     .all() %}
 ```
 
-### See Also
+## See Also
 
 * [User Queries](dev/element-queries/user-queries.md)
 * <api:craft\elements\User>

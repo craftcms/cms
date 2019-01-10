@@ -82,7 +82,7 @@ You can set [parameters](dev/element-queries/entry-queries.md#parameters) on the
     .all() %}
 ```
 
-### See Also
+## See Also
 
 * [Entry Queries](dev/element-queries/entry-queries.md)
 * <api:craft\elements\Entry>

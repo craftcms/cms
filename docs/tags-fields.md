@@ -79,7 +79,7 @@ If you just need to check if there are any related tags (but don’t need to fet
 
 You can set [parameters](dev/element-queries/tag-queries.md#parameters) on the tag query as well.
 
-### See Also
+## See Also
 
 * [Tag Queries](dev/element-queries/tag-queries.md)
 * <api:craft\elements\Tag>
