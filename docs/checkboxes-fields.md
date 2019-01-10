@@ -97,3 +97,7 @@ If you have an [entry form](dev/examples/entry-form.md) that needs to contain a 
     {% endfor %}
 </ul>
 ```
+
+## Considerations
+
+Checkboxes fields are a useful fieldtype, but are stored in such a way as to make them poor choices if you plan to later use their values as filtering criteria - for example, outputting all Entries which have a particular checkbox option selected. It would be better performing to use Categories for this type of functionality. Checkboxes should be considered as a fieldtype unsuited to use as part of an Element Query.
