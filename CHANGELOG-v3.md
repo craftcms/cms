@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where Craft wasn’t saving Dashboard widget sizes properly on PostgreSQL. ([#3609](https://github.com/craftcms/cms/issues/3609))
 - Fixed a bug where the Dashboard could rapidly switch between two column sizes at certain browser sizes. ([#2438](https://github.com/craftcms/cms/issues/2438))
+- Fixed an error that occurred when updating to Craft 3 if there were any Rich Text fields without any stored settings.
 
 ## 3.0.37 - 2019-01-08
 

@@ -25,7 +25,7 @@ class m160707_000001_rename_richtext_assetsource_setting extends Migration
 
         foreach ($fields as $field) {
             $settings = Json::decode($field['settings']);
-            if (array_key_exists('availableAssetSources', $settings)) {
+            if (is_array($settings) && array_key_exists('availableAssetSources', $settings)) {
                 $settings['availableVolumes'] = ArrayHelper::remove($settings, 'availableAssetSources');
                 $this->update('{{%fields}}', ['settings' => Json::encode($settings)], ['id' => $field['id']]);
             }
