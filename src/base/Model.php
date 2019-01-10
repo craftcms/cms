@@ -9,6 +9,7 @@ namespace craft\base;
 
 use Craft;
 use craft\events\DefineBehaviorsEvent;
+use craft\events\DefineRulesEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 
@@ -39,6 +40,12 @@ abstract class Model extends \yii\base\Model
      * @see behaviors()
      */
     const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
+    /**
+     * @event DefineRulesEvent The event that is triggered when defining the model rules
+     * @see behaviors()
+     */
+    const EVENT_DEFINE_RULES = 'defineRules';
 
     // Public Methods
     // =========================================================================
@@ -71,6 +78,17 @@ abstract class Model extends \yii\base\Model
         $event = new DefineBehaviorsEvent();
         $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
         return $event->behaviors;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        // Fire a 'defineRules' event
+        $event = new DefineRulesEvent();
+        $this->trigger(self::EVENT_DEFINE_RULES, $event);
+        return $event->rules;
     }
 
     /**

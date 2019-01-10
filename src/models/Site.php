@@ -138,14 +138,13 @@ class Site extends Model
      */
     public function rules()
     {
-        $rules = [
-            [['groupId', 'name', 'handle', 'language'], 'required'],
-            [['id', 'groupId'], 'number', 'integerOnly' => true],
-            [['name', 'handle', 'baseUrl'], 'string', 'max' => 255],
-            [['language'], LanguageValidator::class, 'onlySiteLanguages' => false],
-            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['baseUrl'], UrlValidator::class, 'defaultScheme' => 'http'],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['groupId', 'name', 'handle', 'language'], 'required'];
+        $rules[] = [['id', 'groupId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle', 'baseUrl'], 'string', 'max' => 255];
+        $rules[] = [['language'], LanguageValidator::class, 'onlySiteLanguages' => false];
+        $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
+        $rules[] = [['baseUrl'], UrlValidator::class, 'defaultScheme' => 'http'];
 
         if (Craft::$app->getIsInstalled()) {
             $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SiteRecord::class];

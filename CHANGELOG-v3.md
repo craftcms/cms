@@ -5,6 +5,7 @@
 ### Added
 - Added the `storeUserIps` config setting. ([#3311](https://github.com/craftcms/cms/issues/3311))
 - Added `craft\base\Element::EVENT_DEFINE_EAGER_LOADING_MAP`.
+- Added `craft\base\Model::EVENT_DEFINE_RULES`.
 - Added `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_SETTINGS`. ([#3314](https://github.com/craftcms/cms/issues/3314))
 
 ### Changed
