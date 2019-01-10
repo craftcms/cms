@@ -24,6 +24,10 @@ module.exports = {
             key: process.env.DEV_SERVER_SSL_KEY ? fs.readFileSync(process.env.DEV_SERVER_SSL_KEY) : null,
             cert: process.env.DEV_SERVER_SSL_CERT ? fs.readFileSync(process.env.DEV_SERVER_SSL_CERT) : null,
         },
+
+        // Fix bug caused by webpack-dev-server 3.1.11.
+        // https://github.com/vuejs/vue-cli/issues/3173#issuecomment-449573901
+        disableHostCheck: true,
     },
     chainWebpack: config => {
         config.module
