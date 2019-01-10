@@ -91,7 +91,7 @@ It can also be a multi-environment config:
 <?php
 
 return [
-    '*' => [ 
+    '*' => [
         'foo' => 'defaultValue',
     ],
     '.test' => [
@@ -101,7 +101,7 @@ return [
 ```
 
 ::: warning
-The config file cannot contain any keys that are not defined in the plugin’s settings model. 
+The config file cannot contain any keys that are not defined in the plugin’s settings model.
 :::
 
 ## Settings Pages

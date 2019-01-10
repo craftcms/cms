@@ -74,7 +74,7 @@ return [
         ],
     ],
 ];
-``` 
+```
 
 ## Session Component
 
@@ -125,7 +125,7 @@ return [
 
             // Create a Mailer component config with these settings
             $config = craft\helpers\App::mailerConfig($settings);
-            
+
             // Instantiate and return it
             return Craft::createObject($config);
         },
@@ -149,7 +149,7 @@ return [
             'class' => yii\queue\redis\Queue::class,
             'redis' => 'redis', // Redis connection component or its config
             'channel' => 'queue', // Queue channel key
-        ], 
+        ],
     ],
 ];
 ```
@@ -161,9 +161,9 @@ Only drivers that implement <api:craft\queue\QueueInterface> will be visible wit
 :::
 
 ::: tip
-If your queue driver supplies its own worker, set the <config:runQueueAutomatically> config setting to `false` in `config/general.php`.  
+If your queue driver supplies its own worker, set the <config:runQueueAutomatically> config setting to `false` in `config/general.php`.
 :::
 
 ## Modules
 
-You can register and bootstrap custom Yii modules into the application from `config/app.php` as well. See [How to Build a Module](../extend/module-guide.md) for more info. 
+You can register and bootstrap custom Yii modules into the application from `config/app.php` as well. See [How to Build a Module](../extend/module-guide.md) for more info.

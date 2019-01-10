@@ -14,7 +14,7 @@ use craft\i18n\PhpMessageSource;
 public function init()
 {
     parent::init();
-    
+
     Craft::$app->i18n->translations['my-category'] = [
         'class' => PhpMessageSource::class,
         'sourceLanguage' => 'en',

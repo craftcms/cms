@@ -33,7 +33,7 @@ If you do install the Redactor plugin, you will need to ensure that your Redacto
 
 The “Position Select” field type has been removed from Craft 3. If you had any Position Select fields, they will be converted to Dropdown fields, with all the same options.
 
-If you miss Position Select, you can try installing the [Position Fieldtype](https://github.com/Rias500/craft-position-fieldtype) plugin, which brings it back. 
+If you miss Position Select, you can try installing the [Position Fieldtype](https://github.com/Rias500/craft-position-fieldtype) plugin, which brings it back.
 
 ## Remote Volumes
 
@@ -431,7 +431,7 @@ Old:
 New:
 {% set query = craft.entries()
     .relatedTo(['and', 1, 2, 3]) %}
-``` 
+```
 
 #### Cloning Element Queries
 
@@ -508,7 +508,7 @@ Old:
 
 New:
 {% set total = craft.entries.section('news').count() %}
-``` 
+```
 
 Alternatively, if you already needed to fetch the actual query results, and you didn’t set the `offset` or `limit` params, you can use the [length](https://twig.symfony.com/doc/2.x/filters/length.html) filter to find the total size of the results array without the need for an extra database query.
 
@@ -527,7 +527,7 @@ In most cases you can replace calls to `.last()` with `.inReverse().one()` and g
 
 ```twig
 {# Channel entries are ordered by `postDate DESC` by default, so this will swap
-   it to `postDate ASC`, returning the oldest News entry: #} 
+   it to `postDate ASC`, returning the oldest News entry: #}
 
 {% set oldest = craft.entries()
     .section('news')

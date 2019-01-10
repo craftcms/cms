@@ -10,7 +10,7 @@ Craft supports several [general config settings](config-settings.md). You can ov
 
 ```php
 return [
-    'devMode' => true, 
+    'devMode' => true,
 ];
 ```
 

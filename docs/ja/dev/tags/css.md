@@ -4,7 +4,7 @@
 
 ```css
 {% css %}
-    .content { 
+    .content {
         color: {{ entry.textColor }};
     }
 {% endcss %}
