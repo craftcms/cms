@@ -14,7 +14,6 @@ use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
 use craft\errors\SectionNotFoundException;
 use craft\events\ConfigEvent;
-use craft\events\DeleteSiteEvent;
 use craft\events\EntryTypeEvent;
 use craft\events\SectionEvent;
 use craft\helpers\ArrayHelper;
@@ -25,7 +24,6 @@ use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
-use craft\models\Site;
 use craft\models\Structure;
 use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
@@ -895,26 +893,6 @@ class Sections extends Component
             $this->trigger(self::EVENT_AFTER_DELETE_SECTION, new SectionEvent([
                 'section' => $section,
             ]));
-        }
-    }
-
-    /**
-     * Prune a deleted site from section site settings.
-     *
-     * @param DeleteSiteEvent $event
-     */
-    public function pruneDeletedSite(DeleteSiteEvent $event)
-    {
-        $siteUid = $event->site->uid;
-
-        $projectConfig = Craft::$app->getProjectConfig();
-        $sections = $projectConfig->get(self::CONFIG_SECTIONS_KEY);
-
-        // Loop through the sections and prune the UID from field layouts.
-        if (is_array($sections)) {
-            foreach ($sections as $sectionUid => $sectionGroup) {
-                $projectConfig->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.siteSettings.' . $siteUid);
-            }
         }
     }
 

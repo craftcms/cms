@@ -15,7 +15,6 @@ use craft\elements\db\CategoryQuery;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
 use craft\events\ConfigEvent;
-use craft\events\DeleteSiteEvent;
 use craft\events\FieldEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -25,7 +24,6 @@ use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\FieldLayout;
-use craft\models\Site;
 use craft\models\Structure;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
@@ -674,25 +672,6 @@ class Categories extends Component
         }
     }
 
-    /**
-     * Prune a deleted site from category group site settings.
-     *
-     * @param DeleteSiteEvent $event
-     */
-    public function pruneDeletedSite(DeleteSiteEvent $event)
-    {
-        $siteUid = $event->site->uid;
-
-        $projectConfig = Craft::$app->getProjectConfig();
-        $categoryGroups = $projectConfig->get(self::CONFIG_CATEGORYROUP_KEY);
-
-        // Loop through the category groups and prune the UID from field layouts.
-        if (is_array($categoryGroups)) {
-            foreach ($categoryGroups as $categoryGroupUid => $categoryGroup) {
-                $projectConfig->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid . '.siteSettings.' . $siteUid);
-            }
-        }
-    }
 
     // Categories
     // -------------------------------------------------------------------------
