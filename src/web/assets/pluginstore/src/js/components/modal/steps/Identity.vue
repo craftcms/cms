@@ -1,7 +1,7 @@
 <template>
     <step>
         <template slot="header">
-            <div class="btn-left"><a @click="$emit('back')">← Back</a></div>
+            <div class="btn-left"><a @click="$emit('back')">{{ "Back"|t('app') }}</a></div>
             <h1>Identity</h1>
         </template>
         <template slot="main">
@@ -24,7 +24,7 @@
 
                 <template v-if="identityMode === 'guest'">
                     <text-field class="text" id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError"></text-field>
-                    <input type="submit" :value="$options.filters.t('Continue', 'app')" class="btn submit" :disabled="(!validates || loading)" :class="{ disabled: (!validates || loading) }" />
+                    <input type="submit" :value="'Continue'|t('app')" class="btn submit" :disabled="(!validates || loading)" :class="{ disabled: (!validates || loading) }" />
                 </template>
 
                 <div v-if="loading" class="spinner"></div>

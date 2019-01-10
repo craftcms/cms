@@ -20,7 +20,7 @@
                         {{priceRange.min|currency}}
                     </template>
                     <template v-else>
-                        Free
+                        {{ "Free"|t('app') }}
                     </template>
                     -
                     {{priceRange.max|currency}}
@@ -30,7 +30,7 @@
                         {{priceRange.min|currency}}
                     </template>
                     <template v-else>
-                        Free
+                        {{ "Free"|t('app') }}
                     </template>
                 </template>
             </p>

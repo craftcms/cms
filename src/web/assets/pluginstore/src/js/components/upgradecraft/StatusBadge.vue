@@ -2,15 +2,15 @@
     <div>
         <template v-if="CraftEdition == edition">
             <template v-if="licensedEdition >= edition">
-                <license-status status="installed" :description="$options.filters.t('Installed', 'app')"></license-status>
+                <license-status status="installed" :description="'Installed'|t('app')"></license-status>
             </template>
             <template v-else>
-                <license-status status="installed" :description="$options.filters.t('Installed as a trial', 'app')"></license-status>
+                <license-status status="installed" :description="'Installed as a trial'|t('app')"></license-status>
             </template>
         </template>
 
         <template v-else-if="licensedEdition == edition">
-            <license-status status="licensed" :description="$options.filters.t('Licensed', 'app')"></license-status>
+            <license-status status="licensed" :description="'Licensed'|t('app')"></license-status>
         </template>
     </div>
 </template>
