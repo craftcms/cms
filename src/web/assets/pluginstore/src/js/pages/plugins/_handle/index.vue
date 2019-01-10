@@ -65,14 +65,14 @@
                     <ul class="plugin-meta">
                         <li><span>{{ "Version"|t('app') }}</span> <strong>{{ plugin.version }}</strong></li>
                         <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ lastUpdate }}</strong></li>
-                        <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls | formatNumber }}</strong></li>
+                        <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls|formatNumber }}</strong></li>
                         <li><span>{{ "Compatibility"|t('app') }}</span> <strong>{{ plugin.compatibility }}</strong></li>
                         <li v-if="pluginCategories.length > 0">
                             <span>{{ "Categories"|t('app') }}</span>
                             <strong>
-                                <template v-for="category, key in pluginCategories">
+                                <span v-for="(category, key) in pluginCategories" :key="key">
                                     <a @click="viewCategory(category)">{{ category.title }}</a><template v-if="key < (pluginCategories.length - 1)">, </template>
-                                </template>
+                                </span>
                             </strong>
                         </li>
                         <li><span>{{ "License"|t('app') }}</span> <strong>{{ licenseLabel }}</strong></li>
@@ -91,6 +91,8 @@
 </template>
 
 <script>
+    /* global Craft */
+
     import {mapState, mapActions} from 'vuex'
     import PluginScreenshots from '../../../components/PluginScreenshots'
     import PluginEditions from '../../../components/PluginEditions'
@@ -188,10 +190,10 @@
                     this.loading = true
                     this.$store.commit('pluginStore/updatePluginDetails', null)
                     this.$store.dispatch('pluginStore/getPluginDetails', pluginId)
-                        .then(response => {
+                        .then(() => {
                             this.loading = false
                         })
-                        .catch(response => {
+                        .catch(() => {
                             this.loading = false
                         })
                 }

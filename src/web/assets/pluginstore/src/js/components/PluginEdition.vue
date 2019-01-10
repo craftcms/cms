@@ -17,7 +17,7 @@
             </p>
 
             <ul v-if="edition.features.length > 0">
-                <li v-for="feature in edition.features">
+                <li v-for="(feature, key) in edition.features" :key="key">
                     <font-awesome-icon icon="check"></font-awesome-icon>
                     {{feature.name}}
 

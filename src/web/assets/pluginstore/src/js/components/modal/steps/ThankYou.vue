@@ -14,6 +14,8 @@
 </template>
 
 <script>
+    /* global Craft */
+
     import {mapState} from 'vuex'
     import Step from '../Step'
 

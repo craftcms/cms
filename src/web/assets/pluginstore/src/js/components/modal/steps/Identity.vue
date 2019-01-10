@@ -14,7 +14,7 @@
                             <li>{{ craftId.name }}</li>
                             <li>{{ craftId.email }}</li>
                         </ul>
-                        <input type="submit" value="Continue" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
+                        <input type="submit" value="Continue" class="btn submit" :disabled="(!validates || loading)" :class="{ disabled: (!validates || loading) }" />
                     </template>
 
                     <p v-else><a class="btn submit" @click="connectCraftId">{{ "Connect to your Craft ID"|t('app') }}</a></p>
@@ -24,7 +24,7 @@
 
                 <template v-if="identityMode === 'guest'">
                     <text-field class="text" id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError"></text-field>
-                    <input type="submit" :value="$options.filters.t('Continue', 'app')" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
+                    <input type="submit" :value="$options.filters.t('Continue', 'app')" class="btn submit" :disabled="(!validates || loading)" :class="{ disabled: (!validates || loading) }" />
                 </template>
 
                 <div v-if="loading" class="spinner"></div>
@@ -34,6 +34,8 @@
 </template>
 
 <script>
+    /* global Craft */
+
     import {mapState} from 'vuex'
     import Step from '../Step'
 

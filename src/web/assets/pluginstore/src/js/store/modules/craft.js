@@ -89,7 +89,8 @@ const actions = {
         commit('updateCraftId', craftId)
     },
 
-    tryEdition({commit}, edition) {
+    // eslint-disable-next-line
+    tryEdition({}, edition) {
         return new Promise((resolve, reject) => {
             api.tryEdition(edition)
                 .then(response => {

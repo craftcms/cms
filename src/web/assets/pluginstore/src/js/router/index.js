@@ -16,7 +16,7 @@ Vue.use(VueRouter)
 export default new VueRouter({
     base: window.pluginStoreAppBaseUrl,
     mode: 'history',
-    scrollBehavior (to, from, savedPosition) {
+    scrollBehavior () {
         return { x: 0, y: 0 }
     },
     routes: [

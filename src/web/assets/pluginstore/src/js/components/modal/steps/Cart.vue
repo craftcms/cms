@@ -19,7 +19,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr v-for="(item, itemKey) in cartItems">
+                        <tr v-for="(item, itemKey) in cartItems" :key="itemKey">
                             <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
                                 <td class="thin">
                                     <div class="plugin-icon">
@@ -29,7 +29,7 @@
                                 <td>Craft {{ item.lineItem.purchasable.name }}</td>
                             </template>
 
-                            <template v-else="item.lineItem.purchasable.type === 'plugin-edition'">
+                            <template v-else-if="item.lineItem.purchasable.type === 'plugin-edition'">
                                 <td class="thin">
                                     <div class="plugin-icon">
                                         <img v-if="item.plugin.iconUrl" :src="item.plugin.iconUrl" width="40" height="40" />
@@ -87,7 +87,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="plugin in pendingActiveTrials">
+                    <tr v-for="(plugin, key) in pendingActiveTrials" :key="key">
                         <template v-if="plugin">
                             <td class="thin">
                                 <div class="plugin-icon">
@@ -113,6 +113,8 @@
 </template>
 
 <script>
+    /* global Craft */
+
     import {mapState, mapGetters, mapActions} from 'vuex'
     import Step from '../Step'
 

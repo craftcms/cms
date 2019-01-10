@@ -1,7 +1,7 @@
 <template>
     <div v-if="plugin" class="plugin-actions">
         <div v-if="pluginLicenseInfo.edition === edition.handle && pluginLicenseInfo.licenseIssues.length > 0">
-            <div v-for="errorCode in pluginLicenseInfo.licenseIssues" class="error mb-6">
+            <div v-for="(errorCode, key) in pluginLicenseInfo.licenseIssues" :key="key" class="error mb-6">
                 {{licenseIssue(errorCode)}}
             </div>
         </div>
@@ -79,6 +79,8 @@
 </template>
 
 <script>
+    /* global Craft */
+
     import {mapGetters} from 'vuex'
     import LicenseStatus from './LicenseStatus'
 
@@ -181,7 +183,7 @@
                         pluginHandle: this.plugin.handle,
                         edition: this.edition.handle,
                     })
-                        .then(response => {
+                        .then(() => {
                             this.loading = false
                             this.$root.displayNotice("Plugin edition changed.")
                         })
@@ -205,8 +207,6 @@
                     default:
                         return 'Your license key is invalid.'
                 }
-
-                return null
             },
 
         }

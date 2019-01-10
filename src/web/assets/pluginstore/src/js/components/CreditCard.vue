@@ -14,6 +14,8 @@
 
 
 <script>
+    /* global Stripe */
+
     import {mapState} from 'vuex'
     import Cleave from 'vue-cleave'
 

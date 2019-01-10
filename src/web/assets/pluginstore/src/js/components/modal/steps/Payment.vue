@@ -280,9 +280,9 @@
                         }
 
                         this.$store.dispatch('cart/checkout', checkoutData)
-                            .then(response => {
+                            .then(() => {
                                 this.$store.dispatch('cart/savePluginLicenseKeys', this.cart)
-                                    .then(response => {
+                                    .then(() => {
                                         this.$store.dispatch('craft/getCraftData')
                                             .then(() => {
                                                 this.$store.dispatch('craft/getPluginLicenseInfo')
@@ -355,13 +355,13 @@
                     }
 
                     this.$store.dispatch('cart/saveCart', data)
-                        .then(response => {
+                        .then(() => {
                             this.couponCodeSuccess = true
                             this.couponCodeError = false
                             this.staticCartTotal = this.cart.totalPrice
                             this.couponCodeLoading = false
                         })
-                        .catch(response => {
+                        .catch(() => {
                             this.couponCodeError = true
                             this.staticCartTotal = this.cart.totalPrice
                             this.couponCodeLoading = false
