@@ -62,6 +62,30 @@ You can choose which custom fields should be available for your assets from Sett
 
 ## Templating
 
+### Querying Elements with Assets Fields
+
+When [querying for elements](dev/element-queries/README.md) that have an Assets field, you can filter the results based on the Assets field data using a query param named after your field’s handle.
+
+To only fetch elements that don’t have any related assets, set the param to `':empty:'`:
+
+```twig
+{# Fetch entries with no related asset #}
+{% set entries = craft.entries()
+    .<FieldHandle>(':empty:')
+    .all() %}
+```
+
+To only fetch elements that have at least one related asset, set the param to `':notempty:'`:
+
+```twig
+{# Fetch entries with a related asset #}
+{% set entries = craft.entries()
+    .<FieldHandle>(':notempty:')
+    .all() %}
+```
+
+### Working with Assets Field Data
+
 If you have an element with an Assets field in your template, you can access its related assets using your Assets field’s handle:
 
 ```twig
@@ -69,8 +93,6 @@ If you have an element with an Assets field in your template, you can access its
 ```
 
 That will give you an [asset query](dev/element-queries/asset-queries.md), prepped to output all of the related assets for the given field.
-
-### Examples
 
 To loop through all of the related assets, call [all()](api:craft\db\Query::all()) and then loop over the results:
 

@@ -37,6 +37,30 @@ When you double-click on a related tag, a HUD will appear where you can edit the
 
 ## Templating
 
+### Querying Elements with Tags Fields
+
+When [querying for elements](dev/element-queries/README.md) that have a Tags field, you can filter the results based on the Tags field data using a query param named after your field’s handle.
+
+To only fetch elements that don’t have any related tags, set the param to `':empty:'`:
+
+```twig
+{# Fetch entries with no related tags #}
+{% set entries = craft.entries()
+    .<FieldHandle>(':empty:')
+    .all() %}
+```
+
+To only fetch elements that have at least one related tag, set the param to `':notempty:'`:
+
+```twig
+{# Fetch entries with a related tag #}
+{% set entries = craft.entries()
+    .<FieldHandle>(':notempty:')
+    .all() %}
+```
+
+### Working with Tags Field Data
+
 If you have an element with an Tags field in your template, you can access its related tags using your Tags field’s handle:
 
 ```twig
@@ -44,8 +68,6 @@ If you have an element with an Tags field in your template, you can access its r
 ```
 
 That will give you a [tag query](dev/element-queries/tag-queries.md), prepped to output all of the related tags for the given field.
-
-### Examples
 
 To loop through all of the related tags, call [all()](api:craft\db\Query::all()) and then loop over the results:
 
