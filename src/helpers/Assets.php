@@ -141,10 +141,12 @@ class Assets
         if ($isFilename && !$preventPluginModifications) {
             $event = new SetAssetFilenameEvent([
                 'filename' => $baseNameSanitized,
-                'originalFilename' => $baseName
+                'originalFilename' => $baseName,
+                'extension' => $extension
             ]);
             Event::trigger(self::class, self::EVENT_SET_FILENAME, $event);
             $baseName = $event->filename;
+            $extension = $event->extension;
         }
 
         if ($isFilename && empty($baseName)) {
