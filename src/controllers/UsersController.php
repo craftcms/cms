@@ -312,16 +312,8 @@ class UsersController extends Controller
             $errors = [];
         }
 
-        if (!empty($user)) {
-            try {
-                $emailSent = Craft::$app->getUsers()->sendPasswordResetEmail($user);
-            } catch (\Throwable $e) {
-                Craft::$app->getErrorHandler()->logException($e);
-                $emailSent = false;
-            }
-            if (!$emailSent) {
-                $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
-            }
+        if (!empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+            $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
         }
 
         if (empty($errors)) {
@@ -1128,17 +1120,12 @@ class UsersController extends Controller
             $originalEmail = $user->email;
             $user->email = $user->unverifiedEmail;
 
-            try {
-                if ($isNewUser) {
-                    // Send the activation email
-                    $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
-                } else {
-                    // Send the standard verification email
-                    $emailSent = Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
-                }
-            } catch (\Throwable $e) {
-                Craft::$app->getErrorHandler()->logException($e);
-                $emailSent = false;
+            if ($isNewUser) {
+                // Send the activation email
+                $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
+            } else {
+                // Send the standard verification email
+                $emailSent = Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
             }
 
             if (!$emailSent) {
@@ -1291,12 +1278,7 @@ class UsersController extends Controller
             throw new BadRequestHttpException('Activation emails can only be sent to pending users');
         }
 
-        try {
-            $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
-        } catch (\Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-            $emailSent = false;
-        }
+        $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
 
         if (Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->asJson(['success' => $emailSent]);

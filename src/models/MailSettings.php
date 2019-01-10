@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
+use craft\validators\TemplateValidator;
 
 /**
  * MailSettings Model class.
@@ -88,6 +89,8 @@ class MailSettings extends Model
         $rules = parent::rules();
         $rules[] = [['fromEmail', 'fromName', 'transportType'], 'required'];
         $rules[] = [['fromEmail'], 'email'];
+        $rules[] = [['template'], TemplateValidator::class];
+
         return $rules;
     }
 }
