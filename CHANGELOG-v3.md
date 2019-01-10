@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed an error that occurred when updating to 3.1.0-beta.6 or 3.1.0-beta.7 if no Matrix fields existed.
+
+## 3.1.0-beta.7 - 2019-01-09
+
 ### Added
 - Added the `storeUserIps` config setting. ([#3311](https://github.com/craftcms/cms/issues/3311))
 - Added `craft\base\Element::EVENT_DEFINE_EAGER_LOADING_MAP`.
