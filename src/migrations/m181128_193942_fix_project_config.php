@@ -9,7 +9,6 @@ use craft\fields\Matrix;
 use craft\helpers\Json;
 use craft\services\Fields;
 use craft\services\UserGroups;
-use craft\services\Users;
 
 /**
  * m181128_193942_fix_project_config migration.

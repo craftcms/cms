@@ -203,7 +203,7 @@ class UtilitiesController extends Controller
                 }
 
                 $response['volumes'][] = [
-                    'volumeId' =>$volumeId,
+                    'volumeId' => $volumeId,
                     'total' => $indexList['total'],
                 ];
 
@@ -298,7 +298,6 @@ class UtilitiesController extends Controller
         return $this->asJson([
             'finished' => 1
         ]);
-
     }
 
     /**

@@ -9,7 +9,6 @@ namespace craft\mail\transportadapters;
 
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
-use craft\validators\StringValidator;
 
 /**
  * Smtp implements a Gmail transport adapter into Craft’s mailer.

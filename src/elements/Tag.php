@@ -131,7 +131,6 @@ class Tag extends Element
     {
         $rules = parent::rules();
         $rules[] = [['groupId'], 'number', 'integerOnly' => true];
-
         return $rules;
     }
 

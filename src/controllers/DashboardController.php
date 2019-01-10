@@ -21,7 +21,6 @@ use craft\models\CraftSupport;
 use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use DateTime;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -401,7 +400,7 @@ class DashboardController extends Controller
 
             // project.yaml backups
             $configBackupPath = Craft::$app->getPath()->getConfigBackupPath(false);
-            $zip->addGlob($configBackupPath.'/*', 0, [
+            $zip->addGlob($configBackupPath . '/*', 0, [
                 'remove_all_path' => true,
                 'add_path' => 'config-backups/',
             ]);

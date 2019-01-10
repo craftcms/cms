@@ -81,7 +81,6 @@ class RecentEntries extends Widget
     {
         $rules = parent::rules();
         $rules[] = [['siteId', 'limit'], 'number', 'integerOnly' => true];
-
         return $rules;
     }
 
