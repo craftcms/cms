@@ -12,7 +12,7 @@ body.rtl #plugins tbody .plugin-infos .icon .license-key-status { right: 26px; }
 #plugins tbody .plugin-infos .icon .license-key-status.valid { background-image: url(valid-icon.svg); }
 #plugins tbody .plugin-infos .details { vertical-align: middle; }
 #plugins tbody .plugin-infos .details h2 { margin-bottom: 0; font-size: 1em; }
-#plugins tbody .plugin-infos .details h2 .edition { text-transform: uppercase; border: 1px solid #8f98a3; border-radius: 3px; color: #576575; font-size: 11px; padding: 2px 5px 3px; line-height: 6px; font-weight: normal; letter-spacing: 1.7px; }
+#plugins tbody .plugin-infos .details h2 .edition { text-transform: uppercase; border: 1px solid #8f98a3; border-radius: 3px; color: #576575; font-size: 11px; padding: 2px 4px 3px 5px; line-height: 6px; font-weight: normal; letter-spacing: 1.5px; }
 body.ltr #plugins tbody .plugin-infos .details h2 .edition { margin-left: 6px; }
 body.rtl #plugins tbody .plugin-infos .details h2 .edition { margin-right: 6px; }
 #plugins tbody .plugin-infos .details h2 .version { color: #8f98a3; font-weight: normal; }

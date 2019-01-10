@@ -9,6 +9,8 @@ use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
+use craft\services\ProjectConfig;
 
 /**
  * m180521_173000_initial_yml_and_snapshot migration.
@@ -23,9 +25,20 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         $this->addColumn('{{%info}}', 'config', $this->mediumText()->null()->after('maintenance'));
         $this->addColumn('{{%info}}', 'configMap', $this->mediumText()->null()->after('config'));
 
-        $configData = $this->_getProjectConfigData();
+        if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
+            $configDir = Craft::$app->getPath()->getConfigPath();
+            $configFile = $configDir . '/' . ProjectConfig::CONFIG_FILENAME;
 
+            if (file_exists($configFile)) {
+                $backupFile = ProjectConfig::CONFIG_FILENAME . '.' . StringHelper::randomString(10);
+                echo "    > renaming project.yaml to {$backupFile} ... ";
+                rename($configFile, $configDir . '/' . $backupFile);
+            }
+        }
+
+        $configData = $this->_getProjectConfigData();
         $projectConfig = Craft::$app->getProjectConfig();
+
         foreach ($configData as $path => $value) {
             $projectConfig->set($path, $value);
         }

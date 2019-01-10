@@ -119,6 +119,7 @@
 - `craft\services\Routes::updateRouteOrder()` now expects route UIDs instead of IDs.
 
 ### Removed
+- Removed `craft\elements\User::authData()`.
 - Removed `craft\fields\Matrix::getOldContentTable()`.
 - Removed `craft\services\Routes::deleteRouteById()`
 
@@ -141,4 +142,5 @@
 - Fixed a bug where `craft\helpers\MigrationHelper::dropIndexIfExists()` wasn’t working if the index had an unexpected name.
 
 ### Security
+- Craft now destroys all other sessions associated with a user account when a user changes their password.
 - It’s no longer possible to spoof Live Preview requests.

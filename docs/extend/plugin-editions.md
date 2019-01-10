@@ -18,13 +18,13 @@ To add edition support to a plugin, begin by defining the available editions (in
 class Plugin extends \craft\base\Plugin;
 {
     const EDITION_LITE = 'lite';
-    const EDITION_STANDARD = 'standard';
+    const EDITION_PRO = 'pro';
 
     public static function editions(): array
     {
         return [
             self::EDITION_LITE,
-            self::EDITION_STANDARD,
+            self::EDITION_PRO,
         ];
     }
 
@@ -39,14 +39,14 @@ Your feature toggles can call your plugin’s [is()](api:craft\base\Plugin::is()
 ::: code
 
 ```php
-if (Plugin::getInstance()->is(Plugin::EDITION_STANDARD) {
-    // Standard edition-only code goes here...
+if (Plugin::getInstance()->is(Plugin::EDITION_PRO) {
+    // Pro edition-only code goes here...
 }
 ```
 
 ```twig
-{% if plugin('plugin-handle').is('standard') %}
-    {# Standard edition-only code goes here... #}
+{% if plugin('plugin-handle').is('pro') %}
+    {# Pro edition-only code goes here... #}
 {% endif %}
 ```
 

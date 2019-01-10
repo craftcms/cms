@@ -1012,7 +1012,7 @@ class Plugins extends Component
         $issues = [];
 
         // Make sure they're allowed to run the current edition
-        $canTestEditions = false; //Craft::$app->getCanTestEditions();
+        $canTestEditions = Craft::$app->getCanTestEditions();
         if (
             !$canTestEditions &&
             isset($pluginInfo['edition'], $pluginInfo['licensedEdition']) &&
