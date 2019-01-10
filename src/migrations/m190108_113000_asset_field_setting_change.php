@@ -33,7 +33,7 @@ class m190108_113000_asset_field_setting_change extends Migration
         $projectConfig = Craft::$app->getProjectConfig();
 
         // Get the field data from the project config
-        $fields = $projectConfig->get(Fields::CONFIG_FIELDS_KEY);
+        $fields = $projectConfig->get(Fields::CONFIG_FIELDS_KEY) ?? [];
 
         foreach ($fields as $fieldUid => $fieldData) {
             if ($fieldData['type'] === Assets::class) {
@@ -45,7 +45,7 @@ class m190108_113000_asset_field_setting_change extends Migration
         }
 
         // Do the same for matrix block type fields
-        $matrixBlockTypes = $projectConfig->get(Matrix::CONFIG_BLOCKTYPE_KEY);
+        $matrixBlockTypes = $projectConfig->get(Matrix::CONFIG_BLOCKTYPE_KEY) ?? [];
 
         foreach ($matrixBlockTypes as $matrixBlockTypeUid => $matrixBlockType) {
             $fields = &$matrixBlockType['fields'];
