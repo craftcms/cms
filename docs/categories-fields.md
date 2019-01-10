@@ -57,16 +57,12 @@ When you double-click on a related category, a HUD will appear where you can edi
 
 When [querying for elements](dev/element-queries/README.md) that have a Categories field, you can filter the results based on the Categories field data using a query param named after your field’s handle.
 
-To only fetch elements that don’t have any related categories, set the param to `':empty:'`:
+Possible values include:
 
-```twig
-{# Fetch entries with no related categories #}
-{% set entries = craft.entries()
-    .<FieldHandle>(':empty:')
-    .all() %}
-```
-
-To only fetch elements that have at least one related category, set the param to `':notempty:'`:
+| Value | Fetches elements…
+| - | -
+| `':empty:'` | that don’t have any related categories.
+| `':notempty:'` | that have at least one related category.
 
 ```twig
 {# Fetch entries with a related category #}

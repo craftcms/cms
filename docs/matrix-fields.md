@@ -31,16 +31,12 @@ Blocks can also be reordered by dragging the “Move” icon at the end of the b
 
 When [querying for elements](dev/element-queries/README.md) that have a Matrix field, you can filter the results based on the Matrix field data using a query param named after your field’s handle.
 
-To only fetch elements that don’t have any Matrix blocks, set the param to `':empty:'`:
+Possible values include:
 
-```twig
-{# Fetch entries with no Matrix blocks #}
-{% set entries = craft.entries()
-    .<FieldHandle>(':empty:')
-    .all() %}
-```
-
-To only fetch elements that have at least one Matrix block, set the param to `':notempty:'`:
+| Value | Fetches elements…
+| - | -
+| `':empty:'` | that don’t have any Matrix blocks.
+| `':notempty:'` | that have at least one Matrix block.
 
 ```twig
 {# Fetch entries with a Matrix block #}

@@ -41,16 +41,12 @@ When you double-click on a related tag, a HUD will appear where you can edit the
 
 When [querying for elements](dev/element-queries/README.md) that have a Tags field, you can filter the results based on the Tags field data using a query param named after your field’s handle.
 
-To only fetch elements that don’t have any related tags, set the param to `':empty:'`:
+Possible values include:
 
-```twig
-{# Fetch entries with no related tags #}
-{% set entries = craft.entries()
-    .<FieldHandle>(':empty:')
-    .all() %}
-```
-
-To only fetch elements that have at least one related tag, set the param to `':notempty:'`:
+| Value | Fetches elements…
+| - | -
+| `':empty:'` | that don’t have any related tags.
+| `':notempty:'` | that have at least one related tag.
 
 ```twig
 {# Fetch entries with a related tag #}

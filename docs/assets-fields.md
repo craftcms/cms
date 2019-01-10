@@ -66,16 +66,12 @@ You can choose which custom fields should be available for your assets from Sett
 
 When [querying for elements](dev/element-queries/README.md) that have an Assets field, you can filter the results based on the Assets field data using a query param named after your field’s handle.
 
-To only fetch elements that don’t have any related assets, set the param to `':empty:'`:
+Possible values include:
 
-```twig
-{# Fetch entries with no related asset #}
-{% set entries = craft.entries()
-    .<FieldHandle>(':empty:')
-    .all() %}
-```
-
-To only fetch elements that have at least one related asset, set the param to `':notempty:'`:
+| Value | Fetches elements…
+| - | -
+| `':empty:'` | that don’t have any related assets.
+| `':notempty:'` | that have at least one related asset.
 
 ```twig
 {# Fetch entries with a related asset #}
