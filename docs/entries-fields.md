@@ -38,16 +38,12 @@ When you double-click on a related entry, a HUD will appear where you can edit t
 
 When [querying for elements](dev/element-queries/README.md) that have an Entries field, you can filter the results based on the Entries field data using a query param named after your field’s handle.
 
-To only fetch elements that don’t have any related entries, set the param to `':empty:'`:
+Possible values include:
 
-```twig
-{# Fetch entries with no related entries #}
-{% set entries = craft.entries()
-    .<FieldHandle>(':empty:')
-    .all() %}
-```
-
-To only fetch elements that have at least one related entry, set the param to `':notempty:'`:
+| Value | Fetches elements…
+| - | -
+| `':empty:'` | that don’t have any related entries.
+| `':notempty:'` | that have at least one related entry.
 
 ```twig
 {# Fetch entries with a related entry #}
