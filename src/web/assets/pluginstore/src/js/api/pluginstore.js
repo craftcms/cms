@@ -1,3 +1,5 @@
+/* global Craft */
+
 import axios from 'axios'
 
 export default {

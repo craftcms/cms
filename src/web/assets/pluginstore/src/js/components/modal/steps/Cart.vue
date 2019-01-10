@@ -1,7 +1,7 @@
 <template>
     <step>
         <template slot="header">
-            <h1>Cart</h1>
+            <h1>{{ "Cart"|t('app') }}</h1>
         </template>
 
         <template slot="main">
@@ -13,13 +13,13 @@
                         <thead>
                         <tr>
                             <th></th>
-                            <th>Item</th>
-                            <th>Updates</th>
+                            <th>{{ "Item"|t('app') }}</th>
+                            <th>{{ "Updates"|t('app') }}</th>
                             <th></th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr v-for="(item, itemKey) in cartItems">
+                        <tr v-for="(item, itemKey) in cartItems" :key="itemKey">
                             <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
                                 <td class="thin">
                                     <div class="plugin-icon">
@@ -29,7 +29,7 @@
                                 <td>Craft {{ item.lineItem.purchasable.name }}</td>
                             </template>
 
-                            <template v-else="item.lineItem.purchasable.type === 'plugin-edition'">
+                            <template v-else-if="item.lineItem.purchasable.type === 'plugin-edition'">
                                 <td class="thin">
                                     <div class="plugin-icon">
                                         <img v-if="item.plugin.iconUrl" :src="item.plugin.iconUrl" width="40" height="40" />
@@ -50,11 +50,11 @@
                             <td class="price">
                                 <strong>{{ item.lineItem.total|currency }}</strong>
                                 <br />
-                                <a role="button" @click="removeFromCart(itemKey)">Remove</a>
+                                <a role="button" @click="removeFromCart(itemKey)">{{ "Remove"|t('app') }}</a>
                             </td>
                         </tr>
                         <tr>
-                            <th class="total-price" colspan="3">Total Price</th>
+                            <th class="total-price" colspan="3">{{ "Total Price"|t('app') }}</th>
                             <td class="total-price"><strong>{{cart.totalPrice|currency}}</strong></td>
                         </tr>
                         </tbody>
@@ -87,7 +87,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="plugin in pendingActiveTrials">
+                    <tr v-for="(plugin, key) in pendingActiveTrials" :key="key">
                         <template v-if="plugin">
                             <td class="thin">
                                 <div class="plugin-icon">
@@ -113,6 +113,8 @@
 </template>
 
 <script>
+    /* global Craft */
+
     import {mapState, mapGetters, mapActions} from 'vuex'
     import Step from '../Step'
 
@@ -246,12 +248,10 @@
 
                 for (let i = 0; i < this.expiryDateOptions.length; i++) {
                     const expiryDateOption = this.expiryDateOptions[i]
-                    const date = expiryDateOption[1]
                     const optionValue = expiryDateOption[0]
-
-                    let label = "Updates Until "  + Craft.formatDate(date)
-
-                    const price = renewalPrice * (i - selectedOption)
+                    const date = Craft.formatDate(expiryDateOption[1])
+                    let label = this.$options.filters.t("Updates Until {date}", 'app', {date})
+                    let price = renewalPrice * (i - selectedOption)
 
                     if (price !== 0) {
                         let sign = '';
@@ -260,7 +260,8 @@
                             sign = '+';
                         }
 
-                        label += " (" + sign + this.$options.filters.currency(price) + ")"
+                        price = this.$options.filters.currency(price)
+                        label = this.$options.filters.t("Updates Until {date} ({sign}{price})", 'app', {date, sign, price})
                     }
 
                     options.push({

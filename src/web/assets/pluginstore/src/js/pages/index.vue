@@ -1,13 +1,11 @@
 <template>
     <div class="ps-container">
         <template v-if="featuredPlugins">
-            <template v-for="featuredPlugin, key in featuredPlugins">
-                <div>
-                    <router-link class="right" :to="'/featured/'+featuredPlugin.id">{{ "See all"|t('app') }}</router-link>
-                    <h2 :class="{'mt-0': key === 0}">{{ featuredPlugin.title }}</h2>
-                    <plugin-grid :plugins="getPluginsByIds(featuredPlugin.plugins.slice(0, featuredPlugin.limit))"></plugin-grid>
-                </div>
-            </template>
+            <div v-for="(featuredPlugin, key) in featuredPlugins" :key="key">
+                <router-link class="right" :to="'/featured/'+featuredPlugin.id">{{ "See all"|t('app') }}</router-link>
+                <h2 :class="{'mt-0': key === 0}">{{ featuredPlugin.title }}</h2>
+                <plugin-grid :plugins="getPluginsByIds(featuredPlugin.plugins.slice(0, featuredPlugin.limit))"></plugin-grid>
+            </div>
         </template>
 
         <template v-if="activeTrialPlugins.length > 0">

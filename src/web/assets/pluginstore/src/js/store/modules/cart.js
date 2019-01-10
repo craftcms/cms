@@ -80,7 +80,7 @@ const getters = {
         return pluginEditions
     },
 
-    getActiveTrialPluginEdition(state, getters, rootState, rootGetters) {
+    getActiveTrialPluginEdition(state, getters) {
         return pluginHandle => {
             const pluginEditions = getters.activeTrialPluginEditions
 
@@ -195,7 +195,8 @@ const actions = {
         })
     },
 
-    checkout({dispatch, commit}, data) {
+    // eslint-disable-next-line
+    checkout({}, data) {
         return new Promise((resolve, reject) => {
             api.checkout(data)
                 .then(response => {
@@ -305,11 +306,12 @@ const actions = {
         api.resetOrderNumber()
     },
 
-    saveOrderNumber({state}, {orderNumber}) {
+    // eslint-disable-next-line
+    saveOrderNumber({}, {orderNumber}) {
         api.saveOrderNumber(orderNumber)
     },
 
-    savePluginLicenseKeys({state, rootState, rootGetters}, cart) {
+    savePluginLicenseKeys({rootGetters}, cart) {
         return new Promise((resolve, reject) => {
             let pluginLicenseKeys = []
 
@@ -402,7 +404,7 @@ const utils = {
             let lineItem = cart.lineItems[i]
 
             switch (lineItem.purchasable.type) {
-                case 'plugin-edition':
+                case 'plugin-edition': {
                     const item = {
                         type: lineItem.purchasable.type,
                         plugin: lineItem.purchasable.plugin.handle,
@@ -421,7 +423,9 @@ const utils = {
                     lineItems.push(item)
 
                     break
-                case 'cms-edition':
+                }
+
+                case 'cms-edition': {
                     lineItems.push({
                         type: lineItem.purchasable.type,
                         edition: lineItem.purchasable.handle,
@@ -430,6 +434,7 @@ const utils = {
                         autoRenew: lineItem.options.autoRenew,
                     })
                     break
+                }
             }
         }
 

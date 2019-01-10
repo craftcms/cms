@@ -1,3 +1,7 @@
+/* global Craft */
+/* global Garnish */
+/* global $ */
+
 import Vue from 'vue'
 import {currency} from './js/filters/currency'
 import {escapeHtml, formatNumber, t} from './js/filters/craft'
@@ -148,18 +152,19 @@ Garnish.$doc.ready(function() {
 
             // Load Plugin Store data
             this.$store.dispatch('pluginStore/getPluginStoreData')
-                .then(response => {
+                .then(() => {
                     this.pluginStoreDataLoaded = true
                     this.$emit('dataLoaded')
                 })
-                .catch(response => {
+                .catch(() => {
                     this.pluginStoreDataError = true
                     this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app')
                 })
 
             // Load Craft data
             this.$store.dispatch('craft/getCraftData')
-                .then(data => {
+                .then(() => {
+
                     this.craftIdDataLoaded = true
                     this.$emit('dataLoaded')
 
@@ -170,13 +175,13 @@ Garnish.$doc.ready(function() {
                             this.$emit('dataLoaded')
                         })
                 })
-                .catch(response => {
+                .catch(() => {
                     this.craftIdDataLoaded = true
                 })
 
             // Load plugin license info
             this.$store.dispatch('craft/getPluginLicenseInfo')
-                .then(response => {
+                .then(() => {
                     this.pluginLicenseInfoLoaded = true
                     this.$emit('dataLoaded')
                 })

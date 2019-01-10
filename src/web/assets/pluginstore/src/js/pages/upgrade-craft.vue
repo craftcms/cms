@@ -95,6 +95,8 @@
 </template>
 
 <script>
+    /* global Craft */
+
     import {mapState} from 'vuex'
     import StatusBadge from '../components/upgradecraft/StatusBadge'
     import BuyBtn from '../components/upgradecraft/BuyBtn'

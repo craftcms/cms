@@ -1,10 +1,10 @@
 <template>
     <div class="plugin-changelog">
         <div class="tw-flex">
-            <h2 class="flex-1">Changelog</h2>
+            <h2 class="flex-1">{{ "Changelog"|t('app') }}</h2>
             <div>
-                <a v-if="showMore === false" @click.prevent="showMore = true">More</a>
-                <a v-if="showMore === true" @click.prevent="showMore = false">Less</a>
+                <a v-if="showMore === false" @click.prevent="showMore = true">{{ "More"|t('app') }}</a>
+                <a v-if="showMore === true" @click.prevent="showMore = false">{{ "Less"|t('app') }}</a>
             </div>
         </div>
 

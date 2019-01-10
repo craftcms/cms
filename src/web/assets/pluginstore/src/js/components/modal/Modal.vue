@@ -10,6 +10,8 @@
 </template>
 
 <script>
+    /* global Garnish */
+
     import {mapState} from 'vuex'
     import Payment from './steps/Payment'
     import Cart from './steps/Cart'

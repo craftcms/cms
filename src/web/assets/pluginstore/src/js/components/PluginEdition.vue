@@ -12,12 +12,12 @@
             </div>
 
             <p v-if="!isPluginEditionFree(edition)" class="-mt-8 py-6 text-grey-dark">
-                Price includes 1 year of updates.<br />
-                {{ edition.renewalPrice|currency }}/year per site for updates after that.
+                {{ "Price includes 1 year of updates."|t('app') }}<br />
+                {{ "{renewalPrice}/year per site for updates after that."|t('app', {renewalPrice: edition.renewalPrice|currency}) }}
             </p>
 
             <ul v-if="edition.features.length > 0">
-                <li v-for="feature in edition.features">
+                <li v-for="(feature, key) in edition.features" :key="key">
                     <font-awesome-icon icon="check"></font-awesome-icon>
                     {{feature.name}}
 

@@ -23,6 +23,9 @@
 </template>
 
 <script>
+    /* global Craft */
+    /* global Garnish */
+
     export default {
         data() {
             return {

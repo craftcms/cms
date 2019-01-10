@@ -1,7 +1,7 @@
 <template>
     <div class="ps-container">
         <div class="ps-header">
-            <h1>Showing results for “{{searchQuery}}”</h1>
+            <h1>{{ "Showing results for “{searchQuery}”"|t('app', {searchQuery}) }}</h1>
             <sort-plugins :sortingOptions.sync="sortingOptions"></sort-plugins>
         </div>
 
