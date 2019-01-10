@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed an error that occurred when updating to 3.1.0-beta.6 or 3.1.0-beta.7 if no Matrix fields existed.
+- Fixed an error where deleted sites would not be removed from category group or section project config settings.
 
 ## 3.1.0-beta.7 - 2019-01-09
 
