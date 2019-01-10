@@ -1,6 +1,6 @@
 <template>
     <div class="plugin-editions mb-4">
-        <plugin-edition v-for="edition in plugin.editions" :plugin="plugin" :edition="edition"></plugin-edition>
+        <plugin-edition v-for="(edition, key) in plugin.editions" :plugin="plugin" :edition="edition" :key="key"></plugin-edition>
     </div>
 </template>
 

@@ -11,7 +11,7 @@
                     {{ "Upgrade Craft CMS"|t('app') }}
                 </router-link>
             </li>
-            <li v-for="category in categories">
+            <li v-for="category in categories" :key="category.id">
                 <router-link :to="'/categories/'+category.id">
                     <img :src="category.iconUrl" />
                     {{ category.title }}
