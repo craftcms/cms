@@ -10,7 +10,7 @@ use yii\base\Event;
 public function init()
 {
     parent::init();
-    
+
     Event::on(
         Cp::class,
         Cp::EVENT_REGISTER_CP_NAV_ITEMS,
@@ -22,7 +22,7 @@ public function init()
             ];
         }
     );
-    
+
     // ...
 }
 ```

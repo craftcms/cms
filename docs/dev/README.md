@@ -44,13 +44,13 @@ Craft treats templates with names prefixed with an underscore, for example `reci
 
 If we have a recipe entry that is available at the entry URL `http://mysite.com/recipes/gin-tonic`, which uses the template located at `recipes/entry`, someone could access the template directly at `http://mysite.com/recipes/entry`.
 
-In this example there is no reason to access the template directly because it's only ever used as part of an entry URL. We change its file name to `_entry.twig` so it is considered hidden by Craft and update the settings in our Section. 
+In this example there is no reason to access the template directly because it's only ever used as part of an entry URL. We change its file name to `_entry.twig` so it is considered hidden by Craft and update the settings in our Section.
 
 Now when we try to access `http://mysite.com/recipes/entry` Craft returns a 404 error instead of attempting to render the template.
 
 ## Template Localization
 
-If you’re running multiple sites with Craft, you can create site-specific subfolders in your `templates/` folder, which contain templates that will only be available to a specific site. 
+If you’re running multiple sites with Craft, you can create site-specific subfolders in your `templates/` folder, which contain templates that will only be available to a specific site.
 
 For example, if you want to create a special template welcoming your German customers, but there’s no need for it on your English site, then you could save it in `templates/de/welcome.twig`. That template would be available from `http://example.de/welcome`.
 

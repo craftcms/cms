@@ -1,8 +1,8 @@
 # Twig Primer
 
-Here’s a rundown of the core concepts in Twig, the templating engine used by Craft. 
+Here’s a rundown of the core concepts in Twig, the templating engine used by Craft.
 
-This is only meant as a primer, not a comprehensive documentation of everything Twig can do. 
+This is only meant as a primer, not a comprehensive documentation of everything Twig can do.
 
 To learn more, visit the Continued Reading section at the bottom of this page or refer directly to the [official Twig documentation](https://twig.symfony.com/doc/templates.html) .
 

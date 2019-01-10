@@ -223,7 +223,7 @@ use Craft;
 use yii\base\Behavior;
 
 /**
- * Adds a `craft.products()` function to the templates (like `craft.entries()`) 
+ * Adds a `craft.products()` function to the templates (like `craft.entries()`)
  */
 class CraftVariableBehavior extends Behavior
 {

@@ -12,6 +12,6 @@ Each tag group holds a unique set of tags, and lets you define a custom set of [
 
 ## Assigning Tags
 
-To assign tags to things (like Entries), you must create a [Tags field](tags-fields.md) and add it to a Field Layout. 
+To assign tags to things (like Entries), you must create a [Tags field](tags-fields.md) and add it to a Field Layout.
 
 Each Tags field is connected to a single tag group. Whatever you attach the field to (entries, assets, users, etc.) will be able to create new tags and create [relations](relations.md) to any of the tags within that group.
