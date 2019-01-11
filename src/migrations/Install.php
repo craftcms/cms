@@ -821,6 +821,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%volumefolders}}', ['name', 'parentId', 'volumeId'], true);
         $this->createIndex(null, '{{%volumefolders}}', ['parentId'], false);
         $this->createIndex(null, '{{%volumefolders}}', ['volumeId'], false);
+        $this->createIndex(null, '{{%volumes}}', ['name'], false);
         $this->createIndex(null, '{{%volumes}}', ['handle'], false);
         $this->createIndex(null, '{{%volumes}}', ['fieldLayoutId'], false);
         $this->createIndex(null, '{{%volumes}}', ['dateDeleted'], false);
