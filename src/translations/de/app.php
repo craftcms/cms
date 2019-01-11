@@ -58,6 +58,7 @@ return [
     'Admin' => 'Admin',
     'Administrate users' => 'Benutzer verwalten',
     'Admins' => 'Administratoren',
+    'and' => 'und',
     'Advanced' => 'Erweitert',
     'All' => 'Alle',
     'All Fields' => 'Alle Felder',

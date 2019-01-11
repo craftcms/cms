@@ -115,4 +115,14 @@ trait SoftDeleteTrait
             ]
         ];
     }
+
+
+    /**
+     * This method is called at the beginning of restoring a record.
+     */
+    public function beforeRestore(): bool
+    {
+        $this->prepareForDb();
+        return true;
+    }
 }

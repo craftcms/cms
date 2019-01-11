@@ -1,4 +1,4 @@
-/*!   - 2019-01-04 */
+/*!   - 2019-01-10 */
 (function($){
 
 /** global: Craft */
@@ -14661,6 +14661,11 @@ Craft.Grid = Garnish.Base.extend(
             }
             else {
                 this.refreshCols._.totalCols = Math.floor(this.$container.width() / this.settings.minColWidth);
+
+                // If we're adding a new column, require an extra 20 pixels in case a scrollbar shows up
+                if (this.totalCols !== null && this.refreshCols._.totalCols > this.totalCols) {
+                    this.refreshCols._.totalCols = Math.floor((this.$container.width() - 20) / this.settings.minColWidth)
+                }
 
                 if (this.settings.maxCols && this.refreshCols._.totalCols > this.settings.maxCols) {
                     this.refreshCols._.totalCols = this.settings.maxCols;

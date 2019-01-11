@@ -22,16 +22,16 @@ use yii\base\Event;
 public function init()
 {
     parent::init();
-    
+
     Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function(Event $e) {
         /** @var CraftVariable $variable */
         $variable = $e->sender;
-        
+
         // Attach a behavior:
         $variable->attachBehaviors([
             MyBehavior::class,
         ]);
-        
+
         // Attach a service:
         $variable->set('serviceId', MyService::class);
     });
@@ -48,7 +48,7 @@ Twig extensions can be registered for Craft’s Twig environment by calling <api
 public function init()
 {
     parent::init();
-    
+
     if (Craft::$app->request->getIsSiteRequest()) {
         // Add in our Twig extension
         $extension = new MyTwigExtension();

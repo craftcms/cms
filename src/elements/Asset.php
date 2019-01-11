@@ -412,6 +412,11 @@ class Asset extends Element
     public $size;
 
     /**
+     * @var bool|null Whether the file was kept around when the asset was deleted
+     */
+    public $keptFile;
+
+    /**
      * @var \DateTime|null Date modified
      */
     public $dateModified;
@@ -1299,7 +1304,14 @@ class Asset extends Element
      */
     public function afterDelete()
     {
-        if (!$this->keepFileOnDelete) {
+        if ($this->keepFileOnDelete) {
+            // Remember that the file was kept around
+            Craft::$app->getDb()->createCommand()
+                ->update('{{%assets}}', [
+                    'keptFile' => true,
+                ], ['id' => $this->id], [], false)
+                ->execute();
+        } else {
             $this->getVolume()->deleteFile($this->getPath());
         }
 
@@ -1312,9 +1324,8 @@ class Asset extends Element
      */
     public function beforeRestore(): bool
     {
-        // todo: maybe we can at least see if the file is still around first
-        // Assets can't be restored
-        return false;
+        // Only allow the asset to be restored if the file was kept on delete
+        return $this->keptFile && parent::beforeRestore();
     }
 
     // Private Methods

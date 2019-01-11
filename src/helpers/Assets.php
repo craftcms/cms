@@ -132,18 +132,22 @@ class Assets
             $separator = null;
         }
 
-        if ($isFilename && !$preventPluginModifications) {
-            $event = new SetAssetFilenameEvent([
-                'filename' => $baseName
-            ]);
-            Event::trigger(self::class, self::EVENT_SET_FILENAME, $event);
-            $baseName = $event->filename;
-        }
-
-        $baseName = FileHelper::sanitizeFilename($baseName, [
+        $baseNameSanitized = FileHelper::sanitizeFilename($baseName, [
             'asciiOnly' => $generalConfig->convertFilenamesToAscii,
             'separator' => $separator
         ]);
+
+        // Give developers a chance to do their own sanitation
+        if ($isFilename && !$preventPluginModifications) {
+            $event = new SetAssetFilenameEvent([
+                'filename' => $baseNameSanitized,
+                'originalFilename' => $baseName,
+                'extension' => $extension
+            ]);
+            Event::trigger(self::class, self::EVENT_SET_FILENAME, $event);
+            $baseName = $event->filename;
+            $extension = $event->extension;
+        }
 
         if ($isFilename && empty($baseName)) {
             $baseName = '-';

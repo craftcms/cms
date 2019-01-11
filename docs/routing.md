@@ -15,7 +15,7 @@ Here is how Craft handles each request:
 
 1. **Is it an action request?**
 
-   Action requests either have a URL that begins with `actions/` (or whatever your <config:actionTrigger> config setting is set to), or an `action` parameter in the POST request or the query string. 
+   Action requests either have a URL that begins with `actions/` (or whatever your <config:actionTrigger> config setting is set to), or an `action` parameter in the POST request or the query string.
 
    Craft routes action requests to a controller action that perform actions. Craft has system Controller actions for core actions, but plugins may also have Controllers that define their own custom actions.
 
@@ -46,7 +46,7 @@ Here is how Craft handles each request:
    If none of the above checks are successful, Craft will throw a [NotFoundHttpException](api:yii\web\NotFoundHttpException). If [Dev Mode](config:devMode) is enabled, an error report for the exception will be shown. Otherwise, a 404 error will be returned.
 
    ::: tip
-   You can customize your site’s 404 page by placing a `404.twig` template at the root of your `templates/` directory. You can test this page even if [Dev Mode](config:devMode) is enabled by going to `http://my-project.test/404`. 
+   You can customize your site’s 404 page by placing a `404.twig` template at the root of your `templates/` directory. You can test this page even if [Dev Mode](config:devMode) is enabled by going to `http://my-project.test/404`.
    :::
 
 
@@ -111,7 +111,7 @@ return [
 ];
 ```
 
-If your Craft installation has multiple sites, you can create site-specific URL rules by placing them in a sub-array, and set the key to the site’s handle. 
+If your Craft installation has multiple sites, you can create site-specific URL rules by placing them in a sub-array, and set the key to the site’s handle.
 
 ```php
 return [
@@ -124,8 +124,8 @@ return [
 Craft also supports special tokens that you can use within the regular expression portion of your [named parameters](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#named-parameters):
 
 - `{handle}` – matches a field handle, volume handle, etc.
-- `{slug}` – matches an entry slug, category slug, etc.  
-- `{uid}` – matches a v4 UUID. 
+- `{slug}` – matches an entry slug, category slug, etc.
+- `{uid}` – matches a v4 UUID.
 
 ```php
 return [

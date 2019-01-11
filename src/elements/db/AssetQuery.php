@@ -252,6 +252,7 @@ class AssetQuery extends ElementQuery
                 ->select(['id'])
                 ->from(['{{%volumes}}'])
                 ->where(Db::parseParam('handle', $value))
+                ->andWhere(['dateDeleted' => null])
                 ->column();
         } else {
             $this->volumeId = null;
@@ -742,6 +743,7 @@ class AssetQuery extends ElementQuery
             'assets.height',
             'assets.size',
             'assets.focalPoint',
+            'assets.keptFile',
             'assets.dateModified',
             'volumeFolders.path AS folderPath'
         ]);
