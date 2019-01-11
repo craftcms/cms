@@ -29,6 +29,15 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      */
     public function beforeSave($insert)
     {
+        $this->prepareForDb();
+        return parent::beforeSave($insert);
+    }
+
+    /**
+     * Prepares record values for DB storage.
+     */
+    protected function prepareForDb()
+    {
         foreach ($this->fields() as $attribute) {
             $this->$attribute = Db::prepareValueForDb($this->$attribute);
         }
@@ -49,7 +58,5 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
         if ($this->hasAttribute('dateUpdated')) {
             $this->dateUpdated = $now;
         }
-
-        return parent::beforeSave($insert);
     }
 }

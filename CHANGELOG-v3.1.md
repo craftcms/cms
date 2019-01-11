@@ -41,6 +41,7 @@
 - Added `craft\base\SavableComponentInterface::beforeApplyDelete()`.
 - Added `craft\behaviors\EnvAttributeParserBehavior`.
 - Added `craft\controllers\LivePreviewController`.
+- Added `craft\db\ActiveRecord::prepareForDb()`.
 - Added `craft\db\Command::restore()`.
 - Added `craft\db\Command::softDelete()`.
 - Added `craft\db\Migration::restore()`.

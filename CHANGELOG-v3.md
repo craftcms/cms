@@ -4,6 +4,8 @@
 
 ### Added
 - Added `craft\validators\TemplateValidator`.
+- Added `craft\db\ActiveRecord::prepareForDb()`.
+- Added `craft\db\SoftDeleteTrait::beforeRestore()`.
 
 ### Changed
 - `craft\mail\Mailer::send()` now swallows any exceptions that are thrown when attempting to render the email HTML body, and sends the email as plain text only. ([#3443](https://github.com/craftcms/cms/issues/3443))
@@ -12,6 +14,7 @@
 ### Fixed
 - Fixed an error that occurred when updating to 3.1.0-beta.6 or 3.1.0-beta.7 if no Matrix fields existed.
 - Fixed an error where deleted sites would not be removed from category group or section project config settings.
+- Fixed a bug where active records weren’t preparing their attributes correctly when being restored.
 
 ## 3.1.0-beta.7 - 2019-01-09
 
