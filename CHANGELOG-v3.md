@@ -20,6 +20,7 @@
 - Fixed an error that occurred when updating to 3.1.0-beta.6 or 3.1.0-beta.7 if no Matrix fields existed.
 - Fixed an error where deleted sites would not be removed from category group or section project config settings.
 - Fixed a bug where active records weren’t preparing their attributes correctly when being restored.
+- Fixed an error that could occur when updating multi-site installs to Craft 3.1. ([#3614](https://github.com/craftcms/cms/issues/3614))
 
 ## 3.1.0-beta.7 - 2019-01-09
 

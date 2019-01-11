@@ -562,16 +562,15 @@ class Sites extends Component
     public function getSitesByGroupId(int $groupId): array
     {
         $sites = [];
-        $sortOrders = [];
 
         foreach ($this->getAllSites() as $site) {
             if ($site->groupId == $groupId) {
                 $sites[] = $site;
-                $sortOrders[] = (int)$site->sortOrder;
             }
         }
 
-        array_multisort($sortOrders, SORT_NUMERIC, $sites);
+        // Using array_multisort threw a nesting error for no obvious reason, so don't use it here.
+        ArrayHelper::multisort($sites, 'sortOrder', SORT_ASC, SORT_NUMERIC);
 
         return $sites;
     }
