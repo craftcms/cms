@@ -60,7 +60,7 @@
 
                 <hr>
 
-                <h2 class="mb-4">{{ "Informations"|t('app') }}</h2>
+                <h2 class="mb-4">{{ "Information"|t('app') }}</h2>
                 <div class="plugin-infos">
                     <ul class="plugin-meta">
                         <li><span>{{ "Version"|t('app') }}</span> <strong>{{ plugin.version }}</strong></li>
