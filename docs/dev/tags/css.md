@@ -4,7 +4,7 @@ The `{% css %}` tag can be used to register a `<style>` tag in the page’s `<he
 
 ```css
 {% css %}
-    .content { 
+    .content {
         color: {{ entry.textColor }};
     }
 {% endcss %}
@@ -17,7 +17,7 @@ The tag calls <api:yii\web\View::registerCss()> under the hood, which can also b
 {% set styles = ".content { color: #{entry.textColor}; }" %}
 {% do view.registerCss(styles) %}
 ```
-::: 
+:::
 
 ## Parameters
 

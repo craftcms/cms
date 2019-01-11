@@ -2,11 +2,24 @@
 
 ## Unreleased
 
+### Added
+- Volumes are now soft-deleted.
+- Added `craft\validators\TemplateValidator`.
+- Added `craft\db\ActiveRecord::prepareForDb()`.
+- Added `craft\db\SoftDeleteTrait::beforeRestore()`.
+- Added `craft\services\Gc::hardDeleteWithFieldLayouts()`.
+- Added `craft\services\Gc::shouldHardDelete()`.
+- Added `craft\services\Gc::hardDeleteCondition()`.
+
 ### Changed
+- `craft\mail\Mailer::send()` now swallows any exceptions that are thrown when attempting to render the email HTML body, and sends the email as plain text only. ([#3443](https://github.com/craftcms/cms/issues/3443))
+- `craft\mail\Mailer::send()` now fires an `afterSend` event with `yii\mail\MailEvent::$isSuccessful` set to `false` if any exceptions were thrown when sending the email, and returns `false`. ([#3443](https://github.com/craftcms/cms/issues/3443))
 - The `craft\helpers\Assets::EVENT_SET_FILENAME` event is now fired after sanitizing the filename, instead of being fired before.
 
 ### Fixed
 - Fixed an error that occurred when updating to 3.1.0-beta.6 or 3.1.0-beta.7 if no Matrix fields existed.
+- Fixed an error where deleted sites would not be removed from category group or section project config settings.
+- Fixed a bug where active records weren’t preparing their attributes correctly when being restored.
 
 ## 3.1.0-beta.7 - 2019-01-09
 
@@ -254,6 +267,9 @@
 
 ### Fixed
 - Fixed a bug where Craft wasn’t saving Dashboard widget sizes properly on PostgreSQL. ([#3609](https://github.com/craftcms/cms/issues/3609))
+- Fixed a bug where the Dashboard could rapidly switch between two column sizes at certain browser sizes. ([#2438](https://github.com/craftcms/cms/issues/2438))
+- Fixed an error that occurred when updating to Craft 3 if there were any Rich Text fields without any stored settings.
+- Fixed a bug where switching an entry’s type could initially show the wrong field layout tab. ([#3600](https://github.com/craftcms/cms/issues/3600))
 
 ## 3.0.37 - 2019-01-08
 

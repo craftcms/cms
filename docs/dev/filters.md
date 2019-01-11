@@ -75,7 +75,7 @@ You can also pass a custom PHP date format using the same [formatting options](h
 
 ```twig
 {{ entry.postDate|date('Y-m-d') }} → 2018-09-26
-```    
+```
 
 You can customize the timezone the time is output in, using the `timezone` param:
 
@@ -245,11 +245,11 @@ Returns an array containing only the values that are also in a passed-in array.
 
 ## `json_encode`
 
-Like Twig’s core [json_encode](https://twig.symfony.com/doc/2.x/filters/json_encode.html) filter, but if the `options` argument isn’t set, it will default to `JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT` if the response content type is either `text/html` or `application/xhtml+xml`.  
+Like Twig’s core [json_encode](https://twig.symfony.com/doc/2.x/filters/json_encode.html) filter, but if the `options` argument isn’t set, it will default to `JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT` if the response content type is either `text/html` or `application/xhtml+xml`.
 
 ## `kebab`
 
-Returns a string formatted in “kebab-case”. 
+Returns a string formatted in “kebab-case”.
 
 Tip: That’s a reference to [shish kebabs](https://en.wikipedia.org/wiki/Kebab#Shish) for those of you that don’t get the analogy.
 
@@ -276,7 +276,7 @@ Processes a string with [Markdown](https://daringfireball.net/projects/markdown/
 
 The only *real* computer keyboard ever made was famously
 the [Apple Extended Keyboard II] [1].
-    
+
     [1]: https://www.flickr.com/photos/gruber/sets/72157604797968156/
 {% endset %}
 
@@ -310,7 +310,7 @@ Parses a string for [reference tags](../reference-tags.md).
 {% set content %}
     {entry:blog/hello-world:link} was my first blog post. Pretty geeky, huh?
 {% endset %}
-    
+
 {{ content|parseRefs|raw }}
 ```
 
