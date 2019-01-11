@@ -122,6 +122,7 @@
 - `craft\helpers\MigrationHelper::doesIndexExist()` no longer has a `$foreignKey` argument, and now has an optional `$db` argument.
 - `craft\services\Routes::saveRoute()` now expects site and route UIDs instead of IDs.
 - `craft\services\Routes::updateRouteOrder()` now expects route UIDs instead of IDs.
+- The `craft\helpers\Assets::EVENT_SET_FILENAME` event is now fired after sanitizing the filename, instead of being fired before.
 
 ### Removed
 - Removed `craft\elements\User::authData()`.

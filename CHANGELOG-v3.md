@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- The `craft\helpers\Assets::EVENT_SET_FILENAME` event is now fired after sanitizing the filename, instead of being fired before.
+
 ### Fixed
 - Fixed an error that occurred when updating to 3.1.0-beta.6 or 3.1.0-beta.7 if no Matrix fields existed.
 
