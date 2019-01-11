@@ -13,7 +13,7 @@
 
             <p v-if="!isPluginEditionFree(edition)" class="-mt-8 py-6 text-grey-dark">
                 {{ "Price includes 1 year of updates."|t('app') }}<br />
-                {{ "{renewalPrice}/year per site for updates after that."|t('app', {renewalPrice: edition.renewalPrice|currency}) }}
+                {{ "{renewalPrice}/year per site for updates after that."|t('app', {renewalPrice: $options.filters.currency(edition.renewalPrice)}) }}
             </p>
 
             <ul v-if="edition.features.length > 0">
