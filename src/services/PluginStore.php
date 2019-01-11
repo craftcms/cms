@@ -48,6 +48,16 @@ class PluginStore extends Component
      */
     public $craftIdOauthClientId = '6DvEra7eqRKLYic9fovyD2FWFjYxRwZn';
 
+    /**
+     * @var string Dev server manifest path
+     */
+    public $devServerManifestPath = 'https://localhost:8082/';
+
+    /**
+     * @var string Dev server public path
+     */
+    public $devServerPublicPath = 'https://localhost:8082/';
+
     // Public Methods
     // =========================================================================
 

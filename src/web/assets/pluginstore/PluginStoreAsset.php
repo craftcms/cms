@@ -57,10 +57,12 @@ class PluginStoreAsset extends AssetBundle
             VueAsset::class,
         ];
 
+        $pluginStoreService = Craft::$app->getPluginStore();
+
         $config = [
             'devServer' => [
-                'manifestPath' => 'https://localhost:8082/',
-                'publicPath' => 'https://localhost:8082/',
+                'manifestPath' => $pluginStoreService->devServerManifestPath,
+                'publicPath' => $pluginStoreService->devServerPublicPath,
             ],
             'server' => [
                 'manifestPath' => __DIR__ . '/dist/',

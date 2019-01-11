@@ -3,7 +3,7 @@ const ManifestPlugin = require('webpack-manifest-plugin')
 
 module.exports = {
     filenameHashing: false,
-    publicPath: process.env.NODE_ENV === 'development' ? process.env.DEV_PUBLIC_PATH : process.env.PROD_PUBLIC_PATH,
+    publicPath: process.env.NODE_ENV === 'development' ? process.env.DEV_PUBLIC_PATH : '/',
     configureWebpack: {
         externals: {
             'vue': 'Vue',
