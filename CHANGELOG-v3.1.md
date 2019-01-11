@@ -91,6 +91,7 @@
 - Added `craft\services\Tags::EVENT_BEFORE_APPLY_GROUP_DELETE`.
 - Added `craft\services\UserGroups::EVENT_BEFORE_APPLY_GROUP_DELETE`.
 - Added `craft\services\Volumes::EVENT_BEFORE_APPLY_VOLUME_DELETE`.
+- Added `craft\validators\TemplateValidator`.
 - Added `craft\web\Controller::requireCpRequest()`.
 - Added `craft\web\Controller::requireSiteRequest()`.
 - Added `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_SETTINGS`. ([#3314](https://github.com/craftcms/cms/issues/3314))
@@ -120,6 +121,8 @@
 - `craft\db\mysql\Schema::findIndexes()` and `craft\db\pgsql\Schema::findIndexes()` now return arrays with `columns` and `unique` keys.
 - `craft\helpers\ArrayHelper::filterByValue()` now defaults its `$value` argument to `true`.
 - `craft\helpers\MigrationHelper::doesIndexExist()` no longer has a `$foreignKey` argument, and now has an optional `$db` argument.
+- `craft\mail\Mailer::send()` now swallows any exceptions that are thrown when attempting to render the email HTML body, and sends the email as plain text only. ([#3443](https://github.com/craftcms/cms/issues/3443))
+- `craft\mail\Mailer::send()` now fires an `afterSend` event with `yii\mail\MailEvent::$isSuccessful` set to `false` if any exceptions were thrown when sending the email, and returns `false`. ([#3443](https://github.com/craftcms/cms/issues/3443))
 - `craft\services\Routes::saveRoute()` now expects site and route UIDs instead of IDs.
 - `craft\services\Routes::updateRouteOrder()` now expects route UIDs instead of IDs.
 
