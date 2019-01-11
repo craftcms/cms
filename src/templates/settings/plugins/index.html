@@ -21,6 +21,7 @@
         <table id="plugins" class="data fullwidth collapsible">
             <tbody>
                 {% for handle, config in info %}
+                    {% set isTrial = config.licenseKeyStatus == 'invalid' and config.licenseIssues is empty %}
                     <tr id="plugin-{{ handle }}" data-name="{{ config.name }}" data-handle="{{ handle }}">
                         <th>
                             <div class="plugin-infos">
@@ -31,11 +32,16 @@
                                     {% endif %}
                                 </div>
                                 <div class="details">
-                                    <h2>
-                                        {{ config.name }}
-                                        {% if config.hasMultipleEditions %}<span class="edition">{{ config.edition }}</span>{% endif %}
+                                    <div class="plugin-id">
+                                        <h2>{{ config.name }}</h2>
+                                        {% if config.hasMultipleEditions or isTrial %}
+                                            <div class="edition">
+                                                {% if config.hasMultipleEditions %}<div class="edition-name">{{ config.edition }}</div>{% endif %}
+                                                {% if isTrial %}<div class="edition-trial">{{ 'Trial'|t('app') }}</div>{% endif %}
+                                            </div>
+                                        {% endif %}
                                         <span class="version">{{ config.version }}</span>
-                                    </h2>
+                                    </div>
                                     {% if config.description %}
                                         <p>{{ config.description }}</p>
                                     {% endif %}
