@@ -3,9 +3,13 @@
 ## Unreleased
 
 ### Added
+- Volumes are now soft-deleted.
 - Added `craft\validators\TemplateValidator`.
 - Added `craft\db\ActiveRecord::prepareForDb()`.
 - Added `craft\db\SoftDeleteTrait::beforeRestore()`.
+- Added `craft\services\Gc::hardDeleteWithFieldLayouts()`.
+- Added `craft\services\Gc::shouldHardDelete()`.
+- Added `craft\services\Gc::hardDeleteCondition()`.
 
 ### Changed
 - `craft\mail\Mailer::send()` now swallows any exceptions that are thrown when attempting to render the email HTML body, and sends the email as plain text only. ([#3443](https://github.com/craftcms/cms/issues/3443))
