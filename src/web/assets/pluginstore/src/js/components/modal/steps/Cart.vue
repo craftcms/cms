@@ -19,40 +19,65 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr v-for="(item, itemKey) in cartItems" :key="itemKey">
-                            <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
-                                <td class="thin">
-                                    <div class="plugin-icon">
-                                        <img :src="craftLogo" width="40" height="40" />
-                                    </div>
-                                </td>
-                                <td>Craft {{ item.lineItem.purchasable.name }}</td>
-                            </template>
+                        <template v-for="(item, itemKey) in cartItems">
+                            <tr :key="'item' + itemKey">
+                                <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
+                                    <td class="thin">
+                                        <div class="plugin-icon">
+                                            <img :src="craftLogo" width="40" height="40" />
+                                        </div>
+                                    </td>
+                                    <td>Craft {{ item.lineItem.purchasable.name }}</td>
+                                </template>
 
-                            <template v-else-if="item.lineItem.purchasable.type === 'plugin-edition'">
-                                <td class="thin">
-                                    <div class="plugin-icon">
-                                        <img v-if="item.plugin.iconUrl" :src="item.plugin.iconUrl" width="40" height="40" />
-                                    </div>
-                                </td>
-                                <td>
-                                    <strong>{{ item.plugin.name}}</strong>
-                                    <div class="text-grey-dark">
-                                        {{item.lineItem.purchasable.name}}
-                                    </div>
-                                </td>
-                            </template>
+                                <template v-else-if="item.lineItem.purchasable.type === 'plugin-edition'">
+                                    <td class="thin">
+                                        <div class="plugin-icon">
+                                            <img v-if="item.plugin.iconUrl" :src="item.plugin.iconUrl" width="40" height="40" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong>{{ item.plugin.name}}</strong>
+                                        <div class="text-grey-dark">
+                                            {{item.lineItem.purchasable.name}}
+                                        </div>
+                                    </td>
+                                </template>
 
-                            <td class="expiry-date">
-                                <select-input v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
-                                <div v-if="itemLoading(itemKey)" class="spinner"></div>
-                            </td>
-                            <td class="price">
-                                <strong>{{ item.lineItem.total|currency }}</strong>
-                                <br />
-                                <a role="button" @click="removeFromCart(itemKey)">{{ "Remove"|t('app') }}</a>
-                            </td>
-                        </tr>
+                                <td class="expiry-date">
+                                    <template v-if="item.lineItem.options.licenseKey.substr(0, 4) === 'new:'">
+                                        <select-input v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
+                                    </template>
+                                    <template v-else>
+                                        {{ "Updates Until {date}"|t('app', {date: getExpiryDate(selectedExpiryDates[itemKey])}) }}
+                                    </template>
+
+                                    <!--if (licenseKey && licenseKey.substr(0, 3) !== 'new') {-->
+                                    <!--item.licenseKey = licenseKey-->
+                                    <!--}-->
+
+                                    <div v-if="itemLoading(itemKey)" class="spinner"></div>
+                                </td>
+                                <td class="price">
+                                    <strong>{{ item.lineItem.price|currency }}</strong>
+                                    <br />
+                                    <a role="button" @click="removeFromCart(itemKey)">{{ "Remove"|t('app') }}</a>
+                                </td>
+                            </tr>
+
+                            <template v-for="(adjustment, adjustmentKey) in item.lineItem.adjustments">
+                                <tr :key="itemKey + 'adjustment-' + adjustmentKey">
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        {{adjustment.name}}
+                                    </td>
+                                    <td class="price">
+                                        {{adjustment.amount|currency}}
+                                    </td>
+                                </tr>
+                            </template>
+                        </template>
                         <tr>
                             <th class="total-price" colspan="3">{{ "Total Price"|t('app') }}</th>
                             <td class="total-price"><strong>{{cart.totalPrice|currency}}</strong></td>
@@ -289,6 +314,16 @@
                 }
 
                 return true
+            },
+
+            getExpiryDate(key) {
+                const expiryDateOption = this.expiryDateOptions.find(option => option[0] === key)
+
+                if (!expiryDateOption) {
+                    return null
+                }
+
+                return expiryDateOption[1]
             }
         },
 
