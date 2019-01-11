@@ -10,7 +10,7 @@ Categories fields have the following settings:
 - **Branch Limit** – The maximum number of category tree branches that can be related with the field at once. (Default is no limit.)
 
   For example, if you have the following category group:
-  
+
   ```
   Food
   ├── Fruit
@@ -34,7 +34,7 @@ On multi-site installs, the following settings will also be available (under “
 - **Relate categories from a specific site?** – Whether to only allow relations to categories from a specific site.
 
   If enabled, a new setting will appear where you can choose which site.
-  
+
   If disabled, related categories will always be pulled from the current site.
 
 - **Manage relations on a per-site basis** – Whether each site should get its own set of related categories.
@@ -53,6 +53,26 @@ When you double-click on a related category, a HUD will appear where you can edi
 
 ## Templating
 
+### Querying Elements with Categories Fields
+
+When [querying for elements](dev/element-queries/README.md) that have a Categories field, you can filter the results based on the Categories field data using a query param named after your field’s handle.
+
+Possible values include:
+
+| Value | Fetches elements…
+| - | -
+| `':empty:'` | that don’t have any related categories.
+| `':notempty:'` | that have at least one related category.
+
+```twig
+{# Fetch entries with a related category #}
+{% set entries = craft.entries()
+    .<FieldHandle>(':notempty:')
+    .all() %}
+```
+
+### Working with Categories Field Data
+
 If you have an element with a Categories field in your template, you can access its related categories using your Categories field’s handle:
 
 ```twig
@@ -60,8 +80,6 @@ If you have an element with a Categories field in your template, you can access 
 ```
 
 That will give you a [category query](dev/element-queries/category-queries.md), prepped to output all of the related categories for the given field.
-
-### Examples
 
 To loop through all of the related categories as a flat list, call [all()](api:craft\db\Query::all()) and then loop over the results:
 
@@ -121,7 +139,7 @@ You can set [parameters](dev/element-queries/category-queries.md#parameters) on 
     .all() %}
 ```
 
-### See Also
+## See Also
 
 * [Category Queries](dev/element-queries/category-queries.md)
 * <api:craft\elements\Category>

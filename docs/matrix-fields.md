@@ -27,6 +27,26 @@ Blocks can also be reordered by dragging the “Move” icon at the end of the b
 
 ## Templating
 
+### Querying Elements with Matrix Fields
+
+When [querying for elements](dev/element-queries/README.md) that have a Matrix field, you can filter the results based on the Matrix field data using a query param named after your field’s handle.
+
+Possible values include:
+
+| Value | Fetches elements…
+| - | -
+| `':empty:'` | that don’t have any Matrix blocks.
+| `':notempty:'` | that have at least one Matrix block.
+
+```twig
+{# Fetch entries with a Matrix block #}
+{% set entries = craft.entries()
+    .<FieldHandle>(':notempty:')
+    .all() %}
+```
+
+### Working with Assets Field Data
+
 To output your Matrix blocks in a template, use a [for-loop](https://twig.symfony.com/doc/tags/for.html) pointed at your Matrix field:
 
 ```twig
@@ -118,7 +138,7 @@ You can get the total number of blocks using the [length filter](https://twig.sy
 ```
 
 
-### See Also
+## See Also
 
 * [Element Queries](dev/element-queries/README.md)
 * <api:craft\elements\MatrixBlock>

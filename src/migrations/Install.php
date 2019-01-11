@@ -105,6 +105,7 @@ class Install extends Migration
             'height' => $this->integer()->unsigned(),
             'size' => $this->bigInteger()->unsigned(),
             'focalPoint' => $this->string(13)->null(),
+            'keptFile' => $this->boolean()->null(),
             'dateModified' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -672,6 +673,7 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%widgets}}', [
@@ -820,9 +822,9 @@ class Install extends Migration
         $this->createIndex(null, '{{%volumefolders}}', ['name', 'parentId', 'volumeId'], true);
         $this->createIndex(null, '{{%volumefolders}}', ['parentId'], false);
         $this->createIndex(null, '{{%volumefolders}}', ['volumeId'], false);
-        $this->createIndex(null, '{{%volumes}}', ['name'], true);
-        $this->createIndex(null, '{{%volumes}}', ['handle'], true);
+        $this->createIndex(null, '{{%volumes}}', ['handle'], false);
         $this->createIndex(null, '{{%volumes}}', ['fieldLayoutId'], false);
+        $this->createIndex(null, '{{%volumes}}', ['dateDeleted'], false);
         $this->createIndex(null, '{{%widgets}}', ['userId'], false);
 
         if ($this->db->getIsMysql()) {

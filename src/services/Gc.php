@@ -8,6 +8,8 @@
 namespace craft\services;
 
 use Craft;
+use craft\db\Query;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use DateInterval;
@@ -56,10 +58,15 @@ class Gc extends Component
 
         Craft::$app->getUsers()->purgeExpiredPendingUsers();
         $this->_deleteStaleSessions();
+
         $this->hardDelete([
             '{{%elements}}',
             '{{%fieldlayouts}}',
             '{{%sites}}',
+        ]);
+
+        $this->hardDeleteWithFieldLayouts([
+            '{{%volumes}}',
         ]);
 
         // Fire a 'run' event
@@ -69,23 +76,90 @@ class Gc extends Component
     }
 
     /**
-     * Hard-deletes any rows in the given table(s), that were soft-deleted long enough ago
-     * to be ready for hard-deletion.
+     * Hard-deletes any rows in the given table(s), that are due for it.
      *
      * @param string|string[] $tables The table(s) to delete rows from. They must have a `dateDeleted` column.
      */
     public function hardDelete($tables)
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if (!$generalConfig->softDeleteDuration && !$this->deleteAllTrashed) {
+        if (!$this->shouldHardDelete()) {
             return;
         }
 
+        if (!is_array($tables)) {
+            $tables = [$tables];
+        }
+
+        $db = Craft::$app->getDb();
+        $condition = $this->hardDeleteCondition();
+
+        foreach ($tables as $table) {
+            $db->createCommand()
+                ->delete($table, $condition)
+                ->execute();
+        }
+    }
+
+    /**
+     * Hard-deletes any rows in the given table(s) that are due for it, along with their field layouts.
+     *
+     * @param string|string[] $tables The table(s) to delete rows from. They must have `id`, `fieldLayoutId`, and
+     * `dateDeleted` columns.
+     */
+    public function hardDeleteWithFieldLayouts($tables)
+    {
+        if (!$this->shouldHardDelete()) {
+            return;
+        }
+
+        if (!is_array($tables)) {
+            $tables = [$tables];
+        }
+
+        $condition = $this->hardDeleteCondition();
+        $fields = Craft::$app->getFields();
+        $db = Craft::$app->getDb();
+
+        foreach ($tables as $table) {
+            $results = (new Query())
+                ->select(['id', 'fieldLayoutId'])
+                ->from([$table])
+                ->where($condition)
+                ->all();
+
+            if (!empty($results)) {
+                $fields->deleteLayoutById(ArrayHelper::getColumn($results, 'fieldLayoutId'));
+                $db->createCommand()
+                    ->delete($table, [
+                        'id' => ArrayHelper::getColumn($results, 'id'),
+                    ])
+                    ->execute();
+            }
+        }
+    }
+
+    /**
+     * Returns whether anything should be hard-deleted.
+     *
+     * @return bool
+     */
+    public function shouldHardDelete(): bool
+    {
+        return $this->deleteAllTrashed || Craft::$app->getConfig()->getGeneral()->softDeleteDuration;
+    }
+
+    /**
+     * Returns the condition that should be used to find table rows that are due to be hard-deleted.
+     *
+     * @return array
+     */
+    public function hardDeleteCondition(): array
+    {
         $condition = ['not', ['dateDeleted' => null]];
 
         if (!$this->deleteAllTrashed) {
             $expire = DateTimeHelper::currentUTCDateTime();
-            $interval = DateTimeHelper::secondsToInterval($generalConfig->softDeleteDuration);
+            $interval = DateTimeHelper::secondsToInterval(Craft::$app->getConfig()->getGeneral()->softDeleteDuration);
             $pastTime = $expire->sub($interval);
             $condition = [
                 'and',
@@ -94,15 +168,7 @@ class Gc extends Component
             ];
         }
 
-        if (!is_array($tables)) {
-            $tables = [$tables];
-        }
-
-        foreach ($tables as $table) {
-            Craft::$app->getDb()->createCommand()
-                ->delete($table, $condition)
-                ->execute();
-        }
+        return $condition;
     }
 
     /**

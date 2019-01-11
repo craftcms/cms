@@ -9,11 +9,11 @@ Assets fields have the following settings:
 - **Restrict uploads to a single folder?** – Whether file uploads/relations should be constrained to a single folder.
 
   If enabled, the following setting will be visible:
-  
+
   - **Upload Location** – The location that files dragged directly onto the field should be saved in.
-  
+
   If disabled, the following settings will be visible:
-  
+
   - **Sources** – Which asset volumes (or other asset index sources) the field should be able to relate assets from.
   - **Default Upload Location** – The default location that files dragged directly onto the field should be saved in.
 
@@ -29,7 +29,7 @@ On multi-site installs, the following settings will also be available (under “
 - **Relate assets from a specific site?** – Whether to only allow relations to assets from a specific site.
 
   If enabled, a new setting will appear where you can choose which site.
-  
+
   If disabled, related assets will always be pulled from the current site.
 
 - **Manage relations on a per-site basis** – Whether each site should get its own set of related assets.
@@ -62,6 +62,26 @@ You can choose which custom fields should be available for your assets from Sett
 
 ## Templating
 
+### Querying Elements with Assets Fields
+
+When [querying for elements](dev/element-queries/README.md) that have an Assets field, you can filter the results based on the Assets field data using a query param named after your field’s handle.
+
+Possible values include:
+
+| Value | Fetches elements…
+| - | -
+| `':empty:'` | that don’t have any related assets.
+| `':notempty:'` | that have at least one related asset.
+
+```twig
+{# Fetch entries with a related asset #}
+{% set entries = craft.entries()
+    .<FieldHandle>(':notempty:')
+    .all() %}
+```
+
+### Working with Assets Field Data
+
 If you have an element with an Assets field in your template, you can access its related assets using your Assets field’s handle:
 
 ```twig
@@ -69,8 +89,6 @@ If you have an element with an Assets field in your template, you can access its
 ```
 
 That will give you an [asset query](dev/element-queries/asset-queries.md), prepped to output all of the related assets for the given field.
-
-### Examples
 
 To loop through all of the related assets, call [all()](api:craft\db\Query::all()) and then loop over the results:
 
