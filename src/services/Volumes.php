@@ -367,7 +367,7 @@ class Volumes extends Component
                 // Delete the field layout
                 $fields->deleteLayoutById($volumeRecord->fieldLayoutId);
 
-                //Create the new layout
+                // Create the new layout
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
                 $layout->type = Asset::class;
                 $layout->uid = key($data['fieldLayouts']);
@@ -613,6 +613,11 @@ class Volumes extends Component
 
         try {
             $volume->beforeApplyDelete();
+
+            // Delete the field layout
+            if ($volumeRecord->fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
+            }
 
             // Delete the assets
             $assets = Asset::find()

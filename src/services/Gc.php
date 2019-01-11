@@ -8,8 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use DateInterval;
@@ -63,9 +61,6 @@ class Gc extends Component
             '{{%elements}}',
             '{{%fieldlayouts}}',
             '{{%sites}}',
-        ]);
-
-        $this->hardDeleteWithFieldLayouts([
             '{{%volumes}}',
         ]);
 
@@ -82,84 +77,16 @@ class Gc extends Component
      */
     public function hardDelete($tables)
     {
-        if (!$this->shouldHardDelete()) {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (!$generalConfig->softDeleteDuration && !$this->deleteAllTrashed) {
             return;
         }
 
-        if (!is_array($tables)) {
-            $tables = [$tables];
-        }
-
-        $db = Craft::$app->getDb();
-        $condition = $this->hardDeleteCondition();
-
-        foreach ($tables as $table) {
-            $db->createCommand()
-                ->delete($table, $condition)
-                ->execute();
-        }
-    }
-
-    /**
-     * Hard-deletes any rows in the given table(s) that are due for it, along with their field layouts.
-     *
-     * @param string|string[] $tables The table(s) to delete rows from. They must have `id`, `fieldLayoutId`, and
-     * `dateDeleted` columns.
-     */
-    public function hardDeleteWithFieldLayouts($tables)
-    {
-        if (!$this->shouldHardDelete()) {
-            return;
-        }
-
-        if (!is_array($tables)) {
-            $tables = [$tables];
-        }
-
-        $condition = $this->hardDeleteCondition();
-        $fields = Craft::$app->getFields();
-        $db = Craft::$app->getDb();
-
-        foreach ($tables as $table) {
-            $results = (new Query())
-                ->select(['id', 'fieldLayoutId'])
-                ->from([$table])
-                ->where($condition)
-                ->all();
-
-            if (!empty($results)) {
-                $fields->deleteLayoutById(ArrayHelper::getColumn($results, 'fieldLayoutId'));
-                $db->createCommand()
-                    ->delete($table, [
-                        'id' => ArrayHelper::getColumn($results, 'id'),
-                    ])
-                    ->execute();
-            }
-        }
-    }
-
-    /**
-     * Returns whether anything should be hard-deleted.
-     *
-     * @return bool
-     */
-    public function shouldHardDelete(): bool
-    {
-        return $this->deleteAllTrashed || Craft::$app->getConfig()->getGeneral()->softDeleteDuration;
-    }
-
-    /**
-     * Returns the condition that should be used to find table rows that are due to be hard-deleted.
-     *
-     * @return array
-     */
-    public function hardDeleteCondition(): array
-    {
         $condition = ['not', ['dateDeleted' => null]];
 
         if (!$this->deleteAllTrashed) {
             $expire = DateTimeHelper::currentUTCDateTime();
-            $interval = DateTimeHelper::secondsToInterval(Craft::$app->getConfig()->getGeneral()->softDeleteDuration);
+            $interval = DateTimeHelper::secondsToInterval($generalConfig->softDeleteDuration);
             $pastTime = $expire->sub($interval);
             $condition = [
                 'and',
@@ -168,7 +95,17 @@ class Gc extends Component
             ];
         }
 
-        return $condition;
+        if (!is_array($tables)) {
+            $tables = [$tables];
+        }
+
+        $db = Craft::$app->getDb();
+
+        foreach ($tables as $table) {
+            $db->createCommand()
+                ->delete($table, $condition)
+                ->execute();
+        }
     }
 
     /**
