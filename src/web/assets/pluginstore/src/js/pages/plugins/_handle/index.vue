@@ -6,6 +6,8 @@
             <div class="plugin-icon">
                 <img v-if="pluginSnippet.iconUrl" :src="pluginSnippet.iconUrl" width="100" />
                 <img v-else :src="defaultPluginSvg" width="100" />
+
+                <div v-if="showLicenseKeyStatus" class="license-key-status" :class="{valid: isLicenseValid}"></div>
             </div>
 
             <div class="description flex-1">
@@ -22,6 +24,17 @@
         <!-- body -->
         <div class="plugin-details-body">
             <template v-if="!loading">
+
+                <template v-if="pluginLicenseInfo.licenseIssues.length > 0">
+                    <ul>
+                        <li v-for="(errorCode, key) in pluginLicenseInfo.licenseIssues" class="error">
+                            {{licenseIssue(errorCode)}}
+                        </li>
+                    </ul>
+
+                    <hr>
+                </template>
+
                 <template v-if="plugin.screenshotUrls && plugin.screenshotUrls.length">
                     <plugin-screenshots :images="plugin.screenshotUrls"></plugin-screenshots>
 
@@ -93,7 +106,7 @@
 <script>
     /* global Craft */
 
-    import {mapState, mapActions} from 'vuex'
+    import {mapState, mapGetters, mapActions} from 'vuex'
     import PluginScreenshots from '../../../components/PluginScreenshots'
     import PluginEditions from '../../../components/PluginEditions'
     import PluginChangelog from '../../../components/PluginChangelog'
@@ -123,6 +136,11 @@
                 plugin: state => state.pluginStore.plugin,
                 plugins: state => state.pluginStore.plugins,
                 defaultPluginSvg: state => state.craft.defaultPluginSvg,
+            }),
+
+            ...mapGetters({
+                getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
+                getPluginEdition: 'pluginStore/getPluginEdition',
             }),
 
             longDescription() {
@@ -155,6 +173,22 @@
                 const date = new Date(this.plugin.lastUpdate.replace(/\s/, 'T'))
                 return Craft.formatDate(date)
             },
+
+            pluginLicenseInfo() {
+                if (!this.plugin) {
+                    return null
+                }
+
+                return this.getPluginLicenseInfo(this.plugin.handle)
+            },
+
+            isLicenseValid() {
+                return this.pluginLicenseInfo && this.pluginLicenseInfo.licenseKeyStatus === 'valid' && this.pluginLicenseInfo.licenseIssues.length === 0
+            },
+
+            showLicenseKeyStatus() {
+                return !this.loading && this.pluginLicenseInfo.isInstalled && this.pluginLicenseInfo.licenseKey;
+            }
 
         },
 
@@ -197,7 +231,24 @@
                             this.loading = false
                         })
                 }
-            }
+            },
+
+            licenseIssue(errorCode) {
+                switch (errorCode) {
+                    case 'wrong_edition':
+                        const currentEdition = this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.edition)
+                        const licensedEdition = this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.licensedEdition)
+                        
+                        return this.$options.filters.t('Your are currently using the {currentEdition} edition, and your licensed edition is {licensedEdition}.', 'app', {
+                            currentEdition: currentEdition.name,
+                            licensedEdition: licensedEdition.name,
+                        })
+                    case 'mismatched':
+                        return this.$options.filters.t('This license is tied to another Craft install. Purchase a license for this install.', 'app')
+                    default:
+                        return this.$options.filters.t('Your license key is invalid.', 'app')
+                }
+            },
 
         },
 
@@ -218,9 +269,23 @@
     @import "../../../../../../../../../lib/craftcms-sass/mixins";
 
     .plugin-icon {
+        @apply .relative;
         @include margin-right(1.5rem); // .mr-6
-    }
 
+        .license-key-status {
+            @apply .block .absolute;
+            bottom: 0px;
+            right: 0;
+            width: 32px;
+            height: 32px;
+            background: no-repeat 0 0 url(~@/images/invalid-icon.svg);
+            background-size: 100% 100%;
+            
+            &.valid {
+                background-image: url(~@/images/valid-icon.svg);
+            }
+        }
+    }
 
     /* Plugin Meta */
 

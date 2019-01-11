@@ -1,11 +1,5 @@
 <template>
     <div v-if="plugin" class="plugin-actions">
-        <div v-if="pluginLicenseInfo.edition === edition.handle && pluginLicenseInfo.licenseIssues.length > 0">
-            <div v-for="(errorCode, key) in pluginLicenseInfo.licenseIssues" :key="key" class="error mb-6">
-                {{licenseIssue(errorCode)}}
-            </div>
-        </div>
-
         <template v-if="!isPluginEditionFree">
             <template v-if="isInCart(plugin, edition)">
                 <!-- Already in cart -->
@@ -192,21 +186,6 @@
                 }
 
                 // Install (don’t prevent form submit)
-            },
-
-            licenseIssue(errorCode) {
-                switch (errorCode) {
-                    case 'wrong_edition':
-                        return 'This license is for the {name} edition.'
-                    case 'mismatched':
-                        return 'This license is tied to another Craft install. Visit {url} to resolve.'
-                    case 'astray':
-                        return 'This license isn’t allowed to run version {version}.'
-                    case 'required':
-                        return 'A license key is required.'
-                    default:
-                        return 'Your license key is invalid.'
-                }
             },
 
         }
