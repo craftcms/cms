@@ -59,8 +59,6 @@ class Gc extends Component
 
         $this->hardDelete([
             '{{%elements}}',
-            '{{%fieldlayouts}}',
-            '{{%sites}}',
             '{{%volumes}}',
         ]);
 
@@ -68,6 +66,11 @@ class Gc extends Component
         if ($this->hasEventHandlers(self::EVENT_RUN)) {
             $this->trigger(self::EVENT_RUN);
         }
+
+        $this->hardDelete([
+            '{{%fieldlayouts}}',
+            '{{%sites}}',
+        ]);
     }
 
     /**
