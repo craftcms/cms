@@ -258,6 +258,28 @@
                     $oldIcon.remove();
                 }
 
+                // add a trial label
+                var $edition = this.$row.find('.edition');
+                var $trial = this.$row.find('.edition-trial');
+
+                if (info.licenseKeyStatus === 'invalid' && !info.licenseIssues.length) {
+                    if (!$trial.length) {
+                        if (!$edition.length) {
+                            $edition = $('<div/>', {'class': 'edition'}).insertBefore(this.$row.find('.version'));
+                        }
+                        $('<span/>', {
+                            'class': 'edition-trial',
+                            'text': Craft.t('app', 'Trial')
+                        }).appendTo($edition);
+                    }
+                } else if ($trial.length) {
+                    if ($edition.find('.edition-name').length) {
+                        $trial.remove();
+                    } else {
+                        $edition.remove();
+                    }
+                }
+
                 // show the license key?
                 var showLicenseKey = info.licenseKey || info.licenseKeyStatus !== 'unknown';
                 if (showLicenseKey) {
