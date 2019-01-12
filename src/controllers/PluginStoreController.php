@@ -288,6 +288,19 @@ class PluginStoreController extends Controller
     }
 
     /**
+     * Returns plugin changelog.
+     *
+     * @return Response
+     */
+    public function actionPluginChangelog()
+    {
+        $pluginId = Craft::$app->getRequest()->getParam('pluginId');
+        $pluginChangelog = Craft::$app->getApi()->getPluginChangelog($pluginId);
+
+        return $this->asJson($pluginChangelog);
+    }
+
+    /**
      * Returns developer details.
      *
      * @return Response

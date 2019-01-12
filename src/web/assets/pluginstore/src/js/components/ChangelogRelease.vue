@@ -1,21 +1,30 @@
 <template>
-    <div class="changelog-release">
+    <div v-if="release" class="changelog-release">
         <div class="version">
-            <a :href="'#' + version" class="anchor"><font-awesome-icon icon="link" /></a>
-            <h2 :id="version">{{ "Version {version}"|t('app', {version}) }}</h2>
+            <a :href="'#' + release.version" class="anchor"><font-awesome-icon icon="link" /></a>
+            <h2 :id="release.version">{{ "Version {version}"|t('app', {version: release.version}) }}</h2>
             <div class="date">{{date}}</div>
+            <div v-if="release.critical" class="critical">{{ 'Critical'|t('app') }}</div>
         </div>
 
-        <div class="details">
-            <slot></slot>
-        </div>
+        <div class="details readable" v-html="release.notes"></div>
     </div>
 </template>
 
 <script>
+    /* global Craft */
+
     export default {
 
-        props: ['version', 'date'],
+        props: ['release'],
+
+        computed: {
+
+            date() {
+                return Craft.formatDate(this.release.date)
+            }
+
+        }
 
     }
 </script>
@@ -53,6 +62,10 @@
 
             .date {
                 @apply .text-grey;
+            }
+
+            .critical {
+                @apply .uppercase .text-red .border .border-red .border-solid .inline-block .px-1 .py-0 .rounded .text-sm .mt-2;
             }
         }
 

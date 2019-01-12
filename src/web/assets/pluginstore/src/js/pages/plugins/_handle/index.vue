@@ -94,7 +94,7 @@
 
                 <hr>
 
-                <plugin-changelog></plugin-changelog>
+                <plugin-changelog :pluginId="$root.pluginId"></plugin-changelog>
             </template>
             <template v-else>
                 <div class="plugin-details-loading spinner"></div>

@@ -133,7 +133,7 @@ class Api extends Component
     }
 
     /**
-     * Returns the plugin details.
+     * Returns plugin details.
      *
      * @param int $pluginId
      *
@@ -143,6 +143,20 @@ class Api extends Component
     public function getPluginDetails(int $pluginId): array
     {
         $response = $this->request('GET', 'plugin/' . $pluginId);
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Returns plugin changelog.
+     *
+     * @param int $pluginId
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getPluginChangelog(int $pluginId): array
+    {
+        $response = $this->request('GET', 'plugin/' . $pluginId . '/changelog');
         return Json::decode((string)$response->getBody());
     }
 

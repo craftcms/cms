@@ -8,6 +8,7 @@ const state = {
     developer: null,
     featuredPlugins: [],
     plugin: null,
+    pluginChangelog: null,
     plugins: [],
     expiryDateOptions: [],
 }
@@ -126,6 +127,17 @@ const actions = {
         })
     },
 
+    getPluginChangelog({commit}, pluginId) {
+        return new Promise((resolve, reject) => {
+            api.getPluginChangelog(pluginId, response => {
+                commit('updatePluginChangelog', response.data)
+                resolve(response)
+            }, response => {
+                reject(response)
+            })
+        })
+    },
+
 }
 
 /**
@@ -146,6 +158,10 @@ const mutations = {
 
     updatePluginDetails(state, pluginDetails) {
         state.plugin = pluginDetails
+    },
+
+    updatePluginChangelog(state, changelog) {
+        state.pluginChangelog = changelog
     },
 
 }
