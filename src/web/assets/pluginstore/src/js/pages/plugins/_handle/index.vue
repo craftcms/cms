@@ -113,8 +113,6 @@
 
     export default {
 
-        props: ['pluginId'],
-
         components: {
             PluginScreenshots,
             PluginEditions,
@@ -238,7 +236,7 @@
                     case 'wrong_edition':
                         const currentEdition = this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.edition)
                         const licensedEdition = this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.licensedEdition)
-                        
+
                         return this.$options.filters.t('Your are currently using the {currentEdition} edition, and your licensed edition is {licensedEdition}.', 'app', {
                             currentEdition: currentEdition.name,
                             licensedEdition: licensedEdition.name,
@@ -263,8 +261,6 @@
 </script>
 
 <style lang="scss">
-
-    // Todo: Remove import?
     @import "../../../../sass/variables";
     @import "../../../../../../../../../lib/craftcms-sass/mixins";
 
@@ -286,6 +282,7 @@
             }
         }
     }
+
 
     /* Plugin Meta */
 
