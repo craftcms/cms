@@ -1172,6 +1172,11 @@ class Fields extends Component
      */
     public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
+        if (!$layout->id && $layout->uid) {
+            // Maybe the ID just wasn't known
+            $layout->id = Db::idByUid('{{%fieldlayouts}}', $layout->uid);
+        }
+
         $isNewLayout = !$layout->id;
 
         // Make sure the tabs/fields are memoized on the layout
@@ -1199,7 +1204,11 @@ class Fields extends Component
                 ->execute();
 
             // Get the current layout
-            if (($layoutRecord = FieldLayoutRecord::findOne($layout->id)) === null) {
+            $layoutRecord = FieldLayoutRecord::findWithTrashed()
+                ->andWhere(['id' => $layout->id])
+                ->one();
+
+            if (!$layoutRecord) {
                 throw new Exception('Invalid field layout ID: ' . $layout->id);
             }
         } else {
@@ -1221,7 +1230,11 @@ class Fields extends Component
             }
         }
 
-        $layoutRecord->save(false);
+        if ($layoutRecord->dateDeleted) {
+            $layoutRecord->restore();
+        } else {
+            $layoutRecord->save(false);
+        }
 
         if ($isNewLayout) {
             $layout->id = $layoutRecord->id;
