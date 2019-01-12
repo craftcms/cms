@@ -247,20 +247,16 @@ class Tags extends Component
             $tagGroupRecord->uid = $tagGroupUid;
 
             if (!empty($data['fieldLayouts'])) {
-                $fields = Craft::$app->getFields();
-
-                // Delete the field layout
-                if ($tagGroupRecord->fieldLayoutId) {
-                    $fields->deleteLayoutById($tagGroupRecord->fieldLayoutId);
-                }
-
-                //Create the new layout
+                // Save the field layout
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                $layout->id = $tagGroupRecord->fieldLayoutId;
                 $layout->type = Tag::class;
                 $layout->uid = key($data['fieldLayouts']);
-                $fields->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout);
                 $tagGroupRecord->fieldLayoutId = $layout->id;
-            } else {
+            } else if ($tagGroupRecord->fieldLayoutId) {
+                // Delete the field layout
+                Craft::$app->getFields()->deleteLayoutById($tagGroupRecord->fieldLayoutId);
                 $tagGroupRecord->fieldLayoutId = null;
             }
 

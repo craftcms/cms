@@ -398,20 +398,16 @@ class Globals extends Component
             $globalSetRecord->uid = $globalSetUid;
 
             if (!empty($data['fieldLayouts'])) {
-                $fields = Craft::$app->getFields();
-
-                // Delete the field layout
-                if ($globalSetRecord->fieldLayoutId) {
-                    $fields->deleteLayoutById($globalSetRecord->fieldLayoutId);
-                }
-
-                //Create the new layout
+                // Save the field layout
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                $layout->id = $globalSetRecord->fieldLayoutId;
                 $layout->type = GlobalSet::class;
                 $layout->uid = key($data['fieldLayouts']);
-                $fields->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout);
                 $globalSetRecord->fieldLayoutId = $layout->id;
-            } else {
+            } else if ($globalSetRecord->fieldLayoutId) {
+                // Delete the field layout
+                Craft::$app->getFields()->deleteLayoutById($globalSetRecord->fieldLayoutId);
                 $globalSetRecord->fieldLayoutId = null;
             }
 

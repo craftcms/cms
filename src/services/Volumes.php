@@ -362,18 +362,16 @@ class Volumes extends Component
             $volumeRecord->uid = $volumeUid;
 
             if (!empty($data['fieldLayouts'])) {
-                $fields = Craft::$app->getFields();
-
-                // Delete the field layout
-                $fields->deleteLayoutById($volumeRecord->fieldLayoutId);
-
-                // Create the new layout
+                // Save the field layout
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                $layout->id = $volumeRecord->fieldLayoutId;
                 $layout->type = Asset::class;
                 $layout->uid = key($data['fieldLayouts']);
-                $fields->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout);
                 $volumeRecord->fieldLayoutId = $layout->id;
-            } else {
+            } else if ($volumeRecord->fieldLayoutId) {
+                // Delete the field layout
+                Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
                 $volumeRecord->fieldLayoutId = null;
             }
 
