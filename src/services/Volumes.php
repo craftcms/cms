@@ -614,11 +614,6 @@ class Volumes extends Component
         try {
             $volume->beforeApplyDelete();
 
-            // Delete the field layout
-            if ($volumeRecord->fieldLayoutId) {
-                Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
-            }
-
             // Delete the assets
             $assets = Asset::find()
                 ->anyStatus()
@@ -630,7 +625,12 @@ class Volumes extends Component
                 Craft::$app->getElements()->deleteElement($asset);
             }
 
-            // Nuke the asset volume.
+            // Delete the field layout
+            if ($volumeRecord->fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
+            }
+
+            // Delete the volume
             $db->createCommand()
                 ->softDelete('{{%volumes}}', ['id' => $volumeRecord->id])
                 ->execute();
