@@ -84,7 +84,7 @@ class Structures extends Component
     /**
      * Returns a structure by its UID.
      *
-     * @param string $structureId
+     * @param string $structureUid
      * @return Structure|null
      */
     public function getStructureByUid(string $structureUid)

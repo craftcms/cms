@@ -619,10 +619,11 @@ class Volumes extends Component
                 ->anyStatus()
                 ->volumeId($volumeRecord->id)
                 ->all();
+            $elementsService = Craft::$app->getElements();
 
             foreach ($assets as $asset) {
                 $asset->keepFileOnDelete = true;
-                Craft::$app->getElements()->deleteElement($asset);
+                $elementsService->deleteElement($asset);
             }
 
             // Delete the field layout
@@ -725,7 +726,7 @@ class Volumes extends Component
      * Gets a volume's record by uid.
      *
      * @param string $uid
-     * @param bool $withTrashed Whether to include trashed sites in search
+     * @param bool $withTrashed Whether to include trashed volumes in search
      * @return AssetVolumeRecord
      */
     private function _getVolumeRecord(string $uid, bool $withTrashed = false): AssetVolumeRecord
