@@ -1148,7 +1148,7 @@ class Install extends Migration
                 'schemaVersion' => Craft::$app->schemaVersion,
                 'timeZone' => 'America/Los_Angeles',
             ],
-            'user' => [
+            'users' => [
                 'requireEmailVerification' => true,
                 'allowPublicRegistration' => false,
                 'defaultGroup' => null,
