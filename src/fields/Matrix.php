@@ -198,13 +198,23 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $this->_blockTypes[] = $config;
             } else {
                 $blockType = new MatrixBlockType();
-                $blockType->id = is_numeric($key) ? $key : null;
                 $blockType->fieldId = $this->id;
                 $blockType->name = $config['name'];
                 $blockType->handle = $config['handle'];
 
+                // Existing block type?
                 if (is_numeric($key)) {
-                    $blockType->uid = Db::uidById('{{%matrixblocktypes}}', $key);
+                    $info = (new Query())
+                        ->select(['uid', 'fieldLayoutId'])
+                        ->from(['{{%matrixblocktypes}}'])
+                        ->where(['id'=> $key])
+                        ->one();
+
+                    if ($info) {
+                        $blockType->id = $key;
+                        $blockType->uid = $info['uid'];
+                        $blockType->fieldLayoutId = $info['fieldLayoutId'];
+                    }
                 }
 
                 $fields = [];
