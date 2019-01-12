@@ -25,7 +25,7 @@
         <div class="plugin-details-body">
             <template v-if="!loading">
 
-                <template v-if="pluginLicenseInfo.licenseIssues.length > 0">
+                <template v-if="pluginLicenseInfo && pluginLicenseInfo.licenseIssues.length > 0">
                     <ul>
                         <li v-for="(errorCode, key) in pluginLicenseInfo.licenseIssues" class="error">
                             {{licenseIssue(errorCode)}}
@@ -80,7 +80,7 @@
                         <li><span>{{ "Last update"|t('app') }}</span> <strong>{{ lastUpdate }}</strong></li>
                         <li v-if="plugin.activeInstalls > 0"><span>{{ "Active installs"|t('app') }}</span> <strong>{{ plugin.activeInstalls|formatNumber }}</strong></li>
                         <li><span>{{ "Compatibility"|t('app') }}</span> <strong>{{ plugin.compatibility }}</strong></li>
-                        <li v-if="pluginCategories.length > 0">
+                        <li v-if="pluginCategories && pluginCategories.length > 0">
                             <span>{{ "Categories"|t('app') }}</span>
                             <strong>
                                 <span v-for="(category, key) in pluginCategories" :key="key">
@@ -187,7 +187,7 @@
             },
 
             showLicenseKeyStatus() {
-                return !this.loading && this.pluginLicenseInfo.isInstalled && this.pluginLicenseInfo.licenseKey;
+                return !this.loading && this.pluginLicenseInfo && this.pluginLicenseInfo.isInstalled && this.pluginLicenseInfo.licenseKey;
             }
 
         },
