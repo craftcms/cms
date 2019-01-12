@@ -348,9 +348,10 @@ class Categories extends Component
             $groupRecord->uid = $categoryGroupUid;
 
             // Structure
-            $structure = Craft::$app->getStructures()->getStructureByUid($structureUid) ?? new Structure();
+            $structuresService = Craft::$app->getStructures();
+            $structure = $structuresService->getStructureByUid($structureUid, true) ?? new Structure(['uid' => $structureUid]);
             $structure->maxLevels = $structureData['maxLevels'];
-            Craft::$app->getStructures()->saveStructure($structure);
+            $structuresService->saveStructure($structure);
 
             $groupRecord->structureId = $structure->id;
 
