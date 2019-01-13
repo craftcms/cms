@@ -46,12 +46,6 @@
             InfoHud,
         },
 
-        data() {
-            return {
-                loading: false,
-            }
-        },
-
         computed: {
 
             ...mapState({
@@ -63,28 +57,6 @@
             }),
 
         },
-
-        methods: {
-
-            addEditionToCart(editionHandle) {
-                this.loading = true
-
-                const item = {
-                    type: 'plugin-edition',
-                    plugin: this.plugin.handle,
-                    edition: editionHandle,
-                    autoRenew: false,
-                    cmsLicenseKey: window.cmsLicenseKey,
-                }
-
-                this.$store.dispatch('cart/addToCart', [item])
-                    .then(() => {
-                        this.loading = false
-                        this.$root.openModal('cart')
-                    })
-            },
-
-        }
 
     }
 </script>
