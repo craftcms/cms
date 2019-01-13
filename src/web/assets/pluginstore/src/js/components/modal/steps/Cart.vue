@@ -216,12 +216,16 @@
                 }
 
                 const pluginLicenseInfo = this.getPluginLicenseInfo(plugin.handle)
-
-                if (pluginLicenseInfo && pluginLicenseInfo.licenseKey) {
+                
+                if (pluginLicenseInfo && pluginLicenseInfo.licenseKeyStatus === 'valid' && pluginLicenseInfo.licenseIssues.length === 0 && pluginLicenseInfo.licenseKey) {
                     item.licenseKey = pluginLicenseInfo.licenseKey
                 }
 
                 this.$store.dispatch('cart/addToCart', [item])
+                    .catch(response => {
+                        const errorMessage = response.errors && response.errors[0] && response.errors[0].message ? response.errors[0].message : 'Couldn’t add item to cart.';
+                        this.$root.displayError(errorMessage)
+                    })
             },
 
             addAllToCart() {

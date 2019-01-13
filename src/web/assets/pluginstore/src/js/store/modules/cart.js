@@ -166,10 +166,14 @@ const actions = {
             }
 
             api.updateCart(cart.number, data, response => {
+                if (typeof response.errors !== 'undefined') {
+                    return reject(response)
+                }
+
                 commit('updateCart', {response})
-                resolve(response)
+                return resolve(response)
             }, response => {
-                reject(response)
+                return reject(response)
             })
         })
     },
