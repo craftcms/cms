@@ -27,7 +27,7 @@
 
                 <template v-if="pluginLicenseInfo && pluginLicenseInfo.licenseIssues.length > 0">
                     <ul>
-                        <li v-for="(errorCode, key) in pluginLicenseInfo.licenseIssues" class="error">
+                        <li v-for="(errorCode, key) in pluginLicenseInfo.licenseIssues" class="error" :key="'license-issue' + key">
                             {{licenseIssue(errorCode)}}
                         </li>
                     </ul>
@@ -83,7 +83,7 @@
                         <li v-if="pluginCategories && pluginCategories.length > 0">
                             <span>{{ "Categories"|t('app') }}</span>
                             <strong>
-                                <span v-for="(category, key) in pluginCategories" :key="key">
+                                <span v-for="(category, key) in pluginCategories" :key="'plugin-category-' + key">
                                     <a @click="viewCategory(category)">{{ category.title }}</a><template v-if="key < (pluginCategories.length - 1)">, </template>
                                 </span>
                             </strong>
@@ -233,7 +233,7 @@
 
             licenseIssue(errorCode) {
                 switch (errorCode) {
-                    case 'wrong_edition':
+                    case 'wrong_edition': {
                         const currentEdition = this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.edition)
                         const licensedEdition = this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.licensedEdition)
 
@@ -241,10 +241,15 @@
                             currentEdition: currentEdition.name,
                             licensedEdition: licensedEdition.name,
                         })
-                    case 'mismatched':
+                    }
+
+                    case 'mismatched': {
                         return this.$options.filters.t('This license is tied to another Craft install. Purchase a license for this install.', 'app')
-                    default:
+                    }
+
+                    default: {
                         return this.$options.filters.t('Your license key is invalid.', 'app')
+                    }
                 }
             },
 
