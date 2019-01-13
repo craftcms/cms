@@ -13,6 +13,7 @@ use craft\helpers\MigrationHelper;
 use craft\migrations\Install;
 use craft\models\Site;
 use craft\web\UploadedFile;
+use yii\base\InvalidArgumentException;
 use yii\db\Exception;
 
 /**
@@ -66,10 +67,6 @@ class TestSetup
         $_COOKIE = [];
         $_REQUEST = [];
 
-        if (isset(\Craft::$app) && \Craft::$app->has('session', true)) {
-            \Craft::$app->session->close();
-        }
-
         UploadedFile::reset();
         if (method_exists(\yii\base\Event::class, 'offAll')) {
             \yii\base\Event::offAll();
@@ -88,15 +85,10 @@ class TestSetup
     {
         $tables = $this->connection->schema->getTableNames();
 
-        if ($this->connection->getIsMysql()) {
-            $this->connection->createCommand("SET foreign_key_checks = 0")->execute();
-            foreach ($tables as $table) {
-                $this->connection->createCommand()->dropTable($table)->execute();
-            }
-            $this->connection->createCommand("SET foreign_key_checks = 1")->execute();
-        } else {
-            // TODO: Drop all in pgsql
+        foreach ($tables as $table) {
+            MigrationHelper::dropTable($table);
         }
+
 
         $tables = $this->connection->schema->getTableNames();
         if ($tables !== []) {
@@ -112,12 +104,19 @@ class TestSetup
      * @return false|null
      * @throws \Throwable
      */
-    public function setupMigration(Migration $migration)
+    public function validateAndApplyMigration(string $class, array $params)
     {
-        // Ensure our connection is used
-        $migration->db = $this->connection;
+        if (!class_exists($class)) {
+            throw new InvalidArgumentException('Unable to ');
+        }
 
-        return $migration->up();
+        $migration = new $class($params);
+
+        if (!$migration instanceof Migration) {
+            throw new InvalidArgumentException('Migration class is not an instance of craft\migrations\Migration');
+        }
+
+        return $migration->safeUp();
     }
 
     /**

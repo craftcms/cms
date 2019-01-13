@@ -10,16 +10,11 @@ namespace craftunit\web;
 
 
 use Codeception\Stub;
-use Codeception\Test\Unit;
-use craft\db\Query;
 use craft\elements\User;
-use craft\helpers\StringHelper;
 use craft\services\Config;
 use craft\services\Security;
 use craft\test\TestCase;
 use craft\web\Session;
-use craftunit\fixtures\SessionsFixture;
-use yii\web\Cookie;
 
 /**
  * Unit tests for UserTest
@@ -175,7 +170,7 @@ class UserTest extends TestCase
         $this->user->setIdentity($this->userElement);
         $this->assertFalse($this->user->startElevatedSession($passwordHash));
 
-        // Ensure password validation returns false
+        // Ensure password validation returns true
         $this->passwordValidationStub(true);
 
         // If we set this to 0. It should return true
@@ -209,7 +204,7 @@ class UserTest extends TestCase
      */
     private function passwordValidationStub($returnValue)
     {
-        \Craft::$app->set('security', Stub::make(Security::class, ['validatePassword' => $returnValue]));
+        $this->tester->mockCraftMethods('security', ['validatePassword' => $returnValue]);
     }
 
     /**
@@ -219,9 +214,9 @@ class UserTest extends TestCase
      */
     private function ensureSetSessionIsOfValue($value)
     {
-        \Craft::$app->set('session', Stub::make(Session::class, ['set' => function($name, $val) use ($value) {
+        $this->tester->mockCraftMethods('session', ['set' => function($name, $val) use ($value) {
             $this->assertSame($value, $val);
-        }]));
+        }]);
     }
 
     /**
@@ -231,7 +226,7 @@ class UserTest extends TestCase
      */
     private function sessionGetStub($returnValue)
     {
-        \Craft::$app->set('session', Stub::make(Session::class, ['get' => $returnValue]));
+        $this->tester->mockCraftMethods('session', ['get' => $returnValue]);
     }
 
     private function getUser()

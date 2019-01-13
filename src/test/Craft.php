@@ -11,12 +11,16 @@ namespace craft\test;
 
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module\Yii2;
-use Codeception\Step;
+use Codeception\Stub;
 use Codeception\TestInterface;
 use craft\config\DbConfig;
+use craft\db\Connection;
 use craft\helpers\App;
-use Codeception\Lib\Connector\Yii2 as Yii2Connector;
+use craft\services\Security;
+use yii\base\Application;
 use yii\base\Event;
+use yii\base\InvalidConfigException;
+use yii\base\Module;
 
 /**
  * Craft module for codeception
@@ -49,6 +53,18 @@ class Craft extends Yii2
     protected $requiredEvents = [];
 
     /**
+     * The DB connection that is used to apply migrations and db setups
+     * @var Connection $dbConnection
+     */
+    private $dbConnection;
+
+    /**
+     * A static version of the config for use on the tests/_craft/config/test.php file
+     * @var array
+     */
+    public static $testConfig;
+
+    /**
      * Craft constructor.
      * We need to merge the config settings here as this is the earliest point in the instance's existance.
      * Doing it in _initialize() wont work as the config variables have already been added.
@@ -65,44 +81,53 @@ class Craft extends Yii2
     }
 
     /**
+     * @throws \Throwable
      * @throws \yii\base\InvalidConfigException
      * @throws \yii\db\Exception
      */
     public function _initialize()
     {
-        // Unless told not to. Lets setup the database.
-        if ($this->_getConfig('setupDb') === true) {
-            $this->setupDb();
-        }
+        self::$testConfig = $this->_getConfig();
+        $this->setupDb();
 
         parent::_initialize();
 
     }
 
     /**
-     * TODO: Plugin migrations & installations, additional migrations e.t.c.
-     *
-     * @param null $databaseKey
-     * @param null $databaseConfig
+     * @throws \Throwable
      * @throws \yii\base\InvalidConfigException
      * @throws \yii\db\Exception
      */
     public function setupDb()
     {
+        ob_start();
         // Create a Craft::$app object
         TestSetup::warmCraft();
 
-        ob_start();
+        $this->dbConnection = \Craft::createObject(App::dbConfig(self::createDbConfig()));
 
-        $conn = \Craft::createObject(App::dbConfig(self::createDbConfig()));
+        \Craft::$app->set('db', $this->dbConnection);
 
-        \Craft::$app->set('db', $conn);
+        $testSetup = self::createTestSetup($this->dbConnection);
 
-        // TODO: Here is where we need to add plugins and migrations to run aswell. To do that we need to rewrite the TestSetup class.
-        $testSetup = new TestSetup($conn);
-        $testSetup->clenseDb();
+        if ($this->_getConfig('dbSetup')['clean'] === true) {
+            $testSetup->clenseDb();
+        }
 
-        $testSetup->setupCraftDb();
+        if ($this->_getConfig('dbSetup')['setupCraft'] === true) {
+            $testSetup->setupCraftDb();
+        }
+
+        if ($this->_getConfig('dbSetup')['setupMigrations'] === true) {
+            foreach ($this->_getConfig('migrations') as $migration) {
+                $testSetup->validateAndApplyMigration($migration['class'], $migration['params']);
+            }
+        }
+
+        foreach ($this->_getConfig('plugins') as $plugin) {
+            $this->installPlugin($plugin);
+        }
 
         // Dont output anything or we get header's already sent exception
         ob_end_clean();
@@ -110,21 +135,15 @@ class Craft extends Yii2
     }
 
     /**
-     * Creates a DB config according to the loaded .ENV variables.
-     * @return DbConfig
+     * @param array $plugin
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     * @throws \craft\errors\InvalidPluginException
      */
-    public static function createDbConfig()
-    {
-        return new DbConfig([
-            'password' => getenv('TEST_DB_PASS'),
-            'user' => getenv('TEST_DB_USER'),
-            'database' => getenv('TEST_DB_NAME'),
-            'tablePrefix' => getenv('TEST_DB_TABLE_PREFIX'),
-            'driver' => getenv('TEST_DB_DRIVER'),
-            'port' => getenv('TEST_DB_PORT'),
-            'schema' => getenv('TEST_DB_SCHEMA'),
-            'server' => getenv('TEST_DB_SERVER'),
-        ]);
+    public function installPlugin(array $plugin) {
+        if (!\Craft::$app->getPlugins()->installPlugin($plugin['handle'])) {
+            throw new InvalidConfigException('Invalid plugin handle: '. $plugin['handle'] .'');
+        }
     }
 
     /**
@@ -150,14 +169,8 @@ class Craft extends Yii2
          * For now: Remounting the DB object using Craft::$app->set() after the event listeners are called works perfectly fine.
          */
         $db = \Craft::createObject(
-            \craft\helpers\App::dbConfig(new \craft\config\DbConfig([
-                'database' => getenv('TEST_DB_NAME'),
-                'driver' => getenv('TEST_DB_DRIVER'),
-                'user' => getenv('TEST_DB_USER'),
-                'password' =>getenv('TEST_DB_PASS'),
-                'tablePrefix' => getenv('TEST_DB_TABLE_PREFIX'),
-                'port' => '3306',
-            ])));
+            \craft\helpers\App::dbConfig(self::createDbConfig())
+        );
 
         \Craft::$app->set('db', $db);
     }
@@ -175,6 +188,28 @@ class Craft extends Yii2
         \Craft::$app->getDb()->createCommand()
             ->delete('{{%searchindex}}', 'elementId != 1')
             ->execute();
+    }
+
+    /**
+     * Gets any custom test setup config based on variables in this class.
+     * The array returned in here gets merged with what is returned in tests/_craft/config/test.php
+     *
+     * @return array
+     */
+    public static function getTestSetupConfig() : array
+    {
+        $returnArray = [];
+        $config = self::$testConfig;
+
+        // Add the modules to the config similar to how its done here: https://github.com/craftcms/craft/blob/master/config/app.php
+        if (isset($config['modules']) && is_array($config['modules'])) {
+            foreach ($config['modules'] as $module) {
+                $returnArray['modules'][$module['handle']] = $module['class'];
+                $returnArray['bootstrap'][] = $module['handle'];
+            }
+        }
+
+        return $returnArray;
     }
 
     // Helper and to-be-directly used in test methods.
@@ -201,5 +236,53 @@ class Craft extends Yii2
         $callback();
 
         $this->assertTrue($requiredEvent, 'Asserting that an event is triggered');
+    }
+
+    /**
+     * @param Module $module
+     * @param string $component
+     * @param $methods
+     * @throws InvalidConfigException
+     */
+    public function mockMethods(Module $module, string $component, $methods)
+    {
+        $componentInstance = $module->get($component);
+
+        $module->set($component, Stub::construct(get_class($componentInstance), [], $methods));
+    }
+
+    public function mockCraftMethods(string $component, $methods)
+    {
+        return $this->mockMethods(\Craft::$app, $component, $methods);
+    }
+
+    // Factories
+    // =========================================================================
+
+    /**
+     * Creates a DB config according to the loaded .ENV variables.
+     * @return DbConfig
+     */
+    public static function createDbConfig() : DbConfig
+    {
+        return new DbConfig([
+            'password' => getenv('TEST_DB_PASS'),
+            'user' => getenv('TEST_DB_USER'),
+            'database' => getenv('TEST_DB_NAME'),
+            'tablePrefix' => getenv('TEST_DB_TABLE_PREFIX'),
+            'driver' => getenv('TEST_DB_DRIVER'),
+            'port' => getenv('TEST_DB_PORT'),
+            'schema' => getenv('TEST_DB_SCHEMA'),
+            'server' => getenv('TEST_DB_SERVER'),
+        ]);
+    }
+
+    /**
+     * @param Connection $connection
+     * @return TestSetup
+     */
+    public static function createTestSetup(Connection $connection) : TestSetup
+    {
+        return new TestSetup($connection);
     }
 }

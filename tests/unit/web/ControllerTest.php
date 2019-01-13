@@ -156,6 +156,18 @@ class ControllerTest extends Unit
             'index.php',
             $this->controller->redirect(null)->headers->get('Location')
         );
+
+        // Absolute url
+        $this->assertSame(
+            'https://craftcms.com',
+            $this->controller->redirect('https://craftcms.com')->headers->get('Location')
+        );
+
+        // Custom status code
+        $this->assertSame(
+            500,
+            $this->controller->redirect('https://craftcms.com', 500)->statusCode
+        );
     }
 
     // Helpers
