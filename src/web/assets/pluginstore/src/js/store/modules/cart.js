@@ -148,7 +148,7 @@ const actions = {
 
     addToCart({commit, state}, newItems) {
         return new Promise((resolve, reject) => {
-            const cart = state.cart
+            const cart = JSON.parse(JSON.stringify(state.cart))
             let items = utils.getCartItemsData(cart)
 
             newItems.forEach(newItem => {
