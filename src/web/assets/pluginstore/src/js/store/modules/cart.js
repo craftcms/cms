@@ -58,6 +58,14 @@ const getters = {
                 return false
             }
 
+            if (pluginLicenseInfo.edition) {
+                const pluginEdition = rootGetters['pluginStore/getPluginEdition'](plugin.handle, pluginLicenseInfo.edition)
+
+                if(pluginEdition && rootGetters['pluginStore/isPluginEditionFree'](pluginEdition)) {
+                    return false
+                }
+            }
+
             if (!rootGetters['craft/isPluginInstalled'](plugin.handle)) {
                 return false
             }
