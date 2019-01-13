@@ -213,7 +213,7 @@
                 }
 
                 const pluginLicenseInfo = this.getPluginLicenseInfo(plugin.handle)
-                
+
                 if (pluginLicenseInfo && pluginLicenseInfo.licenseKeyStatus === 'valid' && pluginLicenseInfo.licenseIssues.length === 0 && pluginLicenseInfo.licenseKey) {
                     item.licenseKey = pluginLicenseInfo.licenseKey
                 }
