@@ -313,15 +313,6 @@
                 return true
             },
 
-            getExpiryDate(key) {
-                const expiryDateOption = this.expiryDateOptions.find(option => option[0] === key)
-
-                if (!expiryDateOption) {
-                    return null
-                }
-
-                return expiryDateOption[1]
-            }
         },
 
     }
