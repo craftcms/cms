@@ -9,7 +9,7 @@
 
             <template v-if="cart">
                 <template v-if="cartItems.length">
-                    <table class="data fullwidth">
+                    <table class="cart-table data fullwidth">
                         <thead>
                         <tr>
                             <th></th>
@@ -18,9 +18,8 @@
                             <th></th>
                         </tr>
                         </thead>
-                        <tbody>
-                        <template v-for="(item, itemKey) in cartItems">
-                            <tr :key="'item' + itemKey">
+                        <tbody v-for="(item, itemKey) in cartItems">
+                            <tr class="item-details" :key="'item' + itemKey">
                                 <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
                                     <td class="thin">
                                         <div class="plugin-icon">
@@ -57,15 +56,13 @@
                                 </td>
                                 <td class="price">
                                     <strong>{{ item.lineItem.price|currency }}</strong>
-                                    <br />
-                                    <a role="button" @click="removeFromCart(itemKey)">{{ "Remove"|t('app') }}</a>
                                 </td>
                             </tr>
 
                             <template v-for="(adjustment, adjustmentKey) in item.lineItem.adjustments">
-                                <tr :key="itemKey + 'adjustment-' + adjustmentKey">
-                                    <td></td>
-                                    <td></td>
+                                <tr :key="itemKey + 'adjustment-' + adjustmentKey" class="sub-item">
+                                    <td class="no-border"></td>
+                                    <td class="no-border"></td>
                                     <td>
                                         {{adjustment.name}}
                                     </td>
@@ -74,11 +71,22 @@
                                     </td>
                                 </tr>
                             </template>
-                        </template>
-                        <tr>
-                            <th class="total-price" colspan="3">{{ "Total Price"|t('app') }}</th>
-                            <td class="total-price"><strong>{{cart.totalPrice|currency}}</strong></td>
-                        </tr>
+
+                            <tr class="sub-item">
+                                <td class="no-border"></td>
+                                <td class="no-border"></td>
+                                <td></td>
+                                <td class="price">
+                                    <a role="button" @click="removeFromCart(itemKey)">{{ "Remove"|t('app') }}</a>
+                                </td>
+                            </tr>
+                        </tbody>
+
+                        <tbody>
+                            <tr>
+                                <th class="total-price" colspan="3">{{ "Total Price"|t('app') }}</th>
+                                <td class="total-price"><strong>{{cart.totalPrice|currency}}</strong></td>
+                            </tr>
                         </tbody>
                     </table>
 
@@ -322,6 +330,32 @@
 <style lang="scss" scoped>
     @import "../../../../../../../../../lib/craftcms-sass/mixins";
 
+    table.cart-table.data {
+        thead {
+            border-bottom: 1px solid #eee;
+        }
+
+        tbody {
+            border-bottom: 1px solid #eee;
+
+            tr {
+                &.sub-item {
+                    td.no-border {
+                        border: 0;
+                    }
+
+                    td {
+                        border-top: 1px dotted #eee;
+                    }
+                }
+
+                th, td {
+                    border: 0;
+                }
+            }
+        }
+    }
+    
     .plugin-icon {
         img {
             max-width: none;
