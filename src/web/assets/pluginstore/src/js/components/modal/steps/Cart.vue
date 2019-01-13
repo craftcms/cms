@@ -346,7 +346,7 @@
             }
         }
     }
-    
+
     .plugin-icon {
         img {
             max-width: none;
