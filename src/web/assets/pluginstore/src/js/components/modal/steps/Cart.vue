@@ -48,9 +48,6 @@
                                     <template v-if="item.lineItem.options.licenseKey.substr(0, 4) === 'new:'">
                                         <select-input v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
                                     </template>
-                                    <template v-else>
-                                        {{ "Updates Until {date}"|t('app', {date: getExpiryDate(selectedExpiryDates[itemKey])}) }}
-                                    </template>
 
                                     <!--if (licenseKey && licenseKey.substr(0, 3) !== 'new') {-->
                                     <!--item.licenseKey = licenseKey-->
