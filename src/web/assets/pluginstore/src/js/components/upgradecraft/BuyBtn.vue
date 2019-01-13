@@ -65,8 +65,6 @@
                 const item = {
                     type: 'cms-edition',
                     edition: edition,
-                    licenseKey: window.cmsLicenseKey,
-                    autoRenew: false,
                 }
 
                 this.addToCart([item])

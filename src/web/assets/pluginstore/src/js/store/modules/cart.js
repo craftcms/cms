@@ -146,7 +146,7 @@ const actions = {
         })
     },
 
-    addToCart({commit, state}, newItems) {
+    addToCart({commit, state, rootGetters}, newItems) {
         return new Promise((resolve, reject) => {
             const cart = JSON.parse(JSON.stringify(state.cart))
             let items = utils.getCartItemsData(cart)
@@ -157,6 +157,22 @@ const actions = {
                 if (!alreadyInCart) {
                     let item = {...newItem}
                     item.expiryDate = '1y'
+
+                    // Set default values
+                    item.autoRenew = false
+                    item.cmsLicenseKey = window.cmsLicenseKey
+
+                    switch(item.type) {
+                        case 'plugin-edition':
+                            // Set the license key if we have a valid one
+                            const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](item.plugin)
+
+                            if (pluginLicenseInfo && pluginLicenseInfo.licenseKeyStatus === 'valid' && pluginLicenseInfo.licenseIssues.length === 0 && pluginLicenseInfo.licenseKey) {
+                                item.licenseKey = pluginLicenseInfo.licenseKey
+                            }
+                            break;
+                    }
+
                     items.push(item)
                 }
             })

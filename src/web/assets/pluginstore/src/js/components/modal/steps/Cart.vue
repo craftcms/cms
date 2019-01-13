@@ -207,15 +207,7 @@
                 const item = {
                     type: 'plugin-edition',
                     plugin: plugin.handle,
-                    edition: editionHandle,
-                    autoRenew: false,
-                    cmsLicenseKey: window.cmsLicenseKey,
-                }
-
-                const pluginLicenseInfo = this.getPluginLicenseInfo(plugin.handle)
-
-                if (pluginLicenseInfo && pluginLicenseInfo.licenseKeyStatus === 'valid' && pluginLicenseInfo.licenseIssues.length === 0 && pluginLicenseInfo.licenseKey) {
-                    item.licenseKey = pluginLicenseInfo.licenseKey
+                    edition: editionHandle
                 }
 
                 this.$store.dispatch('cart/addToCart', [item])
@@ -231,18 +223,11 @@
 
                 this.pendingActiveTrials.forEach(plugin => {
                     const edition = this.getActiveTrialPluginEdition(plugin.handle)
-                    const pluginLicenseInfo = this.getPluginLicenseInfo(plugin.handle)
 
                     const item = {
                         type: 'plugin-edition',
                         plugin: plugin.handle,
-                        edition: edition.handle,
-                        autoRenew: false,
-                        cmsLicenseKey: window.cmsLicenseKey,
-                    }
-
-                    if (pluginLicenseInfo.licenseKey) {
-                        item.licenseKey = pluginLicenseInfo.licenseKey
+                        edition: edition.handle
                     }
 
                     items.push(item)
