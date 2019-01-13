@@ -249,6 +249,9 @@
                 })
 
                 $store.dispatch('cart/addToCart', items)
+                    .catch(() => {
+                        this.$root.displayError(this.$options.filters.t('Couldn’t add all items to the cart.', 'app'))
+                    })
             },
 
             payment() {
