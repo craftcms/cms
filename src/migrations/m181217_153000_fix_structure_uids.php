@@ -4,6 +4,8 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
+use craft\db\Query;
+use craft\models\Section;
 use craft\services\Sections;
 
 /**
@@ -16,35 +18,29 @@ class m181217_153000_fix_structure_uids extends Migration
      */
     public function safeUp()
     {
-
-        $projectConfig = Craft::$app->getProjectConfig();
-
         // Get the section data from the project config
-        $pcSections = $projectConfig->get(Sections::CONFIG_SECTIONS_KEY);
+        $pcSections = Craft::$app->getProjectConfig()->get(Sections::CONFIG_SECTIONS_KEY) ?? [];
 
-        if (empty($pcSections)) {
-            return;
-        }
-
-        // For all sections...
+        // Ensure that the Structure sections' UIDs in the database match the project config
         foreach ($pcSections as $sectionUid => $sectionData) {
-            // ...that are strutures...
-            if (!empty($sectionData['type']) && $sectionData['type'] === 'structure') {
-                $structureUid = $sectionData['structure']['uid'];
-
-                // ...fetch the matching DB section...
-                $section = Craft::$app->getSections()->getSectionByUid($sectionUid);
-                if ($section && $section->structureId) {
-
-                    // ...and the matching structure...
-                    $structure = Craft::$app->getStructures()->getStructureById($section->structureId);
-                    if ($structure && $structure->uid !== $structureUid) {
-                        // ...to make sure that the UIDs match.
-                        $structure->uid = $structureUid;
-                        Craft::$app->getStructures()->saveStructure($structure);
-                    }
-                }
+            if (empty($sectionData['type']) || $sectionData['type'] !== Section::TYPE_STRUCTURE) {
+                continue;
             }
+
+            $structureUid = $sectionData['structure']['uid'];
+            $structureId = (new Query())
+                ->select(['structureId'])
+                ->from('{{%sections}}')
+                ->where(['uid' => $sectionUid])
+                ->scalar();
+
+            if (!$structureId) {
+                continue;
+            }
+
+            $this->update('{{%structures}}', [
+                'uid' => $structureUid,
+            ], ['id' => $structureId], [], false);
         }
     }
 

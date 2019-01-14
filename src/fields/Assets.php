@@ -122,6 +122,12 @@ class Assets extends BaseRelationField
 
         $this->defaultUploadLocationSource = $this->_folderSourceToVolumeSource($this->defaultUploadLocationSource);
         $this->singleUploadLocationSource = $this->_folderSourceToVolumeSource($this->singleUploadLocationSource);
+
+        if (is_array($this->sources)) {
+            foreach ($this->sources as &$source) {
+                $source = $this->_folderSourceToVolumeSource($source);
+            }
+        }
     }
 
     /**
@@ -204,6 +210,12 @@ class Assets extends BaseRelationField
     {
         $this->singleUploadLocationSource = $this->_volumeSourceToFolderSource($this->singleUploadLocationSource);
         $this->defaultUploadLocationSource = $this->_volumeSourceToFolderSource($this->defaultUploadLocationSource);
+
+        if (is_array($this->sources)) {
+            foreach ($this->sources as &$source) {
+                $source = $this->_volumeSourceToFolderSource($source);
+            }
+        }
 
         return parent::getSettingsHtml();
     }
@@ -483,6 +495,8 @@ class Assets extends BaseRelationField
             foreach ($this->sources as $source) {
                 if (strpos($source, 'folder:') === 0) {
                     $sources[] = $source;
+                } else if (strpos($source, 'volume:') === 0) {
+                    $sources[] = $this->_volumeSourceToFolderSource($source);
                 }
             }
         } else {

@@ -463,7 +463,15 @@ class Asset extends Element
     public $conflictingFilename;
 
     /**
+     * @var bool Whether the asset was deleted along with its volume
+     * @see beforeDelete()
+     */
+    public $deletedWithVolume = false;
+
+    /**
      * @var bool Whether the associated file should be preserved if the asset record is deleted.
+     * @see beforeDelete()
+     * @see afterDelete()
      */
     public $keepFileOnDelete = false;
 
@@ -1302,16 +1310,29 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        // Update the asset record
+        Craft::$app->getDb()->createCommand()
+            ->update('{{%assets}}', [
+                'deletedWithVolume' => $this->deletedWithVolume,
+                'keptFile' => $this->keepFileOnDelete,
+            ], ['id' => $this->id], [], false)
+            ->execute();
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function afterDelete()
     {
-        if ($this->keepFileOnDelete) {
-            // Remember that the file was kept around
-            Craft::$app->getDb()->createCommand()
-                ->update('{{%assets}}', [
-                    'keptFile' => true,
-                ], ['id' => $this->id], [], false)
-                ->execute();
-        } else {
+        if (!$this->keepFileOnDelete) {
             $this->getVolume()->deleteFile($this->getPath());
         }
 

@@ -218,16 +218,15 @@ JS;
 
     private function _craftData(): array
     {
+        $upToDate = Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded();
         $request = Craft::$app->getRequest();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $isInstalled = Craft::$app->getIsInstalled();
-        $isMigrationNeeded = Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded();
         $sitesService = Craft::$app->getSites();
         $locale = Craft::$app->getLocale();
         $orientation = $locale->getOrientation();
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
-        $primarySite = $isInstalled && !$isMigrationNeeded ? $sitesService->getPrimarySite() : null;
+        $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
 
         $data = [
             'actionTrigger' => $generalConfig->actionTrigger,
@@ -238,7 +237,7 @@ JS;
             'baseUrl' => UrlHelper::url(),
             'datepickerOptions' => $this->_datepickerOptions($locale, $currentUser, $generalConfig),
             'defaultIndexCriteria' => ['enabledForSite' => null],
-            'editableCategoryGroups' => $isInstalled ? $this->_editableCategoryGroups() : [],
+            'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
             'fileKinds' => Assets::getFileKinds(),
             'forceConfirmUnload' => Craft::$app->getSession()->hasFlash('error'),
@@ -254,14 +253,14 @@ JS;
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
             'primarySiteLanguage' => $primarySite->language ?? null,
             'Pro' => Craft::Pro,
-            'publishableSections' => $isInstalled && $currentUser ? $this->_publishableSections($currentUser) : [],
+            'publishableSections' => $upToDate && $currentUser ? $this->_publishableSections($currentUser) : [],
             'registeredAssetBundles' => ['' => ''], // force encode as JS object
             'registeredJsFiles' => ['' => ''], // force encode as JS object
             'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'runQueueAutomatically' => (bool)$generalConfig->runQueueAutomatically,
             'scriptName' => $request->getScriptFile(),
-            'siteId' => $isInstalled && !$isMigrationNeeded ? (int)$sitesService->currentSite->id : null,
+            'siteId' => $upToDate ? (int)$sitesService->currentSite->id : null,
             'sites' => $this->_sites($sitesService),
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'Solo' => Craft::Solo,

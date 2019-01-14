@@ -543,6 +543,12 @@ class Entry extends Element
     public $revisionNotes;
 
     /**
+     * @var bool Whether the entry was deleted along with its entry type
+     * @see beforeDelete()
+     */
+    public $deletedWithEntryType = false;
+
+    /**
      * @var User|null
      */
     private $_author;
@@ -1107,6 +1113,11 @@ EOD;
             return false;
         }
 
+        $data = [
+            'deletedWithEntryType' => $this->deletedWithEntryType,
+            'parentId' => null,
+        ];
+
         if ($this->structureId) {
             // Remember the parent ID, in case the entry needs to be restored later
             $parentId = $this->getAncestors(1)
@@ -1114,11 +1125,13 @@ EOD;
                 ->select(['elements.id'])
                 ->scalar();
             if ($parentId) {
-                Craft::$app->getDb()->createCommand()
-                    ->update('{{%entries}}', ['parentId' => $parentId], ['id' => $this->id], [], false)
-                    ->execute();
+                $data['parentId'] = $parentId;
             }
         }
+
+        Craft::$app->getDb()->createCommand()
+            ->update('{{%entries}}', $data, ['id' => $this->id], [], false)
+            ->execute();
 
         return true;
     }

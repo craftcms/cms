@@ -3529,8 +3529,23 @@ textarea.text.fullwidth {
 .checkboxfield.has-instructions .instructions {
   margin-top: 2px;
   color: $mediumTextColor;
+
   img {
     max-width: 100%;
+  }
+
+  ul,
+  ol {
+    margin: 1em 0;
+    @include padding-left(2em);
+  }
+
+  ul li {
+    list-style-type: disc;
+  }
+
+  li + li {
+    margin-top: 0.25em;
   }
 }
 

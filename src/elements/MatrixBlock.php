@@ -155,6 +155,12 @@ class MatrixBlock extends Element
     public $collapsed = false;
 
     /**
+     * @var bool Whether the block was deleted along with its owner
+     * @see beforeDelete()
+     */
+    public $deletedWithOwner = false;
+
+    /**
      * @var ElementInterface|false|null The owner element, or false if [[ownerId]] is invalid
      */
     private $_owner;
@@ -390,6 +396,25 @@ class MatrixBlock extends Element
         $record->save(false);
 
         parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        // Update the block record
+        Craft::$app->getDb()->createCommand()
+            ->update('{{%matrixblocks}}', [
+                'deletedWithOwner' => $this->deletedWithOwner,
+            ], ['id' => $this->id], [], false)
+            ->execute();
+
+        return true;
     }
 
     /**

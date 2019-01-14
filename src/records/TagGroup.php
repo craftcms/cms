@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\SoftDeleteTrait;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -24,6 +25,11 @@ use yii\db\ActiveQueryInterface;
  */
 class TagGroup extends ActiveRecord
 {
+    // Traits
+    // =========================================================================
+
+    use SoftDeleteTrait;
+
     // Public Methods
     // =========================================================================
 

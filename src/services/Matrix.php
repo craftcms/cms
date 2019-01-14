@@ -273,7 +273,6 @@ class Matrix extends Component
             $fieldLayoutFields[] = $field;
         }
 
-
         $fieldLayoutTab = new FieldLayoutTab();
         $fieldLayoutTab->name = 'Content';
         $fieldLayoutTab->sortOrder = 1;
@@ -378,21 +377,16 @@ class Matrix extends Component
             $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
 
             if (!empty($data['fieldLayouts'])) {
-                //Create the layout
+                // Save the field layout
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
-
-                // If there is a layout id, just re-use that.
-                if ($blockTypeRecord->fieldLayoutId) {
-                    $layout->id = $blockTypeRecord->fieldLayoutId;
-                }
-
+                $layout->id = $blockTypeRecord->fieldLayoutId;
                 $layout->type = MatrixBlock::class;
                 $layout->uid = key($data['fieldLayouts']);
                 $fieldsService->saveLayout($layout);
-
-                // In case this was a new field layout, save the id.
                 $blockTypeRecord->fieldLayoutId = $layout->id;
-            } else {
+            } else if ($blockTypeRecord->fieldLayoutId) {
+                // Delete the field layout
+                $fieldsService->deleteLayoutById($blockTypeRecord->fieldLayoutId);
                 $blockTypeRecord->fieldLayoutId = null;
             }
 
@@ -813,13 +807,6 @@ class Matrix extends Component
             }
 
             foreach ($deleteBlocksQuery->all() as $deleteBlock) {
-                // Disable it first, in case the block ends up getting restored along with
-                // its owner element after a soft delete, so at least it won’t be enabled.
-                if ($deleteBlock->enabled) {
-                    $deleteBlock->enabled = false;
-                    $elementsService->saveElement($deleteBlock, false, false);
-                }
-
                 $elementsService->deleteElement($deleteBlock);
             }
 
