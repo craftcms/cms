@@ -107,9 +107,9 @@
     /* global Craft */
 
     import {mapState, mapGetters, mapActions} from 'vuex'
-    import PluginScreenshots from '../../../components/PluginScreenshots'
-    import PluginEditions from '../../../components/PluginEditions'
-    import PluginChangelog from '../../../components/PluginChangelog'
+    import PluginScreenshots from '../../components/PluginScreenshots'
+    import PluginEditions from '../../components/PluginEditions'
+    import PluginChangelog from '../../components/PluginChangelog'
 
     export default {
 
@@ -258,16 +258,21 @@
         mounted() {
             const pluginHandle = this.$route.params.handle
             const plugin = this.$store.getters['pluginStore/getPluginByHandle'](pluginHandle)
-            this.$root.pluginId = plugin.id
-            this.loadPlugin(plugin.id)
+
+            if (plugin) {
+                this.$root.pluginId = plugin.id
+                this.loadPlugin(plugin.id)
+            } else {
+                this.$router.push({path: '/'})
+            }
         }
 
     }
 </script>
 
 <style lang="scss">
-    @import "../../../../sass/variables";
-    @import "../../../../../../../../../lib/craftcms-sass/mixins";
+    @import "../../../sass/variables";
+    @import "../../../../../../../../lib/craftcms-sass/mixins";
 
     .plugin-icon {
         @apply .relative;
