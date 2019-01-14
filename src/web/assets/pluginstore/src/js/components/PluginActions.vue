@@ -45,7 +45,7 @@
 
                     <template v-else-if="isPluginEditionBuyable && pluginLicenseInfo.edition !== edition.handle">
                         <!-- Try -->
-                        <btn-input :value="'Try'|t('app')" block large></btn-input>
+                        <btn-input :value="'Try'|t('app')" :disabled="!pluginLicenseInfo.isInstalled || !pluginLicenseInfo.isEnabled" block large></btn-input>
                     </template>
 
                     <template v-else-if="pluginLicenseInfo.licensedEdition === edition.handle && pluginLicenseInfo.edition && pluginLicenseInfo.edition !== edition.handle">
