@@ -21,24 +21,24 @@
         <table id="plugins" class="data fullwidth collapsible">
             <tbody>
                 {% for handle, config in info %}
-                    {% set isTrial = config.licenseKeyStatus == 'invalid' and config.licenseIssues is empty %}
+                    {% set pluginStoreUrl = url('plugin-store/plugins/' ~ handle) %}
                     <tr id="plugin-{{ handle }}" data-name="{{ config.name }}" data-handle="{{ handle }}">
                         <th>
                             <div class="plugin-infos">
-                                <div class="icon">
+                                <a class="icon" href="{{ pluginStoreUrl }}" title="{{ 'View {plugin} in the Plugin Store'|t('app', {plugin: config.name}) }}">
                                     {{ svg(craft.app.plugins.getPluginIconSvg(handle), sanitize=true, namespace=true) }}
                                     {% if config.licenseKeyStatus == 'valid' or config.licenseIssues is not empty %}
                                         <span class="license-key-status {{ config.licenseIssues is empty ? 'valid' }}"></span>
                                     {% endif %}
-                                </div>
+                                </a>
                                 <div class="details">
                                     <div class="plugin-id">
                                         <h2>{{ config.name }}</h2>
-                                        {% if config.hasMultipleEditions or isTrial %}
-                                            <div class="edition">
+                                        {% if config.hasMultipleEditions or config.isTrial %}
+                                            {{ (config.upgradeAvailable ? '<a href="' ~ pluginStoreUrl ~ '"' : '<div')|raw }} class="edition">
                                                 {% if config.hasMultipleEditions %}<div class="edition-name">{{ config.edition }}</div>{% endif %}
-                                                {% if isTrial %}<div class="edition-trial">{{ 'Trial'|t('app') }}</div>{% endif %}
-                                            </div>
+                                                {% if config.isTrial %}<div class="edition-trial">{{ 'Trial'|t('app') }}</div>{% endif %}
+                                            {{ (config.upgradeAvailable ? '</a>' : '</div>')|raw }}
                                         {% endif %}
                                         <span class="version">{{ config.version }}</span>
                                     </div>

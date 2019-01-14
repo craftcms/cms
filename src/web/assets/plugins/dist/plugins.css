@@ -3,7 +3,7 @@
 #plugins tbody th, #plugins tbody td { padding-top: 20px; padding-bottom: 20px; }
 #plugins tbody .plugin-infos { font-weight: normal; display: table; }
 #plugins tbody .plugin-infos .icon, #plugins tbody .plugin-infos .details { display: table-cell; }
-#plugins tbody .plugin-infos .icon { vertical-align: top; padding-right: 14px; position: relative; }
+#plugins tbody .plugin-infos .icon { display: block; vertical-align: top; padding-right: 14px; position: relative; }
 #plugins tbody .plugin-infos .icon a { display: block; line-height: 0; }
 #plugins tbody .plugin-infos .icon svg, #plugins tbody .plugin-infos .icon img { display: block; width: 44px; height: 44px; }
 #plugins tbody .plugin-infos .icon .license-key-status { display: block; position: absolute; top: 26px; width: 20px; height: 20px; background: no-repeat 0 0 url(invalid-icon.svg); background-size: 100% 100%; }
@@ -26,6 +26,11 @@ body.rtl #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name
 #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial:before { display: block; position: absolute; top: 0; content: '.'; font-size: 0; width: 0; height: 0; border-style: solid; -webkit-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 body.ltr #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial:before { left: -7px; border-width: 0 7px 16px 0; border-color: transparent #8f98a3 transparent transparent; }
 body.rtl #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial:before { right: -7px; border-width: 0 0 16px 7px; border-color: transparent transparent transparent #8f98a3; }
+#plugins tbody .plugin-infos .details .plugin-id a.edition:hover { text-decoration: none; border-color: #0d78f2; }
+#plugins tbody .plugin-infos .details .plugin-id a.edition:hover > .edition-name { color: #0d78f2; }
+#plugins tbody .plugin-infos .details .plugin-id a.edition:hover > .edition-trial { background: #0d78f2; }
+body.ltr #plugins tbody .plugin-infos .details .plugin-id a.edition:hover .edition-name + .edition-trial:before { left: -7px; border-width: 0 7px 16px 0; border-right-color: #0d78f2; }
+body.rtl #plugins tbody .plugin-infos .details .plugin-id a.edition:hover .edition-name + .edition-trial:before { border-left-color: #0d78f2; }
 #plugins tbody .plugin-infos .details .plugin-id .version { color: #8f98a3; font-weight: normal; }
 body.ltr #plugins tbody .plugin-infos .details .plugin-id .version { margin-left: 14px; }
 body.rtl #plugins tbody .plugin-infos .details .plugin-id .version { margin-right: 14px; }

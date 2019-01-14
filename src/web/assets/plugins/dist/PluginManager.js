@@ -258,26 +258,25 @@
                     $oldIcon.remove();
                 }
 
-                // add a trial label
-                var $edition = this.$row.find('.edition');
-                var $trial = this.$row.find('.edition-trial');
-
-                if (info.licenseKeyStatus === 'invalid' && !info.licenseIssues.length) {
-                    if (!$trial.length) {
-                        if (!$edition.length) {
-                            $edition = $('<div/>', {'class': 'edition'}).insertBefore(this.$row.find('.version'));
-                        }
-                        $('<span/>', {
-                            'class': 'edition-trial',
-                            'text': Craft.t('app', 'Trial')
-                        }).appendTo($edition);
+                // add the edition/trial badge
+                var $oldEdition = this.$row.find('.edition');
+                if (info.hasMultipleEditions || info.isTrial) {
+                    var $newEdition = info.upgradeAvailable
+                        ? $('<a/>', {href: Craft.getUrl('plugin-store/plugins/' + handle), 'class': 'edition'})
+                        : $('<div/>', {'class': 'edition'});
+                    if (info.hasMultipleEditions) {
+                        $('<div/>', {'class': 'edition-name', text: info.edition}).appendTo($newEdition);
                     }
-                } else if ($trial.length) {
-                    if ($edition.find('.edition-name').length) {
-                        $trial.remove();
+                    if (info.isTrial) {
+                        $('<div/>', {'class': 'edition-trial', text: Craft.t('app', 'Trial')}).appendTo($newEdition);
+                    }
+                    if ($oldEdition.length) {
+                        $oldEdition.replaceWith($newEdition);
                     } else {
-                        $edition.remove();
+                        $newEdition.insertBefore(this.$row.find('.version'));
                     }
+                } else if ($oldEdition.length) {
+                    $oldEdition.remove();
                 }
 
                 // show the license key?

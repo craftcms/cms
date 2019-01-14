@@ -34,6 +34,7 @@
       }
 
       .icon {
+        display: block;
         vertical-align: top;
         padding-right: 14px;
         position: relative;
@@ -142,6 +143,33 @@
                   right: -7px;
                   border-width: 0 0 16px 7px;
                   border-color: transparent transparent transparent $mediumTextColor;
+                }
+              }
+            }
+          }
+
+          a.edition:hover {
+            text-decoration: none;
+            border-color: $linkColor;
+
+            & > .edition-name {
+              color: $linkColor;
+            }
+
+            & > .edition-trial {
+              background: $linkColor;
+            }
+
+            & .edition-name + .edition-trial {
+              &:before {
+                body.ltr & {
+                  left: -7px;
+                  border-width: 0 7px 16px 0;
+                  border-right-color: $linkColor;
+                }
+
+                body.rtl & {
+                  border-left-color: $linkColor;
                 }
               }
             }
