@@ -1726,7 +1726,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _shouldJoinStructureData(): bool
     {
-        return $this->withStructure || ($this->withStructure !== false && $this->structureId);
+        return (
+            !$this->trashed &&
+            ($this->withStructure || ($this->withStructure !== false && $this->structureId))
+        );
     }
 
     /**
@@ -1737,10 +1740,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyStructureParams(string $class)
     {
-        if ($this->trashed) {
-            return;
-        }
-
         if (!$this->_shouldJoinStructureData()) {
             $structureParams = [
                 'hasDescendants',

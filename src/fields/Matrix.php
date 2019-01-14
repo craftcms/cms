@@ -198,13 +198,23 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $this->_blockTypes[] = $config;
             } else {
                 $blockType = new MatrixBlockType();
-                $blockType->id = is_numeric($key) ? $key : null;
                 $blockType->fieldId = $this->id;
                 $blockType->name = $config['name'];
                 $blockType->handle = $config['handle'];
 
+                // Existing block type?
                 if (is_numeric($key)) {
-                    $blockType->uid = Db::uidById('{{%matrixblocktypes}}', $key);
+                    $info = (new Query())
+                        ->select(['uid', 'fieldLayoutId'])
+                        ->from(['{{%matrixblocktypes}}'])
+                        ->where(['id'=> $key])
+                        ->one();
+
+                    if ($info) {
+                        $blockType->id = $key;
+                        $blockType->uid = $info['uid'];
+                        $blockType->fieldLayoutId = $info['fieldLayoutId'];
+                    }
                 }
 
                 $fields = [];
@@ -699,6 +709,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function beforeElementDelete(ElementInterface $element): bool
     {
+        if (!parent::beforeElementDelete($element)) {
+            return false;
+        }
+
         /** @var Element $element */
         // Delete any Matrix blocks that belong to this element(s)
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
@@ -709,13 +723,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
             /** @var MatrixBlock[] $matrixBlocks */
             $matrixBlocks = $matrixBlocksQuery->all();
+            $elementsService = Craft::$app->getElements();
 
             foreach ($matrixBlocks as $matrixBlock) {
-                Craft::$app->getElements()->deleteElement($matrixBlock);
+                $matrixBlock->deletedWithOwner = true;
+                $elementsService->deleteElement($matrixBlock);
             }
         }
 
-        return parent::beforeElementDelete($element);
+        return true;
     }
 
     /**
@@ -731,6 +747,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 ->siteId($siteInfo['siteId'])
                 ->ownerId($element->id)
                 ->trashed()
+                ->andWhere(['matrixblocks.deletedWithOwner' => true])
                 ->all();
 
             foreach ($blocks as $block) {

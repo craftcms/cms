@@ -239,7 +239,7 @@ class Tags extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            $tagGroupRecord = $this->_getTagGroupRecord($tagGroupUid);
+            $tagGroupRecord = $this->_getTagGroupRecord($tagGroupUid, true);
             $isNewTagGroup = $tagGroupRecord->getIsNewRecord();
 
             $tagGroupRecord->name = $data['name'];
@@ -247,25 +247,25 @@ class Tags extends Component
             $tagGroupRecord->uid = $tagGroupUid;
 
             if (!empty($data['fieldLayouts'])) {
-                $fields = Craft::$app->getFields();
-
-                // Delete the field layout
-                if ($tagGroupRecord->fieldLayoutId) {
-                    $fields->deleteLayoutById($tagGroupRecord->fieldLayoutId);
-                }
-
-                //Create the new layout
+                // Save the field layout
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                $layout->id = $tagGroupRecord->fieldLayoutId;
                 $layout->type = Tag::class;
                 $layout->uid = key($data['fieldLayouts']);
-                $fields->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout);
                 $tagGroupRecord->fieldLayoutId = $layout->id;
-            } else {
+            } else if ($tagGroupRecord->fieldLayoutId) {
+                // Delete the field layout
+                Craft::$app->getFields()->deleteLayoutById($tagGroupRecord->fieldLayoutId);
                 $tagGroupRecord->fieldLayoutId = null;
             }
 
-            // Save the volume
-            $tagGroupRecord->save(false);
+            // Save the tag group
+            if ($wasTrashed = (bool)$tagGroupRecord->dateDeleted) {
+                $tagGroupRecord->restore();
+            } else {
+                $tagGroupRecord->save(false);
+            }
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -275,6 +275,16 @@ class Tags extends Component
 
         // Clear caches
         $this->_tagGroups = null;
+
+        if ($wasTrashed) {
+            // Restore the tags that were deleted with the group
+            $tags = Tag::find()
+                ->groupId($tagGroupRecord->id)
+                ->trashed()
+                ->andWhere(['tags.deletedWithGroup' => true])
+                ->all();
+            Craft::$app->getElements()->restoreElements($tags);
+        }
 
         // Fire an 'afterSaveGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
@@ -357,29 +367,26 @@ class Tags extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Delete the field layout
-            $fieldLayoutId = (new Query())
-                ->select(['fieldLayoutId'])
-                ->from(['{{%taggroups}}'])
-                ->where(['id' => $tagGroupRecord->id])
-                ->scalar();
-
-            if ($fieldLayoutId) {
-                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-            }
-
             // Delete the tags
             $tags = Tag::find()
                 ->anyStatus()
                 ->groupId($tagGroupRecord->id)
                 ->all();
+            $elementsService = Craft::$app->getElements();
 
             foreach ($tags as $tag) {
-                Craft::$app->getElements()->deleteElement($tag);
+                $tag->deletedWithGroup = true;
+                $elementsService->deleteElement($tag);
             }
 
+            // Delete the field layout
+            if ($tagGroupRecord->fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($tagGroupRecord->fieldLayoutId);
+            }
+
+            // Delete the tag group
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%taggroups}}', ['id' => $tagGroupRecord->id])
+                ->softDelete('{{%taggroups}}', ['id' => $tagGroupRecord->id])
                 ->execute();
 
             $transaction->commit();
@@ -469,10 +476,13 @@ class Tags extends Component
      * Gets a tag group's record by uid.
      *
      * @param string $uid
+     * @param bool $withTrashed Whether to include trashed tag groups in search
      * @return TagGroupRecord
      */
-    private function _getTagGroupRecord(string $uid): TagGroupRecord
+    private function _getTagGroupRecord(string $uid, bool $withTrashed = false): TagGroupRecord
     {
-        return TagGroupRecord::findOne(['uid' => $uid]) ?? new TagGroupRecord();
+        $query = $withTrashed ? TagGroupRecord::findWithTrashed() : TagGroupRecord::find();
+        $query->andWhere(['uid' => $uid]);
+        return $query->one() ?? new TagGroupRecord();
     }
 }

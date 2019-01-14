@@ -23,6 +23,7 @@ class m190110_214819_soft_delete_volumes extends Migration
         // Unique volume names & handles should no longer be enforced by the DB
         MigrationHelper::dropIndexIfExists('{{%volumes}}', ['name'], true, $this);
         MigrationHelper::dropIndexIfExists('{{%volumes}}', ['handle'], true, $this);
+        $this->createIndex(null, '{{%volumes}}', ['name'], false);
         $this->createIndex(null, '{{%volumes}}', ['handle'], false);
 
         // Give assets a way to remember whether their file was kept on delete

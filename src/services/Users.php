@@ -1027,21 +1027,22 @@ class Users extends Component
         $parsed = true;
         $data = Craft::$app->getProjectConfig()->get(self::CONFIG_USERLAYOUT_KEY, true);
 
-        $fields = Craft::$app->getFields();
-        $fields->deleteLayoutsByType(User::class);
+        $fieldsService = Craft::$app->getFields();
 
-        if (!$data) {
+        if (empty($data) || empty($config = reset($data))) {
+            $fieldsService->deleteLayoutsByType(User::class);
             return;
         }
 
         // Make sure fields are processed
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-        $layout = FieldLayout::createFromConfig(reset($data));
-
+        // Save the field layout
+        $layout = FieldLayout::createFromConfig($config);
+        $layout->id = $fieldsService->getLayoutByType(User::class)->id;
         $layout->type = User::class;
         $layout->uid = key($data);
-        $fields->saveLayout($layout);
+        $fieldsService->saveLayout($layout);
     }
 
     /**

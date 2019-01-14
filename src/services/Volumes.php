@@ -362,35 +362,22 @@ class Volumes extends Component
             $volumeRecord->uid = $volumeUid;
 
             if (!empty($data['fieldLayouts'])) {
-                $fields = Craft::$app->getFields();
-
-                // Delete the field layout
-                $fields->deleteLayoutById($volumeRecord->fieldLayoutId);
-
-                //Create the new layout
+                // Save the field layout
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                $layout->id = $volumeRecord->fieldLayoutId;
                 $layout->type = Asset::class;
                 $layout->uid = key($data['fieldLayouts']);
-                $fields->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout);
                 $volumeRecord->fieldLayoutId = $layout->id;
-            } else {
+            } else if ($volumeRecord->fieldLayoutId) {
+                // Delete the field layout
+                Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
                 $volumeRecord->fieldLayoutId = null;
             }
 
             // Save the volume
-            if ($volumeRecord->dateDeleted) {
+            if ($wasTrashed = (bool)$volumeRecord->dateDeleted) {
                 $volumeRecord->restore();
-
-                // Restore the assets that still have files too
-                $assets = Asset::find()
-                    ->volumeId($volumeRecord->id)
-                    ->trashed()
-                    ->andWhere(['assets.keptFile' => true])
-                    ->all();
-                $elementsService = Craft::$app->getElements();
-                foreach ($assets as $asset) {
-                    $elementsService->restoreElement($asset);
-                }
             } else {
                 $volumeRecord->save(false);
             }
@@ -427,6 +414,16 @@ class Volumes extends Component
         /** @var Volume $volume */
         $volume = $this->getVolumeById($volumeRecord->id);
         $volume->afterSave($isNewVolume);
+
+        if ($wasTrashed) {
+            // Restore the assets that were deleted with the volume
+            $assets = Asset::find()
+                ->volumeId($volumeRecord->id)
+                ->trashed()
+                ->andWhere(['assets.deletedWithVolume' => true])
+                ->all();
+            Craft::$app->getElements()->restoreElements($assets);
+        }
 
         // Fire an 'afterSaveVolume' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_VOLUME)) {
@@ -619,13 +616,20 @@ class Volumes extends Component
                 ->anyStatus()
                 ->volumeId($volumeRecord->id)
                 ->all();
+            $elementsService = Craft::$app->getElements();
 
             foreach ($assets as $asset) {
+                $asset->deletedWithVolume = true;
                 $asset->keepFileOnDelete = true;
-                Craft::$app->getElements()->deleteElement($asset);
+                $elementsService->deleteElement($asset);
             }
 
-            // Nuke the asset volume.
+            // Delete the field layout
+            if ($volumeRecord->fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
+            }
+
+            // Delete the volume
             $db->createCommand()
                 ->softDelete('{{%volumes}}', ['id' => $volumeRecord->id])
                 ->execute();
@@ -720,7 +724,7 @@ class Volumes extends Component
      * Gets a volume's record by uid.
      *
      * @param string $uid
-     * @param bool $withTrashed Whether to include trashed sites in search
+     * @param bool $withTrashed Whether to include trashed volumes in search
      * @return AssetVolumeRecord
      */
     private function _getVolumeRecord(string $uid, bool $withTrashed = false): AssetVolumeRecord

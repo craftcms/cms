@@ -284,6 +284,12 @@ class Category extends Element
     public $newParentId;
 
     /**
+     * @var bool Whether the category was deleted along with its group
+     * @see beforeDelete()
+     */
+    public $deletedWithGroup = false;
+
+    /**
      * @var bool|null
      * @see _hasNewParent()
      */
@@ -516,6 +522,12 @@ class Category extends Element
             return false;
         }
 
+        // Update the category record
+        $data = [
+            'deletedWithGroup' => $this->deletedWithGroup,
+            'parentId' => null,
+        ];
+
         if ($this->structureId) {
             // Remember the parent ID, in case the entry needs to be restored later
             $parentId = $this->getAncestors(1)
@@ -523,11 +535,13 @@ class Category extends Element
                 ->select(['elements.id'])
                 ->scalar();
             if ($parentId) {
-                Craft::$app->getDb()->createCommand()
-                    ->update('{{%categories}}', ['parentId' => $parentId], ['id' => $this->id], [], false)
-                    ->execute();
+                $data['parentId'] = $parentId;
             }
         }
+
+        Craft::$app->getDb()->createCommand()
+            ->update('{{%categories}}', $data, ['id' => $this->id], [], false)
+            ->execute();
 
         return true;
     }
