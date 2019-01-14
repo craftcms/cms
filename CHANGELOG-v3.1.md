@@ -149,6 +149,7 @@
 
 ### Fixed
 - Fixed a bug where `craft\helpers\MigrationHelper::dropIndexIfExists()` wasn’t working if the index had an unexpected name.
+- Fixed a bug where ordered and unordered lists in field instructions didn’t have numbers or bullets.
 
 ### Security
 - The web and CLI installers no longer suggest `@web` for the site URL, and now attempt to save the entered site URL as a `DEFAULT_SITE_URL` environment variable in `.env`. ([#3559](https://github.com/craftcms/cms/issues/3559))
