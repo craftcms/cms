@@ -47,17 +47,11 @@
                         <p v-else>No description.</p>
                     </div>
                     <div class="lg:pl-8 lg:ml-4">
-                        <ul v-if="(plugin.documentationUrl || plugin.changelogUrl)">
+                        <ul v-if="plugin.documentationUrl">
                             <li v-if="plugin.documentationUrl" class="py-1">
                                 <a :href="plugin.documentationUrl" rel="noopener" target="_blank">
                                     <font-awesome-icon icon="book"></font-awesome-icon>
                                     {{ "Documentation"|t('app') }}
-                                </a>
-                            </li>
-                            <li v-if="plugin.changelogUrl" class="py-1">
-                                <a :href="plugin.changelogUrl" rel="noopener" target="_blank">
-                                    <font-awesome-icon icon="info-circle"></font-awesome-icon>
-                                    {{ "Changelog"|t('app') }}
                                 </a>
                             </li>
                         </ul>
