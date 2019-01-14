@@ -19,6 +19,7 @@
 - Fixed a bug where active records weren’t preparing their attributes correctly when being restored.
 - Fixed an error that could occur when updating multi-site installs to Craft 3.1. ([#3614](https://github.com/craftcms/cms/issues/3614))
 - Fixed a bug where the default user settings were getting saved with the wrong project config key.
+- Fixed a bug where Assets fields still were storing references to volume folders (which may not exist in the current environment) rather than the volumes themselves in their field settings. ([#3618](https://github.com/craftcms/cms/issues/3618))
 
 ## 3.1.0-beta.7 - 2019-01-09
 
