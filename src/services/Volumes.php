@@ -376,19 +376,8 @@ class Volumes extends Component
             }
 
             // Save the volume
-            if ($volumeRecord->dateDeleted) {
+            if ($wasTrashed = (bool)$volumeRecord->dateDeleted) {
                 $volumeRecord->restore();
-
-                // Restore the assets that still have files too
-                $assets = Asset::find()
-                    ->volumeId($volumeRecord->id)
-                    ->trashed()
-                    ->andWhere(['assets.keptFile' => true])
-                    ->all();
-                $elementsService = Craft::$app->getElements();
-                foreach ($assets as $asset) {
-                    $elementsService->restoreElement($asset);
-                }
             } else {
                 $volumeRecord->save(false);
             }
@@ -425,6 +414,16 @@ class Volumes extends Component
         /** @var Volume $volume */
         $volume = $this->getVolumeById($volumeRecord->id);
         $volume->afterSave($isNewVolume);
+
+        if ($wasTrashed) {
+            // Restore the assets that were deleted with the volume
+            $assets = Asset::find()
+                ->volumeId($volumeRecord->id)
+                ->trashed()
+                ->andWhere(['assets.deletedWithVolume' => true])
+                ->all();
+            Craft::$app->getElements()->restoreElements($assets);
+        }
 
         // Fire an 'afterSaveVolume' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_VOLUME)) {
@@ -620,6 +619,7 @@ class Volumes extends Component
             $elementsService = Craft::$app->getElements();
 
             foreach ($assets as $asset) {
+                $asset->deletedWithVolume = true;
                 $asset->keepFileOnDelete = true;
                 $elementsService->deleteElement($asset);
             }

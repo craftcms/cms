@@ -25,7 +25,6 @@ use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\FieldLayout;
-use craft\models\Site;
 use craft\models\Structure;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
@@ -340,7 +339,7 @@ class Categories extends Component
             $structureUid = $structureData['uid'];
 
             // Basic data
-            $groupRecord = $this->_getCategoryGroupRecord($categoryGroupUid);
+            $groupRecord = $this->_getCategoryGroupRecord($categoryGroupUid, true);
             $isNewCategoryGroup = $groupRecord->getIsNewRecord();
 
             $groupRecord->name = $data['name'];
@@ -371,7 +370,11 @@ class Categories extends Component
             }
 
             // Save the category group
-            $groupRecord->save(false);
+            if ($wasTrashed = (bool)$groupRecord->dateDeleted) {
+                $groupRecord->restore();
+            } else {
+                $groupRecord->save(false);
+            }
 
             // Update the site settings
             // -----------------------------------------------------------------
@@ -492,6 +495,16 @@ class Categories extends Component
         // Clear caches
         $this->_groups = null;
 
+        if ($wasTrashed) {
+            // Restore the categories that were deleted with the group
+            $categories = Category::find()
+                ->groupId($groupRecord->id)
+                ->trashed()
+                ->andWhere(['categories.deletedWithGroup' => true])
+                ->all();
+            Craft::$app->getElements()->restoreElements($categories);
+        }
+
         // Fire an 'afterSaveGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
             $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new CategoryGroupEvent([
@@ -599,29 +612,29 @@ class Categories extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Delete the field layout
-            $fieldLayoutId = (new Query())
-                ->select(['fieldLayoutId'])
-                ->from(['{{%categorygroups}}'])
-                ->where(['id' => $categoryGroupRecord->id])
-                ->scalar();
-
-            if ($fieldLayoutId) {
-                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-            }
-
-            // Delete the tags
+            // Delete the categories
             $categories = Category::find()
                 ->anyStatus()
                 ->groupId($categoryGroupRecord->id)
                 ->all();
+            $elementsService = Craft::$app->getElements();
 
             foreach ($categories as $category) {
-                Craft::$app->getElements()->deleteElement($category);
+                $category->deletedWithGroup = true;
+                $elementsService->deleteElement($category);
             }
 
+            // Delete the structure
+            Craft::$app->getStructures()->deleteStructureById($categoryGroupRecord->structureId);
+
+            // Delete the field layout
+            if ($categoryGroupRecord->fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($categoryGroupRecord->fieldLayoutId);
+            }
+
+            // Delete the category group
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%categorygroups}}', ['id' => $categoryGroupRecord->id])
+                ->softDelete('{{%categorygroups}}', ['id' => $categoryGroupRecord->id])
                 ->execute();
 
             $transaction->commit();
@@ -829,10 +842,13 @@ class Categories extends Component
      * Gets a category group's record by uid.
      *
      * @param string $uid
+     * @param bool $withTrashed Whether to include trashed category groups in search
      * @return CategoryGroupRecord
      */
-    private function _getCategoryGroupRecord(string $uid): CategoryGroupRecord
+    private function _getCategoryGroupRecord(string $uid, bool $withTrashed = false): CategoryGroupRecord
     {
-        return CategoryGroupRecord::findOne(['uid' => $uid]) ?? new CategoryGroupRecord();
+        $query = $withTrashed ? CategoryGroupRecord::findWithTrashed() : CategoryGroupRecord::find();
+        $query->andWhere(['uid' => $uid]);
+        return $query->one() ?? new CategoryGroupRecord();
     }
 }

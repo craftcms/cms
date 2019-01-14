@@ -111,6 +111,12 @@ class Tag extends Element
      */
     public $groupId;
 
+    /**
+     * @var bool Whether the tag was deleted along with its group
+     * @see beforeDelete()
+     */
+    public $deletedWithGroup = false;
+
     // Public Methods
     // =========================================================================
 
@@ -221,5 +227,24 @@ class Tag extends Element
         $record->save(false);
 
         parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        // Update the tag record
+        Craft::$app->getDb()->createCommand()
+            ->update('{{%tags}}', [
+                'deletedWithGroup' => $this->deletedWithGroup,
+            ], ['id' => $this->id], [], false)
+            ->execute();
+
+        return true;
     }
 }

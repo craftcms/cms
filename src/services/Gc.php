@@ -58,7 +58,11 @@ class Gc extends Component
         $this->_deleteStaleSessions();
 
         $this->hardDelete([
-            '{{%elements}}',
+            '{{%elements}}', // elements should always go first
+            '{{%categorygroups}}',
+            '{{%entrytypes}}',
+            '{{%sections}}',
+            '{{%taggroups}}',
             '{{%volumes}}',
         ]);
 
@@ -68,6 +72,7 @@ class Gc extends Component
         }
 
         $this->hardDelete([
+            '{{%structures}}',
             '{{%fieldlayouts}}',
             '{{%sites}}',
         ]);

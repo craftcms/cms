@@ -105,6 +105,7 @@ class Install extends Migration
             'height' => $this->integer()->unsigned(),
             'size' => $this->bigInteger()->unsigned(),
             'focalPoint' => $this->string(13)->null(),
+            'deletedWithVolume' => $this->boolean()->null(),
             'keptFile' => $this->boolean()->null(),
             'dateModified' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -146,6 +147,7 @@ class Install extends Migration
             'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
             'parentId' => $this->integer(),
+            'deletedWithGroup' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -159,6 +161,7 @@ class Install extends Migration
             'handle' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%categorygroups_sites}}', [
@@ -261,6 +264,7 @@ class Install extends Migration
             'authorId' => $this->integer(),
             'postDate' => $this->dateTime(),
             'expiryDate' => $this->dateTime(),
+            'deletedWithEntryType' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -291,6 +295,7 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%entryversions}}', [
@@ -385,6 +390,7 @@ class Install extends Migration
             'fieldId' => $this->integer()->notNull(),
             'typeId' => $this->integer()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
+            'deletedWithOwner' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -459,6 +465,7 @@ class Install extends Migration
             'propagateEntries' => $this->boolean()->defaultValue(true)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%sections_sites}}', [
@@ -530,6 +537,7 @@ class Install extends Migration
             'maxLevels' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%taggroups}}', [
@@ -539,11 +547,13 @@ class Install extends Migration
             'fieldLayoutId' => $this->integer(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%tags}}', [
             'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
+            'deletedWithGroup' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -703,10 +713,11 @@ class Install extends Migration
         $this->createIndex(null, '{{%assettransforms}}', ['name'], true);
         $this->createIndex(null, '{{%assettransforms}}', ['handle'], true);
         $this->createIndex(null, '{{%categories}}', ['groupId'], false);
-        $this->createIndex(null, '{{%categorygroups}}', ['name'], true);
-        $this->createIndex(null, '{{%categorygroups}}', ['handle'], true);
+        $this->createIndex(null, '{{%categorygroups}}', ['name'], false);
+        $this->createIndex(null, '{{%categorygroups}}', ['handle'], false);
         $this->createIndex(null, '{{%categorygroups}}', ['structureId'], false);
         $this->createIndex(null, '{{%categorygroups}}', ['fieldLayoutId'], false);
+        $this->createIndex(null, '{{%categorygroups}}', ['dateDeleted'], false);
         $this->createIndex(null, '{{%categorygroups_sites}}', ['groupId', 'siteId'], true);
         $this->createIndex(null, '{{%categorygroups_sites}}', ['siteId'], false);
         $this->createIndex(null, '{{%content}}', ['elementId', 'siteId'], true);
@@ -734,10 +745,11 @@ class Install extends Migration
         $this->createIndex(null, '{{%entrydrafts}}', ['entryId', 'siteId'], false);
         $this->createIndex(null, '{{%entrydrafts}}', ['siteId'], false);
         $this->createIndex(null, '{{%entrydrafts}}', ['creatorId'], false);
-        $this->createIndex(null, '{{%entrytypes}}', ['name', 'sectionId'], true);
-        $this->createIndex(null, '{{%entrytypes}}', ['handle', 'sectionId'], true);
+        $this->createIndex(null, '{{%entrytypes}}', ['name', 'sectionId'], false);
+        $this->createIndex(null, '{{%entrytypes}}', ['handle', 'sectionId'], false);
         $this->createIndex(null, '{{%entrytypes}}', ['sectionId'], false);
         $this->createIndex(null, '{{%entrytypes}}', ['fieldLayoutId'], false);
+        $this->createIndex(null, '{{%entrytypes}}', ['dateDeleted'], false);
         $this->createIndex(null, '{{%entryversions}}', ['sectionId'], false);
         $this->createIndex(null, '{{%entryversions}}', ['entryId', 'siteId'], false);
         $this->createIndex(null, '{{%entryversions}}', ['siteId'], false);
@@ -775,9 +787,10 @@ class Install extends Migration
         $this->createIndex(null, '{{%relations}}', ['sourceId'], false);
         $this->createIndex(null, '{{%relations}}', ['targetId'], false);
         $this->createIndex(null, '{{%relations}}', ['sourceSiteId'], false);
-        $this->createIndex(null, '{{%sections}}', ['handle'], true);
-        $this->createIndex(null, '{{%sections}}', ['name'], true);
+        $this->createIndex(null, '{{%sections}}', ['handle'], false);
+        $this->createIndex(null, '{{%sections}}', ['name'], false);
         $this->createIndex(null, '{{%sections}}', ['structureId'], false);
+        $this->createIndex(null, '{{%sections}}', ['dateDeleted'], false);
         $this->createIndex(null, '{{%sections_sites}}', ['sectionId', 'siteId'], true);
         $this->createIndex(null, '{{%sections_sites}}', ['siteId'], false);
         $this->createIndex(null, '{{%sessions}}', ['uid'], false);
@@ -795,8 +808,10 @@ class Install extends Migration
         $this->createIndex(null, '{{%structureelements}}', ['rgt'], false);
         $this->createIndex(null, '{{%structureelements}}', ['level'], false);
         $this->createIndex(null, '{{%structureelements}}', ['elementId'], false);
-        $this->createIndex(null, '{{%taggroups}}', ['name'], true);
-        $this->createIndex(null, '{{%taggroups}}', ['handle'], true);
+        $this->createIndex(null, '{{%structures}}', ['dateDeleted'], false);
+        $this->createIndex(null, '{{%taggroups}}', ['name'], false);
+        $this->createIndex(null, '{{%taggroups}}', ['handle'], false);
+        $this->createIndex(null, '{{%taggroups}}', ['dateDeleted'], false);
         $this->createIndex(null, '{{%tags}}', ['groupId'], false);
         $this->createIndex(null, '{{%templatecacheelements}}', ['cacheId'], false);
         $this->createIndex(null, '{{%templatecacheelements}}', ['elementId'], false);
