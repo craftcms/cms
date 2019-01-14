@@ -24,6 +24,13 @@ class m190108_113000_asset_field_setting_change extends Migration
      */
     public function safeUp()
     {
+        // Don't make the same config changes twice
+        $projectConfig = Craft::$app->getProjectConfig();
+        $schemaVersion = $projectConfig->get('system.schemaVersion', true);
+        if (version_compare($schemaVersion, '3.1.11', '>=')) {
+            return;
+        }
+
         $this->_volumesByFolderUids = (new Query())
             ->select(['folders.uid folderUid', 'volumes.uid volumeUid'])
             ->from(['{{%volumes}} volumes'])
