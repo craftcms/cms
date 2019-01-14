@@ -18,8 +18,8 @@
                             <th></th>
                         </tr>
                         </thead>
-                        <tbody v-for="(item, itemKey) in cartItems">
-                            <tr class="item-details" :key="'item' + itemKey">
+                        <tbody v-for="(item, itemKey) in cartItems" :key="'item' + itemKey">
+                            <tr class="item-details">
                                 <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
                                     <td class="thin">
                                         <div class="plugin-icon">

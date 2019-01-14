@@ -171,7 +171,7 @@ const actions = {
                     item.cmsLicenseKey = window.cmsLicenseKey
 
                     switch(item.type) {
-                        case 'plugin-edition':
+                        case 'plugin-edition': {
                             // Set the license key if we have a valid one
                             const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](item.plugin)
 
@@ -179,6 +179,7 @@ const actions = {
                                 item.licenseKey = pluginLicenseInfo.licenseKey
                             }
                             break;
+                        }
                     }
 
                     items.push(item)
