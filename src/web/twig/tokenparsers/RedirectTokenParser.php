@@ -1,8 +1,8 @@
 <?php
 /**
- * @link https://craftcms.com/
+ * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
+ * @license   https://craftcms.github.io/license/
  */
 
 namespace craft\web\twig\tokenparsers;
@@ -13,7 +13,7 @@ use craft\web\twig\nodes\RedirectNode;
  * Class RedirectTokenParser
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since  3.0
  */
 class RedirectTokenParser extends \Twig_TokenParser
 {
@@ -27,7 +27,7 @@ class RedirectTokenParser extends \Twig_TokenParser
     {
         $lineno = $token->getLine();
         $stream = $this->parser->getStream();
-        $nodes = [
+        $nodes  = [
             'path' => $this->parser->getExpressionParser()->parseExpression(),
         ];
 
@@ -35,6 +35,20 @@ class RedirectTokenParser extends \Twig_TokenParser
             $nodes['httpStatusCode'] = $this->parser->getExpressionParser()->parseExpression();
         } else {
             $nodes['httpStatusCode'] = new \Twig_Node_Expression_Constant(302, 1);
+        }
+
+        // Parse flash message
+        if ($stream->test(\Twig_Token::NAME_TYPE, 'with')) {
+            $stream->next();
+
+            if ($stream->test(\Twig_Token::NAME_TYPE, 'notice')) {
+                $stream->next();
+                $nodes['notice'] = $this->parser->getExpressionParser()->parseExpression();
+            }
+            if ($stream->test(\Twig_Token::NAME_TYPE, 'error')) {
+                $stream->next();
+                $nodes['error'] = $this->parser->getExpressionParser()->parseExpression();
+            }
         }
 
         $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
