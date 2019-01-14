@@ -339,6 +339,18 @@
             th, td {
                 padding: 7px 0;
             }
+
+            td.expiry-date {
+                & > div {
+                    display: inline-block;
+                    margin-bottom: 0;
+                }
+
+                .spinner {
+                    @apply .relative .ml-2;
+                    top: -2px;
+                }
+            }
         }
     }
 
@@ -388,6 +400,10 @@
                     &.total-price {
                         text-align: right;
                     }
+                }
+
+                td.expiry-date {
+                    @apply .w-3/5;
                 }
             }
         }
