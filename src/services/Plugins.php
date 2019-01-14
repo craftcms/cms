@@ -947,18 +947,34 @@ class Plugins extends Component
             if (!in_array($edition, $editions, true)) {
                 $edition = reset($editions);
             }
+        } else {
+            $editions = ['standard'];
         }
 
         $info['isInstalled'] = $installed = $pluginInfo !== null;
         $info['isEnabled'] = $plugin !== null;
         $info['moduleId'] = $handle;
         $info['edition'] = $edition;
-        $info['hasMultipleEditions'] = $plugin ? count($plugin::editions()) > 1 : false;
+        $info['hasMultipleEditions'] = count($editions) > 1;
         $info['hasCpSettings'] = ($plugin !== null && $plugin->hasCpSettings);
         $info['licenseKey'] = $pluginInfo['licenseKey'] ?? null;
         $info['licenseKeyStatus'] = $pluginInfo['licenseKeyStatus'] ?? LicenseKeyStatus::Unknown;
         $info['licensedEdition'] = $pluginInfo['licensedEdition'] ?? null;
         $info['licenseIssues'] = $installed ? $this->getLicenseIssues($handle) : [];
+
+        // The plugin is in trial if it's missing its license key, or running the wrong edition
+        $info['isTrial'] = $installed
+            ? (
+                ($info['licenseKeyStatus'] === LicenseKeyStatus::Invalid && empty($info['licenseIssues'])) ||
+                ($info['licenseKeyStatus'] === LicenseKeyStatus::Valid && !empty($pluginInfo['licensedEdition']) && $pluginInfo['licensedEdition'] !== $edition)
+            )
+            : false;
+
+        // An upgrade is available if the plugin is in trial or licensed to less than the best edition
+        $info['upgradeAvailable'] = (
+            $info['isTrial'] ||
+            ($info['hasMultipleEditions'] && !empty($pluginInfo['licensedEdition']) && $pluginInfo['licensedEdition'] !== end($editions))
+        );
 
         return $info;
     }

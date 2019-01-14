@@ -918,6 +918,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         // Sanitize?
         if ($sanitize) {
             $svg = (new Sanitizer())->sanitize($svg);
+            // Remove comments, title & desc
+            $svg = preg_replace('/<!--.*?-->\s*/s', '', $svg);
+            $svg = preg_replace('/<title>.*?<\/title>\s*/is', '', $svg);
+            $svg = preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
         }
 
         // Remove the XML declaration

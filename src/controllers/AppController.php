@@ -374,11 +374,14 @@ class AppController extends Controller
             $result[$handle] = [
                 'isInstalled' => $pluginInfo['isInstalled'],
                 'isEnabled' => $pluginInfo['isEnabled'],
+                'hasMultipleEditions' => $pluginInfo['hasMultipleEditions'],
                 'edition' => $pluginInfo['edition'],
                 'licenseKey' => $pluginInfo['licenseKey'],
                 'licensedEdition' => $pluginInfo['licensedEdition'],
                 'licenseKeyStatus' => $pluginInfo['licenseKeyStatus'],
                 'licenseIssues' => $pluginInfo['licenseIssues'],
+                'isTrial' => $pluginInfo['isTrial'],
+                'upgradeAvailable' => $pluginInfo['upgradeAvailable'],
             ];
         }
 
