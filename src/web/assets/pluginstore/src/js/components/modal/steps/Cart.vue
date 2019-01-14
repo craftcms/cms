@@ -9,7 +9,7 @@
 
             <template v-if="cart">
                 <template v-if="cartItems.length">
-                    <table class="cart-table data fullwidth">
+                    <table class="cart-data fullwidth">
                         <thead>
                         <tr>
                             <th></th>
@@ -61,8 +61,8 @@
 
                             <template v-for="(adjustment, adjustmentKey) in item.lineItem.adjustments">
                                 <tr :key="itemKey + 'adjustment-' + adjustmentKey" class="sub-item">
-                                    <td class="no-border"></td>
-                                    <td class="no-border"></td>
+                                    <td class="blank-cell"></td>
+                                    <td class="blank-cell"></td>
                                     <td>
                                         {{adjustment.name}}
                                     </td>
@@ -73,9 +73,9 @@
                             </template>
 
                             <tr class="sub-item">
-                                <td class="no-border"></td>
-                                <td class="no-border"></td>
-                                <td></td>
+                                <td class="blank-cell"></td>
+                                <td class="blank-cell"></td>
+                                <td class="empty-cell"></td>
                                 <td class="price">
                                     <a role="button" @click="removeFromCart(itemKey)">{{ "Remove"|t('app') }}</a>
                                 </td>
@@ -84,7 +84,7 @@
 
                         <tbody>
                             <tr>
-                                <th class="total-price" colspan="3">{{ "Total Price"|t('app') }}</th>
+                                <th class="total-price" colspan="3"><strong>{{ "Total Price"|t('app') }}</strong></th>
                                 <td class="total-price"><strong>{{cart.totalPrice|currency}}</strong></td>
                             </tr>
                         </tbody>
@@ -109,32 +109,32 @@
 
                 <h2>{{ "Active Trials"|t('app') }}</h2>
 
-                <table class="data fullwidth">
+                <table class="cart-data">
                     <thead>
                     <tr>
                         <th class="thin"></th>
                         <th>{{ "Plugin Name"|t('app') }}</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    <tr v-for="(plugin, key) in pendingActiveTrials" :key="key">
-                        <template v-if="plugin">
-                            <td class="thin">
-                                <div class="plugin-icon">
-                                    <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="40" width="40" />
-                                    <div class="default-icon" v-else></div>
-                                </div>
-                            </td>
-                            <td>
-                                <strong>{{ plugin.name }}</strong>
-                                <div class="text-grey-dark">
-                                    {{activeTrialPluginEditions[plugin.handle].name}}
-                                </div>
-                            </td>
-                            <td><strong>{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
-                            <td class="thin"><a class="btn" @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)">{{ "Add to cart"|t('app') }}</a></td>
-                        </template>
-                    </tr>
+                    <tbody v-for="(plugin, key) in pendingActiveTrials" :key="key">
+                        <tr>
+                            <template v-if="plugin">
+                                <td class="thin">
+                                    <div class="plugin-icon">
+                                        <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="40" width="40" />
+                                        <div class="default-icon" v-else></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong>{{ plugin.name }}</strong>
+                                    <div class="text-grey-dark">
+                                        {{activeTrialPluginEditions[plugin.handle].name}}
+                                    </div>
+                                </td>
+                                <td><strong>{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
+                                <td class="thin"><a class="btn" @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)">{{ "Add to cart"|t('app') }}</a></td>
+                            </template>
+                        </tr>
                     </tbody>
                 </table>
             </template>
@@ -321,81 +321,75 @@
 <style lang="scss" scoped>
     @import "../../../../../../../../../lib/craftcms-sass/mixins";
 
-    table.cart-table.data {
-        thead {
-            border-bottom: 1px solid #eee;
-        }
-
-        tbody {
-            border-bottom: 1px solid #eee;
-
-            tr {
-                &.sub-item {
-                    td.no-border {
-                        border: 0;
-                    }
-
-                    td {
-                        border-top: 1px dotted #eee;
-                    }
-                }
-
-                th, td {
-                    border: 0;
-                }
-            }
-        }
-    }
-
     .plugin-icon {
+        margin-right: 10px !important;
+
         img {
             max-width: none;
         }
     }
 
-    td.expiry-date {
-        & > div {
-            display: inline-block;
-            margin-bottom: 0;
+    table.cart-data {
+        thead,
+        tbody {
+            border-bottom: 1px solid #eee;
         }
 
-        .spinner {
-            @apply .relative .ml-2;
-            top: -2px;
+        tr {
+            th, td {
+                padding: 7px 0;
+            }
         }
     }
 
     @media (max-width: 991px) {
-        thead {
-            display: none;
-        }
+        table.cart-data {
+            border-top: 1px solid #eee;
 
-        tr,
-        td,
-        th {
-            display: block !important;
-            border: 0 !important;
-            padding: 4px 0 !important;
-        }
+            thead {
+                display: none;
+            }
 
-        tr {
-            border-top: 1px solid #eee !important;
+
+            tr,
+            td,
+            th {
+                display: block;
+            }
+
+            tr {
+                &.sub-item {
+                    td.blank-cell,
+                    td.empty-cell {
+                        display: none;
+                    }
+                }
+            }
         }
     }
 
     @media (min-width: 992px) {
-        td.expiry-date {
-            @apply .w-1/2;
-        }
+        table.cart-data {
+            tr {
+                &.sub-item {
+                    td:not(.blank-cell) {
+                        border-top: 1px dotted #eee;
+                    }
+                }
 
-        td.price {
-            @apply .w-1/4;
-            @include alignright;
-        }
+                th,
+                td {
+                    padding: 10px 0;
 
-        td.total-price,
-        th.total-price {
-            @include alignright;
+                    &.price {
+                        text-align: right;
+                    }
+
+                    &.total-price {
+                        text-align: right;
+                    }
+                }
+            }
         }
     }
 </style>
