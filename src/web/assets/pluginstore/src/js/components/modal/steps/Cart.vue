@@ -272,7 +272,7 @@
                     const expiryDateOption = this.expiryDateOptions[i]
                     const optionValue = expiryDateOption[0]
                     const date = Craft.formatDate(expiryDateOption[1])
-                    let label = this.$options.filters.t("Updates Until {date}", 'app', {date})
+                    let label = this.$options.filters.t("Updates until {date}", 'app', {date})
                     let price = renewalPrice * (i - selectedOption)
 
                     if (price !== 0) {
@@ -283,7 +283,7 @@
                         }
 
                         price = this.$options.filters.currency(price)
-                        label = this.$options.filters.t("Updates Until {date} ({sign}{price})", 'app', {date, sign, price})
+                        label = this.$options.filters.t("Updates until {date} ({sign}{price})", 'app', {date, sign, price})
                     }
 
                     options.push({
