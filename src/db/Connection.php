@@ -555,7 +555,7 @@ class Connection extends \yii\db\Connection
                 ->from(['{{%info}}'])
                 ->column()[0];
         } catch (\Throwable $e) {
-            return Craft::$app->getInfo()->name ?: Craft::$app->getSites()->getPrimarySite()->name;
+            return Craft::$app->getProjectConfig()->get('system.name') ?? Craft::$app->getSites()->getPrimarySite()->name;
         }
     }
 }

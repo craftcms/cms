@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\behaviors\EnvAttributeParserBehavior;
 use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
@@ -82,20 +83,41 @@ class Site extends Model
      */
     public $sortOrder = 1;
 
+    /**
+     * @var string|null Site UID
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * Returns the site’s base URL.
+     *
+     * @return string|null
      */
-    public function __construct($config = [])
+    public function getBaseUrl()
     {
-        // Normalize the base URL
-        if (isset($config['baseUrl'])) {
-            $config['baseUrl'] = rtrim($config['baseUrl'], '/') . '/';
+        if ($this->baseUrl) {
+            return rtrim(Craft::parseEnv($this->baseUrl), '/') . '/';
         }
 
-        parent::__construct($config);
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'baseUrl',
+                ],
+            ]
+        ];
     }
 
     /**
@@ -116,14 +138,13 @@ class Site extends Model
      */
     public function rules()
     {
-        $rules = [
-            [['groupId', 'name', 'handle', 'language'], 'required'],
-            [['id', 'groupId'], 'number', 'integerOnly' => true],
-            [['name', 'handle', 'baseUrl'], 'string', 'max' => 255],
-            [['language'], LanguageValidator::class, 'onlySiteLanguages' => false],
-            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['baseUrl'], UrlValidator::class, 'allowAlias' => true, 'defaultScheme' => 'http'],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['groupId', 'name', 'handle', 'language'], 'required'];
+        $rules[] = [['id', 'groupId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle', 'baseUrl'], 'string', 'max' => 255];
+        $rules[] = [['language'], LanguageValidator::class, 'onlySiteLanguages' => false];
+        $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
+        $rules[] = [['baseUrl'], UrlValidator::class, 'defaultScheme' => 'http'];
 
         if (Craft::$app->getIsInstalled()) {
             $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SiteRecord::class];
@@ -180,6 +201,6 @@ class Site extends Model
     public function overrideBaseUrl(string $baseUrl)
     {
         $this->originalBaseUrl = (string)$this->baseUrl;
-        $this->baseUrl = rtrim($baseUrl, '/') . '/';
+        $this->baseUrl = $baseUrl;
     }
 }

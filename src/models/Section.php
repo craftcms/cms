@@ -21,6 +21,7 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  * @property Section_SiteSettings[] $siteSettings Site-specific settings
+ * @property EntryType[] $entryTypes Entry types
  * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
 class Section extends Model
@@ -76,6 +77,11 @@ class Section extends Model
     public $propagateEntries = true;
 
     /**
+     * @var string|null Section's UID
+     */
+    public $uid;
+
+    /**
      * @var Section_SiteSettings[]|null
      */
     private $_siteSettings;
@@ -105,15 +111,15 @@ class Section extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true],
-            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['type'], 'in', 'range' => ['single', 'channel', 'structure']],
-            [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class],
-            [['name', 'handle', 'type', 'siteSettings'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
-            [['siteSettings'], 'validateSiteSettings'],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
+        $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
+        $rules[] = [['type'], 'in', 'range' => ['single', 'channel', 'structure']];
+        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
+        $rules[] = [['name', 'handle', 'type', 'siteSettings'], 'required'];
+        $rules[] = [['name', 'handle'], 'string', 'max' => 255];
+        $rules[] = [['siteSettings'], 'validateSiteSettings'];
+        return $rules;
     }
 
     /**
@@ -231,6 +237,16 @@ class Section extends Model
         $this->_entryTypes = Craft::$app->getSections()->getEntryTypesBySectionId($this->id);
 
         return $this->_entryTypes;
+    }
+
+    /**
+     * Sets the section's entry types.
+     *
+     * @param EntryType[] $entryTypes
+     */
+    public function setEntryTypes(array $entryTypes)
+    {
+        $this->_entryTypes = $entryTypes;
     }
 
     /**

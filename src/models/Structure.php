@@ -32,6 +32,11 @@ class Structure extends Model
      */
     public $maxLevels;
 
+    /**
+     * @var string|null UID
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 
@@ -40,9 +45,9 @@ class Structure extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'maxLevels'], 'number', 'integerOnly' => true],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'maxLevels'], 'number', 'integerOnly' => true];
+        return $rules;
     }
 
     /**

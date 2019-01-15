@@ -216,7 +216,7 @@
                         name: 'parentId',
                         elementType: elementType,
                         selectionLabel: "Choose"|t('app'),
-                        sources: ['section:'~section.id],
+                        sources: ['section:'~section.uid],
                         criteria: parentOptionCriteria,
                         limit: 1,
                         elements: (parent is defined and parent ? [parent]),

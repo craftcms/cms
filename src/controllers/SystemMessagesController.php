@@ -33,7 +33,7 @@ class SystemMessagesController extends Controller
     public function init()
     {
         // All email message actions require an admin
-        $this->requireAdmin();
+        $this->requirePermission('utility:system-messages');
     }
 
     /**
@@ -56,7 +56,7 @@ class SystemMessagesController extends Controller
         $message = Craft::$app->getSystemMessages()->getMessage($key, $language);
 
         return $this->asJson([
-            'body' => $this->getView()->renderTemplate('settings/email/_message_modal', [
+            'body' => $this->getView()->renderTemplate('_components/utilities/SystemMessages/message-modal', [
                 'message' => $message,
                 'language' => $language,
             ])

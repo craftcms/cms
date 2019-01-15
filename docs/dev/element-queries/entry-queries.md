@@ -1287,6 +1287,31 @@ $entries = \craft\elements\Entry::find()
 :::
 
 
+### `trashed`
+
+Narrows the query results to only entries that have been soft-deleted.
+
+
+
+
+
+::: code
+```twig
+{# Fetch trashed entries #}
+{% set entries = {twig-function}
+    .trashed()
+    .all() %}
+```
+
+```php
+// Fetch trashed entries
+$entries = \craft\elements\Entry::find()
+    ->trashed()
+    ->all();
+```
+:::
+
+
 ### `type`
 
 Narrows the query results based on the entries’ entry types.

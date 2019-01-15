@@ -13,6 +13,7 @@
     "feature-detect-es6": "^1.5.0",
     "lodash": "^4.17.10",
     "vue": "^2.5.16",
+    "vue-autosuggest": "^1.7.1-2",
     "vue-cleave": "^1.2.2",
     "vue-lodash": "^1.0.3",
     "vue-router": "^3.0.1",

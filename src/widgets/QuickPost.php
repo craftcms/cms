@@ -95,7 +95,6 @@ class QuickPost extends Widget
         $rules = parent::rules();
         $rules[] = [['section'], 'required'];
         $rules[] = [['section', 'entryType'], 'integer'];
-
         return $rules;
     }
 
@@ -109,7 +108,7 @@ class QuickPost extends Widget
 
         foreach (Craft::$app->getSections()->getAllSections() as $section) {
             if ($section->type !== Section::TYPE_SINGLE) {
-                if (Craft::$app->getUser()->checkPermission('createEntries:' . $section->id)) {
+                if (Craft::$app->getUser()->checkPermission('createEntries:' . $section->uid)) {
                     $sections[] = $section;
                 }
             }

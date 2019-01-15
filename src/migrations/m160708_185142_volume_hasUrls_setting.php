@@ -4,7 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
-use yii\helpers\Json;
+use craft\helpers\Json;
 
 /**
  * m150403_185142_volumes migration.

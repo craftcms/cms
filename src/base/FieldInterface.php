@@ -338,4 +338,19 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface $element The element that was just deleted
      */
     public function afterElementDelete(ElementInterface $element);
+
+    /**
+     * Performs actions before an element is restored.
+     *
+     * @param ElementInterface $element The element that is about to be restored
+     * @return bool Whether the element should be restored
+     */
+    public function beforeElementRestore(ElementInterface $element): bool;
+
+    /**
+     * Performs actions after the element has been restored.
+     *
+     * @param ElementInterface $element The element that was just restored
+     */
+    public function afterElementRestore(ElementInterface $element);
 }

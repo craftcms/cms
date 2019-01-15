@@ -19,6 +19,7 @@ use craft\migrations\Install;
 use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use craft\web\Controller;
+use yii\base\Exception;
 use yii\base\Response;
 use yii\web\BadRequestHttpException;
 
@@ -94,7 +95,7 @@ class InstallController extends Controller
         $words = preg_split('/[\-_\.]+/', $server);
         array_pop($words);
         $defaultSystemName = implode(' ', array_map('ucfirst', $words));
-        $defaultSiteUrl = '@web';
+        $defaultSiteUrl = getenv('DEFAULT_SITE_URL') ?: Craft::getAlias('@web');
 
         $iconsPath = Craft::getAlias('@app/icons');
         $dbIcon = $showDbScreen ? file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'database.svg') : null;
@@ -235,6 +236,7 @@ class InstallController extends Controller
         $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
+        $configService = Craft::$app->getConfig();
 
         // Should we set the new DB config values?
         if ($request->getBodyParam('db-driver') !== null) {
@@ -242,7 +244,6 @@ class InstallController extends Controller
             $dbConfig = Craft::$app->getConfig()->getDb();
             $this->_populateDbConfig($dbConfig, 'db-');
 
-            $configService = Craft::$app->getConfig();
             $configService->setDotEnvVar('DB_DRIVER', $dbConfig->driver);
             $configService->setDotEnvVar('DB_SERVER', $dbConfig->server);
             $configService->setDotEnvVar('DB_USER', $dbConfig->user);
@@ -263,12 +264,21 @@ class InstallController extends Controller
 
         $email = $request->getBodyParam('account-email');
         $username = $request->getBodyParam('account-username', $email);
+        $siteUrl = $request->getBodyParam('site-baseUrl');
+
+        // Try to save the site URL to a DEFAULT_SITE_URL environment variable
+        try {
+            $configService->setDotEnvVar('DEFAULT_SITE_URL', $siteUrl);
+            $siteUrl = '$DEFAULT_SITE_URL';
+        } catch (Exception $e) {
+            // that's fine, we'll just store the entered URL
+        }
 
         $site = new Site([
             'name' => $request->getBodyParam('site-name'),
             'handle' => 'default',
             'hasUrls' => true,
-            'baseUrl' => $request->getBodyParam('site-baseUrl'),
+            'baseUrl' => $siteUrl,
             'language' => $request->getBodyParam('site-language'),
         ]);
 

@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\db\Query;
 use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\Edit;
+use craft\elements\actions\Restore;
 use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
 use craft\elements\db\ElementQueryInterface;
@@ -20,6 +21,7 @@ use craft\events\AuthenticateUserEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\UserGroup;
@@ -182,7 +184,7 @@ class User extends Element implements IdentityInterface
 
                 foreach ($groups as $group) {
                     $sources[] = [
-                        'key' => 'group:' . $group->id,
+                        'key' => 'group:' . $group->uid,
                         'label' => Craft::t('site', $group->name),
                         'criteria' => ['groupId' => $group->id],
                         'hasThumbs' => true
@@ -200,14 +202,15 @@ class User extends Element implements IdentityInterface
     protected static function defineActions(string $source = null): array
     {
         $actions = [];
+        $elementsService = Craft::$app->getElements();
 
         // Edit
-        $actions[] = Craft::$app->getElements()->createAction([
+        $actions[] = $elementsService->createAction([
             'type' => Edit::class,
             'label' => Craft::t('app', 'Edit user'),
         ]);
 
-        if (Craft::$app->getUser()->checkPermission('administrateUsers')) {
+        if (Craft::$app->getUser()->checkPermission('moderateUsers')) {
             // Suspend
             $actions[] = SuspendUsers::class;
 
@@ -219,6 +222,14 @@ class User extends Element implements IdentityInterface
             // Delete
             $actions[] = DeleteUsers::class;
         }
+
+        // Restore
+        $actions[] = $elementsService->createAction([
+            'type' => Restore::class,
+            'successMessage' => Craft::t('app', 'Users restored.'),
+            'partialSuccessMessage' => Craft::t('app', 'Some users restored.'),
+            'failMessage' => Craft::t('app', 'Users not restored.'),
+        ]);
 
         return $actions;
     }
@@ -384,23 +395,6 @@ class User extends Element implements IdentityInterface
     public static function findIdentityByAccessToken($token, $type = null)
     {
         throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
-    }
-
-    /**
-     * Returns the authentication data from a given auth key.
-     *
-     * @param string $authKey
-     * @return array|null The authentication data, or `null` if it was invalid.
-     */
-    public static function authData(string $authKey)
-    {
-        $data = json_decode($authKey, true);
-
-        if (count($data) === 3 && isset($data[0], $data[1], $data[2])) {
-            return $data;
-        }
-
-        return null;
     }
 
     // Properties
@@ -741,14 +735,18 @@ class User extends Element implements IdentityInterface
      */
     public function getAuthKey()
     {
-        $token = Craft::$app->getSecurity()->generateRandomString(100);
-        $tokenUid = $this->_storeSessionToken($token);
+        $token = Craft::$app->getSession()->get(Craft::$app->getUser()->tokenParam);
+
+        if ($token === null) {
+            throw new Exception('No user session token exists.');
+        }
+
         $userAgent = Craft::$app->getRequest()->getUserAgent();
 
         // The auth key is a combination of the hashed token, its row's UID, and the user agent string
         return json_encode([
             $token,
-            $tokenUid,
+            null,
             $userAgent,
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
@@ -758,18 +756,25 @@ class User extends Element implements IdentityInterface
      */
     public function validateAuthKey($authKey)
     {
-        $data = static::authData($authKey);
+        $data = Json::decodeIfJson($authKey);
 
-        if ($data) {
-            list($token, $tokenUid, $userAgent) = $data;
-
-            return (
-                $this->_validateUserAgent($userAgent) &&
-                ($token === $this->_findSessionTokenByUid($tokenUid))
-            );
+        if (!is_array($data) || count($data) !== 3 || !isset($data[0], $data[2])) {
+            return false;
         }
 
-        return false;
+        list($token, , $userAgent) = $data;
+
+        if (!$this->_validateUserAgent($userAgent)) {
+            return false;
+        }
+
+        return (new Query())
+            ->from(['{{%sessions}}'])
+            ->where([
+                'token' => $token,
+                'userId' => $this->id
+            ])
+            ->exists();
     }
 
     /**
@@ -1294,7 +1299,7 @@ class User extends Element implements IdentityInterface
         $record->passwordResetRequired = $this->passwordResetRequired;
         $record->unverifiedEmail = $this->unverifiedEmail;
 
-        if ($this->newPassword !== null) {
+        if ($changePassword = ($this->newPassword !== null)) {
             $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);
 
             $record->password = $this->password = $hash;
@@ -1315,6 +1320,20 @@ class User extends Element implements IdentityInterface
         $record->save(false);
 
         parent::afterSave($isNew);
+
+        if (!$isNew && $changePassword) {
+            // Destroy all sessions for this user
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%sessions}}', [
+                    'userId' => $this->id,
+                ])
+                ->execute();
+
+            // If this is for the current user, recreate their session so they don't get logged out
+            if ($this->getIsCurrent()) {
+                Craft::$app->getUser()->switchIdentity($this, Craft::$app->getConfig()->getGeneral()->userSessionDuration);
+            }
+        }
     }
 
     /**
@@ -1409,21 +1428,6 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Finds a session token by its row's UID.
-     *
-     * @param string $uid
-     * @return string|null The session token, or `null` if it could not be found.
-     */
-    private function _findSessionTokenByUid(string $uid)
-    {
-        return (new Query())
-            ->select(['token'])
-            ->from(['{{%sessions}}'])
-            ->where(['userId' => $this->id, 'uid' => $uid])
-            ->scalar();
-    }
-
-    /**
      * Validates a cookie's stored user agent against the current request's user agent string,
      * if the 'requireMatchingUserAgentForSession' config setting is enabled.
      *
@@ -1432,14 +1436,15 @@ class User extends Element implements IdentityInterface
      */
     private function _validateUserAgent(string $userAgent): bool
     {
-        if (Craft::$app->getConfig()->getGeneral()->requireMatchingUserAgentForSession) {
-            $requestUserAgent = Craft::$app->getRequest()->getUserAgent();
+        if (!Craft::$app->getConfig()->getGeneral()->requireMatchingUserAgentForSession) {
+            return true;
+        }
 
-            if ($userAgent !== $requestUserAgent) {
-                Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent (' . $userAgent . ') does not match the current request’s (' . $requestUserAgent . ').', __METHOD__);
+        $requestUserAgent = Craft::$app->getRequest()->getUserAgent();
 
-                return false;
-            }
+        if ($userAgent !== $requestUserAgent) {
+            Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent (' . $userAgent . ') does not match the current request’s (' . $requestUserAgent . ').', __METHOD__);
+            return false;
         }
 
         return true;
@@ -1477,13 +1482,13 @@ class User extends Element implements IdentityInterface
                             return self::AUTH_NO_CP_ACCESS;
                         }
                         if (
-                            Craft::$app->getIsSystemOn() === false &&
+                            Craft::$app->getIsLive() === false &&
                             $this->can('accessCpWhenSystemIsOff') === false
                         ) {
                             return self::AUTH_NO_CP_OFFLINE_ACCESS;
                         }
                     } else if (
-                        Craft::$app->getIsSystemOn() === false &&
+                        Craft::$app->getIsLive() === false &&
                         $this->can('accessSiteWhenSystemIsOff') === false
                     ) {
                         return self::AUTH_NO_SITE_OFFLINE_ACCESS;

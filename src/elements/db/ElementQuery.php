@@ -145,6 +145,13 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $archived = false;
 
     /**
+     * @var bool|null Whether to return trashed (soft-deleted) elements.
+     * If this is set to `null`, then both trashed and non-trashed elements will be returned.
+     * @used-by trashed()
+     */
+    public $trashed = false;
+
+    /**
      * @var mixed When the resulting elements must have been created.
      * @used-by dateCreated()
      */
@@ -657,6 +664,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $trashed
+     */
+    public function trashed($value = true)
+    {
+        $this->trashed = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $dateCreated
      */
     public function dateCreated($value)
@@ -1081,6 +1098,16 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->_applyStatusParam($class);
         }
 
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.1.0', '>=')) {
+            if ($this->trashed === false) {
+                $this->subQuery->andWhere(['elements.dateDeleted' => null]);
+            } else if ($this->trashed === true) {
+                $this->subQuery->andWhere(['not', ['elements.dateDeleted' => null]]);
+            }
+        }
+
         if ($this->dateCreated) {
             $this->subQuery->andWhere(Db::parseDateParam('elements.dateCreated', $this->dateCreated));
         }
@@ -1497,6 +1524,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
+        // todo: remove this after the next breakpoint
+        if (Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            return [];
+        }
+
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = 'global';
@@ -1694,7 +1726,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _shouldJoinStructureData(): bool
     {
-        return $this->withStructure || ($this->withStructure !== false && $this->structureId);
+        return (
+            !$this->trashed &&
+            ($this->withStructure || ($this->withStructure !== false && $this->structureId))
+        );
     }
 
     /**
@@ -2093,6 +2128,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
 
+            // If the query includes soft-deleted elements, include the date deleted
+            if ($this->trashed !== false) {
+                $select[] = 'elements.dateDeleted';
+            }
+
             // If the query already specifies any columns, merge those in too
             if (!empty($this->query->select)) {
                 $select = array_merge($select, $this->query->select);
@@ -2224,6 +2264,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                     }
                 }
             }
+        }
+
+        if (array_key_exists('dateDeleted', $row)) {
+            $row['trashed'] = $row['dateDeleted'] !== null;
+            unset($row['dateDeleted']);
         }
 
         /** @var Element $element */

@@ -106,6 +106,26 @@ class TemplatesController extends Controller
     }
 
     /**
+     * Renders the Project Config Sync kickoff template.
+     *
+     * @return Response
+     */
+    public function actionConfigSyncKickoff(): Response
+    {
+        return $this->renderTemplate('_special/configsync');
+    }
+
+    /**
+     * Renders the incompatible project config alert template.
+     *
+     * @return Response
+     */
+    public function actionIncompatibleConfigAlert(): Response
+    {
+        return $this->renderTemplate('_special/incompatibleconfigs');
+    }
+
+    /**
      * @return Response|null
      * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */

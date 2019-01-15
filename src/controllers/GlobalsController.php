@@ -108,7 +108,7 @@ class GlobalsController extends Controller
 
         $globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-        Craft::$app->getElements()->deleteElementById($globalSetId, GlobalSet::class);
+        Craft::$app->getGlobals()->deleteGlobalSetById($globalSetId);
 
         return $this->asJson(['success' => true]);
     }
@@ -169,7 +169,7 @@ class GlobalsController extends Controller
             ->all();
 
         foreach ($globalSets as $thisGlobalSet) {
-            if (Craft::$app->getUser()->checkPermission('editGlobalSet:' . $thisGlobalSet->id)) {
+            if (Craft::$app->getUser()->checkPermission('editGlobalSet:' . $thisGlobalSet->uid)) {
                 $editableGlobalSets[$thisGlobalSet->handle] = $thisGlobalSet;
             }
         }
@@ -232,17 +232,22 @@ class GlobalsController extends Controller
         $globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('setId');
         $siteId = Craft::$app->getRequest()->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
 
-        // Make sure the user is allowed to edit this global set and site
-        $this->requirePermission('editGlobalSet:' . $globalSetId);
-
-        if (Craft::$app->getIsMultiSite()) {
-            $this->requirePermission('editSite:' . $siteId);
-        }
-
+        $site = Craft::$app->getSites()->getSiteById($siteId);
         $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId, $siteId);
 
         if (!$globalSet) {
             throw new NotFoundHttpException('Global set not found');
+        }
+
+        if (!$site) {
+            throw new NotFoundHttpException('Site not found');
+        }
+
+        // Make sure the user is allowed to edit this global set and site
+        $this->requirePermission('editGlobalSet:' . $globalSet->uid);
+
+        if (Craft::$app->getIsMultiSite()) {
+            $this->requirePermission('editSite:' . $site->uid);
         }
 
         $globalSet->setFieldValuesFromRequest('fields');

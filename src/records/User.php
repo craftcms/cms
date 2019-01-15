@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use yii\db\ActiveQuery;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -44,7 +45,7 @@ use yii\db\ActiveQueryInterface;
  */
 class User extends ActiveRecord
 {
-    // Public Methods
+    // Static
     // =========================================================================
 
     /**
@@ -55,6 +56,35 @@ class User extends ActiveRecord
     {
         return '{{%users}}';
     }
+
+    /**
+     * @return ActiveQuery
+     */
+    public static function find()
+    {
+        return parent::find()
+            ->innerJoinWith(['element element'])
+            ->where(['element.dateDeleted' => null]);
+    }
+
+    /**
+     * @return ActiveQuery
+     */
+    public static function findWithTrashed(): ActiveQuery
+    {
+        return static::find()->where([]);
+    }
+
+    /**
+     * @return ActiveQuery
+     */
+    public static function findTrashed(): ActiveQuery
+    {
+        return static::find()->where(['not', ['element.dateDeleted' => null]]);
+    }
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * Returns the user’s element.

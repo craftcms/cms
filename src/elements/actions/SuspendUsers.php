@@ -81,10 +81,11 @@ EOD;
 
         /** @var User[] $users */
         $users = $query->all();
+        $usersService = Craft::$app->getUsers();
 
         foreach ($users as $user) {
             if (!$user->getIsCurrent()) {
-                Craft::$app->getUsers()->suspendUser($user);
+                $usersService->suspendUser($user);
             }
         }
 

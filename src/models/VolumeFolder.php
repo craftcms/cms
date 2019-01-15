@@ -48,6 +48,10 @@ class VolumeFolder extends Model
      */
     public $path;
 
+    /**
+     * @var string|null UID
+     */
+    public $uid;
 
     /**
      * @var VolumeFolder[]|null
@@ -62,9 +66,9 @@ class VolumeFolder extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'parentId', 'volumeId'], 'number', 'integerOnly' => true],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'parentId', 'volumeId'], 'number', 'integerOnly' => true];
+        return $rules;
     }
 
     /**

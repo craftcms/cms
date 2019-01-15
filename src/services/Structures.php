@@ -64,19 +64,51 @@ class Structures extends Component
      * Returns a structure by its ID.
      *
      * @param int $structureId
+     * @param bool $withTrashed
      * @return Structure|null
      */
-    public function getStructureById(int $structureId)
+    public function getStructureById(int $structureId, bool $withTrashed = false)
     {
-        $result = (new Query())
+        $query = (new Query())
             ->select([
                 'id',
                 'maxLevels',
+                'uid'
             ])
             ->from(['{{%structures}}'])
-            ->where(['id' => $structureId])
-            ->one();
+            ->where(['id' => $structureId]);
 
+        if (!$withTrashed) {
+            $query->andWhere(['dateDeleted' => null]);
+        }
+
+        $result = $query->one();
+        return $result ? new Structure($result) : null;
+    }
+
+    /**
+     * Returns a structure by its UID.
+     *
+     * @param string $structureUid
+     * @param bool $withTrashed
+     * @return Structure|null
+     */
+    public function getStructureByUid(string $structureUid, bool $withTrashed = false)
+    {
+        $query = (new Query())
+            ->select([
+                'id',
+                'maxLevels',
+                'uid'
+            ])
+            ->from(['{{%structures}}'])
+            ->where(['uid' => $structureUid]);
+
+        if (!$withTrashed) {
+            $query->andWhere(['dateDeleted' => null]);
+        }
+
+        $result = $query->one();
         return $result ? new Structure($result) : null;
     }
 
@@ -90,7 +122,9 @@ class Structures extends Component
     public function saveStructure(Structure $structure): bool
     {
         if ($structure->id) {
-            $structureRecord = StructureRecord::findOne($structure->id);
+            $structureRecord = StructureRecord::findWithTrashed()
+                ->andWhere(['id' => $structure->id])
+                ->one();
 
             if (!$structureRecord) {
                 throw new StructureNotFoundException("No structure exists with the ID '{$structure->id}'");
@@ -100,8 +134,13 @@ class Structures extends Component
         }
 
         $structureRecord->maxLevels = $structure->maxLevels;
+        $structureRecord->uid = $structure->uid;
 
-        $success = $structureRecord->save();
+        if ($structureRecord->dateDeleted) {
+            $success = $structureRecord->restore();
+        } else {
+            $success = $structureRecord->save();
+        }
 
         if ($success) {
             $structure->id = $structureRecord->id;
@@ -125,11 +164,9 @@ class Structures extends Component
         }
 
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(
-                '{{%structures}}',
-                [
-                    'id' => $structureId
-                ])
+            ->softDelete('{{%structures}}', [
+                'id' => $structureId
+            ])
             ->execute();
 
         return (bool)$affectedRows;
