@@ -62,6 +62,10 @@ class m190114_143000_more_asset_field_setting_changes extends Migration
 
         foreach ($matrixBlockTypes as $matrixBlockTypeUid => $matrixBlockType) {
             $fields = &$matrixBlockType['fields'];
+            
+            if (!is_array($fields)) {
+                continue;
+            }
 
             foreach ($fields as $fieldUid => &$fieldData) {
                 if ($fieldData['type'] === Assets::class) {
