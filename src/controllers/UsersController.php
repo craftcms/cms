@@ -394,7 +394,7 @@ class UsersController extends Controller
         $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
 
         if (!$userToProcess || !$isCodeValid) {
-            return $this->_processInvalidToken($userToProcess);
+            return $this->_processInvalidToken();
         }
 
         $userToProcess->newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
@@ -1909,7 +1909,7 @@ class UsersController extends Controller
         }
 
         if (!$userToProcess || !$isCodeValid) {
-            return $this->_processInvalidToken($userToProcess);
+            return $this->_processInvalidToken();
         }
 
         // Fire an 'afterVerifyUser' event
@@ -1922,11 +1922,10 @@ class UsersController extends Controller
     }
 
     /**
-     * @param User|null $user
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
-    private function _processInvalidToken($user): Response
+    private function _processInvalidToken(): Response
     {
         // If they're already logged-in, just send them to the post-login URL
         $userSession = Craft::$app->getUser();
@@ -1942,13 +1941,7 @@ class UsersController extends Controller
             return $this->redirect(UrlHelper::siteUrl($url));
         }
 
-        if ($user && $user->can('accessCp')) {
-            $url = UrlHelper::cpUrl('login');
-        } else {
-            $url = UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->getLoginPath());
-        }
-
-        throw new HttpException('200', Craft::t('app', 'Invalid verification code. Please [login or reset your password]({loginUrl}).', ['loginUrl' => $url]));
+        throw new HttpException('200', Craft::t('app', 'Invalid verification code. Please login or reset your password.'));
     }
 
     /**

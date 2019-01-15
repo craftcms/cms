@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- System error message templates no longer parse exception messages as Markdown.
+
 ## 3.1.0 - 2018-01-15
 
 ### Added
