@@ -96,7 +96,7 @@ class Site extends Model
      *
      * @return string|null
      */
-    public function getBaseUrl(): string
+    public function getBaseUrl()
     {
         if ($this->baseUrl) {
             return rtrim(Craft::parseEnv($this->baseUrl), '/') . '/';
