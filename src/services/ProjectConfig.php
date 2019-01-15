@@ -203,7 +203,7 @@ class ProjectConfig extends Component
     /**
      * @var array The current changeset being applied, if applying changes by array.
      */
-    private $_changesBeingApplied = null;
+    private $_changesBeingApplied;
 
     // Public methods
     // =========================================================================
