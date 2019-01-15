@@ -107,6 +107,7 @@
 - The `app/migrate` web action now applies pending `project.yaml` changes, if the `useProjectConfigFile` config setting is enabled.
 - The `svg()` function now strips `<title>`, `<desc>`, and comments from the SVG document as part of its sanitization process.
 - The `svg()` function now supports a `class` argument, which will add a class name to the root `<svg>` node. ([#3174](https://github.com/craftcms/cms/issues/3174))
+- The `{% redirect %}` tag now supports `with notice` and `with error` params for setting flash messages. ([#3625](https://github.com/craftcms/cms/pull/3625))
 - `info` buttons can now also have a `warning` class.
 - User permission definitions can now include `info` and/or `warning` keys.
 - The old “Administrate users” permission has been renamed to “Moderate users”.
