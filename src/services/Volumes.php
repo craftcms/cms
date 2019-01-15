@@ -255,7 +255,7 @@ class Volumes extends Component
      */
     public function getVolumeByHandle(string $handle)
     {
-        return ArrayHelper::firstWhere($this->getAllVolumes(), 'hanle', $handle, true);
+        return ArrayHelper::firstWhere($this->getAllVolumes(), 'handle', $handle, true);
     }
 
     /**
