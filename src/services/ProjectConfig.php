@@ -203,7 +203,7 @@ class ProjectConfig extends Component
     /**
      * @var array The current changeset being applied, if applying changes by array.
      */
-    private $_changesBeingApplied = null;
+    private $_changesBeingApplied;
 
     // Public methods
     // =========================================================================
@@ -557,22 +557,17 @@ class ProjectConfig extends Component
 
         if (!empty($this->_modifiedYamlFiles) && $this->_useConfigFile()) {
             // Save modified yaml files
-            $fileList = array_keys($this->_modifiedYamlFiles);
 
-            $savedData = [];
-
-            foreach ($fileList as $filePath) {
+            foreach (array_keys($this->_modifiedYamlFiles) as $filePath) {
                 $data = $this->_parsedConfigs[$filePath];
                 $traverseAndClean($data);
-                $yamlData = Yaml::dump($data, 20, 2);
-                FileHelper::writeToFile($filePath, $yamlData);
-                $savedData[$filePath] = $yamlData;
+                FileHelper::writeToFile($filePath, Yaml::dump($data, 20, 2));
             }
-
-            $this->_storeYamlHistory($savedData);
         }
 
         if (($this->_updateConfigMap && $this->_useConfigFile()) || $this->_updateConfig) {
+            $this->_storeYamlHistory();
+
             $info = Craft::$app->getInfo();
 
             if ($this->_updateConfigMap && $this->_useConfigFile()) {
@@ -1201,11 +1196,13 @@ class ProjectConfig extends Component
     /**
      * Store yaml history
      *
-     * @param array $fileData
      * @throws Exception
      */
-    private function _storeYamlHistory(array $fileData)
+    private function _storeYamlHistory()
     {
+        $previousConfig = $this->_getStoredConfig();
+        // Add a `dateApplied` key for audit purposes.
+        $previousConfig['dateApplied'] = date('Y-m-d H:i:s');
         $basePath = Craft::$app->getPath()->getConfigBackupPath() . '/' . self::CONFIG_FILENAME;
 
         // Go through all of them and move them forward.
@@ -1220,7 +1217,6 @@ class ProjectConfig extends Component
             }
         }
 
-        $storageData = implode("\n===================\n", $fileData);
-        file_put_contents($basePath, $storageData);
+        file_put_contents($basePath,  Yaml::dump($previousConfig, 20, 2));
     }
 }

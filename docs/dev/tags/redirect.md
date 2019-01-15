@@ -25,3 +25,13 @@ You can customize which status code accompanies your redirect response by typing
 ```twig
 {% redirect "pricing" 301 %}
 ```
+
+### Flash Messages
+
+You can optionally set flash messages that will show up for the user on the next request using the `with notice` and/or `with error` params:
+
+```twig
+{% if not currentUser.isInGroup('members') %}
+    {% redirect "pricing" 301 with notice "You have to be a member to access that!" %}
+{% endif %}
+```

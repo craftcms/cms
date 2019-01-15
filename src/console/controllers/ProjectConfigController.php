@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\helpers\Console;
+use craft\services\Plugins;
 use yii\console\Controller;
 use yii\console\ExitCode;
 
@@ -32,9 +33,20 @@ class ProjectConfigController extends Controller
             return ExitCode::OK;
         }
 
-        $this->stdout('Applying changes from project.yaml... ', Console::FG_YELLOW);
+        // Any plugins need to be installed/uninstalled?
+        $projectConfig = Craft::$app->getProjectConfig();
+        $loadedConfigPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY) ?? []);
+        $yamlPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? []);
+        $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
+
+        if (!$this->_installPlugins(array_diff($yamlPlugins, $loadedConfigPlugins))) {
+            $this->stdout('Aborting config sync' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $this->stdout('Applying changes from project.yaml ... ', Console::FG_YELLOW);
         try {
-            Craft::$app->getProjectConfig()->applyYamlChanges();
+            $projectConfig->applyYamlChanges();
         } catch (\Throwable $e) {
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
@@ -42,5 +54,70 @@ class ProjectConfigController extends Controller
 
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
+    }
+
+    /**
+     * Uninstalls plugins.
+     *
+     * @param string[] $handles
+     */
+    private function _uninstallPlugins(array $handles)
+    {
+        $pluginsService = Craft::$app->getPlugins();
+
+        foreach ($handles as $handle) {
+            $this->stdout('Uninstalling plugin ', Console::FG_YELLOW);
+            $this->stdout("\"{$handle}\"", Console::FG_CYAN);
+            $this->stdout(' ... ', Console::FG_YELLOW);
+
+            ob_start();
+
+            try {
+                $pluginsService->uninstallPlugin($handle);
+                ob_end_clean();
+                $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+            } catch (\Throwable $e) {
+                ob_end_clean();
+                $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+                Craft::$app->getErrorHandler()->logException($e);
+
+                // Just remove the row
+                Craft::$app->getDb()->createCommand()
+                    ->delete('{{%plugins}}', ['handle' => $handle])
+                    ->execute();
+            }
+        }
+    }
+
+    /**
+     * Installs plugins.
+     *
+     * @param string[] $handles
+     * @return bool
+     */
+    private function _installPlugins(array $handles): bool
+    {
+        $pluginsService = Craft::$app->getPlugins();
+
+        foreach ($handles as $handle) {
+            $this->stdout('Installing plugin ', Console::FG_YELLOW);
+            $this->stdout("\"{$handle}\"", Console::FG_CYAN);
+            $this->stdout(' ... ', Console::FG_YELLOW);
+
+            ob_start();
+
+            try {
+                $pluginsService->installPlugin($handle);
+                ob_end_clean();
+                $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+            } catch (\Throwable $e) {
+                ob_end_clean();
+                $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+                Craft::$app->getErrorHandler()->logException($e);
+                return false;
+            }
+        }
+
+        return true;
     }
 }
