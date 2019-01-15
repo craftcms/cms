@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="ps-container buy-plugin">
         <status-message v-if="loading" :message="statusMessage"></status-message>
     </div>
 </template>
@@ -103,3 +103,11 @@
 
     }
 </script>
+
+<style lang="scss">
+    .buy-plugin {
+        .status-message {
+            height: 100%;
+        }
+    }
+</style>
