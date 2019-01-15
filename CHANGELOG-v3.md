@@ -5,6 +5,9 @@
 ### Changed
 - System error message templates no longer parse exception messages as Markdown.
 
+### Fixed
+- Fixed a bug where `craft\services\Volumes::getVolumeByHandle()` wasn’t working. ([#3633](https://github.com/craftcms/cms/pull/3633))
+
 ## 3.1.0 - 2018-01-15
 
 ### Added
