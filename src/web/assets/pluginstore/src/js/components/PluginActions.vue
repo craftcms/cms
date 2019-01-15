@@ -57,7 +57,7 @@
         </template>
 
         <template v-else>
-                <template v-if="pluginLicenseInfo.edition !== pluginLicenseInfo.licensedEdition">
+                <template v-if="pluginLicenseInfo.edition !== pluginLicenseInfo.licensedEdition && !isPluginEditionFree">
                     <!-- Installed as a trial -->
                     <btn-input :value="'Installed as a trial'|t('app')" block large disabled></btn-input>
                 </template>
