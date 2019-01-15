@@ -1193,17 +1193,24 @@ class Plugins extends Component
      */
     private function _createPluginQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'id',
                 'handle',
                 'version',
                 'schemaVersion',
                 'licenseKeyStatus',
-                'licensedEdition',
                 'installDate'
             ])
             ->from(['{{%plugins}}']);
+
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.1.19', '>=')) {
+            $query->addSelect(['licensedEdition']);
+        }
+
+        return $query;
     }
 
     /**
