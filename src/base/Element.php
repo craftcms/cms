@@ -10,6 +10,7 @@ namespace craft\base;
 use Craft;
 use craft\behaviors\ContentBehavior;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\DefineEagerLoadingMapEvent;
@@ -565,7 +566,7 @@ abstract class Element extends Component implements ElementInterface
 
             $structureData = (new Query())
                 ->select($selectColumns)
-                ->from(['{{%structureelements}}'])
+                ->from([Table::STRUCTUREELEMENTS])
                 ->where(['elementId' => $sourceElementIds])
                 ->all();
 
@@ -606,7 +607,7 @@ abstract class Element extends Component implements ElementInterface
             // Return any child elements
             $map = $query
                 ->select([$sourceSelectSql, 'elementId as target'])
-                ->from(['{{%structureelements}}'])
+                ->from([Table::STRUCTUREELEMENTS])
                 ->where($condition)
                 ->orderBy(['structureId' => SORT_ASC, 'lft' => SORT_ASC])
                 ->all();

@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\db\Table;
 use craft\errors\TokenNotFoundException;
 use craft\helpers\DateTimeHelper;
 use craft\models\CraftIdToken;
@@ -229,7 +230,7 @@ class PluginStore extends Component
         }
 
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%craftidtokens}}', ['userId' => $userId])
+            ->delete(Table::CRAFTIDTOKENS, ['userId' => $userId])
             ->execute();
 
         return true;

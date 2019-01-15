@@ -14,6 +14,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
+use craft\db\Table as TableName;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\SiteNotFoundException;
@@ -457,7 +458,7 @@ JS;
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
             ->select(['sourceId as source', 'targetId as target'])
-            ->from(['{{%relations}}'])
+            ->from([TableName::RELATIONS])
             ->where([
                 'and',
                 [

@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
 use craft\errors\MatrixBlockTypeNotFoundException;
@@ -236,7 +237,7 @@ class Matrix extends Component
         if ($isNewBlockType) {
             $blockType->uid = StringHelper::UUID();
         } else if (!$blockType->uid) {
-            $blockType->uid = Db::uidById('{{%matrixblocktypes}}', $blockType->id);
+            $blockType->uid = Db::uidById(Table::MATRIXBLOCKTYPES, $blockType->id);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -300,7 +301,7 @@ class Matrix extends Component
         $projectConfig->set($configPath, $configData);
 
         if ($isNewBlockType) {
-            $blockType->id = Db::idByUid('{{%matrixblocktypes}}', $blockType->uid);
+            $blockType->id = Db::idByUid(Table::MATRIXBLOCKTYPES, $blockType->uid);
         }
 
         return true;
@@ -339,7 +340,7 @@ class Matrix extends Component
             $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
 
             // Set the basic info on the new block type record
-            $blockTypeRecord->fieldId = Db::idByUid('{{%fields}}', $data['field']);
+            $blockTypeRecord->fieldId = Db::idByUid(Table::FIELDS, $data['field']);
             $blockTypeRecord->name = $data['name'];
             $blockTypeRecord->handle = $data['handle'];
             $blockTypeRecord->sortOrder = $data['sortOrder'];
@@ -484,7 +485,7 @@ class Matrix extends Component
             // Delete the field layout
             $fieldLayoutId = (new Query())
                 ->select(['fieldLayoutId'])
-                ->from(['{{%matrixblocktypes}}'])
+                ->from([Table::MATRIXBLOCKTYPES])
                 ->where(['id' => $blockTypeRecord->id])
                 ->scalar();
 
@@ -493,7 +494,7 @@ class Matrix extends Component
 
             // Finally delete the actual block type
             $db->createCommand()
-                ->delete('{{%matrixblocktypes}}', ['id' => $blockTypeRecord->id])
+                ->delete(Table::MATRIXBLOCKTYPES, ['id' => $blockTypeRecord->id])
                 ->execute();
 
             $transaction->commit();
@@ -847,7 +848,7 @@ class Matrix extends Component
                 'sortOrder',
                 'uid'
             ])
-            ->from(['{{%matrixblocktypes}}'])
+            ->from([Table::MATRIXBLOCKTYPES])
             ->orderBy(['sortOrder' => SORT_ASC]);
     }
 

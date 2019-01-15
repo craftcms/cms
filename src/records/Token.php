@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use craft\validators\DateTimeValidator;
 
 /**
@@ -47,6 +48,6 @@ class Token extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%tokens}}';
+        return Table::TOKENS;
     }
 }

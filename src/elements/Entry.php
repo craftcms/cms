@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\actions\DeepDuplicate;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
@@ -474,7 +475,7 @@ class Entry extends Element
 
             $map = (new Query())
                 ->select(['id as source', 'authorId as target'])
-                ->from(['{{%entries}}'])
+                ->from([Table::ENTRIES])
                 ->where(['and', ['id' => $sourceElementIds], ['not', ['authorId' => null]]])
                 ->all();
 
@@ -1130,7 +1131,7 @@ EOD;
         }
 
         Craft::$app->getDb()->createCommand()
-            ->update('{{%entries}}', $data, ['id' => $this->id], [], false)
+            ->update(Table::ENTRIES, $data, ['id' => $this->id], [], false)
             ->execute();
 
         return true;

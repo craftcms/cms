@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\Json;
 
 /**
@@ -18,7 +19,7 @@ class m180516_153000_uids_in_field_settings extends Migration
     {
         $fields = (new Query())
             ->select(['id', 'settings', 'type'])
-            ->from(['{{%fields}}'])
+            ->from([Table::FIELDS])
             ->all();
 
         $folderIds = [];
@@ -86,37 +87,37 @@ class m180516_153000_uids_in_field_settings extends Migration
 
         $folders = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%volumefolders}}'])
+            ->from([Table::VOLUMEFOLDERS])
             ->where(['id' => $folderIds])
             ->pairs();
 
         $sections = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%sections}}'])
+            ->from([Table::SECTIONS])
             ->where(['id' => $sectionIds])
             ->pairs();
 
         $userGroups = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%usergroups}}'])
+            ->from([Table::USERGROUPS])
             ->where(['id' => $userGroupIds])
             ->pairs();
 
         $sites = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%sites}}'])
+            ->from([Table::SITES])
             ->where(['id' => $siteIds])
             ->pairs();
 
         $tagGroups = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%taggroups}}'])
+            ->from([Table::TAGGROUPS])
             ->where(['id' => $tagGroupIds])
             ->pairs();
 
         $categoryGroups = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%categorygroups}}'])
+            ->from([Table::CATEGORYGROUPS])
             ->where(['id' => $categoryGroupIds])
             ->pairs();
 
@@ -204,7 +205,7 @@ class m180516_153000_uids_in_field_settings extends Migration
 
             $settings = Json::encode($settings);
 
-            $this->update('{{%fields}}', ['settings' => $settings], ['id' => $field['id']], [], false);
+            $this->update(Table::FIELDS, ['settings' => $settings], ['id' => $field['id']], [], false);
         }
 
         return true;

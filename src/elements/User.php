@@ -10,6 +10,7 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\Edit;
 use craft\elements\actions\Restore;
@@ -337,7 +338,7 @@ class User extends Element implements IdentityInterface
 
             $map = (new Query())
                 ->select(['id as source', 'photoId as target'])
-                ->from(['{{%users}}'])
+                ->from([Table::USERS])
                 ->where(['id' => $sourceElementIds])
                 ->andWhere(['not', ['photoId' => null]])
                 ->all();
@@ -661,7 +662,7 @@ class User extends Element implements IdentityInterface
             // Get the current password hash
             $currentPassword = (new Query())
                 ->select(['password'])
-                ->from(['{{%users}}'])
+                ->from([Table::USERS])
                 ->where(['id' => $this->id])
                 ->scalar();
         } else {
@@ -769,7 +770,7 @@ class User extends Element implements IdentityInterface
         }
 
         return (new Query())
-            ->from(['{{%sessions}}'])
+            ->from([Table::SESSIONS])
             ->where([
                 'token' => $token,
                 'userId' => $this->id
@@ -1324,7 +1325,7 @@ class User extends Element implements IdentityInterface
         if (!$isNew && $changePassword) {
             // Destroy all sessions for this user
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%sessions}}', [
+                ->delete(Table::SESSIONS, [
                     'userId' => $this->id,
                 ])
                 ->execute();
@@ -1364,9 +1365,9 @@ class User extends Element implements IdentityInterface
 
                 // Update the entry/version/draft tables to point to the new user
                 $userRefs = [
-                    '{{%entries}}' => 'authorId',
-                    '{{%entrydrafts}}' => 'creatorId',
-                    '{{%entryversions}}' => 'creatorId',
+                    Table::ENTRIES => 'authorId',
+                    Table::ENTRYDRAFTS => 'creatorId',
+                    Table::ENTRYVERSIONS => 'creatorId',
                 ];
 
                 foreach ($userRefs as $table => $column) {

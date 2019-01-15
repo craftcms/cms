@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
+use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
@@ -1318,7 +1319,7 @@ class Asset extends Element
 
         // Update the asset record
         Craft::$app->getDb()->createCommand()
-            ->update('{{%assets}}', [
+            ->update(Table::ASSETS, [
                 'deletedWithVolume' => $this->deletedWithVolume,
                 'keptFile' => $this->keepFileOnDelete,
             ], ['id' => $this->id], [], false)

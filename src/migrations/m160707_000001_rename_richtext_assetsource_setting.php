@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 
@@ -19,7 +20,7 @@ class m160707_000001_rename_richtext_assetsource_setting extends Migration
     {
         $fields = (new Query())
             ->select(['id', 'settings'])
-            ->from(['{{%fields}}'])
+            ->from([Table::FIELDS])
             ->where(['type' => 'craft\\redactor\\Fields'])
             ->all($this->db);
 
@@ -27,7 +28,7 @@ class m160707_000001_rename_richtext_assetsource_setting extends Migration
             $settings = Json::decode($field['settings']);
             if (is_array($settings) && array_key_exists('availableAssetSources', $settings)) {
                 $settings['availableVolumes'] = ArrayHelper::remove($settings, 'availableAssetSources');
-                $this->update('{{%fields}}', ['settings' => Json::encode($settings)], ['id' => $field['id']]);
+                $this->update(Table::FIELDS, ['settings' => Json::encode($settings)], ['id' => $field['id']]);
             }
         }
     }

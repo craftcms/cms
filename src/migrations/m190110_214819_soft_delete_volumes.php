@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
+use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
@@ -17,18 +18,18 @@ class m190110_214819_soft_delete_volumes extends Migration
     public function safeUp()
     {
         // Add the dateDeleted column
-        $this->addColumn('{{%volumes}}', 'dateDeleted', $this->dateTime()->null()->after('dateUpdated'));
-        $this->createIndex(null, '{{%volumes}}', ['dateDeleted'], false);
+        $this->addColumn(Table::VOLUMES, 'dateDeleted', $this->dateTime()->null()->after('dateUpdated'));
+        $this->createIndex(null, Table::VOLUMES, ['dateDeleted'], false);
 
         // Unique volume names & handles should no longer be enforced by the DB
-        MigrationHelper::dropIndexIfExists('{{%volumes}}', ['name'], true, $this);
-        MigrationHelper::dropIndexIfExists('{{%volumes}}', ['handle'], true, $this);
-        $this->createIndex(null, '{{%volumes}}', ['name'], false);
-        $this->createIndex(null, '{{%volumes}}', ['handle'], false);
+        MigrationHelper::dropIndexIfExists(Table::VOLUMES, ['name'], true, $this);
+        MigrationHelper::dropIndexIfExists(Table::VOLUMES, ['handle'], true, $this);
+        $this->createIndex(null, Table::VOLUMES, ['name'], false);
+        $this->createIndex(null, Table::VOLUMES, ['handle'], false);
 
         // Give assets a way to remember whether their file was kept on delete
-        $this->addColumn('{{%assets}}', 'keptFile', $this->boolean()->null()->after('focalPoint'));
-        $this->createIndex(null, '{{%assets}}', ['volumeId', 'keptFile'], false);
+        $this->addColumn(Table::ASSETS, 'keptFile', $this->boolean()->null()->after('focalPoint'));
+        $this->createIndex(null, Table::ASSETS, ['volumeId', 'keptFile'], false);
     }
 
     /**

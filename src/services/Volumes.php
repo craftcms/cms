@@ -7,6 +7,7 @@ use craft\base\Field;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\MissingComponentException;
 use craft\events\ConfigEvent;
@@ -290,10 +291,10 @@ class Volumes extends Component
         if ($isNewVolume) {
             $volume->uid = StringHelper::UUID();
             $volume->sortOrder = (new Query())
-                    ->from(['{{%volumes}}'])
+                    ->from([Table::VOLUMES])
                     ->max('[[sortOrder]]') + 1;
         } else if (!$volume->uid) {
-            $volume->uid = Db::uidById('{{%volumes}}', $volume->id);
+            $volume->uid = Db::uidById(Table::VOLUMES, $volume->id);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -316,7 +317,7 @@ class Volumes extends Component
                 $layoutUid = StringHelper::UUID();
                 $fieldLayout->uid = $layoutUid;
             } else {
-                $layoutUid = Db::uidById('{{%fieldlayouts}}', $fieldLayout->id);
+                $layoutUid = Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id);
             }
 
             $configData['fieldLayouts'] = [
@@ -329,7 +330,7 @@ class Volumes extends Component
         $projectConfig->set($configPath, $configData);
 
         if ($isNewVolume) {
-            $volume->id = Db::idByUid('{{%volumes}}', $volume->uid);
+            $volume->id = Db::idByUid(Table::VOLUMES, $volume->uid);
         }
 
         return true;
@@ -445,7 +446,7 @@ class Volumes extends Component
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $uidsByIds = Db::uidsByIds('{{%volumes}}', $volumeIds);
+        $uidsByIds = Db::uidsByIds(Table::VOLUMES, $volumeIds);
 
         foreach ($volumeIds as $volumeOrder => $volumeId) {
             if (!empty($uidsByIds[$volumeId])) {
@@ -631,7 +632,7 @@ class Volumes extends Component
 
             // Delete the volume
             $db->createCommand()
-                ->softDelete('{{%volumes}}', ['id' => $volumeRecord->id])
+                ->softDelete(Table::VOLUMES, ['id' => $volumeRecord->id])
                 ->execute();
 
             $volume->afterDelete();
@@ -708,7 +709,7 @@ class Volumes extends Component
                 'settings',
                 'uid'
             ])
-            ->from(['{{%volumes}}'])
+            ->from([Table::VOLUMES])
             ->orderBy(['sortOrder' => SORT_ASC]);
 
         // todo: remove schema version condition after next beakpoint

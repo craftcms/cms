@@ -9,6 +9,7 @@ namespace craft\records;
 
 use craft\db\ActiveRecord;
 use craft\db\SoftDeleteTrait;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -43,7 +44,7 @@ class Site extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%sites}}';
+        return Table::SITES;
     }
 
     /**

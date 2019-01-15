@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Tag;
 use craft\errors\TagGroupNotFoundException;
 use craft\events\ConfigEvent;
@@ -189,7 +190,7 @@ class Tags extends Component
         if ($isNewTagGroup) {
             $tagGroup->uid = StringHelper::UUID();
         } else if (!$tagGroup->uid) {
-            $tagGroup->uid = Db::uidById('{{%taggroups}}', $tagGroup->id);
+            $tagGroup->uid = Db::uidById(Table::TAGGROUPS, $tagGroup->id);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -206,7 +207,7 @@ class Tags extends Component
                 $layoutUid = StringHelper::UUID();
                 $fieldLayout->uid = $layoutUid;
             } else {
-                $layoutUid = Db::uidById('{{%fieldlayouts}}', $fieldLayout->id);
+                $layoutUid = Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id);
             }
 
             $configData['fieldLayouts'] = [
@@ -218,7 +219,7 @@ class Tags extends Component
         $projectConfig->set($configPath, $configData);
 
         if ($isNewTagGroup) {
-            $tagGroup->id = Db::idByUid('{{%taggroups}}', $tagGroup->uid);
+            $tagGroup->id = Db::idByUid(Table::TAGGROUPS, $tagGroup->uid);
         }
 
         return true;
@@ -386,7 +387,7 @@ class Tags extends Component
 
             // Delete the tag group
             Craft::$app->getDb()->createCommand()
-                ->softDelete('{{%taggroups}}', ['id' => $tagGroupRecord->id])
+                ->softDelete(Table::TAGGROUPS, ['id' => $tagGroupRecord->id])
                 ->execute();
 
             $transaction->commit();
@@ -469,7 +470,7 @@ class Tags extends Component
                 'fieldLayoutId',
                 'uid'
             ])
-            ->from(['{{%taggroups}}']);
+            ->from([Table::TAGGROUPS]);
     }
 
     /**

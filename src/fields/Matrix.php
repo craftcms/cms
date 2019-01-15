@@ -14,6 +14,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\db\Query;
+use craft\db\Table as TableName;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
@@ -206,7 +207,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 if (is_numeric($key)) {
                     $info = (new Query())
                         ->select(['uid', 'fieldLayoutId'])
-                        ->from(['{{%matrixblocktypes}}'])
+                        ->from([TableName::MATRIXBLOCKTYPES])
                         ->where(['id'=> $key])
                         ->one();
 
@@ -640,7 +641,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
             ->select(['ownerId as source', 'id as target'])
-            ->from(['{{%matrixblocks}}'])
+            ->from([TableName::MATRIXBLOCKS])
             ->where([
                 'fieldId' => $this->id,
                 'ownerId' => $sourceElementIds,

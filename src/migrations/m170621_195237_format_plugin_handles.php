@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
+use craft\db\Table;
 use yii\helpers\Inflector;
 
 /**
@@ -33,12 +34,12 @@ class m170621_195237_format_plugin_handles extends Migration
                 }
 
                 if ($newHandle !== $oldHandle) {
-                    $this->update('{{%plugins}}', ['handle' => $newHandle], ['handle' => $oldHandle]);
+                    $this->update(Table::PLUGINS, ['handle' => $newHandle], ['handle' => $oldHandle]);
 
                     // Update user permissions
                     $oldName = 'accessplugin-' . strtolower($oldHandle);
                     $newName = 'accessplugin-' . $newHandle;
-                    $this->update('{{%userpermissions}}', ['name' => $newName], ['name' => $oldName]);
+                    $this->update(Table::USERPERMISSIONS, ['name' => $newName], ['name' => $oldName]);
                 }
             }
         }

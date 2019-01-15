@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\models\Section;
 use craft\services\Sections;
 
@@ -30,7 +31,7 @@ class m181217_153000_fix_structure_uids extends Migration
             $structureUid = $sectionData['structure']['uid'];
             $structureId = (new Query())
                 ->select(['structureId'])
-                ->from('{{%sections}}')
+                ->from(Table::SECTIONS)
                 ->where(['uid' => $sectionUid])
                 ->scalar();
 
@@ -38,7 +39,7 @@ class m181217_153000_fix_structure_uids extends Migration
                 continue;
             }
 
-            $this->update('{{%structures}}', [
+            $this->update(Table::STRUCTURES, [
                 'uid' => $structureUid,
             ], ['id' => $structureId], [], false);
         }

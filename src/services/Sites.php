@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Element;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\GlobalSet;
@@ -251,14 +252,14 @@ class Sites extends Component
         if ($isNewGroup) {
             $group->uid = StringHelper::UUID();
         } else if (!$group->uid) {
-            $group->uid = Db::uidById('{{%sitegroups}}', $group->id);
+            $group->uid = Db::uidById(Table::SITEGROUPS, $group->id);
         }
 
         $projectConfig->set(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, $configData);
 
         // Now that we have an ID, save it on the model
         if ($isNewGroup) {
-            $group->id = Db::idByUid('{{%sitegroups}}', $group->uid);
+            $group->id = Db::idByUid(Table::SITEGROUPS, $group->uid);
         }
 
         return true;
@@ -668,11 +669,11 @@ class Sites extends Component
         if ($isNewSite) {
             $site->uid = StringHelper::UUID();
             $configData['sortOrder'] = ((int)(new Query())
-                    ->from(['{{%sites}}'])
+                    ->from([Table::SITES])
                     ->where(['dateDeleted' => null])
                     ->max('[[sortOrder]]')) + 1;
         } else if (!$site->uid) {
-            $site->uid = Db::uidById('{{%sites}}', $site->id);
+            $site->uid = Db::uidById(Table::SITES, $site->id);
         }
 
         $configPath = self::CONFIG_SITES_KEY . '.' . $site->uid;
@@ -680,7 +681,7 @@ class Sites extends Component
 
         // Now that we have a site ID, save it on the model
         if ($isNewSite) {
-            $site->id = Db::idByUid('{{%sites}}', $site->uid);
+            $site->id = Db::idByUid(Table::SITES, $site->uid);
         }
 
         return true;
@@ -764,7 +765,7 @@ class Sites extends Component
             // Create site settings for each of the category groups
             $allSiteSettings = (new Query())
                 ->select(['groupId', 'uriFormat', 'template', 'hasUrls'])
-                ->from(['{{%categorygroups_sites}}'])
+                ->from([Table::CATEGORYGROUPS_SITES])
                 ->where(['siteId' => $oldPrimarySiteId])
                 ->all();
 
@@ -783,7 +784,7 @@ class Sites extends Component
 
                 Craft::$app->getDb()->createCommand()
                     ->batchInsert(
-                        '{{%categorygroups_sites}}',
+                        Table::CATEGORYGROUPS_SITES,
                         ['groupId', 'siteId', 'uriFormat', 'template', 'hasUrls'],
                         $newSiteSettings)
                     ->execute();
@@ -841,7 +842,7 @@ class Sites extends Component
 
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $uidsByIds = Db::uidsByIds('{{%sites}}', $siteIds);
+        $uidsByIds = Db::uidsByIds(Table::SITES, $siteIds);
 
         foreach ($siteIds as $sortOrder => $siteId) {
             if (!empty($uidsByIds[$siteId])) {
@@ -911,7 +912,7 @@ class Sites extends Component
         // Get the section IDs that are enabled for this site
         $sectionIds = (new Query())
             ->select(['sectionId'])
-            ->from(['{{%sections_sites}}'])
+            ->from([Table::SECTIONS_SITES])
             ->where(['siteId' => $site->id])
             ->column();
 
@@ -932,7 +933,7 @@ class Sites extends Component
             if ($transferContentTo !== null) {
                 Craft::$app->getDb()->createCommand()
                     ->update(
-                        '{{%sections_sites}}',
+                        Table::SECTIONS_SITES,
                         ['siteId' => $transferContentTo],
                         ['sectionId' => $soloSectionIds])
                     ->execute();
@@ -940,7 +941,7 @@ class Sites extends Component
                 // Get all of the entry IDs in those sections
                 $entryIds = (new Query())
                     ->select(['id'])
-                    ->from(['{{%entries}}'])
+                    ->from([Table::ENTRIES])
                     ->where(['sectionId' => $soloSectionIds])
                     ->column();
 
@@ -951,35 +952,35 @@ class Sites extends Component
                     // Update the entry tables
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            '{{%content}}',
+                            Table::CONTENT,
                             ['siteId' => $transferContentTo],
                             ['elementId' => $entryIds])
                         ->execute();
 
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            '{{%elements_sites}}',
+                            Table::ELEMENTS_SITES,
                             ['siteId' => $transferContentTo],
                             ['elementId' => $entryIds])
                         ->execute();
 
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            '{{%entrydrafts}}',
+                            Table::ENTRYDRAFTS,
                             ['siteId' => $transferContentTo],
                             ['entryId' => $entryIds])
                         ->execute();
 
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            '{{%entryversions}}',
+                            Table::ENTRYVERSIONS,
                             ['siteId' => $transferContentTo],
                             ['entryId' => $entryIds])
                         ->execute();
 
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            '{{%relations}}',
+                            Table::RELATIONS,
                             ['sourceSiteId' => $transferContentTo],
                             [
                                 'and',
@@ -991,14 +992,14 @@ class Sites extends Component
                     // All the Matrix tables
                     $blockIds = (new Query())
                         ->select(['id'])
-                        ->from(['{{%matrixblocks}}'])
+                        ->from([Table::MATRIXBLOCKS])
                         ->where(['ownerId' => $entryIds])
                         ->column();
 
                     if (!empty($blockIds)) {
                         Craft::$app->getDb()->createCommand()
                             ->update(
-                                '{{%matrixblocks}}',
+                                Table::MATRIXBLOCKS,
                                 ['ownerSiteId' => $transferContentTo],
                                 [
                                     'and',
@@ -1009,7 +1010,7 @@ class Sites extends Component
 
                         Craft::$app->getDb()->createCommand()
                             ->delete(
-                                '{{%elements_sites}}',
+                                Table::ELEMENTS_SITES,
                                 [
                                     'elementId' => $blockIds,
                                     'siteId' => $transferContentTo
@@ -1018,7 +1019,7 @@ class Sites extends Component
 
                         Craft::$app->getDb()->createCommand()
                             ->update(
-                                '{{%elements_sites}}',
+                                Table::ELEMENTS_SITES,
                                 ['siteId' => $transferContentTo],
                                 [
                                     'elementId' => $blockIds,
@@ -1056,7 +1057,7 @@ class Sites extends Component
 
                         Craft::$app->getDb()->createCommand()
                             ->update(
-                                '{{%relations}}',
+                                Table::RELATIONS,
                                 ['sourceSiteId' => $transferContentTo],
                                 [
                                     'and',
@@ -1109,7 +1110,7 @@ class Sites extends Component
 
         try {
             Craft::$app->getDb()->createCommand()
-                ->softDelete('{{%sites}}', ['id' => $siteRecord->id])
+                ->softDelete(Table::SITES, ['id' => $siteRecord->id])
                 ->execute();
 
             $transaction->commit();
@@ -1143,7 +1144,7 @@ class Sites extends Component
     public function restoreSiteById(int $id): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->restore('{{%sites}}', ['id' => $id])
+            ->restore(Table::SITES, ['id' => $id])
             ->execute();
         return (bool)$affectedRows;
     }
@@ -1274,7 +1275,7 @@ class Sites extends Component
                 'name',
                 'uid',
             ])
-            ->from(['{{%sitegroups}}'])
+            ->from([Table::SITEGROUPS])
             ->where(['dateDeleted' => null])
             ->orderBy(['name' => SORT_ASC]);
     }
@@ -1333,10 +1334,10 @@ class Sites extends Component
 
         try {
             $db->createCommand()
-                ->update('{{%sites}}', ['primary' => false], ['id' => $oldPrimarySiteId])
+                ->update(Table::SITES, ['primary' => false], ['id' => $oldPrimarySiteId])
                 ->execute();
             $db->createCommand()
-                ->update('{{%sites}}', ['primary' => true], ['id' => $newPrimarySiteId])
+                ->update(Table::SITES, ['primary' => true], ['id' => $newPrimarySiteId])
                 ->execute();
 
             // Update all of the non-localized elements
@@ -1352,7 +1353,7 @@ class Sites extends Component
             if (!empty($nonLocalizedElementTypes)) {
                 $elementIds = (new Query())
                     ->select(['id'])
-                    ->from(['{{%elements}}'])
+                    ->from([Table::ELEMENTS])
                     ->where(['type' => $nonLocalizedElementTypes])
                     ->column();
 
@@ -1366,10 +1367,10 @@ class Sites extends Component
                     ];
 
                     $db->createCommand()
-                        ->delete('{{%elements_sites}}', $deleteCondition)
+                        ->delete(Table::ELEMENTS_SITES, $deleteCondition)
                         ->execute();
                     $db->createCommand()
-                        ->delete('{{%content}}', $deleteCondition)
+                        ->delete(Table::CONTENT, $deleteCondition)
                         ->execute();
 
                     // Now swap the sites
@@ -1377,10 +1378,10 @@ class Sites extends Component
                     $updateCondition = ['elementId' => $elementIds];
 
                     $db->createCommand()
-                        ->update('{{%elements_sites}}', $updateColumns, $updateCondition)
+                        ->update(Table::ELEMENTS_SITES, $updateColumns, $updateCondition)
                         ->execute();
                     $db->createCommand()
-                        ->update('{{%content}}', $updateColumns, $updateCondition)
+                        ->update(Table::CONTENT, $updateColumns, $updateCondition)
                         ->execute();
                 }
             }

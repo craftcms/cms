@@ -8,6 +8,7 @@
 namespace craft\elements\db;
 
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Tag;
 use craft\helpers\Db;
 use craft\models\TagGroup;
@@ -119,7 +120,7 @@ class TagQuery extends ElementQuery
         } else if ($value !== null) {
             $this->groupId = (new Query())
                 ->select(['id'])
-                ->from(['{{%taggroups}}'])
+                ->from([Table::TAGGROUPS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         } else {

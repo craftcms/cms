@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Element;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
 use craft\errors\SectionNotFoundException;
@@ -415,7 +416,7 @@ class Sections extends Component
         if ($isNewSection) {
             $section->uid = StringHelper::UUID();
         } else if (!$section->uid) {
-            $section->uid = Db::uidById('{{%sections}}', $section->id);
+            $section->uid = Db::uidById(Table::SECTIONS, $section->id);
         }
 
         // Main section settings
@@ -440,7 +441,7 @@ class Sections extends Component
         if ($section->type === Section::TYPE_STRUCTURE) {
             $sectionRecord = $this->_getSectionRecord($section->uid);
             if ($sectionRecord->structureId) {
-                $structureUid = Db::uidById('{{%structures}}', $sectionRecord->structureId);
+                $structureUid = Db::uidById(Table::STRUCTURES, $sectionRecord->structureId);
             } else {
                 $structureUid = StringHelper::UUID();
             }
@@ -464,7 +465,7 @@ class Sections extends Component
         }
 
         foreach ($allSiteSettings as $siteId => $settings) {
-            $siteUid = Db::uidById('{{%sites}}', $siteId);
+            $siteUid = Db::uidById(Table::SITES, $siteId);
             $configData['siteSettings'][$siteUid] = [
                 'enabledByDefault' => $settings['enabledByDefault'],
                 'hasUrls' => $settings['hasUrls'],
@@ -486,7 +487,7 @@ class Sections extends Component
             $projectConfig->set($configPath, $configData);
 
             if ($isNewSection) {
-                $section->id = Db::idByUid('{{%sections}}', $section->uid);
+                $section->id = Db::idByUid(Table::SECTIONS, $section->uid);
             }
 
             // Make sure there's at least one entry type for this section
@@ -495,7 +496,7 @@ class Sections extends Component
             if (!$isNewSection) {
                 $entryTypeExists = (new Query())
                     ->select(['id'])
-                    ->from(['{{%entrytypes}}'])
+                    ->from([Table::ENTRYTYPES])
                     ->where(['sectionId' => $section->id])
                     ->exists();
             } else {
@@ -629,7 +630,7 @@ class Sections extends Component
                 $allOldSiteSettingsRecords = [];
             }
 
-            $siteIdMap = Db::idsByUids('{{%sites}}', array_keys($siteSettingData));
+            $siteIdMap = Db::idsByUids(Table::SITES, array_keys($siteSettingData));
 
             foreach ($siteSettingData as $siteUid => $siteSettings) {
                 $siteId = $siteIdMap[$siteUid];
@@ -864,7 +865,7 @@ class Sections extends Component
 
             // Delete the section
             Craft::$app->getDb()->createCommand()
-                ->softDelete('{{%sections}}', ['id' => $sectionRecord->id])
+                ->softDelete(Table::SECTIONS, ['id' => $sectionRecord->id])
                 ->execute();
 
             $transaction->commit();
@@ -1048,7 +1049,7 @@ class Sections extends Component
             $entryType->uid = StringHelper::UUID();
 
             $maxSortOrder = (new Query())
-                ->from(['{{%entrytypes}}'])
+                ->from([Table::ENTRYTYPES])
                 ->where(['sectionId' => $entryType->sectionId])
                 ->max('[[sortOrder]]');
             $sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
@@ -1083,7 +1084,7 @@ class Sections extends Component
                 $layoutUid = StringHelper::UUID();
                 $fieldLayout->uid = $layoutUid;
             } else {
-                $layoutUid = Db::uidById('{{%fieldlayouts}}', $fieldLayout->id);
+                $layoutUid = Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id);
             }
 
             $configData['fieldLayouts'] = [
@@ -1095,7 +1096,7 @@ class Sections extends Component
         $projectConfig->set($configPath, $configData);
 
         if ($isNewEntryType) {
-            $entryType->id = Db::idByUid('{{%entrytypes}}', $entryType->uid);
+            $entryType->id = Db::idByUid(Table::ENTRYTYPES, $entryType->uid);
         }
 
         return true;
@@ -1247,7 +1248,7 @@ class Sections extends Component
 
         $sectionRecord = null;
 
-        $uidsByIds = Db::uidsByIds('{{%entrytypes}}', $entryTypeIds);
+        $uidsByIds = Db::uidsByIds(Table::ENTRYTYPES, $entryTypeIds);
 
         foreach ($entryTypeIds as $entryTypeOrder => $entryTypeId) {
             if (!empty($uidsByIds[$entryTypeId])) {
@@ -1370,7 +1371,7 @@ class Sections extends Component
 
             // Delete the entry type.
             Craft::$app->getDb()->createCommand()
-                ->softDelete('{{%entrytypes}}', ['id' => $entryTypeRecord->id])
+                ->softDelete(Table::ENTRYTYPES, ['id' => $entryTypeRecord->id])
                 ->execute();
 
             $transaction->commit();
@@ -1490,7 +1491,7 @@ class Sections extends Component
             $firstEntryType = reset($entryTypes);
 
             $entry = new Entry();
-            $entry->siteId = Db::idByUid('{{%sites}}', $firstSiteUid);
+            $entry->siteId = Db::idByUid(Table::SITES, $firstSiteUid);
             $entry->sectionId = $section->id;
             $entry->typeId = $firstEntryType->id;
             $entry->title = $section->name;
@@ -1572,7 +1573,7 @@ class Sections extends Component
                 'titleFormat',
                 'uid',
             ])
-            ->from(['{{%entrytypes}}']);
+            ->from([Table::ENTRYTYPES]);
     }
 
     /**

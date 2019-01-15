@@ -48,6 +48,7 @@
 - Added `craft\db\Migration::restore()`.
 - Added `craft\db\Migration::softDelete()`.
 - Added `craft\db\SoftDeleteTrait`, which can be used by Active Record classes that wish to support soft deletes.
+- Added `craft\db\Table`.
 - Added `craft\elements\actions\Restore`, which can be included in elements’ `defineActions()` methods to opt into element restoration.
 - Added `craft\events\ConfigEvent`.
 - Added `craft\events\DeleteElementEvent`, which provides a `$hardDelete` property that can be set to `true` to force an element to be immediately hard-deleted. ([#3403](https://github.com/craftcms/cms/pull/3403))

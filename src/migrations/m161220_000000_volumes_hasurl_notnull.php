@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\config\DbConfig;
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m161220_000000_volumes_hasurl_notnull migration.
@@ -18,10 +19,10 @@ class m161220_000000_volumes_hasurl_notnull extends Migration
     {
         // https://github.com/yiisoft/yii2/issues/4492
         if (Craft::$app->getDb()->getDriverName() === DbConfig::DRIVER_PGSQL) {
-            $this->alterColumn('{{%volumes}}', 'hasUrls', 'SET NOT NULL');
-            $this->alterColumn('{{%volumes}}', 'hasUrls', 'SET DEFAULT FALSE');
+            $this->alterColumn(Table::VOLUMES, 'hasUrls', 'SET NOT NULL');
+            $this->alterColumn(Table::VOLUMES, 'hasUrls', 'SET DEFAULT FALSE');
         } else {
-            $this->alterColumn('{{%volumes}}', 'hasUrls', $this->boolean()->defaultValue(false)->notNull());
+            $this->alterColumn(Table::VOLUMES, 'hasUrls', $this->boolean()->defaultValue(false)->notNull());
         }
     }
 

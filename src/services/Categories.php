@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
 use craft\errors\CategoryGroupNotFoundException;
@@ -252,7 +253,7 @@ class Categories extends Component
             }
 
             $group->uid = $existingGroupRecord->uid;
-            $structureUid = Db::uidById('{{%structures}}', $existingGroupRecord->structureId);
+            $structureUid = Db::uidById(Table::STRUCTURES, $existingGroupRecord->structureId);
         }
 
         // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
@@ -279,7 +280,7 @@ class Categories extends Component
                 $layoutUid = StringHelper::UUID();
                 $fieldLayout->uid = $layoutUid;
             } else {
-                $layoutUid = Db::uidById('{{%fieldlayouts}}', $fieldLayout->id);
+                $layoutUid = Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id);
             }
 
             $configData['fieldLayouts'] = [
@@ -298,7 +299,7 @@ class Categories extends Component
         }
 
         foreach ($allSiteSettings as $siteId => $settings) {
-            $siteUid = Db::uidById('{{%sites}}', $siteId);
+            $siteUid = Db::uidById(Table::SITES, $siteId);
             $configData['siteSettings'][$siteUid] = [
                 'hasUrls' => $settings['hasUrls'],
                 'uriFormat' => $settings['uriFormat'],
@@ -310,7 +311,7 @@ class Categories extends Component
         $projectConfig->set($configPath, $configData);
 
         if ($isNewCategoryGroup) {
-            $group->id = Db::idByUid('{{%categorygroups}}', $group->uid);
+            $group->id = Db::idByUid(Table::CATEGORYGROUPS, $group->uid);
         }
 
         return true;
@@ -390,7 +391,7 @@ class Categories extends Component
                     ->all();
             }
 
-            $siteIdMap = Db::idsByUids('{{%sites}}', array_keys($siteData));
+            $siteIdMap = Db::idsByUids(Table::SITES, array_keys($siteData));
 
             foreach ($siteData as $siteUid => $siteSettings) {
                 $siteId = $siteIdMap[$siteUid];
@@ -457,7 +458,7 @@ class Categories extends Component
                     if (!empty($sitesNowWithoutUrls)) {
                         $db->createCommand()
                             ->update(
-                                '{{%elements_sites}}',
+                                Table::ELEMENTS_SITES,
                                 ['uri' => null],
                                 [
                                     'elementId' => $categoryIds,
@@ -634,7 +635,7 @@ class Categories extends Component
 
             // Delete the category group
             Craft::$app->getDb()->createCommand()
-                ->softDelete('{{%categorygroups}}', ['id' => $categoryGroupRecord->id])
+                ->softDelete(Table::CATEGORYGROUPS, ['id' => $categoryGroupRecord->id])
                 ->execute();
 
             $transaction->commit();

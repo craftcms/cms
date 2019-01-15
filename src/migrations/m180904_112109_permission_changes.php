@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m180904_112109_permission_changes migration.
@@ -14,13 +15,13 @@ class m180904_112109_permission_changes extends Migration
      */
     public function safeUp()
     {
-        $this->update('{{%userpermissions}}', [
+        $this->update(Table::USERPERMISSIONS, [
             'name' => 'moderateusers',
         ], [
             'name' => 'administrateusers'
         ], [], false);
 
-        $this->update('{{%userpermissions}}', [
+        $this->update(Table::USERPERMISSIONS, [
             'name' => 'administrateusers',
         ], [
             'name' => 'changeuseremails'

@@ -8,6 +8,7 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\db\Table;
 use craft\helpers\Console;
 use craft\services\Plugins;
 use yii\console\Controller;
@@ -83,7 +84,7 @@ class ProjectConfigController extends Controller
 
                 // Just remove the row
                 Craft::$app->getDb()->createCommand()
-                    ->delete('{{%plugins}}', ['handle' => $handle])
+                    ->delete(Table::PLUGINS, ['handle' => $handle])
                     ->execute();
             }
         }

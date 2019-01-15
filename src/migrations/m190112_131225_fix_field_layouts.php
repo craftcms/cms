@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use yii\db\Expression;
 
 /**
@@ -20,7 +21,7 @@ class m190112_131225_fix_field_layouts extends Migration
         // Get all the duplicate field layout UIDs
         $uids = (new Query())
             ->select(['uid'])
-            ->from('{{%fieldlayouts}}')
+            ->from(Table::FIELDLAYOUTS)
             ->groupBy(['uid'])
             ->having('count(*) > 1')
             ->column();
@@ -29,7 +30,7 @@ class m190112_131225_fix_field_layouts extends Migration
             // Get all the IDs
             $ids = (new Query())
                 ->select(['id'])
-                ->from('{{%fieldlayouts}}')
+                ->from(Table::FIELDLAYOUTS)
                 ->where(['uid' => $uid])
                 ->orderBy(new Expression('[[dateDeleted]] is null desc, [[id]] desc'))
                 ->column();
@@ -37,12 +38,12 @@ class m190112_131225_fix_field_layouts extends Migration
             $targetId = array_shift($ids);
 
             // Update the elements
-            $this->update('{{%elements}}', [
+            $this->update(Table::ELEMENTS, [
                 'fieldLayoutId' => $targetId,
             ], ['fieldLayoutId' => $ids], [], false);
 
             // Delete the old layouts
-            $this->delete('{{%fieldlayouts}}', ['id' => $ids]);
+            $this->delete(Table::FIELDLAYOUTS, ['id' => $ids]);
         }
     }
 

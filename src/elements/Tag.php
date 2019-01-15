@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\models\TagGroup;
@@ -240,7 +241,7 @@ class Tag extends Element
 
         // Update the tag record
         Craft::$app->getDb()->createCommand()
-            ->update('{{%tags}}', [
+            ->update(Table::TAGS, [
                 'deletedWithGroup' => $this->deletedWithGroup,
             ], ['id' => $this->id], [], false)
             ->execute();

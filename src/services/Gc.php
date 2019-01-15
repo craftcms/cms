@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\db\Table;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use DateInterval;
@@ -58,12 +59,12 @@ class Gc extends Component
         $this->_deleteStaleSessions();
 
         $this->hardDelete([
-            '{{%elements}}', // elements should always go first
-            '{{%categorygroups}}',
-            '{{%entrytypes}}',
-            '{{%sections}}',
-            '{{%taggroups}}',
-            '{{%volumes}}',
+            Table::ELEMENTS, // elements should always go first
+            Table::CATEGORYGROUPS,
+            Table::ENTRYTYPES,
+            Table::SECTIONS,
+            Table::TAGGROUPS,
+            Table::VOLUMES,
         ]);
 
         // Fire a 'run' event
@@ -72,9 +73,9 @@ class Gc extends Component
         }
 
         $this->hardDelete([
-            '{{%structures}}',
-            '{{%fieldlayouts}}',
-            '{{%sites}}',
+            Table::STRUCTURES,
+            Table::FIELDLAYOUTS,
+            Table::SITES,
         ]);
     }
 
@@ -126,7 +127,7 @@ class Gc extends Component
         $pastTime = $expire->sub($interval);
 
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%sessions}}', ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)])
+            ->delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)])
             ->execute();
     }
 }

@@ -10,6 +10,7 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
@@ -409,7 +410,7 @@ class MatrixBlock extends Element
 
         // Update the block record
         Craft::$app->getDb()->createCommand()
-            ->update('{{%matrixblocks}}', [
+            ->update(Table::MATRIXBLOCKS, [
                 'deletedWithOwner' => $this->deletedWithOwner,
             ], ['id' => $this->id], [], false)
             ->execute();

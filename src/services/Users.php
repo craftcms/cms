@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Volume;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\ImageException;
@@ -272,7 +273,7 @@ class Users extends Component
         try {
             $preferences = (new Query())
                 ->select(['preferences'])
-                ->from(['{{%userpreferences}}'])
+                ->from([Table::USERPREFERENCES])
                 ->where(['userId' => $userId])
                 ->scalar();
 
@@ -294,7 +295,7 @@ class Users extends Component
 
         Craft::$app->getDb()->createCommand()
             ->upsert(
-                '{{%userpreferences}}',
+                Table::USERPREFERENCES,
                 ['userId' => $user->id],
                 ['preferences' => Json::encode($preferences)],
                 [],
@@ -788,7 +789,7 @@ class Users extends Component
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->upsert(
-                '{{%shunnedmessages}}',
+                Table::SHUNNEDMESSAGES,
                 [
                     'userId' => $userId,
                     'message' => $message
@@ -812,7 +813,7 @@ class Users extends Component
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->delete(
-                '{{%shunnedmessages}}',
+                Table::SHUNNEDMESSAGES,
                 [
                     'userId' => $userId,
                     'message' => $message
@@ -832,7 +833,7 @@ class Users extends Component
     public function hasUserShunnedMessage(int $userId, string $message): bool
     {
         return (new Query())
-            ->from(['{{%shunnedmessages}}'])
+            ->from([Table::SHUNNEDMESSAGES])
             ->where([
                 'and',
                 [
@@ -885,7 +886,7 @@ class Users extends Component
 
         $userIds = (new Query())
             ->select(['id'])
-            ->from(['{{%users}}'])
+            ->from([Table::USERS])
             ->where([
                 'and',
                 ['pending' => true],
@@ -924,7 +925,7 @@ class Users extends Component
 
         // Delete their existing groups
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%usergroups_users}}', ['userId' => $userId])
+            ->delete(Table::USERGROUPS_USERS, ['userId' => $userId])
             ->execute();
 
         if (!empty($groupIds)) {
@@ -936,7 +937,7 @@ class Users extends Component
 
             Craft::$app->getDb()->createCommand()
                 ->batchInsert(
-                    '{{%usergroups_users}}',
+                    Table::USERGROUPS_USERS,
                     [
                         'groupId',
                         'userId'

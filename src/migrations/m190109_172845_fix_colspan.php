@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m190109_172845_fix_colspan migration.
@@ -19,7 +20,7 @@ class m190109_172845_fix_colspan extends Migration
             // (see https://github.com/yiisoft/yii2/issues/12077)
             $this->execute('alter table {{%widgets}} alter column [[colspan]] drop default, alter column [[colspan]] drop not null, alter column [[colspan]] type smallint using null');
         } else {
-            $this->alterColumn('{{%widgets}}', 'colspan', $this->tinyInteger());
+            $this->alterColumn(Table::WIDGETS, 'colspan', $this->tinyInteger());
         }
     }
 

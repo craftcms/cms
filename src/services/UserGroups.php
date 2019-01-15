@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
@@ -222,7 +223,7 @@ class UserGroups extends Component
         if ($isNewGroup) {
             $group->uid = StringHelper::UUID();
         } else if (!$group->uid) {
-            $group->uid = Db::uidById('{{%usergroups}}', $group->id);
+            $group->uid = Db::uidById(Table::USERGROUPS, $group->id);
         }
 
         $configPath = self::CONFIG_USERPGROUPS_KEY . '.' . $group->uid;
@@ -237,7 +238,7 @@ class UserGroups extends Component
 
         // Now that we have a group ID, save it on the model
         if ($isNewGroup) {
-            $group->id = Db::idByUid('{{%usergroups}}', $group->uid);
+            $group->id = Db::idByUid(Table::USERGROUPS, $group->uid);
         }
 
         return true;
@@ -297,7 +298,7 @@ class UserGroups extends Component
         }
 
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%usergroups}}', ['uid' => $uid])
+            ->delete(Table::USERGROUPS, ['uid' => $uid])
             ->execute();
 
         // Fire an 'afterDeleteUserGroup' event
@@ -369,6 +370,6 @@ class UserGroups extends Component
                 'handle',
                 'uid'
             ])
-            ->from(['{{%usergroups}}']);
+            ->from([Table::USERGROUPS]);
     }
 }

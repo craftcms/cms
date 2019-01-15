@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User as UserElement;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Db;
@@ -419,7 +420,7 @@ class User extends \yii\web\User
                 // Generate a new session token
                 $token = Craft::$app->getSecurity()->generateRandomString(100);
                 Craft::$app->getDb()->createCommand()
-                    ->insert('{{%sessions}}', [
+                    ->insert(Table::SESSIONS, [
                         'userId' => $identity->id,
                         'token' => $token,
                     ])
@@ -455,7 +456,7 @@ class User extends \yii\web\User
             if ($token !== null) {
                 $tokenId = (new Query())
                     ->select(['id'])
-                    ->from(['{{%sessions}}'])
+                    ->from([Table::SESSIONS])
                     ->where([
                         'token' => $token,
                         'userId' => $id,
@@ -468,7 +469,7 @@ class User extends \yii\web\User
                     if ($extendSession) {
                         // Update the session row's dateUpdated value so it doesn't get GC'd
                         Craft::$app->getDb()->createCommand()
-                            ->update('{{%sessions}}', [
+                            ->update(Table::SESSIONS, [
                                 'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
                             ], ['id' => $tokenId])
                             ->execute();
@@ -513,7 +514,7 @@ class User extends \yii\web\User
         if ($token !== null) {
             $session->remove($this->tokenParam);
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%sessions}}', [
+                ->delete(Table::SESSIONS, [
                     'token' => $token,
                     'userId' => $identity->id,
                 ])

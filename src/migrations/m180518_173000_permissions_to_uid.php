@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 
 /**
  * m180518_173000_permissions_to_uid migration.
@@ -17,37 +18,37 @@ class m180518_173000_permissions_to_uid extends Migration
     {
         $permissions = (new Query())
             ->select(['id', 'name'])
-            ->from(['{{%userpermissions}}'])
+            ->from([Table::USERPERMISSIONS])
             ->pairs();
 
         $userGroupMap = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%usergroups}}'])
+            ->from([Table::USERGROUPS])
             ->pairs();
 
         $siteMap = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%sites}}'])
+            ->from([Table::SITES])
             ->pairs();
 
         $sectionMap = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%sections}}'])
+            ->from([Table::SECTIONS])
             ->pairs();
 
         $globalSetMap = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%globalsets}}'])
+            ->from([Table::GLOBALSETS])
             ->pairs();
 
         $categoryGroupMap = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%categorygroups}}'])
+            ->from([Table::CATEGORYGROUPS])
             ->pairs();
 
         $volumeMap = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%volumes}}'])
+            ->from([Table::VOLUMES])
             ->pairs();
 
         $relations = [
@@ -78,7 +79,7 @@ class m180518_173000_permissions_to_uid extends Migration
                 !empty($relations[strtolower($matches[1])][$matches[3]])
             ) {
                 $permission = $matches[1] . $matches[2] . $relations[strtolower($matches[1])][$matches[3]];
-                $this->update('{{%userpermissions}}', ['name' => $permission], ['id' => $id]);
+                $this->update(Table::USERPERMISSIONS, ['name' => $permission], ['id' => $id]);
             }
         }
     }

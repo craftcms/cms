@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\LocalVolumeInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
@@ -199,7 +200,7 @@ class AssetTransforms extends Component
         if ($isNewTransform) {
             $transform->uid = StringHelper::UUID();
         } else if (!$transform->uid) {
-            $transform->uid = Db::uidById('{{%assettransforms}}', $transform->id);
+            $transform->uid = Db::uidById(Table::ASSETTRANSFORMS, $transform->id);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -220,7 +221,7 @@ class AssetTransforms extends Component
         $projectConfig->set($configPath, $configData);
 
         if ($isNewTransform) {
-            $transform->id = Db::idByUid('{{%assettransforms}}', $transform->uid);
+            $transform->id = Db::idByUid(Table::ASSETTRANSFORMS, $transform->uid);
         }
 
         return true;
@@ -355,7 +356,7 @@ class AssetTransforms extends Component
 
         Craft::$app->getDb()->createCommand()
             ->delete(
-                '{{%assettransforms}}',
+                Table::ASSETTRANSFORMS,
                 ['uid' => $transformUid])
             ->execute();
 
@@ -448,7 +449,7 @@ class AssetTransforms extends Component
         if (!empty($invalidIndexIds)) {
             Craft::$app->getDb()->createCommand()
                 ->delete(
-                    '{{%assettransformindex}}',
+                    Table::ASSETTRANSFORMINDEX,
                     ['id' => $invalidIndexIds])
                 ->execute();
         }
@@ -505,7 +506,7 @@ class AssetTransforms extends Component
 
             // Delete the out-of-date record
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%assettransformindex}}', ['id' => $result['id']])
+                ->delete(Table::ASSETTRANSFORMINDEX, ['id' => $result['id']])
                 ->execute();
 
             // And the file.
@@ -764,13 +765,13 @@ class AssetTransforms extends Component
         $dbConnection = Craft::$app->getDb();
         if (null !== $index->id) {
             $dbConnection->createCommand()
-                ->update('{{%assettransformindex}}', $values, ['id' => $index->id])
+                ->update(Table::ASSETTRANSFORMINDEX, $values, ['id' => $index->id])
                 ->execute();
         } else {
             $dbConnection->createCommand()
-                ->insert('{{%assettransformindex}}', $values)
+                ->insert(Table::ASSETTRANSFORMINDEX, $values)
                 ->execute();
-            $index->id = $dbConnection->getLastInsertID('{{%assettransformindex}}');
+            $index->id = $dbConnection->getLastInsertID(Table::ASSETTRANSFORMINDEX);
         }
 
         return $index;
@@ -863,7 +864,7 @@ class AssetTransforms extends Component
     public function deleteTransformIndexDataByAssetId(int $assetId)
     {
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%assettransformindex}}', ['assetId' => $assetId])
+            ->delete(Table::ASSETTRANSFORMINDEX, ['assetId' => $assetId])
             ->execute();
     }
 
@@ -875,7 +876,7 @@ class AssetTransforms extends Component
     public function deleteTransformIndex(int $indexId)
     {
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%assettransformindex}}', ['id' => $indexId])
+            ->delete(Table::ASSETTRANSFORMINDEX, ['id' => $indexId])
             ->execute();
     }
 
@@ -1280,7 +1281,7 @@ class AssetTransforms extends Component
                 'dateUpdated',
                 'dateCreated',
             ])
-            ->from(['{{%assettransformindex}}']);
+            ->from([Table::ASSETTRANSFORMINDEX]);
     }
 
     /**
@@ -1305,7 +1306,7 @@ class AssetTransforms extends Component
                 'dimensionChangeTime',
                 'uid'
             ])
-            ->from(['{{%assettransforms}}'])
+            ->from([Table::ASSETTRANSFORMS])
             ->orderBy(['name' => SORT_ASC]);
     }
 

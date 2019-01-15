@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m180810_214427_soft_delete_field_layouts migration.
@@ -15,8 +16,8 @@ class m180810_214427_soft_delete_field_layouts extends Migration
     public function safeUp()
     {
         // Add the dateDeleted column
-        $this->addColumn('{{%fieldlayouts}}', 'dateDeleted', $this->dateTime()->null()->after('dateUpdated'));
-        $this->createIndex(null, '{{%fieldlayouts}}', ['dateDeleted'], false);
+        $this->addColumn(Table::FIELDLAYOUTS, 'dateDeleted', $this->dateTime()->null()->after('dateUpdated'));
+        $this->createIndex(null, Table::FIELDLAYOUTS, ['dateDeleted'], false);
     }
 
     /**

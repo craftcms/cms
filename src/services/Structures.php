@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\errors\StructureNotFoundException;
 use craft\events\MoveElementEvent;
 use craft\models\Structure;
@@ -75,7 +76,7 @@ class Structures extends Component
                 'maxLevels',
                 'uid'
             ])
-            ->from(['{{%structures}}'])
+            ->from([Table::STRUCTURES])
             ->where(['id' => $structureId]);
 
         if (!$withTrashed) {
@@ -101,7 +102,7 @@ class Structures extends Component
                 'maxLevels',
                 'uid'
             ])
-            ->from(['{{%structures}}'])
+            ->from([Table::STRUCTURES])
             ->where(['uid' => $structureUid]);
 
         if (!$withTrashed) {
@@ -164,7 +165,7 @@ class Structures extends Component
         }
 
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->softDelete('{{%structures}}', [
+            ->softDelete(Table::STRUCTURES, [
                 'id' => $structureId
             ])
             ->execute();
@@ -441,7 +442,7 @@ class Structures extends Component
             // todo: we should be able to pull these from $elementRecord - https://github.com/creocoder/yii2-nested-sets/issues/114
             $values = (new Query())
                 ->select(['root', 'lft', 'rgt', 'level'])
-                ->from('{{%structureelements}}')
+                ->from(Table::STRUCTUREELEMENTS)
                 ->where([
                     'structureId' => $structureId,
                     'elementId' => $element->id,

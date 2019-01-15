@@ -8,6 +8,7 @@
 use craft\behaviors\ContentBehavior;
 use craft\behaviors\ElementQueryBehavior;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
 use yii\base\ExitException;
@@ -183,7 +184,7 @@ class Craft extends Yii
 
             $fieldHandles = (new Query())
                 ->distinct(true)
-                ->from(['{{%fields}}'])
+                ->from([Table::FIELDS])
                 ->select([$column])
                 ->column();
         } else {

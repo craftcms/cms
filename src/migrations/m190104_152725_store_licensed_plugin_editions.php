@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m190104_152725_store_licensed_plugin_editions migration.
@@ -15,7 +16,7 @@ class m190104_152725_store_licensed_plugin_editions extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn('{{%plugins}}', 'licensedEdition', $this->string()->after('licenseKeyStatus'));
+        $this->addColumn(Table::PLUGINS, 'licensedEdition', $this->string()->after('licenseKeyStatus'));
     }
 
     /**

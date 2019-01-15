@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 use craft\widgets\CraftSupport;
 
 /**
@@ -16,7 +17,7 @@ class m161021_182140_rename_get_help_widget extends Migration
     public function safeUp()
     {
         $this->update(
-            '{{%widgets}}',
+            Table::WIDGETS,
             [
                 'type' => CraftSupport::class
             ],

@@ -66,7 +66,7 @@ class MigrationManager extends Component
     /**
      * @var string The migrations table name
      */
-    public $migrationTable = '{{%migrations}}';
+    public $migrationTable = Table::MIGRATIONS;
 
     // Public Methods
     // =========================================================================

@@ -12,6 +12,7 @@ use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\MigrationManager;
 use craft\db\Query;
+use craft\db\Table;
 use craft\errors\DbConnectException;
 use craft\errors\WrongEditionException;
 use craft\events\EditionChangeEvent;
@@ -236,7 +237,7 @@ trait ApplicationTrait
 
         return $this->_isInstalled = (
             $this->getIsDbConnectionValid() &&
-            $this->getDb()->tableExists('{{%info}}', false)
+            $this->getDb()->tableExists(Table::INFO, false)
         );
     }
 
@@ -524,11 +525,11 @@ trait ApplicationTrait
         }
 
         $row = (new Query())
-            ->from(['{{%info}}'])
+            ->from([Table::INFO])
             ->one();
 
         if (!$row) {
-            $tableName = $this->getDb()->getSchema()->getRawTableName('{{%info}}');
+            $tableName = $this->getDb()->getSchema()->getRawTableName(Table::INFO);
             throw new ServerErrorHttpException("The {$tableName} table is missing its row");
         }
 
@@ -586,17 +587,17 @@ trait ApplicationTrait
                 }
 
                 $this->getDb()->createCommand()
-                    ->update('{{%info}}', $attributes)
+                    ->update(Table::INFO, $attributes)
                     ->execute();
             } else {
                 $this->getDb()->createCommand()
-                    ->insert('{{%info}}', $attributes)
+                    ->insert(Table::INFO, $attributes)
                     ->execute();
 
                 $this->setIsInstalled();
 
                 $row = (new Query())
-                    ->from(['{{%info}}'])
+                    ->from([Table::INFO])
                     ->one();
 
                 // Reload from DB with the new ID and modified dates.

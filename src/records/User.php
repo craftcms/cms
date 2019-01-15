@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use yii\db\ActiveQuery;
 use yii\db\ActiveQueryInterface;
 
@@ -54,7 +55,7 @@ class User extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%users}}';
+        return Table::USERS;
     }
 
     /**
@@ -114,6 +115,6 @@ class User extends ActiveRecord
     public function getGroups(): ActiveQueryInterface
     {
         return $this->hasMany(UserGroup::class, ['id' => 'groupId'])
-            ->viaTable('{{%usergroups_users}}', ['userId' => 'id']);
+            ->viaTable(Table::USERGROUPS_USERS, ['userId' => 'id']);
     }
 }

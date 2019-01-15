@@ -14,6 +14,7 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
@@ -281,7 +282,7 @@ class Elements extends Component
     {
         $class = (new Query())
             ->select(['type'])
-            ->from(['{{%elements}}'])
+            ->from([Table::ELEMENTS])
             ->where(['id' => $elementId])
             ->scalar();
 
@@ -299,7 +300,7 @@ class Elements extends Component
         return (new Query())
             ->select(['type'])
             ->distinct(true)
-            ->from(['{{%elements}}'])
+            ->from([Table::ELEMENTS])
             ->where(['id' => $elementIds])
             ->column();
     }
@@ -315,7 +316,7 @@ class Elements extends Component
     {
         return (new Query())
             ->select(['uri'])
-            ->from(['{{%elements_sites}}'])
+            ->from([Table::ELEMENTS_SITES])
             ->where(['elementId' => $elementId, 'siteId' => $siteId])
             ->scalar();
     }
@@ -331,7 +332,7 @@ class Elements extends Component
     {
         return (new Query())
             ->select(['siteId'])
-            ->from(['{{%elements_sites}}'])
+            ->from([Table::ELEMENTS_SITES])
             ->where(['elementId' => $elementId, 'enabled' => 1])
             ->column();
     }
@@ -535,7 +536,7 @@ class Elements extends Component
         // Delete the rows that don't need to be there anymore
         if (!$isNewElement) {
             Db::deleteIfExists(
-                '{{%elements_sites}}',
+                Table::ELEMENTS_SITES,
                 [
                     'and',
                     ['elementId' => $element->id],
@@ -680,7 +681,7 @@ class Elements extends Component
 
         Craft::$app->getDb()->createCommand()
             ->update(
-                '{{%elements_sites}}',
+                Table::ELEMENTS_SITES,
                 [
                     'slug' => $element->slug,
                     'uri' => $element->uri
@@ -792,14 +793,14 @@ class Elements extends Component
             // Update any relations that point to the merged element
             $relations = (new Query())
                 ->select(['id', 'fieldId', 'sourceId', 'sourceSiteId'])
-                ->from(['{{%relations}}'])
+                ->from([Table::RELATIONS])
                 ->where(['targetId' => $mergedElementId])
                 ->all();
 
             foreach ($relations as $relation) {
                 // Make sure the persisting element isn't already selected in the same field
                 $persistingElementIsRelatedToo = (new Query())
-                    ->from(['{{%relations}}'])
+                    ->from([Table::RELATIONS])
                     ->where([
                         'fieldId' => $relation['fieldId'],
                         'sourceId' => $relation['sourceId'],
@@ -811,7 +812,7 @@ class Elements extends Component
                 if (!$persistingElementIsRelatedToo) {
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            '{{%relations}}',
+                            Table::RELATIONS,
                             [
                                 'targetId' => $prevailingElementId
                             ],
@@ -825,14 +826,14 @@ class Elements extends Component
             // Update any structures that the merged element is in
             $structureElements = (new Query())
                 ->select(['id', 'structureId'])
-                ->from(['{{%structureelements}}'])
+                ->from([Table::STRUCTUREELEMENTS])
                 ->where(['elementId' => $mergedElementId])
                 ->all();
 
             foreach ($structureElements as $structureElement) {
                 // Make sure the persisting element isn't already a part of that structure
                 $persistingElementIsInStructureToo = (new Query())
-                    ->from(['{{%structureelements}}'])
+                    ->from([Table::STRUCTUREELEMENTS])
                     ->where([
                         'structureId' => $structureElement['structureId'],
                         'elementId' => $prevailingElementId
@@ -841,7 +842,7 @@ class Elements extends Component
 
                 if (!$persistingElementIsInStructureToo) {
                     Craft::$app->getDb()->createCommand()
-                        ->update('{{%relations}}',
+                        ->update(Table::RELATIONS,
                             [
                                 'elementId' => $prevailingElementId
                             ],
@@ -918,7 +919,7 @@ class Elements extends Component
             // Get a site this element is enabled in
             $siteId = (int)(new Query())
                 ->select('siteId')
-                ->from('{{%elements_sites}}')
+                ->from(Table::ELEMENTS_SITES)
                 ->where(['elementId' => $elementId])
                 ->scalar();
 
@@ -984,18 +985,18 @@ class Elements extends Component
 
             if ($event->hardDelete) {
                 Craft::$app->getDb()->createCommand()
-                    ->delete('{{%elements}}', ['id' => $element->id])
+                    ->delete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
             } else {
                 // Soft delete the elements table row
                 Craft::$app->getDb()->createCommand()
-                    ->softDelete('{{%elements}}', ['id' => $element->id])
+                    ->softDelete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
             }
 
             // Always hard delete the search indexes
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%searchindex}}', ['elementId' => $element->id])
+                ->delete(Table::SEARCHINDEX, ['elementId' => $element->id])
                 ->execute();
 
             $element->afterDelete();
@@ -1108,7 +1109,7 @@ class Elements extends Component
 
                 // Restore it
                 Craft::$app->getDb()->createCommand()
-                    ->restore('{{%elements}}', ['id' => $element->id])
+                    ->restore(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
 
                 // Restore its search indexes

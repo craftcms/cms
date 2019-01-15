@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ApplicationTrait;
 use craft\base\Plugin;
 use craft\db\Query;
+use craft\db\Table;
 use craft\debug\DeprecatedPanel;
 use craft\debug\UserPanel;
 use craft\helpers\ArrayHelper;
@@ -460,7 +461,7 @@ class Application extends \yii\web\Application
         try {
             $sourcePath = (new Query())
                 ->select(['path'])
-                ->from('{{%resourcepaths}}')
+                ->from(Table::RESOURCEPATHS)
                 ->where(['hash' => $hash])
                 ->scalar();
         } catch (DbException $e) {

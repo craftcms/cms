@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -22,8 +23,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn('{{%info}}', 'config', $this->mediumText()->null()->after('maintenance'));
-        $this->addColumn('{{%info}}', 'configMap', $this->mediumText()->null()->after('config'));
+        $this->addColumn(Table::INFO, 'config', $this->mediumText()->null()->after('maintenance'));
+        $this->addColumn(Table::INFO, 'configMap', $this->mediumText()->null()->after('config'));
 
         if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
             $configDir = Craft::$app->getPath()->getConfigPath();
@@ -45,9 +46,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $this->dropTableIfExists('{{%systemsettings}}');
 
-        $this->dropColumn('{{%plugins}}', 'settings');
-        $this->dropColumn('{{%plugins}}', 'licenseKey');
-        $this->dropColumn('{{%plugins}}', 'enabled');
+        $this->dropColumn(Table::PLUGINS, 'settings');
+        $this->dropColumn(Table::PLUGINS, 'licenseKey');
+        $this->dropColumn(Table::PLUGINS, 'enabled');
     }
 
     /**
@@ -100,7 +101,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'uid',
                 'name',
             ])
-            ->from(['{{%sitegroups}}'])
+            ->from([Table::SITEGROUPS])
             ->pairs();
 
         foreach ($siteGroups as $uid => $name) {
@@ -258,7 +259,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'uid',
                 'name',
             ])
-            ->from(['{{%fieldgroups}}'])
+            ->from([Table::FIELDGROUPS])
             ->pairs();
 
         foreach ($fieldGroups as $uid => $name) {
@@ -425,7 +426,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $layoutId = (new Query())
             ->select(['id'])
-            ->from(['{{%fieldlayouts}}'])
+            ->from([Table::FIELDLAYOUTS])
             ->where(['type' => User::class])
             ->scalar();
 
@@ -439,17 +440,17 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
         $groups = (new Query())
             ->select(['id', 'name', 'handle', 'uid'])
-            ->from(['{{%usergroups}}'])
+            ->from([Table::USERGROUPS])
             ->all();
 
         $permissions = (new Query())
             ->select(['id', 'name'])
-            ->from(['{{%userpermissions}}'])
+            ->from([Table::USERPERMISSIONS])
             ->pairs();
 
         $groupPermissions = (new Query())
             ->select(['permissionId', 'groupId'])
-            ->from(['{{%userpermissions_usergroups}}'])
+            ->from([Table::USERPERMISSIONS_USERGROUPS])
             ->all();
 
         $permissionList = [];
@@ -668,7 +669,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'enabled',
                 'schemaVersion',
             ])
-            ->from(['{{%plugins}}'])
+            ->from([Table::PLUGINS])
             ->all();
 
         $pluginData = [];
@@ -697,7 +698,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         // Get all the UIDs
         $fieldLayoutUids = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%fieldlayouts}}'])
+            ->from([Table::FIELDLAYOUTS])
             ->where(['id' => $layoutIds])
             ->pairs();
 

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\actions\DeepDuplicate;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
@@ -540,7 +541,7 @@ class Category extends Element
         }
 
         Craft::$app->getDb()->createCommand()
-            ->update('{{%categories}}', $data, ['id' => $this->id], [], false)
+            ->update(Table::CATEGORIES, $data, ['id' => $this->id], [], false)
             ->execute();
 
         return true;
@@ -586,14 +587,14 @@ class Category extends Element
 
             $sources = (new Query())
                 ->select(['fieldId', 'sourceId', 'sourceSiteId'])
-                ->from(['{{%relations}}'])
+                ->from([Table::RELATIONS])
                 ->where(['targetId' => $this->id])
                 ->all();
 
             foreach ($sources as $source) {
                 $existingAncestorRelations = (new Query())
                     ->select(['targetId'])
-                    ->from(['{{%relations}}'])
+                    ->from([Table::RELATIONS])
                     ->where([
                         'fieldId' => $source['fieldId'],
                         'sourceId' => $source['sourceId'],
@@ -617,7 +618,7 @@ class Category extends Element
             if (!empty($newRelationValues)) {
                 Craft::$app->getDb()->createCommand()
                     ->batchInsert(
-                        '{{%relations}}',
+                        Table::RELATIONS,
                         ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'],
                         $newRelationValues)
                     ->execute();

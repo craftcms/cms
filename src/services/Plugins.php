@@ -12,6 +12,7 @@ use craft\base\Plugin;
 use craft\base\PluginInterface;
 use craft\db\MigrationManager;
 use craft\db\Query;
+use craft\db\Table;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
@@ -241,7 +242,7 @@ class Plugins extends Component
                     // Update our record of the plugin's version number
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            '{{%plugins}}',
+                            Table::PLUGINS,
                             ['version' => $plugin->getVersion()],
                             ['id' => $row['id']])
                         ->execute();
@@ -497,11 +498,11 @@ class Plugins extends Component
             ];
 
             $db->createCommand()
-                ->insert('{{%plugins}}', $info)
+                ->insert(Table::PLUGINS, $info)
                 ->execute();
 
             $info['installDate'] = DateTimeHelper::toDateTime($info['installDate']);
-            $info['id'] = $db->getLastInsertID('{{%plugins}}');
+            $info['id'] = $db->getLastInsertID(Table::PLUGINS);
 
             $this->_setPluginMigrator($plugin, $info['id']);
 
@@ -511,7 +512,7 @@ class Plugins extends Component
                 if ($db->getIsMysql()) {
                     // Explicitly remove the plugins row just in case the transaction was implicitly committed
                     $db->createCommand()
-                        ->delete('{{%plugins}}', ['handle' => $handle])
+                        ->delete(Table::PLUGINS, ['handle' => $handle])
                         ->execute();
                 }
 
@@ -591,7 +592,7 @@ class Plugins extends Component
             $id = $this->getStoredPluginInfo($handle)['id'];
 
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%plugins}}', ['id' => $id])
+                ->delete(Table::PLUGINS, ['id' => $id])
                 ->execute();
 
             $transaction->commit();
@@ -1170,7 +1171,7 @@ class Plugins extends Component
 
         /** @var Plugin $plugin */
         Craft::$app->getDb()->createCommand()
-            ->update('{{%plugins}}', [
+            ->update(Table::PLUGINS, [
                 'licenseKeyStatus' => $licenseKeyStatus,
                 'licensedEdition' => $licensedEdition,
             ], ['handle' => $handle])
@@ -1202,7 +1203,7 @@ class Plugins extends Component
                 'licenseKeyStatus',
                 'installDate'
             ])
-            ->from(['{{%plugins}}']);
+            ->from([Table::PLUGINS]);
 
         // todo: remove schema version condition after next beakpoint
         $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
@@ -1316,7 +1317,7 @@ class Plugins extends Component
     {
         // todo: remove this after the next breakpoint
         if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
-            $row = (new Query())->from(['{{%plugins}}'])->where(['handle' => $handle])->one();
+            $row = (new Query())->from([Table::PLUGINS])->where(['handle' => $handle])->one();
             $row['settings'] = Json::decodeIfJson((string)$row['settings']);
             return $row;
         }

@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\GlobalSet;
 use craft\errors\GlobalSetNotFoundException;
 use craft\events\ConfigEvent;
@@ -95,7 +96,7 @@ class Globals extends Component
 
         return $this->_allGlobalSetIds = (new Query())
             ->select(['id'])
-            ->from(['{{%globalsets}}'])
+            ->from([Table::GLOBALSETS])
             ->column();
     }
 
@@ -339,7 +340,7 @@ class Globals extends Component
         if ($isNewSet) {
             $globalSet->uid = StringHelper::UUID();
         } else if (!$globalSet->uid) {
-            $globalSet->uid = Db::uidById('{{%globalsets}}', $globalSet->id);
+            $globalSet->uid = Db::uidById(Table::GLOBALSETS, $globalSet->id);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -356,7 +357,7 @@ class Globals extends Component
                 $layoutUid = StringHelper::UUID();
                 $fieldLayout->uid = $layoutUid;
             } else {
-                $layoutUid = Db::uidById('{{%fieldlayouts}}', $fieldLayout->id);
+                $layoutUid = Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id);
             }
 
             $configData['fieldLayouts'] = [
@@ -368,7 +369,7 @@ class Globals extends Component
         $projectConfig->set($configPath, $configData);
 
         if ($isNewSet) {
-            $globalSet->id = Db::idByUid('{{%globalsets}}', $globalSet->uid);
+            $globalSet->id = Db::idByUid(Table::GLOBALSETS, $globalSet->uid);
         }
 
         return true;
@@ -412,7 +413,7 @@ class Globals extends Component
             }
 
             // Make sure there's an element for it.
-            $setId = Db::idByUid('{{%globalsets}}', $globalSetUid);
+            $setId = Db::idByUid(Table::GLOBALSETS, $globalSetUid);
 
             $elementsService = Craft::$app->getElements();
 
@@ -509,7 +510,7 @@ class Globals extends Component
             // Delete the field layout
             $fieldLayoutId = (new Query())
                 ->select(['fieldLayoutId'])
-                ->from(['{{%globalsets}}'])
+                ->from([Table::GLOBALSETS])
                 ->where(['id' => $globalSetRecord->id])
                 ->scalar();
 

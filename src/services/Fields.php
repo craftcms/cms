@@ -13,6 +13,7 @@ use craft\base\FieldInterface;
 use craft\behaviors\ContentBehavior;
 use craft\behaviors\ElementQueryBehavior;
 use craft\db\Query;
+use craft\db\Table;
 use craft\errors\FieldNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\events\ConfigEvent;
@@ -270,13 +271,13 @@ class Fields extends Component
         if ($isNewGroup) {
             $group->uid = StringHelper::UUID();
         } else if (!$group->uid) {
-            $group->uid = Db::uidById('{{%fieldgroups}}', $group->id);
+            $group->uid = Db::uidById(Table::FIELDGROUPS, $group->id);
         }
 
         $projectConfig->set(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid, $configData);
 
         if ($isNewGroup) {
-            $group->id = Db::idByUid('{{%fieldgroups}}', $group->uid);
+            $group->id = Db::idByUid(Table::FIELDGROUPS, $group->uid);
         }
 
         return true;
@@ -536,7 +537,7 @@ class Fields extends Component
         }
 
         if (!empty($config['id']) && empty($config['uid']) && is_numeric($config['id'])) {
-            $uid = Db::uidById('{{%fields}}', $config['id']);
+            $uid = Db::uidById(Table::FIELDS, $config['id']);
             $config['uid'] = $uid;
         }
 
@@ -763,7 +764,7 @@ class Fields extends Component
         if ($isNewField) {
             $field->uid = StringHelper::UUID();
         } else if (!$field->uid) {
-            $field->uid = Db::uidById('{{%fields}}', $field->id);
+            $field->uid = Db::uidById(Table::FIELDS, $field->id);
         }
 
         // Store with all the populated data for future reference.
@@ -779,7 +780,7 @@ class Fields extends Component
         }
 
         if ($isNewField) {
-            $field->id = Db::idByUid('{{%fields}}', $field->uid);
+            $field->id = Db::idByUid(Table::FIELDS, $field->uid);
         }
 
         return true;
@@ -911,7 +912,7 @@ class Fields extends Component
 
             // Delete the row in fields
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%fields}}', ['id' => $fieldRecord->id])
+                ->delete(Table::FIELDS, ['id' => $fieldRecord->id])
                 ->execute();
 
             $field->afterDelete();
@@ -1174,7 +1175,7 @@ class Fields extends Component
     {
         if (!$layout->id && $layout->uid) {
             // Maybe the ID just wasn't known
-            $layout->id = Db::idByUid('{{%fieldlayouts}}', $layout->uid);
+            $layout->id = Db::idByUid(Table::FIELDLAYOUTS, $layout->uid);
         }
 
         $isNewLayout = !$layout->id;
@@ -1200,7 +1201,7 @@ class Fields extends Component
         if (!$isNewLayout) {
             // Delete the old tabs/fields
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%fieldlayouttabs}}', ['layoutId' => $layout->id])
+                ->delete(Table::FIELDLAYOUTTABS, ['layoutId' => $layout->id])
                 ->execute();
 
             // Get the current layout
@@ -1226,7 +1227,7 @@ class Fields extends Component
         if (!$isNewLayout) {
             $layoutRecord->id = $layout->id;
             if (!$layout->uid) {
-                $layoutRecord->uid = Db::uidById('{{%fieldlayouts}}', $layout->id);
+                $layoutRecord->uid = Db::uidById(Table::FIELDLAYOUTS, $layout->id);
             }
         }
 
@@ -1317,7 +1318,7 @@ class Fields extends Component
         }
 
         Craft::$app->getDb()->createCommand()
-            ->softDelete('{{%fieldlayouts}}', ['id' => $layout->id])
+            ->softDelete(Table::FIELDLAYOUTS, ['id' => $layout->id])
             ->execute();
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_LAYOUT)) {
@@ -1338,7 +1339,7 @@ class Fields extends Component
     public function deleteLayoutsByType(string $type): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->softDelete('{{%fieldlayouts}}', ['type' => $type])
+            ->softDelete(Table::FIELDLAYOUTS, ['type' => $type])
             ->execute();
 
         return (bool)$affectedRows;
@@ -1353,7 +1354,7 @@ class Fields extends Component
     public function restoreLayoutById(int $id): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->restore('{{%fieldlayouts}}', ['id' => $id])
+            ->restore(Table::FIELDLAYOUTS, ['id' => $id])
             ->execute();
 
         return (bool)$affectedRows;
@@ -1522,7 +1523,7 @@ class Fields extends Component
                 'name',
                 'uid',
             ])
-            ->from(['{{%fieldgroups}}'])
+            ->from([Table::FIELDGROUPS])
             ->orderBy(['name' => SORT_ASC]);
     }
 
@@ -1567,7 +1568,7 @@ class Fields extends Component
                 'type',
                 'uid'
             ])
-            ->from(['{{%fieldlayouts}}'])
+            ->from([Table::FIELDLAYOUTS])
             ->where(['dateDeleted' => null]);
     }
 
@@ -1586,7 +1587,7 @@ class Fields extends Component
                 'sortOrder',
                 'uid'
             ])
-            ->from(['{{%fieldlayouttabs}}'])
+            ->from([Table::FIELDLAYOUTTABS])
             ->orderBy(['sortOrder' => SORT_ASC]);
     }
 

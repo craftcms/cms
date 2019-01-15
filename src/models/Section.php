@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
@@ -132,7 +133,7 @@ class Section extends Model
         if ($this->id) {
             $currentSiteIds = (new Query())
                 ->select(['siteId'])
-                ->from(['{{%sections_sites}}'])
+                ->from([Table::SECTIONS_SITES])
                 ->where(['sectionId' => $this->id])
                 ->column();
 

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\UploadFailedException;
@@ -1383,7 +1384,7 @@ class UsersController extends Controller
         $summary = [];
 
         $entryCount = (new Query())
-            ->from(['{{%entries}}'])
+            ->from([Table::ENTRIES])
             ->where(['authorId' => $userIds])
             ->count();
 
