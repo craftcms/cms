@@ -38,7 +38,8 @@ var jsDeps = [
     { srcGlob: 'node_modules/vue/dist/vue.min.js', dest: libPath+'vue' },
     { srcGlob: 'node_modules/vue-router/dist/vue-router.js', dest: libPath+'vue-router' },
     { srcGlob: 'node_modules/vuex/dist/vuex.js', dest: libPath+'vuex' },
-    { srcGlob: 'node_modules/axios/dist/axios.js', dest: libPath+'axios' }
+    { srcGlob: 'node_modules/axios/dist/axios.js', dest: libPath+'axios' },
+    { srcGlob: 'node_modules/vue-autosuggest/dist/vue-autosuggest.js', dest: libPath+'vue-autosuggest' }
 
 ];
 

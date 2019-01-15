@@ -1,7 +1,9 @@
 <template>
-    <div>
-        <div id="graphic" class="spinner big" :class="{ error: error }"></div>
-        <div id="status">{{ message }}</div>
+    <div class="status-message">
+        <div>
+            <div class="graphic spinner big" :class="{ error: error }"></div>
+            <div class="message">{{ message }}</div>
+        </div>
     </div>
 </template>
 
@@ -12,3 +14,18 @@
 
     }
 </script>
+
+<style lang="scss" scoped>
+    .status-message {
+        @apply .flex-1 .flex .items-center .justify-center;
+
+        div {
+            .graphic {
+                @apply .block .mx-auto .mb-6;
+            }
+            .message {
+                @apply .text-center;
+            }
+        }
+    }
+</style>

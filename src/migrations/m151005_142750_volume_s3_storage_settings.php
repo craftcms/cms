@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\Json;
 
 /**
@@ -23,7 +24,7 @@ class m151005_142750_volume_s3_storage_settings extends Migration
         // Update AWS S3 Volumes to have information about storage class.
         $volumes = (new Query())
             ->select(['id', 'settings'])
-            ->from(['{{%volumes}}'])
+            ->from([Table::VOLUMES])
             ->where(['like', 'type', '%AwsS3', false])
             ->all($this->db);
 
@@ -35,7 +36,7 @@ class m151005_142750_volume_s3_storage_settings extends Migration
 
                 Craft::$app->getDb()->createCommand()
                     ->update(
-                        '{{%volumes}}',
+                        Table::VOLUMES,
                         ['settings' => Json::encode($settings)],
                         ['id' => $volume['id']])
                     ->execute();

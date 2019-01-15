@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 
 /**
  * m180124_230459_fix_propagate_entries_values migration.
@@ -19,7 +20,7 @@ class m180124_230459_fix_propagate_entries_values extends Migration
         // Any sections with incorrect propagateEntries values?
         $sectionIds = (new Query())
             ->select(['id'])
-            ->from(['{{%sections}}'])
+            ->from([Table::SECTIONS])
             ->where(['type' => ['single', 'structure'], 'propagateEntries' => false])
             ->column();
 

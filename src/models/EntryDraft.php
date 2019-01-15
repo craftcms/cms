@@ -81,7 +81,6 @@ class EntryDraft extends BaseEntryRevisionModel
     {
         $rules = parent::rules();
         $rules[] = [['draftId'], 'number', 'integerOnly' => true];
-
         return $rules;
     }
 }

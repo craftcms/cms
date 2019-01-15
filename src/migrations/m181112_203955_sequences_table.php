@@ -2,8 +2,8 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m181112_203955_sequences_table migration.
@@ -15,7 +15,7 @@ class m181112_203955_sequences_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%sequences}}', [
+        $this->createTable(Table::SEQUENCES, [
             'name' => $this->string()->notNull(),
             'next' => $this->integer()->unsigned()->notNull()->defaultValue(1),
             'PRIMARY KEY([[name]])',

@@ -2,11 +2,11 @@
     <div class="field card">
         <div class="multitext">
             <div class="multitextrow">
-                <cleave class="text fullwidth" :class="{error: errors.number}" type="tel" v-model="number" id="cc-number" autocomplete="off" placeholder="Card number" :options="{ creditCard: true }"></cleave>
+                <cleave class="text fullwidth" :class="{error: errors.number}" type="tel" v-model="number" id="cc-number" autocomplete="off" :placeholder="'Card number'|t('app')" :options="{ creditCard: true }"></cleave>
             </div>
             <div class="multitextrow">
-                <cleave class="text fullwidth" :class="{error: errors.exp}" type="tel" v-model="exp" id="cc-exp" autocomplete="off" placeholder="MM / YY" :options="{ date: true, datePattern: ['m', 'y'] }"></cleave>
-                <cleave class="text fullwidth" :class="{error: errors.cvc}" v-model="cvc" id="cc-cvc" autocomplete="off" placeholder="CVC" :options="{ numericOnly: true, blocks: [4] }"></cleave>
+                <cleave class="text fullwidth" :class="{error: errors.exp}" type="tel" v-model="exp" id="cc-exp" autocomplete="off" :placeholder="'MM / YY'|t('app')" :options="{ date: true, datePattern: ['m', 'y'] }"></cleave>
+                <cleave class="text fullwidth" :class="{error: errors.cvc}" v-model="cvc" id="cc-cvc" autocomplete="off" :placeholder="'CVC'|t('app')" :options="{ numericOnly: true, blocks: [4] }"></cleave>
             </div>
         </div>
     </div>
@@ -14,14 +14,14 @@
 
 
 <script>
+    /* global Stripe */
+
     import {mapState} from 'vuex'
-    import TextInput from './inputs/TextInput'
     import Cleave from 'vue-cleave'
 
     export default {
 
         components: {
-            TextInput,
             Cleave,
         },
 

@@ -7,9 +7,9 @@
 
 namespace craft\web\twig\variables;
 
-use craft\db\Query;
+use Craft;
 use craft\helpers\Html;
-use craft\helpers\Json;
+use craft\services\Routes as RoutesService;
 
 /**
  * Route functions.
@@ -27,21 +27,16 @@ class Routes
      *
      * @return array
      */
-    public function getDbRoutes(): array
+    public function getProjectConfigRoutes(): array
     {
         $routes = [];
 
-        $results = (new Query())
-            ->select(['id', 'siteId', 'uriParts', 'template'])
-            ->from(['{{%routes}}'])
-            ->orderBy(['sortOrder' => SORT_ASC])
-            ->all();
+        $results = Craft::$app->getProjectConfig()->get(RoutesService::CONFIG_ROUTES_KEY) ?? [];
 
-        foreach ($results as $result) {
+        foreach ($results as $routeUid => $route) {
             $uriDisplayHtml = '';
-            $uriParts = Json::decode($result['uriParts']);
 
-            foreach ($uriParts as $part) {
+            foreach ($route['uriParts'] as $part) {
                 if (is_string($part)) {
                     $uriDisplayHtml .= Html::encode($part);
                 } else {
@@ -54,10 +49,10 @@ class Routes
             }
 
             $routes[] = [
-                'id' => $result['id'],
-                'siteId' => $result['siteId'],
+                'uid' => $routeUid,
+                'siteUid' => $route['siteUid'],
                 'uriDisplayHtml' => $uriDisplayHtml,
-                'template' => $result['template']
+                'template' => $route['template']
             ];
         }
 

@@ -15,7 +15,9 @@ use craft\errors\MigrationException;
 use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
+use craft\web\Response as CraftResponse;
 use yii\base\Exception;
+use yii\base\Exception as YiiException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -498,6 +500,54 @@ abstract class BaseUpdaterController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Attempts to install a plugin by its handle.
+     *
+     * @param string $handle
+     * @return array Array with installation results
+     */
+    protected function installPlugin(string $handle): array
+    {
+        // Prevent the plugin from sending any headers, etc.
+        $realResponse = Craft::$app->getResponse();
+        $tempResponse = new CraftResponse(['isSent' => true]);
+        Craft::$app->set('response', $tempResponse);
+
+        try {
+            Craft::$app->getPlugins()->installPlugin($handle);
+            $success = true;
+            $errorDetails = null;
+        } catch (\Throwable $e) {
+            $success = false;
+            Craft::$app->set('response', $realResponse);
+            $migration = $output = null;
+
+            if ($e instanceof MigrateException) {
+                /** @var \Throwable $e */
+                $e = $e->getPrevious();
+                if ($e instanceof MigrationException) {
+                    /** @var \Throwable|null $previous */
+                    $previous = $e->getPrevious();
+                    $migration = $e->migration;
+                    $output = $e->output;
+                    $e = $previous ?? $e;
+                }
+            }
+
+            Craft::error('Plugin installation failed: ' . $e->getMessage(), __METHOD__);
+
+            $eName = $e instanceof YiiException ? $e->getName() : get_class($e);
+            $errorDetails = $eName . ': ' . $e->getMessage() .
+                ($migration ? "\n\nMigration: " . get_class($migration) : '') .
+                ($output ? "\n\nOutput:\n\n" . $output : '');
+        }
+
+        // Put the real response back
+        Craft::$app->set('response', $realResponse);
+
+        return [$success, $tempResponse, $errorDetails];
     }
 
     // Private Methods

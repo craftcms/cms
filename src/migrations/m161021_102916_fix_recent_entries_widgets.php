@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\ArrayHelper;
 
 /**
@@ -20,7 +21,7 @@ class m161021_102916_fix_recent_entries_widgets extends Migration
         // (this is the closest thing to the original locale IDs we have now)
         $siteResults = (new Query())
             ->select(['id', 'handle'])
-            ->from(['{{%sites}}'])
+            ->from([Table::SITES])
             ->all($this->db);
         $siteIdsByHandle = ArrayHelper::map($siteResults, 'handle', 'id');
 

@@ -17,6 +17,7 @@ use craft\behaviors\ElementQueryBehavior;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\db\Table;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\PopulateElementEvent;
@@ -88,7 +89,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var string|null The content table that will be joined by this query.
      */
-    public $contentTable = '{{%content}}';
+    public $contentTable = Table::CONTENT;
 
     /**
      * @var FieldInterface[]|null The fields that may be involved in this query.
@@ -143,6 +144,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @used-by archived()
      */
     public $archived = false;
+
+    /**
+     * @var bool|null Whether to return trashed (soft-deleted) elements.
+     * If this is set to `null`, then both trashed and non-trashed elements will be returned.
+     * @used-by trashed()
+     */
+    public $trashed = false;
 
     /**
      * @var mixed When the resulting elements must have been created.
@@ -657,6 +665,16 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $trashed
+     */
+    public function trashed($value = true)
+    {
+        $this->trashed = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $dateCreated
      */
     public function dateCreated($value)
@@ -1043,7 +1061,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elementsId' => 'elements.id',
                 'elementsSitesId' => 'elements_sites.id',
             ])
-            ->from(['elements' => '{{%elements}}'])
+            ->from(['elements' => Table::ELEMENTS])
             ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
             ->andWhere(['elements_sites.siteId' => $this->siteId])
             ->andWhere($this->where)
@@ -1079,6 +1097,16 @@ class ElementQuery extends Query implements ElementQueryInterface
         } else {
             $this->subQuery->andWhere(['elements.archived' => false]);
             $this->_applyStatusParam($class);
+        }
+
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.1.0', '>=')) {
+            if ($this->trashed === false) {
+                $this->subQuery->andWhere(['elements.dateDeleted' => null]);
+            } else if ($this->trashed === true) {
+                $this->subQuery->andWhere(['not', ['elements.dateDeleted' => null]]);
+            }
         }
 
         if ($this->dateCreated) {
@@ -1497,6 +1525,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
+        // todo: remove this after the next breakpoint
+        if (Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            return [];
+        }
+
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = 'global';
@@ -1694,7 +1727,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _shouldJoinStructureData(): bool
     {
-        return $this->withStructure || ($this->withStructure !== false && $this->structureId);
+        return (
+            !$this->trashed &&
+            ($this->withStructure || ($this->withStructure !== false && $this->structureId))
+        );
     }
 
     /**
@@ -2093,6 +2129,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
 
+            // If the query includes soft-deleted elements, include the date deleted
+            if ($this->trashed !== false) {
+                $select[] = 'elements.dateDeleted';
+            }
+
             // If the query already specifies any columns, merge those in too
             if (!empty($this->query->select)) {
                 $select = array_merge($select, $this->query->select);
@@ -2224,6 +2265,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                     }
                 }
             }
+        }
+
+        if (array_key_exists('dateDeleted', $row)) {
+            $row['trashed'] = $row['dateDeleted'] !== null;
+            unset($row['dateDeleted']);
         }
 
         /** @var Element $element */

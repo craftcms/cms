@@ -20,7 +20,7 @@
         value: groupId
     }) }}
 
-    <div id="categorygroup-settings">
+    <div id="site-settings">
         {{ forms.textField({
             first: true,
             label: "Name"|t('app'),
@@ -85,11 +85,12 @@
         }) }}
 
         <div id="url-settings" class="nested-fields{% if not site.hasUrls %} hidden{% endif %}">
-            {{ forms.textField({
+            {{ forms.autosuggestField({
                 label: "Base URL"|t('app'),
-                instructions: "The base URL for the site. It can begin with an alias, such as {ex}."|t('app', {ex: '`@web`'}),
+                instructions: "The base URL for the site."|t('app'),
                 id: 'base-url',
                 class: 'ltr',
+                suggestions: craft.cp.getEnvSuggestions(true),
                 name: 'baseUrl',
                 value: site.originalBaseUrl ?: site.baseUrl,
                 errors: site.getErrors('baseUrl')

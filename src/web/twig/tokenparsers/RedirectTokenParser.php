@@ -37,6 +37,13 @@ class RedirectTokenParser extends \Twig_TokenParser
             $nodes['httpStatusCode'] = new \Twig_Node_Expression_Constant(302, 1);
         }
 
+        // Parse flash message(s)
+        while ($stream->test(\Twig_Token::NAME_TYPE, 'with')) {
+            $stream->next();
+            $type = $stream->expect(\Twig_Token::NAME_TYPE, ['notice', 'error'])->getValue();
+            $nodes[$type] = $this->parser->getExpressionParser()->parseExpression();
+        }
+
         $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
         return new RedirectNode($nodes, [], $lineno, $this->getTag());

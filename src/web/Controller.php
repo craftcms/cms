@@ -80,6 +80,11 @@ abstract class Controller extends \yii\web\Controller
      */
     public function beforeAction($action)
     {
+        // Don't enable CSRF validation for Live Preview requests
+        if (Craft::$app->getRequest()->getIsLivePreview()) {
+            $this->enableCsrfValidation = false;
+        }
+
         if (!parent::beforeAction($action)) {
             return false;
         }
@@ -166,10 +171,10 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireLogin()
     {
-        $user = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
 
-        if ($user->getIsGuest()) {
-            $user->loginRequired();
+        if ($userSession->getIsGuest()) {
+            $userSession->loginRequired();
             Craft::$app->end();
         }
     }
@@ -253,14 +258,38 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
-     * Throws a 400 error if the current request doesn’t have a valid token.
+     * Throws a 400 error if the current request doesn’t have a valid Craft token.
      *
-     * @throws BadRequestHttpException if the request does not have a valid token
+     * @throws BadRequestHttpException if the request does not have a valid Craft token
      */
     public function requireToken()
     {
-        if (!Craft::$app->getRequest()->getQueryParam(Craft::$app->getConfig()->getGeneral()->tokenParam)) {
+        if (Craft::$app->getRequest()->getToken() === null) {
             throw new BadRequestHttpException('Valid token required');
+        }
+    }
+
+    /**
+     * Throws a 400 error if the current request isn’t a Control Panel request.
+     *
+     * @throws BadRequestHttpException if the request is not a CP request
+     */
+    public function requireCpRequest()
+    {
+        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+            throw new BadRequestHttpException('Request must be a Control Panel request');
+        }
+    }
+
+    /**
+     * Throws a 400 error if the current request isn’t a site request.
+     *
+     * @throws BadRequestHttpException if the request is not a site request
+     */
+    public function requireSiteRequest()
+    {
+        if (!Craft::$app->getRequest()->getIsSiteRequest()) {
+            throw new BadRequestHttpException('Request must be a site request');
         }
     }
 

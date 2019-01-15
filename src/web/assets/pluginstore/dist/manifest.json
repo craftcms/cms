@@ -1,0 +1,16 @@
+{
+  "app.css": "/css/app.css",
+  "app.js": "/js/app.js",
+  "app.css.map": "/css/app.css.map",
+  "app.js.map": "/js/app.js.map",
+  "chunk-vendors.css": "/css/chunk-vendors.css",
+  "chunk-vendors.js": "/js/chunk-vendors.js",
+  "chunk-vendors.css.map": "/css/chunk-vendors.css.map",
+  "chunk-vendors.js.map": "/js/chunk-vendors.js.map",
+  "images/craft.svg": "/images/craft.svg",
+  "images/default-plugin.svg": "/images/default-plugin.svg",
+  "images/App.vue?vue&type=style&index=0&lang=scss&": "/images/success_2x.png",
+  "images/powered_by_stripe.svg": "/images/powered_by_stripe.svg",
+  "img/index.vue?vue&type=style&index=0&lang=scss&": "/img/valid-icon.svg",
+  "index.html": "/index.html"
+}

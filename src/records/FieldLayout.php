@@ -8,6 +8,8 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\SoftDeleteTrait;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -22,6 +24,11 @@ use yii\db\ActiveQueryInterface;
  */
 class FieldLayout extends ActiveRecord
 {
+    // Traits
+    // =========================================================================
+
+    use SoftDeleteTrait;
+
     // Public Methods
     // =========================================================================
 
@@ -31,7 +38,7 @@ class FieldLayout extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%fieldlayouts}}';
+        return Table::FIELDLAYOUTS;
     }
 
     /**

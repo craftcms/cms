@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\events\DeleteTemplateCachesEvent;
 use craft\helpers\DateTimeHelper;
@@ -46,27 +47,6 @@ class TemplateCaches extends Component
 
     // Properties
     // =========================================================================
-
-    /**
-     * The table that template caches are stored in.
-     *
-     * @var string
-     */
-    private static $_templateCachesTable = '{{%templatecaches}}';
-
-    /**
-     * The table that template cache-element relations are stored in.
-     *
-     * @var string
-     */
-    private static $_templateCacheElementsTable = '{{%templatecacheelements}}';
-
-    /**
-     * The table that queries used within template caches are stored in.
-     *
-     * @var string
-     */
-    private static $_templateCacheQueriesTable = '{{%templatecachequeries}}';
 
     /**
      * The duration (in seconds) between the times when Craft will delete any expired template caches.
@@ -150,7 +130,7 @@ class TemplateCaches extends Component
         /** @noinspection PhpUnhandledExceptionInspection */
         $query = (new Query())
             ->select(['body'])
-            ->from([self::$_templateCachesTable])
+            ->from([Table::TEMPLATECACHES])
             ->where([
                 'and',
                 [
@@ -319,7 +299,7 @@ class TemplateCaches extends Component
         try {
             Craft::$app->getDb()->createCommand()
                 ->insert(
-                    self::$_templateCachesTable,
+                    Table::TEMPLATECACHES,
                     [
                         'cacheKey' => $key,
                         'siteId' => Craft::$app->getSites()->getCurrentSite()->id,
@@ -330,7 +310,7 @@ class TemplateCaches extends Component
                     false)
                 ->execute();
 
-            $cacheId = Craft::$app->getDb()->getLastInsertID(self::$_templateCachesTable);
+            $cacheId = Craft::$app->getDb()->getLastInsertID(Table::TEMPLATECACHES);
 
             // Tag it with any element queries that were executed within the cache
             if (!empty($this->_cachedQueries[$key])) {
@@ -343,7 +323,7 @@ class TemplateCaches extends Component
                     ];
                 }
                 Craft::$app->getDb()->createCommand()
-                    ->batchInsert(self::$_templateCacheQueriesTable, [
+                    ->batchInsert(Table::TEMPLATECACHEQUERIES, [
                         'cacheId',
                         'type',
                         'query'
@@ -362,7 +342,7 @@ class TemplateCaches extends Component
 
                 Craft::$app->getDb()->createCommand()
                     ->batchInsert(
-                        self::$_templateCacheElementsTable,
+                        Table::TEMPLATECACHEELEMENTS,
                         ['cacheId', 'elementId'],
                         $values,
                         false)
@@ -403,7 +383,7 @@ class TemplateCaches extends Component
         }
 
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(self::$_templateCachesTable, ['id' => $cacheId])
+            ->delete(Table::TEMPLATECACHES, ['id' => $cacheId])
             ->execute();
 
         // Fire an 'afterDeleteCaches' event
@@ -430,7 +410,7 @@ class TemplateCaches extends Component
 
         $cacheIds = (new Query())
             ->select(['cacheId'])
-            ->from([self::$_templateCacheQueriesTable])
+            ->from([Table::TEMPLATECACHEQUERIES])
             ->where(['type' => $elementType])
             ->column();
 
@@ -507,7 +487,7 @@ class TemplateCaches extends Component
         $cacheIds = (new Query())
             ->select(['cacheId'])
             ->distinct(true)
-            ->from([self::$_templateCacheElementsTable])
+            ->from([Table::TEMPLATECACHEELEMENTS])
             ->where(['elementId' => $elementId])
             ->column();
 
@@ -564,7 +544,7 @@ class TemplateCaches extends Component
 
         $cacheIds = (new Query())
             ->select(['id'])
-            ->from([self::$_templateCachesTable])
+            ->from([Table::TEMPLATECACHES])
             ->where(['cacheKey' => $key])
             ->column();
 
@@ -584,7 +564,7 @@ class TemplateCaches extends Component
 
         $cacheIds = (new Query())
             ->select(['id'])
-            ->from([self::$_templateCachesTable])
+            ->from([Table::TEMPLATECACHES])
             ->where(['<=', 'expiryDate', Db::prepareDateForDb(new \DateTime())])
             ->column();
 
@@ -634,7 +614,7 @@ class TemplateCaches extends Component
 
         $cacheIds = (new Query())
             ->select(['id'])
-            ->from([self::$_templateCachesTable])
+            ->from([Table::TEMPLATECACHES])
             ->column();
 
         $success = $this->deleteCacheById($cacheIds);

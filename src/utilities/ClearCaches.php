@@ -9,6 +9,7 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
+use craft\db\Table;
 use craft\events\RegisterCacheOptionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
@@ -141,7 +142,7 @@ class ClearCaches extends Utility
                 'label' => Craft::t('app', 'Asset transform index'),
                 'action' => function() {
                     Craft::$app->getDb()->createCommand()
-                        ->truncateTable('{{%assettransformindex}}')
+                        ->truncateTable(Table::ASSETTRANSFORMINDEX)
                         ->execute();
                 }
             ],
@@ -150,7 +151,7 @@ class ClearCaches extends Utility
                 'label' => Craft::t('app', 'Asset indexing data'),
                 'action' => function() {
                     Craft::$app->getDb()->createCommand()
-                        ->truncateTable('{{%assetindexdata}}')
+                        ->truncateTable(Table::ASSETINDEXDATA)
                         ->execute();
                 }
             ],

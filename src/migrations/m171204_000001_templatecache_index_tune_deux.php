@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
@@ -15,11 +16,11 @@ class m171204_000001_templatecache_index_tune_deux extends Migration
      */
     public function safeUp()
     {
-        MigrationHelper::dropIndexIfExists('{{%templatecaches}}', ['expiryDate', 'cacheKey', 'siteId'], false, $this);
-        $this->createIndex(null, '{{%templatecaches}}', ['cacheKey', 'siteId', 'expiryDate']);
+        MigrationHelper::dropIndexIfExists(Table::TEMPLATECACHES, ['expiryDate', 'cacheKey', 'siteId'], false, $this);
+        $this->createIndex(null, Table::TEMPLATECACHES, ['cacheKey', 'siteId', 'expiryDate']);
 
-        MigrationHelper::dropIndexIfExists('{{%templatecaches}}', ['expiryDate', 'cacheKey', 'siteId', 'path'], false, $this);
-        $this->createIndex(null, '{{%templatecaches}}', ['cacheKey', 'siteId', 'expiryDate', 'path']);
+        MigrationHelper::dropIndexIfExists(Table::TEMPLATECACHES, ['expiryDate', 'cacheKey', 'siteId', 'path'], false, $this);
+        $this->createIndex(null, Table::TEMPLATECACHES, ['cacheKey', 'siteId', 'expiryDate', 'path']);
     }
 
     /**
