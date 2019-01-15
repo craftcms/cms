@@ -127,11 +127,11 @@
                                 </td>
                                 <td>
                                     <strong>{{ plugin.name }}</strong>
-                                    <div class="text-grey-dark">
+                                    <div v-if="activeTrialPluginEditions[plugin.handle]" class="text-grey-dark">
                                         {{activeTrialPluginEditions[plugin.handle].name}}
                                     </div>
                                 </td>
-                                <td><strong>{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
+                                <td><strong v-if="activeTrialPluginEditions[plugin.handle]">{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
                                 <td class="thin"><a class="btn" @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)">{{ "Add to cart"|t('app') }}</a></td>
                             </template>
                         </tr>
