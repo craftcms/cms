@@ -120,7 +120,7 @@
                 const licensedEditionHandle = this.pluginLicenseInfo.licensedEdition
                 const licensedEdition = this.plugin.editions.find(edition => edition.handle === licensedEditionHandle)
 
-                if(licensedEdition && parseFloat(this.edition.price) <= parseFloat(licensedEdition.price)) {
+                if(licensedEdition && this.edition.price && parseFloat(this.edition.price) <= parseFloat(licensedEdition.price)) {
                     return false
                 }
 

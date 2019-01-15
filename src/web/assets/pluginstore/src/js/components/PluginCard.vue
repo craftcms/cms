@@ -70,7 +70,12 @@
 
                 for(let i = 0; i < editions.length; i++) {
                     const edition = editions[i];
-                    const price = parseInt(edition.price)
+
+                    let price = 0;
+
+                    if (edition.price) {
+                        price = parseInt(edition.price)
+                    }
 
                     if(min === null) {
                         min = price
