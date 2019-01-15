@@ -30,7 +30,7 @@ ul.categories {
         @apply .no-underline .z-10;
         background: #fafafa;
         border-color: #eee;
-        
+
         &:not(.router-link-active) {
           color: $linkColor;
         }
