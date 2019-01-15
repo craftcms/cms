@@ -82,7 +82,7 @@ class ConfigSyncController extends BaseUpdaterController
 
         try {
             Craft::$app->getPlugins()->uninstallPlugin($handle);
-        } catch (InvalidPluginException $e) {
+        } catch (\Throwable $e) {
             Craft::warning('Could not uninstall plugin "' . $handle . '" that was removed from project.yaml: ' . $e->getMessage());
 
             // Just remove the row
