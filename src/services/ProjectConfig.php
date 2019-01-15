@@ -566,7 +566,9 @@ class ProjectConfig extends Component
         }
 
         if (($this->_updateConfigMap && $this->_useConfigFile()) || $this->_updateConfig) {
-            $this->_storeYamlHistory();
+            $previousConfig = $this->_getStoredConfig();
+            $traverseAndClean($previousConfig);
+            $this->_storeYamlHistory($previousConfig);
 
             $info = Craft::$app->getInfo();
 
@@ -1196,13 +1198,13 @@ class ProjectConfig extends Component
     /**
      * Store yaml history
      *
+     * @param array $configData config data to be saved as history
      * @throws Exception
      */
-    private function _storeYamlHistory()
+    private function _storeYamlHistory(array $configData)
     {
-        $previousConfig = $this->_getStoredConfig();
         // Add a `dateApplied` key for audit purposes.
-        $previousConfig['dateApplied'] = date('Y-m-d H:i:s');
+        $configData['dateApplied'] = date('Y-m-d H:i:s');
         $basePath = Craft::$app->getPath()->getConfigBackupPath() . '/' . self::CONFIG_FILENAME;
 
         // Go through all of them and move them forward.
@@ -1217,6 +1219,6 @@ class ProjectConfig extends Component
             }
         }
 
-        file_put_contents($basePath,  Yaml::dump($previousConfig, 20, 2));
+        file_put_contents($basePath,  Yaml::dump($configData, 20, 2));
     }
 }
