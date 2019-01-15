@@ -2,7 +2,7 @@
     <step>
         <template slot="main">
             <div id="thank-you-message">
-                <div id="graphic" class="spinner big success"></div>
+                <div class="graphic spinner big success"></div>
                 <h2>{{ "Thank You!"|t('app') }}</h2>
                 <p class="light">{{ "Your order has been processed successfully."|t('app') }}</p>
                 <p>
@@ -14,6 +14,8 @@
 </template>
 
 <script>
+    /* global Craft */
+
     import {mapState} from 'vuex'
     import Step from '../Step'
 

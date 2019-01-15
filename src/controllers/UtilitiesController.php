@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\UtilityInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\MigrationException;
 use craft\helpers\FileHelper;
@@ -203,7 +204,7 @@ class UtilitiesController extends Controller
                 }
 
                 $response['volumes'][] = [
-                    'volumeId' =>$volumeId,
+                    'volumeId' => $volumeId,
                     'total' => $indexList['total'],
                 ];
 
@@ -256,26 +257,26 @@ class UtilitiesController extends Controller
             // Clean up stale indexing data (all sessions that have all recordIds set)
             $sessionsInProgress = (new Query())
                 ->select(['sessionId'])
-                ->from(['{{%assetindexdata}}'])
+                ->from([Table::ASSETINDEXDATA])
                 ->where(['recordId' => null])
                 ->groupBy(['sessionId'])
                 ->scalar();
 
             if (empty($sessionsInProgress)) {
                 Craft::$app->getDb()->createCommand()
-                    ->delete('{{%assetindexdata}}')
+                    ->delete(Table::ASSETINDEXDATA)
                     ->execute();
             } else {
                 Craft::$app->getDb()->createCommand()
                     ->delete(
-                        '{{%assetindexdata}}',
+                        Table::ASSETINDEXDATA,
                         ['not', ['sessionId' => $sessionsInProgress]])
                     ->execute();
             }
         } else if (!empty($params['finish'])) {
             if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
                 Craft::$app->getDb()->createCommand()
-                    ->delete('{{%assettransformindex}}', ['assetId' => $params['deleteAsset']])
+                    ->delete(Table::ASSETTRANSFORMINDEX, ['assetId' => $params['deleteAsset']])
                     ->execute();
 
                 /** @var Asset[] $assets */
@@ -298,7 +299,6 @@ class UtilitiesController extends Controller
         return $this->asJson([
             'finished' => 1
         ]);
-
     }
 
     /**
@@ -460,13 +460,14 @@ class UtilitiesController extends Controller
         if (!empty($params['start'])) {
             // Truncate the searchindex table
             Craft::$app->getDb()->createCommand()
-                ->truncateTable('{{%searchindex}}')
+                ->truncateTable(Table::SEARCHINDEX)
                 ->execute();
 
             // Get all the element IDs ever
             $elements = (new Query())
                 ->select(['id', 'type'])
-                ->from(['{{%elements}}'])
+                ->from([Table::ELEMENTS])
+                ->where(['dateDeleted' => null])
                 ->all();
 
             $batch = [];

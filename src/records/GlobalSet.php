@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -33,7 +34,7 @@ class GlobalSet extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%globalsets}}';
+        return Table::GLOBALSETS;
     }
 
     /**

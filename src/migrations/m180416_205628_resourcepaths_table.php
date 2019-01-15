@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m180416_205628_resourcepaths_table migration.
@@ -15,9 +16,9 @@ class m180416_205628_resourcepaths_table extends Migration
     public function safeUp()
     {
         // In case this was run in a previous update attempt
-        $this->dropTableIfExists('{{%resourcepaths}}');
+        $this->dropTableIfExists(Table::RESOURCEPATHS);
 
-        $this->createTable('{{%resourcepaths}}', [
+        $this->createTable(Table::RESOURCEPATHS, [
             'hash' => $this->string()->notNull(),
             'path' => $this->string()->notNull(),
             'PRIMARY KEY([[hash]])',

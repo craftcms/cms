@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 
 /**
  * m161108_000000_new_version_format migration.
@@ -16,18 +17,18 @@ class m161108_000000_new_version_format extends Migration
      */
     public function safeUp()
     {
-        if (!$this->db->columnExists('{{%info}}', 'build')) {
+        if (!$this->db->columnExists(Table::INFO, 'build')) {
             // Migration has already run
             return true;
         }
 
         // Increase size of the version column
-        $this->alterColumn('{{%info}}', 'version', $this->string(50)->notNull());
+        $this->alterColumn(Table::INFO, 'version', $this->string(50)->notNull());
 
         // Get the existing version, build, and track
         $infoRow = (new Query())
             ->select(['version', 'build', 'track'])
-            ->from(['{{%info}}'])
+            ->from([Table::INFO])
             ->one($this->db);
 
         // Update the version
@@ -44,12 +45,12 @@ class m161108_000000_new_version_format extends Migration
                 $version .= '.' . $infoRow['build'];
         }
 
-        $this->update('{{%info}}', ['version' => $version]);
+        $this->update(Table::INFO, ['version' => $version]);
 
         // Drop the unneeded columns
-        $this->dropColumn('{{%info}}', 'build');
-        $this->dropColumn('{{%info}}', 'releaseDate');
-        $this->dropColumn('{{%info}}', 'track');
+        $this->dropColumn(Table::INFO, 'build');
+        $this->dropColumn(Table::INFO, 'releaseDate');
+        $this->dropColumn(Table::INFO, 'track');
 
         // Update the info model
         $info = Craft::$app->getInfo();

@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\models\TagGroup;
@@ -94,7 +95,7 @@ class Tag extends Element
 
         foreach (Craft::$app->getTags()->getAllTagGroups() as $tagGroup) {
             $sources[] = [
-                'key' => 'taggroup:' . $tagGroup->id,
+                'key' => 'taggroup:' . $tagGroup->uid,
                 'label' => Craft::t('site', $tagGroup->name),
                 'criteria' => ['groupId' => $tagGroup->id]
             ];
@@ -110,6 +111,12 @@ class Tag extends Element
      * @var int|null Group ID
      */
     public $groupId;
+
+    /**
+     * @var bool Whether the tag was deleted along with its group
+     * @see beforeDelete()
+     */
+    public $deletedWithGroup = false;
 
     // Public Methods
     // =========================================================================
@@ -131,7 +138,6 @@ class Tag extends Element
     {
         $rules = parent::rules();
         $rules[] = [['groupId'], 'number', 'integerOnly' => true];
-
         return $rules;
     }
 
@@ -222,5 +228,24 @@ class Tag extends Element
         $record->save(false);
 
         parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        // Update the tag record
+        Craft::$app->getDb()->createCommand()
+            ->update(Table::TAGS, [
+                'deletedWithGroup' => $this->deletedWithGroup,
+            ], ['id' => $this->id], [], false)
+            ->execute();
+
+        return true;
     }
 }

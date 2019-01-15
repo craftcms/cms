@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\fields\Dropdown;
 use craft\helpers\Json;
 
@@ -19,7 +20,7 @@ class m171016_092553_drop_position_select extends Migration
     {
         $fields = (new Query())
             ->select(['id', 'settings'])
-            ->from(['{{%fields}}'])
+            ->from([Table::FIELDS])
             ->where(['type' => 'craft\\fields\\PositionSelect'])
             ->all();
 
@@ -49,7 +50,7 @@ class m171016_092553_drop_position_select extends Migration
                 ];
             }
 
-            $this->update('{{%fields}}', [
+            $this->update(Table::FIELDS, [
                 'type' => Dropdown::class,
                 'settings' => Json::encode(['options' => $newOptions]),
             ], [

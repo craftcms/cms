@@ -59,6 +59,11 @@ class MatrixBlockType extends Model
      */
     public $hasFieldErrors = false;
 
+    /**
+     * @var string|mixed
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 
@@ -80,9 +85,9 @@ class MatrixBlockType extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'fieldId', 'sortOrder'], 'number', 'integerOnly' => true],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'fieldId', 'sortOrder'], 'number', 'integerOnly' => true];
+        return $rules;
     }
 
     /**

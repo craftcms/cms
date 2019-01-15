@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m170821_180624_deprecation_line_nullable migration.
@@ -14,7 +15,7 @@ class m170821_180624_deprecation_line_nullable extends Migration
      */
     public function safeUp()
     {
-        $this->alterColumn('{{%deprecationerrors}}', 'line', $this->smallInteger()->unsigned());
+        $this->alterColumn(Table::DEPRECATIONERRORS, 'line', $this->smallInteger()->unsigned());
     }
 
     /**

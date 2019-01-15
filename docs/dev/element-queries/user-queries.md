@@ -669,6 +669,31 @@ $elements = ElementClass::find()
 :::
 
 
+### `trashed`
+
+Narrows the query results to only elements that have been soft-deleted.
+
+
+
+
+
+::: code
+```twig
+{# Fetch trashed elements #}
+{% set elements = {twig-function}
+    .trashed()
+    .all() %}
+```
+
+```php
+// Fetch trashed elements
+$elements = ElementClass::find()
+    ->trashed()
+    ->all();
+```
+:::
+
+
 ### `uid`
 
 Narrows the query results based on the elements’ UIDs.

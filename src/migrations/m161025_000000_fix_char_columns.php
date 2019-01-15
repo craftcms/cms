@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m161025_000000_fix_char_columns migration.
@@ -15,13 +16,13 @@ class m161025_000000_fix_char_columns extends Migration
     public function safeUp()
     {
         $this->alterColumn(
-            '{{%users}}',
+            Table::USERS,
             'password',
             $this->string()
         );
 
         $this->alterColumn(
-            '{{%users}}',
+            Table::USERS,
             'verificationCode',
             $this->string()
         );

@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use yii\db\Exception;
 
 /**
@@ -55,11 +56,11 @@ class Sequence
 
             if ($num === 1) {
                 Craft::$app->getDb()->createCommand()
-                    ->insert('{{%sequences}}', ['name' => $name, 'next' => $num + 1], false)
+                    ->insert(Table::SEQUENCES, ['name' => $name, 'next' => $num + 1], false)
                     ->execute();
             } else {
                 Craft::$app->getDb()->createCommand()
-                    ->update('{{%sequences}}', ['next' => $num + 1], ['name' => $name], [], false)
+                    ->update(Table::SEQUENCES, ['next' => $num + 1], ['name' => $name], [], false)
                     ->execute();
             }
         } catch (\Throwable $e) {
@@ -81,7 +82,7 @@ class Sequence
     {
         return (int)(new Query())
             ->select(['next'])
-            ->from('{{%sequences}}')
+            ->from(Table::SEQUENCES)
             ->where(['name' => $name])
             ->scalar() ?: 1;
     }

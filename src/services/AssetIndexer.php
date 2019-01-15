@@ -7,6 +7,7 @@ use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
@@ -216,7 +217,7 @@ class AssetIndexer extends Component
 
         Craft::$app->getDb()->createCommand()
             ->batchInsert(
-                '{{%assetindexdata}}',
+                Table::ASSETINDEXDATA,
                 $attributes,
                 $values)
             ->execute();
@@ -272,7 +273,7 @@ class AssetIndexer extends Component
                 'completed',
                 'inProgress',
             ])
-            ->from(['{{%assetindexdata}}'])
+            ->from([Table::ASSETINDEXDATA])
             ->where([
                 'volumeId' => $volumeId,
                 'sessionId' => $sessionId,
@@ -297,7 +298,7 @@ class AssetIndexer extends Component
 
         Craft::$app->getDb()->createCommand()
             ->update(
-                '{{%assetindexdata}}',
+                Table::ASSETINDEXDATA,
                 $data,
                 ['id' => $entryId])
             ->execute();
@@ -317,7 +318,7 @@ class AssetIndexer extends Component
         // Load the record IDs of the files that were indexed.
         $processedFiles = (new Query())
             ->select(['recordId'])
-            ->from(['{{%assetindexdata}}'])
+            ->from([Table::ASSETINDEXDATA])
             ->where([
                 'and',
                 ['sessionId' => $sessionId],
@@ -328,7 +329,7 @@ class AssetIndexer extends Component
         // Load the processed volume IDs for that sessions.
         $volumeIds = (new Query())
             ->select(['DISTINCT([[volumeId]])'])
-            ->from(['{{%assetindexdata}}'])
+            ->from([Table::ASSETINDEXDATA])
             ->where(['sessionId' => $sessionId])
             ->column();
 

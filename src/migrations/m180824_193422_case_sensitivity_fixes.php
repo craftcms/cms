@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
@@ -16,19 +17,19 @@ class m180824_193422_case_sensitivity_fixes extends Migration
     public function safeUp()
     {
         // Unique URIs and user emails/usernames should no longer be enforced by the DB
-        MigrationHelper::dropIndexIfExists('{{%elements_sites}}', ['uri', 'siteId'], true, $this);
-        MigrationHelper::dropIndexIfExists('{{%users}}', ['email'], true, $this);
-        MigrationHelper::dropIndexIfExists('{{%users}}', ['username'], true, $this);
+        MigrationHelper::dropIndexIfExists(Table::ELEMENTS_SITES, ['uri', 'siteId'], true, $this);
+        MigrationHelper::dropIndexIfExists(Table::USERS, ['email'], true, $this);
+        MigrationHelper::dropIndexIfExists(Table::USERS, ['username'], true, $this);
 
         if ($this->db->getIsMysql()) {
-            $this->createIndex(null, '{{%elements_sites}}', ['uri', 'siteId']);
-            $this->createIndex(null, '{{%users}}', ['email']);
-            $this->createIndex(null, '{{%users}}', ['username']);
+            $this->createIndex(null, Table::ELEMENTS_SITES, ['uri', 'siteId']);
+            $this->createIndex(null, Table::USERS, ['email']);
+            $this->createIndex(null, Table::USERS, ['username']);
         } else {
             // Postgres is case-sensitive
-            $this->createIndex($this->db->getIndexName('{{%elements_sites}}', ['uri', 'siteId']), '{{%elements_sites}}', ['lower([[uri]])', 'siteId']);
-            $this->createIndex($this->db->getIndexName('{{%users}}', ['email']), '{{%users}}', ['lower([[email]])']);
-            $this->createIndex($this->db->getIndexName('{{%users}}', ['username']), '{{%users}}', ['lower([[username]])']);
+            $this->createIndex($this->db->getIndexName(Table::ELEMENTS_SITES, ['uri', 'siteId']), Table::ELEMENTS_SITES, ['lower([[uri]])', 'siteId']);
+            $this->createIndex($this->db->getIndexName(Table::USERS, ['email']), Table::USERS, ['lower([[email]])']);
+            $this->createIndex($this->db->getIndexName(Table::USERS, ['username']), Table::USERS, ['lower([[username]])']);
         }
     }
 

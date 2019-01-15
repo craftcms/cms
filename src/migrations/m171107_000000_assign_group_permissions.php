@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 
 /**
  * m171107_000000_assign_group_permissions migration.
@@ -37,18 +38,18 @@ class m171107_000000_assign_group_permissions extends Migration
         // Get the user group IDs
         $allGroupIds = (new Query())
             ->select(['id'])
-            ->from(['{{%usergroups}}'])
+            ->from([Table::USERGROUPS])
             ->column();
 
         // Create the new permissions
         $permissionIds = [];
 
-        $this->insert('{{%userpermissions}}', ['name' => 'assignusergroups']);
-        $permissionIds[] = $this->db->getLastInsertID('{{%userpermissions}}');
+        $this->insert(Table::USERPERMISSIONS, ['name' => 'assignusergroups']);
+        $permissionIds[] = $this->db->getLastInsertID(Table::USERPERMISSIONS);
 
         foreach ($allGroupIds as $groupId) {
-            $this->insert('{{%userpermissions}}', ['name' => 'assignusergroup:' . $groupId]);
-            $permissionIds[] = $this->db->getLastInsertID('{{%userpermissions}}');
+            $this->insert(Table::USERPERMISSIONS, ['name' => 'assignusergroup:' . $groupId]);
+            $permissionIds[] = $this->db->getLastInsertID(Table::USERPERMISSIONS);
         }
 
         // Assign the new permissions to the users
@@ -59,7 +60,7 @@ class m171107_000000_assign_group_permissions extends Migration
                     $data[] = [$permissionId, $userId];
                 }
             }
-            $this->batchInsert('{{%userpermissions_users}}', ['permissionId', 'userId'], $data);
+            $this->batchInsert(Table::USERPERMISSIONS_USERS, ['permissionId', 'userId'], $data);
         }
 
         // Assign the new permissions to the groups
@@ -70,7 +71,7 @@ class m171107_000000_assign_group_permissions extends Migration
                     $data[] = [$permissionId, $groupId];
                 }
             }
-            $this->batchInsert('{{%userpermissions_usergroups}}', ['permissionId', 'groupId'], $data);
+            $this->batchInsert(Table::USERPERMISSIONS_USERGROUPS, ['permissionId', 'groupId'], $data);
         }
     }
 

@@ -9,6 +9,7 @@ namespace craft\db\pgsql;
 
 use Composer\Util\Platform;
 use Craft;
+use craft\db\Table;
 use craft\db\TableSchema;
 use yii\db\Exception;
 
@@ -120,13 +121,13 @@ class Schema extends \yii\db\pgsql\Schema
     public function getDefaultBackupCommand()
     {
         $defaultTableIgnoreList = [
-            '{{%assetindexdata}}',
-            '{{%assettransformindex}}',
+            Table::ASSETINDEXDATA,
+            Table::ASSETTRANSFORMINDEX,
             '{{%cache}}',
-            '{{%sessions}}',
-            '{{%templatecaches}}',
+            Table::SESSIONS,
+            Table::TEMPLATECACHES,
             '{{%templatecachecriteria}}',
-            '{{%templatecacheelements}}',
+            Table::TEMPLATECACHEELEMENTS,
         ];
 
         $dbSchema = Craft::$app->getDb()->getSchema();
@@ -173,8 +174,10 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * ```php
      * [
-     *     'IndexName1' => ['col1' [, ...]],
-     *     'IndexName2' => ['col2' [, ...]],
+     *     'IndexName' => [
+     *         'columns' => ['col1' [, ...]],
+     *         'unique' => false
+     *     ],
      * ]
      * ```
      *
@@ -197,7 +200,9 @@ class Schema extends \yii\db\pgsql\Schema
                 // https://github.com/yiisoft/yii2/issues/10613
                 $column = substr($column, 1, -1);
             }
-            $indexes[$row['indexname']][] = $column;
+
+            $indexes[$row['indexname']]['columns'][] = $column;
+            $indexes[$row['indexname']]['unique'] = (bool)$row['isunique'];
         }
 
         return $indexes;
@@ -323,7 +328,8 @@ SQL;
     {
         $sql = 'SELECT
     i.relname as indexname,
-    pg_get_indexdef(idx.indexrelid, k + 1, TRUE) AS columnname
+    pg_get_indexdef(idx.indexrelid, k + 1, TRUE) AS columnname,
+    indisunique as isunique
 FROM (
   SELECT *, generate_subscripts(indkey, 1) AS k
   FROM pg_index

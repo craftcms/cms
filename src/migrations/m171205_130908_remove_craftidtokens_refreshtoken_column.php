@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m171205_130908_remove_craftidtokens_refreshtoken_column migration.
@@ -14,12 +15,12 @@ class m171205_130908_remove_craftidtokens_refreshtoken_column extends Migration
      */
     public function safeUp()
     {
-        if (!$this->db->columnExists('{{%craftidtokens}}', 'refreshToken')) {
+        if (!$this->db->columnExists(Table::CRAFTIDTOKENS, 'refreshToken')) {
             // Migration has already run
             return true;
         }
 
-        $this->dropColumn('{{%craftidtokens}}', 'refreshToken');
+        $this->dropColumn(Table::CRAFTIDTOKENS, 'refreshToken');
     }
 
     /**

@@ -491,6 +491,31 @@ $globalSets = \craft\elements\GlobalSet::find()
 :::
 
 
+### `trashed`
+
+Narrows the query results to only global sets that have been soft-deleted.
+
+
+
+
+
+::: code
+```twig
+{# Fetch trashed global sets #}
+{% set globalSets = {twig-function}
+    .trashed()
+    .all() %}
+```
+
+```php
+// Fetch trashed global sets
+$globalSets = \craft\elements\GlobalSet::find()
+    ->trashed()
+    ->all();
+```
+:::
+
+
 ### `uid`
 
 Narrows the query results based on the global sets’ UIDs.

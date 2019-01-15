@@ -8,6 +8,8 @@
 namespace craft\base;
 
 use Craft;
+use craft\events\DefineBehaviorsEvent;
+use craft\events\DefineRulesEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 
@@ -23,6 +25,27 @@ abstract class Model extends \yii\base\Model
     // =========================================================================
 
     use ClonefixTrait;
+
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the model's init cycle
+     * @see init()
+     */
+    const EVENT_INIT = 'init';
+
+    /**
+     * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
+     * @see behaviors()
+     */
+    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
+    /**
+     * @event DefineRulesEvent The event that is triggered when defining the model rules
+     * @see behaviors()
+     */
+    const EVENT_DEFINE_RULES = 'defineRules';
 
     // Public Methods
     // =========================================================================
@@ -40,6 +63,32 @@ abstract class Model extends \yii\base\Model
                 $this->$attribute = DateTimeHelper::toDateTime($this->$attribute);
             }
         }
+
+        if ($this->hasEventHandlers(self::EVENT_INIT)) {
+            $this->trigger(self::EVENT_INIT);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        // Fire a 'defineBehaviors' event
+        $event = new DefineBehaviorsEvent();
+        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+        return $event->behaviors;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        // Fire a 'defineRules' event
+        $event = new DefineRulesEvent();
+        $this->trigger(self::EVENT_DEFINE_RULES, $event);
+        return $event->rules;
     }
 
     /**

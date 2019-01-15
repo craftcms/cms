@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m170206_142126_system_name migration.
@@ -15,17 +16,15 @@ class m170206_142126_system_name extends Migration
      */
     public function safeUp()
     {
-        if ($this->db->columnExists('{{%info}}', 'name')) {
+        if ($this->db->columnExists(Table::INFO, 'name')) {
             return true;
         }
 
         $systemName = Craft::$app->getSites()->getPrimarySite()->name;
 
-        $this->addColumn('{{%info}}', 'name', $this->string()->after('timezone'));
-        $this->update('{{%info}}', ['name' => $systemName]);
-        $this->alterColumn('{{%info}}', 'name', $this->string()->notNull());
-
-        Craft::$app->getInfo()->name = $systemName;
+        $this->addColumn(Table::INFO, 'name', $this->string()->after('timezone'));
+        $this->update(Table::INFO, ['name' => $systemName]);
+        $this->alterColumn(Table::INFO, 'name', $this->string()->notNull());
 
         return true;
     }

@@ -182,6 +182,7 @@ class UpdaterController extends BaseUpdaterController
         // Are there any migrations to run?
         $installedHandles = array_keys($this->data['install']);
         $pendingHandles = Craft::$app->getUpdates()->getPendingMigrationHandles();
+
         if (!empty(array_intersect($pendingHandles, $installedHandles))) {
             $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
             return $this->sendNextAction($backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE);

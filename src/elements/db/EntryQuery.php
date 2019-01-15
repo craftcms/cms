@@ -10,6 +10,7 @@ namespace craft\elements\db;
 use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\db\Table;
 use craft\elements\Entry;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -294,7 +295,7 @@ class EntryQuery extends ElementQuery
         } else if ($value !== null) {
             $this->sectionId = (new Query())
                 ->select(['id'])
-                ->from(['{{%sections}}'])
+                ->from([Table::SECTIONS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         } else {
@@ -384,7 +385,7 @@ class EntryQuery extends ElementQuery
         } else if ($value !== null) {
             $this->typeId = (new Query())
                 ->select(['id'])
-                ->from(['{{%entrytypes}}'])
+                ->from([Table::ENTRYTYPES])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         } else {
@@ -510,7 +511,7 @@ class EntryQuery extends ElementQuery
         } else if ($value !== null) {
             $this->authorGroupId = (new Query())
                 ->select(['id'])
-                ->from(['{{%usergroups}}'])
+                ->from([Table::USERGROUPS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         } else {
@@ -890,7 +891,7 @@ class EntryQuery extends ElementQuery
 
         // Enforce the editPeerEntries permissions for non-Single sections
         foreach (Craft::$app->getSections()->getEditableSections() as $section) {
-            if ($section->type != Section::TYPE_SINGLE && !$user->can('editPeerEntries:' . $section->id)) {
+            if ($section->type != Section::TYPE_SINGLE && !$user->can('editPeerEntries:' . $section->uid)) {
                 $this->subQuery->andWhere([
                     'or',
                     ['not', ['entries.sectionId' => $section->id]],
@@ -910,7 +911,7 @@ class EntryQuery extends ElementQuery
             if ($this->structureId === null && (!is_array($this->sectionId) || count($this->sectionId) === 1)) {
                 $structureId = (new Query())
                     ->select(['structureId'])
-                    ->from(['{{%sections}}'])
+                    ->from([Table::SECTIONS])
                     ->where(Db::parseParam('id', $this->sectionId))
                     ->scalar();
                 $this->structureId = $structureId ? (int)$structureId : false;

@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m161006_205918_schemaVersion_not_null migration.
@@ -15,7 +16,7 @@ class m161006_205918_schemaVersion_not_null extends Migration
     public function safeUp()
     {
         $this->update(
-            '{{%plugins}}',
+            Table::PLUGINS,
             ['schemaVersion' => '1.0.0'],
             ['schemaVersion' => null],
             [],
@@ -26,7 +27,7 @@ class m161006_205918_schemaVersion_not_null extends Migration
             // (see https://github.com/yiisoft/yii2/issues/12077)
             $this->execute('alter table {{%plugins}} alter column [[schemaVersion]] type varchar(15), alter column [[schemaVersion]] set not null');
         } else {
-            $this->alterColumn('{{%plugins}}', 'schemaVersion', $this->string(15)->notNull());
+            $this->alterColumn(Table::PLUGINS, 'schemaVersion', $this->string(15)->notNull());
         }
     }
 

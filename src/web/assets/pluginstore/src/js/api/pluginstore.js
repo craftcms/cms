@@ -1,3 +1,5 @@
+/* global Craft */
+
 import axios from 'axios'
 
 export default {
@@ -44,6 +46,26 @@ export default {
      */
     getPluginDetails(pluginId, cb, errorCb) {
         axios.get(Craft.getActionUrl('plugin-store/plugin-details'), {
+                params: {
+                    pluginId: pluginId,
+                },
+                headers: {
+                    'X-CSRF-Token': Craft.csrfTokenValue,
+                }
+            })
+            .then(response => {
+                return cb(response)
+            })
+            .catch(response => {
+                return errorCb(response)
+            })
+    },
+
+    /**
+     * Get plugin changelog.
+     */
+    getPluginChangelog(pluginId, cb, errorCb) {
+        axios.get(Craft.getActionUrl('plugin-store/plugin-changelog'), {
                 params: {
                     pluginId: pluginId,
                 },

@@ -653,6 +653,31 @@ $MatrixBlocks = \craft\elements\MatrixBlock::find()
 :::
 
 
+### `trashed`
+
+Narrows the query results to only Matrix blocks that have been soft-deleted.
+
+
+
+
+
+::: code
+```twig
+{# Fetch trashed Matrix blocks #}
+{% set MatrixBlocks = {twig-function}
+    .trashed()
+    .all() %}
+```
+
+```php
+// Fetch trashed Matrix blocks
+$MatrixBlocks = \craft\elements\MatrixBlock::find()
+    ->trashed()
+    ->all();
+```
+:::
+
+
 ### `type`
 
 Narrows the query results based on the Matrix blocks’ block types.
