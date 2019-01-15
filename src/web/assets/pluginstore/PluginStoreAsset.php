@@ -235,7 +235,7 @@ class PluginStoreAsset extends AssetBundle
         if (!UrlHelper::isAbsoluteUrl($path) && !is_file($path)) {
             try {
                 $path = UrlHelper::siteUrl($path);
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 Craft::error($e->getMessage(), __METHOD__);
             }
         }
