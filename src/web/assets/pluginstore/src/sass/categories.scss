@@ -19,7 +19,7 @@ ul.categories {
     }
 
     a {
-      @apply .block .relative .px-6 .py-2;
+      @apply .block .relative .px-6 .py-2 .text-grey-darkest;
 
       img {
         @apply .align-middle;
@@ -30,6 +30,10 @@ ul.categories {
         @apply .no-underline .z-10;
         background: #fafafa;
         border-color: #eee;
+        
+        &:not(.router-link-active) {
+          color: $linkColor;
+        }
       }
 
       &.router-link-active {
