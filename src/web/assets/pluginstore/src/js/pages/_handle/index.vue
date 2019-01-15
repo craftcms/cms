@@ -76,11 +76,11 @@
                         <li><span>{{ "Compatibility"|t('app') }}</span> <strong>{{ plugin.compatibility }}</strong></li>
                         <li v-if="pluginCategories && pluginCategories.length > 0">
                             <span>{{ "Categories"|t('app') }}</span>
-                            <strong>
-                                <span v-for="(category, key) in pluginCategories" :key="'plugin-category-' + key">
-                                    <a @click="viewCategory(category)">{{ category.title }}</a><template v-if="key < (pluginCategories.length - 1)">, </template>
-                                </span>
-                            </strong>
+                            <div>
+                                <div v-for="(category, key) in pluginCategories" :key="'plugin-category-' + key">
+                                    <strong><a @click="viewCategory(category)">{{ category.title }}</a></strong>
+                                </div>
+                            </div>
                         </li>
                         <li><span>{{ "License"|t('app') }}</span> <strong>{{ licenseLabel }}</strong></li>
                     </ul>
