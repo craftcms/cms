@@ -68,7 +68,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether Craft should allow system and plugin updates in the Control Panel, and plugin installation from the Plugin Store.
      *
-     * This setting will automatically be disabled if [[allowAdminChanges]] is enabled.
+     * This setting will automatically be disabled if [[allowAdminChanges]] is disabled.
      */
     public $allowUpdates = true;
     /**
