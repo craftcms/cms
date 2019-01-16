@@ -14,16 +14,9 @@ use yii\console\Controller;
 
 
 /**
- * Manages Craft asset indexing.
- * This command indexes assets on all volumes or specified volumes.
- * ~~~
- * # Indexes all assets on all volumes. Optional argument is whether or not to cache images.
- * craft asset-indexing/all
- * # Indexes all assets on a specified volume (EXAMPLE_HANDLE).
- * Second (optional) argument is whether or not to cache images.
- * craft asset-indexing/one EXAMPLE_HANDLE
- * ~~~
+ * Indexes assets.
  *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1
  */
 class AssetIndexingController extends Controller
@@ -44,13 +37,14 @@ class AssetIndexingController extends Controller
     public function actionAll($cacheImages = 1)
     {
         try {
+            $session = Craft::$app->getAssetIndexer()->getIndexingSessionId();
             if ($volumes = Craft::$app->getVolumes()->getAllVolumes()) {
                 foreach ($volumes as $volume) {
                     foreach (Craft::$app->getAssetIndexer()->getIndexListOnVolume($volume) as $item) {
                         Craft::$app->getAssetIndexer()->indexFile(
                             $volume,
                             $item['path'],
-                            '',
+                            $session,
                             $cacheImages
                         );
                     }
@@ -84,12 +78,13 @@ class AssetIndexingController extends Controller
     public function actionOne($name, $cacheImages = 1)
     {
         try {
+            $session = Craft::$app->getAssetIndexer()->getIndexingSessionId();
             if ($volume = Craft::$app->getVolumes()->getVolumeByHandle($name)) {
                 foreach (Craft::$app->getAssetIndexer()->getIndexListOnVolume($volume) as $item) {
                     Craft::$app->getAssetIndexer()->indexFile(
                         $volume,
                         $item['path'],
-                        '',
+                        $session,
                         $cacheImages
                     );
                 }
