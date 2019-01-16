@@ -64,7 +64,12 @@
                                     <td class="blank-cell"></td>
                                     <td class="blank-cell"></td>
                                     <td>
-                                        {{adjustment.name}}
+                                        <template v-if="adjustment.sourceSnapshot.type === 'extendedUpdates'">
+                                            {{"Updates until {date}"|t('app', {date: $options.filters.formatDate(adjustment.sourceSnapshot.expiryDate)})}}
+                                        </template>
+                                        <template v-else>
+                                            {{adjustment.name}}
+                                        </template>
                                     </td>
                                     <td class="price">
                                         {{adjustment.amount|currency}}
@@ -313,6 +318,9 @@
                 return true
             },
 
+            updatesUntil(date) {
+                return this.$options.filters.t("Updates until {date}", 'app', {date})
+            }
         },
 
     }

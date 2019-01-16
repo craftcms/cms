@@ -4,7 +4,7 @@
 
 import Vue from 'vue'
 import {currency} from './js/filters/currency'
-import {escapeHtml, formatNumber, t} from './js/filters/craft'
+import {escapeHtml, formatDate, formatNumber, t} from './js/filters/craft'
 import router from './js/router'
 import store from './js/store'
 import {mapState} from 'vuex'
@@ -18,6 +18,7 @@ import './js/plugins/font-awesome'
 
 Vue.filter('currency', currency)
 Vue.filter('escapeHtml', escapeHtml)
+Vue.filter('formatDate', formatDate)
 Vue.filter('formatNumber', formatNumber)
 Vue.filter('t', t)
 
