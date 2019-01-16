@@ -177,7 +177,7 @@ Defined by
 
 Whether Craft should allow system and plugin updates in the Control Panel, and plugin installation from the Plugin Store.
 
-This setting will automatically be disabled if [$allowAdminChanges](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-allowadminchanges) is enabled.
+This setting will automatically be disabled if [$allowAdminChanges](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-allowadminchanges) is disabled.
 
 
 ### `allowUppercaseInSlug`
