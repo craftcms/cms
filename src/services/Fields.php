@@ -1562,14 +1562,21 @@ class Fields extends Component
      */
     private function _createLayoutQuery(): Query
     {
-        return (new Query)
+        $query = (new Query)
             ->select([
                 'id',
                 'type',
                 'uid'
             ])
-            ->from([Table::FIELDLAYOUTS])
-            ->where(['dateDeleted' => null]);
+            ->from([Table::FIELDLAYOUTS]);
+
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.1.0', '>=')) {
+            $query->where(['dateDeleted' => null]);
+        }
+
+        return $query;
     }
 
     /**

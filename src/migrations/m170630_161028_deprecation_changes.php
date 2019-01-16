@@ -16,9 +16,6 @@ class m170630_161028_deprecation_changes extends Migration
      */
     public function safeUp()
     {
-        // Copy this from m170821_180624_deprecation_line_nullable in case any template lines are null
-        $this->alterColumn(Table::DEPRECATIONERRORS, 'line', $this->smallInteger()->unsigned());
-
         $this->update(Table::DEPRECATIONERRORS, [
             'file' => new Expression('[[template]]'),
             'line' => new Expression('[[templateLine]]')
