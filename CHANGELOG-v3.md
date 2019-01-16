@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\web\User::generateToken()`.
+
 ### Changed
 - System error message templates no longer parse exception messages as Markdown.
 

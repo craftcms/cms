@@ -1330,9 +1330,9 @@ class User extends Element implements IdentityInterface
                 ])
                 ->execute();
 
-            // If this is for the current user, recreate their session so they don't get logged out
+            // If this is for the current user, generate a new user session token for them
             if ($this->getIsCurrent()) {
-                Craft::$app->getUser()->switchIdentity($this, Craft::$app->getConfig()->getGeneral()->userSessionDuration);
+                Craft::$app->getUser()->generateToken($this->id);
             }
         }
     }
