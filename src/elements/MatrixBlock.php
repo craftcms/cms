@@ -113,7 +113,7 @@ class MatrixBlock extends Element
         // Set the field context
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
-        $contentService->fieldContext = 'matrixBlockType:' . $blockType->id;
+        $contentService->fieldContext = 'matrixBlockType:' . $blockType->uid;
 
         $map = parent::eagerLoadingMap($sourceElements, $fieldHandle);
 
@@ -310,7 +310,7 @@ class MatrixBlock extends Element
      */
     public function getFieldContext(): string
     {
-        return 'matrixBlockType:' . $this->typeId;
+        return 'matrixBlockType:' . $this->getType()->uid;
     }
 
     /**
