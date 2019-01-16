@@ -14,7 +14,7 @@
 ### Security
 - Fixed an XSS vulnerability.
 
-## 3.1.0 - 2018-01-15
+## 3.1.0 - 2019-01-15
 
 ### Added
 - Added the Project Config, a portable and centralized configuration for system settings. ([#1429](https://github.com/craftcms/cms/issues/1429)) 
