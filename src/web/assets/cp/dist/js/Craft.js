@@ -1,4 +1,4 @@
-/*!   - 2019-01-13 */
+/*!   - 2019-01-15 */
 (function($){
 
 /** global: Craft */
@@ -3074,10 +3074,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     // Temporarily set the sort to the first option
                     var $firstOption = this.$sortAttributesList.find('a:not(.disabled):first')
                     this.setSortAttribute($firstOption.data('attr'));
-                	this.setSortDirection('asc');
+                    this.setSortDirection('asc');
                 }
             } else {
-            	this.setStoredSortOptionsForSource();
+                this.setStoredSortOptionsForSource();
             }
         },
 
@@ -18869,7 +18869,7 @@ Craft.ui =
 
             var $label = $('<label/>', {
                 'for': id,
-                html: config.label
+                text: config.label
             });
 
             // Should we include a hidden input first?
