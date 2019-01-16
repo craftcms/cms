@@ -546,37 +546,37 @@ class User extends \yii\web\User
             return;
         }
 
-        $validToken = false;
         $token = $session->get($this->tokenParam);
 
-        if ($token !== null) {
-            $tokenId = (new Query())
-                ->select(['id'])
-                ->from([Table::SESSIONS])
-                ->where([
-                    'token' => $token,
-                    'userId' => $id,
-                ])
-                ->scalar();
-
-            if ($tokenId) {
-                $validToken = true;
-
-                if ($extendSession) {
-                    // Update the session row's dateUpdated value so it doesn't get GC'd
-                    Craft::$app->getDb()->createCommand()
-                        ->update(Table::SESSIONS, [
-                            'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
-                        ], ['id' => $tokenId])
-                        ->execute();
-                }
-            }
+        if ($token === null) {
+            // Just give them a new token and be done with it
+            $this->generateToken($id);
+            return;
         }
 
-        if (!$validToken) {
+        $tokenId = (new Query())
+            ->select(['id'])
+            ->from([Table::SESSIONS])
+            ->where([
+                'token' => $token,
+                'userId' => $id,
+            ])
+            ->scalar();
+
+        if (!$tokenId) {
             // Kill their PHP session. Their session may still be auto-renewed via their session cookie, though
             $session->remove($this->idParam);
             $session->remove($this->tokenParam);
+            return;
+        }
+
+        if ($extendSession) {
+            // Update the session row's dateUpdated value so it doesn't get GC'd
+            Craft::$app->getDb()->createCommand()
+                ->update(Table::SESSIONS, [
+                    'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
+                ], ['id' => $tokenId])
+                ->execute();
         }
     }
 }
