@@ -40,6 +40,14 @@ p {
 }
 
 
+/* Edition Badge */
+
+.edition-badge {
+  @apply .inline-block .border .border-solid .border-grey .rounded .uppercase .px-1 .text-grey-dark .text-xs .relative;
+  top: -2px;
+}
+
+
 /* Notifications */
 
 #notifications-wrapper {
