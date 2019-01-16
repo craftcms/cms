@@ -6,6 +6,11 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Json;
+use craft\fields\Assets;
+use craft\fields\Entries;
+use craft\fields\Users;
+use craft\fields\Categories;
+use craft\fields\Tags;
 
 /**
  * m180516_153000_uids_in_field_settings migration.
@@ -41,7 +46,7 @@ class m180516_153000_uids_in_field_settings extends Migration
             }
 
             switch ($field['type']) {
-                case 'craft\fields\Assets':
+                case Assets::class:
                     list(, $folderIds[]) = explode(':', $settings['defaultUploadLocationSource']);
                     list(, $folderIds[]) = explode(':', $settings['singleUploadLocationSource']);
 
@@ -54,7 +59,7 @@ class m180516_153000_uids_in_field_settings extends Migration
                     }
 
                     break;
-                case 'craft\fields\Entries':
+                case Entries::class:
                     if (is_array($settings['sources'])) {
                         foreach ($settings['sources'] as $source) {
                             if (strpos($source, ':') !== false) {
@@ -64,7 +69,7 @@ class m180516_153000_uids_in_field_settings extends Migration
                     }
 
                     break;
-                case 'craft\fields\Users':
+                case Users::class:
                     if (is_array($settings['sources'])) {
                         foreach ($settings['sources'] as $source) {
                             if (strpos($source, ':') !== false) {
@@ -74,11 +79,11 @@ class m180516_153000_uids_in_field_settings extends Migration
                     }
 
                     break;
-                case 'craft\fields\Categories':
+                case Categories::class:
                     list(, $categoryGroupIds[]) = explode(':', $settings['source']);
 
                     break;
-                case 'craft\fields\Tags':
+                case Tags::class:
                     list(, $tagGroupIds[]) = explode(':', $settings['source']);
 
                     break;
@@ -133,7 +138,7 @@ class m180516_153000_uids_in_field_settings extends Migration
             }
 
             switch ($field['type']) {
-                case 'craft\fields\Assets':
+                case Assets::class:
                     $default = explode(':', $settings['defaultUploadLocationSource']);
                     $single = explode(':', $settings['singleUploadLocationSource']);
 
@@ -156,7 +161,7 @@ class m180516_153000_uids_in_field_settings extends Migration
                     }
 
                     break;
-                case 'craft\fields\Entries':
+                case Entries::class:
                     if (is_array($settings['sources'])) {
                         $newSources = [];
 
@@ -173,7 +178,7 @@ class m180516_153000_uids_in_field_settings extends Migration
                     }
 
                     break;
-                case 'craft\fields\Users':
+                case Users::class:
                     if (is_array($settings['sources'])) {
                         $newSources = [];
 
@@ -191,12 +196,12 @@ class m180516_153000_uids_in_field_settings extends Migration
                     }
 
                     break;
-                case 'craft\fields\Categories':
+                case Categories::class:
                     $source = explode(':', $settings['source']);
                     $settings['source'] = $source[0] . ':' . ($categoryGroups[$source[1]] ?? $source[1]);
 
                     break;
-                case 'craft\fields\Tags':
+                case Tags::class:
                     $source = explode(':', $settings['source']);
                     $settings['source'] = $source[0] . ':' . ($tagGroups[$source[1]] ?? $source[1]);
 
