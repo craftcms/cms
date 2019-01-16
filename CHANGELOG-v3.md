@@ -10,6 +10,7 @@
 - Fixed a bug where the `clear-caches/cp-resources` command could clear out the wrong directory if the `resourceBasePath` config setting began with `@webroot`. ([#3637](https://github.com/craftcms/cms/issues/3637))
 - Fixed an error that occurred when updating to Craft 3.1 if there were any Matrix blocks without any sub-fields. ([#3635](https://github.com/craftcms/cms/pull/3635))
 - Fixed an error that occurred when updating to Craft 3.1 if there were any Matrix block types left over from a Matrix field that had been converted to something else.
+- Fixed an error that could occur when logging deprecation errors on PostgreSQL. ([#3638](https://github.com/craftcms/cms/issues/3638))
 
 ### Security
 - Fixed an XSS vulnerability.
