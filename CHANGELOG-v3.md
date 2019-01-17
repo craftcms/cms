@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a PHP notice that would occur when trying to load a plugin that has no settings.
+
 ### Security
 - Fixed an XSS vulnerability.
 
