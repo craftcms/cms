@@ -12,7 +12,7 @@
 - Fixed a bug where links to the Plugin Store from Settings → Plugins were 404ing.
 
 ### Security
-- Fixed an XSS vulnerability.
+- Fixed two XSS vulnerabilities.
 
 ## 3.1.1 - 2019-01-16
 
