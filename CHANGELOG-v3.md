@@ -4,7 +4,7 @@
 
 ### Fixed
 - Fixed a PHP notice that would occur when trying to load a plugin that has no settings.
-- Fixed a bug where Plugin Store’s Try buttons would appear as disabled when they should be enabled.
+- Fixed a bug where Plugin Store’s Try buttons would appear as disabled when they should be enabled. ([#3619](https://github.com/craftcms/cms/issues/3619))
 
 ### Security
 - Fixed an XSS vulnerability.

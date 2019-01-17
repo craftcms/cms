@@ -45,11 +45,11 @@ const getters = {
     getPluginLicenseInfo(state) {
         return pluginHandle => {
             if (!state.pluginLicenseInfo) {
-                return false
+                return null
             }
 
             if (!state.pluginLicenseInfo[pluginHandle]) {
-                return false
+                return null
             }
 
             return state.pluginLicenseInfo[pluginHandle]
