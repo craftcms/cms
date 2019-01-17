@@ -233,13 +233,6 @@ class Matrix extends Component
         /** @var Field $parentField */
         $parentField = $fieldsService->getFieldById($blockType->fieldId);
         $isNewBlockType = $blockType->getIsNew();
-
-        if ($isNewBlockType) {
-            $blockType->uid = StringHelper::UUID();
-        } else if (!$blockType->uid) {
-            $blockType->uid = Db::uidById(Table::MATRIXBLOCKTYPES, $blockType->id);
-        }
-
         $projectConfig = Craft::$app->getProjectConfig();
 
         $configData = [
@@ -258,16 +251,6 @@ class Matrix extends Component
 
         foreach ($blockType->getFields() as $field) {
             /** @var Field $field */
-            // Hack to allow blank field names
-            if (!$field->name) {
-                $field->name = '__blank__';
-            }
-
-            if (!$field->uid) {
-                $field->uid = StringHelper::UUID();
-            }
-
-            $field->context = 'matrixBlockType:' . $blockType->uid;
             $configData['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
 
             $field->sortOrder = ++$sortOrder;
@@ -568,6 +551,10 @@ class Matrix extends Component
      */
     public function saveSettings(MatrixField $matrixField, bool $validate = true): bool
     {
+        if (!$matrixField->contentTable) {
+            throw new Exception('Unable to save a Matrix field’s settings without knowing its content table.');
+        }
+
         if (!$validate || $this->validateFieldSettings($matrixField)) {
             $db = Craft::$app->getDb();
             $transaction = $db->beginTransaction();

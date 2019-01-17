@@ -262,7 +262,7 @@
                 var $oldEdition = this.$row.find('.edition');
                 if (info.hasMultipleEditions || info.isTrial) {
                     var $newEdition = info.upgradeAvailable
-                        ? $('<a/>', {href: Craft.getUrl('plugin-store/plugins/' + handle), 'class': 'edition'})
+                        ? $('<a/>', {href: Craft.getUrl('plugin-store/' + handle), 'class': 'edition'})
                         : $('<div/>', {'class': 'edition'});
                     if (info.hasMultipleEditions) {
                         $('<div/>', {'class': 'edition-name', text: info.edition}).appendTo($newEdition);
