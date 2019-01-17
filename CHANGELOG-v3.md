@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.1 - 2019-01-16
 
 ### Added
 - Added support for the `CRAFT_LOG_PHP_ERRORS` PHP constant. ([#3619](https://github.com/craftcms/cms/issues/3619))
@@ -25,7 +25,7 @@
 
 ### Security
 - The Request panel in the Debug Toolbar now redacts any sensitive information. ([#3619](https://github.com/craftcms/cms/issues/3619))
-- Fixed an XSS vulnerability.
+- Fixed two XSS vulnerabilities.
 
 ## 3.1.0 - 2019-01-15
 
