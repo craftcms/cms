@@ -1215,6 +1215,11 @@ class Fields extends Component
                 ->delete(Table::FIELDLAYOUTTABS, ['layoutId' => $layout->id])
                 ->execute();
 
+            // Because in MySQL, you can't even rely on cascading deletes to work. ¯\_(ツ)_/¯
+            Craft::$app->getDb()->createCommand()
+                ->delete(Table::FIELDLAYOUTFIELDS, ['layoutId' => $layout->id])
+                ->execute();
+
             // Get the current layout
             $layoutRecord = FieldLayoutRecord::findWithTrashed()
                 ->andWhere(['id' => $layout->id])

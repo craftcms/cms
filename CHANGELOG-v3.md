@@ -11,6 +11,7 @@
 - Fixed a bug where Matrix block type fields’ `beforeSave()` methods weren’t getting called.
 - Fixed a bug where links to the Plugin Store from Settings → Plugins were 404ing.
 - Fixed a bug where soft-deleted sections and entry types were still showing up in the Control Panel. ([#3648](https://github.com/craftcms/cms/issues/3648))
+- Fixed a bug where an update to Craft 3.1 would fail with a database error in some scenarios.
 
 ### Security
 - Fixed two XSS vulnerabilities.
