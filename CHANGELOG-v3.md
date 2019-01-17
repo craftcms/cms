@@ -23,6 +23,7 @@
 - Fixed a bug where free plugins weren’t installable from the Plugin Store. ([#3642](https://github.com/craftcms/cms/issues/3642))
 
 ### Security
+- The Request panel in the Debug Toolbar now redacts any sensitive information. ([#3619](https://github.com/craftcms/cms/issues/3619))
 - Fixed an XSS vulnerability.
 
 ## 3.1.0 - 2019-01-15
