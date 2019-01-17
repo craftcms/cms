@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
+use craft\fields\Matrix as MatrixField;
 use craft\services\Fields;
 use craft\services\Matrix;
 
@@ -25,12 +26,18 @@ class m190108_110000_cleanup_project_config extends Migration
 
         $projectConfig = Craft::$app->getProjectConfig();
 
-        // Clean up all the orphan matrix block type from project config
+        // Clean up all the orphan matrix block type from project config or matrix blocks with parent fields that aren't Matrix.
         $matrixBlockTypes = $projectConfig->get(Matrix::CONFIG_BLOCKTYPE_KEY) ?? [];
 
         foreach ($matrixBlockTypes as $matrixBlockTypeUid => $matrixBlockType) {
             if (empty($matrixBlockType['field'])) {
                 $projectConfig->remove(Matrix::CONFIG_BLOCKTYPE_KEY . '.' . $matrixBlockTypeUid);
+            } else {
+                $fieldUid = $matrixBlockType['field'];
+                $field = $fields = $projectConfig->get(Fields::CONFIG_FIELDS_KEY . '.' . $fieldUid);
+                if (!$field || !is_array($field) || $field['type'] !== MatrixField::class) {
+                    $projectConfig->remove(Matrix::CONFIG_BLOCKTYPE_KEY . '.' . $matrixBlockTypeUid);
+                }
             }
         }
 

@@ -18,6 +18,7 @@ use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
 use yii\base\Component;
+use yii\db\IntegrityException;
 
 /**
  * Deprecator service.
@@ -104,7 +105,7 @@ class Deprecator extends Component
         ]);
 
         $db = Craft::$app->getDb();
-        $db->createCommand()
+        $command = $db->createCommand()
             ->upsert(
                 Table::DEPRECATIONERRORS,
                 [
@@ -117,10 +118,14 @@ class Deprecator extends Component
                     'line' => $log->line,
                     'message' => $log->message,
                     'traces' => Json::encode($log->traces),
-                ])
-            ->execute();
+                ]);
 
-        $log->id = $db->getLastInsertID();
+        try {
+            $command->execute();
+            $log->id = $db->getLastInsertID();
+        } catch (IntegrityException $e) {
+            // todo: remove this try/catch after the next breakpoint
+        }
     }
 
     /**

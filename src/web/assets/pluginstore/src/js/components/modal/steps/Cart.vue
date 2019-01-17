@@ -36,9 +36,12 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <strong>{{ item.plugin.name}}</strong>
-                                        <div class="text-grey-dark">
-                                            {{item.lineItem.purchasable.name}}
+                                        <div class="plugin-name">
+                                            <strong>{{ item.plugin.name}}</strong>
+
+                                            <div class="edition-badge">
+                                                {{item.lineItem.purchasable.name}}
+                                            </div>
                                         </div>
                                     </td>
                                 </template>
@@ -64,7 +67,12 @@
                                     <td class="blank-cell"></td>
                                     <td class="blank-cell"></td>
                                     <td>
-                                        {{adjustment.name}}
+                                        <template v-if="adjustment.sourceSnapshot.type === 'extendedUpdates'">
+                                            {{"Updates until {date}"|t('app', {date: $options.filters.formatDate(adjustment.sourceSnapshot.expiryDate)})}}
+                                        </template>
+                                        <template v-else>
+                                            {{adjustment.name}}
+                                        </template>
                                     </td>
                                     <td class="price">
                                         {{adjustment.amount|currency}}
@@ -126,9 +134,12 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <strong>{{ plugin.name }}</strong>
-                                    <div v-if="activeTrialPluginEditions[plugin.handle]" class="text-grey-dark">
-                                        {{activeTrialPluginEditions[plugin.handle].name}}
+                                    <div class="plugin-name">
+                                        <strong>{{ plugin.name }}</strong>
+
+                                        <div v-if="activeTrialPluginEditions[plugin.handle]" class="edition-badge">
+                                            {{activeTrialPluginEditions[plugin.handle].name}}
+                                        </div>
                                     </div>
                                 </td>
                                 <td><strong v-if="activeTrialPluginEditions[plugin.handle]">{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
@@ -313,6 +324,9 @@
                 return true
             },
 
+            updatesUntil(date) {
+                return this.$options.filters.t("Updates until {date}", 'app', {date})
+            }
         },
 
     }
@@ -320,6 +334,16 @@
 
 <style lang="scss" scoped>
     @import "../../../../../../../../../lib/craftcms-sass/mixins";
+
+    .plugin-name {
+        strong {
+            @apply .block;
+        }
+
+        .edition-badge {
+            @apply .mt-2;
+        }
+    }
 
     .plugin-icon {
         margin-right: 10px !important;

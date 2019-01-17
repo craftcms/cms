@@ -3,9 +3,5 @@
 
 {% block message %}
     <h2>{{ title }}</h2>
-    {% if message %}
-        {% filter md %}{{ message }}{% endfilter %}
-    {% else %}
-        <p>{{ "The request could not be understood by the server due to malformed syntax."|t('app') }}</p>
-    {% endif %}
+    <p>{{ (message ?? null) ?: "The request could not be understood by the server due to malformed syntax."|t('app') }}</p>
 {% endblock %}

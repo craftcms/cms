@@ -197,7 +197,11 @@ class Plugins extends Component
         $this->_enabledPluginInfo = [];
 
         foreach ($pluginInfo as $handle => $row) {
-            $configData = $this->_getPluginConfigData($handle);
+            try {
+                $configData = $this->_getPluginConfigData($handle);
+            } catch (InvalidPluginException $e) {
+                continue;
+            }
 
             // Skip disabled plugins
             if (empty($configData['enabled'])) {
@@ -1318,6 +1322,9 @@ class Plugins extends Component
         // todo: remove this after the next breakpoint
         if (version_compare(Craft::$app->getInfo()->version, '3.1', '<')) {
             $row = (new Query())->from([Table::PLUGINS])->where(['handle' => $handle])->one();
+            if (!$row) {
+                throw new InvalidPluginException($handle);
+            }
             $row['settings'] = Json::decodeIfJson((string)$row['settings']);
             return $row;
         }

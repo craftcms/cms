@@ -6,12 +6,12 @@
         </div>
 
         <div>
-            <strong>
-                {{ plugin.name }}
-                <template v-if="trialMode && activeTrialPluginEdition">
-                    ({{activeTrialPluginEdition.name}})
-                </template>
-            </strong>
+            <div class="plugin-name">
+                <strong>{{ plugin.name }}</strong>
+                <div class="edition-badge" v-if="trialMode && activeTrialPluginEdition">
+                    {{activeTrialPluginEdition.name}}
+                </div>
+            </div>
             <div v-shave="{ height: 45 }">{{ plugin.shortDescription }}</div>
             
             <p class="light">
@@ -70,7 +70,12 @@
 
                 for(let i = 0; i < editions.length; i++) {
                     const edition = editions[i];
-                    const price = parseInt(edition.price)
+
+                    let price = 0;
+
+                    if (edition.price) {
+                        price = parseInt(edition.price)
+                    }
 
                     if(min === null) {
                         min = price
@@ -102,6 +107,14 @@
 
 <style lang="scss" scoped>
     @import "../../../../../../../lib/craftcms-sass/mixins";
+
+    .plugin-name {
+        @apply .flex;
+
+        .edition-badge {
+            @apply .ml-2;
+        }
+    }
 
     .plugin-card {
         box-sizing: border-box;

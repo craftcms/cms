@@ -418,18 +418,30 @@ class User extends \yii\web\User
             if ($identity) {
                 /** @var UserElement $identity */
                 // Generate a new session token
-                $token = Craft::$app->getSecurity()->generateRandomString(100);
-                Craft::$app->getDb()->createCommand()
-                    ->insert(Table::SESSIONS, [
-                        'userId' => $identity->id,
-                        'token' => $token,
-                    ])
-                    ->execute();
-                $session->set($this->tokenParam, $token);
+                $this->generateToken($identity->id);
             }
         }
 
         return parent::switchIdentity($identity, $duration);
+    }
+
+    /**
+     * Generates a new user session token.
+     *
+     * @param int $userId
+     */
+    public function generateToken(int $userId)
+    {
+        $token = Craft::$app->getSecurity()->generateRandomString(100);
+
+        Craft::$app->getDb()->createCommand()
+            ->insert(Table::SESSIONS, [
+                'userId' => $userId,
+                'token' => $token,
+            ])
+            ->execute();
+
+        Craft::$app->getSession()->set($this->tokenParam, $token);
     }
 
     /**
@@ -446,43 +458,7 @@ class User extends \yii\web\User
         $extendSession = !Craft::$app->getRequest()->getParam('dontExtendSession');
 
         // Make sure their user session token is valid
-        $session = Craft::$app->getSession();
-        $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->idParam) : null;
-
-        if ($id !== null) {
-            $validToken = false;
-            $token = $session->get($this->tokenParam);
-
-            if ($token !== null) {
-                $tokenId = (new Query())
-                    ->select(['id'])
-                    ->from([Table::SESSIONS])
-                    ->where([
-                        'token' => $token,
-                        'userId' => $id,
-                    ])
-                    ->scalar();
-
-                if ($tokenId) {
-                    $validToken = true;
-
-                    if ($extendSession) {
-                        // Update the session row's dateUpdated value so it doesn't get GC'd
-                        Craft::$app->getDb()->createCommand()
-                            ->update(Table::SESSIONS, [
-                                'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
-                            ], ['id' => $tokenId])
-                            ->execute();
-                    }
-                }
-            }
-
-            if (!$validToken) {
-                // Kill their PHP session. Their session may still be auto-renewed via their session cookie, though
-                $session->remove($this->idParam);
-                $session->remove($this->tokenParam);
-            }
-        }
+        $this->_validateToken($extendSession);
 
         // Prevent the user session from getting extended?
         if ($this->authTimeout !== null && !$extendSession) {
@@ -554,5 +530,53 @@ class User extends \yii\web\User
         }
 
         return true;
+    }
+
+    /**
+     * Validates that a user's session token is valid.
+     *
+     * @param bool $extendSession
+     */
+    private function _validateToken(bool $extendSession)
+    {
+        $session = Craft::$app->getSession();
+        $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->idParam) : null;
+
+        if ($id === null) {
+            return;
+        }
+
+        $token = $session->get($this->tokenParam);
+
+        if ($token === null) {
+            // Just give them a new token and be done with it
+            $this->generateToken($id);
+            return;
+        }
+
+        $tokenId = (new Query())
+            ->select(['id'])
+            ->from([Table::SESSIONS])
+            ->where([
+                'token' => $token,
+                'userId' => $id,
+            ])
+            ->scalar();
+
+        if (!$tokenId) {
+            // Kill their PHP session. Their session may still be auto-renewed via their session cookie, though
+            $session->remove($this->idParam);
+            $session->remove($this->tokenParam);
+            return;
+        }
+
+        if ($extendSession) {
+            // Update the session row's dateUpdated value so it doesn't get GC'd
+            Craft::$app->getDb()->createCommand()
+                ->update(Table::SESSIONS, [
+                    'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
+                ], ['id' => $tokenId])
+                ->execute();
+        }
     }
 }

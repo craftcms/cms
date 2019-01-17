@@ -3,10 +3,5 @@
 
 {% block message %}
     <h2>{{ title }}</h2>
-
-    {% if message %}
-        {% filter md %}{{ message }}{% endfilter %}
-    {% else %}
-        <p>{{ "An error occurred while processing your request."|t('app') }}</p>
-    {% endif %}
+    <p>{{ (message ?? null) ?: "An error occurred while processing your request."|t('app') }}</p>
 {% endblock %}

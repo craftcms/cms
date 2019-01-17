@@ -255,7 +255,7 @@ class Volumes extends Component
      */
     public function getVolumeByHandle(string $handle)
     {
-        return ArrayHelper::firstWhere($this->getAllVolumes(), 'hanle', $handle, true);
+        return ArrayHelper::firstWhere($this->getAllVolumes(), 'handle', $handle, true);
     }
 
     /**
@@ -714,7 +714,7 @@ class Volumes extends Component
 
         // todo: remove schema version condition after next beakpoint
         $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
-        if (version_compare($schemaVersion, '3.1.0', '>=')) {
+        if (version_compare($schemaVersion, '3.1.19', '>=')) {
             $query->where(['dateDeleted' => null]);
         }
 

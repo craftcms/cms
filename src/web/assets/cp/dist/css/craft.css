@@ -1526,13 +1526,11 @@ body.rtl ul.errors { padding-right: 20px; }
 ul.errors li { color: #da5a47; }
 
 /* message pages */
-body.message .message-container { position: absolute; z-index: 100; top: 0; width: 100%; height: 100%; }
-body.ltr body.message .message-container { left: 0; }
-body.rtl body.message .message-container { right: 0; }
-
-body.message .message-container.no-access { background: rgba(50, 50, 50, 0.9); }
-
-body.message .message-container .pane { top: 50%; margin-top: -33px !important; margin-left: auto; margin-right: auto; width: 320px; }
+.message-container { position: absolute; z-index: 100; top: 0; width: 100%; height: 100%; }
+body.ltr .message-container { left: 0; }
+body.rtl .message-container { right: 0; }
+.message-container.no-access { background: rgba(50, 50, 50, 0.9); }
+.message-container .pane { top: 50%; margin-top: -33px !important; margin-left: auto; margin-right: auto; width: 320px; }
 
 /* auto-suggest */
 .autosuggest-container { position: relative; }

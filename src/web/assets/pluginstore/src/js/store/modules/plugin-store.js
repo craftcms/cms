@@ -83,7 +83,7 @@ const getters = {
 
     isPluginEditionFree() {
         return edition => {
-            return parseFloat(edition.price) === 0
+            return edition.price === null
         }
     },
 
