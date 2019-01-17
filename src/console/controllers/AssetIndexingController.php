@@ -12,11 +12,17 @@ use Craft;
 use yii\helpers\Console;
 use yii\console\Controller;
 
-
 /**
- * Indexes assets.
+ * Manages Craft asset indexing.
+ * This command indexes assets on all volumes or specified volumes.
+ * ~~~
+ * # Indexes all assets on all volumes. Optional argument is whether or not to cache images.
+ * craft asset-indexing/all
+ * # Indexes all assets on a specified volume (EXAMPLE_HANDLE).
+ * Second (optional) argument is whether or not to cache images.
+ * craft asset-indexing/one EXAMPLE_HANDLE
+ * ~~~
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1
  */
 class AssetIndexingController extends Controller
