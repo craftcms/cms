@@ -754,21 +754,8 @@ class Fields extends Component
             return false;
         }
 
-        // Clear the translation key format if not using a custom translation method
-        if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
-            $field->translationKeyFormat = null;
-        }
-
+        $this->prepFieldForSave($field);
         $configData = $this->createFieldConfig($field);
-
-        if ($isNewField) {
-            $field->uid = StringHelper::UUID();
-        } else if (!$field->uid) {
-            $field->uid = Db::uidById(Table::FIELDS, $field->id);
-        }
-
-        // Store with all the populated data for future reference.
-        $this->_savingFields[$field->uid] = $field;
 
         // Only store field data in the project config for global context
         if ($field->context === 'global') {
@@ -784,6 +771,30 @@ class Fields extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Preps a field to be saved.
+     *
+     * @param FieldInterface $field
+     */
+    public function prepFieldForSave(FieldInterface $field)
+    {
+        /** @var Field $field */
+        // Clear the translation key format if not using a custom translation method
+        if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
+            $field->translationKeyFormat = null;
+        }
+
+        // Make sure it's got a UUID
+        if ($field->getIsNew()) {
+            $field->uid = StringHelper::UUID();
+        } else if (!$field->uid) {
+            $field->uid = Db::uidById(Table::FIELDS, $field->id);
+        }
+
+        // Store with all the populated data for future reference.
+        $this->_savingFields[$field->uid] = $field;
     }
 
     /**
