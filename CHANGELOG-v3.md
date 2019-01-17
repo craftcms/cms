@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added support for the `CRAFT_LOG_PHP_ERRORS` PHP constant. ([#3619](https://github.com/craftcms/cms/issues/3619))
 - Added `craft\web\User::generateToken()`.
 
 ### Changed
