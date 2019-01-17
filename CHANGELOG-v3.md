@@ -9,6 +9,7 @@
 - Fixed a PHP notice that occurred when updating to Craft 3.1 if there were any plugins installed without settings.
 - Fixed a bug where commercial plugins weren’t installable from the Plugin Store.
 - Fixed a bug where Matrix block type fields’ `beforeSave()` methods weren’t getting called.
+- Fixed a bug where links to the Plugin Store from Settings → Plugins were 404ing.
 
 ### Security
 - Fixed an XSS vulnerability.

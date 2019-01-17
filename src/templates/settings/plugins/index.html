@@ -21,7 +21,7 @@
         <table id="plugins" class="data fullwidth collapsible">
             <tbody>
                 {% for handle, config in info %}
-                    {% set pluginStoreUrl = url('plugin-store/plugins/' ~ handle) %}
+                    {% set pluginStoreUrl = url('plugin-store/' ~ handle) %}
                     <tr id="plugin-{{ handle }}" data-name="{{ config.name }}" data-handle="{{ handle }}">
                         <th>
                             <div class="plugin-infos">
