@@ -559,17 +559,14 @@ class Matrix extends Component
             $db = Craft::$app->getDb();
             $transaction = $db->beginTransaction();
             try {
-                // Create the content table first since the block type fields will need it
-                $configPath = Fields::CONFIG_FIELDS_KEY . '.' . $matrixField->uid . '.settings.contentTable';
-                $oldContentTable = Craft::$app->getProjectConfig()->get($configPath);
-                $newContentTable = $matrixField->contentTable;
-
                 // Do we need to create/rename the content table?
-                if (!$db->tableExists($newContentTable)) {
+                if (!$db->tableExists($matrixField->contentTable)) {
+                    $configPath = Fields::CONFIG_FIELDS_KEY . '.' . $matrixField->uid . '.settings.contentTable';
+                    $oldContentTable = Craft::$app->getProjectConfig()->get($configPath);
                     if ($oldContentTable && $db->tableExists($oldContentTable)) {
-                        MigrationHelper::renameTable($oldContentTable, $newContentTable);
+                        MigrationHelper::renameTable($oldContentTable, $matrixField->contentTable);
                     } else {
-                        $this->_createContentTable($newContentTable);
+                        $this->_createContentTable($matrixField->contentTable);
                     }
                 }
 
@@ -595,7 +592,7 @@ class Matrix extends Component
                 $sortOrder = 0;
 
                 $originalContentTable = Craft::$app->getContent()->contentTable;
-                Craft::$app->getContent()->contentTable = $newContentTable;
+                Craft::$app->getContent()->contentTable = $matrixField->contentTable;
 
                 foreach ($matrixField->getBlockTypes() as $blockType) {
                     $sortOrder++;
