@@ -478,15 +478,21 @@ class ProjectConfig extends Component
 
         if ($newValue === null) {
             // Fire a 'removeItem' event
-            $this->trigger(self::EVENT_REMOVE_ITEM, $event);
+            if (!$this->muteEvents) {
+                $this->trigger(self::EVENT_REMOVE_ITEM, $event);
+            }
         } else if ($oldValue === null) {
             // Fire an 'addItem' event
-            $this->trigger(self::EVENT_ADD_ITEM, $event);
+            if (!$this->muteEvents) {
+                $this->trigger(self::EVENT_ADD_ITEM, $event);
+            }
         } else if ($triggerUpdate ||
             Json::encode($oldValue) !== Json::encode($newValue)
         ) {
             // Fire an 'updateItem' event
-            $this->trigger(self::EVENT_UPDATE_ITEM, $event);
+            if (!$this->muteEvents) {
+                $this->trigger(self::EVENT_UPDATE_ITEM, $event);
+            }
         } else {
             return;
         }
@@ -787,16 +793,6 @@ class ProjectConfig extends Component
                 $event->tokenMatches = null;
             }
         }, $data);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function trigger($name, Event $event = null)
-    {
-        if (!$this->muteEvents) {
-            return parent::trigger($name, $event);
-        }
     }
 
     // Private methods
