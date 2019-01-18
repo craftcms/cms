@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use craft\helpers\Json;
@@ -17,6 +18,7 @@ use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
 use yii\base\Component;
+use yii\db\IntegrityException;
 
 /**
  * Deprecator service.
@@ -38,11 +40,6 @@ class Deprecator extends Component
      * or in the "Deprecated" panel in the Debug Toolbar.
      */
     public $logTarget = 'db';
-
-    /**
-     * @var string
-     */
-    private static $_tableName = '{{%deprecationerrors}}';
 
     /**
      * @var DeprecationError[] The deprecation errors that were logged in the current request
@@ -108,9 +105,9 @@ class Deprecator extends Component
         ]);
 
         $db = Craft::$app->getDb();
-        $db->createCommand()
+        $command = $db->createCommand()
             ->upsert(
-                self::$_tableName,
+                Table::DEPRECATIONERRORS,
                 [
                     'key' => $log->key,
                     'fingerprint' => $log->fingerprint
@@ -121,10 +118,14 @@ class Deprecator extends Component
                     'line' => $log->line,
                     'message' => $log->message,
                     'traces' => Json::encode($log->traces),
-                ])
-            ->execute();
+                ]);
 
-        $log->id = $db->getLastInsertID();
+        try {
+            $command->execute();
+            $log->id = $db->getLastInsertID();
+        } catch (IntegrityException $e) {
+            // todo: remove this try/catch after the next breakpoint
+        }
     }
 
     /**
@@ -145,7 +146,7 @@ class Deprecator extends Component
     public function getTotalLogs(): int
     {
         return (new Query())
-            ->from([self::$_tableName])
+            ->from([Table::DEPRECATIONERRORS])
             ->count('[[id]]');
     }
 
@@ -199,7 +200,7 @@ class Deprecator extends Component
     public function deleteLogById(int $id): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(self::$_tableName, ['id' => $id])
+            ->delete(Table::DEPRECATIONERRORS, ['id' => $id])
             ->execute();
 
         return (bool)$affectedRows;
@@ -213,7 +214,7 @@ class Deprecator extends Component
     public function deleteAllLogs(): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(self::$_tableName)
+            ->delete(Table::DEPRECATIONERRORS)
             ->execute();
 
         return (bool)$affectedRows;
@@ -240,7 +241,7 @@ class Deprecator extends Component
                 'message',
                 'traces',
             ])
-            ->from([self::$_tableName]);
+            ->from([Table::DEPRECATIONERRORS]);
     }
 
     /**

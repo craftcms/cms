@@ -9,7 +9,6 @@ namespace craft\mail\transportadapters;
 
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
-use craft\validators\StringValidator;
 
 /**
  * Smtp implements a SMTP transport adapter into Craft’s mailer.
@@ -109,20 +108,20 @@ class Smtp extends BaseTransportAdapter
      */
     public function rules()
     {
-        return [
-            [['host'], 'trim'],
-            [['host', 'port', 'timeout'], 'required'],
-            [
-                ['username', 'password'],
-                'required',
-                'when' => function($model) {
-                    /** @var self $model */
-                    return (bool)$model->useAuthentication;
-                }
-            ],
-            [['encryptionMethod'], 'in', 'range' => ['tls', 'ssl']],
-            [['timeout'], 'number', 'integerOnly' => true],
+        $rules = parent::rules();
+        $rules[] = [['host'], 'trim'];
+        $rules[] = [['host', 'port', 'timeout'], 'required'];
+        $rules[] = [
+            ['username', 'password'],
+            'required',
+            'when' => function($model) {
+                /** @var self $model */
+                return (bool)$model->useAuthentication;
+            }
         ];
+        $rules[] = [['encryptionMethod'], 'in', 'range' => ['tls', 'ssl']];
+        $rules[] = [['timeout'], 'number', 'integerOnly' => true];
+        return $rules;
     }
 
     /**

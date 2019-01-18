@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\services\Sections;
 
@@ -51,7 +52,7 @@ class m181211_143040_fix_entry_type_uids extends Migration
                     // If the UIDs don't match, update the one in the DB
                     $dbEntryType = $dbEntryTypes[$sectionUid][$handle];
                     if ($dbEntryType['uid'] !== $entryTypeUid) {
-                        $this->update('{{%entrytypes}}', [
+                        $this->update(Table::ENTRYTYPES, [
                             'uid' => $entryTypeUid
                         ], [
                             'id' => $dbEntryType['id']

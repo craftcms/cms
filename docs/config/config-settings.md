@@ -177,7 +177,7 @@ Defined by
 
 Whether Craft should allow system and plugin updates in the Control Panel, and plugin installation from the Plugin Store.
 
-This setting will automatically be disabled if [$allowAdminChanges](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-allowadminchanges) is enabled.
+This setting will automatically be disabled if [$allowAdminChanges](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-allowadminchanges) is disabled.
 
 
 ### `allowUppercaseInSlug`
@@ -1976,6 +1976,25 @@ The amount of time before a soft-deleted item will be up for hard-deletion by ga
 Set to `0` if you don’t ever want to delete soft-deleted items.
 
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
+
+
+### `storeUserIps`
+
+Allowed types
+
+:   [boolean](http://php.net/language.types.boolean)
+
+Default value
+
+:   `false`
+
+Defined by
+
+:   [GeneralConfig::$storeUserIps](api:craft\config\GeneralConfig::$storeUserIps)
+
+
+
+Whether user IP addresses should be stored/logged by the system.
 
 
 ### `suppressTemplateErrors`

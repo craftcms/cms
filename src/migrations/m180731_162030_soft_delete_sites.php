@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
@@ -16,12 +17,12 @@ class m180731_162030_soft_delete_sites extends Migration
     public function safeUp()
     {
         // Add the dateDeleted column
-        $this->addColumn('{{%sites}}', 'dateDeleted', $this->dateTime()->null()->after('dateUpdated'));
-        $this->createIndex(null, '{{%sites}}', ['dateDeleted'], false);
+        $this->addColumn(Table::SITES, 'dateDeleted', $this->dateTime()->null()->after('dateUpdated'));
+        $this->createIndex(null, Table::SITES, ['dateDeleted'], false);
 
         // Unique site handles should no longer be enforced by the DB
-        MigrationHelper::dropIndexIfExists('{{%sites}}', ['handle'], true, $this);
-        $this->createIndex(null, '{{%sites}}', ['handle'], false);
+        MigrationHelper::dropIndexIfExists(Table::SITES, ['handle'], true, $this);
+        $this->createIndex(null, Table::SITES, ['handle'], false);
     }
 
     /**

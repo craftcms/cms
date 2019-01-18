@@ -2,7 +2,7 @@
 
 In Craft 3 you can host multiple websites in a single Craft installation.
 
-You can define one or more sites at different domains, using a different set of templates, and different versions of entry content. 
+You can define one or more sites at different domains, using a different set of templates, and different versions of entry content.
 
 The multi-site feature in Craft is for sites with the same publishing team. You manage the multi-site content at the entry level, with the ability to enable Sections you want included in a site.
 
@@ -30,7 +30,7 @@ Craft creates the first Site Group for you – named after the default site – 
 
 Similar to Field Groups, Site Groups are for organization only.
 
-You can access the current site's group information using: 
+You can access the current site's group information using:
 
 ```twig
 Site ID:            {{ currentSite.id }}
@@ -60,12 +60,12 @@ Or as a way to automatically include the proper template for each language:
 {% include '_share/footer-' ~ craft.app.language %}
 ```
 
-where your template name would be, for example, `_share/footer-de`. 
+where your template name would be, for example, `_share/footer-de`.
 
 
 ### Primary Site
 
-Craft sets the default site as the Primary site, meaning Craft will load it by default on the front end, if it is unable to determine which site to load. If you only have one site then you cannot disable it as the Primary site. 
+Craft sets the default site as the Primary site, meaning Craft will load it by default on the front end, if it is unable to determine which site to load. If you only have one site then you cannot disable it as the Primary site.
 
 You can change the Primary site once you create additional sites. Craft will automatically toggle the current Primary site.
 
@@ -112,7 +112,7 @@ The first step is to create the new site in the Settings of your Craft installat
 
 ### Step 2: Create Template Directories
 
-Create the template directories and templates for your new site. 
+Create the template directories and templates for your new site.
 
 We recommend you have template directories named after the sites handles (e.g. `templates/default` and `templates/beta`). You store the site-specific templates in each site template directory.
 
@@ -121,10 +121,10 @@ We recommend you have template directories named after the sites handles (e.g. `
 1. Go into each Section that you want to be available in the new site and enable the site using the Site Settings table.
 2. Define the Entry URI Format, Template, and Status for the new site in each Section.
 3. Choose whether you want to propagate the entries across all sites. If checked, Craft will create a new entry in every site in the system. If the option is unchecked, Craft will only save the new entry to the site you have currently selected.
- 
+
 ### Step 4: Define Translation Method of Fields
 
-By default, your custom fields will store values on a per-site basis. If you have a Body field, each site can store its only content in that field. 
+By default, your custom fields will store values on a per-site basis. If you have a Body field, each site can store its only content in that field.
 
 If your site has a different language than your default language then you will need to set each field as Translatable (by site, by language, or site group).
 

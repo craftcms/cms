@@ -69,7 +69,6 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
     {
         $rules = parent::rules();
         $rules[] = [['path'], 'required'];
-
         return $rules;
     }
 

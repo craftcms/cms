@@ -106,7 +106,7 @@ Checks if a string references an environment variable (`$VARIABLE_NAME`) and/or 
 
 ## `head()`
 
-Outputs any scripts and styles that were registered for the “head” position. It should be placed right before your `</head>` tag. 
+Outputs any scripts and styles that were registered for the “head” position. It should be placed right before your `</head>` tag.
 
 ```twig
 <head>

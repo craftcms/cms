@@ -14,6 +14,7 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
@@ -240,9 +241,14 @@ class Elements extends Component
             ->from(['{{%elements}} elements'])
             ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
             ->where([
-                'elements.dateDeleted' => null,
                 'elements_sites.siteId' => $siteId,
             ]);
+
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.1.0', '>=')) {
+            $query->andWhere(['elements.dateDeleted' => null]);
+        }
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query->andWhere([
@@ -276,7 +282,7 @@ class Elements extends Component
     {
         $class = (new Query())
             ->select(['type'])
-            ->from(['{{%elements}}'])
+            ->from([Table::ELEMENTS])
             ->where(['id' => $elementId])
             ->scalar();
 
@@ -294,7 +300,7 @@ class Elements extends Component
         return (new Query())
             ->select(['type'])
             ->distinct(true)
-            ->from(['{{%elements}}'])
+            ->from([Table::ELEMENTS])
             ->where(['id' => $elementIds])
             ->column();
     }
@@ -310,7 +316,7 @@ class Elements extends Component
     {
         return (new Query())
             ->select(['uri'])
-            ->from(['{{%elements_sites}}'])
+            ->from([Table::ELEMENTS_SITES])
             ->where(['elementId' => $elementId, 'siteId' => $siteId])
             ->scalar();
     }
@@ -326,7 +332,7 @@ class Elements extends Component
     {
         return (new Query())
             ->select(['siteId'])
-            ->from(['{{%elements_sites}}'])
+            ->from([Table::ELEMENTS_SITES])
             ->where(['elementId' => $elementId, 'enabled' => 1])
             ->column();
     }
@@ -530,7 +536,7 @@ class Elements extends Component
         // Delete the rows that don't need to be there anymore
         if (!$isNewElement) {
             Db::deleteIfExists(
-                '{{%elements_sites}}',
+                Table::ELEMENTS_SITES,
                 [
                     'and',
                     ['elementId' => $element->id],
@@ -675,7 +681,7 @@ class Elements extends Component
 
         Craft::$app->getDb()->createCommand()
             ->update(
-                '{{%elements_sites}}',
+                Table::ELEMENTS_SITES,
                 [
                     'slug' => $element->slug,
                     'uri' => $element->uri
@@ -787,14 +793,14 @@ class Elements extends Component
             // Update any relations that point to the merged element
             $relations = (new Query())
                 ->select(['id', 'fieldId', 'sourceId', 'sourceSiteId'])
-                ->from(['{{%relations}}'])
+                ->from([Table::RELATIONS])
                 ->where(['targetId' => $mergedElementId])
                 ->all();
 
             foreach ($relations as $relation) {
                 // Make sure the persisting element isn't already selected in the same field
                 $persistingElementIsRelatedToo = (new Query())
-                    ->from(['{{%relations}}'])
+                    ->from([Table::RELATIONS])
                     ->where([
                         'fieldId' => $relation['fieldId'],
                         'sourceId' => $relation['sourceId'],
@@ -806,7 +812,7 @@ class Elements extends Component
                 if (!$persistingElementIsRelatedToo) {
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            '{{%relations}}',
+                            Table::RELATIONS,
                             [
                                 'targetId' => $prevailingElementId
                             ],
@@ -820,14 +826,14 @@ class Elements extends Component
             // Update any structures that the merged element is in
             $structureElements = (new Query())
                 ->select(['id', 'structureId'])
-                ->from(['{{%structureelements}}'])
+                ->from([Table::STRUCTUREELEMENTS])
                 ->where(['elementId' => $mergedElementId])
                 ->all();
 
             foreach ($structureElements as $structureElement) {
                 // Make sure the persisting element isn't already a part of that structure
                 $persistingElementIsInStructureToo = (new Query())
-                    ->from(['{{%structureelements}}'])
+                    ->from([Table::STRUCTUREELEMENTS])
                     ->where([
                         'structureId' => $structureElement['structureId'],
                         'elementId' => $prevailingElementId
@@ -836,7 +842,7 @@ class Elements extends Component
 
                 if (!$persistingElementIsInStructureToo) {
                     Craft::$app->getDb()->createCommand()
-                        ->update('{{%relations}}',
+                        ->update(Table::RELATIONS,
                             [
                                 'elementId' => $prevailingElementId
                             ],
@@ -913,7 +919,7 @@ class Elements extends Component
             // Get a site this element is enabled in
             $siteId = (int)(new Query())
                 ->select('siteId')
-                ->from('{{%elements_sites}}')
+                ->from(Table::ELEMENTS_SITES)
                 ->where(['elementId' => $elementId])
                 ->scalar();
 
@@ -979,18 +985,18 @@ class Elements extends Component
 
             if ($event->hardDelete) {
                 Craft::$app->getDb()->createCommand()
-                    ->delete('{{%elements}}', ['id' => $element->id])
+                    ->delete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
             } else {
                 // Soft delete the elements table row
                 Craft::$app->getDb()->createCommand()
-                    ->softDelete('{{%elements}}', ['id' => $element->id])
+                    ->softDelete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
             }
 
             // Always hard delete the search indexes
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%searchindex}}', ['elementId' => $element->id])
+                ->delete(Table::SEARCHINDEX, ['elementId' => $element->id])
                 ->execute();
 
             $element->afterDelete();
@@ -1021,94 +1027,116 @@ class Elements extends Component
      */
     public function restoreElement(ElementInterface $element): bool
     {
-        /** @var Element $element */
-        // Fire a 'beforeRestoreElement' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_ELEMENT)) {
-            $this->trigger(self::EVENT_BEFORE_RESTORE_ELEMENT, new ElementEvent([
-                'element' => $element,
-            ]));
-        }
+        return $this->restoreElements([$element]);
+    }
 
-        if (!$element->beforeRestore()) {
-            return false;
-        }
-
-        // Get the sites supported by this element
-        if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
-            throw new Exception("Element {$element->id} has no supported sites.");
-        }
-
-        // Make sure the element actually supports the site it's being saved in
-        $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (!in_array($element->siteId, $supportedSiteIds, false)) {
-            throw new Exception('Attempting to restore an element in an unsupported site.');
-        }
-
-        // Get the element in each supported site
-        $siteElements = [];
-        /** @var Element|string $class */
-        $class = get_class($element);
-        foreach ($supportedSites as $siteInfo) {
-            $siteId = $siteInfo['siteId'];
-            if ($siteId != $element->siteId) {
-                $siteElement = $class::find()
-                    ->id($element->id)
-                    ->siteId($siteId)
-                    ->anyStatus()
-                    ->trashed(null)
-                    ->one();
-                if ($siteElement) {
-                    $siteElements[] = $siteElement;
-                }
+    /**
+     * Restores multiple elements.
+     *
+     * @param ElementInterface[] $elements
+     * @return bool Whether at least one element was restored successfully
+     * @throws Exception if an $element doesn’t have any supported sites
+     * @throws \Throwable if reasons
+     */
+    public function restoreElements(array $elements): bool
+    {
+        // Fire "before" events
+        foreach ($elements as $element) {
+            /** @var Element $element */
+            // Fire a 'beforeRestoreElement' event
+            if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_ELEMENT)) {
+                $this->trigger(self::EVENT_BEFORE_RESTORE_ELEMENT, new ElementEvent([
+                    'element' => $element,
+                ]));
             }
-        }
 
-        // Make sure it still passes essential validation
-        $element->setScenario(Element::SCENARIO_ESSENTIALS);
-        if (!$element->validate()) {
-            Craft::warning("Unable to restore element {$element->id}: doesn't pass essential validation: " . print_r($element->errors, true), __METHOD__);
-            return false;
-        }
-
-        foreach ($siteElements as $siteElement) {
-            if ($siteElement !== $element) {
-                $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
-                if (!$siteElement->validate()) {
-                    Craft::warning("Unable to restore element {$element->id}: doesn't pass essential validation for site {$element->siteId}: " . print_r($element->errors, true), __METHOD__);
-                    throw new Exception("Element {$element->id} doesn't pass essential validation for site {$element->siteId}.");
-                }
+            if (!$element->beforeRestore()) {
+                return false;
             }
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Restore it
-            Craft::$app->getDb()->createCommand()
-                ->restore('{{%elements}}', ['id' => $element->id])
-                ->execute();
+            // Restore the elements
+            foreach ($elements as $element) {
+                // Get the sites supported by this element
+                if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
+                    throw new Exception("Element {$element->id} has no supported sites.");
+                }
 
-            // Restore its search indexes
-            $searchService = Craft::$app->getSearch();
-            $searchService->indexElementAttributes($element);
-            foreach ($siteElements as $siteElement) {
-                $searchService->indexElementAttributes($siteElement);
+                // Make sure the element actually supports the site it's being saved in
+                $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
+                if (!in_array($element->siteId, $supportedSiteIds, false)) {
+                    throw new Exception('Attempting to restore an element in an unsupported site.');
+                }
+
+                // Get the element in each supported site
+                $siteElements = [];
+                /** @var Element|string $class */
+                $class = get_class($element);
+                foreach ($supportedSites as $siteInfo) {
+                    $siteId = $siteInfo['siteId'];
+                    if ($siteId != $element->siteId) {
+                        $siteElement = $class::find()
+                            ->id($element->id)
+                            ->siteId($siteId)
+                            ->anyStatus()
+                            ->trashed(null)
+                            ->one();
+                        if ($siteElement) {
+                            $siteElements[] = $siteElement;
+                        }
+                    }
+                }
+
+                // Make sure it still passes essential validation
+                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                if (!$element->validate()) {
+                    Craft::warning("Unable to restore element {$element->id}: doesn't pass essential validation: " . print_r($element->errors, true), __METHOD__);
+                    $transaction->rollBack();
+                    return false;
+                }
+
+                foreach ($siteElements as $siteElement) {
+                    if ($siteElement !== $element) {
+                        $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+                        if (!$siteElement->validate()) {
+                            Craft::warning("Unable to restore element {$element->id}: doesn't pass essential validation for site {$element->siteId}: " . print_r($element->errors, true), __METHOD__);
+                            throw new Exception("Element {$element->id} doesn't pass essential validation for site {$element->siteId}.");
+                        }
+                    }
+                }
+
+                // Restore it
+                Craft::$app->getDb()->createCommand()
+                    ->restore(Table::ELEMENTS, ['id' => $element->id])
+                    ->execute();
+
+                // Restore its search indexes
+                $searchService = Craft::$app->getSearch();
+                $searchService->indexElementAttributes($element);
+                foreach ($siteElements as $siteElement) {
+                    $searchService->indexElementAttributes($siteElement);
+                }
             }
 
-            $element->afterRestore();
+            // Fire "after" events
+            foreach ($elements as $element) {
+                $element->afterRestore();
+                $element->trashed = false;
+
+                // Fire an 'afterRestoreElement' event
+                if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE_ELEMENT)) {
+                    $this->trigger(self::EVENT_AFTER_RESTORE_ELEMENT, new ElementEvent([
+                        'element' => $element,
+                    ]));
+                }
+            }
 
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
             throw $e;
-        }
-
-        $element->trashed = false;
-
-        // Fire an 'afterRestoreElement' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE_ELEMENT)) {
-            $this->trigger(self::EVENT_AFTER_RESTORE_ELEMENT, new ElementEvent([
-                'element' => $element,
-            ]));
         }
 
         return true;

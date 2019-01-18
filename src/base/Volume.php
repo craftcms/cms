@@ -58,23 +58,22 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function rules()
     {
-        $rules = [
-            [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true],
-            [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class],
-            [['hasUrls'], 'boolean'],
-            [['name', 'handle', 'url'], 'string', 'max' => 255],
-            [['name', 'handle'], 'required'],
-            [
-                ['handle'],
-                HandleValidator::class,
-                'reservedWords' => [
-                    'id',
-                    'dateCreated',
-                    'dateUpdated',
-                    'uid',
-                    'title'
-                ]
-            ],
+        $rules = parent::rules();
+        $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class];
+        $rules[] = [['hasUrls'], 'boolean'];
+        $rules[] = [['name', 'handle', 'url'], 'string', 'max' => 255];
+        $rules[] = [['name', 'handle'], 'required'];
+        $rules[] = [
+            ['handle'],
+            HandleValidator::class,
+            'reservedWords' => [
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'uid',
+                'title'
+            ]
         ];
 
         // Require URLs for public Volumes.

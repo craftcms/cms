@@ -17,6 +17,7 @@ use craft\behaviors\ElementQueryBehavior;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\db\Table;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\PopulateElementEvent;
@@ -88,7 +89,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var string|null The content table that will be joined by this query.
      */
-    public $contentTable = '{{%content}}';
+    public $contentTable = Table::CONTENT;
 
     /**
      * @var FieldInterface[]|null The fields that may be involved in this query.
@@ -1060,7 +1061,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elementsId' => 'elements.id',
                 'elementsSitesId' => 'elements_sites.id',
             ])
-            ->from(['elements' => '{{%elements}}'])
+            ->from(['elements' => Table::ELEMENTS])
             ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
             ->andWhere(['elements_sites.siteId' => $this->siteId])
             ->andWhere($this->where)
@@ -1726,7 +1727,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _shouldJoinStructureData(): bool
     {
-        return $this->withStructure || ($this->withStructure !== false && $this->structureId);
+        return (
+            !$this->trashed &&
+            ($this->withStructure || ($this->withStructure !== false && $this->structureId))
+        );
     }
 
     /**
@@ -1737,10 +1741,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyStructureParams(string $class)
     {
-        if ($this->trashed) {
-            return;
-        }
-
         if (!$this->_shouldJoinStructureData()) {
             $structureParams = [
                 'hasDescendants',

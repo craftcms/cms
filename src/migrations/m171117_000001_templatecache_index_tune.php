@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m171117_000001_templatecache_index_tune migration.
@@ -14,7 +15,7 @@ class m171117_000001_templatecache_index_tune extends Migration
      */
     public function safeUp()
     {
-        $this->createIndex(null, '{{%templatecaches}}', ['expiryDate', 'cacheKey', 'siteId']);
+        $this->createIndex(null, Table::TEMPLATECACHES, ['expiryDate', 'cacheKey', 'siteId']);
     }
 
     /**

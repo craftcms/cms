@@ -1,4 +1,4 @@
-/*!   - 2019-01-04 */
+/*!   - 2019-01-15 */
 (function($){
 
 /** global: Craft */
@@ -2148,10 +2148,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             this.$scoreSortAttribute.prependTo(this.$sortAttributesList);
-            this.setSortAttribute('score');
-            this.getSortAttributeOption('structure').addClass('disabled');
 
             this.searching = true;
+
+            this._updateStructureSortOption();
+            this.setSortAttribute('score');
         },
 
         stopSearching: function() {
@@ -2159,10 +2160,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$clearSearchBtn.addClass('hidden');
 
             this.$scoreSortAttribute.detach();
-            this.getSortAttributeOption('structure').removeClass('disabled');
-            this.setStoredSortOptionsForSource();
 
             this.searching = false;
+
+            this._updateStructureSortOption();
         },
 
         setInstanceState: function(key, value) {
@@ -2966,6 +2967,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.status = $option.data('status');
             }
 
+            this._updateStructureSortOption();
             this.updateElements();
         },
 
@@ -3057,6 +3059,26 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         _handleSourceToggleClick: function(ev) {
             this._toggleSource($(ev.currentTarget).prev('a'));
             ev.stopPropagation();
+        },
+
+        _updateStructureSortOption: function() {
+            var $option = this.getSortAttributeOption('structure');
+
+            if (!$option.length) {
+                return;
+            }
+
+            if (this.trashed || this.searching) {
+                if (!$option.hasClass('disabled')) {
+                    $option.addClass('disabled');
+                    // Temporarily set the sort to the first option
+                    var $firstOption = this.$sortAttributesList.find('a:not(.disabled):first')
+                    this.setSortAttribute($firstOption.data('attr'));
+                    this.setSortDirection('asc');
+                }
+            } else {
+                this.setStoredSortOptionsForSource();
+            }
         },
 
         // Source managemnet
@@ -14662,6 +14684,11 @@ Craft.Grid = Garnish.Base.extend(
             else {
                 this.refreshCols._.totalCols = Math.floor(this.$container.width() / this.settings.minColWidth);
 
+                // If we're adding a new column, require an extra 20 pixels in case a scrollbar shows up
+                if (this.totalCols !== null && this.refreshCols._.totalCols > this.totalCols) {
+                    this.refreshCols._.totalCols = Math.floor((this.$container.width() - 20) / this.settings.minColWidth)
+                }
+
                 if (this.settings.maxCols && this.refreshCols._.totalCols > this.settings.maxCols) {
                     this.refreshCols._.totalCols = this.settings.maxCols;
                 }
@@ -18842,7 +18869,7 @@ Craft.ui =
 
             var $label = $('<label/>', {
                 'for': id,
-                html: config.label
+                text: config.label
             });
 
             // Should we include a hidden input first?

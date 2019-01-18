@@ -51,7 +51,7 @@ You can include tips, warnings, and other notes in your release notes using this
 > {note} A note.
 ```
 
-Any updates that contain one of these will be auto-expanded on the Utilities → Updates page. 
+Any updates that contain one of these will be auto-expanded on the Utilities → Updates page.
 
 ### Links
 

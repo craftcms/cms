@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 
@@ -20,7 +21,7 @@ class m170414_162429_rich_text_config_setting extends Migration
         // Get all of the Rich Text fields
         $fields = (new Query())
             ->select(['id', 'settings'])
-            ->from(['{{%fields}}'])
+            ->from([Table::FIELDS])
             ->where(['type' => 'craft\\redactor\\Field'])
             ->all($this->db);
 
@@ -28,7 +29,7 @@ class m170414_162429_rich_text_config_setting extends Migration
         foreach ($fields as $field) {
             $settings = Json::decode($field['settings']);
             $settings['redactorConfig'] = ArrayHelper::remove($settings, 'configFile');
-            $this->update('{{%fields}}', [
+            $this->update(Table::FIELDS, [
                 'settings' => Json::encode($settings)
             ], ['id' => $field['id']], [], false);
         }

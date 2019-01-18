@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\db\Table;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use DateInterval;
@@ -56,21 +57,30 @@ class Gc extends Component
 
         Craft::$app->getUsers()->purgeExpiredPendingUsers();
         $this->_deleteStaleSessions();
+
         $this->hardDelete([
-            '{{%elements}}',
-            '{{%fieldlayouts}}',
-            '{{%sites}}',
+            Table::ELEMENTS, // elements should always go first
+            Table::CATEGORYGROUPS,
+            Table::ENTRYTYPES,
+            Table::SECTIONS,
+            Table::TAGGROUPS,
+            Table::VOLUMES,
         ]);
 
         // Fire a 'run' event
         if ($this->hasEventHandlers(self::EVENT_RUN)) {
             $this->trigger(self::EVENT_RUN);
         }
+
+        $this->hardDelete([
+            Table::STRUCTURES,
+            Table::FIELDLAYOUTS,
+            Table::SITES,
+        ]);
     }
 
     /**
-     * Hard-deletes any rows in the given table(s), that were soft-deleted long enough ago
-     * to be ready for hard-deletion.
+     * Hard-deletes any rows in the given table(s), that are due for it.
      *
      * @param string|string[] $tables The table(s) to delete rows from. They must have a `dateDeleted` column.
      */
@@ -98,8 +108,10 @@ class Gc extends Component
             $tables = [$tables];
         }
 
+        $db = Craft::$app->getDb();
+
         foreach ($tables as $table) {
-            Craft::$app->getDb()->createCommand()
+            $db->createCommand()
                 ->delete($table, $condition)
                 ->execute();
         }
@@ -115,7 +127,7 @@ class Gc extends Component
         $pastTime = $expire->sub($interval);
 
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%sessions}}', ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)])
+            ->delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)])
             ->execute();
     }
 }

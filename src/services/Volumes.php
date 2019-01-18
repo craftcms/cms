@@ -7,6 +7,7 @@ use craft\base\Field;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\MissingComponentException;
 use craft\events\ConfigEvent;
@@ -254,7 +255,7 @@ class Volumes extends Component
      */
     public function getVolumeByHandle(string $handle)
     {
-        return ArrayHelper::firstWhere($this->getAllVolumes(), 'hanle', $handle, true);
+        return ArrayHelper::firstWhere($this->getAllVolumes(), 'handle', $handle, true);
     }
 
     /**
@@ -265,7 +266,6 @@ class Volumes extends Component
      * @return bool Whether the field was saved successfully
      * @throws \Throwable
      */
-
     public function saveVolume(VolumeInterface $volume, bool $runValidation = true): bool
     {
         /** @var Volume $volume */
@@ -291,10 +291,10 @@ class Volumes extends Component
         if ($isNewVolume) {
             $volume->uid = StringHelper::UUID();
             $volume->sortOrder = (new Query())
-                    ->from(['{{%volumes}}'])
+                    ->from([Table::VOLUMES])
                     ->max('[[sortOrder]]') + 1;
         } else if (!$volume->uid) {
-            $volume->uid = Db::uidById('{{%volumes}}', $volume->id);
+            $volume->uid = Db::uidById(Table::VOLUMES, $volume->id);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -317,7 +317,7 @@ class Volumes extends Component
                 $layoutUid = StringHelper::UUID();
                 $fieldLayout->uid = $layoutUid;
             } else {
-                $layoutUid = Db::uidById('{{%fieldlayouts}}', $fieldLayout->id);
+                $layoutUid = Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id);
             }
 
             $configData['fieldLayouts'] = [
@@ -330,7 +330,7 @@ class Volumes extends Component
         $projectConfig->set($configPath, $configData);
 
         if ($isNewVolume) {
-            $volume->id = Db::idByUid('{{%volumes}}', $volume->uid);
+            $volume->id = Db::idByUid(Table::VOLUMES, $volume->uid);
         }
 
         return true;
@@ -351,7 +351,7 @@ class Volumes extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            $volumeRecord = $this->_getVolumeRecord($volumeUid);
+            $volumeRecord = $this->_getVolumeRecord($volumeUid, true);
             $isNewVolume = $volumeRecord->getIsNewRecord();
 
             $volumeRecord->name = $data['name'];
@@ -363,26 +363,28 @@ class Volumes extends Component
             $volumeRecord->uid = $volumeUid;
 
             if (!empty($data['fieldLayouts'])) {
-                $fields = Craft::$app->getFields();
-
-                // Delete the field layout
-                $fields->deleteLayoutById($volumeRecord->fieldLayoutId);
-
-                //Create the new layout
+                // Save the field layout
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                $layout->id = $volumeRecord->fieldLayoutId;
                 $layout->type = Asset::class;
                 $layout->uid = key($data['fieldLayouts']);
-                $fields->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout);
                 $volumeRecord->fieldLayoutId = $layout->id;
-            } else {
+            } else if ($volumeRecord->fieldLayoutId) {
+                // Delete the field layout
+                Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
                 $volumeRecord->fieldLayoutId = null;
             }
 
             // Save the volume
-            $volumeRecord->save(false);
+            if ($wasTrashed = (bool)$volumeRecord->dateDeleted) {
+                $volumeRecord->restore();
+            } else {
+                $volumeRecord->save(false);
+            }
 
-            $assets = Craft::$app->getAssets();
-            $rootFolder = $assets->findFolder([
+            $assetsService = Craft::$app->getAssets();
+            $rootFolder = $assetsService->findFolder([
                 'volumeId' => $volumeRecord->id,
                 'parentId' => ':empty:'
             ]);
@@ -398,7 +400,7 @@ class Volumes extends Component
                 $rootFolderRecord->save();
             } else {
                 $rootFolder->name = $volumeRecord->name;
-                $assets->storeFolderRecord($rootFolder);
+                $assetsService->storeFolderRecord($rootFolder);
             }
 
             $transaction->commit();
@@ -413,6 +415,16 @@ class Volumes extends Component
         /** @var Volume $volume */
         $volume = $this->getVolumeById($volumeRecord->id);
         $volume->afterSave($isNewVolume);
+
+        if ($wasTrashed) {
+            // Restore the assets that were deleted with the volume
+            $assets = Asset::find()
+                ->volumeId($volumeRecord->id)
+                ->trashed()
+                ->andWhere(['assets.deletedWithVolume' => true])
+                ->all();
+            Craft::$app->getElements()->restoreElements($assets);
+        }
 
         // Fire an 'afterSaveVolume' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_VOLUME)) {
@@ -434,7 +446,7 @@ class Volumes extends Component
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $uidsByIds = Db::uidsByIds('{{%volumes}}', $volumeIds);
+        $uidsByIds = Db::uidsByIds(Table::VOLUMES, $volumeIds);
 
         foreach ($volumeIds as $volumeOrder => $volumeId) {
             if (!empty($uidsByIds[$volumeId])) {
@@ -600,31 +612,27 @@ class Volumes extends Component
         try {
             $volume->beforeApplyDelete();
 
-            // Delete the field layout
-            $fieldLayoutId = (new Query())
-                ->select(['fieldLayoutId'])
-                ->from(['{{%volumes}}'])
-                ->where(['id' => $volumeRecord->id])
-                ->scalar();
-
-            if ($fieldLayoutId) {
-                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-            }
-
             // Delete the assets
             $assets = Asset::find()
                 ->anyStatus()
                 ->volumeId($volumeRecord->id)
                 ->all();
+            $elementsService = Craft::$app->getElements();
 
             foreach ($assets as $asset) {
+                $asset->deletedWithVolume = true;
                 $asset->keepFileOnDelete = true;
-                Craft::$app->getElements()->deleteElement($asset);
+                $elementsService->deleteElement($asset);
             }
 
-            // Nuke the asset volume.
+            // Delete the field layout
+            if ($volumeRecord->fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
+            }
+
+            // Delete the volume
             $db->createCommand()
-                ->delete('{{%volumes}}', ['id' => $volumeRecord->id])
+                ->softDelete(Table::VOLUMES, ['id' => $volumeRecord->id])
                 ->execute();
 
             $volume->afterDelete();
@@ -686,7 +694,7 @@ class Volumes extends Component
      */
     private function _createVolumeQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'id',
                 'dateCreated',
@@ -701,18 +709,29 @@ class Volumes extends Component
                 'settings',
                 'uid'
             ])
-            ->from(['{{%volumes}}'])
+            ->from([Table::VOLUMES])
             ->orderBy(['sortOrder' => SORT_ASC]);
+
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.1.19', '>=')) {
+            $query->where(['dateDeleted' => null]);
+        }
+
+        return $query;
     }
 
     /**
      * Gets a volume's record by uid.
      *
      * @param string $uid
+     * @param bool $withTrashed Whether to include trashed volumes in search
      * @return AssetVolumeRecord
      */
-    private function _getVolumeRecord(string $uid): AssetVolumeRecord
+    private function _getVolumeRecord(string $uid, bool $withTrashed = false): AssetVolumeRecord
     {
-        return AssetVolumeRecord::findOne(['uid' => $uid]) ?? new AssetVolumeRecord();
+        $query = $withTrashed ? AssetVolumeRecord::findWithTrashed() : AssetVolumeRecord::find();
+        $query->andWhere(['uid' => $uid]);
+        return $query->one() ?? new AssetVolumeRecord();
     }
 }

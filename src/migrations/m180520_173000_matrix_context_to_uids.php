@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 
 /**
  * m180520_173000_matrix_context_to_uids migration.
@@ -18,13 +19,13 @@ class m180520_173000_matrix_context_to_uids extends Migration
         // Map Matrix block type IDs to UUIDs
         $blockTypeUids = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%matrixblocktypes}}'])
+            ->from([Table::MATRIXBLOCKTYPES])
             ->pairs();
 
         // Get all the Matrix sub-fields
         $fields = (new Query())
             ->select(['id', 'context'])
-            ->from(['{{%fields}}'])
+            ->from([Table::FIELDS])
             ->where(['like', 'context', 'matrixBlockType'])
             ->all();
 
@@ -37,7 +38,7 @@ class m180520_173000_matrix_context_to_uids extends Migration
                 continue;
             }
 
-            $this->update('{{%fields}}', [
+            $this->update(Table::FIELDS, [
                 'context' => 'matrixBlockType:' . $blockTypeUids[$blockTypeId]
             ], [
                 'id' => $field['id']

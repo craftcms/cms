@@ -14,7 +14,7 @@ After creating a new site for a language, enable the new site in each Section. I
 
 In Settings → Fields, choose the fields you want to have translatable. Under Translation Method, choose "Translate for each language."
 
-Craft will allow you to update this field's content in each entry on a per-language basis. 
+Craft will allow you to update this field's content in each entry on a per-language basis.
 
 ## Step 4: Update Your Templates
 

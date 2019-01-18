@@ -79,10 +79,10 @@ class Info extends Model
      */
     public function rules()
     {
-        return [
-            [['id'], 'number', 'integerOnly' => true],
-            [['version', 'schemaVersion'], 'required'],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id'], 'number', 'integerOnly' => true];
+        $rules[] = [['version', 'schemaVersion'], 'required'];
+        return $rules;
     }
 
     // Deprecated

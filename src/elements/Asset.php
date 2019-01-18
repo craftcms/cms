@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
+use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
@@ -38,6 +39,7 @@ use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
+use craft\validators\StringValidator;
 use craft\volumes\Temp;
 use DateTime;
 use yii\base\ErrorHandler;
@@ -411,6 +413,11 @@ class Asset extends Element
     public $size;
 
     /**
+     * @var bool|null Whether the file was kept around when the asset was deleted
+     */
+    public $keptFile;
+
+    /**
      * @var \DateTime|null Date modified
      */
     public $dateModified;
@@ -457,7 +464,15 @@ class Asset extends Element
     public $conflictingFilename;
 
     /**
+     * @var bool Whether the asset was deleted along with its volume
+     * @see beforeDelete()
+     */
+    public $deletedWithVolume = false;
+
+    /**
      * @var bool Whether the associated file should be preserved if the asset record is deleted.
+     * @see beforeDelete()
+     * @see afterDelete()
      */
     public $keepFileOnDelete = false;
 
@@ -575,6 +590,7 @@ class Asset extends Element
     {
         $rules = parent::rules();
 
+        $rules[] = [['title'], StringValidator::class, 'max' => 255, 'disallowMb4' => true, 'on' => [self::SCENARIO_CREATE]];
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
@@ -1295,6 +1311,26 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        // Update the asset record
+        Craft::$app->getDb()->createCommand()
+            ->update(Table::ASSETS, [
+                'deletedWithVolume' => $this->deletedWithVolume,
+                'keptFile' => $this->keepFileOnDelete,
+            ], ['id' => $this->id], [], false)
+            ->execute();
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function afterDelete()
     {
         if (!$this->keepFileOnDelete) {
@@ -1310,9 +1346,8 @@ class Asset extends Element
      */
     public function beforeRestore(): bool
     {
-        // todo: maybe we can at least see if the file is still around first
-        // Assets can't be restored
-        return false;
+        // Only allow the asset to be restored if the file was kept on delete
+        return $this->keptFile && parent::beforeRestore();
     }
 
     // Private Methods

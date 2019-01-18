@@ -64,6 +64,11 @@ trait FieldTrait
     public $oldHandle;
 
     /**
+     * @var array|null The field’s previous settings
+     */
+    public $oldSettings;
+
+    /**
      * @var string|null The field’s content column prefix
      */
     public $columnPrefix;

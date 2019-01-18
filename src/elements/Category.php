@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\actions\DeepDuplicate;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
@@ -284,6 +285,12 @@ class Category extends Element
     public $newParentId;
 
     /**
+     * @var bool Whether the category was deleted along with its group
+     * @see beforeDelete()
+     */
+    public $deletedWithGroup = false;
+
+    /**
      * @var bool|null
      * @see _hasNewParent()
      */
@@ -309,7 +316,6 @@ class Category extends Element
     {
         $rules = parent::rules();
         $rules[] = [['groupId', 'newParentId'], 'number', 'integerOnly' => true];
-
         return $rules;
     }
 
@@ -517,6 +523,12 @@ class Category extends Element
             return false;
         }
 
+        // Update the category record
+        $data = [
+            'deletedWithGroup' => $this->deletedWithGroup,
+            'parentId' => null,
+        ];
+
         if ($this->structureId) {
             // Remember the parent ID, in case the entry needs to be restored later
             $parentId = $this->getAncestors(1)
@@ -524,11 +536,13 @@ class Category extends Element
                 ->select(['elements.id'])
                 ->scalar();
             if ($parentId) {
-                Craft::$app->getDb()->createCommand()
-                    ->update('{{%categories}}', ['parentId' => $parentId], ['id' => $this->id], [], false)
-                    ->execute();
+                $data['parentId'] = $parentId;
             }
         }
+
+        Craft::$app->getDb()->createCommand()
+            ->update(Table::CATEGORIES, $data, ['id' => $this->id], [], false)
+            ->execute();
 
         return true;
     }
@@ -573,14 +587,14 @@ class Category extends Element
 
             $sources = (new Query())
                 ->select(['fieldId', 'sourceId', 'sourceSiteId'])
-                ->from(['{{%relations}}'])
+                ->from([Table::RELATIONS])
                 ->where(['targetId' => $this->id])
                 ->all();
 
             foreach ($sources as $source) {
                 $existingAncestorRelations = (new Query())
                     ->select(['targetId'])
-                    ->from(['{{%relations}}'])
+                    ->from([Table::RELATIONS])
                     ->where([
                         'fieldId' => $source['fieldId'],
                         'sourceId' => $source['sourceId'],
@@ -604,7 +618,7 @@ class Category extends Element
             if (!empty($newRelationValues)) {
                 Craft::$app->getDb()->createCommand()
                     ->batchInsert(
-                        '{{%relations}}',
+                        Table::RELATIONS,
                         ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'],
                         $newRelationValues)
                     ->execute();

@@ -155,8 +155,11 @@ $createFolder($storagePath . '/logs');
 $ensureFolderIsReadable($storagePath . '/logs', true);
 
 // Log errors to storage/logs/phperrors.log
-ini_set('log_errors', 1);
-ini_set('error_log', $storagePath . '/logs/phperrors.log');
+if (!defined('CRAFT_LOG_PHP_ERRORS') || CRAFT_LOG_PHP_ERRORS) {
+    ini_set('log_errors', 1);
+    ini_set('error_log', $storagePath . '/logs/phperrors.log');
+}
+
 error_reporting(E_ALL);
 
 // Load the general config

@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\App;
 
 /**
@@ -24,7 +25,7 @@ class m181017_225222_system_config_settings extends Migration
         if (version_compare($schemaVersion, '3.1.3', '<')) {
             $info = (new Query())
                 ->select(['edition', 'name', 'timezone', 'on'])
-                ->from('{{%info}}')
+                ->from(Table::INFO)
                 ->one();
 
             $projectConfig->set('system', [
@@ -39,10 +40,10 @@ class m181017_225222_system_config_settings extends Migration
         }
 
         // Drop the columns from the info table
-        $this->dropColumn('{{%info}}', 'edition');
-        $this->dropColumn('{{%info}}', 'name');
-        $this->dropColumn('{{%info}}', 'timezone');
-        $this->dropColumn('{{%info}}', 'on');
+        $this->dropColumn(Table::INFO, 'edition');
+        $this->dropColumn(Table::INFO, 'name');
+        $this->dropColumn(Table::INFO, 'timezone');
+        $this->dropColumn(Table::INFO, 'on');
     }
 
     /**

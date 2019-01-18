@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\actions\DeepDuplicate;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
@@ -474,7 +475,7 @@ class Entry extends Element
 
             $map = (new Query())
                 ->select(['id as source', 'authorId as target'])
-                ->from(['{{%entries}}'])
+                ->from([Table::ENTRIES])
                 ->where(['and', ['id' => $sourceElementIds], ['not', ['authorId' => null]]])
                 ->all();
 
@@ -541,6 +542,12 @@ class Entry extends Element
      * @var string|null Revision notes
      */
     public $revisionNotes;
+
+    /**
+     * @var bool Whether the entry was deleted along with its entry type
+     * @see beforeDelete()
+     */
+    public $deletedWithEntryType = false;
 
     /**
      * @var User|null
@@ -1107,6 +1114,11 @@ EOD;
             return false;
         }
 
+        $data = [
+            'deletedWithEntryType' => $this->deletedWithEntryType,
+            'parentId' => null,
+        ];
+
         if ($this->structureId) {
             // Remember the parent ID, in case the entry needs to be restored later
             $parentId = $this->getAncestors(1)
@@ -1114,11 +1126,13 @@ EOD;
                 ->select(['elements.id'])
                 ->scalar();
             if ($parentId) {
-                Craft::$app->getDb()->createCommand()
-                    ->update('{{%entries}}', ['parentId' => $parentId], ['id' => $this->id], [], false)
-                    ->execute();
+                $data['parentId'] = $parentId;
             }
         }
+
+        Craft::$app->getDb()->createCommand()
+            ->update(Table::ENTRIES, $data, ['id' => $this->id], [], false)
+            ->execute();
 
         return true;
     }

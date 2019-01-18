@@ -552,7 +552,7 @@ class Connection extends \yii\db\Connection
         try {
             return (new Query())
                 ->select(['siteName'])
-                ->from(['{{%info}}'])
+                ->from([Table::INFO])
                 ->column()[0];
         } catch (\Throwable $e) {
             return Craft::$app->getProjectConfig()->get('system.name') ?? Craft::$app->getSites()->getPrimarySite()->name;

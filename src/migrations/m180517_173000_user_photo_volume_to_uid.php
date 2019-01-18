@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\Json;
 
 /**
@@ -32,7 +33,7 @@ class m180517_173000_user_photo_volume_to_uid extends Migration
                     $volumeUid = (new Query())
                         ->select(['uid'])
                         ->where(['id' => $settings['photoVolumeId']])
-                        ->from(['{{%volumes}}'])
+                        ->from([Table::VOLUMES])
                         ->scalar();
 
                     if ($volumeUid) {

@@ -95,7 +95,6 @@ class QuickPost extends Widget
         $rules = parent::rules();
         $rules[] = [['section'], 'required'];
         $rules[] = [['section', 'entryType'], 'integer'];
-
         return $rules;
     }
 

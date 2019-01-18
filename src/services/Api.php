@@ -133,7 +133,7 @@ class Api extends Component
     }
 
     /**
-     * Returns the plugin details.
+     * Returns plugin details.
      *
      * @param int $pluginId
      *
@@ -143,6 +143,20 @@ class Api extends Component
     public function getPluginDetails(int $pluginId): array
     {
         $response = $this->request('GET', 'plugin/' . $pluginId);
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Returns plugin changelog.
+     *
+     * @param int $pluginId
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getPluginChangelog(int $pluginId): array
+    {
+        $response = $this->request('GET', 'plugin/' . $pluginId . '/changelog');
         return Json::decode((string)$response->getBody());
     }
 
@@ -366,6 +380,7 @@ class Api extends Component
         }
 
         $pluginLicenseStatuses = [];
+        $pluginLicenseEditions = [];
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
             $pluginLicenseStatuses[$pluginHandle] = LicenseKeyStatus::Unknown;
@@ -377,9 +392,17 @@ class Api extends Component
                 $pluginLicenseStatuses[$pluginHandle] = $pluginLicenseStatus;
             }
         }
+        if ($response->hasHeader('X-Craft-Plugin-License-Editions')) {
+            $pluginLicenseInfo = explode(',', $response->getHeaderLine('X-Craft-Plugin-License-Editions'));
+            foreach ($pluginLicenseInfo as $info) {
+                list($pluginHandle, $pluginLicenseEdition) = explode(':', $info);
+                $pluginLicenseEditions[$pluginHandle] = $pluginLicenseEdition;
+            }
+        }
         foreach ($pluginLicenseStatuses as $pluginHandle => $pluginLicenseStatus) {
+            $pluginLicenseEdition = $pluginLicenseEditions[$pluginHandle] ?? null;
             try {
-                $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus);
+                $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus, $pluginLicenseEdition);
             } catch (InvalidPluginException $pluginException) {
             }
         }

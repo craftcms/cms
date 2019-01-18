@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Plugin;
 use craft\base\PluginInterface;
+use craft\db\Table;
 use craft\errors\MigrateException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
@@ -128,7 +129,7 @@ class Updates extends Component
         /** @var Plugin $plugin */
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->update(
-                '{{%plugins}}',
+                Table::PLUGINS,
                 [
                     'version' => $plugin->getVersion(),
                     'schemaVersion' => $plugin->schemaVersion

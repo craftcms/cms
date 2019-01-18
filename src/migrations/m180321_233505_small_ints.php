@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m180321_233505_small_ints migration.
@@ -14,16 +15,16 @@ class m180321_233505_small_ints extends Migration
      */
     public function safeUp()
     {
-        $this->alterColumn('{{%entrytypes}}', 'sortOrder', $this->smallInteger()->unsigned());
-        $this->alterColumn('{{%fieldlayoutfields}}', 'sortOrder', $this->smallInteger()->unsigned());
-        $this->alterColumn('{{%fieldlayouttabs}}', 'sortOrder', $this->smallInteger()->unsigned());
-        $this->alterColumn('{{%matrixblocks}}', 'sortOrder', $this->smallInteger()->unsigned());
-        $this->alterColumn('{{%matrixblocktypes}}', 'sortOrder', $this->smallInteger()->unsigned());
-        $this->alterColumn('{{%relations}}', 'sortOrder', $this->smallInteger()->unsigned());
+        $this->alterColumn(Table::ENTRYTYPES, 'sortOrder', $this->smallInteger()->unsigned());
+        $this->alterColumn(Table::FIELDLAYOUTFIELDS, 'sortOrder', $this->smallInteger()->unsigned());
+        $this->alterColumn(Table::FIELDLAYOUTTABS, 'sortOrder', $this->smallInteger()->unsigned());
+        $this->alterColumn(Table::MATRIXBLOCKS, 'sortOrder', $this->smallInteger()->unsigned());
+        $this->alterColumn(Table::MATRIXBLOCKTYPES, 'sortOrder', $this->smallInteger()->unsigned());
+        $this->alterColumn(Table::RELATIONS, 'sortOrder', $this->smallInteger()->unsigned());
         $this->alterColumn('{{%routes}}', 'sortOrder', $this->smallInteger()->unsigned());
-        $this->alterColumn('{{%sites}}', 'sortOrder', $this->smallInteger()->unsigned());
-        $this->alterColumn('{{%volumes}}', 'sortOrder', $this->smallInteger()->unsigned());
-        $this->alterColumn('{{%widgets}}', 'sortOrder', $this->smallInteger()->unsigned());
+        $this->alterColumn(Table::SITES, 'sortOrder', $this->smallInteger()->unsigned());
+        $this->alterColumn(Table::VOLUMES, 'sortOrder', $this->smallInteger()->unsigned());
+        $this->alterColumn(Table::WIDGETS, 'sortOrder', $this->smallInteger()->unsigned());
     }
 
     /**

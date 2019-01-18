@@ -73,8 +73,8 @@ class FolderCriteria extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'parentId', 'sourceId', 'offset', 'limit'], 'number', 'integerOnly' => true],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'parentId', 'sourceId', 'offset', 'limit'], 'number', 'integerOnly' => true];
+        return $rules;
     }
 }

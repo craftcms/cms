@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\UploadFailedException;
@@ -312,16 +313,8 @@ class UsersController extends Controller
             $errors = [];
         }
 
-        if (!empty($user)) {
-            try {
-                $emailSent = Craft::$app->getUsers()->sendPasswordResetEmail($user);
-            } catch (\Throwable $e) {
-                Craft::$app->getErrorHandler()->logException($e);
-                $emailSent = false;
-            }
-            if (!$emailSent) {
-                $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
-            }
+        if (!empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+            $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
         }
 
         if (empty($errors)) {
@@ -401,7 +394,7 @@ class UsersController extends Controller
         $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
 
         if (!$userToProcess || !$isCodeValid) {
-            return $this->_processInvalidToken($userToProcess);
+            return $this->_processInvalidToken();
         }
 
         $userToProcess->newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
@@ -1128,17 +1121,12 @@ class UsersController extends Controller
             $originalEmail = $user->email;
             $user->email = $user->unverifiedEmail;
 
-            try {
-                if ($isNewUser) {
-                    // Send the activation email
-                    $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
-                } else {
-                    // Send the standard verification email
-                    $emailSent = Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
-                }
-            } catch (\Throwable $e) {
-                Craft::$app->getErrorHandler()->logException($e);
-                $emailSent = false;
+            if ($isNewUser) {
+                // Send the activation email
+                $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
+            } else {
+                // Send the standard verification email
+                $emailSent = Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
             }
 
             if (!$emailSent) {
@@ -1291,12 +1279,7 @@ class UsersController extends Controller
             throw new BadRequestHttpException('Activation emails can only be sent to pending users');
         }
 
-        try {
-            $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
-        } catch (\Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-            $emailSent = false;
-        }
+        $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
 
         if (Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->asJson(['success' => $emailSent]);
@@ -1401,7 +1384,7 @@ class UsersController extends Controller
         $summary = [];
 
         $entryCount = (new Query())
-            ->from(['{{%entries}}'])
+            ->from([Table::ENTRIES])
             ->where(['authorId' => $userIds])
             ->count();
 
@@ -1926,7 +1909,7 @@ class UsersController extends Controller
         }
 
         if (!$userToProcess || !$isCodeValid) {
-            return $this->_processInvalidToken($userToProcess);
+            return $this->_processInvalidToken();
         }
 
         // Fire an 'afterVerifyUser' event
@@ -1939,11 +1922,10 @@ class UsersController extends Controller
     }
 
     /**
-     * @param User|null $user
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
-    private function _processInvalidToken($user): Response
+    private function _processInvalidToken(): Response
     {
         // If they're already logged-in, just send them to the post-login URL
         $userSession = Craft::$app->getUser();
@@ -1959,13 +1941,7 @@ class UsersController extends Controller
             return $this->redirect(UrlHelper::siteUrl($url));
         }
 
-        if ($user && $user->can('accessCp')) {
-            $url = UrlHelper::cpUrl('login');
-        } else {
-            $url = UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->getLoginPath());
-        }
-
-        throw new HttpException('200', Craft::t('app', 'Invalid verification code. Please [login or reset your password]({loginUrl}).', ['loginUrl' => $url]));
+        throw new HttpException('200', Craft::t('app', 'Invalid verification code. Please login or reset your password.'));
     }
 
     /**
@@ -1993,8 +1969,9 @@ class UsersController extends Controller
      */
     private function _maybeLoginUserAfterAccountActivation(User $user): bool
     {
-        if (Craft::$app->getConfig()->getGeneral()->autoLoginAfterAccountActivation === true) {
-            return Craft::$app->getUser()->login($user);
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->autoLoginAfterAccountActivation === true) {
+            return Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
         }
 
         return false;

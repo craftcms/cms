@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Volume;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\User;
@@ -538,7 +539,7 @@ class Assets extends Component
         }
 
         $query = (new Query())
-            ->from(['{{%volumefolders}}']);
+            ->from([Table::VOLUMEFOLDERS]);
 
         $this->_applyFolderConditions($query, $criteria);
 
@@ -1011,7 +1012,7 @@ class Assets extends Component
     {
         return (new Query())
             ->select(['id', 'parentId', 'volumeId', 'name', 'path', 'uid'])
-            ->from(['{{%volumefolders}}']);
+            ->from([Table::VOLUMEFOLDERS]);
     }
 
     /**

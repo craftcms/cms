@@ -101,14 +101,14 @@ class CategoryGroup extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'structureId', 'fieldLayoutId', 'maxLevels'], 'number', 'integerOnly' => true],
-            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['name', 'handle'], UniqueValidator::class, 'targetClass' => CategoryGroupRecord::class],
-            [['name', 'handle', 'siteSettings'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
-            [['siteSettings'], 'validateSiteSettings'],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'structureId', 'fieldLayoutId', 'maxLevels'], 'number', 'integerOnly' => true];
+        $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
+        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => CategoryGroupRecord::class];
+        $rules[] = [['name', 'handle', 'siteSettings'], 'required'];
+        $rules[] = [['name', 'handle'], 'string', 'max' => 255];
+        $rules[] = [['siteSettings'], 'validateSiteSettings'];
+        return $rules;
     }
 
     /**

@@ -438,6 +438,7 @@ class App
             'class' => FileTarget::class,
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
+            'includeUserIp' => $generalConfig->storeUserIps,
         ];
 
         if ($isConsoleRequest) {
@@ -517,6 +518,7 @@ class App
             'identityCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_identity']),
             'usernameCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_username']),
             'idParam' => $stateKeyPrefix . '__id',
+            'tokenParam' => $stateKeyPrefix . '__token',
             'authTimeoutParam' => $stateKeyPrefix . '__expire',
             'absoluteAuthTimeoutParam' => $stateKeyPrefix . '__absoluteExpire',
             'returnUrlParam' => $stateKeyPrefix . '__returnUrl',

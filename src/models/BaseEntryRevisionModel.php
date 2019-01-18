@@ -55,7 +55,6 @@ class BaseEntryRevisionModel extends Entry
     {
         $rules = parent::rules();
         $rules[] = [['creatorId'], 'number', 'integerOnly' => true];
-
         return $rules;
     }
 

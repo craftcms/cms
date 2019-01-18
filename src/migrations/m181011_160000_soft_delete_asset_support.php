@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
@@ -16,8 +17,8 @@ class m181011_160000_soft_delete_asset_support extends Migration
     public function safeUp()
     {
         // Unique file names in folder should no longer be enforced by the DB
-        MigrationHelper::dropIndexIfExists('{{%assets}}', ['filename', 'folderId'], true, $this);
-        $this->createIndex(null, '{{%assets}}', ['filename', 'folderId'], false);
+        MigrationHelper::dropIndexIfExists(Table::ASSETS, ['filename', 'folderId'], true, $this);
+        $this->createIndex(null, Table::ASSETS, ['filename', 'folderId'], false);
     }
 
     /**

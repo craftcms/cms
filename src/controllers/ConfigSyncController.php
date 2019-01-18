@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Plugin;
+use craft\db\Table;
 use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
 use craft\services\Plugins;
@@ -82,12 +83,12 @@ class ConfigSyncController extends BaseUpdaterController
 
         try {
             Craft::$app->getPlugins()->uninstallPlugin($handle);
-        } catch (InvalidPluginException $e) {
+        } catch (\Throwable $e) {
             Craft::warning('Could not uninstall plugin "' . $handle . '" that was removed from project.yaml: ' . $e->getMessage());
 
             // Just remove the row
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%plugins}}', ['handle' => $handle])
+                ->delete(Table::PLUGINS, ['handle' => $handle])
                 ->execute();
         }
 

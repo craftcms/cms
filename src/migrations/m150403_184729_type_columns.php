@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 use yii\db\Expression;
 
 /**
@@ -34,9 +35,9 @@ class m150403_184729_type_columns extends Migration
             [
                 'namespace' => 'craft\elements',
                 'tables' => [
-                    '{{%elements}}',
-                    '{{%elementindexsettings}}',
-                    '{{%fieldlayouts}}',
+                    Table::ELEMENTS,
+                    Table::ELEMENTINDEXSETTINGS,
+                    Table::FIELDLAYOUTS,
                     '{{%templatecachecriteria}}',
                 ],
                 'classes' => [
@@ -52,7 +53,7 @@ class m150403_184729_type_columns extends Migration
             [
                 'namespace' => 'craft\fields',
                 'tables' => [
-                    '{{%fields}}',
+                    Table::FIELDS,
                 ],
                 'classes' => [
                     'Assets',
@@ -78,7 +79,7 @@ class m150403_184729_type_columns extends Migration
             [
                 'namespace' => 'craft\widgets',
                 'tables' => [
-                    '{{%widgets}}',
+                    Table::WIDGETS,
                 ],
                 'classes' => [
                     'Feed',

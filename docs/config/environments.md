@@ -2,7 +2,7 @@
 
 Some settings should be defined on a per-environment basis. For example, when developing locally, you may want your site’s base URL to be `http://my-project.test`, but on production it should be `https://my-project.com`.
 
-## Control Panel Settings 
+## Control Panel Settings
 
 Some settings in the Control Panel can be set to environment variables (like the ones defined in your `.env` file):
 
@@ -63,7 +63,7 @@ return [
     'dev' => [
         'devMode' => true,
     ],
-    
+
     // Production environment settings
     'production' => [
         'cpTrigger' => 'secret-word',

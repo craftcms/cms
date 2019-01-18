@@ -14,10 +14,12 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
+use craft\db\Table as TableName;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\validators\ArrayValidator;
@@ -457,7 +459,7 @@ JS;
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
             ->select(['sourceId as source', 'targetId as target'])
-            ->from(['{{%relations}}'])
+            ->from([TableName::RELATIONS])
             ->where([
                 'and',
                 [
@@ -560,7 +562,7 @@ JS;
             // Make sure it's not a heading
             if (!isset($source['heading'])) {
                 $options[] = [
-                    'label' => $source['label'],
+                    'label' => Html::encode($source['label']),
                     'value' => $source['key']
                 ];
                 $optionNames[] = $source['label'];

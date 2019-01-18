@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\Table;
 use craft\events\ElementContentEvent;
 use craft\helpers\Db;
 use craft\models\FieldLayout;
@@ -46,7 +47,7 @@ class Content extends Component
     /**
      * @var string
      */
-    public $contentTable = '{{%content}}';
+    public $contentTable = Table::CONTENT;
 
     /**
      * @var string

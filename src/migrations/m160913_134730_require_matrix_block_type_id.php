@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
@@ -19,19 +20,19 @@ class m160913_134730_require_matrix_block_type_id extends Migration
         // Are there any Matrix blocks that don't have a type?
         $typelessBlockIds = (new Query())
             ->select(['id'])
-            ->from(['{{%matrixblocks}}'])
+            ->from([Table::MATRIXBLOCKS])
             ->where(['typeId' => null])
             ->column($this->db);
 
         if (!empty($typelessBlockIds)) {
-            $this->delete('{{%elements}}', ['id' => $typelessBlockIds]);
+            $this->delete(Table::ELEMENTS, ['id' => $typelessBlockIds]);
             echo "    > Deleted the following Matrix blocks, because they didn't have a block type: " . implode(',', $typelessBlockIds) . "\n";
         }
 
         // Make typeId required
-        MigrationHelper::dropForeignKeyIfExists('{{%matrixblocks}}', ['typeId'], $this);
-        $this->alterColumn('{{%matrixblocks}}', 'typeId', $this->integer()->notNull());
-        $this->addForeignKey(null, '{{%matrixblocks}}', ['typeId'], '{{%matrixblocktypes}}', ['id'], 'CASCADE', null);
+        MigrationHelper::dropForeignKeyIfExists(Table::MATRIXBLOCKS, ['typeId'], $this);
+        $this->alterColumn(Table::MATRIXBLOCKS, 'typeId', $this->integer()->notNull());
+        $this->addForeignKey(null, Table::MATRIXBLOCKS, ['typeId'], Table::MATRIXBLOCKTYPES, ['id'], 'CASCADE', null);
     }
 
     /**

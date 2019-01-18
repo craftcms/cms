@@ -56,9 +56,9 @@ class FieldLayout extends Model
      */
     public function rules()
     {
-        return [
-            [['id'], 'number', 'integerOnly' => true],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id'], 'number', 'integerOnly' => true];
+        return $rules;
     }
 
     /**

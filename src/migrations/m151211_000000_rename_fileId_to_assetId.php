@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -14,7 +15,7 @@ class m151211_000000_rename_fileId_to_assetId extends Migration
      */
     public function safeUp()
     {
-        $this->renameColumn('{{%assettransformindex}}', 'fileId', 'assetId');
+        $this->renameColumn(Table::ASSETTRANSFORMINDEX, 'fileId', 'assetId');
     }
 
     /**

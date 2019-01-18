@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\Db;
 use craft\helpers\Json;
 
@@ -62,7 +63,7 @@ class m181029_130000_add_transforms_routes_to_config extends Migration
                 'interlace',
                 'uid',
             ])
-            ->from(['{{%assettransforms}}'])
+            ->from([Table::ASSETTRANSFORMS])
             ->indexBy('uid')
             ->all();
 
@@ -92,7 +93,7 @@ class m181029_130000_add_transforms_routes_to_config extends Migration
             ->all();
 
         foreach ($routes as &$route) {
-            $route['siteUid'] = $route['siteId'] ? Db::uidById('{{%sites}}', $route['siteId']) : null;
+            $route['siteUid'] = $route['siteId'] ? Db::uidById(Table::SITES, $route['siteId']) : null;
             $route['uriParts'] = Json::decodeIfJson($route['uriParts']);
             unset($route['uid'], $route['siteId']);
         }

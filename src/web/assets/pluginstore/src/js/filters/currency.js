@@ -12,5 +12,9 @@ export function currency(value) {
         precision = 0;
     }
 
+    if (floatValue < 0) {
+        return '-' + Accounting.formatMoney((floatValue * -1), '$', precision);
+    }
+
     return Accounting.formatMoney(floatValue, '$', precision);
 }

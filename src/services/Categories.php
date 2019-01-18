@@ -10,11 +10,13 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
 use craft\events\ConfigEvent;
+use craft\events\DeleteSiteEvent;
 use craft\events\FieldEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -251,7 +253,7 @@ class Categories extends Component
             }
 
             $group->uid = $existingGroupRecord->uid;
-            $structureUid = Db::uidById('{{%structures}}', $existingGroupRecord->structureId);
+            $structureUid = Db::uidById(Table::STRUCTURES, $existingGroupRecord->structureId);
         }
 
         // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
@@ -278,7 +280,7 @@ class Categories extends Component
                 $layoutUid = StringHelper::UUID();
                 $fieldLayout->uid = $layoutUid;
             } else {
-                $layoutUid = Db::uidById('{{%fieldlayouts}}', $fieldLayout->id);
+                $layoutUid = Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id);
             }
 
             $configData['fieldLayouts'] = [
@@ -297,7 +299,7 @@ class Categories extends Component
         }
 
         foreach ($allSiteSettings as $siteId => $settings) {
-            $siteUid = Db::uidById('{{%sites}}', $siteId);
+            $siteUid = Db::uidById(Table::SITES, $siteId);
             $configData['siteSettings'][$siteUid] = [
                 'hasUrls' => $settings['hasUrls'],
                 'uriFormat' => $settings['uriFormat'],
@@ -309,7 +311,7 @@ class Categories extends Component
         $projectConfig->set($configPath, $configData);
 
         if ($isNewCategoryGroup) {
-            $group->id = Db::idByUid('{{%categorygroups}}', $group->uid);
+            $group->id = Db::idByUid(Table::CATEGORYGROUPS, $group->uid);
         }
 
         return true;
@@ -338,7 +340,7 @@ class Categories extends Component
             $structureUid = $structureData['uid'];
 
             // Basic data
-            $groupRecord = $this->_getCategoryGroupRecord($categoryGroupUid);
+            $groupRecord = $this->_getCategoryGroupRecord($categoryGroupUid, true);
             $isNewCategoryGroup = $groupRecord->getIsNewRecord();
 
             $groupRecord->name = $data['name'];
@@ -346,33 +348,34 @@ class Categories extends Component
             $groupRecord->uid = $categoryGroupUid;
 
             // Structure
-            $structure = Craft::$app->getStructures()->getStructureByUid($structureUid) ?? new Structure();
+            $structuresService = Craft::$app->getStructures();
+            $structure = $structuresService->getStructureByUid($structureUid, true) ?? new Structure(['uid' => $structureUid]);
             $structure->maxLevels = $structureData['maxLevels'];
-            Craft::$app->getStructures()->saveStructure($structure);
+            $structuresService->saveStructure($structure);
 
             $groupRecord->structureId = $structure->id;
 
             // Save the field layout
             if (!empty($data['fieldLayouts'])) {
-                $fields = Craft::$app->getFields();
-
-                // Delete the field layout
-                if ($groupRecord->fieldLayoutId) {
-                    $fields->deleteLayoutById($groupRecord->fieldLayoutId);
-                }
-
-                //Create the new layout
+                // Save the field layout
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                $layout->id = $groupRecord->fieldLayoutId;
                 $layout->type = Category::class;
                 $layout->uid = key($data['fieldLayouts']);
-                $fields->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout);
                 $groupRecord->fieldLayoutId = $layout->id;
-            } else {
+            } else if ($groupRecord->fieldLayoutId) {
+                // Delete the field layout
+                Craft::$app->getFields()->deleteLayoutById($groupRecord->fieldLayoutId);
                 $groupRecord->fieldLayoutId = null;
             }
 
             // Save the category group
-            $groupRecord->save(false);
+            if ($wasTrashed = (bool)$groupRecord->dateDeleted) {
+                $groupRecord->restore();
+            } else {
+                $groupRecord->save(false);
+            }
 
             // Update the site settings
             // -----------------------------------------------------------------
@@ -388,7 +391,7 @@ class Categories extends Component
                     ->all();
             }
 
-            $siteIdMap = Db::idsByUids('{{%sites}}', array_keys($siteData));
+            $siteIdMap = Db::idsByUids(Table::SITES, array_keys($siteData));
 
             foreach ($siteData as $siteUid => $siteSettings) {
                 $siteId = $siteIdMap[$siteUid];
@@ -455,7 +458,7 @@ class Categories extends Component
                     if (!empty($sitesNowWithoutUrls)) {
                         $db->createCommand()
                             ->update(
-                                '{{%elements_sites}}',
+                                Table::ELEMENTS_SITES,
                                 ['uri' => null],
                                 [
                                     'elementId' => $categoryIds,
@@ -492,6 +495,16 @@ class Categories extends Component
 
         // Clear caches
         $this->_groups = null;
+
+        if ($wasTrashed) {
+            // Restore the categories that were deleted with the group
+            $categories = Category::find()
+                ->groupId($groupRecord->id)
+                ->trashed()
+                ->andWhere(['categories.deletedWithGroup' => true])
+                ->all();
+            Craft::$app->getElements()->restoreElements($categories);
+        }
 
         // Fire an 'afterSaveGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
@@ -600,29 +613,29 @@ class Categories extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Delete the field layout
-            $fieldLayoutId = (new Query())
-                ->select(['fieldLayoutId'])
-                ->from(['{{%categorygroups}}'])
-                ->where(['id' => $categoryGroupRecord->id])
-                ->scalar();
-
-            if ($fieldLayoutId) {
-                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-            }
-
-            // Delete the tags
+            // Delete the categories
             $categories = Category::find()
                 ->anyStatus()
                 ->groupId($categoryGroupRecord->id)
                 ->all();
+            $elementsService = Craft::$app->getElements();
 
             foreach ($categories as $category) {
-                Craft::$app->getElements()->deleteElement($category);
+                $category->deletedWithGroup = true;
+                $elementsService->deleteElement($category);
             }
 
+            // Delete the structure
+            Craft::$app->getStructures()->deleteStructureById($categoryGroupRecord->structureId);
+
+            // Delete the field layout
+            if ($categoryGroupRecord->fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($categoryGroupRecord->fieldLayoutId);
+            }
+
+            // Delete the category group
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%categorygroups}}', ['id' => $categoryGroupRecord->id])
+                ->softDelete(Table::CATEGORYGROUPS, ['id' => $categoryGroupRecord->id])
                 ->execute();
 
             $transaction->commit();
@@ -672,6 +685,25 @@ class Categories extends Component
         }
     }
 
+    /**
+     * Prune a deleted site from category group site settings.
+     *
+     * @param DeleteSiteEvent $event
+     */
+    public function pruneDeletedSite(DeleteSiteEvent $event)
+    {
+        $siteUid = $event->site->uid;
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        $categoryGroups = $projectConfig->get(self::CONFIG_CATEGORYROUP_KEY);
+
+        // Loop through the category groups and prune the UID from field layouts.
+        if (is_array($categoryGroups)) {
+            foreach ($categoryGroups as $categoryGroupUid => $categoryGroup) {
+                $projectConfig->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid . '.siteSettings.' . $siteUid);
+            }
+        }
+    }
 
     // Categories
     // -------------------------------------------------------------------------
@@ -811,10 +843,13 @@ class Categories extends Component
      * Gets a category group's record by uid.
      *
      * @param string $uid
+     * @param bool $withTrashed Whether to include trashed category groups in search
      * @return CategoryGroupRecord
      */
-    private function _getCategoryGroupRecord(string $uid): CategoryGroupRecord
+    private function _getCategoryGroupRecord(string $uid, bool $withTrashed = false): CategoryGroupRecord
     {
-        return CategoryGroupRecord::findOne(['uid' => $uid]) ?? new CategoryGroupRecord();
+        $query = $withTrashed ? CategoryGroupRecord::findWithTrashed() : CategoryGroupRecord::find();
+        $query->andWhere(['uid' => $uid]);
+        return $query->one() ?? new CategoryGroupRecord();
     }
 }

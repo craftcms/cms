@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 
 /**
  * Class AssetTransform record.
@@ -37,6 +38,6 @@ class AssetTransform extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%assettransforms}}';
+        return Table::ASSETTRANSFORMS;
     }
 }

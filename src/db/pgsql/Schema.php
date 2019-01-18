@@ -9,6 +9,7 @@ namespace craft\db\pgsql;
 
 use Composer\Util\Platform;
 use Craft;
+use craft\db\Table;
 use craft\db\TableSchema;
 use yii\db\Exception;
 
@@ -120,13 +121,13 @@ class Schema extends \yii\db\pgsql\Schema
     public function getDefaultBackupCommand()
     {
         $defaultTableIgnoreList = [
-            '{{%assetindexdata}}',
-            '{{%assettransformindex}}',
+            Table::ASSETINDEXDATA,
+            Table::ASSETTRANSFORMINDEX,
             '{{%cache}}',
-            '{{%sessions}}',
-            '{{%templatecaches}}',
+            Table::SESSIONS,
+            Table::TEMPLATECACHES,
             '{{%templatecachecriteria}}',
-            '{{%templatecacheelements}}',
+            Table::TEMPLATECACHEELEMENTS,
         ];
 
         $dbSchema = Craft::$app->getDb()->getSchema();

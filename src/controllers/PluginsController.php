@@ -58,6 +58,27 @@ class PluginsController extends Controller
     }
 
     /**
+     * Installs a plugin.
+     *
+     * @return Response
+     */
+    public function actionSwitchEdition(): Response
+    {
+        $this->requirePostRequest();
+        $request = Craft::$app->getRequest();
+        $pluginHandle = $request->getRequiredBodyParam('pluginHandle');
+        $edition = $request->getRequiredBodyParam('edition');
+        Craft::$app->getPlugins()->switchEdition($pluginHandle, $edition);
+
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
+            return $this->asJson(['success' => true]);
+        }
+
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin edition changed.'));
+        return $this->redirectToPostedUrl();
+    }
+
+    /**
      * Uninstalls a plugin.
      *
      * @return Response

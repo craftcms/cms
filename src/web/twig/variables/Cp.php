@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\events\RegisterCpNavItemsEvent;
+use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
@@ -33,6 +34,11 @@ class Cp extends Component
      * @event RegisterCpNavItemsEvent The event that is triggered when registering Control Panel nav items.
      */
     const EVENT_REGISTER_CP_NAV_ITEMS = 'registerCpNavItems';
+
+    /**
+     * @event RegisterCpSettingsEvent The event that is triggered when registering Control Panel nav items.
+     */
+    const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
 
     // Public Methods
     // =========================================================================
@@ -280,7 +286,13 @@ class Cp extends Component
             }
         }
 
-        return $settings;
+        // Allow plugins to modify the settings
+        $event = new RegisterCpSettingsEvent([
+            'settings' => $settings
+        ]);
+        $this->trigger(self::EVENT_REGISTER_CP_SETTINGS, $event);
+
+        return $event->settings;
     }
 
     /**

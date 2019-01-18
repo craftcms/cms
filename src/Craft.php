@@ -8,6 +8,7 @@
 use craft\behaviors\ContentBehavior;
 use craft\behaviors\ElementQueryBehavior;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
 use yii\base\ExitException;
@@ -150,6 +151,12 @@ class Craft extends Yii
      */
     public static function autoload($className)
     {
+        // FileCookieJar is not supported
+        if ($className === 'GuzzleHttp\Cookie\FileCookieJar') {
+            require dirname(__DIR__) . '/lib/guzzle/FileCookieJar.php';
+            return;
+        }
+
         if ($className !== ContentBehavior::class && $className !== ElementQueryBehavior::class) {
             return;
         }
@@ -177,7 +184,7 @@ class Craft extends Yii
 
             $fieldHandles = (new Query())
                 ->distinct(true)
-                ->from(['{{%fields}}'])
+                ->from([Table::FIELDS])
                 ->select([$column])
                 ->column();
         } else {

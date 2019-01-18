@@ -15,7 +15,7 @@ When choosing a module ID, try to avoid names that will conflict with Craft’s 
 
 ## Set up the basic file structure
 
-To create a module, create a new directory for it somewhere within your Craft project, such as `modules/<ModuleID>/`. For example, if your module ID is `foo`, you might set it up like this:   
+To create a module, create a new directory for it somewhere within your Craft project, such as `modules/<ModuleID>/`. For example, if your module ID is `foo`, you might set it up like this:
 
 ```
 my-project.test/

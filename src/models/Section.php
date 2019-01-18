@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
@@ -111,15 +112,15 @@ class Section extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true],
-            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['type'], 'in', 'range' => ['single', 'channel', 'structure']],
-            [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class],
-            [['name', 'handle', 'type', 'siteSettings'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
-            [['siteSettings'], 'validateSiteSettings'],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
+        $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
+        $rules[] = [['type'], 'in', 'range' => ['single', 'channel', 'structure']];
+        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
+        $rules[] = [['name', 'handle', 'type', 'siteSettings'], 'required'];
+        $rules[] = [['name', 'handle'], 'string', 'max' => 255];
+        $rules[] = [['siteSettings'], 'validateSiteSettings'];
+        return $rules;
     }
 
     /**
@@ -132,7 +133,7 @@ class Section extends Model
         if ($this->id) {
             $currentSiteIds = (new Query())
                 ->select(['siteId'])
-                ->from(['{{%sections_sites}}'])
+                ->from([Table::SECTIONS_SITES])
                 ->where(['sectionId' => $this->id])
                 ->column();
 

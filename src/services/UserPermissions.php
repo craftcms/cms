@@ -13,6 +13,7 @@ use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\base\Volume;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
@@ -370,7 +371,7 @@ class UserPermissions extends Component
 
         // Delete any existing user permissions
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%userpermissions_users}}', ['userId' => $userId])
+            ->delete(Table::USERPERMISSIONS_USERS, ['userId' => $userId])
             ->execute();
 
         // Lowercase the permissions
@@ -391,7 +392,7 @@ class UserPermissions extends Component
             // Add the new user permissions
             Craft::$app->getDb()->createCommand()
                 ->batchInsert(
-                    '{{%userpermissions_users}}',
+                    Table::USERPERMISSIONS_USERS,
                     ['permissionId', 'userId'],
                     $userPermissionVals)
                 ->execute();
@@ -420,7 +421,7 @@ class UserPermissions extends Component
 
         // Delete any existing group permissions
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%userpermissions_usergroups}}', ['groupId' => $userGroup->id])
+            ->delete(Table::USERPERMISSIONS_USERGROUPS, ['groupId' => $userGroup->id])
             ->execute();
 
         $groupPermissionVals = [];
@@ -434,7 +435,7 @@ class UserPermissions extends Component
             // Add the new group permissions
             Craft::$app->getDb()->createCommand()
                 ->batchInsert(
-                    '{{%userpermissions_usergroups}}',
+                    Table::USERPERMISSIONS_USERGROUPS,
                     ['permissionId', 'groupId'],
                     $groupPermissionVals)
                 ->execute();

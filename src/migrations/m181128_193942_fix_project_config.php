@@ -5,11 +5,11 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\fields\Matrix;
 use craft\helpers\Json;
 use craft\services\Fields;
 use craft\services\UserGroups;
-use craft\services\Users;
 
 /**
  * m181128_193942_fix_project_config migration.
@@ -36,8 +36,8 @@ class m181128_193942_fix_project_config extends Migration
 
         $matrixFields = (new Query())
             ->select(['uid', 'settings'])
-            ->from(['{{%fields}}'])
-            ->where(['type' => Matrix::class])
+            ->from([Table::FIELDS])
+            ->where(['type' => Matrix::class, 'context' => 'global'])
             ->all();
 
         foreach ($matrixFields as $matrixField) {

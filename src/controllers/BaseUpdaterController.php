@@ -506,7 +506,7 @@ abstract class BaseUpdaterController extends Controller
      * Attempts to install a plugin by its handle.
      *
      * @param string $handle
-     * @return Array with installation results
+     * @return array Array with installation results
      */
     protected function installPlugin(string $handle): array
     {

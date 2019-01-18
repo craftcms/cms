@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
@@ -15,12 +16,12 @@ class m170120_000000_schema_cleanup extends Migration
      */
     public function safeUp()
     {
-        if (!MigrationHelper::doesForeignKeyExist('{{%taggroups}}', 'fieldLayoutId')) {
-            $this->addForeignKey(null, '{{%taggroups}}', ['fieldLayoutId'], '{{%fieldlayouts}}', ['id'], 'SET NULL', null);
+        if (!MigrationHelper::doesForeignKeyExist(Table::TAGGROUPS, 'fieldLayoutId')) {
+            $this->addForeignKey(null, Table::TAGGROUPS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         }
 
-        $this->alterColumn('{{%entryversions}}', 'notes', $this->text());
-        $this->alterColumn('{{%assetindexdata}}', 'uri', $this->text());
+        $this->alterColumn(Table::ENTRYVERSIONS, 'notes', $this->text());
+        $this->alterColumn(Table::ASSETINDEXDATA, 'uri', $this->text());
 
         return true;
     }

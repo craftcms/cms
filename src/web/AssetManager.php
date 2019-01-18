@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\db\Table;
 use craft\errors\DbConnectException;
 use craft\helpers\FileHelper;
 use yii\db\Exception as DbException;
@@ -90,7 +91,7 @@ class AssetManager extends \yii\web\AssetManager
         // Store the hash for later
         try {
             Craft::$app->getDb()->createCommand()
-                ->upsert('{{%resourcepaths}}', [
+                ->upsert(Table::RESOURCEPATHS, [
                     'hash' => $hash,
                 ], [
                     'path' => $alias,

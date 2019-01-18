@@ -8,7 +8,7 @@ For example if a plugin’s handle is `foo` and it has a `templates/bar.twig` te
 
 Modules can have templates too, but they will need to manually define a [template root](template-roots.md) before they are accessible.
 
-## Page Templates  
+## Page Templates
 
 At a minimum, page templates should extend Craft’s [_layouts/cp](https://github.com/craftcms/cms/blob/develop/src/templates/_layouts/cp.html) layout template, set a `title` variable, and define a `content` block.
 

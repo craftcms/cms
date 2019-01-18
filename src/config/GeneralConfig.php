@@ -68,7 +68,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether Craft should allow system and plugin updates in the Control Panel, and plugin installation from the Plugin Store.
      *
-     * This setting will automatically be disabled if [[allowAdminChanges]] is enabled.
+     * This setting will automatically be disabled if [[allowAdminChanges]] is disabled.
      */
     public $allowUpdates = true;
     /**
@@ -677,6 +677,10 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
     public $softDeleteDuration = 2592000;
+    /**
+     * @var bool Whether user IP addresses should be stored/logged by the system.
+     */
+    public $storeUserIps = false;
     /**
      * @var bool Whether Twig runtime errors should be suppressed.
      *

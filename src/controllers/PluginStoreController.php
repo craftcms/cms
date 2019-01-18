@@ -28,6 +28,7 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
+
 class PluginStoreController extends Controller
 {
     // Public Methods
@@ -225,23 +226,6 @@ class PluginStoreController extends Controller
 
         $data = [];
 
-        // Installed plugins
-        $plugins = Craft::$app->getPlugins()->getComposerPluginInfo();
-        $installedPlugins = [];
-
-        foreach ($plugins as $handle => $plugin) {
-            $pluginInfo = Craft::$app->getPlugins()->getStoredPluginInfo($handle);
-
-            $installedPlugins[] = [
-                'handle' => $handle,
-                'packageName' => $plugin['packageName'],
-                'version' => $plugin['version'],
-                'hasLicenseKey' => $pluginInfo['licenseKey'] ? true : false,
-            ];
-        }
-
-        $data['installedPlugins'] = $installedPlugins;
-
         // Current user
         $data['currentUser'] = Craft::$app->getUser()->getIdentity();
 
@@ -279,39 +263,6 @@ class PluginStoreController extends Controller
     }
 
     /**
-     * Saves Craft data.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     */
-    public function actionSaveCraftData(): Response
-    {
-        $this->requirePostRequest();
-
-        $postData = Craft::$app->getRequest()->getParam('craftData');
-
-        $sessionData = [
-            'installedPlugins' => $postData['installedPlugins']
-        ];
-
-        Craft::$app->getSession()->set('pluginStore.craftData', $sessionData);
-
-        return $this->asJson([]);
-    }
-
-    /**
-     * Clears Craft data.
-     *
-     * @return Response
-     */
-    public function actionClearCraftData(): Response
-    {
-        Craft::$app->getSession()->remove('pluginStore.craftData');
-
-        return $this->asJson(true);
-    }
-
-    /**
      * Returns the Plugin Store’s data.
      *
      * @return Response
@@ -334,6 +285,19 @@ class PluginStoreController extends Controller
         $pluginDetails = Craft::$app->getApi()->getPluginDetails($pluginId);
 
         return $this->asJson($pluginDetails);
+    }
+
+    /**
+     * Returns plugin changelog.
+     *
+     * @return Response
+     */
+    public function actionPluginChangelog()
+    {
+        $pluginId = Craft::$app->getRequest()->getParam('pluginId');
+        $pluginChangelog = Craft::$app->getApi()->getPluginChangelog($pluginId);
+
+        return $this->asJson($pluginChangelog);
     }
 
     /**

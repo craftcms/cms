@@ -47,16 +47,16 @@
             }),
 
             ...mapGetters({
-                isCmsEditionInCart: 'isCmsEditionInCart',
+                isCmsEditionInCart: 'cart/isCmsEditionInCart',
             })
 
         },
 
         methods: {
             ...mapActions({
-                addToCart: 'addToCart',
-                tryEdition: 'tryEdition',
-                getCraftData: 'getCraftData',
+                addToCart: 'cart/addToCart',
+                tryEdition: 'craft/tryEdition',
+                getCraftData: 'craft/getCraftData',
             }),
 
             buyCraft(edition) {
@@ -65,8 +65,6 @@
                 const item = {
                     type: 'cms-edition',
                     edition: edition,
-                    licenseKey: window.cmsLicenseKey,
-                    autoRenew: false,
                 }
 
                 this.addToCart([item])
