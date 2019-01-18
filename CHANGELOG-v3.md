@@ -6,6 +6,7 @@
 - Added `craft\base\FieldTrait::$oldSettings`.
 - Added `craft\services\Fields::prepFieldForSave()`.
 - Added the `craft asset-indexing/all` and `craft asset-indexing/one` console commands which can be used to index asset volumes.
+- Added the `craft\services\ProjectConfig::$muteEvents` property that controls whether events are emitted when project configuration is changed.
 
 ### Fixed
 - Fixed a PHP notice that occurred when updating to Craft 3.1 if there were any plugins installed without settings.
