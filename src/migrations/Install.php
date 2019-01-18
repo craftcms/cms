@@ -999,9 +999,7 @@ class Install extends Migration
         $applyExistingProjectConfig = false;
 
         if ($generalConfig->useProjectConfigFile) {
-            $configDir = Craft::$app->getPath()->getConfigPath();
-            $configFile = $configDir . '/' . ProjectConfig::CONFIG_FILENAME;
-
+            $configFile = Craft::$app->getPath()->getProjectConfigFilePath();
             if (file_exists($configFile)) {
                 try {
                     $this->_installPlugins();
@@ -1013,7 +1011,7 @@ class Install extends Migration
                     // Rename project.yaml so we can create a new one
                     $backupFile = ProjectConfig::CONFIG_FILENAME . '.' . StringHelper::randomString(10);
                     echo "    > renaming project.yaml to {$backupFile} ... ";
-                    rename($configFile, $configDir . '/' . $backupFile);
+                    rename($configFile, dirname($configFile) . '/' . $backupFile);
                     echo "done\n";
                 }
             }

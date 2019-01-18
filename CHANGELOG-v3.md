@@ -5,6 +5,7 @@
 ### Added
 - Added `craft\base\FieldTrait::$oldSettings`.
 - Added `craft\services\Fields::prepFieldForSave()`.
+- Added `craft\services\Path::getProjectConfigFilePath()`.
 - Added the `craft asset-indexing/all` and `craft asset-indexing/one` console commands which can be used to index asset volumes.
 
 ### Changed

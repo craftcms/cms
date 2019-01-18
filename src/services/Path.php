@@ -69,6 +69,16 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to `config/project.yaml`.
+     *
+     * @return string
+     */
+    public function getProjectConfigFilePath(): string
+    {
+        return $this->getConfigPath() . DIRECTORY_SEPARATOR . ProjectConfig::CONFIG_FILENAME;
+    }
+
+    /**
      * Returns the path to the `storage/` directory.
      *
      * @return string
