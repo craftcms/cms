@@ -47,14 +47,14 @@ class m180516_153000_uids_in_field_settings extends Migration
 
             switch ($field['type']) {
                 case Assets::class:
-                    if (strpos($settings['defaultUploadLocationSource'], ':') !== false) {
+                    if (!empty($settings['defaultUploadLocationSource']) && strpos($settings['defaultUploadLocationSource'], ':') !== false) {
                         list(, $folderIds[]) = explode(':', $settings['defaultUploadLocationSource']);
                     }
-                    if (strpos($settings['singleUploadLocationSource'], ':') !== false) {
+                    if (!empty($settings['singleUploadLocationSource']) && strpos($settings['singleUploadLocationSource'], ':') !== false) {
                         list(, $folderIds[]) = explode(':', $settings['singleUploadLocationSource']);
                     }
 
-                    if (is_array($settings['sources'])) {
+                    if (!empty($settings['sources']) && is_array($settings['sources'])) {
                         foreach ($settings['sources'] as $source) {
                             if (strpos($source, ':') !== false) {
                                 list(, $folderIds[]) = explode(':', $source);
@@ -64,7 +64,7 @@ class m180516_153000_uids_in_field_settings extends Migration
 
                     break;
                 case Entries::class:
-                    if (is_array($settings['sources'])) {
+                    if (!empty($settings['sources']) && is_array($settings['sources'])) {
                         foreach ($settings['sources'] as $source) {
                             if (strpos($source, ':') !== false) {
                                 list(, $sectionIds[]) = explode(':', $source);
@@ -74,7 +74,7 @@ class m180516_153000_uids_in_field_settings extends Migration
 
                     break;
                 case Users::class:
-                    if (is_array($settings['sources'])) {
+                    if (!empty($settings['sources']) && is_array($settings['sources'])) {
                         foreach ($settings['sources'] as $source) {
                             if (strpos($source, ':') !== false) {
                                 list(, $userGroupIds[]) = explode(':', $source);
@@ -84,13 +84,13 @@ class m180516_153000_uids_in_field_settings extends Migration
 
                     break;
                 case Categories::class:
-                    if (strpos($settings['source'], ':') !== false) {
+                    if (!empty($settings['source']) && strpos($settings['source'], ':') !== false) {
                         list(, $categoryGroupIds[]) = explode(':', $settings['source']);
                     }
 
                     break;
                 case Tags::class:
-                    if (strpos($settings['source'], ':') !== false) {
+                    if (!empty($settings['source']) && strpos($settings['source'], ':') !== false) {
                         list(, $tagGroupIds[]) = explode(':', $settings['source']);
                     }
 
@@ -147,18 +147,18 @@ class m180516_153000_uids_in_field_settings extends Migration
 
             switch ($field['type']) {
                 case Assets::class:
-                    if (strpos($settings['defaultUploadLocationSource'], ':') !== false) {
+                    if (!empty($settings['defaultUploadLocationSource']) && strpos($settings['defaultUploadLocationSource'], ':') !== false) {
                         $default = explode(':', $settings['defaultUploadLocationSource']);
                         $settings['defaultUploadLocationSource'] = isset($folders[$default[1]]) ? $default[0] . ':' . $folders[$default[1]] : null;
                     }
 
-                    if (strpos($settings['singleUploadLocationSource'], ':') !== false) {
+                    if (!empty($settings['singleUploadLocationSource']) && strpos($settings['singleUploadLocationSource'], ':') !== false) {
                         $single = explode(':', $settings['singleUploadLocationSource']);
                         $settings['singleUploadLocationSource'] = isset($folders[$single[1]]) ? $single[0] . ':' . $folders[$single[1]] : null;
                     }
 
 
-                    if (is_array($settings['sources'])) {
+                    if (!empty($settings['sources']) && is_array($settings['sources'])) {
                         $newSources = [];
 
                         foreach ($settings['sources'] as $source) {
@@ -175,7 +175,7 @@ class m180516_153000_uids_in_field_settings extends Migration
 
                     break;
                 case Entries::class:
-                    if (is_array($settings['sources'])) {
+                    if (!empty($settings['sources']) && is_array($settings['sources'])) {
                         $newSources = [];
 
                         foreach ($settings['sources'] as $source) {
@@ -192,7 +192,7 @@ class m180516_153000_uids_in_field_settings extends Migration
 
                     break;
                 case Users::class:
-                    if (is_array($settings['sources'])) {
+                    if (!empty($settings['sources']) && is_array($settings['sources'])) {
                         $newSources = [];
 
                         foreach ($settings['sources'] as $source) {
@@ -210,14 +210,14 @@ class m180516_153000_uids_in_field_settings extends Migration
 
                     break;
                 case Categories::class:
-                    if (strpos($settings['source'], ':') !== false) {
+                    if (!empty($settings['source']) && strpos($settings['source'], ':') !== false) {
                         $source = explode(':', $settings['source']);
                         $settings['source'] = $source[0] . ':' . ($categoryGroups[$source[1]] ?? $source[1]);
                     }
 
                     break;
                 case Tags::class:
-                    if (strpos($settings['source'], ':') !== false) {
+                    if (!empty($settings['source']) && strpos($settings['source'], ':') !== false) {
                         $source = explode(':', $settings['source']);
                         $settings['source'] = $source[0] . ':' . ($tagGroups[$source[1]] ?? $source[1]);
                     }

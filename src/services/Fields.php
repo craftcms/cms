@@ -43,6 +43,7 @@ use craft\fields\Users as UsersField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\FieldGroup;
 use craft\models\FieldLayout;
@@ -754,21 +755,8 @@ class Fields extends Component
             return false;
         }
 
-        // Clear the translation key format if not using a custom translation method
-        if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
-            $field->translationKeyFormat = null;
-        }
-
+        $this->prepFieldForSave($field);
         $configData = $this->createFieldConfig($field);
-
-        if ($isNewField) {
-            $field->uid = StringHelper::UUID();
-        } else if (!$field->uid) {
-            $field->uid = Db::uidById(Table::FIELDS, $field->id);
-        }
-
-        // Store with all the populated data for future reference.
-        $this->_savingFields[$field->uid] = $field;
 
         // Only store field data in the project config for global context
         if ($field->context === 'global') {
@@ -784,6 +772,30 @@ class Fields extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Preps a field to be saved.
+     *
+     * @param FieldInterface $field
+     */
+    public function prepFieldForSave(FieldInterface $field)
+    {
+        /** @var Field $field */
+        // Clear the translation key format if not using a custom translation method
+        if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
+            $field->translationKeyFormat = null;
+        }
+
+        // Make sure it's got a UUID
+        if ($field->getIsNew()) {
+            $field->uid = StringHelper::UUID();
+        } else if (!$field->uid) {
+            $field->uid = Db::uidById(Table::FIELDS, $field->id);
+        }
+
+        // Store with all the populated data for future reference.
+        $this->_savingFields[$field->uid] = $field;
     }
 
     /**
@@ -1204,6 +1216,11 @@ class Fields extends Component
                 ->delete(Table::FIELDLAYOUTTABS, ['layoutId' => $layout->id])
                 ->execute();
 
+            // Because in MySQL, you can't even rely on cascading deletes to work. ¯\_(ツ)_/¯
+            Craft::$app->getDb()->createCommand()
+                ->delete(Table::FIELDLAYOUTFIELDS, ['layoutId' => $layout->id])
+                ->execute();
+
             // Get the current layout
             $layoutRecord = FieldLayoutRecord::findWithTrashed()
                 ->andWhere(['id' => $layout->id])
@@ -1398,6 +1415,7 @@ class Fields extends Component
             $fieldRecord = $this->_getFieldRecord($fieldUid);
             $groupRecord = $this->_getGroupRecord($groupUid);
             $isNewField = $fieldRecord->getIsNewRecord();
+            $oldSettings = $fieldRecord->getOldAttribute('settings');
 
             /** @var Field $class */
             $class = $data['type'];
@@ -1492,8 +1510,9 @@ class Fields extends Component
         }
 
         if (!$isNewField) {
-            // Save the old field handle on the model in case the field type needs to do something with it.
+            // Save the old field handle and settings on the model in case the field type needs to do something with it.
             $field->oldHandle = $fieldRecord->getOldHandle();
+            $field->oldSettings = is_string($oldSettings) ? Json::decode($oldSettings) : null;
         }
 
         $field->afterSave($isNewField);
@@ -1534,7 +1553,7 @@ class Fields extends Component
      */
     private function _createFieldQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'fields.id',
                 'fields.dateCreated',
@@ -1544,7 +1563,6 @@ class Fields extends Component
                 'fields.handle',
                 'fields.context',
                 'fields.instructions',
-                'fields.searchable',
                 'fields.translationMethod',
                 'fields.translationKeyFormat',
                 'fields.type',
@@ -1553,6 +1571,14 @@ class Fields extends Component
             ])
             ->from(['{{%fields}} fields'])
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
+
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.1.0', '>=')) {
+            $query->addSelect(['fields.searchable']);
+        }
+
+        return $query;
     }
 
     /**

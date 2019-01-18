@@ -384,7 +384,12 @@ class AssetIndexer extends Component
             'completed' => false
         ]);
 
-        $record = new AssetIndexDataRecord($indexEntry->toArray());
+        $recordData = $indexEntry->toArray();
+
+        // For some reason Postgres chokes if we don't do that.
+        unset($recordData['id']);
+
+        $record = new AssetIndexDataRecord($recordData);
         $record->save();
 
         $indexEntry->id = $record->id;

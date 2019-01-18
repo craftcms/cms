@@ -1325,7 +1325,7 @@ class Plugins extends Component
             if (!$row) {
                 throw new InvalidPluginException($handle);
             }
-            $row['settings'] = Json::decodeIfJson((string)$row['settings']);
+            $row['settings'] = Json::decodeIfJson((string)($row['settings'] ?? '[]'));
             return $row;
         }
 

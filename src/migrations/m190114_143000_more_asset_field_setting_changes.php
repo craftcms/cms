@@ -43,7 +43,7 @@ class m190114_143000_more_asset_field_setting_changes extends Migration
         $fields = $projectConfig->get(Fields::CONFIG_FIELDS_KEY) ?? [];
 
         foreach ($fields as $fieldUid => $fieldData) {
-            if ($fieldData['type'] === Assets::class) {
+            if ($fieldData['type'] === Assets::class && !empty($fieldData['settings']['sources'])) {
                 $sources = &$fieldData['settings']['sources'];
 
                 if (is_array($sources)) {
@@ -68,7 +68,7 @@ class m190114_143000_more_asset_field_setting_changes extends Migration
             }
 
             foreach ($fields as $fieldUid => &$fieldData) {
-                if ($fieldData['type'] === Assets::class) {
+                if ($fieldData['type'] === Assets::class && !empty($fieldData['settings']['sources'])) {
                     $sources = &$fieldData['settings']['sources'];
 
                     if (is_array($sources)) {

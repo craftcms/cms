@@ -8,15 +8,15 @@
 
             <template v-else>
                 <!-- Add to cart / Upgrade (from lower edition) -->
-                <btn v-if="allowUpdates && isPluginEditionBuyable" type="primary" @click="addEditionToCart(edition.handle)" block large>{{ "Add to cart"|t('app') }}</btn>
+                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" type="primary" @click="addEditionToCart(edition.handle)" block large>{{ "Add to cart"|t('app') }}</btn>
 
                 <!-- Licensed -->
-                <btn v-else-if="pluginLicenseInfo.licensedEdition === edition.handle" type="primary" block large disabled>{{ "Licensed"|t('app') }}</btn>
+                <btn v-else-if="licensedEdition === edition.handle" type="primary" block large disabled>{{ "Licensed"|t('app') }}</btn>
             </template>
         </template>
 
         <!-- Install/Try -->
-        <template v-if="!isPluginInstalled || (isPluginInstalled && pluginLicenseInfo.edition !== edition.handle)">
+        <template v-if="!isPluginInstalled || (isPluginInstalled && currentEdition !== edition.handle)">
             <form v-if="allowUpdates" method="post" @submit="onSwitchOrInstallSubmit">
                 <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
 
@@ -38,17 +38,17 @@
                 <btn-input v-if="isPluginEditionFree" :value="'Install'|t('app')" type="primary" block large></btn-input>
 
                 <template v-else>
-                    <template v-if="(isPluginEditionBuyable && pluginLicenseInfo.edition === edition.handle) || (pluginLicenseInfo.licensedEdition === edition.handle && !pluginLicenseInfo.edition)">
+                    <template v-if="(isEditionMoreExpensiveThanLicensed && currentEdition === edition.handle) || (licensedEdition === edition.handle && !currentEdition)">
                         <!-- Install (Commercial) -->
                         <btn-input :value="'Install'|t('app')" block large></btn-input>
                     </template>
 
-                    <template v-else-if="isPluginEditionBuyable && pluginLicenseInfo.edition !== edition.handle">
+                    <template v-else-if="isEditionMoreExpensiveThanLicensed && currentEdition !== edition.handle">
                         <!-- Try -->
-                        <btn-input :value="'Try'|t('app')" :disabled="!pluginLicenseInfo.isInstalled || !pluginLicenseInfo.isEnabled" block large></btn-input>
+                        <btn-input :value="'Try'|t('app')" :disabled="!((pluginLicenseInfo && pluginLicenseInfo.isInstalled && pluginLicenseInfo.isEnabled) || !pluginLicenseInfo)" block large></btn-input>
                     </template>
 
-                    <template v-else-if="pluginLicenseInfo.licensedEdition === edition.handle && pluginLicenseInfo.edition && pluginLicenseInfo.edition !== edition.handle">
+                    <template v-else-if="currentEdition && licensedEdition === edition.handle && currentEdition !== edition.handle">
                         <!-- Reactivate -->
                         <btn-input :value="'Reactivate'|t('app')" block large></btn-input>
                     </template>
@@ -57,14 +57,14 @@
         </template>
 
         <template v-else>
-                <template v-if="pluginLicenseInfo.edition !== pluginLicenseInfo.licensedEdition && !isPluginEditionFree">
+                <template v-if="currentEdition !== licensedEdition && !isPluginEditionFree">
                     <!-- Installed as a trial -->
-                    <btn-input :value="'Installed as a trial'|t('app')" block large disabled></btn-input>
+                    <button class="c-btn block large" :disabled="true"><font-awesome-icon icon="check"></font-awesome-icon> {{ "Installed as a trial"|t('app') }}</button>
                 </template>
 
                 <template v-else>
                     <!-- Installed -->
-                    <btn-input :value="'Installed'|t('app')" block large disabled></btn-input>
+                    <button class="c-btn block large" :disabled="true"><font-awesome-icon icon="check"></font-awesome-icon> {{ "Installed"|t('app') }}</button>
                 </template>
         </template>
 
@@ -111,20 +111,38 @@
                 return this.$store.getters['craft/isPluginInstalled'](this.plugin.handle)
             },
 
-            isPluginEditionBuyable() {
+            isEditionMoreExpensiveThanLicensed() {
                 // A plugin edition is buyable if it’s more expensive than the licensed one
                 if(!this.edition) {
                     return false
                 }
 
-                const licensedEditionHandle = this.pluginLicenseInfo.licensedEdition
-                const licensedEdition = this.plugin.editions.find(edition => edition.handle === licensedEditionHandle)
+                if (this.pluginLicenseInfo) {
+                    const licensedEditionHandle = this.licensedEdition
+                    const licensedEdition = this.plugin.editions.find(edition => edition.handle === licensedEditionHandle)
 
-                if(licensedEdition && this.edition.price && parseFloat(this.edition.price) <= parseFloat(licensedEdition.price)) {
-                    return false
+                    if(licensedEdition && this.edition.price && parseFloat(this.edition.price) <= parseFloat(licensedEdition.price)) {
+                        return false
+                    }
                 }
 
                 return true
+            },
+
+            licensedEdition() {
+                if (!this.pluginLicenseInfo) {
+                    return null
+                }
+
+                return this.pluginLicenseInfo.licensedEdition
+            },
+
+            currentEdition() {
+                if (!this.pluginLicenseInfo) {
+                    return null
+                }
+
+                return this.pluginLicenseInfo.edition
             },
 
             allowUpdates() {

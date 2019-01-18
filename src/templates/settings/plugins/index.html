@@ -21,7 +21,7 @@
         <table id="plugins" class="data fullwidth collapsible">
             <tbody>
                 {% for handle, config in info %}
-                    {% set pluginStoreUrl = url('plugin-store/plugins/' ~ handle) %}
+                    {% set pluginStoreUrl = url('plugin-store/' ~ handle) %}
                     <tr id="plugin-{{ handle }}" data-name="{{ config.name }}" data-handle="{{ handle }}">
                         <th>
                             <div class="plugin-infos">
@@ -75,7 +75,7 @@
                                                 {% case 'mismatched' %}
                                                     {{ 'This license is tied to another Craft install. Visit {url} to resolve.'|t('app', {
                                                         url: '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>'
-                                                    }) }}
+                                                    })|raw }}
                                                 {% case 'astray' %}
                                                     {{ 'This license isn’t allowed to run version {version}.'|t('app', {
                                                         version: config.version

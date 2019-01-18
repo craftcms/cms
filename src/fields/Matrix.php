@@ -668,11 +668,40 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             return false;
         }
 
-        // Set the old content table before
-        $configPath = Fields::CONFIG_FIELDS_KEY . '.' . $this->uid . '.settings.contentTable';
-        $this->contentTable = Craft::$app->getProjectConfig()->get($configPath);
+        // Prep the block types & fields for save
+        $fieldsService = Craft::$app->getFields();
+        foreach ($this->getBlockTypes() as $blockType) {
+            // Ensure the block type has a UID
+            if ($blockType->getIsNew()) {
+                $blockType->uid = StringHelper::UUID();
+            } else if (!$blockType->uid) {
+                $blockType->uid = Db::uidById(TableName::MATRIXBLOCKTYPES, $blockType->id);
+            }
 
-        // Now see if we need a new one
+            foreach ($blockType->getFields() as $field) {
+                /** @var Field $field */
+                // Hack to allow blank field names
+                if (!$field->name) {
+                    $field->name = '__blank__';
+                }
+
+                $field->context = 'matrixBlockType:' . $blockType->uid;
+                $fieldsService->prepFieldForSave($field);
+
+                if (!$field->beforeSave($field->getIsNew())) {
+                    return false;
+                }
+            }
+        }
+
+        // Set the content table name
+        if ($this->id) {
+            $oldField = $fieldsService->getFieldById($this->id);
+            if ($oldField instanceof self) {
+                $this->contentTable = $oldField->contentTable;
+            }
+        }
+
         $this->contentTable = Craft::$app->getMatrix()->defineContentTableName($this);
 
         return true;

@@ -458,22 +458,6 @@ class Tags extends Component
     // =========================================================================
 
     /**
-     * @return Query
-     */
-    private function _createTagGroupsQuery(): Query
-    {
-        return (new Query())
-            ->select([
-                'id',
-                'name',
-                'handle',
-                'fieldLayoutId',
-                'uid'
-            ])
-            ->from([Table::TAGGROUPS]);
-    }
-
-    /**
      * Gets a tag group's record by uid.
      *
      * @param string $uid

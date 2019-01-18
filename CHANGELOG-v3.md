@@ -1,5 +1,36 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.1.2 - 2019-01-18
+
+### Added
+- Added the `index-assets <volume>` and `index-assets/all` console commands. ([#3595](https://github.com/craftcms/cms/pull/3595))
+- Added `craft\base\FieldTrait::$oldSettings`.
+- Added `craft\helpers\Install`.
+- Added `craft\services\Fields::prepFieldForSave()`.
+- Added `craft\services\Path::getProjectConfigFilePath()`.
+
+### Changed
+- The installer now checks `project.yaml` when determining the default site name, handle, base URL, and language values. ([#3661](https://github.com/craftcms/cms/issues/3661))
+- The Base URL field in the web-based installer now autouggests environment variable names and aliases.
+- Craft now creates a `.gitignore` file in the `storage/config-backups/` folder, preventing any other files within it from getting tracked by Git.
+- Craft no longer prevents changes in `project.yaml` from being synced if a plugins’ schema version in `project.yaml` doesn’t match up with its installed schema version, if one of them is blank.
+
+### Fixed
+- Fixed a PHP notice that occurred when updating to Craft 3.1 if there were any plugins installed without settings.
+- Fixed a SQL error that occurred when updating to Craft 3.1 if a plugin or module was calling any `craft\services\Fields` methods. ([#3663](https://github.com/craftcms/cms/issues/3663))
+- Fixed a bug where element indexes would forget their source settings after updating to Craft 3.1. ([#3659](https://github.com/craftcms/cms/issues/3659))
+- Fixed a bug where commercial plugins weren’t installable from the Plugin Store.
+- Fixed a bug where Matrix block type fields’ `beforeSave()` methods weren’t getting called.
+- Fixed a bug where Matrix fields could forget their content table name if they were created with a non-global context.
+- Fixed a bug where links to the Plugin Store from Settings → Plugins were 404ing. ([#3664](https://github.com/craftcms/cms/issues/3664))
+- Fixed a bug where soft-deleted sections and entry types were still showing up in the Control Panel. ([#3648](https://github.com/craftcms/cms/issues/3648))
+- Fixed a bug where an update to Craft 3.1 would fail with a database error in some scenarios.
+- Fixed a bug where Plugin Store’s Try buttons would appear as disabled when they should be enabled. ([#3619](https://github.com/craftcms/cms/issues/3619))
+- Fixed an error that occurred when updating to Craft 3.1 if there were any relational fields that were missing some expected settings. ([#3641](https://github.com/craftcms/cms/issues/3641))
+
+### Security
+- Fixed two XSS vulnerabilities.
+
 ## 3.1.1 - 2019-01-16
 
 ### Added
