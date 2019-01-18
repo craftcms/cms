@@ -13,6 +13,7 @@
 - The installer now checks `project.yaml` when determining the default site name, handle, base URL, and language values. ([#3661](https://github.com/craftcms/cms/issues/3661))
 - The Base URL field in the web-based installer now autouggests environment variable names and aliases.
 - Craft now creates a `.gitignore` file in the `storage/config-backups/` folder, preventing any other files within it from getting tracked by Git.
+- Craft no longer prevents changes in `project.yaml` from being synced if a plugins’ schema version in `project.yaml` doesn’t match up with its installed schema version, if one of them is blank.
 
 ### Fixed
 - Fixed a PHP notice that occurred when updating to Craft 3.1 if there were any plugins installed without settings.
