@@ -44,8 +44,13 @@ class m190108_113000_asset_field_setting_change extends Migration
 
         foreach ($fields as $fieldUid => $fieldData) {
             if ($fieldData['type'] === Assets::class) {
-                $fieldData['settings']['singleUploadLocationSource'] = $this->_normalizeSourceKey((string)$fieldData['settings']['singleUploadLocationSource']);
-                $fieldData['settings']['defaultUploadLocationSource'] = $this->_normalizeSourceKey((string)$fieldData['settings']['defaultUploadLocationSource']);
+                if (!empty($fieldData['settings']['singleUploadLocationSource'])) {
+                    $fieldData['settings']['singleUploadLocationSource'] = $this->_normalizeSourceKey((string)$fieldData['settings']['singleUploadLocationSource']);
+                }
+
+                if (!empty($fieldData['settings']['defaultUploadLocationSource'])) {
+                    $fieldData['settings']['defaultUploadLocationSource'] = $this->_normalizeSourceKey((string)$fieldData['settings']['defaultUploadLocationSource']);
+                }
 
                 $projectConfig->set(Fields::CONFIG_FIELDS_KEY . '.' . $fieldUid, $fieldData);
             }
@@ -60,8 +65,13 @@ class m190108_113000_asset_field_setting_change extends Migration
             if (is_array($fields)) {
                 foreach ($fields as $fieldUid => &$fieldData) {
                     if ($fieldData['type'] === Assets::class) {
-                        $fieldData['settings']['singleUploadLocationSource'] = $this->_normalizeSourceKey((string)$fieldData['settings']['singleUploadLocationSource']);
-                        $fieldData['settings']['defaultUploadLocationSource'] = $this->_normalizeSourceKey((string)$fieldData['settings']['defaultUploadLocationSource']);
+                        if (!empty($fieldData['settings']['singleUploadLocationSource'])) {
+                            $fieldData['settings']['singleUploadLocationSource'] = $this->_normalizeSourceKey((string)$fieldData['settings']['singleUploadLocationSource']);
+                        }
+
+                        if (!empty($fieldData['settings']['defaultUploadLocationSource'])) {
+                            $fieldData['settings']['defaultUploadLocationSource'] = $this->_normalizeSourceKey((string)$fieldData['settings']['defaultUploadLocationSource']);
+                        }
                     }
                 }
             }
