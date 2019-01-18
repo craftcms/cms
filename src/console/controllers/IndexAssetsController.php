@@ -95,7 +95,13 @@ class IndexAssetsController extends Controller
             $this->stdout('Indexing assets in ', Console::FG_YELLOW);
             $this->stdout($volume->name, Console::FG_CYAN);
             $this->stdout(' ...' . PHP_EOL, Console::FG_YELLOW);
-            foreach ($assetIndexer->getIndexListOnVolume($volume) as $item) {
+            $fileList = array_filter($assetIndexer->getIndexListOnVolume($volume),
+                function ($entry) {
+                    return $entry['type'] !== 'dir';
+                }
+            );
+
+            foreach ($fileList as $item) {
                 $this->stdout('    > ');
                 $this->stdout($item['path'], Console::FG_CYAN);
                 $this->stdout(' ... ');
