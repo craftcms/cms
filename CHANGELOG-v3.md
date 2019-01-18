@@ -3,11 +3,11 @@
 ## Unreleased
 
 ### Added
+- Added the `index-assets <volume>` and `index-assets/all` console commands. ([#3595](https://github.com/craftcms/cms/pull/3595))
 - Added `craft\base\FieldTrait::$oldSettings`.
 - Added `craft\helpers\Install`.
 - Added `craft\services\Fields::prepFieldForSave()`.
 - Added `craft\services\Path::getProjectConfigFilePath()`.
-- Added the `craft asset-indexing/all` and `craft asset-indexing/one` console commands which can be used to index asset volumes.
 
 ### Changed
 - The installer now checks `project.yaml` when determining the default site name, handle, base URL, and language values. ([#3661](https://github.com/craftcms/cms/issues/3661))
