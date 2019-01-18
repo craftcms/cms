@@ -18,6 +18,7 @@
 - Fixed a bug where an update to Craft 3.1 would fail with a database error in some scenarios.
 - Fixed a bug where Plugin Store’s Try buttons would appear as disabled when they should be enabled. ([#3619](https://github.com/craftcms/cms/issues/3619))
 - Fixed an error that occurred when updating to Craft 3.1 if there were any relational fields that were missing some expected settings. ([#3641](https://github.com/craftcms/cms/issues/3641))
+- Fixed an error that occurred when updating to Craft 3.1 if there were any Matrix sub-fields that had their type set to a non-existing type. ([#3662](https://github.com/craftcms/cms/issues/3662))
 
 ### Security
 - Fixed two XSS vulnerabilities.
