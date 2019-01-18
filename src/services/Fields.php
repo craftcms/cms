@@ -173,6 +173,7 @@ class Fields extends Component
 
     /**
      * @var bool Whether to ignore changes to the project config.
+     * @deprecated in 3.1.2. Use [[\craft\services\ProjectConfig::$muteEvents]] instead.
      */
     public $ignoreProjectConfigChanges = false;
 

@@ -18,13 +18,8 @@ class m190108_110000_cleanup_project_config extends Migration
      */
     public function safeUp()
     {
-        $fieldsService = Craft::$app->getFields();
-        $matrixService = Craft::$app->getMatrix();
-
-        $fieldsService->ignoreProjectConfigChanges = true;
-        $matrixService->ignoreProjectConfigChanges = true;
-
         $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig->muteEvents = true;
 
         // Clean up all the orphan matrix block type from project config or matrix blocks with parent fields that aren't Matrix.
         $matrixBlockTypes = $projectConfig->get(Matrix::CONFIG_BLOCKTYPE_KEY) ?? [];
@@ -50,8 +45,7 @@ class m190108_110000_cleanup_project_config extends Migration
             }
         }
 
-        $fieldsService->ignoreProjectConfigChanges = false;
-        $matrixService->ignoreProjectConfigChanges = false;
+        $projectConfig->muteEvents = false;
     }
 
     /**
