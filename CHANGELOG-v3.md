@@ -7,6 +7,9 @@
 - Added `craft\services\Fields::prepFieldForSave()`.
 - Added the `craft asset-indexing/all` and `craft asset-indexing/one` console commands which can be used to index asset volumes.
 
+### Changed
+- Craft now creates a `.gitignore` file in the `storage/config-backups/` folder, preventing any other files within it from getting tracked by Git.
+
 ### Fixed
 - Fixed a PHP notice that occurred when updating to Craft 3.1 if there were any plugins installed without settings.
 - Fixed a bug where commercial plugins weren’t installable from the Plugin Store.
