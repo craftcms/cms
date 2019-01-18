@@ -1,7 +1,7 @@
 <template>
     <div class="plugin-editions-edition">
         <div class="description">
-            <h4 class="edition-name">{{edition.name}}</h4>
+            <h4 v-if="plugin.editions.length > 1" class="edition-name">{{edition.name}}</h4>
             <div class="price">
                 <template v-if="!isPluginEditionFree(edition)">
                     {{edition.price|currency}}
