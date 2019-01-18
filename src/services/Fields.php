@@ -1553,7 +1553,7 @@ class Fields extends Component
      */
     private function _createFieldQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'fields.id',
                 'fields.dateCreated',
@@ -1563,7 +1563,6 @@ class Fields extends Component
                 'fields.handle',
                 'fields.context',
                 'fields.instructions',
-                'fields.searchable',
                 'fields.translationMethod',
                 'fields.translationKeyFormat',
                 'fields.type',
@@ -1572,6 +1571,14 @@ class Fields extends Component
             ])
             ->from(['{{%fields}} fields'])
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
+
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.1.0', '>=')) {
+            $query->addSelect(['fields.searchable']);
+        }
+
+        return $query;
     }
 
     /**

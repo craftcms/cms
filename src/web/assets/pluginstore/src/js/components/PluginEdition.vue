@@ -1,7 +1,7 @@
 <template>
     <div class="plugin-editions-edition">
         <div class="description">
-            <h4 class="edition-name">{{edition.name}}</h4>
+            <h4 v-if="plugin.editions.length > 1" class="edition-name">{{edition.name}}</h4>
             <div class="price">
                 <template v-if="!isPluginEditionFree(edition)">
                     {{edition.price|currency}}
@@ -16,7 +16,7 @@
                 {{ "{renewalPrice}/year per site for updates after that."|t('app', {renewalPrice: $options.filters.currency(edition.renewalPrice)}) }}
             </p>
 
-            <ul v-if="edition.features.length > 0">
+            <ul v-if="plugin.editions.length > 1 && edition.features && edition.features.length > 0">
                 <li v-for="(feature, key) in edition.features" :key="key">
                     <font-awesome-icon icon="check"></font-awesome-icon>
                     {{feature.name}}

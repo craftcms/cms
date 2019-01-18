@@ -318,13 +318,13 @@ class ProjectConfig extends Component
             $configMap = $this->_getStoredConfigMap();
 
             $topNode = explode('.', $path, 2)[0];
-            $targetFilePath = $configMap[$topNode] ?? Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
+            $targetFilePath = $configMap[$topNode] ?? Craft::$app->getPath()->getProjectConfigFilePath();
 
             $config = $this->_parseYamlFile($targetFilePath);
 
             // For new top nodes, update the map
             if (empty($configMap[$topNode])) {
-                $this->_mapNodeLocation($topNode, Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME);
+                $this->_mapNodeLocation($topNode, Craft::$app->getPath()->getProjectConfigFilePath());
                 $this->_updateConfigMap = true;
             }
         } else {
@@ -362,10 +362,7 @@ class ProjectConfig extends Component
     public function regenerateYamlFromConfig()
     {
         $loadedConfig = $this->_getLoadedConfig();
-
-        $basePath = Craft::$app->getPath()->getConfigPath();
-        $baseFile = $basePath . '/' . self::CONFIG_FILENAME;
-
+        $baseFile = Craft::$app->getPath()->getProjectConfigFilePath();
         $this->_saveConfig($loadedConfig, $baseFile);
         $this->updateParsedConfigTimesAfterRequest();
     }
@@ -398,7 +395,7 @@ class ProjectConfig extends Component
         $this->_changesBeingApplied = null;
 
         // Cover an edge-case where we're applying changes, but there's no config file yet
-        $configPath = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
+        $configPath = Craft::$app->getPath()->getProjectConfigFilePath();
 
         if ($this->_useConfigFile() && empty($this->_parsedConfigs[$configPath])) {
             $this->_parsedConfigs[$configPath] = $configData;
@@ -430,7 +427,7 @@ class ProjectConfig extends Component
         }
 
         // If the file does not exist, but should, generate it
-        if ($this->_useConfigFile() && !file_exists(Craft::$app->getPath()->getConfigPath() . '/' . self::CONFIG_FILENAME)) {
+        if ($this->_useConfigFile() && !file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
             $this->regenerateYamlFromConfig();
             $this->saveModifiedConfigData();
         }
@@ -1118,8 +1115,7 @@ class ProjectConfig extends Component
             return $this->_configFileList;
         }
 
-        $basePath = Craft::$app->getPath()->getConfigPath();
-        $baseFile = $basePath . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
+        $baseFile = Craft::$app->getPath()->getProjectConfigFilePath();
 
         $traverseFile = function($filePath) use (&$traverseFile) {
             $fileList = [$filePath];

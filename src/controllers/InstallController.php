@@ -14,6 +14,7 @@ use craft\elements\User;
 use craft\errors\DbConnectException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Install as InstallHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\Install;
 use craft\models\Site;
@@ -91,11 +92,9 @@ class InstallController extends Controller
         $license = file_get_contents($licensePath);
 
         // Guess the site name based on the server name
-        $server = Craft::$app->getRequest()->getServerName();
-        $words = preg_split('/[\-_\.]+/', $server);
-        array_pop($words);
-        $defaultSystemName = implode(' ', array_map('ucfirst', $words));
-        $defaultSiteUrl = getenv('DEFAULT_SITE_URL') ?: Craft::getAlias('@web');
+        $defaultSystemName = InstallHelper::defaultSiteName();
+        $defaultSiteUrl = InstallHelper::defaultSiteUrl();
+        $defaultSiteLanguage = InstallHelper::defaultSiteLanguage();
 
         $iconsPath = Craft::getAlias('@app/icons');
         $dbIcon = $showDbScreen ? file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'database.svg') : null;
@@ -107,6 +106,7 @@ class InstallController extends Controller
             'license',
             'defaultSystemName',
             'defaultSiteUrl',
+            'defaultSiteLanguage',
             'dbIcon',
             'userIcon',
             'worldIcon'
@@ -266,12 +266,20 @@ class InstallController extends Controller
         $username = $request->getBodyParam('account-username', $email);
         $siteUrl = $request->getBodyParam('site-baseUrl');
 
+        // Don't save @web even if they chose it
+        if ($siteUrl === '@web') {
+            $siteUrl = Craft::getAlias($siteUrl);
+        }
+
         // Try to save the site URL to a DEFAULT_SITE_URL environment variable
-        try {
-            $configService->setDotEnvVar('DEFAULT_SITE_URL', $siteUrl);
-            $siteUrl = '$DEFAULT_SITE_URL';
-        } catch (Exception $e) {
-            // that's fine, we'll just store the entered URL
+        // if it's not already set to an alias or environment variable
+        if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$') {
+            try {
+                $configService->setDotEnvVar('DEFAULT_SITE_URL', $siteUrl);
+                $siteUrl = '$DEFAULT_SITE_URL';
+            } catch (Exception $e) {
+                // that's fine, we'll just store the entered URL
+            }
         }
 
         $site = new Site([
