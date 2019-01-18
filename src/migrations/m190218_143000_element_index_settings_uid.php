@@ -37,28 +37,28 @@ class m190218_143000_element_index_settings_uid extends Migration
     {
         $this->_elementData[Entry::class] = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%sections}}'])
+            ->from([Table::SECTIONS])
             ->pairs();
 
         $this->_elementData[User::class] = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%usergroups}}'])
+            ->from([Table::USERGROUPS])
             ->pairs();
 
         $this->_elementData[Category::class] = (new Query())
             ->select(['id', 'uid'])
-            ->from(['{{%categorygroups}}'])
+            ->from([Table::CATEGORYGROUPS])
             ->pairs();
 
         $this->_elementData[Asset::class] = (new Query())
             ->select(['folders.id folderId', 'volumes.uid volumeUid'])
-            ->from(['{{%volumes}} volumes'])
-            ->innerJoin(['{{%volumefolders}} folders'], '[[volumes.id]] = [[folders.volumeId]]')
+            ->from([Table::VOLUMES . ' volumes'])
+            ->innerJoin([Table::VOLUMEFOLDERS . ' folders'], '[[volumes.id]] = [[folders.volumeId]]')
             ->pairs();
 
         $rows = (new Query())
             ->select('*')
-            ->from(Table::ELEMENTINDEXSETTINGS)
+            ->from([Table::ELEMENTINDEXSETTINGS])
             ->all();
 
         foreach ($rows as $row) {
