@@ -15,18 +15,19 @@
             maxlength: 255
         }) }}
 
-        {{ forms.textField({
+        {{ forms.autosuggestField({
             label: "Base URL"|t('app'),
             id: 'site-baseUrl',
-            value: defaultSiteUrl,
-            maxlength: 255
+            class: 'ltr',
+            suggestions: craft.cp.getEnvSuggestions(true),
+            value: defaultSiteUrl
         }) }}
 
         {% set languageInput %}
             <div class="select">
                 <select id="site-language">
                     {% for locale in craft.app.i18n.getAllLocales() %}
-                        <option value="{{ locale.id }}"{% if locale.id == craft.app.language %} selected{% endif %}>{{ locale.id }} ({{ locale.getDisplayName(craft.app.language) }})</option>
+                        <option value="{{ locale.id }}"{% if locale.id == defaultSiteLanguage %} selected{% endif %}>{{ locale.id }} ({{ locale.getDisplayName(craft.app.language) }})</option>
                     {% endfor %}
                 </select>
             </div>

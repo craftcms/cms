@@ -1038,7 +1038,6 @@ class Install extends Migration
             $sitesService = Craft::$app->getSites();
             $site = $sitesService->getPrimarySite();
             $site->baseUrl = $this->site->baseUrl;
-            $site->handle = $this->site->handle;
             $site->hasUrls = $this->site->hasUrls;
             $site->language = $this->site->language;
             $site->name = $this->site->name;

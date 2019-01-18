@@ -4,11 +4,14 @@
 
 ### Added
 - Added `craft\base\FieldTrait::$oldSettings`.
+- Added `craft\helpers\Install`.
 - Added `craft\services\Fields::prepFieldForSave()`.
 - Added `craft\services\Path::getProjectConfigFilePath()`.
 - Added the `craft asset-indexing/all` and `craft asset-indexing/one` console commands which can be used to index asset volumes.
 
 ### Changed
+- The installer now checks `project.yaml` when determining the default site name, handle, base URL, and language values. ([#3661](https://github.com/craftcms/cms/issues/3661))
+- The Base URL field in the web-based installer now autouggests environment variable names and aliases.
 - Craft now creates a `.gitignore` file in the `storage/config-backups/` folder, preventing any other files within it from getting tracked by Git.
 
 ### Fixed
