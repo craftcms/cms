@@ -43,6 +43,7 @@ use craft\fields\Users as UsersField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\FieldGroup;
 use craft\models\FieldLayout;
@@ -1414,6 +1415,7 @@ class Fields extends Component
             $fieldRecord = $this->_getFieldRecord($fieldUid);
             $groupRecord = $this->_getGroupRecord($groupUid);
             $isNewField = $fieldRecord->getIsNewRecord();
+            $oldSettings = $fieldRecord->getOldAttribute('settings');
 
             /** @var Field $class */
             $class = $data['type'];
@@ -1508,8 +1510,9 @@ class Fields extends Component
         }
 
         if (!$isNewField) {
-            // Save the old field handle on the model in case the field type needs to do something with it.
+            // Save the old field handle and settings on the model in case the field type needs to do something with it.
             $field->oldHandle = $fieldRecord->getOldHandle();
+            $field->oldSettings = is_string($oldSettings) ? Json::decode($oldSettings) : null;
         }
 
         $field->afterSave($isNewField);

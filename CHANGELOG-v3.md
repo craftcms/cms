@@ -3,12 +3,14 @@
 ## Unreleased
 
 ### Added
+- Added `craft\base\FieldTrait::$oldSettings`.
 - Added `craft\services\Fields::prepFieldForSave()`.
 
 ### Fixed
 - Fixed a PHP notice that occurred when updating to Craft 3.1 if there were any plugins installed without settings.
 - Fixed a bug where commercial plugins weren’t installable from the Plugin Store.
 - Fixed a bug where Matrix block type fields’ `beforeSave()` methods weren’t getting called.
+- Fixed a bug where Matrix fields could forget their content table name if they were created with a non-global context.
 - Fixed a bug where links to the Plugin Store from Settings → Plugins were 404ing.
 - Fixed a bug where soft-deleted sections and entry types were still showing up in the Control Panel. ([#3648](https://github.com/craftcms/cms/issues/3648))
 - Fixed a bug where an update to Craft 3.1 would fail with a database error in some scenarios.

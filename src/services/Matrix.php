@@ -561,8 +561,7 @@ class Matrix extends Component
             try {
                 // Do we need to create/rename the content table?
                 if (!$db->tableExists($matrixField->contentTable)) {
-                    $configPath = Fields::CONFIG_FIELDS_KEY . '.' . $matrixField->uid . '.settings.contentTable';
-                    $oldContentTable = Craft::$app->getProjectConfig()->get($configPath);
+                    $oldContentTable = $matrixField->oldSettings['contentTable'] ?? null;
                     if ($oldContentTable && $db->tableExists($oldContentTable)) {
                         MigrationHelper::renameTable($oldContentTable, $matrixField->contentTable);
                     } else {
