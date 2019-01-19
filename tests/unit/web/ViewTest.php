@@ -289,7 +289,7 @@ class ViewTest extends TestCase
      * @param $namespace
      * @dataProvider namespaceInputNameData
      */
-    public function testNamespaceInputName($result, $string, $namespace)
+    public function testNamespaceInputName($result, $string, $namespace = null)
     {
         $namespaced = $this->view->namespaceInputName($string, $namespace);
         $this->assertSame($result, $namespaced);
@@ -306,6 +306,33 @@ class ViewTest extends TestCase
             ['namespace[<input type=]"namespace[text]"namespace[ value=]"namespace[im the input]"namespace[ name=]"namespace[test]"namespace[>]', '<input type="text" value="im the input" name="test">', 'namespace'],
             ['namespace[<textarea id=]"namespace[test]"namespace[>Im the content</textarea>]', '<textarea id="test">Im the content</textarea>', 'namespace'],
             ['namespace[<not-html id=]"namespace[test]"namespace[></not-html>]', '<not-html id="test"></not-html>', 'namespace'],
+        ];
+    }
+
+    /**
+     *
+     * @param $result
+     * @param $string
+     * @param $namespace
+     * @dataProvider namespaceInputIdData
+     */
+    public function testNamespaceInputId($result, $string, $namespace = null)
+    {
+        $namespaced = $this->view->namespaceInputId($string, $namespace);
+        $this->assertSame($result, $namespaced);
+    }
+    public function namespaceInputIdData()
+    {
+        return [
+            ['', ''],
+            ['<input type="text" name="test">', '<input type="text" name="test">'],
+            ['namespace-<input type="text" name="test">', '<input type="text" name="test">', 'namespace'],
+            ['!@#$%^&*()_+{}:"<>?-<input type="text" name="test">', '<input type="text" name="test">', '!@#$%^&*()_+{}:"<>?'],
+            ['namespace-<input type="text" for="test3" id="test2"  name="test">', '<input type="text" for="test3" id="test2"  name="test">', 'namespace'],
+            ['namespace-<input im-not-html-tho="test2">', '<input im-not-html-tho="test2">', 'namespace'],
+            ['namespace-<input type="text" value="im the input" name="test">', '<input type="text" value="im the input" name="test">', 'namespace'],
+            ['namespace-<textarea id="test">Im the content</textarea>', '<textarea id="test">Im the content</textarea>', 'namespace'],
+            ['namespace-<not-html id="test"></not-html>', '<not-html id="test"></not-html>', 'namespace'],
         ];
     }
 
