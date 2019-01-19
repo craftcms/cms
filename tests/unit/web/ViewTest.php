@@ -296,6 +296,22 @@ class ViewTest extends TestCase
         });
     }
 
+    public function testRegisterTranslations()
+    {
+        \Craft::$app->language = 'nl';
+
+        // Basic test that register translations gets rendered
+        $js = $this->generateTranslationJs('app', ["1 month" => "1 maand", "1 minute" => "1 minuut"]);
+        $this->assertRegisterJsInputValues($js, View::POS_BEGIN);
+        $this->view->registerTranslations('app', ['1 month', '1 minute']);
+
+        // Non existing translations get ignored
+        $js = $this->generateTranslationJs('app', ["1 month" => "1 maand"]);
+        $this->assertRegisterJsInputValues($js, View::POS_BEGIN);
+        $this->view->registerTranslations('app', ['1 month', 'not an existing translation23131321313']);
+    }
+
+    
     /**
      * @param $result
      * @param $html
@@ -436,20 +452,43 @@ class ViewTest extends TestCase
         $resultString .= '}';
 
         // Set a stub and ensure that _registeredJs is correctly formatting js but dont bother registering it....
-        $this->view = Stub::construct(
-            View::class,
-            [],
-            ['registerJs' => function ($js, $position) use ($resultString) {
-                $this->assertSame($resultString, $js);
-                $this->assertSame(View::POS_HEAD, $position);
-            }]
-        );
+        $this->assertRegisterJsInputValues($resultString, View::POS_HEAD);
 
         $this->registeredJs('randomprop', ['name' => 'value']);
     }
 
     // Helpers
     // =========================================================================
+    private function generateTranslationJs($category, array $messages)
+    {
+        $category = Json::encode($category);
+        $js = '';
+        foreach ($messages as $message => $translation) {
+            $translation = Json::encode($translation);
+            $message = Json::encode($message);
+            $js .= ($js !== '' ? "\n" : '') . "Craft.translations[{$category}][{$message}] = {$translation};";
+        }
+
+        return <<<JS
+if (typeof Craft.translations[{$category}] === 'undefined') {
+    Craft.translations[{$category}] = {};
+}
+{$js}
+JS;
+    }
+
+    private function assertRegisterJsInputValues($desiredJs, $desiredPosition)
+    {
+        $this->view = Stub::construct(
+            View::class,
+            [],
+            ['registerJs' => function ($inputJs, $inputPosition) use ($desiredJs, $desiredPosition) {
+                $this->assertSame($desiredJs, $inputJs);
+                $this->assertSame($desiredPosition, $inputPosition);
+            }]
+        );
+    }
+
     private function registeredJs($property, $names)
     {
         return $this->invokeMethod($this->view, '_registeredJs', [$property, $names]);
