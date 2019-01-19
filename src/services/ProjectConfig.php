@@ -231,6 +231,29 @@ class ProjectConfig extends Component
     }
 
     /**
+     * Resets the internal state.
+     *
+     * @internal
+     */
+    public function reset()
+    {
+        $this->_storedConfig = null;
+        $this->_loadedConfig = null;
+        $this->_parsedChanges = [];
+        $this->_parsedConfigs = [];
+        $this->_configFileList = [];
+        $this->_modifiedYamlFiles = [];
+        $this->_configMap = null;
+        $this->_updateConfigMap = false;
+        $this->_updateConfig = false;
+        $this->_applyingYamlChanges = false;
+        $this->_timestampUpdated = false;
+        $this->_changesBeingApplied = null;
+
+        $this->init();
+    }
+
+    /**
      * Set up an event handler to save modified data after request is over. This is called automatically when service is initialized.
      *
      * @return void
