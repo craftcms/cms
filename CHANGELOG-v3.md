@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.2.1 - 2019-01-19
 
 ### Fixed
 - Fixed an error that occurred when updating to Craft 3.1 if there were any Matrix sub-fields that had their type set to a non-existing class. ([#3662](https://github.com/craftcms/cms/issues/3662))
