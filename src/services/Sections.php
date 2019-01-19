@@ -1401,7 +1401,19 @@ class Sections extends Component
      */
     private function _createSectionQuery(): Query
     {
-        $query = (new Query())
+        // todo: remove schema version condition after next beakpoint
+        $condition = null;
+        $joinCondition = '[[structures.id]] = [[sections.structureId]]';
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.1.19', '>=')) {
+            $condition = ['sections.dateDeleted' => null];
+            $joinCondition = ['and',
+                $joinCondition,
+                ['structures.dateDeleted' => null]
+            ];
+        }
+
+        return (new Query())
             ->select([
                 'sections.id',
                 'sections.structureId',
@@ -1413,21 +1425,10 @@ class Sections extends Component
                 'sections.uid',
                 'structures.maxLevels',
             ])
-            ->leftJoin('{{%structures}} structures', [
-                'and',
-                '[[structures.id]] = [[sections.structureId]]',
-                ['structures.dateDeleted' => null],
-            ])
+            ->leftJoin('{{%structures}} structures', $joinCondition)
             ->from(['{{%sections}} sections'])
+            ->where($condition)
             ->orderBy(['name' => SORT_ASC]);
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
-        if (version_compare($schemaVersion, '3.1.19', '>=')) {
-            $query->where(['sections.dateDeleted' => null]);
-        }
-
-        return $query;
     }
 
     /**
