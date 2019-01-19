@@ -8,6 +8,8 @@ namespace craftunit\validators;
 
 
 use Codeception\Test\Unit;
+use craft\helpers\ArrayHelper;
+use craft\test\mockclasses\models\ExampleModel;
 use craft\validators\LanguageValidator;
 use craftunit\fixtures\SitesFixture;
 
@@ -57,4 +59,54 @@ class LanguageValidatorTest extends Unit
             [['{value} is not a valid site language.', []], 'nolang', false]
         ];
     }
+
+    /**
+     * @param $result
+     * @param $input
+     * @dataProvider validateAttributeData
+     */
+    public function testValidateAtrribute($mustValidate, $input, $onlySiteLocalIds = true)
+    {
+        $this->tester->mockCraftMethods('i18n', ['getSiteLocaleIds' => ['nl', 'en-US']]);
+
+        $model = new ExampleModel(['exampleParam' => $input]);
+
+        $this->languageValidator->onlySiteLanguages = $onlySiteLocalIds;
+        $langVal = $this->languageValidator->validateAttribute($model, 'exampleParam');
+
+        if (!$mustValidate) {
+            $this->assertArrayHasKey('exampleParam', $model->getErrors());
+        } else {
+            $this->assertSame([], $model->getErrors());
+        }
+    }
+    public function validateAttributeData()
+    {
+        $returnArray = [];
+        foreach ($this->validateValueData() as $item) {
+            $mustValidate = true;
+            if (isset($item[0]) && $item[0]) {
+                $mustValidate = false;
+            }
+
+            $lang = $item[1];
+            $requireOnlySite = true;
+            if (isset($item[2]) && $item[2] === false) {
+                $requireOnlySite = false;
+            }
+
+            $returnArray[] = [
+                $mustValidate,
+                $lang,
+                $requireOnlySite
+            ];
+        }
+
+        return ArrayHelper::merge($returnArray, [
+            [true, 'en-US'],
+            [true, 'EN-US'],
+            [false, 'notalang'],
+        ]);
+    }
+
 }
