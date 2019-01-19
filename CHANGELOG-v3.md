@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.1.2.2 - 2019-01-19
+
+### Fixed
+- Fixed an error that occurred when updating to Craft 3.1 if a plugin or module was calling any `craft\services\Sections` methods.
+
 ## 3.1.2.1 - 2019-01-19
 
 ### Fixed
