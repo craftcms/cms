@@ -28,6 +28,7 @@ class m190110_150000_prune_nonexisting_sites extends Migration
     public function safeUp()
     {
         $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig->muteEvents = true;
 
         // Get the site data from the project config
         $sites = $projectConfig->get(Sites::CONFIG_SITES_KEY) ?? [];
@@ -56,6 +57,8 @@ class m190110_150000_prune_nonexisting_sites extends Migration
                 }
             }
         }
+
+        $projectConfig->muteEvents = false;
     }
 
     /**

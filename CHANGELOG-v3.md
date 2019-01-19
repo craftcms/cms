@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.1.2.1 - 2019-01-19
+
+### Fixed
+- Fixed an error that occurred when updating to Craft 3.1 if there were any Matrix sub-fields that had their type set to a non-existing class. ([#3662](https://github.com/craftcms/cms/issues/3662))
+- Fixed a bug where the project config could be in an unexpected state if a `project.yaml` file existed already when initially updating to Craft 3.1.
+
 ## 3.1.2 - 2019-01-18
 
 ### Added
@@ -8,12 +14,17 @@
 - Added `craft\helpers\Install`.
 - Added `craft\services\Fields::prepFieldForSave()`.
 - Added `craft\services\Path::getProjectConfigFilePath()`.
+- Added `craft\services\ProjectConfig::$muteEvents`.
 
 ### Changed
 - The installer now checks `project.yaml` when determining the default site name, handle, base URL, and language values. ([#3661](https://github.com/craftcms/cms/issues/3661))
 - The Base URL field in the web-based installer now autouggests environment variable names and aliases.
 - Craft now creates a `.gitignore` file in the `storage/config-backups/` folder, preventing any other files within it from getting tracked by Git.
 - Craft no longer prevents changes in `project.yaml` from being synced if a plugins’ schema version in `project.yaml` doesn’t match up with its installed schema version, if one of them is blank.
+
+### Deprecated
+- Deprecated `craft\services\Fields::$ignoreProjectConfigChanges`.
+- Deprecated `craft\services\Matrix::$ignoreProjectConfigChanges`.
 
 ### Fixed
 - Fixed a PHP notice that occurred when updating to Craft 3.1 if there were any plugins installed without settings.

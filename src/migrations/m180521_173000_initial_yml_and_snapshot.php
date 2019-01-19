@@ -26,17 +26,22 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         $this->addColumn(Table::INFO, 'config', $this->mediumText()->null()->after('maintenance'));
         $this->addColumn(Table::INFO, 'configMap', $this->mediumText()->null()->after('config'));
 
+        $projectConfig = Craft::$app->getProjectConfig();
+
         if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
             $configFile = Craft::$app->getPath()->getProjectConfigFilePath();
             if (file_exists($configFile)) {
+                // Make a backup of the old config
                 $backupFile = ProjectConfig::CONFIG_FILENAME . '.' . StringHelper::randomString(10);
                 echo "    > renaming project.yaml to {$backupFile} ... ";
                 rename($configFile, dirname($configFile) . '/' . $backupFile);
+
+                // Forget everything we knew about the old config
+                $projectConfig->reset();
             }
         }
 
         $configData = $this->_getProjectConfigData();
-        $projectConfig = Craft::$app->getProjectConfig();
 
         foreach ($configData as $path => $value) {
             $projectConfig->set($path, $value);
