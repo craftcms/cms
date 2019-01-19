@@ -18,21 +18,6 @@ Once you've completed everything listed above you can continue with the upgrade 
 
 The best way to upgrade a Craft 2 site is to approach it like you’re building a new Craft 3 site. So to begin, create a new directory alongside your current project, and follow steps 1-3 in the [installation instructions](installation.md).
 
-::: warning
-We are receiving several reports of upgrade failures from people going from Craft 2 to 3.1. You will have better luck if you upgrade to Craft 3.0.37 first, and then update to 3.1.
-
-To install Craft 3.0.37, you can either use the [3.0.37 download link](https://download.craftcdn.com/craft/3.0/Craft-3.0.37.zip), or if using Composer, change your `craftcms/cms` version requirement in `composer.json` to 3.0.37 after running the `composer create-project` command, and then run `composer update`:
-
-```json
-"require": {
-    "craftcms/cms": "3.0.37",
-    "...": "..."
-}
-```
-
-Once you’ve finished upgrading to Craft 3.0.37 and reinstalled your pluigns, etc., you can [update](updating.md) to Craft 3.1.
-:::
-
 With Craft 3 downloaded and prepped, follow these steps to complete the upgrade: 
 
 1. Configure the `.env` file in your new project with your database connection settings from your old `craft/config/db.php` file.
