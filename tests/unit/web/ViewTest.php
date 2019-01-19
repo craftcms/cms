@@ -7,11 +7,13 @@
 namespace craftunit\web;
 
 
+use craft\events\RegisterTemplateRootsEvent;
 use craft\test\mockclasses\arrayable\ExampleArrayble;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
 use craftunit\fixtures\SitesFixture;
+use yii\base\Event;
 
 /**
  * Unit tests for the View class
@@ -336,9 +338,50 @@ class ViewTest extends TestCase
         ];
     }
 
+    /**
+     * @param $result
+     * @param $which
+     * @param $rootsToBeAdded
+     * @dataProvider getTemplateRootsData
+     */
+    public function testGetTemplateRoots($result, $which, $rootsToBeAdded)
+    {
+        Event::on(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function (RegisterTemplateRootsEvent $event) use ($rootsToBeAdded){
+            $event->roots = $rootsToBeAdded;
+        });
+
+        $roots = $this->getTemplateRoots($which);
+        $this->assertSame($result, $roots);
+    }
+    public function getTemplateRootsData()
+    {
+        return [
+            [['random-roots' => [null]], 'random-roots', ['random-roots' => null]],
+            [['random-roots' => ['/linux/box/craft/templates']], 'random-roots', ['random-roots' => '/linux/box/craft/templates']],
+            [['random-roots' => [['windows/box/craft/templates', '/linux/box/craft/templates']]], 'random-roots', ['random-roots' => ['windows/box/craft/templates', '/linux/box/craft/templates']]],
+        ];
+    }
+
+    /**
+     * Testing these events is quite important as they are quite integral to this function working.
+     */
+    public function testGetTemplateRootsEvents()
+    {
+        $this->tester->expectEvent(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function () {
+            $this->getTemplateRoots('cp');
+        });
+        $this->tester->expectEvent(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function () {
+            $this->getTemplateRoots('doesnt-matter-what-this-is');
+        });
+    }
+
     // Helpers
     // =========================================================================
 
+    private function getTemplateRoots($which)
+    {
+        return $this->invokeMethod($this->view, '_getTemplateRoots', [$which]);
+    }
     private function resolveTemplate($basePath, $name)
     {
         return $this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name]);
