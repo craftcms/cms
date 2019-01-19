@@ -75,7 +75,7 @@ class ErrorHandlerTest extends TestCase
         $this->errorHandler->handleException($exception);
         $this->assertSame(\Craft::getAlias('@crafttestsfolder/storage/logs/web-404s.log'), \Craft::$app->getLog()->targets[0]->logFile);
     }
-    
+
 
     /**
      * @param \Throwable $exception

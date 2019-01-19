@@ -48,10 +48,11 @@ class SearchServiceTest extends Unit
      */
     public function testFilterElementIdsByQuery($usernameOrEmailsForResult, $usernameOrEmailsForQuery, $query, $scoreResults = true, $siteId = null, $returnScores = false)
     {
-        // Repackage the given emails/username into
+        // Repackage the dataProvider data into something that can be used by the filter function
         $result = $this->usernameEmailArrayToIdList($usernameOrEmailsForResult);
         $forQuery = $this->usernameEmailArrayToIdList($usernameOrEmailsForQuery);
 
+        // Filter them
         $filtered = \Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, $returnScores);
 
         $this->assertSame($result, $filtered);
@@ -94,10 +95,13 @@ class SearchServiceTest extends Unit
      */
     public function testFilterScores($scoresAndNames, $usernameOrEmailsForQuery, $query, $scoreResults = true, $siteId = null)
     {
-        // Repackage the given emails/username into
+        // Repackage the dataProvider input into what the filter funciton will return.
         $result = $this->scoreList($scoresAndNames, true, true);
+
+        // Get the user ids to send into the filter function
         $forQuery = $this->usernameEmailArrayToIdList($usernameOrEmailsForQuery);
 
+        // Filter them
         $filtered = \Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, true);
 
         $this->assertSame($result, $filtered);
@@ -168,6 +172,7 @@ class SearchServiceTest extends Unit
      */
     public function testIndexElementAttributes()
     {
+        // Create a user
         $user = new User();
         $user->username = 'testIndexElementAttributes1';
         $user->email = 'testIndexElementAttributes1@test.com';
@@ -179,9 +184,9 @@ class SearchServiceTest extends Unit
         // Index them.
         \Craft::$app->getSearch()->indexElementAttributes($user);
 
+        // Get the data from the DB
         $searchIndex = (new Query())->select('*')->from('{{%searchindex}}')->where(['elementId' => $user->id])->all();
 
-        // Compare the indexed values with what we expect them to be.
         $this->assertSame(' testindexelementattributes1 test com ', $this->getSearchIndexValueByAttribute('email', $searchIndex));
         $this->assertSame(' john smith ', $this->getSearchIndexValueByAttribute('firstname', $searchIndex));
         $this->assertSame(' wil k er son ', $this->getSearchIndexValueByAttribute('lastname', $searchIndex));

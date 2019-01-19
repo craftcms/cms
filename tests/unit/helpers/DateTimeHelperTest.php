@@ -31,6 +31,7 @@ class DateTimeHelperTest extends Unit
 
     protected function _before()
     {
+        \Craft::$app->setTimeZone('America/Los_Angeles');
         $this->systemTimezone = new \DateTimeZone(\Craft::$app->getTimeZone());
         $this->utcTimezone = new \DateTimeZone('UTC');
         $this->asiaTokyoTimezone = new \DateTimeZone('Asia/Tokyo');
