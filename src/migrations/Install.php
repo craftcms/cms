@@ -996,7 +996,7 @@ class Install extends Migration
         echo "done\n";
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $projetConfig = Craft::$app->getProjectConfig();
+        $projectConfig = Craft::$app->getProjectConfig();
         $applyExistingProjectConfig = false;
 
         if ($generalConfig->useProjectConfigFile) {
@@ -1016,7 +1016,7 @@ class Install extends Migration
                     echo "done\n";
 
                     // Forget everything we knew about the old config
-                    $projetConfig->reset();
+                    $projectConfig->reset();
                 }
             }
         }
@@ -1024,13 +1024,13 @@ class Install extends Migration
         if ($applyExistingProjectConfig) {
             // Save the existing system settings
             echo '    > applying existing project config ... ';
-            $projetConfig->applyYamlChanges();
+            $projectConfig->applyYamlChanges();
             echo "done\n";
         } else {
             // Save the default system settings
             echo '    > saving default site data ... ';
             $configData = $this->_generateInitialConfig();
-            $projetConfig->applyConfigChanges($configData);
+            $projectConfig->applyConfigChanges($configData);
             echo "done\n";
         }
 
