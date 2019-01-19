@@ -63,6 +63,10 @@ class GeneralConfig extends BaseObject
      *
      * Therefore you should only disable this in production environments when [[useProjectConfigFile]] is enabled,
      * and you have a deployment workflow that runs `composer install` automatically on deploy.
+     *
+     * ::: warning
+     * Don’t disable this setting until **all** environments have been updated to Craft 3.1.0 or later.
+     * :::
      */
     public $allowAdminChanges = true;
     /**
