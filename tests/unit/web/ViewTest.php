@@ -286,7 +286,7 @@ class ViewTest extends TestCase
 
         $this->assertSame(
             ['index'],
-            $this->getInaccessibleProperty($this->view, '_defaultTemplateExtensions')
+            $this->getInaccessibleProperty($this->view, '_indexTemplateFilenames')
         );
     }
     public function testTemplateModeException()
@@ -330,7 +330,6 @@ class ViewTest extends TestCase
         $var = ['333'];
         $this->assertSame('22333', $this->view->invokeHook('demoHook', $var));
         $this->assertSame('', $this->view->invokeHook('hook-that-dont-exists', $var));
-
     }
 
     /**
