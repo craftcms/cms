@@ -44,6 +44,19 @@ class TestCase extends Unit
     }
 
     /**
+     * Returns a callback/Closure that checks whether the passed in object is an instance of the $class param
+     *
+     * @param string $class
+     * @return \Closure
+     */
+    public function assertObjectIsInstanceOfClassCallback(string $class)
+    {
+        return function ($object) use ($class) {
+            $this->assertSame($class, get_class($object));
+        };
+    }
+
+    /**
      * Gets an inaccessible object property.
      * @param $object
      * @param $propertyName
