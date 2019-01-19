@@ -7,13 +7,16 @@
 namespace craftunit\web;
 
 
+use Codeception\Stub;
 use craft\events\RegisterTemplateRootsEvent;
+use craft\helpers\Json;
 use craft\test\mockclasses\arrayable\ExampleArrayble;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
 use craftunit\fixtures\SitesFixture;
 use yii\base\Event;
+use yii\base\Exception;
 
 /**
  * Unit tests for the View class
@@ -247,6 +250,52 @@ class ViewTest extends TestCase
         ];
     }
 
+    public function testSetSiteTemplateMode()
+    {
+        $genConf = \Craft::$app->getConfig()->getGeneral();
+        $genConf->defaultTemplateExtensions = ['doStuff', 'random'];
+        $genConf->indexTemplateFilenames = ['template', 'raaaa'];
+
+        $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        $this->assertSame(
+            \Craft::getAlias('@crafttestsfolder/templates'),
+            $this->view->templatesPath
+        );
+        $this->assertSame(
+            ['doStuff', 'random'],
+            $this->getInaccessibleProperty($this->view, '_defaultTemplateExtensions')
+        );
+
+        $this->assertSame(
+            ['template', 'raaaa'],
+            $this->getInaccessibleProperty($this->view, '_indexTemplateFilenames')
+        );
+    }
+    public function testSetCpTemplateMode()
+    {
+        $this->view->setTemplateMode(View::TEMPLATE_MODE_CP);
+        $this->assertSame(
+            \Craft::$app->getPath()->getCpTemplatesPath(),
+            $this->view->templatesPath
+        );
+
+        $this->assertSame(
+            ['html', 'twig'],
+            $this->getInaccessibleProperty($this->view, '_defaultTemplateExtensions')
+        );
+
+        $this->assertSame(
+            ['index'],
+            $this->getInaccessibleProperty($this->view, '_defaultTemplateExtensions')
+        );
+    }
+    public function testTemplateModeException()
+    {
+        $this->tester->expectThrowable(Exception::class, function () {
+            $this->view->setTemplateMode('i dont exist');
+        });
+    }
+
     /**
      * @param $result
      * @param $html
@@ -361,7 +410,6 @@ class ViewTest extends TestCase
             [['random-roots' => [['windows/box/craft/templates', '/linux/box/craft/templates']]], 'random-roots', ['random-roots' => ['windows/box/craft/templates', '/linux/box/craft/templates']]],
         ];
     }
-
     /**
      * Testing these events is quite important as they are quite integral to this function working.
      */
@@ -375,9 +423,37 @@ class ViewTest extends TestCase
         });
     }
 
+    /**
+     * Basic test to check the Registered js function
+     */
+    public function testRegisteredJs()
+    {
+        $property = 'randomprop';
+        $name = 'name';
+        $resultString = "if (typeof Craft !== 'undefined') {\n";
+        $jsName = Json::encode($name);
+        $resultString .= "  Craft.{$property}[{$jsName}] = true;\n";
+        $resultString .= '}';
+
+        // Set a stub and ensure that _registeredJs is correctly formatting js but dont bother registering it....
+        $this->view = Stub::construct(
+            View::class,
+            [],
+            ['registerJs' => function ($js, $position) use ($resultString) {
+                $this->assertSame($resultString, $js);
+                $this->assertSame(View::POS_HEAD, $position);
+            }]
+        );
+
+        $this->registeredJs('randomprop', ['name' => 'value']);
+    }
+
     // Helpers
     // =========================================================================
-
+    private function registeredJs($property, $names)
+    {
+        return $this->invokeMethod($this->view, '_registeredJs', [$property, $names]);
+    }
     private function getTemplateRoots($which)
     {
         return $this->invokeMethod($this->view, '_getTemplateRoots', [$which]);
