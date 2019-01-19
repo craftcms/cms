@@ -36,12 +36,18 @@ class ViewTest extends TestCase
      */
     protected $tester;
 
+    /**
+     * @var View $view
+     */
+    protected $view;
     public function _before()
     {
         parent::_before();
-
+        
+        $this->view = \Craft::createObject(View::class);
+        
         // By default we want to be in site mode.
-        \Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
     }
 
 
@@ -52,7 +58,7 @@ class ViewTest extends TestCase
      */
     public function testNormalizeObjectTemplate($result, $input)
     {
-        $this->assertSame($result, \Craft::$app->getView()->normalizeObjectTemplate($input));
+        $this->assertSame($result, $this->view->normalizeObjectTemplate($input));
     }
     public function normalizeObjectTemplateData()
     {
@@ -77,7 +83,7 @@ class ViewTest extends TestCase
 
         $this->assertSame(
             \Craft::getAlias('@craftunittemplates/testSite3/craft.twig'),
-            \Craft::$app->getView()->resolveTemplate('craft')
+            $this->view->resolveTemplate('craft')
         );
     }
     /**
@@ -88,10 +94,10 @@ class ViewTest extends TestCase
     public function testDoesTemplateExistsInSite($result, $templatePath, $templateMode = null)
     {
         if ($templateMode !== null) {
-            \Craft::$app->getView()->setTemplateMode($templateMode);
+            $this->view->setTemplateMode($templateMode);
         }
 
-        $doesIt = \Craft::$app->getView()->resolveTemplate($templatePath);
+        $doesIt = $this->view->resolveTemplate($templatePath);
 
         if ($result === false) {
             $this->assertFalse($doesIt);
@@ -128,12 +134,12 @@ class ViewTest extends TestCase
     {
         // If the data wants to set something custom? Set it as a prop.
         if ($templateExtensions !== null) {
-            $this->setInaccessibleProperty(\Craft::$app->getView(), '_defaultTemplateExtensions', $templateExtensions);
+            $this->setInaccessibleProperty($this->view, '_defaultTemplateExtensions', $templateExtensions);
         }
 
         // Same with index names
         if ($viewTemplateNameExtensions !== null) {
-            $this->setInaccessibleProperty(\Craft::$app->getView(), '_indexTemplateFilenames', $viewTemplateNameExtensions);
+            $this->setInaccessibleProperty($this->view, '_indexTemplateFilenames', $viewTemplateNameExtensions);
         }
 
         // Lets test stuff.
@@ -170,29 +176,29 @@ class ViewTest extends TestCase
     public function testRenderTemplate()
     {
         // Assert that the _renderingTemplate prop goes in and comes out as null.
-        $this->assertSame(null, $this->getInaccessibleProperty(\Craft::$app->getView(), '_renderingTemplate'));
+        $this->assertSame(null, $this->getInaccessibleProperty($this->view, '_renderingTemplate'));
 
-        $result = \Craft::$app->getView()->renderTemplate('withvar', ['name' => 'Giel Tettelaar']);
+        $result = $this->view->renderTemplate('withvar', ['name' => 'Giel Tettelaar']);
 
         $this->assertSame($result, 'Hello iam Giel Tettelaar');
-        $this->assertSame(null, $this->getInaccessibleProperty(\Craft::$app->getView(), '_renderingTemplate'));
+        $this->assertSame(null, $this->getInaccessibleProperty($this->view, '_renderingTemplate'));
 
         // Test that templates can work without variables.
-        $result = \Craft::$app->getView()->renderTemplate('novar');
+        $result = $this->view->renderTemplate('novar');
 
         $this->assertSame($result, 'I have no vars');
     }
 
     public function testRenderMacro()
     {
-        \Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
-        $result = \Craft::$app->getView()->renderTemplateMacro('macros', 'testMacro1', ['arg1' => 'Craft', 'arg2' => 'CMS']);
+        $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        $result = $this->view->renderTemplateMacro('macros', 'testMacro1', ['arg1' => 'Craft', 'arg2' => 'CMS']);
         $this->assertSame('Craft-CMS', $result);
     }
 
     public function testRenderString()
     {
-        $result = \Craft::$app->getView()->renderString('{{ arg1 }}-{{ arg2 }}', ['arg1' => 'Craft', 'arg2' => 'CMS']);
+        $result = $this->view->renderString('{{ arg1 }}-{{ arg2 }}', ['arg1' => 'Craft', 'arg2' => 'CMS']);
         $this->assertSame('Craft-CMS', $result);
     }
 
@@ -205,7 +211,7 @@ class ViewTest extends TestCase
      */
     public function testRenderObjectTemplate($result, $template, $object, array $variables = [])
     {
-        $res = \Craft::$app->getView()->renderObjectTemplate($template, $object, $variables);
+        $res = $this->view->renderObjectTemplate($template, $object, $variables);
         $this->assertSame($result, $res);
     }
     public function renderObjectTemplateData()
@@ -234,12 +240,28 @@ class ViewTest extends TestCase
         ];
     }
 
+    /**
+     * @param $result
+     * @param $html
+     * @param null $namespace
+     * @param bool $otherAttributes
+     * @dataProvider namespaceInputsData
+     */
+    public function testNamespaceInputs($result, $html, $namespace = null, $otherAttributes = true)
+    {
+        $namespaced = $this->view->namespaceInputName($html, $namespace, $otherAttributes);
+    }
+    public function namespaceInputsData()
+    {
+        return [];
+    }
+
     // Helpers
     // =========================================================================
 
     private function resolveTemplate($basePath, $name)
     {
-        return $this->invokeMethod(\Craft::$app->getView(), '_resolveTemplate', [$basePath, $name]);
+        return $this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name]);
     }
 
 }

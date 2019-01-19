@@ -10,6 +10,7 @@ namespace craftunit\web;
 
 
 use craft\test\TestCase;
+use craft\web\ErrorHandler;
 
 /**
  * Unit tests for ErrorHandlerTest
@@ -26,13 +27,25 @@ class ErrorHandlerTest extends TestCase
     protected $tester;
 
     /**
+     * @var ErrorHandler $errorHandler
+     */
+    protected $errorHandler;
+
+    public function _before()
+    {
+        parent::_before();
+
+        $this->errorHandler = \Craft::createObject(ErrorHandler::class);
+    }
+
+    /**
      * @param \Throwable $exception
      * @param $message
      * @dataProvider exceptionTypeAndNameData
      */
     public function testGetExceptionName(\Throwable $exception, $message)
     {
-        $this->assertSame($message, \Craft::$app->getErrorHandler()->getExceptionName($exception));
+        $this->assertSame($message, $this->errorHandler->getExceptionName($exception));
     }
     public function exceptionTypeAndNameData()
     {
@@ -51,7 +64,7 @@ class ErrorHandlerTest extends TestCase
      */
     public function testGetTypeUrl($result, $class, $method)
     {
-        $this->assertSame($result, $this->invokeMethod(\Craft::$app->getErrorHandler(), 'getTypeUrl', [$class, $method]));
+        $this->assertSame($result, $this->invokeMethod($this->errorHandler, 'getTypeUrl', [$class, $method]));
     }
     public function getTypeUrlData() : array
     {
@@ -68,7 +81,7 @@ class ErrorHandlerTest extends TestCase
     public function testHandleError()
     {
         if (PHP_VERSION_ID >= 70100) {
-            $this->assertNull(\Craft::$app->getErrorHandler()->handleError(null, 'Narrowing occurred during type inference. Please file a bug report', null, null));
+            $this->assertNull($this->errorHandler->handleError(null, 'Narrowing occurred during type inference. Please file a bug report', null, null));
         } else {
             $this->markTestSkipped('Running on PHP 70100. parent::handleError() should be called in the craft ErrorHandler.');
         }
