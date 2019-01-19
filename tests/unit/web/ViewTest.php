@@ -311,7 +311,28 @@ class ViewTest extends TestCase
         $this->view->registerTranslations('app', ['1 month', 'not an existing translation23131321313']);
     }
 
-    
+    /**
+     *
+     */
+    public function testHookInvocation()
+    {
+        $this->setInaccessibleProperty($this->view, '_hooks', [
+            'demoHook' => [
+                function() {
+            return '22';
+                },
+                function($val) {
+            return $val[0];
+                }
+            ]
+        ]);
+
+        $var = ['333'];
+        $this->assertSame('22333', $this->view->invokeHook('demoHook', $var));
+        $this->assertSame('', $this->view->invokeHook('hook-that-dont-exists', $var));
+
+    }
+
     /**
      * @param $result
      * @param $html
