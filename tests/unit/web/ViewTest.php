@@ -40,12 +40,13 @@ class ViewTest extends TestCase
      * @var View $view
      */
     protected $view;
+
     public function _before()
     {
         parent::_before();
-        
+
         $this->view = \Craft::createObject(View::class);
-        
+
         // By default we want to be in site mode.
         $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
     }
@@ -60,6 +61,7 @@ class ViewTest extends TestCase
     {
         $this->assertSame($result, $this->view->normalizeObjectTemplate($input));
     }
+
     public function normalizeObjectTemplateData()
     {
         return [
@@ -86,6 +88,7 @@ class ViewTest extends TestCase
             $this->view->resolveTemplate('craft')
         );
     }
+
     /**
      * @param $result
      * @param $templatePath
@@ -125,7 +128,7 @@ class ViewTest extends TestCase
     }
 
     /**
-     * @see testDoesTemplateExistsInSite
+     * @see          testDoesTemplateExistsInSite
      * @param $result
      * @param $input
      * @dataProvider privateResolveTemplateData
@@ -146,6 +149,7 @@ class ViewTest extends TestCase
         $resolved = $this->resolveTemplate(\Craft::getAlias($basePath), $name);
         $this->assertSame(\Craft::getAlias($result), $resolved);
     }
+
     public function privateResolveTemplateData()
     {
         return [
@@ -214,6 +218,7 @@ class ViewTest extends TestCase
         $res = $this->view->renderObjectTemplate($template, $object, $variables);
         $this->assertSame($result, $res);
     }
+
     public function renderObjectTemplateData()
     {
         $model = new ExampleModel();
@@ -249,10 +254,47 @@ class ViewTest extends TestCase
      */
     public function testNamespaceInputs($result, $html, $namespace = null, $otherAttributes = true)
     {
-        $namespaced = $this->view->namespaceInputName($html, $namespace, $otherAttributes);
+        $namespaced = $this->view->namespaceInputs($html, $namespace, $otherAttributes);
         $this->assertSame($result, $namespaced);
     }
+
     public function namespaceInputsData()
+    {
+        return [
+            ['', ''],
+            ['<input type="text" name="test">', '<input type="text" name="test">'],
+            ['<input type="text" name="namespace[test]">', '<input type="text" name="test">', 'namespace'],
+            ['<input type="text" for="namespace-test3" id="namespace-test2"  name="namespace[test]">', '<input type="text" for="test3" id="test2"  name="test">', 'namespace'],
+            ['<input type="text" value="im the input" name="namespace[test]">', '<input type="text" value="im the input" name="test">', 'namespace'],
+            ['<textarea id="namespace-test">Im the content</textarea>', '<textarea id="test">Im the content</textarea>', 'namespace'],
+            ['<not-html id="namespace-test"></not-html>', '<not-html id="test"></not-html>', 'namespace'],
+
+            ['<input im-not-html-tho="test2">', '<input im-not-html-tho="test2">', 'namespace'],
+            ['<input data-target="test2">', '<input data-target="test2">', 'namespace', false],
+
+            // Other attributes
+            ['<input data-target="namespace-test2">', '<input data-target="test2">', 'namespace', true],
+            ['<input aria-describedby="test2">', '<input aria-describedby="test2">', 'namespace', true],
+            ['<input aria-not-a-tag="test2">', '<input aria-not-a-tag="test2">', 'namespace', true],
+            ['<input data-reverse-target="namespace-test2">', '<input data-reverse-target="test2">', 'namespace', true],
+            ['<input data-target-prefix="namespace-test2">', '<input data-target-prefix="test2">', 'namespace', true],
+            ['<input aria-labelledby="namespace-test2">', '<input aria-labelledby="test2">', 'namespace', true],
+            ['<input data-random="test2">', '<input data-random="test2">', 'namespace', true],
+        ];
+    }
+
+    /**
+     * @param $result
+     * @param $string
+     * @param $namespace
+     * @dataProvider namespaceInputNameData
+     */
+    public function testNamespaceInputName($result, $string, $namespace)
+    {
+        $namespaced = $this->view->namespaceInputName($string, $namespace);
+        $this->assertSame($result, $namespaced);
+    }
+    public function namespaceInputNameData()
     {
         return [
             ['', ''],
@@ -261,12 +303,9 @@ class ViewTest extends TestCase
             ['!@#$%^&*()_+{}:"<>?[<input type=]"!@#$%^&*()_+{}:"<>?[text]"!@#$%^&*()_+{}:"<>?[ name=]"!@#$%^&*()_+{}:"<>?[test]"!@#$%^&*()_+{}:"<>?[>]', '<input type="text" name="test">', '!@#$%^&*()_+{}:"<>?'],
             ['namespace[<input type=]"namespace[text]"namespace[ for=]"namespace[test3]"namespace[ id=]"namespace[test2]"namespace[  name=]"namespace[test]"namespace[>]', '<input type="text" for="test3" id="test2"  name="test">', 'namespace'],
             ['namespace[<input im-not-html-tho=]"namespace[test2]"namespace[>]', '<input im-not-html-tho="test2">', 'namespace'],
-
             ['namespace[<input type=]"namespace[text]"namespace[ value=]"namespace[im the input]"namespace[ name=]"namespace[test]"namespace[>]', '<input type="text" value="im the input" name="test">', 'namespace'],
             ['namespace[<textarea id=]"namespace[test]"namespace[>Im the content</textarea>]', '<textarea id="test">Im the content</textarea>', 'namespace'],
-
             ['namespace[<not-html id=]"namespace[test]"namespace[></not-html>]', '<not-html id="test"></not-html>', 'namespace'],
-
         ];
     }
 
