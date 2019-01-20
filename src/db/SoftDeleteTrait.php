@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use Craft;
 use craft\helpers\Db;
 use yii\db\ActiveQuery;
 use yii2tech\ar\softdelete\SoftDeleteBehavior;
@@ -80,7 +81,15 @@ trait SoftDeleteTrait
      */
     public static function find()
     {
-        return parent::find()->where(['dateDeleted' => null]);
+        $query = parent::find();
+
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.1.19', '>=')) {
+            $query->where(['dateDeleted' => null]);
+        }
+
+        return $query;
     }
 
     /**
