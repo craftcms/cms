@@ -18,6 +18,7 @@ use craftunit\fixtures\UsersFixture;
 /**
  * Unit tests for SearchServiceTest
  *
+ * TODO: Add tests for the smaller private methods.
  * Searching and some of the commands run in this test are documented here:
  * https://docs.craftcms.com/v3/searching.html#supported-syntaxes
  *

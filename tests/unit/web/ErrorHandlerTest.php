@@ -36,8 +36,20 @@ class ErrorHandlerTest extends TestCase
     public function _before()
     {
         parent::_before();
+        // Create a dir in compiled templates. See self::144
+        $path = \Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
+        mkdir($path.'/created_path');
 
         $this->errorHandler = \Craft::createObject(ErrorHandler::class);
+    }
+
+    public function _after()
+    {
+        // Remove the dir created in _before
+        $path = \Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
+        rmdir($path.'/created_path');
+
+        parent::_after();
     }
 
     /**
@@ -122,7 +134,34 @@ class ErrorHandlerTest extends TestCase
         if (PHP_VERSION_ID >= 70100) {
             $this->assertNull($this->errorHandler->handleError(null, 'Narrowing occurred during type inference. Please file a bug report', null, null));
         } else {
-            $this->markTestSkipped('Running on PHP 70100. parent::handleError() should be called in the craft ErrorHandler.');
+            $this->markTestSkipped('Running on PHP 70100. parent::handleError() should be called by default in the craft ErrorHandler.');
         }
+    }
+
+    /**
+     * @param $result
+     * @param $input
+     * @dataProvider isCoreFileData
+     */
+    public function testIsCoreFile($result, $input)
+    {
+        $isCore = $this->errorHandler->isCoreFile(\Craft::getAlias($input));
+        $this->assertSame($result, $isCore);
+    }
+    public function isCoreFileData()
+    {
+        $path = \Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
+        $vendorPath = \Craft::getAlias('@vendor');
+        $craftPath = \Craft::getAlias('@craft');
+
+        return [
+            [true, $path.'/created_path'],
+            [true, $vendorPath.'/twig/twig/LICENSE'],
+            [true, $vendorPath.'/twig/twig/composer.json'],
+            [true, $craftPath.'/web/twig/Template.php'],
+
+            [false, $craftPath.'/web/twig'],
+            [false, __DIR__]
+        ];
     }
 }

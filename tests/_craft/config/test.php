@@ -17,6 +17,7 @@ Craft::setAlias('@craftunitfixtures', $basePath.'/tests/fixtures');
 Craft::setAlias('@craft', $srcPath);
 Craft::setAlias('@testsfolder', $basePath.'/tests');
 Craft::setAlias('@crafttestsfolder', $basePath.'/tests/_craft');
+Craft::setAlias('@vendor', $basePath.'/vendor');
 
 $customConfig = \craft\test\Craft::getTestSetupConfig();
 
