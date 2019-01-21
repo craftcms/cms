@@ -9,9 +9,9 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 
 /**
- * m170414_162429_rich_text_config_setting migration.
+ * m190121_120000_rich_text_config_setting migration.
  */
-class m170414_162429_rich_text_config_setting extends Migration
+class m190121_120000_rich_text_config_setting extends Migration
 {
     /**
      * @inheritdoc
@@ -28,6 +28,9 @@ class m170414_162429_rich_text_config_setting extends Migration
         // configFile => redactorConfig
         foreach ($fields as $field) {
             $settings = Json::decode($field['settings']);
+            if (isset($settings['redactorConfig'])) {
+                continue;
+            }
             $settings['redactorConfig'] = ArrayHelper::remove($settings, 'configFile');
             $this->update(Table::FIELDS, [
                 'settings' => Json::encode($settings)
@@ -42,7 +45,7 @@ class m170414_162429_rich_text_config_setting extends Migration
      */
     public function safeDown()
     {
-        echo "m170414_162429_rich_text_config_setting cannot be reverted.\n";
+        echo "m190121_120000_rich_text_config_setting cannot be reverted.\n";
         return false;
     }
 }

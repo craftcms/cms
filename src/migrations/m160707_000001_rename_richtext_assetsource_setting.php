@@ -21,7 +21,7 @@ class m160707_000001_rename_richtext_assetsource_setting extends Migration
         $fields = (new Query())
             ->select(['id', 'settings'])
             ->from([Table::FIELDS])
-            ->where(['type' => 'craft\\redactor\\Fields'])
+            ->where(['type' => 'craft\\redactor\\Field'])
             ->all($this->db);
 
         foreach ($fields as $field) {

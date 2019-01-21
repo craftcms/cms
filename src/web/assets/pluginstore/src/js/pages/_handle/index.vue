@@ -50,7 +50,7 @@
                         <ul v-if="plugin.documentationUrl">
                             <li v-if="plugin.documentationUrl" class="py-1">
                                 <a :href="plugin.documentationUrl" rel="noopener" target="_blank">
-                                    <font-awesome-icon icon="book"></font-awesome-icon>
+                                    <icon icon="book" />
                                     {{ "Documentation"|t('app') }}
                                 </a>
                             </li>

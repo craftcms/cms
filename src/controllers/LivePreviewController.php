@@ -32,9 +32,9 @@ class LivePreviewController extends Controller
      */
     public function beforeAction($action)
     {
-        // Don't enable CSRF validation for live-preview/preview requests
+        // Mark this as a Live Preview request
         if ($action->id === 'preview') {
-            $this->enableCsrfValidation = false;
+            Craft::$app->getRequest()->setIsLivePreview(true);
         }
 
         return parent::beforeAction($action);
@@ -101,7 +101,6 @@ class LivePreviewController extends Controller
             ->add('Access-Control-Allow-Origin', Craft::$app->getRequest()->getOrigin())
             ->add('Access-Control-Allow-Credentials', 'true');
 
-        Craft::$app->getRequest()->setIsLivePreview(true);
         return Craft::$app->runAction($previewAction);
     }
 }

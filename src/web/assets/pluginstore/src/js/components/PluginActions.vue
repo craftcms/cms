@@ -3,7 +3,7 @@
         <template v-if="!isPluginEditionFree">
             <template v-if="isInCart(plugin, edition)">
                 <!-- Already in cart -->
-                <btn v-if="allowUpdates" outline type="primary" @click="$root.openModal('cart')" block large><font-awesome-icon icon="check"></font-awesome-icon> {{ "Already in your cart"|t('app') }}</btn>
+                <btn v-if="allowUpdates" outline type="primary" @click="$root.openModal('cart')" block large><icon icon="check" /> {{ "Already in your cart"|t('app') }}</btn>
             </template>
 
             <template v-else>
@@ -59,12 +59,12 @@
         <template v-else>
                 <template v-if="currentEdition !== licensedEdition && !isPluginEditionFree">
                     <!-- Installed as a trial -->
-                    <button class="c-btn block large" :disabled="true"><font-awesome-icon icon="check"></font-awesome-icon> {{ "Installed as a trial"|t('app') }}</button>
+                    <button class="c-btn block large" :disabled="true"><icon icon="check" /> {{ "Installed as a trial"|t('app') }}</button>
                 </template>
 
                 <template v-else>
                     <!-- Installed -->
-                    <button class="c-btn block large" :disabled="true"><font-awesome-icon icon="check"></font-awesome-icon> {{ "Installed"|t('app') }}</button>
+                    <button class="c-btn block large" :disabled="true"><icon icon="check" /> {{ "Installed"|t('app') }}</button>
                 </template>
         </template>
 
