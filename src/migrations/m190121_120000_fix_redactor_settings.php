@@ -9,9 +9,9 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 
 /**
- * m160707_000001_rename_richtext_assetsource_setting migration.
+ * m190121_120000_fix_redactor_settings migration.
  */
-class m160707_000001_rename_richtext_assetsource_setting extends Migration
+class m190121_120000_fix_redactor_settings extends Migration
 {
     /**
      * @inheritdoc
@@ -38,7 +38,7 @@ class m160707_000001_rename_richtext_assetsource_setting extends Migration
      */
     public function safeDown()
     {
-        echo "m160707_000001_rename_richtext_assetsource_setting cannot be reverted.\n";
+        echo "m190121_120000_fix_redactor_settings cannot be reverted.\n";
 
         return false;
     }
