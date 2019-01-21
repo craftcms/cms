@@ -16,6 +16,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
 use craft\helpers\Template as TemplateHelper;
@@ -213,6 +214,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('indexOf', [$this, 'indexOfFilter']),
             new \Twig_SimpleFilter('intersect', 'array_intersect'),
             new \Twig_SimpleFilter('json_encode', [$this, 'jsonEncodeFilter']),
+            new \Twig_SimpleFilter('json_decode', [Json::class, 'json_decode']),
             new \Twig_SimpleFilter('kebab', [$this, 'kebabFilter']),
             new \Twig_SimpleFilter('lcfirst', [$this, 'lcfirstFilter']),
             new \Twig_SimpleFilter('literal', [$this, 'literalFilter']),
