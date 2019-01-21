@@ -28,6 +28,9 @@ class m190121_120000_rich_text_config_setting extends Migration
         // configFile => redactorConfig
         foreach ($fields as $field) {
             $settings = Json::decode($field['settings']);
+            if (isset($settings['redactorConfig'])) {
+                continue;
+            }
             $settings['redactorConfig'] = ArrayHelper::remove($settings, 'configFile');
             $this->update(Table::FIELDS, [
                 'settings' => Json::encode($settings)
