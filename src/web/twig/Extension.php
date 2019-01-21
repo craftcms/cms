@@ -16,6 +16,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
 use craft\helpers\Template as TemplateHelper;
@@ -48,7 +49,6 @@ use enshrined\svgSanitize\Sanitizer;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
-use yii\helpers\Json;
 use yii\helpers\Markdown;
 
 /**

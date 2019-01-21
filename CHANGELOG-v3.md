@@ -3,8 +3,7 @@
 ## Unreleased
 
 ### Added
-
-Added the `|json_decode` Twig filter.
+- Added the `|json_decode` Twig filter.  ([#3678](https://github.com/craftcms/cms/pull/3678))
 
 ### Fixed
 - Fixed an error that occurred when updating to Craft 3.1 if a plugin or module was calling any soft-deletable records’ `find()` methods.
