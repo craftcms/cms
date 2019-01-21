@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.3 - 2019-01-21
 
 ### Added
 - Added the `|json_decode` Twig filter.  ([#3678](https://github.com/craftcms/cms/pull/3678))
