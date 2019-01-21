@@ -134,8 +134,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         for (var i = 0; i < response.tags.length; i++) {
                             $li = $('<li/>')
-                                .appendTo($ul)
-                                .addClass(response.tags[i].exclude ? 'disabled' : '');
+                                .appendTo($ul);
 
                             $('<a data-icon="tag"/>')
                                 .appendTo($li)
@@ -149,7 +148,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                             $('<a data-icon="plus"/>').appendTo($li).text(data.search);
                         }
 
-                        $ul.find('> li:not(.disabled):first > a').addClass('hover');
+                        $ul.find('a:not(.disabled):first').addClass('hover');
 
                         this.searchMenu = new Garnish.Menu($menu, {
                             attachToElement: this.$addTagInput,
