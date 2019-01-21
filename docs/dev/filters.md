@@ -249,7 +249,11 @@ Like Twig’s core [json_encode](https://twig.symfony.com/doc/2.x/filters/json_e
 
 ## `json_decode`
 
-Returns an array with <api:yii\helpers\Json::decode()>.
+JSON-decodes a string into an array  by passing it through <api:yii\helpers\Json::decode()>.
+
+```twig
+{% set arr = '[1, 2, 3]'|json_decode %}
+```
 
 ## `kebab`
 
