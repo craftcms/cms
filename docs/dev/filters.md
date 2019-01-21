@@ -264,7 +264,7 @@ Lowercases the first character of a string.
 
 ## `literal`
 
-Runs a string through <api:craft\helpers\Db::escapeParam>
+Runs a string through <api:craft\helpers\Db::escapeParam()>
 
 ## `markdown` or `md`
 
