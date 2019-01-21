@@ -48,6 +48,7 @@ use enshrined\svgSanitize\Sanitizer;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
+use yii\helpers\Json;
 use yii\helpers\Markdown;
 
 /**
@@ -213,6 +214,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('indexOf', [$this, 'indexOfFilter']),
             new \Twig_SimpleFilter('intersect', 'array_intersect'),
             new \Twig_SimpleFilter('json_encode', [$this, 'jsonEncodeFilter']),
+            new \Twig_SimpleFilter('json_decode', [Json::class, 'json_decode']),
             new \Twig_SimpleFilter('kebab', [$this, 'kebabFilter']),
             new \Twig_SimpleFilter('lcfirst', [$this, 'lcfirstFilter']),
             new \Twig_SimpleFilter('literal', [$this, 'literalFilter']),
