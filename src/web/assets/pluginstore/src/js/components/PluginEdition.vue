@@ -18,7 +18,7 @@
 
             <ul v-if="plugin.editions.length > 1 && edition.features && edition.features.length > 0">
                 <li v-for="(feature, key) in edition.features" :key="key">
-                    <font-awesome-icon icon="check"></font-awesome-icon>
+                    <icon icon="check" />
                     {{feature.name}}
 
                     <info-hud>

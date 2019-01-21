@@ -1,7 +1,7 @@
 <template>
     <div v-if="release" class="changelog-release">
         <div class="version">
-            <a :href="'#' + release.version" class="anchor"><font-awesome-icon icon="link" /></a>
+            <a :href="'#' + release.version" class="anchor"><icon icon="link" /></a>
             <h2 :id="release.version">{{ "Version {version}"|t('app', {version: release.version}) }}</h2>
             <div class="date">{{date}}</div>
             <div v-if="release.critical" class="critical">{{ 'Critical'|t('app') }}</div>
