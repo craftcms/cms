@@ -51,9 +51,9 @@ class m190218_143000_element_index_settings_uid extends Migration
             ->pairs();
 
         $this->_elementData[Asset::class] = (new Query())
-            ->select(['folders.id folderId', 'volumes.uid volumeUid'])
-            ->from([Table::VOLUMES . ' volumes'])
-            ->innerJoin([Table::VOLUMEFOLDERS . ' folders'], '[[volumes.id]] = [[folders.volumeId]]')
+            ->select(['id', 'uid'])
+            ->from([Table::VOLUMEFOLDERS])
+            ->where(['parentId' => null])
             ->pairs();
 
         $rows = (new Query())
@@ -113,16 +113,13 @@ class m190218_143000_element_index_settings_uid extends Migration
             return $sourceKey;
         }
 
-        $parts = explode(':', $sourceKey);
+        $parts = explode(':', $sourceKey, 2);
         $id = $parts[1];
 
-        if ($elementClass === Asset::class) {
-            $replace = 'volume';
-        } else {
-            $replace = $this->_elements[$elementClass];
+        if (!isset($this->_elementData[$elementClass][$id])) {
+            return $sourceKey;
         }
 
-
-        return array_key_exists($id, $this->_elementData[$elementClass]) ? $replace.':'.$this->_elementData[$elementClass][$id] : $sourceKey;
+        return $this->_elements[$elementClass] . ':' . $this->_elementData[$elementClass][$id];
     }
 }
