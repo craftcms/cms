@@ -147,3 +147,21 @@ When a plugin has an Install migration, its `safeUp()` method will be called whe
 ::: tip
 It is *not* a plugin’s responsibility to manage its row in the `plugins` database table. Craft takes care of that for you.
 :::
+
+### Setting Default Project Config Data
+
+If you want to add things to the [project config](project-config.md) on install, either directly or via your plugin’s API, be sure to only do that if the incoming `project.yaml` file doesn’t already have a record of your plugin.
+
+```php
+public function safeUp()
+{
+    // ...
+
+    // Don't make the same config changes twice
+    if (Craft::$app->projectConfig->get('plugins.<plugin-handle>', true) === null) {
+        // Make the config changes here...
+    }
+}
+```
+
+That’s because there’s a chance that your plugin is being installed as part of a project config sync, and if its Install migration were to make any project config changes of its own, they would overwrite all of the incoming changes from `project.yaml`.
