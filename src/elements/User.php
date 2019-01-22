@@ -30,6 +30,7 @@ use craft\records\Session as SessionRecord;
 use craft\records\User as UserRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
+use craft\validators\UrlValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use yii\base\ErrorHandler;
@@ -675,6 +676,13 @@ class User extends Element implements IdentityInterface
             'forceDifferent' => $this->passwordResetRequired,
             'currentPassword' => $currentPassword,
         ];
+
+        $rules[] = [['firstName', 'lastName'], function ($attribute, $params, $validator) {
+            $urlValidator = new UrlValidator();
+            if ($urlValidator->validate($this->$attribute)) {
+                $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
+            }
+        }];
 
         return $rules;
     }

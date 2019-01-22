@@ -6,6 +6,9 @@
 - The System Name setting can now be set to an environment variable. ([#3529](https://github.com/craftcms/cms/issues/3529))
 - Added `craft\base\ApplicationTrait::getSystemName()`.
 
+### Changed
+- URLs are no longer allowed in a user’s first or last names.
+
 ## 3.1.3 - 2019-01-21
 
 ### Added
