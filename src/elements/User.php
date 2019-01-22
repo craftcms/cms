@@ -30,7 +30,6 @@ use craft\records\Session as SessionRecord;
 use craft\records\User as UserRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
-use craft\validators\UrlValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use yii\base\ErrorHandler;
@@ -39,6 +38,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
+use yii\validators\UrlValidator as YiiUrlValidator;
 use yii\web\IdentityInterface;
 
 /**
@@ -678,7 +678,8 @@ class User extends Element implements IdentityInterface
         ];
 
         $rules[] = [['firstName', 'lastName'], function ($attribute, $params, $validator) {
-            $urlValidator = new UrlValidator();
+            $urlValidator = new YiiUrlValidator();
+            $urlValidator->pattern = '\b' . trim($urlValidator->pattern, '^$');
             if ($urlValidator->validate($this->$attribute)) {
                 $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
             }
