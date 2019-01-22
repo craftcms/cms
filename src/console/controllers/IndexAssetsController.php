@@ -18,6 +18,7 @@ use yii\console\Controller;
 /**
  * Re-indexes assets in volumes.
  *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.2
  */
 class IndexAssetsController extends Controller
