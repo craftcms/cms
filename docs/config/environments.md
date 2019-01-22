@@ -6,6 +6,8 @@ Some settings should be defined on a per-environment basis. For example, when de
 
 Some settings in the Control Panel can be set to environment variables (like the ones defined in your `.env` file):
 
+- General Settings
+  - **System Name**
 - Sites
   - **Base URL**
 - Asset Volumes

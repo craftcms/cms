@@ -14,6 +14,7 @@ use craft\db\MigrationManager;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\DbConnectException;
+use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
 use craft\events\EditionChangeEvent;
 use craft\helpers\App;
@@ -611,6 +612,26 @@ trait ApplicationTrait
         }
 
         return false;
+    }
+
+    /**
+     * Returns the system name.
+     *
+     * @return string
+     */
+    public function getSystemName(): string
+    {
+        if (($name = Craft::$app->getProjectConfig()->get('system.name')) !== null) {
+            return Craft::parseEnv($name);
+        }
+
+        try {
+            $name = $this->getSites()->getPrimarySite()->name;
+        } catch (SiteNotFoundException $e) {
+            $name = null;
+        }
+
+        return $name ?: 'Craft';
     }
 
     /**

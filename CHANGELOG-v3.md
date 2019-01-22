@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- The System Name setting can now be set to an environment variable. ([#3529](https://github.com/craftcms/cms/issues/3529))
+- Added `craft\base\ApplicationTrait::getSystemName()`.
+
 ## 3.1.3 - 2019-01-21
 
 ### Added
