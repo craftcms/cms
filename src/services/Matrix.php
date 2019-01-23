@@ -573,38 +573,40 @@ class Matrix extends Component
                 }
             }
 
-            // Delete the old block types first, in case there's a handle conflict with one of the new ones
-            $oldBlockTypes = $this->getBlockTypesByFieldId($matrixField->id);
-            $oldBlockTypesById = [];
+            if (!Craft::$app->getProjectConfig()->areChangesPending(self::CONFIG_BLOCKTYPE_KEY)) {
+                // Delete the old block types first, in case there's a handle conflict with one of the new ones
+                $oldBlockTypes = $this->getBlockTypesByFieldId($matrixField->id);
+                $oldBlockTypesById = [];
 
-            foreach ($oldBlockTypes as $blockType) {
-                $oldBlockTypesById[$blockType->id] = $blockType;
-            }
-
-            foreach ($matrixField->getBlockTypes() as $blockType) {
-                if (!$blockType->getIsNew()) {
-                    unset($oldBlockTypesById[$blockType->id]);
+                foreach ($oldBlockTypes as $blockType) {
+                    $oldBlockTypesById[$blockType->id] = $blockType;
                 }
+
+                foreach ($matrixField->getBlockTypes() as $blockType) {
+                    if (!$blockType->getIsNew()) {
+                        unset($oldBlockTypesById[$blockType->id]);
+                    }
+                }
+
+                foreach ($oldBlockTypesById as $blockType) {
+                    $this->deleteBlockType($blockType);
+                }
+
+                // Save the new ones
+                $sortOrder = 0;
+
+                $originalContentTable = Craft::$app->getContent()->contentTable;
+                Craft::$app->getContent()->contentTable = $matrixField->contentTable;
+
+                foreach ($matrixField->getBlockTypes() as $blockType) {
+                    $sortOrder++;
+                    $blockType->fieldId = $matrixField->id;
+                    $blockType->sortOrder = $sortOrder;
+                    $this->saveBlockType($blockType, false);
+                }
+
+                Craft::$app->getContent()->contentTable = $originalContentTable;
             }
-
-            foreach ($oldBlockTypesById as $blockType) {
-                $this->deleteBlockType($blockType);
-            }
-
-            // Save the new ones
-            $sortOrder = 0;
-
-            $originalContentTable = Craft::$app->getContent()->contentTable;
-            Craft::$app->getContent()->contentTable = $matrixField->contentTable;
-
-            foreach ($matrixField->getBlockTypes() as $blockType) {
-                $sortOrder++;
-                $blockType->fieldId = $matrixField->id;
-                $blockType->sortOrder = $sortOrder;
-                $this->saveBlockType($blockType, false);
-            }
-
-            Craft::$app->getContent()->contentTable = $originalContentTable;
 
             $transaction->commit();
         } catch (\Throwable $e) {
