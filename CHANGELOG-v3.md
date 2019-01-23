@@ -9,6 +9,9 @@
 ### Changed
 - URLs are no longer allowed in a user’s first or last names.
 
+### Fixed
+- Fixed a bug where `site` translations were falling back to English if the translated message was identical to the source message. ([#3692](https://github.com/craftcms/cms/issues/3692))
+
 ## 3.1.3 - 2019-01-21
 
 ### Added
