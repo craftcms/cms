@@ -6,6 +6,7 @@
 - Added `craft\helpers\App::phpConfigValueInBytes()`.
 
 ### Changed
+- Craft now attempts to disable PHP’s memory and time limits before running Composer operations.
 - Craft no longer respects the `phpMaxMemoryLimit` config setting if PHP’s `memory_limit` setting is already set to `-1` (no limit).
 
 ## 3.0.37 - 2019-01-08

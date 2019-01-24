@@ -18,6 +18,7 @@ use Composer\Package\Locker;
 use Composer\Util\Platform;
 use Craft;
 use craft\composer\Factory;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use Seld\JsonLint\DuplicateKeyException;
 use Seld\JsonLint\JsonParser;
@@ -99,6 +100,8 @@ class Composer extends Component
      */
     public function install(array $requirements, IOInterface $io = null)
     {
+        App::maxPowerCaptain();
+
         if ($io === null) {
             $io = new NullIO();
         }
@@ -183,6 +186,8 @@ class Composer extends Component
      */
     public function uninstall(array $packages, IOInterface $io = null)
     {
+        App::maxPowerCaptain();
+
         $packages = array_map('strtolower', $packages);
 
         if ($io === null) {
