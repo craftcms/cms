@@ -7,6 +7,9 @@
 - Craft now stores backups of `composer.json` and `composer.lock` files in `storage/composer-backups/` before running Composer operations.
 - Added `craft\db\Connection::getBackupFilePath()`.
 - Added `craft\helpers\App::phpConfigValueInBytes()`.
+- Added `craft\helpers\Console::isColorEnabled()`.
+- Added `craft\helpers\Console::outputCommand()`.
+- Added `craft\helpers\Console::outputWarning()`.
 - Added `craft\helpers\FileHelper::cycle()`.
 - Added `craft\services\Composer::$maxBackups`.
 - Added `craft\services\Path::getComposerBackupsPath()`.
