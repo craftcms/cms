@@ -15,7 +15,7 @@ return [
     '1 week' => '1 semana',
     '1 year' => '1 año',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Tu licencia ha caducado.</strong> Renueva tu licencia de {name} para disfrutar de otro año de sorprendentes actualizaciones.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>Has alcanzado un punto de quiebre.</strong> Para acceder a nuevas actualizaciones, instala {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Has alcanzado un punto de quiebre.</strong> Para acceder a nuevas actualizaciones, instala {update}.',
     'A critical update is available.' => 'Se encuentra disponible una actualización crítica.',
     'A fatal error has occurred:' => 'Se produjo un error irrecuperable:',
     'A file with the name “{filename}” already exists.' => 'Ya existe un archivo con el nombre “{filename}”.',

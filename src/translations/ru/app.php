@@ -15,7 +15,7 @@ return [
     '1 week' => '1 неделя',
     '1 year' => '1 год',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Срок действия вашей лицензии истек!</strong> Обновите лицензию {name} еще на год, чтобы иметь доступ ко всем обновлениям.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>Вы достигли контрольной точки!</strong> Новые обновления будут доступны после установки {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Вы достигли контрольной точки!</strong> Новые обновления будут доступны после установки {update}.',
     'A critical update is available.' => 'Имеется важное обновление.',
     'A fatal error has occurred:' => 'Произошла фатальная ошибка:',
     'A file with the name “{filename}” already exists.' => 'Файл с именем «{filename}» уже существует.',

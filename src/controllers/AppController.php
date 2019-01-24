@@ -428,7 +428,7 @@ class AppController extends Controller
             $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
         } else {
             if ($update->status === Update::STATUS_BREAKPOINT) {
-                $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>', [
+                $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
                     'update' => $name . ' ' . ($update->getLatest()->version ?? '')
                 ]);
             }

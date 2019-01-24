@@ -15,7 +15,7 @@ return [
     '1 week' => '1 hafta',
     '1 year' => '1 yıl',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Lisansınızın süresi doldu!</strong> Harika güncellemelerle dolu bir yıl daha geçirmek için {name} lisansınızı güncelleyin.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>Bir ara noktaya ulaştınız!</strong> Siz {update} yükledikten sonra daha fazla güncelleme sunulacak.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Bir ara noktaya ulaştınız!</strong> Siz {update} yükledikten sonra daha fazla güncelleme sunulacak.',
     'A critical update is available.' => 'Kritik bir güncelleme var.',
     'A fatal error has occurred:' => 'Önemli bir hata oluştu:',
     'A file with the name “{filename}” already exists.' => '"{filename}" adlı bir dosya zaten mevcut.',

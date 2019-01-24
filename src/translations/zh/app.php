@@ -15,7 +15,7 @@ return [
     '1 week' => '1 星期',
     '1 year' => '1 年',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>您的许可证已过期！</strong> 将您的 {name} 许可证续约一年，获取惊喜更新。',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>您已达到断点！</strong>安装 {update} 后可获更多更新。</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>您已达到断点！</strong>安装 {update} 后可获更多更新。',
     'A critical update is available.' => '关键更新可用。',
     'A fatal error has occurred:' => '发生严重错误：',
     'A file with the name “{filename}” already exists.' => '名为“{filename}”的文件已存在。',
