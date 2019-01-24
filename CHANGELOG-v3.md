@@ -9,6 +9,7 @@
 ### Changed
 - URLs are no longer allowed in a user’s first or last names.
 - Craft now ensures that installed schema versions match the schema versions in `project.yaml` before syncing project config changes.
+- The `project-config/sync` console command now exits if there are pending Craft or plugin migrations.
 
 ### Fixed
 - Fixed a bug where `site` translations were falling back to English if the translated message was identical to the source message. ([#3692](https://github.com/craftcms/cms/issues/3692))
