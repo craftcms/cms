@@ -345,7 +345,9 @@ class AssetIndexer extends Component
             ->from(['{{%assets}} fi'])
             ->innerJoin('{{%volumefolders}} fo', '[[fi.folderId]] = [[fo.id]]')
             ->innerJoin('{{%volumes}} s', '[[s.id]] = [[fi.volumeId]]')
+            ->innerJoin('{{%elements}} e', '[[e.id]] = [[fi.id]]')
             ->where(['fi.volumeId' => $volumeIds])
+            ->andWhere(['e.dateDeleted' => null])
             ->all();
 
         foreach ($assets as $asset) {
