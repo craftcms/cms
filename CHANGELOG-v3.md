@@ -13,6 +13,7 @@
 ### Fixed
 - Fixed a bug where `site` translations were falling back to English if the translated message was identical to the source message. ([#3692](https://github.com/craftcms/cms/issues/3692))
 - Fixed a bug where syncing Matrix field changes to the project config would result in new changes to the project config. ([#3695](https://github.com/craftcms/cms/issues/3695))
+- Fixed an error where indexing a volume with no files would result in an error.
 
 ## 3.1.3 - 2019-01-21
 
