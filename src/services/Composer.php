@@ -100,14 +100,17 @@ class Composer extends Component
     /**
      * Installs a given set of packages with Composer.
      *
-     * @param array $requirements Package name/version pairs
+     * @param array|null $requirements Package name/version pairs, or set to null to run the equivalent of `composer install`
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
      * @throws \Throwable if something goes wrong
      */
-    public function install(array $requirements, IOInterface $io = null)
+    public function install(array $requirements = null, IOInterface $io = null)
     {
         App::maxPowerCaptain();
-        $this->backupComposerFiles();
+
+        if ($requirements !== null) {
+            $this->backupComposerFiles();
+        }
 
         if ($io === null) {
             $io = new NullIO();
@@ -127,7 +130,9 @@ class Composer extends Component
         $backup = file_get_contents($jsonPath);
 
         // Update composer.json
-        $this->updateRequirements($io, $jsonPath, $requirements);
+        if ($requirements !== null) {
+            $this->updateRequirements($io, $jsonPath, $requirements);
+        }
 
         if ($this->updateComposerClassMap) {
             // Start logging newly-autoloaded classes
@@ -138,24 +143,26 @@ class Composer extends Component
             $this->preloadComposerClasses();
         }
 
-        // Get the whitelist of packages to update
-        $whitelist = Craft::$app->getApi()->getComposerWhitelist($requirements);
-
-        // Run the installer
+        // Create the installer
         $composer = $this->createComposer($io, $jsonPath);
         $config = $composer->getConfig();
 
         $installer = Installer::create($io, $composer)
             ->setPreferDist()
             ->setSkipSuggest()
-            ->setUpdate()
-            ->setUpdateWhitelist($whitelist)
             ->setDumpAutoloader()
             ->setRunScripts(false)
             ->setOptimizeAutoloader(true)
             ->setClassMapAuthoritative($config->get('classmap-authoritative'));
 
+        if ($requirements !== null) {
+            $installer->setUpdate();
+            $whitelist = Craft::$app->getApi()->getComposerWhitelist($requirements);
+            $installer->setUpdateWhitelist($whitelist);
+        }
+
         try {
+            // Run the installer
             $status = $installer->run();
         } catch (\Throwable $exception) {
             $status = 1;
