@@ -429,12 +429,12 @@ class GeneralConfig extends BaseObject
      */
     public $pathParam = 'p';
     /**
-     * @var string The maximum amount of memory Craft will try to reserve during memory intensive operations such as zipping,
+     * @var string|null The maximum amount of memory Craft will try to reserve during memory intensive operations such as zipping,
      * unzipping and updating. Defaults to an empty string, which means it will use as much memory as it possibly can.
      *
      * See <http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes> for a list of acceptable values.
      */
-    public $phpMaxMemoryLimit = '';
+    public $phpMaxMemoryLimit;
     /**
      * @var string The name of the PHP session cookie.
      * @see https://php.net/manual/en/function.session-name.php

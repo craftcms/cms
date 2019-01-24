@@ -1260,11 +1260,11 @@ The query string param that Craft will check when determining the request's path
 
 Allowed types
 
-:   [string](http://php.net/language.types.string)
+:   [string](http://php.net/language.types.string), [null](http://php.net/language.types.null)
 
 Default value
 
-:   `''`
+:   `null`
 
 Defined by
 
