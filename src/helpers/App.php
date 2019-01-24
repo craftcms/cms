@@ -134,6 +134,32 @@ class App
     }
 
     /**
+     * Retrieves a disk size PHP config setting and normalizes it into bytes.
+     *
+     * @param string $var The PHP config setting to retrieve.
+     * @return int The value normalized into bytes.
+     */
+    public static function phpConfigValueInBytes(string $var): int
+    {
+        $value = trim(ini_get($var));
+        $unit = strtolower(substr($value, -1, 1));
+        $value = (int)$value;
+
+        switch ($unit) {
+            case 'g':
+                $value *= 1024;
+            // no break (cumulative multiplier)
+            case 'm':
+                $value *= 1024;
+            // no break (cumulative multiplier)
+            case 'k':
+                $value *= 1024;
+        }
+
+        return $value;
+    }
+
+    /**
      * Returns whether the server has a valid version of the iconv extension installed.
      *
      * @return bool

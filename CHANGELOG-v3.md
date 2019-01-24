@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\helpers\App::phpConfigValueInBytes()`.
+
 ## 3.0.37 - 2019-01-08
 
 ### Added
