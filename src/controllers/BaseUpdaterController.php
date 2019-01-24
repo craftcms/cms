@@ -12,6 +12,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
+use craft\helpers\App;
 use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
@@ -31,6 +32,7 @@ abstract class BaseUpdaterController extends Controller
     // Constants
     // =========================================================================
 
+    const ACTION_PRECHECK = 'precheck';
     const ACTION_RECHECK_COMPOSER = 'recheck-composer';
     const ACTION_COMPOSER_INSTALL = 'composer-install';
     const ACTION_COMPOSER_REMOVE = 'composer-remove';
@@ -99,6 +101,13 @@ abstract class BaseUpdaterController extends Controller
 
         $this->data = $this->initialData();
         $state = $this->initialState();
+        if (isset($state['nextAction'])) {
+            $this->data['postPrecheckState'] = $state;
+            $state = [
+                'nextAction' => self::ACTION_PRECHECK,
+                'status' => $this->actionStatus(self::ACTION_PRECHECK),
+            ];
+        }
         $state['data'] = $this->_hashedData();
         $idJs = Json::encode($this->id);
         $stateJs = Json::encode($state);
@@ -107,6 +116,36 @@ abstract class BaseUpdaterController extends Controller
         return $this->renderTemplate('_special/updater', [
             'title' => $this->pageTitle(),
         ]);
+    }
+
+    /**
+     * Ensures that PHP’s memory_limit and max_execution_time settings are high enough to run Composer.
+     *
+     * @return Response
+     */
+    public function actionPrecheck(): Response
+    {
+        $postState = $this->data['postPrecheckState'];
+
+        if (App::phpConfigValueAsBool('safe_mode')) {
+            $timeLimit = (int)trim(ini_get('max_execution_time'));
+            if ($timeLimit !== 0 && $timeLimit < 120) {
+                return $this->send([
+                    'error' => Craft::t('app', 'Please set {name} to at least {value} in your {file} file before proceeding.', [
+                        'name' => '`max_execution_time`',
+                        'value' => '120',
+                        'file' => '`php.ini`',
+                    ]),
+                    'options' => [
+                        ['label' => Craft::t('app', 'Learn how'), 'url' => 'https://craftcms.com/guides/php-ini'],
+                        $this->actionOption(Craft::t('app', 'Check again'), self::ACTION_PRECHECK),
+                        $this->actionOption(Craft::t('app', 'Continue anyway'), $postState['nextAction'], $postState),
+                    ]
+                ]);
+            }
+        }
+
+        return $this->send($postState);
     }
 
     /**
@@ -395,6 +434,8 @@ abstract class BaseUpdaterController extends Controller
     protected function actionStatus(string $action): string
     {
         switch ($action) {
+            case self::ACTION_PRECHECK:
+                return Craft::t('app', 'Checking environment…');
             case self::ACTION_RECHECK_COMPOSER:
                 return Craft::t('app', 'Checking…');
             case self::ACTION_COMPOSER_INSTALL:

@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Craft now warns if PHP is running in Safe Mode with a [max_execution_time](http://php.net/manual/en/info.configuration.php#ini.max-execution-time) of less than 120 seconds, before performing Composer operations.
 - Craft now stores backups of `composer.json` and `composer.lock` files in `storage/composer-backups/` before running Composer operations.
 - Added `craft\db\Connection::getBackupFilePath()`.
 - Added `craft\helpers\App::phpConfigValueInBytes()`.
