@@ -59,6 +59,11 @@ class MigrateController extends BaseMigrateController
     public $plugin;
 
     /**
+     * @var bool Exclude pending content migrations.
+     */
+    public $noContent;
+
+    /**
      * @var MigrationManager|null The migration manager that will be used in this request
      */
     private $_migrator;
@@ -100,6 +105,10 @@ class MigrateController extends BaseMigrateController
         // Global options
         $options[] = 'type';
         $options[] = 'plugin';
+
+        if ($actionID === 'all') {
+            $options[] = 'noContent';
+        }
 
         return $options;
     }

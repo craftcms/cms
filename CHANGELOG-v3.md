@@ -12,6 +12,7 @@
 - Added `craft\services\Path::getComposerBackupsPath()`.
 
 ### Changed
+- The `migrate/all` console command now supports a `--no-content` argument that can be passed to ignore pending content migrations.
 - Craft now attempts to disable PHP’s memory and time limits before running Composer operations.
 - Craft no longer respects the `phpMaxMemoryLimit` config setting if PHP’s `memory_limit` setting is already set to `-1` (no limit).
 - Craft now respects Composer’s [classmap-authoritative](https://getcomposer.org/doc/06-config.md#classmap-authoritative) config setting.
