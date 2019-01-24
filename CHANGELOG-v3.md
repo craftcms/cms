@@ -5,6 +5,7 @@
 ### Added
 - The System Name setting can now be set to an environment variable. ([#3529](https://github.com/craftcms/cms/issues/3529))
 - Added `craft\base\ApplicationTrait::getSystemName()`.
+- The `index-assets/one` console command can now be used to index a subfolder using the `craft index-assets/one handle/path/to/folder` syntax.
 
 ### Changed
 - URLs are no longer allowed in a user’s first or last names.
