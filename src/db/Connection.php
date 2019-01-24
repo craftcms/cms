@@ -198,6 +198,32 @@ class Connection extends \yii\db\Connection
     }
 
     /**
+     * Returns the raw database table names that should be ignored by default.
+     *
+     * @return string[]
+     */
+    public function getIgnoredBackupTables(): array
+    {
+        $tables = [
+            '{{%assetindexdata}}',
+            '{{%assettransformindex}}',
+            '{{%cache}}',
+            '{{%sessions}}',
+            '{{%templatecaches}}',
+            '{{%templatecachecriteria}}',
+            '{{%templatecacheelements}}',
+        ];
+
+        $schema = $this->getSchema();
+
+        foreach ($tables as $i => $table) {
+            $tables[$i] = $schema->getRawTableName($table);
+        }
+
+        return $tables;
+    }
+
+    /**
      * Performs a backup operation. If a `backupCommand` config setting has been set, will execute it. If not,
      * will execute the default database schema specific backup defined in `getDefaultBackupCommand()`, which uses
      * `pg_dump` for PostgreSQL and `mysqldump` for MySQL.
