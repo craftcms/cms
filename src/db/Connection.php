@@ -263,8 +263,8 @@ class Connection extends \yii\db\Connection
         }
 
         // Create the shell command
+        $backupCommand = $this->_parseCommandTokens($backupCommand, $filePath);
         $command = $this->_createShellCommand($backupCommand);
-        $command = $this->_parseCommandTokens($command, $filePath);
 
         // Fire a 'beforeCreateBackup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_BACKUP)) {
@@ -305,8 +305,8 @@ class Connection extends \yii\db\Connection
         }
 
         // Create the shell command
+        $restoreCommand = $this->_parseCommandTokens($restoreCommand, $filePath);
         $command = $this->_createShellCommand($restoreCommand);
-        $command = $this->_parseCommandTokens($command, $filePath);
 
         // Fire a 'beforeRestoreBackup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
@@ -518,15 +518,14 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * @param ShellCommand $shellCommand
+     * Parses a database backup/restore command for config tokens
+     *
+     * @param string $command The command to parse tokens in
      * @param string $file The path to the backup file
-     * @return ShellCommand
+     * @return string
      */
-    private function _parseCommandTokens(ShellCommand $shellCommand, $file): ShellCommand
+    private function _parseCommandTokens(string $command, $file): string
     {
-        $command = $shellCommand->getCommand();
-
-        // Swap out any tokens in the command
         $dbConfig = Craft::$app->getConfig()->getDb();
         $tokens = [
             '{file}' => $file,
@@ -538,10 +537,7 @@ class Connection extends \yii\db\Connection
             '{schema}' => $dbConfig->schema,
         ];
 
-        $command = str_replace(array_keys($tokens), array_values($tokens), $command);
-        $shellCommand->setCommand($command);
-
-        return $shellCommand;
+        return str_replace(array_keys($tokens), $tokens, $command);
     }
 
     /**
