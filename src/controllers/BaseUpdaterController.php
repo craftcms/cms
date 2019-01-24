@@ -382,8 +382,11 @@ abstract class BaseUpdaterController extends Controller
 
         $state['options'] = [
             [
+                'label' => Craft::t('app', 'Troubleshoot'),
+                'url' => 'https://craftcms.com/guides/failed-updates',
+            ],
+            [
                 'label' => Craft::t('app', 'Send for help'),
-                'submit' => true,
                 'email' => 'support@craftcms.com',
                 'subject' => 'Composer error',
             ]
@@ -514,6 +517,11 @@ abstract class BaseUpdaterController extends Controller
                 $options[] = $this->actionOption($restoreLabel, $restoreAction);
             }
 
+            $options[] = [
+                'label' => Craft::t('app', 'Troubleshoot'),
+                'url' => 'https://craftcms.com/guides/failed-updates',
+            ];
+
             if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
                 /** @var Plugin $plugin */
                 $email = $plugin->developerEmail;
@@ -522,7 +530,6 @@ abstract class BaseUpdaterController extends Controller
 
             $options[] = [
                 'label' => Craft::t('app', 'Send for help'),
-                'submit' => true,
                 'email' => $email,
                 'subject' => $ownerName . ' update failure',
             ];

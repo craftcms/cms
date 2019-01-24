@@ -15,6 +15,7 @@
 - Craft now attempts to disable PHP’s memory and time limits before running Composer operations.
 - Craft no longer respects the `phpMaxMemoryLimit` config setting if PHP’s `memory_limit` setting is already set to `-1` (no limit).
 - Craft now respects Composer’s [classmap-authoritative](https://getcomposer.org/doc/06-config.md#classmap-authoritative) config setting.
+- Craft now links to the [Troubleshooting Failed Updates](https://craftcms.com/guides/failed-updates) guide when an update fails.
 - `craft\services\Composer::install()` can now behave like the `composer install` command, if `$requirements` is `null`.
 - `craft\services\Composer::install()` now has a `$whitelist` argument, which can be set to an array of packages to whitelist, or `false` to disable the whitelist.
 
