@@ -3,8 +3,11 @@
 ## Unreleased
 
 ### Added
+- Craft now stores backups of `composer.json` and `composer.lock` files in `storage/composer-backups/` before running Composer operations.
 - Added `craft\helpers\App::phpConfigValueInBytes()`.
 - Added `craft\helpers\FileHelper::cycle()`.
+- Added `craft\services\Composer::$maxBackups`.
+- Added `craft\services\Path::getComposerBackupsPath()`.
 
 ### Changed
 - Craft now attempts to disable PHP’s memory and time limits before running Composer operations.

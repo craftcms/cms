@@ -90,6 +90,33 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the `storage/composer-backups/` directory.
+     *
+     * @param bool $create Whether the directory should be created if it doesn't exist
+     * @return string
+     * @throws Exception
+     */
+    public function getComposerBackupsPath(bool $create = true): string
+    {
+        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'composer-backups';
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+
+            // Add a .gitignore file in there if there isn't one
+            $gitignorePath = $path . DIRECTORY_SEPARATOR . '.gitignore';
+            if (!is_file($gitignorePath)) {
+                FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n", [
+                    // Prevent a segfault if this is called recursively
+                    'lock' => false,
+                ]);
+            }
+        }
+
+        return $path;
+    }
+
+    /**
      * Returns the path to the `storage/rebrand/` directory.
      *
      * @param bool $create Whether the directory should be created if it doesn't exist

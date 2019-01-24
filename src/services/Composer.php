@@ -20,6 +20,7 @@ use Craft;
 use craft\composer\Factory;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use Seld\JsonLint\DuplicateKeyException;
 use Seld\JsonLint\JsonParser;
 use yii\base\Component;
@@ -51,6 +52,11 @@ class Composer extends Component
      * @var bool Whether to generate a new Composer class map, rather than preloading all of the classes in the current class map
      */
     public $updateComposerClassMap = false;
+
+    /**
+     * @var int The maximum number of composer.json and composer.lock backups to store in storage/composer-backups/
+     */
+    public $maxBackups = 50;
 
     /**
      * @var string[]|null
@@ -101,6 +107,7 @@ class Composer extends Component
     public function install(array $requirements, IOInterface $io = null)
     {
         App::maxPowerCaptain();
+        $this->backupComposerFiles();
 
         if ($io === null) {
             $io = new NullIO();
@@ -187,6 +194,7 @@ class Composer extends Component
     public function uninstall(array $packages, IOInterface $io = null)
     {
         App::maxPowerCaptain();
+        $this->backupComposerFiles();
 
         $packages = array_map('strtolower', $packages);
 
@@ -495,6 +503,31 @@ class Composer extends Component
 
         foreach ($classes as $class) {
             class_exists($class, true);
+        }
+    }
+
+    /**
+     * Backs up the composer.json and composer.lock files to `storage/composer-backups/`
+     */
+    protected function backupComposerFiles()
+    {
+        $backupsDir = Craft::$app->getPath()->getComposerBackupsPath();
+        $jsonBackupPath = $backupsDir . DIRECTORY_SEPARATOR . 'composer.json';
+        $lockBackupPath = $backupsDir . DIRECTORY_SEPARATOR . 'composer.lock';
+        FileHelper::cycle($jsonBackupPath, $this->maxBackups);
+        FileHelper::cycle($lockBackupPath, $this->maxBackups);
+
+        copy($this->getJsonPath(), $jsonBackupPath);
+
+        $lockPath = $this->getLockPath();
+        if (is_file($lockPath)) {
+            copy($lockPath, $lockBackupPath);
+        } else {
+            FileHelper::writeToFile($lockBackupPath, Json::encode([
+                '_readme' => [
+                    'No composer.lock file existed at the time of backup.',
+                ],
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         }
     }
 }
