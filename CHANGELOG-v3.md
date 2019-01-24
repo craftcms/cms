@@ -17,6 +17,7 @@
 - Fixed a bug where syncing Matrix field changes to the project config would result in new changes to the project config. ([#3695](https://github.com/craftcms/cms/issues/3695))
 - Fixed an error where indexing a volume with no files would result in an error.
 - Fixed a bug where soft-deleted assets would show up as missing after indexing.
+- Fixed a JavaScript error that could occur on the Settings → Plugins page.
 
 ## 3.1.3 - 2019-01-21
 
