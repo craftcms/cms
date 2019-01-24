@@ -184,6 +184,20 @@ class Connection extends \yii\db\Connection
     }
 
     /**
+     * Returns the path for a new backup file.
+     *
+     * @return string
+     */
+    public function getBackupFilePath(): string
+    {
+        // Determine the backup file path
+        $currentVersion = 'v' . Craft::$app->getVersion();
+        $systemName = FileHelper::sanitizeFilename($this->_getFixedSystemName(), ['asciiOnly' => true]);
+        $filename = ($systemName ? $systemName . '_' : '') . gmdate('ymd_His') . '_' . strtolower(StringHelper::randomString(10)) . '_' . $currentVersion . '.sql';
+        return Craft::$app->getPath()->getDbBackupPath() . '/' . mb_strtolower($filename);
+    }
+
+    /**
      * Performs a backup operation. If a `backupCommand` config setting has been set, will execute it. If not,
      * will execute the default database schema specific backup defined in `getDefaultBackupCommand()`, which uses
      * `pg_dump` for PostgreSQL and `mysqldump` for MySQL.
@@ -194,14 +208,8 @@ class Connection extends \yii\db\Connection
      */
     public function backup(): string
     {
-        // Determine the backup file path
-        $currentVersion = 'v' . Craft::$app->getVersion();
-        $systemName = FileHelper::sanitizeFilename($this->_getFixedSystemName(), ['asciiOnly' => true]);
-        $filename = ($systemName ? $systemName . '_' : '') . gmdate('ymd_His') . '_' . strtolower(StringHelper::randomString(10)) . '_' . $currentVersion . '.sql';
-        $file = Craft::$app->getPath()->getDbBackupPath() . '/' . mb_strtolower($filename);
-
+        $file = $this->getBackupFilePath();
         $this->backupTo($file);
-
         return $file;
     }
 
