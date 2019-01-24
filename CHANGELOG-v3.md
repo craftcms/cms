@@ -5,6 +5,9 @@
 ### Added
 - Added `craft\helpers\App::phpConfigValueInBytes()`.
 
+### Changed
+- Craft no longer respects the `phpMaxMemoryLimit` config setting if PHP’s `memory_limit` setting is already set to `-1` (no limit).
+
 ## 3.0.37 - 2019-01-08
 
 ### Added
