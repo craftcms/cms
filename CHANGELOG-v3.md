@@ -4,6 +4,7 @@
 
 ### Added
 - Added `craft\helpers\App::phpConfigValueInBytes()`.
+- Added `craft\helpers\FileHelper::cycle()`.
 
 ### Changed
 - Craft now attempts to disable PHP’s memory and time limits before running Composer operations.
