@@ -15,7 +15,7 @@ return [
     '1 week' => '1 週',
     '1 year' => '1 年',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>ライセンスの期限が切れました！</strong>有用なアップデートをもう 1 年受けられるよう、{name} のラインセンスを更新してください。',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>ブレークポイントに到達しました！</strong>今後のアップデートは {update} をインストールした後にご利用いただけます。</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>ブレークポイントに到達しました！</strong>今後のアップデートは {update} をインストールした後にご利用いただけます。',
     'A critical update is available.' => '重要なアップデートが利用可能です。',
     'A fatal error has occurred:' => '重大なエラーが発生しました:',
     'A file with the name “{filename}” already exists.' => '名前が「{filename}」のファイルがすでに存在しています。',

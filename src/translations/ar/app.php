@@ -15,7 +15,7 @@ return [
     '1 week' => '1 أسبوع',
     '1 year' => '1 سنة',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong dir="rtl">لقد انتهت صلاحية ترخيصك!</strong> جدد ترخيص {name} لعام آخر من التحديثات المذهلة.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong dir="rtl">لقد وصلت إلى نقطة توقف!</strong> ستتوافر المزيد من التحديثات بعد تثبيت {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong dir="rtl">لقد وصلت إلى نقطة توقف!</strong> ستتوافر المزيد من التحديثات بعد تثبيت {update}.',
     'A critical update is available.' => 'يتوفر تحديث هام.',
     'A fatal error has occurred:' => 'حدث خطأ جسيم:',
     'A file with the name “{filename}” already exists.' => 'يوجد بالفعل ملف بالاسم "{filename}".',

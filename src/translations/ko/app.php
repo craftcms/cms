@@ -15,7 +15,7 @@ return [
     '1 week' => '1주',
     '1 year' => '1년',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>라이선스가 만료되었습니다!</strong> {name} 라이선스를 갱신하여 년간 우수한 업데이트를 제공받으십시오.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>중단점에 도달했습니다!</strong> {update}을(를) 설치하면 추가 업데이트가 제공됩니다.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>중단점에 도달했습니다!</strong> {update}을(를) 설치하면 추가 업데이트가 제공됩니다.',
     'A critical update is available.' => '중요 업데이트가 있습니다.',
     'A fatal error has occurred:' => '치명적인 오류가 발생했습니다.',
     'A file with the name “{filename}” already exists.' => '이름이 “{filename}”인 파일이 이미 있습니다.',
