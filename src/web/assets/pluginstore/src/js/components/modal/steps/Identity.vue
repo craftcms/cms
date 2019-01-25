@@ -23,7 +23,7 @@
                 <p><label><input type="radio" value="guest" v-model="identityMode" /> {{ "Continue as guest"|t('app') }}</label></p>
 
                 <template v-if="identityMode === 'guest'">
-                    <text-field class="text" id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError"></text-field>
+                    <text-field id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError" />
                     <input type="submit" :value="'Continue'|t('app')" class="btn submit" :disabled="(!validates || loading)" :class="{ disabled: (!validates || loading) }" />
                 </template>
 
