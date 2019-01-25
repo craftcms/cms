@@ -1253,10 +1253,12 @@ body.rtl .chars-left { margin: -24px 0 0 7px ; }
 .field > .heading > label > .site { display: inline-block; border-radius: 2px; padding: 0 4px; font-size: 11px; color: #8f98a3; background: #f1f5f8; }
 body.ltr .field > .heading > label > .site { margin-left: 7px; }
 body.rtl .field > .heading > label > .site { margin-right: 7px; }
-.field > .warning { margin: 2px 0 0; }
-.field > .warning:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; content: 'alert'; }
-body.ltr .field > .warning:before { margin: -2px 2px 0 0 ; }
-body.rtl .field > .warning:before { margin: -2px 0 0 2px ; }
+.field > .notice, .field > .warning { margin: 2px 0 0; }
+.field > .notice:before, .field > .warning:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; width: 1em; }
+body.ltr .field > .notice:before, body.ltr .field > .warning:before { margin: -2px 2px 0 0 ; }
+body.rtl .field > .notice:before, body.rtl .field > .warning:before { margin: -2px 0 0 2px ; }
+.field > .notice.notice:before, .field > .warning.notice:before { content: 'lightbulb'; }
+.field > .notice.warning:before, .field > .warning.warning:before { content: 'alert'; }
 .field > .input { position: relative; }
 .field > .input:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
 

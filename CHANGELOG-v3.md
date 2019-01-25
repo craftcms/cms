@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Control Panel form fields can now be configured with a `tip` property, which will be displayed below the field.
+
 ### Fixed
 - Fixed a bug where the “Duplicate” action wasn’n available on the Entries index page for non-admin users. ([#3705](https://github.com/craftcms/cms/issues/3705))
 - Fixed a bug where it wasn’t possible to rename an asset’s filename from the Assets index page. ([#3707](https://github.com/craftcms/cms/issues/3707))
