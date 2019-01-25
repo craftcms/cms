@@ -10,7 +10,7 @@ You can run all of the updates (Craft, all plugin updates available) using the U
 
 ## Updating from the Terminal
 
-Craft 3.0.38 introduced a new `update` console command that can be used to update Craft and plugins as well.
+Craft 3.0.38 and 3.1.4 introduced a new `update` console command that can be used to update Craft and plugins.
 
 To see available updates, go to your Craft project in your terminal and run this command:
 
@@ -18,7 +18,7 @@ To see available updates, go to your Craft project in your terminal and run this
 ./craft update
 ```
 
-A list of available updates will be displayed.
+![An example interaction with the `update` command.](./images/cli-update-info.png)
 
 To update everything all at once, run this command:
 
@@ -31,6 +31,8 @@ To update a specific thing, replace `all` with its handle (either `craft` to upd
 ```bash
 ./craft update element-api
 ```
+
+![An example interaction with the `update <handle>` command.](./images/cli-update-plugin.png)
 
 You can also pass multiple handles in at once:
 
