@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where renaming an asset file was impossible using the element action. ([#3707](https://github.com/craftcms/cms/issues/3707))
+
 ## 3.1.4 - 2019-01-24
 
 ### Added
