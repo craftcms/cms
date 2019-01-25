@@ -185,11 +185,11 @@ class App
      * @param string $var The PHP config setting to retrieve.
      * @return int The value normalized into bytes.
      */
-    public static function phpConfigValueInBytes(string $var): int
+    public static function phpConfigValueInBytes(string $var): float
     {
         $value = trim(ini_get($var));
         $unit = strtolower(substr($value, -1, 1));
-        $value = (int)$value;
+        $value = (float)$value;
 
         switch ($unit) {
             case 'g':
