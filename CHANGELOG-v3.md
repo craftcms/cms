@@ -3,22 +3,25 @@
 ## Unreleased
 
 ### Added
+- Added all the things that came in [Craft 3.0.38](https://github.com/craftcms/cms/blob/master/CHANGELOG-v3.md#3038---2019-01-24).
 - The System Name setting can now be set to an environment variable. ([#3529](https://github.com/craftcms/cms/issues/3529))
+- Added the `index-assets/one` console command, which can now be used to index a single subfolder.
 - Added `craft\base\ApplicationTrait::getSystemName()`.
-- The `index-assets/one` console command can now be used to index a subfolder using the `craft index-assets/one handle/path/to/folder` syntax.
 
 ### Changed
-- URLs are no longer allowed in a user’s first or last names.
 - Craft now ensures that installed schema versions match the schema versions in `project.yaml` before syncing project config changes.
-- The `project-config/sync` console command now exits if there are pending Craft or plugin migrations.
+- The `project-config/sync` console command now bails if there are pending Craft or plugin migrations.
 
 ### Fixed
 - Fixed a bug where `site` translations were falling back to English if the translated message was identical to the source message. ([#3692](https://github.com/craftcms/cms/issues/3692))
 - Fixed a bug where syncing Matrix field changes to the project config would result in new changes to the project config. ([#3695](https://github.com/craftcms/cms/issues/3695))
-- Fixed an error where indexing a volume with no files would result in an error.
+- Fixed an error that occurred when indexing assets in an empty volume.
 - Fixed a bug where soft-deleted assets would show up as missing after indexing.
 - Fixed a JavaScript error that could occur on the Settings → Plugins page.
 - Fixed a bug where `Craft::parseEnv()` was throwing an `InvalidConfigException` if the given string began with `@` but was not an alias. ([#3700](https://github.com/craftcms/cms/issues/3700))
+
+### Security
+- URLs are no longer allowed in users’ first or last names.
 
 ## 3.1.3 - 2019-01-21
 
