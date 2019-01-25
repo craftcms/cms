@@ -15,7 +15,7 @@ return [
     '1 week' => '1 שבוע',
     '1 year' => '1 שנה',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong dir="rtl">תוקף הרישיון שלך פג!</strong> חדש את רשיון {name} שלך לשנה נוספת של עדכונים מדהימים.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong dir="rtl">הגעת לנקודת עצירה!</strong> עדכונים נוספים יהיו זמינים לאחר התקנת {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong dir="rtl">הגעת לנקודת עצירה!</strong> עדכונים נוספים יהיו זמינים לאחר התקנת {update}.',
     'A critical update is available.' => 'עדכון קריטי זמין',
     'A fatal error has occurred:' => 'אירעה טעות חמורה',
     'A file with the name “{filename}” already exists.' => 'קובץ בשם "{filename}" כבר קיים.',

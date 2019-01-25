@@ -1,5 +1,29 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.38 - 2019-01-24
+
+### Added
+- Added the `update` command, which can be used to [update Craft from the terminal](https://docs.craftcms.com/v3/updating.html#updating-from-the-terminal).
+- Craft now warns if PHP is running in Safe Mode with a [max_execution_time](http://php.net/manual/en/info.configuration.php#ini.max-execution-time) of less than 120 seconds, before performing Composer operations.
+- Craft now stores backups of `composer.json` and `composer.lock` files in `storage/composer-backups/` before running Composer operations.
+- Added `craft\db\Connection::getBackupFilePath()`.
+- Added `craft\helpers\App::phpConfigValueInBytes()`.
+- Added `craft\helpers\Console::isColorEnabled()`.
+- Added `craft\helpers\Console::outputCommand()`.
+- Added `craft\helpers\Console::outputWarning()`.
+- Added `craft\helpers\FileHelper::cycle()`.
+- Added `craft\services\Composer::$maxBackups`.
+- Added `craft\services\Path::getComposerBackupsPath()`.
+
+### Changed
+- The `migrate/all` console command now supports a `--no-content` argument that can be passed to ignore pending content migrations.
+- Craft now attempts to disable PHP’s memory and time limits before running Composer operations.
+- Craft no longer respects the `phpMaxMemoryLimit` config setting if PHP’s `memory_limit` setting is already set to `-1` (no limit).
+- Craft now respects Composer’s [classmap-authoritative](https://getcomposer.org/doc/06-config.md#classmap-authoritative) config setting.
+- Craft now links to the [Troubleshooting Failed Updates](https://craftcms.com/guides/failed-updates) guide when an update fails.
+- `craft\services\Composer::install()` can now behave like the `composer install` command, if `$requirements` is `null`.
+- `craft\services\Composer::install()` now has a `$whitelist` argument, which can be set to an array of packages to whitelist, or `false` to disable the whitelist.
+
 ## 3.0.37 - 2019-01-08
 
 ### Added

@@ -15,7 +15,7 @@ return [
     '1 week' => '1 týždeň',
     '1 year' => '1 rok',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Platnosť licencie vypršala.</strong> Obnovte licenciu {name} na ďalší rok a získate úžasné aktualizácie.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>Dosiahli ste zlomový bod!</strong> Ďalšie aktualizácie sa sprístupnia po inštalácii aktualizácie {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Dosiahli ste zlomový bod!</strong> Ďalšie aktualizácie sa sprístupnia po inštalácii aktualizácie {update}.',
     'A critical update is available.' => 'Je k dispozícii dôležitá aktualizácia.',
     'A fatal error has occurred:' => 'Došlo k závažnej chybe:',
     'A file with the name “{filename}” already exists.' => 'Súbor s názvom {filename} už existuje.',

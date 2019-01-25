@@ -15,7 +15,7 @@ return [
     '1 week' => '1 hét',
     '1 year' => '1 év',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Lejárt a licenced!</strong> Újítsd meg {name} licenced további egy évre a lenyűgöző frissítésekhez.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>Fordulóponthoz érkeztél!</strong> További frissítések a következő telepítése után lesznek elérhetők: {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Fordulóponthoz érkeztél!</strong> További frissítések a következő telepítése után lesznek elérhetők: {update}.',
     'A critical update is available.' => 'Kritikus frissítés érhető el.',
     'A fatal error has occurred:' => 'Végzetes hiba jelentkezett:',
     'A file with the name “{filename}” already exists.' => 'Már van {filename} nevű fájl.',

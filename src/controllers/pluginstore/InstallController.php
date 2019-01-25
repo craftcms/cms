@@ -111,10 +111,8 @@ class InstallController extends BaseUpdaterController
                     ]),
                     $this->actionOption(Craft::t('app', 'Remove it'), self::ACTION_COMPOSER_REMOVE),
                     [
-                        'label' => Craft::t('app', 'Send for help'),
-                        'submit' => true,
-                        'email' => $email,
-                        'subject' => $pluginName . ' update failure',
+                        'label' => Craft::t('app', 'Troubleshoot'),
+                        'url' => 'https://craftcms.com/guides/failed-updates',
                     ],
                 ],
             ]);
