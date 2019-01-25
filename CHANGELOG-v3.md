@@ -18,6 +18,7 @@
 - Fixed an error where indexing a volume with no files would result in an error.
 - Fixed a bug where soft-deleted assets would show up as missing after indexing.
 - Fixed a JavaScript error that could occur on the Settings → Plugins page.
+- Fixed a bug where `Craft::parseEnv()` was throwing an `InvalidConfigException` if the given string began with `@` but was not an alias. ([#3700](https://github.com/craftcms/cms/issues/3700))
 
 ## 3.1.3 - 2019-01-21
 

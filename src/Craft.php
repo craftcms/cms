@@ -82,7 +82,7 @@ class Craft extends Yii
             $str = getenv($matches[1]) ?: $str;
         }
 
-        return static::getAlias($str);
+        return static::getAlias($str, false) ?: $str;
     }
 
     /**
