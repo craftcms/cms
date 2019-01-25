@@ -529,4 +529,25 @@ class FileHelper extends \yii\helpers\FileHelper
 
         return self::$_useFileLocks;
     }
+
+    /**
+     * Moves existing files down to `*.1`, `*.2`, etc.
+     *
+     * @param string $basePath The base path to the first file (sans `.X`)
+     * @param int $max The most files that can coexist before we should start deleting them
+     */
+    public static function cycle(string $basePath, int $max = 50)
+    {
+        // Go through all of them and move them forward.
+        for ($i = $max; $i > 0; $i--) {
+            $thisFile = $basePath . ($i == 1 ? '' : '.' . ($i - 1));
+            if (file_exists($thisFile)) {
+                if ($i === $max) {
+                    @unlink($thisFile);
+                } else {
+                    @rename($thisFile, "$basePath.$i");
+                }
+            }
+        }
+    }
 }

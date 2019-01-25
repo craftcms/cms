@@ -1,5 +1,28 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.1.4 - 2019-01-24
+
+### Added
+- Added all the things that came in [Craft 3.0.38](https://github.com/craftcms/cms/blob/master/CHANGELOG-v3.md#3038---2019-01-24).
+- The System Name setting can now be set to an environment variable. ([#3529](https://github.com/craftcms/cms/issues/3529))
+- Added the `index-assets/one` console command, which can now be used to index a single subfolder.
+- Added `craft\base\ApplicationTrait::getSystemName()`.
+
+### Changed
+- Craft now ensures that installed schema versions match the schema versions in `project.yaml` before syncing project config changes.
+- The `project-config/sync` console command now bails if there are pending Craft or plugin migrations.
+
+### Fixed
+- Fixed a bug where `site` translations were falling back to English if the translated message was identical to the source message. ([#3692](https://github.com/craftcms/cms/issues/3692))
+- Fixed a bug where syncing Matrix field changes to the project config would result in new changes to the project config. ([#3695](https://github.com/craftcms/cms/issues/3695))
+- Fixed an error that occurred when indexing assets in an empty volume.
+- Fixed a bug where soft-deleted assets would show up as missing after indexing.
+- Fixed a JavaScript error that could occur on the Settings → Plugins page.
+- Fixed a bug where `Craft::parseEnv()` was throwing an `InvalidConfigException` if the given string began with `@` but was not an alias. ([#3700](https://github.com/craftcms/cms/issues/3700))
+
+### Security
+- URLs are no longer allowed in users’ first or last names.
+
 ## 3.1.3 - 2019-01-21
 
 ### Added
@@ -254,6 +277,30 @@
 - The web and CLI installers no longer suggest `@web` for the site URL, and now attempt to save the entered site URL as a `DEFAULT_SITE_URL` environment variable in `.env`. ([#3559](https://github.com/craftcms/cms/issues/3559))
 - Craft now destroys all other sessions associated with a user account when a user changes their password.
 - It’s no longer possible to spoof Live Preview requests.
+
+## 3.0.38 - 2019-01-24
+
+### Added
+- Added the `update` command, which can be used to [update Craft from the terminal](https://docs.craftcms.com/v3/updating.html#updating-from-the-terminal).
+- Craft now warns if PHP is running in Safe Mode with a [max_execution_time](http://php.net/manual/en/info.configuration.php#ini.max-execution-time) of less than 120 seconds, before performing Composer operations.
+- Craft now stores backups of `composer.json` and `composer.lock` files in `storage/composer-backups/` before running Composer operations.
+- Added `craft\db\Connection::getBackupFilePath()`.
+- Added `craft\helpers\App::phpConfigValueInBytes()`.
+- Added `craft\helpers\Console::isColorEnabled()`.
+- Added `craft\helpers\Console::outputCommand()`.
+- Added `craft\helpers\Console::outputWarning()`.
+- Added `craft\helpers\FileHelper::cycle()`.
+- Added `craft\services\Composer::$maxBackups`.
+- Added `craft\services\Path::getComposerBackupsPath()`.
+
+### Changed
+- The `migrate/all` console command now supports a `--no-content` argument that can be passed to ignore pending content migrations.
+- Craft now attempts to disable PHP’s memory and time limits before running Composer operations.
+- Craft no longer respects the `phpMaxMemoryLimit` config setting if PHP’s `memory_limit` setting is already set to `-1` (no limit).
+- Craft now respects Composer’s [classmap-authoritative](https://getcomposer.org/doc/06-config.md#classmap-authoritative) config setting.
+- Craft now links to the [Troubleshooting Failed Updates](https://craftcms.com/guides/failed-updates) guide when an update fails.
+- `craft\services\Composer::install()` can now behave like the `composer install` command, if `$requirements` is `null`.
+- `craft\services\Composer::install()` now has a `$whitelist` argument, which can be set to an array of packages to whitelist, or `false` to disable the whitelist.
 
 ## 3.0.37 - 2019-01-08
 

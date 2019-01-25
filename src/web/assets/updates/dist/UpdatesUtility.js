@@ -154,7 +154,7 @@
 
                 // Any ineligible releases?
                 if (this.updateInfo.status !== 'eligible') {
-                    $('<blockquote class="note ineligible"><p>'+this.updateInfo.statusText+'</p>').insertBefore(this.$releaseContainer);
+                    $('<blockquote class="note ineligible"><p>'+this.updateInfo.statusText+'</p></blockquote>').insertBefore(this.$releaseContainer);
 
                     if (this.updateInfo.status === 'expired' || this.updateInfo.latestVersion === null) {
                         this.updatesPage.showUpdateAllBtn = false;

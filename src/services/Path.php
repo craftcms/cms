@@ -100,6 +100,25 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the `storage/composer-backups/` directory.
+     *
+     * @param bool $create Whether the directory should be created if it doesn't exist
+     * @return string
+     * @throws Exception
+     */
+    public function getComposerBackupsPath(bool $create = true): string
+    {
+        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'composer-backups';
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+            $this->_createGitignore($path);
+        }
+
+        return $path;
+    }
+
+    /**
      * Returns the path to the `storage/configs/` directory.
      *
      * @param bool $create Whether the directory should be created if it doesn't exist

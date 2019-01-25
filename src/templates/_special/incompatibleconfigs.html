@@ -2,6 +2,6 @@
 {% set title = "Unable to apply project.yaml changes"|t('app') %}
 
 {% block message %}
-<p>{{ 'Your `project.yaml` file was created for more recent versions of Craft and/or plugins than what’s currently installed.'|t('app')|md(inlineOnly=true) }}</p>
+<p>{{ 'Your `project.yaml` file was created for different versions of Craft and/or plugins than what’s currently installed.'|t('app')|md(inlineOnly=true) }}</p>
 <p>{{ 'Try running `composer install` from your terminal to resolve.'|t('app')|md(inlineOnly=true) }}</p>
 {% endblock %}

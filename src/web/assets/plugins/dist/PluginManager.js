@@ -185,6 +185,9 @@
             }
         }, {
             normalizeUserKey: function(key) {
+                if (typeof key !== 'string') {
+                    return '';
+                }
                 return key.replace(/.{4}/g, '$&-').substr(0, 29).toUpperCase();
             }
         }
