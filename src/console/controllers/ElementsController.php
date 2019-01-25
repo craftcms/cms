@@ -17,7 +17,7 @@ use craft\elements\Entry;
 use craft\elements\Category;
 
 /**
- * Bulk-save entries and categories
+ * Bulk-save entries and categories.
  */
 class ElementsController extends Controller
 {
