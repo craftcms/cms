@@ -8,13 +8,21 @@ All of your assets live in “volumes”. Volumes are storage containers. A volu
 
 You can manage your project’s volumes from Settings → Assets.
 
-All volumes let you choose whether the assets within them should have public URLs, and if so, what their **Base URL** should be. The Base URL can begin with an [alias](config/README.md#aliases) such as `@web`, which represents the URL to the directory that contains the `index.php` file. For example, if your local volume directory is located at `web/assets/images/`, you could set the Base URL to `@web/assets/images`.
+All volumes let you choose whether the assets within them should have public URLs, and if so, what their **base URL** should be.
+
+::: tip
+Volumes’ base URLs can be set to an environment variable, or begin with an alias. See [Environmental Configuration](config/environments.md) to learn more about that.
+:::
 
 ### Local Volumes
 
 Out of the box, you can create one type of volume, “Local”. Local volumes represent a directory on the local web server.
 
-Local volumes have one setting, **File System Path**. Use this setting to define the path to the volume’s root directory on the server. This path can begin with an [alias](config/README.md#aliases) such as `@webroot`, which represents the path to the directory that contains the `index.php` file. For example, if your local volume directory is located at `web/assets/images/`, you could set the File System Path to `@webroot/assets/images`.
+Local volumes have one setting, **File System Path**. Use this setting to define the path to the volume’s root directory on the server.
+
+::: tip
+Local volumes’ file system path can be set to an environment variable, or begin with an alias. See [Environmental Configuration](config/environments.md) to learn more about that.
+:::
 
 Note that Craft/PHP must be able to write to the directory you created.
 
