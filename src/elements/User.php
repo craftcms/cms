@@ -23,6 +23,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\UserGroup;
@@ -679,7 +680,11 @@ class User extends Element implements IdentityInterface
 
         $rules[] = [['firstName', 'lastName'], function ($attribute, $params, $validator) {
             $urlValidator = new YiiUrlValidator();
-            $urlValidator->pattern = '\b' . trim($urlValidator->pattern, '^$');
+            $lastSlash = strrpos($urlValidator->pattern, '/');
+            $pattern = StringHelper::substr($urlValidator->pattern, 1, $lastSlash - 1);
+            $modifiers = StringHelper::substr($urlValidator->pattern, $lastSlash + 1);
+            $urlValidator->pattern = '/\b' . trim($pattern, '^$') . '/' . $modifiers;
+
             if ($urlValidator->validate($this->$attribute)) {
                 $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
             }
