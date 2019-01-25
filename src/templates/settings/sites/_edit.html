@@ -62,9 +62,9 @@
             warning: languageWarning ?? null
         }) }}
 
-        {% if craft.app.isMultiSite or not site.id %}
+        {% if (craft.app.isMultiSite or not site.id) and not site.primary %}
             {{ forms.lightswitchField({
-                label: "Is this the primary site?"|t('app'),
+                label: "Make this the primary site?"|t('app'),
                 instructions: "The primary site will be loaded by default on the front end."|t('app'),
                 id: 'primary',
                 name: 'primary',
@@ -90,7 +90,8 @@
                 instructions: "The base URL for the site."|t('app'),
                 id: 'base-url',
                 class: 'ltr',
-                suggestions: craft.cp.getEnvSuggestions(true),
+                suggestEnvVars: true,
+                suggestAliases: true,
                 name: 'baseUrl',
                 value: site.originalBaseUrl ?: site.baseUrl,
                 errors: site.getErrors('baseUrl')

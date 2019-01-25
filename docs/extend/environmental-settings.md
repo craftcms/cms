@@ -72,14 +72,19 @@ To guide users when entering your setting’s value in the Control Panel, give y
     id: 'secret-key',
     name: 'secretKey',
     value: myModel.secretKey,
-    suggestions: craft.cp.getEnvSuggestions()
+    suggestEnvVars: true
 }) }}
 ```
 
-`craft.cp.getEnvSuggestions()` is a helper function that returns autosuggest data for all of the available environment variables.
+When `suggestEnvVars` is set to `true`, the autosuggest input will call <api:craft\web\twig\variables\Cp::getEnvSuggestions()> to get its suggestions, and a tip will show up below the form field advising the user that they can set the value to an environment variable.
 
-If your setting is for a URL or file system path, you can include [aliases](../config/README.md#aliases) in the autosuggest data as well by passing `includeAliases=true`.
+If your setting is for a URL or file system path, you should also set `suggestAliases` to `true`.
 
-```twig
-suggestions: craft.cp.getEnvSuggestions(includeAliases=true)
+```twig{4}
+{{ forms.autosuggestField({
+    // ...
+    suggestEnvVars: true,
+    suggestAliases: true
+}) }}
+suggestAliases: true
 ```

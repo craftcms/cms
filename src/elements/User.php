@@ -38,7 +38,6 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
-use yii\validators\UrlValidator as YiiUrlValidator;
 use yii\web\IdentityInterface;
 
 /**
@@ -678,9 +677,7 @@ class User extends Element implements IdentityInterface
         ];
 
         $rules[] = [['firstName', 'lastName'], function ($attribute, $params, $validator) {
-            $urlValidator = new YiiUrlValidator();
-            $urlValidator->pattern = '\b' . trim($urlValidator->pattern, '^$');
-            if ($urlValidator->validate($this->$attribute)) {
+            if (strpos($this->$attribute, '://') !== false) {
                 $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
             }
         }];
