@@ -3,9 +3,9 @@
 ## Unreleased
 
 ### Fixed
-- Fixed a bug where renaming an asset file was impossible using the element action. ([#3707](https://github.com/craftcms/cms/issues/3707))
-- Fixed a bug where saving user details would result in a PHP error.
-- Fixed a bug where it was impossible to apply project config changes. ([#3713](https://github.com/craftcms/cms/issues/3713))
+- Fixed a bug where it wasn’t possible to rename an asset’s filename from the Assets index page. ([#3707](https://github.com/craftcms/cms/issues/3707))
+- Fixed an error that occurred when saving a user that had a first or last name set.
+- Fixed a bug where it wasn’t possible to apply project config changes. ([#3713](https://github.com/craftcms/cms/issues/3713))
 
 ## 3.1.4 - 2019-01-24
 
