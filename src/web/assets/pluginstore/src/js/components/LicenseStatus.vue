@@ -1,5 +1,8 @@
 <template>
-    <div :class="'license-status ' + status" data-icon="check">{{ description }}</div>
+    <div :class="'c-btn block large outline license-status ' + status">
+        <icon icon="check"></icon>
+        {{ description }}
+    </div>
 </template>
 
 <script>
@@ -14,13 +17,8 @@
     @import "../../../../../../../lib/craftcms-sass/mixins";
 
     .license-status {
-        &:before {
-            border: 1px solid;
-            border-radius: 9px;
-            width: 17px;
-            height: 17px;
-            line-height: 17px;
-            margin-right: 5px;
+        &:hover {
+            cursor: default;
         }
 
         &.installed {

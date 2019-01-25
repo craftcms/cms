@@ -42,6 +42,10 @@ const getters = {
 
     isCmsEditionInCart(state) {
         return cmsEdition => {
+            if (!state.cart) {
+                return false
+            }
+
             return state.cart.lineItems.find(lineItem => lineItem.purchasable.type === 'cms-edition' && lineItem.purchasable.handle === cmsEdition)
         }
     },
@@ -455,13 +459,21 @@ const utils = {
                 }
 
                 case 'cms-edition': {
-                    lineItems.push({
+                    const item = {
                         type: lineItem.purchasable.type,
                         edition: lineItem.purchasable.handle,
-                        licenseKey: lineItem.options.licenseKey,
                         expiryDate: lineItem.options.expiryDate,
                         autoRenew: lineItem.options.autoRenew,
-                    })
+                    }
+
+                    let licenseKey = lineItem.options.licenseKey
+
+                    if (licenseKey && licenseKey.substr(0, 3) !== 'new') {
+                        item.licenseKey = licenseKey
+                    }
+
+                    lineItems.push(item)
+
                     break
                 }
             }
