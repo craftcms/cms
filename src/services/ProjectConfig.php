@@ -665,7 +665,7 @@ class ProjectConfig extends Component
         $existingSchema = (string)Craft::$app->schemaVersion;
 
         // Compare existing Craft schema version with the one that is being applied.
-        if (version_compare($existingSchema, $incomingSchema, '=')) {
+        if (!version_compare($existingSchema, $incomingSchema, '=')) {
             return false;
         }
 
@@ -677,7 +677,7 @@ class ProjectConfig extends Component
             $existingSchema = (string)$plugin->schemaVersion;
 
             // Compare existing plugin schema version with the one that is being applied.
-            if (version_compare($existingSchema, $incomingSchema, '=')) {
+            if ($incomingSchema && !version_compare($existingSchema, $incomingSchema, '=')) {
                 return false;
             }
         }
