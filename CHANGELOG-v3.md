@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.5 - 2019-01-25
 
 ### Changed
 - Control Panel settings that can be set to environment variables now show a tip about that if the value is not already set to an environment variable or alias.
