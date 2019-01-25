@@ -37,8 +37,8 @@ class ProjectConfigController extends Controller
         $updatesService = Craft::$app->getUpdates();
 
         if ($updatesService->getIsCraftDbMigrationNeeded() || $updatesService->getIsPluginDbUpdateNeeded()) {
-            $this->stdout('Craft has pending migrations. Please run `craft migrate/all` first.' . PHP_EOL, Console::FG_YELLOW);
-            return ExitCode::OK;
+            $this->stderr('Craft has pending migrations. Please run `craft migrate/all` first.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         // Any plugins need to be installed/uninstalled?
