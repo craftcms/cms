@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Fixed
+- Fixed a bug where the “Duplicate” action wasn’n available on the Entries index page for non-admin users. ([#3705](https://github.com/craftcms/cms/issues/3705))
 - Fixed a bug where it wasn’t possible to rename an asset’s filename from the Assets index page. ([#3707](https://github.com/craftcms/cms/issues/3707))
 - Fixed an error that occurred when saving a user that had a first or last name set.
 - Fixed a bug where it wasn’t possible to apply project config changes. ([#3713](https://github.com/craftcms/cms/issues/3713))
