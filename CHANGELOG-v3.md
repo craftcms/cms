@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.4 - 2019-01-24
 
 ### Added
 - Added all the things that came in [Craft 3.0.38](https://github.com/craftcms/cms/blob/master/CHANGELOG-v3.md#3038---2019-01-24).
