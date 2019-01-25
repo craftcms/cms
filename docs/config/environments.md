@@ -14,7 +14,7 @@ Some settings in the Control Panel can be set to environment variables (like the
   - **Base URL**
   - **File System Path** (Local)
 - Email
-  - **System Email Adddress**
+  - **System Email Address**
   - **Sender Name**
   - **HTML Email Template**
   - **Username** (Gmail and SMTP)
