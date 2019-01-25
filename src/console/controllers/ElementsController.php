@@ -126,7 +126,7 @@ class ElementsController extends Controller
                 $startAt++;
             }
 
-            $offset += 50;
+            $offset += $batchSize;
         }
 
         return ExitCode::OK;
