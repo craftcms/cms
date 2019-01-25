@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.38 - 2019-01-24
 
 ### Added
 - Added the `update` command, which can be used to [update Craft from the terminal](https://docs.craftcms.com/v3/updating.html#updating-from-the-terminal).
