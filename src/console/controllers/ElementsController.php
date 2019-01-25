@@ -54,7 +54,7 @@ class ElementsController extends Controller
     }
 
     /**
-     * Saves all entries in a specified section ($groupHandle, $startAt = 1, $batchSize = 50).
+     * Saves all categories in a specified group ($groupHandle, $startAt = 1, $batchSize = 50).
      *
      * @param string $groupHandle
      * @param int $startAt
@@ -68,7 +68,7 @@ class ElementsController extends Controller
     }
 
     /**
-     * Saves all entries across all sections ($startAt = 1, $batchSize = 50).
+     * Saves all categories across all groups ($startAt = 1, $batchSize = 50).
      *
      * @param int $startAt
      * @param int $batchSize
@@ -81,14 +81,15 @@ class ElementsController extends Controller
     }
 
     /**
-     * Saves all entries and all categories.
+     * Saves all entries and all categories ($batchSize = 50).
      *
+     * @param int $batchSize
      * @return int
      */
-    public function actionSaveAll(): int
+    public function actionSaveAll($batchSize = 50): int
     {
-        $this->actionSaveAllEntries();
-        $this->actionSaveAllCategories();
+        $this->actionSaveAllEntries(1, $batchSize);
+        $this->actionSaveAllCategories(1, $batchSize);
         return ExitCode::OK;
     }
 
