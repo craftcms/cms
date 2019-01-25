@@ -103,11 +103,11 @@ class Info extends Model
      * Returns the system name.
      *
      * @return string
-     * @deprecated in 3.1. Use `Craft::$app->projectConfig->get('system.name')` instead.
+     * @deprecated in 3.1. Use `Craft::$app->getSystemName()` instead.
      */
     public function getName(): string
     {
-        return Craft::$app->getProjectConfig()->get('system.name');
+        return Craft::$app->getSystemName();
     }
 
     /**

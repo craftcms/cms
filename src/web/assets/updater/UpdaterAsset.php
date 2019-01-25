@@ -51,6 +51,7 @@ class UpdaterAsset extends AssetBundle
                 'Status:',
                 'Response:',
                 'Send for help',
+                'Troubleshoot',
             ]);
         }
     }

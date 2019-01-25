@@ -3506,12 +3506,21 @@ textarea.text.fullwidth {
     }
   }
 
+  & > .notice,
   & > .warning {
     margin: 2px 0 0;
 
     &:before {
       @include margin(-2px, 2px, 0, 0);
       @include icon;
+      width: 1em;
+    }
+
+    &.notice:before {
+      content: 'lightbulb';
+    }
+
+    &.warning:before {
       content: 'alert';
     }
   }

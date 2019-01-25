@@ -21,10 +21,11 @@
     <input type="hidden" name="action" value="system-settings/save-general-settings">
     {{ redirectInput('settings') }}
 
-    {{ forms.textField({
+    {{ forms.autosuggestField({
         first: true,
         label: "System Name"|t('app'),
         id: 'name',
+        suggestEnvVars: true,
         name: 'name',
         value: system.name
     }) }}

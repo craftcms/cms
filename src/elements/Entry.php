@@ -357,7 +357,7 @@ class Entry extends Element
                 }
 
                 // Duplicate
-                if ($userSession->checkPermission('publishEntries:' . $section->id)) {
+                if ($userSession->checkPermission('publishEntries:' . $section->uid)) {
                     $actions[] = Duplicate::class;
 
                     if ($section->type === Section::TYPE_STRUCTURE && $section->maxLevels != 1) {
