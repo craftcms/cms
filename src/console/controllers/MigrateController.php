@@ -225,7 +225,7 @@ class MigrateController extends BaseMigrateController
         $db = Craft::$app->getDb();
 
         // Get the handles in need of an update
-        $handles = $updatesService->getPendingMigrationHandles(true);
+        $handles = $updatesService->getPendingMigrationHandles(!$this->noContent);
 
         // Anything to update?
         if (!empty($handles)) {
