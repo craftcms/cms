@@ -183,9 +183,9 @@ class App
      * Retrieves a disk size PHP config setting and normalizes it into bytes.
      *
      * @param string $var The PHP config setting to retrieve.
-     * @return int The value normalized into bytes.
+     * @return int|float The value normalized into bytes.
      */
-    public static function phpConfigValueInBytes(string $var): int
+    public static function phpConfigValueInBytes(string $var)
     {
         $value = trim(ini_get($var));
         $unit = strtolower(substr($value, -1, 1));
