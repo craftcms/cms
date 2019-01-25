@@ -112,15 +112,7 @@ class Path extends Component
 
         if ($create) {
             FileHelper::createDirectory($path);
-
-            // Add a .gitignore file in there if there isn't one
-            $gitignorePath = $path . DIRECTORY_SEPARATOR . '.gitignore';
-            if (!is_file($gitignorePath)) {
-                FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n", [
-                    // Prevent a segfault if this is called recursively
-                    'lock' => false,
-                ]);
-            }
+            $this->_createGitignore($path);
         }
 
         return $path;
