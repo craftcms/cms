@@ -22,6 +22,10 @@ p {
   @apply .mb-4;
 }
 
+.swiper-wrapper {
+  min-width: auto;
+}
+
 .ps-header {
   @apply .border-b .border-solid .border-grey-light .py-2 .flex .justify-between;
 }
