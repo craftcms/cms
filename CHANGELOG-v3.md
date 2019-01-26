@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug a bug where Plugin Store screenshots were not showing properly. ([#3709](https://github.com/craftcms/cms/issues/3709))
 ## 3.1.5 - 2019-01-25
 
 ### Changed
