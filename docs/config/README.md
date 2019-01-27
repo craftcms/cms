@@ -101,19 +101,13 @@ Then you can pull them into the alias definitions using [getenv()](http://php.ne
 When referencing aliases in your settings, you can append additional segments onto the URL or path. For example, you can set a volume’s base URL to `@assetBaseUrl/user-photos`.
 :::
 
-When using aliases in your templates, make sure you use the `alias()` function so Craft parses them and replaces them by their actual value.
-
-```php
-'aliases' => [
-    '@environment' => getenv('ENVIRONMENT'),
-],
-```
+::: tip
+You can parse aliases in your templates by passing them to the [alias()](../dev/functions.html#alias-string) function:
 
 ```twig
-{% if alias('@environment') == 'production' %}
-  {# include Google Analytics code #}
-{% endif %}
+{{ alias('@assetBaseUrl') }}
 ```
+:::
 
 ## Overriding Volume Settings
 
