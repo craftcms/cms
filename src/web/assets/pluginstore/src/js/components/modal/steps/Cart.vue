@@ -137,9 +137,9 @@
                                     <div class="plugin-name">
                                         <strong>{{ plugin.name }}</strong>
 
-                                        <div v-if="activeTrialPluginEditions[plugin.handle]" class="edition-badge">
+                                        <span v-if="activeTrialPluginEditions[plugin.handle] && plugin.editions.length > 1" class="edition-badge">
                                             {{activeTrialPluginEditions[plugin.handle].name}}
-                                        </div>
+                                        </span>
                                     </div>
                                 </td>
                                 <td><strong v-if="activeTrialPluginEditions[plugin.handle]">{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
@@ -336,12 +336,8 @@
     @import "../../../../../../../../../lib/craftcms-sass/mixins";
 
     .plugin-name {
-        strong {
-            @apply .block;
-        }
-
         .edition-badge {
-            @apply .mt-2;
+            @apply .ml-2;
         }
     }
 
