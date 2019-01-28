@@ -26,7 +26,10 @@
                                             <img :src="craftLogo" width="40" height="40" />
                                         </div>
                                     </td>
-                                    <td>Craft {{ item.lineItem.purchasable.name }}</td>
+                                    <td class="item-name">
+                                        <strong>Craft CMS</strong>
+                                        <span class="edition-badge">{{ item.lineItem.purchasable.name }}</span>
+                                    </td>
                                 </template>
 
                                 <template v-else-if="item.lineItem.purchasable.type === 'plugin-edition'">
@@ -36,7 +39,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="plugin-name">
+                                        <div class="item-name">
                                             <strong>{{ item.plugin.name}}</strong>
 
                                             <div class="edition-badge">
@@ -133,14 +136,12 @@
                                         <div class="default-icon" v-else></div>
                                     </div>
                                 </td>
-                                <td>
-                                    <div class="plugin-name">
-                                        <strong>{{ plugin.name }}</strong>
+                                <td class="item-name">
+                                    <strong>{{ plugin.name }}</strong>
 
-                                        <span v-if="activeTrialPluginEditions[plugin.handle] && plugin.editions.length > 1" class="edition-badge">
-                                            {{activeTrialPluginEditions[plugin.handle].name}}
-                                        </span>
-                                    </div>
+                                    <span v-if="activeTrialPluginEditions[plugin.handle] && plugin.editions.length > 1" class="edition-badge">
+                                        {{activeTrialPluginEditions[plugin.handle].name}}
+                                    </span>
                                 </td>
                                 <td><strong v-if="activeTrialPluginEditions[plugin.handle]">{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
                                 <td class="thin"><a class="btn" @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)">{{ "Add to cart"|t('app') }}</a></td>
@@ -335,7 +336,7 @@
 <style lang="scss" scoped>
     @import "../../../../../../../../../lib/craftcms-sass/mixins";
 
-    .plugin-name {
+    .item-name {
         .edition-badge {
             @apply .ml-2;
         }
