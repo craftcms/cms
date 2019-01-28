@@ -1018,7 +1018,9 @@ class Plugins extends Component
      */
     public function setPluginLicenseKeyStatus(string $handle, string $licenseKeyStatus = null)
     {
-        if (($plugin = $this->getPlugin($handle)) === null) {
+        $pluginInfo = $this->getPluginInfo($handle);
+
+        if (!$pluginInfo['isInstalled']) {
             throw new InvalidPluginException($handle);
         }
 

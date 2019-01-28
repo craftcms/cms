@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- It’s now possible to update disabled plugins.
+
 ### Fixed
 - Fixed an error that could occur if PHP’s `memory_limit` was set to a higher size (in bytes) than `PHP_INT_MAX`. ([#3717](https://github.com/craftcms/cms/issues/3717))
 
