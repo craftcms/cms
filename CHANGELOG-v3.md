@@ -3,8 +3,8 @@
 ## Unreleased
 
 ### Fixed
-- Fixed a bug a bug where Plugin Store screenshots were not showing properly. ([#3709](https://github.com/craftcms/cms/issues/3709))
-- Fixed an error where using the console `index-assets/one` and  `index-assets/all` commands would create a `.` folder in each volume.
+- Fixed a bug a bug where plugin screenshots in teh Plugin Store were not rendering correctly. ([#3709](https://github.com/craftcms/cms/issues/3709))
+- Fixed an error where the `index-assets/one` and  `index-assets/all` console commands were creating `.` folders in each volume.
 
 ## 3.1.5 - 2019-01-25
 
