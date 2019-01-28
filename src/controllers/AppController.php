@@ -349,6 +349,7 @@ class AppController extends Controller
                     $pluginInfo = $pluginLicenseInfo['plugin'];
                     $result[$pluginInfo['handle']] = [
                         'edition' => $pluginLicenseInfo['edition'],
+                        'isComposerInstalled' => false,
                         'isInstalled' => false,
                         'isEnabled' => false,
                         'licenseKey' => $pluginLicenseInfo['key'],
@@ -372,6 +373,7 @@ class AppController extends Controller
         $info = Craft::$app->getPlugins()->getAllPluginInfo();
         foreach ($info as $handle => $pluginInfo) {
             $result[$handle] = [
+                'isComposerInstalled' => true,
                 'isInstalled' => $pluginInfo['isInstalled'],
                 'isEnabled' => $pluginInfo['isEnabled'],
                 'hasMultipleEditions' => $pluginInfo['hasMultipleEditions'],

@@ -6,6 +6,7 @@
 - Fixed an erroc that occurred when uing the `json_decode` filter. ([#3722](https://github.com/craftcms/cms/pull/3722))
 - Fixed a bug a bug where plugin screenshots in teh Plugin Store were not rendering correctly. ([#3709](https://github.com/craftcms/cms/issues/3709))
 - Fixed an error where the `index-assets/one` and  `index-assets/all` console commands were creating `.` folders in each volume.
+- Fixed a bug where the Settings → Plugins page was showing extra “Missing” rows for any unlicensed plugins that were Composer-installed but not Craft-installed. ([#3726](https://github.com/craftcms/cms/issues/3726))
 
 ## 3.1.5 - 2019-01-25
 
