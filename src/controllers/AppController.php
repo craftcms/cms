@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -101,11 +102,13 @@ class AppController extends Controller
             ];
 
             $pluginsService = Craft::$app->getPlugins();
-            foreach ($updates->plugins as $handle => $update) {
-                if (($plugin = $pluginsService->getPlugin($handle)) !== null) {
-                    /** @var Plugin $plugin */
-                    $res['updates']['plugins'][] = $this->_transformUpdate($allowUpdates, $update, $handle, $plugin->name);
+            foreach ($updates->plugins as $pluginHandle => $pluginUpdate) {
+                try {
+                    $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
+                } catch (InvalidPluginException $e) {
+                    continue;
                 }
+                $res['updates']['plugins'][] = $this->_transformUpdate($allowUpdates, $pluginUpdate, $pluginHandle, $pluginInfo['name']);
             }
         }
 

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- It’s now possible to update disabled plugins.
+
 ### Changed
 - `craft\web\Controller::requireAdmin()` now sends a 403 (Forbidden) response if the `allowAdminChanges` config setting has been set to `false`. ([#3728](https://github.com/craftcms/cms/issues/3728))
 
