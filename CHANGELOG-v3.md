@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- `craft\web\Controller::requireAdmin()` now sends a 403 (Forbidden) response if the `allowAdminChanges` config setting has been set to `false`. ([#3728](https://github.com/craftcms/cms/issues/3728))
+
 ### Fixed
 - Fixed an erroc that occurred when uing the `json_decode` filter. ([#3722](https://github.com/craftcms/cms/pull/3722))
 - Fixed a bug a bug where plugin screenshots in teh Plugin Store were not rendering correctly. ([#3709](https://github.com/craftcms/cms/issues/3709))
