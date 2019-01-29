@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that occured when creating a Table field with a Date column. ([#3748](https://github.com/craftcms/cms/issues/3748))
+
 ## 3.1.6 - 2019-01-29
 
 ### Added
