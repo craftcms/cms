@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.39 - 2019-01-29
+
+### Changed
+- It’s now possible to update disabled plugins.
+
+### Fixed
+- Fixed an error that could occur if PHP’s `memory_limit` was set to a higher size (in bytes) than `PHP_INT_MAX`. ([#3717](https://github.com/craftcms/cms/issues/3717))
+
 ## 3.0.38 - 2019-01-24
 
 ### Added
