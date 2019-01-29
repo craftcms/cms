@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => '站点“{site}”的系统设定尚未设置完毕，暂不能保存内容。',
     'You’re all up-to-date!' => '您已经更新到了最新版本！',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => '您当前运行的 Craft {edition} 使用 Craft {licensedEdition} 许可证。',
-    'account_activation_body' => '您好，{{user.friendlyName}}，感谢您创建 {{siteName}} 帐户！要激活帐户，请单击下面的链接: &lt;{{link}}&gt;如果不希望收到这封电子邮件，请予以忽略。',
+    'account_activation_body' => '您好，{{user.friendlyName}}，
+
+感谢您创建 {{siteName}} 帐户！要激活帐户，请单击下面的链接:
+
+<{{link}}>
+
+如果不希望收到这封电子邮件，请予以忽略。',
     'account_activation_heading' => '有人创建帐户时：',
     'account_activation_subject' => '激活您的帐户',
     'by {author}' => '作者 {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => '五个',
     'folders' => '文件夹',
     'folders and files' => '文件夹和文件',
-    'forgot_password_body' => '{{user.friendlyName}}，您好！要重置您的 {{siteName}} 密码，请单击此链接：&lt;{{link}}&gt;如果您无法识别此邮件，请忽略它。',
+    'forgot_password_body' => '{{user.friendlyName}}，
+
+您好！要重置您的 {{siteName}} 密码，请单击此链接：
+
+<{{link}}>
+
+如果您无法识别此邮件，请忽略它。',
     'forgot_password_heading' => '当用户忘记他们的密码时：',
     'forgot_password_subject' => '重置您的密码',
     'four' => '四',
@@ -1198,12 +1210,24 @@ return [
     'seconds' => '秒',
     'seven' => '七',
     'six' => '六',
-    'test_email_body' => '{{user.friendlyName}}，您好！祝贺您！Craft 已能成功发送邮件。这是您使用的设置：{{ settings }}',
+    'test_email_body' => '{{user.friendlyName}}，您好！
+
+祝贺您！Craft 已能成功发送邮件。
+
+这是您使用的设置：
+
+{{ settings }}',
     'test_email_heading' => '测试电子邮件设置时：',
     'test_email_subject' => '这是来自 Craft 的测试邮件',
     'three' => '三',
     'two' => '二',
-    'verify_new_email_body' => '{{user.friendlyName}}，您好！请单击下方链接验证您的新电子邮件地址：&lt;{{link}}&gt;如果您无法识别此邮件，请忽略它。',
+    'verify_new_email_body' => '{{user.friendlyName}}，您好！
+
+请单击下方链接验证您的新电子邮件地址：
+
+<{{link}}>
+
+如果您无法识别此邮件，请忽略它。',
     'verify_new_email_heading' => '当用户更改他们的电子邮件地址时：',
     'verify_new_email_subject' => '验证您的新电子邮件地址',
     'week' => '星期',
