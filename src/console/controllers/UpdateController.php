@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Composer\IO\BufferIO;
 use Craft;
 use craft\base\Plugin;
+use craft\errors\InvalidPluginException;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
@@ -109,13 +110,16 @@ class UpdateController extends Controller
 
         $pluginsService = Craft::$app->getPlugins();
 
-        foreach ($updates->plugins as $handle => $update) {
-            if (
-                $update->getHasReleases() &&
-                ($plugin = $pluginsService->getPlugin($handle)) !== null
-            ) {
-                /** @var Plugin $plugin */
-                $this->_outputUpdate($plugin->handle, $plugin->version, $update->getLatest()->version, $update->getHasCritical(), $update->status);
+        foreach ($updates->plugins as $pluginHandle => $pluginUpdate) {
+            if ($pluginUpdate->getHasReleases()) {
+                try {
+                    $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
+                } catch (InvalidPluginException $e) {
+                    continue;
+                }
+                if ($pluginInfo['isInstalled']) {
+                    $this->_outputUpdate($pluginHandle, $pluginInfo['version'], $pluginUpdate->getLatest()->version, $pluginUpdate->getHasCritical(), $pluginUpdate->status);
+                }
             }
         }
 
@@ -249,13 +253,16 @@ class UpdateController extends Controller
                 $this->_updateRequirements($requirements, $info, 'craft', Craft::$app->version, $latest->version, 'craftcms/cms', $updates->cms);
             }
 
-            foreach ($updates->plugins as $handle => $update) {
-                if (
-                    ($latest = $update->getLatest()) !== null &&
-                    ($plugin = $pluginsService->getPlugin($handle)) !== null
-                ) {
-                    /** @var Plugin $plugin */
-                    $this->_updateRequirements($requirements, $info, $handle, $plugin->version, $latest->version, $plugin->packageName, $update);
+            foreach ($updates->plugins as $pluginHandle => $pluginUpdate) {
+                if (($latest = $pluginUpdate->getLatest()) !== null) {
+                    try {
+                        $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
+                    } catch (InvalidPluginException $e) {
+                        continue;
+                    }
+                    if ($pluginInfo['isInstalled']) {
+                        $this->_updateRequirements($requirements, $info, $pluginHandle, $pluginInfo['version'], $latest->version, $pluginInfo['packageName'], $pluginUpdate);
+                    }
                 }
             }
         } else {
@@ -268,14 +275,21 @@ class UpdateController extends Controller
 
                 if ($handle === 'craft') {
                     $this->_updateRequirements($requirements, $info, $handle, Craft::$app->version, $to, 'craftcms/cms', $updates->cms);
-                } else if (
-                    isset($updates->plugins[$handle]) &&
-                    ($plugin = $pluginsService->getPlugin($handle)) !== null
-                ) {
-                    /** @var Plugin $plugin */
-                    $this->_updateRequirements($requirements, $info, $handle, $plugin->version, $to, $plugin->packageName, $updates->plugins[$handle]);
                 } else {
-                    $this->stdout('No plugin exists with the handle "' . $handle . '".' . PHP_EOL, Console::FG_RED);
+                    $pluginInfo = null;
+                    if (isset($updates->plugins[$handle])) {
+                        try {
+                            $pluginInfo = $pluginsService->getPluginInfo($handle);
+                        } catch (InvalidPluginException $e) {
+                        }
+                    }
+
+                    if ($pluginInfo === null || !$pluginInfo['isInstalled']) {
+                        $this->stdout('No plugin exists with the handle “' . $handle . '”.' . PHP_EOL, Console::FG_RED);
+                        continue;
+                    }
+
+                    $this->_updateRequirements($requirements, $info, $handle, $pluginInfo['version'], $to, $pluginInfo['packageName'], $updates->plugins[$handle]);
                 }
             }
         }

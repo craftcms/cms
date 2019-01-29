@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Votre système n’est pas paramétré pour enregistrer le contenu du site “{site}”.',
     'You’re all up-to-date!' => 'Vous être à jour!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Vous utilisez Craft {edition} avec une licence Craft {licensedEdition}.',
-    'account_activation_body' => 'Bonjour {{user.friendlyName}},Merci d’avoir créé un compte sur {{siteName}}! Pour activer ce compte, merci de cliquer sur le lien suivant :&lt;{{link}}&gt;Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
+    'account_activation_body' => 'Bonjour {{user.friendlyName}},
+
+Merci d’avoir créé un compte sur {{siteName}}! Pour activer ce compte, merci de cliquer sur le lien suivant :
+
+<{{link}}>
+
+Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
     'account_activation_heading' => 'Lorsqu\'un compte est créé :',
     'account_activation_subject' => 'Activez votre compte',
     'by {author}' => 'par {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => 'cinq',
     'folders' => 'dossiers',
     'folders and files' => 'dossiers et fichiers',
-    'forgot_password_body' => 'Bonjour {{user.friendlyName}},Pour réinitialiser votre mot de passe pour {{siteName}}, merci de cliquer sur le lien suivant :&lt;{{link}}&gt;Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
+    'forgot_password_body' => 'Bonjour {{user.friendlyName}},
+
+Pour réinitialiser votre mot de passe pour {{siteName}}, merci de cliquer sur le lien suivant :
+
+<{{link}}>
+
+Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
     'forgot_password_heading' => 'Lorsqu\'un mot de passe est oublié :',
     'forgot_password_subject' => 'Réinitialiser votre mot de passe',
     'four' => 'quatre',
@@ -1198,12 +1210,24 @@ return [
     'seconds' => 'secondes',
     'seven' => 'sept',
     'six' => 'six',
-    'test_email_body' => 'Bonjour {{user.friendlyName}},Félicitations! Craft a réussi à envoyer un courriel.Voici les paramètres que vous avez utilisés :{{ settings }}',
+    'test_email_body' => 'Bonjour {{user.friendlyName}},
+
+Félicitations! Craft a réussi à envoyer un courriel.
+
+Voici les paramètres que vous avez utilisés :
+
+{{ settings }}',
     'test_email_heading' => 'Quand vous testez vos paramètres de messagerie :',
     'test_email_subject' => 'Ceci est un courriel de test de la part de Craft',
     'three' => 'trois',
     'two' => 'deux',
-    'verify_new_email_body' => 'Bonjour {{user.friendlyName}},Merci de vérifier votre nouveau courriel en cliquant sur le lien suivant :&lt;{{link}}&gt;Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
+    'verify_new_email_body' => 'Bonjour {{user.friendlyName}},
+
+Merci de vérifier votre nouveau courriel en cliquant sur le lien suivant :
+
+<{{link}}>
+
+Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
     'verify_new_email_heading' => 'Lorsqu\'une adresse courriel est modifiée :',
     'verify_new_email_subject' => 'Vérifiez votre nouveau courriel',
     'week' => 'semaine',

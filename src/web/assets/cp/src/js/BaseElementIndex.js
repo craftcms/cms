@@ -1381,14 +1381,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             if (this.trashed || this.searching) {
-                if (!$option.hasClass('disabled')) {
-                    $option.addClass('disabled');
+                $option.addClass('disabled');
+                if (this.getSelectedSortAttribute() === 'structure') {
                     // Temporarily set the sort to the first option
                     var $firstOption = this.$sortAttributesList.find('a:not(.disabled):first')
                     this.setSortAttribute($firstOption.data('attr'));
                     this.setSortDirection('asc');
                 }
             } else {
+                $option.removeClass('disabled');
                 this.setStoredSortOptionsForSource();
             }
         },

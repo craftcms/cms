@@ -191,7 +191,12 @@ abstract class Controller extends \yii\web\Controller
 
         // Make sure they're an admin
         if (!Craft::$app->getUser()->getIsAdmin()) {
-            throw new ForbiddenHttpException('User is not permitted to perform this action');
+            throw new ForbiddenHttpException('User is not permitted to perform this action.');
+        }
+
+        // Make sure admin changes are allowed
+        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
         }
     }
 

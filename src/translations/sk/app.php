@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Váš systém nie je nastavený na ukladanie obsahu pre web {site}.',
     'You’re all up-to-date!' => 'Všetko je aktuálne!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Používate Craft {edition} s Craft {licensedEdition} licenciou.',
-    'account_activation_body' => 'Ahoj {{user.friendlyName}},Vďaka za vytvorenie účtu na {{siteName}}! Pre jeho aktiváciu prosím klikni na nasledujúci odkaz:&lt;{{link}}&gt;Ak si tento email neočakával, jednoducho ho ignoruj.',
+    'account_activation_body' => 'Ahoj {{user.friendlyName}},
+
+Vďaka za vytvorenie účtu na {{siteName}}! Pre jeho aktiváciu prosím klikni na nasledujúci odkaz:
+
+<{{link}}>
+
+Ak si tento email neočakával, jednoducho ho ignoruj.',
     'account_activation_heading' => 'Keď niekto vytvorí účet:',
     'account_activation_subject' => 'Aktivovať svoj účet',
     'by {author}' => 'od {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => 'päť',
     'folders' => 'adresáre',
     'folders and files' => 'adresáre a súbory',
-    'forgot_password_body' => 'Ahoj {{user.friendlyName}},Na obnovenie svojho {{siteName}} hesla, klikni na tento odkaz:&lt;{{link}}&gt;Ak si tento email neočakával, proste ho ignoruj.',
+    'forgot_password_body' => 'Ahoj {{user.friendlyName}},
+
+Na obnovenie svojho {{siteName}} hesla, klikni na tento odkaz:
+
+<{{link}}>
+
+Ak si tento email neočakával, proste ho ignoruj.',
     'forgot_password_heading' => 'Keď niekto zabudne svoje heslo:',
     'forgot_password_subject' => 'Obnoviť heslo',
     'four' => 'štyri',
@@ -1198,12 +1210,24 @@ return [
     'seconds' => 'sekundy',
     'seven' => 'sedem',
     'six' => 'šesť',
-    'test_email_body' => 'Ahoj {{user.friendlyName}},Gratulujem! Craft úspešne odoslal email.Tu sú použité nastavenia:{{ settings }}',
+    'test_email_body' => 'Ahoj {{user.friendlyName}},
+
+Gratulujem! Craft úspešne odoslal email.
+
+Tu sú použité nastavenia:
+
+{{ settings }}',
     'test_email_heading' => 'Keď testuješ svoje nastavenia emailu:',
     'test_email_subject' => 'Toto je testovací email od Craft',
     'three' => 'tri',
     'two' => 'dva',
-    'verify_new_email_body' => 'Ahoj {{user.friendlyName}},Prosím, potvrď svoju novú emailovú adresu kliknutím na tento odkaz:&lt;{{link}}&gt;Ak si tento email neočakával, jednoducho ho ignoruj.',
+    'verify_new_email_body' => 'Ahoj {{user.friendlyName}},
+
+Prosím, potvrď svoju novú emailovú adresu kliknutím na tento odkaz:
+
+<{{link}}>
+
+Ak si tento email neočakával, jednoducho ho ignoruj.',
     'verify_new_email_heading' => 'Keď niekto zmení svoju emailovú adresu:',
     'verify_new_email_subject' => 'Overiť novú emailovú adresu',
     'week' => 'týždeň',
