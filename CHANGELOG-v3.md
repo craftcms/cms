@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.39 - 2019-01-29
 
 ### Changed
 - It’s now possible to update disabled plugins.
