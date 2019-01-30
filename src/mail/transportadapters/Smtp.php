@@ -83,7 +83,7 @@ class Smtp extends BaseTransportAdapter
                     'username',
                     'password',
                 ],
-            ]
+            ],
         ];
     }
 
