@@ -4,6 +4,7 @@
 
 ### Changed
 - `craft\web\Controller::requireAdmin()` now has a `$requireAdminChanges` argument, which dictates whether the `allowAdminChanges` config setting must also be enabled (`true` by default).
+- The `project-config/sync` console command now creates a `project.yaml` file, if it's missing. ([#3736](https://github.com/craftcms/cms/issues/3736))
 
 ### Fixed
 - Fixed a bug where cross-domain Live Preview requests could fail due to CORS restrictions.
