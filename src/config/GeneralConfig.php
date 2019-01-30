@@ -445,10 +445,21 @@ class GeneralConfig extends BaseObject
      * `page` | `/news/page5`
      * `page/` | `/news/page/5`
      * `?page` | `/news?page=5`
+     *
+     * ::: tip
+     * If you want to set this to `?p` (e.g. `/news?p=5`), you will need to change your [[$pathParam]] setting as well,
+     * which is set to `p` by default, and if your server is running Apache, you will need to update the redirect code
+     * in your `.htaccess` file to match your new `pathParam` value.
+     * :::
      */
     public $pageTrigger = 'p';
     /**
      * @var string The query string param that Craft will check when determining the request's path.
+     *
+     * ::: tip
+     * If you change this and your server is running Apache, don’t forget to update the redirect code in your
+     * `.htaccess` file to match the new value.
+     * :::
      */
     public $pathParam = 'p';
     /**
