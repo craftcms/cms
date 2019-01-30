@@ -11,6 +11,7 @@
 - Fixed an error that occurred when updating to Craft 3.1 if a plugin or module was calling `craft\records\User::find()`.
 - Fixed a bug where cross-domain Live Preview requests could fail due to CORS restrictions.
 - Fixed a 403 error that would occur when an admin attempted to log in as another user on an environment where the `allowAdminChanges` config setting was disabled. ([#3749](https://github.com/craftcms/cms/issues/3749))
+- Fixed a bug where asset index toolbar items would be misaligned when searching in a volume or folder with subfolders.
 
 ## 3.1.6.1 - 2019-01-29
 
