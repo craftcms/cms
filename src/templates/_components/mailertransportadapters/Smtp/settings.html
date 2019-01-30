@@ -10,12 +10,13 @@
     errors: adapter.getErrors('host')
 }) }}
 
-{{ forms.textField({
+{{ forms.autosuggestField({
     label: "Port"|t('app'),
     id: 'port',
     name: 'port',
+    suggestEnvVars: true,
     value: adapter.port,
-    size: 4,
+    size: 20,
     required: true,
     errors: adapter.getErrors('port')
 }) }}
