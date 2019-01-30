@@ -24,7 +24,7 @@ Possible values include:
 | `['or', '< 2018-04-04', '> 2018-05-01']` | that have a date selected before 2018-04-01 or after 2018-05-01.
 
 ```twig
-{# Fetch entries with with a selecetd date in the next month #}
+{# Fetch entries with with a selected date in the next month #}
 {% set start = now|atom %}
 {% set end = now|date_modify('+1 month')|atom %}
 
@@ -67,7 +67,7 @@ Craft and Twig provide several Twig filters for manipulating dates, which you ca
 
 If you have an [entry form](dev/examples/entry-form.md) that needs to contain a Date/Time field, you can create a `date` or `datetime-local` input.
 
-If you just the user to be able to select a date, use a `date` input:
+If you just want the user to be able to select a date, use a `date` input:
 
 ```twig
 {% set currentValue = entry is defined and entry.<FieldHandle>
