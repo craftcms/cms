@@ -510,7 +510,7 @@ class DashboardController extends Controller
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => [
-                    'Support' => $e->getMessage()
+                    'Support' => [$e->getMessage()]
                 ]
             ]);
         }
