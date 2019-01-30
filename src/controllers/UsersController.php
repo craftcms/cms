@@ -166,7 +166,7 @@ class UsersController extends Controller
     public function actionImpersonate()
     {
         $this->requireLogin();
-        $this->requireAdmin();
+        $this->requireAdmin(false);
         $this->requirePostRequest();
 
         $userSession = Craft::$app->getUser();

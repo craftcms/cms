@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+### Changed
+- `craft\web\Controller::requireAdmin()` now has a `$requireAdminChanges` argument, which dictates whether the `allowAdminChanges` config setting must also be enabled (`true` by default).
+
 ### Fixed
 - Fixed a bug where cross-domain Live Preview requests could fail due to CORS restrictions.
+- Fixed a 403 error that would occur when an admin attempted to log in as another user on an environment where the `allowAdminChanges` config setting was disabled. ([#3749](https://github.com/craftcms/cms/issues/3749))
 
 ## 3.1.6.1 - 2019-01-29
 

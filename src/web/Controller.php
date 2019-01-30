@@ -182,9 +182,11 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 403 error if the current user is not an admin.
      *
+     * @param bool $requireAdminChanges Whether the [[\craft\config\GeneralConfig::$allowAdminChanges|`allowAdminChanges`]]
+     * config setting must also be enabled.
      * @throws ForbiddenHttpException if the current user is not an admin
      */
-    public function requireAdmin()
+    public function requireAdmin(bool $requireAdminChanges = true)
     {
         // First make sure someone's actually logged in
         $this->requireLogin();
@@ -195,7 +197,7 @@ abstract class Controller extends \yii\web\Controller
         }
 
         // Make sure admin changes are allowed
-        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+        if ($requireAdminChanges && !Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
             throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
         }
     }
