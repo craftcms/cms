@@ -438,6 +438,13 @@ class GeneralConfig extends BaseObject
     /**
      * @var string The string preceding a number which Craft will look for when determining if the current request is for a
      * particular page in a paginated list of pages.
+     *
+     * Example Value | Example URI
+     * ------------- | -----------
+     * `p` | `/news/p5`
+     * `page` | `/news/page5`
+     * `page/` | `/news/page/5`
+     * `?page` | `/news?page=5`
      */
     public $pageTrigger = 'p';
     /**
