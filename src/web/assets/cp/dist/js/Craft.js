@@ -1,4 +1,4 @@
-/*!   - 2019-01-28 */
+/*!   - 2019-01-29 */
 (function($){
 
 /** global: Craft */
@@ -15891,7 +15891,7 @@ Craft.LivePreview = Garnish.Base.extend(
                 this._scrollY = $doc ? $doc.scrollTop() : 0;
 
                 $.ajax({
-                    url: this.previewUrl,
+                    url: this.previewUrl + (this.previewUrl.indexOf('?') !== -1 ? '&' : '?') + Craft.tokenParam + '=' + this.token,
                     method: 'POST',
                     data: $.extend({}, postData, this.basePostData),
                     headers: {

@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where cross-domain Live Preview requests could fail due to CORS restrictions.
+
 ## 3.1.6.1 - 2019-01-29
 
 ### Fixed

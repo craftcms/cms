@@ -99,7 +99,8 @@ class LivePreviewController extends Controller
         // Add CORS headers
         Craft::$app->getResponse()->getHeaders()
             ->add('Access-Control-Allow-Origin', Craft::$app->getRequest()->getOrigin())
-            ->add('Access-Control-Allow-Credentials', 'true');
+            ->add('Access-Control-Allow-Credentials', 'true')
+            ->add('Access-Control-Allow-Headers', 'X-Craft-Token');
 
         return Craft::$app->runAction($previewAction);
     }

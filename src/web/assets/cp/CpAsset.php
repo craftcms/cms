@@ -267,6 +267,7 @@ JS;
             'systemUid' => Craft::$app->getSystemUid(),
             'timepickerOptions' => $this->_timepickerOptions($locale, $orientation),
             'timezone' => Craft::$app->getTimeZone(),
+            'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
             'useCompressedJs' => (bool)$generalConfig->useCompressedJs,
             'usePathInfo' => (bool)$generalConfig->usePathInfo,
