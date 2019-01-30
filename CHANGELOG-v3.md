@@ -9,6 +9,7 @@
 ### Fixed
 - Fixed a bug where cross-domain Live Preview requests could fail due to CORS restrictions.
 - Fixed a 403 error that would occur when an admin attempted to log in as another user on an environment where the `allowAdminChanges` config setting was disabled. ([#3749](https://github.com/craftcms/cms/issues/3749))
+- Fixed a bug that would prevent updating to 3.1 if the `Blitz` plugin was installed. 
 
 ## 3.1.6.1 - 2019-01-29
 

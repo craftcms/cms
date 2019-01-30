@@ -7,6 +7,7 @@
 
 namespace craft\records;
 
+use Craft;
 use craft\db\ActiveRecord;
 use craft\db\Table;
 use yii\db\ActiveQuery;
@@ -63,9 +64,16 @@ class User extends ActiveRecord
      */
     public static function find()
     {
-        return parent::find()
-            ->innerJoinWith(['element element'])
-            ->where(['element.dateDeleted' => null]);
+        $query = parent::find()
+            ->innerJoinWith(['element element']);
+
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.1.19', '>=')) {
+            $query->where(['element.dateDeleted' => null]);
+        }
+
+        return $query;
     }
 
     /**
