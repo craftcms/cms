@@ -26,9 +26,9 @@
 - `craft\helpers\DateTimeHelper::toDateTime()` now supports passing an array with a `datetime` key, which will be handled the same way strings passed to the method are handled (except that the `datetime` key can be paired with a `timezone` key).
 
 ### Fixed
-- Fixed an erroc that occurred when uing the `json_decode` filter. ([#3722](https://github.com/craftcms/cms/pull/3722))
-- Fixed a bug a bug where plugin screenshots in teh Plugin Store were not rendering correctly. ([#3709](https://github.com/craftcms/cms/issues/3709))
-- Fixed an error where the `index-assets/one` and  `index-assets/all` console commands were creating `.` folders in each volume.
+- Fixed an error that occurred when using the `json_decode` filter. ([#3722](https://github.com/craftcms/cms/pull/3722))
+- Fixed a bug a bug where plugin screenshots in the Plugin Store were not rendering correctly. ([#3709](https://github.com/craftcms/cms/issues/3709))
+- Fixed an error where the `index-assets/one` and `index-assets/all` console commands were creating `.` folders in each volume.
 - Fixed a bug where the Settings → Plugins page was showing extra “Missing” rows for any unlicensed plugins that were Composer-installed but not Craft-installed. ([#3726](https://github.com/craftcms/cms/issues/3726))
 - Fixed an error that could occur when viewing trashed elements.
 - Fixed a bug where many system message translations were missing line breaks. ([#3737](https://github.com/craftcms/cms/issues/3737))
