@@ -12,6 +12,7 @@
 - Fixed a bug where cross-domain Live Preview requests could fail due to CORS restrictions.
 - Fixed a 403 error that would occur when an admin attempted to log in as another user on an environment where the `allowAdminChanges` config setting was disabled. ([#3749](https://github.com/craftcms/cms/issues/3749))
 - Fixed a bug where asset index toolbar items would be misaligned when searching in a volume or folder with subfolders.
+- Fixed a bug where asset indexes could show multiple view mode toggles if a different volume or subfolder was selected while at least one asset was checked. ([#3702](https://github.com/craftcms/cms/issues/3702))
 
 ## 3.1.6.1 - 2019-01-29
 

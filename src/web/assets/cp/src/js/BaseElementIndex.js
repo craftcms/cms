@@ -825,6 +825,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return false;
             }
 
+            // Hide action triggers if they're currently being shown
+            this.hideActionTriggers();
+
             this.$source = $source;
             this.sourceKey = $source.data('key');
             this.setInstanceState('selectedSource', this.sourceKey);
