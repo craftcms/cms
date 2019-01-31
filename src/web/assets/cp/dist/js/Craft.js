@@ -1,4 +1,4 @@
-/*!   - 2019-01-29 */
+/*!   - 2019-01-30 */
 (function($){
 
 /** global: Craft */
@@ -2512,6 +2512,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             if (this.$source && this.$source[0] && this.$source[0] === $source[0] && $source.data('key') === this.sourceKey) {
                 return false;
             }
+
+            // Hide action triggers if they're currently being shown
+            this.hideActionTriggers();
 
             this.$source = $source;
             this.sourceKey = $source.data('key');
