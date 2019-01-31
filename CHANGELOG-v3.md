@@ -7,6 +7,7 @@
 - `craft\web\Controller::requireAdmin()` now has a `$requireAdminChanges` argument, which dictates whether the `allowAdminChanges` config setting must also be enabled (`true` by default).
 - The `project-config/sync` console command now creates a `project.yaml` file, if it's missing. ([#3736](https://github.com/craftcms/cms/issues/3736))
 - Querying for active users no longer excludes locked users.
+- `craft\helpers\FileHelper::getMimeType()` now returns `application/x-yaml` for `.yaml` and `.yml` files.
 
 ### Fixed
 - Fixed an error that occurred when updating to Craft 3.1 if a plugin or module was calling `craft\records\User::find()`.
