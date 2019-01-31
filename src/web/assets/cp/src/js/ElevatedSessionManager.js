@@ -123,7 +123,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                         this.callback();
                     }
                     else {
-                        this.showPasswordError(Craft.t('app', 'Incorrect password.'));
+                        this.showPasswordError(response.message || Craft.t('app', 'Incorrect password.'));
                         Garnish.shake(this.passwordModal.$container);
                         this.focusPasswordInput();
                     }
