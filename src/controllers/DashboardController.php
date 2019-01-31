@@ -417,34 +417,11 @@ class DashboardController extends Controller
                 // Make a fresh database backup of the current schema/data. We want all data from all tables
                 // for debugging.
                 try {
-                    Craft::$app->getDb()->backup();
+                    $backupPath = Craft::$app->getDb()->backup();
+                    $zip->addFile($backupPath, pathinfo($backupPath, PATHINFO_BASENAME));
                 } catch (\Throwable $e) {
-                    Craft::warning('Error backing up database: ' . $e->getMessage(), __METHOD__);
-                    $getHelpModel->message .= "\n\n---\n\nError backing up database: " . $e->getMessage();
-                }
-
-                $backupPath = Craft::$app->getPath()->getDbBackupPath();
-                if (is_dir($backupPath)) {
-                    // Get the SQL files in there
-                    $backupFiles = FileHelper::findFiles($backupPath, [
-                        'only' => ['*.sql'],
-                        'recursive' => false
-                    ]);
-
-                    // Get the 3 most recent ones
-                    $backupTimes = [];
-                    foreach ($backupFiles as $backupFile) {
-                        $backupTimes[] = filemtime($backupFile);
-                    }
-                    array_multisort($backupTimes, SORT_DESC, $backupFiles);
-                    array_splice($backupFiles, 3);
-
-                    foreach ($backupFiles as $backupFile) {
-                        if (pathinfo($backupFile, PATHINFO_EXTENSION) !== 'sql') {
-                            continue;
-                        }
-                        $zip->addFile($backupFile, 'backups/' . pathinfo($backupFile, PATHINFO_BASENAME));
-                    }
+                    Craft::warning('Error adding database backup to support request: ' . $e->getMessage(), __METHOD__);
+                    $getHelpModel->message .= "\n\n---\n\nError adding database backup: " . $e->getMessage();
                 }
             }
 
