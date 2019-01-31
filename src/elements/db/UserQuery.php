@@ -635,7 +635,6 @@ class UserQuery extends ElementQuery
             case User::STATUS_ACTIVE:
                 return [
                     'users.suspended' => false,
-                    'users.locked' => false,
                     'users.pending' => false,
                 ];
             case User::STATUS_PENDING:
