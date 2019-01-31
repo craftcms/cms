@@ -102,14 +102,7 @@ abstract class BaseUpdaterController extends Controller
         $view->registerAssetBundle(UpdaterAsset::class);
 
         $this->data = $this->initialData();
-        $state = $this->initialState();
-        if (isset($state['nextAction'])) {
-            $this->data['postPrecheckState'] = $state;
-            $state = [
-                'nextAction' => self::ACTION_PRECHECK,
-                'status' => $this->actionStatus(self::ACTION_PRECHECK),
-            ];
-        }
+        $state = $this->realInitialState();
         $state['data'] = $this->_hashedData();
         $idJs = Json::encode($this->id);
         $stateJs = Json::encode($state);
@@ -129,15 +122,31 @@ abstract class BaseUpdaterController extends Controller
     {
         $postState = $this->data['postPrecheckState'];
 
-        if (App::phpConfigValueAsBool('safe_mode')) {
+        if (!App::testIniSet()) {
+            $errors = [];
+
             $timeLimit = (int)trim(ini_get('max_execution_time'));
             if ($timeLimit !== 0 && $timeLimit < 120) {
+                $errors[] = Craft::t('app', '{name} should be at least {value}.', [
+                    'name' => '`max_execution_time`',
+                    'value' => '`120`',
+                ]);
+            }
+
+            $memoryLimit = App::phpConfigValueInBytes('memory_limit');
+            if ($memoryLimit !== -1 && $memoryLimit < 1024 * 1024 * 256) {
+                $errors[] = Craft::t('app', '{name} should be at least {value}.', [
+                    'name' => '`memory_limit`',
+                    'value' => '`256M`',
+                ]);
+            }
+
+            if (!empty($errors)) {
+                $error = Craft::t('app', 'Please fix the following in your {file} file before proceeding:', ['file' => '`php.ini`']) .
+                    "\n\n" . implode("\n\n", $errors);
+
                 return $this->send([
-                    'error' => Craft::t('app', 'Please set {name} to at least {value} in your {file} file before proceeding.', [
-                        'name' => '`max_execution_time`',
-                        'value' => '120',
-                        'file' => '`php.ini`',
-                    ]),
+                    'error' => $error,
                     'options' => [
                         ['label' => Craft::t('app', 'Learn how'), 'url' => 'https://craftcms.com/guides/php-ini'],
                         $this->actionOption(Craft::t('app', 'Check again'), self::ACTION_PRECHECK),
@@ -157,7 +166,7 @@ abstract class BaseUpdaterController extends Controller
      */
     public function actionRecheckComposer(): Response
     {
-        return $this->send($this->initialState());
+        return $this->send($this->realInitialState());
     }
 
     /**
@@ -282,6 +291,29 @@ abstract class BaseUpdaterController extends Controller
      * @return array
      */
     abstract protected function initialState(): array;
+
+    /**
+     * Returns the real initial state for the updater JS.
+     *
+     * @param bool $force Whether to go through with the update even if Maintenance Mode is enabled
+     * @return array
+     */
+    final protected function realInitialState(bool $force = false): array
+    {
+        $state = $this->initialState($force);
+
+        // If there's nothing to do here, then no precheck is needed
+        if (!isset($state['nextAction'])) {
+            return $state;
+        }
+
+        // Store the "initial" state in a postPrecheckState, and make the real initial state the precheck
+        $this->data['postPrecheckState'] = $state;
+        return [
+            'nextAction' => self::ACTION_PRECHECK,
+            'status' => $this->actionStatus(self::ACTION_PRECHECK),
+        ];
+    }
 
     /**
      * Returns the state data for after [[actionComposerInstall()]] is done.
