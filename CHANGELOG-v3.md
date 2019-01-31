@@ -18,6 +18,7 @@
 ### Security
 - User accounts are now locked after multiple failed password attempts in current-password modals, per the `maxInvalidLogins` config setting.
 - Users are no longer signed out of active sessions when their account becomes locked.
+- Database backup/restore exception messages now redact the database password when using PostgreSQL.
 
 ## 3.1.6.1 - 2019-01-29
 
