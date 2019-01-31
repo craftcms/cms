@@ -374,7 +374,8 @@ class Api extends Component
         }
         if ($response->hasHeader('X-Craft-Plugin-License-Statuses')) {
             $pluginLicenseInfo = explode(',', $response->getHeaderLine('X-Craft-Plugin-License-Statuses'));
-            foreach ($pluginLicenseInfo as list($pluginHandle, $pluginLicenseStatus)) {
+            foreach ($pluginLicenseInfo as $info) {
+                list($pluginHandle, $pluginLicenseStatus) = explode(':', $info);
                 $pluginLicenseStatuses[$pluginHandle] = $pluginLicenseStatus;
             }
         }
