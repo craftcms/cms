@@ -141,8 +141,8 @@ class User extends Element implements IdentityInterface
         return [
             self::STATUS_ACTIVE => Craft::t('app', 'Active'),
             self::STATUS_PENDING => Craft::t('app', 'Pending'),
-            self::STATUS_LOCKED => Craft::t('app', 'Locked'),
             self::STATUS_SUSPENDED => Craft::t('app', 'Suspended'),
+            self::STATUS_LOCKED => Craft::t('app', 'Locked'),
         ];
     }
 

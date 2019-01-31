@@ -889,12 +889,12 @@ body.rtl .tree li .toggle { margin: 7px -15px 0 0 ; }
 body.ltr .status { margin-right: 10px; }
 body.rtl .status { margin-left: 10px; }
 
-.status:not(.on):not(.live):not(.active):not(.enabled):not(.locked):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) { border-color: rgba(0, 0, 0, 0.4); }
+.status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) { border-color: rgba(0, 0, 0, 0.4); }
 
 .status.green, .status.on, .status.live, .status.active, .status.enabled { background-color: #27AE60; }
 
 /* green */
-.status.orange, .status.locked, .status.pending { background-color: #F2842D; }
+.status.orange, .status.pending { background-color: #F2842D; }
 
 /* orange */
 .status.red, .status.off, .status.suspended, .status.expired { background-color: #D0021B; }
