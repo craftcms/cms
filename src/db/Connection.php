@@ -557,7 +557,7 @@ class Connection extends \yii\db\Connection
         }
 
         // PostgreSQL specific cleanup.
-        if (Craft::$app->getDb()->getDriverName() === DbConfig::DRIVER_PGSQL) {
+        if ($this->getIsPgsql()) {
             if (Platform::isWindows()) {
                 $envCommand = 'set PGPASSWORD=';
             } else {
