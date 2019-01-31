@@ -1267,6 +1267,19 @@ Defined by
 The string preceding a number which Craft will look for when determining if the current request is for a
 particular page in a paginated list of pages.
 
+Example Value | Example URI
+------------- | -----------
+`p` | `/news/p5`
+`page` | `/news/page5`
+`page/` | `/news/page/5`
+`?page` | `/news?page=5`
+
+::: tip
+If you want to set this to `?p` (e.g. `/news?p=5`), you will need to change your [$pathParam](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-pathparam) setting as well,
+which is set to `p` by default, and if your server is running Apache, you will need to update the redirect code
+in your `.htaccess` file to match your new `pathParam` value.
+:::
+
 
 ### `pathParam`
 
@@ -1285,6 +1298,11 @@ Defined by
 
 
 The query string param that Craft will check when determining the request's path.
+
+::: tip
+If you change this and your server is running Apache, don’t forget to update the redirect code in your
+`.htaccess` file to match the new value.
+:::
 
 
 ### `phpMaxMemoryLimit`

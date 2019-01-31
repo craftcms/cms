@@ -1,4 +1,4 @@
-/*!   - 2019-01-21 */
+/*!   - 2019-01-30 */
 (function($){
 
 /** global: Craft */
@@ -2513,6 +2513,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return false;
             }
 
+            // Hide action triggers if they're currently being shown
+            this.hideActionTriggers();
+
             this.$source = $source;
             this.sourceKey = $source.data('key');
             this.setInstanceState('selectedSource', this.sourceKey);
@@ -3069,14 +3072,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             if (this.trashed || this.searching) {
-                if (!$option.hasClass('disabled')) {
-                    $option.addClass('disabled');
+                $option.addClass('disabled');
+                if (this.getSelectedSortAttribute() === 'structure') {
                     // Temporarily set the sort to the first option
                     var $firstOption = this.$sortAttributesList.find('a:not(.disabled):first')
                     this.setSortAttribute($firstOption.data('attr'));
                     this.setSortDirection('asc');
                 }
             } else {
+                $option.removeClass('disabled');
                 this.setStoredSortOptionsForSource();
             }
         },
@@ -13487,7 +13491,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                         this.callback();
                     }
                     else {
-                        this.showPasswordError(Craft.t('app', 'Incorrect password.'));
+                        this.showPasswordError(response.message || Craft.t('app', 'Incorrect password.'));
                         Garnish.shake(this.passwordModal.$container);
                         this.focusPasswordInput();
                     }
@@ -15890,7 +15894,7 @@ Craft.LivePreview = Garnish.Base.extend(
                 this._scrollY = $doc ? $doc.scrollTop() : 0;
 
                 $.ajax({
-                    url: this.previewUrl,
+                    url: this.previewUrl + (this.previewUrl.indexOf('?') !== -1 ? '&' : '?') + Craft.tokenParam + '=' + this.token,
                     method: 'POST',
                     data: $.extend({}, postData, this.basePostData),
                     headers: {

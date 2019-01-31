@@ -172,7 +172,6 @@ const actions = {
 
                     // Set default values
                     item.autoRenew = false
-                    item.cmsLicenseKey = window.cmsLicenseKey
 
                     switch(item.type) {
                         case 'plugin-edition': {
@@ -182,7 +181,16 @@ const actions = {
                             if (pluginLicenseInfo && pluginLicenseInfo.licenseKeyStatus === 'valid' && pluginLicenseInfo.licenseIssues.length === 0 && pluginLicenseInfo.licenseKey) {
                                 item.licenseKey = pluginLicenseInfo.licenseKey
                             }
-                            break;
+
+                            item.cmsLicenseKey = window.cmsLicenseKey
+
+                            break
+                        }
+
+                        case 'cms-edition': {
+                            item.licenseKey = window.cmsLicenseKey
+
+                            break
                         }
                     }
 

@@ -1169,7 +1169,11 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Dit system er ikke konfigureret til at gemme indhold for sitet “{site}”.',
     'You’re all up-to-date!' => 'Du helt up-to-date!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Du kører Craft {edition} med et Craft {licensedEdition} licens.',
-    'account_activation_body' => 'Hej {{user.friendlyName}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link: &lt;{{link}}&gt; Hvis du ikke forventede denne e-mail, bare ignorere den.',
+    'account_activation_body' => 'Hej {{user.friendlyName}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
+
+<{{link}}>
+
+Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'account_activation_heading' => 'Når nogen opretter en bruger:',
     'account_activation_subject' => 'Aktiver din bruger',
     'by {author}' => 'af {author}',
@@ -1181,7 +1185,13 @@ return [
     'five' => 'fem',
     'folders' => 'mapper',
     'folders and files' => 'mapper og filer',
-    'forgot_password_body' => 'Hej {{user.friendlyName}}. For at nulstille din {{siteName}} adgangskode skal du klikke på følgende link:&lt;{{link}}&gt;Hvis du ikke forventede denne email, så bare ignorer den.',
+    'forgot_password_body' => 'Hej {{user.friendlyName}}.
+
+For at nulstille din {{siteName}} adgangskode skal du klikke på følgende link:
+
+<{{link}}>
+
+Hvis du ikke forventede denne email, så bare ignorer den.',
     'forgot_password_heading' => 'Når nogen glemmer deres adgangskode:',
     'forgot_password_subject' => 'Nulstil din adgangskode',
     'four' => 'fire',
@@ -1198,12 +1208,22 @@ return [
     'seconds' => 'sekunder',
     'seven' => 'syv',
     'six' => 'seks',
-    'test_email_body' => 'Hej {{user.friendlyName}},Tillykke! Craft var succesfuldt i stamd til at sende en email.Her er indstillingerne du har brugt:{{ settings }}',
+    'test_email_body' => 'Hej {{user.friendlyName}},
+
+Tillykke! Craft var succesfuldt i stamd til at sende en email.
+
+Her er indstillingerne du har brugt:
+
+{{ settings }}',
     'test_email_heading' => 'Når du tester dine e-mail indstillinger:',
     'test_email_subject' => 'Dette er en test email fra Craft',
     'three' => 'tre',
     'two' => 'to',
-    'verify_new_email_body' => 'Hej {{user.friendlyName}}. Bekræft din nye e-mailadresse ved at klikke på dette link: &lt;{{link}}&gt; Hvis du ikke forventede denne e-mail, bare ignorere den.',
+    'verify_new_email_body' => 'Hej {{user.friendlyName}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
+
+<{{link}}>
+
+Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'verify_new_email_heading' => 'Når nogen ændrer deres e-mailadresse:',
     'verify_new_email_subject' => 'Bekræft din nye e-mailadresse',
     'week' => 'uge',

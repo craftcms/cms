@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => '시스템이 “{site}” 사이트의 콘텐츠를 저장하도록 설정되지 않았습니다.',
     'You’re all up-to-date!' => '모두 최신으로 업데이트되었습니다!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Craft {licensedEdition} 라이센스의 Craft {edition}을(를) 실행하고 있습니다.',
-    'account_activation_body' => '안녕하세요 {{user.friendlyName}}님,{{siteName}}에서 계정을 생성해 주셔서 감사합니다! 계정을 활성화시키려면, 다음 링크를 클릭해 주세요:&lt;{{link}}&gt;본 이메일에 관해서 모르신다면, 그냥 무시해 주세요.',
+    'account_activation_body' => '안녕하세요 {{user.friendlyName}}님,
+
+{{siteName}}에서 계정을 생성해 주셔서 감사합니다! 계정을 활성화시키려면, 다음 링크를 클릭해 주세요:
+
+<{{link}}>
+
+본 이메일에 관해서 모르신다면, 그냥 무시해 주세요.',
     'account_activation_heading' => '누군가 계정을 생성했을 때:',
     'account_activation_subject' => '계정을 활성화하기',
     'by {author}' => '작성자 {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => '5',
     'folders' => '폴더',
     'folders and files' => '폴더와 파일',
-    'forgot_password_body' => '안녕하세요 {{user.friendlyName}}님,{{siteName}}의 비밀번호를 재설정하려면, 이 링크를 클릭하세요:&lt;{{link}}&gt;본 이메일을 기다리지 않으셨다면, 그냥 무시해 주세요.',
+    'forgot_password_body' => '안녕하세요 {{user.friendlyName}}님,
+
+{{siteName}}의 비밀번호를 재설정하려면, 이 링크를 클릭하세요:
+
+<{{link}}>
+
+본 이메일을 기다리지 않으셨다면, 그냥 무시해 주세요.',
     'forgot_password_heading' => '누군가 자신의 비밀번호를 잊어버리면:',
     'forgot_password_subject' => '비밀번호를 재설정하세요',
     'four' => '4',
@@ -1198,12 +1210,24 @@ return [
     'seconds' => '초',
     'seven' => '7',
     'six' => '6',
-    'test_email_body' => '안녕하세요 {{user.friendlyName}}님, 축하합니다! Craft로부터 성공적으로 이메일이 전송되었습니다. 다음은 귀하가 사용한 설정입니다:{{ settings }}',
+    'test_email_body' => '안녕하세요 {{user.friendlyName}}님,
+
+축하합니다! Craft로부터 성공적으로 이메일이 전송되었습니다.
+
+다음은 귀하가 사용한 설정입니다:
+
+{{ settings }}',
     'test_email_heading' => '이메일 설정을 테스트하시려면:',
     'test_email_subject' => 'Craft가 전송한 테스트 메일입니다',
     'three' => '3',
     'two' => '2',
-    'verify_new_email_body' => '안녕하세요 {{user.friendlyName}}님, 다음 링크를 클릭하여 새로운 이메일 주소를 확인해 주세요:&lt;{{link}}&gt;이 이메일에 관해 모르신다면, 그냥 무시해 주세요.',
+    'verify_new_email_body' => '안녕하세요 {{user.friendlyName}}님,
+
+다음 링크를 클릭하여 새로운 이메일 주소를 확인해 주세요:
+
+<{{link}}>
+
+이 이메일에 관해 모르신다면, 그냥 무시해 주세요.',
     'verify_new_email_heading' => '누군가 자신의 이메일 주소를 변경했을 때:',
     'verify_new_email_subject' => '새로운 이메일 주소를 확인해 주세요',
     'week' => '주',

@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Systemet ditt er ikke konfigurert til å lagre innhold for nettstedet "{site}".',
     'You’re all up-to-date!' => 'Alt er oppdatert!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Du kjører Craft {edition} med en Craft {licensedEdition}-lisens.',
-    'account_activation_body' => 'Hei {{user.friendlyName}}, Takk for at du opprettet en konto hos {{siteName}}! For å aktivere kontoen din, må du trykke på følgende lenke: &lt;{{link}}&gt; Har du ikke bedt om denne e-posten, vennligst se bort fra den.',
+    'account_activation_body' => 'Hei {{user.friendlyName}},
+
+Takk for at du opprettet en konto hos {{siteName}}! For å aktivere kontoen din, må du trykke på følgende lenke:
+
+<{{link}}>
+
+Har du ikke bedt om denne e-posten, vennligst se bort fra den.',
     'account_activation_heading' => 'Når noen oppretter en konto:',
     'account_activation_subject' => 'Aktivér kontoen din',
     'by {author}' => 'av {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => 'fem',
     'folders' => 'mapper',
     'folders and files' => 'mapper og filer',
-    'forgot_password_body' => 'Hei {{user.friendlyName}}, For å nullstille ditt {{siteName}} passord, vennligst trykk på denne lenken: &lt;{{link}}&gt; Om du ikke har bedt om denne e-posten, vennligst se bort fra den.',
+    'forgot_password_body' => 'Hei {{user.friendlyName}},
+
+For å nullstille ditt {{siteName}} passord, vennligst trykk på denne lenken:
+
+<{{link}}>
+
+Om du ikke har bedt om denne e-posten, vennligst se bort fra den.',
     'forgot_password_heading' => 'Når noen glemmer passordet sitt:',
     'forgot_password_subject' => 'Nullstill passordet ditt',
     'four' => 'fire',
@@ -1198,12 +1210,20 @@ return [
     'seconds' => 'sekunder',
     'seven' => 'syv',
     'six' => 'seks',
-    'test_email_body' => 'Hei {{user.friendlyName}}, Gratulerer! Craft var i stand til å sende e-post vellykket.Her er innstillingene du benyttet: {{ settings }}',
+    'test_email_body' => 'Hei {{user.friendlyName}},
+
+Gratulerer! Craft var i stand til å sende e-post vellykket.Her er innstillingene du benyttet: {{ settings }}',
     'test_email_heading' => 'Når du tester e-post innstillingene:',
     'test_email_subject' => 'Dette er en test-epost fra Craft',
     'three' => 'tre',
     'two' => 'to',
-    'verify_new_email_body' => 'Hei {{user.friendlyName}}, Vennligst bekreft din nye e-postadresse ved å trykke på denne lenken: &lt;{{link}}&gt; Om du ikke har bedt om denne e-posten, vennligst se bort fra den.',
+    'verify_new_email_body' => 'Hei {{user.friendlyName}},
+
+Vennligst bekreft din nye e-postadresse ved å trykke på denne lenken:
+
+<{{link}}>
+
+Om du ikke har bedt om denne e-posten, vennligst se bort fra den.',
     'verify_new_email_heading' => 'Når noen endrer e-postadressen sin:',
     'verify_new_email_subject' => 'Bekreft din nye e-postadresse',
     'week' => 'uke',

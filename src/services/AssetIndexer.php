@@ -373,8 +373,11 @@ class AssetIndexer extends Component
     {
 
         $fileInfo = $volume->getFileMetadata($path);
+        $folderPath = dirname($path);
 
-        Craft::$app->getAssets()->ensureFolderByFullPathAndVolume(dirname($path) . '/', $volume);
+        if ($folderPath !== '.') {
+            Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($folderPath . '/', $volume);
+        }
 
         $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
