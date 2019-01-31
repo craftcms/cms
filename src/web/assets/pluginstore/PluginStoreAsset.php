@@ -162,7 +162,8 @@ class PluginStoreAsset extends AssetBundle
      */
     private function getManifestFile($config, $type = 'modern')
     {
-        $useDevServer = true;
+        $pluginStoreService = Craft::$app->getPluginStore();
+        $useDevServer = $pluginStoreService->useDevServer;
 
         $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
         $this->isHot = ($devMode && $useDevServer);
