@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.0.40 - 2019-01-31
 
 ### Added
 - Added `craft\helpers\App::testIniSet()`.
