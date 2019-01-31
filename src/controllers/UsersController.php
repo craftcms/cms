@@ -15,16 +15,17 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\errors\UploadFailedException;
+use craft\errors\UserLockedException;
 use craft\events\DefineUserContentSummaryEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
 use craft\helpers\Assets;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
+use craft\helpers\User as UserHelper;
 use craft\services\Users;
 use craft\web\assets\edituser\EditUserAsset;
 use craft\web\Controller;
@@ -166,7 +167,7 @@ class UsersController extends Controller
     public function actionImpersonate()
     {
         $this->requireLogin();
-        $this->requireAdmin();
+        $this->requireAdmin(false);
         $this->requirePostRequest();
 
         $userSession = Craft::$app->getUser();
@@ -232,7 +233,21 @@ class UsersController extends Controller
     public function actionStartElevatedSession()
     {
         $password = Craft::$app->getRequest()->getBodyParam('password');
-        $success = Craft::$app->getUser()->startElevatedSession($password);
+
+        try {
+            $success = Craft::$app->getUser()->startElevatedSession($password);
+        } catch (UserLockedException $e) {
+            $authError = Craft::$app->getConfig()->getGeneral()->cooldownDuration
+                ? User::AUTH_ACCOUNT_COOLDOWN
+                : User::AUTH_ACCOUNT_LOCKED;
+
+            $message = UserHelper::getLoginFailureMessage($authError, $e->user);
+
+            return $this->asJson([
+                'success' => false,
+                'message' => $message,
+            ]);
+        }
 
         return $this->asJson([
             'success' => $success,
@@ -583,6 +598,8 @@ class UsersController extends Controller
             }
         }
 
+        $currentUser = $userSession->getIdentity();
+
         // Determine which actions should be available
         // ---------------------------------------------------------------------
 
@@ -614,15 +631,6 @@ class UsersController extends Controller
                         ];
                     }
                     break;
-                case User::STATUS_LOCKED:
-                    $statusLabel = Craft::t('app', 'Locked');
-                    if ($userSession->checkPermission('moderateUsers')) {
-                        $statusActions[] = [
-                            'action' => 'users/unlock-user',
-                            'label' => Craft::t('app', 'Unlock')
-                        ];
-                    }
-                    break;
                 case User::STATUS_SUSPENDED:
                     $statusLabel = Craft::t('app', 'Suspended');
                     if ($userSession->checkPermission('moderateUsers')) {
@@ -633,7 +641,26 @@ class UsersController extends Controller
                     }
                     break;
                 case User::STATUS_ACTIVE:
-                    $statusLabel = Craft::t('app', 'Active');
+                    if ($user->locked) {
+                        $statusLabel = Craft::t('app', 'Locked');
+                        if (
+                            !$isCurrentUser &&
+                            ($currentUser->admin || !$user->admin) &&
+                            $userSession->checkPermission('moderateUsers') &&
+                            (
+                                ($previousUserId = Craft::$app->getSession()->get(User::IMPERSONATE_KEY)) === null ||
+                                $user->id != $previousUserId
+                            )
+                        ) {
+                            $statusActions[] = [
+                                'action' => 'users/unlock-user',
+                                'label' => Craft::t('app', 'Unlock')
+                            ];
+                        }
+                    } else {
+                        $statusLabel = Craft::t('app', 'Active');
+                    }
+
                     if (!$isCurrentUser) {
                         $statusActions[] = [
                             'action' => 'users/send-password-reset-email',
@@ -668,8 +695,6 @@ class UsersController extends Controller
             if ($isCurrentUser || $userSession->checkPermission('deleteUsers')) {
                 // Even if they have delete user permissions, we don't want a non-admin
                 // to be able to delete an admin.
-                $currentUser = $userSession->getIdentity();
-
                 if (($currentUser && $currentUser->admin) || !$user->admin) {
                     $destructiveActions[] = [
                         'id' => 'delete-btn',
@@ -1314,10 +1339,17 @@ class UsersController extends Controller
         }
 
         // Even if you have moderateUsers permissions, only and admin should be able to unlock another admin.
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        if ($user->admin) {
+            $currentUser = Craft::$app->getUser()->getIdentity();
+            if (!$currentUser->admin) {
+                throw new ForbiddenHttpException('Only admins can unlock other admins.');
+            }
 
-        if ($user->admin && !$currentUser->admin) {
-            throw new ForbiddenHttpException('Only admins can unlock other admins');
+            // And admins can't unlock themselves by impersonating another admin
+            $previousUserId = Craft::$app->getSession()->get(User::IMPERSONATE_KEY);
+            if ($previousUserId && $user->id == $previousUserId) {
+                throw new ForbiddenHttpException('You can’t unlock yourself via impersonation.');
+            }
         }
 
         Craft::$app->getUsers()->unlockUser($user);
@@ -1549,52 +1581,7 @@ class UsersController extends Controller
      */
     private function _handleLoginFailure(string $authError = null, User $user = null)
     {
-        switch ($authError) {
-            case User::AUTH_PENDING_VERIFICATION:
-                $message = Craft::t('app', 'Account has not been activated.');
-                break;
-            case User::AUTH_ACCOUNT_LOCKED:
-                $message = Craft::t('app', 'Account locked.');
-                break;
-            case User::AUTH_ACCOUNT_COOLDOWN:
-                $timeRemaining = null;
-
-                if ($user !== null) {
-                    $timeRemaining = $user->getRemainingCooldownTime();
-                }
-
-                if ($timeRemaining) {
-                    $message = Craft::t('app', 'Account locked. Try again in {time}.', ['time' => DateTimeHelper::humanDurationFromInterval($timeRemaining)]);
-                } else {
-                    $message = Craft::t('app', 'Account locked.');
-                }
-                break;
-            case User::AUTH_PASSWORD_RESET_REQUIRED:
-                if (Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
-                    $message = Craft::t('app', 'You need to reset your password. Check your email for instructions.');
-                } else {
-                    $message = Craft::t('app', 'You need to reset your password, but an error was encountered when sending the password reset email.');
-                }
-                break;
-            case User::AUTH_ACCOUNT_SUSPENDED:
-                $message = Craft::t('app', 'Account suspended.');
-                break;
-            case User::AUTH_NO_CP_ACCESS:
-                $message = Craft::t('app', 'You cannot access the CP with that account.');
-                break;
-            case User::AUTH_NO_CP_OFFLINE_ACCESS:
-                $message = Craft::t('app', 'You cannot access the CP while the system is offline with that account.');
-                break;
-            case User::AUTH_NO_SITE_OFFLINE_ACCESS:
-                $message = Craft::t('app', 'You cannot access the site while the system is offline with that account.');
-                break;
-            default:
-                if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
-                    $message = Craft::t('app', 'Invalid email or password.');
-                } else {
-                    $message = Craft::t('app', 'Invalid username or password.');
-                }
-        }
+        $message = UserHelper::getLoginFailureMessage($authError, $user);
 
         // Fire a 'loginFailure' event
         $event = new LoginFailureEvent([

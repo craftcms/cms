@@ -8,7 +8,7 @@
         <div>
             <div class="plugin-name">
                 <strong>{{ plugin.name }}</strong>
-                <div class="edition-badge" v-if="trialMode && activeTrialPluginEdition">
+                <div class="edition-badge" v-if="trialMode && activeTrialPluginEdition && plugin.editions.length > 1">
                     {{activeTrialPluginEdition.name}}
                 </div>
             </div>

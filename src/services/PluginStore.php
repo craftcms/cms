@@ -59,6 +59,11 @@ class PluginStore extends Component
      */
     public $devServerPublicPath = 'https://localhost:8082/';
 
+    /**
+     * @var bool Enable dev server
+     */
+    public $useDevServer = false;
+
     // Public Methods
     // =========================================================================
 

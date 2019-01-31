@@ -239,12 +239,12 @@ class PluginStoreController extends Controller
         // Craft editions
         $data['editions'] = [];
         foreach ($api->getCmsEditions() as $editionInfo) {
-            if ($editionInfo['price']) {
-                $data['editions'][$editionInfo['handle']] = [
-                    'price' => $editionInfo['price'],
-                    'renewalPrice' => $editionInfo['renewalPrice'],
-                ];
-            }
+            $data['editions'][$editionInfo['handle']] = [
+                'name' => $editionInfo['name'],
+                'handle' => $editionInfo['handle'],
+                'price' => $editionInfo['price'],
+                'renewalPrice' => $editionInfo['renewalPrice'],
+            ];
         }
 
         // Craft license/edition info

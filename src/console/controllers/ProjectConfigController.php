@@ -41,23 +41,30 @@ class ProjectConfigController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        // Any plugins need to be installed/uninstalled?
         $projectConfig = Craft::$app->getProjectConfig();
-        $loadedConfigPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY) ?? []);
-        $yamlPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? []);
-        $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
 
-        if (!$this->_installPlugins(array_diff($yamlPlugins, $loadedConfigPlugins))) {
-            $this->stdout('Aborting config sync' . PHP_EOL, Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
-        }
+        // Do we need to create a new config file?
+        if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
+            $this->stdout('No project.yaml file found. Generating one from internal config ... ', Console::FG_YELLOW);
+            $projectConfig->regenerateYamlFromConfig();
+        } else {
+            // Any plugins need to be installed/uninstalled?
+            $loadedConfigPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY) ?? []);
+            $yamlPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? []);
+            $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
 
-        $this->stdout('Applying changes from project.yaml ... ', Console::FG_YELLOW);
-        try {
-            $projectConfig->applyYamlChanges();
-        } catch (\Throwable $e) {
-            $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
+            if (!$this->_installPlugins(array_diff($yamlPlugins, $loadedConfigPlugins))) {
+                $this->stdout('Aborting config sync' . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            $this->stdout('Applying changes from project.yaml ... ', Console::FG_YELLOW);
+            try {
+                $projectConfig->applyYamlChanges();
+            } catch (\Throwable $e) {
+                $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
         }
 
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);

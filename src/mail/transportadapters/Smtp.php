@@ -80,10 +80,11 @@ class Smtp extends BaseTransportAdapter
                 'class' => EnvAttributeParserBehavior::class,
                 'attributes' => [
                     'host',
+                    'port',
                     'username',
                     'password',
                 ],
-            ]
+            ],
         ];
     }
 
@@ -142,7 +143,7 @@ class Smtp extends BaseTransportAdapter
         $config = [
             'class' => \Swift_SmtpTransport::class,
             'host' => Craft::parseEnv($this->host),
-            'port' => $this->port,
+            'port' => Craft::parseEnv($this->port),
             'timeout' => $this->timeout,
         ];
 

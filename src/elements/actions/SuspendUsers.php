@@ -75,7 +75,6 @@ EOD;
         // Get the users that aren't already suspended
         $query->status = [
             User::STATUS_ACTIVE,
-            User::STATUS_LOCKED,
             User::STATUS_PENDING,
         ];
 

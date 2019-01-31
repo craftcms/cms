@@ -1,4 +1,4 @@
-/*!   - 2019-01-28 */
+/*!   - 2019-01-30 */
 (function($){
 
 /** global: Craft */
@@ -2512,6 +2512,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             if (this.$source && this.$source[0] && this.$source[0] === $source[0] && $source.data('key') === this.sourceKey) {
                 return false;
             }
+
+            // Hide action triggers if they're currently being shown
+            this.hideActionTriggers();
 
             this.$source = $source;
             this.sourceKey = $source.data('key');
@@ -13488,7 +13491,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                         this.callback();
                     }
                     else {
-                        this.showPasswordError(Craft.t('app', 'Incorrect password.'));
+                        this.showPasswordError(response.message || Craft.t('app', 'Incorrect password.'));
                         Garnish.shake(this.passwordModal.$container);
                         this.focusPasswordInput();
                     }
@@ -15891,7 +15894,7 @@ Craft.LivePreview = Garnish.Base.extend(
                 this._scrollY = $doc ? $doc.scrollTop() : 0;
 
                 $.ajax({
-                    url: this.previewUrl,
+                    url: this.previewUrl + (this.previewUrl.indexOf('?') !== -1 ? '&' : '?') + Craft.tokenParam + '=' + this.token,
                     method: 'POST',
                     data: $.extend({}, postData, this.basePostData),
                     headers: {

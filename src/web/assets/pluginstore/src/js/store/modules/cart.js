@@ -42,6 +42,10 @@ const getters = {
 
     isCmsEditionInCart(state) {
         return cmsEdition => {
+            if (!state.cart) {
+                return false
+            }
+
             return state.cart.lineItems.find(lineItem => lineItem.purchasable.type === 'cms-edition' && lineItem.purchasable.handle === cmsEdition)
         }
     },
@@ -168,7 +172,6 @@ const actions = {
 
                     // Set default values
                     item.autoRenew = false
-                    item.cmsLicenseKey = window.cmsLicenseKey
 
                     switch(item.type) {
                         case 'plugin-edition': {
@@ -178,7 +181,16 @@ const actions = {
                             if (pluginLicenseInfo && pluginLicenseInfo.licenseKeyStatus === 'valid' && pluginLicenseInfo.licenseIssues.length === 0 && pluginLicenseInfo.licenseKey) {
                                 item.licenseKey = pluginLicenseInfo.licenseKey
                             }
-                            break;
+
+                            item.cmsLicenseKey = window.cmsLicenseKey
+
+                            break
+                        }
+
+                        case 'cms-edition': {
+                            item.licenseKey = window.cmsLicenseKey
+
+                            break
                         }
                     }
 
@@ -455,13 +467,21 @@ const utils = {
                 }
 
                 case 'cms-edition': {
-                    lineItems.push({
+                    const item = {
                         type: lineItem.purchasable.type,
                         edition: lineItem.purchasable.handle,
-                        licenseKey: lineItem.options.licenseKey,
                         expiryDate: lineItem.options.expiryDate,
                         autoRenew: lineItem.options.autoRenew,
-                    })
+                    }
+
+                    let licenseKey = lineItem.options.licenseKey
+
+                    if (licenseKey && licenseKey.substr(0, 3) !== 'new') {
+                        item.licenseKey = licenseKey
+                    }
+
+                    lineItems.push(item)
+
                     break
                 }
             }
