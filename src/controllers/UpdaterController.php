@@ -63,7 +63,7 @@ class UpdaterController extends BaseUpdaterController
      */
     public function actionForceUpdate(): Response
     {
-        return $this->send($this->initialState(true));
+        return $this->send($this->realInitialState(true));
     }
 
     /**
