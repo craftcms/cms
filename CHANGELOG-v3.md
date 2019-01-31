@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.40 - 2019-01-31
+
+### Added
+- Added `craft\helpers\App::testIniSet()`.
+
+### Changed
+- Craft now warns if `ini_set()` is disabled and [memory_limit](http://php.net/manual/en/ini.core.php#ini.memory-limit) is less than `256M` or [max_execution_time](http://php.net/manual/en/info.configuration.php#ini.max-execution-time) is less than `120` before performing Composer operations.
+- `craft\helpers\App::maxPowerCaptain()` now attempts to set the `memory_limit` to `1536M` rather than `-1`.
+
 ## 3.0.39 - 2019-01-29
 
 ### Changed
