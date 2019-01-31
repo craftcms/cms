@@ -8,12 +8,16 @@
 namespace craft\web;
 
 use Craft;
+use craft\controllers\UsersController;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User as UserElement;
+use craft\errors\UserLockedException;
+use craft\events\LoginFailureEvent;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
+use craft\helpers\User as UserHelper;
 use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
 
@@ -292,6 +296,7 @@ class User extends \yii\web\User
      *
      * @param string $password the current user’s password
      * @return bool Whether the password was valid, and the user session has been elevated
+     * @throws UserLockedException if the user is locked.
      */
     public function startElevatedSession(string $password): bool
     {
@@ -309,14 +314,23 @@ class User extends \yii\web\User
             $user = $this->getIdentity();
         }
 
-        if (!$user) {
+        if (!$user || $user->password === null) {
+            // Delay again to match $user->authenticate()'s delay
+            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+            $this->_handleLoginFailure(UserElement::AUTH_INVALID_CREDENTIALS);
             return false;
+        }
+
+        if ($user->locked) {
+            throw new UserLockedException($user);
         }
 
         // Validate the password
         $validator = new UserPasswordValidator();
 
-        if (!$validator->validate($password) || !Craft::$app->getSecurity()->validatePassword($password, $user->password)) {
+        // Did they submit a valid password, and is the user capable of being logged-in?
+        if (!$validator->validate($password) || !$user->authenticate($password)) {
+            $this->_handleLoginFailure($user->authError, $user);
             return false;
         }
 
@@ -578,5 +592,23 @@ class User extends \yii\web\User
                 ], ['id' => $tokenId])
                 ->execute();
         }
+    }
+
+    /**
+     * @param string $authError
+     * @param UserElement $user
+     * @return null
+     */
+    private function _handleLoginFailure(string $authError = null, UserElement $user = null)
+    {
+        $message = UserHelper::getLoginFailureMessage($authError, $user);
+
+        // Fire a 'loginFailure' event
+        $event = new LoginFailureEvent([
+            'authError' => $authError,
+            'message' => $message,
+            'user' => $user,
+        ]);
+        $this->trigger(UsersController::EVENT_LOGIN_FAILURE, $event);
     }
 }

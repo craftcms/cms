@@ -6,6 +6,7 @@
 - The “Port” SMTP mail transport setting can now be set to an environment variable. ([#3740](https://github.com/craftcms/cms/issues/3740))
 - `craft\web\Controller::requireAdmin()` now has a `$requireAdminChanges` argument, which dictates whether the `allowAdminChanges` config setting must also be enabled (`true` by default).
 - The `project-config/sync` console command now creates a `project.yaml` file, if it's missing. ([#3736](https://github.com/craftcms/cms/issues/3736))
+- Querying for active users no longer excludes locked users.
 
 ### Fixed
 - Fixed an error that occurred when updating to Craft 3.1 if a plugin or module was calling `craft\records\User::find()`.
@@ -13,6 +14,10 @@
 - Fixed a 403 error that would occur when an admin attempted to log in as another user on an environment where the `allowAdminChanges` config setting was disabled. ([#3749](https://github.com/craftcms/cms/issues/3749))
 - Fixed a bug where asset index toolbar items would be misaligned when searching in a volume or folder with subfolders.
 - Fixed a bug where asset indexes could show multiple view mode toggles if a different volume or subfolder was selected while at least one asset was checked. ([#3702](https://github.com/craftcms/cms/issues/3702))
+
+### Security
+- User accounts are now locked after multiple failed password attempts in current-password modals, per the `maxInvalidLogins` config setting.
+- Users are no longer signed out of active sessions when their account becomes locked.
 
 ## 3.1.6.1 - 2019-01-29
 
@@ -47,7 +52,7 @@
 - Control Panel templates can now pass `suggestEnvVars: true` and `suggestAliases: true` to autosuggest fields, rather that supplying the `suggestions` array.
 
 ### Fixed
-- Fixed a bug where the “Duplicate” action wasn’n available on the Entries index page for non-admin users. ([#3705](https://github.com/craftcms/cms/issues/3705))
+- Fixed a bug where the “Duplicate” action wasn’t available on the Entries index page for non-admin users. ([#3705](https://github.com/craftcms/cms/issues/3705))
 - Fixed a bug where it wasn’t possible to rename an asset’s filename from the Assets index page. ([#3707](https://github.com/craftcms/cms/issues/3707))
 - Fixed an error that occurred when saving a user that had a first or last name set.
 - Fixed a bug where it wasn’t possible to apply project config changes. ([#3713](https://github.com/craftcms/cms/issues/3713))
