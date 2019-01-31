@@ -5,6 +5,9 @@
 ### Added
 - Added `craft\helpers\App::testIniSet()`.
 
+### Changed
+- `craft\helpers\App::maxPowerCaptain()` now attempts to set the `memory_limit` to `1536M` rather than `-1`.
+
 ## 3.0.39 - 2019-01-29
 
 ### Changed
