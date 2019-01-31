@@ -419,9 +419,8 @@ class DashboardController extends Controller
                 try {
                     Craft::$app->getDb()->backup();
                 } catch (\Throwable $e) {
-                    $noteError = "\n\nError backing up database: " . $e->getMessage();
-                    $requestParamDefaults['tNote'] .= $noteError;
-                    $requestParams['tNote'] .= $noteError;
+                    Craft::warning('Error backing up database: ' . $e->getMessage(), __METHOD__);
+                    $getHelpModel->message .= "\n\n---\n\nError backing up database: " . $e->getMessage();
                 }
 
                 $backupPath = Craft::$app->getPath()->getDbBackupPath();
