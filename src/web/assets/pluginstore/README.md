@@ -48,6 +48,7 @@ By default, the dev server will be set up to work with `https://localhost:8082/`
             'components' => [
                 'pluginStore' => [
                     'class' => craft\services\PluginStore::class,
+                    'useDevServer' => true,
                     'devServerManifestPath' => 'https://localhost:8089',
                     'devServerPublicPath' => 'https://localhost:8089',
                 ],
