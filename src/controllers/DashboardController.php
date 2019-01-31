@@ -352,6 +352,9 @@ class DashboardController extends Controller
             ],
         ];
 
+        // If there's a custom attachment, see if we should include it in the zip
+        $zipAttachment = $getHelpModel->attachment && $this->_shouldZipAttachment($getHelpModel->attachment);
+
         // Create the SupportAttachment zip
         $zipPath = Craft::$app->getPath()->getTempPath() . '/' . StringHelper::UUID() . '.zip';
         try {
@@ -437,6 +440,11 @@ class DashboardController extends Controller
                 }
             }
 
+            // Attachment?
+            if ($zipAttachment) {
+                $zip->addFile($getHelpModel->attachment->tempName, $getHelpModel->attachment->name);
+            }
+
             // Close and attach the zip
             $zip->close();
             $parts[] = [
@@ -449,8 +457,8 @@ class DashboardController extends Controller
             $getHelpModel->message .= "\n\n---\n\nError creating zip: " . $e->getMessage();
         }
 
-        // Uploaded attachment
-        if ($getHelpModel->attachment) {
+        // Uploaded attachment separately?
+        if ($getHelpModel->attachment && !$zipAttachment) {
             $parts[] = [
                 'name' => 'attachments[1]',
                 'contents' => fopen($getHelpModel->attachment->tempName, 'rb'),
@@ -610,5 +618,36 @@ class DashboardController extends Controller
         return $this->asJson([
             'errors' => $allErrors
         ]);
+    }
+
+    /**
+     * Returns whether we should zip the custom support attachment.
+     *
+     * @param string $file
+     * @return bool
+     */
+    private function _shouldZipAttachment(UploadedFile $file): bool
+    {
+        // If it's > 2 MB, just do it
+        if (filesize($file->tempName) > 1024 * 1024 * 2) {
+            return true;
+        }
+
+        $mimeType = $file->getMimeType();
+
+        if ($mimeType === null) {
+            return true;
+        }
+
+        return (
+            !in_array($mimeType, [
+                'application/json',
+                'application/pdf',
+                'application/x-yaml',
+            ], true) &&
+            strpos($mimeType, 'text/') !== 0 &&
+            strpos($mimeType, 'image/') !== 0 &&
+            strpos($mimeType, 'xml') === false
+        );
     }
 }
