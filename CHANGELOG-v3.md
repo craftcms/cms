@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\FileHelper::canTrustMimeType()`.
+- Added `craft\web\UploadedFile::getMimeType()`.
+
 ### Changed
 - The “Port” SMTP mail transport setting can now be set to an environment variable. ([#3740](https://github.com/craftcms/cms/issues/3740))
 - `craft\web\Controller::requireAdmin()` now has a `$requireAdminChanges` argument, which dictates whether the `allowAdminChanges` config setting must also be enabled (`true` by default).

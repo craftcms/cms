@@ -259,11 +259,28 @@ class FileHelper extends \yii\helpers\FileHelper
         $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
 
         // Be forgiving of SVG files, etc., that don't have an XML declaration
-        if ($checkExtension && in_array($mimeType, [null, 'text/plain', 'text/html', 'application/xml', 'text/xml'], true)) {
+        if ($checkExtension && ($mimeType === null || !static::canTrustMimeType($mimeType))) {
             return static::getMimeTypeByExtension($file, $magicFile) ?? $mimeType;
         }
 
         return $mimeType;
+    }
+
+    /**
+     * Returns whether a MIME type can be trusted, or whether we should double-check based on the file extension.
+     *
+     * @param string $mimeType
+     * @return bool
+     */
+    public static function canTrustMimeType(string $mimeType): bool
+    {
+        return !in_array($mimeType, [
+            'application/octet-stream',
+            'application/xml',
+            'text/html',
+            'text/plain',
+            'text/xml',
+        ], true);
     }
 
     /**
