@@ -23,7 +23,7 @@
 - Fixed a bug where asset indexes could show multiple view mode toggles if a different volume or subfolder was selected while at least one asset was checked. ([#3702](https://github.com/craftcms/cms/issues/3702))
 - Fixed a bug where Plugin Store screenshots were not showing properly. ([#3709](https://github.com/craftcms/cms/issues/3709))
 - Fixed a bug where zoomed Plugin Store screenshots would not close when hitting the browser’s Back button. ([#3754](https://github.com/craftcms/cms/issues/3754))
-- Fixed a bug where the Plugin Store was not working properly with `devMode` set to `true`.
+- Fixed a bug where the Plugin Store was not working properly when Dev Mode was enabled.
 
 ### Security
 - User accounts are now locked after multiple failed password attempts in current-password modals, per the `maxInvalidLogins` config setting.
