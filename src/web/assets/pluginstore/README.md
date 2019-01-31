@@ -18,7 +18,7 @@ To get started with local development for the Plugin Store resources, you need t
         return [
             'devMode' => true,
         ];
-4. Tell the Plugin Store to use the dev server in `config/app.php`:
+4. Tell the Plugin Store to use the dev server to serve resources in `config/app.php`:
         
         <?php
         
