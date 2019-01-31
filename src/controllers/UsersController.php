@@ -598,6 +598,8 @@ class UsersController extends Controller
             }
         }
 
+        $currentUser = $userSession->getIdentity();
+
         // Determine which actions should be available
         // ---------------------------------------------------------------------
 
@@ -641,7 +643,15 @@ class UsersController extends Controller
                 case User::STATUS_ACTIVE:
                     if ($user->locked) {
                         $statusLabel = Craft::t('app', 'Locked');
-                        if (!$isCurrentUser && $userSession->checkPermission('moderateUsers')) {
+                        if (
+                            !$isCurrentUser &&
+                            ($currentUser->admin || !$user->admin) &&
+                            $userSession->checkPermission('moderateUsers') &&
+                            (
+                                ($previousUserId = Craft::$app->getSession()->get(User::IMPERSONATE_KEY)) === null ||
+                                $user->id != $previousUserId
+                            )
+                        ) {
                             $statusActions[] = [
                                 'action' => 'users/unlock-user',
                                 'label' => Craft::t('app', 'Unlock')
@@ -685,8 +695,6 @@ class UsersController extends Controller
             if ($isCurrentUser || $userSession->checkPermission('deleteUsers')) {
                 // Even if they have delete user permissions, we don't want a non-admin
                 // to be able to delete an admin.
-                $currentUser = $userSession->getIdentity();
-
                 if (($currentUser && $currentUser->admin) || !$user->admin) {
                     $destructiveActions[] = [
                         'id' => 'delete-btn',
@@ -1331,10 +1339,17 @@ class UsersController extends Controller
         }
 
         // Even if you have moderateUsers permissions, only and admin should be able to unlock another admin.
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        if ($user->admin) {
+            $currentUser = Craft::$app->getUser()->getIdentity();
+            if (!$currentUser->admin) {
+                throw new ForbiddenHttpException('Only admins can unlock other admins.');
+            }
 
-        if ($user->admin && !$currentUser->admin) {
-            throw new ForbiddenHttpException('Only admins can unlock other admins');
+            // And admins can't unlock themselves by impersonating another admin
+            $previousUserId = Craft::$app->getSession()->get(User::IMPERSONATE_KEY);
+            if ($previousUserId && $user->id == $previousUserId) {
+                throw new ForbiddenHttpException('You can’t unlock yourself via impersonation.');
+            }
         }
 
         Craft::$app->getUsers()->unlockUser($user);
