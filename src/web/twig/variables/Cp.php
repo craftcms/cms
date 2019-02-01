@@ -333,7 +333,7 @@ class Cp extends Component
         foreach (array_keys($_ENV) as $var) {
             $envSuggestions[] = [
                 'name' => '$' . $var,
-                'hint' => $security->redactIfSensitive($var, Craft::getAlias(getenv($var)))
+                'hint' => $security->redactIfSensitive($var, Craft::getAlias(getenv($var), false))
             ];
         }
         ArrayHelper::multisort($envSuggestions, 'name');
