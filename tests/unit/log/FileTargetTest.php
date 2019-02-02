@@ -73,6 +73,8 @@ class FileTargetTest extends TestCase
 
     /**
      * Mocks the Craft::$app object so that it overrides the components we need for self::testFullMessagePrefix
+     * TODO: See @internal
+     * @internal Is there a better way to handle Craft::$app mocking
      * @throws \Exception
      */
     private function mockCraftForFullMessagePrefix()
