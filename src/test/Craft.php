@@ -244,16 +244,16 @@ class Craft extends Yii2
      * @param $methods
      * @throws InvalidConfigException
      */
-    public function mockMethods(Module $module, string $component, $methods)
+    public function mockMethods(Module $module, string $component, array $methods = [], array $constructParams = [])
     {
         $componentInstance = $module->get($component);
 
-        $module->set($component, Stub::construct(get_class($componentInstance), [], $methods));
+        $module->set($component, Stub::construct(get_class($componentInstance), [$constructParams], $methods));
     }
 
-    public function mockCraftMethods(string $component, $methods)
+    public function mockCraftMethods(string $component, array $methods = [], array $constructParams = [])
     {
-        return $this->mockMethods(\Craft::$app, $component, $methods);
+        return $this->mockMethods(\Craft::$app, $component, $methods, $constructParams);
     }
 
     // Factories
