@@ -67,10 +67,6 @@ CP_TRIGGER="secret-word"
 'cpTrigger' => getenv('CP_TRIGGER') ?: 'admin',
 ```
 
-::: tip
-We’re using a [ternary operator](http://php.net/manual/en/language.operators.comparison.php#language.operators.comparison.ternary) (`?:`) here to define a fallback value, in case the `CP_TRIGGER` environment variable isn’t defined.
-:::
-
 ### Multi-Environment Configs
 
 Craft’s PHP config files can optionally define separate config settings for each individual environment.
