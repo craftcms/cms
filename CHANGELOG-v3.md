@@ -6,6 +6,7 @@
 - Fixed a bug where pressing the <kbd>Return</kbd> key on editable tables with a static number of rows would add a new row. ([#3765](https://github.com/craftcms/cms/issues/3765))
 - Fixed a bug where pressing the <kbd>Return</kbd> key on editable tables would select the next row’s cell even if the cell was disabled.
 - Fixed a bug where pressing the <kbd>Return</kbd> key on an editable table wouldn’t move the focus to the next row’s sell if it had an `<input>` instead of a `<textarea>`.
+- Fixed an error that could occur in the Control Panel if any environment variable values began with an `@` character. ([#3769](https://github.com/craftcms/cms/issues/3769))
 
 ## 3.1.7 - 2019-01-31
 
