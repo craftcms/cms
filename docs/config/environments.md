@@ -20,6 +20,7 @@ Some settings in the Control Panel can be set to environment variables (like the
   - **Username** (Gmail and SMTP)
   - **Password** (Gmail and SMTP)
   - **Host Name** (SMTP)
+  - **Port** (Port)
 
 To set these settings to an environment variable, type `$` followed by the environment variable’s name.
 
@@ -65,10 +66,6 @@ CP_TRIGGER="secret-word"
 // -- config/general.php --
 'cpTrigger' => getenv('CP_TRIGGER') ?: 'admin',
 ```
-
-::: tip
-We’re using a [ternary operator](http://php.net/manual/en/language.operators.comparison.php#language.operators.comparison.ternary) (`?:`) here to define a fallback value, in case the `CP_TRIGGER` environment variable isn’t defined.
-:::
 
 ### Multi-Environment Configs
 
