@@ -678,11 +678,7 @@ class DateTimeHelper
     {
         $value = trim($value);
 
-        if (static::isValidTimeStamp($value)) {
-            return [$value, 'U'];
-        }
-
-        if (!preg_match('/^
+        if (preg_match('/^
                 (?P<year>\d{4})                                  # YYYY (four digit year)
                 (?:
                     -(?P<mon>\d\d?)                              # -M or -MM (1 or 2 digit month)
@@ -699,39 +695,43 @@ class DateTimeHelper
                         )?
                     )?
                 )?$/x', $value, $m)) {
-            return [$value, false];
-        }
+            $format = 'Y-m-d H:i:s';
 
-        $format = 'Y-m-d H:i:s';
+            $date = $m['year'] .
+                '-' . (!empty($m['mon']) ? sprintf('%02d', $m['mon']) : '01') .
+                '-' . (!empty($m['day']) ? sprintf('%02d', $m['day']) : '01') .
+                ' ' . (!empty($m['hour']) ? sprintf('%02d', $m['hour']) : '00') .
+                ':' . (!empty($m['min']) ? $m['min'] : '00') .
+                ':' . (!empty($m['sec']) ? $m['sec'] : '00');
 
-        $date = $m['year'] .
-            '-' . (!empty($m['mon']) ? sprintf('%02d', $m['mon']) : '01') .
-            '-' . (!empty($m['day']) ? sprintf('%02d', $m['day']) : '01') .
-            ' ' . (!empty($m['hour']) ? sprintf('%02d', $m['hour']) : '00') .
-            ':' . (!empty($m['min']) ? $m['min'] : '00') .
-            ':' . (!empty($m['sec']) ? $m['sec'] : '00');
-
-        if (!empty($m['ampm'])) {
-            $format .= ' A';
-            $date .= ' ' . $m['ampm'];
-        }
-
-        // Did they specify a timezone?
-        if (!empty($m['tz'])) {
-            if (!empty($m['tzd'])) {
-                $format .= strpos($m['tzd'], ':') !== false ? 'P' : 'O';
-                $date .= $m['tzd'];
-            } else {
-                // "Z" = UTC
-                $format .= 'e';
-                $date .= 'UTC';
+            if (!empty($m['ampm'])) {
+                $format .= ' A';
+                $date .= ' ' . $m['ampm'];
             }
-        } else {
-            $format .= 'e';
-            $date .= $defaultTimeZone;
+
+            // Did they specify a timezone?
+            if (!empty($m['tz'])) {
+                if (!empty($m['tzd'])) {
+                    $format .= strpos($m['tzd'], ':') !== false ? 'P' : 'O';
+                    $date .= $m['tzd'];
+                } else {
+                    // "Z" = UTC
+                    $format .= 'e';
+                    $date .= 'UTC';
+                }
+            } else {
+                $format .= 'e';
+                $date .= $defaultTimeZone;
+            }
+
+            return [$date, $format];
         }
 
-        return [$date, $format];
+        if (static::isValidTimeStamp($value)) {
+            return [$value, 'U'];
+        }
+
+        return [$value, false];
     }
 
     /**
