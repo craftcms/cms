@@ -109,27 +109,6 @@ You can parse aliases in your templates by passing them to the [alias()](../dev/
 ```
 :::
 
-## Overriding Volume Settings
-
-If you would prefer to define volume settings with a config file, you can do that from `config/volumes.php`. The file should return an array whose keys map to your volume handles, and values are nested arrays that define the overridden setting values.
-
-::: warning
-You must create your volumes within the Control Panel before Craft will start checking `config/volumes.php` for overrides.
-:::
-
-```php
-return [
-    'siteAssets' => [
-        'path' => getenv('ASSETS_BASE_PATH').'/site',
-        'url' => getenv('ASSETS_BASE_URL').'/site',
-    ],
-    'companyLogos' => [
-        'path' => getenv('ASSETS_BASE_PATH').'/logos',
-        'url' => getenv('ASSETS_BASE_URL').'/logos',
-    ],
-];
-```
-
 ## URL Rules
 
 You can define custom [URL rules](https://www.yiiframework.com/doc/guide/2.0/en/runtime-routing#url-rules) in `config/routes.php`. See [Routing](../routing.md) for more details.
