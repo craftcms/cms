@@ -20,6 +20,7 @@ Some settings in the Control Panel can be set to environment variables (like the
   - **Username** (Gmail and SMTP)
   - **Password** (Gmail and SMTP)
   - **Host Name** (SMTP)
+  - **Port** (Port)
 
 To set these settings to an environment variable, type `$` followed by the environment variable’s name.
 
