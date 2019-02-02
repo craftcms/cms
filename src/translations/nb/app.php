@@ -449,7 +449,7 @@ return [
     'For when you’re building something professionally for a client or team.' => 'Når du bygger noe i jobbsammenheng for en kunde eller et team.',
     'Forgot your password?' => 'Glemt passordet?',
     'Format' => 'Formater',
-    'Free' => 'Ledig',
+    'Free' => 'Gratis',
     'Full Name' => 'Fullt navn',
     'General' => 'Generelt',
     'General Settings' => 'Generelle innstillinger',
