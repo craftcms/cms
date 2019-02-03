@@ -27,4 +27,4 @@ Within that template, place the following code:
 </form>
 ```
 
-The <config:setPasswordSuccessPath> config setting designates where the user should be redirected to after they finish resetting their password (and get automatically logged-in).
+After the user successfully logs in, they will be redirected to the path defined by the <config:setPasswordSuccessPath> config setting.
