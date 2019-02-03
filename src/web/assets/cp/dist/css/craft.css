@@ -1915,12 +1915,11 @@ body.rtl #settingsmenu ul li a:before { margin: 1px -22px 0 0 ; }
 #settingsmenu ul li a img { width: 16px; height: 16px; position: absolute; margin-left: -23px; margin-top: 1px; }
 
 /* notifications */
-#notifications-wrapper { position: fixed; top: 0; z-index: 101; width: 100%; pointer-events: none; }
-body.ltr #notifications-wrapper { left: 0; }
-body.rtl #notifications-wrapper { right: 0; }
+#notifications-wrapper { position: relative; z-index: 101; pointer-events: none; }
+body.fixed-header #notifications-wrapper { position: fixed; width: 100%; }
 
-#notifications { text-align: center; }
-#notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important; pointer-events: auto; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); }
+#notifications { position: absolute; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; -webkit-box-align: start; -ms-flex-align: start; align-items: flex-start; width: 100%; }
+#notifications .notification { padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important; pointer-events: auto; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); }
 #notifications .notification.notice { background: #5286d9; }
 #notifications .notification.error { background: #da5a47; }
 
