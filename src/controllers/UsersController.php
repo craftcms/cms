@@ -426,6 +426,9 @@ class UsersController extends Controller
                 }
             }
 
+            // Maybe automatically log them in
+            $this->_maybeLoginUserAfterAccountActivation($userToProcess);
+
             // Can they access the CP?
             if ($userToProcess->can('accessCp')) {
                 // Send them to the CP login page
@@ -1949,9 +1952,9 @@ class UsersController extends Controller
     }
 
     /**
-     * Possibly log a user in right after they were activate, if Craft is configured to do so.
+     * Possibly log a user in right after they were activated or reset their password, if Craft is configured to do so.
      *
-     * @param User $user The user that was just activated
+     * @param User $user The user that was just activated or reset their password
      */
     private function _maybeLoginUserAfterAccountActivation(User $user)
     {

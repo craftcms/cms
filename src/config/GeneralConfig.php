@@ -89,7 +89,8 @@ class GeneralConfig extends BaseObject
      */
     public $allowUppercaseInSlug = false;
     /**
-     * @var bool Whether users should automatically be logged in after activating their account.
+     * @var bool Whether users should automatically be logged in after activating their account or resetting
+     * their password.
      */
     public $autoLoginAfterAccountActivation = false;
     /**

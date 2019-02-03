@@ -238,7 +238,8 @@ Defined by
 
 
 
-Whether users should automatically be logged in after activating their account.
+Whether users should automatically be logged in after activating their account or resetting
+their password.
 
 
 ### `backupCommand`
