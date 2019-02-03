@@ -1952,16 +1952,13 @@ class UsersController extends Controller
      * Possibly log a user in right after they were activate, if Craft is configured to do so.
      *
      * @param User $user The user that was just activated
-     * @return bool Whether the user was just logged in
      */
-    private function _maybeLoginUserAfterAccountActivation(User $user): bool
+    private function _maybeLoginUserAfterAccountActivation(User $user)
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if ($generalConfig->autoLoginAfterAccountActivation === true) {
-            return Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
+            Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
         }
-
-        return false;
     }
 
     /**
