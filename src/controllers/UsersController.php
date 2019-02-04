@@ -426,6 +426,9 @@ class UsersController extends Controller
                 }
             }
 
+            // Maybe automatically log them in
+            $this->_maybeLoginUserAfterAccountActivation($userToProcess);
+
             // Can they access the CP?
             if ($userToProcess->can('accessCp')) {
                 // Send them to the CP login page
@@ -1201,7 +1204,7 @@ class UsersController extends Controller
     {
         $this->requireAcceptsJson();
         $this->requireLogin();
-        $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
+        $userId = (int)Craft::$app->getRequest()->getRequiredBodyParam('userId');
 
         if ($userId !== Craft::$app->getUser()->getIdentity()->id) {
             $this->requirePermission('editUsers');
@@ -1949,19 +1952,16 @@ class UsersController extends Controller
     }
 
     /**
-     * Possibly log a user in right after they were activate, if Craft is configured to do so.
+     * Possibly log a user in right after they were activated or reset their password, if Craft is configured to do so.
      *
-     * @param User $user The user that was just activated
-     * @return bool Whether the user was just logged in
+     * @param User $user The user that was just activated or reset their password
      */
-    private function _maybeLoginUserAfterAccountActivation(User $user): bool
+    private function _maybeLoginUserAfterAccountActivation(User $user)
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if ($generalConfig->autoLoginAfterAccountActivation === true) {
-            return Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
+            Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
         }
-
-        return false;
     }
 
     /**

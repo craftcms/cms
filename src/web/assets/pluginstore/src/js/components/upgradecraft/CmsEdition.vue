@@ -1,7 +1,7 @@
 <template>
     <div class="cms-editions-edition">
         <div class="description">
-            <h2 class="edition-name">{{edition.name}}</h2>
+            <edition-badge :name="edition.name" block big></edition-badge>
             <p class="edition-description">{{editionDescription}}</p>
             <div class="price">
                 <template v-if="edition.price && edition.price > 0">
@@ -42,6 +42,7 @@
     import InfoHud from '../InfoHud'
     import StatusBadge from './StatusBadge'
     import BuyBtn from './BuyBtn'
+    import EditionBadge from '../EditionBadge'
 
     export default {
 
@@ -51,6 +52,7 @@
             InfoHud,
             StatusBadge,
             BuyBtn,
+            EditionBadge,
         },
 
         computed: {
