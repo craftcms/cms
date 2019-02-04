@@ -16,6 +16,12 @@
     <thead>
         <tr>
             {% for col in cols %}
+                {%- switch col.type %}
+                    {%- case 'time' %}
+                        {%- do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') %}
+                    {%- case 'template' %}
+                        {%- do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
+                {%- endswitch %}
                 <th scope="col" class="{{ col.class ?? '' }}">
                     {%- if col.heading is defined and col.heading %}{{ col.heading }}{% else %}&nbsp;{% endif %}
                     {%- if col.info is defined -%}
