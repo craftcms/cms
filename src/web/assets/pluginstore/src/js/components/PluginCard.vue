@@ -8,9 +8,7 @@
         <div>
             <div class="plugin-name">
                 <strong>{{ plugin.name }}</strong>
-                <div class="edition-badge" v-if="trialMode && activeTrialPluginEdition && plugin.editions.length > 1">
-                    {{activeTrialPluginEdition.name}}
-                </div>
+                <edition-badge v-if="trialMode && activeTrialPluginEdition && plugin.editions.length > 1" :name="activeTrialPluginEdition.name"></edition-badge>
             </div>
             <div v-shave="{ height: 45 }">{{ plugin.shortDescription }}</div>
             
@@ -42,10 +40,15 @@
 
 <script>
     import {mapState, mapGetters} from 'vuex'
+    import EditionBadge from './EditionBadge'
 
     export default {
 
         props: ['plugin', 'trialMode'],
+
+        components: {
+            EditionBadge,
+        },
 
         computed: {
 
