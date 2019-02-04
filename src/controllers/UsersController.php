@@ -1204,7 +1204,7 @@ class UsersController extends Controller
     {
         $this->requireAcceptsJson();
         $this->requireLogin();
-        $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
+        $userId = (int)Craft::$app->getRequest()->getRequiredBodyParam('userId');
 
         if ($userId !== Craft::$app->getUser()->getIdentity()->id) {
             $this->requirePermission('editUsers');
