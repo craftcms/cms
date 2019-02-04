@@ -28,7 +28,7 @@
                                     </td>
                                     <td class="item-name">
                                         <strong>Craft CMS</strong>
-                                        <span class="edition-badge">{{ item.lineItem.purchasable.name }}</span>
+                                        <edition-badge :name="item.lineItem.purchasable.name"></edition-badge>
                                     </td>
                                 </template>
 
@@ -41,10 +41,7 @@
                                     <td>
                                         <div class="item-name">
                                             <strong>{{ item.plugin.name}}</strong>
-
-                                            <div class="edition-badge">
-                                                {{item.lineItem.purchasable.name}}
-                                            </div>
+                                            <edition-badge :name="item.lineItem.purchasable.name"></edition-badge>
                                         </div>
                                     </td>
                                 </template>
@@ -135,9 +132,7 @@
                                 <td class="item-name">
                                     <strong>{{ plugin.name }}</strong>
 
-                                    <span v-if="activeTrialPluginEditions[plugin.handle] && plugin.editions.length > 1" class="edition-badge">
-                                        {{activeTrialPluginEditions[plugin.handle].name}}
-                                    </span>
+                                    <edition-badge v-if="activeTrialPluginEditions[plugin.handle] && plugin.editions.length > 1" :name="activeTrialPluginEditions[plugin.handle].name"></edition-badge>
                                 </td>
                                 <td><strong v-if="activeTrialPluginEditions[plugin.handle]">{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
                                 <td class="thin"><a class="btn" @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)">{{ "Add to cart"|t('app') }}</a></td>
@@ -155,6 +150,7 @@
 
     import {mapState, mapGetters, mapActions} from 'vuex'
     import Step from '../Step'
+    import EditionBadge from '../../EditionBadge'
 
     export default {
 
@@ -166,6 +162,7 @@
 
         components: {
             Step,
+            EditionBadge,
         },
 
         computed: {
