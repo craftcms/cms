@@ -13,7 +13,7 @@
 - Fixed a bug where `craft\helpers\DateTimeHelper::toDateTime()` was mistaking year-only values for Unix timestamps. ([#3772](https://github.com/craftcms/cms/issues/3772))
 - Fixed an error that occurred when a non-admin user attempted to edit a system message, or when the `allowAdminChanges` config setting was disabled. ([#3775](https://github.com/craftcms/cms/issues/3775))
 - Fixed a bug where it was hard to see error notifications on pages with a licensing alert. ([#3776](https://github.com/craftcms/cms/issues/3776))
-- Fixed a bug where it was impossible for non-admin users to change their profile pictures. ([#3735](https://github.com/craftcms/cms/issues/3735))
+- Fixed a bug where it wasn’t possible for non-admin users to change their profile picture. ([#3735](https://github.com/craftcms/cms/issues/3735))
 - Fixed a JavaScript error that occurred when adding a new row to a custom editable table that contained a `time` column, if no rows existed on page load. ([#3780](https://github.com/craftcms/cms/issues/3780))
 
 ## 3.1.7 - 2019-01-31
