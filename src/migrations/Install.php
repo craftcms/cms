@@ -709,7 +709,7 @@ class Install extends Migration
     {
         $this->createIndex(null, Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
         $this->createIndex(null, Table::ASSETINDEXDATA, ['volumeId'], false);
-        $this->createIndex(null, Table::ASSETS, ['filename', 'folderId'], true);
+        $this->createIndex(null, Table::ASSETS, ['filename', 'folderId'], false);
         $this->createIndex(null, Table::ASSETS, ['folderId'], false);
         $this->createIndex(null, Table::ASSETS, ['volumeId'], false);
         $this->createIndex(null, Table::ASSETTRANSFORMINDEX, ['volumeId', 'assetId', 'location'], false);
