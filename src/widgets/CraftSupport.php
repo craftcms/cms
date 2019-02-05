@@ -97,6 +97,7 @@ class CraftSupport extends Widget
         $envInfoJs = Json::encode([
             'Craft version' => Craft::$app->getVersion() . ' (' . Craft::$app->getEditionName() . ')',
             'PHP version' => App::phpVersion(),
+            'OS version' => PHP_OS . ' ' . php_uname('r'),
             'Database driver & version' => $dbDriver . ' ' . $db->getVersion(),
             'Image driver & version' => $imageDriver . ' ' . $imagesService->getVersion(),
             'Plugins & versions' => $plugins,
