@@ -24,6 +24,7 @@ use craft\models\Site;
 use craft\services\Plugins;
 use craft\services\ProjectConfig;
 use craft\web\Response;
+use yii\base\InvalidConfigException;
 
 /**
  * Installation Migration
@@ -1003,6 +1004,14 @@ class Install extends Migration
             $configFile = Craft::$app->getPath()->getProjectConfigFilePath();
             if (file_exists($configFile)) {
                 try {
+                    $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, true);
+                    $craftSchemaVersion = (string)Craft::$app->schemaVersion;
+
+                    // Compare existing Craft schema version with the one that is being applied.
+                    if (!version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
+                        throw new InvalidConfigException("Craft is installed at the wrong schema version ({$craftSchemaVersion}, but project.yaml lists {$expectedSchemaVersion}).");
+                    }
+
                     $this->_installPlugins();
                     $applyExistingProjectConfig = true;
                 } catch (\Throwable $e) {

@@ -4,6 +4,7 @@
 
 ### Changed
 - The operating system name & version are now shown in the System Report utility. ([#3784](https://github.com/craftcms/cms/issues/3784))
+- Craft now ensures that installed schema versions match the schema versions in `project.yaml` before applying project config changes during installation. ([#3783](https://github.com/craftcms/cms/issues/3783))
 
 ### Fixed
 - Fixed a SQL error that could occur when deleting an asset. ([#3786](https://github.com/craftcms/cms/issues/3786))
