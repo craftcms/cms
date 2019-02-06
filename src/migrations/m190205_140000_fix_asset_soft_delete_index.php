@@ -18,6 +18,7 @@ class m190205_140000_fix_asset_soft_delete_index extends Migration
     {
         // Unique file names in folder should no longer be enforced by the DB
         MigrationHelper::dropIndexIfExists(Table::ASSETS, ['filename', 'folderId'], true, $this);
+        MigrationHelper::dropIndexIfExists(Table::ASSETS, ['filename', 'folderId'], false, $this);
         $this->createIndex(null, Table::ASSETS, ['filename', 'folderId'], false);
     }
 
