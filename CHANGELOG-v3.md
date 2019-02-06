@@ -6,7 +6,7 @@
 - The operating system name & version are now shown in the System Report utility. ([#3784](https://github.com/craftcms/cms/issues/3784))
 - Craft now ensures that installed schema versions match the schema versions in `project.yaml` before applying project config changes during installation. ([#3783](https://github.com/craftcms/cms/issues/3783))
 
-### Fixed
+### Fixed
 - Fixed a SQL error that could occur when deleting an asset. ([#3786](https://github.com/craftcms/cms/issues/3786))
 - Fixed an error that occurred when customizing element indexes if the `allowAdminChanges` config setting was disabled. ([#3788](https://github.com/craftcms/cms/issues/3788))
 - Fixed a bug where Checkboxes, Dropdown, Multi-select, and Radio Buttons fields wouldn’t pass validation if the selected option value was `true` or `false`.
