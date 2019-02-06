@@ -54,6 +54,29 @@ If there’s a discrepancy, you will need to fix that before Craft can begin syn
 To avoid downtime on production, you should ensure that `composer install` is built into your deployment workflow.
 :::
 
+### Sensitive Information Could Be Saved in `project.yaml`
+
+Some of your system components may have required sensitive information in their settings, such as:
+
+- a Gmail/SMTP password in your email settings
+- a secret access key in an AWS S3 volume
+
+To prevent those values from being saved into your `project.yaml` file, make sure that you are setting those fields to environment variables. See [Environmental Configuration](config/environments.md) for more information.
+
+::: tip
+If you’re overriding volume settings with `config/volumes.php`, you can set sensitive values to the environment variable name rather than calling [getenv()](http://php.net/manual/en/function.getenv.php) to avoid the real values being saved to `project.yaml`.
+
+```php
+// Bad:
+'secret' => getenv('SECRET_ACCESS_KEY'),
+
+// Good:
+'secret' => '$SECRET_ACCESS_KEY',
+```
+
+Once you’ve made that change, re-save your volume in the Control Panel so your `project.yaml` file gets updated with the environment variable name.
+:::
+
 ### Production Changes May Be Forgotten
 
 If any updates are made on production that updates `project.yaml` there, those changes will be lost the next time your project is deployed and `project.yaml` is overwritten.
