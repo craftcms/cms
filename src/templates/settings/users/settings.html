@@ -7,7 +7,7 @@
 
 
 {% if settings is not defined %}
-    {% set settings = craft.app.projectConfig.get('users') %}
+    {% set settings = craft.app.projectConfig.get('user') %}
 {% endif %}
 
 {% set allVolumes = craft.app.volumes.getAllVolumes() %}
