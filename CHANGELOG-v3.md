@@ -6,7 +6,7 @@
 - The operating system name & version are now shown in the System Report utility. ([#3784](https://github.com/craftcms/cms/issues/3784))
 
 ### Fixed
-- Fixed a bug where soft delete would not work correctly for assets in some cases.
+- Fixed a SQL error that could occur when deleting an asset. ([#3786](https://github.com/craftcms/cms/issues/3786))
 
 ## 3.1.8 - 2019-02-05
 
