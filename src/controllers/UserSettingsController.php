@@ -125,7 +125,7 @@ class UserSettingsController extends Controller
     {
         $this->requirePostRequest();
         $projectConfig = Craft::$app->getProjectConfig();
-        $settings = $projectConfig->get('users') ?? [];
+        $settings = $projectConfig->get('user') ?? [];
 
         $settings['photoVolumeUid'] = Craft::$app->getRequest()->getBodyParam('photoVolumeUid');
         $settings['photoSubpath'] = Craft::$app->getRequest()->getBodyParam('photoSubpath');
@@ -136,7 +136,7 @@ class UserSettingsController extends Controller
             $settings['defaultGroup'] = Craft::$app->getRequest()->getBodyParam('defaultGroup');
         }
 
-        $projectConfig->set('users', $settings);
+        $projectConfig->set('user', $settings);
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
         return $this->redirectToPostedUrl();
