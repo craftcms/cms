@@ -10,6 +10,7 @@
 - Fixed a SQL error that could occur when deleting an asset. ([#3786](https://github.com/craftcms/cms/issues/3786))
 - Fixed an error that occurred when customizing element indexes if the `allowAdminChanges` config setting was disabled. ([#3788](https://github.com/craftcms/cms/issues/3788))
 - Fixed a bug where Checkboxes, Dropdown, Multi-select, and Radio Buttons fields wouldn’t pass validation if the selected option value was `true` or `false`.
+- Fixed an error that occurred on the Settings → Plugins page, if there were any plugins in the database that weren’t Composer-installed.
 
 ## 3.1.8 - 2019-02-05
 

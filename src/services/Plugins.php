@@ -1294,7 +1294,11 @@ class Plugins extends Component
             $this->_disabledPluginInfo = [];
 
             foreach ($pluginInfo as $handle => &$row) {
-                $configData = $this->_getPluginConfigData($handle);
+                try {
+                    $configData = $this->_getPluginConfigData($handle);
+                } catch (InvalidPluginException $e) {
+                    continue;
+                }
 
                 // Skip enabled plugins
                 if (!empty($configData['enabled'])) {
