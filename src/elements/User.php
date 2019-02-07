@@ -38,7 +38,6 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
-use yii\validators\UrlValidator as YiiUrlValidator;
 use yii\web\IdentityInterface;
 
 /**
@@ -142,8 +141,8 @@ class User extends Element implements IdentityInterface
         return [
             self::STATUS_ACTIVE => Craft::t('app', 'Active'),
             self::STATUS_PENDING => Craft::t('app', 'Pending'),
-            self::STATUS_LOCKED => Craft::t('app', 'Locked'),
             self::STATUS_SUSPENDED => Craft::t('app', 'Suspended'),
+            self::STATUS_LOCKED => Craft::t('app', 'Locked'),
         ];
     }
 
@@ -678,9 +677,7 @@ class User extends Element implements IdentityInterface
         ];
 
         $rules[] = [['firstName', 'lastName'], function ($attribute, $params, $validator) {
-            $urlValidator = new YiiUrlValidator();
-            $urlValidator->pattern = '\b' . trim($urlValidator->pattern, '^$');
-            if ($urlValidator->validate($this->$attribute)) {
+            if (strpos($this->$attribute, '://') !== false) {
                 $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
             }
         }];
@@ -790,7 +787,7 @@ class User extends Element implements IdentityInterface
     /**
      * Determines whether the user is allowed to be logged in with a given password.
      *
-     * @param string $password The user's plain text passwerd.
+     * @param string $password The user's plain text password.
      * @return bool
      */
     public function authenticate(string $password): bool
@@ -947,10 +944,6 @@ class User extends Element implements IdentityInterface
      */
     public function getStatus()
     {
-        if ($this->locked) {
-            return self::STATUS_LOCKED;
-        }
-
         if ($this->suspended) {
             return self::STATUS_SUSPENDED;
         }
@@ -1474,13 +1467,14 @@ class User extends Element implements IdentityInterface
                 return self::AUTH_PENDING_VERIFICATION;
             case self::STATUS_SUSPENDED:
                 return self::AUTH_ACCOUNT_SUSPENDED;
-            case self::STATUS_LOCKED:
-                // Let them know how much time they have to wait (if any) before their account is unlocked.
-                if (Craft::$app->getConfig()->getGeneral()->cooldownDuration) {
-                    return self::AUTH_ACCOUNT_COOLDOWN;
-                }
-                return self::AUTH_ACCOUNT_LOCKED;
             case self::STATUS_ACTIVE:
+                if ($this->locked) {
+                    // Let them know how much time they have to wait (if any) before their account is unlocked.
+                    if (Craft::$app->getConfig()->getGeneral()->cooldownDuration) {
+                        return self::AUTH_ACCOUNT_COOLDOWN;
+                    }
+                    return self::AUTH_ACCOUNT_LOCKED;
+                }
                 // Is a password reset required?
                 if ($this->passwordResetRequired) {
                     return self::AUTH_PASSWORD_RESET_REQUIRED;

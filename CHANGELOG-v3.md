@@ -2,12 +2,127 @@
 
 ## Unreleased
 
+### Changed
+- The operating system name & version are now shown in the System Report utility. ([#3784](https://github.com/craftcms/cms/issues/3784))
+- Craft’s installer no longer applies the current `project.yaml` file if the installed schema version doesn’t match the one in the file. ([#3783](https://github.com/craftcms/cms/issues/3783))
+
+### Fixed
+- Fixed a SQL error that could occur when deleting an asset. ([#3786](https://github.com/craftcms/cms/issues/3786))
+- Fixed an error that occurred when customizing element indexes if the `allowAdminChanges` config setting was disabled. ([#3788](https://github.com/craftcms/cms/issues/3788))
+- Fixed a bug where Checkboxes, Dropdown, Multi-select, and Radio Buttons fields wouldn’t pass validation if the selected option value was `true` or `false`.
+
+## 3.1.8 - 2019-02-05
+
+### Changed
+- Craft now automatically logs users in after resetting their password, if the `autoLoginAfterAccountActivation` config setting is enabled.
+
+### Fixed
+- Fixed a bug where pressing the <kbd>Return</kbd> key on editable tables with a static number of rows would add a new row. ([#3765](https://github.com/craftcms/cms/issues/3765))
+- Fixed a bug where pressing the <kbd>Return</kbd> key on editable tables would select the next row’s cell even if the cell was disabled.
+- Fixed a bug where pressing the <kbd>Return</kbd> key on an editable table wouldn’t move the focus to the next row’s sell if it had an `<input>` instead of a `<textarea>`.
+- Fixed an error that could occur in the Control Panel if any environment variable values began with an `@` character. ([#3769](https://github.com/craftcms/cms/issues/3769))
+- Fixed a bug where `craft\helpers\DateTimeHelper::toDateTime()` was mistaking year-only values for Unix timestamps. ([#3772](https://github.com/craftcms/cms/issues/3772))
+- Fixed an error that occurred when a non-admin user attempted to edit a system message, or when the `allowAdminChanges` config setting was disabled. ([#3775](https://github.com/craftcms/cms/issues/3775))
+- Fixed a bug where it was hard to see error notifications on pages with a licensing alert. ([#3776](https://github.com/craftcms/cms/issues/3776))
+- Fixed a bug where it wasn’t possible for non-admin users to change their profile picture. ([#3735](https://github.com/craftcms/cms/issues/3735))
+- Fixed a JavaScript error that occurred when adding a new row to a custom editable table that contained a `time` column, if no rows existed on page load. ([#3780](https://github.com/craftcms/cms/issues/3780))
+
+## 3.1.7 - 2019-01-31
+
 ### Added
+- Added all the things that came in [Craft 3.0.40](https://github.com/craftcms/cms/blob/master/CHANGELOG-v3.md#3040---2019-01-31).
+- Added `craft\helpers\FileHelper::canTrustMimeType()`.
+- Added `craft\web\UploadedFile::getMimeType()`.
+
+### Changed
+- The “Port” SMTP mail transport setting can now be set to an environment variable. ([#3740](https://github.com/craftcms/cms/issues/3740))
+- `craft\web\Controller::requireAdmin()` now has a `$requireAdminChanges` argument, which dictates whether the `allowAdminChanges` config setting must also be enabled (`true` by default).
+- The `project-config/sync` console command now creates a `project.yaml` file, if it's missing. ([#3736](https://github.com/craftcms/cms/issues/3736))
+- Querying for active users no longer excludes locked users.
+- `craft\helpers\FileHelper::getMimeType()` now returns `application/x-yaml` for `.yaml` and `.yml` files.
+- Updated Craft UI to 0.2.0.
+
+### Fixed
+- Fixed an error that occurred when updating to Craft 3.1 if a plugin or module was calling `craft\records\User::find()`.
+- Fixed a bug where cross-domain Live Preview requests could fail due to CORS restrictions.
+- Fixed a 403 error that would occur when an admin attempted to log in as another user on an environment where the `allowAdminChanges` config setting was disabled. ([#3749](https://github.com/craftcms/cms/issues/3749))
+- Fixed a bug where asset index toolbar items would be misaligned when searching in a volume or folder with subfolders.
+- Fixed a bug where asset indexes could show multiple view mode toggles if a different volume or subfolder was selected while at least one asset was checked. ([#3702](https://github.com/craftcms/cms/issues/3702))
+- Fixed a bug where Plugin Store screenshots were not showing properly. ([#3709](https://github.com/craftcms/cms/issues/3709))
+- Fixed a bug where zoomed Plugin Store screenshots would not close when hitting the browser’s Back button. ([#3754](https://github.com/craftcms/cms/issues/3754))
+- Fixed a bug where the Plugin Store was not working properly when Dev Mode was enabled.
+
+### Security
+- User accounts are now locked after multiple failed password attempts in current-password modals, per the `maxInvalidLogins` config setting.
+- Users are no longer signed out of active sessions when their account becomes locked.
+- Database backup/restore exception messages now redact the database password when using PostgreSQL.
+
+## 3.1.6.1 - 2019-01-29
+
+### Fixed
+- Fixed an error that occurred when creating a Table field with a Date column. ([#3748](https://github.com/craftcms/cms/issues/3748))
+
+## 3.1.6 - 2019-01-29
+
+### Added
+- It’s now possible to update disabled plugins.
+
+### Changed
+- `craft\web\Controller::requireAdmin()` now sends a 403 (Forbidden) response if the `allowAdminChanges` config setting has been set to `false`. ([#3728](https://github.com/craftcms/cms/issues/3728))
+- `craft\helpers\DateTimeHelper::toDateTime()` now supports passing an array with a `date` key set to the `YYYY-MM-DD` format, in addition to the current locale’s short date format.
+- `craft\helpers\DateTimeHelper::toDateTime()` now supports passing an array with a `time` key set to the `HH:MM` format, in addition to the current locale’s short time format.
+- `craft\helpers\DateTimeHelper::toDateTime()` now supports passing an array with a `datetime` key, which will be handled the same way strings passed to the method are handled (except that the `datetime` key can be paired with a `timezone` key).
+
+### Fixed
+- Fixed an error that occurred when using the `json_decode` filter. ([#3722](https://github.com/craftcms/cms/pull/3722))
+- Fixed a bug a bug where plugin screenshots in the Plugin Store were not rendering correctly. ([#3709](https://github.com/craftcms/cms/issues/3709))
+- Fixed an error where the `index-assets/one` and `index-assets/all` console commands were creating `.` folders in each volume.
+- Fixed a bug where the Settings → Plugins page was showing extra “Missing” rows for any unlicensed plugins that were Composer-installed but not Craft-installed. ([#3726](https://github.com/craftcms/cms/issues/3726))
+- Fixed an error that could occur when viewing trashed elements.
+- Fixed a bug where many system message translations were missing line breaks. ([#3737](https://github.com/craftcms/cms/issues/3737))
+- Fixed a bug where unparsed markdown code was present in the Control Panel error message displayed when the system was offline. ([#3746](https://github.com/craftcms/cms/issues/3746))
+
+## 3.1.5 - 2019-01-25
+
+### Changed
+- Control Panel settings that can be set to environment variables now show a tip about that if the value is not already set to an environment variable or alias.
+- Control Panel form fields can now be configured with a `tip` property, which will be displayed below the field.
+- Control Panel templates can now pass `suggestEnvVars: true` and `suggestAliases: true` to autosuggest fields, rather that supplying the `suggestions` array.
+
+### Fixed
+- Fixed a bug where the “Duplicate” action wasn’t available on the Entries index page for non-admin users. ([#3705](https://github.com/craftcms/cms/issues/3705))
+- Fixed a bug where it wasn’t possible to rename an asset’s filename from the Assets index page. ([#3707](https://github.com/craftcms/cms/issues/3707))
+- Fixed an error that occurred when saving a user that had a first or last name set.
+- Fixed a bug where it wasn’t possible to apply project config changes. ([#3713](https://github.com/craftcms/cms/issues/3713))
+- Fixed a bug where the Password field on SMTP and Gmail mail transport settings could be set to an encoded and encrypted password. ([#3699](https://github.com/craftcms/cms/issues/3699))
+- Fixed a bug where it was possible to remove the Primary Site status from the primary site, without offering a new primary site. ([#3720](https://github.com/craftcms/cms/issues/3720))
+- Fixed an error that could occur if PHP’s `memory_limit` was set to a higher size (in bytes) than `PHP_INT_MAX`. ([#3717](https://github.com/craftcms/cms/issues/3717))
+
+### Security
+- Control Panel settings that can be set to an alias now show a warning if the current value begins with the `@web` alias.
+
+## 3.1.4 - 2019-01-24
+
+### Added
+- Added all the things that came in [Craft 3.0.38](https://github.com/craftcms/cms/blob/master/CHANGELOG-v3.md#3038---2019-01-24).
 - The System Name setting can now be set to an environment variable. ([#3529](https://github.com/craftcms/cms/issues/3529))
+- Added the `index-assets/one` console command, which can now be used to index a single subfolder.
 - Added `craft\base\ApplicationTrait::getSystemName()`.
 
 ### Changed
-- URLs are no longer allowed in a user’s first or last names.
+- Craft now ensures that installed schema versions match the schema versions in `project.yaml` before syncing project config changes.
+- The `project-config/sync` console command now bails if there are pending Craft or plugin migrations.
+
+### Fixed
+- Fixed a bug where `site` translations were falling back to English if the translated message was identical to the source message. ([#3692](https://github.com/craftcms/cms/issues/3692))
+- Fixed a bug where syncing Matrix field changes to the project config would result in new changes to the project config. ([#3695](https://github.com/craftcms/cms/issues/3695))
+- Fixed an error that occurred when indexing assets in an empty volume.
+- Fixed a bug where soft-deleted assets would show up as missing after indexing.
+- Fixed a JavaScript error that could occur on the Settings → Plugins page.
+- Fixed a bug where `Craft::parseEnv()` was throwing an `InvalidConfigException` if the given string began with `@` but was not an alias. ([#3700](https://github.com/craftcms/cms/issues/3700))
+
+### Security
+- URLs are no longer allowed in users’ first or last names.
 
 ## 3.1.3 - 2019-01-21
 
@@ -258,11 +373,56 @@
 - Fixed a bug where Craft wasn’t saving Dashboard widget sizes properly on PostgreSQL. ([#3609](https://github.com/craftcms/cms/issues/3609))
 - Fixed a PHP error that could occur if the primary site didn’t have a base URL. ([#3624](https://github.com/craftcms/cms/issues/3624))
 - Fixed a bug where `craft\helpers\MigrationHelper::dropIndexIfExists()` wasn’t working if the index had an unexpected name.
+- Fixed an error that could occur if a plugin attempted to register the same Twig extension twice in the same request.
 
 ### Security
 - The web and CLI installers no longer suggest `@web` for the site URL, and now attempt to save the entered site URL as a `DEFAULT_SITE_URL` environment variable in `.env`. ([#3559](https://github.com/craftcms/cms/issues/3559))
 - Craft now destroys all other sessions associated with a user account when a user changes their password.
 - It’s no longer possible to spoof Live Preview requests.
+
+## 3.0.40 - 2019-01-31
+
+### Added
+- Added `craft\helpers\App::testIniSet()`.
+
+### Changed
+- Craft now warns if `ini_set()` is disabled and [memory_limit](http://php.net/manual/en/ini.core.php#ini.memory-limit) is less than `256M` or [max_execution_time](http://php.net/manual/en/info.configuration.php#ini.max-execution-time) is less than `120` before performing Composer operations.
+- `craft\helpers\App::maxPowerCaptain()` now attempts to set the `memory_limit` to `1536M` rather than `-1`.
+
+### Fixed
+- Fixed a bug where Craft wasn’t always aware of plugin licensing issues.
+
+## 3.0.39 - 2019-01-29
+
+### Changed
+- It’s now possible to update disabled plugins.
+
+### Fixed
+- Fixed an error that could occur if PHP’s `memory_limit` was set to a higher size (in bytes) than `PHP_INT_MAX`. ([#3717](https://github.com/craftcms/cms/issues/3717))
+
+## 3.0.38 - 2019-01-24
+
+### Added
+- Added the `update` command, which can be used to [update Craft from the terminal](https://docs.craftcms.com/v3/updating.html#updating-from-the-terminal).
+- Craft now warns if PHP is running in Safe Mode with a [max_execution_time](http://php.net/manual/en/info.configuration.php#ini.max-execution-time) of less than 120 seconds, before performing Composer operations.
+- Craft now stores backups of `composer.json` and `composer.lock` files in `storage/composer-backups/` before running Composer operations.
+- Added `craft\db\Connection::getBackupFilePath()`.
+- Added `craft\helpers\App::phpConfigValueInBytes()`.
+- Added `craft\helpers\Console::isColorEnabled()`.
+- Added `craft\helpers\Console::outputCommand()`.
+- Added `craft\helpers\Console::outputWarning()`.
+- Added `craft\helpers\FileHelper::cycle()`.
+- Added `craft\services\Composer::$maxBackups`.
+- Added `craft\services\Path::getComposerBackupsPath()`.
+
+### Changed
+- The `migrate/all` console command now supports a `--no-content` argument that can be passed to ignore pending content migrations.
+- Craft now attempts to disable PHP’s memory and time limits before running Composer operations.
+- Craft no longer respects the `phpMaxMemoryLimit` config setting if PHP’s `memory_limit` setting is already set to `-1` (no limit).
+- Craft now respects Composer’s [classmap-authoritative](https://getcomposer.org/doc/06-config.md#classmap-authoritative) config setting.
+- Craft now links to the [Troubleshooting Failed Updates](https://craftcms.com/guides/failed-updates) guide when an update fails.
+- `craft\services\Composer::install()` can now behave like the `composer install` command, if `$requirements` is `null`.
+- `craft\services\Composer::install()` now has a `$whitelist` argument, which can be set to an array of packages to whitelist, or `false` to disable the whitelist.
 
 ## 3.0.37 - 2019-01-08
 

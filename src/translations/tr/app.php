@@ -15,7 +15,7 @@ return [
     '1 week' => '1 hafta',
     '1 year' => '1 yıl',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Lisansınızın süresi doldu!</strong> Harika güncellemelerle dolu bir yıl daha geçirmek için {name} lisansınızı güncelleyin.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>Bir ara noktaya ulaştınız!</strong> Siz {update} yükledikten sonra daha fazla güncelleme sunulacak.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Bir ara noktaya ulaştınız!</strong> Siz {update} yükledikten sonra daha fazla güncelleme sunulacak.',
     'A critical update is available.' => 'Kritik bir güncelleme var.',
     'A fatal error has occurred:' => 'Önemli bir hata oluştu:',
     'A file with the name “{filename}” already exists.' => '"{filename}" adlı bir dosya zaten mevcut.',
@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Sisteminiz "{site}" sitesi için içerik kaydedecek şekilde ayarlanmadı.',
     'You’re all up-to-date!' => 'Tamamen Güncelsiniz!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Craft {licensedEdition} lisansı ile Craft {edition} çalıştırıyorsunuz.',
-    'account_activation_body' => 'Merhaba {{user.friendlyName}}, {{siteName}} ile bir hesap oluşturduğunuz için teşekkürler! Hesabınızı etkinleştirmek için şu bağlantıya tıklayınız: &lt;{{link}}&gt; Bu epostayı neden aldığınızı bilmiyorsanız, kaale almayınız.',
+    'account_activation_body' => 'Merhaba {{user.friendlyName}},
+
+{{siteName}} ile bir hesap oluşturduğunuz için teşekkürler! Hesabınızı etkinleştirmek için şu bağlantıya tıklayınız:
+
+<{{link}}>
+
+Bu epostayı neden aldığınızı bilmiyorsanız, kaale almayınız.',
     'account_activation_heading' => 'Biri hesap oluşturduğunda:',
     'account_activation_subject' => 'Hesabını aktif hale getir',
     'by {author}' => 'Yazar: {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => 'beş',
     'folders' => 'klasörler',
     'folders and files' => 'klasörler ve dosyalar',
-    'forgot_password_body' => 'Merhaba {{user.friendlyName}}, {{siteName}} şifrenizi yenilemek için şu bağlantıya tıklayınız: &lt;{{link}}&gt; Bu epostayı neden aldığınızı bilmiyorsanız, kaale almayınız.',
+    'forgot_password_body' => 'Merhaba {{user.friendlyName}},
+
+{{siteName}} şifrenizi yenilemek için şu bağlantıya tıklayınız:
+
+<{{link}}>
+
+Bu epostayı neden aldığınızı bilmiyorsanız, kaale almayınız.',
     'forgot_password_heading' => 'Birisi şifresini unuttuğunda:',
     'forgot_password_subject' => 'Şifreni sıfırla',
     'four' => 'dört',
@@ -1198,12 +1210,20 @@ return [
     'seconds' => 'saniyeler',
     'seven' => 'yedi',
     'six' => 'altı',
-    'test_email_body' => 'Merhaba {{user.friendlyName}}, Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ settings }}',
+    'test_email_body' => 'Merhaba {{user.friendlyName}},
+
+Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ settings }}',
     'test_email_heading' => 'Eposta ayarlarınızı test ederken:',
     'test_email_subject' => 'Bu Craft\'tan bir test epostasıdır',
     'three' => 'üç',
     'two' => 'iki',
-    'verify_new_email_body' => 'Merhaba {{user.friendlyName}}, Lütfen eposta adresinizi şu bağlantıya tıklayarak onaylayın: &lt;{{link}}&gt; Bu epostayı beklemiyorduysanız, görmezden gelin.',
+    'verify_new_email_body' => 'Merhaba {{user.friendlyName}},
+
+Lütfen eposta adresinizi şu bağlantıya tıklayarak onaylayın:
+
+<{{link}}>
+
+Bu epostayı beklemiyorduysanız, görmezden gelin.',
     'verify_new_email_heading' => 'Birisi eposta adresini değiştirdiği zaman:',
     'verify_new_email_subject' => 'Yeni e-posta adresinizi doğrulayın',
     'week' => 'hafta',

@@ -1,4 +1,4 @@
-/*!   - 2019-01-21 */
+/*!   - 2019-02-01 */
 (function($){
 
 /** global: Craft */
@@ -2513,6 +2513,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return false;
             }
 
+            // Hide action triggers if they're currently being shown
+            this.hideActionTriggers();
+
             this.$source = $source;
             this.sourceKey = $source.data('key');
             this.setInstanceState('selectedSource', this.sourceKey);
@@ -3069,14 +3072,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             if (this.trashed || this.searching) {
-                if (!$option.hasClass('disabled')) {
-                    $option.addClass('disabled');
+                $option.addClass('disabled');
+                if (this.getSelectedSortAttribute() === 'structure') {
                     // Temporarily set the sort to the first option
                     var $firstOption = this.$sortAttributesList.find('a:not(.disabled):first')
                     this.setSortAttribute($firstOption.data('attr'));
                     this.setSortDirection('asc');
                 }
             } else {
+                $option.removeClass('disabled');
                 this.setStoredSortOptionsForSource();
             }
         },
@@ -12727,6 +12731,10 @@ Craft.EditableTable = Garnish.Base.extend(
             this.settings.onDeleteRow(row.$tr);
         },
         canAddRow: function() {
+            if (this.settings.staticRows) {
+                return false;
+            }
+
             if (this.settings.maxRows) {
                 return (this.rowCount < this.settings.maxRows);
             }
@@ -12761,7 +12769,40 @@ Craft.EditableTable = Garnish.Base.extend(
 
         createRow: function(rowId, columns, baseName, values) {
             return Craft.EditableTable.createRow(rowId, columns, baseName, values);
-        }
+        },
+
+        focusOnNextRow: function($tr, tdIndex, blurTd) {
+            var $nextTr = $tr.next('tr');
+            var nextRow;
+
+            if ($nextTr.length) {
+                nextRow = $nextTr.data('editable-table-row');
+            } else {
+                nextRow = this.addRow(false);
+            }
+
+            // Focus on the same cell in the next row
+            if (!nextRow) {
+                return;
+            }
+
+            if (!nextRow.$tds[tdIndex]) {
+                return;
+            }
+
+            if ($(nextRow.$tds[tdIndex]).hasClass('disabled')) {
+                if ($nextTr) {
+                    this.focusOnNextRow($nextTr, tdIndex, blurTd);
+                }
+                return;
+            }
+
+            var $input = $('textarea,input.text', nextRow.$tds[tdIndex]);
+            if ($input.length) {
+                $(blurTd).trigger('blur');
+                $input.trigger('focus');
+            }
+        },
     },
     {
         textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'time'],
@@ -13024,21 +13065,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             // Going to the next row?
             if (keyCode === Garnish.RETURN_KEY && (ev.data.type !== 'multiline' || ctrl)) {
                 ev.preventDefault();
-                var $nextTr = this.$tr.next('tr');
-                var nextRow;
-
-                if ($nextTr.length) {
-                    nextRow = $nextTr.data('editable-table-row');
-                } else {
-                    nextRow = this.table.addRow(false);
-                }
-
-                // Focus on the same cell in the next row
-                if (nextRow) {
-                    $(ev.currentTarget).trigger('blur');
-                    $('textarea', nextRow.$tds[ev.data.tdIndex]).trigger('focus');
-                }
-
+                this.table.focusOnNextRow(this.$tr, ev.data.tdIndex, ev.currentTarget);
                 return;
             }
 
@@ -13487,7 +13514,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                         this.callback();
                     }
                     else {
-                        this.showPasswordError(Craft.t('app', 'Incorrect password.'));
+                        this.showPasswordError(response.message || Craft.t('app', 'Incorrect password.'));
                         Garnish.shake(this.passwordModal.$container);
                         this.focusPasswordInput();
                     }
@@ -15890,7 +15917,7 @@ Craft.LivePreview = Garnish.Base.extend(
                 this._scrollY = $doc ? $doc.scrollTop() : 0;
 
                 $.ajax({
-                    url: this.previewUrl,
+                    url: this.previewUrl + (this.previewUrl.indexOf('?') !== -1 ? '&' : '?') + Craft.tokenParam + '=' + this.token,
                     method: 'POST',
                     data: $.extend({}, postData, this.basePostData),
                     headers: {

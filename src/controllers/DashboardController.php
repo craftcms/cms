@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\Widget;
 use craft\base\WidgetInterface;
 use craft\helpers\App;
@@ -21,6 +20,8 @@ use craft\models\CraftSupport;
 use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\RequestOptions;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -336,36 +337,23 @@ class DashboardController extends Controller
             ]);
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
-
-        // Add some extra info about this install
-        $message = $getHelpModel->message . "\n\n" .
-            "------------------------------\n\n" .
-            'Craft ' . Craft::$app->getEditionName() . ' ' . Craft::$app->getVersion();
-
-        /** @var Plugin[] $plugins */
-        $plugins = Craft::$app->getPlugins()->getAllPlugins();
-
-        if (!empty($plugins)) {
-            $pluginNames = [];
-
-            foreach ($plugins as $plugin) {
-                $pluginNames[] = $plugin->name . ' ' . $plugin->getVersion() . ' (' . $plugin->developer . ')';
-            }
-
-            $message .= "\nPlugins: " . implode(', ', $pluginNames);
-        }
-
-        $message .= "\nDomain: " . Craft::$app->getRequest()->getHostInfo();
-
-        $requestParamDefaults = [
-            'sFirstName' => $user->getFriendlyName(),
-            'sLastName' => $user->lastName ?: 'Doe',
-            'sEmail' => $getHelpModel->fromEmail,
-            'tNote' => $message,
+        $parts = [
+            [
+                'name' => 'email',
+                'contents' => $getHelpModel->fromEmail,
+            ],
+            [
+                'name' => 'name',
+                'contents' => Craft::$app->getUser()->getIdentity()->getName(),
+            ],
+            [
+                'name' => 'message',
+                'contents' => $getHelpModel->message,
+            ],
         ];
 
-        $requestParams = $requestParamDefaults;
+        // If there's a custom attachment, see if we should include it in the zip
+        $zipAttachment = $getHelpModel->attachment && $this->_shouldZipAttachment($getHelpModel->attachment);
 
         // Create the SupportAttachment zip
         $zipPath = Craft::$app->getPath()->getTempPath() . '/' . StringHelper::UUID() . '.zip';
@@ -432,35 +420,11 @@ class DashboardController extends Controller
                 // Make a fresh database backup of the current schema/data. We want all data from all tables
                 // for debugging.
                 try {
-                    Craft::$app->getDb()->backup();
+                    $backupPath = Craft::$app->getDb()->backup();
+                    $zip->addFile($backupPath, pathinfo($backupPath, PATHINFO_BASENAME));
                 } catch (\Throwable $e) {
-                    $noteError = "\n\nError backing up database: " . $e->getMessage();
-                    $requestParamDefaults['tNote'] .= $noteError;
-                    $requestParams['tNote'] .= $noteError;
-                }
-
-                $backupPath = Craft::$app->getPath()->getDbBackupPath();
-                if (is_dir($backupPath)) {
-                    // Get the SQL files in there
-                    $backupFiles = FileHelper::findFiles($backupPath, [
-                        'only' => ['*.sql'],
-                        'recursive' => false
-                    ]);
-
-                    // Get the 3 most recent ones
-                    $backupTimes = [];
-                    foreach ($backupFiles as $backupFile) {
-                        $backupTimes[] = filemtime($backupFile);
-                    }
-                    array_multisort($backupTimes, SORT_DESC, $backupFiles);
-                    array_splice($backupFiles, 3);
-
-                    foreach ($backupFiles as $backupFile) {
-                        if (pathinfo($backupFile, PATHINFO_EXTENSION) !== 'sql') {
-                            continue;
-                        }
-                        $zip->addFile($backupFile, 'backups/' . pathinfo($backupFile, PATHINFO_BASENAME));
-                    }
+                    Craft::warning('Error adding database backup to support request: ' . $e->getMessage(), __METHOD__);
+                    $getHelpModel->message .= "\n\n---\n\nError adding database backup: " . $e->getMessage();
                 }
             }
 
@@ -476,48 +440,52 @@ class DashboardController extends Controller
                 }
             }
 
-            // Uploaded attachment
-            if ($getHelpModel->attachment) {
+            // Attachment?
+            if ($zipAttachment) {
                 $zip->addFile($getHelpModel->attachment->tempName, $getHelpModel->attachment->name);
             }
 
             // Close and attach the zip
             $zip->close();
-            $requestParams['File1_sFilename'] = 'SupportAttachment-' . FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->name) . '.zip';
-            $requestParams['File1_sFileMimeType'] = 'application/zip';
-            $requestParams['File1_bFileBody'] = base64_encode(file_get_contents($zipPath));
+            $parts[] = [
+                'name' => 'attachments[0]',
+                'contents' => fopen($zipPath, 'rb'),
+                'filename' => 'SupportAttachment-' . FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->name) . '.zip',
+            ];
         } catch (\Throwable $e) {
-            Craft::warning('Tried to attach debug logs to a support request and something went horribly wrong: ' . $e->getMessage(), __METHOD__);
-
-            // There was a problem zipping, so reset the params and just send the email without the attachment.
-            $requestParams = $requestParamDefaults;
-            $requestParams['tNote'] .= "\n\nError attaching zip: " . $e->getMessage();
+            Craft::warning('Error creating support zip: ' . $e->getMessage(), __METHOD__);
+            $getHelpModel->message .= "\n\n---\n\nError creating zip: " . $e->getMessage();
         }
 
-        $requestParams = array_merge($requestParams, ['method' => 'request.create', 'output' => 'xml']);
-
-        // HelpSpot requires form encoded POST params and Guzzles requires this key to do that.
-        $requestParams = [
-            'form_params' => $requestParams
-        ];
-
-        $guzzleClient = Craft::createGuzzleClient(['timeout' => 120, 'connect_timeout' => 120]);
+        // Uploaded attachment separately?
+        if ($getHelpModel->attachment && !$zipAttachment) {
+            $parts[] = [
+                'name' => 'attachments[1]',
+                'contents' => fopen($getHelpModel->attachment->tempName, 'rb'),
+                'filename' => $getHelpModel->attachment->name,
+            ];
+        }
 
         try {
-            $guzzleClient->post('https://support.pixelandtonic.com/api/index.php', $requestParams);
-        } catch (\Throwable $e) {
-            return $this->renderTemplate('_components/widgets/CraftSupport/response', [
-                'widgetId' => $widgetId,
-                'success' => false,
-                'errors' => [
-                    'Support' => $e->getMessage()
-                ]
+            Craft::$app->getApi()->request('POST', 'support', [
+                RequestOptions::MULTIPART => $parts,
             ]);
+        } catch (RequestException $requestException) {
         }
 
         // Delete the zip file
         if (is_file($zipPath)) {
             FileHelper::unlink($zipPath);
+        }
+
+        if (isset($requestException)) {
+            return $this->renderTemplate('_components/widgets/CraftSupport/response', [
+                'widgetId' => $widgetId,
+                'success' => false,
+                'errors' => [
+                    'Support' => [$requestException->getMessage()]
+                ]
+            ]);
         }
 
         return $this->renderTemplate('_components/widgets/CraftSupport/response', [
@@ -650,5 +618,36 @@ class DashboardController extends Controller
         return $this->asJson([
             'errors' => $allErrors
         ]);
+    }
+
+    /**
+     * Returns whether we should zip the custom support attachment.
+     *
+     * @param string $file
+     * @return bool
+     */
+    private function _shouldZipAttachment(UploadedFile $file): bool
+    {
+        // If it's > 2 MB, just do it
+        if (filesize($file->tempName) > 1024 * 1024 * 2) {
+            return true;
+        }
+
+        $mimeType = $file->getMimeType();
+
+        if ($mimeType === null) {
+            return true;
+        }
+
+        return (
+            !in_array($mimeType, [
+                'application/json',
+                'application/pdf',
+                'application/x-yaml',
+            ], true) &&
+            strpos($mimeType, 'text/') !== 0 &&
+            strpos($mimeType, 'image/') !== 0 &&
+            strpos($mimeType, 'xml') === false
+        );
     }
 }

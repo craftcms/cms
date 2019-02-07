@@ -15,7 +15,7 @@ return [
     '1 week' => '1 أسبوع',
     '1 year' => '1 سنة',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong dir="rtl">لقد انتهت صلاحية ترخيصك!</strong> جدد ترخيص {name} لعام آخر من التحديثات المذهلة.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong dir="rtl">لقد وصلت إلى نقطة توقف!</strong> ستتوافر المزيد من التحديثات بعد تثبيت {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong dir="rtl">لقد وصلت إلى نقطة توقف!</strong> ستتوافر المزيد من التحديثات بعد تثبيت {update}.',
     'A critical update is available.' => 'يتوفر تحديث هام.',
     'A fatal error has occurred:' => 'حدث خطأ جسيم:',
     'A file with the name “{filename}” already exists.' => 'يوجد بالفعل ملف بالاسم "{filename}".',
@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'لم يتم إعداد النظام لديك على حفظ المحتوى للموقع "{site}".',
     'You’re all up-to-date!' => 'أنت على آخر تحديث!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'أنت تعمل على نسخة Craft {edition} بترخيص Craft {licensedEdition}.',
-    'account_activation_body' => 'مرحبا {{user.friendlyName}}،شكراً لإنشائك حساباً في {{siteName}}! لتفعيل حسابك، انقر على الرابط التالي:&lt;{{link}}&gt;إذا لم تكن تتوقع هذه الرسالة، ما عليك سوى تجاهلها.',
+    'account_activation_body' => 'مرحبا {{user.friendlyName}}،
+
+شكراً لإنشائك حساباً في {{siteName}}! لتفعيل حسابك، انقر على الرابط التالي:
+
+<{{link}}>
+
+إذا لم تكن تتوقع هذه الرسالة، ما عليك سوى تجاهلها.',
     'account_activation_heading' => 'عندما ينشئ أحدهم حساباً:',
     'account_activation_subject' => 'تفعيل حسابك',
     'by {author}' => 'بواسطة {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => 'خمسة',
     'folders' => 'مجلدات',
     'folders and files' => 'مجلدات وملفات',
-    'forgot_password_body' => 'مرحبا {{user.friendlyName}}،لإعادة تعيين كلمة المرور الخاصة بك في {{siteName}}، انقر على الرابط التالي:&lt;{{link}}&gt;إذا لم تكن تتوقع هذه الرسالة، ما عليك سوى تجاهلها.',
+    'forgot_password_body' => 'مرحبا {{user.friendlyName}}،
+
+لإعادة تعيين كلمة المرور الخاصة بك في {{siteName}}، انقر على الرابط التالي:
+
+<{{link}}>
+
+إذا لم تكن تتوقع هذه الرسالة، ما عليك سوى تجاهلها.',
     'forgot_password_heading' => 'عندما ينسى أحدهم كلمة المرور الخاصة به:',
     'forgot_password_subject' => 'إعادة تعيين كلمة المرور الخاصة بك',
     'four' => 'أربعة',
@@ -1198,12 +1210,24 @@ return [
     'seconds' => 'ثانية/ثواني',
     'seven' => 'سبعة',
     'six' => 'ستة',
-    'test_email_body' => 'مرحبا {{user.friendlyName}}،تهانينا! لقد تمكن Craft من إرسال رسالة بنجاح.فيما يلي الإعدادات التي استخدمتها:{{ settings }}',
+    'test_email_body' => 'مرحبا {{user.friendlyName}}،
+
+تهانينا! لقد تمكن Craft من إرسال رسالة بنجاح.
+
+فيما يلي الإعدادات التي استخدمتها:
+
+{{ settings }}',
     'test_email_heading' => 'عندما تختبر إعدادات بريدك الإلكتروني:',
     'test_email_subject' => 'هذه رسالة اختبار من Craft',
     'three' => 'ثلاثة',
     'two' => 'اثنان',
-    'verify_new_email_body' => 'مرحبا {{user.friendlyName}}،فضلاً أكد صحة عنوان بريدك الإلكتروني الجديد بالنقر على الرابط التالي:&lt;{{link}}&gt;إذا لم تكن تتوقع هذه الرسالة، ما عليك سوى تجاهلها.',
+    'verify_new_email_body' => 'مرحبا {{user.friendlyName}}،
+
+فضلاً أكد صحة عنوان بريدك الإلكتروني الجديد بالنقر على الرابط التالي:
+
+<{{link}}>
+
+إذا لم تكن تتوقع هذه الرسالة، ما عليك سوى تجاهلها.',
     'verify_new_email_heading' => 'عندما يقوم أحدهم بتغيير عنوان بريده الإلكتروني:',
     'verify_new_email_subject' => 'تأكيد صحة عنوان بريدك الإلكتروني الجديد',
     'week' => 'أسبوع',

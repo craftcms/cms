@@ -15,7 +15,7 @@ return [
     '1 week' => '1 semana',
     '1 year' => '1 año',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Tu licencia ha caducado.</strong> Renueva tu licencia de {name} para disfrutar de otro año de sorprendentes actualizaciones.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>Has alcanzado un punto de quiebre.</strong> Para acceder a nuevas actualizaciones, instala {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Has alcanzado un punto de quiebre.</strong> Para acceder a nuevas actualizaciones, instala {update}.',
     'A critical update is available.' => 'Se encuentra disponible una actualización crítica.',
     'A fatal error has occurred:' => 'Se produjo un error irrecuperable:',
     'A file with the name “{filename}” already exists.' => 'Ya existe un archivo con el nombre “{filename}”.',
@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Tu sistema no está configurado para guardar contenido para el sitio “{site}”.',
     'You’re all up-to-date!' => '¡Tienes todo actualizado!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Estás usando Craft {edition} con una licencia {licensedEdition} de Craft.',
-    'account_activation_body' => 'Hola, {{user.friendlyName}}:¡Gracias por crear una cuenta con {{siteName}}! Para activar tu cuenta, pulsa en el siguiente enlace:&lt;{{link}}&gt;Si no estabas esperando este correo electrónico, ignóralo.',
+    'account_activation_body' => 'Hola, {{user.friendlyName}}:
+
+¡Gracias por crear una cuenta con {{siteName}}! Para activar tu cuenta, pulsa en el siguiente enlace:
+
+<{{link}}>
+
+Si no estabas esperando este correo electrónico, ignóralo.',
     'account_activation_heading' => 'Cuando alguien crea una cuenta:',
     'account_activation_subject' => 'Activa tu cuenta',
     'by {author}' => 'por {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => 'cinco',
     'folders' => 'carpetas',
     'folders and files' => 'carpetas y archivos',
-    'forgot_password_body' => 'Hola, {{user.friendlyName}}:Para restablecer la contraseña de tu {{siteName}} pulsa en el siguiente enlace:&lt;{{link}}&gt;Si no estabas esperando este correo electrónico, ignóralo.',
+    'forgot_password_body' => 'Hola, {{user.friendlyName}}:
+
+Para restablecer la contraseña de tu {{siteName}} pulsa en el siguiente enlace:
+
+<{{link}}>
+
+Si no estabas esperando este correo electrónico, ignóralo.',
     'forgot_password_heading' => 'Cuando alguien olvida su contraseña:',
     'forgot_password_subject' => 'Restablece la contraseña.',
     'four' => 'cuatro',
@@ -1198,12 +1210,24 @@ return [
     'seconds' => 'segundos',
     'seven' => 'siete',
     'six' => 'seis',
-    'test_email_body' => 'Hola, {{user.friendlyName}}:¡Enhorabuena! Craft te ha enviado un correo electrónico.Estas son las configuraciones que has utilizado:{{ settings }}',
+    'test_email_body' => 'Hola, {{user.friendlyName}}:
+
+¡Enhorabuena! Craft te ha enviado un correo electrónico.
+
+Estas son las configuraciones que has utilizado:
+
+{{ settings }}',
     'test_email_heading' => 'Cuando pruebas la configuarción de tu correo electrónico.',
     'test_email_subject' => 'Este es un correo electrónico de prueba de Craft',
     'three' => 'tres',
     'two' => 'dos',
-    'verify_new_email_body' => 'Hola, {{user.friendlyName}}:Verifica tu nueva dirección de correo electrónico pulsando en este enlace:&lt;{{link}}&gt;Si no estabas esperando este correo electrónico, ignóralo.',
+    'verify_new_email_body' => 'Hola, {{user.friendlyName}}:
+
+Verifica tu nueva dirección de correo electrónico pulsando en este enlace:
+
+<{{link}}>
+
+Si no estabas esperando este correo electrónico, ignóralo.',
     'verify_new_email_heading' => 'Cuando alguien cambia su dirección de correo electrónico:',
     'verify_new_email_subject' => 'Verifica tu nueva dirección de correo electrónico',
     'week' => 'semana',

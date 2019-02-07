@@ -173,12 +173,70 @@ class App
      */
     public static function phpConfigValueAsBool(string $var): bool
     {
-        $value = ini_get($var);
+        $value = trim(ini_get($var));
 
         // Supposedly “On” values will always be normalized to '1' but who can trust PHP...
+        return ($value === '1' || strtolower($value) === 'on');
+    }
 
-        /** @noinspection TypeUnsafeComparisonInspection */
-        return ($value == 1 || strtolower($value) === 'on');
+    /**
+     * Retrieves a disk size PHP config setting and normalizes it into bytes.
+     *
+     * @param string $var The PHP config setting to retrieve.
+     * @return int|float The value normalized into bytes.
+     */
+    public static function phpConfigValueInBytes(string $var)
+    {
+        $value = trim(ini_get($var));
+        $unit = strtolower(substr($value, -1, 1));
+        $value = (int)$value;
+
+        switch ($unit) {
+            case 'g':
+                $value *= 1024;
+            // no break (cumulative multiplier)
+            case 'm':
+                $value *= 1024;
+            // no break (cumulative multiplier)
+            case 'k':
+                $value *= 1024;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Tests whether ini_set() works.
+     *
+     * @return bool
+     */
+    public static function testIniSet(): bool
+    {
+        $oldValue = ini_get('memory_limit');
+        $oldBytes = static::phpConfigValueInBytes('memory_limit');
+
+        // When the old value is not equal to '-1', add 1MB to the limit set at the moment
+        if ($oldBytes === -1) {
+            $testBytes = 1024 * 1024 * 442;
+        } else {
+            $testBytes = $oldBytes + 1024 * 1024;
+        }
+
+        $testValue = sprintf('%sM', ceil($testBytes / (1024 * 1024)));
+        set_error_handler(function(){});
+        $result = ini_set('memory_limit', $testValue);
+        $newValue = ini_get('memory_limit');
+        ini_set('memory_limit', $oldValue);
+        restore_error_handler();
+
+        // ini_set can return false or an empty string depending on your php version / FastCGI.
+        // If ini_set has been disabled in php.ini, the value will be null because of our muted error handler
+        return (
+            $result !== null &&
+            $result !== false &&
+            $result !== '' &&
+            $result !== $newValue
+        );
     }
 
     /**
@@ -217,13 +275,11 @@ class App
      */
     public static function maxPowerCaptain()
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-        if ($generalConfig->phpMaxMemoryLimit !== '') {
-            @ini_set('memory_limit', $generalConfig->phpMaxMemoryLimit);
-        } else {
-            // Grab. It. All.
-            @ini_set('memory_limit', -1);
+        // Don't mess with the memory_limit, even at the config's request, if it's already set to -1 or >= 1.5GB
+        $memoryLimit = static::phpConfigValueInBytes('memory_limit');
+        if ($memoryLimit !== -1 && $memoryLimit < 1024 * 1024 * 1536) {
+            $maxMemoryLimit = Craft::$app->getConfig()->getGeneral()->phpMaxMemoryLimit;
+            @ini_set('memory_limit', $maxMemoryLimit ?: '1536M');
         }
 
         // Try to disable the max execution time

@@ -825,6 +825,10 @@ ul.icons li a:hover {
     background: #fff;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
   }
+
+  .flex {
+    align-items: flex-start;
+  }
 }
 
 .flex {
@@ -2269,7 +2273,7 @@ ul.tree,
   border: 1px solid transparent;
 }
 
-.status:not(.on):not(.live):not(.active):not(.enabled):not(.locked):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
+.status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
   border-color: rgba(0, 0, 0, 0.40);
 }
 
@@ -2284,7 +2288,6 @@ ul.tree,
 /* green */
 
 .status.orange,
-.status.locked,
 .status.pending {
   background-color: $orange;
 }
@@ -3506,12 +3509,21 @@ textarea.text.fullwidth {
     }
   }
 
+  & > .notice,
   & > .warning {
     margin: 2px 0 0;
 
     &:before {
       @include margin(-2px, 2px, 0, 0);
       @include icon;
+      width: 1em;
+    }
+
+    &.notice:before {
+      content: 'lightbulb';
+    }
+
+    &.warning:before {
       content: 'alert';
     }
   }

@@ -8,7 +8,7 @@
                     if (textStatus === 'success') {
                         for (var handle in response) {
                             if (response.hasOwnProperty(handle)) {
-                                if (!response[handle].isInstalled) {
+                                if (!response[handle].isComposerInstalled) {
                                     this.addUninstalledPluginRow(handle, response[handle]);
                                 } else {
                                     (new Plugin($('#plugin-' + handle))).update(response[handle], handle);
@@ -185,6 +185,9 @@
             }
         }, {
             normalizeUserKey: function(key) {
+                if (typeof key !== 'string') {
+                    return '';
+                }
                 return key.replace(/.{4}/g, '$&-').substr(0, 29).toUpperCase();
             }
         }

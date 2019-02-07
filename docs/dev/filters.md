@@ -4,7 +4,7 @@ In addition to the template filters that [Twig comes with](https://twig.symfony.
 
 ## `atom`
 
-Outputs a date in the ISO-8601 format (which should be used for Atom feeds, among other things).
+Converts a date to an ISO-8601 timestamp (e.g. `2019-01-29T10:00:00-08:00`), which should be used for Atom feeds, among other things.
 
 ```twig
 {{ entry.postDate|atom }}

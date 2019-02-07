@@ -22,6 +22,10 @@ p {
   @apply .mb-4;
 }
 
+.swiper-wrapper {
+  min-width: auto;
+}
+
 .ps-header {
   @apply .border-b .border-solid .border-grey-light .py-2 .flex .justify-between;
 }
@@ -52,14 +56,6 @@ pre {
 
 code {
   @apply .bg-grey-lighter .p-1;
-}
-
-
-/* Edition Badge */
-
-.edition-badge {
-  @apply .inline-block .border .border-solid .border-grey .rounded .uppercase .px-1 .text-grey-dark .text-xs .relative;
-  top: -2px;
 }
 
 

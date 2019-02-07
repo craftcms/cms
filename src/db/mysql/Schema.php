@@ -146,22 +146,6 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultBackupCommand(): string
     {
-        $defaultTableIgnoreList = [
-            Table::ASSETINDEXDATA,
-            Table::ASSETTRANSFORMINDEX,
-            '{{%cache}}',
-            Table::SESSIONS,
-            Table::TEMPLATECACHES,
-            '{{%templatecachecriteria}}',
-            Table::TEMPLATECACHEELEMENTS,
-        ];
-
-        $dbSchema = Craft::$app->getDb()->getSchema();
-
-        foreach ($defaultTableIgnoreList as $key => $ignoreTable) {
-            $defaultTableIgnoreList[$key] = ' --ignore-table={database}.' . $dbSchema->getRawTableName($ignoreTable);
-        }
-
         $defaultArgs =
             ' --defaults-extra-file="' . $this->_createDumpConfigFile() . '"' .
             ' --add-drop-table' .
@@ -173,6 +157,11 @@ class Schema extends \yii\db\mysql\Schema
             ' --set-charset' .
             ' --triggers';
 
+        $ignoreTableArgs = [];
+        foreach (Craft::$app->getDb()->getIgnoredBackupTables() as $table) {
+            $ignoreTableArgs[] = "--ignore-table={database}.{$table}";
+        }
+
         $schemaDump = 'mysqldump' .
             $defaultArgs .
             ' --single-transaction' .
@@ -183,7 +172,7 @@ class Schema extends \yii\db\mysql\Schema
         $dataDump = 'mysqldump' .
             $defaultArgs .
             ' --no-create-info' .
-            implode('', $defaultTableIgnoreList) .
+            ' ' . implode(' ', $ignoreTableArgs) .
             ' {database}' .
             ' >> "{file}"';
 

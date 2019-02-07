@@ -35,50 +35,43 @@
                     <div class="block">
                         <h2>{{ "Billing"|t('app') }}</h2>
 
-                        <div class="field">
-                            <div class="input">
-                                <div class="multitext">
-                                    <div class="multitextrow">
-                                        <text-input :placeholder="'First Name'|t('app')" id="first-name" v-model="billingInfo.firstName" :errors="errors['billingAddress.firstName']"></text-input>
-                                    </div>
-                                    <div class="multitextrow">
-                                        <text-input :placeholder="'Last Name'|t('app')" id="last-name" v-model="billingInfo.lastName" :errors="errors['billingAddress.lastName']"></text-input>
-                                    </div>
-                                </div>
+                        <div class="flex">
+                            <div class="flex-grow">
+                                <text-field :placeholder="'First Name'|t('app')" id="first-name" v-model="billingInfo.firstName" :errors="errors['billingAddress.firstName']" />
+                            </div>
+                            <div class="flex-grow">
+                                <text-field :placeholder="'Last Name'|t('app')" id="last-name" v-model="billingInfo.lastName" :errors="errors['billingAddress.lastName']" />
                             </div>
                         </div>
 
-                        <div class="field">
-                            <div class="input">
-                                <div class="multitext">
-                                    <div class="multitextrow">
-                                        <text-input :placeholder="'Business Name'|t('app')" id="business-name" v-model="billingInfo.businessName" :errors="errors['billingAddress.businessName']"></text-input>
-                                    </div>
-                                    <div class="multitextrow">
-                                        <text-input :placeholder="'Business Tax ID'|t('app')" id="business-tax-id" v-model="billingInfo.businessTaxId" :errors="errors['billingAddress.businessTaxId']"></text-input>
-                                    </div>
-                                </div>
+                        <div class="flex">
+                            <div class="flex-grow">
+                                <text-field :placeholder="'Business Name'|t('app')" id="business-name" v-model="billingInfo.businessName" :errors="errors['billingAddress.businessName']" />
+                            </div>
+                            <div class="flex-grow">
+                                <text-field :placeholder="'Business Tax ID'|t('app')" id="business-tax-id" v-model="billingInfo.businessTaxId" :errors="errors['billingAddress.businessTaxId']" />
                             </div>
                         </div>
 
-                        <div class="field">
-                            <div class="input">
-                                <div class="multitext">
-                                    <div class="multitextrow">
-                                        <text-input :placeholder="'Address Line 1'|t('app')" id="address-1" v-model="billingInfo.address1" :errors="errors['billingAddress.address1']"></text-input>
-                                    </div>
-                                    <div class="multitextrow">
-                                        <text-input :placeholder="'Address Line 2'|t('app')" id="address-2" v-model="billingInfo.address2" :errors="errors['billingAddress.address2']"></text-input>
-                                    </div>
-                                    <div class="multitextrow">
-                                        <input type="text" class="text" :class="{ error: errors['billingAddress.city'] }" :placeholder="'City'|t('app')" id="city" v-model="billingInfo.city" />
-                                        <input type="text" class="text" :class="{ error: errors['billingAddress.zipCode'] }" :placeholder="'Zip Code'|t('app')" id="zip-code" v-model="billingInfo.zipCode" />
-                                    </div>
-                                    <div class="multiselectrow">
-                                        <select-input v-model="billingInfo.country" :options="countryOptions" @input="onCountryChange" :errors="errors['billingAddress.country']"></select-input>
-                                        <select-input v-model="billingInfo.state" :options="stateOptions" :errors="errors['billingAddress.state']"></select-input>
-                                    </div>
-                                </div>
+                        <text-field :placeholder="'Address Line 1'|t('app')" id="address-1" v-model="billingInfo.address1" :errors="errors['billingAddress.address1']" />
+
+                        <text-field :placeholder="'Address Line 2'|t('app')" id="address-2" v-model="billingInfo.address2" :errors="errors['billingAddress.address2']" />
+
+                        <div class="flex">
+                            <div class="flex-grow">
+                                <text-field :class="{ error: errors['billingAddress.city'] }" :placeholder="'City'|t('app')" id="city" v-model="billingInfo.city" />
+                            </div>
+                            <div class="flex-grow">
+                                <text-field :class="{ error: errors['billingAddress.zipCode'] }" :placeholder="'Zip Code'|t('app')" id="zip-code" v-model="billingInfo.zipCode" />
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex-grow">
+                                <select-field v-model="billingInfo.country" :options="countryOptions" @input="onCountryChange" :errors="errors['billingAddress.country']" />
+                            </div>
+                            <div class="flex-grow">
+                                <select-field v-model="billingInfo.state" :options="stateOptions" :errors="errors['billingAddress.state']" />
                             </div>
                         </div>
                     </div>
@@ -89,7 +82,9 @@
                 <div class="centeralign">
                     <p v-if="error" class="error">{{ error }}</p>
 
-                    <input type="submit" class="btn submit" :value="'Pay'|t('app')+ ' ' + $options.filters.currency(staticCartTotal)" />
+                    <div class="mb-4">
+                        <input type="submit" class="btn submit" :value="'Pay'|t('app')+ ' ' + $options.filters.currency(staticCartTotal)" />
+                    </div>
                     <div v-if="loading" class="spinner"></div>
 
                     <p>
@@ -304,7 +299,7 @@
                     }, (response) => {
                         if (response.errors) {
                             response.errors.forEach(error => {
-                                this.errors[error.param] = error.message
+                                this.errors[error.param] = [error.message]
                             })
                         }
                         this.loading = false
@@ -392,3 +387,26 @@
 
     }
 </script>
+
+<style lang="scss">
+    .payment {
+
+        .field {
+            margin-top: 0.75rem !important;
+            margin-bottom: 0 !important;
+        }
+
+        .flex {
+            .flex-grow {
+                margin-bottom: 0;
+            }
+        }
+    }
+    .select {
+        @apply .w-full;
+
+        select {
+            @apply .w-full;
+        }
+    }
+</style>

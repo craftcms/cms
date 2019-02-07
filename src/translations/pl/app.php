@@ -15,7 +15,7 @@ return [
     '1 week' => '1 tydzień',
     '1 year' => '1 rok',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Twoja licencja wygasła!</strong> Odnów licencję na {name} na kolejny rok i korzystaj ze wszystkich aktualizacji.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>Ważna informacja!</strong> Po dokonaniu instalacji {update} uzyskasz dostęp do kolejnych aktualizacji.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Ważna informacja!</strong> Po dokonaniu instalacji {update} uzyskasz dostęp do kolejnych aktualizacji.',
     'A critical update is available.' => 'Dostępna jest aktualizacja krytyczna.',
     'A fatal error has occurred:' => 'Wystąpił błąd krytyczny:',
     'A file with the name “{filename}” already exists.' => 'Plik o nazwie „{filename}” już istnieje.',
@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'System nie został skonfigurowany do zapisywania zawartości z witryny {site}.',
     'You’re all up-to-date!' => 'Wszystko aktualne!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Korzystasz z Craft {edition} posiadając licencję na Craft {licensedEdition}.',
-    'account_activation_body' => 'Cześć {{user.friendlyName}}, Dziękujemy za utworzenie konta na {{siteName}}! Aby je aktywować, kliknij poniższy link: &lt;{{link}}&gt; Jeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.',
+    'account_activation_body' => 'Cześć {{user.friendlyName}},
+
+Dziękujemy za utworzenie konta na {{siteName}}! Aby je aktywować, kliknij poniższy link:
+
+<{{link}}>
+
+Jeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.',
     'account_activation_heading' => 'Kiedy ktoś zakłada konto:',
     'account_activation_subject' => 'Aktywuj swoje konto',
     'by {author}' => 'autor: {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => 'pięć',
     'folders' => 'katalogi',
     'folders and files' => 'katalogi i pliki',
-    'forgot_password_body' => 'Cześć {{user.friendlyName}}, Aby zresetować hasło na {{siteName}}, kliknij poniższy link: &lt;{{link}}&gt; Jeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.',
+    'forgot_password_body' => 'Cześć {{user.friendlyName}},
+
+Aby zresetować hasło na {{siteName}}, kliknij poniższy link:
+
+<{{link}}>
+
+Jeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.',
     'forgot_password_heading' => 'Gdy ktoś zapomni swojego hasła:',
     'forgot_password_subject' => 'Zresetuj swoje hasło',
     'four' => 'cztery',
@@ -1198,12 +1210,20 @@ return [
     'seconds' => 'sekund',
     'seven' => 'siedem',
     'six' => 'sześć',
-    'test_email_body' => 'Cześć {{user.friendlyName}}, Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniższe ustawienia: {{ settings }}',
+    'test_email_body' => 'Cześć {{user.friendlyName}},
+
+Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniższe ustawienia: {{ settings }}',
     'test_email_heading' => 'Podczas testowania ustawień e-mail:',
     'test_email_subject' => 'To jest testowy e-mail od Craft',
     'three' => 'trzy',
     'two' => 'dwa',
-    'verify_new_email_body' => 'Cześć {{user.friendlyName}}, Proszę zweryfikuj swój nowy adres e-mail poprzez kliknięcie w poniższy link: &lt;{{link}}&gt; Jeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.',
+    'verify_new_email_body' => 'Cześć {{user.friendlyName}},
+
+Proszę zweryfikuj swój nowy adres e-mail poprzez kliknięcie w poniższy link:
+
+<{{link}}>
+
+Jeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.',
     'verify_new_email_heading' => 'Gdy ktoś zmienia swój adres e-mail:',
     'verify_new_email_subject' => 'Zweryfikuj swój nowy adres e-mail',
     'week' => 'tydzień',

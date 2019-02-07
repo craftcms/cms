@@ -19,7 +19,6 @@ use yii\db\ActiveQueryInterface;
  * @property string $class Class
  * @property string $version Version
  * @property bool $enabled Enabled
- * @property array $settings Settings
  * @property \DateTime $installDate Install date
  * @property Migration[] $migrations Migrations
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

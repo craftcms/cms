@@ -48,7 +48,7 @@
         instructions: "The email address Craft CMS will use when sending email."|t('app'),
         id: 'fromEmail',
         name: 'fromEmail',
-        suggestions: craft.cp.getEnvSuggestions(),
+        suggestEnvVars: true,
         value: settings.fromEmail,
         autofocus: true,
         required: true,
@@ -60,7 +60,7 @@
         instructions: "The “From” name Craft CMS will use when sending email."|t('app'),
         id: 'fromName',
         name: 'fromName',
-        suggestions: craft.cp.getEnvSuggestions(),
+        suggestEnvVars: true,
         value: settings.fromName,
         required: true,
         errors: (freshSettings ? null : settings.getErrors('fromName'))
@@ -73,6 +73,7 @@
             id: 'template',
             name: 'template',
             suggestions: craft.cp.getTemplateSuggestions()|merge(craft.cp.getEnvSuggestions()),
+            suggestEnvVars: true,
             value: settings.template,
             errors: (freshSettings ? null : settings.getErrors('template'))
         }) }}

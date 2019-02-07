@@ -15,7 +15,7 @@ return [
     '1 week' => '1 week',
     '1 year' => '1 jaar',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Uw licentie is verlopen.</strong> Verleng uw {name}-licentie voor een jaar lang geweldige updates.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>U hebt een breakpoint bereikt.</strong> Meer updates zijn beschikbaar zodra u {update} hebt geïnstalleerd.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>U hebt een breakpoint bereikt.</strong> Meer updates zijn beschikbaar zodra u {update} hebt geïnstalleerd.',
     'A critical update is available.' => 'Er is een kritische update beschikbaar.',
     'A fatal error has occurred:' => 'Er is een fatale fout opgetreden:',
     'A file with the name “{filename}” already exists.' => 'Er bestaat al een bestand met de naam \'{filename}\'.',
@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Uw systeem is niet geconfigureerd om content op te slaan voor de website \'{site}\'.',
     'You’re all up-to-date!' => 'Je bent up-to-date!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'U gebruikt momenteel {edition} met een {licensedEdition} licentie.',
-    'account_activation_body' => 'Hallo {{user.friendlyName}},Bedankt voor het maken van een account op {{siteName}}! Klik op de volgende link om je account te activeren:&lt;{{link}}&gt;Als je deze email niet verwachtte, kun je hem gewoon negeren.',
+    'account_activation_body' => 'Hallo {{user.friendlyName}},
+
+Bedankt voor het maken van een account op {{siteName}}! Klik op de volgende link om je account te activeren:
+
+<{{link}}>
+
+Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'account_activation_heading' => 'Als iemand een account aanmaakt:',
     'account_activation_subject' => 'Activeer je account',
     'by {author}' => 'door {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => 'vijf',
     'folders' => 'mappen',
     'folders and files' => 'mappen en bestanden',
-    'forgot_password_body' => 'Hallo {{user.friendlyName}},Klik op de volgende link om je wachtwoord voor {{siteName}} te resetten:&lt;{{link}}&gt;Als je deze email niet verwachtte, kun je hem gewoon negeren.',
+    'forgot_password_body' => 'Hallo {{user.friendlyName}},
+
+Klik op de volgende link om je wachtwoord voor {{siteName}} te resetten:
+
+<{{link}}>
+
+Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'forgot_password_heading' => 'Als iemand zijn wachtwoord vergeet:',
     'forgot_password_subject' => 'Reset je wachtwoord',
     'four' => 'vier',
@@ -1198,12 +1210,24 @@ return [
     'seconds' => 'seconden',
     'seven' => 'zeven',
     'six' => 'zes',
-    'test_email_body' => 'Hallo {{user.friendlyName}},Gefeliciteerd! Craft heeft succesvol een email verstuurd.Hier zijn de gebruikte instellingen:{{ settings }}',
+    'test_email_body' => 'Hallo {{user.friendlyName}},
+
+Gefeliciteerd! Craft heeft succesvol een email verstuurd.
+
+Hier zijn de gebruikte instellingen:
+
+{{ settings }}',
     'test_email_heading' => 'Als u uw emailinstellingen aan het controleren bent :',
     'test_email_subject' => 'Dit is een test-email van Craft',
     'three' => 'drie',
     'two' => 'twee',
-    'verify_new_email_body' => 'Hallo {{user.friendlyName}},Klik op deze link om je nieuwe emailadres te bevestigen:&lt;{{link}}&gt;Als je deze email niet verwachtte, kun je hem gewoon negeren.',
+    'verify_new_email_body' => 'Hallo {{user.friendlyName}},
+
+Klik op deze link om je nieuwe emailadres te bevestigen:
+
+<{{link}}>
+
+Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'verify_new_email_heading' => 'Als iemand zijn email-adres wijzigt:',
     'verify_new_email_subject' => 'Bevestig je nieuwe email-adres',
     'week' => 'week',

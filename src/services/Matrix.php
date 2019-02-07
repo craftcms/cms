@@ -556,20 +556,24 @@ class Matrix extends Component
             throw new Exception('Unable to save a Matrix field’s settings without knowing its content table.');
         }
 
-        if (!$validate || $this->validateFieldSettings($matrixField)) {
-            $db = Craft::$app->getDb();
-            $transaction = $db->beginTransaction();
-            try {
-                // Do we need to create/rename the content table?
-                if (!$db->tableExists($matrixField->contentTable)) {
-                    $oldContentTable = $matrixField->oldSettings['contentTable'] ?? null;
-                    if ($oldContentTable && $db->tableExists($oldContentTable)) {
-                        MigrationHelper::renameTable($oldContentTable, $matrixField->contentTable);
-                    } else {
-                        $this->_createContentTable($matrixField->contentTable);
-                    }
-                }
+        if ($validate && !$this->validateFieldSettings($matrixField)) {
+            return false;
+        }
 
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
+        try {
+            // Do we need to create/rename the content table?
+            if (!$db->tableExists($matrixField->contentTable)) {
+                $oldContentTable = $matrixField->oldSettings['contentTable'] ?? null;
+                if ($oldContentTable && $db->tableExists($oldContentTable)) {
+                    MigrationHelper::renameTable($oldContentTable, $matrixField->contentTable);
+                } else {
+                    $this->_createContentTable($matrixField->contentTable);
+                }
+            }
+
+            if (!Craft::$app->getProjectConfig()->areChangesPending(self::CONFIG_BLOCKTYPE_KEY)) {
                 // Delete the old block types first, in case there's a handle conflict with one of the new ones
                 $oldBlockTypes = $this->getBlockTypesByFieldId($matrixField->id);
                 $oldBlockTypesById = [];
@@ -602,21 +606,21 @@ class Matrix extends Component
                 }
 
                 Craft::$app->getContent()->contentTable = $originalContentTable;
-
-                $transaction->commit();
-
-                // Update our cache of this field's block types
-                $this->_blockTypesByFieldId[$matrixField->id] = $matrixField->getBlockTypes();
-
-                return true;
-            } catch (\Throwable $e) {
-                $transaction->rollBack();
-
-                throw $e;
             }
-        } else {
-            return false;
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
+
+        // Clear caches
+        unset(
+            $this->_blockTypesByFieldId[$matrixField->id],
+            $this->_fetchedAllBlockTypesForFieldId[$matrixField->id]
+        );
+
+        return true;
     }
 
     /**

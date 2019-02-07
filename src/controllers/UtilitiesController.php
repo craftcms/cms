@@ -207,20 +207,6 @@ class UtilitiesController extends Controller
                     'volumeId' => $volumeId,
                     'total' => $indexList['total'],
                 ];
-
-                for ($i = 0; $i < $indexList['total']; $i++) {
-                    $batch[] = [
-                        'params' => [
-                            'sessionId' => $sessionId,
-                            'volumeId' => $volumeId,
-                            'total' => $indexList['total'],
-                            'process' => 1,
-                            'cacheImages' => $params['cacheImages']
-                        ]
-                    ];
-                }
-
-                $batches[] = $batch;
             }
 
             Craft::$app->getSession()->set('assetsVolumesBeingIndexed', $volumeIds);

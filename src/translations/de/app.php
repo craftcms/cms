@@ -15,7 +15,7 @@ return [
     '1 week' => '1 Woche',
     '1 year' => '1 Jahr',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Ihre Lizenz ist abgelaufen!</strong> Erneuern Sie Ihre {name}-Lizenz und genießen Sie ein weiteres Jahr großartige Aktualisierungen.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>Sie haben einen Programmstop erreicht!</strong> Weitere Aktualisierungen stehen nach dem Installieren von {update} zur Verfügung.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Sie haben einen Programmstop erreicht!</strong> Weitere Aktualisierungen stehen nach dem Installieren von {update} zur Verfügung.',
     'A critical update is available.' => 'Ein kritisches Update ist verfügbar.',
     'A fatal error has occurred:' => 'Ein schwerwiegender Fehler ist aufgetreten:',
     'A file with the name “{filename}” already exists.' => 'Eine Datei mit dem Namen „{filename}“ ist bereits vorhanden.',
@@ -1170,7 +1170,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Ihr System ist für das Speichern von Inhalten der Website „{site}“ nicht eingerichtet.',
     'You’re all up-to-date!' => 'Sie sind auf dem aktuellen Stand!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Sie haben Craft {edition} mit einer Craft {licensedEdition}-Lizenz.',
-    'account_activation_body' => 'Hallo {{user.friendlyName}}, danke für das Einrichten eines Benutzerkontos auf {{siteName}}. Um Ihr Konto zu aktivieren, klicken Sie bitte auf den folgenden Link: &lt;{{link}}&gt; Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
+    'account_activation_body' => 'Hallo {{user.friendlyName}},
+
+danke für das Einrichten eines Benutzerkontos auf {{siteName}}. Um Ihr Konto zu aktivieren, klicken Sie bitte auf den folgenden Link:
+
+<{{link}}>
+
+Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'account_activation_heading' => 'Wenn jemand ein Benutzerkonto anlegt:',
     'account_activation_subject' => 'Aktivieren Sie Ihr Benutzerkonto',
     'by {author}' => 'von {author}',
@@ -1182,7 +1188,13 @@ return [
     'five' => 'fünf',
     'folders' => 'Ordner',
     'folders and files' => 'Ordner und Dateien',
-    'forgot_password_body' => 'Hallo {{user.friendlyName}}, um Ihr Passwort für {{siteName}} zurückzusetzen, klicken Sie bitte auf den folgenden Link: &lt;{{link}}&gt; Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
+    'forgot_password_body' => 'Hallo {{user.friendlyName}},
+
+um Ihr Passwort für {{siteName}} zurückzusetzen, klicken Sie bitte auf den folgenden Link:
+
+<{{link}}>
+
+Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'forgot_password_heading' => 'Wenn jemand sein Passwort vergisst:',
     'forgot_password_subject' => 'Ihr Passwort zurücksetzen',
     'four' => 'vier',
@@ -1199,12 +1211,20 @@ return [
     'seconds' => 'Sekunden',
     'seven' => 'sieben',
     'six' => 'sechs',
-    'test_email_body' => 'Hallo {{user.friendlyName}}, Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von Ihnen verwendeten Einstellungen: {{ settings }}',
+    'test_email_body' => 'Hallo {{user.friendlyName}},
+
+Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von Ihnen verwendeten Einstellungen: {{ settings }}',
     'test_email_heading' => 'Wenn Sie Ihre E-Mail-Einstellungen testen:',
     'test_email_subject' => 'Dies ist eine Test-E-Mail von Craft.',
     'three' => 'drei',
     'two' => 'zwei',
-    'verify_new_email_body' => 'Hallo {{user.friendlyName}}, bitte bestätigen Sie Ihre neue E-Mail-Adresse, indem Sie auf folgenden Link klicken: &lt;{{link}}&gt; Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
+    'verify_new_email_body' => 'Hallo {{user.friendlyName}},
+
+bitte bestätigen Sie Ihre neue E-Mail-Adresse, indem Sie auf folgenden Link klicken:
+
+<{{link}}>
+
+Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'verify_new_email_heading' => 'Wenn jemand seine Emailadresse ändert:',
     'verify_new_email_subject' => 'Bestätigen Sie Ihre neue E-Mail-Adresse',
     'week' => 'Woche',

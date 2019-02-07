@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -101,11 +102,13 @@ class AppController extends Controller
             ];
 
             $pluginsService = Craft::$app->getPlugins();
-            foreach ($updates->plugins as $handle => $update) {
-                if (($plugin = $pluginsService->getPlugin($handle)) !== null) {
-                    /** @var Plugin $plugin */
-                    $res['updates']['plugins'][] = $this->_transformUpdate($allowUpdates, $update, $handle, $plugin->name);
+            foreach ($updates->plugins as $pluginHandle => $pluginUpdate) {
+                try {
+                    $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
+                } catch (InvalidPluginException $e) {
+                    continue;
                 }
+                $res['updates']['plugins'][] = $this->_transformUpdate($allowUpdates, $pluginUpdate, $pluginHandle, $pluginInfo['name']);
             }
         }
 
@@ -349,6 +352,7 @@ class AppController extends Controller
                     $pluginInfo = $pluginLicenseInfo['plugin'];
                     $result[$pluginInfo['handle']] = [
                         'edition' => $pluginLicenseInfo['edition'],
+                        'isComposerInstalled' => false,
                         'isInstalled' => false,
                         'isEnabled' => false,
                         'licenseKey' => $pluginLicenseInfo['key'],
@@ -372,6 +376,7 @@ class AppController extends Controller
         $info = Craft::$app->getPlugins()->getAllPluginInfo();
         foreach ($info as $handle => $pluginInfo) {
             $result[$handle] = [
+                'isComposerInstalled' => true,
                 'isInstalled' => $pluginInfo['isInstalled'],
                 'isEnabled' => $pluginInfo['isEnabled'],
                 'hasMultipleEditions' => $pluginInfo['hasMultipleEditions'],
@@ -451,7 +456,7 @@ class AppController extends Controller
             $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
         } else {
             if ($update->status === Update::STATUS_BREAKPOINT) {
-                $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>', [
+                $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
                     'update' => $name . ' ' . ($update->getLatest()->version ?? '')
                 ]);
             }

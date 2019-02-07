@@ -10,20 +10,16 @@ import store from './js/store'
 import {mapState} from 'vuex'
 import Modal from './js/components/modal/Modal'
 import StatusMessage from './js/components/StatusMessage'
-import Icon from './js/components/Icon'
 import App from './App'
 import './js/plugins/shave'
 import './js/plugins/craftui'
 import './js/plugins/swiper'
-import './js/plugins/font-awesome'
 
 Vue.filter('currency', currency)
 Vue.filter('escapeHtml', escapeHtml)
 Vue.filter('formatDate', formatDate)
 Vue.filter('formatNumber', formatNumber)
 Vue.filter('t', t)
-
-Vue.component('icon', Icon)
 
 Garnish.$doc.ready(function() {
     Craft.initUiElements()

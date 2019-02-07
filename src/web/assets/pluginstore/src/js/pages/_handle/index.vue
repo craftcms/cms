@@ -128,6 +128,7 @@
                 plugin: state => state.pluginStore.plugin,
                 plugins: state => state.pluginStore.plugins,
                 defaultPluginSvg: state => state.craft.defaultPluginSvg,
+                showingScreenshotModal: state => state.app.showingScreenshotModal,
             }),
 
             ...mapGetters({
@@ -258,6 +259,14 @@
                 this.loadPlugin(plugin.id)
             } else {
                 this.$router.push({path: '/'})
+            }
+        },
+
+        beforeRouteLeave(to, from, next) {
+            if (this.showingScreenshotModal) {
+                this.$store.commit('app/updateShowingScreenshotModal', false)
+            } else {
+                next()
             }
         }
 

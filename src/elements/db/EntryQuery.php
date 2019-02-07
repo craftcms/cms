@@ -689,6 +689,8 @@ class EntryQuery extends ElementQuery
      *
      * | Value | Fetches {elements}…
      * | - | -
+     * | `':empty:'` | that don’t have an expiry date.
+     * | `':notempty:'` | that have an expiry date.
      * | `'>= 2020-04-01'` | that will expire on or after 2020-04-01.
      * | `'< 2020-05-01'` | that will expire before 2020-05-01
      * | `['and', '>= 2020-04-04', '< 2020-05-01']` | that will expire between 2020-04-01 and 2020-05-01.

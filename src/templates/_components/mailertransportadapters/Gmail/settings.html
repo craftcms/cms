@@ -4,7 +4,7 @@
     label: "Username"|t('app'),
     id: 'username',
     name: 'username',
-    suggestions: craft.cp.getEnvSuggestions(),
+    suggestEnvVars: true,
     value: adapter.username,
     errors: adapter.getErrors('username')
 }) }}
@@ -13,7 +13,7 @@
     label: "Password"|t('app'),
     id: 'password',
     name: 'password',
-    suggestions: craft.cp.getEnvSuggestions(),
+    suggestEnvVars: true,
     value: adapter.password,
     errors: adapter.getErrors('password')
 }) }}

@@ -15,7 +15,7 @@ return [
     '1 week' => '1 hét',
     '1 year' => '1 év',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Lejárt a licenced!</strong> Újítsd meg {name} licenced további egy évre a lenyűgöző frissítésekhez.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>Fordulóponthoz érkeztél!</strong> További frissítések a következő telepítése után lesznek elérhetők: {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Fordulóponthoz érkeztél!</strong> További frissítések a következő telepítése után lesznek elérhetők: {update}.',
     'A critical update is available.' => 'Kritikus frissítés érhető el.',
     'A fatal error has occurred:' => 'Végzetes hiba jelentkezett:',
     'A file with the name “{filename}” already exists.' => 'Már van {filename} nevű fájl.',
@@ -1169,7 +1169,11 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'A rendszere úgy van beállítva, hogy ne mentse a(z) {site} webhely tartalmát.',
     'You’re all up-to-date!' => 'Teljesen naprakész!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'A Craft {edition} {licensedEdition} lincensz.',
-    'account_activation_body' => 'Hello {{user.friendlyName}},Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:&lt;{{link}}&gt;',
+    'account_activation_body' => 'Hello {{user.friendlyName}},
+
+Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:
+
+<{{link}}>',
     'account_activation_heading' => 'ha valaki készít egy fiókot:',
     'account_activation_subject' => 'Aktiváld a felhasználói fiókodat',
     'by {author}' => 'Készítette: {author}',
@@ -1181,7 +1185,13 @@ return [
     'five' => 'öt',
     'folders' => 'mappák',
     'folders and files' => 'mappák és fájlok',
-    'forgot_password_body' => 'Szia {{user.friendlyName}}!A {{siteName}} jelszavad visszaállításához kattints erre a hivatkozásra:&lt;{{link}}&gt;Ha nem vártad ezt az e-mailt, akkor hagyd figyelmen kívül.',
+    'forgot_password_body' => 'Szia {{user.friendlyName}}!
+
+A {{siteName}} jelszavad visszaállításához kattints erre a hivatkozásra:
+
+<{{link}}>
+
+Ha nem vártad ezt az e-mailt, akkor hagyd figyelmen kívül.',
     'forgot_password_heading' => 'Amikor valaki elfelejti a jelszavát:',
     'forgot_password_subject' => 'Új jelszó beállítása',
     'four' => 'négy',
@@ -1198,12 +1208,24 @@ return [
     'seconds' => 'másodperc',
     'seven' => 'hét',
     'six' => 'hat',
-    'test_email_body' => 'Szia  {{user.friendlyName}},Gratulálok! A Craft sikeresen elküldött egy e-mailt.Itt láthatók a használt beállítások:{{ settings }}',
+    'test_email_body' => 'Szia  {{user.friendlyName}},
+
+Gratulálok! A Craft sikeresen elküldött egy e-mailt.
+
+Itt láthatók a használt beállítások:
+
+{{ settings }}',
     'test_email_heading' => 'Amikor teszteled az email beállításokat:',
     'test_email_subject' => 'Ez egy teszt e-mail a Crafttól.',
     'three' => 'három',
     'two' => 'kettő',
-    'verify_new_email_body' => 'Hello {{user.friendlyName}},Kérjük erősitsd meg az új email címedet az alábbi linkre kattintva:&lt;{{link}}&gt;Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül.',
+    'verify_new_email_body' => 'Hello {{user.friendlyName}},
+
+Kérjük erősitsd meg az új email címedet az alábbi linkre kattintva:
+
+<{{link}}>
+
+Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül.',
     'verify_new_email_heading' => 'Amikor valaki e-mail címet változtat:',
     'verify_new_email_subject' => 'Ellenőrizze e-mail címét',
     'week' => 'hét',

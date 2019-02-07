@@ -89,7 +89,8 @@ class GeneralConfig extends BaseObject
      */
     public $allowUppercaseInSlug = false;
     /**
-     * @var bool Whether users should automatically be logged in after activating their account.
+     * @var bool Whether users should automatically be logged in after activating their account or resetting
+     * their password.
      */
     public $autoLoginAfterAccountActivation = false;
     /**
@@ -438,19 +439,37 @@ class GeneralConfig extends BaseObject
     /**
      * @var string The string preceding a number which Craft will look for when determining if the current request is for a
      * particular page in a paginated list of pages.
+     *
+     * Example Value | Example URI
+     * ------------- | -----------
+     * `p` | `/news/p5`
+     * `page` | `/news/page5`
+     * `page/` | `/news/page/5`
+     * `?page` | `/news?page=5`
+     *
+     * ::: tip
+     * If you want to set this to `?p` (e.g. `/news?p=5`), you will need to change your [[$pathParam]] setting as well,
+     * which is set to `p` by default, and if your server is running Apache, you will need to update the redirect code
+     * in your `.htaccess` file to match your new `pathParam` value.
+     * :::
      */
     public $pageTrigger = 'p';
     /**
      * @var string The query string param that Craft will check when determining the request's path.
+     *
+     * ::: tip
+     * If you change this and your server is running Apache, don’t forget to update the redirect code in your
+     * `.htaccess` file to match the new value.
+     * :::
      */
     public $pathParam = 'p';
     /**
-     * @var string The maximum amount of memory Craft will try to reserve during memory intensive operations such as zipping,
+     * @var string|null The maximum amount of memory Craft will try to reserve during memory intensive operations such as zipping,
      * unzipping and updating. Defaults to an empty string, which means it will use as much memory as it possibly can.
      *
      * See <http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes> for a list of acceptable values.
      */
-    public $phpMaxMemoryLimit = '';
+    public $phpMaxMemoryLimit;
     /**
      * @var string The name of the PHP session cookie.
      * @see https://php.net/manual/en/function.session-name.php

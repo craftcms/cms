@@ -64,7 +64,7 @@ The following config settings have been deprecated in Craft 3, and will be compl
 
 *<sup>2</sup> `defaultFileMode` is now `null` by default, meaning it will be determined by the current environment.*
 
-*<sup>3</sup> Settings that supported Environment Variables in Craft 2 now support [Aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) in Craft 3. Site URL and Local volume settings will automatically be converted to the new Alias syntax when updating to Craft 3 (`@variable` instead of `{variable}`).
+*<sup>3</sup> Settings that supported values defined by your `environmentVariables` config setting in Craft 2 can now be set to system environment variables and aliases in Craft 3. (See [Environmental Configuration](config/environments.md) to learn more about those.) Site URL and Local volume settings will automatically be converted to the new `@alias/sub/path` syntax when updating to Craft 3.
 
 *<sup>4</sup> `securityKey` is no longer optional. If you haven’t set it yet, set it to the value in `storage/runtime/validation.key` (if the file exists). The auto-generated `validation.key` file fallback will be removed in Craft 4.*
 

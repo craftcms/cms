@@ -64,11 +64,9 @@ class RenameFile extends ElementAction
 
             Craft.elementIndex.setIndexBusy();
 
-            var sourcePath = Craft.elementIndex.\$source.data('key').split('/');
-            var assetSourceKey = sourcePath.pop();
             var data = {
                 assetId:   assetId,
-                folderId: assetSourceKey.split(':')[1],
+                folderId: Craft.elementIndex.\$source.data('folder-id'),
                 filename: newName
             };
 

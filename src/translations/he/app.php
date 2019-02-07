@@ -15,7 +15,7 @@ return [
     '1 week' => '1 שבוע',
     '1 year' => '1 שנה',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong dir="rtl">תוקף הרישיון שלך פג!</strong> חדש את רשיון {name} שלך לשנה נוספת של עדכונים מדהימים.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong dir="rtl">הגעת לנקודת עצירה!</strong> עדכונים נוספים יהיו זמינים לאחר התקנת {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong dir="rtl">הגעת לנקודת עצירה!</strong> עדכונים נוספים יהיו זמינים לאחר התקנת {update}.',
     'A critical update is available.' => 'עדכון קריטי זמין',
     'A fatal error has occurred:' => 'אירעה טעות חמורה',
     'A file with the name “{filename}” already exists.' => 'קובץ בשם "{filename}" כבר קיים.',
@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'המערכת שלך אינה מוגדרת לשמירת תוכן עבור האתר "{site}".',
     'You’re all up-to-date!' => 'אתה משתמש בגרסה העדכנית ביותר!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'אתה מריץ גרסת {edition} של Craft עם רישיון {licensedEdition}.',
-    'account_activation_body' => 'שלום {{user.friendlyName}},תודה שיצרת חשבון ב{{siteName}}! להפעל החשבון שלך, לחץ על הלינק הבא:&lt;{{link}}&gt;אם לא ציפית לקבל את האימייל הזה, פשוט התעלם ממנו.',
+    'account_activation_body' => 'שלום {{user.friendlyName}},
+
+תודה שיצרת חשבון ב{{siteName}}! להפעל החשבון שלך, לחץ על הלינק הבא:
+
+<{{link}}>
+
+אם לא ציפית לקבל את האימייל הזה, פשוט התעלם ממנו.',
     'account_activation_heading' => 'כאשר מישהו יוצר חשבון:',
     'account_activation_subject' => 'הפעל את החשבון שלך',
     'by {author}' => 'מאת {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => 'חמש',
     'folders' => 'תיקיות',
     'folders and files' => 'תיקיות וקבצים',
-    'forgot_password_body' => 'שלום {{user.friendlyName}},על מנת לשחזר את הסיסמה שלך ל {{siteName}}, לחץ על הלינק:&lt;{{link}}&gt;אם לא ציפית לקבל את האימייל הזה, פשוט התעלם ממנו.',
+    'forgot_password_body' => 'שלום {{user.friendlyName}},
+
+על מנת לשחזר את הסיסמא שלך ל{{siteName}}, לחץ על הלינק:
+
+<{{link}}>
+
+אם לא ציפית לקבל את האימייל הזה, פשוט התעלם ממנו.',
     'forgot_password_heading' => 'כאשר מישהו שוכח את הסיסמה שלו:',
     'forgot_password_subject' => 'אפס את הסיסמה שלך',
     'four' => 'ארבע',
@@ -1198,12 +1210,24 @@ return [
     'seconds' => 'שניות',
     'seven' => 'שבע',
     'six' => 'שש',
-    'test_email_body' => 'שלום {{user.friendlyName}},ברכותינו! Craft הצליחהה לשלוח לך אימייל בהצלחה.להלן ההגדרות בהן השתמשת:{{ settings }}',
+    'test_email_body' => 'שלום {{user.friendlyName}},
+
+ברכותינו! Craft הצליחהה לשלוח לך אימייל בהצלחה.
+
+להלן ההגדרות בהן השתמשת:
+
+{{ settings }}',
     'test_email_heading' => 'כאשר את בודק את הגדרות האיימיל שלך:',
     'test_email_subject' => 'זהו מייל בדיקה מ-Craft',
     'three' => 'שלוש',
     'two' => 'שתיים',
-    'verify_new_email_body' => 'שלום {{user.friendlyName}},בבקשה אשר את כתובת האימייל החדשה שלך על-ידי לחיצה על הלינק:&lt;{{link}}&gt;אם לא ציפית לקבל את האימייל הזה, פשוט התעלם ממנו.',
+    'verify_new_email_body' => 'שלום {{user.friendlyName}},
+
+בבקשה אשר את כתובת האימייל החדשה שלך על-ידי לחיצה על הלינק:
+
+<{{link}}>
+
+אם לא ציפית לקבל את האימייל הזה, פשוט התעלם ממנו.',
     'verify_new_email_heading' => 'כאשר מישהו משנה את כתבות האימייל שלו:',
     'verify_new_email_subject' => 'אמת את כתובת האימייל שלך',
     'week' => 'שבוע',

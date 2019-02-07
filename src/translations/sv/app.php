@@ -15,7 +15,7 @@ return [
     '1 week' => '1 vecka',
     '1 year' => '1 år',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Din licens har gått ut!</strong> Förnya din {name}-licens för ytterligare ett år med fantastiska uppdateringar.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>Du har nått en brytpunkt!</strong> Fler uppdateringar kommer att bli tillgängliga efter att du har installerat {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Du har nått en brytpunkt!</strong> Fler uppdateringar kommer att bli tillgängliga efter att du har installerat {update}.',
     'A critical update is available.' => 'En viktig uppdatering finns tillgänglig.',
     'A fatal error has occurred:' => 'Ett allvarligt fel har uppstått:',
     'A file with the name “{filename}” already exists.' => 'En fil med namnet ”{filename}” finns redan.',
@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Systemet är inte inställt på att spara innehåll för webbplatsen ”{site}”.',
     'You’re all up-to-date!' => 'Du har den senaste uppdateringen!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Du använder Craft {edition} med en Craft {licensedEdition} licens.',
-    'account_activation_body' => 'Hej {{user.friendlyName}},Tack för att du skapar ett konto hos {{siteName}}! Klicka på följande länk för att aktivera ditt konto:&lt;{{link}}&gt;Om du inte förväntade dig det här e-postmeddelandet kan du bara ignorera det.',
+    'account_activation_body' => 'Hej {{user.friendlyName}},
+
+Tack för att du skapar ett konto hos {{siteName}}! Klicka på följande länk för att aktivera ditt konto:
+
+<{{link}}>
+
+Om du inte förväntade dig det här e-postmeddelandet kan du bara ignorera det.',
     'account_activation_heading' => 'När någon skapar ett konto:',
     'account_activation_subject' => 'Aktivera ditt konto',
     'by {author}' => 'av {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => 'fem',
     'folders' => 'mappar',
     'folders and files' => 'mappar och filer',
-    'forgot_password_body' => 'Hej, {{user.friendlyName}}!Klicka på den här länken för att återställa ditt lösenord till {{siteName}}:&lt;{{link}}&gt;Om du inte hade väntat dig det här meddelandet behöver du inte göra någonting, ignorera det bara.',
+    'forgot_password_body' => 'Hej, {{user.friendlyName}}!
+
+Klicka på den här länken för att återställa ditt lösenord till {{siteName}}:
+
+<{{link}}>
+
+Om du inte hade väntat dig det här meddelandet behöver du inte göra någonting, ignorera det bara.',
     'forgot_password_heading' => 'När någon glömmer sitt lösenord:',
     'forgot_password_subject' => 'Återställ lösenord',
     'four' => 'fyra',
@@ -1198,12 +1210,24 @@ return [
     'seconds' => 'sekunder',
     'seven' => 'sju',
     'six' => 'sex',
-    'test_email_body' => 'Hej {{user.friendlyName}},Grattis! Craft lyckades skicka ett e-postmeddelande.Här är inställningarna du använde:{{ settings }}',
+    'test_email_body' => 'Hej {{user.friendlyName}},
+
+Grattis! Craft lyckades skicka ett e-postmeddelande.
+
+Här är inställningarna du använde:
+
+{{ settings }}',
     'test_email_heading' => 'När du testar dina e-postinställningar:',
     'test_email_subject' => 'Detta är ett testmeddelande från Craft',
     'three' => 'tre',
     'two' => 'två',
-    'verify_new_email_body' => 'Hej, {{user.friendlyName}}!Var snäll och verifiera din nya e-postadress genom att klicka på denna länk:&lt;{{link}}&gt;Om du inte väntade dig att få detta e-postmeddelande kan du ignorera det.',
+    'verify_new_email_body' => 'Hej, {{user.friendlyName}}!
+
+Var snäll och verifiera din nya e-postadress genom att klicka på denna länk:
+
+<{{link}}>
+
+Om du inte väntade dig att få detta e-postmeddelande kan du ignorera det.',
     'verify_new_email_heading' => 'När någon ändrar sin e-postadress:',
     'verify_new_email_subject' => 'Verifiera din nya e-postadress',
     'week' => 'vecka',

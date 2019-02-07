@@ -91,6 +91,7 @@ class SystemReport extends Utility
     {
         return [
             'PHP version' => App::phpVersion(),
+            'OS version' => PHP_OS . ' ' . php_uname('r'),
             'Database driver & version' => self::_dbDriver(),
             'Image driver & version' => self::_imageDriver(),
             'Craft edition & version' => 'Craft ' . App::editionName(Craft::$app->getEdition()) . ' ' . Craft::$app->getVersion(),

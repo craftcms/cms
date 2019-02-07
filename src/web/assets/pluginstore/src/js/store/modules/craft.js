@@ -54,6 +54,43 @@ const getters = {
 
             return state.pluginLicenseInfo[pluginHandle]
         }
+    },
+
+    getCmsEditionFeatures() {
+        return editionHandle => {
+            const features = {
+                "solo": [
+                    {
+                        name: "All core CMS features",
+                        description: "Core Craft CMS features include live preview, muti-site, matrix, localization, one-click updating, custom fields, section types, image editor, relations, plugin store, debug toolbar, categories and tags"
+                    },
+                    {
+                        name: "Single admin account",
+                        description: "Admin/user account"
+                    }
+                ],
+                "pro": [
+                    {
+                        name: "Unlimited user accounts",
+                        description: "Create unlimited user accounts, user groups, user permissions, and public user registration.",
+                    },
+                    {
+                        name: "System branding features",
+                        description: "Customize your dashboard specifically to your brand.",
+                    },
+                    {
+                        name: "Developer support",
+                        description: "Get developer-to-developer support right from the Craft core development team.",
+                    },
+                ]
+            }
+
+            if (!features[editionHandle]) {
+                return null
+            }
+
+            return features[editionHandle]
+        }
     }
 
 }

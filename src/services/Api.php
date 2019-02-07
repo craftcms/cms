@@ -382,8 +382,10 @@ class Api extends Component
         $pluginLicenseStatuses = [];
         $pluginLicenseEditions = [];
         $pluginsService = Craft::$app->getPlugins();
-        foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
-            $pluginLicenseStatuses[$pluginHandle] = LicenseKeyStatus::Unknown;
+        foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
+            if ($pluginInfo['isInstalled']) {
+                $pluginLicenseStatuses[$pluginHandle] = LicenseKeyStatus::Unknown;
+            }
         }
         if ($response->hasHeader('X-Craft-Plugin-License-Statuses')) {
             $pluginLicenseInfo = explode(',', $response->getHeaderLine('X-Craft-Plugin-License-Statuses'));
@@ -482,13 +484,12 @@ class Api extends Component
         // plugin info
         $pluginLicenses = [];
         $pluginsService = Craft::$app->getPlugins();
-        /** @var Plugin[] $plugins */
-        $plugins = $pluginsService->getAllPlugins();
-        foreach ($plugins as $plugin) {
-            $handle = $plugin->getHandle();
-            $headers['X-Craft-System'] .= ",plugin-{$handle}:{$plugin->getVersion()}";
-            if (($licenseKey = $pluginsService->getPluginLicenseKey($handle)) !== null) {
-                $pluginLicenses[] = "{$handle}:{$licenseKey}";
+        foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
+            if ($pluginInfo['isInstalled']) {
+                $headers['X-Craft-System'] .= ",plugin-{$pluginHandle}:{$pluginInfo['version']}";
+                if (($licenseKey = $pluginsService->getPluginLicenseKey($pluginHandle)) !== null) {
+                    $pluginLicenses[] = "{$pluginHandle}:{$licenseKey}";
+                }
             }
         }
         if (!empty($pluginLicenses)) {

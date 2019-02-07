@@ -119,6 +119,10 @@ Craft.EditableTable = Garnish.Base.extend(
             this.settings.onDeleteRow(row.$tr);
         },
         canAddRow: function() {
+            if (this.settings.staticRows) {
+                return false;
+            }
+
             if (this.settings.maxRows) {
                 return (this.rowCount < this.settings.maxRows);
             }
@@ -153,7 +157,40 @@ Craft.EditableTable = Garnish.Base.extend(
 
         createRow: function(rowId, columns, baseName, values) {
             return Craft.EditableTable.createRow(rowId, columns, baseName, values);
-        }
+        },
+
+        focusOnNextRow: function($tr, tdIndex, blurTd) {
+            var $nextTr = $tr.next('tr');
+            var nextRow;
+
+            if ($nextTr.length) {
+                nextRow = $nextTr.data('editable-table-row');
+            } else {
+                nextRow = this.addRow(false);
+            }
+
+            // Focus on the same cell in the next row
+            if (!nextRow) {
+                return;
+            }
+
+            if (!nextRow.$tds[tdIndex]) {
+                return;
+            }
+
+            if ($(nextRow.$tds[tdIndex]).hasClass('disabled')) {
+                if ($nextTr) {
+                    this.focusOnNextRow($nextTr, tdIndex, blurTd);
+                }
+                return;
+            }
+
+            var $input = $('textarea,input.text', nextRow.$tds[tdIndex]);
+            if ($input.length) {
+                $(blurTd).trigger('blur');
+                $input.trigger('focus');
+            }
+        },
     },
     {
         textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'time'],
@@ -416,21 +453,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             // Going to the next row?
             if (keyCode === Garnish.RETURN_KEY && (ev.data.type !== 'multiline' || ctrl)) {
                 ev.preventDefault();
-                var $nextTr = this.$tr.next('tr');
-                var nextRow;
-
-                if ($nextTr.length) {
-                    nextRow = $nextTr.data('editable-table-row');
-                } else {
-                    nextRow = this.table.addRow(false);
-                }
-
-                // Focus on the same cell in the next row
-                if (nextRow) {
-                    $(ev.currentTarget).trigger('blur');
-                    $('textarea', nextRow.$tds[ev.data.tdIndex]).trigger('focus');
-                }
-
+                this.table.focusOnNextRow(this.$tr, ev.data.tdIndex, ev.currentTarget);
                 return;
             }
 

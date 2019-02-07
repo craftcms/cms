@@ -649,6 +649,8 @@ class ProjectConfig extends Component
 
     /**
      * Returns whether all schema versions stored in the config are compatible with the actual codebase.
+     * The schemas must match exactly to avoid unpredictable behavior that can occur when running migrations
+     * and applying project config changes at the same time.
      *
      * @return bool
      */
@@ -659,9 +661,11 @@ class ProjectConfig extends Component
             return true;
         }
 
-        $configSchemaVersion = (string)$this->get(self::CONFIG_SCHEMA_VERSION_KEY, true);
+        $incomingSchema = (string)$this->get(self::CONFIG_SCHEMA_VERSION_KEY, true);
+        $existingSchema = (string)Craft::$app->schemaVersion;
 
-        if (version_compare((string)Craft::$app->schemaVersion, $configSchemaVersion, '<')) {
+        // Compare existing Craft schema version with the one that is being applied.
+        if (!version_compare($existingSchema, $incomingSchema, '=')) {
             return false;
         }
 
@@ -669,9 +673,11 @@ class ProjectConfig extends Component
 
         foreach ($plugins as $plugin) {
             /** @var Plugin $plugin */
-            $configSchemaVersion = (string)$this->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion', true);
+            $incomingSchema = (string)$this->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion', true);
+            $existingSchema = (string)$plugin->schemaVersion;
 
-            if (version_compare((string)$plugin->schemaVersion, $configSchemaVersion, '<')) {
+            // Compare existing plugin schema version with the one that is being applied.
+            if ($incomingSchema && !version_compare($existingSchema, $incomingSchema, '=')) {
                 return false;
             }
         }

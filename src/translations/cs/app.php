@@ -15,7 +15,7 @@ return [
     '1 week' => '1 týden',
     '1 year' => '1 rok',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Platnost vaší licence vypršela!</strong> Obnovte si licenci {name} na další rok a získáte skvělé aktualizace.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>Dosáhli jste koncového bodu!</strong> Více aktualizací bude k dispozici po instalaci {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Dosáhli jste koncového bodu!</strong> Více aktualizací bude k dispozici po instalaci {update}.',
     'A critical update is available.' => 'K dispozici je zásadní aktualizace.',
     'A fatal error has occurred:' => 'Nastala kritická chyba.',
     'A file with the name “{filename}” already exists.' => 'Soubor s názvem „{filename}“ již existuje.',
@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Váš systém není u webu „{site}“ nastaven na ukládání obsahu.',
     'You’re all up-to-date!' => 'Vše je aktuální!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Používáte Craft {edition} s licencí na Craft {licensedEdition}.',
-    'account_activation_body' => 'Ahoj {{user.friendlyName}},děkujeme za vytvoření uživatelského účtu na webu {{siteName}}! Pro aktivaci svého účtu prosím otevři následující odkaz:&lt;{{link}}&gt;Pokud nevíte, o co se jedná, klidně tuto zprávu ignorujte.',
+    'account_activation_body' => 'Ahoj {{user.friendlyName}},
+
+děkujeme za vytvoření uživatelského účtu na webu {{siteName}}! Pro aktivaci svého účtu prosím otevři následující odkaz:
+
+<{{link}}>
+
+Pokud nevíte, o co se jedná, klidně tuto zprávu ignorujte.',
     'account_activation_heading' => 'Když někdo vytvoří účet:',
     'account_activation_subject' => 'Aktivujte Váš účet',
     'by {author}' => 'Autor: {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => 'pět',
     'folders' => 'adresáře',
     'folders and files' => 'adresáře a soubory',
-    'forgot_password_body' => 'Ahoj {{user.friendlyName}},Pro obnovení hesla na webu {{siteName}} klikni na následující odkaz:&lt;{{link}}&gt;Pokud nevíte o co se jedná, email klidně ignorujte.',
+    'forgot_password_body' => 'Ahoj {{user.friendlyName}},
+
+Pro obnovení hesla na webu {{siteName}} klikni na následující odkaz:
+
+<{{link}}>
+
+Pokud nevíte o co se jedná, email klidně ignorujte.',
     'forgot_password_heading' => 'Když někdo zapomene heslo:',
     'forgot_password_subject' => 'Obnovit heslo',
     'four' => 'čtyři',
@@ -1198,12 +1210,20 @@ return [
     'seconds' => 'sekundy',
     'seven' => 'sedm',
     'six' => 'šest',
-    'test_email_body' => 'Ahoj {{user.friendlyName}},Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následující nastavení:{{ settings }}',
+    'test_email_body' => 'Ahoj {{user.friendlyName}},
+
+Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následující nastavení:{{ settings }}',
     'test_email_heading' => 'Když testujete nastavení emailu',
     'test_email_subject' => 'Toto je testovací email z Craft CMS',
     'three' => 'tři',
     'two' => 'dva',
-    'verify_new_email_body' => 'Dobrý den {{user.friendlyName}},prosím ověřte Vaši novou emailovou adresu kliknutím na následující odkaz:&lt;{{link}}&gt;Pokud nevíte, o co se jedná, tuto zprávu  klidně ignorujte.',
+    'verify_new_email_body' => 'Dobrý den {{user.friendlyName}},
+
+prosím ověřte Vaši novou emailovou adresu kliknutím na následující odkaz:
+
+<{{link}}>
+
+Pokud nevíte, o co se jedná, tuto zprávu  klidně ignorujte.',
     'verify_new_email_heading' => 'Když někdo změní svoji emailovou adresu:',
     'verify_new_email_subject' => 'Ověřte svou novou emailovou adresu',
     'week' => 'týden',

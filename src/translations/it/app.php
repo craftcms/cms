@@ -15,7 +15,7 @@ return [
     '1 week' => '1 settimana',
     '1 year' => '1 anno',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>La licenza è scaduta.</strong> Rinnova la licenza {name} per usufruire degli straordinari aggiornamenti per un altro anno.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>Sei a un punto di rottura.</strong> altri aggiornamenti diverranno disponibili dopo l\'installazione di {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Sei a un punto di rottura.</strong> altri aggiornamenti diverranno disponibili dopo l\'installazione di {update}.',
     'A critical update is available.' => 'È disponibile un aggiornamento fondamentale.',
     'A fatal error has occurred:' => 'Si è verificato un errore fatale:',
     'A file with the name “{filename}” already exists.' => 'File con nome "{filename}" già esistente.',
@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Il sistema non è stato configurato per salvare i contenuti per il sito "{site}".',
     'You’re all up-to-date!' => 'Sei aggiornato!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Stai eseguendo Craft {edition} con una licenza Craft {licensedEdition}.',
-    'account_activation_body' => 'Ciao {{user.friendlyName}}, Grazie per aver creato un account con {{siteName}}! Per attivare il tuo account, clicca sul seguente link: &lt;{{link}}&gt; Se non aspettavi questa email, ignorala semplicemente.',
+    'account_activation_body' => 'Ciao {{user.friendlyName}},
+
+Grazie per aver creato un account con {{siteName}}! Per attivare il tuo account, clicca sul seguente link:
+
+<{{link}}>
+
+Se non aspettavi questa email, ignorala semplicemente.',
     'account_activation_heading' => 'Quando qualcuno crea un account:',
     'account_activation_subject' => 'Attiva il tuo account',
     'by {author}' => 'Autore: {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => 'cinque',
     'folders' => 'cartelle',
     'folders and files' => 'cartelle e file',
-    'forgot_password_body' => 'Ciao {{user.friendlyName}}, Per reimpostare la tua {{siteName}} password, clicca su questo link: &lt;{{link}}&gt; Se non aspettavi questa email, ignorala semplicemente.',
+    'forgot_password_body' => 'Ciao {{user.friendlyName}},
+
+Per reimpostare la tua {{siteName}} password, clicca su questo link:
+
+<{{link}}>
+
+Se non aspettavi questa email, ignorala semplicemente.',
     'forgot_password_heading' => 'Quando qualcuno dimentica la propria password:',
     'forgot_password_subject' => 'Reimposta la tua password',
     'four' => 'quattro',
@@ -1198,12 +1210,20 @@ return [
     'seconds' => 'secondi',
     'seven' => 'sette',
     'six' => 'sei',
-    'test_email_body' => 'Ciao {{user.friendlyName}}, Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazioni da te usate: {{ settings }}',
+    'test_email_body' => 'Ciao {{user.friendlyName}},
+
+Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazioni da te usate: {{ settings }}',
     'test_email_heading' => 'Quando si stanno testando le impostazioni email:',
     'test_email_subject' => 'Questa è una email di prova da Craft',
     'three' => 'tre',
     'two' => 'due',
-    'verify_new_email_body' => 'Ciao {{user.friendlyName}}, Ti preghiamo di verificare il tuo nuovo indirizzo email cliccando su questo link: &lt;{{link}}&gt; Se non aspettavi questa email, ignorala semplicemente.',
+    'verify_new_email_body' => 'Ciao {{user.friendlyName}},
+
+Ti preghiamo di verificare il tuo nuovo indirizzo email cliccando su questo link:
+
+<{{link}}>
+
+Se non aspettavi questa email, ignorala semplicemente.',
     'verify_new_email_heading' => 'Quando qualcuno cambia il proprio indirizzo email:',
     'verify_new_email_subject' => 'Verifica il tuo nuovo indirizzo email',
     'week' => 'settimana',

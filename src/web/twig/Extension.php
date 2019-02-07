@@ -214,7 +214,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('indexOf', [$this, 'indexOfFilter']),
             new \Twig_SimpleFilter('intersect', 'array_intersect'),
             new \Twig_SimpleFilter('json_encode', [$this, 'jsonEncodeFilter']),
-            new \Twig_SimpleFilter('json_decode', [Json::class, 'json_decode']),
+            new \Twig_SimpleFilter('json_decode', [Json::class, 'decode']),
             new \Twig_SimpleFilter('kebab', [$this, 'kebabFilter']),
             new \Twig_SimpleFilter('lcfirst', [$this, 'lcfirstFilter']),
             new \Twig_SimpleFilter('literal', [$this, 'literalFilter']),

@@ -15,7 +15,7 @@ return [
     '1 week' => '1 week',
     '1 year' => '1 year',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Your licence has expired!</strong> Renew your {name} licence for another year of amazing updates.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.',
     'A critical update is available.' => 'A critical update is available.',
     'A fatal error has occurred:' => 'A fatal error has occurred:',
     'A file with the name “{filename}” already exists.' => 'A file with the name “{filename}” already exists.',
@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Your system isn’t set up to save content for the site “{site}”.',
     'You’re all up-to-date!' => 'You’re all up-to-date!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'You’re running Craft {edition} with a Craft {licensedEdition} license.',
-    'account_activation_body' => 'Hey {{user.friendlyName}},Thanks for creating an account with {{siteName}}! To activate your account, click the following link:&lt;{{link}}&gt;If you weren’t expecting this email, just ignore it.',
+    'account_activation_body' => 'Hey {{user.friendlyName}},
+
+Thanks for creating an account with {{siteName}}! To activate your account, click the following link:
+
+<{{link}}>
+
+If you weren’t expecting this email, just ignore it.',
     'account_activation_heading' => 'When someone creates an account:',
     'account_activation_subject' => 'Activate your account',
     'by {author}' => 'by {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => 'five',
     'folders' => 'folders',
     'folders and files' => 'folders and files',
-    'forgot_password_body' => 'Hey {{user.friendlyName}},To reset your {{siteName}} password, click on this link:&lt;{{link}}&gt;If you weren’t expecting this email, just ignore it.',
+    'forgot_password_body' => 'Hey {{user.friendlyName}},
+
+To reset your {{siteName}} password, click on this link:
+
+<{{link}}>
+
+If you weren’t expecting this email, just ignore it.',
     'forgot_password_heading' => 'When someone forgets their password:',
     'forgot_password_subject' => 'Reset your password',
     'four' => 'four',
@@ -1198,12 +1210,24 @@ return [
     'seconds' => 'seconds',
     'seven' => 'seven',
     'six' => 'six',
-    'test_email_body' => 'Hey {{user.friendlyName}},Congratulations! Craft was successfully able to send an email.Here are the settings you used:{{ settings }}',
+    'test_email_body' => 'Hey {{user.friendlyName}},
+
+Congratulations! Craft was successfully able to send an email.
+
+Here are the settings you used:
+
+{{ settings }}',
     'test_email_heading' => 'When you are testing your email settings:',
     'test_email_subject' => 'This is a test email from Craft',
     'three' => 'three',
     'two' => 'two',
-    'verify_new_email_body' => 'Hey {{user.friendlyName}},Please verify your new email address by clicking on this link:&lt;{{link}}&gt;If you weren’t expecting this email, just ignore it.',
+    'verify_new_email_body' => 'Hey {{user.friendlyName}},
+
+Please verify your new email address by clicking on this link:
+
+<{{link}}>
+
+If you weren’t expecting this email, just ignore it.',
     'verify_new_email_heading' => 'When someone changes their email address:',
     'verify_new_email_subject' => 'Verify your new email address',
     'week' => 'week',

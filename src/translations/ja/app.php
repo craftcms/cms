@@ -15,7 +15,7 @@ return [
     '1 week' => '1 週',
     '1 year' => '1 年',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>ライセンスの期限が切れました！</strong>有用なアップデートをもう 1 年受けられるよう、{name} のラインセンスを更新してください。',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>ブレークポイントに到達しました！</strong>今後のアップデートは {update} をインストールした後にご利用いただけます。</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>ブレークポイントに到達しました！</strong>今後のアップデートは {update} をインストールした後にご利用いただけます。',
     'A critical update is available.' => '重要なアップデートが利用可能です。',
     'A fatal error has occurred:' => '重大なエラーが発生しました:',
     'A file with the name “{filename}” already exists.' => '名前が「{filename}」のファイルがすでに存在しています。',
@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'システムは、サイト「{site}」のコンテンツを保存するようには設定されていません。',
     'You’re all up-to-date!' => '最新の状態に更新されています！',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => '現在 Craft {licensedEdition} ライセンスで Craft {edition} を実行しています。',
-    'account_activation_body' => 'こんにちは {{user.friendlyName}} さん、 {{siteName}}のアカウントを作成してくださりありがとうございます！アカウントを有効にするには、以下のリンクをクリックしてください：&lt;{{link}}&gt;このメールに心当たりがない場合は無視してください。',
+    'account_activation_body' => 'こんにちは {{user.friendlyName}} さん、
+
+ {{siteName}}のアカウントを作成してくださりありがとうございます！アカウントを有効にするには、以下のリンクをクリックしてください：
+
+<{{link}}>
+
+このメールに心当たりがない場合は無視してください。',
     'account_activation_heading' => '誰かがアカウントを作成する時：',
     'account_activation_subject' => 'アカウントを有効にする',
     'by {author}' => '{author}著',
@@ -1181,7 +1187,13 @@ return [
     'five' => '5',
     'folders' => 'フォルダ',
     'folders and files' => 'フォルダとファイル',
-    'forgot_password_body' => 'こんにちは、{{user.friendlyName}} さん、{{siteName}}を再設定するには、このリンクをクリックしてください：&lt;{{link}}&gt;このメールに心当たりがない場合は無視してください。',
+    'forgot_password_body' => 'こんにちは、{{user.friendlyName}} さん、
+
+{{siteName}}を再設定するには、このリンクをクリックしてください：
+
+<{{link}}>
+
+このメールに心当たりがない場合は無視してください。',
     'forgot_password_heading' => '誰かがパスワードを忘れた場合：',
     'forgot_password_subject' => 'パスワードを再設定する',
     'four' => '4',
@@ -1198,12 +1210,24 @@ return [
     'seconds' => '秒',
     'seven' => '7',
     'six' => '6',
-    'test_email_body' => 'こんにちは　{{user.friendlyName}} さん、おめでとうございます！ Craft はメールの送信に成功しました。あなたが使用した設定は以下の通りです：{{ settings }}',
+    'test_email_body' => 'こんにちは　{{user.friendlyName}} さん、
+
+おめでとうございます！ Craft はメールの送信に成功しました。
+
+あなたが使用した設定は以下の通りです：
+
+{{ settings }}',
     'test_email_heading' => 'メールの設定を試すとき：',
     'test_email_subject' => 'これはCraftからのテストメールです。',
     'three' => '3',
     'two' => '2',
-    'verify_new_email_body' => 'こんにちは、{{user.friendlyName}} さん、このリンクをクリックして新しいメールアドレスを確認してください：&lt;{{link}}&gt;このメールに心当たりがない場合は無視してください。',
+    'verify_new_email_body' => 'こんにちは、{{user.friendlyName}} さん、
+
+このリンクをクリックして新しいメールアドレスを確認してください：
+
+<{{link}}>
+
+このメールに心当たりがない場合は無視してください。',
     'verify_new_email_heading' => '誰かがメールアドレスを変更する時：',
     'verify_new_email_subject' => '新しいメールアドレスを確認する',
     'week' => '週',

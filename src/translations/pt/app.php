@@ -15,7 +15,7 @@ return [
     '1 week' => '1 semana',
     '1 year' => '1 ano',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>A sua licença expirou!</strong> Renove a sua {name} licença para mais um ano de incríveis atualizações.',
-    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>' => '<strong>Atingiu um ponto de paragem!</strong> Estarão disponíveis mais atualizações após a instalação de {update}.</p>',
+    '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Atingiu um ponto de paragem!</strong> Estarão disponíveis mais atualizações após a instalação de {update}.',
     'A critical update is available.' => 'Está disponível uma atualização importante.',
     'A fatal error has occurred:' => 'Ocorreu um erro fatal ocorreu:',
     'A file with the name “{filename}” already exists.' => 'Já existe um ficheiro com o nome “{filename}”.',
@@ -1169,7 +1169,13 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'O seu sistema não está configurado para guardar conteúdo para o site “{site}”.',
     'You’re all up-to-date!' => 'Tudo está atualizado!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Você está usando Craft {edition} com a licença Craft {licensedEdition}',
-    'account_activation_body' => 'Oi {{user.friendlyName}},Obrigado por criar uma conta em {{siteName}}! Para ativar sua conta, clique no link a seguir:&lt;{{link}}&gt;Se você não estava esperando esse e-mail, ignore-o.',
+    'account_activation_body' => 'Oi {{user.friendlyName}},
+
+Obrigado por criar uma conta em {{siteName}}! Para ativar sua conta, clique no link a seguir:
+
+<{{link}}>
+
+Se você não estava esperando esse e-mail, ignore-o.',
     'account_activation_heading' => 'Quando alguém cria uma conta:',
     'account_activation_subject' => 'Ative sua conta',
     'by {author}' => 'por {author}',
@@ -1181,7 +1187,13 @@ return [
     'five' => 'cinco',
     'folders' => 'pastas',
     'folders and files' => 'pastas e arquivos',
-    'forgot_password_body' => 'Oi {{user.friendlyName}},Para resetar sua senha em {{siteName}}, clique nesse link:&lt;{{link}}&gt;Se você não estava esperando esse e-mail, ignore-o.',
+    'forgot_password_body' => 'Oi {{user.friendlyName}},
+
+Para resetar sua senha em {{siteName}}, clique nesse link:
+
+<{{link}}>
+
+Se você não estava esperando esse e-mail, ignore-o.',
     'forgot_password_heading' => 'Quando alguém esquece de sua senha:',
     'forgot_password_subject' => 'Redefinir sua senha',
     'four' => 'quatro',
@@ -1198,12 +1210,24 @@ return [
     'seconds' => 'segundos',
     'seven' => 'sete',
     'six' => 'seis',
-    'test_email_body' => 'Oi {{user.friendlyName}},Parabéns! Craft conseguiu enviar um e-mail com sucesso.Aqui estão as configurações que você usou:{{ settings }}',
+    'test_email_body' => 'Oi {{user.friendlyName}},
+
+Parabéns! Craft conseguiu enviar um e-mail com sucesso.
+
+Aqui estão as configurações que você usou:
+
+{{ settings }}',
     'test_email_heading' => 'Quando você está testando suas configurações de e-mail:',
     'test_email_subject' => 'Este é um e-mail de teste a partir de Craft',
     'three' => 'três',
     'two' => 'dois',
-    'verify_new_email_body' => 'Olá {{user.friendlyName}},Por favor, verifique o seu novo endereço de e-mail, clicando neste link:&lt;{{link}}&gt;Se você não solicitou este e-mail, simplesmente ignore.',
+    'verify_new_email_body' => 'Olá {{user.friendlyName}},
+
+Por favor, verifique o seu novo endereço de e-mail, clicando neste link:
+
+<{{link}}>
+
+Se você não solicitou este e-mail, simplesmente ignore.',
     'verify_new_email_heading' => 'Quando alguém muda seu endereço de e-mail:',
     'verify_new_email_subject' => 'Verifique o seu novo endereço de e-mail',
     'week' => 'semana',

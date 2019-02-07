@@ -69,6 +69,14 @@ class IndexAssetsController extends Controller
      */
     public function actionOne($handle, $startAt = 0)
     {
+        $path = '';
+
+        if (strpos($handle, '/') !== false) {
+            $parts = explode('/', $handle);
+            $handle = array_shift($parts);
+            $path = implode('/', $parts);
+        }
+
         $volume = Craft::$app->getVolumes()->getVolumeByHandle($handle);
 
         if (!$volume) {
@@ -76,17 +84,18 @@ class IndexAssetsController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        return $this->_indexAssets([$volume], $startAt);
+        return $this->_indexAssets([$volume], $path, $startAt);
     }
 
     /**
      * Indexes the assets in the given volumes.
      *
      * @param VolumeInterface[] $volumes
+     * @param string $path the subfolder path
      * @param int $startAt
      * @return int
      */
-    private function _indexAssets(array $volumes, int $startAt = 0): int
+    private function _indexAssets(array $volumes, string $path = '', $startAt = 0): int
     {
         $assetIndexer = Craft::$app->getAssetIndexer();
         $session = $assetIndexer->getIndexingSessionId();
@@ -98,7 +107,7 @@ class IndexAssetsController extends Controller
             $this->stdout('Indexing assets in ', Console::FG_YELLOW);
             $this->stdout($volume->name, Console::FG_CYAN);
             $this->stdout(' ...' . PHP_EOL, Console::FG_YELLOW);
-            $fileList = array_filter($assetIndexer->getIndexListOnVolume($volume),
+            $fileList = array_filter($assetIndexer->getIndexListOnVolume($volume, $path),
                 function ($entry) {
                     return $entry['type'] !== 'dir';
                 }

@@ -26,7 +26,10 @@
                                             <img :src="craftLogo" width="40" height="40" />
                                         </div>
                                     </td>
-                                    <td>Craft {{ item.lineItem.purchasable.name }}</td>
+                                    <td class="item-name">
+                                        <strong>Craft CMS</strong>
+                                        <edition-badge :name="item.lineItem.purchasable.name"></edition-badge>
+                                    </td>
                                 </template>
 
                                 <template v-else-if="item.lineItem.purchasable.type === 'plugin-edition'">
@@ -36,24 +39,17 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="plugin-name">
+                                        <div class="item-name">
                                             <strong>{{ item.plugin.name}}</strong>
-
-                                            <div class="edition-badge">
-                                                {{item.lineItem.purchasable.name}}
-                                            </div>
+                                            <edition-badge :name="item.lineItem.purchasable.name"></edition-badge>
                                         </div>
                                     </td>
                                 </template>
 
                                 <td class="expiry-date">
-                                    <template v-if="item.lineItem.options.licenseKey.substr(0, 4) === 'new:'">
+                                    <template v-if="item.lineItem.purchasable.type === 'cms-edition' || (item.lineItem.purchasable.type === 'plugin-edition' && item.lineItem.options.licenseKey.substr(0, 4) === 'new:')">
                                         <select-input v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
                                     </template>
-
-                                    <!--if (licenseKey && licenseKey.substr(0, 3) !== 'new') {-->
-                                    <!--item.licenseKey = licenseKey-->
-                                    <!--}-->
 
                                     <div v-if="itemLoading(itemKey)" class="spinner"></div>
                                 </td>
@@ -133,14 +129,10 @@
                                         <div class="default-icon" v-else></div>
                                     </div>
                                 </td>
-                                <td>
-                                    <div class="plugin-name">
-                                        <strong>{{ plugin.name }}</strong>
+                                <td class="item-name">
+                                    <strong>{{ plugin.name }}</strong>
 
-                                        <div v-if="activeTrialPluginEditions[plugin.handle]" class="edition-badge">
-                                            {{activeTrialPluginEditions[plugin.handle].name}}
-                                        </div>
-                                    </div>
+                                    <edition-badge v-if="activeTrialPluginEditions[plugin.handle] && plugin.editions.length > 1" :name="activeTrialPluginEditions[plugin.handle].name"></edition-badge>
                                 </td>
                                 <td><strong v-if="activeTrialPluginEditions[plugin.handle]">{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
                                 <td class="thin"><a class="btn" @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)">{{ "Add to cart"|t('app') }}</a></td>
@@ -158,6 +150,7 @@
 
     import {mapState, mapGetters, mapActions} from 'vuex'
     import Step from '../Step'
+    import EditionBadge from '../../EditionBadge'
 
     export default {
 
@@ -169,6 +162,7 @@
 
         components: {
             Step,
+            EditionBadge,
         },
 
         computed: {
@@ -335,13 +329,9 @@
 <style lang="scss" scoped>
     @import "../../../../../../../../../lib/craftcms-sass/mixins";
 
-    .plugin-name {
-        strong {
-            @apply .block;
-        }
-
+    .item-name {
         .edition-badge {
-            @apply .mt-2;
+            @apply .ml-2;
         }
     }
 
