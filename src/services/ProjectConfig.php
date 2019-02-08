@@ -961,6 +961,13 @@ class ProjectConfig extends Component
 
         foreach ($configMap as &$filePath) {
             $filePath = Craft::getAlias($filePath);
+
+            // If any of the file doesn't exist, return a generated map and make sure we save it as request ends
+            if (!file_exists($filePath)) {
+                $configMap = $this->_generateConfigMap();
+                $this->_updateConfigMap = true;
+                break;
+            }
         }
 
         return $this->_configMap = $configMap;
