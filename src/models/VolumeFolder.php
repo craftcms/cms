@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Model;
 use craft\base\VolumeInterface;
 use craft\volumes\Temp;
+use yii\base\InvalidConfigException;
 
 /**
  * The VolumeFolder model class.
@@ -82,15 +83,20 @@ class VolumeFolder extends Model
     }
 
     /**
-     * @return VolumeInterface|null
+     * @return VolumeInterface
+     * @throws InvalidConfigException if [[volumeId]] is invalid
      */
-    public function getVolume()
+    public function getVolume(): VolumeInterface
     {
         if ($this->volumeId === null) {
             return new Temp();
         }
 
-        return Craft::$app->getVolumes()->getVolumeById($this->volumeId);
+        if (($volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId)) === null) {
+            throw new InvalidConfigException('Invalid volume ID: ' . $this->volumeId);
+        }
+
+        return $volume;
     }
 
     /**

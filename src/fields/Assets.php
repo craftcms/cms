@@ -20,6 +20,7 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\web\UploadedFile;
+use yii\base\InvalidConfigException;
 
 /**
  * Assets represents an Assets field.
@@ -802,7 +803,11 @@ class Assets extends BaseRelationField
             $folder = Craft::$app->getAssets()->getFolderByUid($parts[1]);
 
             if ($folder) {
-                return 'volume:' . $folder->getVolume()->uid;
+                try {
+                    return 'volume:' . $folder->getVolume()->uid;
+                } catch (InvalidConfigException $e) {
+                    // The volume is probably soft-deleted. Just pretend the folder didn't exist.
+                }
             }
         }
 
