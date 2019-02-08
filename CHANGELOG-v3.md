@@ -5,6 +5,7 @@
 ### Changed
 - The operating system name & version are now shown in the System Report utility. ([#3784](https://github.com/craftcms/cms/issues/3784))
 - Craft’s installer no longer applies the current `project.yaml` file if the installed schema version doesn’t match the one in the file. ([#3783](https://github.com/craftcms/cms/issues/3783))
+- Control Panel settings no longer warn about using the `@web` alias, if it was defined by the `aliases` config setting. ([#3798](https://github.com/craftcms/cms/pull/3798))
 
 ### Fixed
 - Fixed a SQL error that could occur when deleting an asset. ([#3786](https://github.com/craftcms/cms/issues/3786))
