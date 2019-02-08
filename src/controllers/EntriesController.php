@@ -832,7 +832,11 @@ class EntriesController extends BaseEntriesController
                     // Set the default site status based on the section's settings
                     foreach ($variables['section']->getSiteSettings() as $siteSettings) {
                         if ($siteSettings->siteId == $variables['entry']->siteId) {
-                            $variables['entry']->enabledForSite = $siteSettings->enabledByDefault;
+                            if ($variables['section']->propagateEntries) {
+                                $variables['entry']->enabledForSite = $siteSettings->enabledByDefault;
+                            } else {
+                                $variables['entry']->enabled = $siteSettings->enabledByDefault;
+                            }
                             break;
                         }
                     }
