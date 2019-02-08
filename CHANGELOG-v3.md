@@ -14,7 +14,7 @@
 - Fixed a bug where Checkboxes, Dropdown, Multi-select, and Radio Buttons fields wouldn’t pass validation if the selected option value was `true` or `false`.
 - Fixed an error that occurred on the Settings → Plugins page, if there were any plugins in the database that weren’t Composer-installed.
 - Fixed an error that could occur if an Assets field was configured to upload to a deleted volume. ([#3799](https://github.com/craftcms/cms/issues/3799))
-- Fixed a bug where sections’ Default Status settings weren’t being respected when site propagation was disabled. ([#3791](https://github.com/craftcms/cms/issues/3791))
+- Fixed a bug where sections’ Default Status settings weren’t always being respected. ([#3791](https://github.com/craftcms/cms/issues/3791))
 
 ## 3.1.8 - 2019-02-05
 
