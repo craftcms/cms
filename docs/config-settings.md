@@ -1435,7 +1435,7 @@ The maximum size in pixels (length or width) Craft should use when caching image
 
 ### `maxUploadFileSize`
 
-**Accepts**: A integer
+**Accepts**: An integer
 
 **Default**: `16777216` (16MB)
 
