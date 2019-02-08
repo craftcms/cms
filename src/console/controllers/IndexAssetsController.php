@@ -61,12 +61,13 @@ class IndexAssetsController extends Controller
     }
 
     /**
-     * Re-indexes assets from the given volume handle.
+     * Re-indexes assets from the given volume handle ($startAt = 0).
      *
      * @param string $handle The handle of the volume to index
+     * @param int $startAt
      * @return int
      */
-    public function actionOne($handle)
+    public function actionOne($handle, $startAt = 0)
     {
         $path = '';
 
@@ -83,7 +84,7 @@ class IndexAssetsController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        return $this->_indexAssets([$volume], $path);
+        return $this->_indexAssets([$volume], $path, $startAt);
     }
 
     /**
@@ -91,9 +92,10 @@ class IndexAssetsController extends Controller
      *
      * @param VolumeInterface[] $volumes
      * @param string $path the subfolder path
+     * @param int $startAt
      * @return int
      */
-    private function _indexAssets(array $volumes, string $path = ''): int
+    private function _indexAssets(array $volumes, string $path = '', $startAt = 0): int
     {
         $assetIndexer = Craft::$app->getAssetIndexer();
         $session = $assetIndexer->getIndexingSessionId();
@@ -111,10 +113,18 @@ class IndexAssetsController extends Controller
                 }
             );
 
+            $startAt = (is_numeric($startAt) && $startAt < count($fileList)) ? (int)$startAt : 0;
+
+            $index = 0;
             foreach ($fileList as $item) {
-                $this->stdout('    > ');
+                $count = $index;
+                $this->stdout('    > #' . $count . ': ');
                 $this->stdout($item['path'], Console::FG_CYAN);
                 $this->stdout(' ... ');
+                if ($index++ < $startAt) {
+                    $this->stdout('skipped' . PHP_EOL, Console::FG_YELLOW);
+                    continue;
+                }
                 try {
                     $assetIndexer->indexFile($volume, $item['path'], $session, $this->cacheRemoteImages);
                 } catch (\Throwable $e) {
