@@ -43,9 +43,11 @@ class Request extends \yii\console\Request
                 }
             }
             Craft::setAlias('@webroot', $dir);
+            $this->isWebrootAliasSetDynamically = true;
         }
         if (Craft::getRootAlias('@web') === false) {
             Craft::setAlias('@web', '/');
+            $this->isWebAliasSetDynamically = true;
         }
     }
 

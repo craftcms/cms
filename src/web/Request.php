@@ -107,11 +107,6 @@ class Request extends \yii\web\Request
     /**
      * @var bool
      */
-    private $_isWebAliasSetDynamically = false;
-
-    /**
-     * @var bool
-     */
     private $_isLivePreview = false;
 
     /**
@@ -158,10 +153,11 @@ class Request extends \yii\web\Request
         // in case a site's base URL requires @web, and so we can include the host info in @web
         if (Craft::getRootAlias('@webroot') === false) {
             Craft::setAlias('@webroot', dirname($this->getScriptFile()));
+            $this->isWebrootAliasSetDynamically = true;
         }
         if (Craft::getRootAlias('@web') === false) {
             Craft::setAlias('@web', $this->getHostInfo() . $this->getBaseUrl());
-            $this->_isWebAliasSetDynamically = true;
+            $this->isWebAliasSetDynamically = true;
         }
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -451,16 +447,6 @@ class Request extends \yii\web\Request
         $this->_checkRequestType();
 
         return $this->_actionSegments;
-    }
-
-    /**
-     * Returns whether the `@web` alias is set dynamically.
-     *
-     * @return bool Whether the `@web` alias is set dynamically.
-     */
-    public function getIsWebAliasSetDynamically(): bool
-    {
-        return $this->_isWebAliasSetDynamically;
     }
 
     /**
