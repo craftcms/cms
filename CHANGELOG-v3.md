@@ -7,6 +7,7 @@
 - Craft’s installer no longer applies the current `project.yaml` file if the installed schema version doesn’t match the one in the file. ([#3783](https://github.com/craftcms/cms/issues/3783))
 - Control Panel settings no longer warn about using the `@web` alias, if it was defined by the `aliases` config setting. ([#3798](https://github.com/craftcms/cms/pull/3798))
 - `craft\models\VolumeFolder::getVolume()` now throws an `InvalidConfigException` if its `$volumeId` property is set to an invalid volume ID, rather than returning `null`.
+- Craft now checks if all files in project config mapping are valid and regenerates the map if they are not.
 
 ### Fixed
 - Fixed a SQL error that could occur when deleting an asset. ([#3786](https://github.com/craftcms/cms/issues/3786))
