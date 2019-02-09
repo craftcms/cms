@@ -611,7 +611,7 @@ class AssetQuery extends ElementQuery
      *
      * ```php
      * // Fetch {elements} modified in the last month
-     * $start = new \DateTime('30 days ago')->format(\DateTime::ATOM);
+     * $start = (new \DateTime('30 days ago'))->format(\DateTime::ATOM);
      *
      * ${elements-var} = {php-method}
      *     ->dateModified(">= {$start}")
