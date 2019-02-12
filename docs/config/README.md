@@ -74,8 +74,8 @@ You can define additional custom aliases using the <config:aliases> config setti
 
 ```php
 'aliases' => [
-    '@assetBaseUrl' => 'http://my-project.com/assets',
-    '@assetBasePath' => '/path/to/web/assets',
+    'assetBaseUrl' => 'http://my-project.com/assets',
+    'assetBasePath' => '/path/to/web/assets',
 ],
 ```
 
