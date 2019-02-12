@@ -160,6 +160,8 @@
 
 {% if not category.slug %}
     {% js %}
-        window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');
+        window.slugGenerator = new Craft.SlugGenerator('#title', '#slug', {
+            charMap: {{ craft.cp.getAsciiCharMap(category.site.language)|json_encode|raw }}
+        });
     {% endjs %}
 {% endif %}

@@ -4,6 +4,9 @@
 
 ### Added
 - Added the `disabledPlugins` config setting. ([craftcms/webhooks#4](https://github.com/craftcms/webhooks/issues/4))
+- Added the `$language` argument to `craft\helpers\StringHelper::toAscii()`.
+- Added `craft\validators\SlugValidator::$language`.
+- Added `craft\web\twig\variables\Cp::getAsciiCharMap()`.
 
 ### Changed
 - The operating system name & version are now shown in the System Report utility. ([#3784](https://github.com/craftcms/cms/issues/3784))
@@ -11,6 +14,7 @@
 - Control Panel settings no longer warn about using the `@web` alias, if it was defined by the `aliases` config setting. ([#3798](https://github.com/craftcms/cms/pull/3798))
 - `craft\models\VolumeFolder::getVolume()` now throws an `InvalidConfigException` if its `$volumeId` property is set to an invalid volume ID, rather than returning `null`.
 - Craft now checks if all files in project config mapping are valid and regenerates the map if they are not.
+- Craft now auto-generates slugs using an ASCII char map based on the language of the current entry/category, rather than the logged-in user. ([#3820](https://github.com/craftcms/cms/issues/3820))
 
 ### Fixed
 - Fixed a SQL error that could occur when deleting an asset. ([#3786](https://github.com/craftcms/cms/issues/3786))

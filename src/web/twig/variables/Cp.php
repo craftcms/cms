@@ -370,6 +370,20 @@ class Cp extends Component
     }
 
     /**
+     * Returns ASCII character mappings for the given language, if it differs from the application language.
+     *
+     * @return array|null
+     */
+    public function getAsciiCharMap(string $language)
+    {
+        if ($language === Craft::$app->language) {
+            return null;
+        }
+
+        return StringHelper::asciiCharMap(true, $language);
+    }
+
+    /**
      * Returns the available template path suggestions for template inputs.
      *
      * @return string[]

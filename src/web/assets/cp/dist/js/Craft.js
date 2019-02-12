@@ -1,4 +1,4 @@
-/*!   - 2019-02-01 */
+/*!   - 2019-02-12 */
 (function($){
 
 /** global: Craft */
@@ -806,15 +806,16 @@ $.extend(Craft,
          * Converts extended ASCII characters to ASCII.
          *
          * @param {string} str
+         * @param {object|undefined} charMap
          * @return string
          */
-        asciiString: function(str) {
+        asciiString: function(str, charMap) {
             var asciiStr = '';
             var char;
 
             for (var i = 0; i < str.length; i++) {
                 char = str.charAt(i);
-                asciiStr += Craft.asciiCharMap[char] || char;
+                asciiStr += (charMap || Craft.asciiCharMap)[char] || char;
             }
 
             return asciiStr;
@@ -16910,7 +16911,7 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend(
 
             if (Craft.limitAutoSlugsToAscii) {
                 // Convert extended ASCII characters to basic ASCII
-                sourceVal = Craft.asciiString(sourceVal);
+                sourceVal = Craft.asciiString(sourceVal, this.settings.charMap);
             }
 
             // Get the "words". Split on anything that is not alphanumeric.

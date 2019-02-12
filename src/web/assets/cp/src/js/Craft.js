@@ -803,15 +803,16 @@ $.extend(Craft,
          * Converts extended ASCII characters to ASCII.
          *
          * @param {string} str
+         * @param {object|undefined} charMap
          * @return string
          */
-        asciiString: function(str) {
+        asciiString: function(str, charMap) {
             var asciiStr = '';
             var char;
 
             for (var i = 0; i < str.length; i++) {
                 char = str.charAt(i);
-                asciiStr += Craft.asciiCharMap[char] || char;
+                asciiStr += (charMap || Craft.asciiCharMap)[char] || char;
             }
 
             return asciiStr;

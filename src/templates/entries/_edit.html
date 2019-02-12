@@ -313,6 +313,8 @@
 
 {% if not entry.slug %}
     {% js %}
-        window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');
+        window.slugGenerator = new Craft.SlugGenerator('#title', '#slug', {
+            charMap: {{ craft.cp.getAsciiCharMap(entry.site.language)|json_encode|raw }}
+        });
     {% endjs %}
 {% endif %}
