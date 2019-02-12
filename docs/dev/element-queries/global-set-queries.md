@@ -130,8 +130,8 @@ Possible values include:
 
 ```php
 // Fetch global sets created last month
-$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+$start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+$end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
 
 $globalSets = \craft\elements\GlobalSet::find()
     ->dateCreated(['and', ">= {$start}", "< {$end}"])
@@ -168,7 +168,7 @@ Possible values include:
 
 ```php
 // Fetch global sets updated in the last week
-$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+$lastWeek = (new \DateTime('1 week ago'))->format(\DateTime::ATOM);
 
 $globalSets = \craft\elements\GlobalSet::find()
     ->dateUpdated(">= {$lastWeek}")
