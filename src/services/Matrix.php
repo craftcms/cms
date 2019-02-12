@@ -336,7 +336,7 @@ class Matrix extends Component
             /** @var MatrixField $matrixField */
             $matrixField = $fieldsService->getFieldById($blockTypeRecord->fieldId);
             $contentService->contentTable = $matrixField->contentTable;
-            $fieldsService->oldFieldColumnPrefix = 'field_' . $blockTypeRecord->handle . '_';
+            $fieldsService->oldFieldColumnPrefix = 'field_' . ($blockTypeRecord->getOldAttribute('handle') ?? $data['handle']) . '_';
 
             $oldFields = $previousData['fields'] ?? [];
             $newFields = $data['fields'] ?? [];

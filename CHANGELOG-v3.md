@@ -20,6 +20,7 @@
 - Fixed an error that could occur if an Assets field was configured to upload to a deleted volume. ([#3799](https://github.com/craftcms/cms/issues/3799))
 - Fixed a bug where sections’ Default Status settings weren’t always being respected. ([#3791](https://github.com/craftcms/cms/issues/3791))
 - Fixed a bug where only users with the “Edit users” user permission were allowed to upload a new user photo. ([#3735](https://github.com/craftcms/cms/issues/3735))
+- Fixed a bug where renaming a Matrix block type’s handle would result in new content columns being created in the database, and existing Matrix blocks losing their content. ([#3809](https://github.com/craftcms/cms/issues/3809))
 
 ## 3.1.8 - 2019-02-05
 
