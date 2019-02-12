@@ -1316,7 +1316,7 @@ class Plugins extends Component
     }
 
     /**
-     * Load config data for plugin by it's handle.
+     * Load config data for plugin by its handle.
      *
      * @param string $handle
      * @return array
