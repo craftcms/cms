@@ -1432,20 +1432,38 @@ class Fields extends Component
                 // Make sure we're working with the latest data in the case of a renamed field.
                 Craft::$app->getDb()->schema->refresh();
 
+                // Are we dealing with an existing column?
                 if (Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)) {
-                    Craft::$app->getDb()->createCommand()
-                        ->alterColumn($contentTable, $oldColumnName, $columnType)
-                        ->execute();
+                    // Name change?
                     if ($oldColumnName !== $newColumnName) {
+                        // Does the new column already exist?
+                        if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
+                            // Rename it so we don't lose any data
+                            Craft::$app->getDb()->createCommand()
+                                ->renameColumn($contentTable, $newColumnName, $newColumnName . '_' . StringHelper::randomString(10))
+                                ->execute();
+                        }
+
+                        // Rename the old column
                         Craft::$app->getDb()->createCommand()
                             ->renameColumn($contentTable, $oldColumnName, $newColumnName)
                             ->execute();
                     }
-                } else if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
+
+                    // Alter it
                     Craft::$app->getDb()->createCommand()
                         ->alterColumn($contentTable, $newColumnName, $columnType)
                         ->execute();
                 } else {
+                    // Does the new column already exist?
+                    if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
+                        // Rename it so we don't lose any data
+                        Craft::$app->getDb()->createCommand()
+                            ->renameColumn($contentTable, $newColumnName, $newColumnName . '_' . StringHelper::randomString(10))
+                            ->execute();
+                    }
+
+                    // Add the new column
                     Craft::$app->getDb()->createCommand()
                         ->addColumn($contentTable, $newColumnName, $columnType)
                         ->execute();
