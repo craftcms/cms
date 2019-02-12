@@ -108,7 +108,6 @@ class Date extends Field implements PreviewableFieldInterface
         $rules = parent::rules();
         $rules[] = [['showDate', 'showTime'], 'boolean'];
         $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
-
         return $rules;
     }
 

@@ -29,8 +29,6 @@
                             $(response.tabsHtml).insertBefore($('#content'))
                         }
 
-                        Craft.cp.initTabs();
-
                         $('#fields').html(response.fieldsHtml);
                         Craft.initUiElements($('#fields'));
                         Craft.appendHeadHtml(response.headHtml);
@@ -40,6 +38,8 @@
                         if (typeof slugGenerator !== 'undefined') {
                             slugGenerator.setNewSource('#title');
                         }
+
+                        Craft.cp.initTabs();
 
                         this.trigger('typeChange');
                     }

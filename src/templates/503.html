@@ -3,10 +3,5 @@
 
 {% block message %}
     <h2>{{ title }}</h2>
-
-    {% if message %}
-        {% filter md %}{{ message }}{% endfilter %}
-    {% else %}
-        <p>{{ "Our site is temporarily unavailable. Please try again later."|t('app') }}</p>
-    {% endif %}
+    <p>{{ (message ?? null) ?: "Our site is temporarily unavailable. Please try again later."|t('app') }}</p>
 {% endblock %}

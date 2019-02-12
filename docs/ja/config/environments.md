@@ -89,7 +89,7 @@ return [
     // Dev environment settings
     'dev' => [
         'siteUrl' => 'http://my-project.test',
-    ],   
+    ],
 ];
 ```
 

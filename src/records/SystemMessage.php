@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use craft\validators\LanguageValidator;
 
 /**
@@ -46,6 +47,6 @@ class SystemMessage extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%systemmessages}}';
+        return Table::SYSTEMMESSAGES;
     }
 }

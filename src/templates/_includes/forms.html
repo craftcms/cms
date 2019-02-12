@@ -96,6 +96,11 @@
 {% endmacro %}
 
 
+{% macro autosuggest(config) %}
+    {% include "_includes/forms/autosuggest" with config only %}
+{% endmacro %}
+
+
 {# Fields #}
 
 
@@ -238,6 +243,30 @@
 {% macro elementSelectField(config) %}
     {% import _self as forms %}
     {{ forms.field(config, forms.elementSelect(config)) }}
+{% endmacro %}
+
+
+{% macro autosuggestField(config) %}
+    {% import _self as forms %}
+
+    {# Suggest an environment variable / alias? #}
+    {% if (config.suggestEnvVars ?? false) %}
+        {% set value = config.value ?? '' %}
+        {% if config.tip is not defined and value[0:1] not in ['$', '@'] %}
+            {% set config = config|merge({
+                tip: ((config.suggestAliases ?? false)
+                    ? 'This can be set to an environment variable, or begin with an alias.'|t('app')
+                    : 'This can be set to an environment variable.'|t('app'))
+                    ~ ' <a href="https://docs.craftcms.com/v3/config/environments.html" class="go">' ~ 'Learn more'|t('app') ~ '</a>'
+            }) %}
+        {% elseif config.warning is not defined and (value == '@web' or value[0:5] == '@web/') and craft.app.request.isWebAliasSetDynamically %}
+            {% set config = config|merge({
+                warning: 'The `@web` alias is not recommended if it is determined automatically.'|t('app')
+            }) %}
+        {% endif %}
+    {% endif %}
+
+    {{ forms.field(config, forms.autosuggest(config)) }}
 {% endmacro %}
 
 

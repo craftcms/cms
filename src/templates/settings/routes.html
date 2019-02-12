@@ -29,7 +29,7 @@
 ]) %}
 
 
-{% set routes = craft.routes.getDbRoutes() %}
+{% set routes = craft.routes.getProjectConfigRoutes() %}
 
 
 {% block content %}
@@ -39,11 +39,11 @@
 
     <div id="routes">
         {% for route in routes %}
-            <div class="route" data-id="{{ route.id }}"{% if route.siteId %} data-site-id="{{ route.siteId }}"{% endif %}>
+            <div class="route" data-uid="{{ route.uid }}"{% if route.siteUid %} data-site-uid="{{ route.siteUid }}"{% endif %}>
                 <div class="uri-container">
                     {%- spaceless %}
                         {% if craft.app.getIsMultiSite() %}
-                            <span class="site">{{ route.siteId ? craft.app.sites.getSiteById(route.siteId).name|t('site') : "Global"|t('app') }}</span>
+                            <span class="site">{{ route.siteUid ? craft.app.sites.getSiteByUid(route.siteUid).name|t('site') : "Global"|t('app') }}</span>
                         {% endif %}
                         <span class="uri">{{ route.uriDisplayHtml|raw }}</span>
                     {% endspaceless -%}

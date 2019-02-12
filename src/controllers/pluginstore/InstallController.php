@@ -9,10 +9,6 @@ namespace craft\controllers\pluginstore;
 
 use Craft;
 use craft\controllers\BaseUpdaterController;
-use craft\errors\MigrateException;
-use craft\errors\MigrationException;
-use craft\web\Response as CraftResponse;
-use yii\base\Exception as YiiException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response as YiiResponse;
 
@@ -54,7 +50,10 @@ class InstallController extends BaseUpdaterController
         // Only admins can install plugins
         $this->requireAdmin();
 
-        if (!Craft::$app->getConfig()->getGeneral()->allowUpdates) {
+        if (
+            !Craft::$app->getConfig()->getGeneral()->allowUpdates ||
+            !Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
             throw new ForbiddenHttpException('Installation of plugins from the Plugin Store is disabled.');
         }
 
@@ -68,60 +67,28 @@ class InstallController extends BaseUpdaterController
      */
     public function actionCraftInstall(): YiiResponse
     {
-        // Prevent the plugin from sending any headers, etc.
-        $realResponse = Craft::$app->getResponse();
-        $tempResponse = new CraftResponse(['isSent' => true]);
-        Craft::$app->set('response', $tempResponse);
+        list($success, $tempResponse, $errorDetails) = $this->installPlugin($this->data['handle']);
 
-        try {
-            Craft::$app->getPlugins()->installPlugin($this->data['handle']);
-        } catch (\Throwable $e) {
-            Craft::$app->set('response', $realResponse);
-            $migration = $output = null;
-
+        if (!$success) {
             $info = Craft::$app->getPlugins()->getComposerPluginInfo($this->data['handle']);
             $pluginName = $info['name'] ?? $this->data['packageName'];
             $email = $info['developerEmail'] ?? 'support@craftcms.com';
 
-            if ($e instanceof MigrateException) {
-                /** @var \Throwable $e */
-                $e = $e->getPrevious();
-
-                if ($e instanceof MigrationException) {
-                    /** @var \Throwable|null $previous */
-                    $previous = $e->getPrevious();
-                    $migration = $e->migration;
-                    $output = $e->output;
-                    $e = $previous ?? $e;
-                }
-            }
-
-            Craft::error('Plugin installation failed: ' . $e->getMessage(), __METHOD__);
-
-            $eName = $e instanceof YiiException ? $e->getName() : get_class($e);
-
             return $this->send([
                 'error' => Craft::t('app', '{name} has been added, but an error occurred when installing it.', ['name' => $pluginName]),
-                'errorDetails' => $eName . ': ' . $e->getMessage() .
-                    ($migration ? "\n\nMigration: " . get_class($migration) : '') .
-                    ($output ? "\n\nOutput:\n\n" . $output : ''),
+                'errorDetails' => $errorDetails,
                 'options' => [
                     $this->finishedState([
                         'label' => Craft::t('app', 'Leave it uninstalled'),
                     ]),
                     $this->actionOption(Craft::t('app', 'Remove it'), self::ACTION_COMPOSER_REMOVE),
                     [
-                        'label' => Craft::t('app', 'Send for help'),
-                        'submit' => true,
-                        'email' => $email,
-                        'subject' => $pluginName . ' update failure',
+                        'label' => Craft::t('app', 'Troubleshoot'),
+                        'url' => 'https://craftcms.com/guides/failed-updates',
                     ],
                 ],
             ]);
         }
-
-        // Put the real response back
-        Craft::$app->set('response', $realResponse);
 
         // Did the plugin want to redirect us somewhere?
         $headers = $tempResponse->getHeaders();

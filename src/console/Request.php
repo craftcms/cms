@@ -37,15 +37,17 @@ class Request extends \yii\console\Request
             // see if it's any of the usual suspects
             $dir = dirname($this->getScriptFile());
             foreach (['web', 'public', 'public_html'] as $folder) {
-                if ($found = (is_dir($dir . DIRECTORY_SEPARATOR . $folder))) {
+                if (is_dir($dir . DIRECTORY_SEPARATOR . $folder)) {
                     $dir .= DIRECTORY_SEPARATOR . $folder;
                     break;
                 }
             }
             Craft::setAlias('@webroot', $dir);
+            $this->isWebrootAliasSetDynamically = true;
         }
         if (Craft::getRootAlias('@web') === false) {
             Craft::setAlias('@web', '/');
+            $this->isWebAliasSetDynamically = true;
         }
     }
 

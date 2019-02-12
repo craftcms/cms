@@ -47,11 +47,18 @@ class PluginsAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
+                'A license key is required.',
                 'Action',
                 'Documentation',
                 'Install',
                 'Missing',
                 'Status',
+                'Switch',
+                'This license is for the {name} edition.',
+                'This license is tied to another Craft install. Visit {url} to resolve.',
+                'This license isn’t allowed to run version {version}.',
+                'Trial',
+                'Your license key is invalid.',
             ]);
         }
     }

@@ -560,6 +560,31 @@ $tags = \craft\elements\Tag::find()
 :::
 
 
+### `trashed`
+
+Narrows the query results to only tags that have been soft-deleted.
+
+
+
+
+
+::: code
+```twig
+{# Fetch trashed tags #}
+{% set tags = {twig-function}
+    .trashed()
+    .all() %}
+```
+
+```php
+// Fetch trashed tags
+$tags = \craft\elements\Tag::find()
+    ->trashed()
+    ->all();
+```
+:::
+
+
 ### `uid`
 
 Narrows the query results based on the tags’ UIDs.

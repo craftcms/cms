@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m180113_153740_drop_users_archived_column migration.
@@ -14,7 +15,7 @@ class m180113_153740_drop_users_archived_column extends Migration
      */
     public function safeUp()
     {
-        $this->dropColumn('{{%users}}', 'archived');
+        $this->dropColumn(Table::USERS, 'archived');
     }
 
     /**

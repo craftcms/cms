@@ -46,7 +46,7 @@ Migration classes contain methods: [safeUp()](api:yii\db\Migration::safeUp()) an
 You can usually ignore the `safeDown()` method, as Craft doesn’t have a way to revert migrations from the Control Panel.
 :::
 
-You have full access to [Craft’s API](https://docs.craftcms.com/api/v3/) from your `safeUp()` method, but plugin migrations should try to avoid calling the plugin’s own APIs here. As your plugin’s database schema changes over time, so will your API’s assumptions about the schema. If an old migration calls a service method that relies on database changes that haven’t been applied yet, it will result in a SQL error. So in general you should execute all SQL queries directly from your own migration class. It may feel like you’re duplicating code, but it will be more future-proof.
+You have full access to [Craft’s API](https://docs.craftcms.com/api/v3/) from your `safeUp()` method, but plugin migrations should try to avoid calling the plugin’s own API here. As your plugin’s database schema changes over time, so will your API’s assumptions about the schema. If an old migration calls a service method that relies on database changes that haven’t been applied yet, it will result in a SQL error. So in general you should execute all SQL queries directly from your own migration class. It may feel like you’re duplicating code, but it will be more future-proof.
 
 ### Manipulating Database Data
 
@@ -60,7 +60,7 @@ $this->db->createCommand()
 
 // Good:
 $this->insert('{{%tablename}}', $rows);
-```  
+```
 
 ::: warning
 The <api:api:yii\db\Migration::insert()>, [batchInsert()](api:craft\db\Migration::batchInsert()), and [update()](api:yii\db\Migration::update()) migration methods will automatically insert/update data in the `dateCreated`, `dateUpdated`, `uid` table columns in addition to whatever you specified in the `$columns` argument. If the table you’re working with does’t have those columns, make sure you pass `false` to the `$includeAuditColumns` argument so you don’t get a SQL error.
@@ -147,3 +147,21 @@ When a plugin has an Install migration, its `safeUp()` method will be called whe
 ::: tip
 It is *not* a plugin’s responsibility to manage its row in the `plugins` database table. Craft takes care of that for you.
 :::
+
+### Setting Default Project Config Data
+
+If you want to add things to the [project config](project-config.md) on install, either directly or via your plugin’s API, be sure to only do that if the incoming `project.yaml` file doesn’t already have a record of your plugin.
+
+```php
+public function safeUp()
+{
+    // ...
+
+    // Don't make the same config changes twice
+    if (Craft::$app->projectConfig->get('plugins.<plugin-handle>', true) === null) {
+        // Make the config changes here...
+    }
+}
+```
+
+That’s because there’s a chance that your plugin is being installed as part of a project config sync, and if its Install migration were to make any project config changes of its own, they would overwrite all of the incoming changes from `project.yaml`.

@@ -1,146 +1,106 @@
 # Environmental Configuration
 
-If your Craft project lives across more than one environment (e.g. Development, Staging, and Production), there are going to be things that should be configured differently for each environment.
+Some settings should be defined on a per-environment basis. For example, when developing locally, you may want your site’s base URL to be `http://my-project.test`, but on production it should be `https://my-project.com`.
 
-For example, each environment will likely need its own unique [database connection settings](db-settings.md), and [Dev Mode](config:devMode) should be enabled for your local Development environment, but not for Production.
+## Control Panel Settings
 
-There are two ways to achieve that in Craft: [environment variables](#environment-variables) and [multi-environment configs](#multi-environment-configs).
+Some settings in the Control Panel can be set to environment variables (like the ones defined in your `.env` file):
+
+- General Settings
+  - **System Name**
+- Sites
+  - **Base URL**
+- Asset Volumes
+  - **Base URL**
+  - **File System Path** (Local)
+- Email
+  - **System Email Address**
+  - **Sender Name**
+  - **HTML Email Template**
+  - **Username** (Gmail and SMTP)
+  - **Password** (Gmail and SMTP)
+  - **Host Name** (SMTP)
+  - **Port** (Port)
+
+To set these settings to an environment variable, type `$` followed by the environment variable’s name.
+
+![A volume’s Base URL setting](../images/volume-base-url-setting.jpg)
+
+Only the environment variable’s name will be stored in your database or project config, so this is a great way to set setting values that may change per-environment, or contain sensitive information.
 
 ::: tip
-These aren’t mutually exclusive. Most Craft projects will use both approaches for different things.
+Plugins can add support for environment variables and aliases in their settings as well. See [Environmental Settings](../extend/environmental-settings.md) to learn how.
 :::
 
-## Environment Variables
+### Using Aliases in Control Panel Settings
 
-Environment variables are values that are set on the server that Craft is running on, which can be loaded with PHP’s [getenv()](http://php.net/manual/en/function.getenv.php) function.
+Some of these settings—the ones that store a URL or a file system path—can also be set to [aliases](README.md#aliases), which is helpful if you just want to store a base URL or path in an environment variable, and append additional segments onto it.
 
-They can be set in multiple ways – for example some hosts provide a UI for defining environment variables – but in general we recommend you set them in the `.env` file that comes with new Craft 3 projects. `.env` files are special because they don’t get committed to Git like the rest of your project’s files. So it’s a good place to put information that is sensitive or likely to change for each environment.
-
-To set a new environment variable, open up your `.env` file and add it like this:
+For example, you can define a `ROOT_URL` environment variable that is set to the root URL of your site:
 
 ```bash
 # -- .env --
-SITE_URL="http://my-project.test"
+ROOT_URL="http://my-project.test"
 ```
+Then create a `@rootUrl` alias that references it:
 
-::: tip
-See the [PHP Dotenv documentation](https://github.com/vlucas/phpdotenv/blob/master/README.md) for more info on supported `.env` syntaxes.
-:::
+```php
+// -- config/general.php --
+'aliases' => [
+    '@rootUrl' => getenv('ROOT_URL'),
+],
+``` 
 
-Whenever you add a new variable to `.env`, you should add it to `.env.example` as well, probably without a value. `.env.example` is the starting point that new environments should base their  `.env` file on.
+Then you could go into your User Photos volume’s settings (for example) and set its Base URL to `@rootUrl/images/user-photos`.  
+
+## Config Files
+
+You can set your [general config settings](config-settings.md), [database connection settings](db-settings.md), and other PHP config files to environment variables using PHP’s [getenv()](http://php.net/manual/en/function.getenv.php) function:
 
 ```bash
-# -- .env.example --
-SITE_URL=""
+# -- .env --
+CP_TRIGGER="secret-word"
 ```
-
-Once you’ve defined an environment variable, you can pull it into an actual [config setting](config-settings.md) or [database connection setting](db-settings.md) like so:
 
 ```php
 // -- config/general.php --
-'siteUrl' => getenv('SITE_URL'),
+'cpTrigger' => getenv('CP_TRIGGER') ?: 'admin',
 ```
 
-If there’s a chance that some environments won’t have the environment variable defined, use a [ternary operator](http://php.net/manual/en/language.operators.comparison.php#language.operators.comparison.ternary) (`?:`) to define a fallback value:
+### Multi-Environment Configs
+
+Craft’s PHP config files can optionally define separate config settings for each individual environment.
 
 ```php
-// -- config/general.php --
-'siteUrl' => getenv('SITE_URL') ?: '/',
-```
-
-## Multi-Environment Configs
-
-All of Craft’s config files (the `.php` files in your `config/` folder) can optionally define separate config settings for each individual environment.
-
-Take this simple single-environment config:
-
-```php
-// -- config/general.php --
-return [
-    'omitScriptNameInUrls' => true,
-    'siteUrl' => 'https://example.com',
-];
-```
-
-Let’s say you want to give your Development environment a different `siteUrl` value. To do that, first make this a **multi-environment config** by moving all of your config settings into a nested array, with a `'*'` key:
-
-```php{4,7}
 // -- config/general.php --
 return [
     // Global settings
     '*' => [
         'omitScriptNameInUrls' => true,
-        'siteUrl' => 'https://example.com',
-    ],
-];
-```
-
-Now Craft knows to treat this as a multi-environment config. All that’s left is to override the `siteUrl` setting for Development:
-
-```php{10-12}
-// -- config/general.php --
-return [
-    // Global settings
-    '*' => [
-        'omitScriptNameInUrls' => true,
-        'siteUrl' => 'https://my-project.com',
     ],
 
     // Dev environment settings
     'dev' => [
-        'siteUrl' => 'http://my-project.test',
-    ],   
+        'devMode' => true,
+    ],
+
+    // Production environment settings
+    'production' => [
+        'cpTrigger' => 'secret-word',
+    ],
 ];
 ```
 
-The actual environment names you go with are up to you. Craft will look for the key(s) with the same name as the [CRAFT_ENVIRONMENT](php-constants.md#craft-environment) PHP constant, which should be defined by your `web/index.php` file.
+The `'*'` key is required here so Craft knows to treat it as a multi-environment key, but the other keys are up to you. Craft will look for the key(s) that match the [CRAFT_ENVIRONMENT](php-constants.md#craft-environment) PHP constant, which should be defined by your `web/index.php` file. (Your server’s hostname will be used as a fallback.)
 
 By default, new Craft 3 projects will define the [CRAFT_ENVIRONMENT](php-constants.md#craft-environment) constant using an environment variable called `ENVIRONMENT`, which is defined in the `.env` file:
 
-```php
-// -- web/index.php --
-// Load and run Craft
-define('CRAFT_ENVIRONMENT', getenv('ENVIRONMENT') ?: 'production');
-```
-
 ```bash
 # -- .env --
-# The environment Craft is currently running in ('dev', 'staging', 'production', etc.)
 ENVIRONMENT="dev"
 ```
 
-::: tip
-If the [CRAFT_ENVIRONMENT](php-constants.md#craft-environment) constant isn’t defined, Craft will define it for you based on the current server name (e.g. `my-project.test`), for backwards compatibility with configs created for Craft 2. We recommend you explicitly define it yourself, though.
-:::
-
-::: warning
-The `'*'` array is required to enable Craft’s multi-environment config support, even if it’s blank. Craft checks for it when determining whether a config is multi-environment or not.
-:::
-
-## Aliases
-
-[Aliases](README.md#aliases) provide a way to define paths and URLs on a per-environment basis.
-
-For example, you might want to define `ASSET_BASE_PATH` and `ASSET_BASE_URL` environment variables that store the base path and URL to a `web/assets/` folder, where your asset volumes will live:
-
-```bash
-# -- .env --
-# Path to web/assets/ relative to index.php
-ASSET_BASE_PATH="./assets"
-
-# URL to web/assets/
-ASSET_BASE_URL="/assets"
-```
-
-You can pull these environment variables into custom aliases from your `config/general.php` file like so:
-
 ```php
-'aliases' => [
-    '@assetBasePath' => getenv('ASSET_BASE_PATH'),
-    '@assetBaseUrl' => getenv('ASSET_BASE_URL'),
-],
+// -- web/index.php --
+define('CRAFT_ENVIRONMENT', getenv('ENVIRONMENT') ?: 'production');
 ```
-
-With that in place, you can start referencing your new aliases from your asset volume settings:
-
-![A local asset volume’s Base URL, Volume Type, and File System Path settings](../images/volume-settings-with-aliases.png)

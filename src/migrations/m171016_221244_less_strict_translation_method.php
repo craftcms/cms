@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m171016_221244_less_strict_translation_method migration.
@@ -19,7 +20,7 @@ class m171016_221244_less_strict_translation_method extends Migration
             // (see https://github.com/yiisoft/yii2/issues/12077)
             $this->execute("ALTER TABLE {{%fields}} DROP CONSTRAINT [[{$this->db->tablePrefix}fields_translationMethod_check]]");
         } else {
-            $this->alterColumn('{{%fields}}', 'translationMethod', $this->string()->notNull()->defaultValue('none'));
+            $this->alterColumn(Table::FIELDS, 'translationMethod', $this->string()->notNull()->defaultValue('none'));
         }
     }
 

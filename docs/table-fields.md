@@ -13,7 +13,7 @@ Table fields have the following settings:
   * *Column Heading* – The name that will appear in the head of the table
   * *Handle* – How you’ll refer to this column from your templates
   * *Width* – The width for this column specified in either pixels or a percentage
-  * *Type* – The type of content allowed in the column. Choose from Single-line text, Multi-line text, Number, and Checkbox.
+  * *Type* – The type of content allowed in the column. Choose from Single-line text, Multi-line text, Number, Checkbox, Date, Time, Lightswitch, and Color.
 
 * **Default Values** – Define the default row and column values for new instances of the field.
 

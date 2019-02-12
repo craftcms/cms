@@ -10,7 +10,7 @@ Craft は、いくつかの[一般設定](config-settings.md)をサポートし�
 
 ```php
 return [
-    'devMode' => true, 
+    'devMode' => true,
 ];
 ```
 

@@ -34,6 +34,11 @@ class FieldGroup extends Model
      */
     public $name;
 
+    /**
+     * @var string|null UID
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 
@@ -52,12 +57,12 @@ class FieldGroup extends Model
      */
     public function rules()
     {
-        return [
-            [['id'], 'number', 'integerOnly' => true],
-            [['name'], 'string', 'max' => 255],
-            [['name'], UniqueValidator::class, 'targetClass' => FieldGroupRecord::class],
-            [['name'], 'required'],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id'], 'number', 'integerOnly' => true];
+        $rules[] = [['name'], 'string', 'max' => 255];
+        $rules[] = [['name'], UniqueValidator::class, 'targetClass' => FieldGroupRecord::class];
+        $rules[] = [['name'], 'required'];
+        return $rules;
     }
 
     /**

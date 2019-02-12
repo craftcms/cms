@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
@@ -15,19 +16,19 @@ class m170217_120224_asset_indexing_columns extends Migration
      */
     public function safeUp()
     {
-        if (!$this->db->columnExists('{{%assetindexdata}}', 'offset')) {
+        if (!$this->db->columnExists(Table::ASSETINDEXDATA, 'offset')) {
             // Migration has already run
             return true;
         }
 
-        $this->addColumn('{{%assetindexdata}}', 'inProgress', $this->boolean()->after('recordId')->defaultValue(false));
-        $this->addColumn('{{%assetindexdata}}', 'completed', $this->boolean()->after('inProgress')->defaultValue(false));
+        $this->addColumn(Table::ASSETINDEXDATA, 'inProgress', $this->boolean()->after('recordId')->defaultValue(false));
+        $this->addColumn(Table::ASSETINDEXDATA, 'completed', $this->boolean()->after('inProgress')->defaultValue(false));
 
-        MigrationHelper::dropIndexIfExists('{{%assetindexdata}}', ['sessionId', 'volumeId', 'offset'], true, $this);
+        MigrationHelper::dropIndexIfExists(Table::ASSETINDEXDATA, ['sessionId', 'volumeId', 'offset'], true, $this);
 
-        $this->dropColumn('{{%assetindexdata}}', 'offset');
+        $this->dropColumn(Table::ASSETINDEXDATA, 'offset');
 
-        $this->createIndex(null, '{{%assetindexdata}}', ['sessionId', 'volumeId']);
+        $this->createIndex(null, Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
 
         return true;
     }

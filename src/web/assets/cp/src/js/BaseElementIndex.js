@@ -41,6 +41,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $search: null,
         searching: false,
         searchText: null,
+        trashed: false,
         $clearSearchBtn: null,
 
         $statusMenuBtn: null,
@@ -459,10 +460,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             this.$scoreSortAttribute.prependTo(this.$sortAttributesList);
-            this.setSortAttribute('score');
-            this.getSortAttributeOption('structure').addClass('disabled');
 
             this.searching = true;
+
+            this._updateStructureSortOption();
+            this.setSortAttribute('score');
         },
 
         stopSearching: function() {
@@ -470,10 +472,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$clearSearchBtn.addClass('hidden');
 
             this.$scoreSortAttribute.detach();
-            this.getSortAttributeOption('structure').removeClass('disabled');
-            this.setStoredSortOptionsForSource();
 
             this.searching = false;
+
+            this._updateStructureSortOption();
         },
 
         setInstanceState: function(key, value) {
@@ -550,7 +552,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 status: this.status,
                 siteId: this.siteId,
                 search: this.searchText,
-                limit: this.settings.batchSize
+                limit: this.settings.batchSize,
+                trashed: this.trashed ? 1 : 0
             }, this.settings.criteria);
 
             var params = {
@@ -559,7 +562,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 source: this.instanceState.selectedSource,
                 criteria: criteria,
                 disabledElementIds: this.settings.disabledElementIds,
-                viewState: this.getSelectedSourceState()
+                viewState: $.extend({}, this.getSelectedSourceState())
             };
 
             // Possible that the order/sort isn't entirely accurate if we're sorting by Score
@@ -822,6 +825,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return false;
             }
 
+            // Hide action triggers if they're currently being shown
+            this.hideActionTriggers();
+
             this.$source = $source;
             this.sourceKey = $source.data('key');
             this.setInstanceState('selectedSource', this.sourceKey);
@@ -924,14 +930,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         setStoredSortOptionsForSource: function() {
-            // Default to whatever's first
-            this.setSortAttribute();
-            this.setSortDirection('asc');
-
             var sortAttr = this.getSelectedSourceState('order'),
                 sortDir = this.getSelectedSourceState('sort');
 
-            if (!sortAttr) {
+            if (!sortAttr || !sortDir) {
                 // Get the default
                 sortAttr = this.getDefaultSort();
 
@@ -1272,7 +1274,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $option = $(ev.selectedOption).addClass('sel');
             this.$statusMenuBtn.html($option.html());
 
-            this.status = $option.data('status');
+            if (Garnish.hasAttr($option, 'data-trashed')) {
+                this.trashed = true;
+                this.status = null;
+            } else {
+                this.trashed = false;
+                this.status = $option.data('status');
+            }
+
+            this._updateStructureSortOption();
             this.updateElements();
         },
 
@@ -1364,6 +1374,27 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         _handleSourceToggleClick: function(ev) {
             this._toggleSource($(ev.currentTarget).prev('a'));
             ev.stopPropagation();
+        },
+
+        _updateStructureSortOption: function() {
+            var $option = this.getSortAttributeOption('structure');
+
+            if (!$option.length) {
+                return;
+            }
+
+            if (this.trashed || this.searching) {
+                $option.addClass('disabled');
+                if (this.getSelectedSortAttribute() === 'structure') {
+                    // Temporarily set the sort to the first option
+                    var $firstOption = this.$sortAttributesList.find('a:not(.disabled):first')
+                    this.setSortAttribute($firstOption.data('attr'));
+                    this.setSortDirection('asc');
+                }
+            } else {
+                $option.removeClass('disabled');
+                this.setStoredSortOptionsForSource();
+            }
         },
 
         // Source managemnet

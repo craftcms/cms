@@ -15,7 +15,7 @@ When choosing a module ID, try to avoid names that will conflict with Craft’s 
 
 ## Set up the basic file structure
 
-To create a module, create a new directory for it somewhere within your Craft project, such as `modules/<ModuleID>/`. For example, if your module ID is `foo`, you might set it up like this:   
+To create a module, create a new directory for it somewhere within your Craft project, such as `modules/<ModuleID>/`. For example, if your module ID is `foo`, you might set it up like this:
 
 ```
 my-project.test/
@@ -83,10 +83,15 @@ Use this template as a starting point for your `Module.php` file:
 <?php
 namespace bar;
 
+use Craft;
+
 class Module extends \yii\base\Module
 {
     public function init()
     {
+        // Define a custom alias named after the namespace
+        Craft::setAlias('@bar', __DIR__);
+
         parent::init();
 
         // Custom initialization code goes here...
@@ -94,7 +99,7 @@ class Module extends \yii\base\Module
 }
 ```
 
-Replace `bar` with your module’s actual namespace.
+Replace `bar` with your module’s actual namespace, and `'@bar'` with an [alias](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) name based on your actual namespace (with any `\`s converted to `/`s). 
 
 ## Further Reading
 

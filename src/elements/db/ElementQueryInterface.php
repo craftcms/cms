@@ -203,6 +203,30 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function archived(bool $value = true);
 
     /**
+     * Narrows the query results to only {elements} that have been soft-deleted.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch trashed {elements} #}
+     * {% set {elements-var} = {twig-function}
+     *     .trashed()
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch trashed {elements}
+     * ${elements-var} = {element-class}::find()
+     *     ->trashed()
+     *     ->all();
+     * ```
+     *
+     * @param bool|null $value The property value (defaults to true)
+     * @return static self reference
+     */
+    public function trashed($value = true);
+
+    /**
      * Narrows the query results based on the {elements}’ creation dates.
      *
      * Possible values include:

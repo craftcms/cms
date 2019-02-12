@@ -9,6 +9,7 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\queue\BaseJob;
 
@@ -58,7 +59,7 @@ class DeleteStaleTemplateCaches extends BaseJob
 
         $query = (new Query())
             ->select(['cacheId', 'query'])
-            ->from(['{{%templatecachequeries}}'])
+            ->from([Table::TEMPLATECACHEQUERIES])
             ->where(['type' => $elementType])
             ->orderBy(['id' => SORT_ASC]);
 

@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m171130_214407_craftidtokens_table migration.
@@ -18,10 +19,10 @@ class m171130_214407_craftidtokens_table extends Migration
         $this->dropTableIfExists('{{%pluginstoretokens}}');
         $this->dropTableIfExists('{{%oauth_tokens}}');
         $this->dropTableIfExists('{{%oauthtokens}}');
-        $this->dropTableIfExists('{{%craftidtokens}}');
+        $this->dropTableIfExists(Table::CRAFTIDTOKENS);
 
         // Create the new one
-        $this->createTable('{{%craftidtokens}}', [
+        $this->createTable(Table::CRAFTIDTOKENS, [
             'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
             'accessToken' => $this->text()->notNull(),
@@ -31,7 +32,7 @@ class m171130_214407_craftidtokens_table extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
-        $this->addForeignKey(null, '{{%craftidtokens}}', ['userId'], '{{%users}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::CRAFTIDTOKENS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
     }
 
     /**

@@ -1,4 +1,4 @@
-{% set systemName = craft.app.info.name|t('site') -%}
+{% set systemName = craft.app.getSystemName()|t('site') -%}
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
 {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ craft.app.locale.getOrientation() -%}
 

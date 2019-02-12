@@ -14,12 +14,14 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\events\ElementEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\EntryDraft;
 use craft\models\EntryVersion;
 use craft\models\Section;
+use craft\models\Section_SiteSettings;
 use craft\models\Site;
 use craft\web\assets\editentry\EditEntryAsset;
 use DateTime;
@@ -109,7 +111,7 @@ class EntriesController extends BaseEntriesController
         $currentUser = Craft::$app->getUser()->getIdentity();
         $request = Craft::$app->getRequest();
 
-        $variables['permissionSuffix'] = ':' . $entry->sectionId;
+        $variables['permissionSuffix'] = ':' . $entry->getSection()->uid;
 
         if (Craft::$app->getEdition() === Craft::Pro && $section->type !== Section::TYPE_SINGLE) {
             // Author selector variables
@@ -217,10 +219,6 @@ class EntriesController extends BaseEntriesController
         $variables['bodyClass'] = 'edit-entry site--' . $site->handle;
 
         // Page title w/ revision label
-        $variables['showSiteLabel'] = (
-            Craft::$app->getIsMultiSite() &&
-            count($section->getSiteSettings()) > 1
-        );
         $variables['showSites'] = (
             $variables['showSiteLabel'] &&
             ($section->propagateEntries || $entry->id === null)
@@ -308,7 +306,7 @@ class EntriesController extends BaseEntriesController
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $entry->getUrl(),
-                    'previewAction' => 'entries/preview-entry',
+                    'previewAction' => Craft::$app->getSecurity()->hashData('entries/preview-entry'),
                     'previewParams' => [
                         'sectionId' => $section->id,
                         'entryId' => $entry->id,
@@ -490,7 +488,7 @@ class EntriesController extends BaseEntriesController
             $entry->enabled
         ) {
             // Make sure they have permission to make live changes to those
-            $this->requirePermission('publishPeerEntries:' . $entry->sectionId);
+            $this->requirePermission('publishPeerEntries:' . $entry->getSection()->uid);
         }
 
         // If we're duplicating the entry, swap $entry with the duplicate
@@ -528,8 +526,8 @@ class EntriesController extends BaseEntriesController
         // Even more permission enforcement
         if ($entry->enabled) {
             if ($entry->id) {
-                $this->requirePermission('publishEntries:' . $entry->sectionId);
-            } else if (!$currentUser->can('publishEntries:' . $entry->sectionId)) {
+                $this->requirePermission('publishEntries:' . $entry->getSection()->uid);
+            } else if (!$currentUser->can('publishEntries:' . $entry->getSection()->uid)) {
                 $entry->enabled = false;
             }
         }
@@ -620,9 +618,9 @@ class EntriesController extends BaseEntriesController
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         if ($entry->authorId == $currentUser->id) {
-            $this->requirePermission('deleteEntries:' . $entry->sectionId);
+            $this->requirePermission('deleteEntries:' . $entry->getSection()->uid);
         } else {
-            $this->requirePermission('deletePeerEntries:' . $entry->sectionId);
+            $this->requirePermission('deletePeerEntries:' . $entry->getSection()->uid);
         }
 
         if (!Craft::$app->getElements()->deleteElement($entry)) {
@@ -770,6 +768,15 @@ class EntriesController extends BaseEntriesController
             throw new NotFoundHttpException('Section not found');
         }
 
+        $variables['showSiteLabel'] = (
+            Craft::$app->getIsMultiSite() &&
+            count($variables['section']->getSiteSettings()) > 1
+        );
+        $variables['showSiteStatus'] = (
+            $variables['showSiteLabel'] &&
+            $variables['section']->propagateEntries
+        );
+
         // Get the site
         // ---------------------------------------------------------------------
 
@@ -825,14 +832,28 @@ class EntriesController extends BaseEntriesController
                 $variables['entry'] = new Entry();
                 $variables['entry']->sectionId = $variables['section']->id;
                 $variables['entry']->authorId = $request->getQueryParam('authorId', Craft::$app->getUser()->getId());
-                $variables['entry']->enabled = true;
                 $variables['entry']->siteId = $site->id;
 
-                if (Craft::$app->getIsMultiSite()) {
+                // Set the default status based on the section's settings
+                /** @var Section_SiteSettings $siteSettings */
+                $siteSettings = ArrayHelper::firstWhere($variables['section']->getSiteSettings(), 'siteId', $variables['entry']->siteId);
+                if ($variables['showSiteStatus']) {
+                    $variables['entry']->enabled = true;
+                    $variables['entry']->enabledForSite = $siteSettings->enabledByDefault;
+                } else {
+                    $variables['entry']->enabled = $siteSettings->enabledByDefault;
+                    $variables['entry']->enabledForSite = true;
+                }
+
+                if ($variables['showSiteStatus']) {
                     // Set the default site status based on the section's settings
                     foreach ($variables['section']->getSiteSettings() as $siteSettings) {
                         if ($siteSettings->siteId == $variables['entry']->siteId) {
-                            $variables['entry']->enabledForSite = $siteSettings->enabledByDefault;
+                            if ($variables['section']->propagateEntries) {
+                                $variables['entry']->enabledForSite = $siteSettings->enabledByDefault;
+                            } else {
+                                $variables['entry']->enabled = $siteSettings->enabledByDefault;
+                            }
                             break;
                         }
                     }

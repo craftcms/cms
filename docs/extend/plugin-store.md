@@ -39,7 +39,7 @@ If you wish to sell your plugin, choose a price point that makes sense. Here are
 You will also be required to pick a Renewal Price, which is the annual fee the Plugin Store will charge customers who wish to continue installing new updates, after the first year. Pick a Renewal Price that is around 20-50% of the initial Price. For example, if you are charging $99 for your plugin, your Renewal Price should be between $19-$49.
 
 ::: warning
-If you initially submit your plugin as free, you will not be able to change it to a commercial plugin later; you will need to submit the commercial version as a completely separate plugin. Eventually the Plugin Store will support plugin Editions, which will provide a path for free plugins to offer commercial upgrades.
+If you initially submit your plugin as free, you will not be allowed to change it to commercial later. You can, however, give it a commercial [edition](plugin-editions.md) that offers extended functionality, as long as you don’t remove crucial functionality from the free edition.
 :::
 
 ### Submit for Approval
@@ -55,7 +55,7 @@ You might want to register your plugin with [Packagist](https://packagist.org/) 
 To release a new version of your plugin, first decide on the version number. The Plugin Store follows the same [Semantic Versioning](https://semver.org/) conventions supported by Composer:
 
 - Versions should have 3 or 4 segments (e.g. `1.2.3` or `1.2.3.4`).
-- Pre-release versions should end with a release identifier (`-alpha.X`, `-beta.X`, or `-RCX`). 
+- Pre-release versions should end with a release identifier (`-alpha.X`, `-beta.X`, or `-RCX`).
 
 Once you’ve decided on a version, follow these steps:
 

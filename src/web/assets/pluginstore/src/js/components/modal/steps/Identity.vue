@@ -1,7 +1,7 @@
 <template>
     <step>
         <template slot="header">
-            <div class="btn-left"><a @click="$emit('back')">← Back</a></div>
+            <div class="btn-left"><a @click="$emit('back')">{{ "Back"|t('app') }}</a></div>
             <h1>Identity</h1>
         </template>
         <template slot="main">
@@ -14,7 +14,7 @@
                             <li>{{ craftId.name }}</li>
                             <li>{{ craftId.email }}</li>
                         </ul>
-                        <input type="submit" value="Continue" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
+                        <input type="submit" value="Continue" class="btn submit" :disabled="(!validates || loading)" :class="{ disabled: (!validates || loading) }" />
                     </template>
 
                     <p v-else><a class="btn submit" @click="connectCraftId">{{ "Connect to your Craft ID"|t('app') }}</a></p>
@@ -23,8 +23,8 @@
                 <p><label><input type="radio" value="guest" v-model="identityMode" /> {{ "Continue as guest"|t('app') }}</label></p>
 
                 <template v-if="identityMode === 'guest'">
-                    <text-field id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError"></text-field>
-                    <input type="submit" :value="$options.filters.t('Continue', 'app')" class="btn submit" :disabled="!validates || loading" :class="{ disabled: !validates || loading }" />
+                    <text-field id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError" />
+                    <input type="submit" :value="'Continue'|t('app')" class="btn submit" :disabled="(!validates || loading)" :class="{ disabled: (!validates || loading) }" />
                 </template>
 
                 <div v-if="loading" class="spinner"></div>
@@ -34,14 +34,14 @@
 </template>
 
 <script>
+    /* global Craft */
+
     import {mapState} from 'vuex'
-    import TextField from '../../fields/TextField'
     import Step from '../Step'
 
     export default {
 
         components: {
-            TextField,
             Step,
         },
 
@@ -66,7 +66,7 @@
                 },
 
                 set(value) {
-                    this.$store.commit("CHANGE_IDENTITY_MODE", value)
+                    this.$store.commit('cart/changeIdentityMode', value)
                 }
             },
 
@@ -110,7 +110,7 @@
                         email: this.guestEmail,
                     }
 
-                    this.$store.dispatch('saveCart', data)
+                    this.$store.dispatch('cart/saveCart', data)
                         .then(() => {
                             this.loading = false
                             this.$root.openModal('payment')

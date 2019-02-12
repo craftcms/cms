@@ -260,10 +260,12 @@ class ElementsController extends BaseElementsController
         $attributes = $request->getBodyParam('attributes', []);
         $element = $this->_getEditorElementInternal($elementId, $elementType, $siteId, $attributes);
 
+        $site = Craft::$app->getSites()->getSiteById($siteId);
+
         /** @var Element $element */
         // Make sure the user is allowed to edit this site
-        $userService = Craft::$app->getUser();
-        if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userService->checkPermission('editSite:' . $siteId)) {
+        $userSession = Craft::$app->getUser();
+        if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userSession->checkPermission('editSite:' . $site->uid)) {
             // Find the first site the user does have permission to edit
             $elementSiteIds = [];
             $newSiteId = null;
@@ -273,7 +275,7 @@ class ElementsController extends BaseElementsController
             }
 
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                if (in_array($siteId, $elementSiteIds, false) && $userService->checkPermission('editSite:' . $siteId)) {
+                if (in_array($siteId, $elementSiteIds, false) && $userSession->checkPermission('editSite:' . $site->uid)) {
                     $newSiteId = $siteId;
                     break;
                 }

@@ -40,9 +40,10 @@ class UnsuspendUsers extends ElementAction
         $query->status(User::STATUS_SUSPENDED);
         /** @var User[] $users */
         $users = $query->all();
+        $usersService = Craft::$app->getUsers();
 
         foreach ($users as $user) {
-            Craft::$app->getUsers()->unsuspendUser($user);
+            $usersService->unsuspendUser($user);
         }
 
         $this->setMessage(Craft::t('app', 'Users unsuspended.'));

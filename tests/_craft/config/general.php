@@ -8,5 +8,5 @@
  */
 
 return [
-    'devMode'=>true
+    'devMode' => true
 ];

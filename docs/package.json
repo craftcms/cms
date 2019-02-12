@@ -10,5 +10,8 @@
     "docs:dev": "vuepress dev .",
     "docs:build": "vuepress build .",
     "docs:sitemap": "vuepress-sitemap -H https://docs.craftcms.com/v3/"
+  },
+  "dependencies": {
+    "markdown-it-imsize": "^2.0.1"
   }
 }

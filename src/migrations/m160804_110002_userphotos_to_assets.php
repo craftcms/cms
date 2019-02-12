@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
@@ -51,9 +52,9 @@ class m160804_110002_userphotos_to_assets extends Migration
         $affectedUsers = $this->_convertPhotosToAssets($volumeId, $affectedUsers);
 
         echo "    > Updating Users table to drop the photo column and add photoId column.\n";
-        $this->dropColumn('{{%users}}', 'photo');
-        $this->addColumn('{{%users}}', 'photoId', $this->integer()->after('username')->null());
-        $this->addForeignKey(null, '{{%users}}', ['photoId'], '{{%assets}}', ['id'], 'SET NULL', null);
+        $this->dropColumn(Table::USERS, 'photo');
+        $this->addColumn(Table::USERS, 'photoId', $this->integer()->after('username')->null());
+        $this->addForeignKey(null, Table::USERS, ['photoId'], Table::ASSETS, ['id'], 'SET NULL', null);
 
         echo "    > Setting the photoId value\n";
         $this->_setPhotoIdValues($affectedUsers);
@@ -104,7 +105,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
             $user = (new Query())
                 ->select(['id', 'photo'])
-                ->from(['{{%users}}'])
+                ->from([Table::USERS])
                 ->where(['username' => $subDir])
                 ->one($this->db);
 
@@ -160,7 +161,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         $existingVolume = (new Query())
             ->select(['id'])
-            ->from(['{{%volumes}}'])
+            ->from([Table::VOLUMES])
             ->where(['handle' => $handle])
             ->one($this->db);
 
@@ -169,7 +170,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             $name = 'User Photos ' . $counter;
             $existingVolume = (new Query())
                 ->select(['id'])
-                ->from(['{{%volumes}}'])
+                ->from([Table::VOLUMES])
                 ->where([
                     'or',
                     ['handle' => $handle],
@@ -180,7 +181,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         // Set the sort order
         $maxSortOrder = (new Query())
-            ->from(['{{%volumes}}'])
+            ->from([Table::VOLUMES])
             ->max('[[sortOrder]]', $this->db);
 
         $volumeData = [
@@ -196,7 +197,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         $db = Craft::$app->getDb();
         $db->createCommand()
-            ->insert('{{%volumes}}', $volumeData)
+            ->insert(Table::VOLUMES, $volumeData)
             ->execute();
 
         $volumeId = $db->getLastInsertID();
@@ -208,7 +209,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             'path' => null
         ];
         $db->createCommand()
-            ->insert('{{%volumefolders}}', $folderData)
+            ->insert(Table::VOLUMEFOLDERS, $folderData)
             ->execute();
 
         return $volumeId;
@@ -221,10 +222,18 @@ class m160804_110002_userphotos_to_assets extends Migration
      */
     private function _setUserphotoVolume(int $volumeId)
     {
-        $systemSettings = Craft::$app->getSystemSettings();
-        $settings = $systemSettings->getSettings('users');
-        $settings['photoVolumeId'] = $volumeId;
-        $systemSettings->saveSettings('users', $settings);
+        $settings = (new Query())
+            ->select(['settings'])
+            ->where(['category' => 'users'])
+            ->from(['{{%systemsettings}}'])
+            ->scalar();
+
+        if ($settings) {
+            $settings = Json::decodeIfJson($settings);
+            $settings['photoVolumeId'] = $volumeId;
+
+            $this->update('{{%systemsettings}}', ['settings' => Json::encode($settings)], ['category' => 'users'], [], false);
+        }
     }
 
     /**
@@ -246,7 +255,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         $folderId = (new Query())
             ->select(['id'])
-            ->from(['{{%volumefolders}}'])
+            ->from([Table::VOLUMEFOLDERS])
             ->where([
                 'parentId' => null,
                 'volumeId' => $volumeId
@@ -275,7 +284,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'archived' => 0
                 ];
                 $db->createCommand()
-                    ->insert('{{%elements}}', $elementData)
+                    ->insert(Table::ELEMENTS, $elementData)
                     ->execute();
 
                 $elementId = $db->getLastInsertID();
@@ -298,7 +307,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                         'title' => AssetsHelper::filename2Title(pathinfo($user['photo'], PATHINFO_FILENAME))
                     ];
                     $db->createCommand()
-                        ->insert('{{%content}}', $contentData)
+                        ->insert(Table::CONTENT, $contentData)
                         ->execute();
                 }
 
@@ -315,7 +324,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'dateModified' => Db::prepareDateForDb(filemtime($filePath))
                 ];
                 $db->createCommand()
-                    ->insert('{{%assets}}', $assetData)
+                    ->insert(Table::ASSETS, $assetData)
                     ->execute();
 
                 $changes[$user['id']] = $elementId;
@@ -336,7 +345,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             $db = Craft::$app->getDb();
             foreach ($userlist as $userId => $assetId) {
                 $db->createCommand()
-                    ->update('{{%users}}', ['photoId' => $assetId], ['id' => $userId])
+                    ->update(Table::USERS, ['photoId' => $assetId], ['id' => $userId])
                     ->execute();
             }
         }

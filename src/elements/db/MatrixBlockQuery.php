@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\MatrixBlock;
 use craft\fields\Matrix as MatrixField;
 use craft\helpers\Db;
@@ -41,6 +42,11 @@ class MatrixBlockQuery extends ElementQuery
 {
     // Properties
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected $defaultOrderBy = ['matrixblocks.sortOrder' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -87,19 +93,6 @@ class MatrixBlockQuery extends ElementQuery
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($elementType, array $config = [])
-    {
-        // Default orderBy
-        if (!isset($config['orderBy'])) {
-            $config['orderBy'] = 'matrixblocks.sortOrder';
-        }
-
-        parent::__construct($elementType, $config);
-    }
 
     /**
      * @inheritdoc
@@ -386,7 +379,7 @@ class MatrixBlockQuery extends ElementQuery
         } else if ($value !== null) {
             $this->typeId = (new Query())
                 ->select(['id'])
-                ->from(['{{%matrixblocktypes}}'])
+                ->from([Table::MATRIXBLOCKTYPES])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         } else {
@@ -451,7 +444,7 @@ class MatrixBlockQuery extends ElementQuery
             $fieldIds = (new Query())
                 ->select(['fieldId'])
                 ->distinct()
-                ->from(['{{%matrixblocks}}'])
+                ->from([Table::MATRIXBLOCKS])
                 ->where(Db::parseParam('id', $this->id))
                 ->column();
 

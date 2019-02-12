@@ -126,7 +126,7 @@ URL の実際のページ番号の前にあるものをカスタマイズする�
 
 <a href="{{ pageInfo.firstUrl }}">First Page</a>
 {% if pageInfo.prevUrl %}<a href="{{ pageInfo.prevUrl }}">Previous Page</a>{% endif %}
-    
+
 {% for page, url in pageInfo.getPrevUrls(5) %}
     <a href="{{ url }}">{{ page }}</a>
 {% endfor %}
@@ -136,7 +136,7 @@ URL の実際のページ番号の前にあるものをカスタマイズする�
 {% for page, url in pageInfo.getNextUrls(5) %}
     <a href="{{ url }}">{{ page }}</a>
 {% endfor %}
-    
+
 {% if pageInfo.nextUrl %}<a href="{{ pageInfo.nextUrl }}">Next Page</a>{% endif %}
 <a href="{{ pageInfo.lastUrl }}">Last Page</a>
 ```

@@ -90,7 +90,7 @@ return [
 <?php
 
 return [
-    '*' => [ 
+    '*' => [
         'foo' => 'defaultValue',
     ],
     '.test' => [

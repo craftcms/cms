@@ -264,7 +264,7 @@ Twig の [json_encode](https://twig.symfony.com/doc/2.x/filters/json_encode.html
 
 ## `literal`
 
-文字列に <api:craft\helpers\Db::escapeParam> を実行します。
+文字列に <api:craft\helpers\Db::escapeParam()> を実行します。
 
 ## `markdown` または `md`
 
@@ -276,7 +276,7 @@ Twig の [json_encode](https://twig.symfony.com/doc/2.x/filters/json_encode.html
 
 The only *real* computer keyboard ever made was famously
 the [Apple Extended Keyboard II] [1].
-    
+
     [1]: https://www.flickr.com/photos/gruber/sets/72157604797968156/
 {% endset %}
 
@@ -311,7 +311,7 @@ the [Apple Extended Keyboard II] [1].
 {% set content %}
     {entry:blog/hello-world:link} was my first blog post. Pretty geeky, huh?
 {% endset %}
-    
+
 {{ content|parseRefs|raw }}
 ```
 

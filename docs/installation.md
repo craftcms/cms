@@ -26,8 +26,8 @@ Composer will take a couple minutes to load everything. Once it’s done you wil
 
 Download the archive format you prefer to work with:
 
-- **zip**: <https://craftcms.com/latest-v3.zip>
-- **tar.gz**: <https://craftcms.com/latest-v3.tar.gz>
+- **zip**: [3.0.37](https://download.craftcdn.com/craft/3.0/Craft-3.0.37.zip), [latest](https://craftcms.com/latest-v3.zip)
+- **tar.gz**: [3.0.37](https://download.craftcdn.com/craft/3.0/Craft-3.0.37.tar.gz), [latest](https://craftcms.com/latest-v3.tar.gz)
 
 Extract the archive wherever you want your new Craft project to live.
 
@@ -60,12 +60,12 @@ my-project.test/
 
 ::: tip
 If you want to learn about what all these folders and files are for and how to customize them, visit the [Directory Structure](directory-structure.md) page.
-:::  
+:::
 
 ## Step 2: Set the File Permissions
 
 ::: tip
-If you used Composer to download Craft, you can probably safely skip this step. 
+If you used Composer to download Craft, you can probably safely skip this step.
 :::
 
 For Craft to run properly, PHP needs to be able to write to the following places:
@@ -91,7 +91,7 @@ Make sure your site’s AppPool account has write permissions to these folders/f
 ## Step 3: Set a Security Key
 
 ::: tip
-If you used Composer to download Craft, you can probably safely skip this step. 
+If you used Composer to download Craft, you can probably safely skip this step.
 :::
 
 Each Craft project should have a unique security key, which is shared between each of the environments that the project is installed on.
@@ -108,13 +108,13 @@ Then open up your `.env` file (you may need to use an app like [Transmit](https:
 
 Paste your security key inside the quotes and save the file.
 
-### Set the Key from Your Terminal 
+### Set the Key from Your Terminal
 
 In your terminal, go to your project’s root directory and run the following command:
 
 ```bash
 ./craft setup/security-key
-``` 
+```
 
 ## Step 4: Create a Database
 
@@ -167,7 +167,7 @@ The first step of the installer is to accept the [license agreement](https://cra
 The second step is to enter your database connection information.
 
 ::: tip
-If the Setup Wizard skips this step, it’s because Craft is already able to connect to your database. 
+If the Setup Wizard skips this step, it’s because Craft is already able to connect to your database.
 :::
 
 ![Craft Installation Database Connection Information](./images/installation-step-2.png)

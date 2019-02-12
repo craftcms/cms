@@ -16,7 +16,7 @@ use yii\base\Event;
 public function init()
 {
     parent::init();
-    
+
     Event::on(
         View::class,
         View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS,

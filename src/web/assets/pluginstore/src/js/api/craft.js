@@ -1,3 +1,5 @@
+/* global Craft */
+
 import axios from 'axios'
 
 export default {
@@ -16,6 +18,19 @@ export default {
     },
 
     /**
+     * Get Plugin License Info.
+     */
+    getPluginLicenseInfo(cb, cbError) {
+        axios.get(Craft.getActionUrl('app/get-plugin-license-info'))
+            .then(response => {
+                return cb(response)
+            })
+            .catch(response => {
+                return cbError(response)
+            })
+    },
+
+    /**
      * Try edition.
      */
     tryEdition(edition) {
@@ -23,6 +38,19 @@ export default {
             headers: {
                 'X-CSRF-Token': Craft.csrfTokenValue,
             }
+        })
+    },
+
+    /**
+     * Switch plugin edition.
+     */
+    switchPluginEdition(pluginHandle, edition) {
+        const data = 'pluginHandle=' + pluginHandle + '&edition=' + edition
+
+        return axios.post(Craft.getActionUrl('plugins/switch-edition'), data, {
+            headers: {
+                'X-CSRF-Token': Craft.csrfTokenValue,
+            },
         })
     }
 

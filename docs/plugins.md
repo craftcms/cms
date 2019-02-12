@@ -15,7 +15,7 @@ To access the Plugin Store, click on the “Plugin Store” item in Craft’s Co
 ![The Craft Plugin Store](./images/plugin-store.png)
 
 When you click on a plugin, a modal window will open with details about the plugin, including a long description and screenshots.
-   
+
 ![A plugin’s modal window within the Plugin Store](./images/plugin-store-plugin.png)
 
 ## Installing Free Plugins

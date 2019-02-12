@@ -4,7 +4,11 @@ Most websites and apps will have some UI messages that are hard-coded into the t
 
 If you’re building a multilingual site or app, then these messages will need to be translatable just like your CMS-driven content.
 
-To do that, Craft employs Yii’s [Message Translations](https://www.yiiframework.com/doc/guide/2.0/en/tutorial-i18n#message-translation) feature, and pre-defines a special translation category, `site`, for front-end messages. 
+To do that, Craft employs Yii’s [Message Translations](https://www.yiiframework.com/doc/guide/2.0/en/tutorial-i18n#message-translation) feature, and pre-defines special translation categories:
+
+- `site` is used for messages that belong to the project.
+- `app` is used for Craft Control Panel messages.
+- Each plugin gets its own category as well, based on the plugin’s handle.
 
 ## Prep Your Messages
 
@@ -31,9 +35,9 @@ $label = Craft::t('site', 'Contact us');
 
 Once you’ve prepped a message for translations, you need to supply the actual translation.
 
-To do that, create a new folder in your project’s base directory called `translations/`, and within that, create a new folder named after the target language’s ID. Within that, create a file called `site.php`.
+To do that, create a new folder in your project’s base directory called `translations/`, and within that, create a new folder named after the target language’s ID. Within that, create a file named after the translation category you want to create massages for (`site.php` for project messages, `app.php` to overwrite Craft's Control Panel messages, or `<plugin-handle>.php` to overwrite a plugin’s messages).
 
-For example, if you want to translate your site into German, this is what your project’s directory structure should look like:
+For example, if you want to translate your project’s messages into German, this is what your project’s directory structure should look like:
 
 ```
 my-project.test/
@@ -52,6 +56,6 @@ Now open `site.php` in a text editor, and have it return an array that maps the 
 return [
     'Contact us' => 'Kontaktiere uns',
 ];
-``` 
+```
 
 Now, when Craft is processing the message translation for a German site, “Contact us” will be replaced with  “Kontaktiere uns”.

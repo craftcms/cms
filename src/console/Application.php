@@ -10,6 +10,7 @@ namespace craft\console;
 use Craft;
 use craft\base\ApplicationTrait;
 use craft\errors\MissingComponentException;
+use craft\helpers\Console;
 use craft\queue\QueueLogBehavior;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -75,6 +76,21 @@ class Application extends \yii\console\Application
         }
 
         parent::bootstrap();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function runAction($route, $params = [])
+    {
+        if (!$this->getIsInstalled()) {
+            list($firstSeg) = explode('/', $route, 2);
+            if ($route !== 'install/plugin' && !in_array($firstSeg, ['install', 'setup'], true)) {
+                Console::outputWarning('Craft isn’t installed yet!');
+            }
+        }
+
+        return parent::runAction($route, $params);
     }
 
     /**

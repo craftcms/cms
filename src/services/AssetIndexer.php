@@ -7,6 +7,7 @@ use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
@@ -216,7 +217,7 @@ class AssetIndexer extends Component
 
         Craft::$app->getDb()->createCommand()
             ->batchInsert(
-                '{{%assetindexdata}}',
+                Table::ASSETINDEXDATA,
                 $attributes,
                 $values)
             ->execute();
@@ -272,7 +273,7 @@ class AssetIndexer extends Component
                 'completed',
                 'inProgress',
             ])
-            ->from(['{{%assetindexdata}}'])
+            ->from([Table::ASSETINDEXDATA])
             ->where([
                 'volumeId' => $volumeId,
                 'sessionId' => $sessionId,
@@ -297,7 +298,7 @@ class AssetIndexer extends Component
 
         Craft::$app->getDb()->createCommand()
             ->update(
-                '{{%assetindexdata}}',
+                Table::ASSETINDEXDATA,
                 $data,
                 ['id' => $entryId])
             ->execute();
@@ -317,7 +318,7 @@ class AssetIndexer extends Component
         // Load the record IDs of the files that were indexed.
         $processedFiles = (new Query())
             ->select(['recordId'])
-            ->from(['{{%assetindexdata}}'])
+            ->from([Table::ASSETINDEXDATA])
             ->where([
                 'and',
                 ['sessionId' => $sessionId],
@@ -328,7 +329,7 @@ class AssetIndexer extends Component
         // Load the processed volume IDs for that sessions.
         $volumeIds = (new Query())
             ->select(['DISTINCT([[volumeId]])'])
-            ->from(['{{%assetindexdata}}'])
+            ->from([Table::ASSETINDEXDATA])
             ->where(['sessionId' => $sessionId])
             ->column();
 
@@ -344,7 +345,9 @@ class AssetIndexer extends Component
             ->from(['{{%assets}} fi'])
             ->innerJoin('{{%volumefolders}} fo', '[[fi.folderId]] = [[fo.id]]')
             ->innerJoin('{{%volumes}} s', '[[s.id]] = [[fi.volumeId]]')
+            ->innerJoin('{{%elements}} e', '[[e.id]] = [[fi.id]]')
             ->where(['fi.volumeId' => $volumeIds])
+            ->andWhere(['e.dateDeleted' => null])
             ->all();
 
         foreach ($assets as $asset) {
@@ -370,8 +373,11 @@ class AssetIndexer extends Component
     {
 
         $fileInfo = $volume->getFileMetadata($path);
+        $folderPath = dirname($path);
 
-        Craft::$app->getAssets()->ensureFolderByFullPathAndVolume(dirname($path) . '/', $volume);
+        if ($folderPath !== '.') {
+            Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($folderPath . '/', $volume);
+        }
 
         $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
@@ -383,7 +389,12 @@ class AssetIndexer extends Component
             'completed' => false
         ]);
 
-        $record = new AssetIndexDataRecord($indexEntry->toArray());
+        $recordData = $indexEntry->toArray();
+
+        // For some reason Postgres chokes if we don't do that.
+        unset($recordData['id']);
+
+        $record = new AssetIndexDataRecord($recordData);
         $record->save();
 
         $indexEntry->id = $record->id;

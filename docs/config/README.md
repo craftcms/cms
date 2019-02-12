@@ -10,7 +10,7 @@ Craft supports several [general config settings](config-settings.md). You can ov
 
 ```php
 return [
-    'devMode' => true, 
+    'devMode' => true,
 ];
 ```
 
@@ -97,26 +97,17 @@ Then you can pull them into the alias definitions using [getenv()](http://php.ne
 ],
 ```
 
-## Overriding Volume Settings
-
-If you would prefer to define volume settings with a config file, you can do that from `config/volumes.php`. The file should return an array whose keys map to your volume handles, and values are nested arrays that define the overridden setting values.
-
-::: warning
-You must create your volumes within the Control Panel before Craft will start checking `config/volumes.php` for overrides.
+::: tip
+When referencing aliases in your settings, you can append additional segments onto the URL or path. For example, you can set a volume’s base URL to `@assetBaseUrl/user-photos`.
 :::
 
-```php
-return [
-    'siteAssets' => [
-        'path' => getenv('ASSETS_BASE_PATH').'/site',
-        'url' => getenv('ASSETS_BASE_URL').'/site',
-    ],
-    'companyLogos' => [
-        'path' => getenv('ASSETS_BASE_PATH').'/logos',
-        'url' => getenv('ASSETS_BASE_URL').'/logos',
-    ],
-];
+::: tip
+You can parse aliases in your templates by passing them to the [alias()](../dev/functions.html#alias-string) function:
+
+```twig
+{{ alias('@assetBaseUrl') }}
 ```
+:::
 
 ## URL Rules
 

@@ -10,6 +10,7 @@
 {% set storageKey = (storageKey is defined and storageKey ? storageKey : null) -%}
 {% set viewMode = (viewMode is defined ? viewMode : 'list') %}
 {% set sortable = (sortable is defined ? sortable : true) %}
+{% set fieldId = (fieldId is defined ? fieldId : null) %}
 
 <div id="{{ id }}" class="elementselect"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
@@ -36,6 +37,7 @@
     limit: limit ?? null,
     showSiteMenu: showSiteMenu ?? false,
     modalStorageKey: storageKey,
+    fieldId: fieldId,
     sortable: sortable
 } %}
 

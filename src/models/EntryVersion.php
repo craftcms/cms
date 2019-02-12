@@ -66,7 +66,6 @@ class EntryVersion extends BaseEntryRevisionModel
     {
         $rules = parent::rules();
         $rules[] = [['versionId', 'num'], 'number', 'integerOnly' => true];
-
         return $rules;
     }
 }

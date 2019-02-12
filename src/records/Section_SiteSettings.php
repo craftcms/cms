@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -36,7 +37,7 @@ class Section_SiteSettings extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%sections_sites}}';
+        return Table::SECTIONS_SITES;
     }
 
     /**

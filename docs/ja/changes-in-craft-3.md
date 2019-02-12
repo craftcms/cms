@@ -31,7 +31,7 @@ Redactor プラグインをインストールする場合、`config/redactor/` �
 
 ## 位置選択フィールド
 
-「位置選択」フィールドタイプは Craft 3 で削除されました。位置選択フィールドがある場合、すべてのオプションを保持したままドロップダウンフィールドに変換されます。 
+「位置選択」フィールドタイプは Craft 3 で削除されました。位置選択フィールドがある場合、すべてのオプションを保持したままドロップダウンフィールドに変換されます。
 
 位置選択フィールドが必要な場合、[Position Fieldtype](https://github.com/Rias500/craft-position-fieldtype) プラグインをインストールしてください。
 
@@ -235,9 +235,9 @@ Twig 2 では、`defined` のテストでない限り、エラーを返します
 | `getHeadHtml()` | `head()` |
 | `getFootHtml()` | `endBody()` |
 | `getTranslations()` | `view.getTranslations()|json_encode|raw` |
-| `craft.categoryGroups.getAllGroupIds()` | `craft.app.categoryGroups.allGroupIds` |
+| `craft.categoryGroups.getAllGroupIds()` | `craft.app.categories.allGroupIds` |
 | `craft.categoryGroups.getEditableGroupIds()` | `craft.app.categories.editableGroupIds` |
-| `craft.categoryGroups.getAllGroups()` | `craft.app.categoryGroups.allGroups` |
+| `craft.categoryGroups.getAllGroups()` | `craft.app.categories.allGroups` |
 | `craft.categoryGroups.getEditableGroups()` | `craft.app.categories.editableGroups` |
 | `craft.categoryGroups.getTotalGroups()` | `craft.app.categories.totalGroups` |
 | `craft.categoryGroups.getGroupById(id)` | `craft.app.categories.getGroupById(id)` |
@@ -523,11 +523,11 @@ New:
 
 `last()` は Craft 3 で非推奨になりました。なぜなら、（`query.nth(query.count() - 1)` に相当する）2つのデータベースクエリを背後で実行する必要があることが明確ではないからです。
 
-ほとんどのケースでは、`.last()` の呼び出しを `.inReverse().one()` に置き換えることで、余分なデータベースクエリを必要とせず、同じ結果を得ることができます。（`inReverse()` は、生成された SQL のすべての `ORDER BY` カラムのソート方向を反転させます。） 
+ほとんどのケースでは、`.last()` の呼び出しを `.inReverse().one()` に置き換えることで、余分なデータベースクエリを必要とせず、同じ結果を得ることができます。（`inReverse()` は、生成された SQL のすべての `ORDER BY` カラムのソート方向を反転させます。）
 
 ```twig
 {# Channel entries are ordered by `postDate DESC` by default, so this will swap
-   it to `postDate ASC`, returning the oldest News entry: #} 
+   it to `postDate ASC`, returning the oldest News entry: #}
 
 {% set oldest = craft.entries()
     .section('news')

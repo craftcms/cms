@@ -34,6 +34,7 @@
       }
 
       .icon {
+        display: block;
         vertical-align: top;
         padding-right: 14px;
         position: relative;
@@ -68,12 +69,116 @@
       .details {
         vertical-align: middle;
 
-        h2 {
+        .plugin-id {
+          display: flex;
+          align-items: baseline;
           margin-bottom: 0;
           font-size: 1em;
+          white-space: nowrap;
+          flex-wrap: wrap;
 
-          .light {
-            @include margin-left(6px);
+          h2 {
+            margin-bottom: 0;
+          }
+
+          .edition {
+            position: relative;
+            top: -1px;
+            @include margin-left(7px);
+            user-select: none;
+            border: 1px solid $mediumTextColor;
+            border-radius: 3px;
+            display: inline-flex;
+            height: 16px;
+            transition: border-color linear 100ms;
+
+            & > .edition-name,
+            & > .edition-trial {
+              padding: 0 6px;
+              font-size: 11px;
+              line-height: 16px;
+              font-weight: normal;
+            }
+
+            & > .edition-name {
+              color: $mediumDarkTextColor;
+              letter-spacing: 1.5px;
+              padding-right: 5.8px;
+              text-transform: uppercase;
+              transition: color linear 100ms;
+            }
+
+            & > .edition-trial {
+              position: relative;
+              background: $mediumTextColor;
+              color: #fff;
+              border-radius: 0 1px 1px 0;
+              letter-spacing: 1px;
+              text-transform: lowercase;
+              transition: background linear 100ms;
+            }
+
+            & .edition-name + .edition-trial {
+              @include margin-left(4px);
+              @include padding-left(4px);
+
+              &:before {
+                display: block;
+                position: absolute;
+                top: 0;
+                content: '.';
+                font-size: 0;
+                width: 0;
+                height: 0;
+                border-style: solid;
+                transition: border-color linear 100ms;
+
+                body.ltr & {
+                  left: -7px;
+                  border-width: 0 7px 16px 0;
+                  border-color: transparent $mediumTextColor transparent transparent;
+                }
+
+                body.rtl & {
+                  right: -7px;
+                  border-width: 0 0 16px 7px;
+                  border-color: transparent transparent transparent $mediumTextColor;
+                }
+              }
+            }
+          }
+
+          a.edition:hover {
+            text-decoration: none;
+            border-color: $linkColor;
+
+            & > .edition-name {
+              color: $linkColor;
+            }
+
+            & > .edition-trial {
+              background: $linkColor;
+            }
+
+            & .edition-name + .edition-trial {
+              &:before {
+                body.ltr & {
+                  left: -7px;
+                  border-width: 0 7px 16px 0;
+                  border-right-color: $linkColor;
+                }
+
+                body.rtl & {
+                  border-left-color: $linkColor;
+                }
+              }
+            }
+          }
+
+          .version {
+            color: $mediumTextColor;
+            font-weight: normal;
+            @include margin-left(14px);
           }
         }
 
@@ -81,9 +186,13 @@
           margin: 0.2em 0;
 
           &.links {
+            display: flex;
+            white-space: nowrap;
+            flex-wrap: wrap;
+
             a {
               & + a {
-                margin-left: 20px;
+                margin-left: 14px;
               }
 
               span[data-icon] {

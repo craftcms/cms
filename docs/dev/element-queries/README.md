@@ -29,7 +29,7 @@ $entryQuery = Entry::find()
     ->section('news')
     ->orderBy('postDate desc')
     ->limit(10);
-    
+
 // Execute the query and get the results
 $entries = $entryQuery->all();
 ```

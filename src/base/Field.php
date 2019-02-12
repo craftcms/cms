@@ -63,6 +63,17 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     const EVENT_AFTER_ELEMENT_DELETE = 'afterElementDelete';
 
+    /**
+     * @event FieldElementEvent The event that is triggered before the element is restored
+     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting restored.
+     */
+    const EVENT_BEFORE_ELEMENT_RESTORE = 'beforeElementRestore';
+
+    /**
+     * @event FieldElementEvent The event that is triggered after the element is restored
+     */
+    const EVENT_AFTER_ELEMENT_RESTORE = 'afterElementRestore';
+
     // Translation methods
     // -------------------------------------------------------------------------
 
@@ -153,80 +164,80 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function rules()
     {
+        $rules = parent::rules();
+
         // Make sure the column name is under the databases maximum column length allowed.
         $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix);
 
-        $rules = [
-            [['name'], 'string', 'max' => 255],
-            [['handle'], 'string', 'max' => $maxHandleLength],
-            [['name', 'handle', 'translationMethod'], 'required'],
-            [['groupId'], 'number', 'integerOnly' => true],
-            [
-                ['translationMethod'],
-                'in',
-                'range' => [
-                    self::TRANSLATION_METHOD_NONE,
-                    self::TRANSLATION_METHOD_SITE,
-                    self::TRANSLATION_METHOD_SITE_GROUP,
-                    self::TRANSLATION_METHOD_LANGUAGE,
-                    self::TRANSLATION_METHOD_CUSTOM
-                ]
-            ],
-            [
-                ['handle'],
-                HandleValidator::class,
-                'reservedWords' => [
-                    'ancestors',
-                    'archived',
-                    'attributeLabel',
-                    'attributes',
-                    'children',
-                    'contentTable',
-                    'dateCreated',
-                    'dateUpdated',
-                    'descendants',
-                    'enabled',
-                    'enabledForSite',
-                    'error',
-                    'errors',
-                    'fieldValue',
-                    'id',
-                    'level',
-                    'lft',
-                    'link',
-                    'name', // global set-specific
-                    'next',
-                    'nextSibling',
-                    'owner',
-                    'parent',
-                    'parents',
-                    'postDate', // entry-specific
-                    'prev',
-                    'prevSibling',
-                    'ref',
-                    'rgt',
-                    'root',
-                    'scenario',
-                    'searchScore',
-                    'siblings',
-                    'site',
-                    'slug',
-                    'sortOrder',
-                    'status',
-                    'title',
-                    'uid',
-                    'uri',
-                    'url',
-                    'username', // user-specific
-                ]
-            ],
-            [
-                ['handle'],
-                UniqueValidator::class,
-                'targetClass' => FieldRecord::class,
-                'targetAttribute' => ['handle', 'context'],
-                'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
-            ],
+        $rules[] = [['name'], 'string', 'max' => 255];
+        $rules[] = [['handle'], 'string', 'max' => $maxHandleLength];
+        $rules[] = [['name', 'handle', 'translationMethod'], 'required'];
+        $rules[] = [['groupId'], 'number', 'integerOnly' => true];
+        $rules[] = [
+            ['translationMethod'],
+            'in',
+            'range' => [
+                self::TRANSLATION_METHOD_NONE,
+                self::TRANSLATION_METHOD_SITE,
+                self::TRANSLATION_METHOD_SITE_GROUP,
+                self::TRANSLATION_METHOD_LANGUAGE,
+                self::TRANSLATION_METHOD_CUSTOM
+            ]
+        ];
+        $rules[] = [
+            ['handle'],
+            HandleValidator::class,
+            'reservedWords' => [
+                'ancestors',
+                'archived',
+                'attributeLabel',
+                'attributes',
+                'children',
+                'contentTable',
+                'dateCreated',
+                'dateUpdated',
+                'descendants',
+                'enabled',
+                'enabledForSite',
+                'error',
+                'errors',
+                'fieldValue',
+                'id',
+                'level',
+                'lft',
+                'link',
+                'name', // global set-specific
+                'next',
+                'nextSibling',
+                'owner',
+                'parent',
+                'parents',
+                'postDate', // entry-specific
+                'prev',
+                'prevSibling',
+                'ref',
+                'rgt',
+                'root',
+                'scenario',
+                'searchScore',
+                'siblings',
+                'site',
+                'slug',
+                'sortOrder',
+                'status',
+                'title',
+                'uid',
+                'uri',
+                'url',
+                'username', // user-specific
+            ]
+        ];
+        $rules[] = [
+            ['handle'],
+            UniqueValidator::class,
+            'targetClass' => FieldRecord::class,
+            'targetAttribute' => ['handle', 'context'],
+            'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
 
         // Only validate the ID if it's not a new field
@@ -501,6 +512,33 @@ abstract class Field extends SavableComponent implements FieldInterface
         // Trigger an 'afterElementDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_DELETE)) {
             $this->trigger(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent([
+                'element' => $element,
+            ]));
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementRestore(ElementInterface $element): bool
+    {
+        // Trigger a 'beforeElementRestore' event
+        $event = new FieldElementEvent([
+            'element' => $element,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_ELEMENT_RESTORE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementRestore(ElementInterface $element)
+    {
+        // Trigger an 'afterElementRestore' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_RESTORE)) {
+            $this->trigger(self::EVENT_AFTER_ELEMENT_RESTORE, new FieldElementEvent([
                 'element' => $element,
             ]));
         }

@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\db\Table;
 use craft\errors\TokenNotFoundException;
 use craft\helpers\DateTimeHelper;
 use craft\models\CraftIdToken;
@@ -47,6 +48,21 @@ class PluginStore extends Component
      * @var string CraftIdOauthClientId
      */
     public $craftIdOauthClientId = '6DvEra7eqRKLYic9fovyD2FWFjYxRwZn';
+
+    /**
+     * @var string Dev server manifest path
+     */
+    public $devServerManifestPath = 'https://localhost:8082/';
+
+    /**
+     * @var string Dev server public path
+     */
+    public $devServerPublicPath = 'https://localhost:8082/';
+
+    /**
+     * @var bool Enable dev server
+     */
+    public $useDevServer = false;
 
     // Public Methods
     // =========================================================================
@@ -219,7 +235,7 @@ class PluginStore extends Component
         }
 
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%craftidtokens}}', ['userId' => $userId])
+            ->delete(Table::CRAFTIDTOKENS, ['userId' => $userId])
             ->execute();
 
         return true;

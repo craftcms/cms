@@ -51,9 +51,6 @@ class SetStatus extends ElementAction
         return Craft::t('app', 'Set Status');
     }
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -32,4 +32,4 @@ To start getting acquainted with how content modeling works in Craft, read [Sect
 
 When you’re ready to install Craft, read [Server Requirements](requirements.md) and [Installation Instructions](installation.md).
 
-Finally, read the [Front-End Development](dev/README.md) section when you’re ready to start building out the front-end of your site or application. 
+Finally, read the [Front-End Development](dev/README.md) section when you’re ready to start building out the front-end of your site or application.

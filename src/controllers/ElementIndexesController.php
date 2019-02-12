@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
+use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\ElementActionEvent;
@@ -58,7 +59,7 @@ class ElementIndexesController extends BaseElementsController
     private $_viewState;
 
     /**
-     * @var ElementQueryInterface|null
+     * @var ElementQueryInterface|ElementQuery|null
      */
     private $_elementQuery;
 
@@ -305,6 +306,9 @@ class ElementIndexesController extends BaseElementsController
 
         // Override with the request's params
         if ($criteria = $request->getBodyParam('criteria')) {
+            if (isset($criteria['trashed'])) {
+                $criteria['trashed'] = (bool)$criteria['trashed'];
+            }
             Craft::configure($query, $criteria);
         }
 
@@ -416,6 +420,14 @@ class ElementIndexesController extends BaseElementsController
                 if ($actions[$i] === null) {
                     unset($actions[$i]);
                 }
+            }
+
+            if ($this->_elementQuery->trashed) {
+                if (!$action instanceof Restore) {
+                    unset($actions[$i]);
+                }
+            } else if ($action instanceof Restore) {
+                unset($actions[$i]);
             }
 
             /** @var ElementActionInterface $action */

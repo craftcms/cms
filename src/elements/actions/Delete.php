@@ -51,9 +51,6 @@ class Delete extends ElementAction
         return true;
     }
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -67,8 +64,9 @@ class Delete extends ElementAction
      */
     public function performAction(ElementQueryInterface $query): bool
     {
+        $elementsService = Craft::$app->getElements();
         foreach ($query->all() as $element) {
-            Craft::$app->getElements()->deleteElement($element);
+            $elementsService->deleteElement($element);
         }
 
         $this->setMessage($this->successMessage);

@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
 use craft\helpers\StringHelper;
@@ -305,7 +306,7 @@ class ElementRelationParamParser extends BaseObject
 
                         $subQuery = (new Query())
                             ->select([$sourcesAlias . '.targetId'])
-                            ->from([$sourcesAlias => '{{%relations}}'])
+                            ->from([$sourcesAlias => Table::RELATIONS])
                             ->innerJoin('{{%matrixblocks}} ' . $targetMatrixBlocksAlias, "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]")
                             ->where([
                                 'and',
@@ -331,7 +332,7 @@ class ElementRelationParamParser extends BaseObject
 
                         $subQuery = (new Query())
                             ->select([$sourceMatrixBlocksAlias . '.ownerId'])
-                            ->from([$sourceMatrixBlocksAlias => '{{%matrixblocks}}'])
+                            ->from([$sourceMatrixBlocksAlias => Table::MATRIXBLOCKS])
                             ->innerJoin('{{%relations}} ' . $matrixBlockTargetsAlias, "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]")
                             ->where([
                                 'and',
@@ -379,7 +380,7 @@ class ElementRelationParamParser extends BaseObject
 
             $subQuery = (new Query())
                 ->select([$relTableAlias . '.' . $relElementColumn])
-                ->from([$relTableAlias => '{{%relations}}'])
+                ->from([$relTableAlias => Table::RELATIONS])
                 ->where(['in', $relTableAlias . '.' . $relConditionColumn, $relElementIds]);
 
             if ($relCriteria['sourceSite']) {

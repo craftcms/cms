@@ -12,6 +12,7 @@ use Composer\Semver\Comparator;
 use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
+use craft\errors\InvalidPluginException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -62,7 +63,7 @@ class UpdaterController extends BaseUpdaterController
      */
     public function actionForceUpdate(): Response
     {
-        return $this->send($this->initialState(true));
+        return $this->send($this->realInitialState(true));
     }
 
     /**
@@ -182,6 +183,7 @@ class UpdaterController extends BaseUpdaterController
         // Are there any migrations to run?
         $installedHandles = array_keys($this->data['install']);
         $pendingHandles = Craft::$app->getUpdates()->getPendingMigrationHandles();
+
         if (!empty(array_intersect($pendingHandles, $installedHandles))) {
             $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
             return $this->sendNextAction($backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE);
@@ -235,15 +237,16 @@ class UpdaterController extends BaseUpdaterController
             ];
 
             // Convert update handles to Composer package names, and capture current versions
+            $pluginsService = Craft::$app->getPlugins();
+
             foreach ($data['install'] as $handle => $version) {
                 if ($handle === 'craft') {
                     $packageName = 'craftcms/cms';
                     $current = Craft::$app->getVersion();
                 } else {
-                    /** @var Plugin $plugin */
-                    $plugin = Craft::$app->getPlugins()->getPlugin($handle);
-                    $packageName = $plugin->packageName;
-                    $current = $plugin->getVersion();
+                    $pluginInfo = $pluginsService->getPluginInfo($handle);
+                    $packageName = $pluginInfo['packageName'];
+                    $current = $pluginInfo['version'];
                 }
                 $data['current'][$packageName] = $current;
                 $data['requirements'][$packageName] = $version;
@@ -404,11 +407,16 @@ class UpdaterController extends BaseUpdaterController
         if ($handle === 'craft') {
             $fromVersion = Craft::$app->getVersion();
         } else {
-            /** @var Plugin|null $plugin */
-            if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
+            $pluginInfo = null;
+            try {
+                $pluginInfo = Craft::$app->getPlugins()->getPluginInfo($handle);
+            } catch (InvalidPluginException $e) {
+            }
+
+            if ($pluginInfo === null || !$pluginInfo['isInstalled']) {
                 throw new BadRequestHttpException('Invalid update handle: ' . $handle);
             }
-            $fromVersion = $plugin->getVersion();
+            $fromVersion = $pluginInfo['version'];
         }
 
         // Normalize the versions in case only one of them starts with a 'v' or something

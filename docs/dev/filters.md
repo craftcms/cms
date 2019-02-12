@@ -4,7 +4,7 @@ In addition to the template filters that [Twig comes with](https://twig.symfony.
 
 ## `atom`
 
-Outputs a date in the ISO-8601 format (which should be used for Atom feeds, among other things).
+Converts a date to an ISO-8601 timestamp (e.g. `2019-01-29T10:00:00-08:00`), which should be used for Atom feeds, among other things.
 
 ```twig
 {{ entry.postDate|atom }}
@@ -75,7 +75,7 @@ You can also pass a custom PHP date format using the same [formatting options](h
 
 ```twig
 {{ entry.postDate|date('Y-m-d') }} → 2018-09-26
-```    
+```
 
 You can customize the timezone the time is output in, using the `timezone` param:
 
@@ -245,11 +245,19 @@ Returns an array containing only the values that are also in a passed-in array.
 
 ## `json_encode`
 
-Like Twig’s core [json_encode](https://twig.symfony.com/doc/2.x/filters/json_encode.html) filter, but if the `options` argument isn’t set, it will default to `JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT` if the response content type is either `text/html` or `application/xhtml+xml`.  
+Like Twig’s core [json_encode](https://twig.symfony.com/doc/2.x/filters/json_encode.html) filter, but if the `options` argument isn’t set, it will default to `JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT` if the response content type is either `text/html` or `application/xhtml+xml`.
+
+## `json_decode`
+
+JSON-decodes a string into an array  by passing it through <api:yii\helpers\Json::decode()>.
+
+```twig
+{% set arr = '[1, 2, 3]'|json_decode %}
+```
 
 ## `kebab`
 
-Returns a string formatted in “kebab-case”. 
+Returns a string formatted in “kebab-case”.
 
 Tip: That’s a reference to [shish kebabs](https://en.wikipedia.org/wiki/Kebab#Shish) for those of you that don’t get the analogy.
 
@@ -264,7 +272,7 @@ Lowercases the first character of a string.
 
 ## `literal`
 
-Runs a string through <api:craft\helpers\Db::escapeParam>
+Runs a string through <api:craft\helpers\Db::escapeParam()>
 
 ## `markdown` or `md`
 
@@ -276,7 +284,7 @@ Processes a string with [Markdown](https://daringfireball.net/projects/markdown/
 
 The only *real* computer keyboard ever made was famously
 the [Apple Extended Keyboard II] [1].
-    
+
     [1]: https://www.flickr.com/photos/gruber/sets/72157604797968156/
 {% endset %}
 
@@ -310,7 +318,7 @@ Parses a string for [reference tags](../reference-tags.md).
 {% set content %}
     {entry:blog/hello-world:link} was my first blog post. Pretty geeky, huh?
 {% endset %}
-    
+
 {{ content|parseRefs|raw }}
 ```
 

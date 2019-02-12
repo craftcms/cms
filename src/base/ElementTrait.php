@@ -121,6 +121,11 @@ trait ElementTrait
     public $searchScore;
 
     /**
+     * @var bool Whether the element has been soft-deleted.
+     */
+    public $trashed = false;
+
+    /**
      * @var bool Whether the element is still awaiting its custom field values
      */
     public $awaitingFieldValues = false;

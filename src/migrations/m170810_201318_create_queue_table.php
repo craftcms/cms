@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m170810_201318_create_queue_table migration.
@@ -12,7 +13,7 @@ class m170810_201318_create_queue_table extends Migration
     /**
      * @var string The queue table name
      */
-    public $tableName = '{{%queue}}';
+    public $tableName = Table::QUEUE;
 
     /**
      * @inheritdoc
@@ -20,9 +21,9 @@ class m170810_201318_create_queue_table extends Migration
     public function safeUp()
     {
         // In case this was run in a previous update attempt
-        $this->dropTableIfExists('{{%queue}}');
+        $this->dropTableIfExists(Table::QUEUE);
 
-        $this->createTable('{{%queue}}', [
+        $this->createTable(Table::QUEUE, [
             'id' => $this->primaryKey(),
             'job' => $this->binary()->notNull(),
             'description' => $this->text(),
@@ -39,8 +40,8 @@ class m170810_201318_create_queue_table extends Migration
             'error' => $this->text(),
         ]);
 
-        $this->createIndex(null, '{{%queue}}', ['fail', 'timeUpdated', 'timePushed']);
-        $this->createIndex(null, '{{%queue}}', ['fail', 'timeUpdated', 'delay']);
+        $this->createIndex(null, Table::QUEUE, ['fail', 'timeUpdated', 'timePushed']);
+        $this->createIndex(null, Table::QUEUE, ['fail', 'timeUpdated', 'delay']);
 
         // Drop the tasks table while we're at it
         $this->dropTable('{{%tasks}}');

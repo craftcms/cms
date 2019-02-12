@@ -58,7 +58,7 @@ $createFolder = function($path) {
             // Set a 503 response header so things like Varnish won't cache a bad page.
             http_response_code(503);
 
-            exit('Tried to create a folder at '.$path.', but could not.' . PHP_EOL);
+            exit('Tried to create a folder at ' . $path . ', but could not.' . PHP_EOL);
         }
 
         // Because setting permission with mkdir is a crapshoot.
@@ -71,11 +71,11 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
     $realPath = realpath($path);
 
     // !@file_exists('/.') is a workaround for the terrible is_executable()
-    if ($realPath === false || !is_dir($realPath) || !@file_exists($realPath.'/.')) {
+    if ($realPath === false || !is_dir($realPath) || !@file_exists($realPath . '/.')) {
         // Set a 503 response header so things like Varnish won't cache a bad page.
         http_response_code(503);
 
-        exit(($realPath !== false ? $realPath : $path).' doesn\'t exist or isn\'t writable by PHP. Please fix that.' . PHP_EOL);
+        exit(($realPath !== false ? $realPath : $path) . ' doesn\'t exist or isn\'t writable by PHP. Please fix that.' . PHP_EOL);
     }
 
     if ($writableToo) {
@@ -83,7 +83,7 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
             // Set a 503 response header so things like Varnish won't cache a bad page.
             http_response_code(503);
 
-            exit($realPath.' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
+            exit($realPath . ' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
         }
     }
 };
@@ -98,11 +98,11 @@ $vendorPath = $findConfigPath('CRAFT_VENDOR_PATH', 'vendorPath') ?: dirname(__DI
 $rootPath = $findConfigPath('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath);
 
 // By default the remaining directories will be in the base directory
-$configPath = $findConfigPath('CRAFT_CONFIG_PATH', 'configPath') ?: $rootPath.'/config';
-$contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $rootPath.'/migrations';
-$storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $rootPath.'/storage';
-$templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $rootPath.'/templates';
-$translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $rootPath.'/translations';
+$configPath = $findConfigPath('CRAFT_CONFIG_PATH', 'configPath') ?: $rootPath . '/config';
+$contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $rootPath . '/migrations';
+$storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $rootPath . '/storage';
+$templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $rootPath . '/templates';
+$translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $rootPath . '/translations';
 
 // Set the environment
 $environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME'] ?? null);
@@ -128,7 +128,7 @@ if (!defined('CRAFT_LICENSE_KEY')) {
     $ensureFolderIsReadable($licensePath);
 
     if ($appType === 'web') {
-        $licenseFullPath = $licensePath.'/'.$licenseKeyName;
+        $licenseFullPath = $licensePath . '/' . $licenseKeyName;
 
         // If the license key doesn't exist yet, make sure the folder is readable and we can write a temp one.
         if (!file_exists($licenseFullPath)) {
@@ -137,7 +137,7 @@ if (!defined('CRAFT_LICENSE_KEY')) {
 
             // See if it worked.
             if (!file_exists($licenseFullPath) || (file_exists($licenseFullPath) && file_get_contents($licenseFullPath) !== 'temp')) {
-                exit($licensePath.' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
+                exit($licensePath . ' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
             }
         }
     }
@@ -147,16 +147,19 @@ if (!defined('CRAFT_LICENSE_KEY')) {
 $ensureFolderIsReadable($storagePath, true);
 
 // Create the storage/runtime/ folder if it doesn't already exist
-$createFolder($storagePath.'/runtime');
-$ensureFolderIsReadable($storagePath.'/runtime', true);
+$createFolder($storagePath . '/runtime');
+$ensureFolderIsReadable($storagePath . '/runtime', true);
 
 // Create the storage/logs/ folder if it doesn't already exist
-$createFolder($storagePath.'/logs');
-$ensureFolderIsReadable($storagePath.'/logs', true);
+$createFolder($storagePath . '/logs');
+$ensureFolderIsReadable($storagePath . '/logs', true);
 
 // Log errors to storage/logs/phperrors.log
-ini_set('log_errors', 1);
-ini_set('error_log', $storagePath.'/logs/phperrors.log');
+if (!defined('CRAFT_LOG_PHP_ERRORS') || CRAFT_LOG_PHP_ERRORS) {
+    ini_set('log_errors', 1);
+    ini_set('error_log', $storagePath . '/logs/phperrors.log');
+}
+
 error_reporting(E_ALL);
 
 // Load the general config
@@ -165,7 +168,7 @@ error_reporting(E_ALL);
 $configService = new Config();
 $configService->env = $environment;
 $configService->configDir = $configPath;
-$configService->appDefaultsDir = dirname(__DIR__).DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults';
+$configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
 $generalConfig = $configService->getConfigFromFile('general');
 
 // Determine if Craft is running in Dev Mode
@@ -196,11 +199,11 @@ defined('CURLOPT_TIMEOUT_MS') || define('CURLOPT_TIMEOUT_MS', 155);
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
 // Load the files
-$cmsPath = $vendorPath.'/craftcms/cms';
-$libPath = $cmsPath.'/lib';
-$srcPath = $cmsPath.'/src';
-require $srcPath.'/Yii.php';
-require $srcPath.'/Craft.php';
+$cmsPath = $vendorPath . '/craftcms/cms';
+$libPath = $cmsPath . '/lib';
+$srcPath = $cmsPath . '/src';
+require $srcPath . '/Yii.php';
+require $srcPath . '/Craft.php';
 
 // Move Yii's autoloader to the end (Composer's is faster when optimized)
 spl_autoload_unregister(['Yii', 'autoload']);

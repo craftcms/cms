@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 
 /**
  * m171012_151440_primary_site migration.
@@ -15,15 +16,15 @@ class m171012_151440_primary_site extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn('{{%sites}}', 'primary', $this->boolean()->after('groupId')->defaultValue(false)->notNull());
+        $this->addColumn(Table::SITES, 'primary', $this->boolean()->after('groupId')->defaultValue(false)->notNull());
 
         $primarySiteId = (new Query())
             ->select(['id'])
-            ->from(['{{%sites}}'])
+            ->from([Table::SITES])
             ->orderBy(['sortOrder' => SORT_ASC])
             ->scalar();
 
-        $this->update('{{%sites}}', ['primary' => true], ['id' => $primarySiteId]);
+        $this->update(Table::SITES, ['primary' => true], ['id' => $primarySiteId]);
     }
 
     /**

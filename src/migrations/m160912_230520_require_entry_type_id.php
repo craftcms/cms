@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\MigrationHelper;
 use yii\db\Expression;
 
@@ -44,7 +45,7 @@ class m160912_230520_require_entry_type_id extends Migration
             $caseSql .= ' end';
 
             // Update the entries without an entry type
-            $this->update('{{%entries}}',
+            $this->update(Table::ENTRIES,
                 [
                     'typeId' => new Expression(str_replace('%', $this->db->quoteColumnName('sectionId'), $caseSql)),
                 ],
@@ -56,19 +57,19 @@ class m160912_230520_require_entry_type_id extends Migration
         // Are there any entries that still don't have a type?
         $typelessEntryIds = (new Query())
             ->select(['id'])
-            ->from(['{{%entries}}'])
+            ->from([Table::ENTRIES])
             ->where(['typeId' => null])
             ->column($this->db);
 
         if (!empty($typelessEntryIds)) {
-            $this->delete('{{%elements}}', ['id' => $typelessEntryIds]);
+            $this->delete(Table::ELEMENTS, ['id' => $typelessEntryIds]);
             echo "    > Deleted the following entries, because they didn't have an entry type: " . implode(',', $typelessEntryIds) . "\n";
         }
 
         // Make typeId required
-        MigrationHelper::dropForeignKeyIfExists('{{%entries}}', ['typeId'], $this);
-        $this->alterColumn('{{%entries}}', 'typeId', $this->integer()->notNull());
-        $this->addForeignKey(null, '{{%entries}}', ['typeId'], '{{%entrytypes}}', ['id'], 'CASCADE', null);
+        MigrationHelper::dropForeignKeyIfExists(Table::ENTRIES, ['typeId'], $this);
+        $this->alterColumn(Table::ENTRIES, 'typeId', $this->integer()->notNull());
+        $this->addForeignKey(null, Table::ENTRIES, ['typeId'], Table::ENTRYTYPES, ['id'], 'CASCADE', null);
     }
 
     /**

@@ -69,6 +69,16 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to `config/project.yaml`.
+     *
+     * @return string
+     */
+    public function getProjectConfigFilePath(): string
+    {
+        return $this->getConfigPath() . DIRECTORY_SEPARATOR . ProjectConfig::CONFIG_FILENAME;
+    }
+
+    /**
      * Returns the path to the `storage/` directory.
      *
      * @return string
@@ -87,6 +97,43 @@ class Path extends Component
         }
 
         return $this->_storagePath = FileHelper::normalizePath($storagePath);
+    }
+
+    /**
+     * Returns the path to the `storage/composer-backups/` directory.
+     *
+     * @param bool $create Whether the directory should be created if it doesn't exist
+     * @return string
+     * @throws Exception
+     */
+    public function getComposerBackupsPath(bool $create = true): string
+    {
+        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'composer-backups';
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+            $this->_createGitignore($path);
+        }
+
+        return $path;
+    }
+
+    /**
+     * Returns the path to the `storage/configs/` directory.
+     *
+     * @param bool $create Whether the directory should be created if it doesn't exist
+     * @return string
+     */
+    public function getConfigBackupPath(bool $create = true): string
+    {
+        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'config-backups';
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+            $this->_createGitignore($path);
+        }
+
+        return $path;
     }
 
     /**
@@ -139,15 +186,7 @@ class Path extends Component
 
         if ($create) {
             FileHelper::createDirectory($path);
-
-            // Add a .gitignore file in there if there isn't one
-            $gitignorePath = $path . DIRECTORY_SEPARATOR . '.gitignore';
-            if (!is_file($gitignorePath)) {
-                FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n", [
-                    // Prevent a segfault if this is called recursively
-                    'lock' => false,
-                ]);
-            }
+            $this->_createGitignore($path);
         }
 
         return $path;
@@ -460,5 +499,24 @@ class Path extends Component
     public function getLicenseKeyPath(): string
     {
         return defined('CRAFT_LICENSE_KEY_PATH') ? CRAFT_LICENSE_KEY_PATH : $this->getConfigPath() . DIRECTORY_SEPARATOR . 'license.key';
+    }
+
+    /**
+     * Creates a .gitignore file in the given directory if it doesn’t exist yet
+     *
+     * @param string $path
+     */
+    private function _createGitignore(string $path)
+    {
+        $gitignorePath = $path . DIRECTORY_SEPARATOR . '.gitignore';
+
+        if (is_file($gitignorePath)) {
+            return;
+        }
+
+        FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n", [
+            // Prevent a segfault if this is called recursively
+            'lock' => false,
+        ]);
     }
 }

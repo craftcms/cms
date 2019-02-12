@@ -13,6 +13,7 @@ use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\Json;
 use yii\base\Component;
 
@@ -44,7 +45,7 @@ class ElementIndexes extends Component
         if ($this->_indexSettings === null || !array_key_exists($elementType, $this->_indexSettings)) {
             $result = (new Query())
                 ->select(['settings'])
-                ->from(['{{%elementindexsettings}}'])
+                ->from([Table::ELEMENTINDEXSETTINGS])
                 ->where(['type' => $elementType])
                 ->scalar();
 
@@ -126,7 +127,7 @@ class ElementIndexes extends Component
 
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->upsert(
-                '{{%elementindexsettings}}',
+                Table::ELEMENTINDEXSETTINGS,
                 ['type' => $elementType],
                 ['settings' => Json::encode($settings)])
             ->execute();

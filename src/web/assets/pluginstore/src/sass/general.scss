@@ -1,0 +1,210 @@
+/* General */
+
+html, body, div, span,  object, iframe, table, caption, tbody, tfoot, thead, tr, th, td,
+del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,
+dl, dt, dd, ol, ul, li, fieldset, form, label, legend, article, main, nav, ins {
+  min-width: 0;
+}
+
+hr {
+  @apply .border-grey-lighter;
+}
+
+h1 {
+  font-size: 24px;
+}
+h2 {
+  @apply .mt-8;
+}
+
+p {
+  @apply .mb-4;
+}
+
+.swiper-wrapper {
+  min-width: auto;
+}
+
+.ps-header {
+  @apply .border-b .border-solid .border-grey-light .py-2 .flex .justify-between;
+}
+
+.no-line-height {
+  line-height: 0;
+}
+
+#main-container {
+  @apply .relative;
+}
+
+#main-content #content {
+  @apply .relative;
+}
+
+.input.success input {
+  border-color: $successColor;
+}
+
+.input.errors .select:not(.selectize) select {
+  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px $errorColor, 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+pre {
+  @apply .bg-grey-lighter .p-4 .mb-4 .overflow-auto .max-w-full min-w-0;
+}
+
+code {
+  @apply .bg-grey-lighter .p-1;
+}
+
+
+/* Notifications */
+
+#notifications-wrapper {
+  z-index: 20001;
+}
+
+
+/* Header title */
+
+#header h1 {
+  cursor: pointer;
+}
+
+
+/* Plugin Store actions */
+
+#pluginstore-actions {
+  @apply .flex .justify-between .items-center;
+
+  & > * {
+    @include margin-left(18px);
+  }
+
+  #cart-button {
+    svg {
+      @apply .inline-block;
+      width: 18px;
+      height: 18px;
+      vertical-align: middle;
+      line-height: 0;
+      margin-right: 3px;
+    }
+
+    svg {
+      @include svg-mask($secondarySubmitColor);
+    }
+
+    &:hover svg {
+      @include svg-mask($secondarySubmitHoverColor);
+    }
+
+    .badge {
+      @include margin(0, 0, 0, -6px);
+      @apply .relative .inline-block .flex-shrink .text-white;
+      top: -1px;
+      padding: 0 6px;
+      font-size: 11px;
+      line-height: 16px;
+      border-radius: 1em;
+      background: $submitColor;
+      box-shadow: 0 0 0 2px $bgColor;
+    }
+  }
+
+  #craftid-account {
+    &:hover {
+      @apply .no-underline;
+    }
+
+    .photo {
+      svg {
+        @apply .align-middle;
+        @include margin-right(7px);
+        width: 22px;
+        height: 22px;
+        border-radius: 100%;
+      }
+    }
+
+    &:hover .label {
+      @apply .no-underline;
+    }
+  }
+
+  #craftid-connect-form {
+    .ssl-status {
+      @apply .inline-block;
+    }
+  }
+}
+
+
+/* Graphic & Status */
+
+.graphic {
+  &.error {
+    background-image: url(~@/images/error.png);
+  }
+
+  &.success {
+    background-image: url(~@/images/success.png);
+  }
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+only screen and (-moz-min-device-pixel-ratio: 1.5),
+only screen and (-o-min-device-pixel-ratio: 3/2),
+only screen and (min-device-pixel-ratio: 1.5),
+only screen and (min-resolution: 1.5dppx) {
+  .graphic {
+    &.error {
+      background-image: url(~@/images/error_2x.png);
+      background-size: 48px;
+    }
+    &.success {
+      background-image: url(~@/images/success_2x.png);
+      background-size: 48px;
+    }
+  }
+}
+
+
+/* Plugin icon */
+/*
+.plugin-icon,
+.plugin-icon img {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+}
+
+.plugin-icon-md,
+.plugin-icon-md img {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+}
+
+.plugin-icon-large,
+.plugin-icon-large img {
+  width: 72px;
+  height: 72px;
+  border-radius: 6px;
+}
+
+.plugin-icon .default-icon {
+  @apply .inline-block .overflow-hidden;
+  background: #eee;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+}*/
+
+
+/* Plugin search */
+
+#container {
+  position: static !important; /* #container hack required for modal overlays */
+}

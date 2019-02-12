@@ -8,6 +8,7 @@
 use craft\behaviors\ContentBehavior;
 use craft\behaviors\ElementQueryBehavior;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
 use yii\base\ExitException;
@@ -55,6 +56,34 @@ class Craft extends Yii
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * Checks if a string references an environment variable (`$VARIABLE_NAME`)
+     * and/or an alias (`@aliasName`), and returns the referenced value.
+     *
+     * ---
+     *
+     * ```php
+     * $value1 = Craft::parseEnv('$SMPT_PASSWORD');
+     * $value2 = Craft::parseEnv('@webroot');
+     * ```
+     *
+     * @param string|null $str
+     * @return string|null The parsed value, or the original value if it didn’t
+     * reference an environment variable and/or alias.
+     */
+    public static function parseEnv(string $str = null)
+    {
+        if ($str === null) {
+            return null;
+        }
+
+        if (preg_match('/^\$(\w+)$/', $str, $matches)) {
+            $str = getenv($matches[1]) ?: $str;
+        }
+
+        return static::getAlias($str, false) ?: $str;
+    }
 
     /**
      * Displays a variable.
@@ -122,6 +151,12 @@ class Craft extends Yii
      */
     public static function autoload($className)
     {
+        // FileCookieJar is not supported
+        if ($className === 'GuzzleHttp\Cookie\FileCookieJar') {
+            require dirname(__DIR__) . '/lib/guzzle/FileCookieJar.php';
+            return;
+        }
+
         if ($className !== ContentBehavior::class && $className !== ElementQueryBehavior::class) {
             return;
         }
@@ -149,7 +184,7 @@ class Craft extends Yii
 
             $fieldHandles = (new Query())
                 ->distinct(true)
-                ->from(['{{%fields}}'])
+                ->from([Table::FIELDS])
                 ->select([$column])
                 ->column();
         } else {

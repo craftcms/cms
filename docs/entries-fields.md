@@ -17,7 +17,7 @@ On multi-site installs, the following settings will also be available (under “
 - **Relate entries from a specific site?** – Whether to only allow relations to entries from a specific site.
 
   If enabled, a new setting will appear where you can choose which site.
-  
+
   If disabled, related entries will always be pulled from the current site.
 
 - **Manage relations on a per-site basis** – Whether each site should get its own set of related entries.
@@ -34,6 +34,26 @@ When you double-click on a related entry, a HUD will appear where you can edit t
 
 ## Templating
 
+### Querying Elements with Entries Fields
+
+When [querying for elements](dev/element-queries/README.md) that have an Entries field, you can filter the results based on the Entries field data using a query param named after your field’s handle.
+
+Possible values include:
+
+| Value | Fetches elements…
+| - | -
+| `':empty:'` | that don’t have any related entries.
+| `':notempty:'` | that have at least one related entry.
+
+```twig
+{# Fetch entries with a related entry #}
+{% set entries = craft.entries()
+    .<FieldHandle>(':notempty:')
+    .all() %}
+```
+
+### Working with Entries Field Data
+
 If you have an element with an Entries field in your template, you can access its related entries using your Entries field’s handle:
 
 ```twig
@@ -41,8 +61,6 @@ If you have an element with an Entries field in your template, you can access it
 ```
 
 That will give you an [entry query](dev/element-queries/entry-queries.md), prepped to output all of the related entries for the given field.
-
-### Examples
 
 To loop through all of the related entries, call [all()](api:craft\db\Query::all()) and then loop over the results:
 
@@ -82,7 +100,7 @@ You can set [parameters](dev/element-queries/entry-queries.md#parameters) on the
     .all() %}
 ```
 
-### See Also
+## See Also
 
 * [Entry Queries](dev/element-queries/entry-queries.md)
 * <api:craft\elements\Entry>

@@ -45,23 +45,19 @@ class RoutesController extends Controller
 
         $uriParts = Craft::$app->getRequest()->getRequiredBodyParam('uriParts');
         $template = Craft::$app->getRequest()->getRequiredBodyParam('template');
-        $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
-        $routeId = Craft::$app->getRequest()->getBodyParam('routeId');
+        $siteUid = Craft::$app->getRequest()->getBodyParam('siteUid');
+        $routeUid = Craft::$app->getRequest()->getBodyParam('routeUid');
 
-        if ($siteId === '') {
-            $siteId = null;
+        if ($siteUid === '') {
+            $siteUid = null;
         }
 
-        $routeRecord = Craft::$app->getRoutes()->saveRoute($uriParts, $template, $siteId, $routeId);
-
-        if ($routeRecord->hasErrors()) {
-            return $this->asJson(['errors' => $routeRecord->getErrors()]);
-        }
+        $routeUid = Craft::$app->getRoutes()->saveRoute($uriParts, $template, $siteUid, $routeUid);
 
         return $this->asJson([
             'success' => true,
-            'routeId' => $routeRecord->id,
-            'siteId' => $routeRecord->siteId
+            'routeUid' => $routeUid,
+            'siteUid' => $siteUid
         ]);
     }
 
@@ -74,8 +70,8 @@ class RoutesController extends Controller
     {
         $this->requirePostRequest();
 
-        $routeId = Craft::$app->getRequest()->getRequiredBodyParam('routeId');
-        Craft::$app->getRoutes()->deleteRouteById($routeId);
+        $routeUid = Craft::$app->getRequest()->getRequiredBodyParam('routeUid');
+        Craft::$app->getRoutes()->deleteRouteByUid($routeUid);
 
         return $this->asJson(['success' => true]);
     }
@@ -90,8 +86,8 @@ class RoutesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $routeIds = Craft::$app->getRequest()->getRequiredBodyParam('routeIds');
-        Craft::$app->getRoutes()->updateRouteOrder($routeIds);
+        $routeUids = Craft::$app->getRequest()->getRequiredBodyParam('routeUids');
+        Craft::$app->getRoutes()->updateRouteOrder($routeUids);
 
         return $this->asJson(['success' => true]);
     }

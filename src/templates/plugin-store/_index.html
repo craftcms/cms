@@ -5,17 +5,26 @@
 {% do view.registerTranslations('app', [
     "Active installs",
     "Active Trials",
+    "Add all to cart",
     "Add to cart",
     "Added to cart",
+    "Address Line 1",
+    "Address Line 2",
+    "Already in your cart",
     "Ascending",
+    "Back",
     "Billing",
+    "Business Name",
+    "Business Tax ID",
     "Buy later",
-    "Buy now",
     "Buy now for {price}",
+    "Buy now",
+    "Card number",
     "Cart",
     "Categories",
     "Changelog",
     "Checkout",
+    "City",
     "Cloud Storage Integration",
     "Community Support (Slack, Stack Exchange)",
     "Compatibility",
@@ -25,60 +34,92 @@
     "Continue as guest",
     "Continue",
     "Coupon Code",
+    "CVC",
     "Descending",
     "Description",
     "Developer Support",
     "Documentation",
     "Features",
+    "First Name",
     "For when you’re building a website for yourself or a friend.",
     "For when you’re building something professionally for a client or team.",
     "Free",
+    "Includes Custom login screen logo, Custom site icon, Custom HTML email template, Custom email message wording",
+    "Includes Multiple locales, Section and entry locale targeting, Content translations",
+    "Includes Sections, Global sets, Category groups, Tag groups, Asset volumes, Custom fields, Entry versioning, and Entry drafts",
+    "Includes User accounts, User groups, User permissions, Public user registration",
+    "Information",
     "Install",
+    "Installed as a trial",
     "Installed",
     "Item",
     "Items in your cart",
+    "Last Name",
     "Last update",
     "Last Update",
+    "Less",
     "License",
+    "Licensed",
     "Loading Plugin Store…",
     "Manage plugins",
+    "MM / YY",
+    "More",
     "Multi-site Multi-lingual",
     "Name",
     "Page not found.",
     "Pay",
     "Payment Method",
+    "Payment",
     "Plugin Name",
     "Plugin Store",
     "Popularity",
+    "Price includes 1 year of updates.",
     "Price",
     "Pro Rate Discount",
     "Reactivate",
+    "Remove",
     "Renewal price",
+    "Save as my new credit card",
     "Screenshots",
     "Search plugins",
     "Security & Bug Fixes",
     "See all",
+    "Showing results for “{searchQuery}”",
     "Staff Picks",
     "Subtotal",
     "Support",
     "System Branding",
     "Thank You!",
     "The Plugin Store is not available, please try again later.",
+    "Total Price",
     "Total",
     "Try for free",
     "Try",
+    "Try",
+    "Updates until {date} ({sign}{price})",
+    "Updates until {date}",
+    "Updates",
     "Upgrade Craft CMS",
+    "Use a new credit card",
+    "Use card {cardDetails}",
     "Use your Craft ID",
     "User Accounts",
+    "Version {version}",
     "Version",
     "Website",
     "Your order has been processed successfully.",
+    "Zip Code",
     "{price} plus {renewalPrice}/year for updates",
     "{price}/year",
+    "{renewalPrice}/year per site for updates after that.",
+    "Your are currently using the {currentEdition} edition, and your licensed edition is {licensedEdition}.",
+    "This license is tied to another Craft install. Purchase a license for this install.",
+    "Your license key is invalid.",
+    "Critical",
+    "Couldn’t add all items to the cart.",
 ]) %}
 
 {% block actionButton %}
-
     <div id="pluginstore-actions-spinner" class="spinner hidden"></div>
 
     <div id="pluginstore-actions" class="hidden">
@@ -109,23 +150,8 @@
             <a onclick="document.getElementById('craftid-connect-form').submit();">{{ 'Sign into Craft ID'|t('app') }}</a>
         </form>
     </div>
-
 {% endblock %}
 
 {% set content %}
-
-    <template v-if="supportsES6">
-        <template v-if="pluginStoreDataLoaded && !pluginStoreDataError">
-            <router-view></router-view>
-        </template>
-        <template v-else>
-            <status-message :error="pluginStoreDataError" :message="statusMessage"></status-message>
-        </template>
-
-        <modal :show.sync="showModal" :plugin-id="pluginId"></modal>
-    </template>
-    <template v-else>
-        <p>{{ 'The Plugin Store requires a modern browser with ES6 support.' }}</p>
-    </template>
-
+    <div id="app"></div>
 {% endset %}

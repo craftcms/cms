@@ -123,7 +123,7 @@
                 name: 'parentId',
                 elementType: elementType,
                 selectionLabel: "Choose"|t('app'),
-                sources: ['group:'~group.id],
+                sources: ['group:'~group.uid],
                 criteria: parentOptionCriteria,
                 limit: 1,
                 elements: (parent is defined and parent ? [parent]),

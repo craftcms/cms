@@ -44,6 +44,11 @@ trait FieldTrait
     public $instructions;
 
     /**
+     * @var bool Whether the field's values should be registered as search keywords on the elements.
+     */
+    public $searchable = true;
+
+    /**
      * @var string The field’s translation method
      */
     public $translationMethod = Field::TRANSLATION_METHOD_NONE;
@@ -59,9 +64,19 @@ trait FieldTrait
     public $oldHandle;
 
     /**
+     * @var array|null The field’s previous settings
+     */
+    public $oldSettings;
+
+    /**
      * @var string|null The field’s content column prefix
      */
     public $columnPrefix;
+
+    /**
+     * @var string|null The field's UID
+     */
+    public $uid;
 
     // These properties are only populated if the field was fetched via a Field Layout
     // -------------------------------------------------------------------------

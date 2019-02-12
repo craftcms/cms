@@ -37,7 +37,7 @@ Craft や Craft プラグイン向けのコードを書くときには、この�
 
 - 文字列（`'some\nmspace\Foo'`）または <api:yii\base\BaseObject::className()> よりむしろ [::class](http://php.net/manual/en/language.oop5.basic.php#language.oop5.basic.class.class) キーワード（`Foo::class`）を使用して、クラス名を参照してください。
 
-- 暗黙的（例：`$array` がまだ定義されていない状態での `$array[] = 'foo'`）よりむしろ明示的（`$array = []`）に配列を初期化してください。 
+- 暗黙的（例：`$array` がまだ定義されていない状態での `$array[] = 'foo'`）よりむしろ明示的（`$array = []`）に配列を初期化してください。
 
 - クラスが拡張されている場合に `static::` が壊れるため、プライベートな static ファンクションを呼び出す際、`static::_foo()` ではなく `self::_foo()` を使用してください。
 

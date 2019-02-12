@@ -71,11 +71,11 @@ class CraftSupport extends Model
      */
     public function rules()
     {
-        return [
-            [['fromEmail', 'message'], 'required'],
-            [['fromEmail'], 'email'],
-            [['fromEmail'], 'string', 'min' => 5, 'max' => 255],
-            [['attachment'], 'file', 'maxSize' => 3145728],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['fromEmail', 'message'], 'required'];
+        $rules[] = [['fromEmail'], 'email'];
+        $rules[] = [['fromEmail'], 'string', 'min' => 5, 'max' => 255];
+        $rules[] = [['attachment'], 'file', 'maxSize' => 3145728];
+        return $rules;
     }
 }

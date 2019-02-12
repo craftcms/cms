@@ -10,7 +10,7 @@ use yii\base\Event;
 public function init()
 {
     parent::init();
-    
+
     Event::on(
         Cp::class,
         Cp::EVENT_REGISTER_CP_NAV_ITEMS,
@@ -22,10 +22,10 @@ public function init()
             ];
         }
     );
-    
+
     // ...
 }
-``` 
+```
 
 Each item within the [navItems](api:craft\events\RegisterCpNavItemsEvent::$navItems) array can have the following keys:
 
@@ -70,7 +70,7 @@ class Plugin extends \craft\base\Plugin
 }
 ```
 
-You can modify aspects of the plugin’s Control Panel nav item by overriding its [getCpNavItem()](api:craft\base\PluginInterface::getCpNavItem()) method:  
+You can modify aspects of the plugin’s Control Panel nav item by overriding its [getCpNavItem()](api:craft\base\PluginInterface::getCpNavItem()) method:
 
 ```php
 public function getCpNavItem()

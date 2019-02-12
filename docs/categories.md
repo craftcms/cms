@@ -45,6 +45,6 @@ You can only nest categories up to the level specified in the Max Level field Ca
 
 ## Assigning Categories
 
-To assign categories to things (entries, assets, users, etc.), you must first create a [Categories field](categories-fields.md). 
+To assign categories to things (entries, assets, users, etc.), you must first create a [Categories field](categories-fields.md).
 
 Each Categories field is connected to a single category group. Whatever you attach the field to will be able to create [relations](relations.md) to any of the categories within that group.

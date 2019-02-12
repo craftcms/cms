@@ -1,3 +1,5 @@
+/* global Craft */
+
 import axios from 'axios'
 
 export default {
@@ -18,6 +20,7 @@ export default {
                 return errorCb(response)
             })
     },
+
 
     /**
      * Update cart.

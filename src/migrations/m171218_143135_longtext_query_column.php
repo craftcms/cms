@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m171218_143135_longtext_query_column migration.
@@ -15,7 +16,7 @@ class m171218_143135_longtext_query_column extends Migration
     public function safeUp()
     {
         if ($this->db->getIsMysql()) {
-            $this->alterColumn('{{%templatecachequeries}}', 'query', $this->longText()->notNull());
+            $this->alterColumn(Table::TEMPLATECACHEQUERIES, 'query', $this->longText()->notNull());
         }
     }
 

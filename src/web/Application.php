@@ -11,10 +11,13 @@ use Craft;
 use craft\base\ApplicationTrait;
 use craft\base\Plugin;
 use craft\db\Query;
+use craft\db\Table;
 use craft\debug\DeprecatedPanel;
+use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
+use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use yii\base\Component;
@@ -29,8 +32,8 @@ use yii\debug\panels\DbPanel;
 use yii\debug\panels\LogPanel;
 use yii\debug\panels\MailPanel;
 use yii\debug\panels\ProfilingPanel;
-use yii\debug\panels\RequestPanel;
 use yii\debug\panels\RouterPanel;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -207,6 +210,13 @@ class Application extends \yii\web\Application
             throw new ServiceUnavailableHttpException();
         }
 
+        $projectConfig = $this->getProjectConfig();
+
+        // Make sure schema required by config files aligns with what we have.
+        if ($projectConfig->areChangesPending() && !$projectConfig->getAreConfigSchemaVersionsCompatible()) {
+            return $this->_handleIncompatibleConfig($request);
+        }
+
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
         // If we're in maintenance mode and it's not a site request, show the manual update template.
         if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
@@ -228,13 +238,18 @@ class Application extends \yii\web\Application
             }
         }
 
-        // If the system is offline, make sure they have permission to be here
-        $this->_enforceSystemStatusPermissions($request);
-
         // Check if a plugin needs to update the database.
         if ($this->getUpdates()->getIsPluginDbUpdateNeeded()) {
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
         }
+
+        // Check if there are any pending changes in project.yaml
+        if ($projectConfig->areChangesPending()) {
+            return $this->_processConfigSyncLogic($request) ?: $this->getResponse();
+        }
+
+        // If the system is offline, make sure they have permission to be here
+        $this->_enforceSystemStatusPermissions($request);
 
         // If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
         if ($request->getIsCpRequest() && !($request->getIsActionRequest() && $this->_isSpecialCaseActionRequest($request))) {
@@ -428,6 +443,7 @@ class Application extends \yii\web\Application
      * Processes resource requests.
      *
      * @param Request $request
+     * @throws BadRequestHttpException
      */
     private function _processResourceRequest(Request $request)
     {
@@ -445,7 +461,7 @@ class Application extends \yii\web\Application
         try {
             $sourcePath = (new Query())
                 ->select(['path'])
-                ->from('{{%resourcepaths}}')
+                ->from(Table::RESOURCEPATHS)
                 ->where(['hash' => $hash])
                 ->scalar();
         } catch (DbException $e) {
@@ -458,6 +474,9 @@ class Application extends \yii\web\Application
 
         // Publish the directory
         $filePath = substr($resourceUri, strlen($hash) + 1);
+        if (!Path::ensurePathIsContained($filePath)) {
+            throw new BadRequestHttpException('Invalid resource path: ' . $filePath);
+        }
         $publishedPath = $this->getAssetManager()->getPublishedPath(Craft::getAlias($sourcePath), true) . DIRECTORY_SEPARATOR . $filePath;
         $this->getResponse()
             ->sendFile($publishedPath, null, ['inline' => true]);
@@ -671,6 +690,70 @@ class Application extends \yii\web\Application
     }
 
     /**
+     * @param Request $request
+     * @return Response|null
+     * @throws HttpException
+     * @throws ServiceUnavailableHttpException
+     * @throws \yii\base\ExitException
+     */
+    private function _processConfigSyncLogic(Request $request)
+    {
+        $this->_unregisterDebugModule();
+
+        // Let all non-action CP requests through.
+        if (
+            $request->getIsCpRequest() &&
+            (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
+        ) {
+            // Show the config sync kickoff template
+            return $this->runAction('templates/config-sync-kickoff');
+        }
+
+        // We'll also let update actions go through
+        if ($request->getIsActionRequest()) {
+            $actionSegments = $request->getActionSegments();
+            $firstSegment = ArrayHelper::firstValue($actionSegments);
+            if (
+                $firstSegment === 'updater' ||
+                $firstSegment === 'config-sync' ||
+                $actionSegments === ['app', 'migrate'] ||
+                $actionSegments === ['pluginstore', 'install', 'migrate']
+            ) {
+                return $this->runAction(implode('/', $actionSegments));
+            }
+        }
+
+        // If an exception gets throw during the rendering of the 503 template, let
+        // TemplatesController->actionRenderError() take care of it.
+        throw new ServiceUnavailableHttpException();
+    }
+
+    /**
+     * @param Request $request
+     * @return Response
+     * @throws HttpException
+     * @throws ServiceUnavailableHttpException
+     * @throws \yii\base\ExitException
+     */
+    private function _handleIncompatibleConfig(Request $request): Response
+    {
+        $this->_unregisterDebugModule();
+
+        // Let all non-action CP requests through.
+        if (
+            $request->getIsCpRequest() &&
+            (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
+        ) {
+            // Show the manual update notification template
+            return $this->runAction('templates/incompatible-config-alert');
+        }
+
+        // If an exception gets throw during the rendering of the 503 template, let
+        // TemplatesController->actionRenderError() take care of it.
+        throw new ServiceUnavailableHttpException();
+    }
+
+    /**
      * Checks if the system is off, and if it is, enforces the "Access the site/CP when the system is off" permissions.
      *
      * @param Request $request
@@ -684,13 +767,9 @@ class Application extends \yii\web\Application
             if (!$this->getUser()->getIsGuest()) {
                 if ($request->getIsCpRequest()) {
                     $error = Craft::t('app', 'Your account doesn’t have permission to access the Control Panel when the system is offline.');
-                    $logoutUrl = UrlHelper::cpUrl('logout');
                 } else {
                     $error = Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
-                    $logoutUrl = UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->getLogoutPath());
                 }
-
-                $error .= ' [' . Craft::t('app', 'Log out?') . '](' . $logoutUrl . ')';
             } else {
                 // If this is a CP request, redirect to the Login page
                 if ($this->getRequest()->getIsCpRequest()) {
@@ -712,7 +791,7 @@ class Application extends \yii\web\Application
      */
     private function _checkSystemStatusPermissions(Request $request): bool
     {
-        if ($this->getIsSystemOn() || $this->_isSpecialCaseActionRequest($request)) {
+        if ($this->getIsLive() || $this->_isSpecialCaseActionRequest($request)) {
             return true;
         }
 

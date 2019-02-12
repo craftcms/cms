@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 
 /**
  * Class UserPermission record.
@@ -40,6 +41,6 @@ class UserPermission extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%userpermissions}}';
+        return Table::USERPERMISSIONS;
     }
 }

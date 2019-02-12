@@ -8,10 +8,10 @@
                     if (textStatus === 'success') {
                         for (var handle in response) {
                             if (response.hasOwnProperty(handle)) {
-                                if (!response[handle].isInstalled) {
+                                if (!response[handle].isComposerInstalled) {
                                     this.addUninstalledPluginRow(handle, response[handle]);
                                 } else {
-                                    (new Plugin($('#plugin-' + handle))).update(response[handle]);
+                                    (new Plugin($('#plugin-' + handle))).update(response[handle], handle);
                                 }
                             }
                         }
@@ -185,6 +185,9 @@
             }
         }, {
             normalizeUserKey: function(key) {
+                if (typeof key !== 'string') {
+                    return '';
+                }
                 return key.replace(/.{4}/g, '$&-').substr(0, 29).toUpperCase();
             }
         }
@@ -244,11 +247,11 @@
                 }, this))
             },
 
-            update: function(info) {
+            update: function(info, handle) {
                 // update the status icon
                 var $oldIcon = this.$row.find('.license-key-status');
-                if (info.licenseKeyStatus == 'valid' || info.hasIssues) {
-                    var $newIcon = $('<span/>', {'class': 'license-key-status ' + info.licenseKeyStatus});
+                if (info.licenseKeyStatus == 'valid' || info.licenseIssues.length) {
+                    var $newIcon = $('<span/>', {'class': 'license-key-status ' + (info.licenseIssues.length === 0 ? 'valid' : '')});
                     if ($oldIcon.length) {
                         $oldIcon.replaceWith($newIcon);
                     } else {
@@ -256,6 +259,27 @@
                     }
                 } else if ($oldIcon.length) {
                     $oldIcon.remove();
+                }
+
+                // add the edition/trial badge
+                var $oldEdition = this.$row.find('.edition');
+                if (info.hasMultipleEditions || info.isTrial) {
+                    var $newEdition = info.upgradeAvailable
+                        ? $('<a/>', {href: Craft.getUrl('plugin-store/' + handle), 'class': 'edition'})
+                        : $('<div/>', {'class': 'edition'});
+                    if (info.hasMultipleEditions) {
+                        $('<div/>', {'class': 'edition-name', text: info.edition}).appendTo($newEdition);
+                    }
+                    if (info.isTrial) {
+                        $('<div/>', {'class': 'edition-trial', text: Craft.t('app', 'Trial')}).appendTo($newEdition);
+                    }
+                    if ($oldEdition.length) {
+                        $oldEdition.replaceWith($newEdition);
+                    } else {
+                        $newEdition.insertBefore(this.$row.find('.version'));
+                    }
+                } else if ($oldEdition.length) {
+                    $oldEdition.remove();
                 }
 
                 // show the license key?
@@ -267,7 +291,7 @@
                 }
 
                 // update the license key input class
-                if (showLicenseKey && info.hasIssues) {
+                if (showLicenseKey && info.licenseIssues.length) {
                     this.$keyInput.addClass('error');
                 } else {
                     this.$keyInput.removeClass('error');
@@ -275,15 +299,77 @@
 
                 // add the error message
                 this.$row.find('p.error').remove();
-                if (showLicenseKey && info.licenseStatusMessage) {
-                    $('<p/>', {'class': 'error', html: info.licenseStatusMessage})
-                        .insertAfter(this.$row.find('.license-key'));
+                if (info.licenseIssues.length) {
+                    var $issues = $();
+                    var $p, $form, message;
+                    for (var i = 0; i < info.licenseIssues.length; i++) {
+                        switch (info.licenseIssues[i]) {
+                            case 'wrong_edition':
+                                message = Craft.t('app', 'This license is for the {name} edition.', {
+                                    name: info.licensedEdition.charAt(0).toUpperCase() + info.licensedEdition.substring(1)
+                                }) + ' <a class="btn submit small formsubmit">' + Craft.t('app', 'Switch') + '</a>';
+                                break;
+                            case 'mismatched':
+                                message = Craft.t('app', 'This license is tied to another Craft install. Visit {url} to resolve.', {
+                                    url: '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>'
+                                });
+                                break;
+                            case 'astray':
+                                message = Craft.t('app', 'This license isn’t allowed to run version {version}.', {
+                                    version: info.version
+                                });
+                                break;
+                            case 'required':
+                                message = Craft.t('app', 'A license key is required.');
+                                break;
+                            default:
+                                message = Craft.t('app', 'Your license key is invalid.');
+                        }
+
+                        $p = $('<p/>', {'class': 'error', html: message});
+                        if (info.licenseIssues[i] === 'wrong_edition') {
+                            $form = $('<form/>', {
+                                    method: 'post',
+                                    'accept-charset': 'UTF-8',
+                                })
+                                .append(Craft.getCsrfInput())
+                                .append(
+                                    $('<input/>', {
+                                        type: 'hidden',
+                                        name: 'action',
+                                        value: 'plugins/switch-edition'
+                                    })
+                                )
+                                .append(
+                                    $('<input/>', {
+                                        type: 'hidden',
+                                        name: 'pluginHandle',
+                                        value: handle
+                                    })
+                                )
+                                .append(
+                                    $('<input/>', {
+                                        type: 'hidden',
+                                        name: 'edition',
+                                        value: info.licensedEdition
+                                    })
+                                )
+                                .append($p);
+
+                            Craft.initUiElements($form);
+                            $issues = $issues.add($form);
+                        } else {
+                            $issues = $issues.add($p);
+                        }
+                    }
+                    $issues.insertAfter(this.$row.find('.license-key'));
+                    Craft.initUiElements()
                 }
 
                 // show/hide the Buy button
                 if (showLicenseKey && !info.licenseKey) {
                     this.$buyBtn.removeClass('hidden');
-                    if (info.hasIssues) {
+                    if (info.licenseIssues.length) {
                         this.$buyBtn.addClass('submit');
                     } else {
                         this.$buyBtn.removeClass('submit');

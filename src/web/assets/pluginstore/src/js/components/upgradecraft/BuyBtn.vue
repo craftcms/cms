@@ -1,23 +1,23 @@
 <template>
-    <div class="btngroup">
+    <div>
         <!-- Show the "Buy" button if this edition is greater than the licensed edition -->
         <template v-if="edition > licensedEdition">
             <template v-if="!isCmsEditionInCart(editionHandle)">
-                <div @click="buyCraft(editionHandle)" class="btn submit">{{ "Buy now"|t('app') }}</div>
+                <div @click="buyCraft(editionHandle)" class="c-btn block large primary">{{ "Buy now"|t('app') }}</div>
             </template>
             <template v-else>
-                <div class="btn submit disabled">{{ "Added to cart"|t('app') }}</div>
+                <div class="c-btn block large submit disabled">{{ "Added to cart"|t('app') }}</div>
             </template>
         </template>
 
         <!-- Show the "Try" button if they're on a testable domain, this is not the current edition, and is greater than the licensed edition -->
         <template v-if="canTestEditions && edition != CraftEdition && edition > licensedEdition">
-            <div @click="installCraft(editionHandle)" class="btn">{{ "Try for free"|t('app') }}</div>
+            <div @click="installCraft(editionHandle)" class="c-btn block large">{{ "Try for free"|t('app') }}</div>
         </template>
 
         <!-- Show the "Reactivate" button if they’re licensed to use this edition but not currently on it -->
         <template v-if="edition == licensedEdition && edition != CraftEdition">
-            <div @click="installCraft(editionHandle)" class="btn">{{ "Reactivate"|t('app') }}</div>
+            <div @click="installCraft(editionHandle)" class="c-btn block large">{{ "Reactivate"|t('app') }}</div>
         </template>
 
         <div v-if="loading" class="spinner"></div>
@@ -40,23 +40,22 @@
         computed: {
 
             ...mapState({
-                cart: state => state.cart.cart,
                 licensedEdition: state => state.craft.licensedEdition,
                 canTestEditions: state => state.craft.canTestEditions,
                 CraftEdition: state => state.craft.CraftEdition,
             }),
 
             ...mapGetters({
-                isCmsEditionInCart: 'isCmsEditionInCart',
+                isCmsEditionInCart: 'cart/isCmsEditionInCart',
             })
 
         },
 
         methods: {
             ...mapActions({
-                addToCart: 'addToCart',
-                tryEdition: 'tryEdition',
-                getCraftData: 'getCraftData',
+                addToCart: 'cart/addToCart',
+                tryEdition: 'craft/tryEdition',
+                getCraftData: 'craft/getCraftData',
             }),
 
             buyCraft(edition) {
@@ -65,8 +64,6 @@
                 const item = {
                     type: 'cms-edition',
                     edition: edition,
-                    licenseKey: window.cmsLicenseKey,
-                    autoRenew: false,
                 }
 
                 this.addToCart([item])

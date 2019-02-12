@@ -34,7 +34,7 @@
 <nav>
     <ul>
         {% for site in currentSite.group.sites %}
-            <li><a href="{{ alias(site.baseUrl) }}">{{ site.name }}</a></li> 
+            <li><a href="{{ alias(site.baseUrl) }}">{{ site.name }}</a></li>
         {% endfor %}
     </ul>
 </nav>

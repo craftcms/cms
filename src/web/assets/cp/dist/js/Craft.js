@@ -1,4 +1,4 @@
-/*!   - 2018-10-12 */
+/*!   - 2019-02-01 */
 (function($){
 
 /** global: Craft */
@@ -1729,6 +1729,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $search: null,
         searching: false,
         searchText: null,
+        trashed: false,
         $clearSearchBtn: null,
 
         $statusMenuBtn: null,
@@ -2147,10 +2148,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             this.$scoreSortAttribute.prependTo(this.$sortAttributesList);
-            this.setSortAttribute('score');
-            this.getSortAttributeOption('structure').addClass('disabled');
 
             this.searching = true;
+
+            this._updateStructureSortOption();
+            this.setSortAttribute('score');
         },
 
         stopSearching: function() {
@@ -2158,10 +2160,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$clearSearchBtn.addClass('hidden');
 
             this.$scoreSortAttribute.detach();
-            this.getSortAttributeOption('structure').removeClass('disabled');
-            this.setStoredSortOptionsForSource();
 
             this.searching = false;
+
+            this._updateStructureSortOption();
         },
 
         setInstanceState: function(key, value) {
@@ -2238,7 +2240,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 status: this.status,
                 siteId: this.siteId,
                 search: this.searchText,
-                limit: this.settings.batchSize
+                limit: this.settings.batchSize,
+                trashed: this.trashed ? 1 : 0
             }, this.settings.criteria);
 
             var params = {
@@ -2247,7 +2250,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 source: this.instanceState.selectedSource,
                 criteria: criteria,
                 disabledElementIds: this.settings.disabledElementIds,
-                viewState: this.getSelectedSourceState()
+                viewState: $.extend({}, this.getSelectedSourceState())
             };
 
             // Possible that the order/sort isn't entirely accurate if we're sorting by Score
@@ -2510,6 +2513,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return false;
             }
 
+            // Hide action triggers if they're currently being shown
+            this.hideActionTriggers();
+
             this.$source = $source;
             this.sourceKey = $source.data('key');
             this.setInstanceState('selectedSource', this.sourceKey);
@@ -2612,14 +2618,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         setStoredSortOptionsForSource: function() {
-            // Default to whatever's first
-            this.setSortAttribute();
-            this.setSortDirection('asc');
-
             var sortAttr = this.getSelectedSourceState('order'),
                 sortDir = this.getSelectedSourceState('sort');
 
-            if (!sortAttr) {
+            if (!sortAttr || !sortDir) {
                 // Get the default
                 sortAttr = this.getDefaultSort();
 
@@ -2960,7 +2962,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $option = $(ev.selectedOption).addClass('sel');
             this.$statusMenuBtn.html($option.html());
 
-            this.status = $option.data('status');
+            if (Garnish.hasAttr($option, 'data-trashed')) {
+                this.trashed = true;
+                this.status = null;
+            } else {
+                this.trashed = false;
+                this.status = $option.data('status');
+            }
+
+            this._updateStructureSortOption();
             this.updateElements();
         },
 
@@ -3052,6 +3062,27 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         _handleSourceToggleClick: function(ev) {
             this._toggleSource($(ev.currentTarget).prev('a'));
             ev.stopPropagation();
+        },
+
+        _updateStructureSortOption: function() {
+            var $option = this.getSortAttributeOption('structure');
+
+            if (!$option.length) {
+                return;
+            }
+
+            if (this.trashed || this.searching) {
+                $option.addClass('disabled');
+                if (this.getSelectedSortAttribute() === 'structure') {
+                    // Temporarily set the sort to the first option
+                    var $firstOption = this.$sortAttributesList.find('a:not(.disabled):first')
+                    this.setSortAttribute($firstOption.data('attr'));
+                    this.setSortDirection('asc');
+                }
+            } else {
+                $option.removeClass('disabled');
+                this.setStoredSortOptionsForSource();
+            }
         },
 
         // Source managemnet
@@ -3449,10 +3480,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
                     }
                 }, this);
 
-                this.addListener(this.$elementContainer, 'dblclick', this._handleElementEditing);
-
-                if ($.isTouchCapable()) {
-                    this.addListener(this.$elementContainer, 'taphold', this._handleElementEditing);
+                if (!this.elementIndex.trashed) {
+                    this.addListener(this.$elementContainer, 'dblclick', this._handleElementEditing);
+                    if ($.isTouchCapable()) {
+                        this.addListener(this.$elementContainer, 'taphold', this._handleElementEditing);
+                    }
                 }
             }
 
@@ -3678,7 +3710,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         },
 
         createElementEditor: function($element) {
-            Craft.createElementEditor(this.elementIndex.elementType, $element, {
+            Craft.createElementEditor($element.data('type'), $element, {
                 elementIndex: this.elementIndex
             });
         },
@@ -7366,7 +7398,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             if (this.settings.context === 'index') {
                 if (this._folderDrag && this._getSourceLevel($source) > 1) {
-                    if (this._getFolderIdFromSourceKey($source.data('key'))) {
+                    if ($source.data('folder-id')) {
                         this._folderDrag.addItems($source.parent());
                     }
                 }
@@ -7438,7 +7470,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     for (var i = 0; i < this.$sources.length; i++) {
                         // Make sure it's a volume folder
                         var $source = this.$sources.eq(i);
-                        if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+                        if (!this._getFolderUidFromSourceKey($source.data('key'))) {
                             continue;
                         }
                         targets.push($source);
@@ -7468,7 +7500,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         for (var i = 0; i < $selected.length; i++) {
                             var $source = $selected.eq(i);
 
-                            if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+                            if (!this._getFolderUidFromSourceKey($source.data('key'))) {
                                 continue;
                             }
 
@@ -7513,7 +7545,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                             var $source = this.$sources.eq(i),
                                 key = $source.data('key');
 
-                            if (!this._getFolderIdFromSourceKey(key)) {
+                            if (!this._getFolderUidFromSourceKey(key)) {
                                 continue;
                             }
 
@@ -7539,7 +7571,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 // Keep it selected
                 var originatingSource = this.$source;
 
-                var targetFolderId = this._getFolderIdFromSourceKey(this._assetDrag.$activeDropTarget.data('key')),
+                var targetFolderId = this._assetDrag.$activeDropTarget.data('folder-id'),
                     originalAssetIds = [];
 
                 // For each file, prepare array data.
@@ -7703,7 +7735,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 this._folderDrag.$activeDropTarget &&
                 this._folderDrag.$activeDropTarget.siblings('ul').children('li').filter(this._folderDrag.$draggee).length === 0
             ) {
-                var targetFolderId = this._getFolderIdFromSourceKey(this._folderDrag.$activeDropTarget.data('key'));
+                var targetFolderId = this._folderDrag.$activeDropTarget.data('folder-id');
 
                 this._collapseExtraExpandedFolders(targetFolderId);
 
@@ -7712,11 +7744,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                 for (var i = 0; i < this._folderDrag.$draggee.length; i++) {
                     var $a = this._folderDrag.$draggee.eq(i).children('a'),
-                        folderId = this._getFolderIdFromSourceKey($a.data('key')),
-                        $source = this._getSourceByFolderId(folderId);
+                        folderId = $a.data('folder-id');
 
                     // Make sure it's not already in the target folder and use this single folder Id.
-                    if (this._getFolderIdFromSourceKey(this._getParentSource($source).data('key')) != targetFolderId) {
+                    if (folderId != targetFolderId) {
                         folderIds.push(folderId);
                         break;
                     }
@@ -7782,7 +7813,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                                 }
 
                                 if (data.newFolderId) {
-                                    newSourceKey = this._folderDrag.$activeDropTarget.data('key') + '/folder:' + data.newFolderId;
+                                    newSourceKey = this._folderDrag.$activeDropTarget.data('key') + '/folder:' + data.newFolderUid;
                                 }
                             }
 
@@ -7935,7 +7966,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         },
 
         _selectSourceByFolderId: function(targetFolderId) {
-            var $targetSource = this._getSourceByFolderId(targetFolderId);
+            var $targetSource = this._getSourceByKey(targetFolderId);
 
             // Make sure that all the parent sources are expanded and this source is visible.
             var $parentSources = $targetSource.parent().parents('li');
@@ -8001,11 +8032,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         },
 
         onSelectSource: function() {
-            var folderId = this._getFolderIdFromSourceKey(this.sourceKey);
+            var $source = this._getSourceByKey(this.sourceKey);
+            var folderId = $source.data('folder-id');
 
             if (folderId && this.$source.attr('data-upload')) {
                 this.uploader.setParams({
-                    folderId: folderId
+                    folderId: this.$source.attr('data-folder-id')
                 });
                 this.$uploadButton.removeClass('disabled');
             } else {
@@ -8015,8 +8047,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.base();
         },
 
-        _getFolderIdFromSourceKey: function(sourceKey) {
-            var m = sourceKey.match(/\bfolder:(\d+)$/);
+        _getFolderUidFromSourceKey: function(sourceKey) {
+            var m = sourceKey.match(/\bfolder:([0-9a-f\-]+)$/);
 
             return m ? m[1] : null;
         },
@@ -8399,10 +8431,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             clearTimeout(this._expandDropTargetFolderTimeout);
 
             if ($dropTarget) {
-                var folderId = this._getFolderIdFromSourceKey($dropTarget.data('key'));
+                var folderId = $dropTarget.data('folder-id');
 
                 if (folderId) {
-                    this.dropTargetFolder = this._getSourceByFolderId(folderId);
+                    this.dropTargetFolder = this._getSourceByKey(folderId);
 
                     if (this._hasSubfolders(this.dropTargetFolder) && !this._isExpanded(this.dropTargetFolder)) {
                         this._expandDropTargetFolderTimeout = setTimeout($.proxy(this, '_expandFolder'), 500);
@@ -8432,7 +8464,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             var $excludedSources;
 
             if (dropTargetFolderId) {
-                $excludedSources = this._getSourceByFolderId(dropTargetFolderId).parents('li').children('a');
+                $excludedSources = this._getSourceByKey(dropTargetFolderId).parents('li').children('a');
             }
 
             for (var i = this._tempExpandedFolders.length - 1; i >= 0; i--) {
@@ -8446,8 +8478,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             }
         },
 
-        _getSourceByFolderId: function(folderId) {
-            return this.$sources.filter('[data-key$="folder:' + folderId + '"]');
+        _getSourceByKey: function(key) {
+            return this.$sources.filter('[data-key$="' + key + '"]');
         },
 
         _hasSubfolders: function($source) {
@@ -8460,7 +8492,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         _expandFolder: function() {
             // Collapse any temp-expanded drop targets that aren't parents of this one
-            this._collapseExtraExpandedFolders(this._getFolderIdFromSourceKey(this.dropTargetFolder.data('key')));
+            this._collapseExtraExpandedFolders(this.dropTargetFolder.data('folder-id'));
 
             this.dropTargetFolder.siblings('.toggle').trigger('click');
 
@@ -8476,7 +8508,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         _createFolderContextMenu: function($source) {
             // Make sure it's a volume folder
-            if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+            if (!this._getFolderUidFromSourceKey($source.data('key'))) {
                 return;
             }
 
@@ -8496,7 +8528,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             if (subfolderName) {
                 var params = {
-                    parentId: this._getFolderIdFromSourceKey($parentFolder.data('key')),
+                    parentId: $parentFolder.data('folder-id'),
                     folderName: subfolderName
                 };
 
@@ -8510,9 +8542,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                         var $subfolder = $(
                             '<li>' +
-                            '<a data-key="' + $parentFolder.data('key') + '/folder:' + data.folderId + '"' +
+                            '<a data-key="' + $parentFolder.data('key') + '/folder:' + data.folderUid + '"' +
                             (Garnish.hasAttr($parentFolder, 'data-has-thumbs') ? ' data-has-thumbs' : '') +
                             ' data-upload="' + $parentFolder.attr('data-upload') + '"' +
+                            ' data-folder-id="' + data.folderId + '"' +
                             '>' +
                             data.folderName +
                             '</a>' +
@@ -8534,7 +8567,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         _deleteFolder: function($targetFolder) {
             if (confirm(Craft.t('app', 'Really delete folder “{folder}”?', {folder: $.trim($targetFolder.text())}))) {
                 var params = {
-                    folderId: this._getFolderIdFromSourceKey($targetFolder.data('key'))
+                    folderId: $targetFolder.data('folder-id')
                 };
 
                 this.setIndexBusy();
@@ -8568,7 +8601,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             if (newName && newName !== oldName) {
                 var params = {
-                    folderId: this._getFolderIdFromSourceKey($targetFolder.data('key')),
+                    folderId: $targetFolder.data('folder-id'),
                     newName: newName
                 };
 
@@ -8581,7 +8614,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         $targetFolder.text(data.newName);
 
                         // If the current folder was renamed.
-                        if (this._getFolderIdFromSourceKey(this.sourceSelect.$selectedItems.data('key')) === this._getFolderIdFromSourceKey($targetFolder.data('key'))) {
+                        if (this._getFolderUidFromSourceKey(this.sourceSelect.$selectedItems.data('key')) === this._getFolderUidFromSourceKey($targetFolder.data('key'))) {
                             this.updateElements();
                         }
                     }
@@ -9618,7 +9651,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
             for (var i = 0; i < Craft.editableCategoryGroups.length; i++) {
                 var group = Craft.editableCategoryGroups[i];
 
-                if (this.getSourceByKey('group:' + group.id)) {
+                if (this.getSourceByKey('group:' + group.uid)) {
                     this.editableGroups.push(group);
                 }
             }
@@ -9796,7 +9829,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                 }, this),
                 onSaveElement: $.proxy(function(response) {
                     // Make sure the right group is selected
-                    var groupSourceKey = 'group:' + groupId;
+                    var groupSourceKey = 'group:' + group.uid;
 
                     if (this.sourceKey !== groupSourceKey) {
                         this.selectSourceByKey(groupSourceKey);
@@ -12698,13 +12731,17 @@ Craft.EditableTable = Garnish.Base.extend(
             this.settings.onDeleteRow(row.$tr);
         },
         canAddRow: function() {
+            if (this.settings.staticRows) {
+                return false;
+            }
+
             if (this.settings.maxRows) {
                 return (this.rowCount < this.settings.maxRows);
             }
 
             return true;
         },
-        addRow: function() {
+        addRow: function(focus) {
             if (!this.canAddRow()) {
                 return;
             }
@@ -12713,22 +12750,59 @@ Craft.EditableTable = Garnish.Base.extend(
                 $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
             $tr.appendTo(this.$tbody);
-            new Craft.EditableTable.Row(this, $tr);
+            var row = new Craft.EditableTable.Row(this, $tr);
             this.sorter.addItems($tr);
 
             // Focus the first input in the row
-            $tr.find('input,textarea,select').first().trigger('focus');
+            if (focus !== false) {
+                $tr.find('input,textarea,select').first().trigger('focus');
+            }
 
             this.rowCount++;
             this.updateAddRowButton();
 
             // onAddRow callback
             this.settings.onAddRow($tr);
+
+            return row;
         },
 
         createRow: function(rowId, columns, baseName, values) {
             return Craft.EditableTable.createRow(rowId, columns, baseName, values);
-        }
+        },
+
+        focusOnNextRow: function($tr, tdIndex, blurTd) {
+            var $nextTr = $tr.next('tr');
+            var nextRow;
+
+            if ($nextTr.length) {
+                nextRow = $nextTr.data('editable-table-row');
+            } else {
+                nextRow = this.addRow(false);
+            }
+
+            // Focus on the same cell in the next row
+            if (!nextRow) {
+                return;
+            }
+
+            if (!nextRow.$tds[tdIndex]) {
+                return;
+            }
+
+            if ($(nextRow.$tds[tdIndex]).hasClass('disabled')) {
+                if ($nextTr) {
+                    this.focusOnNextRow($nextTr, tdIndex, blurTd);
+                }
+                return;
+            }
+
+            var $input = $('textarea,input.text', nextRow.$tds[tdIndex]);
+            if ($input.length) {
+                $(blurTd).trigger('blur');
+                $input.trigger('focus');
+            }
+        },
     },
     {
         textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'time'],
@@ -12881,6 +12955,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             this.$tr = $(tr);
             this.$tds = this.$tr.children();
 
+            this.$tr.data('editable-table-row', this);
+
             // Get the row ID, sans prefix
             var id = parseInt(this.$tr.attr('data-id').substr(this.table.settings.rowIdPrefix.length));
 
@@ -12913,8 +12989,9 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                         onHeightChange: $.proxy(this, 'onTextareaHeightChange')
                     }));
 
+                    this.addListener($textarea, 'keypress', {tdIndex: i, type: col.type}, 'handleKeypress');
+
                     if (col.type === 'singleline' || col.type === 'number') {
-                        this.addListener($textarea, 'keypress', {type: col.type}, 'validateKeypress');
                         this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
                         $textarea.trigger('textchange');
                     }
@@ -12981,13 +13058,19 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             $.data(ev.currentTarget, 'ignoreNextFocus', true);
         },
 
-        validateKeypress: function(ev) {
+        handleKeypress: function(ev) {
             var keyCode = ev.keyCode ? ev.keyCode : ev.charCode;
+            var ctrl = Garnish.isCtrlKeyPressed(ev);
 
-            if (!Garnish.isCtrlKeyPressed(ev) && (
-                    (keyCode === Garnish.RETURN_KEY) ||
-                    (ev.data.type === 'number' && !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes))
-                )) {
+            // Going to the next row?
+            if (keyCode === Garnish.RETURN_KEY && (ev.data.type !== 'multiline' || ctrl)) {
+                ev.preventDefault();
+                this.table.focusOnNextRow(this.$tr, ev.data.tdIndex, ev.currentTarget);
+                return;
+            }
+
+            // Was this an invalid number character?
+            if (ev.data.type === 'number' && !ctrl && !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes)) {
                 ev.preventDefault();
             }
         },
@@ -13431,7 +13514,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                         this.callback();
                     }
                     else {
-                        this.showPasswordError(Craft.t('app', 'Incorrect password.'));
+                        this.showPasswordError(response.message || Craft.t('app', 'Incorrect password.'));
                         Garnish.shake(this.passwordModal.$container);
                         this.focusPasswordInput();
                     }
@@ -13487,7 +13570,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             for (var i = 0; i < Craft.publishableSections.length; i++) {
                 var section = Craft.publishableSections[i];
 
-                if (this.getSourceByKey('section:' + section.id)) {
+                if (this.getSourceByKey('section:' + section.uid)) {
                     this.publishableSections.push(section);
                 }
             }
@@ -13680,7 +13763,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 }, this),
                 onSaveElement: $.proxy(function(response) {
                     // Make sure the right section is selected
-                    var sectionSourceKey = 'section:' + sectionId;
+                    var sectionSourceKey = 'section:' + section.uid;
 
                     if (this.sourceKey !== sectionSourceKey) {
                         this.selectSourceByKey(sectionSourceKey);
@@ -14628,6 +14711,11 @@ Craft.Grid = Garnish.Base.extend(
             else {
                 this.refreshCols._.totalCols = Math.floor(this.$container.width() / this.settings.minColWidth);
 
+                // If we're adding a new column, require an extra 20 pixels in case a scrollbar shows up
+                if (this.totalCols !== null && this.refreshCols._.totalCols > this.totalCols) {
+                    this.refreshCols._.totalCols = Math.floor((this.$container.width() - 20) / this.settings.minColWidth)
+                }
+
                 if (this.settings.maxCols && this.refreshCols._.totalCols > this.settings.maxCols) {
                     this.refreshCols._.totalCols = this.settings.maxCols;
                 }
@@ -15513,6 +15601,7 @@ Craft.LivePreview = Garnish.Base.extend(
         $fieldPlaceholder: null,
 
         previewUrl: null,
+        token: null,
         basePostData: null,
         inPreviewMode: false,
         fields: null,
@@ -15524,6 +15613,7 @@ Craft.LivePreview = Garnish.Base.extend(
         dragger: null,
         dragStartEditorWidth: null,
 
+        _slideInOnIframeLoad: false,
         _handleSuccessProxy: null,
         _handleErrorProxy: null,
         _forceUpdateIframeProxy: null,
@@ -15553,14 +15643,7 @@ Craft.LivePreview = Garnish.Base.extend(
             }
 
             // Set the base post data
-            this.basePostData = $.extend({
-                action: this.settings.previewAction,
-                livePreview: true
-            }, this.settings.previewParams);
-
-            if (Craft.csrfTokenName) {
-                this.basePostData[Craft.csrfTokenName] = Craft.csrfTokenValue;
-            }
+            this.basePostData = $.extend({}, this.settings.previewParams);
 
             this._handleSuccessProxy = $.proxy(this, 'handleSuccess');
             this._handleErrorProxy = $.proxy(this, 'handleError');
@@ -15628,6 +15711,11 @@ Craft.LivePreview = Garnish.Base.extend(
                 return;
             }
 
+            if (!this.token) {
+                this.createToken();
+                return;
+            }
+
             this.trigger('beforeEnter');
 
             $(document.activeElement).trigger('blur');
@@ -15637,7 +15725,6 @@ Craft.LivePreview = Garnish.Base.extend(
                 this.$editorContainer = $('<div class="lp-editor-container"/>').appendTo(Garnish.$bod);
                 this.$editor = $('<div class="lp-editor"/>').appendTo(this.$editorContainer);
                 this.$iframeContainer = $('<div class="lp-iframe-container"/>').appendTo(Garnish.$bod);
-                this.$iframe = $('<iframe class="lp-iframe" frameborder="0"/>').appendTo(this.$iframeContainer);
                 this.$dragHandle = $('<div class="lp-draghandle"/>').appendTo(this.$editorContainer);
 
                 var $header = $('<header class="header"></header>').appendTo(this.$editor),
@@ -15685,12 +15772,8 @@ Craft.LivePreview = Garnish.Base.extend(
             }
 
             if (this.updateIframe()) {
-                this.addListener(this.$iframe, 'load', function() {
-                    this.slideIn();
-                    this.removeListener(this.$iframe, 'load');
-                });
-            }
-            else {
+                this._slideInOnIframeLoad = true;
+            } else {
                 this.slideIn();
             }
 
@@ -15699,6 +15782,17 @@ Craft.LivePreview = Garnish.Base.extend(
 
             this.inPreviewMode = true;
             this.trigger('enter');
+        },
+
+        createToken: function() {
+            Craft.postActionRequest('live-preview/create-token', {
+                previewAction: this.settings.previewAction
+            }, $.proxy(function(response, textStatus) {
+                if (textStatus === 'success') {
+                    this.token = response.token;
+                    this.enter();
+                }
+            }, this));
         },
 
         save: function() {
@@ -15817,15 +15911,18 @@ Craft.LivePreview = Garnish.Base.extend(
                 this.lastPostData = postData;
                 this.loading = true;
 
-                var $doc = $(this.$iframe[0].contentWindow.document);
+                var $doc = this.$iframe ? $(this.$iframe[0].contentWindow.document) : null;
 
-                this._scrollX = $doc.scrollLeft();
-                this._scrollY = $doc.scrollTop();
+                this._scrollX = $doc ? $doc.scrollLeft() : 0;
+                this._scrollY = $doc ? $doc.scrollTop() : 0;
 
                 $.ajax({
-                    url: this.previewUrl,
+                    url: this.previewUrl + (this.previewUrl.indexOf('?') !== -1 ? '&' : '?') + Craft.tokenParam + '=' + this.token,
                     method: 'POST',
                     data: $.extend({}, postData, this.basePostData),
+                    headers: {
+                        'X-Craft-Token': this.token
+                    },
                     xhrFields: {
                         withCredentials: true
                     },
@@ -15849,15 +15946,34 @@ Craft.LivePreview = Garnish.Base.extend(
             var html = data +
                 '<script type="text/javascript">window.scrollTo(' + this._scrollX + ', ' + this._scrollY + ');</script>';
 
-            // Set the iframe to use the same bg as the iframe body,
-            // to reduce the blink when reloading the DOM
-            this.$iframe.css('background', $(this.$iframe[0].contentWindow.document.body).css('background'));
+            // Create a new iframe
+            var $iframe = $('<iframe class="lp-iframe" frameborder="0"/>');
+            if (this.$iframe) {
+                $iframe.insertBefore(this.$iframe);
+            } else {
+                $iframe.appendTo(this.$iframeContainer);
+            }
 
-            this.$iframe[0].contentWindow.document.open();
-            this.$iframe[0].contentWindow.document.write(html);
-            this.$iframe[0].contentWindow.document.close();
+            this.addListener($iframe, 'load', function() {
+                if (this.$iframe) {
+                    this.$iframe.remove();
+                }
+                this.$iframe = $iframe;
 
-            this.onResponse();
+                if (this._slideInOnIframeLoad) {
+                    this.slideIn();
+                    this._slideInOnIframeLoad = false;
+                }
+
+                this.removeListener($iframe, 'load');
+            });
+
+            Garnish.requestAnimationFrame($.proxy(function() {
+                $iframe[0].contentWindow.document.open();
+                $iframe[0].contentWindow.document.write(html);
+                $iframe[0].contentWindow.document.close();
+                this.onResponse();
+            }, this));
         },
 
         handleError: function() {
@@ -18120,7 +18236,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
         },
 
         createElementEditor: function($element) {
-            Craft.createElementEditor(this.elementIndex.elementType, $element, {
+            Craft.createElementEditor($element.data('type'), $element, {
                 params: {
                     includeTableAttributesForSource: this.elementIndex.sourceKey
                 },
@@ -18472,8 +18588,14 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                         var $li;
 
                         for (var i = 0; i < response.tags.length; i++) {
-                            $li = $('<li/>').appendTo($ul);
-                            $('<a data-icon="tag"/>').appendTo($li).text(response.tags[i].title).data('id', response.tags[i].id);
+                            $li = $('<li/>')
+                                .appendTo($ul);
+
+                            $('<a data-icon="tag"/>')
+                                .appendTo($li)
+                                .text(response.tags[i].title)
+                                .data('id', response.tags[i].id)
+                                .addClass(response.tags[i].exclude ? 'disabled' : '');
                         }
 
                         if (!response.exactMatch) {
@@ -18481,7 +18603,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                             $('<a data-icon="plus"/>').appendTo($li).text(data.search);
                         }
 
-                        $ul.find('> li:first-child > a').addClass('hover');
+                        $ul.find('a:not(.disabled):first').addClass('hover');
 
                         this.searchMenu = new Garnish.Menu($menu, {
                             attachToElement: this.$addTagInput,
@@ -18503,9 +18625,14 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
         },
 
         selectTag: function(option) {
-            var $option = $(option),
-                id = $option.data('id'),
-                title = $option.text();
+            var $option = $(option);
+
+            if ($option.hasClass('disabled')) {
+                return;
+            }
+
+            var id = $option.data('id');
+            var title = $option.text();
 
             var $element = $('<div/>', {
                 'class': 'element small removable',
@@ -18780,7 +18907,7 @@ Craft.ui =
 
             var $label = $('<label/>', {
                 'for': id,
-                html: config.label
+                text: config.label
             });
 
             // Should we include a hidden input first?

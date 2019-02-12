@@ -129,10 +129,11 @@ JS;
         }
 
         // Delete the users
+        $elementsService = Craft::$app->getElements();
         foreach ($users as $user) {
             if (!in_array($user->id, $undeletableIds, false)) {
                 $user->inheritorOnDelete = $transferContentTo;
-                Craft::$app->getElements()->deleteElement($user);
+                $elementsService->deleteElement($user);
             }
         }
 

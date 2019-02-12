@@ -10,6 +10,7 @@ namespace craft\queue\jobs;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\db\Table;
 use craft\fields\Matrix;
 use craft\queue\BaseJob;
 use yii\base\Exception;
@@ -51,14 +52,14 @@ class FindAndReplace extends BaseJob
     {
         // Find all the textual field columns
         $this->_textColumns = [
-            ['{{%content}}', 'title'],
+            [Table::CONTENT, 'title'],
         ];
 
         foreach (Craft::$app->getFields()->getAllFields() as $field) {
             if ($field instanceof Matrix) {
                 $this->_checkMatrixField($field);
             } else {
-                $this->_checkField($field, '{{%content}}', 'field_');
+                $this->_checkField($field, Table::CONTENT, 'field_');
             }
         }
 

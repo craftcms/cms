@@ -3,8 +3,8 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0.35',
-    'schemaVersion' => '3.0.94',
+    'version' => '3.1.8',
+    'schemaVersion' => '3.1.25',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -55,6 +55,9 @@ return [
         ],
         'fields' => [
             'class' => craft\services\Fields::class,
+        ],
+        'gc' => [
+            'class' => craft\services\Gc::class,
         ],
         'globals' => [
             'class' => craft\services\Globals::class,
@@ -152,15 +155,6 @@ return [
         ],
         'systemSettings' => [
             'class' => craft\services\SystemSettings::class,
-            'defaults' => [
-                'users' => [
-                    'requireEmailVerification' => true,
-                    'allowPublicRegistration' => false,
-                    'defaultGroup' => null,
-                    'photoVolumeId' => null,
-                    'photoSubpath' => ''
-                ],
-            ]
         ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,
@@ -201,13 +195,22 @@ return [
             return Craft::createObject($config);
         },
 
-        'mailer' => function() {
-            $config = craft\helpers\App::mailerConfig();
-            return Craft::createObject($config);
+        'formatter' => function() {
+            return Craft::$app->getLocale()->getFormatter();
         },
 
         'locale' => function() {
             return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
+        },
+
+        'log' => function() {
+            $config = craft\helpers\App::logConfig();
+            return $config ? Craft::createObject($config) : null;
+        },
+
+        'mailer' => function() {
+            $config = craft\helpers\App::mailerConfig();
+            return Craft::createObject($config);
         },
 
         'mutex' => function() {
@@ -215,13 +218,9 @@ return [
             return Craft::createObject($config);
         },
 
-        'formatter' => function() {
-            return Craft::$app->getLocale()->getFormatter();
-        },
-
-        'log' => function() {
-            $config = craft\helpers\App::logConfig();
-            return $config ? Craft::createObject($config) : null;
+        'projectConfig' => function() {
+            $config = craft\helpers\App::projectConfigConfig();
+            return Craft::createObject($config);
         },
 
         'view' => function() {

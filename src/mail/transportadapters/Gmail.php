@@ -8,9 +8,7 @@
 namespace craft\mail\transportadapters;
 
 use Craft;
-use craft\helpers\StringHelper;
-use craft\validators\StringValidator;
-use yii\base\Exception;
+use craft\behaviors\EnvAttributeParserBehavior;
 
 /**
  * Smtp implements a Gmail transport adapter into Craft’s mailer.
@@ -55,19 +53,17 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function init()
+    public function behaviors()
     {
-        parent::init();
-
-        if ($this->password) {
-            try {
-                $this->password = StringHelper::decdec($this->password);
-            } catch (Exception $e) {
-                Craft::error('Could not decode Gmail password: ' . $e->getMessage());
-                Craft::$app->getErrorHandler()->logException($e);
-                $this->password = null;
-            }
-        }
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'username',
+                    'password',
+                ],
+            ]
+        ];
     }
 
     /**
@@ -87,11 +83,11 @@ class Gmail extends BaseTransportAdapter
      */
     public function rules()
     {
-        return [
-            [['username', 'password'], 'trim'],
-            [['username', 'password', 'timeout'], 'required'],
-            [['timeout'], 'number', 'integerOnly' => true],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['username', 'password'], 'trim'];
+        $rules[] = [['username', 'password', 'timeout'], 'required'];
+        $rules[] = [['timeout'], 'number', 'integerOnly' => true];
+        return $rules;
     }
 
     /**
@@ -114,8 +110,8 @@ class Gmail extends BaseTransportAdapter
             'host' => 'smtp.gmail.com',
             'port' => 465,
             'encryption' => 'ssl',
-            'username' => $this->username,
-            'password' => $this->password,
+            'username' => Craft::parseEnv($this->username),
+            'password' => Craft::parseEnv($this->password),
             'timeout' => $this->timeout,
         ];
     }

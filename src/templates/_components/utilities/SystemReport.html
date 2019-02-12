@@ -1,7 +1,7 @@
 <div class="readable">
     <h2>{{ "Application Info"|t('app') }}</h2>
 
-    <table class="data fullwidth fixed-layout">
+    <table class="data fullwidth fixed-layout" dir="ltr">
         <tbody>
             {% for label, value in appInfo %}
                 <tr>
@@ -15,7 +15,7 @@
     <h2>{{ "Plugins"|t('app') }}</h2>
 
     {% if plugins|length %}
-        <table class="data fullwidth fixed-layout">
+        <table class="data fullwidth fixed-layout" dir="ltr">
             <tbody>
                 {% for plugin in plugins %}
                     <tr>
@@ -32,7 +32,7 @@
     <h2>{{ 'Modules'|t('app') }}</h2>
 
     {% if modules|length %}
-        <table class="data fullwidth fixed-layout">
+        <table class="data fullwidth fixed-layout" dir="ltr">
             <tbody>
                 {% for id, class in modules %}
                     <tr>
@@ -48,7 +48,7 @@
 
     <h2>{{ "Requirements"|t('app') }}</h2>
 
-    <table class="data fullwidth">
+    <table class="data fullwidth" dir="ltr">
         <tbody>
         {% for requirement in requirements %}
             <tr>

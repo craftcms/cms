@@ -275,6 +275,7 @@ class AssetsController extends Controller
             return $this->asJson([
                 'success' => true,
                 'folderName' => $folderModel->name,
+                'folderUid' => $folderModel->uid,
                 'folderId' => $folderModel->id
             ]);
         } catch (AssetException $exception) {
@@ -558,10 +559,14 @@ class AssetsController extends Controller
             return $this->asErrorJson($exception->getMessage());
         }
 
+        $newFolderId = $folderIdChanges[$folderBeingMovedId] ?? null;
+        $newFolder = $assets->getFolderById($newFolderId);
+
         return $this->asJson([
             'success' => true,
             'transferList' => $fileTransferList,
-            'newFolderId' => $folderIdChanges[$folderBeingMovedId] ?? null
+            'newFolderUid' => $newFolder->uid,
+            'newFolderId' => $newFolderId
         ]);
     }
 
@@ -980,7 +985,7 @@ class AssetsController extends Controller
             }
         }
 
-        $this->_requirePermissionByVolumeId($permissionName, $asset->volumeId);
+        $this->_requirePermissionByVolumeId($permissionName, $asset->getVolume()->uid);
     }
 
     /**
@@ -1000,18 +1005,18 @@ class AssetsController extends Controller
             }
         }
 
-        $this->_requirePermissionByVolumeId($permissionName, $folder->volumeId);
+        $this->_requirePermissionByVolumeId($permissionName, $folder->getVolume()->uid);
     }
 
     /**
      * Require an Assets permissions.
      *
      * @param string $permissionName Name of the permission to require.
-     * @param int $volumeId The Volume id on which to require the permission.
+     * @param string $volumeUid The volume uid on which to require the permission.
      */
-    private function _requirePermissionByVolumeId(string $permissionName, int $volumeId)
+    private function _requirePermissionByVolumeId(string $permissionName, string $volumeUid)
     {
-        $this->requirePermission($permissionName . ':' . $volumeId);
+        $this->requirePermission($permissionName . ':' . $volumeUid);
     }
 
     /**

@@ -63,16 +63,9 @@
         else
         {
             document.write(
-                '<div class="no-access">' +
-                    '<div class="pane">' +
-                        '<div class="pane-body">' +
-                            '<div class="notice">' +
-                                '<div class="icon"></div>' +
-                                '<p>{{ "Cookies must be enabled to access the Craft CMS control panel."|t('app') }}<br>' +
-                                    '<a class="go nowrap" href="">{{ "See how"|t('app') }}</a>' +
-                                '</p>' +
-                            '</div>' +
-                        '</div>' +
+                '<div class="message-container no-access">' +
+                    '<div class="pane notice">' +
+                        '<p>{{ "Cookies must be enabled to access the Craft CMS Control Panel."|t('app') }}</p>' +
                     '</div>' +
                 '</div>'
             );

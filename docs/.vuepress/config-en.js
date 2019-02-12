@@ -34,7 +34,9 @@ module.exports = {
                     'plugin-guide',
                     'updating-plugins',
                     'plugin-settings',
+                    'project-config',
                     'changelogs-and-updates',
+                    'plugin-editions',
                     'plugin-store',
                 ]
             },
@@ -73,6 +75,8 @@ module.exports = {
                     'template-roots',
                     'extending-twig',
                     'template-hooks',
+                    'soft-deletes',
+                    'environmental-settings',
                     // 'front-end-controllers',
                 ]
             }
@@ -228,6 +232,8 @@ module.exports = {
                 title: 'More',
                 collapsable: false,
                 children: [
+                    'project-config',
+                    'gc',
                     'reference-tags',
                 ]
             },

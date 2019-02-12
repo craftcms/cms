@@ -4,6 +4,7 @@
 {%- set siteId = ((craft.app.getIsMultiSite() and siteId is defined) ? siteId : null) %}
 {%- set site = (siteId ? craft.app.sites.getSiteById(siteId) : null) %}
 {%- set instructions = (instructions is defined ? instructions : null) %}
+{%- set tip = (tip is defined ? tip : null) %}
 {%- set warning = (warning is defined ? warning : null) %}
 {%- set orientation = (site ? craft.app.i18n.getLocaleById(site.language) : craft.app.locale).getOrientation() %}
 {%- set translatable = translatable ?? (site is not same as(null)) %}
@@ -34,6 +35,9 @@
     <div class="input {{ orientation }}{% if errors %} errors{% endif %}">
         {{ input|raw }}
     </div>
+    {% if tip %}
+        <p class="notice">{{ tip|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
+    {% endif %}
     {% if warning %}
         <p class="warning">{{ warning|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
     {% endif %}

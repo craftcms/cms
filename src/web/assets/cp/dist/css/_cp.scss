@@ -45,7 +45,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   -webkit-overflow-scrolling: touch;
   @include light-on-dark-text;
   background: $sidebarBgColor;
-  box-shadow: none;
+  box-shadow: inset -1px 0 0 darken($sidebarBgColor, 10%);
 
   #devmode {
     flex: 0 0 4px;
@@ -231,6 +231,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       &:not(.has-subnav) > a.sel {
         color: #fff;
         background: darken($sidebarBgColor, 6%);
+        box-shadow: inset 0 0 0 1px darken($sidebarBgColor, 10%);
         border-color: $submitColor;
         opacity: 1;
 
@@ -1026,19 +1027,24 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
 /* notifications */
 #notifications-wrapper {
-  position: fixed;
-  top: 0;
+  position: relative;
   z-index: 101;
-  @include left(0);
-  width: 100%;
   pointer-events: none;
+
+  body.fixed-header & {
+    position: fixed;
+    width: 100%;
+  }
 }
 
 #notifications {
-  text-align: center;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
 
   .notification {
-    display: inline-block;
     padding: 5px 10px;
     border-radius: 0 0 3px 3px;
     border-width: 0 1px 1px;

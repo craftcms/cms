@@ -8,11 +8,16 @@
 namespace craft\web;
 
 use Craft;
+use craft\controllers\UsersController;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User as UserElement;
+use craft\errors\UserLockedException;
+use craft\events\LoginFailureEvent;
 use craft\helpers\ConfigHelper;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
+use craft\helpers\User as UserHelper;
 use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
 
@@ -31,6 +36,11 @@ class User extends \yii\web\User
 {
     // Properties
     // =========================================================================
+
+    /**
+     * @var string the session variable name used to store the user session token.
+     */
+    public $tokenParam = '__token';
 
     /**
      * @var array The configuration of the username cookie.
@@ -286,6 +296,7 @@ class User extends \yii\web\User
      *
      * @param string $password the current user’s password
      * @return bool Whether the password was valid, and the user session has been elevated
+     * @throws UserLockedException if the user is locked.
      */
     public function startElevatedSession(string $password): bool
     {
@@ -303,14 +314,23 @@ class User extends \yii\web\User
             $user = $this->getIdentity();
         }
 
-        if (!$user) {
+        if (!$user || $user->password === null) {
+            // Delay again to match $user->authenticate()'s delay
+            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+            $this->_handleLoginFailure(UserElement::AUTH_INVALID_CREDENTIALS);
             return false;
+        }
+
+        if ($user->locked) {
+            throw new UserLockedException($user);
         }
 
         // Validate the password
         $validator = new UserPasswordValidator();
 
-        if (!$validator->validate($password) || !Craft::$app->getSecurity()->validatePassword($password, $user->password)) {
+        // Did they submit a valid password, and is the user capable of being logged-in?
+        if (!$validator->validate($password) || !$user->authenticate($password)) {
+            $this->_handleLoginFailure($user->authError, $user);
             return false;
         }
 
@@ -368,11 +388,11 @@ class User extends \yii\web\User
     protected function beforeLogin($identity, $cookieBased, $duration)
     {
         // Only allow the login if the request meets our user agent and IP requirements
-        if ($this->_validateUserAgentAndIp()) {
-            return parent::beforeLogin($identity, $cookieBased, $duration);
+        if (!$this->_validateUserAgentAndIp()) {
+            return false;
         }
 
-        return false;
+        return parent::beforeLogin($identity, $cookieBased, $duration);
     }
 
     /**
@@ -387,9 +407,6 @@ class User extends \yii\web\User
         if ($session->get(UserElement::IMPERSONATE_KEY) === null) {
             $this->sendUsernameCookie($identity);
         }
-
-        // Delete any stale session rows
-        $this->_deleteStaleSessions();
 
         // Save the Debug preferences to the session
         $this->saveDebugPreferencesToSession();
@@ -406,36 +423,70 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
-    protected function renewAuthStatus()
+    public function switchIdentity($identity, $duration = 0)
     {
-        // Only renew if the request meets our user agent and IP requirements
-        if (Craft::$app->getIsInstalled() && $this->_validateUserAgentAndIp()) {
-            // Prevent the user session from getting extended?
-            $request = Craft::$app->getRequest();
-            if ($this->authTimeout !== null && $request->getParam('dontExtendSession')) {
-                $this->absoluteAuthTimeout = $this->authTimeout;
-                $this->authTimeout = null;
-                $absoluteAuthTimeoutParam = $this->absoluteAuthTimeoutParam;
-                $this->absoluteAuthTimeoutParam = $this->authTimeoutParam;
-                parent::renewAuthStatus();
-                $this->authTimeout = $this->absoluteAuthTimeout;
-                $this->absoluteAuthTimeout = null;
-                $this->absoluteAuthTimeoutParam = $absoluteAuthTimeoutParam;
-            } else {
-                parent::renewAuthStatus();
+        if ($this->enableSession) {
+            $session = Craft::$app->getSession();
+            $session->remove($this->tokenParam);
+
+            if ($identity) {
+                /** @var UserElement $identity */
+                // Generate a new session token
+                $this->generateToken($identity->id);
             }
         }
+
+        return parent::switchIdentity($identity, $duration);
+    }
+
+    /**
+     * Generates a new user session token.
+     *
+     * @param int $userId
+     */
+    public function generateToken(int $userId)
+    {
+        $token = Craft::$app->getSecurity()->generateRandomString(100);
+
+        Craft::$app->getDb()->createCommand()
+            ->insert(Table::SESSIONS, [
+                'userId' => $userId,
+                'token' => $token,
+            ])
+            ->execute();
+
+        Craft::$app->getSession()->set($this->tokenParam, $token);
     }
 
     /**
      * @inheritdoc
      */
-    protected function renewIdentityCookie()
+    protected function renewAuthStatus()
     {
-        // Prevent the session row from getting stale
-        $this->_updateSessionRow();
+        // Only renew if the request meets our user agent and IP requirements
+        if (!Craft::$app->getIsInstalled() || !$this->_validateUserAgentAndIp()) {
+            return;
+        }
 
-        parent::renewIdentityCookie();
+        // Should we be extending the user's session on this request?
+        $extendSession = !Craft::$app->getRequest()->getParam('dontExtendSession');
+
+        // Make sure their user session token is valid
+        $this->_validateToken($extendSession);
+
+        // Prevent the user session from getting extended?
+        if ($this->authTimeout !== null && !$extendSession) {
+            $this->absoluteAuthTimeout = $this->authTimeout;
+            $this->authTimeout = null;
+            $absoluteAuthTimeoutParam = $this->absoluteAuthTimeoutParam;
+            $this->absoluteAuthTimeoutParam = $this->authTimeoutParam;
+            parent::renewAuthStatus();
+            $this->authTimeout = $this->absoluteAuthTimeout;
+            $this->absoluteAuthTimeout = null;
+            $this->absoluteAuthTimeoutParam = $absoluteAuthTimeoutParam;
+        } else {
+            parent::renewAuthStatus();
+        }
     }
 
     /**
@@ -445,30 +496,19 @@ class User extends \yii\web\User
     {
         /** @var UserElement $identity */
         // Delete the impersonation session, if there is one
-        Craft::$app->getSession()->remove(UserElement::IMPERSONATE_KEY);
+        $session = Craft::$app->getSession();
+        $session->remove(UserElement::IMPERSONATE_KEY);
 
-        // Delete the session row
-        $value = Craft::$app->getRequest()->getCookies()->getValue($this->identityCookie['name']);
-
-        if ($value !== null) {
-            $data = json_decode($value, true);
-
-            if (is_array($data) && isset($data[2])) {
-                $authData = UserElement::authData($data[1]);
-
-                if ($authData) {
-                    $tokenUid = $authData[1];
-
-                    Craft::$app->getDb()->createCommand()
-                        ->delete(
-                            '{{%sessions}}',
-                            [
-                                'userId' => $identity->id,
-                                'uid' => $tokenUid
-                            ])
-                        ->execute();
-                }
-            }
+        // Delete the session token
+        $token = $session->get($this->tokenParam);
+        if ($token !== null) {
+            $session->remove($this->tokenParam);
+            Craft::$app->getDb()->createCommand()
+                ->delete(Table::SESSIONS, [
+                    'token' => $token,
+                    'userId' => $identity->id,
+                ])
+                ->execute();
         }
 
         $this->destroyDebugPreferencesInSession();
@@ -492,64 +532,83 @@ class User extends \yii\web\User
      */
     private function _validateUserAgentAndIp(): bool
     {
-        if (Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession) {
-            $request = Craft::$app->getRequest();
+        if (!Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession) {
+            return true;
+        }
 
-            if ($request->getUserAgent() === null || $request->getUserIP() === null) {
-                Craft::warning('Request didn’t meet the user agent and IP requirement for maintaining a user session.', __METHOD__);
+        $request = Craft::$app->getRequest();
 
-                return false;
-            }
+        if ($request->getUserAgent() === null || $request->getUserIP() === null) {
+            Craft::warning('Request didn’t meet the user agent and IP requirement for maintaining a user session.', __METHOD__);
+            return false;
         }
 
         return true;
     }
 
     /**
-     * Updates the dateUpdated column on the session's row, so it doesn't get stale.
+     * Validates that a user's session token is valid.
      *
-     * @see _deleteStaleSessions()
+     * @param bool $extendSession
      */
-    private function _updateSessionRow()
+    private function _validateToken(bool $extendSession)
     {
-        // Extract the current session token's UID from the identity cookie
-        $cookieValue = Craft::$app->getRequest()->getCookies()->getValue($this->identityCookie['name']);
+        $session = Craft::$app->getSession();
+        $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->idParam) : null;
 
-        if ($cookieValue !== null) {
-            $data = json_decode($cookieValue, true);
+        if ($id === null) {
+            return;
+        }
 
-            if (is_array($data) && isset($data[2])) {
-                $authData = UserElement::authData($data[1]);
+        $token = $session->get($this->tokenParam);
 
-                if ($authData) {
-                    $tokenUid = $authData[1];
+        if ($token === null) {
+            // Just give them a new token and be done with it
+            $this->generateToken($id);
+            return;
+        }
 
-                    // Now update the associated session row's dateUpdated column
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            '{{%sessions}}',
-                            ['dateUpdated' => Db::prepareDateForDb(new \DateTime())],
-                            [
-                                'userId' => $this->getId(),
-                                'uid' => $tokenUid
-                            ])
-                        ->execute();
-                }
-            }
+        $tokenId = (new Query())
+            ->select(['id'])
+            ->from([Table::SESSIONS])
+            ->where([
+                'token' => $token,
+                'userId' => $id,
+            ])
+            ->scalar();
+
+        if (!$tokenId) {
+            // Kill their PHP session. Their session may still be auto-renewed via their session cookie, though
+            $session->remove($this->idParam);
+            $session->remove($this->tokenParam);
+            return;
+        }
+
+        if ($extendSession) {
+            // Update the session row's dateUpdated value so it doesn't get GC'd
+            Craft::$app->getDb()->createCommand()
+                ->update(Table::SESSIONS, [
+                    'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
+                ], ['id' => $tokenId])
+                ->execute();
         }
     }
 
     /**
-     * Deletes any session rows that have gone stale.
+     * @param string $authError
+     * @param UserElement $user
+     * @return null
      */
-    private function _deleteStaleSessions()
+    private function _handleLoginFailure(string $authError = null, UserElement $user = null)
     {
-        $interval = new \DateInterval('P3M');
-        $expire = DateTimeHelper::currentUTCDateTime();
-        $pastTime = $expire->sub($interval);
+        $message = UserHelper::getLoginFailureMessage($authError, $user);
 
-        Craft::$app->getDb()->createCommand()
-            ->delete('{{%sessions}}', ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)])
-            ->execute();
+        // Fire a 'loginFailure' event
+        $event = new LoginFailureEvent([
+            'authError' => $authError,
+            'message' => $message,
+            'user' => $user,
+        ]);
+        $this->trigger(UsersController::EVENT_LOGIN_FAILURE, $event);
     }
 }

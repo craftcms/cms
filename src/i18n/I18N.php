@@ -326,6 +326,14 @@ class I18N extends \yii\i18n\I18N
     {
         $translation = parent::translate($category, $message, $params, $language);
 
+        // If $message is a key and came back identical to the input, translate it into the source language
+        if ($translation === $message && !in_array($category, ['yii', 'site'], true)) {
+            $messageSource = $this->getMessageSource($category);
+            if ($messageSource->sourceLanguage !== $language) {
+                $translation = parent::translate($category, $message, $params, $messageSource->sourceLanguage);
+            }
+        }
+
         if ($this->_shouldAddTranslationDebugOutput()) {
             switch ($category) {
                 case 'site':

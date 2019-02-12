@@ -25,8 +25,23 @@ class RedirectNode extends \Twig_Node
      */
     public function compile(\Twig_Compiler $compiler)
     {
+        $compiler->addDebugInfo($this);
+
+        if ($this->hasNode('error')) {
+            $compiler
+                ->write('\Craft::$app->getSession()->setError(')
+                ->subcompile($this->getNode('error'))
+                ->raw(");\n");
+        }
+
+        if ($this->hasNode('notice')) {
+            $compiler
+                ->write('\Craft::$app->getSession()->setNotice(')
+                ->subcompile($this->getNode('notice'))
+                ->raw(");\n");
+        }
+
         $compiler
-            ->addDebugInfo($this)
             ->write('\Craft::$app->getResponse()->redirect(' . UrlHelper::class . '::url(')
             ->subcompile($this->getNode('path'))
             ->raw('), ')

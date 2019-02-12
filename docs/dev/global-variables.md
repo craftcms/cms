@@ -18,7 +18,7 @@ Accessing things via `craft.app` is considered advanced. There are more security
 {% if craft.app.config.general.devMode %}
     <p>This site is running in Dev Mode.</p>
 {% endif %}
-```  
+```
 
 ## `currentSite`
 
@@ -34,7 +34,7 @@ You can access all of the sites in the same group as the current site via `curre
 <nav>
     <ul>
         {% for site in currentSite.group.sites %}
-            <li><a href="{{ alias(site.baseUrl) }}">{{ site.name }}</a></li> 
+            <li><a href="{{ alias(site.baseUrl) }}">{{ site.name }}</a></li>
         {% endfor %}
     </ul>
 </nav>

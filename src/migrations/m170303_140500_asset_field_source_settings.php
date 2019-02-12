@@ -4,6 +4,7 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\fields\Assets;
 use craft\helpers\Json;
 
@@ -22,7 +23,7 @@ class m170303_140500_asset_field_source_settings extends Migration
         // Convert the field setting from volume id to folder:XX
         $fields = (new Query())
             ->select(['id', 'settings'])
-            ->from(['{{%fields}}'])
+            ->from([Table::FIELDS])
             ->where(['type' => Assets::class])
             ->all($this->db);
 
@@ -33,7 +34,7 @@ class m170303_140500_asset_field_source_settings extends Migration
 
             $folderId = (new Query())
                 ->select(['id'])
-                ->from(['{{%volumefolders}}'])
+                ->from([Table::VOLUMEFOLDERS])
                 ->where(['parentId' => null])
                 ->andWhere(['volumeId' => $volumeId])
                 ->scalar($this->db);
@@ -55,7 +56,7 @@ class m170303_140500_asset_field_source_settings extends Migration
 
             $settings = Json::encode($settings);
 
-            $this->update('{{%fields}}', ['settings' => $settings], ['id' => $field['id']]);
+            $this->update(Table::FIELDS, ['settings' => $settings], ['id' => $field['id']]);
         }
 
         return true;

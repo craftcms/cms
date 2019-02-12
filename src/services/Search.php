@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\config\DbConfig;
 use craft\db\Query;
+use craft\db\Table;
 use craft\events\SearchEvent;
 use craft\helpers\Db;
 use craft\helpers\Search as SearchHelper;
@@ -197,7 +198,7 @@ class Search extends Component
         }
 
         // Begin creating SQL
-        $sql = sprintf('SELECT * FROM %s WHERE %s', Craft::$app->getDb()->quoteTableName('{{%searchindex}}'), $where);
+        $sql = sprintf('SELECT * FROM %s WHERE %s', Craft::$app->getDb()->quoteTableName(Table::SEARCHINDEX), $where);
 
         // Append elementIds to QSL
         if (!empty($elementIds)) {
@@ -317,7 +318,7 @@ class Search extends Component
         // Insert/update the row in searchindex
         Craft::$app->getDb()->createCommand()
             ->upsert(
-                '{{%searchindex}}',
+                Table::SEARCHINDEX,
                 $keyColumns,
                 $keywordColumns,
                 [],
@@ -710,7 +711,7 @@ class Search extends Component
     {
         $query = (new Query())
             ->select(['elementId'])
-            ->from(['{{%searchindex}}'])
+            ->from([Table::SEARCHINDEX])
             ->where($where);
 
         if ($siteId !== null) {

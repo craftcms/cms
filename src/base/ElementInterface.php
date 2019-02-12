@@ -805,6 +805,18 @@ interface ElementInterface extends ComponentInterface
     public function afterDelete();
 
     /**
+     * Performs actions before an element is restored.
+     *
+     * @return bool Whether the element should be restored
+     */
+    public function beforeRestore(): bool;
+
+    /**
+     * Performs actions after an element is restored.
+     */
+    public function afterRestore();
+
+    /**
      * Performs actions before an element is moved within a structure.
      *
      * @param int $structureId The structure ID

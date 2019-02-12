@@ -69,7 +69,6 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
     {
         $rules = parent::rules();
         $rules[] = [['path'], 'required'];
-
         return $rules;
     }
 
@@ -89,7 +88,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
      */
     public function getRootPath(): string
     {
-        return FileHelper::normalizePath(Craft::getAlias($this->path));
+        return FileHelper::normalizePath(Craft::parseEnv($this->path));
     }
 
     /**

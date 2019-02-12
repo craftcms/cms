@@ -184,6 +184,47 @@ class Connection extends \yii\db\Connection
     }
 
     /**
+     * Returns the path for a new backup file.
+     *
+     * @return string
+     */
+    public function getBackupFilePath(): string
+    {
+        // Determine the backup file path
+        $currentVersion = 'v' . Craft::$app->getVersion();
+        $systemName = FileHelper::sanitizeFilename($this->_getFixedSystemName(), ['asciiOnly' => true]);
+        $filename = ($systemName ? $systemName . '_' : '') . gmdate('ymd_His') . '_' . strtolower(StringHelper::randomString(10)) . '_' . $currentVersion . '.sql';
+        return Craft::$app->getPath()->getDbBackupPath() . '/' . mb_strtolower($filename);
+    }
+
+    /**
+     * Returns the raw database table names that should be ignored by default.
+     *
+     * @return string[]
+     */
+    public function getIgnoredBackupTables(): array
+    {
+        $tables = [
+            Table::ASSETINDEXDATA,
+            Table::ASSETTRANSFORMINDEX,
+            Table::SESSIONS,
+            Table::TEMPLATECACHES,
+            Table::TEMPLATECACHEQUERIES,
+            Table::TEMPLATECACHEELEMENTS,
+            '{{%cache}}',
+            '{{%templatecachecriteria}}',
+        ];
+
+        $schema = $this->getSchema();
+
+        foreach ($tables as $i => $table) {
+            $tables[$i] = $schema->getRawTableName($table);
+        }
+
+        return $tables;
+    }
+
+    /**
      * Performs a backup operation. If a `backupCommand` config setting has been set, will execute it. If not,
      * will execute the default database schema specific backup defined in `getDefaultBackupCommand()`, which uses
      * `pg_dump` for PostgreSQL and `mysqldump` for MySQL.
@@ -194,14 +235,8 @@ class Connection extends \yii\db\Connection
      */
     public function backup(): string
     {
-        // Determine the backup file path
-        $currentVersion = 'v' . Craft::$app->getVersion();
-        $systemName = FileHelper::sanitizeFilename($this->_getFixedSystemName(), ['asciiOnly' => true]);
-        $filename = ($systemName ? $systemName . '_' : '') . gmdate('ymd_His') . '_' . strtolower(StringHelper::randomString(10)) . '_' . $currentVersion . '.sql';
-        $file = Craft::$app->getPath()->getDbBackupPath() . '/' . mb_strtolower($filename);
-
+        $file = $this->getBackupFilePath();
         $this->backupTo($file);
-
         return $file;
     }
 
@@ -229,8 +264,8 @@ class Connection extends \yii\db\Connection
         }
 
         // Create the shell command
+        $backupCommand = $this->_parseCommandTokens($backupCommand, $filePath);
         $command = $this->_createShellCommand($backupCommand);
-        $command = $this->_parseCommandTokens($command, $filePath);
 
         // Fire a 'beforeCreateBackup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_BACKUP)) {
@@ -271,8 +306,8 @@ class Connection extends \yii\db\Connection
         }
 
         // Create the shell command
+        $restoreCommand = $this->_parseCommandTokens($restoreCommand, $filePath);
         $command = $this->_createShellCommand($restoreCommand);
-        $command = $this->_parseCommandTokens($command, $filePath);
 
         // Fire a 'beforeRestoreBackup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
@@ -484,15 +519,14 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * @param ShellCommand $shellCommand
+     * Parses a database backup/restore command for config tokens
+     *
+     * @param string $command The command to parse tokens in
      * @param string $file The path to the backup file
-     * @return ShellCommand
+     * @return string
      */
-    private function _parseCommandTokens(ShellCommand $shellCommand, $file): ShellCommand
+    private function _parseCommandTokens(string $command, $file): string
     {
-        $command = $shellCommand->getCommand();
-
-        // Swap out any tokens in the command
         $dbConfig = Craft::$app->getConfig()->getDb();
         $tokens = [
             '{file}' => $file,
@@ -504,10 +538,7 @@ class Connection extends \yii\db\Connection
             '{schema}' => $dbConfig->schema,
         ];
 
-        $command = str_replace(array_keys($tokens), array_values($tokens), $command);
-        $shellCommand->setCommand($command);
-
-        return $shellCommand;
+        return str_replace(array_keys($tokens), $tokens, $command);
     }
 
     /**
@@ -526,7 +557,7 @@ class Connection extends \yii\db\Connection
         }
 
         // PostgreSQL specific cleanup.
-        if (Craft::$app->getDb()->getDriverName() === DbConfig::DRIVER_PGSQL) {
+        if ($this->getIsPgsql()) {
             if (Platform::isWindows()) {
                 $envCommand = 'set PGPASSWORD=';
             } else {
@@ -538,7 +569,16 @@ class Connection extends \yii\db\Connection
         }
 
         if (!$success) {
-            throw ShellCommandException::createFromCommand($command);
+            $execCommand = $command->getExecCommand();
+
+            // Redact the PGPASSWORD
+            if ($this->getIsPgsql()) {
+                $execCommand = preg_replace_callback('/(PGPASSWORD=")([^"]+)"/i', function($match) {
+                    return $match[1] . str_repeat('•', strlen($match[2])) . '"';
+                }, $execCommand);
+            }
+
+            throw new ShellCommandException($execCommand, $command->getExitCode(), $command->getStdErr());
         }
     }
 
@@ -552,10 +592,10 @@ class Connection extends \yii\db\Connection
         try {
             return (new Query())
                 ->select(['siteName'])
-                ->from(['{{%info}}'])
+                ->from([Table::INFO])
                 ->column()[0];
         } catch (\Throwable $e) {
-            return Craft::$app->getInfo()->name ?: Craft::$app->getSites()->getPrimarySite()->name;
+            return Craft::$app->getSystemName();
         }
     }
 }

@@ -12,7 +12,6 @@ use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\ArrayHelper;
 
 /**
  * Duplicate represents a Duplicate element action.

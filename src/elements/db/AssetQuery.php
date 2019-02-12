@@ -10,6 +10,7 @@ namespace craft\elements\db;
 use Craft;
 use craft\base\Volume;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -250,8 +251,9 @@ class AssetQuery extends ElementQuery
         } else if ($value !== null) {
             $this->volumeId = (new Query())
                 ->select(['id'])
-                ->from(['{{%volumes}}'])
+                ->from([Table::VOLUMES])
                 ->where(Db::parseParam('handle', $value))
+                ->andWhere(['dateDeleted' => null])
                 ->column();
         } else {
             $this->volumeId = null;
@@ -742,6 +744,7 @@ class AssetQuery extends ElementQuery
             'assets.height',
             'assets.size',
             'assets.focalPoint',
+            'assets.keptFile',
             'assets.dateModified',
             'volumeFolders.path AS folderPath'
         ]);

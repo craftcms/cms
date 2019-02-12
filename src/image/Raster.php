@@ -599,6 +599,18 @@ class Raster extends Image
         $this->_image->draw()->text($text, $this->_font, $point, $angle);
     }
 
+    /**
+     * Disable animation if this is an animated image.
+     *
+     * @return $this
+     */
+    public function disableAnimation()
+    {
+        $this->_isAnimatedGif = false;
+
+        return $this;
+    }
+
     // Private Methods
     // =========================================================================
 

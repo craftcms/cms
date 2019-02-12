@@ -109,7 +109,7 @@ While not strictly required by Composer, we recommend you explicitly set the `ve
 :::
 
 ::: warning
-If you’re updating a Craft 2 plugin, make sure to remove the `composer/installers` dependency if it has one.  
+If you’re updating a Craft 2 plugin, make sure to remove the `composer/installers` dependency if it has one.
 :::
 
 ## The Plugin Class

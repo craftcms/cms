@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\LocalVolumeInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
@@ -19,6 +20,7 @@ use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetTransformEvent;
 use craft\events\AssetTransformImageEvent;
+use craft\events\ConfigEvent;
 use craft\events\GenerateTransformEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -26,6 +28,7 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
+use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\models\AssetTransform;
 use craft\models\AssetTransformIndex;
@@ -79,22 +82,24 @@ class AssetTransforms extends Component
     const EVENT_BEFORE_DELETE_TRANSFORMS = 'beforeDeleteTransforms';
 
     /**
+     * @event AssetTransformEvent The event that is triggered before a transform delete is applied to the database.
+     */
+    const EVENT_BEFORE_APPLY_TRANSFORM_DELETE = 'beforeApplyTransformDelete';
+
+    /**
      * @event AssetTransformImageEvent The event that is triggered after deleting generated transforms.
      */
     const EVENT_AFTER_DELETE_TRANSFORMS = 'afterDeleteTransforms';
+
+    const CONFIG_TRANSFORM_KEY = 'imageTransforms';
 
     // Properties
     // =========================================================================
 
     /**
-     * @var AssetTransform[]|null
+     * @var AssetTransform[]
      */
-    private $_transformsByHandle;
-
-    /**
-     * @var bool
-     */
-    private $_fetchedAllTransforms = false;
+    private $_transforms;
 
     /**
      * @var array
@@ -121,20 +126,17 @@ class AssetTransforms extends Component
      */
     public function getAllTransforms(): array
     {
-        if ($this->_fetchedAllTransforms) {
-            return array_values($this->_transformsByHandle);
+        if ($this->_transforms !== null) {
+            return $this->_transforms;
         }
 
-        $this->_transformsByHandle = [];
+        $this->_transforms = [];
 
         foreach ($this->_createTransformQuery()->all() as $result) {
-            $transform = new AssetTransform($result);
-            $this->_transformsByHandle[$transform->handle] = $transform;
+            $this->_transforms[] = new AssetTransform($result);
         }
 
-        $this->_fetchedAllTransforms = true;
-
-        return array_values($this->_transformsByHandle);
+        return $this->_transforms;
     }
 
     /**
@@ -145,36 +147,29 @@ class AssetTransforms extends Component
      */
     public function getTransformByHandle(string $handle)
     {
-        if ($this->_transformsByHandle !== null && array_key_exists($handle, $this->_transformsByHandle)) {
-            return $this->_transformsByHandle[$handle];
-        }
-
-        // If we've already fetched all transforms we can save ourselves a trip to the DB for transform handles that
-        // don't exist
-        if ($this->_fetchedAllTransforms) {
-            return null;
-        }
-
-        $result = $this->_createTransformQuery()
-            ->where(['handle' => $handle])
-            ->one();
-
-        return $this->_transformsByHandle[$handle] = $result ? new AssetTransform($result) : null;
+        return ArrayHelper::firstWhere($this->getAllTransforms(), 'handle', $handle, true);
     }
 
     /**
-     * Returns an asset transform by its id.
+     * Returns an asset transform by its ID.
      *
      * @param int $id
      * @return AssetTransform|null
      */
     public function getTransformById(int $id)
     {
-        $result = $this->_createTransformQuery()
-            ->where(['id' => $id])
-            ->one();
+        return ArrayHelper::firstWhere($this->getAllTransforms(), 'id', $id);
+    }
 
-        return $result ? new AssetTransform($result) : null;
+    /**
+     * Returns an asset transform by its UID.
+     *
+     * @param string $uid
+     * @return AssetTransform|null
+     */
+    public function getTransformByUid(string $uid)
+    {
+        return ArrayHelper::firstWhere($this->getAllTransforms(), 'uid', $uid, true);
     }
 
     /**
@@ -203,53 +198,89 @@ class AssetTransforms extends Component
         }
 
         if ($isNewTransform) {
-            $transformRecord = new AssetTransformRecord();
-        } else {
-            $transformRecord = AssetTransformRecord::findOne($transform->id);
+            $transform->uid = StringHelper::UUID();
+        } else if (!$transform->uid) {
+            $transform->uid = Db::uidById(Table::ASSETTRANSFORMS, $transform->id);
+        }
 
-            if (!$transformRecord) {
-                throw new AssetTransformException(Craft::t('app',
-                    'Can’t find the transform with ID “{id}”',
-                    ['id' => $transform->id]));
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        $configData = [
+            'format' => $transform->format,
+            'handle' => $transform->handle,
+            'height' => $transform->height,
+            'interlace' => $transform->interlace,
+            'mode' => $transform->mode,
+            'name' => $transform->name,
+            'position' => $transform->position,
+            'quality' => $transform->quality,
+            'width' => $transform->width
+        ];
+
+        $configPath = self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid;
+        $projectConfig->set($configPath, $configData);
+
+        if ($isNewTransform) {
+            $transform->id = Db::idByUid(Table::ASSETTRANSFORMS, $transform->uid);
+        }
+
+        return true;
+    }
+
+    /**
+     * Handle transform change.
+     *
+     * @param ConfigEvent $event
+     */
+    public function handleChangedTransform(ConfigEvent $event)
+    {
+        $transformUid = $event->tokenMatches[0];
+        $data = $event->newValue;
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            $transformRecord = $this->_getTransformRecord($transformUid);
+            $isNewTransform = $transformRecord->getIsNewRecord();
+
+            $transformRecord->name = $data['name'];
+            $transformRecord->handle = $data['handle'];
+
+            $heightChanged = $transformRecord->width !== $data['width'] || $transformRecord->height !== $data['height'];
+            $modeChanged = $transformRecord->mode !== $data['mode'] || $transformRecord->position !== $data['position'];
+            $qualityChanged = $transformRecord->quality !== $data['quality'];
+            $interlaceChanged = $transformRecord->interlace !== $data['interlace'];
+
+            if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged) {
+                $transformRecord->dimensionChangeTime = new DateTime('@' . time());
             }
+
+            $transformRecord->mode = $data['mode'];
+            $transformRecord->position = $data['position'];
+            $transformRecord->width = $data['width'];
+            $transformRecord->height = $data['height'];
+            $transformRecord->quality = $data['quality'];
+            $transformRecord->interlace = $data['interlace'];
+            $transformRecord->format = $data['format'];
+            $transformRecord->uid = $transformUid;
+
+            $transformRecord->save(false);
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
 
-        $transformRecord->name = $transform->name;
-        $transformRecord->handle = $transform->handle;
-
-        $heightChanged = $transformRecord->width !== $transform->width || $transformRecord->height !== $transform->height;
-        $modeChanged = $transformRecord->mode !== $transform->mode || $transformRecord->position !== $transform->position;
-        $qualityChanged = $transformRecord->quality !== $transform->quality;
-        $interlaceChanged = $transformRecord->interlace !== $transform->interlace;
-
-        if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged) {
-            $transformRecord->dimensionChangeTime = new DateTime('@' . time());
-        }
-
-        $transformRecord->mode = $transform->mode;
-        $transformRecord->position = $transform->position;
-        $transformRecord->width = $transform->width;
-        $transformRecord->height = $transform->height;
-        $transformRecord->quality = $transform->quality;
-        $transformRecord->interlace = $transform->interlace;
-        $transformRecord->format = $transform->format;
-
-        $transformRecord->save(false);
-
-        // Now that we have a transform ID, save it on the model
-        if (!$transform->id) {
-            $transform->id = $transformRecord->id;
-        }
+        // Clear caches
+        $this->_transforms = null;
 
         // Fire an 'afterSaveAssetTransform' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM)) {
             $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
-                'assetTransform' => $transform,
-                'isNew' => $transform,
+                'assetTransform' => $this->getTransformById($transformRecord->id),
+                'isNew' => $isNewTransform,
             ]));
         }
-
-        return true;
     }
 
     /**
@@ -297,11 +328,40 @@ class AssetTransforms extends Component
             ]));
         }
 
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid);
+        return true;
+    }
+
+    /**
+     * Handle transform being deleted
+     *
+     * @param ConfigEvent $event
+     */
+    public function handleDeletedTransform(ConfigEvent $event)
+    {
+        $transformUid = $event->tokenMatches[0];
+
+        $transform = $this->getTransformByUid($transformUid);
+
+        if (!$transform) {
+            return;
+        }
+
+        // Fire a 'beforeApplyTransformDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE, new AssetTransformEvent([
+                'transform' => $transform,
+            ]));
+        }
+
         Craft::$app->getDb()->createCommand()
             ->delete(
-                '{{%assettransforms}}',
-                ['id' => $transform->id])
+                Table::ASSETTRANSFORMS,
+                ['uid' => $transformUid])
             ->execute();
+
+        // Clear caches
+        $this->_transforms = null;
 
         // Fire an 'afterDeleteAssetTransform' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM)) {
@@ -309,8 +369,6 @@ class AssetTransforms extends Component
                 'assetTransform' => $transform
             ]));
         }
-
-        return true;
     }
 
     /**
@@ -391,7 +449,7 @@ class AssetTransforms extends Component
         if (!empty($invalidIndexIds)) {
             Craft::$app->getDb()->createCommand()
                 ->delete(
-                    '{{%assettransformindex}}',
+                    Table::ASSETTRANSFORMINDEX,
                     ['id' => $invalidIndexIds])
                 ->execute();
         }
@@ -448,7 +506,7 @@ class AssetTransforms extends Component
 
             // Delete the out-of-date record
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%assettransformindex}}', ['id' => $result['id']])
+                ->delete(Table::ASSETTRANSFORMINDEX, ['id' => $result['id']])
                 ->execute();
 
             // And the file.
@@ -707,13 +765,13 @@ class AssetTransforms extends Component
         $dbConnection = Craft::$app->getDb();
         if (null !== $index->id) {
             $dbConnection->createCommand()
-                ->update('{{%assettransformindex}}', $values, ['id' => $index->id])
+                ->update(Table::ASSETTRANSFORMINDEX, $values, ['id' => $index->id])
                 ->execute();
         } else {
             $dbConnection->createCommand()
-                ->insert('{{%assettransformindex}}', $values)
+                ->insert(Table::ASSETTRANSFORMINDEX, $values)
                 ->execute();
-            $index->id = $dbConnection->getLastInsertID('{{%assettransformindex}}');
+            $index->id = $dbConnection->getLastInsertID(Table::ASSETTRANSFORMINDEX);
         }
 
         return $index;
@@ -806,7 +864,7 @@ class AssetTransforms extends Component
     public function deleteTransformIndexDataByAssetId(int $assetId)
     {
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%assettransformindex}}', ['assetId' => $assetId])
+            ->delete(Table::ASSETTRANSFORMINDEX, ['assetId' => $assetId])
             ->execute();
     }
 
@@ -818,7 +876,7 @@ class AssetTransforms extends Component
     public function deleteTransformIndex(int $indexId)
     {
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%assettransformindex}}', ['id' => $indexId])
+            ->delete(Table::ASSETTRANSFORMINDEX, ['id' => $indexId])
             ->execute();
     }
 
@@ -856,7 +914,7 @@ class AssetTransforms extends Component
                     // Fetch a list of existing temp files for this image.
                     $files = FileHelper::findFiles($tempPath, [
                         'only' => [
-                            $prefix . '*' .  '.' . $extension
+                            $prefix . '*' . '.' . $extension
                         ]
                     ]);
 
@@ -1223,7 +1281,7 @@ class AssetTransforms extends Component
                 'dateUpdated',
                 'dateCreated',
             ])
-            ->from(['{{%assettransformindex}}']);
+            ->from([Table::ASSETTRANSFORMINDEX]);
     }
 
     /**
@@ -1245,9 +1303,10 @@ class AssetTransforms extends Component
                 'format',
                 'quality',
                 'interlace',
-                'dimensionChangeTime'
+                'dimensionChangeTime',
+                'uid'
             ])
-            ->from(['{{%assettransforms}}'])
+            ->from([Table::ASSETTRANSFORMS])
             ->orderBy(['name' => SORT_ASC]);
     }
 
@@ -1392,4 +1451,16 @@ class AssetTransforms extends Component
             $this->queueSourceForDeletingIfNecessary($imageSource);
         }
     }
+
+    /**
+     * Gets a transform's record by uid.
+     *
+     * @param string $uid
+     * @return AssetTransformRecord
+     */
+    private function _getTransformRecord(string $uid): AssetTransformRecord
+    {
+        return AssetTransformRecord::findOne(['uid' => $uid]) ?? new AssetTransformRecord();
+    }
+
 }

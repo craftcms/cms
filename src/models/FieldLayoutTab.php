@@ -46,6 +46,11 @@ class FieldLayoutTab extends Model
     public $sortOrder;
 
     /**
+     * @var string|null UID
+     */
+    public $uid;
+
+    /**
      * @var FieldLayout|null
      */
     private $_layout;
@@ -63,11 +68,11 @@ class FieldLayoutTab extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'layoutId'], 'number', 'integerOnly' => true],
-            [['name'], 'string', 'max' => 255],
-            [['sortOrder'], 'string', 'max' => 4],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'layoutId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name'], 'string', 'max' => 255];
+        $rules[] = [['sortOrder'], 'string', 'max' => 4];
+        return $rules;
     }
 
     /**

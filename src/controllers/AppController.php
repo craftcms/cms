@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
-use craft\errors\MigrationException;
+use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -72,8 +72,8 @@ class AppController extends Controller
         $this->requireAcceptsJson();
 
         // Require either the 'performUpdates' or 'utility:updates' permission
-        $user = Craft::$app->getUser();
-        if (!$user->checkPermission('performUpdates') && !$user->checkPermission('utility:updates')) {
+        $userSession = Craft::$app->getUser();
+        if (!$userSession->checkPermission('performUpdates') && !$userSession->checkPermission('utility:updates')) {
             throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
 
@@ -85,6 +85,7 @@ class AppController extends Controller
 
         $allowUpdates = (
             Craft::$app->getConfig()->getGeneral()->allowUpdates &&
+            Craft::$app->getConfig()->getGeneral()->allowAdminChanges &&
             Craft::$app->getUser()->checkPermission('performUpdates')
         );
 
@@ -101,11 +102,13 @@ class AppController extends Controller
             ];
 
             $pluginsService = Craft::$app->getPlugins();
-            foreach ($updates->plugins as $handle => $update) {
-                if (($plugin = $pluginsService->getPlugin($handle)) !== null) {
-                    /** @var Plugin $plugin */
-                    $res['updates']['plugins'][] = $this->_transformUpdate($allowUpdates, $update, $handle, $plugin->name);
+            foreach ($updates->plugins as $pluginHandle => $pluginUpdate) {
+                try {
+                    $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
+                } catch (InvalidPluginException $e) {
+                    continue;
                 }
+                $res['updates']['plugins'][] = $this->_transformUpdate($allowUpdates, $pluginUpdate, $pluginHandle, $pluginInfo['name']);
             }
         }
 
@@ -113,10 +116,12 @@ class AppController extends Controller
     }
 
     /**
-     * Creates a DB backup (if configured to do so) and runs any pending Craft, plugin, & content migrations in one go.
+     * Creates a DB backup (if configured to do so), runs any pending Craft,
+     * plugin, & content migrations, and syncs `project.yaml` changes in one go.
      *
-     * This action can be used as a post-deploy webhook with site deployment services (like [DeployBot](https://deploybot.com/))
-     * to minimize site downtime after a deployment.
+     * This action can be used as a post-deploy webhook with site deployment
+     * services (like [DeployBot](https://deploybot.com/)) to minimize site
+     * downtime after a deployment.
      *
      * @throws ServerErrorException if something went wrong
      */
@@ -144,7 +149,8 @@ class AppController extends Controller
         Craft::$app->enableMaintenanceMode();
 
         // Backup the DB?
-        $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $backup = $generalConfig->getBackupOnUpdate();
         if ($backup) {
             try {
                 $backupPath = $db->backup();
@@ -154,13 +160,26 @@ class AppController extends Controller
             }
         }
 
-        // Run the migrations
+        $transaction = $db->beginTransaction();
+
         try {
+            // Run the migrations
             $updatesService->runMigrations($handles);
-        } catch (MigrationException $e) {
+
+            // Sync project.yaml?
+            if ($generalConfig->useProjectConfigFile) {
+                Craft::$app->getProjectConfig()->applyYamlChanges();
+            }
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+
+            // MySQL may have implicitly committed the transaction
+            $restored = $db->getIsPgsql();
+
             // Do we have a backup?
-            $restored = false;
-            if (!empty($backupPath)) {
+            if (!$restored && !empty($backupPath)) {
                 // Attempt a restore
                 try {
                     $db->restore($backupPath);
@@ -332,11 +351,14 @@ class AppController extends Controller
                 if (isset($pluginLicenseInfo['plugin'])) {
                     $pluginInfo = $pluginLicenseInfo['plugin'];
                     $result[$pluginInfo['handle']] = [
+                        'edition' => $pluginLicenseInfo['edition'],
+                        'isComposerInstalled' => false,
                         'isInstalled' => false,
+                        'isEnabled' => false,
                         'licenseKey' => $pluginLicenseInfo['key'],
+                        'licensedEdition' => null,
                         'licenseKeyStatus' => LicenseKeyStatus::Valid,
-                        'hasIssues' => false,
-                        'licenseStatusMessage' => null,
+                        'licenseIssues' => [],
                         'name' => $pluginInfo['name'],
                         'description' => $pluginInfo['shortDescription'],
                         'iconUrl' => $pluginInfo['icon']['url'] ?? $defaultIconUrl,
@@ -354,11 +376,17 @@ class AppController extends Controller
         $info = Craft::$app->getPlugins()->getAllPluginInfo();
         foreach ($info as $handle => $pluginInfo) {
             $result[$handle] = [
-                'isInstalled' => true,
+                'isComposerInstalled' => true,
+                'isInstalled' => $pluginInfo['isInstalled'],
+                'isEnabled' => $pluginInfo['isEnabled'],
+                'hasMultipleEditions' => $pluginInfo['hasMultipleEditions'],
+                'edition' => $pluginInfo['edition'],
                 'licenseKey' => $pluginInfo['licenseKey'],
+                'licensedEdition' => $pluginInfo['licensedEdition'],
                 'licenseKeyStatus' => $pluginInfo['licenseKeyStatus'],
-                'hasIssues' => $pluginInfo['hasIssues'],
-                'licenseStatusMessage' => $pluginInfo['licenseStatusMessage'],
+                'licenseIssues' => $pluginInfo['licenseIssues'],
+                'isTrial' => $pluginInfo['isTrial'],
+                'upgradeAvailable' => $pluginInfo['upgradeAvailable'],
             ];
         }
 
@@ -391,9 +419,9 @@ class AppController extends Controller
         $info = $pluginsService->getPluginInfo($handle);
         return $this->asJson([
             'licenseKey' => $info['licenseKey'],
+            'licensedEdition' => $info['licensedEdition'],
             'licenseKeyStatus' => $info['licenseKeyStatus'],
-            'hasIssues' => $info['hasIssues'],
-            'licenseStatusMessage' => $info['licenseStatusMessage'],
+            'licenseIssues' => $info['licenseIssues'],
         ]);
     }
 
@@ -428,7 +456,7 @@ class AppController extends Controller
             $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
         } else {
             if ($update->status === Update::STATUS_BREAKPOINT) {
-                $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.</p>', [
+                $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
                     'update' => $name . ' ' . ($update->getLatest()->version ?? '')
                 ]);
             }

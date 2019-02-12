@@ -47,6 +47,11 @@ class TagGroup extends Model
      */
     public $fieldLayoutId;
 
+    /**
+     * @var int|null Field layout ID
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 
@@ -79,13 +84,13 @@ class TagGroup extends Model
      */
     public function rules()
     {
-        return [
-            [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true],
-            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['name', 'handle'], UniqueValidator::class, 'targetClass' => TagGroupRecord::class],
-            [['name', 'handle'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
+        $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
+        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => TagGroupRecord::class];
+        $rules[] = [['name', 'handle'], 'required'];
+        $rules[] = [['name', 'handle'], 'string', 'max' => 255];
+        return $rules;
     }
 
     /**

@@ -9,9 +9,11 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\elements\User;
+use craft\helpers\Install as InstallHelper;
 use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
+use yii\base\Exception;
 use yii\console\Controller;
 use yii\console\ExitCode;
 use yii\helpers\Console;
@@ -122,9 +124,20 @@ class InstallController extends Controller
         $username = $this->username ?: $this->prompt('Username:', ['validator' => [$this, 'validateUsername'], 'default' => 'admin']);
         $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => [$this, 'validateEmail']]);
         $password = $this->password ?: $this->_passwordPrompt();
-        $siteName = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'validator' => [$this, 'validateSiteName']]);
-        $siteUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => '@web', 'validator' => [$this, 'validateSiteUrl']]);
-        $language = $this->language ?: $this->prompt('Site language:', ['validator' => [$this, 'validateLanguage'], 'default' => 'en-US']);
+        $siteName = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'default' => InstallHelper::defaultSiteName(), 'validator' => [$this, 'validateSiteName']]);
+        $siteUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => InstallHelper::defaultSiteUrl(), 'validator' => [$this, 'validateSiteUrl']]);
+        $language = $this->language ?: $this->prompt('Site language:', ['default' => InstallHelper::defaultSiteLanguage(), 'validator' => [$this, 'validateLanguage']]);
+
+        // Try to save the site URL to a DEFAULT_SITE_URL environment variable
+        // if it's not already set to an alias or environment variable
+        if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$') {
+            try {
+                Craft::$app->getConfig()->setDotEnvVar('DEFAULT_SITE_URL', $siteUrl);
+                $siteUrl = '$DEFAULT_SITE_URL';
+            } catch (Exception $e) {
+                // that's fine, we'll just store the entered URL
+            }
+        }
 
         $site = new Site([
             'name' => $siteName,

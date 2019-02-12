@@ -330,8 +330,8 @@ class UrlHelper
     {
         try {
             $currentSite = Craft::$app->getSites()->getCurrentSite();
-            if ($currentSite->baseUrl) {
-                return rtrim(Craft::getAlias($currentSite->baseUrl), '/') . '/';
+            if (($baseUrl = $currentSite->getBaseUrl()) !== null) {
+                return $baseUrl;
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating

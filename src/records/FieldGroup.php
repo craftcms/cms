@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -30,7 +31,7 @@ class FieldGroup extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%fieldgroups}}';
+        return Table::FIELDGROUPS;
     }
 
     /**

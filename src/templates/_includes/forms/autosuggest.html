@@ -1,0 +1,118 @@
+{% do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
+
+{% if (suggestEnvVars ?? false) and suggestions is not defined %}
+    {% set suggestions = craft.cp.getEnvSuggestions(suggestAliases ?? false) %}
+{% endif %}
+
+{%- set id = (id is defined and id ? id : 'autosuggest'~random()) %}
+{%- set containerId = id ~ '-container' %}
+
+{%- set class = [
+    'text',
+    (class is defined and class ? class : null),
+    (size is defined and size ? null : 'fullwidth')
+]|filter|join(' ') %}
+
+<div id="{{ containerId }}" class="autosuggest-container">
+    {% verbatim %}
+    <vue-autosuggest
+            :suggestions="filteredOptions"
+            :getSuggestionValue="getSuggestionValue"
+            :input-props="inputProps"
+            :limit="limit"
+            @selected="onSelected">
+        <template slot-scope="{suggestion}">
+            {{suggestion.item.name || suggestion.item}}
+            <span v-if="suggestion.item.hint" class="light">– {{suggestion.item.hint}}</span>
+        </template>
+    </vue-autosuggest>
+    {% endverbatim %}
+</div>
+
+{% js %}
+new Vue({
+    el: "#{{ containerId|namespaceInputId|e('js') }}",
+
+    data() {
+        return {
+            selected: '',
+            filteredOptions: [],
+            suggestions: {{ suggestions|json_encode|raw }},
+            inputProps: {
+                class: "{{ class }}",
+                initialValue: "{{ (value ?? '')|e('js') }}",
+                onInputChange: this.onInputChange,
+                style: "{{ (style ?? '')|e('js') }}",
+                id: "{{ id|namespaceInputId|e('js') }}",
+                name: "{{ (name ?? '')|namespaceInputName|e('js') }}",
+                size: "{{ (size ?? '')|e('js') }}",
+                maxlength: "{{ (maxlength ?? '')|e('js') }}",
+                autofocus: {{ (autofocus ?? false) ? 'true' : 'false' }},
+                title: "{{ (title ?? '')|e('js') }}",
+                placeholder: "{{ (placeholder ?? '')|e('js') }}"
+            },
+            limit: {{ limit ?? 5 }}
+        };
+    },
+
+    methods: {
+        onInputChange(text) {
+            if (text === '' || text === undefined) {
+                this.filteredOptions = this.suggestions;
+                return;
+            }
+
+            text = text.toLowerCase();
+
+            var filtered = [];
+            var i, j, sectionFilter, item, name;
+            var that = this;
+
+            for (i = 0; i < this.suggestions.length; i++) {
+                sectionFilter = [];
+                for (j = 0; j < this.suggestions[i].data.length; j++) {
+                    item = this.suggestions[i].data[j];
+                    if (
+                        (item.name || item).toLowerCase().indexOf(text) !== -1 ||
+                        (item.hint && item.hint.toLowerCase().indexOf(text) !== -1)
+                    ) {
+                        sectionFilter.push(item.name ? item : {name: item});
+                    }
+                }
+                if (sectionFilter.length) {
+                    sectionFilter.sort(function(a, b) {
+                        var scoreA = that.scoreItem(a, text);
+                        var scoreB = that.scoreItem(b, text);
+                        if (scoreA === scoreB) {
+                            return 0;
+                        }
+                        return scoreA < scoreB ? 1 : -1;
+                    });
+                    filtered.push({
+                        label: this.suggestions[i].label || null,
+                        data: sectionFilter.slice(0, this.limit)
+                    });
+                }
+            }
+
+            this.filteredOptions = filtered;
+        },
+        scoreItem(item, text) {
+            var score = 0;
+            if (item.name.toLowerCase().indexOf(text) !== -1) {
+                score += 100 + text.length / item.name.length;
+            }
+            if (item.hint && item.hint.toLowerCase().indexOf(text) !== -1) {
+                score += text.length / item.hint.length;
+            }
+            return score;
+        },
+        onSelected(option) {
+            this.selected = option.item;
+        },
+        getSuggestionValue(suggestion) {
+            return suggestion.item.name || suggestion.item;
+        }
+    }
+})
+{% endjs %}

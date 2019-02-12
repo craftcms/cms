@@ -12,10 +12,13 @@ use Craft;
 use craft\base\Plugin;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
+use craft\helpers\App;
 use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
+use craft\web\Response as CraftResponse;
 use yii\base\Exception;
+use yii\base\Exception as YiiException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -31,6 +34,7 @@ abstract class BaseUpdaterController extends Controller
     // Constants
     // =========================================================================
 
+    const ACTION_PRECHECK = 'precheck';
     const ACTION_RECHECK_COMPOSER = 'recheck-composer';
     const ACTION_COMPOSER_INSTALL = 'composer-install';
     const ACTION_COMPOSER_REMOVE = 'composer-remove';
@@ -98,7 +102,7 @@ abstract class BaseUpdaterController extends Controller
         $view->registerAssetBundle(UpdaterAsset::class);
 
         $this->data = $this->initialData();
-        $state = $this->initialState();
+        $state = $this->realInitialState();
         $state['data'] = $this->_hashedData();
         $idJs = Json::encode($this->id);
         $stateJs = Json::encode($state);
@@ -110,13 +114,59 @@ abstract class BaseUpdaterController extends Controller
     }
 
     /**
+     * Ensures that PHP’s memory_limit and max_execution_time settings are high enough to run Composer.
+     *
+     * @return Response
+     */
+    public function actionPrecheck(): Response
+    {
+        $postState = $this->data['postPrecheckState'];
+
+        if (!App::testIniSet()) {
+            $errors = [];
+
+            $timeLimit = (int)trim(ini_get('max_execution_time'));
+            if ($timeLimit !== 0 && $timeLimit < 120) {
+                $errors[] = Craft::t('app', '{name} should be at least {value}.', [
+                    'name' => '`max_execution_time`',
+                    'value' => '`120`',
+                ]);
+            }
+
+            $memoryLimit = App::phpConfigValueInBytes('memory_limit');
+            if ($memoryLimit !== -1 && $memoryLimit < 1024 * 1024 * 256) {
+                $errors[] = Craft::t('app', '{name} should be at least {value}.', [
+                    'name' => '`memory_limit`',
+                    'value' => '`256M`',
+                ]);
+            }
+
+            if (!empty($errors)) {
+                $error = Craft::t('app', 'Please fix the following in your {file} file before proceeding:', ['file' => '`php.ini`']) .
+                    "\n\n" . implode("\n\n", $errors);
+
+                return $this->send([
+                    'error' => $error,
+                    'options' => [
+                        ['label' => Craft::t('app', 'Learn how'), 'url' => 'https://craftcms.com/guides/php-ini'],
+                        $this->actionOption(Craft::t('app', 'Check again'), self::ACTION_PRECHECK),
+                        $this->actionOption(Craft::t('app', 'Continue anyway'), $postState['nextAction'], $postState),
+                    ]
+                ]);
+            }
+        }
+
+        return $this->send($postState);
+    }
+
+    /**
      * Rechecks for composer.json, if it couldn't be found in the initial state.
      *
      * @return Response
      */
     public function actionRecheckComposer(): Response
     {
-        return $this->send($this->initialState());
+        return $this->send($this->realInitialState());
     }
 
     /**
@@ -243,6 +293,29 @@ abstract class BaseUpdaterController extends Controller
     abstract protected function initialState(): array;
 
     /**
+     * Returns the real initial state for the updater JS.
+     *
+     * @param bool $force Whether to go through with the update even if Maintenance Mode is enabled
+     * @return array
+     */
+    final protected function realInitialState(bool $force = false): array
+    {
+        $state = $this->initialState($force);
+
+        // If there's nothing to do here, then no precheck is needed
+        if (!isset($state['nextAction'])) {
+            return $state;
+        }
+
+        // Store the "initial" state in a postPrecheckState, and make the real initial state the precheck
+        $this->data['postPrecheckState'] = $state;
+        return [
+            'nextAction' => self::ACTION_PRECHECK,
+            'status' => $this->actionStatus(self::ACTION_PRECHECK),
+        ];
+    }
+
+    /**
      * Returns the state data for after [[actionComposerInstall()]] is done.
      *
      * @return array
@@ -343,8 +416,11 @@ abstract class BaseUpdaterController extends Controller
 
         $state['options'] = [
             [
+                'label' => Craft::t('app', 'Troubleshoot'),
+                'url' => 'https://craftcms.com/guides/failed-updates',
+            ],
+            [
                 'label' => Craft::t('app', 'Send for help'),
-                'submit' => true,
                 'email' => 'support@craftcms.com',
                 'subject' => 'Composer error',
             ]
@@ -395,6 +471,8 @@ abstract class BaseUpdaterController extends Controller
     protected function actionStatus(string $action): string
     {
         switch ($action) {
+            case self::ACTION_PRECHECK:
+                return Craft::t('app', 'Checking environment…');
             case self::ACTION_RECHECK_COMPOSER:
                 return Craft::t('app', 'Checking…');
             case self::ACTION_COMPOSER_INSTALL:
@@ -473,6 +551,11 @@ abstract class BaseUpdaterController extends Controller
                 $options[] = $this->actionOption($restoreLabel, $restoreAction);
             }
 
+            $options[] = [
+                'label' => Craft::t('app', 'Troubleshoot'),
+                'url' => 'https://craftcms.com/guides/failed-updates',
+            ];
+
             if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
                 /** @var Plugin $plugin */
                 $email = $plugin->developerEmail;
@@ -481,7 +564,6 @@ abstract class BaseUpdaterController extends Controller
 
             $options[] = [
                 'label' => Craft::t('app', 'Send for help'),
-                'submit' => true,
                 'email' => $email,
                 'subject' => $ownerName . ' update failure',
             ];
@@ -498,6 +580,54 @@ abstract class BaseUpdaterController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Attempts to install a plugin by its handle.
+     *
+     * @param string $handle
+     * @return array Array with installation results
+     */
+    protected function installPlugin(string $handle): array
+    {
+        // Prevent the plugin from sending any headers, etc.
+        $realResponse = Craft::$app->getResponse();
+        $tempResponse = new CraftResponse(['isSent' => true]);
+        Craft::$app->set('response', $tempResponse);
+
+        try {
+            Craft::$app->getPlugins()->installPlugin($handle);
+            $success = true;
+            $errorDetails = null;
+        } catch (\Throwable $e) {
+            $success = false;
+            Craft::$app->set('response', $realResponse);
+            $migration = $output = null;
+
+            if ($e instanceof MigrateException) {
+                /** @var \Throwable $e */
+                $e = $e->getPrevious();
+                if ($e instanceof MigrationException) {
+                    /** @var \Throwable|null $previous */
+                    $previous = $e->getPrevious();
+                    $migration = $e->migration;
+                    $output = $e->output;
+                    $e = $previous ?? $e;
+                }
+            }
+
+            Craft::error('Plugin installation failed: ' . $e->getMessage(), __METHOD__);
+
+            $eName = $e instanceof YiiException ? $e->getName() : get_class($e);
+            $errorDetails = $eName . ': ' . $e->getMessage() .
+                ($migration ? "\n\nMigration: " . get_class($migration) : '') .
+                ($output ? "\n\nOutput:\n\n" . $output : '');
+        }
+
+        // Put the real response back
+        Craft::$app->set('response', $realResponse);
+
+        return [$success, $tempResponse, $errorDetails];
     }
 
     // Private Methods

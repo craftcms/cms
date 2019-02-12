@@ -91,7 +91,6 @@ class PlainText extends Field implements PreviewableFieldInterface
         $rules = parent::rules();
         $rules[] = [['initialRows', 'charLimit'], 'integer', 'min' => 1];
         $rules[] = [['charLimit'], 'validateCharLimit'];
-
         return $rules;
     }
 

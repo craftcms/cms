@@ -9,6 +9,7 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\queue\BaseJob;
 
 /**
@@ -37,7 +38,7 @@ class LocalizeRelations extends BaseJob
     {
         $relations = (new Query())
             ->select(['id', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'])
-            ->from(['{{%relations}}'])
+            ->from([Table::RELATIONS])
             ->where([
                 'fieldId' => $this->fieldId,
                 'sourceSiteId' => null
@@ -55,7 +56,7 @@ class LocalizeRelations extends BaseJob
             // Set the existing relation to the primary site
             $db->createCommand()
                 ->update(
-                    '{{%relations}}',
+                    Table::RELATIONS,
                     ['sourceSiteId' => $primarySiteId],
                     ['id' => $relation['id']])
                 ->execute();
@@ -64,7 +65,7 @@ class LocalizeRelations extends BaseJob
             foreach ($allSiteIds as $siteId) {
                 $db->createCommand()
                     ->insert(
-                        '{{%relations}}',
+                        Table::RELATIONS,
                         [
                             'fieldid' => $this->fieldId,
                             'sourceId' => $relation['sourceId'],

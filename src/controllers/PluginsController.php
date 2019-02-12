@@ -43,14 +43,38 @@ class PluginsController extends Controller
     public function actionInstallPlugin(): Response
     {
         $this->requirePostRequest();
-        $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
 
-        if (Craft::$app->getPlugins()->installPlugin($pluginHandle)) {
+        $request = Craft::$app->getRequest();
+        $pluginHandle = $request->getRequiredBodyParam('pluginHandle');
+        $edition = $request->getBodyParam('edition');
+
+        if (Craft::$app->getPlugins()->installPlugin($pluginHandle, $edition)) {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin installed.'));
         } else {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t install plugin.'));
         }
 
+        return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * Installs a plugin.
+     *
+     * @return Response
+     */
+    public function actionSwitchEdition(): Response
+    {
+        $this->requirePostRequest();
+        $request = Craft::$app->getRequest();
+        $pluginHandle = $request->getRequiredBodyParam('pluginHandle');
+        $edition = $request->getRequiredBodyParam('edition');
+        Craft::$app->getPlugins()->switchEdition($pluginHandle, $edition);
+
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
+            return $this->asJson(['success' => true]);
+        }
+
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin edition changed.'));
         return $this->redirectToPostedUrl();
     }
 

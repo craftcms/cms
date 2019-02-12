@@ -41,16 +41,14 @@
             }) }}
 
             <div id="url-field" class="{% if not volume.hasUrls %}hidden{% endif %}">
-                {{ forms.textField({
+                {{ forms.autosuggestField({
                     label: "Base URL"|t('app'),
-                    instructions: "The base URL to the assets in this volume. An absolute URL ({ex1}) or protocol-relative URL ({ex2}) is recommended. It can begin with an alias, such as {ex3}."|t('app', {
-                        ex1: '“`http://example.com/path/to/folder`”',
-                        ex2: '“`//example.com/path/to/folder”`',
-                        ex3: '`@web`'
-                    }),
+                    instructions: "The base URL to the assets in this volume."|t('app'),
                     id: 'url',
                     class: 'ltr volume-url',
                     name: 'url',
+                    suggestEnvVars: true,
+                    suggestAliases: true,
                     value: (volume is defined ? volume.url : null),
                     errors: (volume is defined ? volume.getErrors('url') : null),
                     required: true,

@@ -10,7 +10,7 @@ use yii\base\Event;
 public function init()
 {
     parent::init();
-    
+
     Event::on(
         UserPermissions::class,
         UserPermissions::EVENT_REGISTER_PERMISSIONS,

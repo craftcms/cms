@@ -3,6 +3,17 @@
 In addition to the template functions that [Twig comes with](https://twig.symfony.com/doc/functions/index.html), Craft provides a few of its own:
 
 
+## `actionInput( actionPath )`
+
+A shortcut for outputting a hidden input used to route a POST request to a particular controller and action. This is effectively the same as writing `<input type="hidden" name="action" value="controller/action-name">` directly into a template.
+
+```twig
+<form method="POST">
+    {{ actionInput('users/save-user') }}
+    <!-- ... -->
+</form>
+```
+
 ## `alias( string )`
 
 Passes a string through [Craft::getAlias()](api:yii\BaseYii::getAlias()), which will check if the string begins with an [alias](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases). (See [Configuration](../config/README.md#aliases) for more info.)
@@ -69,6 +80,10 @@ Outputs any scripts and styles that were registered for the “end body” posit
 </body>
 ```
 
+## `expression( expression, params, config )`
+
+Creates and returns a new <api:yii\db\Expression> object, for use in database queries.
+
 ## `floor( num )`
 
 Rounds a number down.
@@ -85,15 +100,27 @@ Returns the value of an environment variable.
 {{ getenv('MAPS_API_KEY') }}
 ```
 
+## `parseEnv( str )`
+
+Checks if a string references an environment variable (`$VARIABLE_NAME`) and/or an alias (`@aliasName`), and returns the referenced value.
+
 ## `head()`
 
-Outputs any scripts and styles that were registered for the “head” position. It should be placed right before your `</head>` tag. 
+Outputs any scripts and styles that were registered for the “head” position. It should be placed right before your `</head>` tag.
 
 ```twig
 <head>
     <title>{{ siteName }}</title>
     {{ head() }}
 </head>
+```
+
+## `plugin( handle )`
+
+Returns a plugin instance by its handle, or `null` if no plugin is installed and enabled with that handle.
+
+```twig
+{{ plugin('commerce').version }}
 ```
 
 ## `redirectInput( url )`
@@ -166,7 +193,7 @@ The `siteUrl()` function has the following arguments:
 * **`scheme`** – Which scheme the URL should use (`'http'` or `'https'`). The default value depends on whether the current request is served over SSL or not. If not, then the scheme in your Site URL will be used; if so, then `https` will be used.
 * **`siteId`** – The ID of the site that the URL should point to. By default the current site will be used.
 
-## `svg( svg, sanitize, namespace )`
+## `svg( svg, sanitize, namespace, class )`
 
 Outputs an SVG document.
 
@@ -198,6 +225,12 @@ By default, if you pass an asset or raw markup into the function, the SVG will b
 
 ```twig
 {{ svg(image, sanitize=false, namespace=false) }}
+```
+
+You can also specify a custom class name that should be added to the root `<svg>` node using the `class` argument:
+
+```twig
+{{ svg('@webroot/icons/lemon.svg', class='lemon-icon') }}
 ```
 
 ## `url( path, params, scheme, mustShowScriptName )`

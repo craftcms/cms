@@ -8,8 +8,8 @@ $_SERVER['REMOTE_PORT'] = 654321;
 
 $basePath = dirname(dirname(dirname(__DIR__)));
 
-$srcPath = $basePath.'/src';
-$vendorPath = $basePath.'/vendor';
+$srcPath = $basePath . '/src';
+$vendorPath = $basePath . '/vendor';
 
 // Load the config
 $config = ArrayHelper::merge(
@@ -18,12 +18,12 @@ $config = ArrayHelper::merge(
             'config' => [
                 'class' => Config::class,
                 'configDir' => __DIR__,
-                'appDefaultsDir' => $srcPath.'/config/defaults',
+                'appDefaultsDir' => $srcPath . '/config/defaults',
             ],
         ],
     ],
-    require $srcPath.'/config/app.php',
-    require $srcPath.'/config/app.web.php'
+    require $srcPath . '/config/app.php',
+    require $srcPath . '/config/app.web.php'
 );
 
 $config['vendorPath'] = $vendorPath;
@@ -38,6 +38,6 @@ $config = ArrayHelper::merge($config, [
 
 return ArrayHelper::merge($config, [
     'class' => craft\web\Application::class,
-    'id'=>'craft-test',
+    'id' => 'craft-test',
     'basePath' => $srcPath
 ]);

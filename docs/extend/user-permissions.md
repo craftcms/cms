@@ -10,7 +10,7 @@ use yii\base\Event;
 public function init()
 {
     parent::init();
-    
+
     Event::on(
         UserPermissions::class,
         UserPermissions::EVENT_REGISTER_PERMISSIONS,
@@ -76,4 +76,4 @@ You can also see if any given user has a permission by calling <api:craft\elemen
 if ($user->can('stayUpLate')) {
     // ...
 }
-``` 
+```

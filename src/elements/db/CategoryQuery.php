@@ -10,6 +10,7 @@ namespace craft\elements\db;
 use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\db\Table;
 use craft\elements\Category;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -140,7 +141,7 @@ class CategoryQuery extends ElementQuery
         } else if ($value !== null) {
             $this->groupId = (new Query())
                 ->select(['id'])
-                ->from('{{%categorygroups}}')
+                ->from(Table::CATEGORYGROUPS)
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         } else {
@@ -242,7 +243,7 @@ class CategoryQuery extends ElementQuery
             if ($this->structureId === null && (!is_array($this->groupId) || count($this->groupId) === 1)) {
                 $structureId = (new Query())
                     ->select(['structureId'])
-                    ->from(['{{%categorygroups}}'])
+                    ->from([Table::CATEGORYGROUPS])
                     ->where(Db::parseParam('id', $this->groupId))
                     ->scalar();
                 $this->structureId = $structureId ? (int)$structureId : false;

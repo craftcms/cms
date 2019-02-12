@@ -33,7 +33,7 @@ If you do install the Redactor plugin, you will need to ensure that your Redacto
 
 The “Position Select” field type has been removed from Craft 3. If you had any Position Select fields, they will be converted to Dropdown fields, with all the same options.
 
-If you miss Position Select, you can try installing the [Position Fieldtype](https://github.com/Rias500/craft-position-fieldtype) plugin, which brings it back. 
+If you miss Position Select, you can try installing the [Position Fieldtype](https://github.com/Rias500/craft-position-fieldtype) plugin, which brings it back.
 
 ## Remote Volumes
 
@@ -64,7 +64,7 @@ The following config settings have been deprecated in Craft 3, and will be compl
 
 *<sup>2</sup> `defaultFileMode` is now `null` by default, meaning it will be determined by the current environment.*
 
-*<sup>3</sup> Settings that supported Environment Variables in Craft 2 now support [Aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) in Craft 3. Site URL and Local volume settings will automatically be converted to the new Alias syntax when updating to Craft 3 (`@variable` instead of `{variable}`).
+*<sup>3</sup> Settings that supported values defined by your `environmentVariables` config setting in Craft 2 can now be set to system environment variables and aliases in Craft 3. (See [Environmental Configuration](config/environments.md) to learn more about those.) Site URL and Local volume settings will automatically be converted to the new `@alias/sub/path` syntax when updating to Craft 3.
 
 *<sup>4</sup> `securityKey` is no longer optional. If you haven’t set it yet, set it to the value in `storage/runtime/validation.key` (if the file exists). The auto-generated `validation.key` file fallback will be removed in Craft 4.*
 
@@ -235,9 +235,9 @@ The following template functions have been deprecated in Craft 3, and will be co
 | `getHeadHtml()`                                         | `head()`
 | `getFootHtml()`                                         | `endBody()`
 | `getTranslations()`                                     | `view.getTranslations()|json_encode|raw`
-| `craft.categoryGroups.getAllGroupIds()`                 | `craft.app.categoryGroups.allGroupIds`
+| `craft.categoryGroups.getAllGroupIds()`                 | `craft.app.categories.allGroupIds`
 | `craft.categoryGroups.getEditableGroupIds()`            | `craft.app.categories.editableGroupIds`
-| `craft.categoryGroups.getAllGroups()`                   | `craft.app.categoryGroups.allGroups`
+| `craft.categoryGroups.getAllGroups()`                   | `craft.app.categories.allGroups`
 | `craft.categoryGroups.getEditableGroups()`              | `craft.app.categories.editableGroups`
 | `craft.categoryGroups.getTotalGroups()`                 | `craft.app.categories.totalGroups`
 | `craft.categoryGroups.getGroupById(id)`                 | `craft.app.categories.getGroupById(id)`
@@ -431,7 +431,7 @@ Old:
 New:
 {% set query = craft.entries()
     .relatedTo(['and', 1, 2, 3]) %}
-``` 
+```
 
 #### Cloning Element Queries
 
@@ -508,7 +508,7 @@ Old:
 
 New:
 {% set total = craft.entries.section('news').count() %}
-``` 
+```
 
 Alternatively, if you already needed to fetch the actual query results, and you didn’t set the `offset` or `limit` params, you can use the [length](https://twig.symfony.com/doc/2.x/filters/length.html) filter to find the total size of the results array without the need for an extra database query.
 
@@ -527,7 +527,7 @@ In most cases you can replace calls to `.last()` with `.inReverse().one()` and g
 
 ```twig
 {# Channel entries are ordered by `postDate DESC` by default, so this will swap
-   it to `postDate ASC`, returning the oldest News entry: #} 
+   it to `postDate ASC`, returning the oldest News entry: #}
 
 {% set oldest = craft.entries()
     .section('news')

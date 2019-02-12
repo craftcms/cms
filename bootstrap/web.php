@@ -39,4 +39,4 @@ date_default_timezone_set('UTC');
 
 $appType = 'web';
 
-return require __DIR__.'/bootstrap.php';
+return require __DIR__ . '/bootstrap.php';

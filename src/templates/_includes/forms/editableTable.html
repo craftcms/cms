@@ -16,6 +16,12 @@
     <thead>
         <tr>
             {% for col in cols %}
+                {%- switch col.type %}
+                    {%- case 'time' %}
+                        {%- do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') %}
+                    {%- case 'template' %}
+                        {%- do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
+                {%- endswitch %}
                 <th scope="col" class="{{ col.class ?? '' }}">
                     {%- if col.heading is defined and col.heading %}{{ col.heading }}{% else %}&nbsp;{% endif %}
                     {%- if col.info is defined -%}
@@ -41,7 +47,7 @@
                     {% else %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
-                        {% set textual = (col.type in ['color', 'date', 'multiline', 'number', 'singleline', 'time']) %}
+                        {% set textual = (col.type in ['color', 'date', 'multiline', 'number', 'singleline', 'template', 'time']) %}
                         {% set isCode = col.code is defined or col.type == 'color' %}
                         <td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
                             {%- switch col.type -%}
@@ -87,6 +93,13 @@
                                         value: value,
                                         disabled: static
                                     } only %}
+                                {%- case 'template' -%}
+                                    {% include "_includes/forms/autosuggest" with {
+                                        name: cellName,
+                                        suggestions: craft.cp.getTemplateSuggestions(),
+                                        value: value,
+                                        disabled: static
+                                    } only %}
                                 {%- default -%}
                                     <textarea name="{{ cellName }}" rows="1"{% if static %} disabled{% endif %}{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
                             {%- endswitch -%}
@@ -113,6 +126,7 @@
     {% js %}
         new Craft.EditableTable("{{ jsId }}", "{{ jsName }}", {{ jsCols|raw }}, {
             defaultValues: {{ defaultValues ? defaultValues|json_encode|raw : '{}' }},
+            staticRows: {{ staticRows ? 'true' : 'false' }},
             minRows: {{ minRows ? minRows : 'null' }},
             maxRows: {{ maxRows ? maxRows : 'null' }}
         });

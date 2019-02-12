@@ -28,6 +28,26 @@ When you double-click on a related user, a HUD will appear where you can edit th
 
 ## Templating
 
+### Querying Elements with Users Fields
+
+When [querying for elements](dev/element-queries/README.md) that have a Users field, you can filter the results based on the Users field data using a query param named after your field’s handle.
+
+Possible values include:
+
+| Value | Fetches elements…
+| - | -
+| `':empty:'` | that don’t have any related users.
+| `':notempty:'` | that have at least one related user.
+
+```twig
+{# Fetch entries with a related user #}
+{% set entries = craft.entries()
+    .<FieldHandle>(':notempty:')
+    .all() %}
+```
+
+### Working with Users Field Data
+
 If you have an element with a Users field in your template, you can access its related users using your Users field’s handle:
 
 ```twig
@@ -35,8 +55,6 @@ If you have an element with a Users field in your template, you can access its r
 ```
 
 That will give you a [user query](dev/element-queries/user-queries.md), prepped to output all of the related users for the given field.
-
-### Examples
 
 To loop through all of the related users, call [all()](api:craft\db\Query::all()) and then loop over the results:
 
@@ -76,7 +94,7 @@ You can set [parameters](dev/element-queries/user-queries.md#parameters) on the 
     .all() %}
 ```
 
-### See Also
+## See Also
 
 * [User Queries](dev/element-queries/user-queries.md)
 * <api:craft\elements\User>

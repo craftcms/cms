@@ -1,7 +1,7 @@
 <template>
     <step>
         <template slot="header">
-            <h1>Cart</h1>
+            <h1>{{ "Cart"|t('app') }}</h1>
         </template>
 
         <template slot="main">
@@ -9,52 +9,94 @@
 
             <template v-if="cart">
                 <template v-if="cartItems.length">
-                    <table class="data fullwidth">
+                    <table class="cart-data fullwidth">
                         <thead>
                         <tr>
                             <th></th>
-                            <th>Item</th>
-                            <th></th>
+                            <th>{{ "Item"|t('app') }}</th>
+                            <th>{{ "Updates"|t('app') }}</th>
                             <th></th>
                         </tr>
                         </thead>
+                        <tbody v-for="(item, itemKey) in cartItems" :key="'item' + itemKey">
+                            <tr class="item-details">
+                                <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
+                                    <td class="thin">
+                                        <div class="plugin-icon">
+                                            <img :src="craftLogo" width="40" height="40" />
+                                        </div>
+                                    </td>
+                                    <td class="item-name">
+                                        <strong>Craft CMS</strong>
+                                        <edition-badge :name="item.lineItem.purchasable.name"></edition-badge>
+                                    </td>
+                                </template>
+
+                                <template v-else-if="item.lineItem.purchasable.type === 'plugin-edition'">
+                                    <td class="thin">
+                                        <div class="plugin-icon">
+                                            <img v-if="item.plugin.iconUrl" :src="item.plugin.iconUrl" width="40" height="40" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="item-name">
+                                            <strong>{{ item.plugin.name}}</strong>
+                                            <edition-badge :name="item.lineItem.purchasable.name"></edition-badge>
+                                        </div>
+                                    </td>
+                                </template>
+
+                                <td class="expiry-date">
+                                    <template v-if="item.lineItem.purchasable.type === 'cms-edition' || (item.lineItem.purchasable.type === 'plugin-edition' && item.lineItem.options.licenseKey.substr(0, 4) === 'new:')">
+                                        <select-input v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
+                                    </template>
+
+                                    <div v-if="itemLoading(itemKey)" class="spinner"></div>
+                                </td>
+                                <td class="price">
+                                    <strong>{{ item.lineItem.price|currency }}</strong>
+                                </td>
+                            </tr>
+
+                            <template v-for="(adjustment, adjustmentKey) in item.lineItem.adjustments">
+                                <tr :key="itemKey + 'adjustment-' + adjustmentKey" class="sub-item">
+                                    <td class="blank-cell"></td>
+                                    <td class="blank-cell"></td>
+                                    <td>
+                                        <template v-if="adjustment.sourceSnapshot.type === 'extendedUpdates'">
+                                            {{"Updates until {date}"|t('app', {date: $options.filters.formatDate(adjustment.sourceSnapshot.expiryDate)})}}
+                                        </template>
+                                        <template v-else>
+                                            {{adjustment.name}}
+                                        </template>
+                                    </td>
+                                    <td class="price">
+                                        {{adjustment.amount|currency}}
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <tr class="sub-item">
+                                <td class="blank-cell"></td>
+                                <td class="blank-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="price">
+                                    <a role="button" @click="removeFromCart(itemKey)">{{ "Remove"|t('app') }}</a>
+                                </td>
+                            </tr>
+                        </tbody>
+
                         <tbody>
-                        <tr v-for="(item, itemKey) in cartItems">
-                            <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
-                                <td class="thin">
-                                    <div class="plugin-icon">
-                                        <img :src="craftLogo" width="32" height="32" />
-                                    </div>
-                                </td>
-                                <td>Craft {{ item.lineItem.purchasable.name }}</td>
-                            </template>
-
-                            <template v-else="item.lineItem.purchasable.type === 'plugin-edition'">
-                                <td class="thin">
-                                    <div class="plugin-icon">
-                                        <img v-if="item.plugin.iconUrl" :src="item.plugin.iconUrl" height="32" />
-                                    </div>
-                                </td>
-                                <td>
-                                    {{ item.plugin.name}}
-                                </td>
-                            </template>
-
-                            <td class="rightalign">
-                                <strong>{{ item.lineItem.total|currency }}</strong>
-                            </td>
-
-                            <td class="thin"><a class="delete icon" role="button" @click="removeFromCart(itemKey)"></a></td>
-                        </tr>
-                        <tr>
-                            <th class="rightalign" colspan="2">Total Price</th>
-                            <td class="rightalign"><strong>{{ cart.totalPrice|currency }}</strong></td>
-                            <td class="thin"></td>
-                        </tr>
+                            <tr>
+                                <th class="total-price" colspan="3"><strong>{{ "Total Price"|t('app') }}</strong></th>
+                                <td class="total-price"><strong>{{cart.totalPrice|currency}}</strong></td>
+                            </tr>
                         </tbody>
                     </table>
 
-                    <p><a @click="payment()" class="btn submit">{{ "Checkout"|t('app') }}</a></p>
+                    <div class="py-4">
+                        <a @click="payment()" class="btn submit">{{ "Checkout"|t('app') }}</a>
+                    </div>
                 </template>
 
                 <div v-else>
@@ -63,7 +105,6 @@
             </template>
 
             <template v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
-
                 <hr />
 
                 <div v-if="pendingActiveTrials.length > 1" class="right">
@@ -72,33 +113,31 @@
 
                 <h2>{{ "Active Trials"|t('app') }}</h2>
 
-                <table class="data fullwidth">
+                <table class="cart-data">
                     <thead>
                     <tr>
                         <th class="thin"></th>
                         <th>{{ "Plugin Name"|t('app') }}</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    <tr v-for="plugin in pendingActiveTrials">
-                        <template v-if="plugin">
-                            <td class="thin">
-                                <div class="plugin-icon">
-                                    <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
-                                    <div class="default-icon" v-else></div>
-                                </div>
-                            </td>
-                            <td>
-                                {{ plugin.name }}
-                            </td>
-                            <td>
-                                <strong>{{ plugin.editions[0].price|currency }}</strong>
-                            </td>
-                            <td class="thin">
-                                <a class="btn" @click="addToCart(plugin)">{{ "Add to cart"|t('app') }}</a>
-                            </td>
-                        </template>
-                    </tr>
+                    <tbody v-for="(plugin, key) in pendingActiveTrials" :key="key">
+                        <tr>
+                            <template v-if="plugin">
+                                <td class="thin">
+                                    <div class="plugin-icon">
+                                        <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="40" width="40" />
+                                        <div class="default-icon" v-else></div>
+                                    </div>
+                                </td>
+                                <td class="item-name">
+                                    <strong>{{ plugin.name }}</strong>
+
+                                    <edition-badge v-if="activeTrialPluginEditions[plugin.handle] && plugin.editions.length > 1" :name="activeTrialPluginEditions[plugin.handle].name"></edition-badge>
+                                </td>
+                                <td><strong v-if="activeTrialPluginEditions[plugin.handle]">{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
+                                <td class="thin"><a class="btn" @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)">{{ "Add to cart"|t('app') }}</a></td>
+                            </template>
+                        </tr>
                     </tbody>
                 </table>
             </template>
@@ -107,13 +146,23 @@
 </template>
 
 <script>
+    /* global Craft */
+
     import {mapState, mapGetters, mapActions} from 'vuex'
     import Step from '../Step'
+    import EditionBadge from '../../EditionBadge'
 
     export default {
 
+        data() {
+            return {
+                loadingItems: {},
+            }
+        },
+
         components: {
             Step,
+            EditionBadge,
         },
 
         computed: {
@@ -122,16 +171,36 @@
                 cart: state => state.cart.cart,
                 craftLogo: state => state.craft.craftLogo,
                 craftId: state => state.craft.craftId,
+                expiryDateOptions: state => state.pluginStore.expiryDateOptions,
+                pluginLicenseInfo: state => state.craft.pluginLicenseInfo,
             }),
 
             ...mapGetters({
-                activeTrialPlugins: 'activeTrialPlugins',
-                cartItems: 'cartItems',
+                activeTrialPlugins: 'cart/activeTrialPlugins',
+                cartItems: 'cart/cartItems',
+                cartItemsData: 'cart/cartItemsData',
+                getActiveTrialPluginEdition: 'cart/getActiveTrialPluginEdition',
+                activeTrialPluginEditions: 'cart/activeTrialPluginEditions',
+                getPluginEdition: 'pluginStore/getPluginEdition',
+                getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
             }),
+
+            selectedExpiryDates: {
+                get() {
+                    return JSON.parse(JSON.stringify(this.$store.state.cart.selectedExpiryDates))
+                },
+                set(newValue) {
+                    this.$store.commit('cart/updateSelectedExpiryDates', newValue)
+                }
+            },
 
             pendingActiveTrials() {
                 return this.activeTrialPlugins.filter(p => {
                     if (p) {
+                        if(!this.cart) {
+                            return false
+                        }
+
                         return !this.cart.lineItems.find(item => {
                             return item.purchasable.pluginId == p.id
                         })
@@ -143,37 +212,44 @@
 
         methods: {
 
-            ...mapActions([
-                'removeFromCart'
-            ]),
+            ...mapActions({
+                removeFromCart: 'cart/removeFromCart'
+            }),
 
-            addToCart(plugin) {
+            addToCart(plugin, editionHandle) {
                 const item = {
                     type: 'plugin-edition',
                     plugin: plugin.handle,
-                    edition: plugin.editions[0].handle,
-                    autoRenew: false,
-                    cmsLicenseKey: window.cmsLicenseKey,
+                    edition: editionHandle
                 }
 
-                this.$store.dispatch('addToCart', [item])
+                this.$store.dispatch('cart/addToCart', [item])
+                    .catch(response => {
+                        const errorMessage = response.errors && response.errors[0] && response.errors[0].message ? response.errors[0].message : 'Couldn’t add item to cart.';
+                        this.$root.displayError(errorMessage)
+                    })
             },
 
             addAllToCart() {
                 let $store = this.$store
                 let items = []
 
-                this.pendingActiveTrials.forEach(activeTrialPlugin => {
-                    items.push({
+                this.pendingActiveTrials.forEach(plugin => {
+                    const edition = this.getActiveTrialPluginEdition(plugin.handle)
+
+                    const item = {
                         type: 'plugin-edition',
-                        plugin: activeTrialPlugin.handle,
-                        edition: activeTrialPlugin.editions[0].handle,
-                        autoRenew: false,
-                        cmsLicenseKey: window.cmsLicenseKey,
-                    })
+                        plugin: plugin.handle,
+                        edition: edition.handle
+                    }
+
+                    items.push(item)
                 })
 
-                $store.dispatch('addToCart', items)
+                $store.dispatch('cart/addToCart', items)
+                    .catch(() => {
+                        this.$root.displayError(this.$options.filters.t('Couldn’t add all items to the cart.', 'app'))
+                    })
             },
 
             payment() {
@@ -182,9 +258,168 @@
                 } else {
                     this.$root.openModal('identity')
                 }
-            }
+            },
 
+            itemExpiryDateOptions(itemKey) {
+                const item = this.cartItems[itemKey]
+                const renewalPrice = item.lineItem.purchasable.renewalPrice
+
+                let options = []
+                let selectedOption = 0
+
+                this.expiryDateOptions.forEach((option, key) => {
+                    if (option === item.lineItem.options.expiryDate) {
+                        selectedOption = key
+                    }
+                })
+
+                for (let i = 0; i < this.expiryDateOptions.length; i++) {
+                    const expiryDateOption = this.expiryDateOptions[i]
+                    const optionValue = expiryDateOption[0]
+                    const date = Craft.formatDate(expiryDateOption[1])
+                    let label = this.$options.filters.t("Updates until {date}", 'app', {date})
+                    let price = renewalPrice * (i - selectedOption)
+
+                    if (price !== 0) {
+                        let sign = '';
+
+                        if (price > 0) {
+                            sign = '+';
+                        }
+
+                        price = this.$options.filters.currency(price)
+                        label = this.$options.filters.t("Updates until {date} ({sign}{price})", 'app', {date, sign, price})
+                    }
+
+                    options.push({
+                        label: label,
+                        value: optionValue,
+                    })
+                }
+
+                return options
+            },
+
+            onSelectedExpiryDateChange(itemKey) {
+                this.$set(this.loadingItems, itemKey, true)
+                let item = this.cartItemsData[itemKey]
+                item.expiryDate = this.selectedExpiryDates[itemKey]
+                this.$store.dispatch('cart/updateItem', {itemKey, item})
+                    .then(() => {
+                        this.$delete(this.loadingItems, itemKey)
+                    })
+            },
+
+            itemLoading(itemKey) {
+                if (!this.loadingItems[itemKey]) {
+                    return false
+                }
+
+                return true
+            },
+
+            updatesUntil(date) {
+                return this.$options.filters.t("Updates until {date}", 'app', {date})
+            }
         },
 
     }
 </script>
+
+<style lang="scss" scoped>
+    @import "../../../../../../../../../lib/craftcms-sass/mixins";
+
+    .item-name {
+        .edition-badge {
+            @apply .ml-2;
+        }
+    }
+
+    .plugin-icon {
+        margin-right: 10px !important;
+
+        img {
+            max-width: none;
+        }
+    }
+
+    table.cart-data {
+        thead,
+        tbody {
+            border-bottom: 1px solid #eee;
+        }
+
+        tr {
+            th, td {
+                padding: 7px 0;
+            }
+
+            td.expiry-date {
+                & > div {
+                    display: inline-block;
+                    margin-bottom: 0;
+                }
+
+                .spinner {
+                    @apply .relative .ml-2;
+                    top: -2px;
+                }
+            }
+        }
+    }
+
+    @media (max-width: 991px) {
+        table.cart-data {
+            border-top: 1px solid #eee;
+
+            thead {
+                display: none;
+            }
+
+
+            tr,
+            td,
+            th {
+                display: block;
+            }
+
+            tr {
+                &.sub-item {
+                    td.blank-cell,
+                    td.empty-cell {
+                        display: none;
+                    }
+                }
+            }
+        }
+    }
+
+    @media (min-width: 992px) {
+        table.cart-data {
+            tr {
+                &.sub-item {
+                    td:not(.blank-cell) {
+                        border-top: 1px dotted #eee;
+                    }
+                }
+
+                th,
+                td {
+                    padding: 10px 0;
+
+                    &.price {
+                        text-align: right;
+                    }
+
+                    &.total-price {
+                        text-align: right;
+                    }
+                }
+
+                td.expiry-date {
+                    @apply .w-3/5;
+                }
+            }
+        }
+    }
+</style>

@@ -161,27 +161,29 @@ class ElementHelper
     {
         /** @var Element $element */
         $query = (new Query())
-            ->from(['{{%elements_sites}}'])
+            ->from(['{{%elements_sites}} elements_sites'])
+            ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
-                'siteId' => $element->siteId,
+                'elements_sites.siteId' => $element->siteId,
+                'elements.dateDeleted' => null,
             ]);
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query->andWhere([
-                'uri' => $testUri,
+                'elements_sites.uri' => $testUri,
             ]);
         } else {
             // Postgres is case-sensitive
             $query->andWhere([
-                'lower([[uri]])' => mb_strtolower($testUri),
+                'lower([[elements_sites.uri]])' => mb_strtolower($testUri),
             ]);
         }
 
         if ($element->id) {
-            $query->andWhere(['not', ['elementId' => $element->id]]);
+            $query->andWhere(['not', ['elements.id' => $element->id]]);
         }
 
-        return (int)$query->count('[[id]]') === 0;
+        return (int)$query->count() === 0;
     }
 
     /**
@@ -208,6 +210,17 @@ class ElementHelper
     {
         $sites = [];
 
+        static $siteUidMap = null;
+
+        // Load an ID => UID map
+        if (empty($siteUidMap)) {
+            $allSites = Craft::$app->getSites()->getAllSites();
+
+            foreach ($allSites as $siteModel) {
+                $siteUidMap[$siteModel->id] = $siteModel->uid;
+            }
+        }
+
         foreach ($element->getSupportedSites() as $site) {
             if (!is_array($site)) {
                 $site = [
@@ -216,6 +229,9 @@ class ElementHelper
             } else if (!isset($site['siteId'])) {
                 throw new Exception('Missing "siteId" key in ' . get_class($element) . '::getSupportedSites()');
             }
+
+            $site['siteUid'] = $siteUidMap[$site['siteId']];
+
             $sites[] = array_merge([
                 'enabledByDefault' => true,
             ], $site);
@@ -235,7 +251,7 @@ class ElementHelper
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteId'])) {
+                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteUid'])) {
                         return true;
                     }
                 }
@@ -260,7 +276,7 @@ class ElementHelper
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteId'])) {
+                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteUid'])) {
                         $siteIds[] = $siteInfo['siteId'];
                     }
                 }

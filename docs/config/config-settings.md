@@ -115,6 +115,35 @@ Defined by
 Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
 
 
+### `allowAdminChanges`
+
+Allowed types
+
+:   [boolean](http://php.net/language.types.boolean)
+
+Default value
+
+:   `true`
+
+Defined by
+
+:   [GeneralConfig::$allowAdminChanges](api:craft\config\GeneralConfig::$allowAdminChanges)
+
+
+
+Whether admins should be allowed to make administrative changes to the system.
+
+If this is disabled, the Settings and Plugin Store sections will be hidden,
+the Craft edition and Craft/plugin versions will be locked, and the project config will become read-only.
+
+Therefore you should only disable this in production environments when [$useProjectConfigFile](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-useprojectconfigfile) is enabled,
+and you have a deployment workflow that runs `composer install` automatically on deploy.
+
+::: warning
+Don’t disable this setting until **all** environments have been updated to Craft 3.1.0 or later.
+:::
+
+
 ### `allowSimilarTags`
 
 Allowed types
@@ -151,6 +180,8 @@ Defined by
 
 
 Whether Craft should allow system and plugin updates in the Control Panel, and plugin installation from the Plugin Store.
+
+This setting will automatically be disabled if [$allowAdminChanges](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-allowadminchanges) is disabled.
 
 
 ### `allowUppercaseInSlug`
@@ -207,7 +238,8 @@ Defined by
 
 
 
-Whether users should automatically be logged in after activating their account.
+Whether users should automatically be logged in after activating their account or resetting
+their password.
 
 
 ### `backupCommand`
@@ -615,7 +647,7 @@ Allowed types
 
 Default value
 
-:   `null`
+:   `1`
 
 Defined by
 
@@ -825,6 +857,40 @@ Only use this setting if your server has the Intl PHP extension, or if you’ve 
 [locale data](https://github.com/craftcms/locales) into your `config/locales/` folder.
 
 
+### `extraFileKinds`
+
+Allowed types
+
+:   [array](http://php.net/language.types.array)
+
+Default value
+
+:   `[]`
+
+Defined by
+
+:   [GeneralConfig::$extraFileKinds](api:craft\config\GeneralConfig::$extraFileKinds)
+
+
+
+List of additional file kinds Craft should support. This array
+will get merged with the one defined in `\craft\config\craft\helpers\Assets::_buildFileKinds()`.
+
+```php
+'extraFileKinds' => [
+    // merge .psb into list of Photoshop file kinds
+    'photoshop' => [
+        'extensions' => ['psb'],
+    ],
+    // register new "Stylesheet" file kind
+    'stylesheet' => [
+        'label' => 'Stylesheet',
+        'extensions' => ['css', 'less', 'pcss', 'sass', 'scss', 'styl'],
+    ],
+],
+```
+
+
 ### `filenameWordSeparator`
 
 Allowed types
@@ -969,7 +1035,7 @@ See [yii\web\Request::$ipHeaders](https://www.yiiframework.com/doc/api/2.0/yii-w
 If not set, the default [craft\web\Request::$ipHeaders](https://docs.craftcms.com/api/v3/craft-web-request.html#property-ipheaders) value will be used.
 
 
-### `isSystemOn`
+### `isSystemLive`
 
 Allowed types
 
@@ -981,11 +1047,11 @@ Default value
 
 Defined by
 
-:   [GeneralConfig::$isSystemOn](api:craft\config\GeneralConfig::$isSystemOn)
+:   [GeneralConfig::$isSystemLive](api:craft\config\GeneralConfig::$isSystemLive)
 
 
 
-Whether the site is currently online or not. If set to `true` or `false`, it will take precedence over the
+Whether the site is currently live. If set to `true` or `false`, it will take precedence over the
 System Status setting in Settings → General.
 
 
@@ -1202,6 +1268,19 @@ Defined by
 The string preceding a number which Craft will look for when determining if the current request is for a
 particular page in a paginated list of pages.
 
+Example Value | Example URI
+------------- | -----------
+`p` | `/news/p5`
+`page` | `/news/page5`
+`page/` | `/news/page/5`
+`?page` | `/news?page=5`
+
+::: tip
+If you want to set this to `?p` (e.g. `/news?p=5`), you will need to change your [$pathParam](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-pathparam) setting as well,
+which is set to `p` by default, and if your server is running Apache, you will need to update the redirect code
+in your `.htaccess` file to match your new `pathParam` value.
+:::
+
 
 ### `pathParam`
 
@@ -1221,16 +1300,21 @@ Defined by
 
 The query string param that Craft will check when determining the request's path.
 
+::: tip
+If you change this and your server is running Apache, don’t forget to update the redirect code in your
+`.htaccess` file to match the new value.
+:::
+
 
 ### `phpMaxMemoryLimit`
 
 Allowed types
 
-:   [string](http://php.net/language.types.string)
+:   [string](http://php.net/language.types.string), [null](http://php.net/language.types.null)
 
 Default value
 
-:   `''`
+:   `null`
 
 Defined by
 
@@ -1894,6 +1978,48 @@ Defined by
 The character(s) that should be used to separate words in slugs.
 
 
+### `softDeleteDuration`
+
+Allowed types
+
+:   `mixed`
+
+Default value
+
+:   `2592000`
+
+Defined by
+
+:   [GeneralConfig::$softDeleteDuration](api:craft\config\GeneralConfig::$softDeleteDuration)
+
+
+
+The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection.
+
+Set to `0` if you don’t ever want to delete soft-deleted items.
+
+See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
+
+
+### `storeUserIps`
+
+Allowed types
+
+:   [boolean](http://php.net/language.types.boolean)
+
+Default value
+
+:   `false`
+
+Defined by
+
+:   [GeneralConfig::$storeUserIps](api:craft\config\GeneralConfig::$storeUserIps)
+
+
+
+Whether user IP addresses should be stored/logged by the system.
+
+
 ### `suppressTemplateErrors`
 
 Allowed types
@@ -1974,7 +2100,7 @@ Defined by
 
 
 
-The query string parameter name that tokens should be set to.
+The query string parameter name that Craft tokens should be set to.
 
 
 ### `transformGifs`
@@ -2120,6 +2246,29 @@ Defined by
 Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
 
 Note that this setting only takes effect if [$omitScriptNameInUrls](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-omitscriptnameinurls) is set to false.
+
+
+### `useProjectConfigFile`
+
+Allowed types
+
+:   [boolean](http://php.net/language.types.boolean)
+
+Default value
+
+:   `false`
+
+Defined by
+
+:   [GeneralConfig::$useProjectConfigFile](api:craft\config\GeneralConfig::$useProjectConfigFile)
+
+
+
+Whether the project config should be saved out to `config/project.yaml`.
+
+If set to `true`, a hard copy of your system’s project config will be saved in `config/project.yaml`,
+and any changes to `config/project.yaml` will be applied back to the system, making it possible for
+multiple environments to share the same project config despite having separate databases.
 
 
 ### `useSecureCookies`

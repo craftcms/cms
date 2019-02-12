@@ -178,16 +178,27 @@ class VolumesController extends Controller
 
         $type = $request->getBodyParam('type');
 
-        /** @var Volume $volume */
-        $volume = $volumes->createVolume([
-            'id' => $request->getBodyParam('volumeId'),
+        $volumeId = $request->getBodyParam('volumeId');
+
+        $volumeData = [
+            'id' => $volumeId,
             'type' => $type,
             'name' => $request->getBodyParam('name'),
             'handle' => $request->getBodyParam('handle'),
             'hasUrls' => (bool)$request->getBodyParam('hasUrls'),
             'url' => $request->getBodyParam('url'),
             'settings' => $request->getBodyParam('types.' . $type)
-        ]);
+        ];
+
+        // If this is an existing volume, populate with properties unchangeable by this action.
+        if ($volumeId) {
+            $savedVolume = $volumes->getVolumeById($volumeId);
+            $volumeData['uid'] = $savedVolume->uid;
+            $volumeData['sortOrder'] = $savedVolume->sortOrder;
+        }
+
+        /** @var Volume $volume */
+        $volume = $volumes->createVolume($volumeData);
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();

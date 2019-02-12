@@ -62,7 +62,7 @@ The permissions Craft comes with are:
 
 ## Public Registration
 
-Craft Pro has the option of allowing public user registration, which is disabled by default. 
+Craft Pro has the option of allowing public user registration, which is disabled by default.
 
 To enable public registration, go to Settings → Users → Settings, and check the “Allow public registration?” setting. With that checked, you will also have the ability to choose a default user group to which Craft will assign the publicly-registered users.
 

@@ -8,6 +8,7 @@
 namespace craft\elements\db;
 
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Tag;
 use craft\helpers\Db;
 use craft\models\TagGroup;
@@ -36,6 +37,11 @@ class TagQuery extends ElementQuery
     // Properties
     // =========================================================================
 
+    /**
+     * @inheritdoc
+     */
+    protected $defaultOrderBy = ['content.title' => SORT_ASC];
+
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -61,19 +67,6 @@ class TagQuery extends ElementQuery
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($elementType, array $config = [])
-    {
-        // Default orderBy
-        if (!isset($config['orderBy'])) {
-            $config['orderBy'] = 'content.title';
-        }
-
-        parent::__construct($elementType, $config);
-    }
 
     /**
      * @inheritdoc
@@ -127,7 +120,7 @@ class TagQuery extends ElementQuery
         } else if ($value !== null) {
             $this->groupId = (new Query())
                 ->select(['id'])
-                ->from(['{{%taggroups}}'])
+                ->from([Table::TAGGROUPS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         } else {

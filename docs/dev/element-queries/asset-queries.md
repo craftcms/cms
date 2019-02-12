@@ -748,6 +748,31 @@ $assets = \craft\elements\Asset::find()
 :::
 
 
+### `trashed`
+
+Narrows the query results to only assets that have been soft-deleted.
+
+
+
+
+
+::: code
+```twig
+{# Fetch trashed assets #}
+{% set assets = {twig-function}
+    .trashed()
+    .all() %}
+```
+
+```php
+// Fetch trashed assets
+$assets = \craft\elements\Asset::find()
+    ->trashed()
+    ->all();
+```
+:::
+
+
 ### `uid`
 
 Narrows the query results based on the assets’ UIDs.

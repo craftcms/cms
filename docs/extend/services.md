@@ -78,54 +78,7 @@ Here’s an example: <api:craft\services\Elements::saveElement()> will call `bef
 
 Here’s a control flow diagram for class-oriented methods:
 
-```
-╔════════════════════════════╗
-║ saveRecipe(Recipe $recipe) ║
-╚════════════════════════════╝
-               │
-               ▼
-  ┌────────────────────────┐
-  │ beforeSaveRecipe event │
-  └────────────────────────┘
-               │
-               ▼
-               Λ
-              ╱ ╲
-             ╱   ╲              ┏━━━━━━━━━━━━━━┓
-          validates? ─── no ───▶┃ return false ┃
-             ╲   ╱              ┗━━━━━━━━━━━━━━┛
-              ╲ ╱
-               V
-               │
-              yes
-               │
-               ▼
-     ┌───────────────────┐
-     │ begin transaction │
-     │      (maybe)      │
-     └───────────────────┘
-               │
-               ▼
-      ┌─────────────────┐
-      │ save the recipe │
-      └─────────────────┘
-               │
-               ▼
-      ┌─────────────────┐
-      │ end transaction │
-      │     (maybe)     │
-      └─────────────────┘
-               │
-               ▼
-   ┌───────────────────────┐
-   │ afterSaveRecipe event │
-   └───────────────────────┘
-               │
-               ▼
-        ┏━━━━━━━━━━━━━┓
-        ┃ return true ┃
-        ┗━━━━━━━━━━━━━┛
-```
+![An example flow for a saveRecipe() method.](../images/save-component--class.png =612x1176)
 
 ::: tip
 It’s only necessary to wrap the operation in a database transaction if the operation encompasses multiple database changes.
@@ -165,68 +118,7 @@ public function saveRecipe(Recipe $recipe, $runValidation = true)
 
 Here’s a control flow diagram for interface-oriented methods:
 
-```
-╔═════════════════════════════════════════════════╗
-║ saveIngredient(IngredientInterface $ingredient) ║
-╚═════════════════════════════════════════════════╝
-                         │
-                         ▼
-          ┌────────────────────────────┐
-          │ beforeSaveIngredient event │
-          └────────────────────────────┘
-                         │
-                         ▼
-                         Λ
-                        ╱ ╲
-                       ╱   ╲                        ┏━━━━━━━━━━━━━━┓
-             $ingredient->beforeSave() ── false ───▶┃ return false ┃
-                       ╲   ╱                        ┗━━━━━━━━━━━━━━┛
-                        ╲ ╱
-                         V
-                         │
-                        true
-                         │
-                         ▼
-                         Λ
-                        ╱ ╲
-                       ╱   ╲              ┏━━━━━━━━━━━━━━┓
-                    validates? ─── no ───▶┃ return false ┃
-                       ╲   ╱              ┗━━━━━━━━━━━━━━┛
-                        ╲ ╱
-                         V
-                         │
-                        yes
-                         │
-                         ▼
-               ┌───────────────────┐
-               │ begin transaction │
-               └───────────────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │ save the ingredient │
-              └─────────────────────┘
-                         │
-                         ▼
-           ┌──────────────────────────┐
-           │ $ingredient->afterSave() │
-           └──────────────────────────┘
-                         │
-                         ▼
-                ┌─────────────────┐
-                │ end transaction │
-                └─────────────────┘
-                         │
-                         ▼
-           ┌───────────────────────────┐
-           │ afterSaveIngredient event │
-           └───────────────────────────┘
-                         │
-                         ▼
-                  ┏━━━━━━━━━━━━━┓
-                  ┃ return true ┃
-                  ┗━━━━━━━━━━━━━┛
-```
+![An example flow for a saveIngredient() method.](../images/save-component--interface.png =660x1488)
 
 Here’s a complete code example of what that looks like:
 

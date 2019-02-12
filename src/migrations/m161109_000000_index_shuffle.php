@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
 /**
@@ -17,11 +18,11 @@ class m161109_000000_index_shuffle extends Migration
     {
         // Order is important
         echo "    > Dropping `expiryDate,cacheKey,siteId,path` index on the templatecaches table.\n";
-        MigrationHelper::dropIndexIfExists('{{%templatecaches}}', 'expiryDate,cacheKey,siteId,path', false, $this);
-        MigrationHelper::dropIndexIfExists('{{%templatecaches}}', 'siteId,cacheKey,path,expiryDate', false, $this);
+        MigrationHelper::dropIndexIfExists(Table::TEMPLATECACHES, 'expiryDate,cacheKey,siteId,path', false, $this);
+        MigrationHelper::dropIndexIfExists(Table::TEMPLATECACHES, 'siteId,cacheKey,path,expiryDate', false, $this);
 
         echo "    > Creating `siteId,cacheKey,path,expiryDate` index on the templatecaches table.\n";
-        $this->createIndex(null, '{{%templatecaches}}', ['siteId', 'cacheKey', 'path', 'expiryDate']);
+        $this->createIndex(null, Table::TEMPLATECACHES, ['siteId', 'cacheKey', 'path', 'expiryDate']);
     }
 
     /**

@@ -679,6 +679,74 @@ class Db
             ->execute();
     }
 
+    /**
+     * Returns the `id` of a row in the given table by its `uid`.
+     *
+     * @param string $table
+     * @param string $uid
+     * @return int|null
+     */
+    public static function idByUid(string $table, string $uid)
+    {
+        $id = (new Query())
+            ->select(['id'])
+            ->from([$table])
+            ->where(['uid' => $uid])
+            ->scalar();
+
+        return $id ? (int)$id : null;
+    }
+
+    /**
+     * Returns an array `uid`:`id` pairs from a given table, by their `uid`s.
+     *
+     * @param string $table
+     * @param string[] $uids
+     * @return string[]
+     */
+    public static function idsByUids(string $table, array $uids): array
+    {
+        return (new Query())
+            ->select(['uid', 'id'])
+            ->from([$table])
+            ->where(['uid' => $uids])
+            ->pairs();
+    }
+
+    /**
+     * Returns the `uid` of a row in the given table by its `id`.
+     *
+     * @param string $table
+     * @param int $id
+     * @return string|null
+     */
+    public static function uidById(string $table, int $id)
+    {
+        $uid = (new Query())
+            ->select(['uid'])
+            ->from([$table])
+            ->where(['id' => $id])
+            ->scalar();
+
+        return $uid ?: null;
+    }
+
+    /**
+     * Returns an array `id`:`uid` pairs from a given table, by their `id`s.
+     *
+     * @param string $table
+     * @param int[] $ids
+     * @return string[]
+     */
+    public static function uidsByIds(string $table, array $ids): array
+    {
+        return (new Query())
+            ->select(['id', 'uid'])
+            ->from([$table])
+            ->where(['id' => $ids])
+            ->pairs();
+    }
+
     // Private Methods
     // =========================================================================
 

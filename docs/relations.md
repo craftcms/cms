@@ -1,6 +1,6 @@
 # Relations
 
-Craft has a powerful engine for relating elements to one another. You create those relationships using relational field types. 
+Craft has a powerful engine for relating elements to one another. You create those relationships using relational field types.
 
 Craft comes with five relational field types:
 
@@ -47,9 +47,9 @@ If we want to output the ingredients list for a drink recipe, we'd use the follo
 
 ```twig
 {% if drink.ingredients|length %}
-    
+
     <h3>Ingredients</h3>
-    
+
     <ul>
         {% for ingredient in drink.ingredients %}
             <li>{{ ingredient.title }}</li>
