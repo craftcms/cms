@@ -741,6 +741,33 @@ Defined by
 Whether the system should run in [Dev Mode](https://craftcms.com/support/dev-mode).
 
 
+
+### `disabledPlugins`
+
+Allowed types
+
+:   [string](http://php.net/language.types.string)[]
+
+Default value
+
+:   `[]`
+
+Defined by
+
+:   [GeneralConfig::$disabledPlugins](api:craft\config\GeneralConfig::$disabledPlugins)
+
+
+
+Array of plugin handles that should be disabled, regardless of what the project config says.
+
+
+
+```php
+'dev' => [
+    'disabledPlugins' => ['webhooks'],
+],
+```
+
 ### `elevatedSessionDuration`
 
 Allowed types

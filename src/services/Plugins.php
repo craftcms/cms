@@ -135,6 +135,11 @@ class Plugins extends Component
     private $_disabledPluginInfo;
 
     /**
+     * @var array Any plugin handles that must be disabled per the `disablePlugins` config setting
+     */
+    private $_forceDisabledPlugins;
+
+    /**
      * @var string[] Cache for [[getPluginHandleByClass()]]
      */
     private $_classPluginHandles = [];
@@ -147,6 +152,8 @@ class Plugins extends Component
      */
     public function init()
     {
+        $this->_forceDisabledPlugins = array_flip(Craft::$app->getConfig()->getGeneral()->disabledPlugins);
+
         $this->_composerPluginInfo = [];
 
         $path = Craft::$app->getVendorPath() . DIRECTORY_SEPARATOR . 'craftcms' . DIRECTORY_SEPARATOR . 'plugins.php';
@@ -1341,6 +1348,11 @@ class Plugins extends Component
 
         if (!$data) {
             throw new InvalidPluginException($handle);
+        }
+
+        // Force disable it?
+        if (isset($this->_forceDisabledPlugins[$handle])) {
+            $data['enabled'] = false;
         }
 
         return $data;
