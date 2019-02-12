@@ -56,6 +56,7 @@ The URI segment Craft should look for when determining if the current request sh
 controller action.
 
 
+
 ### `activateAccountSuccessPath`
 
 Allowed types
@@ -77,6 +78,7 @@ The URI that users without access to the Control Panel should be redirected to a
 See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) for a list of supported value types.
 
 
+
 ### `addTrailingSlashesToUrls`
 
 Allowed types
@@ -96,6 +98,7 @@ Defined by
 Whether auto-generated URLs should have trailing slashes.
 
 
+
 ### `aliases`
 
 Allowed types
@@ -113,6 +116,7 @@ Defined by
 
 
 Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
+
 
 
 ### `allowAdminChanges`
@@ -144,6 +148,7 @@ Don’t disable this setting until **all** environments have been updated to Cra
 :::
 
 
+
 ### `allowSimilarTags`
 
 Allowed types
@@ -161,6 +166,7 @@ Defined by
 
 
 Whether users should be allowed to create similarly-named tags.
+
 
 
 ### `allowUpdates`
@@ -184,6 +190,7 @@ Whether Craft should allow system and plugin updates in the Control Panel, and p
 This setting will automatically be disabled if [$allowAdminChanges](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-allowadminchanges) is disabled.
 
 
+
 ### `allowUppercaseInSlug`
 
 Allowed types
@@ -201,6 +208,7 @@ Defined by
 
 
 Whether uppercase letters should be allowed in slugs.
+
 
 
 ### `allowedFileExtensions`
@@ -222,6 +230,7 @@ Defined by
 The file extensions Craft should allow when a user is uploading files.
 
 
+
 ### `autoLoginAfterAccountActivation`
 
 Allowed types
@@ -240,6 +249,7 @@ Defined by
 
 Whether users should automatically be logged in after activating their account or resetting
 their password.
+
 
 
 ### `backupCommand`
@@ -275,6 +285,7 @@ There are several tokens you can use that Craft will swap out at runtime:
 This can also be set to `false` to disable database backups completely.
 
 
+
 ### `backupOnUpdate`
 
 Allowed types
@@ -292,6 +303,7 @@ Defined by
 
 
 Whether Craft should create a database backup before applying a new system update.
+
 
 
 ### `baseCpUrl`
@@ -317,6 +329,7 @@ It will be determined automatically if left blank.
 ::: tip
 The base CP URL should **not** include the [CP trigger word](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-cptrigger) (e.g. `/admin`).
 :::
+
 
 
 ### `blowfishHashCost`
@@ -346,6 +359,7 @@ For example, if the hash takes 1 second to compute when the value is 14 then the
 2^(value - 14) seconds.
 
 
+
 ### `cacheDuration`
 
 Allowed types
@@ -369,6 +383,7 @@ If set to `0`, data and RSS feed caches will be stored indefinitely; template ca
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
 
 
+
 ### `cacheElementQueries`
 
 Allowed types
@@ -388,6 +403,7 @@ Defined by
 Whether Craft should cache element queries that fall inside `{% cache %}` tags.
 
 
+
 ### `convertFilenamesToAscii`
 
 Allowed types
@@ -405,6 +421,7 @@ Defined by
 
 
 Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
+
 
 
 ### `cooldownDuration`
@@ -431,6 +448,7 @@ Set to `0` to keep the account locked indefinitely, requiring an admin to manual
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
 
 
+
 ### `cpTrigger`
 
 Allowed types
@@ -451,6 +469,7 @@ The URI segment Craft should look for when determining if the current request sh
 the front-end website.
 
 
+
 ### `csrfTokenName`
 
 Allowed types
@@ -468,6 +487,7 @@ Defined by
 
 
 The name of CSRF token used for CSRF validation if [$enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-enablecsrfprotection) is set to `true`.
+
 
 
 ### `defaultCookieDomain`
@@ -491,6 +511,7 @@ up to the browser to determine which domain to use (almost always the current). 
 for all subdomains, for example, you could set this to `'.domain.com'`.
 
 
+
 ### `defaultCpLanguage`
 
 Allowed types
@@ -508,6 +529,7 @@ Defined by
 
 
 The default language the Control Panel should use for users who haven’t set a preferred language yet.
+
 
 
 ### `defaultDirMode`
@@ -531,6 +553,7 @@ The default permission to be set for newly generated directories.
 If set to `null`, the permission will be determined by the current environment.
 
 
+
 ### `defaultFileMode`
 
 Allowed types
@@ -552,6 +575,7 @@ The default permission to be set for newly generated files.
 If set to `null`, the permission will be determined by the current environment.
 
 
+
 ### `defaultImageQuality`
 
 Allowed types
@@ -570,6 +594,7 @@ Defined by
 
 The quality level Craft will use when saving JPG and PNG files. Ranges from 0 (worst quality, smallest file) to
 100 (best quality, biggest file).
+
 
 
 ### `defaultSearchTermOptions`
@@ -599,6 +624,7 @@ Options include:
 - `subRight` – Whether to include keywords that contain the term, with additional characters after it. (`true` by default)
 
 
+
 ### `defaultTemplateExtensions`
 
 Allowed types
@@ -616,6 +642,7 @@ Defined by
 
 
 The template file extensions Craft will look for when matching a template path to a file on the front end.
+
 
 
 ### `defaultTokenDuration`
@@ -637,6 +664,7 @@ Defined by
 The default amount of time tokens can be used before expiring.
 
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
+
 
 
 ### `defaultWeekStartDay`
@@ -668,6 +696,7 @@ This should be set to one of the following integers:
 - `6` – Saturday
 
 
+
 ### `deferPublicRegistrationPassword`
 
 Allowed types
@@ -690,6 +719,7 @@ user registrations. Setting this to `true` will no longer require it on the init
 If you have email verification enabled, new users will set their password once they've clicked on the
 verification link in the email. If you don't, the only way they can set their password is to go
 through your "forgot password" workflow.
+
 
 
 ### `devMode`
@@ -734,6 +764,7 @@ Set to `0` to disable elevated session support.
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
 
 
+
 ### `enableCsrfCookie`
 
 Allowed types
@@ -756,6 +787,7 @@ session increases security, it requires starting a session for every page that a
 degrade site performance.
 
 
+
 ### `enableCsrfProtection`
 
 Allowed types
@@ -775,6 +807,7 @@ Defined by
 Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft.
 
 
+
 ### `enableTemplateCaching`
 
 Allowed types
@@ -792,6 +825,7 @@ Defined by
 
 
 Whether to enable Craft's template `{% cache %}` tag on a global basis.
+
 
 
 ### `errorTemplatePrefix`
@@ -816,6 +850,7 @@ template.
 If set to `'_'`, then your site’s 404 template would live at `templates/_404.html`, for example.
 
 
+
 ### `extraAllowedFileExtensions`
 
 Allowed types
@@ -833,6 +868,7 @@ Defined by
 
 
 List of file extensions that will be merged into the [$allowedFileExtensions](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-allowedfileextensions) config setting.
+
 
 
 ### `extraAppLocales`
@@ -855,6 +891,7 @@ List of extra locale IDs that the application should support, and users should b
 
 Only use this setting if your server has the Intl PHP extension, or if you’ve saved the corresponding
 [locale data](https://github.com/craftcms/locales) into your `config/locales/` folder.
+
 
 
 ### `extraFileKinds`
@@ -891,6 +928,7 @@ will get merged with the one defined in `\craft\config\craft\helpers\Assets::_bu
 ```
 
 
+
 ### `filenameWordSeparator`
 
 Allowed types
@@ -910,6 +948,7 @@ Defined by
 The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
 
 
+
 ### `generateTransformsBeforePageLoad`
 
 Allowed types
@@ -927,6 +966,7 @@ Defined by
 
 
 Whether images transforms should be generated before page load.
+
 
 
 ### `imageDriver`
@@ -949,6 +989,7 @@ The image driver Craft should use to cleanse and transform images. By default Cr
 either `'imagick'` or `'gd'` here to override that behavior.
 
 
+
 ### `indexTemplateFilenames`
 
 Allowed types
@@ -967,6 +1008,7 @@ Defined by
 
 The template filenames Craft will look for within a directory to represent the directory’s “index” template when
 matching a template path to a file on the front end.
+
 
 
 ### `invalidLoginWindowDuration`
@@ -990,6 +1032,7 @@ The amount of time to track invalid login attempts for a user, for determining i
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
 
 
+
 ### `invalidUserTokenPath`
 
 Allowed types
@@ -1010,6 +1053,7 @@ The URI Craft should redirect to when user token validation fails. A token is us
 resetting user account passwords. Note that this only affects front-end site requests.
 
 See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) for a list of supported value types.
+
 
 
 ### `ipHeaders`
@@ -1035,6 +1079,7 @@ See [yii\web\Request::$ipHeaders](https://www.yiiframework.com/doc/api/2.0/yii-w
 If not set, the default [craft\web\Request::$ipHeaders](https://docs.craftcms.com/api/v3/craft-web-request.html#property-ipheaders) value will be used.
 
 
+
 ### `isSystemLive`
 
 Allowed types
@@ -1053,6 +1098,7 @@ Defined by
 
 Whether the site is currently live. If set to `true` or `false`, it will take precedence over the
 System Status setting in Settings → General.
+
 
 
 ### `limitAutoSlugsToAscii`
@@ -1078,6 +1124,7 @@ This only affects the JavaScript auto-generated slugs. Non-ASCII characters can 
 :::
 
 
+
 ### `loginPath`
 
 Allowed types
@@ -1097,6 +1144,7 @@ Defined by
 The URI Craft should use for user login on the front-end.
 
 See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) for a list of supported value types.
+
 
 
 ### `logoutPath`
@@ -1120,6 +1168,7 @@ The URI Craft should use for user logout on the front-end.
 See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) for a list of supported value types.
 
 
+
 ### `maxCachedCloudImageSize`
 
 Allowed types
@@ -1138,6 +1187,7 @@ Defined by
 
 The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to
 never cache them.
+
 
 
 ### `maxInvalidLogins`
@@ -1160,6 +1210,7 @@ The number of invalid login attempts Craft will allow within the specified durat
 locked.
 
 
+
 ### `maxSlugIncrement`
 
 Allowed types
@@ -1177,6 +1228,7 @@ Defined by
 
 
 The highest number Craft will tack onto a slug in order to make it unique before giving up and throwing an error.
+
 
 
 ### `maxUploadFileSize`
@@ -1198,6 +1250,7 @@ Defined by
 The maximum upload file size allowed.
 
 See [craft\helpers\ConfigHelper::sizeInBytes()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-sizeinbytes) for a list of supported value types.
+
 
 
 ### `omitScriptNameInUrls`
@@ -1229,6 +1282,7 @@ RewriteRule (.+) /index.php?p= [QSA,L]
 ```
 
 
+
 ### `optimizeImageFilesize`
 
 Allowed types
@@ -1247,6 +1301,7 @@ Defined by
 
 Whether Craft should optimize images for reduced file sizes without noticeably reducing image quality.
 (Only supported when ImageMagick is used.)
+
 
 
 ### `pageTrigger`
@@ -1282,6 +1337,7 @@ in your `.htaccess` file to match your new `pathParam` value.
 :::
 
 
+
 ### `pathParam`
 
 Allowed types
@@ -1306,6 +1362,7 @@ If you change this and your server is running Apache, don’t forget to update t
 :::
 
 
+
 ### `phpMaxMemoryLimit`
 
 Allowed types
@@ -1328,6 +1385,7 @@ unzipping and updating. Defaults to an empty string, which means it will use as 
 See <http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes> for a list of acceptable values.
 
 
+
 ### `phpSessionName`
 
 Allowed types
@@ -1345,6 +1403,7 @@ Defined by
 
 
 The name of the PHP session cookie.
+
 
 
 ### `postCpLoginRedirect`
@@ -1371,6 +1430,7 @@ or the CP’s root URL (/admin) when they are already logged in.
 See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) for a list of supported value types.
 
 
+
 ### `postLoginRedirect`
 
 Allowed types
@@ -1395,6 +1455,7 @@ setting) when they are already logged in.
 See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) for a list of supported value types.
 
 
+
 ### `postLogoutRedirect`
 
 Allowed types
@@ -1414,6 +1475,7 @@ Defined by
 The path that users should be redirected to after logging out from the front-end site.
 
 See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) for a list of supported value types.
+
 
 
 ### `preserveCmykColorspace`
@@ -1436,6 +1498,7 @@ Whether CMYK should be preserved as the colorspace when when manipulating images
 
 Setting this to `true` will prevent Craft from transforming CMYK images to sRGB, but on some ImageMagick versions can cause color
 distortion in the image. This will only have effect if ImageMagick is in use.
+
 
 
 ### `preserveExifData`
@@ -1461,6 +1524,7 @@ Setting this to `true` will result in larger image file sizes.
 This will only have effect if ImageMagick is in use.
 
 
+
 ### `preserveImageColorProfiles`
 
 Allowed types
@@ -1481,6 +1545,7 @@ Whether the embedded Image Color Profile (ICC) should be preserved when manipula
 
 Setting this to `false` will reduce the image size a little bit, but on some ImageMagick versions can cause images to be saved with
 an incorrect gamma value, which causes the images to become very dark. This will only have effect if ImageMagick is in use.
+
 
 
 ### `preventUserEnumeration`
@@ -1505,6 +1570,7 @@ your email for further instructions. This can allow for username/email enumerati
 `true`, you will always get a successful response even if there was an error making it difficult to enumerate users.
 
 
+
 ### `privateTemplateTrigger`
 
 Allowed types
@@ -1525,6 +1591,7 @@ The template path segment prefix that should be used to identify "private" templ
 directly accessible via a matching URL).
 
 Set to an empty value to disable public template routing.
+
 
 
 ### `purgePendingUsersDuration`
@@ -1552,6 +1619,7 @@ Set to `0` to disable this feature.
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
 
 
+
 ### `rememberUsernameDuration`
 
 Allowed types
@@ -1573,6 +1641,7 @@ The amount of time Craft will remember a username and pre-populate it on the CP 
 Set to `0` to disable this feature altogether.
 
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
+
 
 
 ### `rememberedUserSessionDuration`
@@ -1598,6 +1667,7 @@ Set to `0` to disable the “Remember Me” feature altogether.
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
 
 
+
 ### `requireMatchingUserAgentForSession`
 
 Allowed types
@@ -1615,6 +1685,7 @@ Defined by
 
 
 Whether Craft should require a matching user agent string when restoring a user session from a cookie.
+
 
 
 ### `requireUserAgentAndIpForSession`
@@ -1637,6 +1708,7 @@ Whether Craft should require the existence of a user agent string and IP address
 session.
 
 
+
 ### `resourceBasePath`
 
 Allowed types
@@ -1656,6 +1728,7 @@ Defined by
 The path to the root directory that should store published CP resources.
 
 
+
 ### `resourceBaseUrl`
 
 Allowed types
@@ -1673,6 +1746,7 @@ Defined by
 
 
 The URL to the root directory that should store published CP resources.
+
 
 
 ### `restoreCommand`
@@ -1708,6 +1782,7 @@ There are several tokens you can use that Craft will swap out at runtime:
 This can also be set to `false` to disable database restores completely.
 
 
+
 ### `rotateImagesOnUploadByExifData`
 
 Allowed types
@@ -1725,6 +1800,7 @@ Defined by
 
 
 Whether Craft should rotate images according to their EXIF data on upload.
+
 
 
 ### `runQueueAutomatically`
@@ -1757,6 +1833,7 @@ Here is an example of how you would setup a queue runner from a cron job that ra
 ```
 
 
+
 ### `sanitizeSvgUploads`
 
 Allowed types
@@ -1776,6 +1853,7 @@ Defined by
 Whether Craft should sanitize uploaded SVG files and strip out potential malicious looking content.
 
 This should definitely be enabled if you are accepting SVG uploads from untrusted sources.
+
 
 
 ### `secureHeaders`
@@ -1801,6 +1879,7 @@ See [yii\web\Request::$secureHeaders](https://www.yiiframework.com/doc/api/2.0/y
 If not set, the default [yii\web\Request::$secureHeaders](https://www.yiiframework.com/doc/api/2.0/yii-web-request#$secureHeaders-detail) value will be used.
 
 
+
 ### `secureProtocolHeaders`
 
 Allowed types
@@ -1822,6 +1901,7 @@ List of headers to check for determining whether the connection is made via HTTP
 See [yii\web\Request::$secureProtocolHeaders](https://www.yiiframework.com/doc/api/2.0/yii-web-request#$secureProtocolHeaders-detail) for more details.
 
 If not set, the default [yii\web\Request::$secureProtocolHeaders](https://www.yiiframework.com/doc/api/2.0/yii-web-request#$secureProtocolHeaders-detail) value will be used.
+
 
 
 ### `securityKey`
@@ -1847,6 +1927,7 @@ This value should be the same across all environments. Note that if this key eve
 was encrypted with it will be inaccessible.
 
 
+
 ### `sendPoweredByHeader`
 
 Allowed types
@@ -1864,6 +1945,7 @@ Defined by
 
 
 Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
+
 
 
 ### `setPasswordPath`
@@ -1887,6 +1969,7 @@ The password-reset template path. Note that this only affects front-end site req
 See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) for a list of supported value types.
 
 
+
 ### `setPasswordSuccessPath`
 
 Allowed types
@@ -1908,6 +1991,7 @@ The URI Craft should redirect users to after setting their password from the fro
 See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) for a list of supported value types.
 
 
+
 ### `siteName`
 
 Allowed types
@@ -1927,6 +2011,7 @@ Defined by
 The site name(s). If set, it will take precedence over the Name settings in Settings → Sites → [Site Name].
 
 This can be set to a string, which will override the primary site’s name only, or an array with site handles used as the keys.
+
 
 
 ### `siteUrl`
@@ -1959,6 +2044,7 @@ The URL(s) must begin with either `http://`, `https://`, `//` (protocol-relative
 ```
 
 
+
 ### `slugWordSeparator`
 
 Allowed types
@@ -1976,6 +2062,7 @@ Defined by
 
 
 The character(s) that should be used to separate words in slugs.
+
 
 
 ### `softDeleteDuration`
@@ -2001,6 +2088,7 @@ Set to `0` if you don’t ever want to delete soft-deleted items.
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
 
 
+
 ### `storeUserIps`
 
 Allowed types
@@ -2018,6 +2106,7 @@ Defined by
 
 
 Whether user IP addresses should be stored/logged by the system.
+
 
 
 ### `suppressTemplateErrors`
@@ -2039,6 +2128,7 @@ Defined by
 Whether Twig runtime errors should be suppressed.
 
 If it is set to `true`, the errors will still be logged to Craft’s log files.
+
 
 
 ### `testToEmailAddress`
@@ -2063,6 +2153,7 @@ purposes.
 By default the recipient name(s) will be “Test Recipient”, but you can customize that by setting the value with the format `['email@address.com' => 'Name']`.
 
 
+
 ### `timezone`
 
 Allowed types
@@ -2084,6 +2175,7 @@ The timezone of the site. If set, it will take precedence over the Timezone sett
 This can be set to one of PHP’s [supported timezones](http://php.net/manual/en/timezones.php).
 
 
+
 ### `tokenParam`
 
 Allowed types
@@ -2101,6 +2193,7 @@ Defined by
 
 
 The query string parameter name that Craft tokens should be set to.
+
 
 
 ### `transformGifs`
@@ -2122,6 +2215,7 @@ Defined by
 Whether GIF files should be cleansed/transformed.
 
 
+
 ### `translationDebugOutput`
 
 Allowed types
@@ -2140,6 +2234,7 @@ Defined by
 
 Whether translated messages should be wrapped in special characters, to help find any strings that are not
 being run through `Craft::t()` or the `|translate` filter.
+
 
 
 ### `trustedHosts`
@@ -2165,6 +2260,7 @@ See [yii\web\Request::$trustedHosts](https://www.yiiframework.com/doc/api/2.0/yi
 By default, all hosts are trusted.
 
 
+
 ### `useCompressedJs`
 
 Allowed types
@@ -2184,6 +2280,7 @@ Defined by
 Whether Craft should use compressed JavaScript files whenever possible.
 
 
+
 ### `useEmailAsUsername`
 
 Allowed types
@@ -2201,6 +2298,7 @@ Defined by
 
 
 Whether Craft should set users’ usernames to their email addresses, rather than let them set their username separately.
+
 
 
 ### `useFileLocks`
@@ -2227,6 +2325,7 @@ If not set to `true` or `false`, Craft will automatically try to detect if the u
 locking and cache the results.
 
 
+
 ### `usePathInfo`
 
 Allowed types
@@ -2246,6 +2345,7 @@ Defined by
 Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
 
 Note that this setting only takes effect if [$omitScriptNameInUrls](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-omitscriptnameinurls) is set to false.
+
 
 
 ### `useProjectConfigFile`
@@ -2271,6 +2371,7 @@ and any changes to `config/project.yaml` will be applied back to the system, mak
 multiple environments to share the same project config despite having separate databases.
 
 
+
 ### `useSecureCookies`
 
 Allowed types
@@ -2294,6 +2395,7 @@ you're currently accessing is over `https://`. `true` will always set the flag, 
 will never automatically set the flag.
 
 
+
 ### `useSslOnTokenizedUrls`
 
 Allowed types
@@ -2315,6 +2417,7 @@ Craft will check the siteUrl and the protocol of the current request and if eith
 will use `https` in the tokenized URL. If not, will use `http`.
 
 If set to `false`, the Craft will always use `http`. If set to `true`, then, Craft will always use `https`.
+
 
 
 ### `userSessionDuration`
@@ -2341,6 +2444,7 @@ amount of time.
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
 
 
+
 ### `verificationCodeDuration`
 
 Allowed types
@@ -2360,6 +2464,7 @@ Defined by
 The amount of time a user verification code can be used before expiring.
 
 See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
+
 
 
 

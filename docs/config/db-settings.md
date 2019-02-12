@@ -75,6 +75,7 @@ can connect via SSL, you'd set these:
 ```
 
 
+
 ### `charset`
 
 Allowed types
@@ -92,6 +93,7 @@ Defined by
 
 
 The charset to use when creating tables.
+
 
 
 ### `database`
@@ -113,6 +115,7 @@ Defined by
 The name of the database to select.
 
 
+
 ### `driver`
 
 Allowed types
@@ -130,6 +133,7 @@ Defined by
 
 
 The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
+
 
 
 ### `dsn`
@@ -156,6 +160,7 @@ If you set this, then the [$server](https://docs.craftcms.com/api/v3/craft-confi
 [$driver](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-driver) and [$unixSocket](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-unixsocket) config settings will be ignored.
 
 
+
 ### `password`
 
 Allowed types
@@ -173,6 +178,7 @@ Defined by
 
 
 The database password to connect with.
+
 
 
 ### `port`
@@ -194,6 +200,7 @@ Defined by
 The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
 
 
+
 ### `schema`
 
 Allowed types
@@ -213,6 +220,7 @@ Defined by
 The database schema to use (PostgreSQL only).
 
 
+
 ### `server`
 
 Allowed types
@@ -230,6 +238,7 @@ Defined by
 
 
 The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
+
 
 
 ### `tablePrefix`
@@ -254,6 +263,7 @@ prefix here to avoid table naming conflicts per install. This can be no more tha
 characters, and must be all lowercase.
 
 
+
 ### `unixSocket`
 
 Allowed types
@@ -273,6 +283,7 @@ Defined by
 MySQL only. If this is set, then the CLI connection string (used for yiic) will
 connect to the Unix socket, instead of the server and port. If this is
 specified, then 'server' and 'port' settings are ignored.
+
 
 
 ### `url`
@@ -297,6 +308,7 @@ If this is set, the values for [$driver](https://docs.craftcms.com/api/v3/craft-
 will be extracted from it.
 
 
+
 ### `user`
 
 Allowed types
@@ -314,6 +326,7 @@ Defined by
 
 
 The database username to connect with.
+
 
 
 
