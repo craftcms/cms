@@ -891,11 +891,12 @@ class StringHelper extends \yii\helpers\StringHelper
      * counterparts, and the rest are removed.
      *
      * @param string $str The string to convert.
+     * @param string|null $language The language to pull ASCII character mappings for.
      * @return string The string that contains only ASCII characters.
      */
-    public static function toAscii(string $str): string
+    public static function toAscii(string $str, string $language = null): string
     {
-        return (string)BaseStringy::create($str)->toAscii(Craft::$app->language);
+        return (string)BaseStringy::create($str)->toAscii($language ?? Craft::$app->language);
     }
 
     /**

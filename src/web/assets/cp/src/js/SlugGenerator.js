@@ -17,7 +17,7 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend(
 
             if (Craft.limitAutoSlugsToAscii) {
                 // Convert extended ASCII characters to basic ASCII
-                sourceVal = Craft.asciiString(sourceVal);
+                sourceVal = Craft.asciiString(sourceVal, this.settings.charMap);
             }
 
             // Get the "words". Split on anything that is not alphanumeric.

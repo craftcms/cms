@@ -265,6 +265,16 @@ class GeneralConfig extends BaseObject
      */
     public $devMode = false;
     /**
+     * @var string[] Array of plugin handles that should be disabled, regardless of what the project config says.
+     * ---
+     * ```php
+     * 'dev' => [
+     *     'disabledPlugins' => ['webhooks'],
+     * ],
+     * ```
+     */
+    public $disabledPlugins = [];
+    /**
      * @var bool Whether to use a cookie to persist the CSRF token if [[enableCsrfProtection]] is enabled. If false, the CSRF token
      * will be stored in session under the 'csrfTokenName' config setting name. Note that while storing CSRF tokens in
      * session increases security, it requires starting a session for every page that a CSRF token is need, which may

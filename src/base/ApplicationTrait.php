@@ -19,6 +19,7 @@ use craft\errors\WrongEditionException;
 use craft\events\EditionChangeEvent;
 use craft\helpers\App;
 use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
@@ -554,6 +555,10 @@ trait ApplicationTrait
         }
         unset($row['edition'], $row['name'], $row['timezone'], $row['on'], $row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
 
+        if (Craft::$app->getDb()->getIsMysql() && isset($row['config'])) {
+            $row['config'] = html_entity_decode($row['config']);
+        }
+
         return $this->_info = new Info($row);
     }
 
@@ -579,6 +584,10 @@ trait ApplicationTrait
 
             if (array_key_exists('id', $attributes) && $attributes['id'] === null) {
                 unset($attributes['id']);
+            }
+
+            if (Craft::$app->getDb()->getIsMysql() && isset($attributes['config'])) {
+                $attributes['config'] = StringHelper::encodeMb4($attributes['config']);
             }
 
             if ($this->getIsInstalled()) {
@@ -657,8 +666,10 @@ trait ApplicationTrait
             $this->getDb()->open();
             return true;
         } catch (DbConnectException $e) {
+            Craft::error('There was a problem connecting to the database: '.$e->getMessage(), __METHOD__);
             return false;
         } catch (InvalidConfigException $e) {
+            Craft::error('There was a problem connecting to the database: '.$e->getMessage(), __METHOD__);
             return false;
         }
     }

@@ -259,9 +259,9 @@
                     : 'This can be set to an environment variable.'|t('app'))
                     ~ ' <a href="https://docs.craftcms.com/v3/config/environments.html" class="go">' ~ 'Learn more'|t('app') ~ '</a>'
             }) %}
-        {% elseif config.warning is not defined and (value == '@web' or value[0:5] == '@web/') %}
+        {% elseif config.warning is not defined and (value == '@web' or value[0:5] == '@web/') and craft.app.request.isWebAliasSetDynamically %}
             {% set config = config|merge({
-                warning: 'The `@web` alias is not recommended.'|t('app')
+                warning: 'The `@web` alias is not recommended if it is determined automatically.'|t('app')
             }) %}
         {% endif %}
     {% endif %}

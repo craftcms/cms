@@ -326,6 +326,11 @@ class ProjectConfig extends Component
      */
     public function set(string $path, $value)
     {
+        // Make sure it's actually changing
+        if ($value === $this->get($path)) {
+            return;
+        }
+
         if ($this->readOnly) {
             throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
         }
@@ -361,7 +366,7 @@ class ProjectConfig extends Component
         // Ensure that new data is processed
         unset($this->_parsedChanges[$path]);
 
-        return $this->processConfigChanges($path, true);
+        $this->processConfigChanges($path, true);
     }
 
     /**
@@ -961,6 +966,13 @@ class ProjectConfig extends Component
 
         foreach ($configMap as &$filePath) {
             $filePath = Craft::getAlias($filePath);
+
+            // If any of the file doesn't exist, return a generated map and make sure we save it as request ends
+            if (!file_exists($filePath)) {
+                $configMap = $this->_generateConfigMap();
+                $this->_updateConfigMap = true;
+                break;
+            }
         }
 
         return $this->_configMap = $configMap;

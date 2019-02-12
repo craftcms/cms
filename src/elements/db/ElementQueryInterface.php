@@ -251,8 +251,8 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * ```php
      * // Fetch {elements} created last month
-     * $start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-     * $end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+     * $start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+     * $end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
      *
      * ${elements-var} = {php-method}
      *     ->dateCreated(['and', ">= {$start}", "< {$end}"])
@@ -288,7 +288,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * ```php
      * // Fetch {elements} updated in the last week
-     * $lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+     * $lastWeek = (new \DateTime('1 week ago'))->format(\DateTime::ATOM);
      *
      * ${elements-var} = {php-method}
      *     ->dateUpdated(">= {$lastWeek}")

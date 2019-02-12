@@ -130,8 +130,8 @@ Possible values include:
 
 ```php
 // Fetch assets created last month
-$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+$start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+$end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
 
 $assets = \craft\elements\Asset::find()
     ->dateCreated(['and', ">= {$start}", "< {$end}"])
@@ -166,7 +166,7 @@ Possible values include:
 
 ```php
 // Fetch assets modified in the last month
-$start = new \DateTime('30 days ago')->format(\DateTime::ATOM);
+$start = (new \DateTime('30 days ago'))->format(\DateTime::ATOM);
 
 $assets = \craft\elements\Asset::find()
     ->dateModified(">= {$start}")
@@ -203,7 +203,7 @@ Possible values include:
 
 ```php
 // Fetch assets updated in the last week
-$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+$lastWeek = (new \DateTime('1 week ago'))->format(\DateTime::ATOM);
 
 $assets = \craft\elements\Asset::find()
     ->dateUpdated(">= {$lastWeek}")

@@ -489,7 +489,7 @@ class UserQuery extends ElementQuery
      *
      * ```php
      * // Fetch {elements} that logged in recently
-     * $aWeekAgo = new \DateTime('7 days ago')->format(\DateTime::ATOM);
+     * $aWeekAgo = (new \DateTime('7 days ago'))->format(\DateTime::ATOM);
      *
      * ${elements-var} = {php-method}
      *     ->lastLoginDate(">= {$aWeekAgo}")

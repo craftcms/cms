@@ -449,7 +449,7 @@ return [
     'For when you’re building something professionally for a client or team.' => '用于您为客户或团队创建某些专业事物时。',
     'Forgot your password?' => '忘记密码？',
     'Format' => '格式',
-    'Free' => '空闲',
+    'Free' => '免费',
     'Full Name' => '全名',
     'General' => '基本',
     'General Settings' => '基本设置',

@@ -1,5 +1,35 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.1.9 - 2019-02-12
+
+### Added
+- Added the `disabledPlugins` config setting. ([craftcms/webhooks#4](https://github.com/craftcms/webhooks/issues/4))
+- Added the `$language` argument to `craft\helpers\StringHelper::toAscii()`.
+- Added `craft\validators\SlugValidator::$language`.
+- Added `craft\web\twig\variables\Cp::getAsciiCharMap()`.
+
+### Changed
+- The operating system name & version are now shown in the System Report utility. ([#3784](https://github.com/craftcms/cms/issues/3784))
+- Craft’s installer no longer applies the current `project.yaml` file if the installed schema version doesn’t match the one in the file. ([#3783](https://github.com/craftcms/cms/issues/3783))
+- Control Panel settings no longer warn about using the `@web` alias, if it was defined by the `aliases` config setting. ([#3798](https://github.com/craftcms/cms/pull/3798))
+- The `clear-caches` console command now clears CP resource files if the `@webroot` alias was defined by the `aliases` config setting. ([#3787](https://github.com/craftcms/cms/issues/3787))
+- `craft\models\VolumeFolder::getVolume()` now throws an `InvalidConfigException` if its `$volumeId` property is set to an invalid volume ID, rather than returning `null`.
+- Craft now checks if all files in project config mapping are valid and regenerates the map if they are not.
+- Craft now auto-generates slugs using an ASCII char map based on the language of the current entry/category, rather than the logged-in user. ([#3820](https://github.com/craftcms/cms/issues/3820))
+
+### Fixed
+- Fixed a SQL error that could occur when deleting an asset. ([#3786](https://github.com/craftcms/cms/issues/3786))
+- Fixed an error that occurred when customizing element indexes if the `allowAdminChanges` config setting was disabled. ([#3788](https://github.com/craftcms/cms/issues/3788))
+- Fixed a bug where Checkboxes, Dropdown, Multi-select, and Radio Buttons fields wouldn’t pass validation if the selected option value was `true` or `false`.
+- Fixed an error that occurred on the Settings → Plugins page, if there were any plugins in the database that weren’t Composer-installed.
+- Fixed an error that could occur if an Assets field was configured to upload to a deleted volume. ([#3799](https://github.com/craftcms/cms/issues/3799))
+- Fixed a bug where sections’ Default Status settings weren’t always being respected. ([#3791](https://github.com/craftcms/cms/issues/3791))
+- Fixed a bug where only users with the “Edit users” user permission were allowed to upload a new user photo. ([#3735](https://github.com/craftcms/cms/issues/3735))
+- Fixed a bug where renaming a Matrix block type’s handle would result in new content columns being created in the database, and existing Matrix blocks losing their content. ([#3809](https://github.com/craftcms/cms/issues/3809))
+- Fixed a SQL error that could occur when updating to Craft 3.1 if any system messages contained emoji characters.
+- Fixed an error that could occur when syncing `project.yaml` changes if the `allowAdminChanges` config setting was disabled. ([#3823](https://github.com/craftcms/cms/issues/3823))
+- Fixed an error that could occur when working with elements, if a site had been created earlier in the same request. ([#3824](https://github.com/craftcms/cms/issues/3824))
+
 ## 3.1.8 - 2019-02-05
 
 ### Changed
@@ -13,7 +43,6 @@
 - Fixed a bug where `craft\helpers\DateTimeHelper::toDateTime()` was mistaking year-only values for Unix timestamps. ([#3772](https://github.com/craftcms/cms/issues/3772))
 - Fixed an error that occurred when a non-admin user attempted to edit a system message, or when the `allowAdminChanges` config setting was disabled. ([#3775](https://github.com/craftcms/cms/issues/3775))
 - Fixed a bug where it was hard to see error notifications on pages with a licensing alert. ([#3776](https://github.com/craftcms/cms/issues/3776))
-- Fixed a bug where it wasn’t possible for non-admin users to change their profile picture. ([#3735](https://github.com/craftcms/cms/issues/3735))
 - Fixed a JavaScript error that occurred when adding a new row to a custom editable table that contained a `time` column, if no rows existed on page load. ([#3780](https://github.com/craftcms/cms/issues/3780))
 
 ## 3.1.7 - 2019-01-31

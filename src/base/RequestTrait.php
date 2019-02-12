@@ -19,6 +19,19 @@ use yii\base\InvalidConfigException;
  */
 trait RequestTrait
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var bool
+     */
+    public $isWebrootAliasSetDynamically = false;
+
+    /**
+     * @var bool
+     */
+    public $isWebAliasSetDynamically = false;
+
     // Public Methods
     // =========================================================================
 

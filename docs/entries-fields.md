@@ -92,7 +92,7 @@ If you just need to check if there are any related entries (but don’t need to 
 {% endif %}
 ```
 
-You can set [parameters](dev/element-queries/entry-queries.md#parameters) on the entry query as well. For example, to only fetch entries in the `news` section, set the [sectionId](dev/element-queries/entry-queries.md#sectionid) param:
+You can set [parameters](dev/element-queries/entry-queries.md#parameters) on the entry query as well. For example, to only fetch entries in the `news` section, set the [section](dev/element-queries/entry-queries.md#section) param:
 
 ```twig
 {% set relatedEntries = entry.<FieldHandle>

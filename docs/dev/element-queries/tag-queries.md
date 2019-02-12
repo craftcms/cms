@@ -129,8 +129,8 @@ Possible values include:
 
 ```php
 // Fetch tags created last month
-$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+$start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+$end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
 
 $tags = \craft\elements\Tag::find()
     ->dateCreated(['and', ">= {$start}", "< {$end}"])
@@ -167,7 +167,7 @@ Possible values include:
 
 ```php
 // Fetch tags updated in the last week
-$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+$lastWeek = (new \DateTime('1 week ago'))->format(\DateTime::ATOM);
 
 $tags = \craft\elements\Tag::find()
     ->dateUpdated(">= {$lastWeek}")

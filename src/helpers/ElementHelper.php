@@ -209,17 +209,7 @@ class ElementHelper
     public static function supportedSitesForElement(ElementInterface $element): array
     {
         $sites = [];
-
-        static $siteUidMap = null;
-
-        // Load an ID => UID map
-        if (empty($siteUidMap)) {
-            $allSites = Craft::$app->getSites()->getAllSites();
-
-            foreach ($allSites as $siteModel) {
-                $siteUidMap[$siteModel->id] = $siteModel->uid;
-            }
-        }
+        $siteUidMap = ArrayHelper::map(Craft::$app->getSites()->getAllSites(), 'id', 'uid');
 
         foreach ($element->getSupportedSites() as $site) {
             if (!is_array($site)) {

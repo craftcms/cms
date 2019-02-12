@@ -584,8 +584,8 @@ class EntryQuery extends ElementQuery
      *
      * ```php
      * // Fetch {elements} posted last month
-     * $start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-     * $end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+     * $start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+     * $end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
      *
      * ${elements-var} = {php-method}
      *     ->postDate(['and', ">= {$start}", "< {$end}"])
@@ -708,7 +708,7 @@ class EntryQuery extends ElementQuery
      *
      * ```php
      * // Fetch {elements} expiring this month
-     * $nextMonth = new \DateTime('first day of next month')->format(\DateTime::ATOM);
+     * $nextMonth = (new \DateTime('first day of next month'))->format(\DateTime::ATOM);
      *
      * ${elements-var} = {php-method}
      *     ->expiryDate("< {$nextMonth}")

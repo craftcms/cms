@@ -153,9 +153,11 @@ class Request extends \yii\web\Request
         // in case a site's base URL requires @web, and so we can include the host info in @web
         if (Craft::getRootAlias('@webroot') === false) {
             Craft::setAlias('@webroot', dirname($this->getScriptFile()));
+            $this->isWebrootAliasSetDynamically = true;
         }
         if (Craft::getRootAlias('@web') === false) {
             Craft::setAlias('@web', $this->getHostInfo() . $this->getBaseUrl());
+            $this->isWebAliasSetDynamically = true;
         }
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();

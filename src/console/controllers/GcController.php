@@ -26,7 +26,7 @@ class GcController extends Controller
     public $defaultAction = 'run';
 
     /**
-     * @var bool Whether allsoft-deleted items should be deleted, rather than just
+     * @var bool Whether all soft-deleted items should be deleted, rather than just
      * the ones that were deleted long enough ago to be ready for hard-deletion
      * per the `softDeleteDuration` config setting.
      */

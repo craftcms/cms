@@ -177,8 +177,8 @@ Possible values include:
 
 ```php
 // Fetch elements created last month
-$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+$start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+$end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
 
 $elements = ElementClass::find()
     ->dateCreated(['and', ">= {$start}", "< {$end}"])
@@ -215,7 +215,7 @@ Possible values include:
 
 ```php
 // Fetch elements updated in the last week
-$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+$lastWeek = (new \DateTime('1 week ago'))->format(\DateTime::ATOM);
 
 $elements = ElementClass::find()
     ->dateUpdated(">= {$lastWeek}")
@@ -468,7 +468,7 @@ Possible values include:
 
 ```php
 // Fetch elements that logged in recently
-$aWeekAgo = new \DateTime('7 days ago')->format(\DateTime::ATOM);
+$aWeekAgo = (new \DateTime('7 days ago'))->format(\DateTime::ATOM);
 
 $elements = ElementClass::find()
     ->lastLoginDate(">= {$aWeekAgo}")
