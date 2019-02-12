@@ -361,7 +361,7 @@ class ProjectConfig extends Component
         // Ensure that new data is processed
         unset($this->_parsedChanges[$path]);
 
-        return $this->processConfigChanges($path, true);
+        $this->processConfigChanges($path, true);
     }
 
     /**
