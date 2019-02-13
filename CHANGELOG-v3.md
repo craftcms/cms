@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fix a bug where deleting a user photo using the `users/save-user` action would not delete it.
+
 ## 3.1.9.1 - 2019-02-12
 
 ### Fixed
