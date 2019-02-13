@@ -300,7 +300,6 @@ EOD;
         $fileContents = file_get_contents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);
         FileHelper::writeToFile($destinationPath, $fileContents);
-
         include $destinationPath;
     }
 }
