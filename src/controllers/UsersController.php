@@ -1751,6 +1751,8 @@ class UsersController extends Controller
 
         if (Craft::$app->getRequest()->getBodyParam('deletePhoto')) {
             $users->deleteUserPhoto($user);
+            $user->photoId = null;
+            Craft::$app->getElements()->saveElement($user);
         }
 
         // Did they upload a new one?

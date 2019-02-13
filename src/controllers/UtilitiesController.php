@@ -480,26 +480,30 @@ class UtilitiesController extends Controller
             ->id($params['id'])
             ->anyStatus();
 
+        $searchService = Craft::$app->getSearch();
+
         foreach ($siteIds as $siteId) {
             $query->siteId($siteId);
             $element = $query->one();
 
             if ($element) {
                 /** @var Element $element */
-                Craft::$app->getSearch()->indexElementAttributes($element);
+                $searchService->indexElementAttributes($element);
 
                 if ($class::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
                     $keywords = [];
 
                     foreach ($fieldLayout->getFields() as $field) {
                         /** @var Field $field */
-                        // Set the keywords for the content's site
-                        $fieldValue = $element->getFieldValue($field->handle);
-                        $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-                        $keywords[$field->id] = $fieldSearchKeywords;
+                        if ($field->searchable) {
+                            // Set the keywords for the content's site
+                            $fieldValue = $element->getFieldValue($field->handle);
+                            $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
+                            $keywords[$field->id] = $fieldSearchKeywords;
+                        }
                     }
 
-                    Craft::$app->getSearch()->indexElementFields($element->id, $siteId, $keywords);
+                    $searchService->indexElementFields($element->id, $siteId, $keywords);
                 }
             }
         }

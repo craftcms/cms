@@ -370,6 +370,11 @@ class FileHelper extends \yii\helpers\FileHelper
             throw new ErrorException("Unable to write new contents to \"{$file}\".");
         }
 
+        // Invalidate opcache
+        if (function_exists('opcache_invalidate')) {
+            @opcache_invalidate($file, true);
+        }
+
         if ($lock) {
             $mutex->release($lockName);
         }

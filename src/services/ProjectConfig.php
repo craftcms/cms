@@ -326,12 +326,7 @@ class ProjectConfig extends Component
      */
     public function set(string $path, $value)
     {
-        // Make sure it's actually changing
-        if ($value === $this->get($path)) {
-            return;
-        }
-
-        if ($this->readOnly) {
+        if ($this->readOnly && $value !== $this->get($path)) {
             throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
         }
 

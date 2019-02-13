@@ -112,7 +112,7 @@ return [
     'components' => [
         'mailer' => function() {
             // Get the stored email settings
-            $settings = Craft::$app->systemSettings->getEmailSettings();
+            $settings = craft\helpers\App::mailSettings();
 
             // Override the transport adapter class
             $settings->transportType = craft\mailgun\MailgunAdapter::class;
