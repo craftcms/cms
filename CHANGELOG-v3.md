@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.1.9.1 - 2019-02-12
+
+### Fixed
+- Fixed a bug where `Craft::alias()` wasn’t beginning the response string with an `@` character if no `@` was passed into `Craft::setAlias()` to begin with.
+- Fixed an error that could occur if there were any HTML entities in the project config.
+
 ## 3.1.9 - 2019-02-12
 
 ### Added

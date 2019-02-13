@@ -29,6 +29,9 @@ class Yii extends BaseYii
      */
     public static function setAlias($alias, $path)
     {
+        if (strncmp($alias, '@', 1)) {
+            $alias = '@' . $alias;
+        }
         parent::setAlias($alias, $path);
         self::$_aliasPaths[$alias] = FileHelper::normalizePath($path);
         self::$_aliasesChanged = true;

@@ -556,7 +556,7 @@ trait ApplicationTrait
         unset($row['edition'], $row['name'], $row['timezone'], $row['on'], $row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
 
         if (Craft::$app->getDb()->getIsMysql() && isset($row['config'])) {
-            $row['config'] = html_entity_decode($row['config']);
+            $row['config'] = StringHelper::decdec($row['config']);
         }
 
         return $this->_info = new Info($row);
@@ -586,8 +586,12 @@ trait ApplicationTrait
                 unset($attributes['id']);
             }
 
-            if (Craft::$app->getDb()->getIsMysql() && isset($attributes['config'])) {
-                $attributes['config'] = StringHelper::encodeMb4($attributes['config']);
+            if (
+                isset($attributes['config']) &&
+                Craft::$app->getDb()->getIsMysql() &&
+                StringHelper::containsMb4($attributes['config'])
+            ) {
+                $attributes['config'] = 'base64:' . base64_encode($attributes['config']);
             }
 
             if ($this->getIsInstalled()) {
