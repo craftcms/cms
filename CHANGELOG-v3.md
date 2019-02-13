@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Fixed
-- Fix a bug where deleting a user photo using the `users/save-user` action would not delete it.
+- Fixed a bug where the `users/save-user` action wasn’t deleting user photos properly.
 
 ## 3.1.9.1 - 2019-02-12
 
