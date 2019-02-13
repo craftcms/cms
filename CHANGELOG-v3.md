@@ -4,6 +4,7 @@
 
 ### Changed
 - `craft\helpers\FileHelper::wrietToFile()` now invalidates the OPcache for the file. ([#3838](https://github.com/craftcms/cms/pull/3838))
+- The `serve` command now uses `@webroot` as the default `docroot` option value. ([#3770](https://github.com/craftcms/cms/pull/3770))
 
 ### Fixed
 - Fixed a bug where the `users/save-user` action wasn’t deleting user photos properly.
