@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.10 - 2019-02-13
 
 ### Changed
 - `craft\helpers\FileHelper::wrietToFile()` now invalidates the OPcache for the file. ([#3838](https://github.com/craftcms/cms/pull/3838))
