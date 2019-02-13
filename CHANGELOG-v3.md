@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where the `users/save-user` action wasn’t deleting user photos properly.
+- Fixed a bug where changes to Matrix block type fields’ settings weren’t always saving. ([#3832](https://github.com/craftcms/cms/issues/3832))
 
 ## 3.1.9.1 - 2019-02-12
 
