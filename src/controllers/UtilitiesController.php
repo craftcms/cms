@@ -495,10 +495,12 @@ class UtilitiesController extends Controller
 
                     foreach ($fieldLayout->getFields() as $field) {
                         /** @var Field $field */
-                        // Set the keywords for the content's site
-                        $fieldValue = $element->getFieldValue($field->handle);
-                        $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-                        $keywords[$field->id] = $fieldSearchKeywords;
+                        if ($field->searchable) {
+                            // Set the keywords for the content's site
+                            $fieldValue = $element->getFieldValue($field->handle);
+                            $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
+                            $keywords[$field->id] = $fieldSearchKeywords;
+                        }
                     }
 
                     $searchService->indexElementFields($element->id, $siteId, $keywords);
