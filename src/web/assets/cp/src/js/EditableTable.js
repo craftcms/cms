@@ -410,7 +410,9 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 col = this.table.columns[colId];
 
                 if (col.autopopulate && typeof textareasByColId[col.autopopulate] !== 'undefined' && !textareasByColId[colId].val()) {
-                    new Craft.HandleGenerator(textareasByColId[colId], textareasByColId[col.autopopulate]);
+                    new Craft.HandleGenerator(textareasByColId[colId], textareasByColId[col.autopopulate], {
+                        allowNonAlphaStart: true
+                    });
                 }
             }
 

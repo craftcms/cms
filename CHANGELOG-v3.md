@@ -8,6 +8,7 @@
 ### Fixed
 - Fixed a bug where the Plugin Store wouldn’t load if the `baseCpUrl` config setting was set to a URL with a different scheme than Craft believed the request had.
 - Fixed a validation error that would occur on non-required Checkboxes fields if no options were selected. ([#3844](https://github.com/craftcms/cms/issues/3844))
+- Fixed a bug where the Value column for Checkboxes, Dropdown, Multi-select, and Radio Buttons fields’ Options settings weren’t auto-populating if the Option Label column was set to a number.
 
 ## 3.1.10 - 2019-02-13
 

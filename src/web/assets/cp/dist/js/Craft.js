@@ -1,4 +1,4 @@
-/*!   - 2019-02-12 */
+/*!   - 2019-02-14 */
 (function($){
 
 /** global: Craft */
@@ -13023,7 +13023,9 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 col = this.table.columns[colId];
 
                 if (col.autopopulate && typeof textareasByColId[col.autopopulate] !== 'undefined' && !textareasByColId[colId].val()) {
-                    new Craft.HandleGenerator(textareasByColId[colId], textareasByColId[col.autopopulate]);
+                    new Craft.HandleGenerator(textareasByColId[colId], textareasByColId[col.autopopulate], {
+                        allowNonAlphaStart: true
+                    });
                 }
             }
 
@@ -15184,8 +15186,10 @@ Craft.HandleGenerator = Craft.BaseInputGenerator.extend(
             // Convert extended ASCII characters to basic ASCII
             handle = Craft.asciiString(handle);
 
-            // Handle must start with a letter
-            handle = handle.replace(/^[^a-z]+/, '');
+            if (!this.settings.allowNonAlphaStart) {
+                // Handle must start with a letter
+                handle = handle.replace(/^[^a-z]+/, '');
+            }
 
             // Get the "words"
             var words = Craft.filterArray(handle.split(/[^a-z0-9]+/));
