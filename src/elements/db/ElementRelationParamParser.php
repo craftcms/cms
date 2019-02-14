@@ -303,14 +303,17 @@ class ElementRelationParamParser extends BaseObject
 
                         $sourcesAlias = 'sources' . $this->_relateSourcesCount;
                         $targetMatrixBlocksAlias = 'target_matrixblocks' . $this->_relateTargetMatrixBlocksCount;
+                        $targetMatrixElementsAlias = 'target_matrixelements' . $this->_relateTargetMatrixBlocksCount;
 
                         $subQuery = (new Query())
                             ->select([$sourcesAlias . '.targetId'])
                             ->from([$sourcesAlias => Table::RELATIONS])
                             ->innerJoin(Table::MATRIXBLOCKS . ' ' . $targetMatrixBlocksAlias, "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]")
+                            ->innerJoin(Table::ELEMENTS . ' ' . $targetMatrixElementsAlias, "[[{$targetMatrixElementsAlias}.id]] = [[{$targetMatrixBlocksAlias}.id]]")
                             ->where([
                                 $targetMatrixBlocksAlias . '.ownerId' => $relElementIds,
                                 $targetMatrixBlocksAlias . '.fieldId' => $fieldModel->id,
+                                $targetMatrixElementsAlias . '.dateDeleted' => null,
                             ]);
 
                         if ($relCriteria['sourceSite']) {
@@ -327,13 +330,16 @@ class ElementRelationParamParser extends BaseObject
                     } else {
                         $this->_relateSourceMatrixBlocksCount++;
                         $sourceMatrixBlocksAlias = 'source_matrixblocks' . $this->_relateSourceMatrixBlocksCount;
+                        $sourceMatrixElementsAlias = 'source_matrixelements' . $this->_relateSourceMatrixBlocksCount;
                         $matrixBlockTargetsAlias = 'matrixblock_targets' . $this->_relateSourceMatrixBlocksCount;
 
                         $subQuery = (new Query())
                             ->select([$sourceMatrixBlocksAlias . '.ownerId'])
                             ->from([$sourceMatrixBlocksAlias => Table::MATRIXBLOCKS])
+                            ->innerJoin(Table::ELEMENTS . ' ' . $sourceMatrixElementsAlias, "[[{$sourceMatrixElementsAlias}.id]] = [[{$sourceMatrixBlocksAlias}.id]]")
                             ->innerJoin(Table::RELATIONS . ' ' . $matrixBlockTargetsAlias, "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]")
                             ->where([
+                                $sourceMatrixElementsAlias . '.dateDeleted' => null,
                                 $matrixBlockTargetsAlias . '.targetId' => $relElementIds,
                                 $sourceMatrixBlocksAlias . '.fieldId' => $fieldModel->id
                             ]);

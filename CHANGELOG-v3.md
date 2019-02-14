@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where the `relatedTo` element query param could include results for elements that were related via soft-deleted Matrix blocks. ([#3846](https://github.com/craftcms/cms/issues/3846))
+
 ## 3.1.11 - 2019-02-14
 
 ### Added
