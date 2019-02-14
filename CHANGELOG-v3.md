@@ -1,5 +1,17 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.1.11 - 2019-02-14
+
+### Added
+- Added `craft\helpers\UrlHelper::rootRelativeUrl()`.
+
+### Fixed
+- Fixed a bug where the Plugin Store wouldn’t load if the `baseCpUrl` config setting was set to a URL with a different scheme than Craft believed the request had.
+- Fixed a validation error that would occur on non-required Checkboxes and Multi-select fields if no options were selected. ([#3844](https://github.com/craftcms/cms/issues/3844))
+- Fixed a validation error that would occur on Dropdown and Radio Buttons fields if the selected option’s value was `0`. ([#3842](https://github.com/craftcms/cms/issues/3842))
+- Fixed a bug where the Value column for Checkboxes, Dropdown, Multi-select, and Radio Buttons fields’ Options settings weren’t auto-populating if the Option Label column was set to a number.
+- Fixed an error on the Settings → Users page if `users.photoVolumeUid` was not defined in the project config. ([#3303](https://github.com/craftcms/cms/issues/3303))
+
 ## 3.1.10 - 2019-02-13
 
 ### Changed
