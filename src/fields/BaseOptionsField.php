@@ -179,7 +179,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = new MultiOptionsFieldData($options);
         } else {
             // Convert the value to a SingleOptionFieldData object
-            $value = reset($selectedValues) ?: null;
+            $value = !empty($selectedValues) ? reset($selectedValues) : null;
             $label = $this->optionLabel($value);
             $value = new SingleOptionFieldData($label, $value, true);
         }
