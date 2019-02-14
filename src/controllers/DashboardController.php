@@ -435,7 +435,7 @@ class DashboardController extends Controller
                     $templateFiles = FileHelper::findFiles($templatesPath);
                     foreach ($templateFiles as $templateFile) {
                         // Preserve the directory structure within the templates folder
-                        $zip->addFile($templateFile, 'templates' . substr($templateFile, strlen($templatesPath)));
+                        $zip->addFile($templateFile, 'templates' . str_replace(DIRECTORY_SEPARATOR, '/', substr($templateFile, strlen($templatesPath))));
                     }
                 }
             }
