@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where the Plugin Store wouldn’t load if the `baseCpUrl` config setting was set to a URL with a different scheme than Craft believed the request had.
+- Fixed a validation error that would occur on non-required Checkboxes fields if no options were selected. ([#3844](https://github.com/craftcms/cms/issues/3844))
 
 ## 3.1.10 - 2019-02-13
 

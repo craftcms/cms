@@ -157,6 +157,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         if (is_string($value) && (
+            $value === '' ||
             strpos($value, '[') === 0 ||
             strpos($value, '{') === 0
         )) {
