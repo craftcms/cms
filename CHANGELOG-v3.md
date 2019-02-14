@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where the `relatedTo` element query param could include results for elements that were related via soft-deleted Matrix blocks. ([#3846](https://github.com/craftcms/cms/issues/3846))
+- Fixed a bug where some edge case search queries would not match on MySQL servers.
 
 ## 3.1.11 - 2019-02-14
 
