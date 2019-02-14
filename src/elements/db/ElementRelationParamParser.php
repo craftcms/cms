@@ -307,7 +307,7 @@ class ElementRelationParamParser extends BaseObject
                         $subQuery = (new Query())
                             ->select([$sourcesAlias . '.targetId'])
                             ->from([$sourcesAlias => Table::RELATIONS])
-                            ->innerJoin('{{%matrixblocks}} ' . $targetMatrixBlocksAlias, "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]")
+                            ->innerJoin(Table::MATRIXBLOCKS . ' ' . $targetMatrixBlocksAlias, "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]")
                             ->where([
                                 'and',
                                 ['in', $targetMatrixBlocksAlias . '.ownerId', $relElementIds],
@@ -333,7 +333,7 @@ class ElementRelationParamParser extends BaseObject
                         $subQuery = (new Query())
                             ->select([$sourceMatrixBlocksAlias . '.ownerId'])
                             ->from([$sourceMatrixBlocksAlias => Table::MATRIXBLOCKS])
-                            ->innerJoin('{{%relations}} ' . $matrixBlockTargetsAlias, "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]")
+                            ->innerJoin(Table::RELATIONS . ' ' . $matrixBlockTargetsAlias, "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]")
                             ->where([
                                 'and',
                                 ['in', $matrixBlockTargetsAlias . '.targetId', $relElementIds],
