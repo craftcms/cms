@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.11 - 2019-02-14
 
 ### Added
 - Added `craft\helpers\UrlHelper::rootRelativeUrl()`.
