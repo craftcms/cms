@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\helpers\UrlHelper::rootRelativeUrl()`.
+
+### Fixed
+- Fixed a bug where the Plugin Store wouldn’t load if the `baseCpUrl` config setting was set to a URL with a different scheme than Craft believed the request had.
+
 ## 3.1.10 - 2019-02-13
 
 ### Changed

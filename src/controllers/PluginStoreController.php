@@ -430,11 +430,6 @@ class PluginStoreController extends Controller
      */
     private function _getVueAppBaseUrl(): string
     {
-        $url = UrlHelper::url('plugin-store');
-
-        $hostInfo = Craft::$app->getRequest()->getHostInfo();
-        $hostInfo = StringHelper::ensureRight($hostInfo, '/');
-
-        return (string)substr($url, strlen($hostInfo) - 1);
+        return UrlHelper::rootRelativeUrl(UrlHelper::url('plugin-store'));
     }
 }
