@@ -51,7 +51,7 @@
                 first: true,
                 label: "User Photo Location"|t('app'),
                 instructions: "Where do you want to store user photos? Note that the subfolder path can contain variables like <code>{username}</code>."|t('app')
-            }, assetLocationInput(volumeList, settings.photoVolumeUid, settings.photoSubpath)) }}
+            }, assetLocationInput(volumeList, settings.photoVolumeUid ?? null, settings.photoSubpath ?? null)) }}
         {% else %}
             {{ forms.field({
                 first: true,
