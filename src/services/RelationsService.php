@@ -52,7 +52,7 @@ class RelationsService extends BaseApplicationComponent
 			craft()->db->createCommand()->delete('relations', $oldRelationConditions, $oldRelationParams);
 
 			// Add the new ones
-			if ($targetIds)
+			if (array_filter($targetIds))
 			{
 				$values = array();
 
