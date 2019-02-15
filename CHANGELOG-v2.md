@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.7.5
+
 ### Changed
 - Suspended users are no longer shown when viewing pending or locked users. ([#3556](https://github.com/craftcms/cms/issues/3556))
 
