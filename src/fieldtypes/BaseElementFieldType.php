@@ -581,7 +581,10 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 			// Make sure it's not a heading
 			if (!isset($source['heading']))
 			{
-				$options[] = array('label' => $source['label'], 'value' => $source['key']);
+				$options[] = array(
+					'label' => HtmlHelper::encode($source['label']),
+					'value' => $source['key'],
+				);
 				$optionNames[] = $source['label'];
 			}
 		}

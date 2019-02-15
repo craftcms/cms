@@ -91,7 +91,10 @@ class AssetsFieldType extends BaseElementFieldType
 
 		foreach (craft()->assetSources->getAllSources() as $source)
 		{
-			$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
+			$sourceOptions[] = array(
+				'label' => HtmlHelper::encode($source->name),
+				'value' => $source->id,
+			);
 		}
 
 		$fileKindOptions = array();

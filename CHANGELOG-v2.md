@@ -13,8 +13,7 @@
 - Fixed an error that would occur when calling `RelationsService::saveRelations()` if `$targetIds` contained any empty values. ([#3850](https://github.com/craftcms/cms/pull/3850))
 
 ### Security
-- Fixed a self-XSS vulnerability in the Recent Entries widget.
-- Fixed a self-XSS vulnerability in the Feed widget.
+- Fixed XSS vulnerabilities.
 - URLs are no longer allowed in users’ first or last names.
 
 ## 2.7.4 - 2018-11-27
