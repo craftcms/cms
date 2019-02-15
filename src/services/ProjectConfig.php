@@ -326,16 +326,18 @@ class ProjectConfig extends Component
      */
     public function set(string $path, $value)
     {
-        if ($this->readOnly && $value !== $this->get($path)) {
-            throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
+        if ($value !== $this->get($path)) {
+            if ($this->readOnly) {
+                throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
+            }
+
+            if (!$this->_timestampUpdated) {
+                $this->_timestampUpdated = true;
+                $this->set('dateModified', DateTimeHelper::currentTimeStamp());
+            }
         }
 
         $targetFilePath = null;
-
-        if (!$this->_timestampUpdated) {
-            $this->_timestampUpdated = true;
-            $this->set('dateModified', DateTimeHelper::currentTimeStamp());
-        }
 
         if ($this->_useConfigFile()) {
             $configMap = $this->_getStoredConfigMap();
