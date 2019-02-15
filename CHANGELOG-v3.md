@@ -6,6 +6,7 @@
 - Fixed a bug where the `relatedTo` element query param could include results for elements that were related via soft-deleted Matrix blocks. ([#3846](https://github.com/craftcms/cms/issues/3846))
 - Fixed a bug where some search queries were not returning results when they should, if using MySQL.
 - Fixed an error that could occur when syncing `project.yaml` changes if the `allowAdminChanges` config setting was disabled. ([#3823](https://github.com/craftcms/cms/issues/3823))
+- Fixed an `InvalidConfigException` that was thrown if a user’s photo was soft-deleted. ([#3849](https://github.com/craftcms/cms/issues/3849))
 
 ## 3.1.11 - 2019-02-14
 
