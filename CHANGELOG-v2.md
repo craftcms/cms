@@ -10,6 +10,7 @@
 - Fixed a bug where element indexes wouldn’t return to the previous sort selection after the search input was cleared. ([#3548](https://github.com/craftcms/cms/issues/3548))
 - Fixed a bug where password-reset email send errors weren’t being properly reported on the login page if the `preventUserEnumeration` config setting was enabled.
 - Fixed a bug where Edit User pages weren’t reporting email send errors when the “Send password reset email” option was chosen. ([#3549](https://github.com/craftcms/cms/issues/3549))
+- Fixed an error that would occur when calling `RelationsService::saveRelations()` if `$targetIds` contained any empty values. ([#3850](https://github.com/craftcms/cms/pull/3850))
 
 ### Security
 - Fixed a self-XSS vulnerability in the Recent Entries widget.

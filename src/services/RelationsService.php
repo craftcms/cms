@@ -33,8 +33,8 @@ class RelationsService extends BaseApplicationComponent
 			$targetIds = array();
 		}
 
-		// Prevent duplicate target IDs.
-		$targetIds = array_unique($targetIds);
+		// Prevent duplicate/empty target IDs.
+		$targetIds = array_unique(array_filter($targetIds));
 
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
