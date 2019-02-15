@@ -15,6 +15,7 @@
 ### Security
 - Fixed a self-XSS vulnerability in the Recent Entries widget.
 - Fixed a self-XSS vulnerability in the Feed widget.
+- URLs are no longer allowed in users’ first or last names.
 
 ## 2.7.4 - 2018-11-27
 

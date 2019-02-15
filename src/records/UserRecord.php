@@ -82,6 +82,7 @@ class UserRecord extends BaseRecord
 		$rules = parent::rules();
 		$rules[] = array('unverifiedEmail', 'validateUnverifiedEmail');
 		$rules[] = array('username', 'validateUsername');
+		$rules[] = array(array('firstName', 'lastName'), 'validateName');
 
 		return $rules;
 	}
@@ -110,6 +111,23 @@ class UserRecord extends BaseRecord
 		if (preg_match('/\s+/', $this->username))
 		{
 			$this->addError('username', Craft::t('Spaces are not allowed in the username.'));
+		}
+	}
+
+	/**
+	 * Validates the unverified email address.
+	 *
+	 * @param $attribute
+	 */
+	public function validateName($attribute)
+	{
+		$value = $this->$attribute;
+
+		if (strpos($value, '://') !== false)
+		{
+			$this->addError($attribute, Craft::t('Invalid value “{value}”.', array(
+				'value' => $value,
+			)));
 		}
 	}
 
