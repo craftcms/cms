@@ -64,25 +64,6 @@ class UserRecord extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::validate()
-	 *
-	 * @param null $attributes
-	 * @param bool $clearErrors
-	 *
-	 * @return bool|null
-	 */
-	public function validate($attributes = null, $clearErrors = true)
-	{
-		// Don't allow whitespace in the username.
-		if (preg_match('/\s+/', $this->username))
-		{
-			$this->addError('username', Craft::t('Spaces are not allowed in the username.'));
-		}
-
-		return parent::validate($attributes, false);
-	}
-
-	/**
 	 * Sets a user's status to active.
 	 */
 	public function setActive()
@@ -100,22 +81,53 @@ class UserRecord extends BaseRecord
 	{
 		$rules = parent::rules();
 		$rules[] = array('unverifiedEmail', 'validateUnverifiedEmail');
+		$rules[] = array('username', 'validateUsername');
+		$rules[] = array(array('firstName', 'lastName'), 'validateName');
 
 		return $rules;
 	}
 
 	/**
-	 * @param $attribute
+	 * Validates the unverified email address.
 	 */
-	public function validateUnverifiedEmail($attribute)
+	public function validateUnverifiedEmail()
 	{
-		$value = $this->$attribute;
+		$value = $this->unverifiedEmail;
 		$user = craft()->users->getUserByEmail($value);
 
 		// In the case of saving a new user, these will be the identical until they verify their address
 		if ($user && $user->email !== $value)
 		{
 			$this->addError('email', Craft::t('That email address is already in use. Please choose another.'));
+		}
+	}
+
+	/**
+	 * Validates the username.
+	 */
+	public function validateUsername()
+	{
+		// Don't allow whitespace in the username.
+		if (preg_match('/\s+/', $this->username))
+		{
+			$this->addError('username', Craft::t('Spaces are not allowed in the username.'));
+		}
+	}
+
+	/**
+	 * Validates the unverified email address.
+	 *
+	 * @param $attribute
+	 */
+	public function validateName($attribute)
+	{
+		$value = $this->$attribute;
+
+		if (strpos($value, '://') !== false)
+		{
+			$this->addError($attribute, Craft::t('Invalid value “{value}”.', array(
+				'value' => $value,
+			)));
 		}
 	}
 

@@ -1872,7 +1872,7 @@ class ElementsService extends BaseApplicationComponent
 			{
 				// Make sure the persisting element isn't already a part of that structure
 				$persistingElementIsInStructureToo = (bool) craft()->db->createCommand()
-					->from('structureElements')
+					->from('structureelements')
 					->where(array(
 						'structureId' => $structureElement['structureId'],
 						'elementId' => $prevailingElementId

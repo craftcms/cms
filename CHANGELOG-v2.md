@@ -1,5 +1,23 @@
 # Release Notes for Craft CMS 2.x
 
+## Unreleased
+
+## 2.7.5
+
+### Changed
+- Suspended users are no longer shown when viewing pending or locked users. ([#3556](https://github.com/craftcms/cms/issues/3556))
+
+### Fixed
+- Fixed a SQL error that could occur when merging two elements together if MySQL was set to a case-sensitive collation. ([#3539](https://github.com/craftcms/cms/issues/3539))
+- Fixed a bug where element indexes wouldn’t return to the previous sort selection after the search input was cleared. ([#3548](https://github.com/craftcms/cms/issues/3548))
+- Fixed a bug where password-reset email send errors weren’t being properly reported on the login page if the `preventUserEnumeration` config setting was enabled.
+- Fixed a bug where Edit User pages weren’t reporting email send errors when the “Send password reset email” option was chosen. ([#3549](https://github.com/craftcms/cms/issues/3549))
+- Fixed an error that would occur when calling `RelationsService::saveRelations()` if `$targetIds` contained any empty values. ([#3850](https://github.com/craftcms/cms/pull/3850))
+
+### Security
+- Fixed XSS vulnerabilities.
+- URLs are no longer allowed in users’ first or last names.
+
 ## 2.7.4 - 2018-11-27
 
 ### Fixed

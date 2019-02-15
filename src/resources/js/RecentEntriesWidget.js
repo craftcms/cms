@@ -40,11 +40,13 @@ Craft.RecentEntriesWidget = Garnish.Base.extend(
 		this.$tbody.prepend(
 			'<tr>' +
 				'<td>' +
-					'<a href="'+entry.url+'">'+entry.title+'</a> ' +
+					'<a href="'+entry.url+'">'+Craft.escapeHtml(entry.title)+'</a> ' +
 					'<span class="light">' +
-						(entry.dateCreated ? Craft.formatDate(entry.dateCreated) : '') +
-						(entry.dateCreated && entry.username && Craft.edition >= Craft.Client ? ', ' : '') +
-						(entry.username && Craft.edition >= Craft.Client ? entry.username : '') +
+						Craft.escapeHtml(
+							(entry.dateCreated ? Craft.formatDate(entry.dateCreated) : '') +
+							(entry.dateCreated && entry.username && Craft.edition >= Craft.Client ? ', ' : '') +
+							(entry.username && Craft.edition >= Craft.Client ? entry.username : '')
+						) +
 					'</span>' +
 				'</td>' +
 			'</tr>'
