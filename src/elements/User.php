@@ -527,7 +527,7 @@ class User extends Element implements IdentityInterface
     public $inheritorOnDelete;
 
     /**
-     * @var Asset|null user photo
+     * @var Asset|false|null user photo
      */
     private $_photo;
 
@@ -1191,23 +1191,18 @@ class User extends Element implements IdentityInterface
      * Returns the user's photo.
      *
      * @return Asset|null
-     * @throws InvalidConfigException if [[photoId]] is set but invalid
      */
     public function getPhoto()
     {
-        if ($this->_photo !== null) {
-            return $this->_photo;
+        if ($this->_photo === null) {
+            if (!$this->photoId) {
+                return null;
+            }
+
+            $this->_photo = Craft::$app->getAssets()->getAssetById($this->photoId) ?? false;
         }
 
-        if (!$this->photoId) {
-            return null;
-        }
-
-        if (($this->_photo = Craft::$app->getAssets()->getAssetById($this->photoId)) === null) {
-            throw new InvalidConfigException('Invalid photo ID: ' . $this->photoId);
-        }
-
-        return $this->_photo;
+        return $this->_photo ?: null;
     }
 
     /**
@@ -1218,6 +1213,7 @@ class User extends Element implements IdentityInterface
     public function setPhoto(Asset $photo = null)
     {
         $this->_photo = $photo;
+        $this->photoId = $photo->id ?? null;
     }
 
     // Indexes, etc.

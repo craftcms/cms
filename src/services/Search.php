@@ -564,7 +564,17 @@ class Search extends Component
 
                         // Add quotes for exact match
                         if ($isMysql && StringHelper::contains($keywords, ' ')) {
-                            $keywords = '"' . $keywords . '"';
+                            if (StringHelper::first($keywords, 1) === '*') {
+                                $keywords = StringHelper::insert($keywords, '"', 1);
+                            } else {
+                                $keywords = '"' . $keywords;
+                            }
+
+                            if (StringHelper::last($keywords, 1) === '*') {
+                                $keywords = StringHelper::insert($keywords, '"', StringHelper::length($keywords) - 1);
+                            } else {
+                                $keywords .= '"';
+                            }
                         }
 
                         // Determine prefix for the full-text keyword

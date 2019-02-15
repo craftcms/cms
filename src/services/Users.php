@@ -437,7 +437,7 @@ class Users extends Component
         $assetsService = Craft::$app->getAssets();
 
         // If the photo exists, just replace the file.
-        if ($user->photoId) {
+        if ($user->photoId && $user->getPhoto() !== null) {
             // No longer a new file.
             $assetsService->replaceAssetFile($assetsService->getAssetById($user->photoId), $fileLocation, $filenameToUse);
         } else {
@@ -455,7 +455,7 @@ class Users extends Component
             $elementsService = Craft::$app->getElements();
             $elementsService->saveElement($photo);
 
-            $user->photoId = $photo->id;
+            $user->setPhoto($photo);
             $elementsService->saveElement($user, false);
         }
     }
