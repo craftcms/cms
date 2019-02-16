@@ -104,7 +104,6 @@ class EventTagAdder extends BaseEventTagVisitor
             } else {
                 // Did we just find the `>`?
                 if (preg_match('/^[^>]*>/', $data, $matches)) {
-
                     $this->_findingBeginBody = false;
                     static::$foundBeginBody = true;
                     $beginBodyPos = strlen($matches[0]);
@@ -142,9 +141,9 @@ class EventTagAdder extends BaseEventTagVisitor
         $splitLine = $startLine + substr_count($preSplitHtml, "\n");
 
         return new \Twig_Node([
-            $this->_processTextNode(new \Twig_Node_Text($preSplitHtml, $startLine), $env),
+            new \Twig_Node_Text($preSplitHtml, $startLine),
             new \Twig_Node_Do(new \Twig_Node_Expression_Function($functionName, new \Twig_Node(), $splitLine), $splitLine),
-            $this->_processTextNode(new \Twig_Node_Text($postSplitHtml, $splitLine), $env)
+            new \Twig_Node_Text($postSplitHtml, $splitLine),
         ], [], $startLine);
     }
 }
