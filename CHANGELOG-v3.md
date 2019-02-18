@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where Craft could auto-place the `{{ beginBody() }}` and `{{ endBody() }}` tags in the wrong places.
+- Fixed a bug where it was impossible to change volume order. ([#3764](https://github.com/craftcms/cms/issues/3764))
 
 ## 3.1.12 - 2019-02-15
 
