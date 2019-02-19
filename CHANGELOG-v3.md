@@ -5,6 +5,9 @@
 ### Added
 - Added `craft\helpers\StringHelper::replaceMb4()`.
 
+### Changed
+- The `users/login` and `users/logout` actions now include a `csrfTokenValue` key in JSON responses. [#3858](https://github.com/craftcms/cms/issues/3858)
+
 ### Fixed
 - Fixed a bug where Craft could auto-place the `{{ beginBody() }}` and `{{ endBody() }}` tags in the wrong places.
 - Fixed a bug where Craft wasn’t storing custom volume sort orders. ([#3764](https://github.com/craftcms/cms/issues/3764))
