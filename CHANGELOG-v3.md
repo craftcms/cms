@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\StringHelper::replaceMb4()`.
+
 ### Fixed
 - Fixed a bug where Craft could auto-place the `{{ beginBody() }}` and `{{ endBody() }}` tags in the wrong places.
 - Fixed a bug where Craft wasn’t storing custom volume sort orders. ([#3764](https://github.com/craftcms/cms/issues/3764))
