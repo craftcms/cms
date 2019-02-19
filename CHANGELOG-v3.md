@@ -7,6 +7,7 @@
 
 ### Changed
 - The `users/login` and `users/logout` actions now include a `csrfTokenValue` key in JSON responses. [#3858](https://github.com/craftcms/cms/issues/3858)
+- Craft no longer deletes search indexes when soft-deleting an element, until the element gets hard-deleted. ([#3863](https://github.com/craftcms/cms/issues/3863))
 
 ### Fixed
 - Fixed a bug where Craft could auto-place the `{{ beginBody() }}` and `{{ endBody() }}` tags in the wrong places.

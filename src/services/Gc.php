@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -111,6 +112,23 @@ class Gc extends Component
         $db = Craft::$app->getDb();
 
         foreach ($tables as $table) {
+            // If we are deleting elements, delete their search indexes too
+            if ($table === Table::ELEMENTS) {
+                $elementIds = (new Query())
+                    ->select(['id'])
+                    ->from([$table])
+                    ->where($condition)
+                    ->column();
+
+                if (empty($elementIds)) {
+                    continue;
+                }
+
+                Craft::$app->getDb()->createCommand()
+                    ->delete(Table::SEARCHINDEX, ['elementId' => $elementIds])
+                    ->execute();
+            }
+
             $db->createCommand()
                 ->delete($table, $condition)
                 ->execute();
