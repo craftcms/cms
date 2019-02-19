@@ -500,7 +500,7 @@ New:
 {% for asset in entry.myAssetsField.all() %}...{% endfor %}
 ```
 
-When you need to to get the total number of results from an element query, you should call the `.count()` method:
+When you need to get the total number of results from an element query, you should call the `.count()` method:
 
 ```twig
 Old:
