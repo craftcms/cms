@@ -262,13 +262,14 @@ class UsersController extends Controller
         // Passing false here for reasons.
         Craft::$app->getUser()->logout(false);
 
-        if (Craft::$app->getRequest()->getAcceptsJson()) {
+        $request = Craft::$app->getRequest();
+        if ($request->getAcceptsJson()) {
             $return = [
                 'success' => true
             ];
 
             if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
-                $return['csrfTokenValue'] = Craft::$app->getRequest()->getCsrfToken();
+                $return['csrfTokenValue'] = $request->getCsrfToken();
             }
 
             return $this->asJson($return);
@@ -1637,14 +1638,15 @@ class UsersController extends Controller
         $userSession->removeReturnUrl();
 
         // If this was an Ajax request, just return success:true
-        if (Craft::$app->getRequest()->getAcceptsJson()) {
+        $request = Craft::$app->getRequest();
+        if ($request->getAcceptsJson()) {
             $return = [
                 'success' => true,
                 'returnUrl' => $returnUrl
             ];
 
             if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
-                $return['csrfTokenValue'] = Craft::$app->getRequest()->getCsrfToken();
+                $return['csrfTokenValue'] = $request->getCsrfToken();
             }
 
             return $this->asJson($return);
