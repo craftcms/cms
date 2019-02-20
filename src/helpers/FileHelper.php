@@ -176,14 +176,16 @@ class FileHelper extends \yii\helpers\FileHelper
             $filename = StringHelper::replaceMb4($filename, '');
         }
 
-        if ($separator !== null) {
-            $filename = preg_replace('/(\s|' . preg_quote($separator, '/') . ')+/u', $separator, $filename);
-        }
-
         // Nuke any trailing or leading .-_
         $filename = trim($filename, '.-_');
 
         $filename = $asciiOnly ? StringHelper::toAscii($filename) : $filename;
+
+        if ($separator !== null) {
+            $qSeparator = preg_quote($separator, '/');
+            $filename = preg_replace("/[\s{$qSeparator}]+/u", $separator, $filename);
+            $filename = preg_replace("/^{$qSeparator}+|{$qSeparator}+$/u", '', $filename);
+        }
 
         return $filename;
     }

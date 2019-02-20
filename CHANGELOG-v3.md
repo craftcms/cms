@@ -16,6 +16,7 @@
 - Fixed a SQL error that would occur when uploading a file with emojis in its name, if using MySQL. ([#3852](https://github.com/craftcms/cms/issues/3852))
 - Fixed a bug where Assets fields weren’t respecting their View Mode setting when files were drag-uploaded to them. ([#3578](https://github.com/craftcms/cms/issues/3578))
 - Fixed a bug where asset queries’ `kind` param wasn’t working for custom file kinds defined by the `extraFileKinds` config setting, for file extensions that were already associated with another file kind. ([#3869](https://github.com/craftcms/cms/issues/3869))
+- Fixed a bug where `craft\helpers\FileHelper::sanitizeFilename()` could return inconsistent results.
 
 ## 3.1.12 - 2019-02-15
 
