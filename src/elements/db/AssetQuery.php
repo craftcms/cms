@@ -12,6 +12,7 @@ use craft\base\Volume;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
+use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use yii\db\Connection;
@@ -768,7 +769,16 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->kind) {
-            $this->subQuery->andWhere(Db::parseParam('assets.kind', $this->kind));
+            $kindCondition = ['or', Db::parseParam('assets.kind', $this->kind)];
+            $kinds = Assets::getFileKinds();
+            foreach ((array)$this->kind as $kind) {
+                if (isset($kinds[$kind])) {
+                    foreach ($kinds[$kind]['extensions'] as $extension) {
+                        $kindCondition[] = ['like', 'assets.filename', "%.{$extension}", false];
+                    }
+                }
+            }
+            $this->subQuery->andWhere($kindCondition);
         }
 
         if ($this->width) {
