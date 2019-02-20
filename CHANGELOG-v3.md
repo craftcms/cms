@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.13 - 2019-02-20
 
 ### Added
 - Added `craft\helpers\StringHelper::replaceMb4()`.
