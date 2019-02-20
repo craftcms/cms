@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where `IOHelper::cleanFilename()` could return inconsistent results.
+
 ## 2.7.5 - 2019-02-15
 
 ### Changed
