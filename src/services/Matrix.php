@@ -302,11 +302,16 @@ class Matrix extends Component
             return;
         }
 
-        ProjectConfigHelper::ensureAllFieldsProcessed();
-
         $blockTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
         $previousData = $event->oldValue;
+
+        // Make sure the field has been synced
+        $fieldId = Db::idByUid(Table::FIELDS, $data['field']);
+        if ($fieldId === null) {
+            Craft::$app->getProjectConfig()->defer($event, [$this, __FUNCTION__]);
+            return;
+        }
 
         $fieldsService = Craft::$app->getFields();
         $contentService = Craft::$app->getContent();
@@ -324,7 +329,7 @@ class Matrix extends Component
             $blockTypeRecord = $this->_getBlockTypeRecord($blockTypeUid);
 
             // Set the basic info on the new block type record
-            $blockTypeRecord->fieldId = Db::idByUid(Table::FIELDS, $data['field']);
+            $blockTypeRecord->fieldId = $fieldId;
             $blockTypeRecord->name = $data['name'];
             $blockTypeRecord->handle = $data['handle'];
             $blockTypeRecord->sortOrder = $data['sortOrder'];

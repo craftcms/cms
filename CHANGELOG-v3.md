@@ -4,6 +4,7 @@
 
 ### Added
 - Added `craft\helpers\StringHelper::replaceMb4()`.
+- Added `craft\services\ProjectConfig::defer()`.
 
 ### Changed
 - The `users/login` and `users/logout` actions now include a `csrfTokenValue` key in JSON responses. [#3858](https://github.com/craftcms/cms/issues/3858)
@@ -17,6 +18,7 @@
 - Fixed a bug where Assets fields weren’t respecting their View Mode setting when files were drag-uploaded to them. ([#3578](https://github.com/craftcms/cms/issues/3578))
 - Fixed a bug where asset queries’ `kind` param wasn’t working for custom file kinds defined by the `extraFileKinds` config setting, for file extensions that were already associated with another file kind. ([#3869](https://github.com/craftcms/cms/issues/3869))
 - Fixed a bug where `craft\helpers\FileHelper::sanitizeFilename()` could return inconsistent results.
+- Fixed an error that could occur when syncing `project.yaml` if it introduced a new Super Table field with a nested Matrix field.
 
 ## 3.1.12 - 2019-02-15
 

@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Plugin;
+use craft\errors\OperationAbortedException;
 use craft\events\ConfigEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
@@ -120,6 +121,13 @@ class ProjectConfig extends Component
     public $maxBackups = 50;
 
     /**
+     * @var int The maximum number of times deferred events can be re-deferred before we give up on them
+     * @see defer()
+     * @see _applyChanges()
+     */
+    public $maxDefers = 500;
+
+    /**
      * @var bool Whether the project config is read-only.
      */
     public $readOnly = false;
@@ -210,6 +218,13 @@ class ProjectConfig extends Component
      * @var array The current changeset being applied, if applying changes by array.
      */
     private $_changesBeingApplied;
+
+    /**
+     * @var array Deferred config sync events
+     * @see defer()
+     * @see _applyChanges()
+     */
+    private $_deferredEvents = [];
 
     // Public methods
     // =========================================================================
@@ -797,6 +812,18 @@ class ProjectConfig extends Component
     }
 
     /**
+     * Defers an event until all other project config changes have been processed.
+     *
+     * @param ConfigEvent $event
+     * @param callable $handler
+     */
+    public function defer(ConfigEvent $event, callable $handler)
+    {
+        Craft::info('Deferring event handler for ' . $event->path, __METHOD__);
+        $this->_deferredEvents[] = [$event, $event->tokenMatches, $handler];
+    }
+
+    /**
      * Registers a config change event listener, for a specific config path pattern.
      *
      * @param string $event The event name
@@ -833,6 +860,7 @@ class ProjectConfig extends Component
      * Applies changes from a configuration array.
      *
      * @param array $changes array nested array with keys `removedItems`, `changedItems` and `newItems`
+     * @throws OperationAbortedException
      */
     private function _applyChanges(array $changes)
     {
@@ -860,6 +888,23 @@ class ProjectConfig extends Component
             foreach ($changes['newItems'] as $itemPath) {
                 $this->processConfigChanges($itemPath);
             }
+        }
+
+        $defers = -count($this->_deferredEvents);
+        while (!empty($this->_deferredEvents)) {
+            if ($defers > $this->maxDefers) {
+                throw new OperationAbortedException('Maximum number of deferred events reached.');
+            }
+
+            /** @var ConfigEvent $event */
+            /** @var string[]|null $tokenMatches */
+            /** @var callable $handler */
+            list($event, $tokenMatches, $handler) = array_shift($this->_deferredEvents);
+            Craft::info('Re-triggering deferred event for ' . $event->path, __METHOD__);
+            $event->tokenMatches = $tokenMatches;
+            $handler($event);
+            $event->tokenMatches = null;
+            $defers++;
         }
 
         Craft::info('Finalizing configuration parsing', __METHOD__);
