@@ -987,17 +987,15 @@ class Elements extends Component
                 Craft::$app->getDb()->createCommand()
                     ->delete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->delete(Table::SEARCHINDEX, ['elementId' => $element->id])
+                    ->execute();
             } else {
                 // Soft delete the elements table row
                 Craft::$app->getDb()->createCommand()
                     ->softDelete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
             }
-
-            // Always hard delete the search indexes
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::SEARCHINDEX, ['elementId' => $element->id])
-                ->execute();
 
             $element->afterDelete();
 

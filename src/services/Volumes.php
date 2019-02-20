@@ -358,6 +358,7 @@ class Volumes extends Component
             $volumeRecord->handle = $data['handle'];
             $volumeRecord->type = $data['type'];
             $volumeRecord->hasUrls = $data['hasUrls'];
+            $volumeRecord->sortOrder = $data['sortOrder'];
             $volumeRecord->url = !empty($data['url']) ? $data['url'] : null;
             $volumeRecord->settings = $data['settings'];
             $volumeRecord->uid = $volumeUid;

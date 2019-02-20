@@ -206,10 +206,12 @@ class ElementsController extends BaseElementsController
     {
         $elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
         $siteId = Craft::$app->getRequest()->getBodyParam('siteId', null);
+        $size = Craft::$app->getRequest()->getBodyParam('size', null);
+        $viewMode = Craft::$app->getRequest()->getBodyParam('viewMode', null);
         $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
 
         $view = $this->getView();
-        $html = $view->renderTemplate('_elements/element', ['element' => $element]);
+        $html = $view->renderTemplate('_elements/element', compact('element', 'size', 'viewMode'));
         $headHtml = $view->getHeadHtml();
 
         return $this->asJson(['html' => $html, 'headHtml' => $headHtml]);
