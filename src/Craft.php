@@ -11,8 +11,10 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
+use GuzzleHttp\Cookie\FileCookieJar;
 use yii\base\ExitException;
 use yii\db\Expression;
+use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -151,8 +153,15 @@ class Craft extends Yii
      */
     public static function autoload($className)
     {
+        // todo: remove this when Yii 2.0.16.1 is released
+        // Use our own Inflector class
+        if ($className === Inflector::class) {
+            require dirname(__DIR__) . '/lib/yii2/helpers/Inflector.php';
+            return;
+        }
+
         // FileCookieJar is not supported
-        if ($className === 'GuzzleHttp\Cookie\FileCookieJar') {
+        if ($className === FileCookieJar::class) {
             require dirname(__DIR__) . '/lib/guzzle/FileCookieJar.php';
             return;
         }

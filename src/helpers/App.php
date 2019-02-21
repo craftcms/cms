@@ -20,7 +20,6 @@ use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
-use craft\mutex\FileMutex;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
@@ -32,6 +31,7 @@ use yii\caching\FileCache;
 use yii\helpers\Inflector;
 use yii\log\Dispatcher;
 use yii\log\Logger;
+use yii\mutex\FileMutex;
 
 /**
  * App helper.

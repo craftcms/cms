@@ -60,6 +60,11 @@ class Request extends \yii\web\Request
     ];
 
     /**
+     * @param int The highest page number that Craft should accept.
+     */
+    public $maxPageNum = 100000;
+
+    /**
      * @var
      */
     private $_fullPath;
@@ -239,6 +244,8 @@ class Request extends \yii\web\Request
                 $this->_segments = $this->_segments($newPath);
             }
         }
+
+        $this->_pageNum = min($this->_pageNum, $this->maxPageNum);
 
         // Now that we've chopped off the admin/page segments, set the path
         $this->_path = implode('/', $this->_segments);
