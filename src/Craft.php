@@ -11,6 +11,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
+use GuzzleHttp\Cookie\FileCookieJar;
 use yii\base\ExitException;
 use yii\db\Expression;
 use yii\helpers\VarDumper;
@@ -152,7 +153,7 @@ class Craft extends Yii
     public static function autoload($className)
     {
         // FileCookieJar is not supported
-        if ($className === 'GuzzleHttp\Cookie\FileCookieJar') {
+        if ($className === FileCookieJar::class) {
             require dirname(__DIR__) . '/lib/guzzle/FileCookieJar.php';
             return;
         }
