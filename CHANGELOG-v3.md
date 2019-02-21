@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where Craft could update the `dateModified` value in the project config even when nothing had changed. ([#3792](https://github.com/craftcms/cms/issues/3792))
+- Fixed a SQL error that occurred when running the “Localizing relations” task if using PostgreSQL. ([#3877](https://github.com/craftcms/cms/issues/3877))
 
 ### Security
 - Fixed a bug where sensitive environment variable values weren’t getting redacted correctly.
