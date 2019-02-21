@@ -6,9 +6,13 @@
 - Added `craft\helpers\ProjectConfig::cleanupConfig()`.
 - Added `craft\web\Request::$maxPageNum`, which determines the maximum page number Craft should accept (100,000 by default). ([#3880](https://github.com/craftcms/cms/issues/3880))
 
+### Deprecated
+- Deprecated `craft\mutex\FileMutex`.
+
 ### Fixed
 - Fixed a bug where Craft could update the `dateModified` value in the project config even when nothing had changed. ([#3792](https://github.com/craftcms/cms/issues/3792))
 - Fixed a SQL error that occurred when running the “Localizing relations” task if using PostgreSQL. ([#3877](https://github.com/craftcms/cms/issues/3877))
+- Fixed a bug where file locking wasn’t working on Windows. ([#3879](https://github.com/craftcms/cms/issues/3879))
 
 ### Security
 - Fixed a bug where sensitive environment variable values weren’t getting redacted correctly.
