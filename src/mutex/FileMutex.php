@@ -34,6 +34,9 @@ class FileMutex extends \yii\mutex\FileMutex
         if (!is_dir($this->mutexPath)) {
             FileHelper::createDirectory($this->mutexPath, $this->dirMode, true);
         }
+        if ($this->isWindows === null) {
+            $this->isWindows = DIRECTORY_SEPARATOR === '\\';
+        }
     }
 
     /**
