@@ -2,8 +2,11 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\ProjectConfig::cleanupConfig()`.
+
 ### Fixed
-- Fixed an error where the `dateModified` key was updated in project config when there was no point in doing that. ([#3792](https://github.com/craftcms/cms/issues/3792))
+- Fixed a bug where Craft could update the `dateModified` value in the project config even when nothing had changed. ([#3792](https://github.com/craftcms/cms/issues/3792))
 
 ### Security
 - Fixed a bug where sensitive environment variable values weren’t getting redacted correctly.
