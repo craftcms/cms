@@ -67,7 +67,7 @@ class LocalizeRelations extends BaseJob
                     ->insert(
                         Table::RELATIONS,
                         [
-                            'fieldid' => $this->fieldId,
+                            'fieldId' => $this->fieldId,
                             'sourceId' => $relation['sourceId'],
                             'sourceSiteId' => $siteId,
                             'targetId' => $relation['targetId'],
