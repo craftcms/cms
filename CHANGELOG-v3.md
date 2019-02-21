@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Security
+- Fixed a bug where sensitive environment variable values weren’t getting redacted correctly.
+
 ## 3.1.13 - 2019-02-20
 
 ### Added
