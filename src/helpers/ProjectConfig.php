@@ -110,4 +110,33 @@ class ProjectConfig
             }
         }
     }
+
+    /**
+     * Traverse and clean a config array, removing empty values and sorting keys.
+     *
+     * @param array $config Config array to clean
+     *
+     * @return array
+     */
+    public static function cleanupConfig(array $config) {
+        $remove = [];
+        foreach ($config as $key => &$value) {
+            if (\is_array($value)) {
+                $value = static::cleanupConfig($value);
+
+                if (empty($value)) {
+                    $remove[] = $key;
+                }
+            }
+        }
+
+        // Remove empty stuff
+        foreach ($remove as $removeKey) {
+            unset($config[$removeKey]);
+        }
+
+        ksort($config);
+
+        return $config;
+    }
 }

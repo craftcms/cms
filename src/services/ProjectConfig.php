@@ -14,12 +14,12 @@ use craft\events\ConfigEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Path as PathHelper;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
-use yii\base\Event;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 use yii\web\ServerErrorHttpException;
@@ -341,6 +341,10 @@ class ProjectConfig extends Component
      */
     public function set(string $path, $value)
     {
+        if (\is_array($value)) {
+            $value = ProjectConfigHelper::cleanupConfig($value);
+        }
+
         if ($value !== $this->get($path)) {
             if ($this->readOnly) {
                 throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
@@ -585,38 +589,19 @@ class ProjectConfig extends Component
      */
     public function saveModifiedConfigData()
     {
-        $traverseAndClean = function(&$array) use (&$traverseAndClean) {
-            $remove = [];
-            foreach ($array as $key => &$value) {
-                if (\is_array($value)) {
-                    $traverseAndClean($value);
-                    if (empty($value)) {
-                        $remove[] = $key;
-                    }
-                }
-            }
-
-            // Remove empty stuff
-            foreach ($remove as $removeKey) {
-                unset($array[$removeKey]);
-            }
-
-            ksort($array);
-        };
-
         if (!empty($this->_modifiedYamlFiles) && $this->_useConfigFile()) {
             // Save modified yaml files
 
             foreach (array_keys($this->_modifiedYamlFiles) as $filePath) {
                 $data = $this->_parsedConfigs[$filePath];
-                $traverseAndClean($data);
+                $data = ProjectConfigHelper::cleanupConfig($data);
                 FileHelper::writeToFile($filePath, Yaml::dump($data, 20, 2));
             }
         }
 
         if (($this->_updateConfigMap && $this->_useConfigFile()) || $this->_updateConfig) {
             $previousConfig = $this->_getStoredConfig();
-            $traverseAndClean($previousConfig);
+            $value = ProjectConfigHelper::cleanupConfig($previousConfig);
             $this->_storeYamlHistory($previousConfig);
 
             $info = Craft::$app->getInfo();
