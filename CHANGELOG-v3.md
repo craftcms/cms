@@ -4,6 +4,7 @@
 
 ### Added
 - Added `craft\helpers\ProjectConfig::cleanupConfig()`.
+- Added `craft\web\Request::$maxPageNum`, which determines the maximum page number Craft should accept (100,000 by default). ([#3880](https://github.com/craftcms/cms/issues/3880))
 
 ### Fixed
 - Fixed a bug where Craft could update the `dateModified` value in the project config even when nothing had changed. ([#3792](https://github.com/craftcms/cms/issues/3792))
