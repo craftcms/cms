@@ -24,7 +24,7 @@ class Inflector extends BaseInflector
             '-',
             '_',
             '.',
-        ], ' ', preg_replace('/(?<!\p{Lu})(\p{Lu})/u', ' \0', $name))), self::encoding());
+        ], ' ', preg_replace('/(?<!\p{Lu})(\p{Lu})|(\p{Lu})(?=\p{Ll})/u', ' \0', $name))), self::encoding());
 
         return $ucwords ? StringHelper::mb_ucwords($label, self::encoding()) : $label;
     }
