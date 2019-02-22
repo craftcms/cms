@@ -1,4 +1,4 @@
-/*!   - 2018-12-28 */
+/*!   - 2019-02-22 */
 (function($){
 
 /** global: Craft */
@@ -18803,7 +18803,7 @@ Craft.ui =
 
             var $label = $('<label/>', {
                 'for': id,
-                html: config.label
+                text: config.label
             });
 
             // Should we include a hidden input first?
