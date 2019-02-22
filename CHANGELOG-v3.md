@@ -4,6 +4,7 @@
 
 ### Security
 - Database backup/restore exception messages now redact the database password when using PostgreSQL.
+- URLs are no longer allowed in users’ first or last names.
 
 ## 3.0.40.1 - 2019-02-21
 
