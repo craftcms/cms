@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Security
+- Database backup/restore exception messages now redact the database password when using PostgreSQL.
+
 ## 3.0.40.1 - 2019-02-21
 
 ### Fixed
