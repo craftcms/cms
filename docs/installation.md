@@ -26,8 +26,8 @@ Composer will take a couple minutes to load everything. Once it’s done you wil
 
 Download the archive format you prefer to work with:
 
-- **zip**: [3.0.40](https://download.craftcdn.com/craft/3.0/Craft-3.0.40.zip), [latest](https://craftcms.com/latest-v3.zip)
-- **tar.gz**: [3.0.40](https://download.craftcdn.com/craft/3.0/Craft-3.0.40.tar.gz), [latest](https://craftcms.com/latest-v3.tar.gz)
+- **zip**: [3.0.41](https://download.craftcdn.com/craft/3.0/Craft-3.0.41.zip), [latest](https://craftcms.com/latest-v3.zip)
+- **tar.gz**: [3.0.41](https://download.craftcdn.com/craft/3.0/Craft-3.0.41.tar.gz), [latest](https://craftcms.com/latest-v3.tar.gz)
 
 Extract the archive wherever you want your new Craft project to live.
 
