@@ -17,6 +17,7 @@ use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\validators\ArrayValidator;
@@ -559,7 +560,7 @@ JS;
             // Make sure it's not a heading
             if (!isset($source['heading'])) {
                 $options[] = [
-                    'label' => $source['label'],
+                    'label' => Html::encode($source['label']),
                     'value' => $source['key']
                 ];
                 $optionNames[] = $source['label'];

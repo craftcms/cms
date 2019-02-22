@@ -568,7 +568,16 @@ class Connection extends \yii\db\Connection
         }
 
         if (!$success) {
-            throw ShellCommandException::createFromCommand($command);
+            $execCommand = $command->getExecCommand();
+
+            // Redact the PGPASSWORD
+            if ($this->getIsPgsql()) {
+                $execCommand = preg_replace_callback('/(PGPASSWORD=")([^"]+)"/i', function($match) {
+                    return $match[1] . str_repeat('•', strlen($match[2])) . '"';
+                }, $execCommand);
+            }
+
+            throw new ShellCommandException($execCommand, $command->getExitCode(), $command->getStdErr());
         }
     }
 

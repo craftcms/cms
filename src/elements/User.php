@@ -681,6 +681,12 @@ class User extends Element implements IdentityInterface
             'currentPassword' => $currentPassword,
         ];
 
+        $rules[] = [['firstName', 'lastName'], function ($attribute, $params, $validator) {
+            if (strpos($this->$attribute, '://') !== false) {
+                $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
+            }
+        }];
+
         return $rules;
     }
 

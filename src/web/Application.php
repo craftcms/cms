@@ -12,6 +12,7 @@ use craft\base\ApplicationTrait;
 use craft\base\Plugin;
 use craft\db\Query;
 use craft\debug\DeprecatedPanel;
+use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
@@ -30,7 +31,6 @@ use yii\debug\panels\DbPanel;
 use yii\debug\panels\LogPanel;
 use yii\debug\panels\MailPanel;
 use yii\debug\panels\ProfilingPanel;
-use yii\debug\panels\RequestPanel;
 use yii\debug\panels\RouterPanel;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -690,13 +690,9 @@ class Application extends \yii\web\Application
             if (!$this->getUser()->getIsGuest()) {
                 if ($request->getIsCpRequest()) {
                     $error = Craft::t('app', 'Your account doesn’t have permission to access the Control Panel when the system is offline.');
-                    $logoutUrl = UrlHelper::cpUrl('logout');
                 } else {
                     $error = Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
-                    $logoutUrl = UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->getLogoutPath());
                 }
-
-                $error .= ' [' . Craft::t('app', 'Log out?') . '](' . $logoutUrl . ')';
             } else {
                 // If this is a CP request, redirect to the Login page
                 if ($this->getRequest()->getIsCpRequest()) {
