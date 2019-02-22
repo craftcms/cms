@@ -66,7 +66,7 @@ class Craft extends Yii
      * ---
      *
      * ```php
-     * $value1 = Craft::parseEnv('$SMPT_PASSWORD');
+     * $value1 = Craft::parseEnv('$SMTP_PASSWORD');
      * $value2 = Craft::parseEnv('@webroot');
      * ```
      *
