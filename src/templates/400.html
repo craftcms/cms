@@ -3,5 +3,5 @@
 
 {% block message %}
     <h2>{{ title }}</h2>
-    <p>{{ message ?: "The request could not be understood by the server due to malformed syntax."|t('app') }}</p>
+    <p>{{ (message ?? null) ?: "The request could not be understood by the server due to malformed syntax."|t('app') }}</p>
 {% endblock %}
