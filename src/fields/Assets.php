@@ -18,6 +18,7 @@ use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
+use craft\helpers\Html;
 use craft\web\UploadedFile;
 
 /**
@@ -145,7 +146,7 @@ class Assets extends BaseRelationField
         foreach (Asset::sources('settings') as $key => $volume) {
             if (!isset($volume['heading'])) {
                 $sourceOptions[] = [
-                    'label' => $volume['label'],
+                    'label' => Html::encode($volume['label']),
                     'value' => $volume['key']
                 ];
             }
