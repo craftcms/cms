@@ -6,6 +6,7 @@
 - Database backup/restore exception messages now redact the database password when using PostgreSQL.
 - URLs are no longer allowed in users’ first or last names.
 - Fixed two XSS vulnerabilities.
+- The Request panel in the Debug Toolbar now redacts any sensitive information. ([#3619](https://github.com/craftcms/cms/issues/3619))
 
 ## 3.0.40.1 - 2019-02-21
 
