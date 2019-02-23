@@ -15,6 +15,7 @@ use craft\helpers\ArrayHelper;
 use craft\models\SystemMessage;
 use craft\records\SystemMessage as EmailMessageRecord;
 use yii\base\Component;
+use yii\db\Expression;
 
 /**
  * System Messages service.
@@ -168,10 +169,24 @@ class SystemMessages extends Component
             $language = Craft::$app->getSites()->getPrimarySite()->language;
         }
 
+        if (($pos = strpos($language, '-')) !== false) {
+            $languageId = substr($language, 0, $pos);
+        } else {
+            $languageId = $language;
+        }
+
         // Fetch the customization (if there is one)
         $override = $this->_createMessagesQuery()
             ->select(['subject', 'body'])
-            ->where(['key' => $key, 'language' => $language])
+            ->where(['key' => $key])
+            ->andWhere(['or',
+                ['language' => [$language, $languageId]],
+                ['like', 'language', "{$languageId}%", false],
+            ])
+            ->orderBy(new Expression('case when ([[language]] = :language) then 0 when ([[language]] = :languageId) then 1 else 2 end', [
+                'language' => $language,
+                'languageId' => $languageId,
+            ]))
             ->one();
 
         // Combine them to create the final message

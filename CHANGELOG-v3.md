@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Craft now sends system messages authored for the same root language as the requested language, if an exact language match can’t be found. ([#3888](https://github.com/craftcms/cms/issues/3888))
+
 ### Fixed
 - Fixed a bug where the System Messages utility wouldn’t update message previews after editing a message for the primary site’s language, if the user had a different preferred language selected.
 
