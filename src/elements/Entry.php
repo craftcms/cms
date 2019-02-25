@@ -902,14 +902,17 @@ class Entry extends Element
         switch ($attribute) {
             case 'author':
                 $author = $this->getAuthor();
-
                 return $author ? Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $author]) : '';
 
             case 'section':
                 return Craft::t('site', $this->getSection()->name);
 
             case 'type':
-                return Craft::t('site', $this->getType()->name);
+                try {
+                    return Craft::t('site', $this->getType()->name);
+                } catch (InvalidConfigException $e) {
+                    return Craft::t('app', 'Unknown');
+                }
         }
 
         return parent::tableAttributeHtml($attribute);
