@@ -214,6 +214,7 @@ interface ElementInterface extends ComponentInterface
      * - **`key`** – The source’s key. This is the string that will be passed into the $source argument of [[actions()]],
      *   [[indexHtml()]], and [[defaultTableAttributes()]].
      * - **`label`** – The human-facing label of the source.
+     * - **`badgeCount`** – The badge count that should be displayed alongside the label. (Optional)
      * - **`sites`** – An array of site IDs that the source should be shown for, on multi-site element indexes. (Optional;
      *   by default the source will be shown for all sites.)
      * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
