@@ -672,6 +672,7 @@ public function getCpEditUrl()
 ### Relation Field
 
 You can give your element its own relation field by creating a new [field type](field-types.md) that extends <api:craft\fields\BaseRelationField>.
+<!--- The above page doesn't actually exist, there is no documentation page for BaseRelationField --->
 
 That base class does most of the grunt work for you, so you can get your field up and running by implementing three simple methods:
 
@@ -679,7 +680,7 @@ That base class does most of the grunt work for you, so you can get your field u
 <?php
 namespace ns\prefix\fields;
 
-use craft\fields\BaseRelationsField;
+use craft\fields\BaseRelationField;
 use ns\prefix\elements\Product;
 
 class Products extends BaseRelationField
