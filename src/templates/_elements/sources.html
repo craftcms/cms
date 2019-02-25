@@ -27,6 +27,9 @@
                             </span>
                         {% endif %}
                         <span class="label">{{ source.label }}</span>
+                        {% if source.badge is defined %}
+                            <span class="badge">{{ source.badge }}</span>
+                        {% endif %}
                 </a>
                 {% if source.nested is defined and source.nested is not empty %}
                     <div class="toggle"></div>
