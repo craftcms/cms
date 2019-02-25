@@ -737,7 +737,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
           @include border-right(1px solid $hairlineColorAlpha);
         }
 
-        & > * {
+        & > *:last-child {
           padding-bottom: 48px;
         }
       }
