@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `resave/assets`, `resave/categories`, `resave/entries`, `resave/tags`, and `resave/users` console commands.
+
 ### Changed
 - Craft now sends system messages authored for the same root language as the requested language, if an exact language match can’t be found. ([#3888](https://github.com/craftcms/cms/issues/3888))
 - Element source definitions can now include a `badgeCount` key.
