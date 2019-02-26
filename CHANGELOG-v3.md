@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.15 - 2019-02-26
 
 ### Added
 - Added the `resave/assets`, `resave/categories`, `resave/entries`, `resave/tags`, and `resave/users` console commands.
@@ -9,7 +9,7 @@
 - Craft now sends system messages authored for the same root language as the requested language, if an exact language match can’t be found. ([#3888](https://github.com/craftcms/cms/issues/3888))
 - Element source definitions can now include a `badgeCount` key.
 - Login requests no longer enforce CSRF validation if someone is already logged in.
-- Craft now throws an exception if there's unexpected data when saving project config.
+- Craft now throws an `InvalidConfigException` when updating the project config if any unexpected data types are encountered.
 - The `testToEmailAddress` config setting can now be set to `false`. ([#3910](https://github.com/craftcms/cms/pull/3910))
 
 ### Fixed
