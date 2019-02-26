@@ -735,11 +735,12 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
           padding: 24px 24px 0;
           word-wrap: break-word;
           @include border-right(1px solid $hairlineColorAlpha);
+
+          & > *:last-child {
+            padding-bottom: 48px;
+          }
         }
 
-        & > *:last-child {
-          padding-bottom: 48px;
-        }
       }
 
       #details {
