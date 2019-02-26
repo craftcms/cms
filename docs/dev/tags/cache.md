@@ -86,7 +86,7 @@ Only activates the `{% cache %}` tag if a certain condition is met.
 
 ```twig
 {# Only cache if this is a mobile browser #}
-{% cache if craft.request.isMobileBrowser() %}
+{% cache if craft.app.request.isMobileBrowser() %}
 ```
 
 ### `unless`

@@ -127,15 +127,6 @@ Returns a plugin instance by its handle, or `null` if no plugin is installed and
 
 Shortcut for typing `<input type="hidden" name="redirect" value="{{ url|hash }}">`.
 
-## `round( num )`
-
-Rounds off a number to the closest integer.
-
-```twig
-{{ round(42.1) }} → 42
-{{ round(42.9) }} → 43
-```
-
 ## `seq( name, length, next )`
 
 Outputs the next or current number in a sequence, defined by `name`:
