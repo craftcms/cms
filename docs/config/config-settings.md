@@ -2162,7 +2162,7 @@ If it is set to `true`, the errors will still be logged to Craft’s log files.
 
 Allowed types
 
-:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [null](http://php.net/language.types.null)
+:   [string](http://php.net/language.types.string), [array](http://php.net/language.types.array), [false](http://php.net/language.types.boolean), [null](http://php.net/language.types.null)
 
 Default value
 

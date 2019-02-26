@@ -10,6 +10,7 @@
 - Element source definitions can now include a `badgeCount` key.
 - Login requests no longer enforce CSRF validation if someone is already logged in.
 - Project config now does a better job of cleansing the config before saving it.
+- The `testToEmailAddress` config setting can now be set to `false`. ([#3910](https://github.com/craftcms/cms/pull/3910))
 
 ### Fixed
 - Fixed a bug where the System Messages utility wouldn’t update message previews after editing a message for the primary site’s language, if the user had a different preferred language selected.
