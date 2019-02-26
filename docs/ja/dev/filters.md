@@ -27,11 +27,11 @@
 {% set entryIds = entries|column('id') %}
 ```
 
-## `currency( currency, numberOptions, textOptions, stripZeroCents )`
+## `currency( currency, numberOptions, textOptions, stripZeros)`
 
 ユーザーが優先する言語に応じて指定された通貨で、数値をフォーマットします。
 
-最後の引数に `true` を渡すと、セントがゼロであれば「.00」が削除されます。
+最後の引数に `true` を渡すと、小数がゼロであれば, 削除されます (例えば、セント)。
 
 利用可能な `numberOptions` は、[こちらのリスト](api:yii\i18n\Formatter::$numberFormatterOptions)を参照してください。
 

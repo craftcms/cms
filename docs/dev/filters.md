@@ -27,11 +27,11 @@ Runs an array through [ArrayHelper::getColumn()](api:yii\helpers\BaseArrayHelper
 {% set entryIds = entries|column('id') %}
 ```
 
-## `currency( currency, numberOptions, textOptions, stripZeroCents )`
+## `currency( currency, numberOptions, textOptions, stripZeros )`
 
 Formats a number with a given currency according to the user’s preferred language.
 
-If you pass `true` into the last argument, the “.00” will be stripped if there’s zero cents.
+If you pass `true` into the last argument, the fraction digits will be removed if the value to be formatted has no minor value (e.g. cents).
 
 See [here for a list](api:yii\i18n\Formatter::$numberFormatterOptions) of the possible `numberOptions`.
 
