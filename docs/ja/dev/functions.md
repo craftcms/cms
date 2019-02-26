@@ -99,15 +99,6 @@
 
 `<input type="hidden" name="redirect" value="{{ url|hash }}">` を入力するためのショートカットです。
 
-## `round( num )`
-
-最も近い整数値に数を丸めます。
-
-```twig
-{{ round(42.1) }} → 42
-{{ round(42.9) }} → 43
-```
-
 ## `seq( name, length, next )`
 
 `name` で定義されたシーケンスの次または現在の番号を出力します。
@@ -222,4 +213,3 @@ URL を返します。
 ```
 
 :::
-

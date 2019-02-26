@@ -364,6 +364,15 @@ You can also use a regular expression to search for matches by starting and endi
 {{ tag.name|lower|replace('/[^\\w]+/', '-') }}
 ```
 
+## `round`
+
+Rounds off a number to the closest integer.
+
+```twig
+{{ 42.1|round }} → 42
+{{ 42.9|round }} → 43
+```
+
 ## `rss`
 
 Outputs a date in the format required for RSS feeds (`D, d M Y H:i:s O`).

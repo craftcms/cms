@@ -357,6 +357,15 @@ the [Apple Extended Keyboard II] [1].
 {{ tag.name|lower|replace('/[^\\w]+/', '-') }}
 ```
 
+## `round`
+
+最も近い整数値に数を丸めます。
+
+```twig
+{{ 42.1|round }} → 42
+{{ 42.9|round }} → 43
+```
+
 ## `rss`
 
 RSS フィードに必要な形式（`D, d M Y H:i:s O`）で日付を出力します。
@@ -461,4 +470,3 @@ RSS フィードに必要な形式（`D, d M Y H:i:s O`）で日付を出力し�
 {% set firstEntry = entries[0] %}
 {% set remainingEntries = entries|without(firstEntry) %}
 ```
-
