@@ -602,7 +602,7 @@ class ProjectConfig extends Component
         if (($this->_updateConfigMap && $this->_useConfigFile()) || $this->_updateConfig) {
             $previousConfig = $this->_getStoredConfig();
             $value = ProjectConfigHelper::cleanupConfig($previousConfig);
-            $this->_storeYamlHistory($previousConfig);
+            $this->_storeYamlHistory($value);
 
             $info = Craft::$app->getInfo();
 

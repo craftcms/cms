@@ -120,8 +120,21 @@ class ProjectConfig
      */
     public static function cleanupConfig(array $config) {
         $remove = [];
+
         foreach ($config as $key => &$value) {
-            if (\is_array($value)) {
+            // Only scalars and arrays accepted.
+            if (!is_scalar($value) && !is_array($value) && !(is_object($value) && $value instanceof \StdClass)) {
+                $remove[] = $key;
+
+                continue;
+            }
+
+            // Key/value objects get converted to arrays
+            if ($value instanceof \StdClass) {
+                $value = (array) $value;
+            }
+
+            if (is_array($value)) {
                 $value = static::cleanupConfig($value);
 
                 if (empty($value)) {
