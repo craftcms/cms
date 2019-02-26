@@ -110,7 +110,7 @@ Set the `sourceLocale` property if you want to limit the scope to relations crea
 ```twig
 {% set ingredients = craft.entries.section('ingredients').relatedTo({
     sourceElement: drink,
-    sourceLocale: craft.locale
+    sourceLocale: craft.app.language
 }) %}
 ```
 

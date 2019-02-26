@@ -27,11 +27,11 @@
 {% set entryIds = entries|column('id') %}
 ```
 
-## `currency( currency, numberOptions, textOptions, stripZeroCents )`
+## `currency( currency, numberOptions, textOptions, stripZeros)`
 
 ユーザーが優先する言語に応じて指定された通貨で、数値をフォーマットします。
 
-最後の引数に `true` を渡すと、セントがゼロであれば「.00」が削除されます。
+最後の引数に `true` を渡すと、小数がゼロであれば, 削除されます (例えば、セント)。
 
 利用可能な `numberOptions` は、[こちらのリスト](api:yii\i18n\Formatter::$numberFormatterOptions)を参照してください。
 
@@ -354,7 +354,16 @@ the [Apple Extended Keyboard II] [1].
 置換文字列の値の最初と最後にスラッシュを付けてマッチするものを検索することで、正規表現も利用できます。
 
 ```twig
-{{ tag.name|lower|replace('/[^\\w]+/', '-') }}
+{{ tag.title|lower|replace('/[^\\w]+/', '-') }}
+```
+
+## `round`
+
+最も近い整数値に数を丸めます。
+
+```twig
+{{ 42.1|round }} → 42
+{{ 42.9|round }} → 43
 ```
 
 ## `rss`
@@ -461,4 +470,3 @@ RSS フィードに必要な形式（`D, d M Y H:i:s O`）で日付を出力し�
 {% set firstEntry = entries[0] %}
 {% set remainingEntries = entries|without(firstEntry) %}
 ```
-
