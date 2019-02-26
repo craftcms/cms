@@ -9,7 +9,7 @@
 - Craft now sends system messages authored for the same root language as the requested language, if an exact language match can’t be found. ([#3888](https://github.com/craftcms/cms/issues/3888))
 - Element source definitions can now include a `badgeCount` key.
 - Login requests no longer enforce CSRF validation if someone is already logged in.
-- Project config now does a better job of cleansing the config before saving it.
+- Craft now throws an exception if there's unexpected data when saving project config.
 - The `testToEmailAddress` config setting can now be set to `false`. ([#3910](https://github.com/craftcms/cms/pull/3910))
 
 ### Fixed
