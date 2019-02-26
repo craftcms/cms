@@ -361,7 +361,7 @@ Or you can replace one thing at a time:
 You can also use a regular expression to search for matches by starting and ending the replacement string’s value with forward slashes:
 
 ```twig
-{{ tag.name|lower|replace('/[^\\w]+/', '-') }}
+{{ tag.title|lower|replace('/[^\\w]+/', '-') }}
 ```
 
 ## `round`

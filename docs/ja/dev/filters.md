@@ -354,7 +354,7 @@ the [Apple Extended Keyboard II] [1].
 置換文字列の値の最初と最後にスラッシュを付けてマッチするものを検索することで、正規表現も利用できます。
 
 ```twig
-{{ tag.name|lower|replace('/[^\\w]+/', '-') }}
+{{ tag.title|lower|replace('/[^\\w]+/', '-') }}
 ```
 
 ## `round`
