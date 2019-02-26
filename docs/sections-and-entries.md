@@ -60,7 +60,7 @@ Channel and Structure sections can choose whether their entries should be assign
 
 Entry URI Formats are mini Twig templates, which will be rendered each time an entry in the section is saved. The rendering result will be saved as the entry’s URI in the system.
 
-The entry being saved will be available to the template as a variabled named `object`, and each of the entry’s properties and custom field values will also be available as their own variables. So something like this is possible:
+The entry being saved will be available to the template as a variable named `object`, and each of the entry’s properties and custom field values will also be available as their own variables. So something like this is possible:
 
 ```twig
 {{ author.username }}/{{ slug }}

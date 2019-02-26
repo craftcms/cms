@@ -70,7 +70,7 @@ Assets, categories, entries, users, and tags each support their own set of addit
 
 ```twig
 {# Get the user's search query from the 'q' query-string param #}
-{% set searchQuery = craft.request.getParam('q') %}
+{% set searchQuery = craft.app.request.getParam('q') %}
 
 {# Fetch entries that match the search query #}
 {% set results = craft.entries()

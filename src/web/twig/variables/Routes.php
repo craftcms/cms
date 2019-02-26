@@ -30,6 +30,7 @@ class Routes
     public function getProjectConfigRoutes(): array
     {
         $routes = [];
+        $sortOrders = [];
 
         $results = Craft::$app->getProjectConfig()->get(RoutesService::CONFIG_ROUTES_KEY) ?? [];
 
@@ -54,8 +55,10 @@ class Routes
                 'uriDisplayHtml' => $uriDisplayHtml,
                 'template' => $route['template']
             ];
+            $sortOrders[] = $route['sortOrder'];
         }
 
+        array_multisort($sortOrders, SORT_ASC, SORT_NUMERIC, $routes);
         return $routes;
     }
 }

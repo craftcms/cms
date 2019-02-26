@@ -565,7 +565,7 @@ $assets = \craft\elements\Asset::find()
 
 ```twig
 {# Get the search query from the 'q' query string param #}
-{% set searchQuery = craft.request.getQueryParam('q') %}
+{% set searchQuery = craft.app.request.getQueryParam('q') %}
 
 {# Fetch all assets that match the search query #}
 {% set assets = craft.assets()

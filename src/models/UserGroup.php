@@ -13,8 +13,6 @@ use craft\records\UserGroup as UserGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 
-Craft::$app->requireEdition(Craft::Pro);
-
 /**
  * UserGroup model class.
  *

@@ -251,10 +251,6 @@ class UserGroups extends Component
      */
     public function handleChangedUserGroup(ConfigEvent $event)
     {
-        if (Craft::$app->getEdition() !== Craft::Pro) {
-            Craft::$app->setEdition(Craft::Pro);
-        }
-
         $uid = $event->tokenMatches[0];
         $data = $event->newValue;
 

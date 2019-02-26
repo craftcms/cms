@@ -920,7 +920,7 @@ $entries = \craft\elements\Entry::find()
 
 ```twig
 {# Get the search query from the 'q' query string param #}
-{% set searchQuery = craft.request.getQueryParam('q') %}
+{% set searchQuery = craft.app.request.getQueryParam('q') %}
 
 {# Fetch all entries that match the search query #}
 {% set entries = craft.entries()

@@ -130,7 +130,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected $allowLargeThumbsView = false;
 
     /**
-     * @var string Temlpate to use for settings rendering
+     * @var string Template to use for settings rendering
      */
     protected $settingsTemplate = '_components/fieldtypes/elementfieldsettings';
 

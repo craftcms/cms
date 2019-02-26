@@ -117,27 +117,23 @@ class Routes extends Component
      */
     public function getProjectConfigRoutes(): array
     {
-        if ($this->_projectConfigRoutes === null) {
-            $routes = Craft::$app->getProjectConfig()->get(self::CONFIG_ROUTES_KEY) ?? [];
-            $currentSiteUid = Craft::$app->getSites()->getCurrentSite()->uid;
-            $this->_projectConfigRoutes = [];
+        if ($this->_projectConfigRoutes !== null) {
+            return $this->_projectConfigRoutes;
+        }
 
-            $sortedRoutes = [];
+        $routes = Craft::$app->getProjectConfig()->get(self::CONFIG_ROUTES_KEY) ?? [];
+        $currentSiteUid = Craft::$app->getSites()->getCurrentSite()->uid;
+        $this->_projectConfigRoutes = [];
+        $sortOrders = [];
 
-            foreach ($routes as $route) {
-                $sortedRoutes[$route['sortOrder']] = $route;
-            }
-
-            ksort($sortedRoutes);
-            $routes = array_values($sortedRoutes);
-
-            foreach ($routes as $route) {
-                if (empty($route['site']) || $route['site'] == $currentSiteUid) {
-                    $this->_projectConfigRoutes[$route['uriPattern']] = ['template' => $route['template']];
-                }
+        foreach ($routes as $route) {
+            if (empty($route['site']) || $route['site'] == $currentSiteUid) {
+                $this->_projectConfigRoutes[$route['uriPattern']] = ['template' => $route['template']];
+                $sortOrders[] = $route['sortOrder'];
             }
         }
 
+        array_multisort($sortOrders, SORT_ASC, SORT_NUMERIC, $this->_projectConfigRoutes);
         return $this->_projectConfigRoutes;
     }
 
