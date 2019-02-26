@@ -108,7 +108,7 @@ Craft のリレーションを操作する前に、それがテンプレート�
 ```twig
 {% set ingredients = craft.entries.section('ingredients').relatedTo({
     sourceElement: drink,
-    sourceLocale: craft.locale
+    sourceLocale: craft.app.language
 }) %}
 ```
 
@@ -137,4 +137,3 @@ Craft のリレーションを操作する前に、それがテンプレート�
 ```
 
 最初の引数（`'and'`）は、クエリがリレーションの基準と _すべて_ 一致しなければならないことを指定しています。リレーション基準の _いずれか_ とマッチさせたい場合、`'or'` を渡すことができます。
-
