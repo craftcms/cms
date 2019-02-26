@@ -87,7 +87,7 @@ URL ごとではなく、（現在のサイトロケールのための）グロ�
 
 ```twig
 {# Only cache if this is a mobile browser #}
-{% cache if craft.request.isMobileBrowser() %}
+{% cache if craft.app.request.isMobileBrowser() %}
 ```
 
 ### `unless`

@@ -64,7 +64,7 @@ Craft は次の検索構文をサポートしています。
 
 ```twig
 {# Get the user's search query from the 'q' query-string param #}
-{% set searchQuery = craft.request.getParam('q') %}
+{% set searchQuery = craft.app.request.getParam('q') %}
 
 {# Fetch entries that match the search query #}
 {% set results = craft.entries()
