@@ -721,6 +721,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('expression', [$this, 'expressionFunction']),
             new \Twig_SimpleFunction('floor', 'floor'),
             new \Twig_SimpleFunction('getenv', 'getenv'),
+            new \Twig_SimpleFunction('new', [$this, 'newFunction']),
             new \Twig_SimpleFunction('parseEnv', [Craft::class, 'parseEnv']),
             new \Twig_SimpleFunction('plugin', [$this, 'pluginFunction']),
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
@@ -778,6 +779,19 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function expressionFunction($expression, $params = [], $config = []): Expression
     {
         return new Expression($expression, $params, $config);
+    }
+
+    /**
+     * Returns a new object of the given $class, configured with $config.
+     *
+     * @param mixed $class
+     * @param array $config
+     *
+     * @return mixed
+     */
+    public function newFunction($class, $config = [])
+    {
+        return new $class($config);
     }
 
     /**
