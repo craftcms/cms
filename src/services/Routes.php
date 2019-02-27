@@ -127,7 +127,10 @@ class Routes extends Component
         $sortOrders = [];
 
         foreach ($routes as $route) {
-            if (empty($route['site']) || $route['site'] == $currentSiteUid) {
+            if (
+                !isset($this->_projectConfigRoutes[$route['uriPattern']]) &&
+                (empty($route['site']) || $route['site'] == $currentSiteUid)
+            ) {
                 $this->_projectConfigRoutes[$route['uriPattern']] = ['template' => $route['template']];
                 $sortOrders[] = $route['sortOrder'];
             }
