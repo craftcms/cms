@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `create()` Twig function. ([#3921](https://github.com/craftcms/cms/pull/3921))
 - Added `craft\helers\Assets::getAllowedFileKinds()`.
 
 ### Changed

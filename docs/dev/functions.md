@@ -56,6 +56,22 @@ Clones a given object.
 {% set articles = clone(query).type('articles') %}
 ```
 
+## `create( type )`
+
+Creates a new object instance based on a given class name or object configuration. See <api:Yii::createObject()> for a full explanation of supported arguments.
+
+```twig
+{# Pass in a class name #}
+{% set cookie = create('yii\\web\\Cookie') %}
+
+{# Or a full object configuration array #}
+{% set cookie = create({
+    class: 'yii\\web\\cookie',
+    name: 'foo',
+    value: 'bar'
+}) %}
+```
+
 ## `csrfInput()`
 
 Returns a hidden CSRF Token input. All sites that have CSRF Protection enabled must include this in each form that submits via POST.
