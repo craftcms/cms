@@ -337,6 +337,11 @@ class GeneralConfig extends BaseObject
      *     ],
      * ],
      * ```
+     *
+     * ::: tip
+     * File extensions listed here won’t immediately be allowed to be uploaded. You will also need to list them with
+     * the [[$extraAllowedFileExtensions]] config setting.
+     * :::
      */
     public $extraFileKinds = [];
     /**
