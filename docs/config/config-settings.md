@@ -954,6 +954,11 @@ will get merged with the one defined in `\craft\config\craft\helpers\Assets::_bu
 ],
 ```
 
+::: tip
+File extensions listed here won’t immediately be allowed to be uploaded. You will also need to list them with
+the [$extraAllowedFileExtensions](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-extraallowedfileextensions) config setting.
+:::
+
 
 
 ### `filenameWordSeparator`
