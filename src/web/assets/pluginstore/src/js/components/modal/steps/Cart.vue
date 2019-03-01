@@ -95,7 +95,7 @@
                     </table>
 
                     <div class="py-4">
-                        <a @click="payment()" class="btn submit">{{ "Checkout"|t('app') }}</a>
+                        <btn class="primary" @click="payment()">{{ "Checkout"|t('app') }}</btn>
                     </div>
                 </template>
 
@@ -135,7 +135,9 @@
                                     <edition-badge v-if="activeTrialPluginEditions[plugin.handle] && plugin.editions.length > 1" :name="activeTrialPluginEditions[plugin.handle].name"></edition-badge>
                                 </td>
                                 <td><strong v-if="activeTrialPluginEditions[plugin.handle]">{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
-                                <td class="thin"><a class="btn" @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)">{{ "Add to cart"|t('app') }}</a></td>
+                                <td class="thin">
+                                    <btn @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)">{{ "Add to cart"|t('app') }}</btn>
+                                </td>
                             </template>
                         </tr>
                     </tbody>

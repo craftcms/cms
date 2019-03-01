@@ -14,17 +14,19 @@
                             <li>{{ craftId.name }}</li>
                             <li>{{ craftId.email }}</li>
                         </ul>
-                        <input type="submit" value="Continue" class="btn submit" :disabled="(!validates || loading)" :class="{ disabled: (!validates || loading) }" />
+                        <btn class="primary" type="submit" :disabled="(!validates || loading)">{{ "Continue"|t('app') }}</btn>
                     </template>
 
-                    <p v-else><a class="btn submit" @click="connectCraftId">{{ "Connect to your Craft ID"|t('app') }}</a></p>
+                    <p v-else>
+                        <btn class="primary" @click="connectCraftId">{{ "Connect to your Craft ID"|t('app') }}</btn>
+                    </p>
                 </template>
 
                 <p><label><input type="radio" value="guest" v-model="identityMode" /> {{ "Continue as guest"|t('app') }}</label></p>
 
                 <template v-if="identityMode === 'guest'">
                     <text-field id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError" />
-                    <input type="submit" :value="'Continue'|t('app')" class="btn submit" :disabled="(!validates || loading)" :class="{ disabled: (!validates || loading) }" />
+                    <btn class="primary" type="submit" :disabled="(!validates || loading)">{{ "Continue"|t('app') }}</btn>
                 </template>
 
                 <div v-if="loading" class="spinner"></div>

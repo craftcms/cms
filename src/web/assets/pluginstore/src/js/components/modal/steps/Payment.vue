@@ -83,7 +83,7 @@
                     <p v-if="error" class="error">{{ error }}</p>
 
                     <div class="mb-4">
-                        <input type="submit" class="btn submit" :value="'Pay'|t('app')+ ' ' + $options.filters.currency(staticCartTotal)" />
+                        <btn class="primary" type="submit">{{ "Pay {price}"|t('app', { price: $options.filters.currency(staticCartTotal) }) }}</btn>
                     </div>
                     <div v-if="loading" class="spinner"></div>
 

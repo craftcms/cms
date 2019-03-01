@@ -19,8 +19,8 @@
                     </ul>
 
                     <ul>
-                        <li class="mr-4 inline-block"><a class="btn block" :href="developer.developerUrl">{{ "Website"|t('app') }}</a></li>
-                        <li class="mr-4 inline-block"><a class="btn block" :href="developer.developerUrl">{{ "Contact"|t('app') }}</a></li>
+                        <li class="mr-4 inline-block"><btn :href="developer.developerUrl" block>{{ "Website"|t('app') }}</btn></li>
+                        <li class="mr-4 inline-block"><btn :href="developer.developerUrl" block>{{ "Contact"|t('app') }}</btn></li>
                     </ul>
                 </template>
             </div>
