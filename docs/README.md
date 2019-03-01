@@ -20,7 +20,7 @@ Craft is a self-hosted PHP 7 application, built on [Yii 2](https://www.yiiframew
 
 We highly recommend you check out these resources as you’re getting started with Craft:
 
-- **[Craft Slack](https://craftcms.com/slack)** – one of the most friendly and helpful Slacks on the planet.
+- **[Craft Discord](https://craftcms.com/discord)** – one of the most friendly and helpful Discord channels on the planet.
 - **[Up and Running with Craft 3](https://craftquest.io/courses/craft-cms-3-tutorials)** – free 4 1/2-hour video course by [CraftQuest](https://craftquest.io).
 - **[Craft CMS 3 Orientation Guide](https://nystudio107.com/blog/craft-cms-3-orientation-guide-welcome)** – intro to Craft and the community by [nystudio107](https://nystudio107.com).
 - **[Craft CMS Stack Exchange](http://craftcms.stackexchange.com/)** – community-run Q&A for Craft developers.
