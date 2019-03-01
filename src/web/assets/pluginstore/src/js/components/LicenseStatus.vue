@@ -1,8 +1,7 @@
 <template>
-    <div :class="'c-btn block large outline license-status ' + status">
-        <icon icon="check"></icon>
+    <btn icon="check" :class="'license-status ' + status" block large outline>
         {{ description }}
-    </div>
+    </btn>
 </template>
 
 <script>

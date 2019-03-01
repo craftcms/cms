@@ -3,15 +3,15 @@
         <template v-if="!isPluginEditionFree">
             <template v-if="isInCart(plugin, edition)">
                 <!-- Already in cart -->
-                <btn v-if="allowUpdates" outline type="primary" @click="$root.openModal('cart')" block large><icon icon="check" /> {{ "Already in your cart"|t('app') }}</btn>
+                <btn v-if="allowUpdates" class="primary" icon="check" block large outline @click="$root.openModal('cart')">{{ "Already in your cart"|t('app') }}</btn>
             </template>
 
             <template v-else>
                 <!-- Add to cart / Upgrade (from lower edition) -->
-                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" type="primary" @click="addEditionToCart(edition.handle)" block large>{{ "Add to cart"|t('app') }}</btn>
+                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" class="primary" @click="addEditionToCart(edition.handle)" block large>{{ "Add to cart"|t('app') }}</btn>
 
                 <!-- Licensed -->
-                <btn v-else-if="licensedEdition === edition.handle" type="primary" block large disabled>{{ "Licensed"|t('app') }}</btn>
+                <btn v-else-if="licensedEdition === edition.handle" class="primary" block large disabled>{{ "Licensed"|t('app') }}</btn>
             </template>
         </template>
 
@@ -61,12 +61,12 @@
         <template v-else>
                 <template v-if="currentEdition !== licensedEdition && !isPluginEditionFree">
                     <!-- Installed as a trial -->
-                    <button class="c-btn block large" :disabled="true"><icon icon="check" /> {{ "Installed as a trial"|t('app') }}</button>
+                    <btn icon="check" :disabled="true" large block> {{ "Installed as a trial"|t('app') }}</btn>
                 </template>
 
                 <template v-else>
                     <!-- Installed -->
-                    <button class="c-btn block large" :disabled="true"><icon icon="check" /> {{ "Installed"|t('app') }}</button>
+                    <btn icon="check" :disabled="true" block large> {{ "Installed"|t('app') }}</btn>
                 </template>
         </template>
 
