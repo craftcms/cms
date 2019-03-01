@@ -68,7 +68,7 @@
                 </template>
         </template>
 
-        <div class="spinner" v-if="loading"></div>
+        <spinner v-if="loading"></spinner>
     </div>
 </template>
 
@@ -208,7 +208,7 @@
 <style lang="scss">
     .plugin-actions {
         position: relative;
-        .spinner {
+        .c-spinner {
             position: absolute;
             bottom: -32px;
             left: 50%;

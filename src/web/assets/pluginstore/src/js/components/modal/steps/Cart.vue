@@ -51,7 +51,7 @@
                                         <select-input v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
                                     </template>
 
-                                    <div v-if="itemLoading(itemKey)" class="spinner"></div>
+                                    <spinner v-if="itemLoading(itemKey)"></spinner>
                                 </td>
                                 <td class="price">
                                     <strong>{{ item.lineItem.price|currency }}</strong>
@@ -362,9 +362,9 @@
                     margin-bottom: 0;
                 }
 
-                .spinner {
-                    @apply .relative .ml-2;
-                    top: -2px;
+                .c-spinner {
+                    @apply .relative .ml-4;
+                    top: 6px;
                 }
             }
         }

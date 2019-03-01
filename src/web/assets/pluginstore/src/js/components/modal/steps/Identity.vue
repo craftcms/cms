@@ -14,7 +14,7 @@
                             <li>{{ craftId.name }}</li>
                             <li>{{ craftId.email }}</li>
                         </ul>
-                        <btn class="primary" type="submit" :disabled="(!validates || loading)">{{ "Continue"|t('app') }}</btn>
+                        <btn class="primary" type="submit" :disabled="(!validates || loading)" :loading="loading">{{ "Continue"|t('app') }}</btn>
                     </template>
 
                     <p v-else>
@@ -26,10 +26,8 @@
 
                 <template v-if="identityMode === 'guest'">
                     <text-field id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError" />
-                    <btn class="primary" type="submit" :disabled="(!validates || loading)">{{ "Continue"|t('app') }}</btn>
+                    <btn class="primary" type="submit" :disabled="(!validates || loading)" :loading="loading">{{ "Continue"|t('app') }}</btn>
                 </template>
-
-                <div v-if="loading" class="spinner"></div>
             </form>
         </template>
     </step>

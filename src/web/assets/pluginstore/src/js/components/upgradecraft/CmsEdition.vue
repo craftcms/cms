@@ -131,10 +131,11 @@
 
         .cms-edition-actions {
             position: relative;
-            .spinner {
+            .c-spinner {
                 position: absolute;
-                bottom: -32px;
+                bottom: -30px;
                 left: 50%;
+                margin-left: -11px;
             }
 
             .c-btn {

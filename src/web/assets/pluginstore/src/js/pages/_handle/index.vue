@@ -17,7 +17,7 @@
             </div>
 
             <div v-if="actionsLoading">
-                <div class="spinner"></div>
+                <spinner></spinner>
             </div>
         </div>
 
@@ -91,7 +91,7 @@
                 <plugin-changelog :pluginId="$root.pluginId"></plugin-changelog>
             </template>
             <template v-else>
-                <div class="plugin-details-loading spinner"></div>
+                <spinner></spinner>
             </template>
         </div>
     </div>

@@ -9,7 +9,7 @@
 
             <div class="flex-1">
                 <template v-if="loading || !developer">
-                    <div class="spinner mt-8"></div>
+                    <spinner class="mt-8"></spinner>
                 </template>
                 <template v-else>
                     <h1>{{developer.developerName}}</h1>

@@ -6,7 +6,7 @@
         </div>
 
         <template v-if="loading">
-            <div class="spinner"></div>
+            <spinner></spinner>
         </template>
         <template v-else>
             <plugin-grid :plugins="pluginsToRender"></plugin-grid>

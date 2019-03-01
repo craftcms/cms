@@ -20,7 +20,7 @@
             <div @click="installCraft(editionHandle)" class="c-btn block large">{{ "Reactivate"|t('app') }}</div>
         </template>
 
-        <div v-if="loading" class="spinner"></div>
+        <spinner v-if="loading"></spinner>
     </div>
 </template>
 

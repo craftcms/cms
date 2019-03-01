@@ -29,7 +29,7 @@
 
                         <h2>{{ "Coupon Code"|t('app') }}</h2>
                         <text-field placeholder="XXXXXXX" id="coupon-code" v-model="couponCode" size="12" @input="couponCodeChange" :errors="couponCodeError"></text-field>
-                        <div v-if="couponCodeLoading" class="spinner"></div>
+                        <spinner v-if="couponCodeLoading" class="mt-2"></spinner>
                     </div>
 
                     <div class="block">
@@ -83,9 +83,8 @@
                     <p v-if="error" class="error">{{ error }}</p>
 
                     <div class="mb-4">
-                        <btn class="primary" type="submit">{{ "Pay {price}"|t('app', { price: $options.filters.currency(staticCartTotal) }) }}</btn>
+                        <btn class="primary" type="submit" :loading="loading">{{ "Pay {price}"|t('app', { price: $options.filters.currency(staticCartTotal) }) }}</btn>
                     </div>
-                    <div v-if="loading" class="spinner"></div>
 
                     <p>
                         <img :src="poweredByStripe" height="18" />
