@@ -35,22 +35,24 @@
                 </template>
 
                 <!-- Install (Free) -->
-                <btn-input v-if="isPluginEditionFree" :value="'Install'|t('app')" type="primary" block large></btn-input>
+                <template v-if="isPluginEditionFree">
+                    <btn class="primary" type="submit" block large>{{ "Install"|t('app') }}</btn>
+                </template>
 
                 <template v-else>
                     <template v-if="(isEditionMoreExpensiveThanLicensed && currentEdition === edition.handle) || (licensedEdition === edition.handle && !currentEdition)">
                         <!-- Install (Commercial) -->
-                        <btn-input :value="'Install'|t('app')" block large></btn-input>
+                        <btn class="primary" type="submit" block large>{{ "Install"|t('app') }}</btn>
                     </template>
 
                     <template v-else-if="isEditionMoreExpensiveThanLicensed && currentEdition !== edition.handle">
                         <!-- Try -->
-                        <btn-input :value="'Try'|t('app')" :disabled="!((pluginLicenseInfo && pluginLicenseInfo.isInstalled && pluginLicenseInfo.isEnabled) || !pluginLicenseInfo)" block large></btn-input>
+                        <btn class="primary" type="submit" :disabled="!((pluginLicenseInfo && pluginLicenseInfo.isInstalled && pluginLicenseInfo.isEnabled) || !pluginLicenseInfo)" block large>{{ "Try"|t('app') }}</btn>
                     </template>
 
                     <template v-else-if="currentEdition && licensedEdition === edition.handle && currentEdition !== edition.handle">
                         <!-- Reactivate -->
-                        <btn-input :value="'Reactivate'|t('app')" block large></btn-input>
+                        <btn class="primary" type="submit" block large>{{ "Reactivate"|t('app') }}</btn>
                     </template>
                 </template>
             </form>
