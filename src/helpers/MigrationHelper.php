@@ -576,7 +576,7 @@ class MigrationHelper
      * @param string $tableName
      * @param Migration|null $migration
      * @return array An array of the indexes that were just dropped.
-     * @deprecated in 3.1.
+     * @todo drop the awkward return value in Craft 4
      */
     public static function dropAllIndexesOnTable(string $tableName, Migration $migration = null): array
     {
