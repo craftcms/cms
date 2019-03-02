@@ -2,7 +2,7 @@
     <step>
         <template slot="main">
             <div id="thank-you-message">
-                <div class="graphic spinner big success"></div>
+                <icon icon="check-circle" />
                 <h2>{{ "Thank You!"|t('app') }}</h2>
                 <p class="light">{{ "Your order has been processed successfully."|t('app') }}</p>
                 <p>

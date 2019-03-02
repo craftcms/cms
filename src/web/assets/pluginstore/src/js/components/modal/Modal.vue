@@ -166,14 +166,6 @@
                 @apply .text-center;
                 padding: 48px 24px;
             }
-
-            #graphic {
-                @apply .inline-block;
-                width: 48px;
-                height: 48px;
-                background-repeat: no-repeat;
-                background-position: 50% 50%;
-            }
         }
     }
 </style>
