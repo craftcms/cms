@@ -1,4 +1,4 @@
-/* General */
+/* Basics */
 
 html, body, div, span,  object, iframe, table, caption, tbody, tfoot, thead, tr, th, td,
 del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var,
@@ -22,24 +22,19 @@ p {
   @apply .mb-4;
 }
 
-.swiper-wrapper {
-  min-width: auto;
+pre {
+  @apply .bg-grey-lighter .p-4 .mb-4 .overflow-auto .max-w-full min-w-0;
 }
 
-.ps-header {
-  @apply .border-b .border-solid .border-grey-light .py-2 .flex .justify-between;
+code {
+  @apply .bg-grey-lighter .p-1;
 }
+
+
+/* Classes */
 
 .no-line-height {
   line-height: 0;
-}
-
-#main-container {
-  @apply .relative;
-}
-
-#main-content #content {
-  @apply .relative;
 }
 
 .input.success input {
@@ -54,12 +49,18 @@ input.error {
   @apply .border-red;
 }
 
-pre {
-  @apply .bg-grey-lighter .p-4 .mb-4 .overflow-auto .max-w-full min-w-0;
+
+/* Header */
+
+.ps-header {
+  @apply .border-b .border-solid .border-grey-light .py-2 .flex .justify-between;
 }
 
-code {
-  @apply .bg-grey-lighter .p-1;
+
+/* Swiper */
+
+.swiper-wrapper {
+  min-width: auto;
 }
 
 
@@ -70,12 +71,19 @@ code {
 }
 
 
-/* Header title */
+/* Craft tweaks */
 
 #header h1 {
   cursor: pointer;
 }
 
+#main-container {
+  @apply .relative;
+}
+
+#main-content #content {
+  @apply .relative;
+}
 
 /* Plugin Store actions */
 
