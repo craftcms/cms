@@ -85,6 +85,11 @@ input.error {
   @apply .relative;
 }
 
+#container {
+  position: static !important; /* #container hack required for modal overlays */
+}
+
+
 /* Plugin Store actions */
 
 #pluginstore-actions {
@@ -180,10 +185,4 @@ only screen and (min-resolution: 1.5dppx) {
       background-size: 48px;
     }
   }
-}
-
-/* Plugin search */
-
-#container {
-  position: static !important; /* #container hack required for modal overlays */
 }
