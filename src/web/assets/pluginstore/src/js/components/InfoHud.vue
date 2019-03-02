@@ -27,23 +27,12 @@
         @apply .inline-block;
 
         .v-popover {
+            @apply .text-grey;
             display: inline-block;
             line-height: 0;
 
-            svg[data-icon="info-circle"] {
-                path {
-                    fill: $lightTextColor;
-                }
-            }
-
             &:hover, &.open {
-                @apply .cursor-pointer;
-
-                svg[data-icon="info-circle"] {
-                    path {
-                        fill: $linkColor;
-                    }
-                }
+                @apply .cursor-pointer .text-blue;
             }
 
             & > span {

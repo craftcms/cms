@@ -119,12 +119,6 @@
                     &:first-child {
                         @apply .border-t;
                     }
-
-                    svg[data-icon="info-circle"] {
-                        path {
-                            fill: #ccc;
-                        }
-                    }
                 }
             }
         }
