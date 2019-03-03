@@ -140,7 +140,7 @@ Whether admins should be allowed to make administrative changes to the system.
 If this is disabled, the Settings and Plugin Store sections will be hidden,
 the Craft edition and Craft/plugin versions will be locked, and the project config will become read-only.
 
-Therefore you should only disable this in production environments when [useProjectConfigFile](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-useprojectconfigfile) is enabled,
+Therefore you should only disable this in production environments when [useProjectConfigFile](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#useprojectconfigfile) is enabled,
 and you have a deployment workflow that runs `composer install` automatically on deploy.
 
 ::: warning
@@ -187,7 +187,7 @@ Defined by
 
 Whether Craft should allow system and plugin updates in the Control Panel, and plugin installation from the Plugin Store.
 
-This setting will automatically be disabled if [allowAdminChanges](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-allowadminchanges) is disabled.
+This setting will automatically be disabled if [allowAdminChanges](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#allowadminchanges) is disabled.
 
 
 
@@ -327,7 +327,7 @@ The base URL that Craft should use when generating Control Panel URLs.
 It will be determined automatically if left blank.
 
 ::: tip
-The base CP URL should **not** include the [CP trigger word](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-cptrigger) (e.g. `/admin`).
+The base CP URL should **not** include the [CP trigger word](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#cptrigger) (e.g. `/admin`).
 :::
 
 
@@ -486,7 +486,7 @@ Defined by
 
 
 
-The name of CSRF token used for CSRF validation if [enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-enablecsrfprotection) is set to `true`.
+The name of CSRF token used for CSRF validation if [enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#enablecsrfprotection) is set to `true`.
 
 
 
@@ -808,7 +808,7 @@ Defined by
 
 
 
-Whether to use a cookie to persist the CSRF token if [enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-enablecsrfprotection) is enabled. If false, the CSRF token
+Whether to use a cookie to persist the CSRF token if [enableCsrfProtection](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#enablecsrfprotection) is enabled. If false, the CSRF token
 will be stored in session under the 'csrfTokenName' config setting name. Note that while storing CSRF tokens in
 session increases security, it requires starting a session for every page that a CSRF token is need, which may
 degrade site performance.
@@ -894,7 +894,7 @@ Defined by
 
 
 
-List of file extensions that will be merged into the [allowedFileExtensions](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-allowedfileextensions) config setting.
+List of file extensions that will be merged into the [allowedFileExtensions](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#allowedfileextensions) config setting.
 
 
 
@@ -956,7 +956,7 @@ will get merged with the one defined in `\craft\config\craft\helpers\Assets::_bu
 
 ::: tip
 File extensions listed here won’t immediately be allowed to be uploaded. You will also need to list them with
-the [extraAllowedFileExtensions](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-extraallowedfileextensions) config setting.
+the [extraAllowedFileExtensions](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#extraallowedfileextensions) config setting.
 :::
 
 
@@ -1108,7 +1108,7 @@ List of headers where proxies store the real client IP.
 
 See [yii\web\Request::$ipHeaders](https://www.yiiframework.com/doc/api/2.0/yii-web-request#$ipHeaders-detail) for more details.
 
-If not set, the default [craft\web\Request::$ipHeaders](https://docs.craftcms.com/api/v3/craft-web-request.html#property-ipheaders) value will be used.
+If not set, the default [craft\web\Request::$ipHeaders](https://docs.craftcms.com/api/v3/craft-web-request.html#ipheaders) value will be used.
 
 
 
@@ -1363,7 +1363,7 @@ Example Value | Example URI
 `?page` | `/news?page=5`
 
 ::: tip
-If you want to set this to `?p` (e.g. `/news?p=5`), you will need to change your [pathParam](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-pathparam) setting as well,
+If you want to set this to `?p` (e.g. `/news?p=5`), you will need to change your [pathParam](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#pathparam) setting as well,
 which is set to `p` by default, and if your server is running Apache, you will need to update the redirect code
 in your `.htaccess` file to match your new `pathParam` value.
 :::
@@ -2066,7 +2066,7 @@ The base URL to the site(s). If set, it will take precedence over the Base URL s
 
 This can be set to a string, which will override the primary site’s base URL only, or an array with site handles used as the keys.
 
-The URL(s) must begin with either `http://`, `https://`, `//` (protocol-relative), or an [alias](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-aliases).
+The URL(s) must begin with either `http://`, `https://`, `//` (protocol-relative), or an [alias](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#aliases).
 
 ```php
 'siteUrl' => [
@@ -2376,7 +2376,7 @@ Defined by
 
 Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
 
-Note that this setting only takes effect if [omitScriptNameInUrls](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-omitscriptnameinurls) is set to false.
+Note that this setting only takes effect if [omitScriptNameInUrls](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#omitscriptnameinurls) is set to false.
 
 
 
