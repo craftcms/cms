@@ -15,6 +15,10 @@ Create a `LICENSE.md` file at the root of your plugin’s repository, and paste 
 Copyright © <YourName>
 ```
 
+::: tip
+If you are going with the Craft License, don’t forget to change the `license` value in your `composer.json` file from `MIT` to `proprietary`.
+::: 
+
 ## Registering your Plugin
 
 To register your plugin, first make sure it’s published to a public GitHub repository. Then create a Craft ID account at [id.craftcms.com](https://id.craftcms.com), and connect it to your GitHub account.
