@@ -56,7 +56,7 @@ Create a `composer.json` file at the root of your plugin directory, and use this
     "email": "email@developer-website.tld",
     "issues": "https://github.com/developer/repo/issues?state=open",
     "source": "https://github.com/developer/repo",
-    "docs": "https://github.com/developer/repo"
+    "docs": "https://github.com/developer/repo/blob/master/README.md"
   },
   "require": {
     "craftcms/cms": "^3.0.0"
@@ -68,7 +68,8 @@ Create a `composer.json` file at the root of your plugin directory, and use this
   },
   "extra": {
     "handle": "plugin-handle",
-    "name": "Plugin Name"
+    "name": "Plugin Name",
+    "documentationUrl": "https://github.com/developer/repo/blob/master/README.md"
   }
 }
 ```
@@ -80,6 +81,7 @@ Replace:
 - `https://developer-website.tld` with the URL to the website the developer name should link to in the Control Panel.
 - `email@developer-website.tld` with your support email.
 - `developer/repo` with the actual GitHub account and repository names where the plugin will live.
+- `master` with the actual primary branch name of your GitHub repository.
 - `namespace\\prefix\\` with your namespace prefix. (Use double-backslashes because this is JSON, and note this must end with `\\`.)
 - `plugin-handle` with your plugin handle.
 - `Plugin Name` with your plugin name.
