@@ -543,7 +543,7 @@ class Entry extends Element
      * @var \DateTime|null Post date
      * ---
      * ```php
-     * echo Craft::$app->formatter->asDate($entry->date, 'short');
+     * echo Craft::$app->formatter->asDate($entry->postDate, 'short');
      * ```
      * ```twig
      * {{ entry.postDate|date('short') }}
