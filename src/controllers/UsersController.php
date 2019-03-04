@@ -1260,7 +1260,11 @@ class UsersController extends Controller
         } catch (\Throwable $exception) {
             /** @noinspection UnSafeIsSetOverArrayInspection - FP */
             if (isset($fileLocation)) {
-                FileHelper::unlink($fileLocation);
+                try {
+                    FileHelper::unlink($fileLocation);
+                } catch (\Throwable $e) {
+                    // Let it go
+                }
             }
 
             Craft::error('There was an error uploading the photo: ' . $exception->getMessage(), __METHOD__);
