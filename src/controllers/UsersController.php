@@ -1223,8 +1223,10 @@ class UsersController extends Controller
      */
     public function actionUploadUserPhoto()
     {
+        $this->requireCpRequest();
         $this->requireAcceptsJson();
         $this->requireLogin();
+
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
 
         if ($userId != Craft::$app->getUser()->getIdentity()->id) {
@@ -1273,11 +1275,14 @@ class UsersController extends Controller
      * Delete all the photos for current user.
      *
      * @return Response
+     * @throws BadRequestHttpException
      */
     public function actionDeleteUserPhoto(): Response
     {
+        $this->requireCpRequest();
         $this->requireAcceptsJson();
         $this->requireLogin();
+
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
 
         if ($userId != Craft::$app->getUser()->getIdentity()->id) {
