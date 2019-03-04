@@ -204,7 +204,7 @@ class ResaveController extends Controller
         }
 
         if ($this->uid) {
-            $query->uid(explode(',', $this->id));
+            $query->uid(explode(',', $this->uid));
         }
 
         if ($this->site) {
