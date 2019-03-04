@@ -10,6 +10,7 @@
 {%- set class = [
     'text',
     (class is defined and class ? class : null),
+    (disabled is defined and disabled ? 'disabled' : null),
     (size is defined and size ? null : 'fullwidth')
 ]|filter|join(' ') %}
 
@@ -48,6 +49,7 @@ new Vue({
                 size: "{{ (size ?? '')|e('js') }}",
                 maxlength: "{{ (maxlength ?? '')|e('js') }}",
                 autofocus: {{ (autofocus ?? false) ? 'true' : 'false' }},
+                disabled: {{ (disabled ?? false) ? 'true' : 'false' }},
                 title: "{{ (title ?? '')|e('js') }}",
                 placeholder: "{{ (placeholder ?? '')|e('js') }}"
             },

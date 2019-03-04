@@ -12,6 +12,7 @@
 - The `{% exit %}` tag now throws a more specific exception depending on the status code passed to it (e.g. `yii\web\NotFoundHttpException` for 404s). ([#3915](https://github.com/craftcms/cms/issues/3915))
 - `craft\helpers\MigrationHelper::dropAllIndexesOnTable()` is no longer deprecated.
 - The `--id` option on `resave/*` console commands is now named `--element-id`.
+- The `_includes/forms/autosuggest.html` template now supports passing `disabled: true`. ([#3925](https://github.com/craftcms/cms/issues/3925))
 
 ### Fixed
 - Fixed a bug where Control Panel content areas weren’t getting their bottom padding applied in Firefox. ([#3874](https://github.com/craftcms/cms/issues/3874))
