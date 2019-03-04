@@ -32,7 +32,7 @@ class ResaveController extends Controller
     /**
      * @var int|string The ID(s) of the elements to resave.
      */
-    public $id;
+    public $elementId;
 
     /**
      * @var string The UUID(s) of the elements to resave.
@@ -199,8 +199,8 @@ class ResaveController extends Controller
         /** @var ElementQuery $query */
         $type = App::humanizeClass($query->elementType);
 
-        if ($this->id) {
-            $query->id(is_int($this->id) ? $this->id : explode(',', $this->id));
+        if ($this->elementId) {
+            $query->id(is_int($this->elementId) ? $this->elementId : explode(',', $this->elementId));
         }
 
         if ($this->uid) {

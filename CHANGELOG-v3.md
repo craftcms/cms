@@ -11,12 +11,14 @@
 - Assets field settings no longer list file kinds that aren’t allowed to be uploaded, per the `allowedFileExtensions` and `extraAllowedFileExtensions` config settings. ([#3917](https://github.com/craftcms/cms/issues/3917))
 - The `{% exit %}` tag now throws a more specific exception depending on the status code passed to it (e.g. `yii\web\NotFoundHttpException` for 404s). ([#3915](https://github.com/craftcms/cms/issues/3915))
 - `craft\helpers\MigrationHelper::dropAllIndexesOnTable()` is no longer deprecated.
+- The `--id` option on `resave/*` console commands is now named `--element-id`.
 
 ### Fixed
 - Fixed a bug where Control Panel content areas weren’t getting their bottom padding applied in Firefox. ([#3874](https://github.com/craftcms/cms/issues/3874))
 - Fixed a PHP error that occurred on the front-end if two routes defined in Settings → Routes had the same URI pattern. ([#3922](https://github.com/craftcms/cms/issues/3922))
 - Fixed a bug where Craft wasn’t always preselecting the correct tab on Control Panel pages if the tab name contained non-ASCII characters. ([#3923](https://github.com/craftcms/cms/issues/3923))
 - Fixed a bug where the `--uid` option on `resave/*` console commands wasn’t working.
+- Fixed a SQL error that could occur when running `resave/*` console commands.
 
 ## 3.1.15 - 2019-02-26
 
