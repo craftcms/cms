@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `create()` Twig function. ([#3921](https://github.com/craftcms/cms/pull/3921))
+- Added the `--type` option to the `resave/entries` command. ([#3939](https://github.com/craftcms/cms/issues/3939))
 - Added `craft\helers\Assets::getAllowedFileKinds()`.
 
 ### Changed

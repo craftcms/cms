@@ -80,6 +80,11 @@ class ResaveController extends Controller
     public $section;
 
     /**
+     * @var string|null The entry type handle(s) of the entries to resave.
+     */
+    public $type;
+
+    /**
      * @var string|null The volume handle(s) to save assets from. Can be set to multiple comma-separated volumes.
      */
     public $volume;
@@ -108,6 +113,7 @@ class ResaveController extends Controller
                 break;
             case 'entries':
                 $options[] = 'section';
+                $options[] = 'type';
                 break;
             case 'tags':
                 $options[] = 'group';
@@ -158,6 +164,9 @@ class ResaveController extends Controller
         $query = Entry::find();
         if ($this->section !== null) {
             $query->section(explode(',', $this->section));
+        }
+        if ($this->type !== null) {
+            $query->type(explode(',', $this->type));
         }
         return $this->_saveElements($query);
     }
