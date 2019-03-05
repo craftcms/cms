@@ -717,6 +717,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('ceil', 'ceil'),
             new \Twig_SimpleFunction('className', 'get_class'),
             new \Twig_SimpleFunction('clone', [$this, 'cloneFunction']),
+            new \Twig_SimpleFunction('create', [Craft::class, 'createObject']),
             new \Twig_SimpleFunction('csrfInput', [$this, 'csrfInputFunction']),
             new \Twig_SimpleFunction('expression', [$this, 'expressionFunction']),
             new \Twig_SimpleFunction('floor', 'floor'),

@@ -1,4 +1,4 @@
-/*!   - 2019-02-20 */
+/*!   - 2019-02-27 */
 (function($){
 
 /** global: Craft */
@@ -11041,7 +11041,7 @@ Craft.CP = Garnish.Base.extend(
                         this.selectTab(ev.currentTarget);
                     });
 
-                    if (href === document.location.hash) {
+                    if (encodeURIComponent(href.substr(1)) === document.location.hash.substr(1)) {
                         this.selectTab(a);
                     }
                 }

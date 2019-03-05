@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.1.15",
+  "version": "3.1.16",
   "keywords": [
     "cms",
     "craftcms",
@@ -14,7 +14,7 @@
     "issues": "https://github.com/craftcms/cms/issues?state=open",
     "forum": "https://craftcms.stackexchange.com/",
     "source": "https://github.com/craftcms/cms",
-    "docs": "https://github.com/craftcms/docs",
+    "docs": "https://docs.craftcms.com/v3/",
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {

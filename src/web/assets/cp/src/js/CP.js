@@ -244,7 +244,7 @@ Craft.CP = Garnish.Base.extend(
                         this.selectTab(ev.currentTarget);
                     });
 
-                    if (href === document.location.hash) {
+                    if (encodeURIComponent(href.substr(1)) === document.location.hash.substr(1)) {
                         this.selectTab(a);
                     }
                 }

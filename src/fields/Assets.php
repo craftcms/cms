@@ -176,7 +176,7 @@ class Assets extends BaseRelationField
     {
         $fileKindOptions = [];
 
-        foreach (AssetsHelper::getFileKinds() as $value => $kind) {
+        foreach (AssetsHelper::getAllowedFileKinds() as $value => $kind) {
             $fileKindOptions[] = ['value' => $value, 'label' => $kind['label']];
         }
 

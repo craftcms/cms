@@ -1837,7 +1837,7 @@ body.rtl #main-container #main #main-content #content-container #tabs ul li a.se
 #main-container #main #main-content #content-container #content { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; background: #fff; background-clip: padding-box; padding: 24px 24px 0; word-wrap: break-word; }
 body.ltr #main-container #main #main-content #content-container #content { border-right: 1px solid rgba(0, 0, 20, 0.1); }
 body.rtl #main-container #main #main-content #content-container #content { border-left: 1px solid rgba(0, 0, 20, 0.1); }
-#main-container #main #main-content #content-container > *:last-child { padding-bottom: 48px; }
+#main-container #main #main-content #content-container #content > *:last-child { padding-bottom: 48px; }
 #main-container #main #main-content #details { -webkit-box-flex: 0; -ms-flex: 0 0 350px; flex: 0 0 350px; width: 350px; padding: 24px 0 32px; }
 #main-container #main #main-content #details .meta { padding: 16px 24px; }
 #main-container #main #main-content #details .meta.read-only { background: #e7eef3; }
