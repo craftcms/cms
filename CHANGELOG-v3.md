@@ -6,6 +6,7 @@
 - Added the `create()` Twig function. ([#3921](https://github.com/craftcms/cms/pull/3921))
 - Added the `--type` option to the `resave/entries` command. ([#3939](https://github.com/craftcms/cms/issues/3939))
 - Added `craft\helers\Assets::getAllowedFileKinds()`.
+- Added repository link to the plugin details page in the Plugin Store.
 
 ### Changed
 - Line breaks in field instructions now get converted to `<br>` tags. ([#3928](https://github.com/craftcms/cms/issues/3928))
