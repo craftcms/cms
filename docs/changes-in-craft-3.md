@@ -199,13 +199,13 @@ The following Twig template tags have been deprecated in Craft 3, and will be co
 
 | Old                             | New
 | ------------------------------- | ---------------------------------------------
-| `{% includecss %}`              | `{% css %}`
-| `{% includehirescss %}`         | `{% css %}` *(write your own media selector)*
-| `{% includejs %}`               | `{% js %}`
-| `{% includecssfile url %}`      | `{% do view.registerCssFile(url) %}`
-| `{% includejsfile url %}`       | `{% do view.registerJsFile(url) %}`
-| `{% includecssresource path %}` | See [Asset Bundles](extend/asset-bundles.md)
-| `{% includejsresource path %}`  | See [Asset Bundles](extend/asset-bundles.md)
+| `{% includeCss %}`              | `{% css %}`
+| `{% includeHiResCss %}`         | `{% css %}` *(write your own media selector)*
+| `{% includeJs %}`               | `{% js %}`
+| `{% includeCssFile url %}`      | `{% do view.registerCssFile(url) %}`
+| `{% includeJsFile url %}`       | `{% do view.registerJsFile(url) %}`
+| `{% includeCssResource path %}` | See [Asset Bundles](extend/asset-bundles.md)
+| `{% includeJsResource path %}`  | See [Asset Bundles](extend/asset-bundles.md)
 
 ## Template Functions
 
