@@ -22,6 +22,7 @@
 - Fixed a bug where the `--uid` option on `resave/*` console commands wasn’t working. ([#3941](https://github.com/craftcms/cms/issues/3941))
 - Fixed a SQL error that could occur when running `resave/*` console commands.
 - Fixed a PHP error that occurred when calling the deprecated `getError()` method on a model that had no errors. ([#3934](https://github.com/craftcms/cms/issues/3934))
+- Fixed a bug where new folder names would not be sanitized when created via asset manager. ([#3689](https://github.com/craftcms/cms/issues/3689))
 
 ## 3.1.15 - 2019-02-26
 

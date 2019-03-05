@@ -163,6 +163,10 @@ class Assets
             $baseName = '-';
         }
 
+        if (!$isFilename) {
+            $baseName = $baseNameSanitized;
+        }
+
         return $baseName . $extension;
     }
 
