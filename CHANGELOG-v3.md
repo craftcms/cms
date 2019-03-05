@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.16 - 2019-03-05
 
 ### Added
 - The Plugin Store now shows Repository links on plugin screens.
