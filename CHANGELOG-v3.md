@@ -3,10 +3,10 @@
 ## Unreleased
 
 ### Added
+- The Plugin Store now shows Repository links on plugin screens.
 - Added the `create()` Twig function. ([#3921](https://github.com/craftcms/cms/pull/3921))
 - Added the `--type` option to the `resave/entries` command. ([#3939](https://github.com/craftcms/cms/issues/3939))
 - Added `craft\helers\Assets::getAllowedFileKinds()`.
-- Added repository link to the plugin details page in the Plugin Store.
 
 ### Changed
 - Line breaks in field instructions now get converted to `<br>` tags. ([#3928](https://github.com/craftcms/cms/issues/3928))
@@ -23,7 +23,7 @@
 - Fixed a bug where the `--uid` option on `resave/*` console commands wasn’t working. ([#3941](https://github.com/craftcms/cms/issues/3941))
 - Fixed a SQL error that could occur when running `resave/*` console commands.
 - Fixed a PHP error that occurred when calling the deprecated `getError()` method on a model that had no errors. ([#3934](https://github.com/craftcms/cms/issues/3934))
-- Fixed a bug where new folder names would not be sanitized when created via asset manager. ([#3689](https://github.com/craftcms/cms/issues/3689))
+- Fixed a bug where Craft wasn’t sanitizing new asset subfolder names. ([#3689](https://github.com/craftcms/cms/issues/3689))
 
 ## 3.1.15 - 2019-02-26
 
