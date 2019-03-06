@@ -10,6 +10,7 @@
 
 ### Fixed
 - Fixed a bug where the `positionedBefore` element query param was not including direct ancestors in the results.
+- Fixed a bug where HTML in plugin-supplied field instructions was getting encoded. ([#3928](https://github.com/craftcms/cms/issues/3928))
 
 ## 3.1.16 - 2019-03-05
 
