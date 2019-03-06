@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- The Plugin Store now shows “Report an issue“ links on plugin screens.
+
 ### Changed
 - When installing Craft using a `project.yaml`, Craft now processes all sites before installing any plugins. ([craftcms/commerce#752](https://github.com/craftcms/commerce/issues/752))
 

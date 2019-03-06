@@ -89,6 +89,10 @@
                     </ul>
                 </div>
 
+                <p>
+                    <a :href="'mailto:issues@craftcms.com?subject=' + encodeURIComponent('Issue with ' + plugin.name) + '&body=' + encodeURIComponent('I would like to report the following issue with '+plugin.name+' (https://plugins.craftcms.com/' + plugin.handle + '):\n\n')">{{ "Report an issue"|t('app') }}</a>
+                </p>
+
                 <hr>
 
                 <plugin-changelog :pluginId="$root.pluginId"></plugin-changelog>
