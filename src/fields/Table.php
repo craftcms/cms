@@ -126,6 +126,21 @@ class Table extends Field
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+
+        // Turn defaults into a non-associative array so it doesn't get reordered when saved to the project config
+        if (!empty($settings['defaults'])) {
+            $settings['defaults'] = array_values($settings['defaults']);
+        }
+
+        return $settings;
+    }
+
+    /**
      * @return bool whether minRows was set
      */
     public function hasMinRows(): bool
