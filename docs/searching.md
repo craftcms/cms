@@ -83,7 +83,7 @@ Assets, categories, entries, users, and tags each support their own set of addit
 You can also set the `orderBy` parameter to `'score'` if you want results ordered by best-match to worst-match:
 
 ```twig
-{% set results = craft.entries(){
+{% set results = craft.entries()
     .search(searchQuery)
     .orderBy('score')
     .all() %}
