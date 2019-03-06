@@ -339,8 +339,10 @@
     {% endif %}
 
     new Craft.ElevatedSessionForm('#userform', [
+        {% if not isNewUser %}
         '#email',
         '#newPassword',
+        {% endif %}
         '#admin:not(:checked)',
         '#user-groups input[type="checkbox"]:not(:checked)',
         '#permissions input[type="checkbox"]:not(:checked)'
