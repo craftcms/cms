@@ -207,7 +207,7 @@ class Sections extends Component
     public function getEditableSections(): array
     {
         $userSession = Craft::$app->getUser();
-        return ArrayHelper::filterByValue($this->getAllSections(), function(Section $section) use ($userSession) {
+        return ArrayHelper::where($this->getAllSections(), function(Section $section) use ($userSession) {
             return $userSession->checkPermission('editEntries:' . $section->uid);
         });
     }
@@ -231,7 +231,7 @@ class Sections extends Component
      */
     public function getSectionsByType(string $type): array
     {
-        return ArrayHelper::filterByValue($this->getAllSections(), 'type', $type, true);
+        return ArrayHelper::where($this->getAllSections(), 'type', $type, true);
     }
 
     /**
