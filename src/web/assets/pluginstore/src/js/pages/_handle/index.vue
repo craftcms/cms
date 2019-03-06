@@ -44,6 +44,7 @@
                 <div class="lg:flex">
                     <div class="lg:flex-1 lg:pr-8 lg:mr-4">
                         <div v-if="longDescription" v-html="longDescription" class="readable"></div>
+                        <div v-else-if="plugin.shortDescription" v-html="plugin.shortDescription" class="readable"></div>
                         <p v-else>No description.</p>
                     </div>
                     <div class="lg:pl-8 lg:ml-4">
