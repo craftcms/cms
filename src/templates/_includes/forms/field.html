@@ -28,7 +28,7 @@
                 </label>
             {% endif %}
             {% if instructions %}
-                <div class="instructions">{{ instructions|md|replace('/&amp;(\\w+);/', '&$1;')|raw }}</div>
+                <div class="instructions">{{ instructions|raw|nl2br|md|replace('/&amp;(\\w+);/', '&$1;')|raw }}</div>
             {% endif %}
         </div>
     {% endif %}

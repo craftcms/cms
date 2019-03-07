@@ -233,12 +233,21 @@ class AssetIndexer extends Component
      */
     public function processIndexForVolume(string $sessionId, int $volumeId, bool $cacheImages = false)
     {
+        $mutex = Craft::$app->getMutex();
+        $lockName = 'idx--' . $sessionId;
+
+        if (!$mutex->acquire($lockName, 5)) {
+            throw new Exception('Could not acquire a lock for the indexing session "' . $sessionId . '".');
+        }
+
         if (($indexEntryModel = $this->getNextIndexEntry($sessionId, $volumeId)) === null) {
             return false;
         }
 
         // Mark as started.
         $this->updateIndexEntry($indexEntryModel->id, ['inProgress' => true]);
+
+        $mutex->release($lockName);
 
         try {
             $asset = $this->_indexFileByIndexData($indexEntryModel, $cacheImages);

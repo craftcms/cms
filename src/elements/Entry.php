@@ -505,47 +505,90 @@ class Entry extends Element
 
     /**
      * @var int|null Section ID
+     * ---
+     * ```php
+     * echo $entry->sectionId;
+     * ```
+     * ```twig
+     * {{ entry.sectionId }}
+     * ```
      */
     public $sectionId;
 
     /**
      * @var int|null Type ID
+     * ---
+     * ```php
+     * echo $entry->typeId;
+     * ```
+     * ```twig
+     * {{ entry.typeId }}
+     * ```
      */
     public $typeId;
 
     /**
      * @var int|null Author ID
+     * ---
+     * ```php
+     * echo $entry->authorId;
+     * ```
+     * ```twig
+     * {{ entry.authorId }}
+     * ```
      */
     public $authorId;
 
     /**
      * @var \DateTime|null Post date
+     * ---
+     * ```php
+     * echo Craft::$app->formatter->asDate($entry->postDate, 'short');
+     * ```
+     * ```twig
+     * {{ entry.postDate|date('short') }}
+     * ```
      */
     public $postDate;
 
     /**
      * @var \DateTime|null Expiry date
+     * ---
+     * ```php
+     * if ($entry->expiryDate) {
+     *     echo Craft::$app->formatter->asDate($entry->expiryDate, 'short');
+     * }
+     * ```
+     * ```twig
+     * {% if entry.expiryDate %}
+     *     {{ entry.expiryDate|date('short') }}
+     * {% endif %}
+     * ```
      */
     public $expiryDate;
 
     /**
      * @var int|null New parent ID
+     * @internal
      */
     public $newParentId;
 
     /**
      * @var int|null Revision creator ID
+     * @internal
      */
     public $revisionCreatorId;
 
     /**
      * @var string|null Revision notes
+     * @internal
      */
     public $revisionNotes;
 
     /**
      * @var bool Whether the entry was deleted along with its entry type
      * @see beforeDelete()
+     * @internal
      */
     public $deletedWithEntryType = false;
 

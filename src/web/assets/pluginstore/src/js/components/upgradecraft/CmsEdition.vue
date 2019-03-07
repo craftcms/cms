@@ -22,7 +22,7 @@
                     <icon icon="check" />
                     {{feature.name}}
 
-                    <info-hud>
+                    <info-hud v-if="feature.description">
                         {{feature.description}}
                     </info-hud>
                 </li>

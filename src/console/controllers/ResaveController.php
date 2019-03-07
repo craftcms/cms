@@ -32,7 +32,7 @@ class ResaveController extends Controller
     /**
      * @var int|string The ID(s) of the elements to resave.
      */
-    public $id;
+    public $elementId;
 
     /**
      * @var string The UUID(s) of the elements to resave.
@@ -80,6 +80,11 @@ class ResaveController extends Controller
     public $section;
 
     /**
+     * @var string|null The entry type handle(s) of the entries to resave.
+     */
+    public $type;
+
+    /**
      * @var string|null The volume handle(s) to save assets from. Can be set to multiple comma-separated volumes.
      */
     public $volume;
@@ -108,6 +113,7 @@ class ResaveController extends Controller
                 break;
             case 'entries':
                 $options[] = 'section';
+                $options[] = 'type';
                 break;
             case 'tags':
                 $options[] = 'group';
@@ -159,6 +165,9 @@ class ResaveController extends Controller
         if ($this->section !== null) {
             $query->section(explode(',', $this->section));
         }
+        if ($this->type !== null) {
+            $query->type(explode(',', $this->type));
+        }
         return $this->_saveElements($query);
     }
 
@@ -199,12 +208,12 @@ class ResaveController extends Controller
         /** @var ElementQuery $query */
         $type = App::humanizeClass($query->elementType);
 
-        if ($this->id) {
-            $query->id(is_int($this->id) ? $this->id : explode(',', $this->id));
+        if ($this->elementId) {
+            $query->id(is_int($this->elementId) ? $this->elementId : explode(',', $this->elementId));
         }
 
         if ($this->uid) {
-            $query->uid(explode(',', $this->id));
+            $query->uid(explode(',', $this->uid));
         }
 
         if ($this->site) {

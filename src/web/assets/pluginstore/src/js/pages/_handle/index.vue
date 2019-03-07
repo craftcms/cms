@@ -44,15 +44,18 @@
                 <div class="lg:flex">
                     <div class="lg:flex-1 lg:pr-8 lg:mr-4">
                         <div v-if="longDescription" v-html="longDescription" class="readable"></div>
+                        <div v-else-if="plugin.shortDescription" v-html="plugin.shortDescription" class="readable"></div>
                         <p v-else>No description.</p>
                     </div>
                     <div class="lg:pl-8 lg:ml-4">
-                        <ul v-if="plugin.documentationUrl">
+                        <ul>
                             <li v-if="plugin.documentationUrl" class="py-1">
                                 <a :href="plugin.documentationUrl" rel="noopener" target="_blank">
                                     <icon icon="book"></icon> {{ "Documentation"|t('app') }}
                                 </a>
                             </li>
+
+                            <li><a :href="plugin.repository"><icon icon="link" /> Repository</a></li>
                         </ul>
 
                     </div>
@@ -84,6 +87,10 @@
                         <li><span>{{ "License"|t('app') }}</span> <strong>{{ licenseLabel }}</strong></li>
                     </ul>
                 </div>
+
+                <p>
+                    <a :href="'mailto:issues@craftcms.com?subject=' + encodeURIComponent('Issue with ' + plugin.name) + '&body=' + encodeURIComponent('I would like to report the following issue with '+plugin.name+' (https://plugins.craftcms.com/' + plugin.handle + '):\n\n')">{{ "Report an issue"|t('app') }}</a>
+                </p>
 
                 <hr>
 
