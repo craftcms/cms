@@ -20,7 +20,6 @@
 
                     <ul>
                         <li class="mr-4 inline-block"><a class="btn block" :href="developer.developerUrl">{{ "Website"|t('app') }}</a></li>
-                        <li class="mr-4 inline-block"><a class="btn block" :href="developer.developerUrl">{{ "Contact"|t('app') }}</a></li>
                     </ul>
                 </template>
             </div>
