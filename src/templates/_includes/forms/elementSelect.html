@@ -15,7 +15,7 @@
 <div id="{{ id }}" class="elementselect"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <div class="elements">
-        {% for element in elements %}
+        {% for element in elements.all %}
             {% include "_elements/element" with {
                 context: 'field',
                 size: (viewMode == 'large' ? 'large' : 'small')
