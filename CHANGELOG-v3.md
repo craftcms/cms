@@ -4,6 +4,7 @@
 
 ### Added
 - The Plugin Store now shows “Report an issue” links on plugin screens.
+- Added a “Package Name” section to the Plugin Store’s plugin screens. ([#2757](https://github.com/craftcms/cms/issues/2757))
 
 ### Changed
 - When installing Craft using a `project.yaml`, Craft now processes all sites before installing any plugins. ([craftcms/commerce#752](https://github.com/craftcms/commerce/issues/752))

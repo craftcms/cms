@@ -69,6 +69,14 @@
 
                 <hr>
 
+                <div class="max-w-sm mx-auto p-8">
+                    <h2 class="mt-0">{{ "Package Name"|t('app') }}</h2>
+                    <p>{{ "Copy the package’s name for this plugin."|t('app') }}</p>
+                    <copy-package :plugin="plugin"></copy-package>
+                </div>
+
+                <hr>
+
                 <h2 class="mb-4">{{ "Information"|t('app') }}</h2>
                 <div class="plugin-infos">
                     <ul class="plugin-meta">
@@ -110,6 +118,7 @@
     import PluginScreenshots from '../../components/PluginScreenshots'
     import PluginEditions from '../../components/PluginEditions'
     import PluginChangelog from '../../components/PluginChangelog'
+    import CopyPackage from '../../components/CopyPackage'
 
     export default {
 
@@ -117,6 +126,7 @@
             PluginScreenshots,
             PluginEditions,
             PluginChangelog,
+            CopyPackage,
         },
 
         data() {
