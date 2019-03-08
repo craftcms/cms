@@ -812,14 +812,14 @@ Determines the order that the entries should be returned in.
 ```twig
 {# Fetch all entries in order of date created #}
 {% set entries = craft.entries()
-    .orderBy('elements.dateCreated asc')
+    .orderBy('dateCreated asc')
     .all() %}
 ```
 
 ```php
 // Fetch all entries in order of date created
 $entries = \craft\elements\Entry::find()
-    ->orderBy('elements.dateCreated asc')
+    ->orderBy('dateCreated asc')
     ->all();
 ```
 :::
