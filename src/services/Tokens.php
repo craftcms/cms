@@ -41,9 +41,10 @@ class Tokens extends Component
     /**
      * Creates a new token and returns it.
      *
-     * @param mixed $route Where matching requests should be routed to. If you
-     * want them to be routed to a controller action, pass:
-     * `['action' => "controller/action", 'params' => ['foo' => 'bar']]`.
+     * @param mixed $route The controller and action a matching request should
+     * be routed to. Pass the controller path as the first element in an array,
+     * and any action param names and values as the second element:
+     * `['controller/action', ['fooParam' => 'barValue']]`.
      * @param int|null $usageLimit The maximum number of times this token can be
      * used. Defaults to no limit.
      * @param DateTime|null $expiryDate The date that the token expires.
