@@ -17,6 +17,7 @@ use craft\elements\User;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\Json;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\Info;
@@ -1012,6 +1013,9 @@ class Install extends Migration
                     if (!version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
                         throw new InvalidConfigException("Craft is installed at the wrong schema version ({$craftSchemaVersion}, but project.yaml lists {$expectedSchemaVersion}).");
                     }
+
+                    // Make sure at least sites are processed
+                    ProjectConfigHelper::ensureAllSitesProcessed();
 
                     $this->_installPlugins();
                     $applyExistingProjectConfig = true;

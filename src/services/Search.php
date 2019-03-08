@@ -247,7 +247,7 @@ class Search extends Component
 
         $elementIds = array_unique($elementIds);
 
-        // Fire a 'beforeSearch' event
+        // Fire an 'afterSearch' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
             $this->trigger(self::EVENT_AFTER_SEARCH, new SearchEvent([
                 'elementIds' => $elementIds,

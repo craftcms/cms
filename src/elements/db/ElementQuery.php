@@ -1887,7 +1887,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             $this->subQuery->andWhere([
                 'and',
-                ['<', 'structureelements.rgt', $positionedBefore->lft],
+                ['<', 'structureelements.lft', $positionedBefore->lft],
                 ['structureelements.root' => $positionedBefore->root]
             ]);
         }
