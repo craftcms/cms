@@ -5,6 +5,9 @@
 ### Added
 - Added `craft\helpers\ArrayHelper::ensureNonAssociative()`.
 
+### Fixed
+- Fixed a bug where commercial plugin editions weren’t showing up in the Plugin Store.
+
 ## 3.1.17 - 2019-03-08
 
 ### Changed
