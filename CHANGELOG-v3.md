@@ -7,6 +7,7 @@
 - The Plugin Store now shows “Report an issue” links on plugin screens.
 - The Plugin Store now includes a “Package Name” section on plugin screens. ([#2757](https://github.com/craftcms/cms/issues/2757))
 - The Plugin Store now shows discounted upgrade prices for plugins when a lower edition is already licensed.
+- Craft now requires Yii 2.0.16.1.
 
 ### Fixed
 - Fixed a bug where the `positionedBefore` element query param was not including direct ancestors in the results.
