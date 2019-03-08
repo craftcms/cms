@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Category;
+use craft\elements\Entry;
 use craft\errors\InvalidTypeException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
@@ -126,6 +127,12 @@ class ElementsController extends BaseElementsController
         }
 
         if (Craft::$app->getElements()->saveElement($element)) {
+            // todo: super hacky. Adjust when we add revision support to all element types
+            // If this is an entry, should we save a new version?
+            if (($element instanceof Entry) && $element->getSection()->enableVersioning) {
+                Craft::$app->getEntryRevisions()->saveVersion($element);
+            }
+
             $response = [
                 'success' => true,
                 'id' => $element->id,

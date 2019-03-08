@@ -16,6 +16,7 @@
 - Fixed a bug where Craft would prompt for a user’s current password when registering a new user, even if they weren’t assigning any groups or permissions to that user
 - Fixed a bug where a race condition could make Asset indexing inconsistent. ([#3450](https://github.com/craftcms/cms/issues/3450))
 - Fixed a bug where Plugin Store’s edition features were showing an info icon even if the feature didn’t have a description.
+- Fixed a bug where entries weren’t getting new versions when edited from element editor HUDs. ([#3959](https://github.com/craftcms/cms/issues/3959))
 
 ## 3.1.16 - 2019-03-05
 
