@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\helpers\ArrayHelper::ensureNonAssociative()`.
+
 ## 3.1.17 - 2019-03-08
 
 ### Changed
