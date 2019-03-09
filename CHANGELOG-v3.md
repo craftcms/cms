@@ -8,6 +8,7 @@
 ### Fixed
 - Fixed a bug where commercial plugin editions weren’t showing up in the Plugin Store.
 - Fixed a bug where installing a plugin from the Plugin Store would not respect the selected edition.
+- Fixed a bug where plugins with free and commercial editions weren’t getting license key inputs on the Setting → Plugins page.
 
 ## 3.1.17 - 2019-03-08
 

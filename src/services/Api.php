@@ -486,7 +486,7 @@ class Api extends Component
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
             if ($pluginInfo['isInstalled']) {
-                $headers['X-Craft-System'] .= ",plugin-{$pluginHandle}:{$pluginInfo['version']}";
+                $headers['X-Craft-System'] .= ",plugin-{$pluginHandle}:{$pluginInfo['version']};{$pluginInfo['edition']}";
                 if (($licenseKey = $pluginsService->getPluginLicenseKey($pluginHandle)) !== null) {
                     $pluginLicenses[] = "{$pluginHandle}:{$licenseKey}";
                 }
