@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where commercial plugin editions weren’t showing up in the Plugin Store.
+- Fixed a bug where installing a plugin from the Plugin Store would not respect the selected edition.
 
 ## 3.1.17 - 2019-03-08
 
