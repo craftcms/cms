@@ -76,7 +76,7 @@
             },
 
             licensedEdition() {
-                return this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.licensedEdition)
+                return this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo ? this.pluginLicenseInfo.licensedEdition : null)
             }
 
         },

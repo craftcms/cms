@@ -31,6 +31,7 @@
                     <input type="hidden" name="action" value="pluginstore/install">
                     <input type="hidden" name="packageName" :value="plugin.packageName">
                     <input type="hidden" name="handle" :value="plugin.handle">
+                    <input type="hidden" name="edition" :value="edition.handle">
                     <input type="hidden" name="version" :value="plugin.version">
                 </template>
 
