@@ -220,4 +220,16 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
         static::removeValue($array, $value);
         return $array;
     }
+
+    /**
+     * Ensures an array is non-associative.
+     *
+     * @param array $array
+     */
+    public static function ensureNonAssociative(array &$array)
+    {
+        if (static::isAssociative($array, false)) {
+            $array = array_values($array);
+        }
+    }
 }

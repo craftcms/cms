@@ -18,6 +18,7 @@ module.exports = {
         docsDir: 'docs',
         docsBranch: 'develop',
         editLinks: true,
+        searchMaxSuggestions: 10,
         locales: {
             '/': require('./config-en'),
             '/ja/': require('./config-ja')

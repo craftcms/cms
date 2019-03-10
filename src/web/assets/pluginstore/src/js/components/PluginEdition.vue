@@ -4,13 +4,19 @@
             <edition-badge v-if="plugin.editions.length > 1" :name="edition.name" block big></edition-badge>
             <div class="price">
                 <template v-if="!isPluginEditionFree(edition)">
-                    {{edition.price|currency}}
+
+                    <template v-if="licensedEdition && licensedEdition.handle !== edition.handle && licensedEdition.price > 0">
+                        <del>{{edition.price|currency}}</del>
+                        {{(edition.price - licensedEdition.price)|currency}}
+                    </template>
+                    <template v-else>
+                        {{edition.price|currency}}
+                    </template>
                 </template>
                 <template v-else>
                     {{ "Free"|t('app') }}
                 </template>
             </div>
-
             <p v-if="!isPluginEditionFree(edition)" class="-mt-8 py-6 text-grey-dark">
                 {{ "Price includes 1 year of updates."|t('app') }}<br />
                 {{ "{renewalPrice}/year per site for updates after that."|t('app', {renewalPrice: $options.filters.currency(edition.renewalPrice)}) }}
@@ -21,7 +27,7 @@
                     <icon icon="check" />
                     {{feature.name}}
 
-                    <info-hud>
+                    <info-hud v-if="feature.description">
                         {{feature.description}}
                     </info-hud>
                 </li>
@@ -56,7 +62,22 @@
 
             ...mapGetters({
                 isPluginEditionFree: 'pluginStore/isPluginEditionFree',
+                getPluginEdition: 'pluginStore/getPluginEdition',
+                getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
             }),
+
+
+            pluginLicenseInfo() {
+                if (!this.plugin) {
+                    return null
+                }
+
+                return this.getPluginLicenseInfo(this.plugin.handle)
+            },
+
+            licensedEdition() {
+                return this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo ? this.pluginLicenseInfo.licensedEdition : null)
+            }
 
         },
 

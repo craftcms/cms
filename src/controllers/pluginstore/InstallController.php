@@ -67,7 +67,7 @@ class InstallController extends BaseUpdaterController
      */
     public function actionCraftInstall(): YiiResponse
     {
-        list($success, $tempResponse, $errorDetails) = $this->installPlugin($this->data['handle']);
+        list($success, $tempResponse, $errorDetails) = $this->installPlugin($this->data['handle'], $this->data['edition']);
 
         if (!$success) {
             $info = Craft::$app->getPlugins()->getComposerPluginInfo($this->data['handle']);
@@ -144,6 +144,7 @@ class InstallController extends BaseUpdaterController
         $request = Craft::$app->getRequest();
         $packageName = strip_tags($request->getRequiredBodyParam('packageName'));
         $handle = strip_tags($request->getRequiredBodyParam('handle'));
+        $edition = strip_tags($request->getRequiredBodyParam('edition'));
         $version = strip_tags($request->getRequiredBodyParam('version'));
         $licenseKey = $request->getBodyParam('licenseKey');
 
@@ -157,6 +158,7 @@ class InstallController extends BaseUpdaterController
         return [
             'packageName' => $packageName,
             'handle' => $handle,
+            'edition' => $edition,
             'version' => $version,
             'requirements' => [$packageName => $version],
             'removed' => false,

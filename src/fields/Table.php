@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
@@ -99,6 +100,8 @@ class Table extends Field
 
         if (!is_array($this->defaults)) {
             $this->defaults = [];
+        } else {
+            ArrayHelper::ensureNonAssociative($this->defaults);
         }
 
         // Convert default date cell values to ISO8601 strings
@@ -123,21 +126,6 @@ class Table extends Field
         $rules[] = [['maxRows'], 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number', 'when' => [$this, 'hasMinRows']];
         $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
         return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSettings(): array
-    {
-        $settings = parent::getSettings();
-
-        // Turn defaults into a non-associative array so it doesn't get reordered when saved to the project config
-        if (!empty($settings['defaults'])) {
-            $settings['defaults'] = array_values($settings['defaults']);
-        }
-
-        return $settings;
     }
 
     /**
