@@ -301,7 +301,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function dateUpdated($value);
 
     /**
-     * Determines which site the {elements} should be queried in.
+     * Determines which site(s) the {elements} should be queried in.
      *
      * The current site will be used by default.
      *
@@ -310,7 +310,10 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | Value | Fetches {elements}…
      * | - | -
      * | `'foo'` | from the site with a handle of `foo`.
+     * | `['foo', 'bar']` | from a site with a handle of `foo` or `bar`.
+     * | `['not', 'foo', 'bar']` | not in a site with a handle of `foo` or `bar`.
      * | a [[Site]] object | from the site represented by the object.
+     * | `'*'` | from any site.
      *
      * ---
      *
@@ -328,13 +331,13 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *     ->all();
      * ```
      *
-     * @param string|Site $value The property value
+     * @param string|string[]|Site $value The property value
      * @return static self reference
      */
     public function site($value);
 
     /**
-     * Determines which site the {elements} should be queried in, per the site’s ID.
+     * Determines which site(s) the {elements} should be queried in, per the site’s ID.
      *
      * The current site will be used by default.
      *
@@ -354,10 +357,10 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *     ->all();
      * ```
      *
-     * @param int|null $value The property value
+     * @param int|int[]|string|null $value The property value
      * @return static self reference
      */
-    public function siteId(int $value = null);
+    public function siteId($value);
 
     /**
      * Narrows the query results based on whether the {elements} are enabled in the site they’re being queried in, per the [[site()]] parameter.

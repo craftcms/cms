@@ -621,7 +621,7 @@ $assets = \craft\elements\Asset::find()
 
 ### `site`
 
-Determines which site the assets should be queried in.
+Determines which site(s) the assets should be queried in.
 
 
 
@@ -632,7 +632,10 @@ Possible values include:
 | Value | Fetches assets…
 | - | -
 | `'foo'` | from the site with a handle of `foo`.
+| `['foo', 'bar']` | from a site with a handle of `foo` or `bar`.
+| `['not', 'foo', 'bar']` | not in a site with a handle of `foo` or `bar`.
 | a `\craft\elements\db\Site` object | from the site represented by the object.
+| `'*'` | from any site.
 
 
 
@@ -655,7 +658,7 @@ $assets = \craft\elements\Asset::find()
 
 ### `siteId`
 
-Determines which site the assets should be queried in, per the site’s ID.
+Determines which site(s) the assets should be queried in, per the site’s ID.
 
 
 

@@ -464,7 +464,7 @@ $tags = \craft\elements\Tag::find()
 
 ### `site`
 
-Determines which site the tags should be queried in.
+Determines which site(s) the tags should be queried in.
 
 
 
@@ -475,7 +475,10 @@ Possible values include:
 | Value | Fetches tags…
 | - | -
 | `'foo'` | from the site with a handle of `foo`.
+| `['foo', 'bar']` | from a site with a handle of `foo` or `bar`.
+| `['not', 'foo', 'bar']` | not in a site with a handle of `foo` or `bar`.
 | a `\craft\elements\db\Site` object | from the site represented by the object.
+| `'*'` | from any site.
 
 
 
@@ -498,7 +501,7 @@ $tags = \craft\elements\Tag::find()
 
 ### `siteId`
 
-Determines which site the tags should be queried in, per the site’s ID.
+Determines which site(s) the tags should be queried in, per the site’s ID.
 
 
 
