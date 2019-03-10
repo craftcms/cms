@@ -353,6 +353,10 @@ class GeneralConfig extends BaseObject
      */
     public $generateTransformsBeforePageLoad = false;
     /**
+     * @var bool Whether logged deprecation errors should throw an exception.
+     */
+    public $hardDeprecationErrors = false;
+    /**
      * @var mixed The image driver Craft should use to cleanse and transform images. By default Craft will auto-detect if ImageMagick is installed and fallback to GD if not. You can explicitly set
      * either `'imagick'` or `'gd'` here to override that behavior.
      */

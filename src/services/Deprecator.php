@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
+use craft\errors\DeprecationException;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -126,6 +127,10 @@ class Deprecator extends Component
             $log->id = $db->getLastInsertID();
         } catch (IntegrityException $e) {
             // todo: remove this try/catch after the next breakpoint
+        }
+        // Throw an exception if $hardDeprecationErrors is true
+        if (Craft::$app->getConfig()->getGeneral()->hardDeprecationErrors) {
+            throw new DeprecationException($message);
         }
     }
 
