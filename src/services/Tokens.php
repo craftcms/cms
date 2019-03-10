@@ -140,7 +140,7 @@ class Tokens extends Component
             ->update(
                 Table::TOKENS,
                 [
-                    'usageCount' => new Expression('usageCount + 1')
+                    'usageCount' => new Expression('[[usageCount]] + 1')
                 ],
                 [
                     'id' => $tokenId
