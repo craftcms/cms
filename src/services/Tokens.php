@@ -40,10 +40,19 @@ class Tokens extends Component
 
     /**
      * Creates a new token and returns it.
+     * ---
+     * ```php
+     * // Route to a controller action
+     * Craft::$app->tokens->createToken('action/path');
      *
-     * @param mixed $route Where matching requests should be routed to. If you
-     * want them to be routed to a controller action, pass:
-     * `['action' => "controller/action", 'params' => ['foo' => 'bar']]`.
+     * // Route to a controller action with params
+     * Craft::$app->tokens->createToken('action/path', ['foo' => 'bar']);
+     *
+     * // Route to a template
+     * Craft::$app->tokens->createToken(['template' => 'template/path']);
+     * ```
+     *
+     * @param mixed $route Where matching requests should be routed to.
      * @param int|null $usageLimit The maximum number of times this token can be
      * used. Defaults to no limit.
      * @param DateTime|null $expiryDate The date that the token expires.
