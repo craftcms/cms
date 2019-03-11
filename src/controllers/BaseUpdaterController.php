@@ -586,9 +586,10 @@ abstract class BaseUpdaterController extends Controller
      * Attempts to install a plugin by its handle.
      *
      * @param string $handle
+     * @param string|null $edition
      * @return array Array with installation results
      */
-    protected function installPlugin(string $handle): array
+    protected function installPlugin(string $handle, string $edition = null): array
     {
         // Prevent the plugin from sending any headers, etc.
         $realResponse = Craft::$app->getResponse();
@@ -596,7 +597,7 @@ abstract class BaseUpdaterController extends Controller
         Craft::$app->set('response', $tempResponse);
 
         try {
-            Craft::$app->getPlugins()->installPlugin($handle);
+            Craft::$app->getPlugins()->installPlugin($handle, $edition);
             $success = true;
             $errorDetails = null;
         } catch (\Throwable $e) {

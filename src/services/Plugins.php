@@ -985,7 +985,13 @@ class Plugins extends Component
         // An upgrade is available if the plugin is in trial or licensed to less than the best edition
         $info['upgradeAvailable'] = (
             $info['isTrial'] ||
-            ($info['hasMultipleEditions'] && !empty($pluginInfo['licensedEdition']) && $pluginInfo['licensedEdition'] !== end($editions))
+            (
+                $info['hasMultipleEditions'] &&
+                (
+                    (!empty($pluginInfo['licensedEdition']) && $pluginInfo['licensedEdition'] !== end($editions)) ||
+                    $pluginInfo['edition'] !== end($editions)
+                )
+            )
         );
 
         return $info;

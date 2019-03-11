@@ -357,14 +357,14 @@ Determines the order that the global sets should be returned in.
 ```twig
 {# Fetch all global sets in order of date created #}
 {% set globalSets = craft.globalSets()
-    .orderBy('elements.dateCreated asc')
+    .orderBy('dateCreated asc')
     .all() %}
 ```
 
 ```php
 // Fetch all global sets in order of date created
 $globalSets = \craft\elements\GlobalSet::find()
-    ->orderBy('elements.dateCreated asc')
+    ->orderBy('dateCreated asc')
     ->all();
 ```
 :::
