@@ -153,11 +153,11 @@ class CategoryGroup_SiteSettings extends Model implements GraphQlInterface
     /**
      * @inheritdoc
      */
-    protected static function overrideGraphQlTypeProperties(array $properties): array
+    protected static function overrideGqlTypeProperties(array $properties): array
     {
         $properties['site'] = [
             'name' => 'site',
-            'type' => Site::getGraphQlTypeDefinition(),
+            'type' => Site::getGqlTypeDefinition(),
             'resolve' => function (CategoryGroup_SiteSettings $settings) {
                 return $settings->getSite();
             }

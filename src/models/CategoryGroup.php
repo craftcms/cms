@@ -181,11 +181,11 @@ class CategoryGroup extends Model implements GraphQlInterface
     /**
      * @inheritdoc
      */
-    public static function getGraphQlQueryDefinitions(): array
+    public static function getGqlQueryDefinitions(): array
     {
         return [
-            'query' . self::getGraphQlTypeName() => [
-                'type' => self::getGraphQlTypeDefinition(),
+            'query' . self::getGqlTypeName() => [
+                'type' => self::getGqlTypeDefinition(),
                 'args' => [
                     'id' => Type::id(),
                     'uid' => Type::string(),
@@ -205,8 +205,8 @@ class CategoryGroup extends Model implements GraphQlInterface
                     }
                 }
             ],
-            'queryAll' . Inflector::pluralize(self::getGraphQlTypeName()) => [
-                'type' => Type::listOf(self::getGraphQlTypeDefinition()),
+            'queryAll' . Inflector::pluralize(self::getGqlTypeName()) => [
+                'type' => Type::listOf(self::getGqlTypeDefinition()),
                 'resolve' => function() {
                     return Craft::$app->getCategories()->getAllGroups();
                 }
@@ -218,11 +218,11 @@ class CategoryGroup extends Model implements GraphQlInterface
     /**
      * @inheritdoc
      */
-    protected static function overrideGraphQlTypeProperties(array $properties): array
+    protected static function overrideGqlTypeProperties(array $properties): array
     {
         $properties['siteSettings'] = [
             'name' => 'siteSettings',
-            'type' => Type::listOf(CategoryGroup_SiteSettings::getGraphQlTypeDefinition()),
+            'type' => Type::listOf(CategoryGroup_SiteSettings::getGqlTypeDefinition()),
             'resolve' => function(CategoryGroup $categoryGroup) {
                 return $categoryGroup->getSiteSettings();
             }

@@ -81,8 +81,8 @@ class GraphQl extends Component
     public function getSchema(string $token = null): Schema
     {
         // TODO check for cached schema first
-        $graphQlSupportedModels = $this->getGraphQlSupportedModels();
-        $types = $this->getGraphQlTypeDefinitions($graphQlSupportedModels);
+        $graphQlSupportedModels = $this->getGqlSupportedModels();
+        $types = $this->getGqlTypeDefinitions($graphQlSupportedModels);
         $queries = $this->getQueries($graphQlSupportedModels);
 
         return new Schema([
@@ -97,13 +97,13 @@ class GraphQl extends Component
      * @param string[] $models
      * @return array
      */
-    public function getGraphQlTypeDefinitions(array $models): array
+    public function getGqlTypeDefinitions(array $models): array
     {
         $output = [];
 
         /** @var GraphQlInterface $model */
         foreach ($models as $model) {
-            $output[] = $model::getGraphQlTypeDefinition();
+            $output[] = $model::getGqlTypeDefinition();
         }
 
         return $output;
@@ -120,7 +120,7 @@ class GraphQl extends Component
 
         /** @var GraphQlInterface $model */
         foreach ($models as $model) {
-            $queries += $model::getGraphQlQueryDefinitions();
+            $queries += $model::getGqlQueryDefinitions();
         }
 
         return new ObjectType([
@@ -134,7 +134,7 @@ class GraphQl extends Component
      *
      * @return array
      */
-    public function getGraphQlSupportedModels(): array
+    public function getGqlSupportedModels(): array
     {
         $graphQlSupportedModels = [
             AssetTransform::class,

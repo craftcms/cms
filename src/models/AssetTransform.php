@@ -227,11 +227,11 @@ class AssetTransform extends Model implements GraphQlInterface
     /**
      * @inheritdoc
      */
-    public static function getGraphQlQueryDefinitions(): array
+    public static function getGqlQueryDefinitions(): array
     {
         return [
-            'query' . self::getGraphQlTypeName() => [
-                'type' => self::getGraphQlTypeDefinition(),
+            'query' . self::getGqlTypeName() => [
+                'type' => self::getGqlTypeDefinition(),
                 'args' => [
                     'id' => Type::id(),
                     'uid' => Type::string(),
@@ -251,8 +251,8 @@ class AssetTransform extends Model implements GraphQlInterface
                     }
                 }
             ],
-            'queryAll' . Inflector::pluralize(self::getGraphQlTypeName()) => [
-                'type' => Type::listOf(self::getGraphQlTypeDefinition()),
+            'queryAll' . Inflector::pluralize(self::getGqlTypeName()) => [
+                'type' => Type::listOf(self::getGqlTypeDefinition()),
                 'resolve' => function () {
                     return Craft::$app->getAssetTransforms()->getAllTransforms();
                 }
@@ -263,7 +263,7 @@ class AssetTransform extends Model implements GraphQlInterface
     /**
      * @inheritdoc
      */
-    protected static function overrideGraphQlTypeProperties(array $properties): array
+    protected static function overrideGqlTypeProperties(array $properties): array
     {
         $properties['mode'] = Type::nonNull(new EnumType([
             'name' => 'transformMode',

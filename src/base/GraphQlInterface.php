@@ -24,17 +24,17 @@ interface GraphQlInterface
      * Returns the model's GraphQL type definition
      * @return ObjectType
      */
-    public static function getGraphQlTypeDefinition(): ObjectType;
+    public static function getGqlTypeDefinition(): ObjectType;
 
     /**
      * Returns the model's GraphQL type name
      * @return ObjectType
      */
-    public static function getGraphQlTypeName(): string;
+    public static function getGqlTypeName(): string;
 
     /**
      * Return all the queries defined by the model.
      * @return array
      */
-    public static function getGraphQlQueryDefinitions(): array;
+    public static function getGqlQueryDefinitions(): array;
 }

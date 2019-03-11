@@ -35,7 +35,7 @@ trait GraphQlTrait
     /**
      * @inheritdoc
      */
-    public static function getGraphQlTypeName(): string
+    public static function getGqlTypeName(): string
     {
         $className = substr(self::class, strrpos(self::class, '\\') + 1);
 
@@ -45,12 +45,12 @@ trait GraphQlTrait
     /**
      * @inheritdoc
      */
-    public static function getGraphQlTypeDefinition(): ObjectType
+    public static function getGqlTypeDefinition(): ObjectType
     {
         if (self::$graphQlType === null) {
             self::$graphQlType = new ObjectType([
-                'name' => self::getGraphQlTypeName(),
-                'fields' => self::getGraphQlTypeProperties()
+                'name' => self::getGqlTypeName(),
+                'fields' => self::getGqlTypeProperties()
             ]);
         }
 
@@ -60,7 +60,7 @@ trait GraphQlTrait
     /**
      * @inheritdoc
      */
-    public static function getGraphQlQueryDefinitions(): array
+    public static function getGqlQueryDefinitions(): array
     {
         return [];
     }
@@ -71,7 +71,7 @@ trait GraphQlTrait
      * @return array
      * @throws \ReflectionException
      */
-    protected static function getGraphQlTypeProperties(): array
+    protected static function getGqlTypeProperties(): array
     {
         // By default we return a list of all public properties with the type figured out.
         $class = new \ReflectionClass(self::class);
@@ -113,7 +113,7 @@ trait GraphQlTrait
             }
         }
 
-        return self::overrideGraphQlTypeProperties($properties);
+        return self::overrideGqlTypeProperties($properties);
     }
 
     /**
@@ -122,7 +122,7 @@ trait GraphQlTrait
      * @param array $properties
      * @return array
      */
-    protected static function overrideGraphQlTypeProperties(array $properties): array
+    protected static function overrideGqlTypeProperties(array $properties): array
     {
         return $properties;
     }

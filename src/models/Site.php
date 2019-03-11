@@ -214,11 +214,11 @@ class Site extends Model implements GraphQlInterface
     /**
      * @inheritdoc
      */
-    protected static function overrideGraphQlTypeProperties(array $properties): array
+    protected static function overrideGqlTypeProperties(array $properties): array
     {
         $properties['siteGroup'] = [
             'name' => 'siteGroup',
-            'type' => SiteGroup::getGraphQlTypeDefinition(),
+            'type' => SiteGroup::getGqlTypeDefinition(),
             'resolve' => function (Site $site) {
                 return $site->getGroup();
             }
