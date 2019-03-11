@@ -6,27 +6,15 @@ export default {
     /**
      * Get Craft data.
      */
-    getCraftData(cb, cbError) {
-        axios.get(Craft.getActionUrl('plugin-store/craft-data'))
-            .then(response => {
-                return cb(response)
-            })
-            .catch(response => {
-                return cbError(response)
-            })
+    getCraftData() {
+        return axios.get(Craft.getActionUrl('plugin-store/craft-data'))
     },
 
     /**
      * Get Plugin License Info.
      */
-    getPluginLicenseInfo(cb, cbError) {
-        axios.get(Craft.getActionUrl('app/get-plugin-license-info'))
-            .then(response => {
-                return cb(response)
-            })
-            .catch(response => {
-                return cbError(response)
-            })
+    getPluginLicenseInfo() {
+        return axios.get(Craft.getActionUrl('app/get-plugin-license-info'))
     },
 
     /**

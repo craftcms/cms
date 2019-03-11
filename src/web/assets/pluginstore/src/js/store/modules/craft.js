@@ -99,23 +99,27 @@ const getters = {
 const actions = {
     getCraftData({commit}) {
         return new Promise((resolve, reject) => {
-            api.getCraftData(response => {
-                commit('updateCraftData', {response})
-                resolve(response)
-            }, response => {
-                reject(response)
-            })
+            api.getCraftData()
+                .then(response => {
+                    commit('updateCraftData', {response})
+                    resolve(response)
+                })
+                .catch(error => {
+                    reject(error.response)
+                })
         })
     },
 
     getPluginLicenseInfo({commit}) {
         return new Promise((resolve, reject) => {
-            api.getPluginLicenseInfo(response => {
-                commit('updatePluginLicenseInfo', {response})
-                resolve(response)
-            }, response => {
-                reject(response)
-            })
+            api.getPluginLicenseInfo()
+                .then(response => {
+                    commit('updatePluginLicenseInfo', {response})
+                    resolve(response)
+                })
+                .catch(error => {
+                    reject(error.response)
+                })
         })
     },
 

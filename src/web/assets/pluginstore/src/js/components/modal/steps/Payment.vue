@@ -245,67 +245,77 @@
             checkout() {
                 this.errors = {}
                 this.loading = true
-                this.savePaymentMethod(() => {
-                    this.saveBillingInfo(() => {
-                        // Ready to pay
-                        let cardToken = null
+                this.savePaymentMethod(
+                    // success
+                    () => {
+                        this.saveBillingInfo(
+                            // success
+                            () => {
+                                // Ready to pay
+                                let cardToken = null
 
-                        if (this.cart.totalPrice > 0) {
-                            if (this.craftId) {
-                                switch (this.paymentMode) {
-                                    case 'newCard':
-                                        cardToken = this.cardToken.id
-                                        break
-                                    default:
-                                        cardToken = this.craftId.cardToken
+                                if (this.cart.totalPrice > 0) {
+                                    if (this.craftId) {
+                                        switch (this.paymentMode) {
+                                            case 'newCard':
+                                                cardToken = this.cardToken.id
+                                                break
+                                            default:
+                                                cardToken = this.craftId.cardToken
+                                        }
+                                    } else {
+                                        cardToken = this.guestCardToken.id
+                                    }
                                 }
-                            } else {
-                                cardToken = this.guestCardToken.id
-                            }
-                        }
 
-                        let checkoutData = {
-                            orderNumber: this.cart.number,
-                            token: cardToken,
-                            expectedPrice: this.cart.totalPrice,
-                            makePrimary: this.replaceCard,
-                        }
+                                let checkoutData = {
+                                    orderNumber: this.cart.number,
+                                    token: cardToken,
+                                    expectedPrice: this.cart.totalPrice,
+                                    makePrimary: this.replaceCard,
+                                }
 
-                        this.$store.dispatch('cart/checkout', checkoutData)
-                            .then(() => {
-                                this.$store.dispatch('cart/savePluginLicenseKeys', this.cart)
+                                this.$store.dispatch('cart/checkout', checkoutData)
                                     .then(() => {
-                                        this.$store.dispatch('craft/getCraftData')
+                                        this.$store.dispatch('cart/savePluginLicenseKeys', this.cart)
                                             .then(() => {
-                                                this.$store.dispatch('craft/getPluginLicenseInfo')
+                                                this.$store.dispatch('craft/getCraftData')
                                                     .then(() => {
-                                                        this.$store.dispatch('cart/resetCart')
+                                                        this.$store.dispatch('craft/getPluginLicenseInfo')
                                                             .then(() => {
-                                                                this.loading = false
-                                                                this.error = false
-                                                                this.$root.modalStep = 'thank-you'
+                                                                this.$store.dispatch('cart/resetCart')
+                                                                    .then(() => {
+                                                                        this.loading = false
+                                                                        this.error = false
+                                                                        this.$root.modalStep = 'thank-you'
+                                                                    })
                                                             })
                                                     })
                                             })
                                     })
-                            })
-                            .catch(error => {
+                                    .catch(checkoutResponse => {
+                                        this.loading = false
+                                        this.error = checkoutResponse.data.error || checkoutResponse.statusText;
+                                    })
+                            },
+
+                            // error
+                            (response) => {
+                                if (response.errors) {
+                                    response.errors.forEach(error => {
+                                        this.errors[error.param] = [error.message]
+                                    })
+                                }
                                 this.loading = false
-                                this.error = error.response.data.error || error.response.statusText;
+                                this.$root.displayError("Couldn’t save billing information.")
                             })
-                    }, (response) => {
-                        if (response.errors) {
-                            response.errors.forEach(error => {
-                                this.errors[error.param] = [error.message]
-                            })
-                        }
+                    },
+
+                    // error
+                    () => {
                         this.loading = false
-                        this.$root.displayError("Couldn’t save billing information.")
+                        this.$root.displayError("Couldn’t save payment method.")
                     })
-                }, () => {
-                    this.loading = false
-                    this.$root.displayError("Couldn’t save payment method.")
-                })
             },
 
             onCountryChange(iso) {
