@@ -637,6 +637,11 @@ Possible values include:
 | a `\craft\elements\db\Site` object | from the site represented by the object.
 | `'*'` | from any site.
 
+::: tip
+If multiple sites are specified, elements that belong to multiple sites will be returned multiple times. If you
+only want unique elements to be returned, use `\craft\elements\db\unique()` in conjunction with this.
+:::
+
 
 
 ::: code

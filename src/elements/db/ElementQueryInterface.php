@@ -315,6 +315,11 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | a [[Site]] object | from the site represented by the object.
      * | `'*'` | from any site.
      *
+     * ::: tip
+     * If multiple sites are specified, elements that belong to multiple sites will be returned multiple times. If you
+     * only want unique elements to be returned, use [[unique()]] in conjunction with this.
+     * :::
+     *
      * ---
      *
      * ```twig
@@ -361,6 +366,35 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @return static self reference
      */
     public function siteId($value);
+
+    /**
+     * Determines whether only elements with unique IDs should be returned by the query.
+     *
+     * This should be used when querying elements from multiple sites at the same time, if “duplicate” results is not
+     * desired.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch unique {elements} across all sites #}
+     * {% set {elements-var} = {twig-method}
+     *     .site('*')
+     *     .unique()
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch unique {elements} across all sites
+     * ${elements-var} = {php-method}
+     *     ->site('*')
+     *     ->unique()
+     *     ->all();
+     * ```
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     */
+    public function unique(bool $value = true);
 
     /**
      * Narrows the query results based on whether the {elements} are enabled in the site they’re being queried in, per the [[site()]] parameter.

@@ -32,6 +32,7 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Connection;
+use yii\db\Expression;
 use yii\db\ExpressionInterface;
 
 /**
@@ -172,6 +173,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @used-by siteId()
      */
     public $siteId;
+
+    /**
+     * @var bool Whether only elements with unique IDs should be returned by the query.
+     * @used-by unique()
+     */
+    public $unique = false;
 
     /**
      * @var bool Whether the elements must be enabled for the chosen site.
@@ -756,6 +763,17 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @uses $unique
+     * @since 3.2
+     */
+    public function unique(bool $value = true)
+    {
+        $this->unique = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
      * @uses $enabledForSite
      */
     public function enabledForSite(bool $value = true)
@@ -1162,6 +1180,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (!$this->afterPrepare()) {
             throw new QueryAbortedException();
         }
+
+        $this->_applyUniqueParam($builder->db);
 
         // Pass the query back
         return $this->query;
@@ -2178,6 +2198,49 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->join[] = $join;
             }
         }
+    }
+
+    /**
+     * Applies the 'unique' param to the query being prepared
+     *
+     * @param Connection $db
+     */
+    private function _applyUniqueParam(Connection $db)
+    {
+        if (!$this->unique || (
+            $this->siteId &&
+            $this->siteId !== '*' &&
+            (!is_array($this->siteId) || count($this->siteId) === 1)
+        )) {
+            return;
+        }
+
+        $subSelectSql = (clone $this->subQuery)
+            ->select(['elements_sites.id'])
+            ->andWhere('[[subElements.id]] = [[tmpElements.id]]')
+            ->orderBy([
+                new Expression('case when [[elements_sites.siteId]] = :currentSiteId then 0 else 1 end', [
+                    'currentSiteId' => Craft::$app->getSites()->getCurrentSite()->id
+                ]),
+                'elements_sites.id' => SORT_ASC
+            ])
+            ->limit(1)
+            ->getRawSql();
+
+        // `elements` => `subElements`
+        $qElements = $db->quoteTableName('elements');
+        $qSubElements = $db->quoteTableName('subElements');
+        $qTmpElements = $db->quoteTableName('tmpElements');
+        $subSelectSql = str_replace($qElements, $qSubElements, $subSelectSql);
+        $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
+        $subSelectSql = str_replace("{$qSubElements} {$qSubElements}", "{$qElements} {$qSubElements}", $subSelectSql);
+
+        $this->subQuery
+            ->addSelect("({$subSelectSql}) as [[preferredElementsSitesId]]")
+            ->where(null);
+
+        $this->query
+            ->andWhere('[[elements_sites.id]] = [[preferredElementsSitesId]]');
     }
 
     /**
