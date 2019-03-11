@@ -34,7 +34,6 @@
     import PluginIndex from '../../components/PluginIndex'
 
     export default {
-
         data() {
             return {
                 plugins: [],
@@ -47,11 +46,9 @@
         },
 
         computed: {
-
             ...mapState({
                 developer: state => state.pluginStore.developer,
             }),
-
         },
 
         mounted() {
@@ -69,7 +66,6 @@
                     this.loading = false
                 })
         },
-
     }
 </script>
 

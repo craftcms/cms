@@ -15,10 +15,13 @@ Vue.use(VueRouter)
 
 export default new VueRouter({
     base: window.pluginStoreAppBaseUrl,
+
     mode: 'history',
+
     scrollBehavior () {
         return { x: 0, y: 0 }
     },
+
     routes: [
         {
             path: '/',

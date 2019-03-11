@@ -16,7 +16,6 @@
 
 <script>
     export default {
-
         data() {
             return {
                 searchQuery: '',
@@ -33,6 +32,5 @@
             }
 
         },
-
     }
 </script>

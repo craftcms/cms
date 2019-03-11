@@ -40,7 +40,6 @@
     import Step from '../Step'
 
     export default {
-
         components: {
             Step,
         },
@@ -54,7 +53,6 @@
         },
 
         computed: {
-
             ...mapState({
                 cart: state => state.cart.cart,
                 craftId: state => state.craft.craftId,
@@ -84,7 +82,6 @@
         },
 
         methods: {
-
             connectCraftId() {
                 let width = 800
                 let height = 600
@@ -124,7 +121,6 @@
                     this.$root.openModal('payment')
                 }
             }
-
         },
 
         mounted() {
@@ -136,6 +132,5 @@
 
             this.guestEmail = this.cart.email
         }
-
     }
 </script>

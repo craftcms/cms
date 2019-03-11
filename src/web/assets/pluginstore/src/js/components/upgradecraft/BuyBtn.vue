@@ -28,7 +28,6 @@
     import {mapState, mapGetters, mapActions} from 'vuex'
 
     export default {
-
         props: ['edition', 'edition-handle'],
 
         data() {
@@ -38,7 +37,6 @@
         },
 
         computed: {
-
             ...mapState({
                 licensedEdition: state => state.craft.licensedEdition,
                 canTestEditions: state => state.craft.canTestEditions,
@@ -48,7 +46,6 @@
             ...mapGetters({
                 isCmsEditionInCart: 'cart/isCmsEditionInCart',
             })
-
         },
 
         methods: {
@@ -92,9 +89,6 @@
                         this.$root.displayError("Couldn’t change Craft CMS edition.")
                     })
             },
-
         },
-
     }
 </script>
-

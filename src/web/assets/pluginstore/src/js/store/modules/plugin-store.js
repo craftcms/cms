@@ -17,7 +17,6 @@ const state = {
  * Getters
  */
 const getters = {
-
     getFeaturedPlugin(state) {
         return id => {
             return state.featuredPlugins.find(g => g.id == id)
@@ -86,14 +85,12 @@ const getters = {
             return edition.price === null
         }
     },
-
 }
 
 /**
  * Actions
  */
 const actions = {
-
     getDeveloper({commit}, developerId) {
         return new Promise((resolve, reject) => {
             api.getDeveloper(developerId, developer => {
@@ -137,14 +134,12 @@ const actions = {
             })
         })
     },
-
 }
 
 /**
  * Mutations
  */
 const mutations = {
-
     updateDeveloper(state, {developer}) {
         state.developer = developer
     },
@@ -163,7 +158,6 @@ const mutations = {
     updatePluginChangelog(state, changelog) {
         state.pluginChangelog = changelog
     },
-
 }
 
 export default {

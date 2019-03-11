@@ -14,9 +14,7 @@
 
 <script>
     export default {
-
         props: ['message', 'error']
-
     }
 </script>
 

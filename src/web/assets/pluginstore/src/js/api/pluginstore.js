@@ -3,7 +3,6 @@
 import axios from 'axios'
 
 export default {
-
     /**
      * Get developer.
      */
@@ -80,5 +79,4 @@ export default {
                 return errorCb(response)
             })
     },
-
 }

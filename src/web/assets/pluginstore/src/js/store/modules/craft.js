@@ -23,7 +23,6 @@ const state = {
  * Getters
  */
 const getters = {
-
     isPluginInstalled(state) {
         return pluginHandle => {
             if (!state.pluginLicenseInfo) {
@@ -92,14 +91,12 @@ const getters = {
             return features[editionHandle]
         }
     }
-
 }
 
 /**
  * Actions
  */
 const actions = {
-
     getCraftData({commit}) {
         return new Promise((resolve, reject) => {
             api.getCraftData(response => {
@@ -139,9 +136,6 @@ const actions = {
         })
     },
 
-    /**
-     * Switch plugin edition.
-     */
     switchPluginEdition({dispatch}, {pluginHandle, edition}) {
         return new Promise((resolve, reject) => {
             api.switchPluginEdition(pluginHandle, edition)
@@ -158,14 +152,12 @@ const actions = {
                 .catch(response => reject(response))
         })
     }
-
 }
 
 /**
  * Mutations
  */
 const mutations = {
-
     updateCraftData(state, {response}) {
         state.CraftEdition = response.data.CraftEdition
         state.CraftPro = response.data.CraftPro
@@ -188,7 +180,6 @@ const mutations = {
     updateCraftId(state, {craftId}) {
         state.craftId = craftId
     },
-
 }
 
 export default {

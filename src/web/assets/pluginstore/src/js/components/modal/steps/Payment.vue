@@ -146,7 +146,6 @@
         },
 
         computed: {
-
             ...mapState({
                 cart: state => state.cart.cart,
                 poweredByStripe: state => state.craft.poweredByStripe,
@@ -186,7 +185,6 @@
         },
 
         methods: {
-
             savePaymentMethod(cb, cbError) {
                 if (this.cart.totalPrice > 0) {
                     if (this.craftId) {
@@ -362,7 +360,6 @@
                         })
                 }.bind(this), 500)
             }
-
         },
 
         mounted() {
@@ -383,7 +380,6 @@
                 })
             }
         }
-
     }
 </script>
 

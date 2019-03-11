@@ -20,7 +20,6 @@
     import LicenseStatus from '../LicenseStatus'
 
     export default {
-
         props: ['edition'],
 
         components: {
@@ -28,13 +27,10 @@
         },
 
         computed: {
-
             ...mapState({
                 licensedEdition: state => state.craft.licensedEdition,
                 CraftEdition: state => state.craft.CraftEdition,
             }),
-
         }
-
     }
 </script>

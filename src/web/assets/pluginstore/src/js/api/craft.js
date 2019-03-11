@@ -3,7 +3,6 @@
 import axios from 'axios'
 
 export default {
-
     /**
      * Get Craft data.
      */
@@ -53,5 +52,4 @@ export default {
             },
         })
     }
-
 }

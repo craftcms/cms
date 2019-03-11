@@ -45,7 +45,6 @@
     import EditionBadge from '../EditionBadge'
 
     export default {
-
         props: ['edition'],
 
         components: {
@@ -56,7 +55,6 @@
         },
 
         computed: {
-
             ...mapGetters({
                 getCmsEditionFeatures: 'craft/getCmsEditionFeatures',
             }),
@@ -87,7 +85,6 @@
                 }
             }
         },
-
     }
 </script>
 

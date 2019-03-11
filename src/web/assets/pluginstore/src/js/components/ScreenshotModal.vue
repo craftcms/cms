@@ -20,7 +20,6 @@
     import {mapState} from 'vuex'
 
     export default {
-
         data() {
             return {
                 ratio: '4:3'
@@ -28,7 +27,6 @@
         },
 
         computed: {
-
             ...mapState({
                 screenshotModalImages: state => state.app.screenshotModalImages,
                 screenshotModalImageKey: state => state.app.screenshotModalImageKey,
@@ -49,11 +47,9 @@
                     keyboard: true,
                 }
             }
-
         },
 
         methods: {
-
             close() {
                 this.$store.commit('app/updateShowingScreenshotModal', false)
             },
@@ -98,7 +94,6 @@
                     this.close()
                 }
             }
-
         },
 
         mounted: function () {
@@ -116,7 +111,6 @@
             window.removeEventListener('resize', this.handleResize)
             window.removeEventListener('keydown', this.handleEscapeKey)
         }
-
     }
 </script>
 

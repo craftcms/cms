@@ -155,7 +155,6 @@
     import EditionBadge from '../../EditionBadge'
 
     export default {
-
         data() {
             return {
                 loadingItems: {},
@@ -168,7 +167,6 @@
         },
 
         computed: {
-
             ...mapState({
                 cart: state => state.cart.cart,
                 craftLogo: state => state.craft.craftLogo,
@@ -209,11 +207,9 @@
                     }
                 })
             },
-
         },
 
         methods: {
-
             ...mapActions({
                 removeFromCart: 'cart/removeFromCart'
             }),
@@ -324,7 +320,6 @@
                 return this.$options.filters.t("Updates until {date}", 'app', {date})
             }
         },
-
     }
 </script>
 

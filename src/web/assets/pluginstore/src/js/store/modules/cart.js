@@ -19,7 +19,6 @@ const state = {
  * Getters
  */
 const getters = {
-
     isInCart(state) {
         return (plugin, edition) => {
             if (!state.cart) {
@@ -129,14 +128,12 @@ const getters = {
     cartItemsData(state) {
         return utils.getCartItemsData(state.cart)
     }
-
 }
 
 /**
  * Actions
  */
 const actions = {
-
     updateItem({commit, state}, {itemKey, item}) {
         return new Promise((resolve, reject) => {
             const cart = state.cart
@@ -380,14 +377,12 @@ const actions = {
                 })
         })
     }
-
 }
 
 /**
  * Mutations
  */
 const mutations = {
-
     updateCart(state, {response}) {
         state.cart = response.cart
         state.stripePublicKey = response.stripePublicKey
@@ -412,14 +407,12 @@ const mutations = {
     updateSelectedExpiryDates(state, selectedExpiryDates) {
         state.selectedExpiryDates = selectedExpiryDates
     }
-
 }
 
 /**
  * Utils
  */
 const utils = {
-
     getCartData(cart) {
         let data = {
             email: cart.email,

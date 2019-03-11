@@ -121,7 +121,6 @@
     import CopyPackage from '../../components/CopyPackage'
 
     export default {
-
         components: {
             PluginScreenshots,
             PluginEditions,
@@ -138,7 +137,6 @@
         },
 
         computed: {
-
             ...mapState({
                 categories: state => state.pluginStore.categories,
                 plugin: state => state.pluginStore.plugin,
@@ -198,20 +196,16 @@
             showLicenseKeyStatus() {
                 return !this.loading && this.pluginLicenseInfo && this.pluginLicenseInfo.isInstalled && this.pluginLicenseInfo.licenseKey;
             }
-
         },
 
         watch: {
-
             pluginId(pluginId) {
                 this.loadPlugin(pluginId)
                 return pluginId
             }
-
         },
 
         methods: {
-
             ...mapActions({
                 addToCart: 'cart/addToCart'
             }),
@@ -263,7 +257,6 @@
                     }
                 }
             },
-
         },
 
         mounted() {
@@ -285,7 +278,6 @@
                 next()
             }
         }
-
     }
 </script>
 
@@ -351,5 +343,4 @@
             }
         }
     }
-
 </style>

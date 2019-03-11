@@ -3,7 +3,6 @@
 import axios from 'axios'
 
 export default {
-
     /**
      * Create cart.
      */
@@ -20,7 +19,6 @@ export default {
                 return errorCb(response)
             })
     },
-
 
     /**
      * Update cart.
@@ -102,5 +100,4 @@ export default {
             }
         })
     },
-
 }

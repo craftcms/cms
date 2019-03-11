@@ -9,7 +9,6 @@
 
 <script>
     export default {
-
         props: ['images'],
 
         methods: {
@@ -21,7 +20,6 @@
             }
 
         }
-
     }
 </script>
 

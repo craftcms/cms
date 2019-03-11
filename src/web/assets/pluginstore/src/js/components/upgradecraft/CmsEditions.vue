@@ -9,7 +9,6 @@
     import CmsEdition from './CmsEdition'
 
     export default {
-
         components: {
             CmsEdition,
         },
@@ -21,10 +20,8 @@
             }),
 
         },
-
     }
 </script>
-
 
 <style lang="scss">
     .cms-editions {

@@ -20,13 +20,11 @@
     import Step from '../Step'
 
     export default {
-
         components: {
             Step,
         },
 
         computed: {
-
             ...mapState({
                 craftLogo: state => state.craft.craftLogo,
             }),
@@ -34,8 +32,6 @@
             managePluginsUrl() {
                 return Craft.getCpUrl('settings/plugins')
             }
-
         },
-
     }
 </script>

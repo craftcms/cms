@@ -12,7 +12,6 @@
     import PluginCard from './PluginCard'
 
     export default {
-
         components: {
             PluginCard,
         },
@@ -26,6 +25,5 @@
             },
 
         },
-
     }
 </script>
