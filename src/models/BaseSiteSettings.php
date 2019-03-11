@@ -14,10 +14,10 @@ use craft\validators\UriFormatValidator;
 use yii\base\InvalidConfigException;
 
 /**
- * CategoryGroup_SiteSettings model class.
+ * BaseSiteSettings model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.2
  */
 class BaseSiteSettings extends Model
 {
