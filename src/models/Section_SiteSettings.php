@@ -20,10 +20,15 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Section_SiteSettings extends BaseSiteSettings
+class Section_SiteSettings extends Model
 {
     // Properties
     // =========================================================================
+
+    /**
+     * @var int|null ID
+     */
+    public $id;
 
     /**
      * @var int|null Section ID
@@ -31,9 +36,29 @@ class Section_SiteSettings extends BaseSiteSettings
     public $sectionId;
 
     /**
+     * @var int|null Site ID
+     */
+    public $siteId;
+
+    /**
      * @var bool Enabled by default
      */
     public $enabledByDefault = true;
+
+    /**
+     * @var bool|null Has URLs?
+     */
+    public $hasUrls;
+
+    /**
+     * @var string|null URI format
+     */
+    public $uriFormat;
+
+    /**
+     * @var string|null Entry template
+     */
+    public $template;
 
     /**
      * @var Section|null
@@ -74,6 +99,25 @@ class Section_SiteSettings extends BaseSiteSettings
     public function setSection(Section $section)
     {
         $this->_section = $section;
+    }
+
+    /**
+     * Returns the site.
+     *
+     * @return Site
+     * @throws InvalidConfigException if [[siteId]] is missing or invalid
+     */
+    public function getSite(): Site
+    {
+        if (!$this->siteId) {
+            throw new InvalidConfigException('Section site settings model is missing its site ID');
+        }
+
+        if (($site = Craft::$app->getSites()->getSiteById($this->siteId)) === null) {
+            throw new InvalidConfigException('Invalid site ID: ' . $this->siteId);
+        }
+
+        return $site;
     }
 
     /**
