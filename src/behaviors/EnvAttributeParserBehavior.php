@@ -20,7 +20,7 @@ use yii\validators\UrlValidator;
  * ---
  *
  * ```php
- * public function attributes()
+ * public function behaviors()
  * {
  *     return [
  *         'parser' => [

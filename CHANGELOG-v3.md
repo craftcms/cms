@@ -2,20 +2,36 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a SQL error that occurred when using a token with a usage limit, if using PostgreSQL. ([#3969](https://github.com/craftcms/cms/issues/3969))
+
+## 3.1.17.1 - 2019-03-08
+
 ### Added
-- The Plugin Store now shows “Report an issue” links on plugin screens.
-- Added a “Package Name” section to the Plugin Store’s plugin screens. ([#2757](https://github.com/craftcms/cms/issues/2757))
+- Added `craft\helpers\ArrayHelper::ensureNonAssociative()`.
+
+### Fixed
+- Fixed a bug where commercial plugin editions weren’t showing up in the Plugin Store.
+- Fixed a bug where installing a plugin from the Plugin Store would not respect the selected edition.
+- Fixed a bug where plugins with free and commercial editions weren’t getting license key inputs on the Setting → Plugins page.
+- Fixed a bug where the Setting → Plugins page wasn’t linking plugins’ edition badge to their page in the Plugin Store for plugins with free and commercial editions, if the free edition was currently active.
+
+## 3.1.17 - 2019-03-08
 
 ### Changed
 - When installing Craft using a `project.yaml`, Craft now processes all sites before installing any plugins. ([craftcms/commerce#752](https://github.com/craftcms/commerce/issues/752))
-- The Plugin Store now shows the discounted price when another commercial edition of the plugin is licensed.
+- The Plugin Store now shows “Report an issue” links on plugin screens.
+- The Plugin Store now includes a “Package Name” section on plugin screens. ([#2757](https://github.com/craftcms/cms/issues/2757))
+- The Plugin Store now shows discounted upgrade prices for plugins when a lower edition is already licensed.
+- Craft now requires Yii 2.0.16.1.
 
 ### Fixed
 - Fixed a bug where the `positionedBefore` element query param was not including direct ancestors in the results.
 - Fixed a bug where HTML in plugin-supplied field instructions was getting encoded. ([#3928](https://github.com/craftcms/cms/issues/3928))
 - Fixed a bug where Craft would prompt for a user’s current password when registering a new user, even if they weren’t assigning any groups or permissions to that user
-- Fixed a bug where a race condition could make Asset indexing inconsistent. ([#3450](https://github.com/craftcms/cms/issues/3450))
-- Fixed a bug where Plugin Store’s edition features were showing an info icon even if the feature didn’t have a description.
+- Fixed a bug where asset indexing could yield inconsistent results in some cases. ([#3450](https://github.com/craftcms/cms/issues/3450))
+- Fixed a bug where the Plugin Store was showing info icons in the feature matrix of multi-edition plugins, even for features that didn’t have an extended description.
+- Fixed a bug where entries weren’t getting new versions when edited from element editor HUDs. ([#3959](https://github.com/craftcms/cms/issues/3959))
 
 ## 3.1.16 - 2019-03-05
 
