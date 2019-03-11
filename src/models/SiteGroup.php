@@ -8,6 +8,8 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\GraphQlInterface;
+use craft\base\GraphQlTrait;
 use craft\base\Model;
 use craft\helpers\ArrayHelper;
 use craft\records\SiteGroup as SiteGroupRecord;
@@ -19,8 +21,13 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class SiteGroup extends Model
+class SiteGroup extends Model implements GraphQlInterface
 {
+    // Traits
+    // =========================================================================
+
+    use GraphQlTrait;
+
     // Properties
     // =========================================================================
 

@@ -8,6 +8,8 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\GraphQlInterface;
+use craft\base\GraphQlTrait;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\records\Site as SiteRecord;
@@ -23,8 +25,12 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Site extends Model
+class Site extends Model implements GraphQlInterface
 {
+    // Traits
+    // =========================================================================
+    use GraphQlTrait;
+
     // Properties
     // =========================================================================
 
@@ -202,5 +208,22 @@ class Site extends Model
     {
         $this->originalBaseUrl = (string)$this->baseUrl;
         $this->baseUrl = $baseUrl;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    protected static function overrideGraphQlTypeProperties(array $properties): array
+    {
+        $properties['siteGroup'] = [
+            'name' => 'siteGroup',
+            'type' => SiteGroup::getGraphQlTypeDefinition(),
+            'resolve' => function (Site $site) {
+                return $site->getGroup();
+            }
+        ];
+
+        return $properties;
     }
 }
