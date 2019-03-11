@@ -62,6 +62,9 @@ return [
         'globals' => [
             'class' => craft\services\Globals::class,
         ],
+        'graphQl' => [
+            'class' => craft\services\GraphQl::class,
+        ],
         'images' => [
             'class' => craft\services\Images::class,
         ],

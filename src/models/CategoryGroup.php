@@ -8,6 +8,8 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\GraphQlInterface;
+use craft\base\GraphQlTrait;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Category;
@@ -15,6 +17,8 @@ use craft\helpers\ArrayHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use GraphQL\Type\Definition\Type;
+use yii\helpers\Inflector;
 
 /**
  * CategoryGroup model.
@@ -24,8 +28,13 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class CategoryGroup extends Model
+class CategoryGroup extends Model implements GraphQlInterface
 {
+    // Traits
+    // =========================================================================
+
+    use GraphQlTrait;
+
     // Properties
     // =========================================================================
 
@@ -166,5 +175,43 @@ class CategoryGroup extends Model
         foreach ($this->_siteSettings as $settings) {
             $settings->setGroup($this);
         }
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGraphQlQueryDefinitions(): array
+    {
+        return [
+            'query' . self::getGraphQlTypeName() => [
+                'type' => self::getGraphQlTypeDefinition(),
+                'args' => [
+                    'id' => Type::id(),
+                    'uid' => Type::string(),
+                    'handle' => Type::string(),
+                ],
+                'resolve' => function ($rootValue, $args) {
+                    if (isset($args['uid'])) {
+                        return Craft::$app->getCategories()->getGroupById($args['uid']);
+                    }
+
+                    if (isset($args['id'])) {
+                        return Craft::$app->getCategories()->getGroupByUid($args['id']);
+                    }
+
+                    if (isset($args['handle'])) {
+                        return Craft::$app->getCategories()->getGroupByHandle($args['handle']);
+                    }
+                }
+            ],
+            'queryAll' . Inflector::pluralize(self::getGraphQlTypeName()) => [
+                'type' => Type::listOf(self::getGraphQlTypeDefinition()),
+                'resolve' => function () {
+                    return Craft::$app->getCategories()->getAllGroups();
+                }
+            ],
+
+        ];
     }
 }

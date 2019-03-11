@@ -8,11 +8,18 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\GraphQlInterface;
+use craft\base\GraphQlTrait;
 use craft\base\Model;
+use craft\graphql\types\DateTimeType;
 use craft\records\AssetTransform as AssetTransformRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use GraphQL\Type\Definition\EnumType;
+use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\Type;
+use yii\helpers\Inflector;
 
 /**
  * The AssetTransform model class.
@@ -21,8 +28,12 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AssetTransform extends Model
+class AssetTransform extends Model implements GraphQlInterface
 {
+    // Traits
+    // =========================================================================
+    use GraphQlTrait;
+
     // Properties
     // =========================================================================
 
@@ -211,5 +222,83 @@ class AssetTransform extends Model
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'dimensionChangeTime';
         return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGraphQlQueryDefinitions(): array
+    {
+        return [
+            'query' . self::getGraphQlTypeName() => [
+                'type' => self::getGraphQlTypeDefinition(),
+                'args' => [
+                    'id' => Type::id(),
+                    'uid' => Type::string(),
+                    'handle' => Type::string(),
+                ],
+                'resolve' => function ($rootValue, $args) {
+                    if (isset($args['uid'])) {
+                        return Craft::$app->getAssetTransforms()->getTransformByUid($args['uid']);
+                    }
+
+                    if (isset($args['id'])) {
+                        return Craft::$app->getAssetTransforms()->getTransformById($args['id']);
+                    }
+
+                    if (isset($args['handle'])) {
+                        return Craft::$app->getAssetTransforms()->getTransformByHandle($args['handle']);
+                    }
+                }
+            ],
+            'queryAll' . Inflector::pluralize(self::getGraphQlTypeName()) => [
+                'type' => Type::listOf(self::getGraphQlTypeDefinition()),
+                'resolve' => function () {
+                    return Craft::$app->getAssetTransforms()->getAllTransforms();
+                }
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function overrideGraphQlTypeProperties(array $properties): array
+    {
+        $properties['mode'] = Type::nonNull(new EnumType([
+            'name' => 'transformMode',
+            'values' => [
+                'stretch',
+                'fit',
+                'crop',
+            ]
+        ]));
+
+        $properties['position'] = Type::nonNull(new EnumType([
+            'name' => 'transformPosition',
+            'values' => [
+                'topLeft' => 'top-left',
+                'topCenter' => 'top-center',
+                'topRight' => 'top-right',
+                'centerLeft' => 'center-left',
+                'centerCenter' => 'center-center',
+                'centerRIght' => 'center-right',
+                'bottomLeft' => 'bottom-left',
+                'bottomCenter' => 'bottom-center',
+                'bottomRight' => 'bottom-right',
+            ]
+        ]));
+
+        $properties['interlace'] = Type::nonNull(new EnumType([
+            'name' => 'transformInterlace',
+            'values' => [
+                'none',
+                'line',
+                'plane',
+                'partition',
+            ]
+        ]));
+
+        return $properties;
     }
 }

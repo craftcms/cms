@@ -44,6 +44,7 @@
     "symfony/yaml": "^3.2|^4.0",
     "true/punycode": "^2.1.0",
     "twig/twig": "^2.5.0",
+    "webonyx/graphql-php": "^0.12.0",
     "yii2tech/ar-softdelete": "^1.0.2",
     "yiisoft/yii2": "~2.0.16.0",
     "yiisoft/yii2-debug": "^2.0.10",
