@@ -191,7 +191,7 @@ class CategoryGroup extends Model implements GraphQlInterface
                     'uid' => Type::string(),
                     'handle' => Type::string(),
                 ],
-                'resolve' => function ($rootValue, $args) {
+                'resolve' => function($rootValue, $args) {
                     if (isset($args['uid'])) {
                         return Craft::$app->getCategories()->getGroupById($args['uid']);
                     }
@@ -207,11 +207,27 @@ class CategoryGroup extends Model implements GraphQlInterface
             ],
             'queryAll' . Inflector::pluralize(self::getGraphQlTypeName()) => [
                 'type' => Type::listOf(self::getGraphQlTypeDefinition()),
-                'resolve' => function () {
+                'resolve' => function() {
                     return Craft::$app->getCategories()->getAllGroups();
                 }
             ],
 
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function overrideGraphQlTypeProperties(array $properties): array
+    {
+        $properties['siteSettings'] = [
+            'name' => 'siteSettings',
+            'type' => Type::listOf(CategoryGroup_SiteSettings::getGraphQlTypeDefinition()),
+            'resolve' => function(CategoryGroup $categoryGroup) {
+                return $categoryGroup->getSiteSettings();
+            }
+        ];
+
+        return $properties;
     }
 }
