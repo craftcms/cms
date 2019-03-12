@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.1.17.2 - 2019-03-12
+
+### Changed
+- Craft now requires Twig ~2.6.2.
+
 ## 3.1.17.1 - 2019-03-08
 
 ### Added
@@ -543,6 +548,11 @@
 - The web and CLI installers no longer suggest `@web` for the site URL, and now attempt to save the entered site URL as a `DEFAULT_SITE_URL` environment variable in `.env`. ([#3559](https://github.com/craftcms/cms/issues/3559))
 - Craft now destroys all other sessions associated with a user account when a user changes their password.
 - It’s no longer possible to spoof Live Preview requests.
+
+## 3.0.41.1 - 2019-03-12
+
+### Changed
+- Craft now requires Twig ~2.6.2.
 
 ## 3.0.41 - 2019-02-22
 
