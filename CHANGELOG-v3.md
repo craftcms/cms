@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.0.41.1 - 2019-03-12
+
+### Changed
+- Craft now requires Twig ~2.6.2.
+
 ## 3.0.41 - 2019-02-22
 
 ### Changed
