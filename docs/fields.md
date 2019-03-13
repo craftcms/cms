@@ -17,7 +17,19 @@ All fields share a few common settings:
 
 If you’re running a multi-language site with Craft you have the option to mark the field as translatable.
 
-If that setting is checked, the field’s values are stored on a per-site basis. Otherwise, the values are always copied across all sites.
+The available options are:
+
+* Not translatable
+* Translate for each site
+* Translate for each site group
+* Translate for each language
+* Custom
+
+If you mark the fields as not translatable, the values are always copied across all sites.
+
+The custom option can be used to implement custom translation logic. Selecting custom, you can define the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key. 
+
+For example, to make the field translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.
 
 ## Field Types
 
