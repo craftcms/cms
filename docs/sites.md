@@ -73,7 +73,7 @@ You can change the Primary site once you create additional sites. Craft will aut
 
 Each site has a Base URL, which Craft uses as the starting point when generating dynamic links to entries and other site content.
 
-Mutiple sites can share the same host name, such as `https://craftcms.com/` and `https://craftcms.com/de/`, or they can have different host names, such as `https://craftcms.com/` and `https://de.craftcms.com/`.
+Multiple sites can share the same host name, such as `https://craftcms.com/` and `https://craftcms.com/de/`, or they can have different host names, such as `https://craftcms.com/` and `https://de.craftcms.com/`.
 
 If you want to create a site with a different host name, you must configure your server to handle traffic for it. The host name can either point to the same web root as your current site (e.g. `web/`), or you may want to give it its own separate web root. If you do the latter, make sure you copy your `.htaccess` and `index.php` files into the new web root.
 
