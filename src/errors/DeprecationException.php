@@ -10,7 +10,7 @@ namespace craft\errors;
 use yii\base\UserException;
 
 /**
- * Class FileException
+ * Class DeprecationException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
