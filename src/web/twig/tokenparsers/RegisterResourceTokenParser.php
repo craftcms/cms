@@ -9,6 +9,7 @@ namespace craft\web\twig\tokenparsers;
 
 use Craft;
 use craft\web\twig\nodes\RegisterResourceNode;
+use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 use Twig\TokenStream;
@@ -89,8 +90,11 @@ class RegisterResourceTokenParser extends AbstractTokenParser
         }
 
         $lineno = $token->getLine();
-        $stream = $this->parser->getStream();
-        $expressionParser = $this->parser->getExpressionParser();
+        /** @var Parser $parser */
+        $parser = $this->parser;
+        $stream = $parser->getStream();
+        $expressionParser = $parser->getExpressionParser();
+
         $nodes = [];
 
         // Is this a tag pair?
@@ -147,7 +151,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
 
         if ($capture) {
             // Tag pair. Capture the value.
-            $nodes['value'] = $this->parser->subparse([$this, 'decideBlockEnd'], true);
+            $nodes['value'] = $parser->subparse([$this, 'decideBlockEnd'], true);
             $stream->expect(Token::BLOCK_END_TYPE);
         }
 

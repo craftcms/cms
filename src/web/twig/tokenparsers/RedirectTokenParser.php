@@ -9,6 +9,7 @@ namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\RedirectNode;
 use Twig\Node\Expression\ConstantExpression;
+use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -29,13 +30,16 @@ class RedirectTokenParser extends AbstractTokenParser
     public function parse(Token $token)
     {
         $lineno = $token->getLine();
-        $stream = $this->parser->getStream();
+        /** @var Parser $parser */
+        $parser = $this->parser;
+        $stream = $parser->getStream();
+
         $nodes = [
-            'path' => $this->parser->getExpressionParser()->parseExpression(),
+            'path' => $parser->getExpressionParser()->parseExpression(),
         ];
 
         if ($stream->test(Token::NUMBER_TYPE)) {
-            $nodes['httpStatusCode'] = $this->parser->getExpressionParser()->parseExpression();
+            $nodes['httpStatusCode'] = $parser->getExpressionParser()->parseExpression();
         } else {
             $nodes['httpStatusCode'] = new ConstantExpression(302, 1);
         }
@@ -44,10 +48,10 @@ class RedirectTokenParser extends AbstractTokenParser
         while ($stream->test(Token::NAME_TYPE, 'with')) {
             $stream->next();
             $type = $stream->expect(Token::NAME_TYPE, ['notice', 'error'])->getValue();
-            $nodes[$type] = $this->parser->getExpressionParser()->parseExpression();
+            $nodes[$type] = $parser->getExpressionParser()->parseExpression();
         }
 
-        $this->parser->getStream()->expect(Token::BLOCK_END_TYPE);
+        $stream->expect(Token::BLOCK_END_TYPE);
 
         return new RedirectNode($nodes, [], $lineno, $this->getTag());
     }

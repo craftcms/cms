@@ -10,6 +10,7 @@ namespace craft\web\twig\tokenparsers;
 use craft\web\twig\nodes\NavNode;
 use Twig\Node\Expression\AssignNameExpression;
 use Twig\Node\Node;
+use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -38,14 +39,16 @@ class NavTokenParser extends AbstractTokenParser
     public function parse(Token $token)
     {
         $lineno = $token->getLine();
-        $stream = $this->parser->getStream();
+        /** @var Parser $parser */
+        $parser = $this->parser;
+        $stream = $parser->getStream();
 
-        $targets = $this->parser->getExpressionParser()->parseAssignmentExpression();
+        $targets = $parser->getExpressionParser()->parseAssignmentExpression();
         $stream->expect(Token::OPERATOR_TYPE, 'in');
-        $seq = $this->parser->getExpressionParser()->parseExpression();
+        $seq = $parser->getExpressionParser()->parseExpression();
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        $upperBody = $this->parser->subparse([$this, 'decideNavFork']);
+        $upperBody = $parser->subparse([$this, 'decideNavFork']);
         $lowerBody = new Node();
         $indent = new Node();
         $outdent = new Node();
@@ -56,19 +59,19 @@ class NavTokenParser extends AbstractTokenParser
             $stream->expect(Token::BLOCK_END_TYPE);
 
             if ($nextValue === 'ifchildren') {
-                $indent = $this->parser->subparse([
+                $indent = $parser->subparse([
                     $this,
                     'decideChildrenFork'
                 ], true);
                 $stream->expect(Token::BLOCK_END_TYPE);
-                $outdent = $this->parser->subparse([
+                $outdent = $parser->subparse([
                     $this,
                     'decideChildrenEnd'
                 ], true);
                 $stream->expect(Token::BLOCK_END_TYPE);
             }
 
-            $lowerBody = $this->parser->subparse([$this, 'decideNavEnd'], true);
+            $lowerBody = $parser->subparse([$this, 'decideNavEnd'], true);
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);

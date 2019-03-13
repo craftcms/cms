@@ -8,6 +8,7 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\RequirePermissionNode;
+use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -28,10 +29,14 @@ class RequirePermissionTokenParser extends AbstractTokenParser
     public function parse(Token $token)
     {
         $lineno = $token->getLine();
+        /** @var Parser $parser */
+        $parser = $this->parser;
+        $stream = $parser->getStream();
+
         $nodes = [
-            'permissionName' => $this->parser->getExpressionParser()->parseExpression(),
+            'permissionName' => $parser->getExpressionParser()->parseExpression(),
         ];
-        $this->parser->getStream()->expect(Token::BLOCK_END_TYPE);
+        $stream->expect(Token::BLOCK_END_TYPE);
 
         return new RequirePermissionNode($nodes, [], $lineno, $this->getTag());
     }

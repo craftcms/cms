@@ -10,6 +10,7 @@ namespace craft\web\twig\tokenparsers;
 use craft\web\twig\nodes\SwitchNode;
 use Twig\Error\SyntaxError;
 use Twig\Node\Node;
+use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -39,10 +40,12 @@ class SwitchTokenParser extends AbstractTokenParser
     public function parse(Token $token)
     {
         $lineno = $token->getLine();
-        $stream = $this->parser->getStream();
+        /** @var Parser $parser */
+        $parser = $this->parser;
+        $stream = $parser->getStream();
 
         $nodes = [
-            'value' => $this->parser->getExpressionParser()->parseExpression(),
+            'value' => $parser->getExpressionParser()->parseExpression(),
         ];
 
         $stream->expect(Token::BLOCK_END_TYPE);
@@ -54,7 +57,7 @@ class SwitchTokenParser extends AbstractTokenParser
 
         $stream->expect(Token::BLOCK_START_TYPE);
 
-        $expressionParser = $this->parser->getExpressionParser();
+        $expressionParser = $parser->getExpressionParser();
         $cases = [];
         $end = false;
 
@@ -74,7 +77,7 @@ class SwitchTokenParser extends AbstractTokenParser
                         }
                     }
                     $stream->expect(Token::BLOCK_END_TYPE);
-                    $body = $this->parser->subparse([$this, 'decideIfFork']);
+                    $body = $parser->subparse([$this, 'decideIfFork']);
                     $cases[] = new Node([
                         'values' => new Node($values),
                         'body' => $body
@@ -82,7 +85,7 @@ class SwitchTokenParser extends AbstractTokenParser
                     break;
                 case 'default':
                     $stream->expect(Token::BLOCK_END_TYPE);
-                    $nodes['default'] = $this->parser->subparse([$this, 'decideIfEnd']);
+                    $nodes['default'] = $parser->subparse([$this, 'decideIfEnd']);
                     break;
                 case 'endswitch':
                     $end = true;

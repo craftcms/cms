@@ -8,6 +8,7 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\NamespaceNode;
+use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -36,12 +37,15 @@ class NamespaceTokenParser extends AbstractTokenParser
     public function parse(Token $token)
     {
         $lineno = $token->getLine();
-        $stream = $this->parser->getStream();
+        /** @var Parser $parser */
+        $parser = $this->parser;
+        $stream = $parser->getStream();
+
         $nodes = [
-            'namespace' => $this->parser->getExpressionParser()->parseExpression(),
+            'namespace' => $parser->getExpressionParser()->parseExpression(),
         ];
         $stream->expect(Token::BLOCK_END_TYPE);
-        $nodes['body'] = $this->parser->subparse([$this, 'decideNamespaceEnd'], true);
+        $nodes['body'] = $parser->subparse([$this, 'decideNamespaceEnd'], true);
         $stream->expect(Token::BLOCK_END_TYPE);
 
         return new NamespaceNode($nodes, [], $lineno, $this->getTag());

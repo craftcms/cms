@@ -8,6 +8,7 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\CacheNode;
+use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -36,7 +37,9 @@ class CacheTokenParser extends AbstractTokenParser
     public function parse(Token $token)
     {
         $lineno = $token->getLine();
-        $stream = $this->parser->getStream();
+        /** @var Parser $parser */
+        $parser = $this->parser;
+        $stream = $parser->getStream();
 
         $nodes = [];
 
@@ -54,7 +57,7 @@ class CacheTokenParser extends AbstractTokenParser
         if ($stream->test(Token::NAME_TYPE, 'using')) {
             $stream->next();
             $stream->expect(Token::NAME_TYPE, 'key');
-            $nodes['key'] = $this->parser->getExpressionParser()->parseExpression();
+            $nodes['key'] = $parser->getExpressionParser()->parseExpression();
         }
 
         if ($stream->test(Token::NAME_TYPE, 'for')) {
@@ -87,19 +90,19 @@ class CacheTokenParser extends AbstractTokenParser
                 ])->getValue();
         } else if ($stream->test(Token::NAME_TYPE, 'until')) {
             $stream->next();
-            $nodes['expiration'] = $this->parser->getExpressionParser()->parseExpression();
+            $nodes['expiration'] = $parser->getExpressionParser()->parseExpression();
         }
 
         if ($stream->test(Token::NAME_TYPE, 'if')) {
             $stream->next();
-            $nodes['conditions'] = $this->parser->getExpressionParser()->parseExpression();
+            $nodes['conditions'] = $parser->getExpressionParser()->parseExpression();
         } else if ($stream->test(Token::NAME_TYPE, 'unless')) {
             $stream->next();
-            $nodes['ignoreConditions'] = $this->parser->getExpressionParser()->parseExpression();
+            $nodes['ignoreConditions'] = $parser->getExpressionParser()->parseExpression();
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);
-        $nodes['body'] = $this->parser->subparse([
+        $nodes['body'] = $parser->subparse([
             $this,
             'decideCacheEnd'
         ], true);

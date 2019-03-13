@@ -32,10 +32,11 @@ class ExitTokenParser extends AbstractTokenParser
         /** @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
+
         $nodes = [];
 
         if ($stream->test(Token::NUMBER_TYPE)) {
-            $nodes['status'] = $this->parser->getExpressionParser()->parseExpression();
+            $nodes['status'] = $parser->getExpressionParser()->parseExpression();
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);
