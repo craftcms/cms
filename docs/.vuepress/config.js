@@ -127,14 +127,6 @@ function replaceApiLink(link) {
             }
             return url + (hash ? `#${hash}` : '');
         }
-
-        if (className.match(/^Twig/)) {
-            let url = 'https://twig.symfony.com/api/2.x/'+className.replace(/\\/g, '/')+'.html'
-            if (subject) {
-                hash = '#method_'+subject
-            }
-            return url + (hash ? `#${hash}` : '');
-        }
     }
 
     m = link.match(/^config:(.+)/)
