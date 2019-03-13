@@ -5,6 +5,9 @@
 ### Fixed
 - Fixed a bug where `IOHelper::cleanFilename()` could return inconsistent results.
 
+### Changed
+- Objects can no longer be unserialized from a cookie.
+
 ## 2.7.5 - 2019-02-15
 
 ### Changed

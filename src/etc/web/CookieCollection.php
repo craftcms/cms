@@ -40,7 +40,7 @@ class CookieCollection extends \CCookieCollection
 			{
 				if (is_string($value) && ($value=craft()->security->validateData($value)) !== false)
 				{
-					$cookies[$name] = new HttpCookie($name, @unserialize($value));
+					$cookies[$name] = new HttpCookie($name, @unserialize($value, array('allowed_classes' => false)));
 				}
 			}
 		}
