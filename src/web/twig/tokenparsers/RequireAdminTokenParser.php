@@ -8,6 +8,8 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\RequireAdminNode;
+use Twig\Token;
+use Twig\TokenParser\AbstractTokenParser;
 
 /**
  * Class RequireAdminTokenParser
@@ -15,7 +17,7 @@ use craft\web\twig\nodes\RequireAdminNode;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class RequireAdminTokenParser extends \Twig_TokenParser
+class RequireAdminTokenParser extends AbstractTokenParser
 {
     // Public Methods
     // =========================================================================
@@ -23,10 +25,10 @@ class RequireAdminTokenParser extends \Twig_TokenParser
     /**
      * @inheritdoc
      */
-    public function parse(\Twig_Token $token)
+    public function parse(Token $token)
     {
         $lineno = $token->getLine();
-        $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
+        $this->parser->getStream()->expect(Token::BLOCK_END_TYPE);
 
         return new RequireAdminNode([], [], $lineno, $this->getTag());
     }

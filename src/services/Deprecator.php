@@ -17,6 +17,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
+use Twig\Template as TwigTemplate;
 use yii\base\Component;
 use yii\db\IntegrityException;
 
@@ -277,7 +278,7 @@ class Deprecator extends Component
             $templateCodeLine = $traces[$templateTrace]['line'] ?? null;
             $template = $traces[$templateTrace + 1]['object'] ?? null;
 
-            if ($template instanceof \Twig_Template) {
+            if ($template instanceof TwigTemplate) {
                 $templateName = $template->getTemplateName();
                 $file = Craft::$app->getView()->resolveTemplate($templateName) ?: $templateName;
                 $line = $this->_findTemplateLine($template, $templateCodeLine);
@@ -345,11 +346,11 @@ class Deprecator extends Component
     /**
      * Returns the Twig template that should be associated with the deprecation error, if any.
      *
-     * @param \Twig_Template $template
+     * @param TwigTemplate $template
      * @param int|null $actualCodeLine
      * @return int|null
      */
-    private function _findTemplateLine(\Twig_Template $template, int $actualCodeLine = null)
+    private function _findTemplateLine(TwigTemplate $template, int $actualCodeLine = null)
     {
         if ($actualCodeLine === null) {
             return null;

@@ -7,13 +7,16 @@
 
 namespace craft\web\twig\nodes;
 
+use Twig\Compiler;
+use Twig\Node\Node;
+
 /**
  * Class HeaderNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class HeaderNode extends \Twig_Node
+class HeaderNode extends Node
 {
     // Public Methods
     // =========================================================================
@@ -21,7 +24,7 @@ class HeaderNode extends \Twig_Node
     /**
      * @inheritdoc
      */
-    public function compile(\Twig_Compiler $compiler)
+    public function compile(Compiler $compiler)
     {
         $compiler
             ->write('$_headerParts = array_map(\'trim\', explode(\':\', ')

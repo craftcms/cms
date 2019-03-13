@@ -8,6 +8,8 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\HookNode;
+use Twig\Token;
+use Twig\TokenParser\AbstractTokenParser;
 
 /**
  * Class HookTokenParser
@@ -15,7 +17,7 @@ use craft\web\twig\nodes\HookNode;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class HookTokenParser extends \Twig_TokenParser
+class HookTokenParser extends AbstractTokenParser
 {
     // Public Methods
     // =========================================================================
@@ -31,13 +33,13 @@ class HookTokenParser extends \Twig_TokenParser
     /**
      * @inheritdoc
      */
-    public function parse(\Twig_Token $token)
+    public function parse(Token $token)
     {
         $lineno = $token->getLine();
         $nodes = [
             'hook' => $this->parser->getExpressionParser()->parseExpression(),
         ];
-        $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
+        $this->parser->getStream()->expect(Token::BLOCK_END_TYPE);
 
         return new HookNode($nodes, [], $lineno, $this->getTag());
     }

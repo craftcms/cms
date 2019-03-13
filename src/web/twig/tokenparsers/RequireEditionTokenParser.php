@@ -8,6 +8,8 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\RequireEditionNode;
+use Twig\Token;
+use Twig\TokenParser\AbstractTokenParser;
 
 /**
  * Class RequireEditionTokenParser
@@ -15,7 +17,7 @@ use craft\web\twig\nodes\RequireEditionNode;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class RequireEditionTokenParser extends \Twig_TokenParser
+class RequireEditionTokenParser extends AbstractTokenParser
 {
     // Public Methods
     // =========================================================================
@@ -23,13 +25,13 @@ class RequireEditionTokenParser extends \Twig_TokenParser
     /**
      * @inheritdoc
      */
-    public function parse(\Twig_Token $token)
+    public function parse(Token $token)
     {
         $lineno = $token->getLine();
         $nodes = [
             'editionName' => $this->parser->getExpressionParser()->parseExpression(),
         ];
-        $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
+        $this->parser->getStream()->expect(Token::BLOCK_END_TYPE);
 
         return new RequireEditionNode($nodes, [], $lineno, $this->getTag());
     }

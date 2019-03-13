@@ -7,6 +7,8 @@
 
 namespace craft\web\twig\nodes;
 
+use Twig\Compiler;
+use Twig\Node\Node;
 use yii\web\NotFoundHttpException;
 
 /**
@@ -15,7 +17,7 @@ use yii\web\NotFoundHttpException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class RequireEditionNode extends \Twig_Node
+class RequireEditionNode extends Node
 {
     // Public Methods
     // =========================================================================
@@ -23,7 +25,7 @@ class RequireEditionNode extends \Twig_Node
     /**
      * @inheritdoc
      */
-    public function compile(\Twig_Compiler $compiler)
+    public function compile(Compiler $compiler)
     {
         $compiler
             ->addDebugInfo($this)

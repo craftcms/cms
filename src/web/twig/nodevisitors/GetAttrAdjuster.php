@@ -8,22 +8,26 @@
 namespace craft\web\twig\nodevisitors;
 
 use craft\web\twig\nodes\GetAttrNode;
+use Twig\Environment;
+use Twig\Node\Expression\GetAttrExpression;
+use Twig\Node\Node;
+use Twig\NodeVisitor\NodeVisitorInterface;
 
 /**
- * GetAttrAdjuster swaps Twig_Node_Expression_GetAttr nodes with [[GetAttrNode]] nodes.
+ * GetAttrAdjuster swaps [[GetAttrExpression]] nodes with [[GetAttrNode]] nodes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class GetAttrAdjuster implements \Twig_NodeVisitorInterface
+class GetAttrAdjuster implements NodeVisitorInterface
 {
     /**
      * @inheritdoc
      */
-    public function enterNode(\Twig_Node $node, \Twig_Environment $env)
+    public function enterNode(Node $node, Environment $env)
     {
-        // Is it a Twig_Node_Expression_GetAttr (and not a subclass)?
-        if (get_class($node) === \Twig_Node_Expression_GetAttr::class) {
+        // Is it a GetAttrExpression (and not a subclass)?
+        if (get_class($node) === GetAttrExpression::class) {
             // "Clone" it into a GetAttrNode
             $nodes = [
                 'node' => $node->getNode('node'),
@@ -37,7 +41,8 @@ class GetAttrAdjuster implements \Twig_NodeVisitorInterface
             $attributes = [
                 'type' => $node->getAttribute('type'),
                 'is_defined_test' => $node->getAttribute('is_defined_test'),
-                'ignore_strict_check' => $node->getAttribute('ignore_strict_check')
+                'ignore_strict_check' => $node->getAttribute('ignore_strict_check'),
+                'optimizable' => $node->getAttribute('optimizable'),
             ];
 
             $node = new GetAttrNode($nodes, $attributes, $node->getTemplateLine(), $node->getNodeTag());
@@ -49,7 +54,7 @@ class GetAttrAdjuster implements \Twig_NodeVisitorInterface
     /**
      * @inheritdoc
      */
-    public function leaveNode(\Twig_Node $node, \Twig_Environment $env)
+    public function leaveNode(Node $node, Environment $env)
     {
         return $node;
     }
