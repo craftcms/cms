@@ -42,6 +42,8 @@ use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use DateTime;
+use GraphQL\Type\Definition\InterfaceType;
+use GraphQL\Type\Definition\Type;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -87,12 +89,13 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class Element extends Component implements ElementInterface
+abstract class Element extends Component implements ElementInterface, GqlInterface
 {
     // Traits
     // =========================================================================
 
     use ElementTrait;
+    use GqlTrait;
 
     // Constants
     // =========================================================================
@@ -1985,6 +1988,29 @@ abstract class Element extends Component implements ElementInterface
                 'structureId' => $structureId,
             ]));
         }
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlTypeDefinition(): array
+    {
+        if (self::$gqlTypes === null) {
+
+            self::$gqlTypes = [
+                self::getGqlTypeName() => new InterfaceType([
+                    'name' => self::getGqlTypeName(),
+                    'fields' => [
+                        'id' => Type::id(),
+                        'uid' => Type::string(),
+                        // TODO ALL THE ELEMENT FIELDS
+                    ]
+                ])
+            ];
+        }
+
+        return self::$gqlTypes;
     }
 
     // Protected Methods

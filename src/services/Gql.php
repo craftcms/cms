@@ -142,6 +142,7 @@ class Gql extends Component
         $graphQlSupportedModels = [
             AssetTransform::class,
             CategoryGroup::class,
+            Category::class,
         ];
 
         $event = new RegisterGqlModelEvent([

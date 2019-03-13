@@ -25,7 +25,7 @@ trait GqlTrait
     /**
      * @var ObjectType[] holds this GraphQl Model's type definition, if already defined.
      */
-    protected static $gqlTypes = null;
+    private static $gqlTypes = null;
 
     // Public Methods
     // =========================================================================
@@ -35,7 +35,7 @@ trait GqlTrait
      */
     public static function getGqlTypeName(): string
     {
-        $className = substr(self::class, strrpos(self::class, '\\') + 1);
+        $className = substr(static::class, strrpos(static::class, '\\') + 1);
 
         return 'Craft' . $className;
     }
@@ -45,17 +45,17 @@ trait GqlTrait
      */
     public static function getGqlTypeDefinition(): array
     {
-        if (self::$gqlTypes === null) {
-            self::$gqlTypes = [
-                self::getGqlTypeName() => new ObjectType([
-                        'name' => self::getGqlTypeName(),
-                        'fields' => self::getGqlTypeProperties()
+        if (static::$gqlTypes === null) {
+            static::$gqlTypes = [
+                static::getGqlTypeName() => new ObjectType([
+                        'name' => static::getGqlTypeName(),
+                        'fields' => static::getGqlTypeProperties()
                     ]
                 )
             ];
         }
 
-        return self::$gqlTypes;
+        return static::$gqlTypes;
     }
 
     /**
@@ -63,10 +63,26 @@ trait GqlTrait
      *
      * @return ObjectType
      */
-    public static function getFirstGqlTypeDefinition(): ObjectType
+    public static function getFirstGqlTypeDefinition(): Type
     {
-        $typeDefinitions = self::getGqlTypeDefinition();
+        $typeDefinitions = static::getGqlTypeDefinition();
         return reset($typeDefinitions);
+    }
+
+    /**
+     * A helper method to retrieve the first GraphQL type definition for models that define multiple definitions.
+     *
+     * @param string $name name of the type
+     * @return ObjectType
+     */
+    public static function getGqlTypeDefinitionByName(string $name): Type
+    {
+        $typeDefinitions = static::getGqlTypeDefinition();
+
+        if (!isset($typeDefinitions[$name])) {
+            throw new GqlException('Type "' . $name . '" not found!');
+        }
+        return $typeDefinitions[$name];
     }
 
     /**
@@ -86,7 +102,7 @@ trait GqlTrait
     protected static function getGqlTypeProperties(): array
     {
         // By default we return a list of all public properties with the type figured out.
-        $class = new \ReflectionClass(self::class);
+        $class = new \ReflectionClass(static::class);
         $properties = [];
 
         foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
@@ -125,7 +141,7 @@ trait GqlTrait
             }
         }
 
-        return self::overrideGqlTypeProperties($properties);
+        return static::overrideGqlTypeProperties($properties);
     }
 
     /**

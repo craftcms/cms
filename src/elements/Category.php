@@ -9,6 +9,8 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\GqlInterface;
+use craft\base\GqlTrait;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
@@ -25,7 +27,10 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
+use craft\models\Structure;
 use craft\records\Category as CategoryRecord;
+use GraphQL\Type\Definition\InterfaceType;
+use GraphQL\Type\Definition\Type;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -36,8 +41,13 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Category extends Element
+class Category extends Element implements GqlInterface
 {
+    // Traits
+    // =========================================================================
+
+    use GqlTrait;
+
     // Static
     // =========================================================================
 
@@ -626,6 +636,36 @@ class Category extends Element
         }
 
         parent::afterMoveInStructure($structureId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlTypeDefinition(): array
+    {
+        if (self::$gqlTypes === null) {
+            $categoryInterface = new InterfaceType([
+                'name' => self::getGqlTypeName(),
+                'fields' => function () use (&$categoryInterface) {
+                    return [
+                        'id' => Type::id(),
+                        'uid' => Type::string(),
+                        'parent' => $categoryInterface,
+                        'children' => Type::listOf($categoryInterface),
+                        'structureNode' => Structure::getGqlTypeDefinitionByName('CraftStructureNode'),
+                        'uri' => Type::string(),
+                        'group' => Type::nonNull(CategoryGroup::getFirstGqlTypeDefinition()),
+                        'status' => Type::nonNull(Type::string())
+                    ];
+                }
+            ]);
+
+            self::$gqlTypes = [
+                self::getGqlTypeName() => $categoryInterface
+            ];
+        }
+
+        return self::$gqlTypes;
     }
 
     // Private Methods

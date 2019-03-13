@@ -8,7 +8,12 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Element;
+use craft\base\GqlInterface;
+use craft\base\GqlTrait;
 use craft\base\Model;
+use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Class Structure model.
@@ -17,8 +22,13 @@ use craft\base\Model;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Structure extends Model
+class Structure extends Model implements GqlInterface
 {
+    // Traits
+    // =========================================================================
+
+    use GqlTrait;
+
     // Properties
     // =========================================================================
 
@@ -58,5 +68,35 @@ class Structure extends Model
     public function getIsSortable(): bool
     {
         return Craft::$app->getSession()->checkAuthorization('editStructure:' . $this->id);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlTypeDefinition(): array
+    {
+        if (self::$gqlTypes === null) {
+            echo '';
+            self::$gqlTypes = [
+                self::getGqlTypeName() => new ObjectType([
+                        'name' => self::getGqlTypeName(),
+                        'fields' => self::getGqlTypeProperties()
+                    ]
+                ),
+                self::getGqlTypeName() . 'Node' => new ObjectType([
+                    'name' => self::getGqlTypeName() . 'Node',
+                    'fields' => [
+                        'id' => Type::id(),
+                        'element' => Element::getFirstGqlTypeDefinition(),
+                        'root' => Type::int(),
+                        'lft' => Type::nonNull(Type::int()),
+                        'rgt' => Type::nonNull(Type::int()),
+                        'level' => Type::nonNull(Type::int()),
+                    ]
+                ])
+            ];
+        }
+
+        return self::$gqlTypes;
     }
 }
