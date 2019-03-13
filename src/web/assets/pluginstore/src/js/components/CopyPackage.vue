@@ -1,6 +1,6 @@
 <template>
     <div class="copy-package">
-        <input ref="input" type="text" class="text w-full" :value="plugin.packageName" @focus="select" readonly="readonly" />
+        <textbox ref="input" class="w-full" :value="plugin.packageName" readonly="readonly" @focus="select" />
         <btn @click="copy"><icon icon="copy" /></btn>
     </div>
 </template>
@@ -11,7 +11,7 @@
 
         methods: {
             select() {
-                this.$refs.input.select()
+                this.$refs.input.$refs.input.select()
             },
 
             copy() {

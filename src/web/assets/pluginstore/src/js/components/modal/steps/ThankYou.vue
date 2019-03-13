@@ -6,7 +6,7 @@
                 <h2>{{ "Thank You!"|t('app') }}</h2>
                 <p class="light">{{ "Your order has been processed successfully."|t('app') }}</p>
                 <p>
-                    <btn class="primary" :href="managePluginsUrl">{{ "Manage plugins"|t('app') }}</btn>
+                    <btn kind="primary" :href="managePluginsUrl">{{ "Manage plugins"|t('app') }}</btn>
                 </p>
             </div>
         </template>

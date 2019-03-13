@@ -48,7 +48,7 @@
 
                                 <td class="expiry-date">
                                     <template v-if="item.lineItem.purchasable.type === 'cms-edition' || (item.lineItem.purchasable.type === 'plugin-edition' && item.lineItem.options.licenseKey.substr(0, 4) === 'new:')">
-                                        <select-input v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
+                                        <dropdown v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
                                     </template>
 
                                     <spinner v-if="itemLoading(itemKey)"></spinner>
@@ -95,7 +95,7 @@
                     </table>
 
                     <div class="py-4">
-                        <btn class="primary" @click="payment()">{{ "Checkout"|t('app') }}</btn>
+                        <btn kind="primary" @click="payment()">{{ "Checkout"|t('app') }}</btn>
                     </div>
                 </template>
 
