@@ -16,6 +16,12 @@
 
 {% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') %}
 
+{% if craft.app.request.isPost %}
+    {% set currentGroupIds = craft.app.request.getBodyParam('groups') ?: [] %}
+{% else %}
+    {% set currentGroupIds = user.getGroups()|column('id') %}
+{% endif %}
+
 {% set hiddenInputs %}
     {{ csrfInput() }}
     {% if not isNewUser -%}
@@ -141,7 +147,6 @@
                     <h2>{{ "User Groups"|t('app') }}</h2>
 
                     {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
-                    {% set currentGroupIds = user.getGroups()|column('id') %}
 
                     {% set userGroupsInput %}
                         <input type="hidden" name="groups" value="">

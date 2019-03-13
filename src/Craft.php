@@ -63,6 +63,9 @@ class Craft extends Yii
      * Checks if a string references an environment variable (`$VARIABLE_NAME`)
      * and/or an alias (`@aliasName`), and returns the referenced value.
      *
+     * If the string references an environment variable with a value of `true`
+     * or `false`, a boolean value will be returned.
+     *
      * ---
      *
      * ```php
@@ -71,7 +74,7 @@ class Craft extends Yii
      * ```
      *
      * @param string|null $str
-     * @return string|null The parsed value, or the original value if it didn’t
+     * @return string|bool|null The parsed value, or the original value if it didn’t
      * reference an environment variable and/or alias.
      */
     public static function parseEnv(string $str = null)
@@ -81,7 +84,16 @@ class Craft extends Yii
         }
 
         if (preg_match('/^\$(\w+)$/', $str, $matches)) {
-            $str = getenv($matches[1]) ?: $str;
+            $value = getenv($matches[1]);
+            if ($value !== false) {
+                switch (strtolower($value)) {
+                    case 'true':
+                        return true;
+                    case 'false':
+                        return false;
+                }
+                $str = $value;
+            }
         }
 
         return static::getAlias($str, false) ?: $str;
