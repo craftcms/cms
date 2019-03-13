@@ -7,19 +7,17 @@
 
 namespace craft\base;
 
-use craft\graphql\types\DateTimeType;
-use craft\helpers\StringHelper;
+use craft\gql\types\DateTimeType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
-use ReflectionClass;
 
 /**
- * GraphQlTrait implements the common methods and properties for classes that support GraphQL.
+ * GqlTrait implements the common methods and properties for classes that support GraphQL.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2
  */
-trait GraphQlTrait
+trait GqlTrait
 {
     // Properties
     // =========================================================================
@@ -27,7 +25,7 @@ trait GraphQlTrait
     /**
      * @var ObjectType|null holds this GraphQl Model's type definition, if already defined.
      */
-    protected static $graphQlType = null;
+    protected static $gqlType = null;
 
     // Public Methods
     // =========================================================================
@@ -47,14 +45,14 @@ trait GraphQlTrait
      */
     public static function getGqlTypeDefinition(): ObjectType
     {
-        if (self::$graphQlType === null) {
-            self::$graphQlType = new ObjectType([
+        if (self::$gqlType === null) {
+            self::$gqlType = new ObjectType([
                 'name' => self::getGqlTypeName(),
                 'fields' => self::getGqlTypeProperties()
             ]);
         }
 
-        return self::$graphQlType;
+        return self::$gqlType;
     }
 
     /**

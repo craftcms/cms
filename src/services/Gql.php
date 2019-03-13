@@ -10,11 +10,11 @@ namespace craft\services;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser;
 use Craft;
-use craft\base\GraphQlInterface;
+use craft\base\GqlInterface;
 use craft\base\Plugin;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
-use craft\events\RegisterGraphQlModelEvent;
+use craft\events\RegisterGqlModelEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
@@ -32,39 +32,39 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * The GraphQL service provides GraphQL functionality.
+ * The Gql service provides GraphQL functionality.
  * @TODO Docs
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2
  */
-class GraphQl extends Component
+class Gql extends Component
 {
     // Constants
     // =========================================================================
 
     /**
-     * @event RegisterGraphQlModelEvent The event that is triggered when registering models that support GraphQL.
+     * @event RegisterGqlModelEvent The event that is triggered when registering models that support GraphQL.
      *
-     * Models must implement types must implement [[GraphQlInterface]]. [[GraphQlTrait]] provides a base implementation.
+     * Models must implement types must implement [[GqlInterface]]. [[GqlTrait]] provides a base implementation.
      *
      * @TODO: docs
      * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
      * ---
      * ```php
-     * use craft\events\RegisterGraphQlModelEvent;
+     * use craft\events\RegisterGqlModelEvent;
      * use craft\services\GraphQl;
      * use yii\base\Event;
      *
-     * Event::on(GraphQl::class,
-     *     GraphQl::EVENT_REGISTER_GRAPHQL_MODELS,
-     *     function(RegisterGraphQlModelEvent $event) {
+     * Event::on(Gql::class,
+     *     Gql::EVENT_REGISTER_GQL_MODELS,
+     *     function(RegisterGqlModelEvent $event) {
      *         $event->models[] = MyModel::class;
      *     }
      * );
      * ```
      */
-    const EVENT_REGISTER_GRAPHQL_MODELS = 'registerGraphQlModels';
+    const EVENT_REGISTER_GQL_MODELS = 'registerGraphQlModels';
 
     // Properties
     // =========================================================================
@@ -101,7 +101,7 @@ class GraphQl extends Component
     {
         $output = [];
 
-        /** @var GraphQlInterface $model */
+        /** @var GqlInterface $model */
         foreach ($models as $model) {
             $output[] = $model::getGqlTypeDefinition();
         }
@@ -118,7 +118,7 @@ class GraphQl extends Component
     public function getQueries(array $models) {
         $queries = [];
 
-        /** @var GraphQlInterface $model */
+        /** @var GqlInterface $model */
         foreach ($models as $model) {
             $queries += $model::getGqlQueryDefinitions();
         }
@@ -141,11 +141,11 @@ class GraphQl extends Component
             CategoryGroup::class,
         ];
 
-        $event = new RegisterGraphQlModelEvent([
+        $event = new RegisterGqlModelEvent([
             'models' => $graphQlSupportedModels
         ]);
 
-        $this->trigger(self::EVENT_REGISTER_GRAPHQL_MODELS, $event);
+        $this->trigger(self::EVENT_REGISTER_GQL_MODELS, $event);
 
         return $event->models;
     }

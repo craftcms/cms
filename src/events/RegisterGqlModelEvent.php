@@ -10,12 +10,12 @@ namespace craft\events;
 use yii\base\Event;
 
 /**
- * RegisterGraphQlTypeEvent class.
+ * RegisterGqlModelEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2
  */
-class RegisterGraphQlModelEvent extends Event
+class RegisterGqlModelEvent extends Event
 {
     // Properties
     // =========================================================================

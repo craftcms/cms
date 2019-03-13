@@ -73,7 +73,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\services\Fields $fields The fields service
  * @property-read \craft\services\Gc $gc The garbage collection service
  * @property-read \craft\services\Globals $globals The globals service
- * @property-read \craft\services\GraphQl $graphQl The GraphQl service
+ * @property-read \craft\services\Gql $gql The GraphQl service
  * @property-read \craft\services\Images $images The images service
  * @property-read \craft\services\Matrix $matrix The matrix service
  * @property-read \craft\services\Path $path The path service
@@ -904,12 +904,12 @@ trait ApplicationTrait
     /**
      * Returns the GraphQL service.
      *
-     * @return \craft\services\GraphQl The GraphQL service
+     * @return \craft\services\Gql The GraphQL service
      */
-    public function getGraphQl()
+    public function getGql()
     {
         /** @var WebApplication|ConsoleApplication $this */
-        return $this->get('graphQl');
+        return $this->get('gql');
     }
 
     /**

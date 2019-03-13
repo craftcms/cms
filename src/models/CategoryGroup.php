@@ -8,8 +8,8 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\GraphQlInterface;
-use craft\base\GraphQlTrait;
+use craft\base\GqlInterface;
+use craft\base\GqlTrait;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Category;
@@ -28,12 +28,12 @@ use yii\helpers\Inflector;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class CategoryGroup extends Model implements GraphQlInterface
+class CategoryGroup extends Model implements GqlInterface
 {
     // Traits
     // =========================================================================
 
-    use GraphQlTrait;
+    use GqlTrait;
 
     // Properties
     // =========================================================================

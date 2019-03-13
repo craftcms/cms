@@ -1,7 +1,6 @@
 <?php
-namespace craft\graphql\types;
+namespace craft\gql\types;
 
-use craft\helpers\DateTimeHelper;
 use GraphQL\Type\Definition\ScalarType;
 
 /**

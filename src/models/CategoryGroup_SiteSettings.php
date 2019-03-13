@@ -8,8 +8,8 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\GraphQlInterface;
-use craft\base\GraphQlTrait;
+use craft\base\GqlInterface;
+use craft\base\GqlTrait;
 use craft\base\Model;
 use craft\validators\SiteIdValidator;
 use craft\validators\UriFormatValidator;
@@ -21,12 +21,12 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class CategoryGroup_SiteSettings extends Model implements GraphQlInterface
+class CategoryGroup_SiteSettings extends Model implements GqlInterface
 {
     // Traits
     // =========================================================================
 
-    use GraphQlTrait;
+    use GqlTrait;
 
     // Properties
     // =========================================================================

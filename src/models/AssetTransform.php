@@ -8,16 +8,14 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\GraphQlInterface;
-use craft\base\GraphQlTrait;
+use craft\base\GqlInterface;
+use craft\base\GqlTrait;
 use craft\base\Model;
-use craft\graphql\types\DateTimeType;
 use craft\records\AssetTransform as AssetTransformRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use GraphQL\Type\Definition\EnumType;
-use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use yii\helpers\Inflector;
 
@@ -28,11 +26,11 @@ use yii\helpers\Inflector;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AssetTransform extends Model implements GraphQlInterface
+class AssetTransform extends Model implements GqlInterface
 {
     // Traits
     // =========================================================================
-    use GraphQlTrait;
+    use GqlTrait;
 
     // Properties
     // =========================================================================

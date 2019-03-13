@@ -29,13 +29,13 @@ use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
- * The GraphQlController class is a controller that handles various GraphQL related tasks.
+ * The GqlController class is a controller that handles various GraphQL related tasks.
  * @TODO Docs
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2
  */
-class GraphQlController extends Controller
+class GqlController extends Controller
 {
     // Public Methods
     // =========================================================================
@@ -57,7 +57,7 @@ class GraphQlController extends Controller
      */
     public function actionIndex(): Response
     {
-        $schema = Craft::$app->getGraphQl()->getSchema();
+        $schema = Craft::$app->getGql()->getSchema();
         $schema->assertValid();
 
         if (Craft::$app->request->isPost && $query=Craft::$app->request->post('query')) {

@@ -10,12 +10,12 @@ namespace craft\base;
 use GraphQL\Type\Definition\ObjectType;
 
 /**
- * GraphQlInterface defines the common interface to be implemented by classes that support GraphQL.
+ * GqlInterface defines the common interface to be implemented by classes that support GraphQL.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2
  */
-interface GraphQlInterface
+interface GqlInterface
 {
     // Public Methods
     // =========================================================================
