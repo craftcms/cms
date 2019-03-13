@@ -86,7 +86,7 @@ class EventTagAdder extends BaseEventTagVisitor
         if (static::$foundHead === false && ($endHeadPos = stripos($data, '</head>')) !== false) {
             static::$foundHead = true;
 
-            return $this->_insertEventNode($node, $env, $endHeadPos, 'head');
+            return $this->_insertEventNode($node, $endHeadPos, 'head');
         }
 
         // Are we looking for `<body>`?
@@ -100,7 +100,7 @@ class EventTagAdder extends BaseEventTagVisitor
                         static::$foundBeginBody = true;
                         $beginBodyPos = $matches[0][1] + strlen($matches[0][0]);
 
-                        return $this->_insertEventNode($node, $env, $beginBodyPos, 'beginBody');
+                        return $this->_insertEventNode($node, $beginBodyPos, 'beginBody');
                     }
 
 // Will have to wait for the next text node
@@ -113,7 +113,7 @@ class EventTagAdder extends BaseEventTagVisitor
                     static::$foundBeginBody = true;
                     $beginBodyPos = strlen($matches[0]);
 
-                    return $this->_insertEventNode($node, $env, $beginBodyPos, 'beginBody');
+                    return $this->_insertEventNode($node, $beginBodyPos, 'beginBody');
                 }
             }
         }
@@ -122,7 +122,7 @@ class EventTagAdder extends BaseEventTagVisitor
         if (static::$foundEndBody === false && ($endBodyPos = stripos($data, '</body>')) !== false) {
             static::$foundEndBody = true;
 
-            return $this->_insertEventNode($node, $env, $endBodyPos, 'endBody');
+            return $this->_insertEventNode($node, $endBodyPos, 'endBody');
         }
 
         return $node;
@@ -137,7 +137,7 @@ class EventTagAdder extends BaseEventTagVisitor
      * @param string $functionName
      * @return Node
      */
-    private function _insertEventNode(TextNode $node, Environment $env, int $pos, string $functionName): Node
+    private function _insertEventNode(TextNode $node, int $pos, string $functionName): Node
     {
         $data = $node->getAttribute('data');
         $preSplitHtml = substr($data, 0, $pos);
