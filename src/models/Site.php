@@ -218,7 +218,7 @@ class Site extends Model implements GqlInterface
     {
         $properties['siteGroup'] = [
             'name' => 'siteGroup',
-            'type' => SiteGroup::getGqlTypeDefinition(),
+            'type' => SiteGroup::getFirstGqlTypeDefinition(),
             'resolve' => function (Site $site) {
                 return $site->getGroup();
             }

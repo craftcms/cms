@@ -23,9 +23,9 @@ trait GqlTrait
     // =========================================================================
 
     /**
-     * @var ObjectType|null holds this GraphQl Model's type definition, if already defined.
+     * @var ObjectType[] holds this GraphQl Model's type definition, if already defined.
      */
-    protected static $gqlType = null;
+    protected static $gqlTypes = null;
 
     // Public Methods
     // =========================================================================
@@ -43,16 +43,30 @@ trait GqlTrait
     /**
      * @inheritdoc
      */
-    public static function getGqlTypeDefinition(): ObjectType
+    public static function getGqlTypeDefinition(): array
     {
-        if (self::$gqlType === null) {
-            self::$gqlType = new ObjectType([
-                'name' => self::getGqlTypeName(),
-                'fields' => self::getGqlTypeProperties()
-            ]);
+        if (self::$gqlTypes === null) {
+            self::$gqlTypes = [
+                self::getGqlTypeName() => new ObjectType([
+                        'name' => self::getGqlTypeName(),
+                        'fields' => self::getGqlTypeProperties()
+                    ]
+                )
+            ];
         }
 
-        return self::$gqlType;
+        return self::$gqlTypes;
+    }
+
+    /**
+     * A helper method to retrieve the first GraphQL type definition for models that define multiple definitions.
+     *
+     * @return ObjectType
+     */
+    public static function getFirstGqlTypeDefinition(): ObjectType
+    {
+        $typeDefinitions = self::getGqlTypeDefinition();
+        return reset($typeDefinitions);
     }
 
     /**

@@ -12,6 +12,7 @@ use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\GqlInterface;
 use craft\base\Plugin;
+use craft\elements\Category;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
 use craft\events\RegisterGqlModelEvent;
@@ -99,14 +100,14 @@ class Gql extends Component
      */
     public function getGqlTypeDefinitions(array $models): array
     {
-        $output = [];
+        $output = [[]];
 
         /** @var GqlInterface $model */
         foreach ($models as $model) {
             $output[] = $model::getGqlTypeDefinition();
         }
 
-        return $output;
+        return array_merge(...$output);
     }
 
     /**
@@ -116,12 +117,14 @@ class Gql extends Component
      * @return ObjectType
      */
     public function getQueries(array $models) {
-        $queries = [];
+        $queries = [[]];
 
         /** @var GqlInterface $model */
         foreach ($models as $model) {
-            $queries += $model::getGqlQueryDefinitions();
+            $queries[] = $model::getGqlQueryDefinitions();
         }
+
+        $queries = array_merge(...$queries);
 
         return new ObjectType([
             'name' => 'Query',

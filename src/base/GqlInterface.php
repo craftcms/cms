@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\Type;
 
 /**
  * GqlInterface defines the common interface to be implemented by classes that support GraphQL.
@@ -21,20 +22,20 @@ interface GqlInterface
     // =========================================================================
 
     /**
-     * Returns the model's GraphQL type definition
-     * @return ObjectType
+     * Returns an array of the model's GraphQL type definitions
+     * @return Type[]
      */
-    public static function getGqlTypeDefinition(): ObjectType;
+    public static function getGqlTypeDefinition(): array;
 
     /**
      * Returns the model's GraphQL type name
-     * @return ObjectType
+     * @return string
      */
     public static function getGqlTypeName(): string;
 
     /**
      * Return all the queries defined by the model.
-     * @return array
+     * @return ObjectType[]
      */
     public static function getGqlQueryDefinitions(): array;
 }

@@ -185,7 +185,7 @@ class CategoryGroup extends Model implements GqlInterface
     {
         return [
             'query' . self::getGqlTypeName() => [
-                'type' => self::getGqlTypeDefinition(),
+                'type' => self::getFirstGqlTypeDefinition(),
                 'args' => [
                     'id' => Type::id(),
                     'uid' => Type::string(),
@@ -206,7 +206,7 @@ class CategoryGroup extends Model implements GqlInterface
                 }
             ],
             'queryAll' . Inflector::pluralize(self::getGqlTypeName()) => [
-                'type' => Type::listOf(self::getGqlTypeDefinition()),
+                'type' => Type::listOf(self::getFirstGqlTypeDefinition()),
                 'resolve' => function() {
                     return Craft::$app->getCategories()->getAllGroups();
                 }
@@ -222,7 +222,7 @@ class CategoryGroup extends Model implements GqlInterface
     {
         $properties['siteSettings'] = [
             'name' => 'siteSettings',
-            'type' => Type::listOf(CategoryGroup_SiteSettings::getGqlTypeDefinition()),
+            'type' => Type::listOf(CategoryGroup_SiteSettings::getFirstGqlTypeDefinition()),
             'resolve' => function(CategoryGroup $categoryGroup) {
                 return $categoryGroup->getSiteSettings();
             }

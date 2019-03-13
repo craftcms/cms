@@ -229,7 +229,7 @@ class AssetTransform extends Model implements GqlInterface
     {
         return [
             'query' . self::getGqlTypeName() => [
-                'type' => self::getGqlTypeDefinition(),
+                'type' => self::getFirstGqlTypeDefinition(),
                 'args' => [
                     'id' => Type::id(),
                     'uid' => Type::string(),
@@ -250,7 +250,7 @@ class AssetTransform extends Model implements GqlInterface
                 }
             ],
             'queryAll' . Inflector::pluralize(self::getGqlTypeName()) => [
-                'type' => Type::listOf(self::getGqlTypeDefinition()),
+                'type' => Type::listOf(self::getFirstGqlTypeDefinition()),
                 'resolve' => function () {
                     return Craft::$app->getAssetTransforms()->getAllTransforms();
                 }

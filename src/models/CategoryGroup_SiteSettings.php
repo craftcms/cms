@@ -157,7 +157,7 @@ class CategoryGroup_SiteSettings extends Model implements GqlInterface
     {
         $properties['site'] = [
             'name' => 'site',
-            'type' => Site::getGqlTypeDefinition(),
+            'type' => Site::getFirstGqlTypeDefinition(),
             'resolve' => function (CategoryGroup_SiteSettings $settings) {
                 return $settings->getSite();
             }
