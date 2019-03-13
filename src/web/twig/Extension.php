@@ -806,9 +806,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Returns an action input wrapped in a \Twig_Markup object, suitable for use in a front-end form.
      *
+     * @param string $actionPath
      * @return \Twig_Markup|null
      */
-    public function actionInputFunction($actionPath)
+    public function actionInputFunction(string $actionPath)
     {
         return TemplateHelper::raw('<input type="hidden" name="action" value="' . $actionPath . '">');
     }
