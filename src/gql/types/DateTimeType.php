@@ -19,6 +19,25 @@ class DateTimeType extends ScalarType
     public $description = 'The `DateTime` scalar type represents a point in time.';
 
     /**
+     * @var self
+     */
+    protected static $instance;
+
+    /**
+     * Returns a singleton instance to ensure one type per schema.
+     *
+     * @return DateTimeType
+     */
+    public static function instance(): DateTimeType
+    {
+        if (!self::$instance) {
+            self::$instance = new self();
+        }
+
+        return self::$instance;
+    }
+
+    /**
      * @inheritdoc
      */
     public function serialize($value)

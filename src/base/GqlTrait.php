@@ -102,7 +102,7 @@ trait GqlTrait
                 } else if ($hasType('float')) {
                     $type = Type::float();
                 } else if ($hasType('datetime')) {
-                    $type = new DateTimeType();
+                    $type = DateTimeType::instance();
                 }
 
                 if ($type) {
