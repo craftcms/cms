@@ -29,6 +29,8 @@ defined('CRAFT_STORAGE_PATH')      || define('CRAFT_STORAGE_PATH',      CRAFT_BA
 defined('CRAFT_TEMPLATES_PATH')    || define('CRAFT_TEMPLATES_PATH',    CRAFT_BASE_PATH.'templates/');
 defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', CRAFT_BASE_PATH.'translations/');
 
+require __DIR__.'/lib/FileCookieJar.php';
+
 function craft_createFolder($path)
 {
 	// Code borrowed from IOHelper...
