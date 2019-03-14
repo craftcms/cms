@@ -42,6 +42,7 @@ use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
 use craft\volumes\Temp;
 use DateTime;
+use Twig\Markup;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
@@ -57,7 +58,7 @@ use yii\base\UnknownPropertyException;
  * @property VolumeFolder $folder the asset’s volume folder
  * @property bool $hasFocalPoint whether a user-defined focal point is set on the asset
  * @property int|float|null $height the image height
- * @property \Twig_Markup|null $img an `<img>` tag based on this asset
+ * @property Markup|null $img an `<img>` tag based on this asset
  * @property string|null $mimeType the file’s MIME type, if it can be determined
  * @property string $path the asset's path in the volume
  * @property VolumeInterface $volume the asset’s volume
@@ -626,7 +627,7 @@ class Asset extends Element
     /**
      * Returns an `<img>` tag based on this asset.
      *
-     * @return \Twig_Markup|null
+     * @return Markup|null
      */
     public function getImg()
     {

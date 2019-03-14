@@ -372,6 +372,7 @@ class Cp extends Component
     /**
      * Returns ASCII character mappings for the given language, if it differs from the application language.
      *
+     * @param string $language
      * @return array|null
      */
     public function getAsciiCharMap(string $language)

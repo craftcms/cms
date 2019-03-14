@@ -108,16 +108,18 @@ class Updates extends Component
         }
 
         try {
-            $updates = Craft::$app->getApi()->getUpdates();
+            $updateData = Craft::$app->getApi()->getUpdates();
             $cacheDuration = 86400; // 24 hours
         } catch (\Throwable $e) {
             Craft::warning("Couldn't get updates: {$e->getMessage()}", __METHOD__);
-            $updates = [];
+            $updateData = [];
             $cacheDuration = 300; // 5 minutes
         }
 
-        Craft::$app->getCache()->set($this->cacheKey, $updates, $cacheDuration);
-        return $this->_updates = new UpdatesModel($updates);
+        // Instantiate the Updates model first so we don't chance caching bad data
+        $updates = new UpdatesModel($updateData);
+        Craft::$app->getCache()->set($this->cacheKey, $updateData, $cacheDuration);
+        return $this->_updates = $updates;
     }
 
     /**

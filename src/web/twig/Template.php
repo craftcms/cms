@@ -8,6 +8,9 @@
 namespace craft\web\twig;
 
 use Craft;
+use Twig\Error\Error;
+use Twig\Error\RuntimeError;
+use Twig\Template as TwigTemplate;
 
 /**
  * Base Twig template class.
@@ -16,7 +19,7 @@ use Craft;
  * @since 3.0
  * @method int[] getDebugInfo()
  */
-abstract class Template extends \Twig_Template
+abstract class Template extends TwigTemplate
 {
     // Public Methods
     // =========================================================================
@@ -40,14 +43,14 @@ abstract class Template extends \Twig_Template
      *
      * @param array $context
      * @param array $blocks
-     * @throws \Twig_Error
-     * @throws \Twig_Error_Runtime
+     * @throws Error
+     * @throws RuntimeError
      */
     protected function displayWithErrorHandling(array $context, array $blocks = [])
     {
         try {
             parent::displayWithErrorHandling($context, $blocks);
-        } catch (\Twig_Error_Runtime $e) {
+        } catch (RuntimeError $e) {
             if (Craft::$app->getConfig()->getGeneral()->suppressTemplateErrors) {
                 // Just log it and move on
                 Craft::$app->getErrorHandler()->logException($e);

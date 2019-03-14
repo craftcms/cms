@@ -46,6 +46,14 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use enshrined\svgSanitize\Sanitizer;
+use Twig\Environment as TwigEnvironment;
+use Twig\Error\RuntimeError;
+use Twig\Extension\AbstractExtension;
+use Twig\Extension\GlobalsInterface;
+use Twig\Markup;
+use Twig\TwigFilter;
+use Twig\TwigFunction;
+use Twig\TwigTest;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -57,7 +65,7 @@ use yii\helpers\Markdown;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterface
+class Extension extends AbstractExtension implements GlobalsInterface
 {
     // Properties
     // =========================================================================
@@ -68,7 +76,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     protected $view;
 
     /**
-     * @var Environment|null
+     * @var TwigEnvironment|null
      */
     protected $environment;
 
@@ -79,9 +87,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Constructor
      *
      * @param View $view
-     * @param Environment $environment
+     * @param TwigEnvironment $environment
      */
-    public function __construct(View $view, Environment $environment)
+    public function __construct(View $view, TwigEnvironment $environment)
     {
         $this->view = $view;
         $this->environment = $environment;
@@ -100,9 +108,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     }
 
     /**
-     * Returns the token parser instances to add to the existing list.
-     *
-     * @return array An array of Twig_TokenParserInterface or Twig_TokenParserBrokerInterface instances
+     * @inheritdoc
      */
     public function getTokenParsers(): array
     {
@@ -186,9 +192,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     }
 
     /**
-     * Returns a list of filters to add to the existing list.
-     *
-     * @return \Twig_SimpleFilter[] An array of filters
+     * @inheritdoc
      */
     public function getFilters(): array
     {
@@ -196,51 +200,51 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $security = Craft::$app->getSecurity();
 
         return [
-            new \Twig_SimpleFilter('atom', [$this, 'atomFilter'], ['needs_environment' => true]),
-            new \Twig_SimpleFilter('camel', [$this, 'camelFilter']),
-            new \Twig_SimpleFilter('column', [ArrayHelper::class, 'getColumn']),
-            new \Twig_SimpleFilter('currency', [$formatter, 'asCurrency']),
-            new \Twig_SimpleFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
-            new \Twig_SimpleFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
-            new \Twig_SimpleFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
-            new \Twig_SimpleFilter('encenc', [$this, 'encencFilter']),
-            new \Twig_SimpleFilter('filesize', [$formatter, 'asShortSize']),
-            new \Twig_SimpleFilter('filter', 'array_filter'),
-            new \Twig_SimpleFilter('filterByValue', [ArrayHelper::class, 'filterByValue']),
-            new \Twig_SimpleFilter('group', [$this, 'groupFilter']),
-            new \Twig_SimpleFilter('hash', [$security, 'hashData']),
-            new \Twig_SimpleFilter('id', [$this->view, 'formatInputId']),
-            new \Twig_SimpleFilter('index', [ArrayHelper::class, 'index']),
-            new \Twig_SimpleFilter('indexOf', [$this, 'indexOfFilter']),
-            new \Twig_SimpleFilter('intersect', 'array_intersect'),
-            new \Twig_SimpleFilter('json_encode', [$this, 'jsonEncodeFilter']),
-            new \Twig_SimpleFilter('json_decode', [Json::class, 'decode']),
-            new \Twig_SimpleFilter('kebab', [$this, 'kebabFilter']),
-            new \Twig_SimpleFilter('lcfirst', [$this, 'lcfirstFilter']),
-            new \Twig_SimpleFilter('literal', [$this, 'literalFilter']),
-            new \Twig_SimpleFilter('markdown', [$this, 'markdownFilter']),
-            new \Twig_SimpleFilter('md', [$this, 'markdownFilter']),
-            new \Twig_SimpleFilter('multisort', [$this, 'multisortFilter']),
-            new \Twig_SimpleFilter('namespace', [$this->view, 'namespaceInputs']),
-            new \Twig_SimpleFilter('ns', [$this->view, 'namespaceInputs']),
-            new \Twig_SimpleFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
-            new \Twig_SimpleFilter('namespaceInputId', [$this->view, 'namespaceInputId']),
-            new \Twig_SimpleFilter('number', [$formatter, 'asDecimal']),
-            new \Twig_SimpleFilter('parseRefs', [$this, 'parseRefsFilter']),
-            new \Twig_SimpleFilter('pascal', [$this, 'pascalFilter']),
-            new \Twig_SimpleFilter('percentage', [$formatter, 'asPercent']),
-            new \Twig_SimpleFilter('replace', [$this, 'replaceFilter']),
-            new \Twig_SimpleFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
-            new \Twig_SimpleFilter('snake', [$this, 'snakeFilter']),
-            new \Twig_SimpleFilter('time', [$this, 'timeFilter'], ['needs_environment' => true]),
-            new \Twig_SimpleFilter('timestamp', [$formatter, 'asTimestamp']),
-            new \Twig_SimpleFilter('translate', [$this, 'translateFilter']),
-            new \Twig_SimpleFilter('t', [$this, 'translateFilter']),
-            new \Twig_SimpleFilter('ucfirst', [$this, 'ucfirstFilter']),
-            new \Twig_SimpleFilter('ucwords', 'ucwords'),
-            new \Twig_SimpleFilter('unique', 'array_unique'),
-            new \Twig_SimpleFilter('values', 'array_values'),
-            new \Twig_SimpleFilter('without', [$this, 'withoutFilter']),
+            new TwigFilter('atom', [$this, 'atomFilter'], ['needs_environment' => true]),
+            new TwigFilter('camel', [$this, 'camelFilter']),
+            new TwigFilter('column', [ArrayHelper::class, 'getColumn']),
+            new TwigFilter('currency', [$formatter, 'asCurrency']),
+            new TwigFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
+            new TwigFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
+            new TwigFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
+            new TwigFilter('encenc', [$this, 'encencFilter']),
+            new TwigFilter('filesize', [$formatter, 'asShortSize']),
+            new TwigFilter('filter', 'array_filter'),
+            new TwigFilter('filterByValue', [ArrayHelper::class, 'filterByValue']),
+            new TwigFilter('group', [$this, 'groupFilter']),
+            new TwigFilter('hash', [$security, 'hashData']),
+            new TwigFilter('id', [$this->view, 'formatInputId']),
+            new TwigFilter('index', [ArrayHelper::class, 'index']),
+            new TwigFilter('indexOf', [$this, 'indexOfFilter']),
+            new TwigFilter('intersect', 'array_intersect'),
+            new TwigFilter('json_encode', [$this, 'jsonEncodeFilter']),
+            new TwigFilter('json_decode', [Json::class, 'decode']),
+            new TwigFilter('kebab', [$this, 'kebabFilter']),
+            new TwigFilter('lcfirst', [$this, 'lcfirstFilter']),
+            new TwigFilter('literal', [$this, 'literalFilter']),
+            new TwigFilter('markdown', [$this, 'markdownFilter']),
+            new TwigFilter('md', [$this, 'markdownFilter']),
+            new TwigFilter('multisort', [$this, 'multisortFilter']),
+            new TwigFilter('namespace', [$this->view, 'namespaceInputs']),
+            new TwigFilter('ns', [$this->view, 'namespaceInputs']),
+            new TwigFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
+            new TwigFilter('namespaceInputId', [$this->view, 'namespaceInputId']),
+            new TwigFilter('number', [$formatter, 'asDecimal']),
+            new TwigFilter('parseRefs', [$this, 'parseRefsFilter']),
+            new TwigFilter('pascal', [$this, 'pascalFilter']),
+            new TwigFilter('percentage', [$formatter, 'asPercent']),
+            new TwigFilter('replace', [$this, 'replaceFilter']),
+            new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
+            new TwigFilter('snake', [$this, 'snakeFilter']),
+            new TwigFilter('time', [$this, 'timeFilter'], ['needs_environment' => true]),
+            new TwigFilter('timestamp', [$formatter, 'asTimestamp']),
+            new TwigFilter('translate', [$this, 'translateFilter']),
+            new TwigFilter('t', [$this, 'translateFilter']),
+            new TwigFilter('ucfirst', [$this, 'ucfirstFilter']),
+            new TwigFilter('ucwords', 'ucwords'),
+            new TwigFilter('unique', 'array_unique'),
+            new TwigFilter('values', 'array_values'),
+            new TwigFilter('without', [$this, 'withoutFilter']),
         ];
     }
 
@@ -250,10 +254,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function getTests()
     {
         return [
-            new \Twig_SimpleTest('instance of', function($obj, $class) {
+            new TwigTest('instance of', function($obj, $class) {
                 return $obj instanceof $class;
             }),
-            new \Twig_SimpleTest('missing', function($obj) {
+            new TwigTest('missing', function($obj) {
                 return $obj instanceof MissingComponentInterface;
             }),
         ];
@@ -415,9 +419,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @param mixed $str
      * @param int|null $siteId
-     * @return \Twig_Markup
+     * @return Markup
      */
-    public function parseRefsFilter($str, int $siteId = null): \Twig_Markup
+    public function parseRefsFilter($str, int $siteId = null): Markup
     {
         $str = Craft::$app->getElements()->parseRefs((string)$str, $siteId);
 
@@ -452,14 +456,14 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Extending Twig's |date filter so we can run any translations on the output.
      *
-     * @param \Twig_Environment $env
+     * @param TwigEnvironment $env
      * @param DateTimeInterface|DateInterval|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return mixed|string
      */
-    public function dateFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, string $locale = null)
+    public function dateFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, string $locale = null)
     {
         if ($date instanceof \DateInterval) {
             return \twig_date_format_filter($env, $date, $format, $timezone);
@@ -486,12 +490,12 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Converts a date to the Atom format.
      *
-     * @param \Twig_Environment $env
+     * @param TwigEnvironment $env
      * @param DateTime|DateTimeInterface|string $date A date
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      * @return string The formatted date
      */
-    public function atomFilter(\Twig_Environment $env, $date, $timezone = null): string
+    public function atomFilter(TwigEnvironment $env, $date, $timezone = null): string
     {
         return \twig_date_format_filter($env, $date, \DateTime::ATOM, $timezone);
     }
@@ -499,12 +503,12 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Converts a date to the RSS format.
      *
-     * @param \Twig_Environment $env
+     * @param TwigEnvironment $env
      * @param DateTime|DateTimeInterface|string $date A date
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      * @return string The formatted date
      */
-    public function rssFilter(\Twig_Environment $env, $date, $timezone = null): string
+    public function rssFilter(TwigEnvironment $env, $date, $timezone = null): string
     {
         return \twig_date_format_filter($env, $date, \DateTime::RSS, $timezone);
     }
@@ -512,14 +516,14 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Formats the value as a time.
      *
-     * @param \Twig_Environment $env
+     * @param TwigEnvironment $env
      * @param DateTimeInterface|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return mixed|string
      */
-    public function timeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, string $locale = null)
+    public function timeFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, string $locale = null)
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -542,14 +546,14 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Formats the value as a date+time.
      *
-     * @param \Twig_Environment $env
+     * @param TwigEnvironment $env
      * @param DateTimeInterface|string $date A date
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      * @param string|null $locale The target locale the date should be formatted for. By default the current systme locale will be used.
      * @return mixed|string
      */
-    public function datetimeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, string $locale = null)
+    public function datetimeFilter(TwigEnvironment $env, $date, string $format = null, $timezone = null, string $locale = null)
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -586,7 +590,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param array|\Traversable $arr
      * @param string $item
      * @return array
-     * @throws \Twig_Error_Runtime if $arr is not of type array or Traversable
+     * @throws RuntimeError if $arr is not of type array or Traversable
      */
     public function groupFilter($arr, string $item): array
     {
@@ -596,7 +600,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         if (!is_array($arr) && !$arr instanceof \Traversable) {
-            throw new \Twig_Error_Runtime('Values passed to the |group filter must be of type array or Traversable.');
+            throw new RuntimeError('Values passed to the |group filter must be of type array or Traversable.');
         }
 
         $groups = [];
@@ -663,9 +667,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * 'gfm-comment' (GFM with newlines converted to `<br>`s),
      * or 'extra' (Markdown Extra). Default is 'original'.
      * @param bool $inlineOnly Whether to only parse inline elements, omitting any `<p>` tags.
-     * @return \Twig_Markup
+     * @return Markup
      */
-    public function markdownFilter($markdown, string $flavor = null, bool $inlineOnly = false): \Twig_Markup
+    public function markdownFilter($markdown, string $flavor = null, bool $inlineOnly = false): Markup
     {
         if ($inlineOnly) {
             $html = Markdown::processParagraph((string)$markdown, $flavor);
@@ -703,50 +707,48 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     }
 
     /**
-     * Returns a list of functions to add to the existing list.
-     *
-     * @return \Twig_SimpleFunction[] An array of functions
+     * @inheritdoc
      */
     public function getFunctions(): array
     {
         return [
-            new \Twig_SimpleFunction('alias', [Craft::class, 'getAlias']),
-            new \Twig_SimpleFunction('actionInput', [$this, 'actionInputFunction']),
-            new \Twig_SimpleFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
-            new \Twig_SimpleFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
-            new \Twig_SimpleFunction('ceil', 'ceil'),
-            new \Twig_SimpleFunction('className', 'get_class'),
-            new \Twig_SimpleFunction('clone', [$this, 'cloneFunction']),
-            new \Twig_SimpleFunction('create', [Craft::class, 'createObject']),
-            new \Twig_SimpleFunction('csrfInput', [$this, 'csrfInputFunction']),
-            new \Twig_SimpleFunction('expression', [$this, 'expressionFunction']),
-            new \Twig_SimpleFunction('floor', 'floor'),
-            new \Twig_SimpleFunction('getenv', 'getenv'),
-            new \Twig_SimpleFunction('parseEnv', [Craft::class, 'parseEnv']),
-            new \Twig_SimpleFunction('plugin', [$this, 'pluginFunction']),
-            new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
-            new \Twig_SimpleFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
-            new \Twig_SimpleFunction('round', [$this, 'roundFunction']),
-            new \Twig_SimpleFunction('seq', [$this, 'seqFunction']),
-            new \Twig_SimpleFunction('shuffle', [$this, 'shuffleFunction']),
-            new \Twig_SimpleFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
-            new \Twig_SimpleFunction('svg', [$this, 'svgFunction']),
-            new \Twig_SimpleFunction('url', [UrlHelper::class, 'url']),
+            new TwigFunction('alias', [Craft::class, 'getAlias']),
+            new TwigFunction('actionInput', [$this, 'actionInputFunction']),
+            new TwigFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
+            new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
+            new TwigFunction('ceil', 'ceil'),
+            new TwigFunction('className', 'get_class'),
+            new TwigFunction('clone', [$this, 'cloneFunction']),
+            new TwigFunction('create', [Craft::class, 'createObject']),
+            new TwigFunction('csrfInput', [$this, 'csrfInputFunction']),
+            new TwigFunction('expression', [$this, 'expressionFunction']),
+            new TwigFunction('floor', 'floor'),
+            new TwigFunction('getenv', 'getenv'),
+            new TwigFunction('parseEnv', [Craft::class, 'parseEnv']),
+            new TwigFunction('plugin', [$this, 'pluginFunction']),
+            new TwigFunction('redirectInput', [$this, 'redirectInputFunction']),
+            new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
+            new TwigFunction('round', [$this, 'roundFunction']),
+            new TwigFunction('seq', [$this, 'seqFunction']),
+            new TwigFunction('shuffle', [$this, 'shuffleFunction']),
+            new TwigFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
+            new TwigFunction('svg', [$this, 'svgFunction']),
+            new TwigFunction('url', [UrlHelper::class, 'url']),
             // DOM event functions
-            new \Twig_SimpleFunction('head', [$this->view, 'head']),
-            new \Twig_SimpleFunction('beginBody', [$this->view, 'beginBody']),
-            new \Twig_SimpleFunction('endBody', [$this->view, 'endBody']),
+            new TwigFunction('head', [$this->view, 'head']),
+            new TwigFunction('beginBody', [$this->view, 'beginBody']),
+            new TwigFunction('endBody', [$this->view, 'endBody']),
             // Deprecated functions
-            new \Twig_SimpleFunction('getCsrfInput', [$this, 'getCsrfInput']),
-            new \Twig_SimpleFunction('getHeadHtml', [$this, 'getHeadHtml']),
-            new \Twig_SimpleFunction('getFootHtml', [$this, 'getFootHtml']),
+            new TwigFunction('getCsrfInput', [$this, 'getCsrfInput']),
+            new TwigFunction('getHeadHtml', [$this, 'getHeadHtml']),
+            new TwigFunction('getFootHtml', [$this, 'getFootHtml']),
         ];
     }
 
     /**
-     * Returns a CSRF input wrapped in a \Twig_Markup object.
+     * Returns a CSRF input wrapped in a \Twig\Markup object.
      *
-     * @return \Twig_Markup|null
+     * @return Markup|null
      */
     public function csrfInputFunction()
     {
@@ -793,22 +795,23 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     }
 
     /**
-     * Returns a redirect input wrapped in a \Twig_Markup object.
+     * Returns a redirect input wrapped in a \Twig\Markup object.
      *
      * @param string $url The URL to redirect to.
-     * @return \Twig_Markup
+     * @return Markup
      */
-    public function redirectInputFunction(string $url): \Twig_Markup
+    public function redirectInputFunction(string $url): Markup
     {
         return TemplateHelper::raw('<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData($url) . '">');
     }
 
     /**
-     * Returns an action input wrapped in a \Twig_Markup object, suitable for use in a front-end form.
+     * Returns an action input wrapped in a \Twig\Markup object, suitable for use in a front-end form.
      *
-     * @return \Twig_Markup|null
+     * @param string $actionPath
+     * @return Markup
      */
-    public function actionInputFunction($actionPath)
+    public function actionInputFunction(string $actionPath): Markup
     {
         return TemplateHelper::raw('<input type="hidden" name="action" value="' . $actionPath . '">');
     }
@@ -888,7 +891,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default the SVG will only be namespaced if an asset or markup is passed in.
      * @param string|null $class A CSS class name that should be added to the `<svg>` element.
-     * @return \Twig_Markup|string
+     * @return Markup|string
      */
     public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, string $class = null)
     {
@@ -971,9 +974,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     }
 
     /**
-     * Returns a list of global variables to add to the existing list.
-     *
-     * @return array An array of global variables
+     * @inheritdoc
      */
     public function getGlobals(): array
     {
@@ -1046,22 +1047,12 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         return $globals;
     }
 
-    /**
-     * Returns the name of the extension.
-     *
-     * @return string The extension name
-     */
-    public function getName(): string
-    {
-        return 'craft';
-    }
-
     // Deprecated Methods
     // -------------------------------------------------------------------------
 
     /**
      * @deprecated in Craft 3.0. Use csrfInput() instead.
-     * @return \Twig_Markup|null
+     * @return Markup|null
      */
     public function getCsrfInput()
     {
@@ -1072,9 +1063,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
     /**
      * @deprecated in Craft 3.0. Use head() instead.
-     * @return \Twig_Markup
+     * @return Markup
      */
-    public function getHeadHtml(): \Twig_Markup
+    public function getHeadHtml(): Markup
     {
         Craft::$app->getDeprecator()->log('getHeadHtml', 'getHeadHtml() has been deprecated. Use head() instead.');
 
@@ -1087,9 +1078,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
     /**
      * @deprecated in Craft 3.0. Use endBody() instead.
-     * @return \Twig_Markup
+     * @return Markup
      */
-    public function getFootHtml(): \Twig_Markup
+    public function getFootHtml(): Markup
     {
         Craft::$app->getDeprecator()->log('getFootHtml', 'getFootHtml() has been deprecated. Use endBody() instead.');
 

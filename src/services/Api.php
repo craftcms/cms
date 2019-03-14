@@ -10,7 +10,6 @@ namespace craft\services;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser;
 use Craft;
-use craft\base\Plugin;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;

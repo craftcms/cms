@@ -14,6 +14,11 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\i18n\Locale;
 use craft\web\twig\variables\Paginate;
+use Twig\Environment;
+use Twig\Error\RuntimeError;
+use Twig\Markup;
+use Twig\Source;
+use Twig\Template as TwigTemplate;
 use yii\base\BaseObject;
 use yii\base\UnknownMethodException;
 
@@ -31,35 +36,35 @@ class Template
     /**
      * Returns the attribute value for a given array/object.
      *
-     * @param \Twig_Environment $env
-     * @param \Twig_Source $source
+     * @param Environment $env
+     * @param Source $source
      * @param mixed $object The object or array from where to get the item
      * @param mixed $item The item to get from the array or object
      * @param array $arguments An array of arguments to pass if the item is an object method
-     * @param string $type The type of attribute (@see Twig_Template constants)
+     * @param string $type The type of attribute (@see [[TwigTemplate]] constants)
      * @param bool $isDefinedTest Whether this is only a defined check
      * @param bool $ignoreStrictCheck Whether to ignore the strict attribute check or not
      * @return mixed The attribute value, or a Boolean when $isDefinedTest is true, or null when the attribute is not set and $ignoreStrictCheck is true
-     * @throws \Twig_Error_Runtime if the attribute does not exist and Twig is running in strict mode and $isDefinedTest is false
+     * @throws RuntimeError if the attribute does not exist and Twig is running in strict mode and $isDefinedTest is false
      * @internal
      */
-    public static function attribute(\Twig_Environment $env, \Twig_Source $source, $object, $item, array $arguments = [], string $type = \Twig_Template::ANY_CALL, bool $isDefinedTest = false, bool $ignoreStrictCheck = false)
+    public static function attribute(Environment $env, Source $source, $object, $item, array $arguments = [], string $type = TwigTemplate::ANY_CALL, bool $isDefinedTest = false, bool $ignoreStrictCheck = false)
     {
         if ($object instanceof ElementInterface) {
             self::_includeElementInTemplateCaches($object);
         }
 
         if (
-            $type !== \Twig_Template::METHOD_CALL &&
+            $type !== TwigTemplate::METHOD_CALL &&
             $object instanceof BaseObject &&
             $object->canGetProperty($item)
         ) {
             return $isDefinedTest ? true : $object->$item;
         }
 
-        // Convert any Twig_Markup arguments back to strings (unless the class *extends* Twig_Markup)
+        // Convert any \Twig\Markup arguments back to strings (unless the class *extends* \Twig\Markup)
         foreach ($arguments as $key => $value) {
-            if (is_object($value) && get_class($value) === \Twig_Markup::class) {
+            if (is_object($value) && get_class($value) === Markup::class) {
                 $arguments[$key] = (string)$value;
             }
         }
@@ -76,7 +81,7 @@ class Template
             if ($ignoreStrictCheck || !$env->isStrictVariables()) {
                 return null;
             }
-            throw new \Twig_Error_Runtime($e->getMessage(), -1, $source);
+            throw new RuntimeError($e->getMessage(), -1, $source);
         }
     }
 
@@ -143,14 +148,14 @@ class Template
     }
 
     /**
-     * Returns a string wrapped in a \Twig_Markup object
+     * Returns a string wrapped in a \Twig\Markup object
      *
      * @param string $value
-     * @return \Twig_Markup
+     * @return Markup
      */
-    public static function raw(string $value): \Twig_Markup
+    public static function raw(string $value): Markup
     {
-        return new \Twig_Markup($value, Craft::$app->charset);
+        return new Markup($value, Craft::$app->charset);
     }
 
     // Private Methods
@@ -264,7 +269,7 @@ class Template
 
         $key = "DateTime::{$item}()";
         /** @noinspection PhpUndefinedVariableInspection */
-        $message = "DateTime::{$item}" . ($type === \Twig_Template::METHOD_CALL ? '()' : '') . " is deprecated. Use the |{$filter} filter instead.";
+        $message = "DateTime::{$item}" . ($type === TwigTemplate::METHOD_CALL ? '()' : '') . " is deprecated. Use the |{$filter} filter instead.";
 
         if ($item === 'iso8601') {
             $message = rtrim($message, '.') . ', or consider using the |atom filter, which will give you an actual ISO-8601 string (unlike the old .iso8601() method).';

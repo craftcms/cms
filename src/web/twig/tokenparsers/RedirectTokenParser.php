@@ -8,6 +8,10 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\RedirectNode;
+use Twig\Node\Expression\ConstantExpression;
+use Twig\Parser;
+use Twig\Token;
+use Twig\TokenParser\AbstractTokenParser;
 
 /**
  * Class RedirectTokenParser
@@ -15,7 +19,7 @@ use craft\web\twig\nodes\RedirectNode;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class RedirectTokenParser extends \Twig_TokenParser
+class RedirectTokenParser extends AbstractTokenParser
 {
     // Public Methods
     // =========================================================================
@@ -23,28 +27,31 @@ class RedirectTokenParser extends \Twig_TokenParser
     /**
      * @inheritdoc
      */
-    public function parse(\Twig_Token $token)
+    public function parse(Token $token)
     {
         $lineno = $token->getLine();
-        $stream = $this->parser->getStream();
+        /** @var Parser $parser */
+        $parser = $this->parser;
+        $stream = $parser->getStream();
+
         $nodes = [
-            'path' => $this->parser->getExpressionParser()->parseExpression(),
+            'path' => $parser->getExpressionParser()->parseExpression(),
         ];
 
-        if ($stream->test(\Twig_Token::NUMBER_TYPE)) {
-            $nodes['httpStatusCode'] = $this->parser->getExpressionParser()->parseExpression();
+        if ($stream->test(Token::NUMBER_TYPE)) {
+            $nodes['httpStatusCode'] = $parser->getExpressionParser()->parseExpression();
         } else {
-            $nodes['httpStatusCode'] = new \Twig_Node_Expression_Constant(302, 1);
+            $nodes['httpStatusCode'] = new ConstantExpression(302, 1);
         }
 
         // Parse flash message(s)
-        while ($stream->test(\Twig_Token::NAME_TYPE, 'with')) {
+        while ($stream->test(Token::NAME_TYPE, 'with')) {
             $stream->next();
-            $type = $stream->expect(\Twig_Token::NAME_TYPE, ['notice', 'error'])->getValue();
-            $nodes[$type] = $this->parser->getExpressionParser()->parseExpression();
+            $type = $stream->expect(Token::NAME_TYPE, ['notice', 'error'])->getValue();
+            $nodes[$type] = $parser->getExpressionParser()->parseExpression();
         }
 
-        $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
+        $stream->expect(Token::BLOCK_END_TYPE);
 
         return new RedirectNode($nodes, [], $lineno, $this->getTag());
     }

@@ -4,11 +4,7 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\db\Query;
-use craft\fields\Assets;
 use craft\services\Categories;
-use craft\services\Fields;
-use craft\services\Matrix;
 use craft\services\Sections;
 use craft\services\Sites;
 

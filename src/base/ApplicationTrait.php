@@ -670,10 +670,10 @@ trait ApplicationTrait
             $this->getDb()->open();
             return true;
         } catch (DbConnectException $e) {
-            Craft::error('There was a problem connecting to the database: '.$e->getMessage(), __METHOD__);
+            Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             return false;
         } catch (InvalidConfigException $e) {
-            Craft::error('There was a problem connecting to the database: '.$e->getMessage(), __METHOD__);
+            Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             return false;
         }
     }

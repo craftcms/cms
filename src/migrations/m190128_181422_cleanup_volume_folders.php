@@ -2,10 +2,8 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
-use craft\helpers\StringHelper;
 
 /**
  * m190128_181422_cleanup_volume_folders migration.

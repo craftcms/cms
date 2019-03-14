@@ -14,7 +14,7 @@ use craft\helpers\App;
 use GuzzleHttp\Client;
 use Imagine\Gd\Imagine;
 use RequirementsChecker;
-use Twig_Environment;
+use Twig\Environment;
 use Yii;
 use yii\base\Module;
 
@@ -96,7 +96,7 @@ class SystemReport extends Utility
             'Image driver & version' => self::_imageDriver(),
             'Craft edition & version' => 'Craft ' . App::editionName(Craft::$app->getEdition()) . ' ' . Craft::$app->getVersion(),
             'Yii version' => Yii::getVersion(),
-            'Twig version' => Twig_Environment::VERSION,
+            'Twig version' => Environment::VERSION,
             'Guzzle version' => Client::VERSION,
             'Imagine version' => Imagine::VERSION,
         ];
