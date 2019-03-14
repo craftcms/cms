@@ -21,7 +21,7 @@ use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
-use Twig\Error\LoaderError;
+use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\DebugExtension;
 use Twig\Extension\ExtensionInterface;
@@ -320,7 +320,7 @@ class View extends \yii\web\View
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
      * @return string the rendering result
-     * @throws LoaderError if the template doesn’t exist
+     * @throws TwigLoaderError if the template doesn’t exist
      * @throws Exception in case of failure
      * @throws \RuntimeException in case of failure
      */
@@ -594,7 +594,7 @@ class View extends \yii\web\View
     {
         try {
             return ($this->resolveTemplate($name) !== false);
-        } catch (LoaderError $e) {
+        } catch (TwigLoaderError $e) {
             // _validateTemplateName() han an issue with it
             return false;
         }
@@ -1494,17 +1494,17 @@ JS;
      * [[\Twig\Loader\FilesystemLoader]].
      *
      * @param string $name
-     * @throws LoaderError
+     * @throws TwigLoaderError
      */
     private function _validateTemplateName(string $name)
     {
         if (StringHelper::contains($name, "\0")) {
-            throw new LoaderError(Craft::t('app', 'A template name cannot contain NUL bytes.'));
+            throw new TwigLoaderError(Craft::t('app', 'A template name cannot contain NUL bytes.'));
         }
 
         if (Path::ensurePathIsContained($name) === false) {
             Craft::error('Someone tried to load a template outside the templates folder: ' . $name);
-            throw new LoaderError(Craft::t('app', 'Looks like you are trying to load a template outside the template folder.'));
+            throw new TwigLoaderError(Craft::t('app', 'Looks like you are trying to load a template outside the template folder.'));
         }
     }
 
