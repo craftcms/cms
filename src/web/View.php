@@ -22,6 +22,8 @@ use craft\web\twig\Extension;
 use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
 use Twig\Error\LoaderError as TwigLoaderError;
+use Twig\Error\RuntimeError as TwigRuntimeError;
+use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\DebugExtension;
 use Twig\Extension\ExtensionInterface;
@@ -320,9 +322,9 @@ class View extends \yii\web\View
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
      * @return string the rendering result
-     * @throws TwigLoaderError if the template doesn’t exist
-     * @throws Exception in case of failure
-     * @throws \RuntimeException in case of failure
+     * @throws TwigLoaderError
+     * @throws TwigRuntimeError
+     * @throws TwigSyntaxError
      */
     public function renderTemplate(string $template, array $variables = []): string
     {
@@ -342,7 +344,7 @@ class View extends \yii\web\View
         } catch (\RuntimeException $e) {
             if (!YII_DEBUG) {
                 // Throw a generic exception instead
-                throw new Exception('An error occurred when rendering a template.', 0, $e);
+                throw new \RuntimeException('An error occurred when rendering a template.', 0, $e);
             }
             throw $e;
         }
@@ -371,6 +373,9 @@ class View extends \yii\web\View
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
      * @return string the rendering result
+     * @throws TwigLoaderError
+     * @throws TwigRuntimeError
+     * @throws TwigSyntaxError
      */
     public function renderPageTemplate(string $template, array $variables = []): string
     {
@@ -404,8 +409,9 @@ class View extends \yii\web\View
      * @param string $macro The name of the macro.
      * @param array $args Any arguments that should be passed to the macro.
      * @return string The rendered macro output.
-     * @throws Exception in case of failure
-     * @throws \RuntimeException in case of failure
+     * @throws TwigLoaderError
+     * @throws TwigRuntimeError
+     * @throws TwigSyntaxError
      */
     public function renderTemplateMacro(string $template, string $macro, array $args = []): string
     {
@@ -420,7 +426,7 @@ class View extends \yii\web\View
         } catch (\RuntimeException $e) {
             if (!YII_DEBUG) {
                 // Throw a generic exception instead
-                throw new Exception('An error occurred when rendering a template.', 0, $e);
+                throw new \RuntimeException('An error occurred when rendering a template.', 0, $e);
             }
             throw $e;
         }
@@ -436,6 +442,8 @@ class View extends \yii\web\View
      * @param string $template The source template string.
      * @param array $variables Any variables that should be available to the template.
      * @return string The rendered template.
+     * @throws TwigLoaderError
+     * @throws TwigSyntaxError
      */
     public function renderString(string $template, array $variables = []): string
     {
