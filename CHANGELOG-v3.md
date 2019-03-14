@@ -7,6 +7,7 @@
 
 ### Changed
 - `Craft::parseEnv()` will now boolean values for environment variables set to `true` or `false`. ([#3975](https://github.com/craftcms/cms/issues/3975))
+- Nested project config keys are no longer sorted alphabetically.
 - Craft now requires Twig ^2.7.2.
 
 ### Fixed
@@ -16,6 +17,7 @@
 - Fixed a bug where it wasn’t possible to switch plugin editions when the `allowUpdates` config setting was disabled. ([#3987](https://github.com/craftcms/cms/issues/3987))
 - Fixed a bug where multiple consecutive newlines in field instructions would result in multiple `<br>` tags rather than new paragraphs.
 - Fixed a bug where Table fields weren’t always remembering the sort order for their Default Values settings. ([#3947](https://github.com/craftcms/cms/issues/3947))
+- Fixed a bug where Table fields weren’t always remembering the sort order for their Table Columns settings. ([#3997](https://github.com/craftcms/cms/issues/3997))
 
 ## 3.1.17.2 - 2019-03-12
 

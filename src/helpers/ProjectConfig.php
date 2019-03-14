@@ -151,8 +151,6 @@ class ProjectConfig
             unset($config[$removeKey]);
         }
 
-        ksort($config);
-
         return $config;
     }
 }
