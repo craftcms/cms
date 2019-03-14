@@ -101,7 +101,8 @@ class Table extends Field
         if (!is_array($this->defaults)) {
             $this->defaults = [];
         } else {
-            ArrayHelper::ensureNonAssociative($this->defaults);
+            // Make sure the array is non-associative and with incrementing keys
+            $this->defaults = array_values($this->defaults);
         }
 
         // Convert default date cell values to ISO8601 strings
