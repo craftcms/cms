@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.1.17.2",
+  "version": "3.1.18",
   "keywords": [
     "cms",
     "craftcms",
@@ -43,7 +43,7 @@
     "seld/cli-prompt": "^1.0.3",
     "symfony/yaml": "^3.2|^4.0",
     "true/punycode": "^2.1.0",
-    "twig/twig": "~2.6.2",
+    "twig/twig": "^2.7.2",
     "yii2tech/ar-softdelete": "^1.0.2",
     "yiisoft/yii2": "~2.0.16.1",
     "yiisoft/yii2-debug": "^2.0.10",

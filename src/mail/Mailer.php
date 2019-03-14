@@ -11,7 +11,6 @@ use Craft;
 use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\Template;
-use Swift_TransportException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\mail\MessageInterface;

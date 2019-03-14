@@ -14,7 +14,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
 use yii\base\ExitException;
 use yii\db\Expression;
-use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 

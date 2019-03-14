@@ -42,6 +42,7 @@ use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use DateTime;
+use Twig\Markup;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -67,7 +68,7 @@ use yii\validators\Validator;
  * @property bool $hasFreshContent Whether the element’s content is "fresh" (unsaved and without validation errors)
  * @property array $htmlAttributes Any attributes that should be included in the element’s DOM representation in the Control Panel
  * @property bool $isEditable Whether the current user can edit the element
- * @property \Twig_Markup|null $link An anchor pre-filled with this element’s URL and title
+ * @property Markup|null $link An anchor pre-filled with this element’s URL and title
  * @property Element|null $next The next element relative to this one, from a given set of criteria
  * @property Element|null $nextSibling The element’s next sibling
  * @property Element|null $parent The element’s parent

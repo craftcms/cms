@@ -14,8 +14,8 @@ use craft\events\ConfigEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Path as PathHelper;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Application;
 use yii\base\Component;
@@ -595,6 +595,7 @@ class ProjectConfig extends Component
             foreach (array_keys($this->_modifiedYamlFiles) as $filePath) {
                 $data = $this->_parsedConfigs[$filePath];
                 $data = ProjectConfigHelper::cleanupConfig($data);
+                ksort($data);
                 FileHelper::writeToFile($filePath, Yaml::dump($data, 20, 2));
             }
         }
@@ -602,6 +603,7 @@ class ProjectConfig extends Component
         if (($this->_updateConfigMap && $this->_useConfigFile()) || $this->_updateConfig) {
             $previousConfig = $this->_getStoredConfig();
             $value = ProjectConfigHelper::cleanupConfig($previousConfig);
+            ksort($value);
             $this->_storeYamlHistory($value);
 
             $info = Craft::$app->getInfo();
@@ -1295,6 +1297,6 @@ class ProjectConfig extends Component
             }
         }
 
-        file_put_contents($basePath,  Yaml::dump($configData, 20, 2));
+        file_put_contents($basePath, Yaml::dump($configData, 20, 2));
     }
 }

@@ -8,6 +8,9 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\ExitNode;
+use Twig\Parser;
+use Twig\Token;
+use Twig\TokenParser\AbstractTokenParser;
 
 /**
  * Class ExitTokenParser
@@ -15,7 +18,7 @@ use craft\web\twig\nodes\ExitNode;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ExitTokenParser extends \Twig_TokenParser
+class ExitTokenParser extends AbstractTokenParser
 {
     // Public Methods
     // =========================================================================
@@ -23,17 +26,20 @@ class ExitTokenParser extends \Twig_TokenParser
     /**
      * @inheritdoc
      */
-    public function parse(\Twig_Token $token)
+    public function parse(Token $token)
     {
         $lineno = $token->getLine();
-        $stream = $this->parser->getStream();
+        /** @var Parser $parser */
+        $parser = $this->parser;
+        $stream = $parser->getStream();
+
         $nodes = [];
 
-        if ($stream->test(\Twig_Token::NUMBER_TYPE)) {
-            $nodes['status'] = $this->parser->getExpressionParser()->parseExpression();
+        if ($stream->test(Token::NUMBER_TYPE)) {
+            $nodes['status'] = $parser->getExpressionParser()->parseExpression();
         }
 
-        $stream->expect(\Twig_Token::BLOCK_END_TYPE);
+        $stream->expect(Token::BLOCK_END_TYPE);
 
         return new ExitNode($nodes, [], $lineno, $this->getTag());
     }

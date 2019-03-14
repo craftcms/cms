@@ -26,7 +26,6 @@ use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
-use craft\models\Site;
 use craft\models\Structure;
 use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
@@ -1402,7 +1401,8 @@ class Sections extends Component
         $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
         if (version_compare($schemaVersion, '3.1.19', '>=')) {
             $condition = ['sections.dateDeleted' => null];
-            $joinCondition = ['and',
+            $joinCondition = [
+                'and',
                 $joinCondition,
                 ['structures.dateDeleted' => null]
             ];

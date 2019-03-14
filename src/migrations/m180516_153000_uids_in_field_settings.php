@@ -5,12 +5,12 @@ namespace craft\migrations;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\Json;
 use craft\fields\Assets;
-use craft\fields\Entries;
-use craft\fields\Users;
 use craft\fields\Categories;
+use craft\fields\Entries;
 use craft\fields\Tags;
+use craft\fields\Users;
+use craft\helpers\Json;
 
 /**
  * m180516_153000_uids_in_field_settings migration.
