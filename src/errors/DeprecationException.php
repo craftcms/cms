@@ -19,28 +19,23 @@ use yii\base\Exception;
 class DeprecationException extends Exception
 {
     /**
-     * @var string|null The file the deprecation warning occurred in
-     */
-    public $file;
-
-    /**
-     * @var int|null The line number the deprecation warning occurred on
-     */
-    public $line;
-
-    /**
      * Constructor
      *
-     * @param string|null $message
+     * @param string $message
      * @param string|null $file
      * @param int|null $line
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(string $message = null, string $file = null, int $line = null, int $code = 0, Throwable $previous = null)
+    public function __construct(string $message = '', string $file = null, int $line = null, int $code = 0, Throwable $previous = null)
     {
-        $this->file = $file;
-        $this->line = $line;
+        if ($file !== null) {
+            $this->file = $file;
+        }
+
+        if ($line !== null) {
+            $this->line = $line;
+        }
 
         parent::__construct($message, $code, $previous);
     }
