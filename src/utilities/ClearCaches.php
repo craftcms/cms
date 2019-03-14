@@ -12,7 +12,6 @@ use craft\base\Utility;
 use craft\db\Table;
 use craft\events\RegisterCacheOptionsEvent;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\web\assets\clearcaches\ClearCachesAsset;
 use yii\base\Event;

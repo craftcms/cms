@@ -14,8 +14,8 @@ use craft\events\ConfigEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Path as PathHelper;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Application;
 use yii\base\Component;
@@ -1295,6 +1295,6 @@ class ProjectConfig extends Component
             }
         }
 
-        file_put_contents($basePath,  Yaml::dump($configData, 20, 2));
+        file_put_contents($basePath, Yaml::dump($configData, 20, 2));
     }
 }

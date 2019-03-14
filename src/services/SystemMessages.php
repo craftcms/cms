@@ -179,7 +179,8 @@ class SystemMessages extends Component
         $override = $this->_createMessagesQuery()
             ->select(['subject', 'body'])
             ->where(['key' => $key])
-            ->andWhere(['or',
+            ->andWhere([
+                'or',
                 ['language' => [$language, $languageId]],
                 ['like', 'language', "{$languageId}%", false],
             ])
