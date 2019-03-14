@@ -35,7 +35,7 @@ new Vue({
     el: "#{{ containerId|namespaceInputId|e('js') }}",
 
     data() {
-        return {{ {
+        var data = {{ {
             selected: '',
             filteredOptions: [],
             suggestions: suggestions,
@@ -51,10 +51,11 @@ new Vue({
                 disabled: disabled ?? false,
                 title: title ?? '',
                 placeholder: placeholder ?? '',
-                onInputChange: '%1'
             },
             limit: limit ?? 5
-        }|json_encode|replace('"%1"', 'this.onInputChange')|raw }};
+        }|json_encode|raw }};
+        data.inputProps.onInputChange = this.onInputChange;
+        return data;
     },
 
     methods: {
