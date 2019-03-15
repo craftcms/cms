@@ -6,7 +6,8 @@
 - Fixed a bug where `IOHelper::cleanFilename()` could return inconsistent results.
 
 ### Changed
-- Objects can no longer be unserialized from a cookie.
+- Objects can no longer be unserialized from cookies.
+- Update Yii to 1.1.20.2.
 
 ## 2.7.5 - 2019-02-15
 
