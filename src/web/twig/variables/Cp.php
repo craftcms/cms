@@ -18,6 +18,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use GuzzleHttp\Exception\ServerException;
 use yii\base\Component;
+use yii\base\InvalidConfigException;
 
 /**
  * CP functions
@@ -70,7 +71,42 @@ class Cp extends Component
     /**
      * Returns the Control Panel nav items.
      *
+     * Each CP nav item should be defined by an array with the following keys:
+     *
+     * - `label` – The human-facing nav item label
+     * - `url` – The URL the nav item should link to
+     * - `id` – The HTML `id` attribute the nav item should have (optional)
+     * - `icon` – The path to an SVG file that should be used as the nav item icon (optional)
+     * - `fontIcon` – A character/ligature from Craft’s font icon set (optional)
+     * - `badgeCount` – A number that should be displayed beside the nav item when unselected
+     * - `subnav` – A sub-array of subnav items
+     *
+     * Subnav arrays should be associative, with identifiable keys set to sub-arrays with the following keys:
+     *
+     * - `label` – The human-facing subnav item label
+     * - `url` – The URL the subnav item should link to
+     *
+     * For example:
+     *
+     * ```php
+     * [
+     *     'label' => 'Commerce',
+     *     'url' => 'commerce',
+     *     'subnav' => [
+     *         'orders' => ['label' => 'Orders', 'url' => 'commerce/orders',
+     *         'discounts' => ['label' => 'Discounts', 'url' => 'commerce/discounts',
+     *     ],
+     * ]
+     * ```
+     *
+     * Control Panel templates can specify which subnav item is selected by defining a `selectedSubnavItem` variable.
+     *
+     * ```twig
+     * {% set selectedSubnavItem = 'orders' %}
+     * ```
+     *
      * @return array
+     * @throws InvalidConfigException
      */
     public function nav(): array
     {
