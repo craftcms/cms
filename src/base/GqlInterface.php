@@ -25,13 +25,7 @@ interface GqlInterface
      * Returns an array of the model's GraphQL type definitions
      * @return Type[]
      */
-    public static function getGqlTypeDefinition(): array;
-
-    /**
-     * Returns the model's GraphQL type name
-     * @return string
-     */
-    public static function getGqlTypeName(): string;
+    public static function getGqlTypeDefinitions(): array;
 
     /**
      * Return all the queries defined by the model.

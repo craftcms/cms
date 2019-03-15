@@ -11,13 +11,12 @@ use Craft;
 use craft\base\GqlInterface;
 use craft\base\GqlTrait;
 use craft\base\Model;
+use craft\gql\queries\AssetTransform as AssetTransformQuery;
+use craft\gql\types\AssetTransform as AssetTransformType;
 use craft\records\AssetTransform as AssetTransformRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
-use GraphQL\Type\Definition\EnumType;
-use GraphQL\Type\Definition\Type;
-use yii\helpers\Inflector;
 
 /**
  * The AssetTransform model class.
@@ -227,76 +226,16 @@ class AssetTransform extends Model implements GqlInterface
      */
     public static function getGqlQueryDefinitions(): array
     {
-        return [
-            'query' . self::getGqlTypeName() => [
-                'type' => self::getFirstGqlTypeDefinition(),
-                'args' => [
-                    'id' => Type::id(),
-                    'uid' => Type::string(),
-                    'handle' => Type::string(),
-                ],
-                'resolve' => function ($rootValue, $args) {
-                    if (isset($args['uid'])) {
-                        return Craft::$app->getAssetTransforms()->getTransformByUid($args['uid']);
-                    }
-
-                    if (isset($args['id'])) {
-                        return Craft::$app->getAssetTransforms()->getTransformById($args['id']);
-                    }
-
-                    if (isset($args['handle'])) {
-                        return Craft::$app->getAssetTransforms()->getTransformByHandle($args['handle']);
-                    }
-                }
-            ],
-            'queryAll' . Inflector::pluralize(self::getGqlTypeName()) => [
-                'type' => Type::listOf(self::getFirstGqlTypeDefinition()),
-                'resolve' => function () {
-                    return Craft::$app->getAssetTransforms()->getAllTransforms();
-                }
-            ],
-        ];
+        return AssetTransformQuery::getQueries();
     }
 
     /**
      * @inheritdoc
      */
-    protected static function overrideGqlTypeProperties(array $properties): array
+    public static function getGqlTypeList(): array
     {
-        $properties['mode'] = Type::nonNull(new EnumType([
-            'name' => 'transformMode',
-            'values' => [
-                'stretch',
-                'fit',
-                'crop',
-            ]
-        ]));
-
-        $properties['position'] = Type::nonNull(new EnumType([
-            'name' => 'transformPosition',
-            'values' => [
-                'topLeft' => 'top-left',
-                'topCenter' => 'top-center',
-                'topRight' => 'top-right',
-                'centerLeft' => 'center-left',
-                'centerCenter' => 'center-center',
-                'centerRIght' => 'center-right',
-                'bottomLeft' => 'bottom-left',
-                'bottomCenter' => 'bottom-center',
-                'bottomRight' => 'bottom-right',
-            ]
-        ]));
-
-        $properties['interlace'] = Type::nonNull(new EnumType([
-            'name' => 'transformInterlace',
-            'values' => [
-                'none',
-                'line',
-                'plane',
-                'partition',
-            ]
-        ]));
-
-        return $properties;
+        return [
+            'AssetTransform' => AssetTransformType::class,
+        ];
     }
 }

@@ -12,6 +12,8 @@ use craft\base\GqlInterface;
 use craft\base\GqlTrait;
 use craft\base\Model;
 use craft\helpers\ArrayHelper;
+use craft\gql\queries\SiteGroup as SiteGroupQuery;
+use craft\gql\types\SiteGroup as SiteGroupType;
 use craft\records\SiteGroup as SiteGroupRecord;
 use craft\validators\UniqueValidator;
 
@@ -100,5 +102,23 @@ class SiteGroup extends Model implements GqlInterface
     public function getSiteIds(): array
     {
         return ArrayHelper::getColumn($this->getSites(), 'id');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlTypeList(): array
+    {
+        return [
+            'SiteGroup' => SiteGroupType::class,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlQueryDefinitions(): array
+    {
+        return SiteGroupQuery::getQueries();
     }
 }

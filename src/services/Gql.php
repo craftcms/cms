@@ -10,6 +10,7 @@ namespace craft\services;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser;
 use Craft;
+use craft\base\Element;
 use craft\base\GqlInterface;
 use craft\base\Plugin;
 use craft\elements\Category;
@@ -22,6 +23,8 @@ use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\AssetTransform;
 use craft\models\CategoryGroup;
+use craft\models\FieldGroup;
+use craft\models\Structure;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
@@ -82,9 +85,9 @@ class Gql extends Component
     public function getSchema(string $token = null): Schema
     {
         // TODO check for cached schema first
-        $graphQlSupportedModels = $this->getGqlSupportedModels();
-        $types = $this->getGqlTypeDefinitions($graphQlSupportedModels);
-        $queries = $this->getQueries($graphQlSupportedModels);
+        $gqlSupportedClasses = $this->getGqlSupportedClasses();
+        $types = $this->getGqlTypeDefinitions($gqlSupportedClasses);
+        $queries = $this->getQueries($gqlSupportedClasses);
 
         return new Schema([
             'types' => $types,
@@ -104,7 +107,7 @@ class Gql extends Component
 
         /** @var GqlInterface $model */
         foreach ($models as $model) {
-            $output[] = $model::getGqlTypeDefinition();
+            $output[] = $model::getGqlTypeDefinitions();
         }
 
         return array_merge(...$output);
@@ -137,14 +140,16 @@ class Gql extends Component
      *
      * @return array
      */
-    public function getGqlSupportedModels(): array
+    public function getGqlSupportedClasses(): array
     {
         $graphQlSupportedModels = [
             AssetTransform::class,
             CategoryGroup::class,
-            Category::class,
+            FieldGroup::class,
+            Structure::class,
         ];
 
+        // TODO FIELDS
         $event = new RegisterGqlModelEvent([
             'models' => $graphQlSupportedModels
         ]);

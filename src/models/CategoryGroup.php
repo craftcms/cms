@@ -14,11 +14,11 @@ use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Category;
 use craft\helpers\ArrayHelper;
+use craft\gql\queries\CategoryGroup as CategoryGroupQuery;
+use craft\gql\types\CategoryGroup as CategoryGroupType;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
-use GraphQL\Type\Definition\Type;
-use yii\helpers\Inflector;
 
 /**
  * CategoryGroup model.
@@ -177,57 +177,21 @@ class CategoryGroup extends Model implements GqlInterface
         }
     }
 
-
     /**
      * @inheritdoc
      */
-    public static function getGqlQueryDefinitions(): array
+    public static function getGqlTypeList(): array
     {
         return [
-            'query' . self::getGqlTypeName() => [
-                'type' => self::getFirstGqlTypeDefinition(),
-                'args' => [
-                    'id' => Type::id(),
-                    'uid' => Type::string(),
-                    'handle' => Type::string(),
-                ],
-                'resolve' => function($rootValue, $args) {
-                    if (isset($args['uid'])) {
-                        return Craft::$app->getCategories()->getGroupById($args['uid']);
-                    }
-
-                    if (isset($args['id'])) {
-                        return Craft::$app->getCategories()->getGroupByUid($args['id']);
-                    }
-
-                    if (isset($args['handle'])) {
-                        return Craft::$app->getCategories()->getGroupByHandle($args['handle']);
-                    }
-                }
-            ],
-            'queryAll' . Inflector::pluralize(self::getGqlTypeName()) => [
-                'type' => Type::listOf(self::getFirstGqlTypeDefinition()),
-                'resolve' => function() {
-                    return Craft::$app->getCategories()->getAllGroups();
-                }
-            ],
-
+            'CategoryGroup' => CategoryGroupType::class,
         ];
     }
 
     /**
      * @inheritdoc
      */
-    protected static function overrideGqlTypeProperties(array $properties): array
+    public static function getGqlQueryDefinitions(): array
     {
-        $properties['siteSettings'] = [
-            'name' => 'siteSettings',
-            'type' => Type::listOf(CategoryGroup_SiteSettings::getFirstGqlTypeDefinition()),
-            'resolve' => function(CategoryGroup $categoryGroup) {
-                return $categoryGroup->getSiteSettings();
-            }
-        ];
-
-        return $properties;
+        return CategoryGroupQuery::getQueries();
     }
 }

@@ -12,6 +12,7 @@ use craft\base\GqlInterface;
 use craft\base\GqlTrait;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
+use craft\gql\types\Site as SiteType;
 use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
@@ -210,20 +211,13 @@ class Site extends Model implements GqlInterface
         $this->baseUrl = $baseUrl;
     }
 
-
     /**
      * @inheritdoc
      */
-    protected static function overrideGqlTypeProperties(array $properties): array
+    public static function getGqlTypeList(): array
     {
-        $properties['siteGroup'] = [
-            'name' => 'siteGroup',
-            'type' => SiteGroup::getFirstGqlTypeDefinition(),
-            'resolve' => function (Site $site) {
-                return $site->getGroup();
-            }
+        return [
+            'Site' => SiteType::class,
         ];
-
-        return $properties;
     }
 }

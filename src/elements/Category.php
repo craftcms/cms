@@ -9,8 +9,6 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\base\GqlInterface;
-use craft\base\GqlTrait;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
@@ -41,13 +39,8 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Category extends Element implements GqlInterface
+class Category extends Element
 {
-    // Traits
-    // =========================================================================
-
-    use GqlTrait;
-
     // Static
     // =========================================================================
 
@@ -636,36 +629,6 @@ class Category extends Element implements GqlInterface
         }
 
         parent::afterMoveInStructure($structureId);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getGqlTypeDefinition(): array
-    {
-        if (self::$gqlTypes === null) {
-            $categoryInterface = new InterfaceType([
-                'name' => self::getGqlTypeName(),
-                'fields' => function () use (&$categoryInterface) {
-                    return [
-                        'id' => Type::id(),
-                        'uid' => Type::string(),
-                        'parent' => $categoryInterface,
-                        'children' => Type::listOf($categoryInterface),
-                        'structureNode' => Structure::getGqlTypeDefinitionByName('CraftStructureNode'),
-                        'uri' => Type::string(),
-                        'group' => Type::nonNull(CategoryGroup::getFirstGqlTypeDefinition()),
-                        'status' => Type::nonNull(Type::string())
-                    ];
-                }
-            ]);
-
-            self::$gqlTypes = [
-                self::getGqlTypeName() => $categoryInterface
-            ];
-        }
-
-        return self::$gqlTypes;
     }
 
     // Private Methods

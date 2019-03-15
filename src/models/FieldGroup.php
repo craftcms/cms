@@ -9,7 +9,10 @@ namespace craft\models;
 
 use Craft;
 use craft\base\FieldInterface;
+use craft\base\GqlInterface;
+use craft\base\GqlTrait;
 use craft\base\Model;
+use craft\gql\types\FieldGroup as FieldGroupType;
 use craft\records\FieldGroup as FieldGroupRecord;
 use craft\validators\UniqueValidator;
 
@@ -19,8 +22,13 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class FieldGroup extends Model
+class FieldGroup extends Model implements GqlInterface
 {
+    // Traits
+    // =========================================================================
+
+    use GqlTrait;
+
     // Properties
     // =========================================================================
 
@@ -83,5 +91,15 @@ class FieldGroup extends Model
     public function getFields(): array
     {
         return Craft::$app->getFields()->getFieldsByGroupId($this->id);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlTypeList(): array
+    {
+        return [
+            'FieldGroup' => FieldGroupType::class,
+        ];
     }
 }
