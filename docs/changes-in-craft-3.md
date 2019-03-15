@@ -47,7 +47,7 @@ Support for Amazon S3, Rackspace Cloud Files, and Google Cloud Storage have been
 
 ### Config Settings
 
-The following config settings have been deprecated in Craft 3, and will be completely removed in Craft 4:
+Older Craft 2 config settings have been deprecated in Craft 3, and will be completely removed in Craft 4:
 
 | File          | Old Setting                  | New Setting
 | ------------- | ---------------------------- | -----------------------------
@@ -68,7 +68,7 @@ The following config settings have been deprecated in Craft 3, and will be compl
 
 *<sup>4</sup> `securityKey` is no longer optional. If you haven’t set it yet, set it to the value in `storage/runtime/validation.key` (if the file exists). The auto-generated `validation.key` file fallback will be removed in Craft 4.*
 
-The following config settings have been removed entirely:
+Older Craft 2 config settings have been removed entirely:
 
 | File          | Setting
 | ------------- | -----------
@@ -108,7 +108,7 @@ If you have any [URL rules](config/README.md#url-rules) saved in `config/routes.
 
 ## PHP Constants
 
-The following PHP constants have been deprecated in Craft 3, and will no longer work in Craft 4:
+Older Craft 2 PHP constants have been deprecated in Craft 3, and will no longer work in Craft 4:
 
 | Old              | New
 | ---------------- | ----------------------------------------
@@ -189,13 +189,13 @@ Twig 2 will throw an error unless it’s a `defined` test:
 
 ## Template Tags
 
-The following Twig template tags have been removed:
+Older Craft 2 Twig template tags have been removed:
 
 | Old                 | New
 | ------------------- | -----------------------------------------
 | `{% endpaginate %}` | *(no replacement needed; just delete it)*
 
-The following Twig template tags have been deprecated in Craft 3, and will be completely removed in Craft 4:
+Older Craft 2 Twig template tags have been deprecated in Craft 3, and will be completely removed in Craft 4:
 
 | Old                             | New
 | ------------------------------- | ---------------------------------------------
@@ -209,7 +209,7 @@ The following Twig template tags have been deprecated in Craft 3, and will be co
 
 ## Template Functions
 
-The following template functions have been removed:
+Older Craft 2 template functions have been removed:
 
 | Old                                         | New
 | ------------------------------------------- | ------------------------------------
@@ -226,7 +226,7 @@ The following template functions have been removed:
 
 *<sup>1</sup> Only available if the `queue` component implements <api:craft\queue\QueueInterface>.*
 
-The following template functions have been deprecated in Craft 3, and will be completely removed in Craft 4:
+Older Craft 2 template functions have been deprecated in Craft 3, and will be completely removed in Craft 4:
 
 | Old                                                     | New
 | ------------------------------------------------------- | ---------------------------------------------
@@ -389,7 +389,7 @@ New:
 
 ### Query Params
 
-The following params have been removed:
+Older Craft 2 params have been removed:
 
 | Element Type | Old Param          | New Param
 | ------------ | ------------------ | -------------------------
@@ -403,7 +403,7 @@ The following params have been removed:
 | Tag          | `set`              | `group`
 | Tag          | `orderBy:"name"`   | `orderBy:"title"`
 
-The following params are now deprecated in Craft 3, and will be completely removed in Craft 4:
+Older Craft 2 params are now deprecated in Craft 3, and will be completely removed in Craft 4:
 
 | Element Type | Old Param                | New Param
 | ------------ | ------------------------ | ----------------------------
@@ -468,13 +468,13 @@ If you have any templates that count on the Craft 2 behavior, you can fix them u
 
 ### Query Methods
 
-The following methods have been removed:
+Older Craft 2 methods have been removed:
 
 | Old                           | New
 | ----------------------------- | -------------
 | `findElementAtOffset(offset)` | `nth(offset)`
 
-The following methods are now deprecated in Craft 3, and will be completely removed in Craft 4:
+Older Craft 2 methods are now deprecated in Craft 3, and will be completely removed in Craft 4:
 
 | Old             | New
 | --------------- | --------------------------------------------------------
@@ -551,13 +551,13 @@ In those cases, you can just replace the `.last()` call with what it’s already
 
 ## Elements
 
-The following element properties have been removed:
+Older Craft 2 element properties have been removed:
 
 | Element Type | Old Property | New Property
 | ------------ | ------------ | ------------
 | Tag          | `name`       | `title`
 
-The following element properties have been deprecated in Craft 3, and will be completely removed in Craft 4:
+Older Craft 2 element properties have been deprecated in Craft 3, and will be completely removed in Craft 4:
 
 | Old      | New
 | -------- | -------------------------------------------
@@ -565,7 +565,7 @@ The following element properties have been deprecated in Craft 3, and will be co
 
 ## Models
 
-The following model methods have been deprecated in Craft 3, and will be completely removed in Craft 4:
+Older Craft 2 model methods have been deprecated in Craft 3, and will be completely removed in Craft 4:
 
 | Old                 | New
 | ------------------- | ------------------------
@@ -573,7 +573,7 @@ The following model methods have been deprecated in Craft 3, and will be complet
 
 ## Locales
 
-The following locale methods have been deprecated in Craft 3, and will be completely removed in Craft 4:
+Older Craft 2 locale methods have been deprecated in Craft 3, and will be completely removed in Craft 4:
 
 | Old                | New
 | ------------------ | ------------------------------------
@@ -597,7 +597,7 @@ New:
 <input type="hidden" name="action" value="entries/save-entry">
 ```
 
-The following controller actions have been removed:
+Older Craft 2 controller actions have been removed:
 
 | Old                          | New
 | ---------------------------- | --------------------------
@@ -623,7 +623,7 @@ The `redirectInput()` function is provided as a shortcut.
 {{ redirectInput('foo/bar') }}
 ```
 
-The following `redirect` param tokens are no longer supported:
+Older Craft 2 `redirect` param tokens are no longer supported:
 
 | Controller Action               | Old Token     | New Token
 | ------------------------------- | ------------- | ---------
