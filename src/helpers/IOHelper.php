@@ -1554,15 +1554,16 @@ class IOHelper
 		// Strip any characters not allowed.
 		$fileName = str_replace($disallowedChars, '', strip_tags($fileName));
 
-		if (!is_null($separator))
-		{
-			$fileName = preg_replace('/(\s|'.preg_quote($separator).')+/u', $separator, $fileName);
-		}
-
 		// Nuke any trailing or leading .-_
 		$fileName = trim($fileName, '.-_');
 
 		$fileName = ($onlyAscii) ? StringHelper::asciiString($fileName) : $fileName;
+
+		if ($separator !== null) {
+			$qSeparator = preg_quote($separator, '/');
+			$fileName = preg_replace("/[\s{$qSeparator}]+/u", $separator, $fileName);
+			$fileName = preg_replace("/^{$qSeparator}+|{$qSeparator}+$/u", '', $fileName);
+		}
 
 		return $fileName;
 	}
