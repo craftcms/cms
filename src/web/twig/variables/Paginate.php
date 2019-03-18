@@ -8,6 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\db\Paginator;
 use craft\helpers\UrlHelper;
 use yii\base\BaseObject;
 
@@ -19,6 +20,29 @@ use yii\base\BaseObject;
  */
 class Paginate extends BaseObject
 {
+    // Static
+    // =========================================================================
+
+    /**
+     * Creates a new instance based on a Paginator object
+     *
+     * @param Paginator $paginator
+     * @return static
+     */
+    public static function create(Paginator $paginator): self
+    {
+        $pageResults = $paginator->getPageResults();
+        $pageOffset = $paginator->getPageOffset();
+
+        return new static([
+            'first' => $pageOffset + 1,
+            'last' => $pageOffset + count($pageResults),
+            'total' => $paginator->getTotalResults(),
+            'currentPage' => $paginator->getCurrentPage(),
+            'totalPages' => $paginator->getTotalPages(),
+        ]);
+    }
+
     // Properties
     // =========================================================================
 

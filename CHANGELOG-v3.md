@@ -4,6 +4,7 @@
 
 ### Added
 - Added `craft\db\Paginator`.
+- Added `craft\web\twig\variables\Paginate::create()`.
 
 ### Changed
 - The `{% paginate %}` tag now accepts any query object, not just element queries.

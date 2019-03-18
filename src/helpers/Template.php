@@ -100,18 +100,10 @@ class Template
             'pageSize' => $query->limit ?: 100,
         ]);
 
-        $pageResults = $paginator->getPageResults();
-        $pageOffset = $paginator->getPageOffset();
-
-        $pageInfo = new Paginate([
-            'first' => $pageOffset + 1,
-            'last' => $pageOffset + count($pageResults),
-            'total' => $paginator->getTotalResults(),
-            'currentPage' => $paginator->getCurrentPage(),
-            'totalPages' => $paginator->getTotalPages(),
-        ]);
-
-        return [$pageInfo, $pageResults];
+        return [
+            Paginate::create($paginator),
+            $paginator->getPageResults()
+        ];
     }
 
     /**

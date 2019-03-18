@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use craft\helpers\ArrayHelper;
 use yii\base\BaseObject;
 use yii\db\Connection as YiiConnection;
 use yii\db\Query;
@@ -76,6 +77,11 @@ class Paginator extends BaseObject
     protected $currentPage = 1;
 
     /**
+     * @var array|null The current page’s results
+     */
+    private $_pageResults;
+
+    /**
      * Constructor
      *
      * @param QueryInterface $query The query that should be paginated
@@ -84,7 +90,15 @@ class Paginator extends BaseObject
     public function __construct(QueryInterface $query, array $config = [])
     {
         $this->query = $query;
+
+        // Set the current page after everything else
+        $currentPage = ArrayHelper::remove($config, 'currentPage');
+
         parent::__construct($config);
+
+        if ($currentPage !== null) {
+            $this->setCurrentPage($currentPage);
+        }
     }
 
     /**
@@ -94,6 +108,8 @@ class Paginator extends BaseObject
     public function init()
     {
         parent::init();
+
+        // Make sure that $db is a Connection instance
         $this->db = Instance::ensure($this->db, YiiConnection::class);
     }
 
@@ -152,7 +168,13 @@ class Paginator extends BaseObject
      */
     public function setCurrentPage(int $currentPage)
     {
-        $this->currentPage = max(1, $currentPage);
+        $currentPage = max(1, $currentPage);
+        $currentPage = min($this->getTotalPages(), $currentPage);
+
+        if ($currentPage !== $this->currentPage) {
+            $this->currentPage = $currentPage;
+            $this->_pageResults = null;
+        }
     }
 
     /**
@@ -162,6 +184,10 @@ class Paginator extends BaseObject
      */
     public function getPageResults(): array
     {
+        if ($this->_pageResults !== null) {
+            return $this->_pageResults;
+        }
+
         $pageOffset =  ($this->query->offset ?? 0) + $this->getPageOffset();
         $pageLimit = max(0, min($this->pageSize, $this->getTotalResults() - $pageOffset));
 
@@ -172,7 +198,7 @@ class Paginator extends BaseObject
         $limit = $this->query->limit;
         $offset = $this->query->offset;
 
-        $results = $this->query
+        $this->_pageResults = $this->query
             ->offset($pageOffset)
             ->limit($pageLimit)
             ->all($this->db);
@@ -180,7 +206,7 @@ class Paginator extends BaseObject
         $this->query->limit = $limit;
         $this->query->offset = $offset;
 
-        return $results;
+        return $this->_pageResults;
     }
 
     /**
