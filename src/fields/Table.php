@@ -109,7 +109,9 @@ class Table extends Field
             foreach ($this->columns as $colId => $col) {
                 if (in_array($col['type'], ['date', 'time'], true)) {
                     foreach ($this->defaults as &$row) {
-                        $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
+                        if (isset($row[$colId])) {
+                            $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
+                        }
                     }
                 }
             }
