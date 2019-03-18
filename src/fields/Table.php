@@ -285,7 +285,7 @@ class Table extends Field
     {
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
-        } else if ($value === null && $this->isFresh($element) && is_array($this->defaults)) {
+        } else if ($value === null && $this->isFresh($element)) {
             $value = array_values($this->defaults);
         }
 
