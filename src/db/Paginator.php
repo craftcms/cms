@@ -162,7 +162,7 @@ class Paginator extends BaseObject
      */
     public function getPageResults(): array
     {
-        $pageOffset = $this->getPageOffset();
+        $pageOffset =  ($this->query->offset ?? 0) + $this->getPageOffset();
         $pageLimit = max(0, min($this->pageSize, $this->getTotalResults() - $pageOffset));
 
         if (!$pageLimit) {
@@ -190,6 +190,6 @@ class Paginator extends BaseObject
      */
     public function getPageOffset()
     {
-        return ($this->query->offset ?? 0) + ($this->pageSize * ($this->currentPage - 1));
+        return $this->pageSize * ($this->currentPage - 1);
     }
 }
