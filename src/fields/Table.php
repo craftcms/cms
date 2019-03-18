@@ -70,9 +70,7 @@ class Table extends Field
     /**
      * @var array The default row values that new elements should have
      */
-    public $defaults = [
-        'row1' => []
-    ];
+    public $defaults;
 
     /**
      * @var string The type of database column the field should have in the content table
@@ -98,7 +96,7 @@ class Table extends Field
         }
 
         if (!is_array($this->defaults)) {
-            $this->defaults = [];
+            $this->defaults = $this->id || $this->defaults === '' ? [] : [[]];
         } else {
             // Make sure the array is non-associative and with incrementing keys
             $this->defaults = array_values($this->defaults);
