@@ -28,10 +28,10 @@ use yii\di\Instance;
  * $pageResults = $paginator->getResults();
  * ```
  * ```twig
- * {% set paginator = create('craft\\db\\Paginator', {
+ * {% set paginator = create('craft\\db\\Paginator', [query, {
  *     pageSize: 10,
  *     currentPage: craft.app.request.pageNum,
- * }) %}
+ * }]) %}
  *
  * {% set pageResults = paginator.getResults() %}
  * ```
