@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\db\Paginator`.
+
+### Changed
+- The `{% paginate %}` tag now accepts any query object, not just element queries.
+
 ### Fixed
 - Fixed a bug where sidebar badge counts in the Control Panel were getting formatted with two decimals if the Intl extension wasn’t loaded. ([#4002](https://github.com/craftcms/cms/issues/4002))
 - Fixed a bug where entry drafts would forget that certain field values had been cleared out, and continue using the live revision’s content instead. ([#3981](https://github.com/craftcms/cms/issues/3981))

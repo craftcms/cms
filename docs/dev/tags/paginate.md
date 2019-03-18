@@ -1,9 +1,13 @@
 # `{% paginate %}` Tags
 
-This tag makes it easy to paginate a set of elements across multiple pages.
+This tag makes it easy to paginate query results across multiple pages.
 
 ```twig
-{% paginate craft.entries.section('blog').limit(10) as pageInfo, pageEntries %}
+{% set query = craft.entries()
+    .section('blog')
+    .limit(10) %}
+
+{% paginate query as pageInfo, pageEntries %}
 
 {% for entry in pageEntries %}
     <article>
@@ -30,11 +34,13 @@ Only a single `{% paginate %}` tag should be used per request.
 
 The `{% paginate %}` tag has the following parameters:
 
-### Element criteria
+### Query
 
-The first thing you pass into the `{% paginate %}` tag is an [Element Query](../element-queries/README.md) object, which defines all of the elements that should be paginated. Use the `limit` parameter to define how many elements should show up per page.
+The first thing you pass into the `{% paginate %}` tag is a query object (such as an [element query](../element-queries/README.md)), which defines all of the results that should be paginated. Use the `limit` parameter to define how many results should show up per page (100 by default).
 
-Warning: This parameter needs to be an actual ElementCriteriaModel object; not an array of elements. So don’t call `all()` on the object.
+::: warning
+This parameter needs to be an actual query object, not an array of pre-fetched results. So don’t call `all()` on the query before passing it in.
+:::
 
 ### `as`
 
@@ -43,19 +49,20 @@ Next up you need to type “`as`”, followed by one or two variable names:
 * `as pageInfo, pageEntries`
 * `as pageEntries`
 
-The actual variable name(s) are up to you, however if you only specify one variable name here, the `pageInfo` variable will be called “`paginate`” by default.
-
 Here’s what they get set to:
 
-* `pageInfo` gets set to a <api:craft\web\twig\variables\Paginate> object, which provides info about the current page, and some helper methods for creating links to other pages ([more details](#the-pageInfo-variable) below).
-* `pageEntries` gets set to an array of the elements that belong to the current page.
+* `pageInfo` gets set to a <api:craft\web\twig\variables\Paginate> object, which provides info about the current page, and some helper methods for creating links to other pages. (See [below](#the-pageInfo-variable) for more info.)
+* `pageEntries` gets set to an array of the results (e.g. the elements) that belong to the current page.
 
+::: tip
+If you only specify one variable name here, the `pageInfo` variable will be called `paginate` by default for backwards compatibility.
+:::
 
-## Showing the elements
+## Showing the results
 
-The `{% paginate %}` tag won’t actually output the current page’s elements for you – it will only give you an array of the elements that should be on the current page (referenced by the variable you defined in the `as` parameter.)
+The `{% paginate %}` tag won’t actually output the current page’s results for you. It will only give you an array of the results that should be on the current page (referenced by the variable you defined in the `as` parameter.)
 
-Following your `{% paginate %}` tag, you will need to loop through this page’s elements using a [for](https://twig.symfony.com/doc/tags/for.html) tag.
+Following your `{% paginate %}` tag, you will need to loop through this page’s results using a [for](https://twig.symfony.com/doc/tags/for.html) tag.
 
 ```twig
 {% paginate craft.entries.section('blog').limit(10) as pageEntries %}
@@ -70,11 +77,11 @@ Following your `{% paginate %}` tag, you will need to loop through this page’s
 
 ## The `pageInfo` variable
 
-The `pageInfo` variable (or whatever you’ve called it, or `paginate` by default) provides the following properties and methods:
+The `pageInfo` variable (or whatever you’ve called it) provides the following properties and methods:
 
-* **`pageInfo.first`** – The offset of the first element on the current page.
-* **`pageInfo.last`** – The offset of the last element on the current page.
-* **`pageInfo.total`** – The total number of elements across all pages
+* **`pageInfo.first`** – The offset of the first result on the current page.
+* **`pageInfo.last`** – The offset of the last result on the current page.
+* **`pageInfo.total`** – The total number of results across all pages
 * **`pageInfo.currentPage`** – The current page number.
 * **`pageInfo.totalPages`** – The total number of pages.
 * **`pageInfo.prevUrl`** – The URL to the previous page, or `null` if you’re on the first page.
@@ -96,7 +103,11 @@ The [pageInfo](#the-pageInfo-variable) variable gives you lots of options for bu
 If you just want simple Previous Page and Next Page links to appear, you can do this:
 
 ```twig
-{% paginate craft.entries.section('blog').limit(10) as pageInfo, pageEntries %}
+{% set query = craft.entries()
+    .section('blog')
+    .limit(10) %}
+
+{% paginate query as pageInfo, pageEntries %}
 
 {% if pageInfo.prevUrl %}<a href="{{ pageInfo.prevUrl }}">Previous Page</a>{% endif %}
 {% if pageInfo.nextUrl %}<a href="{{ pageInfo.nextUrl }}">Next Page</a>{% endif %}
@@ -109,7 +120,11 @@ Note that we’re wrapping those links in conditionals because there won’t alw
 You can add First Page and Last Page links into the mix, you can do that too:
 
 ```twig
-{% paginate craft.entries.section('blog').limit(10) as pageInfo, pageEntries %}
+{% set query = craft.entries()
+    .section('blog')
+    .limit(10) %}
+
+{% paginate query as pageInfo, pageEntries %}
 
 <a href="{{ pageInfo.firstUrl }}">First Page</a>
 {% if pageInfo.prevUrl %}<a href="{{ pageInfo.prevUrl }}">Previous Page</a>{% endif %}
@@ -124,7 +139,11 @@ There’s no reason to wrap those links in conditionals since there will always 
 If you want to create a list of nearby pages, perhaps surrounding the current page number, you can do that too!
 
 ```twig
-{% paginate craft.entries.section('blog').limit(10) as pageInfo, pageEntries %}
+{% set query = craft.entries()
+    .section('blog')
+    .limit(10) %}
+
+{% paginate query as pageInfo, pageEntries %}
 
 <a href="{{ pageInfo.firstUrl }}">First Page</a>
 {% if pageInfo.prevUrl %}<a href="{{ pageInfo.prevUrl }}">Previous Page</a>{% endif %}

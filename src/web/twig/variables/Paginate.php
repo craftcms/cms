@@ -9,6 +9,7 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\helpers\UrlHelper;
+use yii\base\BaseObject;
 
 /**
  * Paginate variable class.
@@ -16,7 +17,7 @@ use craft\helpers\UrlHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Paginate
+class Paginate extends BaseObject
 {
     // Properties
     // =========================================================================
