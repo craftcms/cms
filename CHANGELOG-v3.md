@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `_includes/pagination` Control Panel template.
 - Added `craft\db\Paginator`.
 - Added `craft\web\twig\variables\Paginate::create()`.
 

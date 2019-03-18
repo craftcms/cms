@@ -1,0 +1,28 @@
+{% set prevLabel = prevLabel ?? 'Previous Page'|t('app') %}
+{% set nextLabel = nextLabel ?? 'Next Page'|t('app') %}
+
+<div class="flex pagination">
+    <div class="page-info">
+        {% if pageInfo.total %}
+            {{ "{first}-{last} of {total}"|t('app', {
+                first: pageInfo.first,
+                last: pageInfo.last,
+                total: pageInfo.total
+            }) }}
+        {% else %}
+            {{ noResultsLabel ?? 'No results'|t('app') }}
+        {% endif %}
+    </div>
+
+    {% if pageInfo.prevUrl %}
+        <a class="page-link" href="{{ pageInfo.prevUrl }}" data-icon="leftangle" title="{{ prevLabel }}"></a>
+    {% else %}
+        <div class="page-link disabled" data-icon="leftangle" title="{{ prevLabel }}"></div>
+    {% endif %}
+
+    {% if pageInfo.nextUrl %}
+        <a class="page-link" href="{{ pageInfo.nextUrl }}" data-icon="rightangle" title="{{ nextLabel }}"></a>
+    {% else %}
+        <div class="page-link disabled" data-icon="rightangle" title="{{ nextLabel }}"></div>
+    {% endif %}
+</div>
