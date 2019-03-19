@@ -35,10 +35,11 @@ new Vue({
     el: "#{{ containerId|namespaceInputId|e('js') }}",
 
     data() {
+        {% block data %}
         var data = {{ {
             selected: '',
             filteredOptions: [],
-            suggestions: suggestions,
+            suggestions: suggestions ?? [],
             inputProps: {
                 class: class,
                 initialValue: value ?? '',
@@ -55,10 +56,12 @@ new Vue({
             limit: limit ?? 5
         }|json_encode|raw }};
         data.inputProps.onInputChange = this.onInputChange;
+        {% endblock %}
         return data;
     },
 
     methods: {
+        {% block methods %}
         onInputChange(text) {
             if (text === '' || text === undefined) {
                 this.filteredOptions = this.suggestions;
@@ -115,7 +118,8 @@ new Vue({
         },
         getSuggestionValue(suggestion) {
             return suggestion.item.name || suggestion.item;
-        }
+        },
+        {% endblock %}
     }
 })
 {% endjs %}
