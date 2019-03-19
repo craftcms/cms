@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.19 - 2019-03-19
 
 ### Added
 - Added the `_includes/pagination` Control Panel template.
