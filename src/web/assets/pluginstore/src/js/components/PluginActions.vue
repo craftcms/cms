@@ -42,17 +42,17 @@
                 <template v-else>
                     <template v-if="(isEditionMoreExpensiveThanLicensed && currentEdition === edition.handle) || (licensedEdition === edition.handle && !currentEdition)">
                         <!-- Install (Commercial) -->
-                        <btn kind="primary" type="submit" block large>{{ "Install"|t('app') }}</btn>
+                        <btn type="submit" block large>{{ "Install"|t('app') }}</btn>
                     </template>
 
                     <template v-else-if="isEditionMoreExpensiveThanLicensed && currentEdition !== edition.handle">
                         <!-- Try -->
-                        <btn kind="primary" type="submit" :disabled="!((pluginLicenseInfo && pluginLicenseInfo.isInstalled && pluginLicenseInfo.isEnabled) || !pluginLicenseInfo)" block large>{{ "Try"|t('app') }}</btn>
+                        <btn type="submit" :disabled="!((pluginLicenseInfo && pluginLicenseInfo.isInstalled && pluginLicenseInfo.isEnabled) || !pluginLicenseInfo)" block large>{{ "Try"|t('app') }}</btn>
                     </template>
 
                     <template v-else-if="currentEdition && licensedEdition === edition.handle && currentEdition !== edition.handle">
                         <!-- Reactivate -->
-                        <btn kind="primary" type="submit" block large>{{ "Reactivate"|t('app') }}</btn>
+                        <btn type="submit" block large>{{ "Reactivate"|t('app') }}</btn>
                     </template>
                 </template>
             </form>
