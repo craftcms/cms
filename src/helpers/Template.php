@@ -10,8 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
+use craft\db\Paginator;
 use craft\i18n\Locale;
 use craft\web\twig\variables\Paginate;
 use Twig\Environment;
@@ -21,6 +20,8 @@ use Twig\Source;
 use Twig\Template as TwigTemplate;
 use yii\base\BaseObject;
 use yii\base\UnknownMethodException;
+use yii\db\Query;
+use yii\db\QueryInterface;
 
 /**
  * Class Template
@@ -86,65 +87,23 @@ class Template
     }
 
     /**
-     * Paginates an element query's results
+     * Paginates a query's results
      *
-     * @param ElementQueryInterface $query
+     * @param QueryInterface $query
      * @return array
      */
-    public static function paginateCriteria(ElementQueryInterface $query): array
+    public static function paginateCriteria(QueryInterface $query): array
     {
-        /** @var ElementQuery $query */
-        $currentPage = Craft::$app->getRequest()->getPageNum();
+        /** @var Query $query */
+        $paginator = new Paginator((clone $query)->limit(null), [
+            'currentPage' => Craft::$app->getRequest()->getPageNum(),
+            'pageSize' => $query->limit ?: 100,
+        ]);
 
-        // Get the total result count
-        $total = (int)$query->count() - ($query->offset ?? 0);
-
-        // Bail out early if there are no results. Also avoids a divide by zero bug in the calculation of $totalPages
-        if ($total === 0) {
-            return [new Paginate(), $query->all()];
-        }
-
-        // If they specified limit as null or 0 (for whatever reason), just assume it's all going to be on one page.
-        $limit = $query->limit ?: $total;
-
-        $totalPages = (int)ceil($total / $limit);
-
-        $paginateVariable = new Paginate();
-
-        if ($totalPages === 0) {
-            return [$paginateVariable, []];
-        }
-
-        if ($currentPage > $totalPages) {
-            $currentPage = $totalPages;
-        }
-
-        $offset = $limit * ($currentPage - 1);
-
-        // Is there already an offset set?
-        if ($query->offset) {
-            $offset += $query->offset;
-        }
-
-        $last = $offset + $limit;
-
-        if ($last > $total) {
-            $last = $total;
-        }
-
-        $paginateVariable->first = $offset + 1;
-        $paginateVariable->last = $last;
-        $paginateVariable->total = $total;
-        $paginateVariable->currentPage = $currentPage;
-        $paginateVariable->totalPages = $totalPages;
-
-        // Fetch the elements
-        $originalOffset = $query->offset;
-        $query->offset = (int)$offset;
-        $elements = $query->all();
-        $query->offset = $originalOffset;
-
-        return [$paginateVariable, $elements];
+        return [
+            Paginate::create($paginator),
+            $paginator->getPageResults()
+        ];
     }
 
     /**

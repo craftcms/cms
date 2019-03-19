@@ -588,8 +588,10 @@ trait ApplicationTrait
 
             if (
                 isset($attributes['config']) &&
-                Craft::$app->getDb()->getIsMysql() &&
-                StringHelper::containsMb4($attributes['config'])
+                (
+                    !mb_check_encoding($attributes['config'], 'UTF-8') ||
+                    (Craft::$app->getDb()->getIsMysql() && StringHelper::containsMb4($attributes['config']))
+                )
             ) {
                 $attributes['config'] = 'base64:' . base64_encode($attributes['config']);
             }

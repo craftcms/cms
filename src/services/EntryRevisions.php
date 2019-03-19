@@ -556,7 +556,7 @@ class EntryRevisions extends Component
 
         foreach (Craft::$app->getFields()->getAllFields() as $field) {
             /** @var Field $field */
-            if (isset($content[$field->handle]) && $content[$field->handle] !== null) {
+            if (array_key_exists($field->handle, $content)) {
                 $revisionData['fields'][$field->id] = $content[$field->handle];
             }
         }
