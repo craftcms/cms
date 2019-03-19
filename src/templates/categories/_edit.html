@@ -111,6 +111,8 @@
             siteId: category.siteId,
             id: 'slug',
             name: 'slug',
+            autocorrect: false,
+            autocapitalize: false,
             value: category.slug,
             placeholder: "Enter slug"|t('app'),
             errors: (category.getErrors('slug')|merge(category.getErrors('uri')))
