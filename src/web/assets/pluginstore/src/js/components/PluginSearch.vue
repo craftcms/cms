@@ -1,14 +1,13 @@
 <template>
     <div class="mb-4">
         <form @submit.prevent="search()">
-            <div class="w-full texticon search icon clearable">
+            <div class="ps-search">
+                <icon icon="search" />
                 <textbox
                         id="searchQuery"
                         v-model="searchQuery"
                         :placeholder="'Search plugins'|t('app')"
-                        class="text"
                 />
-                <div class="clear" :class="{ hidden: searchQuery.length == 0 }" @click="searchQuery = ''" title="Clear"></div>
             </div>
         </form>
     </div>
@@ -34,3 +33,21 @@
         },
     }
 </script>
+
+<style lang="scss">
+    .ps-search {
+        @apply .relative;
+
+        .c-icon {
+            @apply .absolute .z-10 .text-grey-darker;
+            top: 9px;
+            left: 10px;
+        }
+
+        .c-textbox {
+            input {
+                padding-left: 32px;
+            }
+        }
+    }
+</style>
