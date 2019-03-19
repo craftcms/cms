@@ -47,9 +47,15 @@ class TemplatesController extends Controller
      */
     public function beforeAction($action)
     {
-        $actionSegments = Craft::$app->getRequest()->getActionSegments();
+        $request = Craft::$app->getRequest();
+        $actionSegments = $request->getActionSegments();
         if (isset($actionSegments[0]) && strtolower($actionSegments[0]) === 'templates') {
             throw new ForbiddenHttpException();
+        }
+
+        // Allow anonymous access to the Login template even if the site is offline
+        if ($request->getIsLoginRequest()) {
+            $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
         }
 
         return parent::beforeAction($action);

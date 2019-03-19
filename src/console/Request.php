@@ -82,6 +82,17 @@ class Request extends \yii\console\Request
     }
 
     /**
+     * Returns whether this was a Login request.
+     *
+     * @return bool
+     * @since 3.2.0
+     */
+    public function getIsLoginRequest(): bool
+    {
+        return false;
+    }
+
+    /**
      * Returns whether the current request is solely an action request. (Narrator: It isn't.)
      */
     public function getIsSingleActionRequest()
