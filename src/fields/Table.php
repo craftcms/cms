@@ -70,9 +70,7 @@ class Table extends Field
     /**
      * @var array The default row values that new elements should have
      */
-    public $defaults = [
-        'row1' => []
-    ];
+    public $defaults;
 
     /**
      * @var string The type of database column the field should have in the content table
@@ -98,7 +96,7 @@ class Table extends Field
         }
 
         if (!is_array($this->defaults)) {
-            $this->defaults = [];
+            $this->defaults = $this->id || $this->defaults === '' ? [] : [[]];
         } else {
             // Make sure the array is non-associative and with incrementing keys
             $this->defaults = array_values($this->defaults);
@@ -109,7 +107,9 @@ class Table extends Field
             foreach ($this->columns as $colId => $col) {
                 if (in_array($col['type'], ['date', 'time'], true)) {
                     foreach ($this->defaults as &$row) {
-                        $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
+                        if (isset($row[$colId])) {
+                            $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
+                        }
                     }
                 }
             }
@@ -228,7 +228,7 @@ class Table extends Field
                 'id' => 'defaults',
                 'name' => 'defaults',
                 'cols' => $this->columns,
-                'rows' => $this->defaults,
+                'rows' => $this->normalizeValue($this->defaults),
                 'initJs' => false
             ]
         ]);
@@ -285,7 +285,7 @@ class Table extends Field
     {
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
-        } else if ($value === null && $this->isFresh($element) && is_array($this->defaults)) {
+        } else if ($value === null && $this->isFresh($element)) {
             $value = array_values($this->defaults);
         }
 

@@ -35,29 +35,33 @@ new Vue({
     el: "#{{ containerId|namespaceInputId|e('js') }}",
 
     data() {
-        return {
+        {% block data %}
+        var data = {{ {
             selected: '',
             filteredOptions: [],
-            suggestions: {{ suggestions|json_encode|raw }},
+            suggestions: suggestions ?? [],
             inputProps: {
-                class: "{{ class }}",
-                initialValue: "{{ (value ?? '')|e('js') }}",
-                onInputChange: this.onInputChange,
-                style: "{{ (style ?? '')|e('js') }}",
-                id: "{{ id|namespaceInputId|e('js') }}",
-                name: "{{ (name ?? '')|namespaceInputName|e('js') }}",
-                size: "{{ (size ?? '')|e('js') }}",
-                maxlength: "{{ (maxlength ?? '')|e('js') }}",
-                autofocus: {{ (autofocus ?? false) ? 'true' : 'false' }},
-                disabled: {{ (disabled ?? false) ? 'true' : 'false' }},
-                title: "{{ (title ?? '')|e('js') }}",
-                placeholder: "{{ (placeholder ?? '')|e('js') }}"
+                class: class,
+                initialValue: value ?? '',
+                style: style ?? '',
+                id: id|namespaceInputId,
+                name: (name ?? '')|namespaceInputName,
+                size: size ?? '',
+                maxlength: maxlength ?? '',
+                autofocus: autofocus ?? false,
+                disabled: disabled ?? false,
+                title: title ?? '',
+                placeholder: placeholder ?? '',
             },
-            limit: {{ limit ?? 5 }}
-        };
+            limit: limit ?? 5
+        }|json_encode|raw }};
+        data.inputProps.onInputChange = this.onInputChange;
+        {% endblock %}
+        return data;
     },
 
     methods: {
+        {% block methods %}
         onInputChange(text) {
             if (text === '' || text === undefined) {
                 this.filteredOptions = this.suggestions;
@@ -114,7 +118,8 @@ new Vue({
         },
         getSuggestionValue(suggestion) {
             return suggestion.item.name || suggestion.item;
-        }
+        },
+        {% endblock %}
     }
 })
 {% endjs %}

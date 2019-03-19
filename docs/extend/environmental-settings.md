@@ -86,5 +86,4 @@ If your setting is for a URL or file system path, you should also set `suggestAl
     suggestEnvVars: true,
     suggestAliases: true
 }) }}
-suggestAliases: true
 ```

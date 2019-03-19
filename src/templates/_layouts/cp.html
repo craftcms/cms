@@ -131,7 +131,7 @@
                                 </span>
 
                                 {%- if not item.sel and item.badgeCount -%}
-                                    <span class="badge">{{ item.badgeCount|number }}</span>
+                                    <span class="badge">{{ item.badgeCount|number(decimals=0) }}</span>
                                 {%- endif -%}
                             </a>
                             {% if item.sel and hasSubnav %}
