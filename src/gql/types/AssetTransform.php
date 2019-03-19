@@ -1,6 +1,7 @@
 <?php
 namespace craft\gql\types;
 
+use craft\gql\common\SchemaObject;
 use GraphQL\Type\Definition\EnumType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
@@ -8,9 +9,9 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class AssetTransform
  */
-class AssetTransform extends BaseType
+class AssetTransform extends SchemaObject
 {
-    public static function getType(): ObjectType
+    public static function getType(): Type
     {
         return static::hasType(self::class) ?: static::createType(self::class, new ObjectType([
             'name' => 'AssetTransform',

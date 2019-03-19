@@ -1,6 +1,7 @@
 <?php
 namespace craft\gql\types;
 
+use craft\gql\common\SchemaObject;
 use craft\models\CategoryGroup as CategoryGroupModel;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
@@ -8,9 +9,9 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class CategoryGroup
  */
-class CategoryGroup extends BaseType
+class CategoryGroup extends SchemaObject
 {
-    public static function getType(): ObjectType
+    public static function getType(): Type
     {
         return static::hasType(self::class) ?: static::createType(self::class, new ObjectType([
             'name' => 'CategoryGroup',

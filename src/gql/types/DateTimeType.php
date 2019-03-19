@@ -1,6 +1,7 @@
 <?php
 namespace craft\gql\types;
 
+use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 
 /**

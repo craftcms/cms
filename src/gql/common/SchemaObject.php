@@ -1,22 +1,22 @@
 <?php
-namespace craft\gql\types;
+namespace craft\gql\common;
 
-use GraphQL\Type\Definition\ObjectType;
+use craft\gql\types\DateTimeType;
 use GraphQL\Type\Definition\Type;
 
 /**
  * Class BaseType
  */
-abstract class BaseType
+abstract class SchemaObject
 {
     /**
-     * @var ObjectType[]
+     * @var Type[]
      */
     protected static $_typeInstances = [];
 
     /**
      * @param string $className
-     * @return bool|ObjectType
+     * @return bool|Type
      */
     protected static function hasType(string $className)
     {
@@ -25,10 +25,10 @@ abstract class BaseType
 
     /**
      * @param string $className
-     * @param ObjectType $type
-     * @return ObjectType
+     * @param Type $type
+     * @return Type
      */
-    protected static function createType(string $className, ObjectType $type): ObjectType
+    protected static function createType(string $className, Type $type): Type
     {
         self::$_typeInstances[$className] = $type;
         return $type;
@@ -49,5 +49,5 @@ abstract class BaseType
         ];
     }
 
-    abstract public static function getType(): ObjectType;
+    abstract public static function getType(): Type;
 }

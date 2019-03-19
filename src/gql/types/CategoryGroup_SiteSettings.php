@@ -1,7 +1,6 @@
 <?php
 namespace craft\gql\types;
 
-use craft\models\CategoryGroup as CategoryGroupModel;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 
@@ -10,7 +9,7 @@ use GraphQL\Type\Definition\Type;
  */
 class CategoryGroup_SiteSettings extends BaseSiteSettings
 {
-    public static function getType(): ObjectType
+    public static function getType(): Type
     {
         return static::hasType(self::class) ?: static::createType(self::class, new ObjectType([
             'name' => 'CategoryGroup_SiteSettings',

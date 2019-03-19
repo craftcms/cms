@@ -3,12 +3,13 @@ namespace craft\gql\queries;
 
 use Craft;
 use GraphQL\Type\Definition\Type;
-use craft\gql\types\AssetTransform as AssetTransformType;
+use \craft\gql\types\SiteGroup as SiteGroupType;
+use craft\gql\interfaces\Field as FieldInterface;
 
 /**
- * Class AssetTransform
+ * Class Field
  */
-class AssetTransform
+class Field
 {
     /**
      * @inheritdoc
@@ -16,8 +17,8 @@ class AssetTransform
     public static function getQueries(): array
     {
         return [
-            'queryAssetTransform' => [
-                'type' => AssetTransformType::getType(),
+            'queryField' => [
+                'type' => FieldInterface::getType(),
                 'args' => [
                     'id' => Type::id(),
                     'uid' => Type::string(),
@@ -25,22 +26,22 @@ class AssetTransform
                 ],
                 'resolve' => function ($rootValue, $args) {
                     if (isset($args['uid'])) {
-                        return Craft::$app->getAssetTransforms()->getTransformByUid($args['uid']);
+                        return Craft::$app->getFields()->getFieldByUid($args['uid']);
                     }
 
                     if (isset($args['id'])) {
-                        return Craft::$app->getAssetTransforms()->getTransformById($args['id']);
+                        return Craft::$app->getFields()->getFieldById($args['id']);
                     }
 
                     if (isset($args['handle'])) {
-                        return Craft::$app->getAssetTransforms()->getTransformByHandle($args['handle']);
+                        return Craft::$app->getFields()->getFieldByHandle($args['handle']);
                     }
                 },
             ],
-            'queryAllAssetTransforms'  => [
-                'type' => Type::listOf(AssetTransformType::getType()),
+            'queryAllFields'  => [
+                'type' => Type::listOf(FieldInterface::getType()),
                 'resolve' => function () {
-                    return Craft::$app->getAssetTransforms()->getAllTransforms();
+                    return Craft::$app->getFields()->getAllFields();
                 },
             ],
         ];

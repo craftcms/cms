@@ -13,6 +13,7 @@ use craft\base\GqlInterface;
 use craft\base\GqlTrait;
 use craft\base\Model;
 use craft\gql\types\FieldGroup as FieldGroupType;
+use craft\gql\queries\FieldGroup as FieldGroupQuery;
 use craft\records\FieldGroup as FieldGroupRecord;
 use craft\validators\UniqueValidator;
 
@@ -102,4 +103,14 @@ class FieldGroup extends Model implements GqlInterface
             'FieldGroup' => FieldGroupType::class,
         ];
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlQueryDefinitions(): array
+    {
+        return FieldGroupQuery::getQueries();
+    }
+
+
 }

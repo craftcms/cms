@@ -1,14 +1,13 @@
 <?php
 namespace craft\gql\types;
 
-use craft\models\CategoryGroup as CategoryGroupModel;
-use GraphQL\Type\Definition\ObjectType;
+use craft\gql\common\SchemaObject;
 use GraphQL\Type\Definition\Type;
 
 /**
  * Class BaseSiteSettings
  */
-abstract class BaseSiteSettings extends BaseType
+abstract class BaseSiteSettings extends SchemaObject
 {
     protected static function getSiteSettingFields(): array
     {

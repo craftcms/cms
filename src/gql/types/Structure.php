@@ -1,15 +1,16 @@
 <?php
 namespace craft\gql\types;
 
+use craft\gql\common\SchemaObject;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 
 /**
  * Class Structure
  */
-class Structure extends BaseType
+class Structure extends SchemaObject
 {
-    public static function getType(): ObjectType
+    public static function getType(): Type
     {
         return static::hasType(self::class) ?: static::createType(self::class, new ObjectType([
             'name' => 'Structure',

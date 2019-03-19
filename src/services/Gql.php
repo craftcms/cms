@@ -7,33 +7,16 @@
 
 namespace craft\services;
 
-use Composer\Repository\PlatformRepository;
-use Composer\Semver\VersionParser;
-use Craft;
-use craft\base\Element;
+use craft\base\Field;
 use craft\base\GqlInterface;
-use craft\base\Plugin;
-use craft\elements\Category;
-use craft\enums\LicenseKeyStatus;
-use craft\errors\InvalidPluginException;
 use craft\events\RegisterGqlModelEvent;
-use craft\helpers\App;
-use craft\helpers\ArrayHelper;
-use craft\helpers\FileHelper;
-use craft\helpers\Json;
 use craft\models\AssetTransform;
 use craft\models\CategoryGroup;
 use craft\models\FieldGroup;
 use craft\models\Structure;
 use GraphQL\Type\Definition\ObjectType;
-use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\RequestOptions;
-use Psr\Http\Message\ResponseInterface;
 use yii\base\Component;
-use yii\base\Exception;
 
 /**
  * The Gql service provides GraphQL functionality.
@@ -147,6 +130,7 @@ class Gql extends Component
             CategoryGroup::class,
             FieldGroup::class,
             Structure::class,
+            Field::class,
         ];
 
         // TODO FIELDS
