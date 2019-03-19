@@ -8,6 +8,8 @@
 namespace craft\web\twig\nodes;
 
 use Craft;
+use Twig\Compiler;
+use Twig\Node\Node;
 
 /**
  * Class NamespaceNode
@@ -15,7 +17,7 @@ use Craft;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class NamespaceNode extends \Twig_Node
+class NamespaceNode extends Node
 {
     // Public Methods
     // =========================================================================
@@ -23,7 +25,7 @@ class NamespaceNode extends \Twig_Node
     /**
      * @inheritdoc
      */
-    public function compile(\Twig_Compiler $compiler)
+    public function compile(Compiler $compiler)
     {
         $compiler
             ->addDebugInfo($this)

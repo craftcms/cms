@@ -726,7 +726,7 @@ return [
     'Please talk to your host/IT department about upgrading your server.' => 'Please talk to your host/IT department about upgrading your server.',
     'Plugin Installer' => 'Plugin installer',
     'Plugin Name' => 'Plugin name',
-    'Plugin Store' => 'Plugin store',
+    'Plugin Store' => 'Plugin Store',
     'Plugin Uninstaller' => 'Plugin uninstaller',
     'Plugin disabled.' => 'Plugin disabled.',
     'Plugin enabled.' => 'Plugin enabled.',

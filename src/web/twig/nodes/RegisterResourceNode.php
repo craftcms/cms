@@ -8,6 +8,9 @@
 namespace craft\web\twig\nodes;
 
 use craft\web\View;
+use Twig\Compiler;
+use Twig\Node\Node;
+use Twig\Node\NodeCaptureInterface;
 use yii\base\NotSupportedException;
 
 /**
@@ -16,7 +19,7 @@ use yii\base\NotSupportedException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class RegisterResourceNode extends \Twig_Node implements \Twig_NodeCaptureInterface
+class RegisterResourceNode extends Node implements NodeCaptureInterface
 {
     // Public Methods
     // =========================================================================
@@ -24,7 +27,7 @@ class RegisterResourceNode extends \Twig_Node implements \Twig_NodeCaptureInterf
     /**
      * @inheritdoc
      */
-    public function compile(\Twig_Compiler $compiler)
+    public function compile(Compiler $compiler)
     {
         $method = $this->getAttribute('method');
         $position = $this->getAttribute('position');

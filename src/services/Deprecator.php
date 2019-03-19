@@ -11,12 +11,14 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
+use craft\errors\DeprecationException;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
+use Twig\Template as TwigTemplate;
 use yii\base\Component;
 use yii\db\IntegrityException;
 
@@ -31,6 +33,11 @@ class Deprecator extends Component
 {
     // Properties
     // =========================================================================
+
+    /**
+     * @var bool Whether deprecation warnings should throw exceptions rather than being logged.
+     */
+    public $throwExceptions = false;
 
     /**
      * @var string|false Whether deprecation errors should be logged in the database ('db'),
@@ -61,6 +68,7 @@ class Deprecator extends Component
      * @param string $message
      * @param string|null $file
      * @param int|null $line
+     * @throws DeprecationException
      */
     public function log(string $key, string $message, string $file = null, int $line = null)
     {
@@ -84,6 +92,10 @@ class Deprecator extends Component
 
         if ($file === null) {
             list($file, $line) = $this->_findOrigin($traces);
+        }
+
+        if ($this->throwExceptions) {
+            throw new DeprecationException($message, $file, $line);
         }
 
         $fingerprint = $file . ($line ? ':' . $line : '');
@@ -277,7 +289,7 @@ class Deprecator extends Component
             $templateCodeLine = $traces[$templateTrace]['line'] ?? null;
             $template = $traces[$templateTrace + 1]['object'] ?? null;
 
-            if ($template instanceof \Twig_Template) {
+            if ($template instanceof TwigTemplate) {
                 $templateName = $template->getTemplateName();
                 $file = Craft::$app->getView()->resolveTemplate($templateName) ?: $templateName;
                 $line = $this->_findTemplateLine($template, $templateCodeLine);
@@ -345,11 +357,11 @@ class Deprecator extends Component
     /**
      * Returns the Twig template that should be associated with the deprecation error, if any.
      *
-     * @param \Twig_Template $template
+     * @param TwigTemplate $template
      * @param int|null $actualCodeLine
      * @return int|null
      */
-    private function _findTemplateLine(\Twig_Template $template, int $actualCodeLine = null)
+    private function _findTemplateLine(TwigTemplate $template, int $actualCodeLine = null)
     {
         if ($actualCodeLine === null) {
             return null;

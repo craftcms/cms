@@ -589,8 +589,10 @@ trait ApplicationTrait
 
             if (
                 isset($attributes['config']) &&
-                Craft::$app->getDb()->getIsMysql() &&
-                StringHelper::containsMb4($attributes['config'])
+                (
+                    !mb_check_encoding($attributes['config'], 'UTF-8') ||
+                    (Craft::$app->getDb()->getIsMysql() && StringHelper::containsMb4($attributes['config']))
+                )
             ) {
                 $attributes['config'] = 'base64:' . base64_encode($attributes['config']);
             }
@@ -671,10 +673,10 @@ trait ApplicationTrait
             $this->getDb()->open();
             return true;
         } catch (DbConnectException $e) {
-            Craft::error('There was a problem connecting to the database: '.$e->getMessage(), __METHOD__);
+            Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             return false;
         } catch (InvalidConfigException $e) {
-            Craft::error('There was a problem connecting to the database: '.$e->getMessage(), __METHOD__);
+            Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             return false;
         }
     }

@@ -26,7 +26,6 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\MatrixBlockType;
 use craft\services\Elements;
-use craft\services\Fields;
 use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\assets\matrixsettings\MatrixSettingsAsset;
@@ -208,7 +207,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                     $info = (new Query())
                         ->select(['uid', 'fieldLayoutId'])
                         ->from([TableName::MATRIXBLOCKTYPES])
-                        ->where(['id'=> $key])
+                        ->where(['id' => $key])
                         ->one();
 
                     if ($info) {

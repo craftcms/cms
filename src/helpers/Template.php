@@ -10,12 +10,18 @@ namespace craft\helpers;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
+use craft\db\Paginator;
 use craft\i18n\Locale;
 use craft\web\twig\variables\Paginate;
+use Twig\Environment;
+use Twig\Error\RuntimeError;
+use Twig\Markup;
+use Twig\Source;
+use Twig\Template as TwigTemplate;
 use yii\base\BaseObject;
 use yii\base\UnknownMethodException;
+use yii\db\Query;
+use yii\db\QueryInterface;
 
 /**
  * Class Template
@@ -31,35 +37,35 @@ class Template
     /**
      * Returns the attribute value for a given array/object.
      *
-     * @param \Twig_Environment $env
-     * @param \Twig_Source $source
+     * @param Environment $env
+     * @param Source $source
      * @param mixed $object The object or array from where to get the item
      * @param mixed $item The item to get from the array or object
      * @param array $arguments An array of arguments to pass if the item is an object method
-     * @param string $type The type of attribute (@see Twig_Template constants)
+     * @param string $type The type of attribute (@see [[TwigTemplate]] constants)
      * @param bool $isDefinedTest Whether this is only a defined check
      * @param bool $ignoreStrictCheck Whether to ignore the strict attribute check or not
      * @return mixed The attribute value, or a Boolean when $isDefinedTest is true, or null when the attribute is not set and $ignoreStrictCheck is true
-     * @throws \Twig_Error_Runtime if the attribute does not exist and Twig is running in strict mode and $isDefinedTest is false
+     * @throws RuntimeError if the attribute does not exist and Twig is running in strict mode and $isDefinedTest is false
      * @internal
      */
-    public static function attribute(\Twig_Environment $env, \Twig_Source $source, $object, $item, array $arguments = [], string $type = \Twig_Template::ANY_CALL, bool $isDefinedTest = false, bool $ignoreStrictCheck = false)
+    public static function attribute(Environment $env, Source $source, $object, $item, array $arguments = [], string $type = TwigTemplate::ANY_CALL, bool $isDefinedTest = false, bool $ignoreStrictCheck = false)
     {
         if ($object instanceof ElementInterface) {
             self::_includeElementInTemplateCaches($object);
         }
 
         if (
-            $type !== \Twig_Template::METHOD_CALL &&
+            $type !== TwigTemplate::METHOD_CALL &&
             $object instanceof BaseObject &&
             $object->canGetProperty($item)
         ) {
             return $isDefinedTest ? true : $object->$item;
         }
 
-        // Convert any Twig_Markup arguments back to strings (unless the class *extends* Twig_Markup)
+        // Convert any \Twig\Markup arguments back to strings (unless the class *extends* \Twig\Markup)
         foreach ($arguments as $key => $value) {
-            if (is_object($value) && get_class($value) === \Twig_Markup::class) {
+            if (is_object($value) && get_class($value) === Markup::class) {
                 $arguments[$key] = (string)$value;
             }
         }
@@ -76,81 +82,39 @@ class Template
             if ($ignoreStrictCheck || !$env->isStrictVariables()) {
                 return null;
             }
-            throw new \Twig_Error_Runtime($e->getMessage(), -1, $source);
+            throw new RuntimeError($e->getMessage(), -1, $source);
         }
     }
 
     /**
-     * Paginates an element query's results
+     * Paginates a query's results
      *
-     * @param ElementQueryInterface $query
+     * @param QueryInterface $query
      * @return array
      */
-    public static function paginateCriteria(ElementQueryInterface $query): array
+    public static function paginateCriteria(QueryInterface $query): array
     {
-        /** @var ElementQuery $query */
-        $currentPage = Craft::$app->getRequest()->getPageNum();
+        /** @var Query $query */
+        $paginator = new Paginator((clone $query)->limit(null), [
+            'currentPage' => Craft::$app->getRequest()->getPageNum(),
+            'pageSize' => $query->limit ?: 100,
+        ]);
 
-        // Get the total result count
-        $total = (int)$query->count() - ($query->offset ?? 0);
-
-        // Bail out early if there are no results. Also avoids a divide by zero bug in the calculation of $totalPages
-        if ($total === 0) {
-            return [new Paginate(), $query->all()];
-        }
-
-        // If they specified limit as null or 0 (for whatever reason), just assume it's all going to be on one page.
-        $limit = $query->limit ?: $total;
-
-        $totalPages = (int)ceil($total / $limit);
-
-        $paginateVariable = new Paginate();
-
-        if ($totalPages === 0) {
-            return [$paginateVariable, []];
-        }
-
-        if ($currentPage > $totalPages) {
-            $currentPage = $totalPages;
-        }
-
-        $offset = $limit * ($currentPage - 1);
-
-        // Is there already an offset set?
-        if ($query->offset) {
-            $offset += $query->offset;
-        }
-
-        $last = $offset + $limit;
-
-        if ($last > $total) {
-            $last = $total;
-        }
-
-        $paginateVariable->first = $offset + 1;
-        $paginateVariable->last = $last;
-        $paginateVariable->total = $total;
-        $paginateVariable->currentPage = $currentPage;
-        $paginateVariable->totalPages = $totalPages;
-
-        // Fetch the elements
-        $originalOffset = $query->offset;
-        $query->offset = (int)$offset;
-        $elements = $query->all();
-        $query->offset = $originalOffset;
-
-        return [$paginateVariable, $elements];
+        return [
+            Paginate::create($paginator),
+            $paginator->getPageResults()
+        ];
     }
 
     /**
-     * Returns a string wrapped in a \Twig_Markup object
+     * Returns a string wrapped in a \Twig\Markup object
      *
      * @param string $value
-     * @return \Twig_Markup
+     * @return Markup
      */
-    public static function raw(string $value): \Twig_Markup
+    public static function raw(string $value): Markup
     {
-        return new \Twig_Markup($value, Craft::$app->charset);
+        return new Markup($value, Craft::$app->charset);
     }
 
     // Private Methods
@@ -264,7 +228,7 @@ class Template
 
         $key = "DateTime::{$item}()";
         /** @noinspection PhpUndefinedVariableInspection */
-        $message = "DateTime::{$item}" . ($type === \Twig_Template::METHOD_CALL ? '()' : '') . " is deprecated. Use the |{$filter} filter instead.";
+        $message = "DateTime::{$item}" . ($type === TwigTemplate::METHOD_CALL ? '()' : '') . " is deprecated. Use the |{$filter} filter instead.";
 
         if ($item === 'iso8601') {
             $message = rtrim($message, '.') . ', or consider using the |atom filter, which will give you an actual ISO-8601 string (unlike the old .iso8601() method).';

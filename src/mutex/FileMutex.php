@@ -7,10 +7,6 @@
 
 namespace craft\mutex;
 
-use Craft;
-use craft\helpers\FileHelper;
-use yii\base\Exception;
-
 /**
  * @inheritdoc
  * @see Mutex

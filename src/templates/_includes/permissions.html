@@ -19,7 +19,7 @@
                 {% set checked = true %}
             {% else %}
                 {% if context.userOrGroup is not empty %}
-                    {% if context.userOrGroup.hasErrors() %}
+                    {% if craft.app.request.isPost %}
                         {% set checked = permissionName in craft.app.request.getBodyParam('permissions', []) %}
                     {% else %}
                         {% set checked = context.userOrGroup.can(permissionName) %}

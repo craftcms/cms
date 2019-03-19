@@ -2,8 +2,45 @@
 
 ## Unreleased
 
+### Added
+- Added the `_includes/pagination` Control Panel template.
+- Added `craft\db\Paginator`.
+- Added `craft\web\twig\variables\Paginate::create()`.
+
+### Changed
+- The `{% paginate %}` tag now accepts any query object, not just element queries.
+- The `_includes/forms/autosuggest` template now has `data` and `methods` blocks that can be overridden by sub-templates to customize the autosuggest behavior.
+
+### Fixed
+- Fixed a bug where sidebar badge counts in the Control Panel were getting formatted with two decimals if the Intl extension wasn’t loaded. ([#4002](https://github.com/craftcms/cms/issues/4002))
+- Fixed a bug where entry drafts would forget that certain field values had been cleared out, and continue using the live revision’s content instead. ([#3981](https://github.com/craftcms/cms/issues/3981))
+- Fixed an error that occurred if a Table field was created with a Date or Time column and no rows in the Default Values setting. ([#4005](https://github.com/craftcms/cms/issues/4005))
+- Fixed a bug where Table fields would forget that they had been saved without any rows in the Default Values setting.
+- Fixed a SQL error that could occur when saving non-UTF-8 characters to the project config. ([#4007](https://github.com/craftcms/cms/issues/4007))
+
+## 3.1.18 - 2019-03-14
+
+### Added
+- Added `craft\services\Deprecator::$throwExceptions`. ([#3972](https://github.com/craftcms/cms/pull/3972))
+
+### Changed
+- `Craft::parseEnv()` will now boolean values for environment variables set to `true` or `false`. ([#3975](https://github.com/craftcms/cms/issues/3975))
+- Nested project config keys are no longer sorted alphabetically.
+- Craft now requires Twig ^2.7.2.
+
 ### Fixed
 - Fixed a SQL error that occurred when using a token with a usage limit, if using PostgreSQL. ([#3969](https://github.com/craftcms/cms/issues/3969))
+- Fixed a bug where the Edit User page would forget user group selection changes if there was a validation error. ([#3971](https://github.com/craftcms/cms/issues/3971))
+- Fixed a bug where the updater would get an unexpected response when updating from 3.1.14 - 3.1.16 to 3.1.17+.
+- Fixed a bug where it wasn’t possible to switch plugin editions when the `allowUpdates` config setting was disabled. ([#3987](https://github.com/craftcms/cms/issues/3987))
+- Fixed a bug where multiple consecutive newlines in field instructions would result in multiple `<br>` tags rather than new paragraphs.
+- Fixed a bug where Table fields weren’t always remembering the sort order for their Default Values settings. ([#3947](https://github.com/craftcms/cms/issues/3947))
+- Fixed a bug where Table fields weren’t always remembering the sort order for their Table Columns settings. ([#3997](https://github.com/craftcms/cms/issues/3997))
+
+## 3.1.17.2 - 2019-03-12
+
+### Changed
+- Craft now requires Twig ~2.6.2.
 
 ## 3.1.17.1 - 2019-03-08
 
@@ -548,6 +585,11 @@
 - The web and CLI installers no longer suggest `@web` for the site URL, and now attempt to save the entered site URL as a `DEFAULT_SITE_URL` environment variable in `.env`. ([#3559](https://github.com/craftcms/cms/issues/3559))
 - Craft now destroys all other sessions associated with a user account when a user changes their password.
 - It’s no longer possible to spoof Live Preview requests.
+
+## 3.0.41.1 - 2019-03-12
+
+### Changed
+- Craft now requires Twig ~2.6.2.
 
 ## 3.0.41 - 2019-02-22
 
