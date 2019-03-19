@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- The `_includes/forms/text` Control Panel template now supports passing `autocorrect: false` and `autocapitalize: false`, to disable autocorrect and auto-capitalization on iOS devices.
+- iOS autocorrect and auto-capitalization has been disabled for all core “Handle” fields in the Control Panel. ([#4009](https://github.com/craftcms/cms/issues/4009))
+
 ## 3.1.19 - 2019-03-19
 
 ### Added

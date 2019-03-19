@@ -26,8 +26,10 @@
         label: "Handle"|t('app'),
         instructions: "How you’ll refer to this section in the templates."|t('app'),
         id: 'handle',
-        class: 'code',
         name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
         value: section.handle,
         errors: section.getErrors('handle'),
         required: true
