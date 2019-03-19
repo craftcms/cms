@@ -7,6 +7,7 @@
                         id="searchQuery"
                         v-model="searchQuery"
                         :placeholder="'Search plugins'|t('app')"
+                        autocomplete="off"
                 />
             </div>
         </form>
