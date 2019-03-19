@@ -40,7 +40,7 @@
         @apply .relative;
 
         .c-icon {
-            @apply .absolute .z-10 .text-grey-darker;
+            @apply .absolute .z-10 .text-grey;
             top: 9px;
             left: 10px;
         }
