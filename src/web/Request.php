@@ -454,8 +454,11 @@ class Request extends \yii\web\Request
 
     /**
      * Returns whether the current request is solely an action request.
+     *
+     * @return bool
+     * @deprecated in 3.2
      */
-    public function getIsSingleActionRequest()
+    public function getIsSingleActionRequest(): bool
     {
         $this->_checkRequestType();
         return $this->_isSingleActionRequest;

@@ -94,8 +94,11 @@ class Request extends \yii\console\Request
 
     /**
      * Returns whether the current request is solely an action request. (Narrator: It isn't.)
+     *
+     * @return bool
+     * @deprecated in 3.2
      */
-    public function getIsSingleActionRequest()
+    public function getIsSingleActionRequest(): bool
     {
         return false;
     }
