@@ -362,6 +362,12 @@
                     top: 6px;
                 }
             }
+
+            td.thin {
+                .c-btn {
+                    white-space: nowrap;
+                }
+            }
         }
     }
 
