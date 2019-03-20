@@ -101,6 +101,12 @@ class EntryRevisions extends Component
         $draft = new EntryDraft($result);
 
         $entry = Craft::$app->getEntries()->getEntryById($draft->id, $draft->siteId);
+
+        if (!$entry) {
+            // The entry was probably soft-deleted
+            return null;
+        }
+
         $this->_configureRevisionWithEntryProperties($draft, $entry);
 
         return $draft;
@@ -335,6 +341,12 @@ class EntryRevisions extends Component
         $version = new EntryVersion($result);
 
         $entry = Craft::$app->getEntries()->getEntryById($version->id, $version->siteId);
+
+        if (!$entry) {
+            // The entry was probably soft-deleted
+            return null;
+        }
+
         $this->_configureRevisionWithEntryProperties($version, $entry);
 
         return $version;
