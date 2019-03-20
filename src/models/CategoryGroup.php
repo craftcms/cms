@@ -8,14 +8,10 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\GqlInterface;
-use craft\base\GqlTrait;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Category;
 use craft\helpers\ArrayHelper;
-use craft\gql\queries\CategoryGroup as CategoryGroupQuery;
-use craft\gql\types\CategoryGroup as CategoryGroupType;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -28,13 +24,8 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class CategoryGroup extends Model implements GqlInterface
+class CategoryGroup extends Model
 {
-    // Traits
-    // =========================================================================
-
-    use GqlTrait;
-
     // Properties
     // =========================================================================
 
@@ -175,23 +166,5 @@ class CategoryGroup extends Model implements GqlInterface
         foreach ($this->_siteSettings as $settings) {
             $settings->setGroup($this);
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getGqlTypeList(): array
-    {
-        return [
-            'CategoryGroup' => CategoryGroupType::class,
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getGqlQueryDefinitions(): array
-    {
-        return CategoryGroupQuery::getQueries();
     }
 }

@@ -8,11 +8,8 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\GqlInterface;
-use craft\base\GqlTrait;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
-use craft\gql\types\Site as SiteType;
 use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
@@ -26,12 +23,8 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Site extends Model implements GqlInterface
+class Site extends Model
 {
-    // Traits
-    // =========================================================================
-    use GqlTrait;
-
     // Properties
     // =========================================================================
 
@@ -209,15 +202,5 @@ class Site extends Model implements GqlInterface
     {
         $this->originalBaseUrl = (string)$this->baseUrl;
         $this->baseUrl = $baseUrl;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getGqlTypeList(): array
-    {
-        return [
-            'Site' => SiteType::class,
-        ];
     }
 }

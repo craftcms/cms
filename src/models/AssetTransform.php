@@ -8,11 +8,7 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\GqlInterface;
-use craft\base\GqlTrait;
 use craft\base\Model;
-use craft\gql\queries\AssetTransform as AssetTransformQuery;
-use craft\gql\types\AssetTransform as AssetTransformType;
 use craft\records\AssetTransform as AssetTransformRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\HandleValidator;
@@ -25,12 +21,8 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AssetTransform extends Model implements GqlInterface
+class AssetTransform extends Model
 {
-    // Traits
-    // =========================================================================
-    use GqlTrait;
-
     // Properties
     // =========================================================================
 
@@ -219,23 +211,5 @@ class AssetTransform extends Model implements GqlInterface
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'dimensionChangeTime';
         return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getGqlQueryDefinitions(): array
-    {
-        return AssetTransformQuery::getQueries();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getGqlTypeList(): array
-    {
-        return [
-            'AssetTransform' => AssetTransformType::class,
-        ];
     }
 }

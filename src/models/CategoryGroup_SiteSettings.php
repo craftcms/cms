@@ -8,8 +8,6 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\GqlInterface;
-use craft\base\GqlTrait;
 use craft\base\Model;
 use craft\validators\SiteIdValidator;
 use craft\validators\UriFormatValidator;
@@ -21,13 +19,8 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class CategoryGroup_SiteSettings extends Model implements GqlInterface
+class CategoryGroup_SiteSettings extends Model
 {
-    // Traits
-    // =========================================================================
-
-    use GqlTrait;
-
     // Properties
     // =========================================================================
 
@@ -148,21 +141,5 @@ class CategoryGroup_SiteSettings extends Model implements GqlInterface
         }
 
         return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected static function overrideGqlTypeProperties(array $properties): array
-    {
-        $properties['site'] = [
-            'name' => 'site',
-            'type' => Site::getFirstGqlTypeDefinition(),
-            'resolve' => function (CategoryGroup_SiteSettings $settings) {
-                return $settings->getSite();
-            }
-        ];
-
-        return $properties;
     }
 }

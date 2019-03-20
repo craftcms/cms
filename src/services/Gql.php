@@ -7,13 +7,27 @@
 
 namespace craft\services;
 
-use craft\base\Field;
-use craft\base\GqlInterface;
-use craft\events\RegisterGqlModelEvent;
-use craft\models\AssetTransform;
-use craft\models\CategoryGroup;
-use craft\models\FieldGroup;
-use craft\models\Structure;
+use craft\events\RegisterGqlQueryEvent;
+use craft\events\RegisterGqlTypeEvent;
+use craft\gql\interfaces\Field as FieldInterface;
+use craft\gql\types\AssetTransform;
+use craft\gql\types\CategoryGroup;
+use craft\gql\types\FieldGroup;
+use craft\gql\types\fields\Assets as AssetsField;
+use craft\gql\types\fields\PlainText;
+use craft\gql\types\fields\Table;
+use craft\gql\types\fields\UnsupportedField;
+use craft\gql\types\Section;
+use craft\gql\types\Site;
+use craft\gql\types\SiteGroup;
+use craft\gql\types\Structure;
+use craft\gql\types\StructureNode;
+use craft\gql\queries\AssetTransform as AssetTransformQuery;
+use craft\gql\queries\CategoryGroup as CategoryGroupQuery;
+use craft\gql\queries\Field as FieldQuery;
+use craft\gql\queries\FieldGroup as FieldGroupQuery;
+use craft\gql\queries\Section as SectionQuery;
+use craft\gql\queries\SiteGroup as SiteGroupQuery;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 use yii\base\Component;
@@ -31,27 +45,30 @@ class Gql extends Component
     // =========================================================================
 
     /**
-     * @event RegisterGqlModelEvent The event that is triggered when registering models that support GraphQL.
-     *
-     * Models must implement types must implement [[GqlInterface]]. [[GqlTrait]] provides a base implementation.
+     * @event RegisterGqlModelEvent The event that is triggered when registering GraphQL types.
      *
      * @TODO: docs
      * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
      * ---
      * ```php
-     * use craft\events\RegisterGqlModelEvent;
+     * use craft\events\RegisterGqlTypeEvent;
      * use craft\services\GraphQl;
      * use yii\base\Event;
      *
      * Event::on(Gql::class,
-     *     Gql::EVENT_REGISTER_GQL_MODELS,
+     *     Gql::EVENT_REGISTER_GQL_TYPES,
      *     function(RegisterGqlModelEvent $event) {
-     *         $event->models[] = MyModel::class;
+     *         $event->types[] = MyType::getType();
      *     }
      * );
      * ```
      */
-    const EVENT_REGISTER_GQL_MODELS = 'registerGraphQlModels';
+    const EVENT_REGISTER_GQL_TYPES = 'registerGraphQlTypes';
+
+    /**
+     * @TODO docs
+     */
+    const EVENT_REGISTER_GQL_QUERIES = 'registerGrapQlQueries';
 
     // Properties
     // =========================================================================
@@ -68,9 +85,8 @@ class Gql extends Component
     public function getSchema(string $token = null): Schema
     {
         // TODO check for cached schema first
-        $gqlSupportedClasses = $this->getGqlSupportedClasses();
-        $types = $this->getGqlTypeDefinitions($gqlSupportedClasses);
-        $queries = $this->getQueries($gqlSupportedClasses);
+        $types = $this->getGqlTypeDefinitions();
+        $queries = $this->getGqlQueryDefinitions();
 
         return new Schema([
             'types' => $types,
@@ -81,66 +97,68 @@ class Gql extends Component
     /**
      * Get GraphQL type definitions from a list of models that support GraphQL
      *
-     * @param string[] $models
      * @return array
      */
-    public function getGqlTypeDefinitions(array $models): array
+    public function getGqlTypeDefinitions(): array
     {
-        $output = [[]];
+        $typeList = [
+            // Interfaces
+            FieldInterface::getType(),
 
-        /** @var GqlInterface $model */
-        foreach ($models as $model) {
-            $output[] = $model::getGqlTypeDefinitions();
-        }
+            // Entities
+            AssetTransform::getType(),
+            CategoryGroup::getType(),
+            FieldGroup::getType(),
+            Section::getType(),
+            Site::getType(),
+            SiteGroup::getType(),
+            Structure::getType(),
+            StructureNode::getType(),
 
-        return array_merge(...$output);
+            // Fields
+            AssetsField::getType(),
+            PlainText::getType(),
+            Table::getType(),
+            UnsupportedField::getType(),
+
+        ];
+
+        $event = new RegisterGqlTypeEvent([
+            'types' => $typeList
+        ]);
+
+        $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
+
+        return $event->types;
     }
 
     /**
-     * Get GraphQL query definitions from a list of models that support GraphQL
+     * Get GraphQL query definitions
      *
-     * @param string[] $models
      * @return ObjectType
      */
-    public function getQueries(array $models) {
-        $queries = [[]];
+    public function getGqlQueryDefinitions(): ObjectType
+    {
+        $queryList = [
+            // Entities
+            AssetTransformQuery::getQueries(),
+            CategoryGroupQuery::getQueries(),
+            FieldGroupQuery::getQueries(),
+            FieldQuery::getQueries(),
+            SectionQuery::getQueries(),
+            SiteGroupQuery::getQueries(),
+        ];
 
-        /** @var GqlInterface $model */
-        foreach ($models as $model) {
-            $queries[] = $model::getGqlQueryDefinitions();
-        }
+        $event = new RegisterGqlQueryEvent([
+            'queries' => array_merge(...$queryList)
+        ]);
 
-        $queries = array_merge(...$queries);
+        $this->trigger(self::EVENT_REGISTER_GQL_QUERIES, $event);
 
         return new ObjectType([
             'name' => 'Query',
-            'fields' => $queries
+            'fields' => $event->queries
         ]);
     }
 
-    /**
-     * Return a list of models that support GraphQL.
-     *
-     * @return array
-     */
-    public function getGqlSupportedClasses(): array
-    {
-        $graphQlSupportedModels = [
-            AssetTransform::class,
-            CategoryGroup::class,
-            FieldGroup::class,
-            Structure::class,
-            Field::class,
-            \craft\models\Section::class,
-        ];
-
-        // TODO FIELDS
-        $event = new RegisterGqlModelEvent([
-            'models' => $graphQlSupportedModels
-        ]);
-
-        $this->trigger(self::EVENT_REGISTER_GQL_MODELS, $event);
-
-        return $event->models;
-    }
 }

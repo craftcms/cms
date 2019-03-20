@@ -11,11 +11,6 @@ use Craft;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\FieldElementEvent;
-use craft\gql\types\fields\Assets;
-use craft\gql\types\fields\PlainText;
-use craft\gql\types\fields\Table;
-use craft\gql\queries\Field as FieldQuery;
-use craft\gql\types\fields\UnsupportedField;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -33,13 +28,12 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class Field extends SavableComponent implements FieldInterface, GqlInterface
+abstract class Field extends SavableComponent implements FieldInterface
 {
     // Traits
     // =========================================================================
 
     use FieldTrait;
-    use GqlTrait;
 
     // Constants
     // =========================================================================
@@ -549,25 +543,6 @@ abstract class Field extends SavableComponent implements FieldInterface, GqlInte
             ]));
         }
     }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getGqlTypeDefinitions(): array
-    {
-        return [
-            UnsupportedField::getType(),
-            PlainText::getType(),
-            Assets::getType(),
-            Table::getType(),
-        ];
-    }
-
-    public static function getGqlQueryDefinitions(): array
-    {
-        return FieldQuery::getQueries();
-    }
-
 
     // Protected Methods
     // =========================================================================

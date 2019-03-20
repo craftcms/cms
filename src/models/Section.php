@@ -8,8 +8,6 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\GqlInterface;
-use craft\base\GqlTrait;
 use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
@@ -27,13 +25,8 @@ use craft\validators\UniqueValidator;
  * @property EntryType[] $entryTypes Entry types
  * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
-class Section extends Model implements GqlInterface
+class Section extends Model
 {
-    // Traits
-    // =========================================================================
-
-    use GqlTrait;
-
     // Constants
     // =========================================================================
 
@@ -270,24 +263,4 @@ class Section extends Model implements GqlInterface
             $this->propagateEntries
         );
     }
-
-
-    /**
-     * @inheritdoc
-     */
-    public static function getGqlTypeList(): array
-    {
-        return [
-            'Section' => \craft\gql\types\Section::class,
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getGqlQueryDefinitions(): array
-    {
-        return \craft\gql\queries\Section::getQueries();
-    }
-
 }

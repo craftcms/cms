@@ -8,12 +8,7 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Element;
-use craft\base\GqlInterface;
-use craft\base\GqlTrait;
 use craft\base\Model;
-use craft\gql\types\Structure as StructureType;
-use craft\gql\types\StructureNode as StructureNodeType;
 
 /**
  * Class Structure model.
@@ -22,13 +17,8 @@ use craft\gql\types\StructureNode as StructureNodeType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Structure extends Model implements GqlInterface
+class Structure extends Model
 {
-    // Traits
-    // =========================================================================
-
-    use GqlTrait;
-
     // Properties
     // =========================================================================
 
@@ -68,13 +58,5 @@ class Structure extends Model implements GqlInterface
     public function getIsSortable(): bool
     {
         return Craft::$app->getSession()->checkAuthorization('editStructure:' . $this->id);
-    }
-
-    public static function getGqlTypeList(): array
-    {
-       return [
-            'Structure' => StructureType::class,
-            'StructureNode' => StructureNodeType::class,
-        ];
     }
 }

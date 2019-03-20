@@ -7,21 +7,22 @@
 
 namespace craft\events;
 
+use GraphQL\Type\Definition\Type;
 use yii\base\Event;
 
 /**
- * RegisterGqlModelEvent class.
+ * RegisterGqlQueryEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2
  */
-class RegisterGqlModelEvent extends Event
+class RegisterGqlQueryEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var string[] List of model classes that support GraphQL
+     * @var array[] List of GQL query definitions
      */
-    public $models = [];
+    public $queries = [];
 }
