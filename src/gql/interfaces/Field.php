@@ -4,10 +4,12 @@ namespace craft\gql\interfaces;
 use craft\base\Field as BaseField;
 use craft\fields\Assets as AssetsField;
 use craft\fields\PlainText as PlainTextField;
+use craft\fields\Table as TableField;
 use craft\gql\common\SchemaObject;
 use craft\gql\types\FieldGroup;
 use craft\gql\types\fields\Assets;
 use craft\gql\types\fields\PlainText;
+use craft\gql\types\fields\Table;
 use craft\gql\types\fields\UnsupportedField;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
@@ -39,6 +41,8 @@ class Field extends SchemaObject {
                         return PlainText::getType();
                     case AssetsField::class:
                         return Assets::getType();
+                    case TableField::class:
+                        return Table::getType();
                     default:
                         return UnsupportedField::getType();
                 }

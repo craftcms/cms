@@ -13,6 +13,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\events\FieldElementEvent;
 use craft\gql\types\fields\Assets;
 use craft\gql\types\fields\PlainText;
+use craft\gql\types\fields\Table;
 use craft\gql\queries\Field as FieldQuery;
 use craft\gql\types\fields\UnsupportedField;
 use craft\helpers\DateTimeHelper;
@@ -558,6 +559,7 @@ abstract class Field extends SavableComponent implements FieldInterface, GqlInte
             UnsupportedField::getType(),
             PlainText::getType(),
             Assets::getType(),
+            Table::getType(),
         ];
     }
 
