@@ -59,7 +59,7 @@ Create a `composer.json` file at the root of your plugin directory, and use this
     "docs": "https://github.com/developer/repo/blob/master/README.md"
   },
   "require": {
-    "craftcms/cms": "^3.0.0"
+    "craftcms/cms": "^3.1.0"
   },
   "autoload": {
     "psr-4": {
