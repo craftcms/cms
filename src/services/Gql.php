@@ -131,6 +131,7 @@ class Gql extends Component
             FieldGroup::class,
             Structure::class,
             Field::class,
+            \craft\models\Section::class,
         ];
 
         // TODO FIELDS
