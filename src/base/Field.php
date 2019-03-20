@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\FieldElementEvent;
+use craft\gql\types\fields\Assets;
 use craft\gql\types\fields\PlainText;
 use craft\gql\queries\Field as FieldQuery;
 use craft\gql\types\fields\UnsupportedField;
@@ -556,6 +557,7 @@ abstract class Field extends SavableComponent implements FieldInterface, GqlInte
         return [
             UnsupportedField::getType(),
             PlainText::getType(),
+            Assets::getType(),
         ];
     }
 

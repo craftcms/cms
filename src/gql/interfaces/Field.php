@@ -2,9 +2,11 @@
 namespace craft\gql\interfaces;
 
 use craft\base\Field as BaseField;
+use craft\fields\Assets as AssetsField;
 use craft\fields\PlainText as PlainTextField;
 use craft\gql\common\SchemaObject;
 use craft\gql\types\FieldGroup;
+use craft\gql\types\fields\Assets;
 use craft\gql\types\fields\PlainText;
 use craft\gql\types\fields\UnsupportedField;
 use GraphQL\Type\Definition\InterfaceType;
@@ -35,6 +37,8 @@ class Field extends SchemaObject {
                 switch (get_class($value)) {
                     case PlainTextField::class:
                         return PlainText::getType();
+                    case AssetsField::class:
+                        return Assets::getType();
                     default:
                         return UnsupportedField::getType();
                 }
