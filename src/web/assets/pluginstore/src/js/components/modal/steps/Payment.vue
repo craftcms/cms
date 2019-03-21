@@ -12,8 +12,11 @@
                             <h2>{{ "Payment Method"|t('app') }}</h2>
 
                             <template v-if="craftId">
-                                <p v-if="craftId && craftId.card"><label><input type="radio" value="existingCard" v-model="paymentMode" /> {{ "Use card {cardDetails}"|t('app', {cardDetails: craftId.card.brand + ' •••• •••• •••• ' + craftId.card.last4 + ' — ' + craftId.card.exp_month + '/' + craftId.card.exp_year }) }}</label></p>
-                                <p><label><input type="radio" value="newCard" v-model="paymentMode" /> {{ "Use a new credit card"|t('app') }}</label></p>
+                                <template v-if="craftId.card">
+                                    <radio v-model="paymentMode" value="existingCard" :label="$options.filters.t('Use card {cardDetails}', 'app', {cardDetails: craftId.card.brand + ' •••• •••• •••• ' + craftId.card.last4 + ' — ' + craftId.card.exp_month + '/' + craftId.card.exp_year })" />
+                                </template>
+
+                                <radio v-model="paymentMode" value="newCard" :label="$options.filters.t('Use a new credit card', 'app')" />
 
                                 <template v-if="paymentMode === 'newCard'">
                                     <credit-card v-if="!cardToken" ref="newCard"></credit-card>
