@@ -14,8 +14,9 @@ hr {
 h1 {
   font-size: 24px;
 }
+
 h2 {
-  @apply .mt-8;
+  @apply .mt-8 .mb-4;
 }
 
 p {
