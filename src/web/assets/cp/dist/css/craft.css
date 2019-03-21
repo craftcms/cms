@@ -20,7 +20,7 @@ a { text-decoration: none; }
 
 input, textarea { margin: 0; font-family: 'Lucida Grande', sans-serif; font-size: 100%; }
 
-textarea { resize: none; }
+textarea { resize: vertical; }
 
 select { margin: 0; }
 
