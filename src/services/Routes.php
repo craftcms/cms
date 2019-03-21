@@ -129,7 +129,7 @@ class Routes extends Component
         foreach ($routes as $route) {
             if (
                 !isset($this->_projectConfigRoutes[$route['uriPattern']]) &&
-                (empty($route['site']) || $route['site'] == $currentSiteUid)
+                (empty($route['siteUid']) || $route['siteUid'] === $currentSiteUid)
             ) {
                 $this->_projectConfigRoutes[$route['uriPattern']] = ['template' => $route['template']];
             }
