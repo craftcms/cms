@@ -17,7 +17,7 @@ If those are all you need, then the form can be quite simple.
 ```twig
 {% requireLogin %}
 
-<form id="profile-form" class="profile-form" method="post" accept-charset="UTF-8">
+<form id="profile-form" class="profile-form" method="post" accept-charset="UTF-8" enctype="multipart/form-data">
   <input type="hidden" name="action" value="users/save-user">
 
   {{ csrfInput() }}
