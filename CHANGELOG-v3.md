@@ -18,6 +18,7 @@
 - Fixed a bug where Craft wasn’t respecting the site selection for routes defined in Settings → Routes. ([#4021](https://github.com/craftcms/cms/issues/4021))
 - Fixed an error where exception would not be logged if encountering an error while applying project config changes using the `project-config/sync` console command ([#4015](https://github.com/craftcms/cms/issues/4015))
 - Fixed a bug where field UIDs could get overwritten in some scenarios.
+- Fixed an error that occurred when attempting to use Live Preview with a pending user account. ([#4025](https://github.com/craftcms/cms/issues/4025))
 
 ## 3.1.19 - 2019-03-19
 
