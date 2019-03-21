@@ -1,5 +1,5 @@
 <template>
-    <btn icon="check" :class="'license-status ' + status" block large outline>
+    <btn icon="check" :disabled="true" :class="'license-status ' + status" block large outline>
         {{ description }}
     </btn>
 </template>
