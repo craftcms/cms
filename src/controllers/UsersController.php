@@ -406,52 +406,52 @@ class UsersController extends Controller
                 return $info;
             }
 
-            /** @var User $userToProcess */
+            /** @var User $user */
             /** @var string $uid */
             /** @var string $code */
-            list($userToProcess, $uid, $code) = $info;
+            list($user, $uid, $code) = $info;
 
-            Craft::$app->getUser()->sendUsernameCookie($userToProcess);
+            Craft::$app->getUser()->sendUsernameCookie($user);
 
             // Send them to the set password template.
-            return $this->_renderSetPasswordTemplate($userToProcess, [
+            return $this->_renderSetPasswordTemplate($user, [
                 'code' => $code,
                 'id' => $uid,
-                'newUser' => $userToProcess->password ? false : true,
+                'newUser' => $user->password ? false : true,
             ]);
         }
 
         // POST request. They've just set the password.
         $code = Craft::$app->getRequest()->getRequiredBodyParam('code');
         $uid = Craft::$app->getRequest()->getRequiredParam('id');
-        $userToProcess = Craft::$app->getUsers()->getUserByUid($uid);
+        $user = Craft::$app->getUsers()->getUserByUid($uid);
 
         // See if we still have a valid token.
-        $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
+        $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code);
 
-        if (!$userToProcess || !$isCodeValid) {
+        if (!$user || !$isCodeValid) {
             return $this->_processInvalidToken();
         }
 
-        $userToProcess->newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
-        $userToProcess->setScenario(User::SCENARIO_PASSWORD);
+        $user->newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
+        $user->setScenario(User::SCENARIO_PASSWORD);
 
-        if (Craft::$app->getElements()->saveElement($userToProcess)) {
-            if ($userToProcess->getStatus() == User::STATUS_PENDING) {
+        if (Craft::$app->getElements()->saveElement($user)) {
+            if ($user->getStatus() == User::STATUS_PENDING) {
                 // Activate them
-                Craft::$app->getUsers()->activateUser($userToProcess);
+                Craft::$app->getUsers()->activateUser($user);
 
                 // Treat this as an activation request
-                if (($response = $this->_onAfterActivateUser($userToProcess)) !== null) {
+                if (($response = $this->_onAfterActivateUser($user)) !== null) {
                     return $response;
                 }
             }
 
             // Maybe automatically log them in
-            $this->_maybeLoginUserAfterAccountActivation($userToProcess);
+            $this->_maybeLoginUserAfterAccountActivation($user);
 
             // Can they access the CP?
-            if ($userToProcess->can('accessCp')) {
+            if ($user->can('accessCp')) {
                 // Send them to the CP login page
                 $url = UrlHelper::cpUrl('login');
             } else {
@@ -465,13 +465,13 @@ class UsersController extends Controller
 
         Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t update password.'));
 
-        $errors = $userToProcess->getErrors('newPassword');
+        $errors = $user->getErrors('newPassword');
 
-        return $this->_renderSetPasswordTemplate($userToProcess, [
+        return $this->_renderSetPasswordTemplate($user, [
             'errors' => $errors,
             'code' => $code,
             'id' => $uid,
-            'newUser' => $userToProcess->password ? false : true,
+            'newUser' => $user->password ? false : true,
         ]);
     }
 
@@ -486,11 +486,11 @@ class UsersController extends Controller
             return $info;
         }
 
-        /** @var User $userToProcess */
-        list($userToProcess) = $info;
-        $userIsPending = $userToProcess->status == User::STATUS_PENDING;
+        /** @var User $user */
+        list($user) = $info;
+        $userIsPending = $user->status == User::STATUS_PENDING;
 
-        if (Craft::$app->getUsers()->verifyEmailForUser($userToProcess)) {
+        if (Craft::$app->getUsers()->verifyEmailForUser($user)) {
             // If they're logged in, give them a success notice
             if (!Craft::$app->getUser()->getIsGuest()) {
                 Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
@@ -498,18 +498,17 @@ class UsersController extends Controller
 
             if ($userIsPending) {
                 // They were just activated, so treat this as an activation request
-                if (($response = $this->_onAfterActivateUser($userToProcess)) !== null) {
+                if (($response = $this->_onAfterActivateUser($user)) !== null) {
                     return $response;
                 }
             }
 
-            // Redirect to the site/CP root
             $url = UrlHelper::url('');
             return $this->redirect($url);
         }
 
         return $this->renderTemplate('_special/emailtaken', [
-            'email' => $userToProcess->unverifiedEmail
+            'email' => $user->unverifiedEmail
         ]);
     }
 
@@ -1914,8 +1913,8 @@ class UsersController extends Controller
         $code = Craft::$app->getRequest()->getRequiredParam('code');
         $isCodeValid = false;
 
-        /** @var User|null $userToProcess */
-        $userToProcess = User::find()
+        /** @var User|null $user */
+        $user = User::find()
             ->uid($uid)
             ->anyStatus()
             ->addSelect(['users.password', 'users.unverifiedEmail'])
@@ -1923,31 +1922,31 @@ class UsersController extends Controller
 
         // If someone is logged in and it's not this person, log them out
         $userSession = Craft::$app->getUser();
-        if (($identity = $userSession->getIdentity()) !== null && $userToProcess && $identity->id != $userToProcess->id) {
+        if (($identity = $userSession->getIdentity()) !== null && $user && $identity->id != $user->id) {
             $userSession->logout();
         }
 
-        if ($userToProcess) {
+        if ($user) {
             // Fire a 'beforeVerifyUser' event
             Craft::$app->getUsers()->trigger(Users::EVENT_BEFORE_VERIFY_EMAIL,
                 new UserEvent([
-                    'user' => $userToProcess
+                    'user' => $user
                 ]));
 
-            $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
+            $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code);
         }
 
-        if (!$userToProcess || !$isCodeValid) {
+        if (!$user || !$isCodeValid) {
             return $this->_processInvalidToken();
         }
 
         // Fire an 'afterVerifyUser' event
         Craft::$app->getUsers()->trigger(Users::EVENT_AFTER_VERIFY_EMAIL,
             new UserEvent([
-                'user' => $userToProcess
+                'user' => $user
             ]));
 
-        return [$userToProcess, $uid, $code];
+        return [$user, $uid, $code];
     }
 
     /**
