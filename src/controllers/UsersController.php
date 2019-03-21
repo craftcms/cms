@@ -490,26 +490,26 @@ class UsersController extends Controller
         list($user) = $info;
         $userIsPending = $user->status == User::STATUS_PENDING;
 
-        if (Craft::$app->getUsers()->verifyEmailForUser($user)) {
-            // If they're logged in, give them a success notice
-            if (!Craft::$app->getUser()->getIsGuest()) {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
-            }
-
-            if ($userIsPending) {
-                // They were just activated, so treat this as an activation request
-                if (($response = $this->_onAfterActivateUser($user)) !== null) {
-                    return $response;
-                }
-            }
-
-            $url = UrlHelper::url('');
-            return $this->redirect($url);
+        if (!Craft::$app->getUsers()->verifyEmailForUser($user)) {
+            return $this->renderTemplate('_special/emailtaken', [
+                'email' => $user->unverifiedEmail
+            ]);
         }
 
-        return $this->renderTemplate('_special/emailtaken', [
-            'email' => $user->unverifiedEmail
-        ]);
+        // If they're logged in, give them a success notice
+        if (!Craft::$app->getUser()->getIsGuest()) {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
+        }
+
+        if ($userIsPending) {
+            // They were just activated, so treat this as an activation request
+            if (($response = $this->_onAfterActivateUser($user)) !== null) {
+                return $response;
+            }
+        }
+
+        $url = UrlHelper::url('');
+        return $this->redirect($url);
     }
 
     /**
