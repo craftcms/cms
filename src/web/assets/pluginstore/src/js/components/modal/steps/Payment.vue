@@ -90,7 +90,7 @@
                     </div>
 
                     <p>
-                        <img :src="poweredByStripe" height="18" />
+                        <img :src="poweredByStripe" width="80" />
                     </p>
                 </div>
             </form>
