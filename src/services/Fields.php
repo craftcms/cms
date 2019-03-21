@@ -789,8 +789,10 @@ class Fields extends Component
         }
 
         // Make sure it's got a UUID
-        if (empty($field->uid)) {
-            $field->uid = StringHelper::UUID();
+        if ($field->getIsNew()) {
+            if (empty($field->uid)) {
+                $field->uid = StringHelper::UUID();
+            }
         } else if (!$field->uid) {
             $field->uid = Db::uidById(Table::FIELDS, $field->id);
         }
