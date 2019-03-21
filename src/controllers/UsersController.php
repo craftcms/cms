@@ -1209,7 +1209,7 @@ class UsersController extends Controller
 
         // Is this public registration, and is the user going to be activated automatically?
         if ($publicActivation) {
-            return $this->_redirectUserAfterAccountActivation($user);
+            return $this->_redirectUserToCp($user) ?? $this->_redirectUserAfterAccountActivation($user);
         }
 
         return $this->redirectToPostedUrl($user);
@@ -1984,7 +1984,7 @@ class UsersController extends Controller
         $this->_maybeLoginUserAfterAccountActivation($user);
 
         if (!Craft::$app->getRequest()->getAcceptsJson()) {
-            return $this->_redirectUserAfterAccountActivation($user);
+            return $this->_redirectUserToCp($user) ?? $this->_redirectUserAfterAccountActivation($user);
         }
 
         return null;
@@ -2004,24 +2004,33 @@ class UsersController extends Controller
     }
 
     /**
-     * Redirect the browser after a user’s account has been activated.
+     * Redirects a user to the `postCpLoginRedirect` location, if they have access to the Control Panel.
      *
-     * @param User $user The user that was just activated
+     * @param User $user The user to redirect
      * @return Response|null
      */
-    private function _redirectUserAfterAccountActivation(User $user)
+    private function _redirectUserToCp(User $user)
     {
         // Can they access the CP?
         if ($user->can('accessCp')) {
             $postCpLoginRedirect = Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
             $url = UrlHelper::cpUrl($postCpLoginRedirect);
-
             return $this->redirect($url);
         }
 
+        return null;
+    }
+
+    /**
+     * Redirect the browser after a user’s account has been activated.
+     *
+     * @param User $user The user that was just activated
+     * @return Response
+     */
+    private function _redirectUserAfterAccountActivation(User $user): Response
+    {
         $activateAccountSuccessPath = Craft::$app->getConfig()->getGeneral()->getActivateAccountSuccessPath();
         $url = UrlHelper::siteUrl($activateAccountSuccessPath);
-
         return $this->redirectToPostedUrl($user, $url);
     }
 
