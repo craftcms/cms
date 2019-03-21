@@ -63,6 +63,7 @@ class ProjectConfigController extends Controller
                 $projectConfig->applyYamlChanges();
             } catch (\Throwable $e) {
                 $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+                Craft::$app->getErrorHandler()->logException($e);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
         }
