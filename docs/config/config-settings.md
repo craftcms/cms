@@ -2499,5 +2499,27 @@ See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/
 
 
 
+### `verifyEmailSuccessPath`
+
+Allowed types
+
+:   `mixed`
+
+Default value
+
+:   `''`
+
+Defined by
+
+:   [GeneralConfig::$verifyEmailSuccessPath](api:craft\config\GeneralConfig::$verifyEmailSuccessPath)
+
+
+
+The URI that users without access to the Control Panel should be redirected to after verifying a new email address.
+
+See [craft\helpers\ConfigHelper::localizedValue()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-localizedvalue) for a list of supported value types.
+
+
+
 
 <!-- END SETTINGS -->

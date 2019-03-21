@@ -2,7 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added the `verifyEmailSuccessPath` config setting.
+- Added `craft\config\GeneralConfig::getVerifyEmailSuccessPath()`.
+
 ### Changed
+- Users without access to the Control Panel are now redirected according to the `verifyEmailSuccessPath` config setting after verifying a new email address. ([#1998](https://github.com/craftcms/cms/issues/1998))
 - The `_includes/forms/text` Control Panel template now supports passing `autocorrect: false` and `autocapitalize: false`, to disable autocorrect and auto-capitalization on iOS devices.
 - iOS autocorrect and auto-capitalization has been disabled for all core “Handle” and “Slug” fields in the Control Panel. ([#4009](https://github.com/craftcms/cms/issues/4009))
 

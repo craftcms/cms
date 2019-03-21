@@ -508,8 +508,19 @@ class UsersController extends Controller
             }
         }
 
-        $url = UrlHelper::url('');
-        return $this->redirect($url);
+        // If they're logged in, give them a success notice
+        if (!Craft::$app->getUser()->getIsGuest()) {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
+        }
+
+        if ($userIsPending) {
+            // They were just activated, so treat this as an activation request
+            if (($response = $this->_onAfterActivateUser($user)) !== null) {
+                return $response;
+            }
+        }
+
+        return $this->_redirectUserToCp($user) ?? $this->_redirectUserAfterEmailVerification($user);
     }
 
     /**
@@ -2030,6 +2041,19 @@ class UsersController extends Controller
     {
         $activateAccountSuccessPath = Craft::$app->getConfig()->getGeneral()->getActivateAccountSuccessPath();
         $url = UrlHelper::siteUrl($activateAccountSuccessPath);
+        return $this->redirectToPostedUrl($user, $url);
+    }
+
+    /**
+     * Redirect the browser after a user has verified their new email address
+     *
+     * @param User $user The user that just verified their email
+     * @return Response
+     */
+    private function _redirectUserAfterEmailVerification(User $user): Response
+    {
+        $verifyEmailSuccessPath = Craft::$app->getConfig()->getGeneral()->getVerifyEmailSuccessPath();
+        $url = UrlHelper::siteUrl($verifyEmailSuccessPath);
         return $this->redirectToPostedUrl($user, $url);
     }
 
