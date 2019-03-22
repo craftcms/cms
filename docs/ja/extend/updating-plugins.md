@@ -958,13 +958,13 @@ class Install extends Migration
         // Fresh install code goes here...
     }
 
-    private function _upgradeFromCraft2()
+    private function _upgradeFromCraft2(): bool
     {
         // Fetch the old plugin row, if it was installed
         $row = (new \craft\db\Query())
-            ->select(['id', 'settings'])
+            ->select(['id', 'handle', 'settings'])
             ->from(['{{%plugins}}'])
-            ->where(['in', 'handle', ['old-handle', 'oldhandle']])
+            ->where(['in', 'handle', ['<old-handle>', '<oldhandle>']])
             ->one();
 
         if (!$row) {
@@ -972,12 +972,14 @@ class Install extends Migration
         }
 
         // Update this one's settings to old values
-        $this->update('{{%plugins}}', [
-            'settings' => $row['settings']
-        ], ['handle' => 'new-handle']);
+        $projectConfig = \Craft::$app->projectConfig;
+        $oldKey = "plugins.{$row['handle']}";
+        $newKey = 'plugins.<new-handle>';
+        $projectConfig->set($newKey, $projectConfig->get($oldKey));
 
-        // Delete the old row
+        // Delete the old plugin row and project config data
         $this->delete('{{%plugins}}', ['id' => $row['id']]);
+        $projectConfig->remove($oldKey);
 
         // Any additional upgrade code goes here...
 
@@ -991,7 +993,7 @@ class Install extends Migration
 }
 ```
 
-プラグインの以前のハンドル（`kebab-case` と `onewordalllowercase`）を `old-handle` と `oldhandle` に置き換えてください。そして、`_upgradeFromCraft2()` メソッドの最後（`return` 文の前）に、追加のアップグレードコードを配置してください。（プラグインの新規インストール向けの）通常のインストールマイグレーションコードは、`safeUp()` の最後に入れる必要があります。
+プラグインの以前のハンドル（`kebab-case` と `onewordalllowercase`）を `<old-handle>` と `<oldhandle>` に置き換えてください。そして、`_upgradeFromCraft2()` メソッドの最後（`return` 文の前）に、追加のアップグレードコードを配置してください。（プラグインの新規インストール向けの）通常のインストールマイグレーションコードは、`safeUp()` の最後に入れる必要があります。
 
 ### コンポーネントクラス名
 
