@@ -633,29 +633,6 @@ The `csrfInput()` function is provided as a shortcut.
 {{ csrfInput() }}
 ```
 
-## Memcache
-
-If you are using `memcache` for your <config:cacheMethod> config setting and you did not have `useMemcached` set to `true` in your `config/memcache.php` config file, you'll need to install memcached on your server.  Craft 3 will only use it because there is not a PHP 7 compatible version of memcache available.
-
-## DbCache
-
-If you are using `db` for your <config:cacheMethod> config setting, you'll need to manually execute some SQL before attempting the Craft 3 update.
-
-```sql
-DROP TABLE IF EXISTS craft_cache;
-
-CREATE TABLE craft_cache (
-    id char(128) NOT NULL PRIMARY KEY,
-    expire int(11),
-    data BLOB,
-    dateCreated datetime NOT NULL,
-    dateUpdated datetime NOT NULL,
-    uid char(36) NOT NULL DEFAULT 0
-);
-```
-
-Note that these examples use Craft 2’s default `tablePrefix` DB config setting of `craft`. If you have changed that config setting, you will want to adjust the examples accordingly.
-
 ## Plugins
 
 See [Updating Plugins for Craft 3](extend/updating-plugins.md).
