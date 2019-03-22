@@ -501,23 +501,9 @@ class UsersController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
         }
 
-        if ($userIsPending) {
-            // They were just activated, so treat this as an activation request
-            if (($response = $this->_onAfterActivateUser($user)) !== null) {
-                return $response;
-            }
-        }
-
-        // If they're logged in, give them a success notice
-        if (!Craft::$app->getUser()->getIsGuest()) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
-        }
-
-        if ($userIsPending) {
-            // They were just activated, so treat this as an activation request
-            if (($response = $this->_onAfterActivateUser($user)) !== null) {
-                return $response;
-            }
+        // They were just activated, so treat this as an activation request
+        if ($userIsPending && ($response = $this->_onAfterActivateUser($user)) !== null) {
+            return $response;
         }
 
         return $this->_redirectUserToCp($user) ?? $this->_redirectUserAfterEmailVerification($user);
@@ -1397,8 +1383,7 @@ class UsersController extends Controller
 
         Craft::$app->getUsers()->unlockUser($user);
 
-        Craft::$app->getSession()->setNotice(Craft::t('app',
-            'User activated.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'User activated.'));
 
         return $this->redirectToPostedUrl();
     }
