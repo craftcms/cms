@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 2.7.7 - 2019-03-23
+
+### Fixed
+- Fixed a bug where CSRF validation was broken on servers running PHP 5.x.
+
+### Changed
+- Updated Twig to 1.38.4.
+
 ## 2.7.6 - 2019-03-15
 
 ### Fixed
