@@ -30,5 +30,8 @@
     {%- if readonly is defined and readonly %} readonly {% endif %}
     {%- if title is defined %} title="{{ title }}"{% endif %}
     {%- if placeholder is defined %} placeholder="{{ placeholder }}"{% endif %}
+    {%- if step is defined %} step="{{ step }}"{% endif %}
+    {%- if min is defined %} min="{{ min }}"{% endif %}
+    {%- if max is defined %} max="{{ max }}"{% endif %}
     {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
 {%- if type == 'password' %}</div>{% endif %}
