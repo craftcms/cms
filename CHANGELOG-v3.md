@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `verifyEmailSuccessPath` config setting.
+- Added the “Max Length” setting for URL fields. ([#4019](https://github.com/craftcms/cms/issues/4019))
 - Added `craft\config\GeneralConfig::getVerifyEmailSuccessPath()`.
 
 ### Changed
