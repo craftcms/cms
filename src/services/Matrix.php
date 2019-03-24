@@ -636,7 +636,11 @@ class Matrix extends Component
      */
     public function deleteMatrixField(MatrixField $matrixField): bool
     {
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        // Clear the schema cache
+        $db = Craft::$app->getDb();
+        $db->getSchema()->refresh();
+
+        $transaction = $db->beginTransaction();
         try {
             $originalContentTable = Craft::$app->getContent()->contentTable;
             Craft::$app->getContent()->contentTable = $matrixField->contentTable;
@@ -649,7 +653,7 @@ class Matrix extends Component
             }
 
             // Drop the content table
-            Craft::$app->getDb()->createCommand()
+            $db->createCommand()
                 ->dropTable($matrixField->contentTable)
                 ->execute();
 
