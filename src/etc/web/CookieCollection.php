@@ -38,9 +38,13 @@ class CookieCollection extends \CCookieCollection
 		{
 			foreach($_COOKIE as $name => $value)
 			{
-				if (is_string($value) && ($value=craft()->security->validateData($value)) !== false)
+				if (defined('PHP_VERSION_ID') && PHP_VERSION_ID >= 70000)
 				{
 					$cookies[$name] = new HttpCookie($name, @unserialize($value, array('allowed_classes' => false)));
+				}
+				else
+				{
+					$cookies[$name] = new HttpCookie($name, @unserialize($value));
 				}
 			}
 		}
