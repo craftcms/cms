@@ -406,7 +406,6 @@ class Tags extends Component
         }
     }
 
-
     /**
      * Prune a deleted field from tag group layouts.
      *
