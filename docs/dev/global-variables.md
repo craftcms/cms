@@ -50,6 +50,16 @@ The currently-logged-in user, represented by a <api:craft\elements\User> object,
 {% endif %}
 ```
 
+## `devMode`
+
+Whether the <config:devMode> config setting is currently enabled.
+
+```twig
+{% if devMode %}
+    Craft is running in dev mode.
+{% endif %}
+```
+
 ## `loginUrl`
 
 The URL to your site’s login page, based on the <config:loginPath> config setting.
