@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.7.7.2 - 2019-03-25
+
 ### Changed
 - Updated Yii to 1.1.20.4.
 
