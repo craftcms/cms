@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8190062d859e5089ef1daceaf858ebbc",
+    "content-hash": "196197b02ac54e95947e1a4b66b38a30",
     "packages": [
         {
             "name": "elvanto/litemoji",
@@ -805,16 +805,16 @@
         },
         {
             "name": "yiisoft/yii",
-            "version": "1.1.20.3",
+            "version": "1.1.20.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/yii.git",
-                "reference": "d88d8ef6149409d181299d94ba3bab0c10ef3b6b"
+                "reference": "b7bd817648c70ce2bc692715c0adda247292eb84"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pixelandtonic/yii/zipball/d88d8ef6149409d181299d94ba3bab0c10ef3b6b",
-                "reference": "d88d8ef6149409d181299d94ba3bab0c10ef3b6b",
+                "url": "https://api.github.com/repos/pixelandtonic/yii/zipball/b7bd817648c70ce2bc692715c0adda247292eb84",
+                "reference": "b7bd817648c70ce2bc692715c0adda247292eb84",
                 "shasum": ""
             },
             "require": {
@@ -897,7 +897,7 @@
                 "irc": "irc://irc.freenode.net/yii",
                 "source": "https://github.com/yiisoft/yii"
             },
-            "time": "2019-03-23T16:46:29+00:00"
+            "time": "2019-03-25T22:51:09+00:00"
         }
     ],
     "packages-dev": [
