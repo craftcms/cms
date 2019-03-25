@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed another bug where CSRF validation was broken on servers running PHP 5.x.
+
 ## 2.7.7 - 2019-03-23
 
 ### Fixed
