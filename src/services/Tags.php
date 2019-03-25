@@ -421,6 +421,9 @@ class Tags extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $tagGroups = $projectConfig->get(self::CONFIG_TAGGROUP_KEY);
 
+        // Engage stealth mode
+        $projectConfig->muteEvents = true;
+
         // Loop through the tag groups and prune the UID from field layouts.
         if (is_array($tagGroups)) {
             foreach ($tagGroups as $tagGroupUid => $tagGroup) {
@@ -435,6 +438,12 @@ class Tags extends Component
                 }
             }
         }
+
+        // Nuke all the layout fields from the DB
+        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+
+        // Allow events again
+        $projectConfig->muteEvents = false;
     }
 
     // Tags
