@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where you could get incorrect cookie values.
+
 ## 2.7.7.2 - 2019-03-25
 
 ### Changed
