@@ -26,6 +26,7 @@
 - Fixed a bug where field UIDs could get overwritten in some scenarios.
 - Fixed an error that occurred when attempting to use Live Preview with a pending user account. ([#4025](https://github.com/craftcms/cms/issues/4025))
 - Fixed a bug where deleting fields via `project.yaml` could sometimes prevent other updates from being applied.
+- Fixed an error when displaying a time input in the Control Panel if the value passed wasn’t a `DateTime` object. ([#4041](https://github.com/craftcms/cms/issues/4041))
 
 ## 3.1.19 - 2019-03-19
 
