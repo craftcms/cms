@@ -189,7 +189,13 @@ class Paginator extends BaseObject
         }
 
         $pageOffset =  ($this->query->offset ?? 0) + $this->getPageOffset();
-        $pageLimit = max(0, min($this->pageSize, $this->getTotalResults() - $pageOffset));
+
+        // Have we reached the last page, and would the default page size bleed past the total results?
+        if ($this->pageSize * $this->currentPage > $this->getTotalResults()) {
+            $pageLimit = max(0, $this->getTotalResults() - $this->getPageOffset());
+        } else {
+            $pageLimit = $this->pageSize;
+        }
 
         if (!$pageLimit) {
             return [];
