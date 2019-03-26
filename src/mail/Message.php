@@ -126,7 +126,14 @@ class Message extends \yii\swiftmailer\Message
         if (is_array($emails)) {
             foreach ($emails as $key => $email) {
                 if (is_numeric($key)) {
-                    $emails[$key] = $this->_normalizeEmail($email);
+                    if (is_array($normalizedEmail = $this->_normalizeEmail($email))) {
+                        foreach ($normalizedEmail as $emailAddress => $emailName) {
+                            unset($emails[$key]);
+                            $emails[$emailAddress] = $emailName;
+                        }
+                    } else {
+                        $emails[$key] = $normalizedEmail;
+                    }
                 }
             }
         } else {
