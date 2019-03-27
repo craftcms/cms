@@ -1378,6 +1378,7 @@ class ProjectConfig extends Component
             'users' => $this->_getUserData(),
             'globalSets' => $this->_getGlobalSetData(),
             'plugins' => $this->_getPluginData(),
+            'imageTransforms' => $this->_getTransformData(),
         ];
 
         return $data;
@@ -1582,7 +1583,6 @@ class ProjectConfig extends Component
                 'fields.id',
                 'fields.name',
                 'fields.handle',
-                'fields.context',
                 'fields.instructions',
                 'fields.searchable',
                 'fields.translationMethod',
@@ -1594,6 +1594,7 @@ class ProjectConfig extends Component
             ])
             ->from(['{{%fields}} fields'])
             ->leftJoin('{{%fieldgroups}} fieldGroups', '[[fields.groupId]] = [[fieldGroups.id]]')
+            ->where(['fields.context' => 'global'])
             ->all();
 
         $fields = [];
@@ -1652,12 +1653,53 @@ class ProjectConfig extends Component
 
         $matrixFieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
 
+        // Fetch the subfields
+        $matrixSubfieldRows = (new Query())
+            ->select([
+                'fields.id',
+                'fields.name',
+                'fields.handle',
+                'fields.instructions',
+                'fields.searchable',
+                'fields.translationMethod',
+                'fields.translationKeyFormat',
+                'fields.type',
+                'fields.settings',
+                'fields.context',
+                'fields.uid',
+                'fieldGroups.uid AS fieldGroup',
+            ])
+            ->from(['{{%fields}} fields'])
+            ->leftJoin('{{%fieldgroups}} fieldGroups', '[[fields.groupId]] = [[fieldGroups.id]]')
+            ->where(['like', 'fields.context', 'matrixBlockType:'])
+            ->all();
+
+        $matrixSubFields = [];
+        $fieldService = Craft::$app->getFields();
+
+        // Massage the data and index by UID
+        foreach ($matrixSubfieldRows as $matrixSubfieldRow) {
+            $matrixSubfieldRow['settings'] = Json::decodeIfJson($matrixSubfieldRow['settings']);
+            $fieldInstance = $fieldService->getFieldById($matrixSubfieldRow['id']);
+            $matrixSubfieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
+            list (, $blockTypeUid) = explode(':', $matrixSubfieldRow['context']);
+
+            if (empty($matrixSubFields[$blockTypeUid])) {
+                $matrixSubFields[$blockTypeUid] = [];
+            }
+
+            $fieldUid = $matrixSubfieldRow['uid'];
+            unset($matrixSubfieldRow['uid'], $matrixSubfieldRow['id'], $matrixSubfieldRow['context']);
+            $matrixSubFields[$blockTypeUid][$fieldUid] = $matrixSubfieldRow;
+        }
+
         foreach ($blockTypeData as &$blockTypes) {
             foreach ($blockTypes as &$blockType) {
                 $blockTypeUid = $blockType['uid'];
                 $layout = $matrixFieldLayouts[$blockType['fieldLayoutId']];
                 unset($blockType['uid'], $blockType['fieldLayoutId']);
                 $blockType['fieldLayouts'] = [$layout['uid'] => ['tabs' => $layout['tabs']]];
+                $blockType['fields'] = $matrixSubFields[$blockTypeUid];
                 $data[$blockTypeUid] = $blockType;
             }
         }
@@ -1942,7 +1984,6 @@ class ProjectConfig extends Component
             ->select([
                 'handle',
                 'schemaVersion',
-                'licensedEdition',
             ])
             ->from([Table::PLUGINS])
             ->all();
@@ -1952,11 +1993,42 @@ class ProjectConfig extends Component
         foreach ($plugins as $plugin) {
             $pluginData[$plugin['handle']] = [
                 'schemaVersion' => $plugin['schemaVersion'],
-                'edition' => $plugin['licensedEdition'],
             ];
         }
 
         return $pluginData;
+    }
+
+
+    /**
+     * Return asset transform config array
+     *
+     * @return array
+     */
+    private function _getTransformData(): array
+    {
+        $transformRows = (new Query())
+            ->select([
+                'name',
+                'handle',
+                'mode',
+                'position',
+                'width',
+                'height',
+                'format',
+                'quality',
+                'interlace',
+                'uid',
+            ])
+            ->from([Table::ASSETTRANSFORMS])
+            ->indexBy('uid')
+            ->all();
+
+        foreach ($transformRows as &$row) {
+            unset($row['uid']);
+        }
+
+        return $transformRows;
     }
 
     /**
