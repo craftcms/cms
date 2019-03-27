@@ -2141,6 +2141,10 @@ table.editable {
 
         &.textual {
           vertical-align: top;
+
+          textarea {
+            resize: none;
+          }
         }
 
         &:not(.textual) {

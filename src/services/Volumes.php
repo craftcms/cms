@@ -669,6 +669,9 @@ class Volumes extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $volumes = $projectConfig->get(self::CONFIG_VOLUME_KEY);
 
+        // Engage stealth mode
+        $projectConfig->muteEvents = true;
+
         // Loop through the volumes and prune the UID from field layouts.
         if (is_array($volumes)) {
             foreach ($volumes as $volumeUid => $volume) {
@@ -683,6 +686,12 @@ class Volumes extends Component
                 }
             }
         }
+
+        // Nuke all the layout fields from the DB
+        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+
+        // Allow events again
+        $projectConfig->muteEvents = false;
     }
 
     // Private Methods

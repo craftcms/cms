@@ -203,6 +203,8 @@
                     siteId: entry.siteId,
                     id: 'slug',
                     name: 'slug',
+                    autocorrect: false,
+                    autocapitalize: false,
                     value: entry.slug,
                     placeholder: "Enter slug"|t('app'),
                     errors: (not isVersion ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),

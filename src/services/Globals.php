@@ -541,6 +541,9 @@ class Globals extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $globalSets = $projectConfig->get(self::CONFIG_GLOBALSETS_KEY);
 
+        // Engage stealth mode
+        $projectConfig->muteEvents = true;
+
         // Loop through the global sets and prune the UID from field layouts.
         if (is_array($globalSets)) {
             foreach ($globalSets as $globalSetUid => $globalSet) {
@@ -555,6 +558,12 @@ class Globals extends Component
                 }
             }
         }
+
+        // Nuke all the layout fields from the DB
+        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+
+        // Allow events again
+        $projectConfig->muteEvents = false;
     }
 
     // Private methods

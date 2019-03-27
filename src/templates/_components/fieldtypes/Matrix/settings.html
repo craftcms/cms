@@ -74,8 +74,10 @@
                                     {{ forms.textField({
                                         label: "Handle"|t('app'),
                                         id: 'handle',
-                                        class: 'code',
                                         name: 'handle',
+                                        class: 'code',
+                                        autocorrect: false,
+                                        autocapitalize: false,
                                         maxlength: 64,
                                         value: field.handle,
                                         errors: field.getErrors('handle'),

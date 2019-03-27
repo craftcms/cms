@@ -28,8 +28,10 @@
             label: "Handle"|t('app'),
             instructions: "How you’ll refer to this category group in the templates."|t('app'),
             id: 'handle',
-            class: 'code',
             name: 'handle',
+            class: 'code',
+            autocorrect: false,
+            autocapitalize: false,
             value: categoryGroup.handle,
             errors: categoryGroup.getErrors('handle'),
             required: true

@@ -27,8 +27,10 @@
             label: "Handle"|t('app'),
             instructions: "How you’ll refer to this tag group in the templates."|t('app'),
             id: 'handle',
-            class: 'code',
             name: 'handle',
+            class: 'code',
+            autocorrect: false,
+            autocapitalize: false,
             value: tagGroup.handle,
             errors: tagGroup.getErrors('handle'),
             required: true

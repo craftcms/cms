@@ -122,21 +122,19 @@ class Routes extends Component
         }
 
         $routes = Craft::$app->getProjectConfig()->get(self::CONFIG_ROUTES_KEY) ?? [];
+        ArrayHelper::multisort($routes, 'sortOrder', SORT_ASC, SORT_NUMERIC);
         $currentSiteUid = Craft::$app->getSites()->getCurrentSite()->uid;
         $this->_projectConfigRoutes = [];
-        $sortOrders = [];
 
         foreach ($routes as $route) {
             if (
                 !isset($this->_projectConfigRoutes[$route['uriPattern']]) &&
-                (empty($route['site']) || $route['site'] == $currentSiteUid)
+                (empty($route['siteUid']) || $route['siteUid'] === $currentSiteUid)
             ) {
                 $this->_projectConfigRoutes[$route['uriPattern']] = ['template' => $route['template']];
-                $sortOrders[] = $route['sortOrder'];
             }
         }
 
-        array_multisort($sortOrders, SORT_ASC, SORT_NUMERIC, $this->_projectConfigRoutes);
         return $this->_projectConfigRoutes;
     }
 

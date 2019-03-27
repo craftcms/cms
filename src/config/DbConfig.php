@@ -151,8 +151,6 @@ class DbConfig extends BaseObject
                     case 'password': // PG only
                         $this->password = $paramValue;
                         break;
-                    default:
-                        throw new InvalidConfigException('Unsupported DSN param: ' . $paramName);
                 }
             }
         }
@@ -219,7 +217,9 @@ class DbConfig extends BaseObject
         }
 
         // Set the DSN
-        $this->updateDsn();
+        if (!$this->dsn) {
+            $this->updateDsn();
+        }
     }
 
     /**

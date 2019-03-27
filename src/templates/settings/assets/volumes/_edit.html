@@ -28,6 +28,8 @@
                 id: 'handle',
                 name: 'handle',
                 class: 'code',
+                autocorrect: false,
+                autocapitalize: false,
                 value: (volume is defined ? volume.handle : null),
                 errors: (volume is defined ? volume.getErrors('handle') : null),
                 required: true,

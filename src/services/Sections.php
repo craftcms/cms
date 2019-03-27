@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
@@ -17,6 +18,7 @@ use craft\errors\SectionNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EntryTypeEvent;
+use craft\events\FieldEvent;
 use craft\events\SectionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -897,6 +899,49 @@ class Sections extends Component
                 $projectConfig->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.siteSettings.' . $siteUid);
             }
         }
+    }
+
+    /**
+     * Prune a deleted field from entry type layouts.
+     *
+     * @param FieldEvent $event
+     */
+    public function pruneDeletedField(FieldEvent $event)
+    {
+        /** @var Field $field */
+        $field = $event->field;
+        $fieldUid = $field->uid;
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        $sections = $projectConfig->get(self::CONFIG_SECTIONS_KEY);
+
+        // Engage stealth mode
+        $projectConfig->muteEvents = true;
+
+        // Loop through the tag groups and prune the UID from field layouts.
+        if (is_array($sections)) {
+            foreach ($sections as $sectionUid => $section) {
+                if (!empty($section['entryTypes'])) {
+                    foreach ($section['entryTypes'] as $entryTypeUid => $entryType) {
+                        if (!empty($entryType['fieldLayouts'])) {
+                            foreach ($entryType['fieldLayouts'] as $layoutUid => $layout) {
+                                if (!empty($layout['tabs'])) {
+                                    foreach ($layout['tabs'] as $tabUid => $tab) {
+                                        $projectConfig->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Nuke all the layout fields from the DB
+        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+
+        // Allow events again
+        $projectConfig->muteEvents = false;
     }
 
     /**

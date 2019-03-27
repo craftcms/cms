@@ -178,7 +178,7 @@ class Assets
      */
     public static function filename2Title(string $filename): string
     {
-        return StringHelper::upperCaseFirst(implode(' ', StringHelper::toWords($filename)));
+        return StringHelper::upperCaseFirst(implode(' ', StringHelper::toWords($filename, false, true)));
     }
 
     /**
