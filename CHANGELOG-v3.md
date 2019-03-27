@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed an error that occurred when regenerating the project config, if there were any fields without settings. ([#4062](https://github.com/craftcms/cms/issues/4062))
+- Fixed an error that occurred when loading the `_includes/forms/date` template without passing a `value` variable. ([#4063](https://github.com/craftcms/cms/issues/4063))
 
 ## 3.1.20 - 2019-03-27
 
