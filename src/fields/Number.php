@@ -196,4 +196,16 @@ class Number extends Field implements PreviewableFieldInterface
             ['number', 'min' => $this->min, 'max' => $this->max],
         ];
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($value, ElementInterface $element): string
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        return Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
+    }
 }
