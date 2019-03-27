@@ -9,8 +9,12 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Plugin;
+use craft\db\Query;
+use craft\db\Table;
 use craft\errors\OperationAbortedException;
 use craft\events\ConfigEvent;
+use craft\events\RebuildConfigEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
@@ -111,6 +115,23 @@ class ProjectConfig extends Component
      * @event Event The event that is triggered after pending changes in `config/project.yaml` have been applied.
      */
     const EVENT_AFTER_APPLY_CHANGES = 'afterApplyChanges';
+
+    /**
+     * @event RebuildConfigEvent The event that is triggered when the project config is being rebuilt.
+     * @since 3.1.20
+     *
+     * ```php
+     * use craft\events\RebuildConfigEvent;
+     * use craft\services\ProjectConfig;
+     * use yii\base\Event;
+     *
+     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD, function(RebuildConfigEvent $e) {
+     *     // Add plugin's project config data...
+     *    $e->config['myPlugin']['key'] = $value;
+     * });
+     * ```
+     */
+    const EVENT_REBUILD = 'rebuild';
 
     // Properties
     // =========================================================================
@@ -840,6 +861,40 @@ class ProjectConfig extends Component
         }, $data);
     }
 
+    /**
+     * Rebuilds the project config from the current state in the database.
+     *
+     * @throws \Throwable if reasons
+     * @since 3.1.20
+     */
+    public function rebuild()
+    {
+        // Create a backup of current config.
+        $this->reset();
+        $currentConfig = $this->_getStoredConfig();
+        $this->_storeYamlHistory($currentConfig);
+
+        // Gather everything that we can about the current state of affairs
+        $configData = $this->_getCurrentStateData();
+
+        // Fire a 'rebuild' event
+        $event = new RebuildConfigEvent([
+            'config' => $configData,
+        ]);
+        $this->trigger(self::EVENT_REBUILD, $event);
+
+        // Merge the new data over the existing one.
+        $configData = array_replace_recursive($currentConfig, $event->config);
+
+        $this->muteEvents = true;
+
+        foreach ($configData as $path => $value) {
+            $this->set($path, $value);
+        }
+
+        $this->muteEvents = false;
+    }
+
     // Private methods
     // =========================================================================
 
@@ -1298,5 +1353,756 @@ class ProjectConfig extends Component
         }
 
         file_put_contents($basePath, Yaml::dump($configData, 20, 2));
+    }
+
+    // Private methods for rebuilding project config
+    // =========================================================================
+
+    /**
+     * Return project config array.
+     * TODO: this is just a reminder that this part *needs* to be kept up-to-date as Craft evolves.
+     *
+     * @return array
+     */
+    private function _getCurrentStateData(): array
+    {
+        $data = [
+            'dateModified' => DateTimeHelper::currentTimeStamp(),
+            'siteGroups' => $this->_getSiteGroupData(),
+            'sites' => $this->_getSiteData(),
+            'sections' => $this->_getSectionData(),
+            'fieldGroups' => $this->_getFieldGroupData(),
+            'fields' => $this->_getFieldData(),
+            'matrixBlockTypes' => $this->_getMatrixBlockTypeData(),
+            'volumes' => $this->_getVolumeData(),
+            'categoryGroups' => $this->_getCategoryGroupData(),
+            'tagGroups' => $this->_getTagGroupData(),
+            'users' => $this->_getUserData(),
+            'globalSets' => $this->_getGlobalSetData(),
+            'plugins' => $this->_getPluginData(),
+            'imageTransforms' => $this->_getTransformData(),
+        ];
+
+        return $data;
+    }
+
+    /**
+     * Return site data config array.
+     *
+     * @return array
+     */
+    private function _getSiteGroupData(): array
+    {
+        $data = [];
+
+        $siteGroups = (new Query())
+            ->select([
+                'uid',
+                'name',
+            ])
+            ->from([Table::SITEGROUPS])
+            ->pairs();
+
+        foreach ($siteGroups as $uid => $name) {
+            $data[$uid] = ['name' => $name];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return site data config array.
+     *
+     * @return array
+     */
+    private function _getSiteData(): array
+    {
+        $data = [];
+
+        $sites = (new Query())
+            ->select([
+                'sites.name',
+                'sites.handle',
+                'sites.language',
+                'sites.hasUrls',
+                'sites.baseUrl',
+                'sites.sortOrder',
+                'sites.groupId',
+                'sites.uid',
+                'sites.primary',
+                'siteGroups.uid AS siteGroup',
+            ])
+            ->from(['{{%sites}} sites'])
+            ->innerJoin('{{%sitegroups}} siteGroups', '[[sites.groupId]] = [[siteGroups.id]]')
+            ->all();
+
+        foreach ($sites as $site) {
+            $uid = $site['uid'];
+            unset($site['uid'], $site['groupId']);
+            $data[$uid] = $site;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return section data config array.
+     *
+     * @return array
+     */
+    private function _getSectionData(): array
+    {
+        $sectionRows = (new Query())
+            ->select([
+                'sections.id',
+                'sections.name',
+                'sections.handle',
+                'sections.type',
+                'sections.enableVersioning',
+                'sections.propagateEntries',
+                'sections.uid',
+                'structures.uid AS structure',
+                'structures.maxLevels AS structureMaxLevels',
+            ])
+            ->from(['{{%sections}} sections'])
+            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
+            ->all();
+
+        $sectionData = [];
+
+        foreach ($sectionRows as $section) {
+            if (!empty($section['structure'])) {
+                $section['structure'] = [
+                    'uid' => $section['structure'],
+                    'maxLevels' => $section['structureMaxLevels']
+                ];
+            } else {
+                unset($section['structure']);
+            }
+
+            $uid = $section['uid'];
+            unset($section['id'], $section['structureMaxLevels'], $section['uid']);
+
+            $sectionData[$uid] = $section;
+            $sectionData[$uid]['entryTypes'] = [];
+            $sectionData[$uid]['siteSettings'] = [];
+        }
+
+        $sectionSiteRows = (new Query())
+            ->select([
+                'sections_sites.enabledByDefault',
+                'sections_sites.hasUrls',
+                'sections_sites.uriFormat',
+                'sections_sites.template',
+                'sites.uid AS siteUid',
+                'sections.uid AS sectionUid',
+            ])
+            ->from(['{{%sections_sites}} sections_sites'])
+            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_sites.siteId]]')
+            ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[sections_sites.sectionId]]')
+            ->all();
+
+        foreach ($sectionSiteRows as $sectionSiteRow) {
+            $sectionUid = $sectionSiteRow['sectionUid'];
+            $siteUid = $sectionSiteRow['siteUid'];
+            unset($sectionSiteRow['sectionUid'], $sectionSiteRow['siteUid']);
+            $sectionData[$sectionUid]['siteSettings'][$siteUid] = $sectionSiteRow;
+        }
+
+        $entryTypeRows = (new Query())
+            ->select([
+                'entrytypes.fieldLayoutId',
+                'entrytypes.name',
+                'entrytypes.handle',
+                'entrytypes.hasTitleField',
+                'entrytypes.titleLabel',
+                'entrytypes.titleFormat',
+                'entrytypes.sortOrder',
+                'entrytypes.uid',
+                'sections.uid AS sectionUid',
+            ])
+            ->from(['{{%entrytypes}} as entrytypes'])
+            ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entrytypes.sectionId]]')
+            ->all();
+
+        $layoutIds = ArrayHelper::getColumn($entryTypeRows, 'fieldLayoutId');
+        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        foreach ($entryTypeRows as $entryType) {
+            if (empty($entryType['fieldLayoutId'])) {
+                continue;
+            }
+
+            $layout = $fieldLayouts[$entryType['fieldLayoutId']];
+            $layoutUid = $layout['uid'];
+            $sectionUid = $entryType['sectionUid'];
+            $uid = $entryType['uid'];
+
+            unset($entryType['fieldLayoutId'], $entryType['sectionUid'], $entryType['uid'], $layout['uid']);
+
+            $entryType['fieldLayouts'] = [$layoutUid => $layout];
+            $sectionData[$sectionUid]['entryTypes'][$uid] = $entryType;
+        }
+
+        return $sectionData;
+    }
+
+    /**
+     * Return field data config array.
+     *
+     * @return array
+     */
+    private function _getFieldGroupData(): array
+    {
+        $data = [];
+
+        $fieldGroups = (new Query())
+            ->select([
+                'uid',
+                'name',
+            ])
+            ->from([Table::FIELDGROUPS])
+            ->pairs();
+
+        foreach ($fieldGroups as $uid => $name) {
+            $data[$uid] = ['name' => $name];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return field data config array.
+     *
+     * @return array
+     */
+    private function _getFieldData(): array
+    {
+        $data = [];
+
+        $fieldRows = (new Query())
+            ->select([
+                'fields.id',
+                'fields.name',
+                'fields.handle',
+                'fields.instructions',
+                'fields.searchable',
+                'fields.translationMethod',
+                'fields.translationKeyFormat',
+                'fields.type',
+                'fields.settings',
+                'fields.uid',
+                'fieldGroups.uid AS fieldGroup',
+            ])
+            ->from(['{{%fields}} fields'])
+            ->leftJoin('{{%fieldgroups}} fieldGroups', '[[fields.groupId]] = [[fieldGroups.id]]')
+            ->where(['fields.context' => 'global'])
+            ->all();
+
+        $fields = [];
+        $fieldService = Craft::$app->getFields();
+
+        // Massage the data and index by UID
+        foreach ($fieldRows as $fieldRow) {
+            $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
+            $fieldInstance = $fieldService->getFieldById($fieldRow['id']);
+            $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
+            $fields[$fieldRow['uid']] = $fieldRow;
+        }
+
+        foreach ($fields as $field) {
+            $fieldUid = $field['uid'];
+            unset($field['id'], $field['uid']);
+            $data[$fieldUid] = $field;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return matrix block type data config array.
+     *
+     * @return array
+     */
+    private function _getMatrixBlockTypeData(): array
+    {
+        $data = [];
+
+        $matrixBlockTypes = (new Query())
+            ->select([
+                'bt.fieldId',
+                'bt.fieldLayoutId',
+                'bt.name',
+                'bt.handle',
+                'bt.sortOrder',
+                'bt.uid',
+                'f.uid AS field',
+            ])
+            ->from(['{{%matrixblocktypes}} bt'])
+            ->innerJoin('{{%fields}} f', '[[bt.fieldId]] = [[f.id]]')
+            ->all();
+
+        $layoutIds = [];
+        $blockTypeData = [];
+
+        foreach ($matrixBlockTypes as $matrixBlockType) {
+            $fieldId = $matrixBlockType['fieldId'];
+            unset($matrixBlockType['fieldId']);
+
+            $layoutIds[] = $matrixBlockType['fieldLayoutId'];
+            $blockTypeData[$fieldId][$matrixBlockType['uid']] = $matrixBlockType;
+        }
+
+        $matrixFieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        // Fetch the subfields
+        $matrixSubfieldRows = (new Query())
+            ->select([
+                'fields.id',
+                'fields.name',
+                'fields.handle',
+                'fields.instructions',
+                'fields.searchable',
+                'fields.translationMethod',
+                'fields.translationKeyFormat',
+                'fields.type',
+                'fields.settings',
+                'fields.context',
+                'fields.uid',
+                'fieldGroups.uid AS fieldGroup',
+            ])
+            ->from(['{{%fields}} fields'])
+            ->leftJoin('{{%fieldgroups}} fieldGroups', '[[fields.groupId]] = [[fieldGroups.id]]')
+            ->where(['like', 'fields.context', 'matrixBlockType:'])
+            ->all();
+
+        $matrixSubFields = [];
+        $fieldService = Craft::$app->getFields();
+
+        // Massage the data and index by UID
+        foreach ($matrixSubfieldRows as $matrixSubfieldRow) {
+            $matrixSubfieldRow['settings'] = Json::decodeIfJson($matrixSubfieldRow['settings']);
+            $fieldInstance = $fieldService->getFieldById($matrixSubfieldRow['id']);
+            $matrixSubfieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
+            list (, $blockTypeUid) = explode(':', $matrixSubfieldRow['context']);
+
+            if (empty($matrixSubFields[$blockTypeUid])) {
+                $matrixSubFields[$blockTypeUid] = [];
+            }
+
+            $fieldUid = $matrixSubfieldRow['uid'];
+            unset($matrixSubfieldRow['uid'], $matrixSubfieldRow['id'], $matrixSubfieldRow['context']);
+            $matrixSubFields[$blockTypeUid][$fieldUid] = $matrixSubfieldRow;
+        }
+
+        foreach ($blockTypeData as &$blockTypes) {
+            foreach ($blockTypes as &$blockType) {
+                $blockTypeUid = $blockType['uid'];
+                $layout = $matrixFieldLayouts[$blockType['fieldLayoutId']];
+                unset($blockType['uid'], $blockType['fieldLayoutId']);
+                $blockType['fieldLayouts'] = [$layout['uid'] => ['tabs' => $layout['tabs']]];
+                $blockType['fields'] = $matrixSubFields[$blockTypeUid];
+                $data[$blockTypeUid] = $blockType;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return volume data config array.
+     *
+     * @return array
+     */
+    private function _getVolumeData(): array
+    {
+        $volumes = (new Query())
+            ->select([
+                'volumes.fieldLayoutId',
+                'volumes.name',
+                'volumes.handle',
+                'volumes.type',
+                'volumes.hasUrls',
+                'volumes.url',
+                'volumes.settings',
+                'volumes.sortOrder',
+                'volumes.uid',
+            ])
+            ->from(['{{%volumes}} volumes'])
+            ->all();
+
+        $layoutIds = [];
+
+        foreach ($volumes as $volume) {
+            $layoutIds[] = $volume['fieldLayoutId'];
+        }
+
+        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        $data = [];
+
+        foreach ($volumes as $volume) {
+            if (isset($fieldLayouts[$volume['fieldLayoutId']])) {
+                $layoutUid = $fieldLayouts[$volume['fieldLayoutId']]['uid'];
+                unset($fieldLayouts[$volume['fieldLayoutId']]['uid']);
+                $volume['fieldLayouts'] = [$layoutUid => $fieldLayouts[$volume['fieldLayoutId']]];
+            }
+
+            $volume['settings'] = Json::decodeIfJson($volume['settings']);
+
+            $uid = $volume['uid'];
+            unset($volume['fieldLayoutId'], $volume['uid']);
+            $data[$uid] = $volume;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Return user group data config array.
+     *
+     * @return array
+     */
+    private function _getUserData(): array
+    {
+        $data = [];
+
+        $layoutId = (new Query())
+            ->select(['id'])
+            ->from([Table::FIELDLAYOUTS])
+            ->where(['type' => User::class])
+            ->scalar();
+
+        if ($layoutId) {
+            $layouts = array_values($this->_generateFieldLayoutArray([$layoutId]));
+            $layout = reset($layouts);
+            $uid = $layout['uid'];
+            unset($layout['uid']);
+            $data['fieldLayouts'] = [$uid => $layout];
+        }
+
+        $groups = (new Query())
+            ->select(['id', 'name', 'handle', 'uid'])
+            ->from([Table::USERGROUPS])
+            ->all();
+
+        $permissions = (new Query())
+            ->select(['id', 'name'])
+            ->from([Table::USERPERMISSIONS])
+            ->pairs();
+
+        $groupPermissions = (new Query())
+            ->select(['permissionId', 'groupId'])
+            ->from([Table::USERPERMISSIONS_USERGROUPS])
+            ->all();
+
+        $permissionList = [];
+
+        foreach ($groupPermissions as $groupPermission) {
+            $permissionList[$groupPermission['groupId']][] = $permissions[$groupPermission['permissionId']];
+        }
+
+        foreach ($groups as $group) {
+            $data['groups'][$group['uid']] = [
+                'name' => $group['name'],
+                'handle' => $group['handle'],
+                'permissions' => $permissionList[$group['id']] ?? []
+            ];
+        }
+
+        $data['permissions'] = array_unique(array_values($permissions));
+
+        return $data;
+    }
+
+    /**
+     * Return category group data config array.
+     *
+     * @return array
+     */
+    private function _getCategoryGroupData(): array
+    {
+        $groupRows = (new Query())
+            ->select([
+                'groups.name',
+                'groups.handle',
+                'groups.uid',
+                'groups.fieldLayoutId',
+                'structures.uid AS structure',
+                'structures.maxLevels AS structureMaxLevels',
+            ])
+            ->from(['{{%categorygroups}} groups'])
+            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[groups.structureId]]')
+            ->all();
+
+        $groupData = [];
+
+        $layoutIds = [];
+
+        foreach ($groupRows as $group) {
+            $layoutIds[] = $group['fieldLayoutId'];
+        }
+
+        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        foreach ($groupRows as $group) {
+            if (!empty($group['structure'])) {
+                $group['structure'] = [
+                    'uid' => $group['structure'],
+                    'maxLevels' => $group['structureMaxLevels']
+                ];
+            } else {
+                unset($group['structure']);
+            }
+
+            if (isset($fieldLayouts[$group['fieldLayoutId']])) {
+                $layoutUid = $fieldLayouts[$group['fieldLayoutId']]['uid'];
+                unset($fieldLayouts[$group['fieldLayoutId']]['uid']);
+                $group['fieldLayouts'] = [$layoutUid => $fieldLayouts[$group['fieldLayoutId']]];
+            }
+
+            $uid = $group['uid'];
+            unset($group['structureMaxLevels'], $group['uid'], $group['fieldLayoutId']);
+
+            $groupData[$uid] = $group;
+            $groupData[$uid]['siteSettings'] = [];
+        }
+
+        $groupSiteRows = (new Query())
+            ->select([
+                'groups_sites.hasUrls',
+                'groups_sites.uriFormat',
+                'groups_sites.template',
+                'sites.uid AS siteUid',
+                'groups.uid AS groupUid',
+            ])
+            ->from(['{{%categorygroups_sites}} groups_sites'])
+            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[groups_sites.siteId]]')
+            ->innerJoin('{{%categorygroups}} groups', '[[groups.id]] = [[groups_sites.groupId]]')
+            ->all();
+
+        foreach ($groupSiteRows as $groupSiteRow) {
+            $groupUid = $groupSiteRow['groupUid'];
+            $siteUid = $groupSiteRow['siteUid'];
+            unset($groupSiteRow['siteUid'], $groupSiteRow['groupUid']);
+            $groupData[$groupUid]['siteSettings'][$siteUid] = $groupSiteRow;
+        }
+
+        return $groupData;
+    }
+
+    /**
+     * Return tag group data config array.
+     *
+     * @return array
+     */
+    private function _getTagGroupData(): array
+    {
+        $groupRows = (new Query())
+            ->select([
+                'groups.name',
+                'groups.handle',
+                'groups.uid',
+                'groups.fieldLayoutId',
+            ])
+            ->from(['{{%taggroups}} groups'])
+            ->all();
+
+        $groupData = [];
+        $layoutIds = [];
+
+        foreach ($groupRows as $group) {
+            $layoutIds[] = $group['fieldLayoutId'];
+        }
+
+        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        foreach ($groupRows as $group) {
+            if (isset($fieldLayouts[$group['fieldLayoutId']])) {
+                $layoutUid = $fieldLayouts[$group['fieldLayoutId']]['uid'];
+                unset($fieldLayouts[$group['fieldLayoutId']]['uid']);
+                $group['fieldLayouts'] = [$layoutUid => $fieldLayouts[$group['fieldLayoutId']]];
+            }
+
+            $uid = $group['uid'];
+            unset($group['uid'], $group['fieldLayoutId']);
+
+            $groupData[$uid] = $group;
+        }
+
+        return $groupData;
+    }
+
+    /**
+     * Return global set data config array.
+     *
+     * @return array
+     */
+    private function _getGlobalSetData(): array
+    {
+        $setRows = (new Query())
+            ->select([
+                'sets.name',
+                'sets.handle',
+                'sets.uid',
+                'sets.fieldLayoutId',
+            ])
+            ->from(['{{%globalsets}} sets'])
+            ->all();
+
+        $setData = [];
+        $layoutIds = [];
+
+        foreach ($setRows as $setRow) {
+            $layoutIds[] = $setRow['fieldLayoutId'];
+        }
+
+        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
+
+        foreach ($setRows as $setRow) {
+            if (isset($fieldLayouts[$setRow['fieldLayoutId']])) {
+                $layoutUid = $fieldLayouts[$setRow['fieldLayoutId']]['uid'];
+                unset($fieldLayouts[$setRow['fieldLayoutId']]['uid']);
+                $setRow['fieldLayouts'] = [$layoutUid => $fieldLayouts[$setRow['fieldLayoutId']]];
+            }
+
+            $uid = $setRow['uid'];
+            unset($setRow['uid'], $setRow['fieldLayoutId']);
+
+            $setData[$uid] = $setRow;
+        }
+
+        return $setData;
+    }
+
+    /**
+     * Return plugin data config array
+     *
+     * @return array
+     */
+    private function _getPluginData(): array
+    {
+        $plugins = (new Query())
+            ->select([
+                'handle',
+                'schemaVersion',
+            ])
+            ->from([Table::PLUGINS])
+            ->all();
+
+        $pluginData = [];
+
+        foreach ($plugins as $plugin) {
+            $pluginData[$plugin['handle']] = [
+                'schemaVersion' => $plugin['schemaVersion'],
+            ];
+        }
+
+        return $pluginData;
+    }
+
+
+    /**
+     * Return asset transform config array
+     *
+     * @return array
+     */
+    private function _getTransformData(): array
+    {
+        $transformRows = (new Query())
+            ->select([
+                'name',
+                'handle',
+                'mode',
+                'position',
+                'width',
+                'height',
+                'format',
+                'quality',
+                'interlace',
+                'uid',
+            ])
+            ->from([Table::ASSETTRANSFORMS])
+            ->indexBy('uid')
+            ->all();
+
+        foreach ($transformRows as &$row) {
+            unset($row['uid']);
+        }
+
+        return $transformRows;
+    }
+
+    /**
+     * Generate field layout config data for a list of array ids
+     *
+     * @param int[] $layoutIds
+     *
+     * @return array
+     */
+    private function _generateFieldLayoutArray(array $layoutIds): array
+    {
+        // Get all the UIDs
+        $fieldLayoutUids = (new Query())
+            ->select(['id', 'uid'])
+            ->from([Table::FIELDLAYOUTS])
+            ->where(['id' => $layoutIds])
+            ->pairs();
+
+        $fieldLayouts = [];
+        foreach ($fieldLayoutUids as $id => $uid) {
+            $fieldLayouts[$id] = [
+                'uid' => $uid,
+                'tabs' => [],
+            ];
+        }
+
+        // Get the tabs and fields
+        $fieldRows = (new Query())
+            ->select([
+                'fields.handle',
+                'fields.uid AS fieldUid',
+                'layoutFields.fieldId',
+                'layoutFields.required',
+                'layoutFields.sortOrder AS fieldOrder',
+                'tabs.id AS tabId',
+                'tabs.name as tabName',
+                'tabs.sortOrder AS tabOrder',
+                'tabs.uid AS tabUid',
+                'layouts.id AS layoutId',
+            ])
+            ->from(['{{%fieldlayoutfields}} AS layoutFields'])
+            ->innerJoin('{{%fieldlayouttabs}} AS tabs', '[[layoutFields.tabId]] = [[tabs.id]]')
+            ->innerJoin('{{%fieldlayouts}} AS layouts', '[[layoutFields.layoutId]] = [[layouts.id]]')
+            ->innerJoin('{{%fields}} AS fields', '[[layoutFields.fieldId]] = [[fields.id]]')
+            ->where(['layouts.id' => $layoutIds])
+            ->orderBy(['tabs.sortOrder' => SORT_ASC, 'layoutFields.sortOrder' => SORT_ASC])
+            ->all();
+
+        foreach ($fieldRows as $fieldRow) {
+            $layout = &$fieldLayouts[$fieldRow['layoutId']];
+
+            if (empty($layout['tabs'][$fieldRow['tabUid']])) {
+                $layout['tabs'][$fieldRow['tabUid']] =
+                    [
+                        'name' => $fieldRow['tabName'],
+                        'sortOrder' => $fieldRow['tabOrder'],
+                    ];
+            }
+
+            $tab = &$layout['tabs'][$fieldRow['tabUid']];
+
+            $field['required'] = $fieldRow['required'];
+            $field['sortOrder'] = $fieldRow['fieldOrder'];
+
+            $tab['fields'][$fieldRow['fieldUid']] = $field;
+        }
+
+        // Get rid of UIDs
+        foreach ($fieldLayouts as &$fieldLayout) {
+            $fieldLayout['tabs'] = array_values($fieldLayout['tabs']);
+        }
+
+        return $fieldLayouts;
     }
 }

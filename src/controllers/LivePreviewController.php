@@ -90,10 +90,15 @@ class LivePreviewController extends Controller
         $this->requireToken();
 
         // Switch the identity for this one request
-        $user = User::findOne($userId);
+        $user = User::find()
+            ->id($userId)
+            ->status([User::STATUS_ACTIVE, User::STATUS_PENDING])
+            ->one();
+
         if (!$user) {
             throw new ServerErrorHttpException('No user exists with an ID of ' . $userId);
         }
+
         Craft::$app->getUser()->setIdentity($user);
 
         // Add CORS headers

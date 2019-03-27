@@ -790,7 +790,9 @@ class Fields extends Component
 
         // Make sure it's got a UUID
         if ($field->getIsNew()) {
-            $field->uid = StringHelper::UUID();
+            if (empty($field->uid)) {
+                $field->uid = StringHelper::UUID();
+            }
         } else if (!$field->uid) {
             $field->uid = Db::uidById(Table::FIELDS, $field->id);
         }
@@ -1410,7 +1412,8 @@ class Fields extends Component
             Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_FIELDGROUP_KEY . '.' . $groupUid);
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
 
         try {
             $fieldRecord = $this->_getFieldRecord($fieldUid);
@@ -1429,42 +1432,42 @@ class Fields extends Component
             if ($class::hasContentColumn()) {
                 $columnType = $data['contentColumnType'];
 
-                // Make sure we're working with the latest data in the case of a renamed field.
-                Craft::$app->getDb()->schema->refresh();
+                // Clear the schema cache
+                $db->getSchema()->refresh();
 
                 // Are we dealing with an existing column?
-                if (Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)) {
+                if ($db->columnExists($contentTable, $oldColumnName)) {
                     // Name change?
                     if ($oldColumnName !== $newColumnName) {
                         // Does the new column already exist?
-                        if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
+                        if ($db->columnExists($contentTable, $newColumnName)) {
                             // Rename it so we don't lose any data
-                            Craft::$app->getDb()->createCommand()
+                            $db->createCommand()
                                 ->renameColumn($contentTable, $newColumnName, $newColumnName . '_' . StringHelper::randomString(10))
                                 ->execute();
                         }
 
                         // Rename the old column
-                        Craft::$app->getDb()->createCommand()
+                        $db->createCommand()
                             ->renameColumn($contentTable, $oldColumnName, $newColumnName)
                             ->execute();
                     }
 
                     // Alter it
-                    Craft::$app->getDb()->createCommand()
+                    $db->createCommand()
                         ->alterColumn($contentTable, $newColumnName, $columnType)
                         ->execute();
                 } else {
                     // Does the new column already exist?
-                    if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
+                    if ($db->columnExists($contentTable, $newColumnName)) {
                         // Rename it so we don't lose any data
-                        Craft::$app->getDb()->createCommand()
+                        $db->createCommand()
                             ->renameColumn($contentTable, $newColumnName, $newColumnName . '_' . StringHelper::randomString(10))
                             ->execute();
                     }
 
                     // Add the new column
-                    Craft::$app->getDb()->createCommand()
+                    $db->createCommand()
                         ->addColumn($contentTable, $newColumnName, $columnType)
                         ->execute();
                 }
@@ -1473,9 +1476,9 @@ class Fields extends Component
                 if (
                     !$isNewField &&
                     $fieldRecord->getOldHandle() &&
-                    Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)
+                    $db->columnExists($contentTable, $oldColumnName)
                 ) {
-                    Craft::$app->getDb()->createCommand()
+                    $db->createCommand()
                         ->dropColumn($contentTable, $oldColumnName)
                         ->execute();
                 }

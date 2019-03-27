@@ -985,6 +985,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $globals = [
             'view' => $this->view,
 
+            'devMode' => YII_DEBUG,
             'SORT_ASC' => SORT_ASC,
             'SORT_DESC' => SORT_DESC,
             'SORT_REGULAR' => SORT_REGULAR,

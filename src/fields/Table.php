@@ -228,7 +228,7 @@ class Table extends Field
                 'id' => 'defaults',
                 'name' => 'defaults',
                 'cols' => $this->columns,
-                'rows' => $this->normalizeValue($this->defaults),
+                'rows' => $this->defaults,
                 'initJs' => false
             ]
         ]);

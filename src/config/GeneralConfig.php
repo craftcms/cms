@@ -822,6 +822,13 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
     public $verificationCodeDuration = 86400;
+    /**
+     * @var mixed The URI that users without access to the Control Panel should be redirected to after verifying a new email address.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * @see getVerifyEmailSuccessPath()
+     */
+    public $verifyEmailSuccessPath = '';
 
     /**
      * @var array Stores any custom config settings
@@ -968,6 +975,18 @@ class GeneralConfig extends BaseObject
     public function getActivateAccountSuccessPath(string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->activateAccountSuccessPath, $siteHandle);
+    }
+
+    /**
+     * Returns the localized Verify Email Success Path value.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     * @return string
+     * @see verifyEmailSuccessPath
+     */
+    public function getVerifyEmailSuccessPath(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->verifyEmailSuccessPath, $siteHandle);
     }
 
     /**
