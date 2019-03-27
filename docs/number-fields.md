@@ -11,18 +11,7 @@ Number fields have the following settings:
 * **Max Value** – The highest number that may be entered in the field.
 * **Decimal Points** – The maximum number of decimal points that may be entered in the field
 
-
-
-Calling a Number field in your templates will return the number that was entered in the field.
-
-```twig
-{% if user.birthyear %}
-    <p>{{ user.name }} was born in {{ user.birthyear }}.</p>
-
-    {% set age = now.year - user.birthyear %}
-    <p>That makes them {{ age }} years old!</p>
-{% endif %}
-```
+## Templating
 
 ### Querying Elements with Number Fields
 
