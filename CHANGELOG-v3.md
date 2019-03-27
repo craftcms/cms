@@ -9,6 +9,10 @@
 - Added the `devMode` global Twig variable. ([#4038](https://github.com/craftcms/cms/issues/4038))
 - Added `craft\config\GeneralConfig::getVerifyEmailSuccessPath()`.
 - Added `craft\services\Sections::pruneDeletedField()`.
+- Added `craft\events\RebuildConfigEvent`.
+- Added `craft\services\ProjectConfig::rebuildProjectConfig()`.
+- Added the `project-config/rebuild` console command.
+- Added the Rebuild Project Config utility.
 
 ### Changed
 - Textareas within the Control Panel can now be manually vertically resized. ([#4030](https://github.com/craftcms/cms/issues/4030))
