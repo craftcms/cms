@@ -3,7 +3,7 @@
 ::: warning
 This update introduces a few changes in behavior to be aware of:
 
-- Custom login controllers must now explicitly set their `$allowAnonymous` values to include `self::ALLOW_ANONYMOUS_OFFLINE` if they wish to be available when the system is offline.  
+- Custom login controllers must now explicitly set their `$allowAnonymous` values to include `self::ALLOW_ANONYMOUS_OFFLINE` if they wish to be available when the system is offline.
 :::
 
 ### Added
