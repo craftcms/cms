@@ -30,14 +30,14 @@
 - Fixed a bug where Craft wasn’t removing hyphens and other symbols from auto-generated asset titles. ([#4011](https://github.com/craftcms/cms/issues/4011))
 - Fixed a PHP error that occurred when calling `craft\services\EntryRevisions::getDraftById()` or `getVersionById()` for a draft/version that belonged to a soft-deleted entry. ([#4013](https://github.com/craftcms/cms/issues/4013))
 - Fixed a bug where Craft wasn’t respecting the site selection for routes defined in Settings → Routes. ([#4021](https://github.com/craftcms/cms/issues/4021))
-- Fixed an error where exception would not be logged if encountering an error while applying project config changes using the `project-config/sync` console command ([#4015](https://github.com/craftcms/cms/issues/4015))
-- Fixed a bug where field UIDs could get overwritten in some scenarios.
+- Fixed a bug where the `project-config/sync` command wasn’t logging exceptions. ([#4015](https://github.com/craftcms/cms/issues/4015))
 - Fixed an error that occurred when attempting to use Live Preview with a pending user account. ([#4025](https://github.com/craftcms/cms/issues/4025))
-- Fixed a bug where deleting fields via `project.yaml` could sometimes prevent other updates from being applied.
 - Fixed an error when displaying a date input in the Control Panel if the value passed wasn’t a `DateTime` object. ([#4041](https://github.com/craftcms/cms/issues/4041))
 - Fixed a PHP error that occurred when passing an array of `craft\elements\User` objects to `craft\mail\Message::setTo()`. ([#4048](https://github.com/craftcms/cms/issues/4048))
 - Fixed a bug where Craft was applying the `offset` param to both ends of the result set when paginating queries. ([#4052](https://github.com/craftcms/cms/issues/4052))
 - Fixed a PHP error that occurred if `true` or `false` was passed to the third argument of `craft\db\Command::upsert()`. ([#4054](https://github.com/craftcms/cms/pull/4054))
+- Fixed a bug where deleting fields via `project.yaml` could prevent other changes from being applied.
+- Fixed a bug where field UIDs could be overwritten in some cases.
 
 ## 3.1.19 - 2019-03-19
 
