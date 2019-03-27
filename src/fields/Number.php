@@ -62,6 +62,16 @@ class Number extends Field implements PreviewableFieldInterface
      */
     public $size;
 
+    /**
+     * @var string|null Text that should be displayed before the input
+     */
+    public $prefix;
+
+    /**
+     * @var string|null Text that should be displayed after the input
+     */
+    public $suffix;
+
     // Public Methods
     // =========================================================================
 
@@ -171,12 +181,10 @@ class Number extends Field implements PreviewableFieldInterface
             }
         }
 
-        return '<input type="hidden" name="' . $this->handle . '[locale]" value="' . Craft::$app->language . '">' .
-            Craft::$app->getView()->renderTemplate('_includes/forms/text', [
-                'name' => $this->handle . '[value]',
-                'value' => $value,
-                'size' => $this->size
-            ]);
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input', [
+            'field' => $this,
+            'value' => $value,
+        ]);
     }
 
     /**
