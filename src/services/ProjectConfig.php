@@ -69,6 +69,8 @@ class ProjectConfig extends Component
     /**
      * @event ConfigEvent The event that is triggered when an item is added to the config.
      *
+     * ---
+     *
      * ```php
      * use craft\events\ParseConfigEvent;
      * use craft\services\ProjectConfig;
@@ -84,6 +86,8 @@ class ProjectConfig extends Component
     /**
      * @event ConfigEvent The event that is triggered when an item is updated in the config.
      *
+     * ---
+     *
      * ```php
      * use craft\events\ParseConfigEvent;
      * use craft\services\ProjectConfig;
@@ -98,6 +102,8 @@ class ProjectConfig extends Component
 
     /**
      * @event ConfigEvent The event that is triggered when an item is removed from the config.
+     *
+     * ---
      *
      * ```php
      * use craft\events\ParseConfigEvent;
@@ -118,7 +124,8 @@ class ProjectConfig extends Component
 
     /**
      * @event RebuildConfigEvent The event that is triggered when the project config is being rebuilt.
-     * @since 3.1.20
+     *
+     * ---
      *
      * ```php
      * use craft\events\RebuildConfigEvent;
@@ -130,6 +137,8 @@ class ProjectConfig extends Component
      *    $e->config['myPlugin']['key'] = $value;
      * });
      * ```
+     *
+     * @since 3.1.20
      */
     const EVENT_REBUILD = 'rebuild';
 
