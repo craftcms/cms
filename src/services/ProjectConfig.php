@@ -118,19 +118,20 @@ class ProjectConfig extends Component
 
     /**
      * @event RebuildConfigEvent The event that is triggered when the project config is being rebuilt.
+     * @since 3.1.20
      *
      * ```php
      * use craft\events\RebuildConfigEvent;
      * use craft\services\ProjectConfig;
      * use yii\base\Event;
      *
-     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD_PROJECT_CONFIG, function(RebuildConfigEvent $e) {
+     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD, function(RebuildConfigEvent $e) {
      *     // Add plugin's project config data...
-     *    $e->configData['myPlugin']['key'] = $value;
+     *    $e->config['myPlugin']['key'] = $value;
      * });
      * ```
      */
-    const EVENT_REBUILD_PROJECT_CONFIG = 'rebuildProjectConfig';
+    const EVENT_REBUILD = 'rebuild';
 
     // Properties
     // =========================================================================
@@ -864,6 +865,7 @@ class ProjectConfig extends Component
      * Rebuilds the project config from the current state in the database.
      *
      * @throws \Throwable if reasons
+     * @since 3.1.20
      */
     public function rebuild()
     {
@@ -875,14 +877,14 @@ class ProjectConfig extends Component
         // Gather everything that we can about the current state of affairs
         $configData = $this->_getCurrentStateData();
 
-        $event = new RebuildConfigEvent(['configData' => $configData]);
-
-        if ($this->hasEventHandlers(self::EVENT_REBUILD_PROJECT_CONFIG)) {
-            $this->trigger(self::EVENT_REBUILD_PROJECT_CONFIG, $event);
-        }
+        // Fire a 'rebuild' event
+        $event = new RebuildConfigEvent([
+            'config' => $configData,
+        ]);
+        $this->trigger(self::EVENT_REBUILD, $event);
 
         // Merge the new data over the existing one.
-        $configData = array_replace_recursive($currentConfig, $event->configData);
+        $configData = array_replace_recursive($currentConfig, $event->config);
 
         $this->muteEvents = true;
 
