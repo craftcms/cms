@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.20 - 2019-03-27
 
 ### Added
 - Added the `project-config/rebuild` console command.
