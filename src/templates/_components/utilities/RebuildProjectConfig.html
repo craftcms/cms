@@ -1,0 +1,27 @@
+{% import "_includes/forms" as forms %}
+
+<form id="db-backup" class="utility" method="post" accept-charset="UTF-8">
+    <input type="hidden" name="action" value="utilities/rebuild-project-config-perform-action">
+
+    {{ csrfInput() }}
+
+    <ul>
+        <li>{{ 'This utility attempts to rebuild the project configuration using the current state of Craft.'|t('app') }}</li>
+        <li>{{ 'Even though designed to be harmless, it can, in some cases, work partially or break something.'|t('app') }}</li>
+        <li>{{ 'Either of those scenarios can cause unpredictable behavior of your site, including breakage.'|t('app') }}</li>
+        <li>{{ 'Please note that not everything can be recovered. Some information is not stored in the database.'|t('app') }}</li>
+        <li>{{ 'Backups are <strong>strongly recommended</strong>. Please, do not take this lightly or initiate on a whim.'|t('app')|raw }}</li>
+    </ul>
+    <br />
+
+    {{ forms.checkbox({
+        name: 'agree',
+        label: 'I understand the risks associated.'|t('app'),
+        checked: false,
+    }) }}
+
+    <div class="buttons">
+        <input type="submit" class="btn submit" value="{{ 'Rebuild Project Config'|t('app') }}" />
+        <div class="utility-status"></div>
+    </div>
+</form>
