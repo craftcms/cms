@@ -17,7 +17,6 @@ use craft\utilities\DeprecationErrors;
 use craft\utilities\FindAndReplace;
 use craft\utilities\Migrations;
 use craft\utilities\PhpInfo;
-use craft\utilities\RebuildProjectConfig;
 use craft\utilities\SearchIndexes;
 use craft\utilities\SystemMessages as SystemMessagesUtility;
 use craft\utilities\SystemReport;
