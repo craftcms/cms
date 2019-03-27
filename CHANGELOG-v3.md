@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Craft now requires Yii 2.0.17.
+
 ## 3.1.20.1 - 2019-03-27
 
 ### Fixed
