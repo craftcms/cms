@@ -45,7 +45,7 @@ class RebuildProjectConfig extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/photo.svg');
+        return Craft::getAlias('@app/icons/tools.svg');
     }
 
     /**
