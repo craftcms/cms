@@ -13,6 +13,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
 use craft\events\ConfigEvent;
+use craft\events\RebuildConfigEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
@@ -114,6 +115,22 @@ class ProjectConfig extends Component
      * @event Event The event that is triggered after pending changes in `config/project.yaml` have been applied.
      */
     const EVENT_AFTER_APPLY_CHANGES = 'afterApplyChanges';
+
+    /**
+     * @event RebuildConfigEvent The event that is triggered when the project config is being rebuilt.
+     *
+     * ```php
+     * use craft\events\RebuildConfigEvent;
+     * use craft\services\ProjectConfig;
+     * use yii\base\Event;
+     *
+     * Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD_PROJECT_CONFIG, function(RebuildConfigEvent $e) {
+     *     // Add plugin's project config data...
+     *    $e->configData['myPlugin']['key'] = $value;
+     * });
+     * ```
+     */
+    const EVENT_REBUILD_PROJECT_CONFIG = 'rebuildProjectConfig';
 
     // Properties
     // =========================================================================
@@ -846,7 +863,7 @@ class ProjectConfig extends Component
     /**
      * Rebuilds a project config from the current state of the site and stores it as the current config.
      *
-     * @throws Exception
+     * @throws Exception If something goes wrong.
      */
     public function rebuildProjectConfig()
     {
@@ -855,14 +872,24 @@ class ProjectConfig extends Component
         $currentConfig = $this->_getStoredConfig();
         $this->_storeYamlHistory($currentConfig);
 
-        // TODO: this is just a reminder that this part *needs* to be kept up-to-date as Craft evolves.
         // Gather everything that we can about the current state of affairs
         $configData = $this->_getCurrentStateData();
 
+        $event = new RebuildConfigEvent(['configData' => $configData]);
+
+        if ($this->hasEventHandlers(self::EVENT_REBUILD_PROJECT_CONFIG)) {
+            $this->trigger(self::EVENT_REBUILD_PROJECT_CONFIG, $event);
+        }
+
+        // Merge the new data over the existing one.
+        $configData = array_replace_recursive($currentConfig, $event->configData);
+
         $this->muteEvents = true;
+
         foreach ($configData as $path => $value) {
             $this->set($path, $value);
         }
+
         $this->muteEvents = false;
     }
 
@@ -1331,6 +1358,7 @@ class ProjectConfig extends Component
 
     /**
      * Return project config array.
+     * TODO: this is just a reminder that this part *needs* to be kept up-to-date as Craft evolves.
      *
      * @return array
      */
