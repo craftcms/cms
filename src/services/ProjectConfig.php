@@ -861,11 +861,11 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Rebuilds a project config from the current state of the site and stores it as the current config.
+     * Rebuilds the project config from the current state in the database.
      *
-     * @throws Exception If something goes wrong.
+     * @throws \Throwable if reasons
      */
-    public function rebuildProjectConfig()
+    public function rebuild()
     {
         // Create a backup of current config.
         $this->reset();

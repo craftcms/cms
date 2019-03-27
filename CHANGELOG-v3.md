@@ -10,7 +10,7 @@
 - Added the `devMode` global Twig variable. ([#4038](https://github.com/craftcms/cms/issues/4038))
 - Added `craft\config\GeneralConfig::getVerifyEmailSuccessPath()`.
 - Added `craft\events\RebuildConfigEvent`.
-- Added `craft\services\ProjectConfig::rebuildProjectConfig()`.
+- Added `craft\services\ProjectConfig::rebuild()`.
 - Added `craft\services\Sections::pruneDeletedField()`.
 
 ### Changed
