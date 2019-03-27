@@ -13,16 +13,7 @@ Number fields have the following settings:
 * **Prefix** – Text that should be displayed before the input.
 * **Suffix** – Text that should be displayed after the input.
 
-Calling a Number field in your templates will return the number that was entered in the field.
-
-```twig
-{% if user.birthyear %}
-    <p>{{ user.name }} was born in {{ user.birthyear }}.</p>
-
-    {% set age = now.year - user.birthyear %}
-    <p>That makes them {{ age }} years old!</p>
-{% endif %}
-```
+## Templating
 
 ### Querying Elements with Number Fields
 
