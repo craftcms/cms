@@ -535,32 +535,6 @@ class UtilitiesController extends Controller
         return $this->redirect('utilities/migrations');
     }
 
-
-    /**
-     * Rebuilds the project config.
-     *
-     * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Migrations utility
-     */
-    public function actionRebuildProjectConfigPerformAction()
-    {
-        $this->requirePermission('utility:rebuild-project-config');
-
-        if (!empty(Craft::$app->getRequest()->getBodyParam('agree'))) {
-            try {
-                Craft::$app->getProjectConfig()->rebuildProjectConfig();
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Project Config rebuilt successfully.'));
-            } catch (\Throwable $e) {
-                Craft::$app->getSession()->setError(Craft::t('app', 'There was an error rebuilding your project config.'));
-                Craft::$app->getErrorHandler()->logException($e);
-            }
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'You must agree to the risks to rebuild the project config.'));
-        }
-
-        return $this->redirect('utilities/rebuild-project-config');
-    }
-
     // Private Methods
     // =========================================================================
 

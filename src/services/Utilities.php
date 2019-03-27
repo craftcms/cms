@@ -89,7 +89,6 @@ class Utilities extends Component
         $utilityTypes[] = DbBackup::class;
         $utilityTypes[] = FindAndReplace::class;
         $utilityTypes[] = Migrations::class;
-        $utilityTypes[] = RebuildProjectConfig::class;
 
         $event = new RegisterComponentTypesEvent([
             'types' => $utilityTypes
