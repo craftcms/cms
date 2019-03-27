@@ -1530,6 +1530,7 @@ class ProjectConfig extends Component
                 continue;
             }
 
+            $layout = $fieldLayouts[$entryType['fieldLayoutId']];
             $layoutUid = $layout['uid'];
             $sectionUid = $entryType['sectionUid'];
             $uid = $entryType['uid'];
