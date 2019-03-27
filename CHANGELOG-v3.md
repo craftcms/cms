@@ -3,11 +3,14 @@
 ## Unreleased
 
 ### Added
+- Added the `project-config/rebuild` console command.
 - Added the `verifyEmailSuccessPath` config setting.
 - Added the “Prefix” and “Suffix” settings for Number fields. ([#4055](https://github.com/craftcms/cms/issues/4055))
 - Added the “Max Length” setting for URL fields. ([#4019](https://github.com/craftcms/cms/issues/4019))
 - Added the `devMode` global Twig variable. ([#4038](https://github.com/craftcms/cms/issues/4038))
 - Added `craft\config\GeneralConfig::getVerifyEmailSuccessPath()`.
+- Added `craft\events\RebuildConfigEvent`.
+- Added `craft\services\ProjectConfig::rebuild()`.
 - Added `craft\services\Sections::pruneDeletedField()`.
 
 ### Changed
