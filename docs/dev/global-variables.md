@@ -15,9 +15,7 @@ Accessing things via `craft.app` is considered advanced. There are more security
 :::
 
 ```twig
-{% if craft.app.config.general.devMode %}
-    <p>This site is running in Dev Mode.</p>
-{% endif %}
+{% set field = craft.app.fields.getFieldByHandle('body') %}
 ```
 
 ## `currentSite`
