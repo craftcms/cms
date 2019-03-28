@@ -414,7 +414,7 @@ abstract class Element extends Component implements ElementInterface
 
             if (isset($source['structureId'])) {
                 $elementQuery->orderBy(['lft' => SORT_ASC]);
-                $variables['structure'] = Craft::$app->getStructures()->getStructureById($source['structureId']);
+                $variables['structure'] = Craft::$app->getStructures()->getStructureById((int)$source['structureId']);
 
                 // Are they allowed to make changes to this structure?
                 if ($context === 'index' && $variables['structure'] && !empty($source['structureEditable'])) {

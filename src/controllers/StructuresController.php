@@ -59,9 +59,9 @@ class StructuresController extends Controller
             throw new ForbiddenHttpException('Action only available from the Control Panel');
         }
 
-        $structureId = $request->getRequiredBodyParam('structureId');
-        $elementId = $request->getRequiredBodyParam('elementId');
-        $siteId = $request->getRequiredBodyParam('siteId');
+        $structureId = (int)$request->getRequiredBodyParam('structureId');
+        $elementId = (int)$request->getRequiredBodyParam('elementId');
+        $siteId = (int)$request->getRequiredBodyParam('siteId');
 
         // Make sure they have permission to edit this structure
         $this->requireAuthorization('editStructure:' . $structureId);
