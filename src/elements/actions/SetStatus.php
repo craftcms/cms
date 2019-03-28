@@ -50,7 +50,7 @@ class SetStatus extends ElementAction
     {
         // Only allow the "Disabled for site" option if there are multiple sites and the element type is localized
         if ($this->allowDisabledForSite) {
-            $this->allowDisabledForSite = Craft::$app->getIsMultiSite() && $this->elementType::isLocalized();
+            $this->allowDisabledForSite = $this->elementType && $this->elementType::isLocalized() && Craft::$app->getIsMultiSite();
         }
 
         parent::init();

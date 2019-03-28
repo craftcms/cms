@@ -423,7 +423,13 @@ class ElementIndexesController extends BaseElementsController
 
         foreach ($actions as $i => $action) {
             // $action could be a string or config array
-            if (!$action instanceof ElementActionInterface) {
+            if ($action instanceof ElementActionInterface) {
+                $action->setElementType($elementType);
+            } else {
+                if (is_string($action)) {
+                    $action = ['type' => $action];
+                }
+                $action['elementType'] = $elementType;
                 $actions[$i] = $action = Craft::$app->getElements()->createAction($action);
 
                 if ($actions[$i] === null) {
@@ -438,9 +444,6 @@ class ElementIndexesController extends BaseElementsController
             } else if ($action instanceof Restore) {
                 unset($actions[$i]);
             }
-
-            /** @var ElementActionInterface $action */
-            $action->setElementType($elementType);
         }
 
         return array_values($actions);
