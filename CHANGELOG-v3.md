@@ -5,6 +5,9 @@
 ### Changed
 - Craft now requires Yii 2.0.17.
 
+### Fixed
+- Fixed a bug where the Asset Indexes utility wasn’t logging exceptions.
+
 ## 3.1.20.1 - 2019-03-27
 
 ### Fixed

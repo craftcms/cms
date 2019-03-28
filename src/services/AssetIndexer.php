@@ -110,6 +110,7 @@ class AssetIndexer extends Component
                 'skippedFiles' => $skippedItems
             ];
         } catch (\Throwable $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
             return ['error' => $exception->getMessage()];
         }
     }
