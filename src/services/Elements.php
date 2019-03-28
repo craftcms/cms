@@ -415,6 +415,11 @@ class Elements extends Component
             throw new Exception('Attempting to save an element in an unsupported site.');
         }
 
+        // If the element only supports a single site, ensure it's enabled for that site
+        if (count($supportedSites) === 1) {
+            $element->enabledForSite = true;
+        }
+
         // Set a dummy title if there isn't one already and the element type has titles
         if (!$runValidation && $element::hasContent() && $element::hasTitles() && !$element->validate(['title'])) {
             $humanClass = App::humanizeClass(get_class($element));

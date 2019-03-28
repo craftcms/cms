@@ -980,9 +980,7 @@ class EntriesController extends BaseEntriesController
             $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
         }
         $entry->enabled = (bool)$request->getBodyParam('enabled', $entry->enabled);
-        $entry->enabledForSite = $entry->getSection()->getHasMultiSiteEntries()
-            ? (bool)$request->getBodyParam('enabledForSite', $entry->enabledForSite)
-            : true;
+        $entry->enabledForSite = (bool)$request->getBodyParam('enabledForSite', $entry->enabledForSite);
         $entry->title = $request->getBodyParam('title', $entry->title);
 
         if (!$entry->typeId) {
