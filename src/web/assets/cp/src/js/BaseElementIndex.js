@@ -407,12 +407,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         initSourceToggle: function($source) {
+            // Remove handlers for the same thing. Just in case.
+            this.deinitSourceToggle($source);
+
             var $toggle = this._getSourceToggle($source);
 
             if ($toggle.length) {
-                // Remove handlers for the same thing. Just in case.
-                this.removeListener($toggle, 'click', '_handleSourceToggleClick');
-
                 this.addListener($toggle, 'click', '_handleSourceToggleClick');
                 $source.data('hasNestedSources', true);
             } else {
@@ -428,8 +428,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         deinitSourceToggle: function($source) {
             if ($source.data('hasNestedSources')) {
-                var $toggle = this._getSourceToggle($source);
-                this.removeListener($toggle, 'click');
+                this.removeListener(this._getSourceToggle($source), 'click');
             }
 
             $source.removeData('hasNestedSources');
