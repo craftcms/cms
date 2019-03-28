@@ -106,6 +106,16 @@ class Sections extends Component
     // =========================================================================
 
     /**
+     * @var bool Whether entries should be resaved after a section or entry type has been updated.
+     *
+     * ::: warning
+     * Don’t disable this unless you know what you’re doing, as entries won’t reflect section/entry type changes until
+     * they’ve been resaved. (You can resave entries manually by running the `resave/entries` console command.)
+     * :::
+     */
+    public $autoResaveEntries = true;
+
+    /**
      * @var Section[]
      */
     private $_sections;
@@ -682,7 +692,7 @@ class Sections extends Component
             // Finally, deal with the existing entries...
             // -----------------------------------------------------------------
 
-            if (!$isNewSection) {
+            if (!$isNewSection && $this->autoResaveEntries) {
                 if ($oldSectionRecord->propagateEntries) {
                     // Find a site that the section was already enabled in, and still is
                     $oldSiteIds = array_keys($allOldSiteSettingsRecords);
@@ -1225,7 +1235,7 @@ class Sections extends Component
         // If this is for a Single section, ensure its entry exists
         if ($section->type === Section::TYPE_SINGLE) {
             $this->_ensureSingleEntry($section);
-        } else if (!$isNewEntryType) {
+        } else if (!$isNewEntryType && $this->autoResaveEntries) {
             // Re-save the entries of this type
             $allSiteSettings = $section->getSiteSettings();
 
