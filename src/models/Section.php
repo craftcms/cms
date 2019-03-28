@@ -34,6 +34,11 @@ class Section extends Model
     const TYPE_CHANNEL = 'channel';
     const TYPE_STRUCTURE = 'structure';
 
+    const PROPAGATION_METHOD_NONE = 'none';
+    const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
+    const PROPAGATION_METHOD_LANGUAGE = 'language';
+    const PROPAGATION_METHOD_ALL = 'all';
+
     // Properties
     // =========================================================================
 
@@ -73,7 +78,20 @@ class Section extends Model
     public $enableVersioning = true;
 
     /**
+     * @var string Propagation method
+     *
+     * This will be set to one of the following:
+     *
+     * - `none` – Only save entries in the site they were created in
+     * - `siteGroup` – Save entries to other sites in the same site group
+     * - `language` – Save entries to other sites with the same language
+     * - `all` – Save entries to all sites enabled for this section
+     */
+    public $propagationMethod = self::PROPAGATION_METHOD_ALL;
+
+    /**
      * @var bool Propagate entries
+     * @deprecated in 3.2. Use [[$propagationMethod]] instead
      */
     public $propagateEntries = true;
 
@@ -94,6 +112,18 @@ class Section extends Model
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        // todo: remove this in 4.0
+        // Set propagateEntries in case anything is still checking it
+        $this->propagateEntries = $this->propagationMethod !== self::PROPAGATION_METHOD_NONE;
+
+        parent::init();
+    }
 
     /**
      * @inheritdoc
@@ -122,8 +152,16 @@ class Section extends Model
                 self::TYPE_STRUCTURE
             ]
         ];
+        $rules[] = [
+            ['propagationMethod'], 'in', 'range' => [
+                self::PROPAGATION_METHOD_NONE,
+                self::PROPAGATION_METHOD_SITE_GROUP,
+                self::PROPAGATION_METHOD_LANGUAGE,
+                self::PROPAGATION_METHOD_ALL
+            ]
+        ];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
-        $rules[] = [['name', 'handle', 'type', 'siteSettings'], 'required'];
+        $rules[] = [['name', 'handle', 'type', 'propagationMethod', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
         return $rules;
@@ -266,7 +304,7 @@ class Section extends Model
         return (
             Craft::$app->getIsMultiSite() &&
             count($this->getSiteSettings()) > 1 &&
-            $this->propagateEntries
+            $this->propagationMethod !== self::PROPAGATION_METHOD_NONE
         );
     }
 }

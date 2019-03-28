@@ -1468,7 +1468,7 @@ class ProjectConfig extends Component
                 'sections.handle',
                 'sections.type',
                 'sections.enableVersioning',
-                'sections.propagateEntries',
+                'sections.propagationMethod',
                 'sections.uid',
                 'structures.uid AS structure',
                 'structures.maxLevels AS structureMaxLevels',

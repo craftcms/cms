@@ -7,8 +7,10 @@ This update introduces a few changes in behavior to be aware of:
 :::
 
 ### Added
+- Sections now have a “Propagation Method” setting, enabling entries to only be propagated to other sites in the same site group, or with the same language. ([#3554](https://github.com/craftcms/cms/issues/3554))
 - The `site` element query params now support passing multiple site handles, or `'*'`, to query elements across multiple sites at once. ([#2854](https://github.com/craftcms/cms/issues/2854))
 - Added the `unique` element query param, which can be used to prevent duplicate elements when querying elements across multiple sites.
+- Added `craft\models\Section::$propagationMethod`.
 - Added `craft\web\Request::getIsLoginRequest()` and `craft\console\Request::getIsLoginRequest()`.
 
 ### Changed
@@ -18,4 +20,5 @@ This update introduces a few changes in behavior to be aware of:
 
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
+- Deprecated `craft\models\Section::$propagateEntries`. Use `$propagationMethod` instead.
 - Deprecated `craft\web\Request::getIsSingleActionRequest()` and `craft\console\Request::getIsSingleActionRequest()`.

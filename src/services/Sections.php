@@ -422,7 +422,7 @@ class Sections extends Component
 
         // Main section settings
         if ($section->type === Section::TYPE_SINGLE) {
-            $section->propagateEntries = true;
+            $section->propagationMethod = Section::PROPAGATION_METHOD_ALL;
         }
 
         // Assemble the section config
@@ -435,7 +435,7 @@ class Sections extends Component
             'handle' => $section->handle,
             'type' => $section->type,
             'enableVersioning' => (bool)$section->enableVersioning,
-            'propagateEntries' => (bool)$section->propagateEntries,
+            'propagationMethod' => $section->propagationMethod,
             'siteSettings' => [],
         ];
 
@@ -587,7 +587,7 @@ class Sections extends Component
             $sectionRecord->handle = $data['handle'];
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
-            $sectionRecord->propagateEntries = (bool)$data['propagateEntries'];
+            $sectionRecord->propagationMethod = $data['propagationMethod'];
 
             $isNewSection = $sectionRecord->getIsNewRecord();
 
@@ -1408,7 +1408,7 @@ class Sections extends Component
                 'sections.handle',
                 'sections.type',
                 'sections.enableVersioning',
-                'sections.propagateEntries',
+                'sections.propagationMethod',
                 'sections.uid',
                 'structures.maxLevels',
             ])
