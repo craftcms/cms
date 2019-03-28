@@ -13,6 +13,8 @@ use craft\base\ElementInterface;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
+use craft\helpers\ElementHelper;
 use craft\queue\BaseJob;
 
 /**
@@ -37,7 +39,9 @@ class PropagateElements extends BaseJob
     public $criteria;
 
     /**
-     * @var int|int[] The site ID(s) that the elements should be propagated to
+     * @var int|int[]|null The site ID(s) that the elements should be propagated to
+     *
+     * If this is `null`, then elements will be propagated to all supported sites, except the one they were queried in.
      */
     public $siteId;
 
@@ -68,14 +72,30 @@ class PropagateElements extends BaseJob
         $totalElements = $query->count();
         $currentElement = 0;
 
+        $elementsService = Craft::$app->getElements();
+
         try {
             foreach ($query->each() as $element) {
                 $this->setProgress($queue, $currentElement++ / $totalElements);
 
                 /** @var Element $element */
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                foreach ((array)$this->siteId as $siteId) {
-                    Craft::$app->getElements()->propagateElement($element, $siteId);
+
+                if ($this->siteId) {
+                    $siteIds = (array)$this->siteId;
+                } else {
+                    $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
+                }
+
+                foreach ($siteIds as $siteId) {
+                    if ($siteId != $element->siteId) {
+                        // Make sure the site element wasn't updated more recently than the main one
+                        /** @var Element $siteElement */
+                        $siteElement = $elementsService->getElementById($element->id, $class, $siteId);
+                        if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
+                            $elementsService->propagateElement($element, $siteId, $siteElement);
+                        }
+                    }
                 }
             }
         } catch (QueryAbortedException $e) {

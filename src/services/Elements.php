@@ -37,6 +37,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\FindAndReplace;
+use craft\queue\jobs\PropagateElements;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
@@ -524,12 +525,18 @@ class Elements extends Component
 
             // Update the element across the other sites?
             if ($propagate && $element::isLocalized() && Craft::$app->getIsMultiSite()) {
-                foreach ($supportedSites as $siteInfo) {
-                    // Skip the master site
-                    if ($siteInfo['siteId'] != $element->siteId) {
-                        $this->_propagateElement($element, $isNewElement, $siteInfo);
-                    }
-                }
+                Craft::$app->getQueue()->push(new PropagateElements([
+                    'elementType' => get_class($element),
+                    'criteria' => [
+                        'id' => $element->id,
+                        'siteId' => $element->siteId,
+                        'status' => null,
+                        'enabledForSite' => false,
+                    ],
+                    'description' => $element::hasTitles()
+                        ? Craft::t('app', 'Propagating {title}', ['title' => $element->title])
+                        : null,
+                ]));
             }
 
             $transaction->commit();
@@ -1480,9 +1487,11 @@ class Elements extends Component
      *
      * @param ElementInterface $element The element to propagate
      * @param int $siteId The site ID that the element should be propagated to
+     * @param ElementInterface|null $siteElement The element loaded for the propagated site (only pass this if you
+     * already had a reason to load it)
      * @throws Exception if the element couldn't be propagated
      */
-    public function propagateElement(ElementInterface $element, int $siteId)
+    public function propagateElement(ElementInterface $element, int $siteId, ElementInterface $siteElement = null)
     {
         /** @var Element $element */
         $isNewElement = !$element->id;
@@ -1499,7 +1508,7 @@ class Elements extends Component
             throw new Exception('Attempting to propagate an element to an unsupported site.');
         }
 
-        $this->_propagateElement($element, $isNewElement, $siteInfo);
+        $this->_propagateElement($element, $isNewElement, $siteInfo, $siteElement);
     }
 
     // Private Methods
@@ -1511,14 +1520,14 @@ class Elements extends Component
      * @param ElementInterface $element
      * @param bool $isNewElement
      * @param array $siteInfo
+     * @param ElementInterface|null $siteElement The element loaded for the propagated site
      * @throws Exception if the element couldn't be propagated
      */
-    private function _propagateElement(ElementInterface $element, bool $isNewElement, array $siteInfo)
+    private function _propagateElement(ElementInterface $element, bool $isNewElement, array $siteInfo, ElementInterface $siteElement = null)
     {
         /** @var Element $element */
         // Try to fetch the element in this site
-        $siteElement = null;
-        if (!$isNewElement) {
+        if ($siteElement === null && !$isNewElement) {
             $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
         }
 
