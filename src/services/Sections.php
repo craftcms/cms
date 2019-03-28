@@ -582,7 +582,6 @@ class Sections extends Component
 
             // Basic data
             $sectionRecord = $this->_getSectionRecord($sectionUid, true);
-            $oldSectionRecord = clone $sectionRecord;
             $sectionRecord->uid = $sectionUid;
             $sectionRecord->name = $data['name'];
             $sectionRecord->handle = $data['handle'];
@@ -676,7 +675,7 @@ class Sections extends Component
                 !$isNewSection &&
                 $isNewStructure
             ) {
-                $this->_populateNewStructure($sectionRecord, $oldSectionRecord, array_keys($allOldSiteSettingsRecords));
+                $this->_populateNewStructure($sectionRecord);
             }
 
             // Finally, deal with the existing entries...
@@ -1520,40 +1519,25 @@ class Sections extends Component
      * Adds existing entries to a newly-created structure, if the section type was just converted to Structure.
      *
      * @param SectionRecord $sectionRecord
-     * @param SectionRecord $oldSectionRecord
-     * @param string[] $oldSiteIds
      * @see saveSection()
      * @throws Exception if reasons
      */
-    private function _populateNewStructure(SectionRecord $sectionRecord, SectionRecord $oldSectionRecord, array $oldSiteIds)
+    private function _populateNewStructure(SectionRecord $sectionRecord)
     {
-        if ($oldSectionRecord->propagateEntries) {
-            $siteIds = [reset($oldSiteIds)];
-        } else {
-            $siteIds = $oldSiteIds;
-        }
+        // Add all of the entries to the structure
+        $query = Entry::find()
+            ->sectionId($sectionRecord->id)
+            ->siteId('*')
+            ->unique()
+            ->anyStatus()
+            ->orderBy(['elements.id' => SORT_ASC])
+            ->withStructure(false);
 
-        $handledEntryIds = [];
         $structuresService = Craft::$app->getStructures();
 
-        foreach ($siteIds as $siteId) {
-            // Add all of the entries to the structure
-            $query = Entry::find()
-                ->siteId($siteId)
-                ->sectionId($sectionRecord->id)
-                ->anyStatus()
-                ->orderBy(['elements.id' => SORT_ASC])
-                ->withStructure(false);
-
-            if (!empty($handledEntryIds)) {
-                $query->andWhere(['not', ['elements.id' => $handledEntryIds]]);
-            }
-
-            /** @var Entry $entry */
-            foreach ($query->each() as $entry) {
-                $structuresService->appendToRoot($sectionRecord->structureId, $entry, 'insert');
-                $handledEntryIds[] = $entry->id;
-            }
+        /** @var Entry $entry */
+        foreach ($query->each() as $entry) {
+            $structuresService->appendToRoot($sectionRecord->structureId, $entry, 'insert');
         }
     }
 
