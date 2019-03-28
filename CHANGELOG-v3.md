@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where the Asset Indexes utility wasn’t logging exceptions.
+- Fixed a SQL error that could occur when using the Asset Indexes utility, if any filenames contained 4+ byte characters.
 
 ## 3.1.20.1 - 2019-03-27
 
