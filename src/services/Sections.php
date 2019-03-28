@@ -683,49 +683,19 @@ class Sections extends Component
             // -----------------------------------------------------------------
 
             if (!$isNewSection) {
-                if ($oldSectionRecord->propagateEntries) {
-                    // Find a site that the section was already enabled in, and still is
-                    $oldSiteIds = array_keys($allOldSiteSettingsRecords);
-                    $newSiteIds = $siteIdMap;
-                    $persistentSiteIds = array_values(array_intersect($newSiteIds, $oldSiteIds));
-
-                    // Try to make that the primary site, if it's in the list
-                    $siteId = Craft::$app->getSites()->getPrimarySite()->id;
-                    if (!in_array($siteId, $persistentSiteIds, false)) {
-                        $siteId = $persistentSiteIds[0];
-                    }
-
-                    Craft::$app->getQueue()->push(new ResaveElements([
-                        'description' => Craft::t('app', 'Resaving {section} entries', [
-                            'section' => $sectionRecord->name,
-                        ]),
-                        'elementType' => Entry::class,
-                        'criteria' => [
-                            'siteId' => $siteId,
-                            'sectionId' => $sectionRecord->id,
-                            'status' => null,
-                            'enabledForSite' => false,
-                        ]
-                    ]));
-                } else {
-                    // Resave entries for each site
-                    $sitesService = Craft::$app->getSites();
-                    foreach ($siteSettingData as $siteUid => $siteSettings) {
-                        Craft::$app->getQueue()->push(new ResaveElements([
-                            'description' => Craft::t('app', 'Resaving {section} entries ({site})', [
-                                'section' => $sectionRecord->name,
-                                'site' => $sitesService->getSiteByUid($siteUid)->name
-                            ]),
-                            'elementType' => Entry::class,
-                            'criteria' => [
-                                'siteId' => $siteIdMap[$siteUid],
-                                'sectionId' => $sectionRecord->id,
-                                'status' => null,
-                                'enabledForSite' => false,
-                            ]
-                        ]));
-                    }
-                }
+                Craft::$app->getQueue()->push(new ResaveElements([
+                    'description' => Craft::t('app', 'Resaving {section} entries', [
+                        'section' => $sectionRecord->name,
+                    ]),
+                    'elementType' => Entry::class,
+                    'criteria' => [
+                        'sectionId' => $sectionRecord->id,
+                        'siteId' => '*',
+                        'unique' => true,
+                        'status' => null,
+                        'enabledForSite' => false,
+                    ]
+                ]));
             }
 
             $transaction->commit();
@@ -1227,42 +1197,20 @@ class Sections extends Component
             $this->_ensureSingleEntry($section);
         } else if (!$isNewEntryType) {
             // Re-save the entries of this type
-            $allSiteSettings = $section->getSiteSettings();
-
-            if ($section->propagateEntries) {
-                $siteIds = array_keys($allSiteSettings);
-
-                Craft::$app->getQueue()->push(new ResaveElements([
-                    'description' => Craft::t('app', 'Resaving {type} entries', [
-                        'type' => ($section->type !== Section::TYPE_SINGLE ? $section->name . ' - ' : '') . $entryType->name,
-                    ]),
-                    'elementType' => Entry::class,
-                    'criteria' => [
-                        'siteId' => $siteIds[0],
-                        'sectionId' => $section->id,
-                        'typeId' => $entryType->id,
-                        'status' => null,
-                        'enabledForSite' => false,
-                    ]
-                ]));
-            } else {
-                foreach ($allSiteSettings as $siteId => $siteSettings) {
-                    Craft::$app->getQueue()->push(new ResaveElements([
-                        'description' => Craft::t('app', 'Resaving {type} entries ({site})', [
-                            'type' => $entryType->name,
-                            'site' => $siteSettings->getSite()->name,
-                        ]),
-                        'elementType' => Entry::class,
-                        'criteria' => [
-                            'siteId' => $siteId,
-                            'sectionId' => $section->id,
-                            'typeId' => $entryType->id,
-                            'status' => null,
-                            'enabledForSite' => false,
-                        ]
-                    ]));
-                }
-            }
+            Craft::$app->getQueue()->push(new ResaveElements([
+                'description' => Craft::t('app', 'Resaving {type} entries', [
+                    'type' => ($section->type !== Section::TYPE_SINGLE ? $section->name . ' - ' : '') . $entryType->name,
+                ]),
+                'elementType' => Entry::class,
+                'criteria' => [
+                    'sectionId' => $section->id,
+                    'typeId' => $entryType->id,
+                    'siteId' => '*',
+                    'unique' => true,
+                    'status' => null,
+                    'enabledForSite' => false,
+                ]
+            ]));
         }
 
         // Fire an 'afterSaveEntryType' event
