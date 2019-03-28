@@ -413,6 +413,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $toggle = this._getSourceToggle($source);
 
             if ($toggle.length) {
+                this.addListener($source, 'dblclick', '_handleSourceDblClick');
                 this.addListener($toggle, 'click', '_handleSourceToggleClick');
                 $source.data('hasNestedSources', true);
             } else {
@@ -428,6 +429,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         deinitSourceToggle: function($source) {
             if ($source.data('hasNestedSources')) {
+                this.removeListener($source, 'dblclick');
                 this.removeListener(this._getSourceToggle($source), 'click');
             }
 
@@ -1368,6 +1370,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         _handleSelectionChange: function() {
             this.updateActionTriggers();
             this.onSelectionChange();
+        },
+
+        _handleSourceDblClick: function(ev) {
+            this._toggleSource($(ev.currentTarget));
+            ev.stopPropagation();
         },
 
         _handleSourceToggleClick: function(ev) {
