@@ -844,29 +844,6 @@ class EntriesController extends BaseEntriesController
                     $variables['entry']->enabled = $siteSettings->enabledByDefault;
                     $variables['entry']->enabledForSite = true;
                 }
-
-                if ($variables['showSiteStatus']) {
-                    // Set the default site status based on the section's settings
-                    foreach ($variables['section']->getSiteSettings() as $siteSettings) {
-                        if ($siteSettings->siteId == $variables['entry']->siteId) {
-                            if ($variables['section']->propagateEntries) {
-                                $variables['entry']->enabledForSite = $siteSettings->enabledByDefault;
-                            } else {
-                                $variables['entry']->enabled = $siteSettings->enabledByDefault;
-                            }
-                            break;
-                        }
-                    }
-                } else {
-                    // Set the default entry status based on the section's settings
-                    /** @noinspection LoopWhichDoesNotLoopInspection */
-                    foreach ($variables['section']->getSiteSettings() as $siteSettings) {
-                        if (!$siteSettings->enabledByDefault) {
-                            $variables['entry']->enabled = false;
-                        }
-                        break;
-                    }
-                }
             }
         }
 
