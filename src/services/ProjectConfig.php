@@ -1710,7 +1710,7 @@ class ProjectConfig extends Component
                 $layout = $matrixFieldLayouts[$blockType['fieldLayoutId']];
                 unset($blockType['uid'], $blockType['fieldLayoutId']);
                 $blockType['fieldLayouts'] = [$layout['uid'] => ['tabs' => $layout['tabs']]];
-                $blockType['fields'] = $matrixSubFields[$blockTypeUid];
+                $blockType['fields'] = $matrixSubFields[$blockTypeUid] ?? [];
                 $data[$blockTypeUid] = $blockType;
             }
         }
