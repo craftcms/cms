@@ -43,7 +43,7 @@ To start sharing a project config across multiple environments, follow these ste
 
 5. Load any page on the primary environment, so Craft can generate a `config/project.yaml` file.
 6. Backup the database on the primary environment.
-7. For all other environments, restore the database backup created in step 5, and save a copy of the `config/project.yaml` file created in step 4.
+7. For all other environments, restore the database backup created in step 6, and save a copy of the `config/project.yaml` file created in step 5.
 
 Going forward, Craft will start updating `config/project.yaml` any time something changes that is managed by the project config. And any time Craft detects that `project.yaml` has been updated on its own (e.g. if it was changed in a Git commit that was recently pulled down), any changes in it will be propagated to the local Craft install.
 
