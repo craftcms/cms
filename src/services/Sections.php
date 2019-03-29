@@ -616,8 +616,16 @@ class Sections extends Component
                 $isNewStructure = false;
             }
 
+            $resaveEntries = (
+                $sectionRecord->handle !== $sectionRecord->getOldAttribute('handle') ||
+                $sectionRecord->type !== $sectionRecord->getOldAttribute('type') ||
+                $sectionRecord->propagateEntries != $sectionRecord->getOldAttribute('propagateEntries') ||
+                $sectionRecord->structureId != $sectionRecord->getOldAttribute('structureId')
+            );
+
             if ($sectionRecord->dateDeleted) {
                 $sectionRecord->restore();
+                $resaveEntries = true;
             } else {
                 $sectionRecord->save(false);
             }
@@ -647,6 +655,7 @@ class Sections extends Component
                     $siteSettingsRecord = new Section_SiteSettingsRecord();
                     $siteSettingsRecord->sectionId = $sectionRecord->id;
                     $siteSettingsRecord->siteId = $siteId;
+                    $resaveEntries = true;
                 }
 
                 $siteSettingsRecord->enabledByDefault = $siteSettings['enabledByDefault'];
@@ -658,6 +667,12 @@ class Sections extends Component
                     $siteSettingsRecord->uriFormat = $siteSettings['uriFormat'] = null;
                     $siteSettingsRecord->template = $siteSettings['template'] = null;
                 }
+
+                $resaveEntries = (
+                    $resaveEntries ||
+                    $siteSettingsRecord->hasUrls != $siteSettingsRecord->getOldAttribute('hasUrls') ||
+                    $siteSettingsRecord->uriFormat !== $siteSettingsRecord->getOldAttribute('uriFormat')
+                );
 
                 $siteSettingsRecord->save(false);
             }
@@ -672,6 +687,7 @@ class Sections extends Component
                     $siteUid = array_search($siteId, $siteIdMap, false);
                     if (!in_array($siteUid, $affectedSiteUids, false)) {
                         $siteSettingsRecord->delete();
+                        $resaveEntries = true;
                     }
                 }
             }
@@ -691,7 +707,7 @@ class Sections extends Component
             // Finally, deal with the existing entries...
             // -----------------------------------------------------------------
 
-            if (!$isNewSection && $this->autoResaveEntries) {
+            if (!$isNewSection && $resaveEntries && $this->autoResaveEntries) {
                 Craft::$app->getQueue()->push(new ResaveElements([
                     'description' => Craft::t('app', 'Resaving {section} entries', [
                         'section' => $sectionRecord->name,
@@ -1171,9 +1187,17 @@ class Sections extends Component
                 $entryTypeRecord->fieldLayoutId = null;
             }
 
+            $resaveEntries = (
+                $entryTypeRecord->handle !== $entryTypeRecord->getOldAttribute('handle') ||
+                $entryTypeRecord->hasTitleField != $entryTypeRecord->getOldAttribute('hasTitleField') ||
+                $entryTypeRecord->titleFormat !== $entryTypeRecord->getOldAttribute('titleFormat') ||
+                $entryTypeRecord->fieldLayoutId != $entryTypeRecord->getOldAttribute('fieldLayoutId')
+            );
+
             // Save the entry type
             if ($wasTrashed = (bool)$entryTypeRecord->dateDeleted) {
                 $entryTypeRecord->restore();
+                $resaveEntries = true;
             } else {
                 $entryTypeRecord->save(false);
             }
@@ -1204,7 +1228,7 @@ class Sections extends Component
         // If this is for a Single section, ensure its entry exists
         if ($section->type === Section::TYPE_SINGLE) {
             $this->_ensureSingleEntry($section);
-        } else if (!$isNewEntryType && $this->autoResaveEntries) {
+        } else if (!$isNewEntryType && $resaveEntries && $this->autoResaveEntries) {
             // Re-save the entries of this type
             Craft::$app->getQueue()->push(new ResaveElements([
                 'description' => Craft::t('app', 'Resaving {type} entries', [
