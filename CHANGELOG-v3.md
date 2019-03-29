@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Added the `queue/retry` command, which can be passed a failed job ID, or `all` to retry all failed jobs. ([#4072](https://github.com/craftcms/cms/issues/4072))
+- Added `craft\queue\Queue::retryAll()`.
 - Added `craft\services\sections::$autoResaveEntries`, which can be set to `false` from `config/app.php` to prevent Craft from auto-resaving entries after sections and entry types are updated. ([#3482](https://github.com/craftcms/cms/issues/3482))
 
 ### Changed

@@ -186,6 +186,33 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
+     * Re-adds all failed jobs to the queue
+     */
+    public function retryAll()
+    {
+        // Move expired messages into waiting list
+        $this->_moveExpired();
+
+        Craft::$app->getDb()->createCommand()
+            ->update(
+                Table::QUEUE,
+                [
+                    'dateReserved' => null,
+                    'timeUpdated' => null,
+                    'progress' => 0,
+                    'attempt' => 0,
+                    'fail' => false,
+                    'dateFailed' => null,
+                    'error' => null,
+                ],
+                ['fail' => true],
+                [],
+                false
+            )
+            ->execute();
+    }
+
+    /**
      * @inheritdoc
      */
     public function release(string $id)
