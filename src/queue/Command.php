@@ -7,8 +7,10 @@
 
 namespace craft\queue;
 
+use yii\console\ExitCode;
+
 /**
- * Manages application db-queue.
+ * Manages the queue
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Roman Zhuravlev <zhuravljov@gmail.com>
@@ -40,7 +42,7 @@ class Command extends \yii\queue\cli\Command
     // =========================================================================
 
     /**
-     *
+     * @inheritdoc
      */
     protected function isWorkerAction($actionID)
     {
@@ -51,7 +53,7 @@ class Command extends \yii\queue\cli\Command
     // =========================================================================
 
     /**
-     *
+     * @inheritdoc
      */
     public function beforeAction($action)
     {
@@ -63,7 +65,7 @@ class Command extends \yii\queue\cli\Command
     }
 
     /**
-     *
+     * @inheritdoc
      */
     public function actions()
     {
@@ -73,21 +75,20 @@ class Command extends \yii\queue\cli\Command
     }
 
     /**
-     * Runs all jobs from db-queue.
+     * Runs all jobs in the queue
      *
-     * It can be used as cron job.
+     * @return int
      */
-    public function actionRun()
+    public function actionRun(): int
     {
         $this->queue->run();
+        return ExitCode::OK;
     }
 
     /**
-     * Listens db-queue and runs new jobs.
+     * Listens for new jobs added to the queue and runs them
      *
-     * It can be used as demon process.
-     *
-     * @param integer $delay Number of seconds for waiting new job.
+     * @param int $delay Number of seconds for waiting new job
      */
     public function actionListen($delay = 3)
     {
