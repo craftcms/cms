@@ -97,7 +97,7 @@
                 </div>
 
                 <p>
-                    <a :href="'mailto:issues@craftcms.com?subject=' + encodeURIComponent('Issue with ' + plugin.name) + '&body=' + encodeURIComponent('I would like to report the following issue with '+plugin.name+' (https://plugins.craftcms.com/' + plugin.handle + '):\n\n')"><icon icon="exclamation-circle" /> {{ "Report an issue"|t('app') }}</a>
+                    <a :href="'mailto:issues@craftcms.com?subject=' + encodeURIComponent('Issue with ' + plugin.name) + '&body=' + encodeURIComponent('I would like to report the following issue with '+plugin.name+' (https://plugins.craftcms.com/' + plugin.handle + '):\n\n')"><icon icon="exclamation-circle" class="mr-2" />{{ "Report an issue"|t('app') }}</a>
                 </p>
 
                 <hr>
