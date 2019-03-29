@@ -7,8 +7,11 @@
 
 namespace craft\queue;
 
+use craft\helpers\Console;
+use yii\console\ExitCode;
+
 /**
- * Manages application db-queue.
+ * Manages the queue
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Roman Zhuravlev <zhuravljov@gmail.com>
@@ -40,7 +43,7 @@ class Command extends \yii\queue\cli\Command
     // =========================================================================
 
     /**
-     *
+     * @inheritdoc
      */
     protected function isWorkerAction($actionID)
     {
@@ -51,7 +54,7 @@ class Command extends \yii\queue\cli\Command
     // =========================================================================
 
     /**
-     *
+     * @inheritdoc
      */
     public function beforeAction($action)
     {
@@ -63,7 +66,7 @@ class Command extends \yii\queue\cli\Command
     }
 
     /**
-     *
+     * @inheritdoc
      */
     public function actions()
     {
@@ -73,24 +76,49 @@ class Command extends \yii\queue\cli\Command
     }
 
     /**
-     * Runs all jobs from db-queue.
+     * Runs all jobs in the queue
      *
-     * It can be used as cron job.
+     * @return int
      */
-    public function actionRun()
+    public function actionRun(): int
     {
         $this->queue->run();
+        return ExitCode::OK;
     }
 
     /**
-     * Listens db-queue and runs new jobs.
+     * Listens for new jobs added to the queue and runs them
      *
-     * It can be used as demon process.
-     *
-     * @param integer $delay Number of seconds for waiting new job.
+     * @param int $delay Number of seconds for waiting new job
      */
     public function actionListen($delay = 3)
     {
         $this->queue->listen($delay);
+    }
+
+    /**
+     * Re-adds a failed job(s) to the queue.
+     *
+     * @param int|string $job The job ID that should be retried, or pass `all` to retry all failed jobs
+     * @return int
+     * @since 3.1.21
+     */
+    public function actionRetry($job): int
+    {
+        if (strtolower($job) === 'all') {
+            $total = $this->queue->getTotalFailed();
+            if ($total === 0) {
+                $this->stdout('No failed jobs in the queue.' . PHP_EOL);
+                return ExitCode::OK;
+            }
+            $this->stdout("Re-adding {$total} failed " . ($total === 1 ? 'job' : 'jobs') . ' back into the queue ... ');
+            $this->queue->retryAll();
+        } else {
+            $this->stdout('Re-adding 1 failed job back into the queue ... ');
+            $this->queue->retry($job);
+        }
+
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
     }
 }

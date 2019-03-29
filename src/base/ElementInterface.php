@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
 use craft\models\FieldLayout;
+use Twig\Markup;
 
 
 /**
@@ -428,7 +429,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns an anchor pre-filled with this element’s URL and title.
      *
-     * @return \Twig_Markup|null
+     * @return Markup|null
      */
     public function getLink();
 

@@ -18,6 +18,7 @@ module.exports = {
         docsDir: 'docs',
         docsBranch: 'develop',
         editLinks: true,
+        searchMaxSuggestions: 10,
         locales: {
             '/': require('./config-en'),
             '/ja/': require('./config-ja')
@@ -123,14 +124,6 @@ function replaceApiLink(link) {
             let url = 'https://www.yiiframework.com/doc/api/2.0/'+className.replace(/\\/g, '-').toLowerCase()
             if (subject) {
                 hash = (isMethod ? `${subject}()` : `\$${subject}`)+'-detail'
-            }
-            return url + (hash ? `#${hash}` : '');
-        }
-
-        if (className.match(/^Twig/)) {
-            let url = 'https://twig.symfony.com/api/2.x/'+className.replace(/\\/g, '/')+'.html'
-            if (subject) {
-                hash = '#method_'+subject
             }
             return url + (hash ? `#${hash}` : '');
         }

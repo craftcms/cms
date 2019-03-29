@@ -20,7 +20,7 @@ a { text-decoration: none; }
 
 input, textarea { margin: 0; font-family: 'Lucida Grande', sans-serif; font-size: 100%; }
 
-textarea { resize: none; }
+textarea { resize: vertical; }
 
 select { margin: 0; }
 
@@ -573,6 +573,14 @@ body.rtl .lightswitch .label { float: right; }
 body.ltr .lightswitch .handle { float: left; }
 body.rtl .lightswitch .handle { float: right; }
 
+/* pagination */
+.pagination { margin: 24px 0; }
+.pagination .page-link { padding: 0 9px 3px; border-radius: 2px; }
+.pagination .page-link:before { font-size: 1em; }
+.pagination .page-link:not(.disabled) { -webkit-transition: -webkit-box-shadow linear 100ms; transition: -webkit-box-shadow linear 100ms; transition: box-shadow linear 100ms; transition: box-shadow linear 100ms, -webkit-box-shadow linear 100ms; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05); }
+.pagination .page-link:not(.disabled):hover { text-decoration: none; -webkit-box-shadow: inset 0 0 0 1px #0d78f2; box-shadow: inset 0 0 0 1px #0d78f2; }
+.pagination .page-link.disabled { opacity: 1; background: #f1f5f8; font-weight: bold; color: #b9bfc6; }
+
 /* action buttons */
 body.ltr .actions { float: right; }
 body.rtl .actions { float: left; }
@@ -841,6 +849,7 @@ body.ltr table.editable tbody tr th ~ td:not(:first-child) { border-left: 1px so
 body.rtl table.editable tbody tr th ~ td:not(:first-child) { border-right: 1px solid #dbdddf; }
 table.editable tbody tr td { vertical-align: middle; text-align: center; background: #fff; }
 table.editable tbody tr td.textual { vertical-align: top; }
+table.editable tbody tr td.textual textarea { resize: none; }
 table.editable tbody tr td:not(.textual) { padding: 4px 10px; }
 table.editable tbody tr td.error { -webkit-box-shadow: inset 0 0 0 1px #da5a47; box-shadow: inset 0 0 0 1px #da5a47; }
 table.editable tbody tr td.disabled { position: relative; opacity: 1; }

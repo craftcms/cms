@@ -28,7 +28,7 @@
                         {% endif %}
                         <span class="label">{{ source.label }}</span>
                         {% if source.badgeCount is defined %}
-                            <span class="badge">{{ source.badgeCount|number }}</span>
+                            <span class="badge">{{ source.badgeCount|number(decimals=0) }}</span>
                         {% endif %}
                 </a>
                 {% if source.nested is defined and source.nested is not empty %}

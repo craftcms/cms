@@ -72,7 +72,7 @@ class CraftSupport extends Widget
         }
 
         $view = Craft::$app->getView();
-        $view->registerAssetBundle(CraftSupportAsset::class);
+        $assetBundle = $view->registerAssetBundle(CraftSupportAsset::class);
 
         $plugins = '';
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
@@ -117,7 +117,8 @@ class CraftSupport extends Widget
             'bullhornIcon' => file_get_contents($iconsDir . '/bullhorn.svg'),
             'seIcon' => file_get_contents($iconsDir . '/craft-stack-exchange.svg'),
             'ghIcon' => file_get_contents($iconsDir . '/github.svg'),
-            'showBackupOption' => $showBackupOption
+            'showBackupOption' => $showBackupOption,
+            'bundleUrl' => $assetBundle->baseUrl,
         ]);
     }
 }

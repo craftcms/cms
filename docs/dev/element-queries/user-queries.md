@@ -563,14 +563,14 @@ Determines the order that the elements should be returned in.
 ```twig
 {# Fetch all elements in order of date created #}
 {% set elements = craft.queryFunction()
-    .orderBy('elements.dateCreated asc')
+    .orderBy('dateCreated asc')
     .all() %}
 ```
 
 ```php
 // Fetch all elements in order of date created
 $elements = ElementClass::find()
-    ->orderBy('elements.dateCreated asc')
+    ->orderBy('dateCreated asc')
     ->all();
 ```
 :::

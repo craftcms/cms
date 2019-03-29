@@ -961,13 +961,13 @@ class Install extends Migration
         // Fresh install code goes here...
     }
 
-    private function _upgradeFromCraft2()
+    private function _upgradeFromCraft2(): bool
     {
         // Fetch the old plugin row, if it was installed
         $row = (new \craft\db\Query())
-            ->select(['id', 'settings'])
+            ->select(['id', 'handle', 'settings'])
             ->from(['{{%plugins}}'])
-            ->where(['in', 'handle', ['old-handle', 'oldhandle']])
+            ->where(['in', 'handle', ['<old-handle>', '<oldhandle>']])
             ->one();
 
         if (!$row) {
@@ -975,12 +975,14 @@ class Install extends Migration
         }
 
         // Update this one's settings to old values
-        $this->update('{{%plugins}}', [
-            'settings' => $row['settings']
-        ], ['handle' => 'new-handle']);
+        $projectConfig = \Craft::$app->projectConfig;
+        $oldKey = "plugins.{$row['handle']}";
+        $newKey = 'plugins.<new-handle>';
+        $projectConfig->set($newKey, $projectConfig->get($oldKey));
 
-        // Delete the old row
+        // Delete the old plugin row and project config data
         $this->delete('{{%plugins}}', ['id' => $row['id']]);
+        $projectConfig->remove($oldKey);
 
         // Any additional upgrade code goes here...
 
@@ -994,7 +996,9 @@ class Install extends Migration
 }
 ```
 
-Replace `old-handle` and `oldhandle` with your plugin’s previous handle (in `kebab-case` and `onewordalllowercase`), and put any additional upgrade code at the end of the `_upgradeFromCraft2()` method (before the `return` statement). Your normal install migration code (for fresh installations of your plugin) should go at the end of `safeUp()`.
+Replace `<old-handle>` and `<oldhandle>` with your plugin’s previous handle (in `kebab-case` and `onewordalllowercase`), and `<new-handle>` with your new plugin handle.
+
+If there’s any additional upgrade logic you need to add, put it at the end of the `_upgradeFromCraft2()` method (before the `return` statement). Your normal install migration code (for fresh installations of your plugin) should go at the end of `safeUp()`.
 
 ### Component Class Names
 

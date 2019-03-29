@@ -63,8 +63,31 @@ class ProjectConfigController extends Controller
                 $projectConfig->applyYamlChanges();
             } catch (\Throwable $e) {
                 $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+                Craft::$app->getErrorHandler()->logException($e);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
+        }
+
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
+     * Rebuilds the project config.
+     *
+     * @return int
+     */
+    public function actionRebuild(): int
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+        $this->stdout('Rebuilding the project config from the current state ... ', Console::FG_YELLOW);
+
+        try {
+            $projectConfig->rebuild();
+        } catch (\Throwable $e) {
+            $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+            Craft::$app->getErrorHandler()->logException($e);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);

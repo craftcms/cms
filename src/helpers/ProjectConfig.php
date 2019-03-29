@@ -120,13 +120,14 @@ class ProjectConfig
      * @return array
      * @throws InvalidConfigException if config contains unexpected data.
      */
-    public static function cleanupConfig(array $config) {
+    public static function cleanupConfig(array $config): array
+    {
         $remove = [];
 
         foreach ($config as $key => &$value) {
             // Only scalars, arrays and simple objects allowed.
             if ($value instanceof \StdClass) {
-                $value = (array) $value;
+                $value = (array)$value;
             }
 
             if (!empty($value) && !is_scalar($value) && !is_array($value)) {
@@ -143,13 +144,12 @@ class ProjectConfig
                 }
             }
         }
+        unset($value);
 
         // Remove empty stuff
         foreach ($remove as $removeKey) {
             unset($config[$removeKey]);
         }
-
-        ksort($config);
 
         return $config;
     }

@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
@@ -17,6 +18,7 @@ use craft\errors\SectionNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EntryTypeEvent;
+use craft\events\FieldEvent;
 use craft\events\SectionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -26,7 +28,6 @@ use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
-use craft\models\Site;
 use craft\models\Structure;
 use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
@@ -103,6 +104,16 @@ class Sections extends Component
 
     // Properties
     // =========================================================================
+
+    /**
+     * @var bool Whether entries should be resaved after a section or entry type has been updated.
+     *
+     * ::: warning
+     * Don’t disable this unless you know what you’re doing, as entries won’t reflect section/entry type changes until
+     * they’ve been resaved. (You can resave entries manually by running the `resave/entries` console command.)
+     * :::
+     */
+    public $autoResaveEntries = true;
 
     /**
      * @var Section[]
@@ -681,7 +692,7 @@ class Sections extends Component
             // Finally, deal with the existing entries...
             // -----------------------------------------------------------------
 
-            if (!$isNewSection) {
+            if (!$isNewSection && $this->autoResaveEntries) {
                 if ($oldSectionRecord->propagateEntries) {
                     // Find a site that the section was already enabled in, and still is
                     $oldSiteIds = array_keys($allOldSiteSettingsRecords);
@@ -898,6 +909,49 @@ class Sections extends Component
                 $projectConfig->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.siteSettings.' . $siteUid);
             }
         }
+    }
+
+    /**
+     * Prune a deleted field from entry type layouts.
+     *
+     * @param FieldEvent $event
+     */
+    public function pruneDeletedField(FieldEvent $event)
+    {
+        /** @var Field $field */
+        $field = $event->field;
+        $fieldUid = $field->uid;
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        $sections = $projectConfig->get(self::CONFIG_SECTIONS_KEY);
+
+        // Engage stealth mode
+        $projectConfig->muteEvents = true;
+
+        // Loop through the tag groups and prune the UID from field layouts.
+        if (is_array($sections)) {
+            foreach ($sections as $sectionUid => $section) {
+                if (!empty($section['entryTypes'])) {
+                    foreach ($section['entryTypes'] as $entryTypeUid => $entryType) {
+                        if (!empty($entryType['fieldLayouts'])) {
+                            foreach ($entryType['fieldLayouts'] as $layoutUid => $layout) {
+                                if (!empty($layout['tabs'])) {
+                                    foreach ($layout['tabs'] as $tabUid => $tab) {
+                                        $projectConfig->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Nuke all the layout fields from the DB
+        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+
+        // Allow events again
+        $projectConfig->muteEvents = false;
     }
 
     /**
@@ -1181,7 +1235,7 @@ class Sections extends Component
         // If this is for a Single section, ensure its entry exists
         if ($section->type === Section::TYPE_SINGLE) {
             $this->_ensureSingleEntry($section);
-        } else if (!$isNewEntryType) {
+        } else if (!$isNewEntryType && $this->autoResaveEntries) {
             // Re-save the entries of this type
             $allSiteSettings = $section->getSiteSettings();
 
@@ -1402,7 +1456,8 @@ class Sections extends Component
         $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
         if (version_compare($schemaVersion, '3.1.19', '>=')) {
             $condition = ['sections.dateDeleted' => null];
-            $joinCondition = ['and',
+            $joinCondition = [
+                'and',
                 $joinCondition,
                 ['structures.dateDeleted' => null]
             ];

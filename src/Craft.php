@@ -11,10 +11,8 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
-use GuzzleHttp\Cookie\FileCookieJar;
 use yii\base\ExitException;
 use yii\db\Expression;
-use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -63,6 +61,9 @@ class Craft extends Yii
      * Checks if a string references an environment variable (`$VARIABLE_NAME`)
      * and/or an alias (`@aliasName`), and returns the referenced value.
      *
+     * If the string references an environment variable with a value of `true`
+     * or `false`, a boolean value will be returned.
+     *
      * ---
      *
      * ```php
@@ -71,7 +72,7 @@ class Craft extends Yii
      * ```
      *
      * @param string|null $str
-     * @return string|null The parsed value, or the original value if it didn’t
+     * @return string|bool|null The parsed value, or the original value if it didn’t
      * reference an environment variable and/or alias.
      */
     public static function parseEnv(string $str = null)
@@ -81,7 +82,16 @@ class Craft extends Yii
         }
 
         if (preg_match('/^\$(\w+)$/', $str, $matches)) {
-            $str = getenv($matches[1]) ?: $str;
+            $value = getenv($matches[1]);
+            if ($value !== false) {
+                switch (strtolower($value)) {
+                    case 'true':
+                        return true;
+                    case 'false':
+                        return false;
+                }
+                $str = $value;
+            }
         }
 
         return static::getAlias($str, false) ?: $str;
@@ -153,19 +163,6 @@ class Craft extends Yii
      */
     public static function autoload($className)
     {
-        // todo: remove this when Yii 2.0.16.1 is released
-        // Use our own Inflector class
-        if ($className === Inflector::class) {
-            require dirname(__DIR__) . '/lib/yii2/helpers/Inflector.php';
-            return;
-        }
-
-        // FileCookieJar is not supported
-        if ($className === FileCookieJar::class) {
-            require dirname(__DIR__) . '/lib/guzzle/FileCookieJar.php';
-            return;
-        }
-
         if ($className !== ContentBehavior::class && $className !== ElementQueryBehavior::class) {
             return;
         }

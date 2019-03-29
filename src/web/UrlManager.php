@@ -305,7 +305,7 @@ class UrlManager extends \yii\web\UrlManager
 
             $rules = array_merge(
                 $routesService->getConfigFileRoutes(),
-                $routesService->getDbRoutes()
+                $routesService->getProjectConfigRoutes()
             );
 
             $eventName = self::EVENT_REGISTER_SITE_URL_RULES;

@@ -185,7 +185,7 @@ Randomizes the order of the elements within an array.
 
 ## `siteUrl( path, params, scheme, siteId )`
 
-Similar to [url()](#url-path-params-protocol-mustshowscriptname), except _only_ for creating URLs to pages on your site.
+Similar to [url()](#url-path-params-scheme-mustshowscriptname), except _only_ for creating URLs to pages on your site.
 
 ```twig
 <a href="{{ siteUrl('company/contact') }}">Contact Us</a>

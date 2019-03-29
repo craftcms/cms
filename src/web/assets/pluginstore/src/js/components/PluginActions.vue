@@ -16,8 +16,8 @@
         </template>
 
         <!-- Install/Try -->
-        <template v-if="!isPluginInstalled || (isPluginInstalled && currentEdition !== edition.handle)">
-            <form v-if="allowUpdates" method="post" @submit="onSwitchOrInstallSubmit">
+        <template v-if="!isPluginInstalled || currentEdition !== edition.handle">
+            <form v-if="allowUpdates || isPluginInstalled" method="post" @submit="onSwitchOrInstallSubmit">
                 <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue">
 
                 <template v-if="isPluginInstalled">
@@ -31,6 +31,7 @@
                     <input type="hidden" name="action" value="pluginstore/install">
                     <input type="hidden" name="packageName" :value="plugin.packageName">
                     <input type="hidden" name="handle" :value="plugin.handle">
+                    <input type="hidden" name="edition" :value="edition.handle">
                     <input type="hidden" name="version" :value="plugin.version">
                 </template>
 

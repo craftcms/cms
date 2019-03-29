@@ -35,7 +35,6 @@ use craft\validators\UserPasswordValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
 use yii\web\IdentityInterface;
@@ -676,11 +675,13 @@ class User extends Element implements IdentityInterface
             'currentPassword' => $currentPassword,
         ];
 
-        $rules[] = [['firstName', 'lastName'], function ($attribute, $params, $validator) {
-            if (strpos($this->$attribute, '://') !== false) {
-                $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
+        $rules[] = [
+            ['firstName', 'lastName'], function($attribute, $params, $validator) {
+                if (strpos($this->$attribute, '://') !== false) {
+                    $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
+                }
             }
-        }];
+        ];
 
         return $rules;
     }

@@ -588,8 +588,10 @@ trait ApplicationTrait
 
             if (
                 isset($attributes['config']) &&
-                Craft::$app->getDb()->getIsMysql() &&
-                StringHelper::containsMb4($attributes['config'])
+                (
+                    !mb_check_encoding($attributes['config'], 'UTF-8') ||
+                    (Craft::$app->getDb()->getIsMysql() && StringHelper::containsMb4($attributes['config']))
+                )
             ) {
                 $attributes['config'] = 'base64:' . base64_encode($attributes['config']);
             }
@@ -670,10 +672,10 @@ trait ApplicationTrait
             $this->getDb()->open();
             return true;
         } catch (DbConnectException $e) {
-            Craft::error('There was a problem connecting to the database: '.$e->getMessage(), __METHOD__);
+            Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             return false;
         } catch (InvalidConfigException $e) {
-            Craft::error('There was a problem connecting to the database: '.$e->getMessage(), __METHOD__);
+            Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             return false;
         }
     }
@@ -1430,5 +1432,6 @@ trait ApplicationTrait
             ->onAdd(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
             ->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
             ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleDeletedEntryType']);
+        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$sectionsService, 'pruneDeletedField']);
     }
 }

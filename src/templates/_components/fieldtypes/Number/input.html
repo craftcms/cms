@@ -1,0 +1,22 @@
+{% from '_includes/forms' import text %}
+
+<input type="hidden" name="{{  field.handle }}[locale]" value="{{ craft.app.language }}">
+<div class="flex">
+    {% if field.prefix %}
+        <div>
+            {{ field.prefix|md(inlineOnly=true)|raw }}
+        </div>
+    {% endif %}
+    <div>
+        {{ text({
+            name: field.handle ~ '[value]',
+            value: value,
+            size: field.size
+        }) }}
+    </div>
+    {% if field.suffix %}
+        <div>
+            {{ field.suffix|md(inlineOnly=true)|raw }}
+        </div>
+    {% endif %}
+</div>

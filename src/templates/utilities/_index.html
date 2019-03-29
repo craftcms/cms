@@ -12,7 +12,7 @@
                         <span class="icon icon-mask">{{ utility.iconSvg|raw }}</span>
                         <span class="label">{{ utility.displayName }}</span>
                         {% if not selected and utility.badgeCount %}
-                            <span class="badge">{{ utility.badgeCount|number }}</span>
+                            <span class="badge">{{ utility.badgeCount|number(decimals=0) }}</span>
                         {% endif %}
                     </a>
                 </li>

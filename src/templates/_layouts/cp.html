@@ -74,7 +74,7 @@
 {% block body %}
     <div id="global-container">
         <header id="global-sidebar" class="sidebar">
-            {% if currentUser.admin and craft.app.config.general.devMode %}
+            {% if currentUser.admin and devMode %}
                 <div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>
             {% endif %}
 
@@ -131,7 +131,7 @@
                                 </span>
 
                                 {%- if not item.sel and item.badgeCount -%}
-                                    <span class="badge">{{ item.badgeCount|number }}</span>
+                                    <span class="badge">{{ item.badgeCount|number(decimals=0) }}</span>
                                 {%- endif -%}
                             </a>
                             {% if item.sel and hasSubnav %}
