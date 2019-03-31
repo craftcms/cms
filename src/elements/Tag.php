@@ -40,6 +40,14 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Tags');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function refHandle()
     {
         return 'tag';

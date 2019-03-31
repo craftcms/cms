@@ -15,6 +15,7 @@ use craft\elements\db\ElementQuery;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
+use craft\elements\db\ElementQueryInterface;
 use craft\queue\BaseJob;
 
 /**
@@ -53,26 +54,14 @@ class PropagateElements extends BaseJob
      */
     public function execute($queue)
     {
-        $class = $this->elementType;
-
         // Let's save ourselves some trouble and just clear all the caches for this element class
-        Craft::$app->getTemplateCaches()->deleteCachesByElementType($class);
+        Craft::$app->getTemplateCaches()->deleteCachesByElementType($this->elementType);
 
-        // Now find the affected element IDs
         /** @var ElementQuery $query */
-        $query = $class::find();
-        if (!empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
-        }
-        $query
-            ->offset(null)
-            ->limit(null)
-            ->orderBy(null);
-
+        $query = $this->_query();
         $totalElements = $query->count();
-        $currentElement = 0;
-
         $elementsService = Craft::$app->getElements();
+        $currentElement = 0;
 
         try {
             foreach ($query->each() as $element) {
@@ -91,7 +80,7 @@ class PropagateElements extends BaseJob
                     if ($siteId != $element->siteId) {
                         // Make sure the site element wasn't updated more recently than the main one
                         /** @var Element $siteElement */
-                        $siteElement = $elementsService->getElementById($element->id, $class, $siteId);
+                        $siteElement = $elementsService->getElementById($element->id, $this->elementType, $siteId);
                         if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
                             $elementsService->propagateElement($element, $siteId, $siteElement);
                         }
@@ -111,8 +100,37 @@ class PropagateElements extends BaseJob
      */
     protected function defaultDescription(): string
     {
-        return Craft::t('app', 'Propagating {class} elements', [
-            'class' => App::humanizeClass($this->elementType)
+        /** @var ElementQuery $query */
+        $query = $this->_query();
+        /** @var ElementInterface $elementType */
+        $elementType = $query->elementType;
+        $totalElements = $query->count();
+        return Craft::t('app', 'Propagating {type}', [
+            'type' => mb_strtolower($totalElements == 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
         ]);
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns the element query based on the criteria.
+     *
+     * @return ElementQueryInterface
+     */
+    private function _query(): ElementQueryInterface
+    {
+        $query = $this->elementType::find();
+
+        if (!empty($this->criteria)) {
+            Craft::configure($query, $this->criteria);
+        }
+
+        $query
+            ->offset(null)
+            ->limit(null)
+            ->orderBy(null);
+
+        return $query;
     }
 }

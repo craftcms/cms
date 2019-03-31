@@ -25,6 +25,14 @@ interface ElementInterface extends ComponentInterface
     // =========================================================================
 
     /**
+     * Returns the plural version of [[displayName()]].
+     *
+     * @return string
+     * @since 3.2.0
+     */
+    public static function pluralDisplayName(): string;
+
+    /**
      * Returns the handle that should be used to refer to this element type from reference tags.
      *
      * @return string|null The reference handle, or null if the elemnet type doesn’t support reference tags

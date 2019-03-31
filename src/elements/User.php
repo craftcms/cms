@@ -111,6 +111,14 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Users');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function refHandle()
     {
         return 'user';

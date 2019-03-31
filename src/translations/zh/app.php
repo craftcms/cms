@@ -650,7 +650,7 @@ return [
     'New user group' => '新建用户组',
     'New volume' => '新建存储卷',
     'New widget' => '添加小部件',
-    'New {class}' => '新建 {class}',
+    'New {type}' => '新建 {type}',
     'New {group} category' => '新的  {group} 分类',
     'New {section} entry' => '新的 {section} 记录',
     'Next' => '下一步',

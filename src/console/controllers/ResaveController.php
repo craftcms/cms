@@ -9,17 +9,17 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\elements\Asset;
+use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\elements\User;
-use craft\helpers\App;
+use yii\console\Controller;
 use yii\console\ExitCode;
 use yii\helpers\Console;
-use yii\console\Controller;
-use craft\elements\Entry;
-use craft\elements\Category;
 
 /**
  * Bulk-saves elements
@@ -206,7 +206,10 @@ class ResaveController extends Controller
     private function _saveElements(ElementQueryInterface $query): int
     {
         /** @var ElementQuery $query */
-        $type = App::humanizeClass($query->elementType);
+        /** @var ElementInterface $elementType */
+        $elementType = $query->elementType;
+        $type = mb_strtolower($elementType::displayName());
+        $pType = mb_strtolower($elementType::pluralDisplayName());
 
         if ($this->elementId) {
             $query->id(is_int($this->elementId) ? $this->elementId : explode(',', $this->elementId));
@@ -237,12 +240,12 @@ class ResaveController extends Controller
         $count = (int)$query->count();
 
         if ($count === 0) {
-            $this->stdout("No {$type} elements exist for that criteria." . PHP_EOL, Console::FG_YELLOW);
+            $this->stdout("No {$pType} exist for that criteria." . PHP_EOL, Console::FG_YELLOW);
             return ExitCode::OK;
         }
 
-        $elementsText = $count === 1 ? 'element' : 'elements';
-        $this->stdout("Resaving {$count} {$type} {$elementsText} ..." . PHP_EOL, Console::FG_YELLOW);
+        $elementsText = $count === 1 ? $type : $pType;
+        $this->stdout("Resaving {$count} {$elementsText} ..." . PHP_EOL, Console::FG_YELLOW);
 
         $elementsService = Craft::$app->getElements();
         $fail = false;
@@ -267,7 +270,7 @@ class ResaveController extends Controller
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
 
-        $this->stdout("Done resaving {$type} elements." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("Done resaving {$elementsText}." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
         return $fail ? ExitCode::UNSPECIFIED_ERROR : ExitCode::OK;
     }
 }

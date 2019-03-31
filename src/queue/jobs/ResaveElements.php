@@ -12,7 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
-use craft\helpers\App;
+use craft\elements\db\ElementQueryInterface;
 use craft\queue\BaseJob;
 use yii\base\Exception;
 
@@ -45,23 +45,13 @@ class ResaveElements extends BaseJob
      */
     public function execute($queue)
     {
-        $class = $this->elementType;
-
         // Let's save ourselves some trouble and just clear all the caches for this element class
-        Craft::$app->getTemplateCaches()->deleteCachesByElementType($class);
+        Craft::$app->getTemplateCaches()->deleteCachesByElementType($this->elementType);
 
-        // Now find the affected element IDs
         /** @var ElementQuery $query */
-        $query = $class::find();
-        if (!empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
-        }
-        $query
-            ->offset(null)
-            ->limit(null)
-            ->orderBy(null);
-
+        $query = $this->_query();
         $totalElements = $query->count();
+        $elementsService = Craft::$app->getElements();
         $currentElement = 0;
 
         try {
@@ -70,7 +60,7 @@ class ResaveElements extends BaseJob
 
                 /** @var Element $element */
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                if (!Craft::$app->getElements()->saveElement($element)) {
+                if (!$elementsService->saveElement($element)) {
                     throw new Exception('Couldn’t save element ' . $element->id . ' (' . get_class($element) . ') due to validation errors.');
                 }
             }
@@ -87,8 +77,37 @@ class ResaveElements extends BaseJob
      */
     protected function defaultDescription(): string
     {
-        return Craft::t('app', 'Resaving {class} elements', [
-            'class' => App::humanizeClass($this->elementType)
+        /** @var ElementQuery $query */
+        $query = $this->_query();
+        /** @var ElementInterface $elementType */
+        $elementType = $query->elementType;
+        $totalElements = $query->count();
+        return Craft::t('app', 'Resaving {type}', [
+            'type' => mb_strtolower($totalElements == 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
         ]);
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns the element query based on the criteria.
+     *
+     * @return ElementQueryInterface
+     */
+    private function _query(): ElementQueryInterface
+    {
+        $query = $this->elementType::find();
+
+        if (!empty($this->criteria)) {
+            Craft::configure($query, $this->criteria);
+        }
+
+        $query
+            ->offset(null)
+            ->limit(null)
+            ->orderBy(null);
+
+        return $query;
     }
 }

@@ -66,6 +66,14 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Entries');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function refHandle()
     {
         return 'entry';
