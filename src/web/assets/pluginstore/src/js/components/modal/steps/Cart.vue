@@ -136,7 +136,7 @@
                                 </td>
                                 <td><strong v-if="activeTrialPluginEditions[plugin.handle]">{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
                                 <td class="thin">
-                                    <btn @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)">{{ "Add to cart"|t('app') }}</btn>
+                                    <btn @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)" :loading="activeTrialLoading(plugin.handle)">{{ "Add to cart"|t('app') }}</btn>
                                 </td>
                             </template>
                         </tr>
@@ -158,6 +158,7 @@
         data() {
             return {
                 loadingItems: {},
+                loadingActiveTrials: {},
             }
         },
 
@@ -215,6 +216,8 @@
             }),
 
             addToCart(plugin, editionHandle) {
+                this.$set(this.loadingActiveTrials, plugin.handle, true)
+
                 const item = {
                     type: 'plugin-edition',
                     plugin: plugin.handle,
@@ -222,7 +225,11 @@
                 }
 
                 this.$store.dispatch('cart/addToCart', [item])
+                    .then(() => {
+                        this.$delete(this.loadingActiveTrials, plugin.handle)
+                    })
                     .catch(response => {
+                        this.$delete(this.loadingActiveTrials, plugin.handle)
                         const errorMessage = response.errors && response.errors[0] && response.errors[0].message ? response.errors[0].message : 'Couldn’t add item to cart.';
                         this.$root.displayError(errorMessage)
                     })
@@ -310,6 +317,14 @@
 
             itemLoading(itemKey) {
                 if (!this.loadingItems[itemKey]) {
+                    return false
+                }
+
+                return true
+            },
+
+            activeTrialLoading(pluginHandle) {
+                if (!this.loadingActiveTrials[pluginHandle]) {
                     return false
                 }
 
