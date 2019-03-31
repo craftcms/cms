@@ -741,6 +741,16 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
           }
         }
 
+        #footer {
+          z-index: 1;
+          box-shadow: 0 -1px 0 $hairlineColorAlpha;
+          padding: 10px 24px;
+          background: #fff;
+
+          & > * {
+            margin-bottom: 0;
+          }
+        }
       }
 
       #details {
