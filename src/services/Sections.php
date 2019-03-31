@@ -598,7 +598,7 @@ class Sections extends Component
             $sectionRecord->handle = $data['handle'];
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
-            $sectionRecord->propagateEntries = (bool)$data['propagateEntries'];
+            $sectionRecord->propagationMethod = (bool)$data['propagationMethod'];
 
             $isNewSection = $sectionRecord->getIsNewRecord();
 
