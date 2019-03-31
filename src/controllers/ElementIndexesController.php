@@ -374,7 +374,12 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function elementResponseData(bool $includeContainer, bool $includeActions): array
     {
-        $responseData = [];
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType;
+
+        $responseData = [
+            'count' => $this->elementQuery->count(),
+        ];
 
         $view = $this->getView();
 
@@ -387,8 +392,6 @@ class ElementIndexesController extends BaseElementsController
 
         $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
         $showCheckboxes = !empty($this->actions);
-        /** @var string|ElementInterface $elementType */
-        $elementType = $this->elementType;
 
         $responseData['html'] = $elementType::indexHtml(
             $this->elementQuery,

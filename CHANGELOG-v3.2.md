@@ -10,6 +10,7 @@ This update introduces a few changes in behavior to be aware of:
 - Sections now have a “Propagation Method” setting, enabling entries to only be propagated to other sites in the same site group, or with the same language. ([#3554](https://github.com/craftcms/cms/issues/3554))
 - The `site` element query params now support passing multiple site handles, or `'*'`, to query elements across multiple sites at once. ([#2854](https://github.com/craftcms/cms/issues/2854))
 - Added the `unique` element query param, which can be used to prevent duplicate elements when querying elements across multiple sites.
+- Element index pages now show the total number of elements in the footer. ([#818](https://github.com/craftcms/cms/issues/818))
 - The `_layouts/cp` Control Panel template now supports a `footer` block, which will be output below the main content area.
 - Added `craft\base\ElementInterface::pluralDisplayName()`, which element type classes can use to define the plural of their display name.
 - Added `craft\models\Section::$propagationMethod`.

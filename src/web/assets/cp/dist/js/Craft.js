@@ -1,4 +1,4 @@
-/*!   - 2019-03-28 */
+/*!   - 2019-03-31 */
 (function($){
 
 /** global: Craft */
@@ -1806,6 +1806,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$sidebar = this.$container.find('.sidebar:first');
             this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
+            this.$countContainer = this.$container.find('#count-container');
 
             // Hide sidebar if needed
             if (this.settings.hideSidebar) {
@@ -2284,6 +2285,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             this.$elements.html('');
+            this.$countContainer.html('&nbsp;');
 
             var params = this.getViewParams();
 
@@ -3173,6 +3175,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.$selectAllContainer.detach();
             }
 
+            // Update the count text
+            // -------------------------------------------------------------
+
+            this.$countContainer.text(response.count + ' ' +
+                (response.count == 1 ? this.settings.elementTypeName : this.settings.elementTypePluralName).toLowerCase());
+
             // Batch actions setup
             // -------------------------------------------------------------
 
@@ -3375,6 +3383,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             submitActionsAction: 'element-indexes/perform-action',
             toolbarFixed: null,
 
+            elementTypeName: Craft.t('app', 'Element'),
+            elementTypePluralName: Craft.t('app', 'Elements'),
+
             onAfterInit: $.noop,
             onSelectSource: $.noop,
             onSelectSite: $.noop,
@@ -3385,7 +3396,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             onAfterAction: $.noop
         }
     });
-
 
 /** global: Craft */
 /** global: Garnish */

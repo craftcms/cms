@@ -134,6 +134,8 @@ JS;
             'Display in a table',
             'Done',
             'Edit',
+            'Element',
+            'Elements',
             'Enter the name of the folder',
             'Enter your password to continue.',
             'Enter your password to log back in.',
