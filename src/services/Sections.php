@@ -619,7 +619,7 @@ class Sections extends Component
             $resaveEntries = (
                 $sectionRecord->handle !== $sectionRecord->getOldAttribute('handle') ||
                 $sectionRecord->type !== $sectionRecord->getOldAttribute('type') ||
-                $sectionRecord->propagateEntries != $sectionRecord->getOldAttribute('propagateEntries') ||
+                $sectionRecord->propagationMethod != $sectionRecord->getOldAttribute('propagationMethod') ||
                 $sectionRecord->structureId != $sectionRecord->getOldAttribute('structureId')
             );
 
