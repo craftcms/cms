@@ -22,6 +22,7 @@
 - Fixed an error that occurred when sending emails if the `testToEmailAddress` config setting was set. ([#4076](https://github.com/craftcms/cms/issues/4076))
 - Fixed a bug where it wasn’t possible to pass the `--element-id` option on `resave/*` commands.
 - Fixed a bug where Matrix fields were including disabled blocks if any changes had been made to the Matrix block query params.
+- Fixed SQL errors that could occur if the table prefix had ever changed.
 
 ## 3.1.20.1 - 2019-03-27
 
