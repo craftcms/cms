@@ -747,7 +747,8 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
           padding: 10px 24px;
           background: #fff;
 
-          & > * {
+          & > *,
+          .flex > * {
             margin-bottom: 0;
           }
         }

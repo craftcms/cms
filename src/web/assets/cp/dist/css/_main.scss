@@ -1359,19 +1359,24 @@ div.btn.submit input {
 
 /* pagination */
 .pagination {
-  margin: 24px 0;
+  table.data + & {
+    margin-top: 24px;
+  }
 
   .page-link {
-    padding: 0 9px 3px;
+    padding: 2px 11px 6px;
     border-radius: $btnBorderRadius;
+    color: $textColor;
 
     &:before {
-      font-size: 1em;
+      font-size: 1.2em;
     }
 
     &:not(.disabled) {
       transition: box-shadow linear 100ms;
       box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+
       &:hover {
         text-decoration: none;
         box-shadow: inset 0 0 0 1px $linkColor;

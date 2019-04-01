@@ -574,10 +574,10 @@ body.ltr .lightswitch .handle { float: left; }
 body.rtl .lightswitch .handle { float: right; }
 
 /* pagination */
-.pagination { margin: 24px 0; }
-.pagination .page-link { padding: 0 9px 3px; border-radius: 2px; }
-.pagination .page-link:before { font-size: 1em; }
-.pagination .page-link:not(.disabled) { -webkit-transition: -webkit-box-shadow linear 100ms; transition: -webkit-box-shadow linear 100ms; transition: box-shadow linear 100ms; transition: box-shadow linear 100ms, -webkit-box-shadow linear 100ms; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05); }
+table.data + .pagination { margin-top: 24px; }
+.pagination .page-link { padding: 2px 11px 6px; border-radius: 2px; color: #29323d; }
+.pagination .page-link:before { font-size: 1.2em; }
+.pagination .page-link:not(.disabled) { -webkit-transition: -webkit-box-shadow linear 100ms; transition: -webkit-box-shadow linear 100ms; transition: box-shadow linear 100ms; transition: box-shadow linear 100ms, -webkit-box-shadow linear 100ms; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05); cursor: pointer; }
 .pagination .page-link:not(.disabled):hover { text-decoration: none; -webkit-box-shadow: inset 0 0 0 1px #0d78f2; box-shadow: inset 0 0 0 1px #0d78f2; }
 .pagination .page-link.disabled { opacity: 1; background: #f1f5f8; font-weight: bold; color: #b9bfc6; }
 
@@ -1848,7 +1848,7 @@ body.ltr #main-container #main #main-content #content-container #content { borde
 body.rtl #main-container #main #main-content #content-container #content { border-left: 1px solid rgba(0, 0, 20, 0.1); }
 #main-container #main #main-content #content-container #content > *:last-child { padding-bottom: 48px; }
 #main-container #main #main-content #content-container #footer { z-index: 1; -webkit-box-shadow: 0 -1px 0 rgba(0, 0, 20, 0.1); box-shadow: 0 -1px 0 rgba(0, 0, 20, 0.1); padding: 10px 24px; background: #fff; }
-#main-container #main #main-content #content-container #footer > * { margin-bottom: 0; }
+#main-container #main #main-content #content-container #footer > *, #main-container #main #main-content #content-container #footer .flex > * { margin-bottom: 0; }
 #main-container #main #main-content #details { -webkit-box-flex: 0; -ms-flex: 0 0 350px; flex: 0 0 350px; width: 350px; padding: 24px 0 32px; }
 #main-container #main #main-content #details .meta { padding: 16px 24px; }
 #main-container #main #main-content #details .meta.read-only { background: #e7eef3; }

@@ -65,6 +65,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         viewMode: null,
         view: null,
         _autoSelectElements: null,
+        page: 1,
 
         actions: null,
         actionsHeadHtml: null,
@@ -280,7 +281,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Load the first batch of elements!
             // ---------------------------------------------------------------------
 
-            this.updateElements();
+            // Default to whatever page is in the URL
+            if (this.settings.context === 'index') {
+                this.page = Craft.pageNum;
+                this._updateUrl();
+            }
+
+            this.updateElements(true);
         },
 
         afterInit: function() {
@@ -554,6 +561,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 status: this.status,
                 siteId: this.siteId,
                 search: this.searchText,
+                offset: this.settings.batchSize * (this.page - 1),
                 limit: this.settings.batchSize,
                 trashed: this.trashed ? 1 : 0
             }, this.settings.criteria);
@@ -581,7 +589,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             return params;
         },
 
-        updateElements: function() {
+        updateElements: function(preservePagination) {
             // Ignore if we're not fully initialized yet
             if (!this.initialized) {
                 return;
@@ -596,7 +604,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             this.$elements.html('');
-            this.$countContainer.html('&nbsp;');
+
+            if (preservePagination !== true) {
+                this.$countContainer.html('&nbsp;');
+                this.page = 1;
+            }
 
             var params = this.getViewParams();
 
@@ -604,6 +616,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.setIndexAvailable();
 
                 if (textStatus === 'success') {
+                    // Have we gone too far?
+                    var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
+                    if (this.page > totalPages) {
+                        this.page = totalPages;
+                        this._updateUrl();
+                        this.updateElements(true);
+                        return;
+                    }
+
                     this._updateView(params, response);
                 }
                 else {
@@ -1489,8 +1510,56 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Update the count text
             // -------------------------------------------------------------
 
-            this.$countContainer.text(response.count + ' ' +
-                (response.count == 1 ? this.settings.elementTypeName : this.settings.elementTypePluralName).toLowerCase());
+            this.$countContainer.html('');
+            var elementTypeName = (response.count == 1 ? this.settings.elementTypeName : this.settings.elementTypePluralName).toLowerCase();
+
+            if (this.settings.context !== 'index' || this.getSelectedSortAttribute() === 'structure' || response.count <= this.settings.batchSize) {
+                this.$countContainer.text(response.count + ' ' + elementTypeName);
+            } else {
+                var $paginationContainer = $('<div class="flex pagination"/>').appendTo(this.$countContainer);
+                var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
+
+                var $prevBtn = $('<div/>', {
+                    'class': 'page-link' + (this.page > 1 ? '' : ' disabled'),
+                    'data-icon': 'leftangle',
+                    title: Craft.t('app', 'Previous Page')
+                }).appendTo($paginationContainer);
+                var $nextBtn = $('<div/>', {
+                    'class': 'page-link' + (this.page < totalPages ? '' : ' disabled'),
+                    'data-icon': 'rightangle',
+                    title: Craft.t('app', 'Next Page')
+                }).appendTo($paginationContainer);
+
+                var first = Math.min((this.settings.batchSize * (this.page - 1)) + 1, response.count);
+                $('<div/>', {
+                    'class': 'page-info',
+                    text: Craft.t('app', '{first}-{last} of {total}', {
+                        first: Craft.formatNumber(first),
+                        last: Craft.formatNumber(Math.min(first + (this.settings.batchSize - 1), response.count)),
+                        total: Craft.formatNumber(response.count)
+                    }) + ' ' + elementTypeName
+                }).appendTo($paginationContainer);
+
+                if (this.page > 1) {
+                    this.addListener($prevBtn, 'click', function() {
+                        this.page--;
+                        this.removeListener($prevBtn, 'click');
+                        this.removeListener($nextBtn, 'click');
+                        this._updateUrl();
+                        this.updateElements(true);
+                    });
+                }
+
+                if (this.page < totalPages) {
+                    this.addListener($nextBtn, 'click', function() {
+                        this.page++;
+                        this.removeListener($prevBtn, 'click');
+                        this.removeListener($nextBtn, 'click');
+                        this._updateUrl();
+                        this.updateElements(true);
+                    });
+                }
+            }
 
             // Batch actions setup
             // -------------------------------------------------------------
@@ -1556,7 +1625,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.view = this.createView(this.getSelectedViewMode(), {
                 context: this.settings.context,
-                batchSize: this.settings.batchSize,
+                batchSize: this.getSelectedSortAttribute() === 'structure' ? this.settings.batchSize : null,
                 params: params,
                 selectable: selectable,
                 multiSelect: (this.actions || this.settings.multiSelect),
@@ -1581,6 +1650,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // -------------------------------------------------------------
 
             this.onUpdateElements();
+        },
+
+        _updateUrl: function() {
+            var url = document.location.href
+                .replace(new RegExp(Craft.pageTrigger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '.*$'), '')
+                .replace(/\/+$/, '');
+
+            if (this.page !== 1) {
+                if (Craft.pageTrigger[0] !== '?') {
+                    url += '/';
+                }
+                url += Craft.pageTrigger + this.page;
+            }
+
+            history.replaceState({}, '', url);
         },
 
         _createTriggers: function() {
