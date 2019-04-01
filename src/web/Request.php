@@ -215,28 +215,16 @@ class Request extends \yii\web\Request
         }
 
         // Is this a paginated request?
-        $pageTrigger = Craft::$app->getConfig()->getGeneral()->pageTrigger;
-
-        if (!is_string($pageTrigger) || $pageTrigger === '') {
-            $pageTrigger = 'p';
-        }
+        $pageTrigger = $generalConfig->getPageTrigger();
 
         // Is this query string-based pagination?
-        if ($pageTrigger[0] === '?') {
-            $pageTrigger = trim($pageTrigger, '?=');
-
-            // Avoid conflict with the path param
-            $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-            if ($pageTrigger === $pathParam) {
-                $pageTrigger = $pathParam === 'p' ? 'pg' : 'p';
-            }
-
-            $this->_pageNum = (int)$this->getQueryParam($pageTrigger, '1');
+        if (strpos($pageTrigger, '?') === 0) {
+            $this->_pageNum = (int)$this->getQueryParam(trim($pageTrigger, '?='), '1');
         } else if (!empty($this->_segments)) {
             // Match against the entire path string as opposed to just the last segment so that we can support
             // "/page/2"-style pagination URLs
             $path = implode('/', $this->_segments);
-            $pageTrigger = preg_quote($generalConfig->pageTrigger, '/');
+            $pageTrigger = preg_quote($pageTrigger, '/');
 
             if (preg_match("/^(?:(.*)\/)?{$pageTrigger}(\d+)$/", $path, $match)) {
                 // Capture the page num

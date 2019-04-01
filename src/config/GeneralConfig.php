@@ -467,6 +467,8 @@ class GeneralConfig extends BaseObject
      * which is set to `p` by default, and if your server is running Apache, you will need to update the redirect code
      * in your `.htaccess` file to match your new `pathParam` value.
      * :::
+     *
+     * @see getPageTrigger()
      */
     public $pageTrigger = 'p';
     /**
@@ -1092,5 +1094,35 @@ class GeneralConfig extends BaseObject
     public function getBackupOnUpdate(): bool
     {
         return ($this->backupOnUpdate && $this->backupCommand !== false);
+    }
+
+    /**
+     * Returns the normalized page trigger.
+     *
+     * @return string
+     * @see pageTrigger
+     * @since 3.2.0
+     */
+    public function getPageTrigger(): string
+    {
+        $pageTrigger = $this->pageTrigger;
+
+        if (!is_string($pageTrigger) || $pageTrigger === '') {
+            $pageTrigger = 'p';
+        }
+
+        // Is this query string-based pagination?
+        if (strpos($pageTrigger, '?') === 0) {
+            $pageTrigger = trim($pageTrigger, '?=');
+
+            // Avoid conflict with the path param
+            if ($pageTrigger === $this->pathParam) {
+                $pageTrigger = $this->pathParam === 'p' ? 'pg' : 'p';
+            }
+
+            return '?' . $pageTrigger . '=';
+        }
+
+        return $pageTrigger;
     }
 }
