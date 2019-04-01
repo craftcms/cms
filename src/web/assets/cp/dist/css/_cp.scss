@@ -3,7 +3,7 @@
 
 $sidebarWidth: 225px;
 $detailsWidth: 350px;
-$minFullUiWidth: 1224px;
+$minFullUiWidth: 1200px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 $sidebarBgColor: hsl($hue, 20%, 25%);
@@ -822,7 +822,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   }
 }
 
-// Hide the sidebar at < 1224
+// Hide the sidebar at < 1200
 @media only screen and (max-width: $minFullUiWidth - 1px) {
   #global-container {
     position: relative;
