@@ -1972,8 +1972,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             // Default to whatever page is in the URL
             if (this.settings.context === 'index') {
-                this.page = Craft.pageNum;
-                this._updateUrl();
+                this.setPage(Craft.pageNum);
             }
 
             this.updateElements(true);
@@ -2242,6 +2241,29 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         /**
+         * Sets the page number.
+         */
+        setPage: function(page) {
+            page = Math.max(page, 1);
+            this.page = page;
+
+            // Update the URL
+            var url = document.location.href
+                .replace(/\?.*$/, '')
+                .replace(new RegExp('/' + Craft.pageTrigger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\d+$'), '')
+                .replace(/\/+$/, '');
+
+            if (this.page !== 1) {
+                if (Craft.pageTrigger[0] !== '?') {
+                    url += '/';
+                }
+                url += Craft.pageTrigger + this.page;
+            }
+
+            history.replaceState({}, '', url);
+        },
+
+        /**
          * Returns the data that should be passed to the elementIndex/getElements controller action
          * when loading elements.
          */
@@ -2296,7 +2318,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (preservePagination !== true) {
                 this.$countContainer.html('&nbsp;');
-                this.page = 1;
+                this.setPage(1);
             }
 
             var params = this.getViewParams();
@@ -2308,8 +2330,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     // Have we gone too far?
                     var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
                     if (this.page > totalPages) {
-                        this.page = totalPages;
-                        this._updateUrl();
+                        this.setPage(totalPages);
                         this.updateElements(true);
                         return;
                     }
@@ -3231,20 +3252,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if (this.page > 1) {
                     this.addListener($prevBtn, 'click', function() {
-                        this.page--;
                         this.removeListener($prevBtn, 'click');
                         this.removeListener($nextBtn, 'click');
-                        this._updateUrl();
+                        this.setPage(this.page - 1);
                         this.updateElements(true);
                     });
                 }
 
                 if (this.page < totalPages) {
                     this.addListener($nextBtn, 'click', function() {
-                        this.page++;
                         this.removeListener($prevBtn, 'click');
                         this.removeListener($nextBtn, 'click');
-                        this._updateUrl();
+                        this.setPage(this.page + 1);
                         this.updateElements(true);
                     });
                 }
@@ -3339,21 +3358,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // -------------------------------------------------------------
 
             this.onUpdateElements();
-        },
-
-        _updateUrl: function() {
-            var url = document.location.href
-                .replace(new RegExp(Craft.pageTrigger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '.*$'), '')
-                .replace(/\/+$/, '');
-
-            if (this.page !== 1) {
-                if (Craft.pageTrigger[0] !== '?') {
-                    url += '/';
-                }
-                url += Craft.pageTrigger + this.page;
-            }
-
-            history.replaceState({}, '', url);
         },
 
         _createTriggers: function() {
