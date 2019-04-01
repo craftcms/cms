@@ -26,15 +26,18 @@ class m190327_235137_propagation_method extends Migration
 
         if (version_compare($schemaVersion, '3.2.0', '<')) {
             $projectConfig->muteEvents = true;
-            foreach ($projectConfig->get('sections') as $uid => $section) {
+            foreach ($projectConfig->get('sections') ?? [] as $uid => $section) {
                 $newVal = ArrayHelper::remove($section, 'propagateEntries') ? Section::PROPAGATION_METHOD_ALL : Section::PROPAGATION_METHOD_NONE;
+                $section['propagationMethod'] = $newVal;
                 $projectConfig->set('sections.' . $uid, $section);
                 $this->update(Table::SECTIONS, ['propagationMethod' => $newVal], ['uid' => $uid], [], false);
             }
             $projectConfig->muteEvents = false;
         } else {
-            foreach ($projectConfig->get('sections', true) as $uid => $section) {
-                $this->update(Table::SECTIONS, ['propagationMethod' => $section['propagationMethod']], ['uid' => $uid], [], false);
+            foreach ($projectConfig->get('sections', true) ?? [] as $uid => $section) {
+                $this->update(Table::SECTIONS, [
+                    'propagationMethod' => $section['propagationMethod'] ?? Section::PROPAGATION_METHOD_ALL,
+                ], ['uid' => $uid], [], false);
             }
         }
 
