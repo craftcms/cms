@@ -30,14 +30,14 @@
         "guzzle/guzzle": "3.9.3.1",
         "twig/twig": "1.38.4.1",
         "simplepie/simplepie": "1.5.1.1",
-        "phpmailer/phpmailer": "v5.2.26",
+        "phpmailer/phpmailer": "v5.2.27",
         "pixelandtonic/imagine": "v0.7.1.3",
         "lsolesen/pel": "0.9.6.1",
-        "yiisoft/yii": "1.1.20.4",
+        "yiisoft/yii": "1.1.21.0",
         "enshrined/svg-sanitize": "0.9.0",
         "pclzip/pclzip": "2.8.2.1",
-        "elvanto/litemoji": "1.4.1",
-        "phpseclib/mcrypt_compat": "1.0.6"
+        "elvanto/litemoji": "1.4.4",
+        "phpseclib/mcrypt_compat": "1.0.9"
     },
     "require-dev": {
         "phpunit/phpunit": "4.8.16",

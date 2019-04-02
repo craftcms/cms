@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 2.7.8 - 2019-04-02
+
+### Changed
+- Updated Yii to 1.1.21.
+- Updated PhpMailer to 5.2.27.
+- Updated Litemoji to 1.4.4.
+- Updated mcrypt_compat to 1.0.9.
+
 ## 2.7.7.3 - 2019-03-26
 
 ### Fixed
