@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.7.8 - 2019-04-02
+
 ### Changed
 - Updated Yii to 1.1.21.
 - Updated PhpMailer to 5.2.27.
