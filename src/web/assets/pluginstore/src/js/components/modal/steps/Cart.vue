@@ -15,7 +15,7 @@
                             <th></th>
                             <th>{{ "Item"|t('app') }}</th>
                             <th>{{ "Updates"|t('app') }}</th>
-                            <th></th>
+                            <th class="w-10"></th>
                         </tr>
                         </thead>
                         <tbody v-for="(item, itemKey) in cartItems" :key="'item' + itemKey">
@@ -81,7 +81,14 @@
                                 <td class="blank-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="price">
-                                    <a role="button" @click="removeFromCart(itemKey)">{{ "Remove"|t('app') }}</a>
+                                    <div class="w-16">
+                                        <template v-if="!removeFromCartLoading(itemKey)">
+                                            <a role="button" @click="removeFromCart(itemKey)">{{ "Remove"|t('app') }}</a>
+                                        </template>
+                                        <template v-else>
+                                            <spinner class="sm"></spinner>
+                                        </template>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -135,8 +142,15 @@
                                     <edition-badge v-if="activeTrialPluginEditions[plugin.handle] && plugin.editions.length > 1" :name="activeTrialPluginEditions[plugin.handle].name"></edition-badge>
                                 </td>
                                 <td><strong v-if="activeTrialPluginEditions[plugin.handle]">{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
-                                <td class="thin">
-                                    <btn @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)" :loading="activeTrialLoading(plugin.handle)">{{ "Add to cart"|t('app') }}</btn>
+                                <td class="w-1/4">
+                                    <div class="text-right">
+                                        <template v-if="!activeTrialLoading(plugin.handle)">
+                                            <a @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)" :loading="activeTrialLoading(plugin.handle)">{{ "Add to cart"|t('app') }}</a>
+                                        </template>
+                                        <template v-else>
+                                            <spinner size="sm"></spinner>
+                                        </template>
+                                    </div>
                                 </td>
                             </template>
                         </tr>
@@ -159,6 +173,7 @@
             return {
                 loadingItems: {},
                 loadingActiveTrials: {},
+                loadingRemoveFromCart: {},
             }
         },
 
@@ -231,6 +246,20 @@
                     .catch(response => {
                         this.$delete(this.loadingActiveTrials, plugin.handle)
                         const errorMessage = response.errors && response.errors[0] && response.errors[0].message ? response.errors[0].message : 'Couldn’t add item to cart.';
+                        this.$root.displayError(errorMessage)
+                    })
+            },
+
+            removeFromCart(itemKey) {
+                this.$set(this.loadingRemoveFromCart, itemKey, true)
+
+                this.$store.dispatch('cart/removeFromCart', itemKey)
+                    .then(() => {
+                        this.$delete(this.loadingRemoveFromCart, itemKey)
+                    })
+                    .catch(response => {
+                        this.$delete(this.loadingRemoveFromCart, itemKey)
+                        const errorMessage = response.errors && response.errors[0] && response.errors[0].message ? response.errors[0].message : 'Couldn’t remove item from cart.';
                         this.$root.displayError(errorMessage)
                     })
             },
@@ -325,6 +354,14 @@
 
             activeTrialLoading(pluginHandle) {
                 if (!this.loadingActiveTrials[pluginHandle]) {
+                    return false
+                }
+
+                return true
+            },
+
+            removeFromCartLoading(itemKey) {
+                if (!this.loadingRemoveFromCart[itemKey]) {
                     return false
                 }
 
