@@ -17,7 +17,10 @@ Craft.ui =
                     disabled: this.getDisabledValue(config.disabled),
                     readonly: config.readonly,
                     title: config.title,
-                    placeholder: config.placeholder
+                    placeholder: config.placeholder,
+                    step: config.step,
+                    min: config.min,
+                    max: config.max
                 }
             });
 

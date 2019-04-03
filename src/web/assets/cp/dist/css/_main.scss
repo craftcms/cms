@@ -1900,6 +1900,15 @@ $checkboxPadding: 20px;
   }
 }
 
+.export-form {
+  position: relative;
+  .spinner {
+    position: absolute;
+    bottom: 0;
+    @include right(-24px);
+  }
+}
+
 .thumbviewhelper {
   margin: -7px;
   padding: 7px;

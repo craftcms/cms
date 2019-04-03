@@ -67,6 +67,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         _autoSelectElements: null,
         $countContainer: null,
         page: 1,
+        $exportBtn: null,
 
         actions: null,
         actionsHeadHtml: null,
@@ -120,6 +121,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
             this.$countContainer = this.$container.find('#count-container');
+            this.$exportBtn = this.$container.find('#export-btn');
 
             // Hide sidebar if needed
             if (this.settings.hideSidebar) {
@@ -264,6 +266,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 this.sortMenu.on('optionselect', $.proxy(this, '_handleSortChange'));
             }
+
+            // Initialize the Export button
+            // ---------------------------------------------------------------------
+
+            this.addListener(this.$exportBtn, 'click', '_showExportHud');
 
             // Let everyone know that the UI is initialized
             // ---------------------------------------------------------------------
@@ -1715,6 +1722,99 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             if ($btn) {
                 $btn.data('menubtn').on('optionSelect', $.proxy(this, '_handleMenuActionTriggerSubmit'));
             }
+        },
+
+        _showExportHud: function() {
+            this.$exportBtn.addClass('active');
+
+            var $form = $('<form/>', {
+                'class': 'export-form'
+            });
+
+            var $fmtContainer = $('<div/>', {
+                'class': 'btngroup'
+            })
+            var formats = ['csv', 'xls', 'xlsx', 'ods'];
+            var format = 'csv';
+            for (var i = 0; i < formats.length; i++) {
+                $('<div/>', {
+                    'class': 'btn' + (i === 0 ? ' active' : ''),
+                    role: 'button',
+                    pressed: (i === 0) ? 'true' : 'false',
+                    text: formats[i].toUpperCase(),
+                    'data-format': formats[i]
+                })
+                    .appendTo($fmtContainer)
+                    .on('click', function() {
+                        $fmtContainer.children()
+                            .removeClass('active')
+                            .attr('pressed', 'false');
+                        format = $(this)
+                            .addClass('active')
+                            .attr('pressed', 'true')
+                            .data('format');
+                    });
+            }
+            var $fmtField = Craft.ui.createField($fmtContainer, {
+                label: Craft.t('app', 'Format')
+            }).appendTo($form);
+
+            var $limitField = Craft.ui.createTextField({
+                label: Craft.t('app', 'Limit'),
+                placeholder: Craft.t('app', 'No limit'),
+                type: 'number',
+                min: 0
+            }).appendTo($form);
+
+            $('<input/>', {
+                type: 'submit',
+                'class': 'btn submit fullwidth',
+                value: Craft.t('app', 'Export')
+            }).appendTo($form)
+
+            var $spinner = $('<div/>', {
+                'class': 'spinner hidden'
+            }).appendTo($form);
+
+            var hud = new Garnish.HUD(this.$exportBtn, $form);
+
+            hud.on('hide', $.proxy(function() {
+                this.$exportBtn.removeClass('active');
+            }, this));
+
+            var submitting = false;
+
+            this.addListener($form, 'submit', function(ev) {
+                ev.preventDefault();
+                if (submitting) {
+                    return;
+                }
+
+                submitting = true;
+                $spinner.removeClass('hidden');
+
+                var params = this.getViewParams();
+                params.criteria.limit = $limitField.find('input').val();
+                if (!params.criteria.limit) {
+                    delete params.criteria.limit;
+                }
+                params.format = format;
+
+                Craft.postActionRequest('element-indexes/create-export-token', params, $.proxy(function(response, textStatus) {
+                    submitting = false;
+                    $spinner.addClass('hidden');
+
+                    if (textStatus === 'success') {
+                        var url = Craft.getCpUrl('', {
+                            token: response.token
+                        });
+                        document.location.href = url;
+                    } else {
+                        Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                    }
+
+                }, this));
+            });
         },
 
         _createMenuTriggerList: function(actions, destructive) {

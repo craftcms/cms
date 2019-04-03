@@ -769,6 +769,11 @@ body.rtl .elements .thumbsview li.has-checkbox .element.large.hasthumb.hasstatus
 body.ltr .elements .thumbsview li.has-checkbox .element.large.hasthumb.hasstatus .status { left: 20px; }
 body.rtl .elements .thumbsview li.has-checkbox .element.large.hasthumb.hasstatus .status { right: 20px; }
 
+.export-form { position: relative; }
+.export-form .spinner { position: absolute; bottom: 0; }
+body.ltr .export-form .spinner { right: -24px; }
+body.rtl .export-form .spinner { left: -24px; }
+
 .thumbviewhelper { margin: -7px; padding: 7px; }
 .thumbviewhelper .thumbsview, .thumbviewhelper .thumbsview li { margin: 0 !important; }
 

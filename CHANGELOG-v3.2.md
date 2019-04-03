@@ -11,6 +11,7 @@ This update introduces a few changes in behavior to be aware of:
 - The `site` element query params now support passing multiple site handles, or `'*'`, to query elements across multiple sites at once. ([#2854](https://github.com/craftcms/cms/issues/2854))
 - Added the `unique` element query param, which can be used to prevent duplicate elements when querying elements across multiple sites.
 - Element index pages are now paginated for non-Structure views. ([#818](https://github.com/craftcms/cms/issues/818))
+- Element index pages now have an “Export…” button that will export all of the elements in the current view (across all pages) or up to a custom limit, in either CSV, XLS, XLSX, or ODS format. ([#994](https://github.com/craftcms/cms/issues/994))
 - The `_layouts/cp` Control Panel template now supports a `footer` block, which will be output below the main content area.
 - Added `craft\base\ElementInterface::pluralDisplayName()`, which element type classes can use to define the plural of their display name.
 - Added `craft\models\Section::$propagationMethod`.

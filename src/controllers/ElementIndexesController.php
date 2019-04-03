@@ -20,6 +20,7 @@ use craft\helpers\ElementHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The ElementIndexesController class is a controller that handles various element index related actions.
@@ -244,6 +245,43 @@ class ElementIndexesController extends BaseElementsController
                 'sources' => $sources
             ])
         ]);
+    }
+
+    /**
+     * Creates an export token.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ServerErrorHttpException
+     * @since 3.2.0
+     */
+    public function actionCreateExportToken(): Response
+    {
+        if (!$this->sourceKey) {
+            throw new BadRequestHttpException('Request missing required body param');
+        }
+
+        if ($this->context !== 'index') {
+            throw new BadRequestHttpException('Request missing index context');
+        }
+
+        $request = Craft::$app->getRequest();
+
+        $token = Craft::$app->getTokens()->createToken([
+            'export/export',
+            [
+                'elementType' => $this->elementType,
+                'sourceKey' => $this->sourceKey,
+                'criteria' => $request->getBodyParam('criteria', []),
+                'format' => $request->getRequiredBodyParam('format'),
+            ]
+        ], 1, (new \DateTime())->add(new \DateInterval('PT1H')));
+
+        if (!$token) {
+            throw new ServerErrorHttpException(Craft::t('app', 'Could not create a Live Preview token.'));
+        }
+
+        return $this->asJson(compact('token'));
     }
 
     // Protected Methods
