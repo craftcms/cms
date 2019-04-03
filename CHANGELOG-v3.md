@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.2.0-alpha.2
+## 3.2.0-alpha.2 - 2019-04-03
 
 > {warning} If you’re coming from 3.2.0-alpha.1, please run `./craft project-config/rebuild` after updating to 3.2.0-alpha.2 or later.
 
@@ -25,7 +25,7 @@
 - Deprecated `craft\models\Section::$propagateEntries`. Use `$propagationMethod` instead.
 - Deprecated `craft\web\Request::getIsSingleActionRequest()` and `craft\console\Request::getIsSingleActionRequest()`.
 
-## 3.2.0-alpha.1
+## 3.2.0-alpha.1 - 2019-03-14
 
 ### Added
 - The `site` element query params now support passing multiple site handles, or `'*'`, to query elements across multiple sites at once. ([#2854](https://github.com/craftcms/cms/issues/2854))
