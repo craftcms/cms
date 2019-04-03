@@ -230,8 +230,10 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Returns the source tree HTML for an element index.
+     *
+     * @return Response
      */
-    public function actionGetSourceTreeHtml()
+    public function actionGetSourceTreeHtml(): Response
     {
         $this->requireAcceptsJson();
 

@@ -65,6 +65,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         viewMode: null,
         view: null,
         _autoSelectElements: null,
+        $countContainer: null,
         page: 1,
 
         actions: null,
@@ -171,8 +172,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if ($option.length) {
                     this._setSite($option.data('site-id'));
-                }
-                else {
+                } else {
                     // No site options -- they must not have any site permissions
                     this.settings.criteria = {id: '0'};
                 }
@@ -193,8 +193,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         }
                     }
                 }
-            }
-            else if (this.settings.criteria && this.settings.criteria.siteId) {
+            } else if (this.settings.criteria && this.settings.criteria.siteId) {
                 this._setSite(this.settings.criteria.siteId);
             } else {
                 this._setSite(Craft.siteId);
@@ -207,8 +206,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.addListener(this.$search, 'textchange', $.proxy(function() {
                 if (!this.searching && this.$search.val()) {
                     this.startSearching();
-                }
-                else if (this.searching && !this.$search.val()) {
+                } else if (this.searching && !this.$search.val()) {
                     this.stopSearching();
                 }
 
@@ -369,8 +367,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     this.getSourceContainer().replaceWith(response.html);
                     this.initSources();
                     this.selectDefaultSource();
-                }
-                else {
+                } else {
                     Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
                 }
 
@@ -392,8 +389,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         width: this.$main.width()
                     });
                 }
-            }
-            else {
+            } else {
                 if (this.$toolbar.hasClass('fixed')) {
                     this.$toolbar.removeClass('fixed');
                     this.$toolbar.css('width', '');
@@ -489,8 +485,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         setInstanceState: function(key, value) {
             if (typeof key === 'object') {
                 $.extend(this.instanceState, key);
-            }
-            else {
+            } else {
                 this.instanceState[key] = value;
             }
 
@@ -511,11 +506,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (typeof key === 'undefined') {
                 return this.sourceStates[source];
-            }
-            else if (typeof this.sourceStates[source][key] !== 'undefined') {
+            } else if (typeof this.sourceStates[source][key] !== 'undefined') {
                 return this.sourceStates[source][key];
-            }
-            else {
+            } else {
                 return (typeof defaultValue !== 'undefined' ? defaultValue : null);
             }
         },
@@ -529,8 +522,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (typeof key === 'object') {
                 $.extend(viewState, key);
-            }
-            else {
+            } else {
                 viewState[key] = value;
             }
 
@@ -647,8 +639,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     }
 
                     this._updateView(params, response);
-                }
-                else {
+                } else {
                     Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
                 }
 
@@ -677,8 +668,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (!this._$triggers) {
                 this._createTriggers();
-            }
-            else {
+            } else {
                 this._$triggers.insertAfter(this.$selectAllContainer);
             }
 
@@ -732,8 +722,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         }
 
                         this.afterAction(action, params);
-                    }
-                    else {
+                    } else {
                         Craft.cp.displayError(response.message);
                     }
                 }
@@ -775,16 +764,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         this.$selectAllCheckbox.removeClass('indeterminate');
                         this.$selectAllCheckbox.addClass('checked');
                         this.$selectAllBtn.attr('aria-checked', 'true');
-                    }
-                    else {
+                    } else {
                         this.$selectAllCheckbox.addClass('indeterminate');
                         this.$selectAllCheckbox.removeClass('checked');
                         this.$selectAllBtn.attr('aria-checked', 'mixed');
                     }
 
                     this.showActionTriggers();
-                }
-                else {
+                } else {
                     this.$selectAllCheckbox.removeClass('indeterminate checked');
                     this.$selectAllBtn.attr('aria-checked', 'false');
                     this.hideActionTriggers();
@@ -824,8 +811,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if (attr === 'structure') {
                     this.$sortDirectionsList.find('a').addClass('disabled');
-                }
-                else {
+                } else {
                     this.$sortDirectionsList.find('a').removeClass('disabled');
                 }
             }
@@ -898,8 +884,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
 
                 this.$structureSortAttribute.prependTo(this.$sortAttributesList);
-            }
-            else if (this.$structureSortAttribute) {
+            } else if (this.$structureSortAttribute) {
                 this.$structureSortAttribute.removeClass('sel').detach();
             }
 
@@ -968,8 +953,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if ($source) {
                 return this.selectSource($source);
-            }
-            else {
+            } else {
                 return false;
             }
         },
@@ -1000,8 +984,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Does the source specify what to do?
             if (this.$source && Garnish.hasAttr(this.$source, 'data-default-sort')) {
                 return this.$source.attr('data-default-sort').split(':');
-            }
-            else {
+            } else {
                 // Default to whatever's first
                 return [this.$sortAttributesList.find('a:first').data('attr'), 'asc'];
             }
@@ -1120,8 +1103,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if ($element && $element.length) {
                     this.enableElements($element);
-                }
-                else {
+                } else {
                     this.forgetDisabledElementId(id);
                 }
             }
@@ -1136,8 +1118,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if ($element && $element.length) {
                     this.disableElements($element);
-                }
-                else {
+                } else {
                     this.rememberDisabledElementId(id);
                 }
             }
@@ -1167,8 +1148,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Is there a predesignated place where buttons should go?
             if (this.settings.buttonContainer) {
                 return $(this.settings.buttonContainer);
-            }
-            else {
+            } else {
                 var $container = $('#button-container');
 
                 if (!$container.length) {
@@ -1402,8 +1382,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Is this an attribute or a direction?
             if ($option.parent().parent().is(this.$sortAttributesList)) {
                 this.setSortAttribute($option.data('attr'));
-            }
-            else {
+            } else {
                 this.setSortDirection($option.data('dir'));
             }
 
@@ -1478,8 +1457,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         _toggleSource: function($source) {
             if ($source.parent('li').hasClass('expanded')) {
                 this._collapseSource($source);
-            }
-            else {
+            } else {
                 this._expandSource($source);
             }
         },
@@ -1604,8 +1582,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     this.addListener(this.$selectAllBtn, 'click', function() {
                         if (this.view.getSelectedElements().length === 0) {
                             this.view.selectAllElements();
-                        }
-                        else {
+                        } else {
                             this.view.deselectAllElements();
                         }
                     });
@@ -1617,8 +1594,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                             $(ev.currentTarget).trigger('click');
                         }
                     });
-                }
-                else {
+                } else {
                     // Reset the select all button
                     this.$selectAllCheckbox.removeClass('indeterminate checked');
 
@@ -1688,12 +1664,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                     this.addListener($form, 'submit', '_handleActionTriggerSubmit');
                     triggers.push($form);
-                }
-                else {
+                } else {
                     if (!action.destructive) {
                         safeMenuActions.push(action);
-                    }
-                    else {
+                    } else {
                         destructiveMenuActions.push(action);
                     }
                 }
