@@ -39,6 +39,8 @@ class SectionsController extends Controller
     {
         // All section actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**

@@ -38,6 +38,8 @@ class SitesController extends Controller
     {
         // All actions require an admin account
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**
