@@ -1,5 +1,42 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.2.0-alpha.2
+
+> {warning} If you’re coming from 3.2.0-alpha.1, please run `./craft project-config/rebuild` after updating to 3.2.0-alpha.2 or later.
+
+### Added
+- Sections now have a “Propagation Method” setting, enabling entries to only be propagated to other sites in the same site group, or with the same language. ([#3554](https://github.com/craftcms/cms/issues/3554))
+- Element index pages are now paginated for non-Structure views. ([#818](https://github.com/craftcms/cms/issues/818))
+- Element index pages now have an “Export…” button that will export all of the elements in the current view (across all pages) or up to a custom limit, in either CSV, XLS, XLSX, or ODS format. ([#994](https://github.com/craftcms/cms/issues/994))
+- The `_layouts/cp` Control Panel template now supports a `footer` block, which will be output below the main content area.
+- Added `craft\base\ElementInterface::pluralDisplayName()`, which element type classes can use to define the plural of their display name.
+- Added `craft\models\Section::$propagationMethod`.
+- Added `craft\web\Request::getIsLoginRequest()` and `craft\console\Request::getIsLoginRequest()`.
+
+### Changed
+- Craft now propagates elements over background jobs, speeding up the initial element save request. ([#4064](https://github.com/craftcms/cms/issues/4064))
+- The Control Panel now shows the sidebar on screens that are at least 1,000 pixels wide. ([#4079](https://github.com/craftcms/cms/issues/4079))
+- Anonymous/offline/Control Panel access validation now takes place from `craft\web\Controller::beforeAction()` rather than `craft\web\Application::handleRequest()`, giving controllers a chance to do things like set CORS headers before a `ForbiddenHttpException` or `ServiceUnavailableHttpException` is thrown. ([#4008](https://github.com/craftcms/cms/issues/4008))
+- Controllers can now set `$allowAnonymous` to a combination of bitwise integers `self::ALLOW_ANONYMOUS_LIVE` and `self::ALLOW_ANONYMOUS_OFFLINE`, or an array of action ID/bitwise integer pairs, to define whether their actions should be accessible anonymously even when the system is offline.
+- `craft\queue\jobs\PropagateElements` no longer needs to be configured with a `siteId`, and no longer propagates elements to sites if they were updated in the target site more recently than the source site.
+- `craft\services\Elements::propagateElement()` now has a `$siteElement` argument.
+
+### Deprecated
+- Deprecated `craft\models\Section::$propagateEntries`. Use `$propagationMethod` instead.
+- Deprecated `craft\web\Request::getIsSingleActionRequest()` and `craft\console\Request::getIsSingleActionRequest()`.
+
+## 3.2.0-alpha.1
+
+### Added
+- The `site` element query params now support passing multiple site handles, or `'*'`, to query elements across multiple sites at once. ([#2854](https://github.com/craftcms/cms/issues/2854))
+- Added the `unique` element query param, which can be used to prevent duplicate elements when querying elements across multiple sites.
+
+### Changed
+- Renamed `craft\helpers\ArrayHelper::filterByValue()` to `where()`.
+
+### Deprecated
+- Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
+
 ## 3.1.21 - 2019-04-03
 
 ### Added

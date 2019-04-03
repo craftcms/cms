@@ -1,10 +1,8 @@
 # Running Release Notes for Craft CMS 3.2
 
-::: warning
-This update introduces a few changes in behavior to be aware of:
-
-- Custom login controllers must now explicitly set their `$allowAnonymous` values to include `self::ALLOW_ANONYMOUS_OFFLINE` if they wish to be available when the system is offline.
-:::
+> {warning} This update introduces a few changes in behavior to be aware of:
+>
+> - Custom login controllers must now explicitly set their `$allowAnonymous` values to include `self::ALLOW_ANONYMOUS_OFFLINE` if they wish to be available when the system is offline.
 
 ### Added
 - Sections now have a “Propagation Method” setting, enabling entries to only be propagated to other sites in the same site group, or with the same language. ([#3554](https://github.com/craftcms/cms/issues/3554))
