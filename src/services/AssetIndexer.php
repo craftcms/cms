@@ -138,8 +138,8 @@ class AssetIndexer extends Component
                 for ($segmentIndex = 0; $segmentIndex < $segmentCount; $segmentIndex++) {
                     $currentSegment = $segments[$segmentIndex];
 
-                    // Skip if segment begins with an underscrore and (this is a directory or not the last segment)
-                    if ($currentSegment[0] === '_' && ($value['type'] === 'dir' || $segmentIndex + 1 < $segmentCount)) {
+                    // Skip if segment begins with an underscore and (this is a directory or not the last segment)
+                    if (isset($currentSegment[0]) && $currentSegment[0] === '_' && ($value['type'] === 'dir' || $segmentIndex + 1 < $segmentCount)) {
                         return false;
                     }
                 }

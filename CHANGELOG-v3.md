@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a PHP error that could occur during asset indexing in some cases.
+
 ## 3.1.21 - 2019-04-03
 
 ### Added
