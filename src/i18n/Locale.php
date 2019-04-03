@@ -422,6 +422,7 @@ class Locale extends BaseObject
         if ($this->_formatter === null) {
             $config = [
                 'locale' => $this->id,
+                'sizeFormatBase' => 1000,
             ];
 
             if (!Craft::$app->getI18n()->getIsIntlLoaded()) {

@@ -46,7 +46,9 @@ class Tokens extends Component
      * Craft::$app->tokens->createToken('action/path');
      *
      * // Route to a controller action with params
-     * Craft::$app->tokens->createToken('action/path', ['foo' => 'bar']);
+     * Craft::$app->tokens->createToken(['action/path', [
+     *     'foo' => 'bar'
+     * ]]);
      *
      * // Route to a template
      * Craft::$app->tokens->createToken(['template' => 'template/path']);

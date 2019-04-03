@@ -11,6 +11,7 @@ use Craft;
 use Stringy\Stringy as BaseStringy;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\helpers\Inflector;
 
 /**
  * This helper class provides various multi-byte aware string related manipulation and encoding methods.
@@ -1070,7 +1071,7 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function toWords(string $string, bool $lower = false, bool $removePunctuation = false): array
     {
         // Convert CamelCase to multiple words
-        $string = preg_replace('/(?<=[a-z])[A-Z]/u', ' \0', $string);
+        $string = Inflector::camel2words($string, false);
 
         if ($lower) {
             // Make it lowercase

@@ -319,10 +319,10 @@ class UpdateController extends Controller
      * @param string $handle
      * @param string $from
      * @param string|null $to
-     * @param string $packageName
+     * @param string $oldPackageName
      * @param Update $update
      */
-    private function _updateRequirements(array &$requirements, array &$info, string $handle, string $from, string $to = null, string $packageName, Update $update)
+    private function _updateRequirements(array &$requirements, array &$info, string $handle, string $from, string $to = null, string $oldPackageName, Update $update)
     {
         if ($update->status === Update::STATUS_EXPIRED) {
             $this->stdout("Skipping {$handle} because its license has expired." . PHP_EOL, Console::FG_GREY);
@@ -338,8 +338,13 @@ class UpdateController extends Controller
             return;
         }
 
-        $requirements[$packageName] = $to;
+        $requirements[$update->packageName] = $to;
         $info[] = [$handle, $from, $to, $update->getHasCritical(), $update->status];
+
+        // Has the package name changed?
+        if ($update->packageName !== $oldPackageName) {
+            $requirements[$oldPackageName] = false;
+        }
     }
 
     /**
