@@ -55,6 +55,11 @@ class Update extends Model
      */
     public $releases = [];
 
+    /**
+     * @var string The package name that should be used when updating
+     */
+    public $packageName;
+
     // Public Methods
     // =========================================================================
 

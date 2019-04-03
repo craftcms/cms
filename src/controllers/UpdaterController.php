@@ -229,6 +229,8 @@ class UpdaterController extends BaseUpdaterController
 
         // Set the things to install, if any
         if (($install = $request->getBodyParam('install')) !== null) {
+            $packageNames = $request->getRequiredBodyParam('packageNames');
+
             $data = [
                 'install' => $this->_parseInstallParam($install),
                 'current' => [],
@@ -240,16 +242,22 @@ class UpdaterController extends BaseUpdaterController
             $pluginsService = Craft::$app->getPlugins();
 
             foreach ($data['install'] as $handle => $version) {
+                $packageName = strip_tags($packageNames[$handle]);
                 if ($handle === 'craft') {
-                    $packageName = 'craftcms/cms';
+                    $oldPackageName = 'craftcms/cms';
                     $current = Craft::$app->getVersion();
                 } else {
                     $pluginInfo = $pluginsService->getPluginInfo($handle);
-                    $packageName = $pluginInfo['packageName'];
+                    $oldPackageName = $pluginInfo['packageName'];
                     $current = $pluginInfo['version'];
                 }
                 $data['current'][$packageName] = $current;
                 $data['requirements'][$packageName] = $version;
+
+                // Has the package name changed?
+                if ($packageName !== $oldPackageName) {
+                    $data['requirements'][$oldPackageName] = false;
+                }
             }
         } else {
             // Figure out what needs to be updated, if any
