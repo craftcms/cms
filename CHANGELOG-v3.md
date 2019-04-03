@@ -1,5 +1,30 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.1.21 - 2019-04-03
+
+### Added
+- Added the `backup` command, which creates a new database backup. ([#4075](https://github.com/craftcms/cms/issues/4075))
+- Added the `queue/retry` command, which can be passed a failed job ID, or `all` to retry all failed jobs. ([#4072](https://github.com/craftcms/cms/issues/4072))
+- Added `craft\queue\Queue::retryAll()`.
+- Added `craft\services\sections::$autoResaveEntries`, which can be set to `false` from `config/app.php` to prevent Craft from auto-resaving entries after sections and entry types are updated. ([#3482](https://github.com/craftcms/cms/issues/3482))
+
+### Changed
+- It’s now possible to double-click on asset sources to expand/collapse their subfolders. ([#4070](https://github.com/craftcms/cms/issues/4070))
+- Craft no longer auto-resaves entries after saving a section or entry type if nothing changed of any significance to entries. ([#3482](https://github.com/craftcms/cms/issues/3482))
+- Craft now formats filesizes using metric units (e.g. MB instead of MiB).
+- The updater is now capable of handling package name changes.
+- Craft now requires Yii 2.0.17.
+
+### Fixed
+- Fixed a bug where the Asset Indexes utility wasn’t logging exceptions.
+- Fixed a SQL error that could occur when using the Asset Indexes utility, if any filenames contained 4+ byte characters.
+- Fixed a bug where entry queries could return duplicate results for any entries that belong to a section that has soft-deleted structures associated with it. ([#4066](https://github.com/craftcms/cms/issues/4066))
+- Fixed a bug where rebuilding project config would not work with Matrix fields with no block types. ([#4074](https://github.com/craftcms/cms/issues/4074)
+- Fixed an error that occurred when sending emails if the `testToEmailAddress` config setting was set. ([#4076](https://github.com/craftcms/cms/issues/4076))
+- Fixed a bug where it wasn’t possible to pass the `--element-id` option on `resave/*` commands.
+- Fixed a bug where Matrix fields were including disabled blocks if any changes had been made to the Matrix block query params.
+- Fixed SQL errors that could occur if the table prefix had ever changed.
+
 ## 3.1.20.1 - 2019-03-27
 
 ### Fixed

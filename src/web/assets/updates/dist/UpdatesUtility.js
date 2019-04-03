@@ -114,6 +114,11 @@
                         name: 'install['+updates[i].updateInfo.handle+']',
                         value: updates[i].updateInfo.latestVersion
                     }));
+                    $form.append($('<input/>', {
+                        type: 'hidden',
+                        name: 'packageNames['+updates[i].updateInfo.handle+']',
+                        value: updates[i].updateInfo.packageName
+                    }));
                 }
 
                 $form.append($('<input/>', {

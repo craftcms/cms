@@ -95,7 +95,7 @@ class ResaveController extends Controller
     public function options($actionID)
     {
         $options = parent::options($actionID);
-        $options[] = 'id';
+        $options[] = 'elementId';
         $options[] = 'uid';
         $options[] = 'site';
         $options[] = 'status';

@@ -115,7 +115,13 @@ class Section extends Model
         $rules = parent::rules();
         $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
-        $rules[] = [['type'], 'in', 'range' => ['single', 'channel', 'structure']];
+        $rules[] = [
+            ['type'], 'in', 'range' => [
+                self::TYPE_SINGLE,
+                self::TYPE_CHANNEL,
+                self::TYPE_STRUCTURE
+            ]
+        ];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
         $rules[] = [['name', 'handle', 'type', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];

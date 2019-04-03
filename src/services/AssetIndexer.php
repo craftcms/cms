@@ -110,6 +110,7 @@ class AssetIndexer extends Component
                 'skippedFiles' => $skippedItems
             ];
         } catch (\Throwable $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
             return ['error' => $exception->getMessage()];
         }
     }
@@ -173,8 +174,16 @@ class AssetIndexer extends Component
      */
     public function extractSkippedItemsFromIndexList(array &$indexList): array
     {
-        $skippedItems = array_filter($indexList, function($entry) {
-            return preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $entry['basename']);
+        $isMysql = Craft::$app->getDb()->getIsMysql();
+
+        $skippedItems = array_filter($indexList, function($entry) use ($isMysql) {
+            if (preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $entry['basename'])) {
+                return true;
+            }
+            if ($isMysql && StringHelper::containsMb4($entry['basename'])) {
+                return true;
+            }
+            return false;
         });
 
         $indexList = array_diff_key($indexList, $skippedItems);

@@ -211,59 +211,25 @@ class m160807_144858_sites extends Migration
         // Drop the old indexes
         // ---------------------------------------------------------------------
 
-        MigrationHelper::dropIndexIfExists('{{%categorygroups_i18n}}', [
-            'groupId',
-            'locale'
-        ], true, $this);
+        MigrationHelper::dropIndexIfExists('{{%categorygroups_i18n}}', ['groupId', 'locale'], true, $this);
         MigrationHelper::dropIndexIfExists('{{%categorygroups_i18n}}', ['locale'], false, $this);
-        MigrationHelper::dropIndexIfExists(Table::CONTENT, [
-            'elementId',
-            'locale'
-        ], true, $this);
+        MigrationHelper::dropIndexIfExists(Table::CONTENT, ['elementId', 'locale'], true, $this);
         MigrationHelper::dropIndexIfExists(Table::CONTENT, ['locale'], false, $this);
-        MigrationHelper::dropIndexIfExists('{{%elements_i18n}}', [
-            'elementId',
-            'locale'
-        ], true, $this);
-        MigrationHelper::dropIndexIfExists('{{%elements_i18n}}', [
-            'uri',
-            'locale'
-        ], true, $this);
+        MigrationHelper::dropIndexIfExists('{{%elements_i18n}}', ['elementId', 'locale'], true, $this);
+        MigrationHelper::dropIndexIfExists('{{%elements_i18n}}', ['uri', 'locale'], true, $this);
         MigrationHelper::dropIndexIfExists('{{%elements_i18n}}', ['locale'], false, $this);
-        MigrationHelper::dropIndexIfExists('{{%elements_i18n}}', [
-            'slug',
-            'locale'
-        ], false, $this);
-        MigrationHelper::dropIndexIfExists(Table::ENTRYDRAFTS, [
-            'entryId',
-            'locale'
-        ], false, $this);
+        MigrationHelper::dropIndexIfExists('{{%elements_i18n}}', ['slug', 'locale'], false, $this);
+        MigrationHelper::dropIndexIfExists(Table::ENTRYDRAFTS, ['entryId', 'locale'], false, $this);
         MigrationHelper::dropIndexIfExists(Table::ENTRYDRAFTS, ['locale'], false, $this);
-        MigrationHelper::dropIndexIfExists(Table::ENTRYVERSIONS, [
-            'entryId',
-            'locale'
-        ], false, $this);
+        MigrationHelper::dropIndexIfExists(Table::ENTRYVERSIONS, ['entryId', 'locale'], false, $this);
         MigrationHelper::dropIndexIfExists(Table::ENTRYVERSIONS, ['locale'], false, $this);
         MigrationHelper::dropIndexIfExists(Table::MATRIXBLOCKS, ['ownerLocale'], false, $this);
-        MigrationHelper::dropIndexIfExists(Table::RELATIONS, [
-            'fieldId',
-            'sourceId',
-            'sourceLocale',
-            'targetId'
-        ], true, $this);
+        MigrationHelper::dropIndexIfExists(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceLocale', 'targetId'], true, $this);
         MigrationHelper::dropIndexIfExists(Table::RELATIONS, ['sourceLocale'], false, $this);
         MigrationHelper::dropIndexIfExists('{{%routes}}', ['locale'], false, $this);
-        MigrationHelper::dropIndexIfExists('{{%sections_i18n}}', [
-            'sectionId',
-            'locale'
-        ], true, $this);
+        MigrationHelper::dropIndexIfExists('{{%sections_i18n}}', ['sectionId', 'locale'], true, $this);
         MigrationHelper::dropIndexIfExists('{{%sections_i18n}}', ['locale'], false, $this);
-        MigrationHelper::dropIndexIfExists(Table::TEMPLATECACHES, [
-            'expiryDate',
-            'cacheKey',
-            'locale',
-            'path'
-        ], false, $this);
+        MigrationHelper::dropIndexIfExists(Table::TEMPLATECACHES, ['expiryDate', 'cacheKey', 'locale', 'path'], false, $this);
         MigrationHelper::dropIndexIfExists(Table::TEMPLATECACHES, ['locale'], false, $this);
 
         // Drop the locale columns
