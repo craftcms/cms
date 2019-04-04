@@ -1,9 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleaed
+## 3.2.0-alpha.2.1 - 2019-04-04
 
 ### Fixed
 - Fixed a SQL error that could occur when updating to Craft 3.2.
+- Fixed a bug where underscores were getting stripped from element slugs. ([#4096](https://github.com/craftcms/cms/issues/4096))
 
 ## 3.2.0-alpha.2 - 2019-04-03
 
