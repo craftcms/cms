@@ -18,6 +18,7 @@ use craft\events\SearchEvent;
 use craft\helpers\Db;
 use craft\helpers\Search as SearchHelper;
 use craft\helpers\StringHelper;
+use craft\models\Site;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
@@ -268,26 +269,43 @@ class Search extends Component
      * @param int $elementId
      * @param string $attribute
      * @param string $fieldId
-     * @param int|null $siteId
+     * @param int $siteId
      * @param string $dirtyKeywords
      * @throws \craft\errors\SiteNotFoundException
      */
-    private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId = null, string $dirtyKeywords)
+    private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId, string $dirtyKeywords)
     {
         $attribute = strtolower($attribute);
-        $driver = Craft::$app->getDb()->getDriverName();
 
-        if ($siteId !== null) {
-            $site = Craft::$app->getSites()->getSiteById($siteId);
-        } else {
-            $site = Craft::$app->getSites()->getPrimarySite();
+        // Acquire a lock for this element/attribute/field ID/site ID
+        $mutex = Craft::$app->getMutex();
+        $lockKey = "searchindex:{$elementId}:{$attribute}:{$fieldId}:{$siteId}";
+
+        if (!$mutex->acquire($lockKey)) {
+            // Not worth waiting around; for all we know the other process has newer search attributes anyway
+            return;
         }
+
+        // Drop all current rows for this element/attribute/site ID
+        $db = Craft::$app->getDb();
+        $db->createCommand()
+            ->delete(Table::SEARCHINDEX, [
+                'elementId' => $elementId,
+                'attribute' => $attribute,
+                'fieldId' => $fieldId,
+                'siteId' => $siteId,
+            ])
+            ->execute();
+
+        $driver = $db->getDriverName();
+        /** @var Site $site */
+        $site = Craft::$app->getSites()->getSiteById($siteId);
 
         // Clean 'em up
         $cleanKeywords = SearchHelper::normalizeKeywords($dirtyKeywords, [], true, $site->language);
 
         // Save 'em
-        $keyColumns = [
+        $columns = [
             'elementId' => $elementId,
             'attribute' => $attribute,
             'fieldId' => $fieldId,
@@ -309,21 +327,19 @@ class Search extends Component
             $cleanKeywords = $this->_truncateSearchIndexKeywords($cleanKeywords, $maxSize);
         }
 
-        $keywordColumns = ['keywords' => $cleanKeywords];
+        $columns['keywords'] = $cleanKeywords;
 
         if ($driver === DbConfig::DRIVER_PGSQL) {
-            $keywordColumns['keywords_vector'] = $cleanKeywords;
+            $columns['keywords_vector'] = $cleanKeywords;
         }
 
         // Insert/update the row in searchindex
-        Craft::$app->getDb()->createCommand()
-            ->upsert(
-                Table::SEARCHINDEX,
-                $keyColumns,
-                $keywordColumns,
-                [],
-                false)
+        $db->createCommand()
+            ->insert(Table::SEARCHINDEX, $columns, false)
             ->execute();
+
+        // Release the lock
+        $mutex->release($lockKey);
     }
 
     /**

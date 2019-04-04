@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Changed the way Craft updates search indexes, to reduce the likelihood of a deadlock. ([#3197](https://github.com/craftcms/cms/issues/3197))
+
+### Fixed
+- Fixed a PHP error that could occur during asset indexing in some cases.
+
 ## 3.1.21 - 2019-04-03
 
 ### Added
