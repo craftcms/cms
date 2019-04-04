@@ -1434,7 +1434,7 @@ class Sections extends Component
             ];
         }
 
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'sections.id',
                 'sections.structureId',
@@ -1442,7 +1442,6 @@ class Sections extends Component
                 'sections.handle',
                 'sections.type',
                 'sections.enableVersioning',
-                'sections.propagationMethod',
                 'sections.uid',
                 'structures.maxLevels',
             ])
@@ -1450,6 +1449,13 @@ class Sections extends Component
             ->from(['{{%sections}} sections'])
             ->where($condition)
             ->orderBy(['name' => SORT_ASC]);
+
+        // todo: remove schema version condition after next beakpoint
+        if (version_compare($schemaVersion, '3.2.1', '>=')) {
+            $query->addSelect('sections.propagationMethod');
+        }
+
+        return $query;
     }
 
     /**

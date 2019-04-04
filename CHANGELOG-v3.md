@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleaed
+
+### Fixed
+- Fixed a SQL error that could occur when updating to Craft 3.2.
+
 ## 3.2.0-alpha.2 - 2019-04-03
 
 > {warning} If you’re coming from 3.2.0-alpha.1, please run `./craft project-config/rebuild` after updating to 3.2.0-alpha.2 or later.
