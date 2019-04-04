@@ -4,6 +4,7 @@
 
 ### Changed
 - Changed the way Craft updates search indexes, to reduce the likelihood of a deadlock. ([#3197](https://github.com/craftcms/cms/issues/3197))
+- Improved styles and behavior of the Plugin Store.
 
 ### Fixed
 - Fixed a PHP error that could occur during asset indexing in some cases.
