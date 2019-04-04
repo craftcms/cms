@@ -37,6 +37,11 @@
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
 
+## 3.1.21.1 - 2019-04-04
+
+### Fixed
+- Fixed a bug where underscores were getting stripped from element slugs. ([#4096](https://github.com/craftcms/cms/issues/4096))
+
 ## 3.1.21 - 2019-04-03
 
 ### Added
