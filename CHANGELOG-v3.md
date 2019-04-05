@@ -9,6 +9,7 @@
 
 ### Fixed
 - Fixed a PHP error that could occur during asset indexing in some cases.
+- Fixed a bug where entry drafts weren’t showing previous changes to Matrix fields on the draft. ([#4105](https://github.com/craftcms/cms/issues/4105))
 
 ## 3.1.21.1 - 2019-04-04
 
