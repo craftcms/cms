@@ -342,55 +342,8 @@ class AppController extends Controller
      */
     public function actionGetPluginLicenseInfo(): Response
     {
-        // Update our records & use all licensed plugins as a starting point
-        $licenseInfo = Craft::$app->getApi()->getLicenseInfo(['plugins']);
-        $result = [];
-        if (!empty($licenseInfo['pluginLicenses'])) {
-            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@app/icons/default-plugin.svg', true);
-            foreach ($licenseInfo['pluginLicenses'] as $pluginLicenseInfo) {
-                if (isset($pluginLicenseInfo['plugin'])) {
-                    $pluginInfo = $pluginLicenseInfo['plugin'];
-                    $result[$pluginInfo['handle']] = [
-                        'edition' => $pluginLicenseInfo['edition'],
-                        'isComposerInstalled' => false,
-                        'isInstalled' => false,
-                        'isEnabled' => false,
-                        'licenseKey' => $pluginLicenseInfo['key'],
-                        'licensedEdition' => null,
-                        'licenseKeyStatus' => LicenseKeyStatus::Valid,
-                        'licenseIssues' => [],
-                        'name' => $pluginInfo['name'],
-                        'description' => $pluginInfo['shortDescription'],
-                        'iconUrl' => $pluginInfo['icon']['url'] ?? $defaultIconUrl,
-                        'documentationUrl' => $pluginInfo['documentationUrl'] ?? null,
-                        'packageName' => $pluginInfo['packageName'],
-                        'latestVersion' => $pluginInfo['latestVersion'],
-                    ];
-                }
-            }
-        }
-
+        $result = $this->_pluginLicenseInfo();
         ArrayHelper::multisort($result, 'name');
-
-        // Override with info for the installed plugins
-        $info = Craft::$app->getPlugins()->getAllPluginInfo();
-        foreach ($info as $handle => $pluginInfo) {
-            $result[$handle] = [
-                'isComposerInstalled' => true,
-                'isInstalled' => $pluginInfo['isInstalled'],
-                'isEnabled' => $pluginInfo['isEnabled'],
-                'version' => $pluginInfo['version'],
-                'hasMultipleEditions' => $pluginInfo['hasMultipleEditions'],
-                'edition' => $pluginInfo['edition'],
-                'licenseKey' => $pluginInfo['licenseKey'],
-                'licensedEdition' => $pluginInfo['licensedEdition'],
-                'licenseKeyStatus' => $pluginInfo['licenseKeyStatus'],
-                'licenseIssues' => $pluginInfo['licenseIssues'],
-                'isTrial' => $pluginInfo['isTrial'],
-                'upgradeAvailable' => $pluginInfo['upgradeAvailable'],
-            ];
-        }
-
         return $this->asJson($result);
     }
 
@@ -413,18 +366,8 @@ class AppController extends Controller
         $pluginsService = Craft::$app->getPlugins();
         $pluginsService->setPluginLicenseKey($handle, $newKey ?: null);
 
-        // Update the status
-        Craft::$app->getApi()->getLicenseInfo();
-
         // Return the new plugin license info
-        $info = $pluginsService->getPluginInfo($handle);
-        return $this->asJson([
-            'licenseKey' => $info['licenseKey'],
-            'licensedEdition' => $info['licensedEdition'],
-            'licenseKeyStatus' => $info['licenseKeyStatus'],
-            'licenseIssues' => $info['licenseIssues'],
-            'version' => $info['version'],
-        ]);
+        return $this->asJson($this->_pluginLicenseInfo()[$handle]);
     }
 
     // Private Methods
@@ -469,5 +412,75 @@ class AppController extends Controller
         }
 
         return $arr;
+    }
+
+    /**
+     * Returns plugin license info.
+     *
+     * @return array
+     */
+    private function _pluginLicenseInfo(): array
+    {
+        $result = [];
+
+        // Update our records and get license info from the API
+        $licenseInfo = Craft::$app->getApi()->getLicenseInfo(['plugins']);
+        $allPluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+
+        // Update our records & use all licensed plugins as a starting point
+        if (!empty($licenseInfo['pluginLicenses'])) {
+            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@app/icons/default-plugin.svg', true);
+            foreach ($licenseInfo['pluginLicenses'] as $pluginLicenseInfo) {
+                if (isset($pluginLicenseInfo['plugin'])) {
+                    $pluginInfo = $pluginLicenseInfo['plugin'];
+                    $handle = $pluginInfo['handle'];
+
+                    // The same plugin could be associated with this Craft license more than once,
+                    // so make sure this is the same license they've entered a license key for, if there is one
+                    if (
+                        !isset($allPluginInfo[$handle]) ||
+                        !$allPluginInfo[$handle]['licenseKey'] ||
+                        $allPluginInfo[$handle]['licenseKey'] === $pluginLicenseInfo['key']
+                    ) {
+                        $result[$handle] = [
+                            'edition' => $pluginLicenseInfo['edition'],
+                            'isComposerInstalled' => false,
+                            'isInstalled' => false,
+                            'isEnabled' => false,
+                            'licenseKey' => $pluginLicenseInfo['key'],
+                            'licensedEdition' => null,
+                            'licenseKeyStatus' => LicenseKeyStatus::Valid,
+                            'licenseIssues' => [],
+                            'name' => $pluginInfo['name'],
+                            'description' => $pluginInfo['shortDescription'],
+                            'iconUrl' => $pluginInfo['icon']['url'] ?? $defaultIconUrl,
+                            'documentationUrl' => $pluginInfo['documentationUrl'] ?? null,
+                            'packageName' => $pluginInfo['packageName'],
+                            'latestVersion' => $pluginInfo['latestVersion'],
+                        ];
+                    }
+                }
+            }
+        }
+
+        // Override with info for the installed plugins
+        foreach ($allPluginInfo as $handle => $pluginInfo) {
+            $result[$handle] = [
+                'isComposerInstalled' => true,
+                'isInstalled' => $pluginInfo['isInstalled'],
+                'isEnabled' => $pluginInfo['isEnabled'],
+                'version' => $pluginInfo['version'],
+                'hasMultipleEditions' => $pluginInfo['hasMultipleEditions'],
+                'edition' => $pluginInfo['edition'],
+                'licenseKey' => $pluginInfo['licenseKey'],
+                'licensedEdition' => $pluginInfo['licensedEdition'],
+                'licenseKeyStatus' => $pluginInfo['licenseKeyStatus'],
+                'licenseIssues' => $pluginInfo['licenseIssues'],
+                'isTrial' => $pluginInfo['isTrial'],
+                'upgradeAvailable' => $pluginInfo['upgradeAvailable'],
+            ];
+        }
+
+        return $result;
     }
 }
