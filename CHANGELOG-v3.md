@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Control Panel pages that didn’t have a dedicated controller action weren’t ensuring that a user was logged in.
+
 ## 3.2.0-alpha.2.1 - 2019-04-04
 
 ### Fixed
