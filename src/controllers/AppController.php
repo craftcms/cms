@@ -379,6 +379,7 @@ class AppController extends Controller
                 'isComposerInstalled' => true,
                 'isInstalled' => $pluginInfo['isInstalled'],
                 'isEnabled' => $pluginInfo['isEnabled'],
+                'version' => $pluginInfo['version'],
                 'hasMultipleEditions' => $pluginInfo['hasMultipleEditions'],
                 'edition' => $pluginInfo['edition'],
                 'licenseKey' => $pluginInfo['licenseKey'],
