@@ -423,6 +423,7 @@ class AppController extends Controller
             'licensedEdition' => $info['licensedEdition'],
             'licenseKeyStatus' => $info['licenseKeyStatus'],
             'licenseIssues' => $info['licenseIssues'],
+            'version' => $info['version'],
         ]);
     }
 
