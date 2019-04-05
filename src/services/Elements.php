@@ -1512,6 +1512,7 @@ class Elements extends Component
     {
         /** @var Element $element */
         // Try to fetch the element in this site
+        /** @var Element|null $siteElement */
         $siteElement = null;
         if (!$isNewElement) {
             $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
@@ -1519,13 +1520,13 @@ class Elements extends Component
 
         // If it doesn't exist yet, just clone the master site
         if ($isNewSiteForElement = ($siteElement === null)) {
-            /** @var Element $siteElement */
             $siteElement = clone $element;
             $siteElement->siteId = $siteInfo['siteId'];
             $siteElement->contentId = null;
             $siteElement->enabledForSite = $siteInfo['enabledByDefault'];
         } else {
             $siteElement->enabled = $element->enabled;
+            $siteElement->resaving = $element->resaving;
         }
 
         // Copy any non-translatable field values

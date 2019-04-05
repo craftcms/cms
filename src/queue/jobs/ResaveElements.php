@@ -70,6 +70,7 @@ class ResaveElements extends BaseJob
 
                 /** @var Element $element */
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                $element->resaving = true;
                 if (!Craft::$app->getElements()->saveElement($element)) {
                     throw new Exception('Couldn’t save element ' . $element->id . ' (' . get_class($element) . ') due to validation errors.');
                 }
