@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
@@ -430,6 +429,7 @@ class AppController extends Controller
         // Update our records & use all licensed plugins as a starting point
         if (!empty($licenseInfo['pluginLicenses'])) {
             $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@app/icons/default-plugin.svg', true);
+            $formatter = Craft::$app->getFormatter();
             foreach ($licenseInfo['pluginLicenses'] as $pluginLicenseInfo) {
                 if (isset($pluginLicenseInfo['plugin'])) {
                     $pluginInfo = $pluginLicenseInfo['plugin'];
@@ -457,7 +457,14 @@ class AppController extends Controller
                             'documentationUrl' => $pluginInfo['documentationUrl'] ?? null,
                             'packageName' => $pluginInfo['packageName'],
                             'latestVersion' => $pluginInfo['latestVersion'],
+                            'expired' => $pluginLicenseInfo['expired'],
                         ];
+                        if ($pluginLicenseInfo['expired']) {
+                            $result[$handle]['renewalUrl'] = $pluginLicenseInfo['renewalUrl'];
+                            $result[$handle]['renewalText'] = Craft::t('app', 'Renew for {price}', [
+                                'price' => $formatter->asCurrency($pluginLicenseInfo['renewalPrice'], $pluginLicenseInfo['renewalCurrency'])
+                            ]);
+                        }
                     }
                 }
             }
@@ -465,7 +472,7 @@ class AppController extends Controller
 
         // Override with info for the installed plugins
         foreach ($allPluginInfo as $handle => $pluginInfo) {
-            $result[$handle] = [
+            $result[$handle] = array_merge($result[$handle] ?? [], [
                 'isComposerInstalled' => true,
                 'isInstalled' => $pluginInfo['isInstalled'],
                 'isEnabled' => $pluginInfo['isEnabled'],
@@ -478,7 +485,7 @@ class AppController extends Controller
                 'licenseIssues' => $pluginInfo['licenseIssues'],
                 'isTrial' => $pluginInfo['isTrial'],
                 'upgradeAvailable' => $pluginInfo['upgradeAvailable'],
-            ];
+            ]);
         }
 
         return $result;
