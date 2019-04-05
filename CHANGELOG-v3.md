@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Table fields can now have Dropdown columns. ([#811](https://github.com/craftcms/cms/issues/811))
+
 ### Fixed
 - Fixed a bug where Control Panel pages that didn’t have a dedicated controller action weren’t ensuring that a user was logged in.
 

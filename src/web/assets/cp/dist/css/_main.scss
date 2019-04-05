@@ -835,7 +835,10 @@ ul.icons li a:hover {
   display: flex;
   align-items: center;
   align-content: stretch;
-  flex-wrap: wrap;
+
+  &:not(.flex-nowrap) {
+    flex-wrap: wrap;
+  }
 
   & > * {
     margin-bottom: 7px;
@@ -2220,6 +2223,10 @@ table.editable {
             @include sans-serif-font;
           }
         }
+
+        .flex > * {
+          margin-bottom: 0;
+        }
       }
     }
 
@@ -3209,6 +3216,14 @@ ul.tree,
       @include margin-left(-4px);
     }
   }
+}
+
+.dropdownsettingsmodal {
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  max-width: 400px;
 }
 
 /* ----------------------------------------
