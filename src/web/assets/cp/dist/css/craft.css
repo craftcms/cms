@@ -320,8 +320,10 @@ body.rtl th.right, body.rtl td.right { text-align: left; }
 .info.warning:before { content: 'alert'; }
 .info.warning:hover:before { color: #e78640; }
 
-.info-hud { max-width: 250px; }
+.info-hud table { max-width: 280px; table-layout: auto; }
+.info-hud td { word-wrap: break-word; width: 100%; }
 
+@media (max-width: 450px) { .info-hud table { table-layout: fixed; width: 100%; } }
 /* ----------------------------------------
 /*  Content
 /* ----------------------------------------*/
