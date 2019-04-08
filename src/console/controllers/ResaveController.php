@@ -17,6 +17,8 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\elements\User;
+use craft\events\ResaveElementEvent;
+use craft\services\Elements;
 use yii\console\Controller;
 use yii\console\ExitCode;
 use yii\helpers\Console;
@@ -60,11 +62,6 @@ class ResaveController extends Controller
     public $limit;
 
     /**
-     * @var int The batch size to query elements in.
-     */
-    public $batchSize = 100;
-
-    /**
      * @var bool Whether to save the elements across all their enabled sites.
      */
     public $propagate = true;
@@ -101,7 +98,6 @@ class ResaveController extends Controller
         $options[] = 'status';
         $options[] = 'offset';
         $options[] = 'limit';
-        $options[] = 'batchSize';
         $options[] = 'propagate';
 
         switch ($actionID) {
@@ -250,26 +246,37 @@ class ResaveController extends Controller
         $elementsService = Craft::$app->getElements();
         $fail = false;
 
-        foreach ($query->each($this->batchSize) as $element) {
-            /** @var Element $element */
-            $this->stdout("    - Resaving {$element} ({$element->id}) ... ");
-            $element->setScenario(Element::SCENARIO_ESSENTIALS);
-            $element->resaving = true;
-            try {
-                if (!$elementsService->saveElement($element)) {
+        $beforeCallback = function(ResaveElementEvent $e) use ($query) {
+            if ($e->query === $query) {
+                /** @var Element $element */
+                $element = $e->element;
+                $this->stdout("    - Resaving {$element} ({$element->id}) ... ");
+            }
+        };
+
+        $afterCallback = function(ResaveElementEvent $e) use ($query, &$fail) {
+            if ($e->query === $query) {
+                /** @var Element $element */
+                $element = $e->element;
+                if ($e->exception) {
+                    $this->stderr('error: ' . $e->exception->getMessage() . PHP_EOL, Console::FG_RED);
+                    $fail = true;
+                } else if ($element->hasErrors()) {
                     $this->stderr('failed: ' . implode(', ', $element->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
                     $fail = true;
-                    continue;
+                } else {
+                    $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
                 }
-            } catch (\Throwable $e) {
-                Craft::$app->getErrorHandler()->logException($e);
-                $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
-                $fail = true;
-                continue;
             }
+        };
 
-            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-        }
+        $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
+        $elementsService->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
+
+        $elementsService->resaveElements($query, true);
+
+        $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
+        $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
 
         $this->stdout("Done resaving {$elementsText}." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
         return $fail ? ExitCode::UNSPECIFIED_ERROR : ExitCode::OK;

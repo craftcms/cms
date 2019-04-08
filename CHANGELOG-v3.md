@@ -4,6 +4,10 @@
 
 ### Added
 - Table fields can now have Dropdown columns. ([#811](https://github.com/craftcms/cms/issues/811))
+- Added `craft\services\Elements::resaveElements()` along with `EVENT_BEFORE_RESAVE_ELEMENTS`, `EVENT_AFTER_RESAVE_ELEMENTS`, `EVENT_BEFORE_RESAVE_ELEMENT`, and `EVENT_AFTER_RELAVE_ELEMENT` events. ([#3482](https://github.com/craftcms/cms/issues/3482))
+
+### Removed
+- Removed the `--batch-size` option from `resave/*` actions.
 
 ### Fixed
 - Fixed a bug where Control Panel pages that didn’t have a dedicated controller action weren’t ensuring that a user was logged in.

@@ -14,10 +14,12 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\MatrixBlock;
@@ -29,6 +31,8 @@ use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\events\ResaveElementEvent;
+use craft\events\ResaveElementsEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
@@ -113,6 +117,26 @@ class Elements extends Component
      * @event ElementEvent The event that is triggered after an element is saved.
      */
     const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
+
+    /**
+     * @event ElementEvent The event that is triggered before resaving a batch of elements.
+     */
+    const EVENT_BEFORE_RESAVE_ELEMENTS = 'beforeResaveElements';
+
+    /**
+     * @event ElementEvent The event that is triggered after resaving a batch of elements.
+     */
+    const EVENT_AFTER_RESAVE_ELEMENTS = 'afterResaveElements';
+
+    /**
+     * @event ElementEvent The event that is triggered before an element is resaved.
+     */
+    const EVENT_BEFORE_RESAVE_ELEMENT = 'beforeResaveElement';
+
+    /**
+     * @event ElementEvent The event that is triggered after an element is resaved.
+     */
+    const EVENT_AFTER_RESAVE_ELEMENT = 'afterResaveElement';
 
     /**
      * @event ElementEvent The event that is triggered before an element’s slug and URI are updated, usually following a Structure move.
@@ -580,6 +604,75 @@ class Elements extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Resaves all elements that match a given element query.
+     *
+     * @param ElementQueryInterface $query The element query to fetch elements with
+     * @param bool $continueOnError Whether to continue going if an error occurs
+     * @throws \Throwable if reasons
+     * @since 3.2.0
+     */
+    public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false)
+    {
+        // Fire a 'beforeSaveElements' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
+            $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENTS, new ResaveElementsEvent([
+                'query' => $query,
+            ]));
+        }
+
+        $position = 0;
+
+        try {
+            /** @var ElementQuery $query */
+            foreach ($query->each() as $element) {
+                $position++;
+
+                /** @var Element $element */
+                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                $element->resaving = true;
+
+                // Fire a 'beforeSaveElement' event
+                if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
+                    $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new ResaveElementEvent([
+                        'query' => $query,
+                        'element' => $element,
+                        'position' => $position,
+                    ]));
+                }
+
+                $e = null;
+                try {
+                    $this->saveElement($element);
+                } catch (\Throwable $e) {
+                    if (!$continueOnError) {
+                        throw $e;
+                    }
+                    Craft::$app->getErrorHandler()->logException($e);
+                }
+
+                // Fire an 'afterSaveElement' event
+                if ($this->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENT)) {
+                    $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENT, new ResaveElementEvent([
+                        'query' => $query,
+                        'element' => $element,
+                        'position' => $position,
+                        'exception' => $e,
+                    ]));
+                }
+            }
+        } catch (QueryAbortedException $e) {
+            // Fail silently
+        }
+
+        // Fire an 'afterSaveElements' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENTS)) {
+            $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENTS, new ResaveElementsEvent([
+                'query' => $query,
+            ]));
+        }
     }
 
     /**
