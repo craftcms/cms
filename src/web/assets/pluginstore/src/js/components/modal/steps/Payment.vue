@@ -12,13 +12,16 @@
                             <h2>{{ "Payment Method"|t('app') }}</h2>
 
                             <template v-if="craftId">
-                                <p v-if="craftId && craftId.card"><label><input type="radio" value="existingCard" v-model="paymentMode" /> {{ "Use card {cardDetails}"|t('app', {cardDetails: craftId.card.brand + ' •••• •••• •••• ' + craftId.card.last4 + ' — ' + craftId.card.exp_month + '/' + craftId.card.exp_year }) }}</label></p>
-                                <p><label><input type="radio" value="newCard" v-model="paymentMode" /> {{ "Use a new credit card"|t('app') }}</label></p>
+                                <template v-if="craftId.card">
+                                    <radio v-model="paymentMode" value="existingCard" :label="$options.filters.t('Use card {cardDetails}', 'app', {cardDetails: craftId.card.brand + ' •••• •••• •••• ' + craftId.card.last4 + ' — ' + craftId.card.exp_month + '/' + craftId.card.exp_year })" />
+                                </template>
+
+                                <radio v-model="paymentMode" value="newCard" :label="$options.filters.t('Use a new credit card', 'app')" />
 
                                 <template v-if="paymentMode === 'newCard'">
                                     <credit-card v-if="!cardToken" ref="newCard"></credit-card>
                                     <p v-else>{{ cardToken.card.brand }} •••• •••• •••• {{ cardToken.card.last4 }} ({{ cardToken.card.exp_month }}/{{ cardToken.card.exp_year }}) <a class="delete icon" @click="cardToken = null"></a></p>
-                                    <checkbox-field id="replaceCard" v-model="replaceCard" :label="'Save as my new credit card'|t('app')"></checkbox-field>
+                                    <checkbox id="replaceCard" v-model="replaceCard" :label="'Save as my new credit card'|t('app')"></checkbox>
                                 </template>
                             </template>
 
@@ -28,8 +31,8 @@
                         </div>
 
                         <h2>{{ "Coupon Code"|t('app') }}</h2>
-                        <text-field placeholder="XXXXXXX" id="coupon-code" v-model="couponCode" size="12" @input="couponCodeChange" :errors="couponCodeError"></text-field>
-                        <div v-if="couponCodeLoading" class="spinner"></div>
+                        <textbox placeholder="XXXXXXX" id="coupon-code" v-model="couponCode" size="12" @input="couponCodeChange" :errors="couponCodeError" />
+                        <spinner v-if="couponCodeLoading" class="mt-2"></spinner>
                     </div>
 
                     <div class="block">
@@ -37,41 +40,41 @@
 
                         <div class="flex">
                             <div class="flex-grow">
-                                <text-field :placeholder="'First Name'|t('app')" id="first-name" v-model="billingInfo.firstName" :errors="errors['billingAddress.firstName']" />
+                                <textbox :placeholder="'First Name'|t('app')" id="first-name" v-model="billingInfo.firstName" :errors="errors['billingAddress.firstName']" />
                             </div>
                             <div class="flex-grow">
-                                <text-field :placeholder="'Last Name'|t('app')" id="last-name" v-model="billingInfo.lastName" :errors="errors['billingAddress.lastName']" />
+                                <textbox :placeholder="'Last Name'|t('app')" id="last-name" v-model="billingInfo.lastName" :errors="errors['billingAddress.lastName']" />
                             </div>
                         </div>
 
                         <div class="flex">
                             <div class="flex-grow">
-                                <text-field :placeholder="'Business Name'|t('app')" id="business-name" v-model="billingInfo.businessName" :errors="errors['billingAddress.businessName']" />
+                                <textbox :placeholder="'Business Name'|t('app')" id="business-name" v-model="billingInfo.businessName" :errors="errors['billingAddress.businessName']" />
                             </div>
                             <div class="flex-grow">
-                                <text-field :placeholder="'Business Tax ID'|t('app')" id="business-tax-id" v-model="billingInfo.businessTaxId" :errors="errors['billingAddress.businessTaxId']" />
+                                <textbox :placeholder="'Business Tax ID'|t('app')" id="business-tax-id" v-model="billingInfo.businessTaxId" :errors="errors['billingAddress.businessTaxId']" />
                             </div>
                         </div>
 
-                        <text-field :placeholder="'Address Line 1'|t('app')" id="address-1" v-model="billingInfo.address1" :errors="errors['billingAddress.address1']" />
+                        <textbox :placeholder="'Address Line 1'|t('app')" id="address-1" v-model="billingInfo.address1" :errors="errors['billingAddress.address1']" />
 
-                        <text-field :placeholder="'Address Line 2'|t('app')" id="address-2" v-model="billingInfo.address2" :errors="errors['billingAddress.address2']" />
+                        <textbox :placeholder="'Address Line 2'|t('app')" id="address-2" v-model="billingInfo.address2" :errors="errors['billingAddress.address2']" />
 
                         <div class="flex">
                             <div class="flex-grow">
-                                <text-field :class="{ error: errors['billingAddress.city'] }" :placeholder="'City'|t('app')" id="city" v-model="billingInfo.city" />
+                                <textbox :class="{ error: errors['billingAddress.city'] }" :placeholder="'City'|t('app')" id="city" v-model="billingInfo.city" />
                             </div>
                             <div class="flex-grow">
-                                <text-field :class="{ error: errors['billingAddress.zipCode'] }" :placeholder="'Zip Code'|t('app')" id="zip-code" v-model="billingInfo.zipCode" />
+                                <textbox :class="{ error: errors['billingAddress.zipCode'] }" :placeholder="'Zip Code'|t('app')" id="zip-code" v-model="billingInfo.zipCode" />
                             </div>
                         </div>
 
                         <div class="flex items-start">
                             <div class="flex-grow">
-                                <select-field v-model="billingInfo.country" :options="countryOptions" @input="onCountryChange" :errors="errors['billingAddress.country']" />
+                                <dropdown v-model="billingInfo.country" :options="countryOptions" @input="onCountryChange" :errors="errors['billingAddress.country']" />
                             </div>
                             <div class="flex-grow">
-                                <select-field v-model="billingInfo.state" :options="stateOptions" :errors="errors['billingAddress.state']" />
+                                <dropdown v-model="billingInfo.state" :options="stateOptions" :errors="errors['billingAddress.state']" />
                             </div>
                         </div>
                     </div>
@@ -83,12 +86,11 @@
                     <p v-if="error" class="error">{{ error }}</p>
 
                     <div class="mb-4">
-                        <input type="submit" class="btn submit" :value="'Pay'|t('app')+ ' ' + $options.filters.currency(staticCartTotal)" />
+                        <btn kind="primary" type="submit" :loading="loading" :disabled="loading">{{ "Pay {price}"|t('app', { price: $options.filters.currency(staticCartTotal) }) }}</btn>
                     </div>
-                    <div v-if="loading" class="spinner"></div>
 
                     <p>
-                        <img :src="poweredByStripe" height="18" />
+                        <img :src="poweredByStripe" width="80" />
                     </p>
                 </div>
             </form>
@@ -147,7 +149,6 @@
         },
 
         computed: {
-
             ...mapState({
                 cart: state => state.cart.cart,
                 poweredByStripe: state => state.craft.poweredByStripe,
@@ -187,7 +188,6 @@
         },
 
         methods: {
-
             savePaymentMethod(cb, cbError) {
                 if (this.cart.totalPrice > 0) {
                     if (this.craftId) {
@@ -248,67 +248,77 @@
             checkout() {
                 this.errors = {}
                 this.loading = true
-                this.savePaymentMethod(() => {
-                    this.saveBillingInfo(() => {
-                        // Ready to pay
-                        let cardToken = null
+                this.savePaymentMethod(
+                    // success
+                    () => {
+                        this.saveBillingInfo(
+                            // success
+                            () => {
+                                // Ready to pay
+                                let cardToken = null
 
-                        if (this.cart.totalPrice > 0) {
-                            if (this.craftId) {
-                                switch (this.paymentMode) {
-                                    case 'newCard':
-                                        cardToken = this.cardToken.id
-                                        break
-                                    default:
-                                        cardToken = this.craftId.cardToken
+                                if (this.cart.totalPrice > 0) {
+                                    if (this.craftId) {
+                                        switch (this.paymentMode) {
+                                            case 'newCard':
+                                                cardToken = this.cardToken.id
+                                                break
+                                            default:
+                                                cardToken = this.craftId.cardToken
+                                        }
+                                    } else {
+                                        cardToken = this.guestCardToken.id
+                                    }
                                 }
-                            } else {
-                                cardToken = this.guestCardToken.id
-                            }
-                        }
 
-                        let checkoutData = {
-                            orderNumber: this.cart.number,
-                            token: cardToken,
-                            expectedPrice: this.cart.totalPrice,
-                            makePrimary: this.replaceCard,
-                        }
+                                let checkoutData = {
+                                    orderNumber: this.cart.number,
+                                    token: cardToken,
+                                    expectedPrice: this.cart.totalPrice,
+                                    makePrimary: this.replaceCard,
+                                }
 
-                        this.$store.dispatch('cart/checkout', checkoutData)
-                            .then(() => {
-                                this.$store.dispatch('cart/savePluginLicenseKeys', this.cart)
+                                this.$store.dispatch('cart/checkout', checkoutData)
                                     .then(() => {
-                                        this.$store.dispatch('craft/getCraftData')
+                                        this.$store.dispatch('cart/savePluginLicenseKeys', this.cart)
                                             .then(() => {
-                                                this.$store.dispatch('craft/getPluginLicenseInfo')
+                                                this.$store.dispatch('craft/getCraftData')
                                                     .then(() => {
-                                                        this.$store.dispatch('cart/resetCart')
+                                                        this.$store.dispatch('craft/getPluginLicenseInfo')
                                                             .then(() => {
-                                                                this.loading = false
-                                                                this.error = false
-                                                                this.$root.modalStep = 'thank-you'
+                                                                this.$store.dispatch('cart/resetCart')
+                                                                    .then(() => {
+                                                                        this.loading = false
+                                                                        this.error = false
+                                                                        this.$root.modalStep = 'thank-you'
+                                                                    })
                                                             })
                                                     })
                                             })
                                     })
-                            })
-                            .catch(error => {
+                                    .catch(checkoutResponse => {
+                                        this.loading = false
+                                        this.error = checkoutResponse.data.error || checkoutResponse.statusText;
+                                    })
+                            },
+
+                            // error
+                            (response) => {
+                                if (response.data.errors) {
+                                    response.data.errors.forEach(error => {
+                                        this.errors[error.param] = [error.message]
+                                    })
+                                }
                                 this.loading = false
-                                this.error = error.response.data.error || error.response.statusText;
+                                this.$root.displayError("Couldn’t save billing information.")
                             })
-                    }, (response) => {
-                        if (response.errors) {
-                            response.errors.forEach(error => {
-                                this.errors[error.param] = [error.message]
-                            })
-                        }
+                    },
+
+                    // error
+                    () => {
                         this.loading = false
-                        this.$root.displayError("Couldn’t save billing information.")
+                        this.$root.displayError("Couldn’t save payment method.")
                     })
-                }, () => {
-                    this.loading = false
-                    this.$root.displayError("Couldn’t save payment method.")
-                })
             },
 
             onCountryChange(iso) {
@@ -363,7 +373,6 @@
                         })
                 }.bind(this), 500)
             }
-
         },
 
         mounted() {
@@ -384,7 +393,6 @@
                 })
             }
         }
-
     }
 </script>
 

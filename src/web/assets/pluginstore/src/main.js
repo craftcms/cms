@@ -164,7 +164,6 @@ Garnish.$doc.ready(function() {
             // Load Craft data
             this.$store.dispatch('craft/getCraftData')
                 .then(() => {
-
                     this.craftIdDataLoaded = true
                     this.$emit('dataLoaded')
 

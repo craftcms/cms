@@ -9,7 +9,7 @@
 
             <div class="flex-1">
                 <template v-if="loading || !developer">
-                    <div class="spinner mt-8"></div>
+                    <spinner class="mt-8"></spinner>
                 </template>
                 <template v-else>
                     <h1>{{developer.developerName}}</h1>
@@ -19,7 +19,7 @@
                     </ul>
 
                     <ul>
-                        <li class="mr-4 inline-block"><a class="btn block" :href="developer.developerUrl">{{ "Website"|t('app') }}</a></li>
+                        <li class="mr-4 inline-block"><btn :href="developer.developerUrl" block>{{ "Website"|t('app') }}</btn></li>
                     </ul>
                 </template>
             </div>
@@ -34,7 +34,6 @@
     import PluginIndex from '../../components/PluginIndex'
 
     export default {
-
         data() {
             return {
                 plugins: [],
@@ -47,11 +46,9 @@
         },
 
         computed: {
-
             ...mapState({
                 developer: state => state.pluginStore.developer,
             }),
-
         },
 
         mounted() {
@@ -69,7 +66,6 @@
                     this.loading = false
                 })
         },
-
     }
 </script>
 

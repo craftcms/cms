@@ -1,4 +1,4 @@
-/* General */
+/* Basics */
 
 html, body, div, span,  object, iframe, table, caption, tbody, tfoot, thead, tr, th, td,
 del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var,
@@ -14,40 +14,13 @@ hr {
 h1 {
   font-size: 24px;
 }
+
 h2 {
-  @apply .mt-8;
+  @apply .mt-8 .mb-4;
 }
 
 p {
   @apply .mb-4;
-}
-
-.swiper-wrapper {
-  min-width: auto;
-}
-
-.ps-header {
-  @apply .border-b .border-solid .border-grey-light .py-2 .flex .justify-between;
-}
-
-.no-line-height {
-  line-height: 0;
-}
-
-#main-container {
-  @apply .relative;
-}
-
-#main-content #content {
-  @apply .relative;
-}
-
-.input.success input {
-  border-color: $successColor;
-}
-
-.input.errors .select:not(.selectize) select {
-  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px $errorColor, 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
 pre {
@@ -59,6 +32,39 @@ code {
 }
 
 
+/* Classes */
+
+.no-line-height {
+  line-height: 0;
+}
+
+.input.success input {
+  border-color: $successColor;
+}
+
+.input.errors .select:not(.selectize) select {
+  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px $errorColor, 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+input.error {
+  @apply .border-red;
+}
+
+
+/* Header */
+
+.ps-header {
+  @apply .border-b .border-solid .border-grey-light .py-2 .flex .justify-between;
+}
+
+
+/* Swiper */
+
+.swiper-wrapper {
+  min-width: auto;
+}
+
+
 /* Notifications */
 
 #notifications-wrapper {
@@ -66,10 +72,22 @@ code {
 }
 
 
-/* Header title */
+/* Craft tweaks */
 
 #header h1 {
   cursor: pointer;
+}
+
+#main-container {
+  @apply .relative;
+}
+
+#main-content #content {
+  @apply .relative;
+}
+
+#container {
+  position: static !important; /* #container hack required for modal overlays */
 }
 
 
@@ -138,73 +156,4 @@ code {
       @apply .inline-block;
     }
   }
-}
-
-
-/* Graphic & Status */
-
-.graphic {
-  &.error {
-    background-image: url(~@/images/error.png);
-  }
-
-  &.success {
-    background-image: url(~@/images/success.png);
-  }
-}
-
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5),
-only screen and (min-resolution: 1.5dppx) {
-  .graphic {
-    &.error {
-      background-image: url(~@/images/error_2x.png);
-      background-size: 48px;
-    }
-    &.success {
-      background-image: url(~@/images/success_2x.png);
-      background-size: 48px;
-    }
-  }
-}
-
-
-/* Plugin icon */
-/*
-.plugin-icon,
-.plugin-icon img {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-}
-
-.plugin-icon-md,
-.plugin-icon-md img {
-  width: 48px;
-  height: 48px;
-  border-radius: 6px;
-}
-
-.plugin-icon-large,
-.plugin-icon-large img {
-  width: 72px;
-  height: 72px;
-  border-radius: 6px;
-}
-
-.plugin-icon .default-icon {
-  @apply .inline-block .overflow-hidden;
-  background: #eee;
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-}*/
-
-
-/* Plugin search */
-
-#container {
-  position: static !important; /* #container hack required for modal overlays */
 }

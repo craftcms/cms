@@ -3,15 +3,15 @@
         <template v-if="!isPluginEditionFree">
             <template v-if="isInCart(plugin, edition)">
                 <!-- Already in cart -->
-                <btn v-if="allowUpdates" outline type="primary" @click="$root.openModal('cart')" block large><icon icon="check" /> {{ "Already in your cart"|t('app') }}</btn>
+                <btn v-if="allowUpdates" kind="primary" icon="check" block large outline @click="$root.openModal('cart')">{{ "Already in your cart"|t('app') }}</btn>
             </template>
 
             <template v-else>
                 <!-- Add to cart / Upgrade (from lower edition) -->
-                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" type="primary" @click="addEditionToCart(edition.handle)" block large>{{ "Add to cart"|t('app') }}</btn>
+                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" kind="primary" @click="addEditionToCart(edition.handle)" :loading="addToCartloading" :disabled="addToCartloading" block large>{{ "Add to cart"|t('app') }}</btn>
 
                 <!-- Licensed -->
-                <btn v-else-if="licensedEdition === edition.handle" type="primary" block large disabled>{{ "Licensed"|t('app') }}</btn>
+                <btn v-else-if="licensedEdition === edition.handle" kind="primary" block large disabled>{{ "Licensed"|t('app') }}</btn>
             </template>
         </template>
 
@@ -36,22 +36,24 @@
                 </template>
 
                 <!-- Install (Free) -->
-                <btn-input v-if="isPluginEditionFree" :value="'Install'|t('app')" type="primary" block large></btn-input>
+                <template v-if="isPluginEditionFree">
+                    <btn kind="primary" type="submit" :loading="loading" block large>{{ "Install"|t('app') }}</btn>
+                </template>
 
                 <template v-else>
                     <template v-if="(isEditionMoreExpensiveThanLicensed && currentEdition === edition.handle) || (licensedEdition === edition.handle && !currentEdition)">
                         <!-- Install (Commercial) -->
-                        <btn-input :value="'Install'|t('app')" block large></btn-input>
+                        <btn type="submit" :loading="loading" block large>{{ "Install"|t('app') }}</btn>
                     </template>
 
                     <template v-else-if="isEditionMoreExpensiveThanLicensed && currentEdition !== edition.handle">
                         <!-- Try -->
-                        <btn-input :value="'Try'|t('app')" :disabled="!((pluginLicenseInfo && pluginLicenseInfo.isInstalled && pluginLicenseInfo.isEnabled) || !pluginLicenseInfo)" block large></btn-input>
+                        <btn type="submit" :disabled="!((pluginLicenseInfo && pluginLicenseInfo.isInstalled && pluginLicenseInfo.isEnabled) || !pluginLicenseInfo)" :loading="loading" block large>{{ "Try"|t('app') }}</btn>
                     </template>
 
                     <template v-else-if="currentEdition && licensedEdition === edition.handle && currentEdition !== edition.handle">
                         <!-- Reactivate -->
-                        <btn-input :value="'Reactivate'|t('app')" block large></btn-input>
+                        <btn type="submit" :loading="loading" block large>{{ "Reactivate"|t('app') }}</btn>
                     </template>
                 </template>
             </form>
@@ -60,16 +62,14 @@
         <template v-else>
                 <template v-if="currentEdition !== licensedEdition && !isPluginEditionFree">
                     <!-- Installed as a trial -->
-                    <button class="c-btn block large" :disabled="true"><icon icon="check" /> {{ "Installed as a trial"|t('app') }}</button>
+                    <btn icon="check" :disabled="true" large block> {{ "Installed as a trial"|t('app') }}</btn>
                 </template>
 
                 <template v-else>
                     <!-- Installed -->
-                    <button class="c-btn block large" :disabled="true"><icon icon="check" /> {{ "Installed"|t('app') }}</button>
+                    <btn icon="check" :disabled="true" block large> {{ "Installed"|t('app') }}</btn>
                 </template>
         </template>
-
-        <div class="spinner" v-if="loading"></div>
     </div>
 </template>
 
@@ -90,6 +90,7 @@
         data() {
             return {
                 loading: false,
+                addToCartloading: false,
             }
         },
 
@@ -163,7 +164,7 @@
         methods: {
 
             addEditionToCart(editionHandle) {
-                this.loading = true
+                this.addToCartloading = true
 
                 const item = {
                     type: 'plugin-edition',
@@ -173,8 +174,11 @@
 
                 this.$store.dispatch('cart/addToCart', [item])
                     .then(() => {
-                        this.loading = false
+                        this.addToCartloading = false
                         this.$root.openModal('cart')
+                    })
+                    .catch(() => {
+                        this.addToCartloading = false
                     })
             },
 
@@ -209,7 +213,7 @@
 <style lang="scss">
     .plugin-actions {
         position: relative;
-        .spinner {
+        .c-spinner {
             position: absolute;
             bottom: -32px;
             left: 50%;

@@ -14,20 +14,20 @@
                             <li>{{ craftId.name }}</li>
                             <li>{{ craftId.email }}</li>
                         </ul>
-                        <input type="submit" value="Continue" class="btn submit" :disabled="(!validates || loading)" :class="{ disabled: (!validates || loading) }" />
+                        <btn kind="primary" type="submit" :disabled="(!validates || loading)" :loading="loading">{{ "Continue"|t('app') }}</btn>
                     </template>
 
-                    <p v-else><a class="btn submit" @click="connectCraftId">{{ "Connect to your Craft ID"|t('app') }}</a></p>
+                    <p v-else>
+                        <btn kind="primary" @click="connectCraftId">{{ "Connect to your Craft ID"|t('app') }}</btn>
+                    </p>
                 </template>
 
                 <p><label><input type="radio" value="guest" v-model="identityMode" /> {{ "Continue as guest"|t('app') }}</label></p>
 
                 <template v-if="identityMode === 'guest'">
-                    <text-field id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError" />
-                    <input type="submit" :value="'Continue'|t('app')" class="btn submit" :disabled="(!validates || loading)" :class="{ disabled: (!validates || loading) }" />
+                    <textbox id="email" placeholder="Email" v-model="guestEmail" :errors="guestEmailError" />
+                    <btn kind="primary" type="submit" :disabled="(!validates || loading)" :loading="loading">{{ "Continue"|t('app') }}</btn>
                 </template>
-
-                <div v-if="loading" class="spinner"></div>
             </form>
         </template>
     </step>
@@ -40,7 +40,6 @@
     import Step from '../Step'
 
     export default {
-
         components: {
             Step,
         },
@@ -54,7 +53,6 @@
         },
 
         computed: {
-
             ...mapState({
                 cart: state => state.cart.cart,
                 craftId: state => state.craft.craftId,
@@ -84,7 +82,6 @@
         },
 
         methods: {
-
             connectCraftId() {
                 let width = 800
                 let height = 600
@@ -124,7 +121,6 @@
                     this.$root.openModal('payment')
                 }
             }
-
         },
 
         mounted() {
@@ -136,6 +132,5 @@
 
             this.guestEmail = this.cart.email
         }
-
     }
 </script>
