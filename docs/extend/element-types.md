@@ -701,6 +701,8 @@ class Products extends BaseRelationField
 }
 ```
 
+If you want your relation field to be available as a custom field then you’ll need to [register it with the Fields service](https://docs.craftcms.com/v3/extend/field-types.html#registering-custom-field-types), so Craft will know about it when populating the list of available field types.
+
 ## Reference Tags
 
 If you want your elements to support reference tags (e.g. `{product:100}`), add a static `refHandle()` method to your element class that returns a unique handle that should be used for its reference tags.
