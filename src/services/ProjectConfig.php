@@ -447,6 +447,7 @@ class ProjectConfig extends Component
     public function applyYamlChanges()
     {
         $this->_applyingYamlChanges = true;
+        Craft::$app->getCache()->delete(self::CACHE_KEY);
 
         $changes = $this->_getPendingChanges();
 
