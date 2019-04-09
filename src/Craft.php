@@ -5,10 +5,12 @@
  * @license https://craftcms.github.io/license/
  */
 
+use craft\base\FieldInterface;
 use craft\behaviors\ContentBehavior;
 use craft\behaviors\ElementQueryBehavior;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\Component;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
 use yii\base\ExitException;
@@ -180,63 +182,54 @@ class Craft extends Yii
             return;
         }
 
+
+        $fieldHandles = [];
+
         if (self::$app->getIsInstalled()) {
             // Properties are case-sensitive, so get all the binary-unique field handles
             if (self::$app->getDb()->getIsMysql()) {
-                $column = new Expression('binary [[handle]] as [[handle]]');
+                $handleColumn = new Expression('binary [[handle]] as [[handle]]');
             } else {
-                $column = 'handle';
+                $handleColumn = 'handle';
             }
-            // create an array of field handles and their types
-            //
-            //  [
-            //      'fieldHandle' => [
-            //          'type',
-            //          'type'
-            //      ],
-            //      'myTextField' => [
-            //          'craft\fields\PlainText',   // <- global usage
-            //          'craft\fields\Categories'   // <- used in a matrix field, no global context
-            //      ]
-            //  ]
-            $fieldHandles = [];
-            $fieldsWithTypes = [];
+
+            // Create an array of field handles and their types
             $fields = (new Query())
-                //->distinct(true)
                 ->from([Table::FIELDS])
-                ->select([$column, 'type'])
+                ->select([$handleColumn, 'type'])
                 ->all();
-            // index it properly
-            foreach ($fields as $field){
-                $index = $field['handle'];
+            foreach ($fields as $field) {
+                /** @var FieldInterface|string $fieldClass */
                 $fieldClass = $field['type'];
-                $docType = $fieldClass::getPHPDocType();
-                if(isset($fieldsWithTypes[$index]) && in_array($docType, $fieldsWithTypes[$index], true)){
-                    // we already have this field type in the array
-                    continue;
+                if (Component::validateComponentClass($fieldClass, FieldInterface::class)) {
+                    $types = explode('|', $fieldClass::valueType());
+                } else {
+                    $types = ['mixed'];
                 }
-                $fieldsWithTypes[$index][] = $docType;
+                foreach ($types as $type) {
+                    $type = trim($type, ' \\');
+                    // Add a leading `\` if there is a namespace
+                    if (strpos($type, '\\') !== false) {
+                        $type = '\\' . $type;
+                    }
+                    $fieldHandles[$field['handle']][$type] = true;
+                }
             }
-            // now that we have the unique field types for all contexts build the PHPDoc string
-            foreach ($fieldsWithTypes as $handle => $types){
-                $fieldHandles[$handle] = implode('|', $types);
-            }
-        } else {
-            $fieldHandles = [];
         }
 
         if (!$isContentBehaviorFileValid) {
             $handles = [];
             $properties = [];
 
-            foreach ($fieldHandles as $handle => $docType) {
+            foreach ($fieldHandles as $handle => $types) {
+                $phpDocTypes = implode('|', array_keys($types));
                 $handles[] = <<<EOD
         '{$handle}' => true,
 EOD;
 
                 $properties[] = <<<EOD
     /**
-     * @var {$docType} Value for field with the handle “{$handle}”.
+     * @var {$phpDocTypes} Value for field with the handle “{$handle}”.
      */
     public \${$handle};
 EOD;
@@ -253,9 +246,9 @@ EOD;
         if (!$isElementQueryBehaviorFileValid) {
             $methods = [];
 
-            foreach ($fieldHandles as $handle => $docType) {
+            foreach (array_keys($fieldHandles) as $handle) {
                 $methods[] = <<<EOD
- * @method self {$handle}({$docType} \$value) Sets the [[{$handle}]] property
+ * @method self {$handle}(mixed \$value) Sets the [[{$handle}]] property
 EOD;
             }
 

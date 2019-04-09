@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Category;
+use craft\elements\db\CategoryQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 
@@ -46,6 +47,14 @@ class Categories extends BaseRelationField
     public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add a category');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return CategoryQuery::class;
     }
 
     // Properties

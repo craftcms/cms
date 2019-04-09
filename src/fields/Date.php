@@ -41,9 +41,9 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function getPHPDocType(): string
+    public static function valueType(): string
     {
-        return '\\DateTime';
+        return DateTime::class . '|null';
     }
 
     // Properties

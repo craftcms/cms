@@ -38,6 +38,14 @@ class Table extends Field
         return Craft::t('app', 'Table');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'array|null';
+    }
+
     // Properties
     // =========================================================================
 

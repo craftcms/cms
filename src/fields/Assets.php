@@ -57,6 +57,14 @@ class Assets extends BaseRelationField
         return Craft::t('app', 'Add an asset');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return AssetQuery::class;
+    }
+
     // Properties
     // =========================================================================
 

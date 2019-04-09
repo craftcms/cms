@@ -79,9 +79,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public static function getPHPDocType(): string
+    public static function valueType(): string
     {
-        return '\\craft\\elements\\db\\ElementQuery';
+        return ElementQueryInterface::class;
     }
 
     // Properties
