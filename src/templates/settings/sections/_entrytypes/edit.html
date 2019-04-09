@@ -32,8 +32,10 @@
             label: "Handle"|t('app'),
             instructions: "How you’ll refer to this entry type in the templates."|t('app'),
             id: 'handle',
-            class: 'code',
             name: 'handle',
+            class: 'code',
+            autocorrect: false,
+            autocapitalize: false,
             value: entryType.handle,
             errors: entryType.getErrors('handle'),
             required: true

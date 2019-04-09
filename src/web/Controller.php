@@ -12,7 +12,9 @@ use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use GuzzleHttp\Exception\ClientException;
+use yii\base\Action;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -30,22 +32,70 @@ use yii\web\Response as YiiResponse;
  */
 abstract class Controller extends \yii\web\Controller
 {
+    // Constants
+    // =========================================================================
+
+    const ALLOW_ANONYMOUS_NEVER = 0;
+    const ALLOW_ANONYMOUS_LIVE = 1;
+    const ALLOW_ANONYMOUS_OFFLINE = 2;
+
     // Properties
     // =========================================================================
 
     /**
-     * @var bool|string[] Whether this controller’s actions can be accessed anonymously
-     * If set to false, you are required to be logged in to execute any of the given controller's actions.
-     * If set to true, anonymous access is allowed for all of the given controller's actions.
-     * If the value is an array of action IDs, then you must be logged in for any actions except for the ones in
-     * the array list.
-     * If you have a controller that where the majority of actions allow anonymous access, but you only want require
-     * login on a few, you can set this to true and call [[requireLogin()]] in the individual methods.
+     * @var int|bool|int[]|string[] Whether this controller’s actions can be accessed anonymously.
+     *
+     * This can be set to any of the following:
+     *
+     * - `false` or `self::ALLOW_ANONYMOUS_NEVER` (default) – indicates that all controller actions should never be
+     *   accessed anonymously
+     * - `true` or `self::ALLOW_ANONYMOUS_LIVE` – indicates that all controller actions can be accessed anonymously when
+     *    the system is live
+     * - `self::ALLOW_ANONYMOUS_OFFLINE` – indicates that all controller actions can be accessed anonymously when the
+     *    system is offline
+     * - `self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE` – indicates that all controller actions can be
+     *    accessed anonymously when the system is live or offline
+     * - An array of action IDs (e.g. `['save-guest-entry', 'edit-guest-entry']`) – indicates that the listed action IDs
+     *   can be accessed anonymously when the system is live
+     * - An array of action ID/bitwise pairs (e.g. `['save-guest-entry' => self::ALLOW_ANONYMOUS_OFFLINE]` – indicates
+     *   that the listed action IDs can be accessed anonymously per the bitwise int assigned to it.
      */
-    protected $allowAnonymous = false;
+    protected $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     * @throws InvalidConfigException if [[$allowAnonymous]] is set to an invalid value
+     */
+    public function init()
+    {
+        // Normalize $allowAnonymous
+        if (is_bool($this->allowAnonymous)) {
+            $this->allowAnonymous = (int)$this->allowAnonymous;
+        } else if (is_array($this->allowAnonymous)) {
+            $normalized = [];
+            foreach ($this->allowAnonymous as $k => $v) {
+                if (
+                    (is_int($k) && !is_string($v)) ||
+                    (is_string($k) && !is_int($v))
+                ) {
+                    throw new InvalidArgumentException("Invalid \$allowAnonymous value for key \"{$k}\"");
+                }
+                if (is_int($k)) {
+                    $normalized[$v] = self::ALLOW_ANONYMOUS_LIVE;
+                } else {
+                    $normalized[$k] = $v;
+                }
+            }
+            $this->allowAnonymous = $normalized;
+        } else if (!is_int($this->allowAnonymous)) {
+            throw new InvalidConfigException('Invalid $allowAnonymous value');
+        }
+
+        parent::init();
+    }
 
     /**
      * This method is invoked right before an action is executed.
@@ -76,19 +126,52 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param Action $action the action to be executed.
      * @return bool whether the action should continue to run.
+     * @throws BadRequestHttpException if the request is missing a valid CSRF token
+     * @throws ForbiddenHttpException if the user is not logged in or locks the necessary permissions
+     * @throws ServiceUnavailableHttpException if the system is offline and the user isn't allowed to access it
      */
     public function beforeAction($action)
     {
+        $request = Craft::$app->getRequest();
+
+        // Don't enable CSRF validation for Live Preview requests
+        if ($request->getIsLivePreview()) {
+            $this->enableCsrfValidation = false;
+        }
+
         if (!parent::beforeAction($action)) {
             return false;
         }
 
         // Enforce $allowAnonymous
-        if (
-            (is_array($this->allowAnonymous) && (!preg_grep("/{$action->id}/i", $this->allowAnonymous))) ||
-            $this->allowAnonymous === false
-        ) {
-            $this->requireLogin();
+        $isLive = Craft::$app->getIsLive();
+        $test = $isLive ? self::ALLOW_ANONYMOUS_LIVE : self::ALLOW_ANONYMOUS_OFFLINE;
+
+        if (is_int($this->allowAnonymous)) {
+            $allowAnonymous = $this->allowAnonymous;
+        } else {
+            $allowAnonymous = $this->allowAnonymous[$action->id] ?? self::ALLOW_ANONYMOUS_NEVER;
+        }
+
+        if (!($test & $allowAnonymous)) {
+            // If this is a CP request, make sure they have access to the CP
+            if ($request->getIsCpRequest()) {
+                $this->requireLogin();
+                $this->requirePermission('accessCp');
+            } else if (Craft::$app->getUser()->getIsGuest()) {
+                throw new ServiceUnavailableHttpException();
+            }
+
+            // If the system is offline, make sure they have permission to access the CP/site
+            if (!$isLive) {
+                $permission = $request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
+                if (!Craft::$app->getUser()->checkPermission($permission)) {
+                    $error = $request->getIsCpRequest()
+                        ? Craft::t('app', 'Your account doesn’t have permission to access the Control Panel when the system is offline.')
+                        : Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
+                    throw new ServiceUnavailableHttpException($error);
+                }
+            }
         }
 
         return true;
@@ -144,11 +227,11 @@ abstract class Controller extends \yii\web\Controller
             $templateFile = Craft::$app->getView()->resolveTemplate($template);
             $extension = pathinfo($templateFile, PATHINFO_EXTENSION) ?: 'html';
 
-            if (($mimeType = FileHelper::getMimeTypeByExtension('.'.$extension)) === null) {
+            if (($mimeType = FileHelper::getMimeTypeByExtension('.' . $extension)) === null) {
                 $mimeType = 'text/html';
             }
 
-            $headers->set('content-type', $mimeType.'; charset='.$response->charset);
+            $headers->set('content-type', $mimeType . '; charset=' . $response->charset);
         }
 
         // Render and return the template
@@ -165,10 +248,10 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireLogin()
     {
-        $user = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
 
-        if ($user->getIsGuest()) {
-            $user->loginRequired();
+        if ($userSession->getIsGuest()) {
+            $userSession->loginRequired();
             Craft::$app->end();
         }
     }
@@ -176,16 +259,23 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 403 error if the current user is not an admin.
      *
+     * @param bool $requireAdminChanges Whether the [[\craft\config\GeneralConfig::$allowAdminChanges|`allowAdminChanges`]]
+     * config setting must also be enabled.
      * @throws ForbiddenHttpException if the current user is not an admin
      */
-    public function requireAdmin()
+    public function requireAdmin(bool $requireAdminChanges = true)
     {
         // First make sure someone's actually logged in
         $this->requireLogin();
 
         // Make sure they're an admin
         if (!Craft::$app->getUser()->getIsAdmin()) {
-            throw new ForbiddenHttpException('User is not permitted to perform this action');
+            throw new ForbiddenHttpException('User is not permitted to perform this action.');
+        }
+
+        // Make sure admin changes are allowed
+        if ($requireAdminChanges && !Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
         }
     }
 
@@ -252,14 +342,38 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
-     * Throws a 400 error if the current request doesn’t have a valid token.
+     * Throws a 400 error if the current request doesn’t have a valid Craft token.
      *
-     * @throws BadRequestHttpException if the request does not have a valid token
+     * @throws BadRequestHttpException if the request does not have a valid Craft token
      */
     public function requireToken()
     {
-        if (!Craft::$app->getRequest()->getQueryParam(Craft::$app->getConfig()->getGeneral()->tokenParam)) {
+        if (Craft::$app->getRequest()->getToken() === null) {
             throw new BadRequestHttpException('Valid token required');
+        }
+    }
+
+    /**
+     * Throws a 400 error if the current request isn’t a Control Panel request.
+     *
+     * @throws BadRequestHttpException if the request is not a CP request
+     */
+    public function requireCpRequest()
+    {
+        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+            throw new BadRequestHttpException('Request must be a Control Panel request');
+        }
+    }
+
+    /**
+     * Throws a 400 error if the current request isn’t a site request.
+     *
+     * @throws BadRequestHttpException if the request is not a site request
+     */
+    public function requireSiteRequest()
+    {
+        if (!Craft::$app->getRequest()->getIsSiteRequest()) {
+            throw new BadRequestHttpException('Request must be a site request');
         }
     }
 

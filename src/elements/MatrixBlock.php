@@ -10,6 +10,7 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
@@ -41,6 +42,14 @@ class MatrixBlock extends Element
     public static function displayName(): string
     {
         return Craft::t('app', 'Matrix Block');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Matrix Blocks');
     }
 
     /**
@@ -99,7 +108,7 @@ class MatrixBlock extends Element
         list($blockTypeHandle, $fieldHandle) = $handleParts;
 
         // Get the block type
-        $matrixFieldId = $sourceElements[0]->fieldId;
+        $matrixFieldId = ArrayHelper::firstValue($sourceElements)->fieldId;
         $blockTypes = ArrayHelper::index(Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixFieldId), 'handle');
 
         if (!isset($blockTypes[$blockTypeHandle])) {
@@ -112,7 +121,7 @@ class MatrixBlock extends Element
         // Set the field context
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
-        $contentService->fieldContext = 'matrixBlockType:'.$blockType->id;
+        $contentService->fieldContext = 'matrixBlockType:' . $blockType->uid;
 
         $map = parent::eagerLoadingMap($sourceElements, $fieldHandle);
 
@@ -155,6 +164,12 @@ class MatrixBlock extends Element
     public $collapsed = false;
 
     /**
+     * @var bool Whether the block was deleted along with its owner
+     * @see beforeDelete()
+     */
+    public $deletedWithOwner = false;
+
+    /**
      * @var ElementInterface|false|null The owner element, or false if [[ownerId]] is invalid
      */
     private $_owner;
@@ -186,7 +201,6 @@ class MatrixBlock extends Element
         $rules = parent::rules();
         $rules[] = [['fieldId', 'ownerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
         $rules[] = [['ownerSiteId'], SiteIdValidator::class];
-
         return $rules;
     }
 
@@ -202,13 +216,11 @@ class MatrixBlock extends Element
             return [$this->ownerSiteId];
         }
 
-        $owner = $this->getOwner();
-
-        if ($owner) {
+        if (($owner = $this->getOwner()) || $this->duplicateOf) {
             // Just send back an array of site IDs -- don't pass along enabledByDefault configs
             $siteIds = [];
 
-            foreach (ElementHelper::supportedSitesForElement($owner) as $siteInfo) {
+            foreach (ElementHelper::supportedSitesForElement($owner ?? $this->duplicateOf) as $siteInfo) {
                 $siteIds[] = $siteInfo['siteId'];
             }
 
@@ -241,7 +253,7 @@ class MatrixBlock extends Element
         $blockType = Craft::$app->getMatrix()->getBlockTypeById($this->typeId);
 
         if (!$blockType) {
-            throw new InvalidConfigException('Invalid Matrix block ID: '.$this->typeId);
+            throw new InvalidConfigException('Invalid Matrix block ID: ' . $this->typeId);
         }
 
         return $blockType;
@@ -288,7 +300,7 @@ class MatrixBlock extends Element
      */
     public function getContentTable(): string
     {
-        return Craft::$app->getMatrix()->getContentTableName($this->_getField());
+        return $this->_getField()->contentTable;
     }
 
     /**
@@ -296,7 +308,7 @@ class MatrixBlock extends Element
      */
     public function getFieldColumnPrefix(): string
     {
-        return 'field_'.$this->getType()->handle.'_';
+        return 'field_' . $this->getType()->handle . '_';
     }
 
     /**
@@ -306,7 +318,7 @@ class MatrixBlock extends Element
      */
     public function getFieldContext(): string
     {
-        return 'matrixBlockType:'.$this->typeId;
+        return 'matrixBlockType:' . $this->getType()->uid;
     }
 
     /**
@@ -315,7 +327,7 @@ class MatrixBlock extends Element
     public function hasEagerLoadedElements(string $handle): bool
     {
         // See if we have this stored with a block type-specific handle
-        $blockTypeHandle = $this->getType()->handle.':'.$handle;
+        $blockTypeHandle = $this->getType()->handle . ':' . $handle;
 
         if (isset($this->_eagerLoadedBlockTypeElements[$blockTypeHandle])) {
             return true;
@@ -330,7 +342,7 @@ class MatrixBlock extends Element
     public function getEagerLoadedElements(string $handle)
     {
         // See if we have this stored with a block type-specific handle
-        $blockTypeHandle = $this->getType()->handle.':'.$handle;
+        $blockTypeHandle = $this->getType()->handle . ':' . $handle;
 
         if (isset($this->_eagerLoadedBlockTypeElements[$blockTypeHandle])) {
             return $this->_eagerLoadedBlockTypeElements[$blockTypeHandle];
@@ -345,7 +357,7 @@ class MatrixBlock extends Element
     public function setEagerLoadedElements(string $handle, array $elements)
     {
         // See if this was eager-loaded with a block type-specific handle
-        $blockTypeHandlePrefix = $this->getType()->handle.':';
+        $blockTypeHandlePrefix = $this->getType()->handle . ':';
         if (strpos($handle, $blockTypeHandlePrefix) === 0) {
             $this->_eagerLoadedBlockTypeElements[$handle] = $elements;
         } else {
@@ -378,7 +390,7 @@ class MatrixBlock extends Element
             $record = MatrixBlockRecord::findOne($this->id);
 
             if (!$record) {
-                throw new Exception('Invalid Matrix block ID: '.$this->id);
+                throw new Exception('Invalid Matrix block ID: ' . $this->id);
             }
         } else {
             $record = new MatrixBlockRecord();
@@ -398,13 +410,32 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        // Update the block record
+        Craft::$app->getDb()->createCommand()
+            ->update(Table::MATRIXBLOCKS, [
+                'deletedWithOwner' => $this->deletedWithOwner,
+            ], ['id' => $this->id], [], false)
+            ->execute();
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function afterDelete()
     {
         if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
             // Tell the browser to forget about this block
             $session = Craft::$app->getSession();
             $session->addAssetBundleFlash(MatrixAsset::class);
-            $session->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$this->id.');');
+            $session->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId(' . $this->id . ');');
         }
 
         parent::afterDelete();

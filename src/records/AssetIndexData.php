@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use craft\validators\DateTimeValidator;
 use yii\db\ActiveQueryInterface;
 
@@ -53,7 +54,7 @@ class AssetIndexData extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%assetindexdata}}';
+        return Table::ASSETINDEXDATA;
     }
 
     /**

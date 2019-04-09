@@ -12,6 +12,7 @@ use Composer\Semver\Comparator;
 use Composer\Semver\VersionParser;
 use Craft;
 use craft\base\Plugin;
+use craft\errors\InvalidPluginException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -62,7 +63,7 @@ class UpdaterController extends BaseUpdaterController
      */
     public function actionForceUpdate(): Response
     {
-        return $this->send($this->initialState(true));
+        return $this->send($this->realInitialState(true));
     }
 
     /**
@@ -75,7 +76,7 @@ class UpdaterController extends BaseUpdaterController
         try {
             $this->data['dbBackupPath'] = Craft::$app->getDb()->backup();
         } catch (\Throwable $e) {
-            Craft::error('Error backing up the database: '.$e->getMessage(), __METHOD__);
+            Craft::error('Error backing up the database: ' . $e->getMessage(), __METHOD__);
             if (!empty($this->data['install'])) {
                 $firstAction = $this->actionOption(Craft::t('app', 'Revert the update'), self::ACTION_REVERT);
             } else {
@@ -107,7 +108,7 @@ class UpdaterController extends BaseUpdaterController
         try {
             Craft::$app->getDb()->restore($this->data['dbBackupPath']);
         } catch (\Throwable $e) {
-            Craft::error('Error restoring up the database: '.$e->getMessage(), __METHOD__);
+            Craft::error('Error restoring up the database: ' . $e->getMessage(), __METHOD__);
             return $this->send([
                 'error' => Craft::t('app', 'Couldn’t restore the database. How would you like to proceed?'),
                 'options' => [
@@ -138,11 +139,11 @@ class UpdaterController extends BaseUpdaterController
 
         try {
             Craft::$app->getComposer()->install($this->data['current'], $io);
-            Craft::info("Reverted Composer requirements.\nOutput: ".$io->getOutput(), __METHOD__);
+            Craft::info("Reverted Composer requirements.\nOutput: " . $io->getOutput(), __METHOD__);
             $this->data['reverted'] = true;
         } catch (\Throwable $e) {
-            Craft::error('Error reverting Composer requirements: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
-            return $this->sendComposerError(Craft::t('app', 'Composer was unable to revert the updates.'), $e, $io);
+            Craft::error('Error reverting Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
+            return $this->sendComposerError(Craft::t('app', 'Composer was unable to revert the updates.'), $e, $io->getOutput());
         }
 
         return $this->send($this->postComposerInstallState());
@@ -169,9 +170,9 @@ class UpdaterController extends BaseUpdaterController
         }
 
         if (!empty($errors)) {
-            Craft::warning("The server doesn't meet Craft's new requirements:\n - ".implode("\n - ", $errors), __METHOD__);
+            Craft::warning("The server doesn't meet Craft's new requirements:\n - " . implode("\n - ", $errors), __METHOD__);
             return $this->send([
-                'error' => Craft::t('app', 'The server doesn’t meet Craft’s new requirements:').' '.implode(', ', $errors),
+                'error' => Craft::t('app', 'The server doesn’t meet Craft’s new requirements:') . ' ' . implode(', ', $errors),
                 'options' => [
                     $this->actionOption(Craft::t('app', 'Revert update'), self::ACTION_REVERT),
                     $this->actionOption(Craft::t('app', 'Check again'), self::ACTION_SERVER_CHECK),
@@ -182,6 +183,7 @@ class UpdaterController extends BaseUpdaterController
         // Are there any migrations to run?
         $installedHandles = array_keys($this->data['install']);
         $pendingHandles = Craft::$app->getUpdates()->getPendingMigrationHandles();
+
         if (!empty(array_intersect($pendingHandles, $installedHandles))) {
             $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
             return $this->sendNextAction($backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE);
@@ -227,6 +229,8 @@ class UpdaterController extends BaseUpdaterController
 
         // Set the things to install, if any
         if (($install = $request->getBodyParam('install')) !== null) {
+            $packageNames = $request->getRequiredBodyParam('packageNames');
+
             $data = [
                 'install' => $this->_parseInstallParam($install),
                 'current' => [],
@@ -235,18 +239,25 @@ class UpdaterController extends BaseUpdaterController
             ];
 
             // Convert update handles to Composer package names, and capture current versions
+            $pluginsService = Craft::$app->getPlugins();
+
             foreach ($data['install'] as $handle => $version) {
+                $packageName = strip_tags($packageNames[$handle]);
                 if ($handle === 'craft') {
-                    $packageName = 'craftcms/cms';
+                    $oldPackageName = 'craftcms/cms';
                     $current = Craft::$app->getVersion();
                 } else {
-                    /** @var Plugin $plugin */
-                    $plugin = Craft::$app->getPlugins()->getPlugin($handle);
-                    $packageName = $plugin->packageName;
-                    $current = $plugin->getVersion();
+                    $pluginInfo = $pluginsService->getPluginInfo($handle);
+                    $oldPackageName = $pluginInfo['packageName'];
+                    $current = $pluginInfo['version'];
                 }
                 $data['current'][$packageName] = $current;
                 $data['requirements'][$packageName] = $version;
+
+                // Has the package name changed?
+                if ($packageName !== $oldPackageName) {
+                    $data['requirements'][$oldPackageName] = false;
+                }
             }
         } else {
             // Figure out what needs to be updated, if any
@@ -404,11 +415,16 @@ class UpdaterController extends BaseUpdaterController
         if ($handle === 'craft') {
             $fromVersion = Craft::$app->getVersion();
         } else {
-            /** @var Plugin|null $plugin */
-            if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
-                throw new BadRequestHttpException('Invalid update handle: '.$handle);
+            $pluginInfo = null;
+            try {
+                $pluginInfo = Craft::$app->getPlugins()->getPluginInfo($handle);
+            } catch (InvalidPluginException $e) {
             }
-            $fromVersion = $plugin->getVersion();
+
+            if ($pluginInfo === null || !$pluginInfo['isInstalled']) {
+                throw new BadRequestHttpException('Invalid update handle: ' . $handle);
+            }
+            $fromVersion = $pluginInfo['version'];
         }
 
         // Normalize the versions in case only one of them starts with a 'v' or something

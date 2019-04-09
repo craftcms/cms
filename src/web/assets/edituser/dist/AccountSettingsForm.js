@@ -53,11 +53,17 @@
 
             showConfirmDeleteModal: function() {
                 if (!this.confirmDeleteModal) {
-                    this.confirmDeleteModal = new Craft.DeleteUserModal(this.userId, {
-                        redirect: this.settings.deleteModalRedirect
-                    });
-                }
-                else {
+                    this.$actionSpinner.removeClass('hidden');
+                    Craft.postActionRequest('users/user-content-summary', {userId: this.userId}, $.proxy(function(response, textStatus) {
+                        this.$actionSpinner.addClass('hidden');
+                        if (textStatus === 'success') {
+                            this.confirmDeleteModal = new Craft.DeleteUserModal(this.userId, {
+                                contentSummary: response,
+                                redirect: this.settings.deleteModalRedirect
+                            });
+                        }
+                    }, this));
+                } else {
                     this.confirmDeleteModal.show();
                 }
             }

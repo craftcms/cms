@@ -47,7 +47,7 @@ class CpAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             D3Asset::class,
@@ -71,7 +71,7 @@ class CpAsset extends AssetBundle
             'css/charts.css',
         ];
 
-        $this->js[] = 'js/Craft'.$this->dotJs();
+        $this->js[] = 'js/Craft' . $this->dotJs();
 
         parent::init();
     }
@@ -103,6 +103,7 @@ JS;
         $view->registerTranslations('app', [
             '(blank)',
             '1 Available Update',
+            '{first}-{last} of {total}',
             'Actions',
             'All',
             'An unknown error occurred.',
@@ -115,41 +116,54 @@ JS;
             'Cancel',
             'Choose a user',
             'Choose which table columns should be visible for this source, and in which order.',
-            'Close',
             'Close Live Preview',
+            'Close',
             'Continue',
+            'Could not create a Live Preview token.',
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
-            'Delete',
+            'day',
+            'days',
             'Delete folder',
             'Delete heading',
             'Delete it',
             'Delete user',
             'Delete users',
+            'Delete',
             'Display as thumbnails',
             'Display in a table',
             'Done',
             'Edit',
+            'Element',
+            'Elements',
             'Enter the name of the folder',
             'Enter your password to continue.',
             'Enter your password to log back in.',
+            'Export',
+            'Export…',
             'Failed',
+            'Format',
             'Give your tab a name.',
             'Handle',
             'Heading',
-            'Hide',
             'Hide sidebar',
+            'Hide',
+            'hour',
+            'hours',
             'Incorrect password.',
             'Instructions',
             'Keep both',
             'Keep me logged in',
             'License transferred.',
+            'Limit',
             'Log out now',
             'Login',
             'Make not required',
             'Make required',
             'Merge the folder (any conflicting files will be replaced)',
+            'minute',
+            'minutes',
             'More',
             'Move',
             'Name',
@@ -162,27 +176,33 @@ JS;
             'New subfolder',
             'New {group} category',
             'New {section} entry',
+            'Next Page',
+            'No limit',
             'OK',
             'Options',
             'Password',
             'Pay {price}',
             'Pending',
+            'Previous Page',
             'Really delete folder “{folder}”?',
             'Remove',
-            'Rename',
             'Rename folder',
+            'Rename',
             'Reorder',
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
+            'Save as a new asset',
             'Save',
             'Score',
             'Search in subfolders',
-            'Select',
+            'second',
+            'seconds',
             'Select transform',
+            'Select',
             'Settings',
-            'Show',
             'Show nav',
             'Show sidebar',
+            'Show',
             'Show/hide children',
             'Sort by {attribute}',
             'Source settings saved',
@@ -194,20 +214,12 @@ JS;
             'Try again',
             'Upload failed for {filename}',
             'Upload files',
+            'week',
+            'weeks',
             'What do you want to do with their content?',
             'What do you want to do?',
             'Your session has ended.',
             'Your session will expire in {time}.',
-            'day',
-            'days',
-            'hour',
-            'hours',
-            'minute',
-            'minutes',
-            'second',
-            'seconds',
-            'week',
-            'weeks',
             '{ctrl}C to copy.',
             '{num} Available Updates',
             '“{name}” deleted.',
@@ -216,15 +228,15 @@ JS;
 
     private function _craftData(): array
     {
+        $upToDate = Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded();
         $request = Craft::$app->getRequest();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $isInstalled = Craft::$app->getIsInstalled();
-        $isMigrationNeeded = Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded();
         $sitesService = Craft::$app->getSites();
         $locale = Craft::$app->getLocale();
         $orientation = $locale->getOrientation();
-        $userService = Craft::$app->getUser();
-        $currentUser = $userService->getIdentity();
+        $userSession = Craft::$app->getUser();
+        $currentUser = $userSession->getIdentity();
+        $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
 
         $data = [
             'actionTrigger' => $generalConfig->actionTrigger,
@@ -235,7 +247,7 @@ JS;
             'baseUrl' => UrlHelper::url(),
             'datepickerOptions' => $this->_datepickerOptions($locale, $currentUser, $generalConfig),
             'defaultIndexCriteria' => ['enabledForSite' => null],
-            'editableCategoryGroups' => $isInstalled ? $this->_editableCategoryGroups() : [],
+            'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
             'fileKinds' => Assets::getFileKinds(),
             'forceConfirmUnload' => Craft::$app->getSession()->hasFlash('error'),
@@ -247,23 +259,27 @@ JS;
             'maxUploadSize' => Assets::getMaxUploadSize(),
             'omitScriptNameInUrls' => (bool)$generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
+            'pageNum' => $request->getPageNum(),
+            'pageTrigger' => $generalConfig->getPageTrigger(),
             'path' => $request->getPathInfo(),
-            'primarySiteId' => $isInstalled && !$isMigrationNeeded ? $sitesService->getPrimarySite()->id : null,
+            'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
+            'primarySiteLanguage' => $primarySite->language ?? null,
             'Pro' => Craft::Pro,
-            'publishableSections' => $isInstalled && $currentUser ? $this->_publishableSections($currentUser) : [],
+            'publishableSections' => $upToDate && $currentUser ? $this->_publishableSections($currentUser) : [],
             'registeredAssetBundles' => ['' => ''], // force encode as JS object
             'registeredJsFiles' => ['' => ''], // force encode as JS object
-            'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userService->getRemainingSessionTime() : 0,
+            'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'runQueueAutomatically' => (bool)$generalConfig->runQueueAutomatically,
             'scriptName' => $request->getScriptFile(),
-            'siteId' => $isInstalled && !$isMigrationNeeded ? $sitesService->currentSite->id : null,
+            'siteId' => $upToDate ? (int)$sitesService->currentSite->id : null,
             'sites' => $this->_sites($sitesService),
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'Solo' => Craft::Solo,
             'systemUid' => Craft::$app->getSystemUid(),
             'timepickerOptions' => $this->_timepickerOptions($locale, $orientation),
             'timezone' => Craft::$app->getTimeZone(),
+            'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
             'useCompressedJs' => (bool)$generalConfig->useCompressedJs,
             'usePathInfo' => (bool)$generalConfig->usePathInfo,
@@ -301,8 +317,9 @@ JS;
         foreach (Craft::$app->getCategories()->getEditableGroups() as $group) {
             $groups[] = [
                 'handle' => $group->handle,
-                'id' => $group->id,
+                'id' => (int)$group->id,
                 'name' => Craft::t('site', $group->name),
+                'uid' => Craft::t('site', $group->uid),
             ];
         }
 
@@ -314,14 +331,15 @@ JS;
         $sections = [];
 
         foreach (Craft::$app->getSections()->getEditableSections() as $section) {
-            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can('createEntries:'.$section->id)) {
+            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can('createEntries:' . $section->uid)) {
                 $sections[] = [
                     'entryTypes' => $this->_entryTypes($section),
                     'handle' => $section->handle,
-                    'id' => $section->id,
+                    'id' => (int)$section->id,
                     'name' => Craft::t('site', $section->name),
                     'sites' => $section->getSiteIds(),
                     'type' => $section->type,
+                    'uid' => $section->uid,
                 ];
             }
         }
@@ -336,7 +354,7 @@ JS;
         foreach ($section->getEntryTypes() as $type) {
             $types[] = [
                 'handle' => $type->handle,
-                'id' => $type->id,
+                'id' => (int)$type->id,
                 'name' => Craft::t('site', $type->name),
             ];
         }
@@ -351,7 +369,8 @@ JS;
         foreach ($sitesService->getAllSites() as $site) {
             $sites[] = [
                 'handle' => $site->handle,
-                'id' => $site->id,
+                'id' => (int)$site->id,
+                'uid' => (string)$site->uid,
                 'name' => Craft::t('site', $site->name),
             ];
         }

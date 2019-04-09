@@ -37,15 +37,17 @@ class Request extends \yii\console\Request
             // see if it's any of the usual suspects
             $dir = dirname($this->getScriptFile());
             foreach (['web', 'public', 'public_html'] as $folder) {
-                if ($found = (is_dir($dir.DIRECTORY_SEPARATOR.$folder))) {
-                    $dir .= DIRECTORY_SEPARATOR.$folder;
+                if (is_dir($dir . DIRECTORY_SEPARATOR . $folder)) {
+                    $dir .= DIRECTORY_SEPARATOR . $folder;
                     break;
                 }
             }
             Craft::setAlias('@webroot', $dir);
+            $this->isWebrootAliasSetDynamically = true;
         }
         if (Craft::getRootAlias('@web') === false) {
             Craft::setAlias('@web', '/');
+            $this->isWebAliasSetDynamically = true;
         }
     }
 
@@ -80,9 +82,23 @@ class Request extends \yii\console\Request
     }
 
     /**
-     * Returns whether the current request is solely an action request. (Narrator: It isn't.)
+     * Returns whether this was a Login request.
+     *
+     * @return bool
+     * @since 3.2.0
      */
-    public function getIsSingleActionRequest()
+    public function getIsLoginRequest(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns whether the current request is solely an action request. (Narrator: It isn't.)
+     *
+     * @return bool
+     * @deprecated in 3.2
+     */
+    public function getIsSingleActionRequest(): bool
     {
         return false;
     }

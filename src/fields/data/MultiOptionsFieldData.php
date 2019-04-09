@@ -7,16 +7,13 @@
 
 namespace craft\fields\data;
 
-use craft\base\Serializable;
-use craft\helpers\Json;
-
 /**
  * Multi-select option field data class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class MultiOptionsFieldData extends \ArrayObject implements Serializable
+class MultiOptionsFieldData extends \ArrayObject
 {
     // Properties
     // =========================================================================
@@ -65,20 +62,5 @@ class MultiOptionsFieldData extends \ArrayObject implements Serializable
         }
 
         return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function serialize()
-    {
-        $serialized = [];
-
-        foreach ($this as $selectedValue) {
-            /** @var OptionData $selectedValue */
-            $serialized[] = $selectedValue->value;
-        }
-
-        return Json::encode($serialized);
     }
 }

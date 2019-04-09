@@ -21,14 +21,14 @@ class RecentEntriesAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
         ];
 
         $this->js = [
-            'RecentEntriesWidget'.$this->dotJs(),
+            'RecentEntriesWidget' . $this->dotJs(),
         ];
 
         parent::init();

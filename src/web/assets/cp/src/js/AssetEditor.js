@@ -5,6 +5,8 @@
  */
 Craft.AssetEditor = Craft.BaseElementEditor.extend(
     {
+        reloadIndex: false,
+
         updateForm: function(response) {
             this.base(response);
 
@@ -21,11 +23,21 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend(
         showImageEditor: function()
         {
             new Craft.AssetImageEditor(this.$element.data('id'), {
-                onSave: $.proxy(this, 'reloadForm'),
+                onSave: function () {
+                    this.reloadIndex = true;
+                    this.reloadForm();
+                }.bind(this),
                 allowDegreeFractions: Craft.isImagick
             });
-        }
+        },
 
+        onHideHud: function () {
+            if (this.reloadIndex && this.settings.elementIndex) {
+                this.settings.elementIndex.updateElements();
+            }
+
+            this.base();
+        }
     });
 
 // Register it!

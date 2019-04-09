@@ -43,7 +43,7 @@ class MigrationException extends Exception
         $this->output = $output;
 
         if ($message === null) {
-            $message = 'An error occurred while executing the "'.get_class($migration).' migration'.($previous ? ': '.$previous->getMessage() : '.');
+            $message = 'An error occurred while executing the "' . get_class($migration) . ' migration' . ($previous ? ': ' . $previous->getMessage() : '.');
         }
 
         parent::__construct($message, $code, $previous);

@@ -1,20 +1,22 @@
 {% import "_includes/forms" as forms %}
 
-{{ forms.textField({
+{{ forms.autosuggestField({
     label: "Host Name"|t('app'),
     id: 'host',
     name: 'host',
+    suggestEnvVars: true,
     value: adapter.host,
     required: true,
     errors: adapter.getErrors('host')
 }) }}
 
-{{ forms.textField({
+{{ forms.autosuggestField({
     label: "Port"|t('app'),
     id: 'port',
     name: 'port',
+    suggestEnvVars: true,
     value: adapter.port,
-    size: 4,
+    size: 20,
     required: true,
     errors: adapter.getErrors('port')
 }) }}
@@ -28,19 +30,21 @@
 }) }}
 
 <div id="auth-credentials" class="nested-fields{% if not adapter.useAuthentication %} hidden{% endif %}">
-    {{ forms.textField({
+    {{ forms.autosuggestField({
         label: "Username"|t('app'),
         id: 'username',
         name: 'username',
+        suggestEnvVars: true,
         value: adapter.username,
         errors: adapter.getErrors('username')
     }) }}
 
-    {{ forms.passwordField({
+    {{ forms.autosuggestField({
         label: "Password"|t('app'),
         id: 'password',
         name: 'password',
-        value: adapter.password ? adapter.password|encenc,
+        suggestEnvVars: true,
+        value: adapter.password,
         errors: adapter.getErrors('password')
     }) }}
 </div>

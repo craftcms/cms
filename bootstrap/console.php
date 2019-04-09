@@ -28,4 +28,4 @@ date_default_timezone_set('UTC');
 
 $appType = 'console';
 
-return require __DIR__.'/bootstrap.php';
+return require __DIR__ . '/bootstrap.php';

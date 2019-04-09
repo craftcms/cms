@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.0.10.1",
+  "version": "3.2.0-alpha.2.1",
   "keywords": [
     "cms",
     "craftcms",
@@ -14,7 +14,7 @@
     "issues": "https://github.com/craftcms/cms/issues?state=open",
     "forum": "https://craftcms.stackexchange.com/",
     "source": "https://github.com/craftcms/cms",
-    "docs": "https://github.com/craftcms/docs",
+    "docs": "https://docs.craftcms.com/v3/",
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
@@ -32,21 +32,25 @@
     "craftcms/plugin-installer": "~1.5.0",
     "craftcms/server-check": "~1.1.0",
     "creocoder/yii2-nested-sets": "~0.9.0",
-    "danielstjules/stringy": "~3.1.0",
+    "danielstjules/stringy": "^3.1.0",
     "elvanto/litemoji": "^1.3.1",
-    "enshrined/svg-sanitize": "~0.8.2",
-    "guzzlehttp/guzzle": "~6.3.0",
-    "league/flysystem": "~1.0.35",
-    "league/oauth2-client": "~2.2.1",
-    "mikehaertl/php-shellcommand": "~1.2.5",
+    "enshrined/svg-sanitize": "~0.9.0",
+    "guzzlehttp/guzzle": "^6.3.0",
+    "league/flysystem": "^1.0.35",
+    "league/oauth2-client": "^2.2.1",
+    "mikehaertl/php-shellcommand": "^1.2.5",
     "pixelandtonic/imagine": "~0.7.1.2",
-    "seld/cli-prompt": "~1.0.3",
-    "twig/twig": "~2.4.4",
-    "yiisoft/yii2": "~2.0.15.1",
-    "yiisoft/yii2-debug": "~2.0.10",
-    "yiisoft/yii2-swiftmailer": "~2.1.0",
-    "yiisoft/yii2-queue": "~2.0.1",
-    "zendframework/zend-feed": "~2.8.0"
+    "seld/cli-prompt": "^1.0.3",
+    "symfony/yaml": "^3.2|^4.0",
+    "true/punycode": "^2.1.0",
+    "twig/twig": "^2.7.2",
+    "yii2tech/ar-softdelete": "^1.0.2",
+    "yiisoft/yii2": "~2.0.17.0",
+    "yiisoft/yii2-debug": "^2.0.10",
+    "yiisoft/yii2-swiftmailer": "^2.1.0",
+    "yiisoft/yii2-queue": "2.1.0",
+    "phpoffice/phpspreadsheet": "^1.6.0",
+    "zendframework/zend-feed": "^2.8.0"
   },
   "require-dev": {
     "codeception/codeception": "^2.4",
@@ -56,10 +60,13 @@
   },
   "provide": {
     "bower-asset/bootstrap": "3.3.* | 3.2.* | 3.1.*",
-    "bower-asset/jquery": "3.2.*@stable | 3.1.*@stable | 2.2.*@stable | 2.1.*@stable | 1.11.*@stable | 1.12.*@stable",
+    "bower-asset/jquery": "3.3.*@stable | 3.2.*@stable | 3.1.*@stable | 2.2.*@stable | 2.1.*@stable | 1.11.*@stable | 1.12.*@stable",
     "bower-asset/inputmask": "~3.2.2 | ~3.3.5",
     "bower-asset/punycode": "1.3.*",
     "bower-asset/yii2-pjax": "~2.0.1"
+  },
+  "conflict": {
+    "league/oauth2-client": "2.4.0"
   },
   "suggest": {
     "ext-imagick": "Adds support for more image processing formats and options.",

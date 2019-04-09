@@ -45,6 +45,11 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     const EVENT_BEFORE_DELETE = 'beforeDelete';
 
     /**
+     * @event ModelEvent The event that is triggered before the delete is applied to the database
+     */
+    const EVENT_BEFORE_APPLY_DELETE = 'beforeApplyDelete';
+
+    /**
      * @event \yii\base\Event The event that is triggered after the component is deleted
      */
     const EVENT_AFTER_DELETE = 'afterDelete';
@@ -151,6 +156,17 @@ abstract class SavableComponent extends Component implements SavableComponentInt
         $this->trigger(self::EVENT_BEFORE_DELETE, $event);
 
         return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeApplyDelete()
+    {
+        // Trigger an 'beforeApplyDelete' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DELETE)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_DELETE);
+        }
     }
 
     /**

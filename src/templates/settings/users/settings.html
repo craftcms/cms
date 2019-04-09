@@ -7,24 +7,24 @@
 
 
 {% if settings is not defined %}
-    {% set settings = craft.app.systemSettings.getSettings('users') %}
+    {% set settings = craft.app.projectConfig.get('users') %}
 {% endif %}
 
 {% set allVolumes = craft.app.volumes.getAllVolumes() %}
 {% set volumeList = [] %}
 {% for volume in allVolumes %}
-    {% set volumeList = volumeList|merge([{'value': volume.id, 'label': volume.name}]) %}
+    {% set volumeList = volumeList|merge([{'value': volume.uid, 'label': volume.name}]) %}
 {% endfor %}
 
-{% macro assetLocationInput(volumeOptions, volumeId, subpath) %}
+{% macro assetLocationInput(volumeOptions, volumeUid, subpath) %}
     {% from "_includes/forms" import select, text %}
     <div class="flex">
         <div>
             {{ select({
-                id: 'photoVolumeId',
-                name: 'photoVolumeId',
+                id: 'photoVolumeUid',
+                name: 'photoVolumeUid',
                 options: volumeOptions,
-                value: volumeId,
+                value: volumeUid,
             }) }}
         </div>
         <div class="flex-grow">
@@ -51,7 +51,7 @@
                 first: true,
                 label: "User Photo Location"|t('app'),
                 instructions: "Where do you want to store user photos? Note that the subfolder path can contain variables like <code>{username}</code>."|t('app')
-            }, assetLocationInput(volumeList, settings.photoVolumeId, settings.photoSubpath)) }}
+            }, assetLocationInput(volumeList, settings.photoVolumeUid ?? null, settings.photoSubpath ?? null)) }}
         {% else %}
             {{ forms.field({
                 first: true,

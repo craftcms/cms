@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m170703_181539_plugins_table_tweaks migration.
@@ -22,9 +23,9 @@ class m170703_181539_plugins_table_tweaks extends Migration
             $this->execute('alter table {{%plugins}} alter column [[version]] type varchar(255), alter column [[version]] set not null');
             $this->execute('alter table {{%plugins}} alter column [[schemaVersion]] type varchar(255), alter column [[schemaVersion]] set not null');
         } else {
-            $this->alterColumn('{{%plugins}}', 'handle', $this->string()->notNull());
-            $this->alterColumn('{{%plugins}}', 'version', $this->string()->notNull());
-            $this->alterColumn('{{%plugins}}', 'schemaVersion', $this->string()->notNull());
+            $this->alterColumn(Table::PLUGINS, 'handle', $this->string()->notNull());
+            $this->alterColumn(Table::PLUGINS, 'version', $this->string()->notNull());
+            $this->alterColumn(Table::PLUGINS, 'schemaVersion', $this->string()->notNull());
         }
     }
 

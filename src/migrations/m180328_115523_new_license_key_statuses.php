@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m180328_115523_new_license_key_statuses migration.
@@ -27,7 +28,7 @@ class m180328_115523_new_license_key_statuses extends Migration
             $check .= ')';
             $this->execute("alter table {{%plugins}} drop constraint {{%plugins_licenseKeyStatus_check}}, add check ({$check})");
         } else {
-            $this->alterColumn('{{%plugins}}', 'licenseKeyStatus', $this->enum('licenseKeyStatus', $values)->notNull()->defaultValue('unknown'));
+            $this->alterColumn(Table::PLUGINS, 'licenseKeyStatus', $this->enum('licenseKeyStatus', $values)->notNull()->defaultValue('unknown'));
         }
     }
 

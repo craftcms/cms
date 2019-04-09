@@ -62,6 +62,16 @@ class Number extends Field implements PreviewableFieldInterface
      */
     public $size;
 
+    /**
+     * @var string|null Text that should be displayed before the input
+     */
+    public $prefix;
+
+    /**
+     * @var string|null Text that should be displayed after the input
+     */
+    public $suffix;
+
     // Public Methods
     // =========================================================================
 
@@ -164,15 +174,17 @@ class Number extends Field implements PreviewableFieldInterface
         // If decimals is 0 (or null, empty for whatever reason), don't run this
         if ($value !== null && $this->decimals) {
             $decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
-            $value = number_format($value, $this->decimals, $decimalSeparator, '');
+            try {
+                $value = number_format($value, $this->decimals, $decimalSeparator, '');
+            } catch (\Throwable $e) {
+                // NaN
+            }
         }
 
-        return '<input type="hidden" name="'.$this->handle.'[locale]" value="'.Craft::$app->language.'">'.
-            Craft::$app->getView()->renderTemplate('_includes/forms/text', [
-                'name' => $this->handle.'[value]',
-                'value' => $value,
-                'size' => $this->size
-            ]);
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input', [
+            'field' => $this,
+            'value' => $value,
+        ]);
     }
 
     /**
@@ -181,7 +193,19 @@ class Number extends Field implements PreviewableFieldInterface
     public function getElementValidationRules(): array
     {
         return [
-            ['number', 'min' => $this->min ?: null, 'max' => $this->max ?: null],
+            ['number', 'min' => $this->min, 'max' => $this->max],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($value, ElementInterface $element): string
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        return Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
     }
 }

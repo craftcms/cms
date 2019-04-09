@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\volumes\Local;
@@ -22,13 +23,13 @@ class m171231_055546_environment_variables_to_aliases extends Migration
         // Parse the site URLs
         $sites = (new Query())
             ->select(['id', 'baseUrl'])
-            ->from(['{{%sites}}'])
+            ->from([Table::SITES])
             ->where(['like', 'baseUrl', '{%', false])
             ->all();
 
         foreach ($sites as $site) {
             if ($this->_parseEnvString($site['baseUrl'])) {
-                $this->update('{{%sites}}', [
+                $this->update(Table::SITES, [
                     'baseUrl' => $site['baseUrl']
                 ], ['id' => $site['id']], [], false);
             }
@@ -37,7 +38,7 @@ class m171231_055546_environment_variables_to_aliases extends Migration
         // Parse the 'path' and 'url' local volume settings
         $localVolumes = (new Query())
             ->select(['id', 'settings'])
-            ->from(['{{%volumes}}'])
+            ->from([Table::VOLUMES])
             ->where(['type' => Local::class])
             ->all();
 
@@ -52,7 +53,7 @@ class m171231_055546_environment_variables_to_aliases extends Migration
             }
 
             if ($changed) {
-                $this->update('{{%volumes}}', [
+                $this->update(Table::VOLUMES, [
                     'settings' => Json::encode($settings)
                 ], ['id' => $volume['id']], [], false);
             }
@@ -78,7 +79,7 @@ class m171231_055546_environment_variables_to_aliases extends Migration
     private function _parseEnvString(string &$str): bool
     {
         if (preg_match('/^\s*\{(\w+)\}([^\{\}]*)$/', $str, $matches)) {
-            $str = '@'.$matches[1].($matches[2] ? '/'.trim(str_replace('\\', '/', $matches[2]), '/') : '');
+            $str = '@' . $matches[1] . ($matches[2] ? '/' . trim(str_replace('\\', '/', $matches[2]), '/') : '');
             return true;
         }
 
@@ -86,8 +87,8 @@ class m171231_055546_environment_variables_to_aliases extends Migration
         $normalizedStr = str_replace('\\', '/', $str);
         $normalizedStorage = str_replace('\\', '/', Craft::$app->getPath()->getStoragePath());
 
-        if (StringHelper::startsWith($normalizedStr.'/', $normalizedStorage.'/')) {
-            $str = '@storage'.substr($normalizedStr, strlen($normalizedStorage));
+        if (StringHelper::startsWith($normalizedStr . '/', $normalizedStorage . '/')) {
+            $str = '@storage' . substr($normalizedStr, strlen($normalizedStorage));
             return true;
         }
 

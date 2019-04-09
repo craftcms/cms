@@ -124,7 +124,7 @@ Craft.CP = Garnish.Base.extend(
             // hat tip: https://stackoverflow.com/a/2911045/1688568
             $('a').each(function() {
                 if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
-                    $(this).attr('target', '_blank')
+                    $(this).attr('rel', 'noopener').attr('target', '_blank')
                 }
             });
         },
@@ -154,22 +154,35 @@ Craft.CP = Garnish.Base.extend(
             }
 
             this.addListener(Garnish.$win, 'beforeunload', function(ev) {
-                for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                    if (
-                        Craft.forceConfirmUnload ||
-                        this.initialFormValues[i] !== $(this.$confirmUnloadForms[i]).serialize()
-                    ) {
-                        var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
-
-                        if (ev) {
-                            ev.originalEvent.returnValue = message;
+                var confirmUnload = false;
+                if (
+                    Craft.forceConfirmUnload ||
+                    (
+                        typeof Craft.livePreview !== 'undefined' &&
+                        Craft.livePreview.inPreviewMode
+                    )
+                ) {
+                    confirmUnload = true;
+                } else {
+                    for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
+                        if (this.initialFormValues[i] !== $(this.$confirmUnloadForms[i]).serialize()) {
+                            confirmUnload = true;
+                            break;
                         }
-                        else {
-                            window.event.returnValue = message;
-                        }
-
-                        return message;
                     }
+                }
+
+                if (confirmUnload) {
+                    var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
+
+                    if (ev) {
+                        ev.originalEvent.returnValue = message;
+                    }
+                    else {
+                        window.event.returnValue = message;
+                    }
+
+                    return message;
                 }
             });
         },
@@ -231,7 +244,7 @@ Craft.CP = Garnish.Base.extend(
                         this.selectTab(ev.currentTarget);
                     });
 
-                    if (href === document.location.hash) {
+                    if (encodeURIComponent(href.substr(1)) === document.location.hash.substr(1)) {
                         this.selectTab(a);
                     }
                 }
@@ -676,7 +689,7 @@ Craft.CP = Garnish.Base.extend(
         JOB_STATUS_FAILED: 4
     });
 
-Garnish.$scrollContainer = $('#content-container');
+Garnish.$scrollContainer = $('#content');
 Craft.cp = new Craft.CP();
 
 

@@ -47,4 +47,9 @@ trait VolumeTrait
      * @var int|null Field layout ID
      */
     public $fieldLayoutId;
+
+    /**
+     * @var string|null UID
+     */
+    public $uid;
 }

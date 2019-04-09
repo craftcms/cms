@@ -21,14 +21,14 @@ class UpdatesWidgetAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
         ];
 
         $this->js = [
-            'UpdatesWidget'.$this->dotJs(),
+            'UpdatesWidget' . $this->dotJs(),
         ];
 
         parent::init();

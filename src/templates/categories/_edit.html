@@ -18,7 +18,7 @@
             <div class="btn livepreviewbtn">{{ "Live Preview"|t('app') }}</div>
         {% endif %}
         {% if shareUrl is defined %}
-            <a href="{{ shareUrl }}" class="btn sharebtn" target="_blank">{{ 'Share'|t('app') }}</a>
+            <a href="{{ shareUrl }}" class="btn sharebtn" rel="noopener" target="_blank">{{ 'Share'|t('app') }}</a>
         {% endif %}
         <div class="flex-grow"></div>
     {% endif %}
@@ -111,6 +111,8 @@
             siteId: category.siteId,
             id: 'slug',
             name: 'slug',
+            autocorrect: false,
+            autocapitalize: false,
             value: category.slug,
             placeholder: "Enter slug"|t('app'),
             errors: (category.getErrors('slug')|merge(category.getErrors('uri')))
@@ -123,7 +125,7 @@
                 name: 'parentId',
                 elementType: elementType,
                 selectionLabel: "Choose"|t('app'),
-                sources: ['group:'~group.id],
+                sources: ['group:'~group.uid],
                 criteria: parentOptionCriteria,
                 limit: 1,
                 elements: (parent is defined and parent ? [parent]),
@@ -141,7 +143,6 @@
     </div>
 
     {% if category.id %}
-        <hr>
         <div class="meta read-only">
             <div class="data">
                 <h5 class="heading">{{ "Date Created"|t('app') }}</h5>
@@ -161,6 +162,8 @@
 
 {% if not category.slug %}
     {% js %}
-        window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');
+        window.slugGenerator = new Craft.SlugGenerator('#title', '#slug', {
+            charMap: {{ craft.cp.getAsciiCharMap(category.site.language)|json_encode|raw }}
+        });
     {% endjs %}
 {% endif %}

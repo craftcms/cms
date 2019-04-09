@@ -179,6 +179,11 @@ interface SavableComponentInterface extends ComponentInterface
     public function beforeDelete(): bool;
 
     /**
+     * Performs actions before a component delete is applied to the database.
+     */
+    public function beforeApplyDelete();
+
+    /**
      * Performs actions after a component is deleted.
      */
     public function afterDelete();

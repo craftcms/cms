@@ -90,7 +90,7 @@ class FieldLayoutBehavior extends Behavior
         }
 
         if (!isset($id) || !is_numeric($id)) {
-            throw new InvalidConfigException('Unable to determine the field layout ID for '.get_class($this->owner).'.');
+            throw new InvalidConfigException('Unable to determine the field layout ID for ' . get_class($this->owner) . '.');
         }
 
         return $this->_fieldLayoutId = (int)$id;
@@ -127,7 +127,7 @@ class FieldLayoutBehavior extends Behavior
         }
 
         if (($fieldLayout = Craft::$app->getFields()->getLayoutById($id)) === null) {
-            throw new InvalidConfigException('Invalid field layout ID: '.$id);
+            throw new InvalidConfigException('Invalid field layout ID: ' . $id);
         }
 
         return $this->_fieldLayout = $fieldLayout;

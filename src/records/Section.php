@@ -8,6 +8,8 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\SoftDeleteTrait;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -19,7 +21,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $handle Handle
  * @property string $type Type
  * @property bool $enableVersioning Enable versioning
- * @property bool $propagateEntries Propagate entries
+ * @property bool $propagationMethod Propagation method
  * @property Section_SiteSettings[] $siteSettings Site settings
  * @property Structure $structure Structure
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -27,6 +29,11 @@ use yii\db\ActiveQueryInterface;
  */
 class Section extends ActiveRecord
 {
+    // Traits
+    // =========================================================================
+
+    use SoftDeleteTrait;
+
     // Public Methods
     // =========================================================================
 
@@ -36,7 +43,7 @@ class Section extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%sections}}';
+        return Table::SECTIONS;
     }
 
     /**

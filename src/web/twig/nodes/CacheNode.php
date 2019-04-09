@@ -9,6 +9,8 @@ namespace craft\web\twig\nodes;
 
 use Craft;
 use craft\helpers\StringHelper;
+use Twig\Compiler;
+use Twig\Node\Node;
 
 /**
  * Cache twig node.
@@ -16,7 +18,7 @@ use craft\helpers\StringHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class CacheNode extends \Twig_Node
+class CacheNode extends Node
 {
     // Properties
     // =========================================================================
@@ -32,7 +34,7 @@ class CacheNode extends \Twig_Node
     /**
      * @inheritdoc
      */
-    public function compile(\Twig_Compiler $compiler)
+    public function compile(Compiler $compiler)
     {
         $n = self::$_cacheCount++;
 
@@ -47,8 +49,8 @@ class CacheNode extends \Twig_Node
 
         $compiler
             ->addDebugInfo($this)
-            ->write('$cacheService = '.Craft::class."::\$app->getTemplateCaches();\n")
-            ->write('$request = '.Craft::class."::\$app->getRequest();\n")
+            ->write('$cacheService = ' . Craft::class . "::\$app->getTemplateCaches();\n")
+            ->write('$request = ' . Craft::class . "::\$app->getRequest();\n")
             ->write("\$ignoreCache{$n} = (\$request->getIsLivePreview() || \$request->getToken()");
 
         if ($conditions) {
@@ -72,7 +74,7 @@ class CacheNode extends \Twig_Node
         if ($key) {
             $compiler->subcompile($key);
         } else {
-            $compiler->raw('"'.StringHelper::randomString().'"');
+            $compiler->raw('"' . StringHelper::randomString() . '"');
         }
 
         $compiler

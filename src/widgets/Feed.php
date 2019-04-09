@@ -81,7 +81,6 @@ class Feed extends Widget
         $rules[] = [['url', 'title'], 'required'];
         $rules[] = [['url'], 'url'];
         $rules[] = [['limit'], 'integer', 'min' => 1];
-
         return $rules;
     }
 
@@ -112,9 +111,9 @@ class Feed extends Widget
         $view = Craft::$app->getView();
         $view->registerAssetBundle(FeedAsset::class);
         $view->registerJs(
-            "new Craft.FeedWidget({$this->id}, ".
-            Json::encode($this->url).', '.
-            Json::encode($this->limit).');'
+            "new Craft.FeedWidget({$this->id}, " .
+            Json::encode($this->url) . ', ' .
+            Json::encode($this->limit) . ');'
         );
 
         return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/body', [

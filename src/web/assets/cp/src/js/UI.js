@@ -17,7 +17,10 @@ Craft.ui =
                     disabled: this.getDisabledValue(config.disabled),
                     readonly: config.readonly,
                     title: config.title,
-                    placeholder: config.placeholder
+                    placeholder: config.placeholder,
+                    step: config.step,
+                    min: config.min,
+                    max: config.max
                 }
             });
 
@@ -176,7 +179,7 @@ Craft.ui =
 
             var $label = $('<label/>', {
                 'for': id,
-                html: config.label
+                text: config.label
             });
 
             // Should we include a hidden input first?

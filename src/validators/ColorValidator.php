@@ -35,12 +35,12 @@ class ColorValidator extends RegularExpressionValidator
 
         // make sure it starts with a #
         if ($color[0] !== '#') {
-            $color = '#'.$color;
+            $color = '#' . $color;
         }
 
         // #abc => #aabbcc
         if (strlen($color) === 4) {
-            $color = '#'.$color[1].$color[1].$color[2].$color[2].$color[3].$color[3];
+            $color = '#' . $color[1] . $color[1] . $color[2] . $color[2] . $color[3] . $color[3];
         }
 
         return $color;

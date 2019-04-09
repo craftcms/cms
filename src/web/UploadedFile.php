@@ -8,6 +8,8 @@
 namespace craft\web;
 
 use Craft;
+use craft\helpers\FileHelper;
+use yii\base\InvalidConfigException;
 
 /**
  * UploadedFile represents the information for an uploaded file.
@@ -95,14 +97,49 @@ class UploadedFile extends \yii\web\UploadedFile
             return false;
         }
 
-        $tempFilename = uniqid(pathinfo($this->name, PATHINFO_FILENAME), true).'.'.pathinfo($this->name, PATHINFO_EXTENSION);
-        $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+        $tempFilename = uniqid(pathinfo($this->name, PATHINFO_FILENAME), true) . '.' . pathinfo($this->name, PATHINFO_EXTENSION);
+        $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
 
         if (!$this->saveAs($tempPath, $deleteTempFile)) {
             return false;
         }
 
         return $tempPath;
+    }
+
+    /**
+     * Returns the MIME type of the file, based on [[\craft\helpers\FileHelper::getMimeType()]] rather than what the
+     * request told us.
+     *
+     * @param string|null $magicFile name of the optional magic database file (or alias).
+     * @param bool $checkExtension whether to use the file extension to determine the MIME type in case
+     * `finfo_open()` cannot determine it.
+     * @return string|null
+     * @throws InvalidConfigException when the `fileinfo` PHP extension is not installed and `$checkExtension` is `false`.
+     * @since 3.1.7
+     */
+    public function getMimeType(string $magicFile = null, bool $checkExtension = true)
+    {
+        $mimeType = null;
+
+        // Make sure it still exists in the temp location
+        if (is_uploaded_file($this->tempName)) {
+            // Don't check the extension yet (the temp name doesn't have one)
+            try {
+                $mimeType = FileHelper::getMimeType($this->tempName, $magicFile, false);
+            } catch (InvalidConfigException $e) {
+                if (!$checkExtension) {
+                    throw $e;
+                }
+            }
+        }
+
+        // Be forgiving of SVG files, etc., that don't have an XML declaration
+        if ($checkExtension && ($mimeType === null || !FileHelper::canTrustMimeType($mimeType))) {
+            return FileHelper::getMimeTypeByExtension($this->name, $magicFile) ?? $mimeType;
+        }
+
+        return $mimeType;
     }
 
     // Private Methods
@@ -120,7 +157,7 @@ class UploadedFile extends \yii\web\UploadedFile
     {
         if (($pos = strpos($name, '.')) !== false) {
             // Convert dot notation to the normal format ex: fields.assetsField => fields[assetsField]
-            $name = substr($name, 0, $pos).'['.str_replace('.', '][', substr($name, $pos + 1)).']';
+            $name = substr($name, 0, $pos) . '[' . str_replace('.', '][', substr($name, $pos + 1)) . ']';
         }
 
         return $name;

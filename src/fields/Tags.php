@@ -82,8 +82,7 @@ class Tags extends BaseRelationField
 
         if ($value instanceof ElementQueryInterface) {
             $value = $value
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->all();
         } else if (!is_array($value)) {
             $value = [];
@@ -98,14 +97,14 @@ class Tags extends BaseRelationField
                     'id' => Craft::$app->getView()->formatInputId($this->handle),
                     'name' => $this->handle,
                     'elements' => $value,
-                    'tagGroupId' => $this->_getTagGroupId(),
+                    'tagGroupId' => $tagGroup->id,
                     'targetSiteId' => $this->targetSiteId($element),
                     'sourceElementId' => $element !== null ? $element->id : null,
                     'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
                 ]);
         }
 
-        return '<p class="error">'.Craft::t('app', 'This field is not set to a valid source.').'</p>';
+        return '<p class="error">' . Craft::t('app', 'This field is not set to a valid source.') . '</p>';
     }
 
     // Private Methods
@@ -121,7 +120,7 @@ class Tags extends BaseRelationField
         $tagGroupId = $this->_getTagGroupId();
 
         if ($tagGroupId !== false) {
-            return Craft::$app->getTags()->getTagGroupById($tagGroupId);
+            return Craft::$app->getTags()->getTagGroupByUid($tagGroupId);
         }
 
         return null;
@@ -138,10 +137,10 @@ class Tags extends BaseRelationField
             return $this->_tagGroupId;
         }
 
-        if (!preg_match('/^taggroup:(\d+)$/', $this->source, $matches)) {
+        if (!preg_match('/^taggroup:(([0-9a-f\-]+))$/', $this->source, $matches)) {
             return $this->_tagGroupId = false;
         }
 
-        return $this->_tagGroupId = (int)$matches[1];
+        return $this->_tagGroupId = $matches[1];
     }
 }

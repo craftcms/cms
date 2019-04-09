@@ -21,7 +21,7 @@ class UpdatesAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
@@ -32,7 +32,7 @@ class UpdatesAsset extends AssetBundle
         ];
 
         $this->js = [
-            'UpdatesUtility'.$this->dotJs(),
+            'UpdatesUtility' . $this->dotJs(),
         ];
 
         parent::init();

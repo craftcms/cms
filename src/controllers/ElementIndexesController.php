@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
+use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\ElementActionEvent;
@@ -19,6 +20,7 @@ use craft\helpers\ElementHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The ElementIndexesController class is a controller that handles various element index related actions.
@@ -35,58 +37,62 @@ class ElementIndexesController extends BaseElementsController
     /**
      * @var string|null
      */
-    private $_elementType;
+    protected $elementType;
 
     /**
      * @var string|null
      */
-    private $_context;
+    protected $context;
 
     /**
      * @var string|null
      */
-    private $_sourceKey;
+    protected $sourceKey;
 
     /**
      * @var array|null
      */
-    private $_source;
+    protected $source;
 
     /**
      * @var array|null
      */
-    private $_viewState;
+    protected $viewState;
 
     /**
-     * @var ElementQueryInterface|null
+     * @var ElementQueryInterface|ElementQuery|null
      */
-    private $_elementQuery;
+    protected $elementQuery;
 
     /**
      * @var ElementActionInterface[]|null
      */
-    private $_actions;
+    protected $actions;
 
     // Public Methods
     // =========================================================================
 
     /**
-     * Initializes the application component.
+     * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
-
-        $this->_elementType = $this->elementType();
-        $this->_context = $this->context();
-        $this->_sourceKey = Craft::$app->getRequest()->getParam('source');
-        $this->_source = $this->_source();
-        $this->_viewState = $this->_viewState();
-        $this->_elementQuery = $this->_elementQuery();
-
-        if ($this->_context === 'index' && $this->_sourceKey !== null) {
-            $this->_actions = $this->_availableActions();
+        if (!parent::beforeAction($action)) {
+            return false;
         }
+
+        $this->elementType = $this->elementType();
+        $this->context = $this->context();
+        $this->sourceKey = Craft::$app->getRequest()->getParam('source');
+        $this->source = $this->source();
+        $this->viewState = $this->viewState();
+        $this->elementQuery = $this->elementQuery();
+
+        if ($this->includeActions() && $this->sourceKey !== null) {
+            $this->actions = $this->availableActions();
+        }
+
+        return true;
     }
 
     /**
@@ -102,7 +108,7 @@ class ElementIndexesController extends BaseElementsController
      */
     public function getElementQuery(): ElementQueryInterface
     {
-        return $this->_elementQuery;
+        return $this->elementQuery;
     }
 
     /**
@@ -112,8 +118,7 @@ class ElementIndexesController extends BaseElementsController
      */
     public function actionGetElements(): Response
     {
-        $includeActions = ($this->_context === 'index');
-        $responseData = $this->_elementResponseData(true, $includeActions);
+        $responseData = $this->elementResponseData(true, $this->includeActions());
 
         return $this->asJson($responseData);
     }
@@ -125,7 +130,7 @@ class ElementIndexesController extends BaseElementsController
      */
     public function actionGetMoreElements(): Response
     {
-        $responseData = $this->_elementResponseData(false, false);
+        $responseData = $this->elementResponseData(false, false);
 
         return $this->asJson($responseData);
     }
@@ -147,9 +152,9 @@ class ElementIndexesController extends BaseElementsController
         $elementIds = $requestService->getRequiredBodyParam('elementIds');
 
         // Find that action from the list of available actions for the source
-        if (!empty($this->_actions)) {
+        if (!empty($this->actions)) {
             /** @var ElementAction $availableAction */
-            foreach ($this->_actions as $availableAction) {
+            foreach ($this->actions as $availableAction) {
                 if ($actionClass === get_class($availableAction)) {
                     $action = $availableAction;
                     break;
@@ -178,7 +183,7 @@ class ElementIndexesController extends BaseElementsController
 
         // Perform the action
         /** @var ElementQuery $actionCriteria */
-        $actionCriteria = clone $this->_elementQuery;
+        $actionCriteria = clone $this->elementQuery;
         $actionCriteria->offset = 0;
         $actionCriteria->limit = null;
         $actionCriteria->orderBy = null;
@@ -218,7 +223,7 @@ class ElementIndexesController extends BaseElementsController
 
         if ($success) {
             // Send a new set of elements
-            $responseData = array_merge($responseData, $this->_elementResponseData(true, true));
+            $responseData = array_merge($responseData, $this->elementResponseData(true, true));
         }
 
         return $this->asJson($responseData);
@@ -226,12 +231,14 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Returns the source tree HTML for an element index.
+     *
+     * @return Response
      */
-    public function actionGetSourceTreeHtml()
+    public function actionGetSourceTreeHtml(): Response
     {
         $this->requireAcceptsJson();
 
-        $sources = Craft::$app->getElementIndexes()->getSources($this->_elementType, $this->_context);
+        $sources = Craft::$app->getElementIndexes()->getSources($this->elementType, $this->context);
 
         return $this->asJson([
             'html' => $this->getView()->renderTemplate('_elements/sources', [
@@ -240,8 +247,55 @@ class ElementIndexesController extends BaseElementsController
         ]);
     }
 
-    // Private Methods
+    /**
+     * Creates an export token.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ServerErrorHttpException
+     * @since 3.2.0
+     */
+    public function actionCreateExportToken(): Response
+    {
+        if (!$this->sourceKey) {
+            throw new BadRequestHttpException('Request missing required body param');
+        }
+
+        if ($this->context !== 'index') {
+            throw new BadRequestHttpException('Request missing index context');
+        }
+
+        $request = Craft::$app->getRequest();
+
+        $token = Craft::$app->getTokens()->createToken([
+            'export/export',
+            [
+                'elementType' => $this->elementType,
+                'sourceKey' => $this->sourceKey,
+                'criteria' => $request->getBodyParam('criteria', []),
+                'format' => $request->getRequiredBodyParam('format'),
+            ]
+        ], 1, (new \DateTime())->add(new \DateInterval('PT1H')));
+
+        if (!$token) {
+            throw new ServerErrorHttpException(Craft::t('app', 'Could not create a Live Preview token.'));
+        }
+
+        return $this->asJson(compact('token'));
+    }
+
+    // Protected Methods
     // =========================================================================
+
+    /**
+     * Identify whether index actions should be included in the element index
+     *
+     * @return bool
+     */
+    protected function includeActions(): bool
+    {
+        return $this->context === 'index';
+    }
 
     /**
      * Returns the selected source info.
@@ -249,13 +303,13 @@ class ElementIndexesController extends BaseElementsController
      * @return array|null
      * @throws ForbiddenHttpException if the user is not permitted to access the requested source
      */
-    private function _source()
+    protected function source()
     {
-        if ($this->_sourceKey === null) {
+        if ($this->sourceKey === null) {
             return null;
         }
 
-        $source = ElementHelper::findSource($this->_elementType, $this->_sourceKey, $this->_context);
+        $source = ElementHelper::findSource($this->elementType, $this->sourceKey, $this->context);
 
         if ($source === null) {
             // That wasn't a valid source, or the user doesn't have access to it in this context
@@ -270,7 +324,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return array
      */
-    private function _viewState(): array
+    protected function viewState(): array
     {
         $viewState = Craft::$app->getRequest()->getParam('viewState', []);
 
@@ -286,21 +340,24 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return ElementQueryInterface
      */
-    private function _elementQuery(): ElementQueryInterface
+    protected function elementQuery(): ElementQueryInterface
     {
         /** @var string|ElementInterface $elementType */
-        $elementType = $this->_elementType;
+        $elementType = $this->elementType;
         $query = $elementType::find();
 
         $request = Craft::$app->getRequest();
 
         // Does the source specify any criteria attributes?
-        if (isset($this->_source['criteria'])) {
-            Craft::configure($query, $this->_source['criteria']);
+        if (isset($this->source['criteria'])) {
+            Craft::configure($query, $this->source['criteria']);
         }
 
         // Override with the request's params
         if ($criteria = $request->getBodyParam('criteria')) {
+            if (isset($criteria['trashed'])) {
+                $criteria['trashed'] = (bool)$criteria['trashed'];
+            }
             Craft::configure($query, $criteria);
         }
 
@@ -308,28 +365,23 @@ class ElementIndexesController extends BaseElementsController
         $collapsedElementIds = $request->getParam('collapsedElementIds');
 
         if ($collapsedElementIds) {
-            // Get the actual elements
-            $collapsedElementQuery = clone $query;
-            /** @var Element[] $collapsedElements */
-            $collapsedElements = $collapsedElementQuery
-                ->id($collapsedElementIds)
-                ->offset(0)
+            $descendantQuery = (clone $query)
+                ->offset(null)
                 ->limit(null)
-                ->orderBy(['lft' => SORT_ASC])
+                ->orderBy(null)
                 ->positionedAfter(null)
                 ->positionedBefore(null)
+                ->anyStatus();
+
+            // Get the actual elements
+            /** @var Element[] $collapsedElements */
+            $collapsedElements = (clone $descendantQuery)
+                ->id($collapsedElementIds)
+                ->orderBy(['lft' => SORT_ASC])
                 ->all();
 
             if (!empty($collapsedElements)) {
                 $descendantIds = [];
-
-                $descendantQuery = clone $query;
-                $descendantQuery
-                    ->offset(0)
-                    ->limit(null)
-                    ->orderBy(null)
-                    ->positionedAfter(null)
-                    ->positionedBefore(null);
 
                 foreach ($collapsedElements as $element) {
                     // Make sure we haven't already excluded this one, because its ancestor is collapsed as well
@@ -337,10 +389,11 @@ class ElementIndexesController extends BaseElementsController
                         continue;
                     }
 
-                    $descendantQuery->descendantOf($element);
-                    foreach ($descendantQuery->ids() as $id) {
-                        $descendantIds[] = $id;
-                    }
+                    $elementDescendantIds = (clone $descendantQuery)
+                        ->descendantOf($element)
+                        ->ids();
+
+                    $descendantIds = array_merge($descendantIds, $elementDescendantIds);
                 }
 
                 if (!empty($descendantIds)) {
@@ -359,30 +412,33 @@ class ElementIndexesController extends BaseElementsController
      * @param bool $includeActions Whether info about the available actions should be included in the response data
      * @return array
      */
-    private function _elementResponseData(bool $includeContainer, bool $includeActions): array
+    protected function elementResponseData(bool $includeContainer, bool $includeActions): array
     {
-        $responseData = [];
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType;
+
+        $responseData = [
+            'count' => $this->elementQuery->count(),
+        ];
 
         $view = $this->getView();
 
         // Get the action head/foot HTML before any more is added to it from the element HTML
         if ($includeActions) {
-            $responseData['actions'] = $this->_actionData();
+            $responseData['actions'] = $this->actionData();
             $responseData['actionsHeadHtml'] = $view->getHeadHtml();
             $responseData['actionsFootHtml'] = $view->getBodyHtml();
         }
 
         $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
-        $showCheckboxes = !empty($this->_actions);
-        /** @var string|ElementInterface $elementType */
-        $elementType = $this->_elementType;
+        $showCheckboxes = !empty($this->actions);
 
         $responseData['html'] = $elementType::indexHtml(
-            $this->_elementQuery,
+            $this->elementQuery,
             $disabledElementIds,
-            $this->_viewState,
-            $this->_sourceKey,
-            $this->_context,
+            $this->viewState,
+            $this->sourceKey,
+            $this->context,
             $includeContainer,
             $showCheckboxes
         );
@@ -398,24 +454,38 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return ElementActionInterface[]|null
      */
-    private function _availableActions()
+    protected function availableActions()
     {
         if (Craft::$app->getRequest()->isMobileBrowser()) {
             return null;
         }
 
         /** @var string|ElementInterface $elementType */
-        $elementType = $this->_elementType;
-        $actions = $elementType::actions($this->_sourceKey);
+        $elementType = $this->elementType;
+        $actions = $elementType::actions($this->sourceKey);
 
         foreach ($actions as $i => $action) {
             // $action could be a string or config array
-            if (!$action instanceof ElementActionInterface) {
+            if ($action instanceof ElementActionInterface) {
+                $action->setElementType($elementType);
+            } else {
+                if (is_string($action)) {
+                    $action = ['type' => $action];
+                }
+                $action['elementType'] = $elementType;
                 $actions[$i] = $action = Craft::$app->getElements()->createAction($action);
 
                 if ($actions[$i] === null) {
                     unset($actions[$i]);
                 }
+            }
+
+            if ($this->elementQuery->trashed) {
+                if (!$action instanceof Restore) {
+                    unset($actions[$i]);
+                }
+            } else if ($action instanceof Restore) {
+                unset($actions[$i]);
             }
         }
 
@@ -427,16 +497,16 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return array|null
      */
-    private function _actionData()
+    protected function actionData()
     {
-        if (empty($this->_actions)) {
+        if (empty($this->actions)) {
             return null;
         }
 
         $actionData = [];
 
         /** @var ElementAction $action */
-        foreach ($this->_actions as $action) {
+        foreach ($this->actions as $action) {
             $actionData[] = [
                 'type' => get_class($action),
                 'destructive' => $action->isDestructive(),

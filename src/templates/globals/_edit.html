@@ -2,6 +2,7 @@
 {% set title = globalSet.name|t('site') %}
 {% set fullPageForm = true %}
 
+{% hook "cp.globals.edit" %}
 
 {% block contextMenu %}
     {% if craft.app.getIsMultiSite() %}
@@ -44,4 +45,7 @@
     {% else %}
         {{ "This global set doesn’t have any fields assigned to it in its field layout."|t('app') }}
     {% endif %}
+
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.globals.edit.content" %}
 {% endblock %}

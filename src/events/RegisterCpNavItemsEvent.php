@@ -24,6 +24,4 @@ class RegisterCpNavItemsEvent extends Event
      * @var array The registered CP nav items
      */
     public $navItems = [];
-
-
 }

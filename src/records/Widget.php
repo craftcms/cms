@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -34,7 +35,7 @@ class Widget extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%widgets}}';
+        return Table::WIDGETS;
     }
 
     /**

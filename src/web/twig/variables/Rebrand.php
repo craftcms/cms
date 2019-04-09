@@ -130,7 +130,7 @@ class Rebrand
             return $this->_paths[$type];
         }
 
-        $dir = Craft::$app->getPath()->getRebrandPath().DIRECTORY_SEPARATOR.$type;
+        $dir = Craft::$app->getPath()->getRebrandPath() . DIRECTORY_SEPARATOR . $type;
 
         if (!is_dir($dir)) {
             $this->_paths[$type] = false;
@@ -145,7 +145,7 @@ class Rebrand
             if ($subDir === '.' || $subDir === '..') {
                 continue;
             }
-            $path = $dir.DIRECTORY_SEPARATOR.$subDir;
+            $path = $dir . DIRECTORY_SEPARATOR . $subDir;
             if (is_dir($path) || !ImageHelper::canManipulateAsImage(pathinfo($path, PATHINFO_EXTENSION))) {
                 continue;
             }

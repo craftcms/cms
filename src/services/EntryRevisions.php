@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\EntryDraftNotFoundException;
 use craft\events\DraftEvent;
@@ -100,6 +101,12 @@ class EntryRevisions extends Component
         $draft = new EntryDraft($result);
 
         $entry = Craft::$app->getEntries()->getEntryById($draft->id, $draft->siteId);
+
+        if (!$entry) {
+            // The entry was probably soft-deleted
+            return null;
+        }
+
         $this->_configureRevisionWithEntryProperties($draft, $entry);
 
         return $draft;
@@ -163,7 +170,7 @@ class EntryRevisions extends Component
             foreach ($allDrafts as $draft) {
                 if (
                     ($draft->creatorId && $draft->creatorId == $user->id) ||
-                    $user->can('editPeerEntryDrafts:'.$draft->sectionId)
+                    $user->can('editPeerEntryDrafts:' . $draft->getSection()->uid)
                 ) {
                     $editableDrafts[] = $draft;
                 }
@@ -187,7 +194,7 @@ class EntryRevisions extends Component
         if (!$draft->name && $draft->id) {
             // Get the total number of existing drafts for this entry/site
             $totalDrafts = (new Query())
-                ->from(['{{%entrydrafts}}'])
+                ->from([Table::ENTRYDRAFTS])
                 ->where(['entryId' => $draft->id, 'siteId' => $draft->siteId])
                 ->count('[[id]]');
 
@@ -334,6 +341,12 @@ class EntryRevisions extends Component
         $version = new EntryVersion($result);
 
         $entry = Craft::$app->getEntries()->getEntryById($version->id, $version->siteId);
+
+        if (!$entry) {
+            // The entry was probably soft-deleted
+            return null;
+        }
+
         $this->_configureRevisionWithEntryProperties($version, $entry);
 
         return $version;
@@ -411,7 +424,7 @@ class EntryRevisions extends Component
     {
         // Get the total number of existing versions for this entry/site
         $versionQuery = (new Query())
-            ->from(['{{%entryversions}}'])
+            ->from([Table::ENTRYVERSIONS])
             ->where(['entryId' => $entry->id, 'siteId' => $entry->siteId]);
         $totalVersions = $versionQuery->count('[[id]]');
         $revisionData = $this->_getRevisionData($entry);
@@ -518,7 +531,7 @@ class EntryRevisions extends Component
             $draftRecord = EntryDraftRecord::findOne($draft->draftId);
 
             if (!$draftRecord) {
-                throw new EntryDraftNotFoundException('Invalid entry draft ID: '.$draft->draftId);
+                throw new EntryDraftNotFoundException('Invalid entry draft ID: ' . $draft->draftId);
             }
         } else {
             $draftRecord = new EntryDraftRecord();
@@ -555,7 +568,7 @@ class EntryRevisions extends Component
 
         foreach (Craft::$app->getFields()->getAllFields() as $field) {
             /** @var Field $field */
-            if (isset($content[$field->handle]) && $content[$field->handle] !== null) {
+            if (array_key_exists($field->handle, $content)) {
                 $revisionData['fields'][$field->id] = $content[$field->handle];
             }
         }
@@ -605,7 +618,7 @@ class EntryRevisions extends Component
                 'dateUpdated',
                 'uid',
             ])
-            ->from(['{{%entrydrafts}}']);
+            ->from([Table::ENTRYDRAFTS]);
     }
 
     /**
@@ -627,6 +640,6 @@ class EntryRevisions extends Component
                 'dateUpdated',
                 'uid',
             ])
-            ->from(['{{%entryversions}}']);
+            ->from([Table::ENTRYVERSIONS]);
     }
 }

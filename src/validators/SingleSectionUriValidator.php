@@ -45,14 +45,25 @@ class SingleSectionUriValidator extends Validator
         // Make sure no other elements are using this URI already
         $query = (new Query())
             ->from(['{{%elements_sites}} elements_sites'])
+            ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
                 'elements_sites.siteId' => $model->siteId,
-                'elements_sites.uri' => $model->uriFormat
+                'elements.dateDeleted' => null,
             ]);
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $query->andWhere([
+                'elements_sites.uri' => $model->uriFormat,
+            ]);
+        } else {
+            $query->andWhere([
+                'lower([[elements_sites.uri]])' => mb_strtolower($model->uriFormat),
+            ]);
+        }
 
         if ($section->id) {
             $query
-                ->innerJoin('{{%entries}} entries', '[[entries.id]] = [[elements_sites.elementId]]')
+                ->innerJoin('{{%entries}} entries', '[[entries.id]] = [[elements.id]]')
                 ->andWhere(['not', ['entries.sectionId' => $section->id]]);
         }
 
@@ -60,7 +71,7 @@ class SingleSectionUriValidator extends Validator
             $site = Craft::$app->getSites()->getSiteById($model->siteId);
 
             if (!$site) {
-                throw new Exception('Invalid site ID: '.$model->siteId);
+                throw new Exception('Invalid site ID: ' . $model->siteId);
             }
 
             if ($model->uriFormat === '__home__') {

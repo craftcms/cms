@@ -111,7 +111,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         if (!$draft->creatorId || $draft->creatorId != Craft::$app->getUser()->getIdentity()->id) {
             // Make sure they have permission to be doing this
-            $this->requirePermission('editPeerEntryDrafts:'.$draft->sectionId);
+            $this->requirePermission('editPeerEntryDrafts:' . $draft->getSection()->uid);
         }
 
         $draft->name = $name;
@@ -142,7 +142,7 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         if (!$draft->creatorId || $draft->creatorId != Craft::$app->getUser()->getIdentity()->id) {
-            $this->requirePermission('deletePeerEntryDrafts:'.$draft->sectionId);
+            $this->requirePermission('deletePeerEntryDrafts:' . $draft->getSection()->uid);
         }
 
         Craft::$app->getEntryRevisions()->deleteDraft($draft);
@@ -177,21 +177,21 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         $this->enforceEditEntryPermissions($entry);
-        $userSessionService = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
 
         // Is this another user's entry (and it's not a Single)?
         if (
-            $entry->authorId != $userSessionService->getIdentity()->id &&
+            $entry->authorId != $userSession->getIdentity()->id &&
             $entry->getSection()->type != Section::TYPE_SINGLE &&
             $entry->enabled
         ) {
             // Make sure they have permission to make live changes to those
-            $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
+            $this->requirePermission('publishPeerEntries:' . $entry->getSection()->uid);
         }
 
         // Is this another user's draft?
         if (!$draft->creatorId || $draft->creatorId != $userId) {
-            $this->requirePermission('publishPeerEntryDrafts:'.$entry->sectionId);
+            $this->requirePermission('publishPeerEntryDrafts:' . $entry->getSection()->uid);
         }
 
         // Populate the main draft attributes
@@ -199,7 +199,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Even more permission enforcement
         if ($draft->enabled) {
-            $this->requirePermission('publishEntries:'.$entry->sectionId);
+            $this->requirePermission('publishEntries:' . $entry->getSection()->uid);
         }
 
         // Populate the field content
@@ -250,24 +250,25 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         $this->enforceEditEntryPermissions($entry);
-        $userSessionService = Craft::$app->getUser();
+        $userSession = Craft::$app->getUser();
 
         // Is this another user's entry (and it's not a Single)?
         if (
-            $entry->authorId != $userSessionService->getIdentity()->id &&
+            $entry->authorId != $userSession->getIdentity()->id &&
             $entry->getSection()->type !== Section::TYPE_SINGLE &&
             $entry->enabled
         ) {
             // Make sure they have permission to make live changes to those
-            $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
+            $this->requirePermission('publishPeerEntries:' . $entry->getSection()->uid);
         }
 
         if ($entry->enabled) {
-            $this->requirePermission('publishEntries:'.$entry->sectionId);
+            $this->requirePermission('publishEntries:' . $entry->getSection()->uid);
         }
 
         // Revert to the version
-        if (!Craft::$app->getEntryRevisions()->revertEntryToVersion($version)) {
+        $revisionsService = Craft::$app->getEntryRevisions();
+        if (!$revisionsService->revertEntryToVersion($version)) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t revert entry to past version.'));
 
             // Send the version back to the template
@@ -276,6 +277,11 @@ class EntryRevisionsController extends BaseEntriesController
             ]);
 
             return null;
+        }
+
+        // Should we save a new version?
+        if ($version->getSection()->enableVersioning) {
+            $revisionsService->saveVersion($version);
         }
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry reverted to past version.'));

@@ -156,7 +156,7 @@ class Image
     {
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
-        return in_array(StringHelper::toLowerCase($extension), ['jpg', 'jpeg', 'tiff'], true);
+        return in_array(strtolower($extension), ['jpg', 'jpeg', 'tiff'], true);
     }
 
     /**
@@ -214,7 +214,7 @@ class Image
         // JPG 2 byte signature 0xFF 0xD8
 
         // It's much easier to work with a HEX string here, because of variable signature lengths
-        $signature = StringHelper::toUpperCase(bin2hex(stream_get_contents($stream, 2)));
+        $signature = mb_strtoupper(bin2hex(stream_get_contents($stream, 2)));
 
         try {
             switch ($signature) {
@@ -265,7 +265,7 @@ class Image
                     break;
                 // Maybe PNG
                 case '8950':
-                    $signature .= StringHelper::toUpperCase(bin2hex(stream_get_contents($stream, 6)));
+                    $signature .= mb_strtoupper(bin2hex(stream_get_contents($stream, 6)));
 
                     // Make sure it's PNG
                     if ($signature !== '89504E470D0A1A0A') {

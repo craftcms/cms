@@ -27,7 +27,7 @@ class DeprecationErrors extends Utility
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Deprecation Errors');
+        return Craft::t('app', 'Deprecation Warnings');
     }
 
     /**

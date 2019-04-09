@@ -121,6 +121,11 @@ trait ElementTrait
     public $searchScore;
 
     /**
+     * @var bool Whether the element has been soft-deleted.
+     */
+    public $trashed = false;
+
+    /**
      * @var bool Whether the element is still awaiting its custom field values
      */
     public $awaitingFieldValues = false;
@@ -129,4 +134,14 @@ trait ElementTrait
      * @var bool Whether the element is being saved in the context of propagating another site's version of the element.
      */
     public $propagating = false;
+
+    /**
+     * @var bool Whether the element is being resaved by a ResaveElement job or a `resave` console command.
+     */
+    public $resaving = false;
+
+    /**
+     * @var ElementInterface|null The element that this element is being duplicated by.
+     */
+    public $duplicateOf;
 }

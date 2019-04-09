@@ -21,14 +21,14 @@ class MatrixAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
         ];
 
         $this->js = [
-            'MatrixInput'.$this->dotJs(),
+            'MatrixInput' . $this->dotJs(),
         ];
 
         parent::init();

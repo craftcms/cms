@@ -49,7 +49,7 @@ class Config extends Component
      * $env = Craft::$app->config->env;
      * ```
      * ```twig
-     * {% if craft.app.config.env == 'prod' %}
+     * {% if craft.app.config.env == 'production' %}
      *     {% include "_includes/ga" %}
      * {% endif %}
      * ```
@@ -101,7 +101,7 @@ class Config extends Component
                 $class = GeneralConfig::class;
                 break;
             default:
-                throw new InvalidArgumentException('Invalid config category: '.$category);
+                throw new InvalidArgumentException('Invalid config category: ' . $category);
         }
 
         // Get any custom config settings
@@ -112,7 +112,7 @@ class Config extends Component
         if ($category === self::CATEGORY_GENERAL) {
             /** @var GeneralConfig $config */
             if ($config->securityKey === null) {
-                $keyPath = Craft::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'validation.key';
+                $keyPath = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'validation.key';
                 if (file_exists($keyPath)) {
                     $config->securityKey = trim(file_get_contents($keyPath));
                 } else {
@@ -120,7 +120,7 @@ class Config extends Component
                     try {
                         FileHelper::writeToFile($keyPath, $key);
                     } catch (ErrorException $e) {
-                        throw new InvalidConfigException('The securityKey config setting is required, and an auto-generated value could not be generated: '.$e->getMessage());
+                        throw new InvalidConfigException('The securityKey config setting is required, and an auto-generated value could not be generated: ' . $e->getMessage());
                     }
                     $config->securityKey = $key;
                 }
@@ -183,7 +183,7 @@ class Config extends Component
      */
     public function getConfigFilePath(string $filename): string
     {
-        return $this->configDir.DIRECTORY_SEPARATOR.$filename.'.php';
+        return $this->configDir . DIRECTORY_SEPARATOR . $filename . '.php';
     }
 
     /**
@@ -265,7 +265,7 @@ class Config extends Component
 
         if ($count === 0) {
             $contents = rtrim($contents);
-            $contents = ($contents ? $contents.PHP_EOL.PHP_EOL : '')."{$name}=\"{$slashedValue}\"".PHP_EOL;
+            $contents = ($contents ? $contents . PHP_EOL . PHP_EOL : '') . "{$name}=\"{$slashedValue}\"" . PHP_EOL;
         }
 
         FileHelper::writeToFile($path, $contents);

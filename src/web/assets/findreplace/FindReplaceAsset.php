@@ -20,14 +20,14 @@ class FindReplaceAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
         ];
 
         $this->js = [
-            'FindAndReplaceUtility'.$this->dotJs(),
+            'FindAndReplaceUtility' . $this->dotJs(),
         ];
 
         parent::init();

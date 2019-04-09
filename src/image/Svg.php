@@ -83,7 +83,7 @@ class Svg extends Image
     public function loadImage(string $path)
     {
         if (!is_file($path)) {
-            Craft::error('Tried to load an image at '.$path.', but the file does not exist.', __METHOD__);
+            Craft::error('Tried to load an image at ' . $path . ', but the file does not exist.', __METHOD__);
             throw new ImageException(Craft::t('app', 'No file exists at the given path.'));
         }
 
@@ -92,7 +92,7 @@ class Svg extends Image
         $svg = file_get_contents($path);
 
         if ($svg === false) {
-            Craft::error('Tried to read the SVG contents at '.$path.', but could not.', __METHOD__);
+            Craft::error('Tried to read the SVG contents at ' . $path . ', but could not.', __METHOD__);
             throw new ImageException(Craft::t('app', 'Could not read SVG contents.'));
         }
 
@@ -186,14 +186,14 @@ class Svg extends Image
             // Reverse the components
             $cropPositions = implode('-', array_reverse(explode('-', $cropPosition)));
 
-            $value = 'x'.strtr($cropPositions, [
+            $value = 'x' . strtr($cropPositions, [
                     'left' => 'Min',
                     'center' => 'Mid',
                     'right' => 'Max',
                     'top' => 'Min',
                     'bottom' => 'Max',
                     '-' => 'Y'
-                ]).' slice';
+                ]) . ' slice';
 
             // Add/modify aspect ratio information
             if (preg_match(self::SVG_ASPECT_RE, $this->_svgContent)) {

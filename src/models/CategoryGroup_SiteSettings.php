@@ -79,7 +79,7 @@ class CategoryGroup_SiteSettings extends Model
         }
 
         if (($this->_group = Craft::$app->getCategories()->getGroupById($this->groupId)) === null) {
-            throw new InvalidConfigException('Invalid group ID: '.$this->groupId);
+            throw new InvalidConfigException('Invalid group ID: ' . $this->groupId);
         }
 
         return $this->_group;
@@ -108,7 +108,7 @@ class CategoryGroup_SiteSettings extends Model
         }
 
         if (($site = Craft::$app->getSites()->getSiteById($this->siteId)) === null) {
-            throw new InvalidConfigException('Invalid site ID: '.$this->siteId);
+            throw new InvalidConfigException('Invalid site ID: ' . $this->siteId);
         }
 
         return $site;
@@ -120,8 +120,8 @@ class CategoryGroup_SiteSettings extends Model
     public function attributeLabels()
     {
         return [
-            'uriFormat' => Craft::t('app', 'URI Format'),
             'template' => Craft::t('app', 'Template'),
+            'uriFormat' => Craft::t('app', 'URI Format'),
         ];
     }
 
@@ -130,12 +130,11 @@ class CategoryGroup_SiteSettings extends Model
      */
     public function rules()
     {
-        $rules = [
-            [['id', 'groupId', 'siteId'], 'number', 'integerOnly' => true],
-            [['siteId'], SiteIdValidator::class],
-            [['template'], 'string', 'max' => 500],
-            [['uriFormat'], UriFormatValidator::class]
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'groupId', 'siteId'], 'number', 'integerOnly' => true];
+        $rules[] = [['siteId'], SiteIdValidator::class];
+        $rules[] = [['template'], 'string', 'max' => 500];
+        $rules[] = [['uriFormat'], UriFormatValidator::class];
 
         if ($this->hasUrls) {
             $rules[] = [['uriFormat'], 'required'];

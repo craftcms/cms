@@ -118,8 +118,8 @@ abstract class Migration extends \yii\db\Migration
     private function _printException($e)
     {
         // Copied from \yii\db\Migration::printException(), only because it’s private
-        echo 'Exception: '.$e->getMessage().' ('.$e->getFile().':'.$e->getLine().")\n";
-        echo $e->getTraceAsString()."\n";
+        echo 'Exception: ' . $e->getMessage() . ' (' . $e->getFile() . ':' . $e->getLine() . ")\n";
+        echo $e->getTraceAsString() . "\n";
     }
 
     // Schema Builder Methods
@@ -222,7 +222,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->insert($table, $columns, $includeAuditColumns)
             ->execute();
-        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
 
     /**
@@ -242,7 +242,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->batchInsert($table, $columns, $rows, $includeAuditColumns)
             ->execute();
-        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
 
     /**
@@ -290,7 +290,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->update($table, $columns, $condition, $params, $includeAuditColumns)
             ->execute();
-        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
 
     /**
@@ -311,7 +311,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->replace($table, $column, $find, $replace, $condition, $params)
             ->execute();
-        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
 
     // Schema Manipulation Methods
@@ -329,7 +329,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->dropTableIfExists($table)
             ->execute();
-        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
 
     /**
@@ -345,7 +345,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->renameSequence($oldName, $newName)
             ->execute();
-        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
 
     /**
@@ -398,5 +398,41 @@ abstract class Migration extends \yii\db\Migration
         }
 
         return parent::createIndex($name, $table, $columns, $unique);
+    }
+
+    /**
+     * Creates and executes a SQL statement for soft-deleting a row.
+     *
+     * @param string $table The table to be updated.
+     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params The parameters to be bound to the command.
+     */
+    public function softDelete(string $table, $condition = '', array $params = [])
+    {
+        echo "    > soft delete from $table ...";
+        $time = microtime(true);
+        $this->db->createCommand()
+            ->softDelete($table, $condition, $params)
+            ->execute();
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
+    }
+
+    /**
+     * Creates and executes a SQL statement for restoring a soft-deleted row.
+     *
+     * @param string $table The table to be updated.
+     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params The parameters to be bound to the command.
+     */
+    public function restore(string $table, $condition = '', array $params = [])
+    {
+        echo "    > restore from $table ...";
+        $time = microtime(true);
+        $this->db->createCommand()
+            ->restore($table, $condition, $params)
+            ->execute();
+        echo ' done (time: ' . sprintf('%.3f', microtime(true) - $time) . "s)\n";
     }
 }

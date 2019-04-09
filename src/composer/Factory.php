@@ -8,7 +8,6 @@
 namespace craft\composer;
 
 use Composer\Package\Archiver;
-use Craft;
 
 /**
  * Composer Factory

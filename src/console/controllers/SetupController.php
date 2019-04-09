@@ -12,12 +12,14 @@ use Craft;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\errors\DbConnectException;
+use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\InvalidConfigException;
 use yii\console\Controller;
+use yii\console\ExitCode;
 
 /**
  * Craft CMS setup installer.
@@ -91,8 +93,10 @@ class SetupController extends Controller
 
     /**
      * Sets up all the things.
+     *
+     * @return int
      */
-    public function actionIndex()
+    public function actionIndex(): int
     {
         if (!Craft::$app->getConfig()->getGeneral()->securityKey) {
             $this->run('security-key');
@@ -100,30 +104,32 @@ class SetupController extends Controller
         }
 
         if (!$this->interactive) {
-            return;
+            return ExitCode::OK;
         }
 
         $this->run('db-creds');
 
         if (Craft::$app->getIsInstalled()) {
-            $this->stdout("It looks like Craft is already installed, so we're done here.".PHP_EOL, Console::FG_YELLOW);
-            return;
+            $this->stdout("It looks like Craft is already installed, so we're done here." . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
         }
 
-        if (!$this->confirm(PHP_EOL.'Install Craft now?', true)) {
-            $this->stdout("You can install Craft from a browser once you've set up a web server, or by running this command:".PHP_EOL);
+        if (!$this->confirm(PHP_EOL . 'Install Craft now?', true)) {
+            $this->stdout("You can install Craft from a browser once you've set up a web server, or by running this command:" . PHP_EOL, Console::FG_YELLOW);
             $this->_outputCommand('install');
-            return;
+            return ExitCode::OK;
         }
 
         $this->stdout(PHP_EOL);
-        $this->module->runAction('install');
+        return $this->module->runAction('install');
     }
 
     /**
      * Called from the post-create-project-cmd Composer hook.
+     *
+     * @return int
      */
-    public function actionWelcome()
+    public function actionWelcome(): int
     {
         $craft = <<<EOD
 
@@ -149,27 +155,35 @@ EOD;
 
         // Can't do anything interactive here (https://github.com/composer/composer/issues/3299)
         $this->run('security-key');
-        $this->stdout(PHP_EOL.'Welcome to Craft CMS! Run the following command if you want to setup Craft from your terminal:'.PHP_EOL);
+        $this->stdout(PHP_EOL . 'Welcome to Craft CMS! Run the following command if you want to setup Craft from your terminal:' . PHP_EOL);
         $this->_outputCommand('setup');
+        return ExitCode::OK;
     }
 
     /**
      * Generates a new security key and saves it in the .env file.
+     *
+     * @return int
      */
-    public function actionSecurityKey()
+    public function actionSecurityKey(): int
     {
-        $this->stdout(PHP_EOL.'Generating a security key... ', Console::FG_YELLOW);
+        $this->stdout(PHP_EOL . 'Generating a security key ... ', Console::FG_YELLOW);
         $key = Craft::$app->getSecurity()->generateRandomString();
-        if ($this->_setEnvVar('SECURITY_KEY', $key)) {
-            Craft::$app->getConfig()->getGeneral()->securityKey = $key;
-            $this->stdout("done ({$key})".PHP_EOL, Console::FG_YELLOW);
+        if (!$this->_setEnvVar('SECURITY_KEY', $key)) {
+            return ExitCode::UNSPECIFIED_ERROR;
         }
+
+        Craft::$app->getConfig()->getGeneral()->securityKey = $key;
+        $this->stdout("done ({$key})" . PHP_EOL, Console::FG_YELLOW);
+        return ExitCode::OK;
     }
 
     /**
      * Stores new DB connection settings to the .env file.
+     *
+     * @return int
      */
-    public function actionDbCreds()
+    public function actionDbCreds(): int
     {
         try {
             $dbConfig = Craft::$app->getConfig()->getDb();
@@ -178,14 +192,15 @@ EOD;
         }
 
         $firstTime = true;
+        $badUserCredentials = false;
 
         top:
 
         // driver
         if ($this->driver) {
             if (!in_array($this->driver, [DbConfig::DRIVER_MYSQL, DbConfig::DRIVER_PGSQL], true)) {
-                $this->stderr('--driver must be either "'.DbConfig::DRIVER_MYSQL.'" or "'.DbConfig::DRIVER_PGSQL.'".'.PHP_EOL);
-                return;
+                $this->stderr('--driver must be either "' . DbConfig::DRIVER_MYSQL . '" or "' . DbConfig::DRIVER_PGSQL . '".' . PHP_EOL, Console::FG_RED);
+                return ExitCode::USAGE;
             }
             $dbConfig->driver = $this->driver;
         } else if ($this->interactive) {
@@ -201,21 +216,21 @@ EOD;
         } else {
             $server = $this->prompt('Database server name or IP address:', [
                 'required' => true,
-                'default' => $dbConfig->server,
+                'default' => $dbConfig->server ?: '127.0.0.1',
             ]);
         }
         $dbConfig->server = strtolower($server);
 
         // port
         if ($this->port) {
-            $dbConfig->port = $this->port;
+            $dbConfig->port = (int)$this->port;
         } else {
             if ($firstTime) {
                 $defaultPort = $dbConfig->driver === DbConfig::DRIVER_MYSQL ? 3306 : 5432;
             } else {
                 $defaultPort = $dbConfig->port;
             }
-            $dbConfig->port = $this->prompt('Database port:', [
+            $dbConfig->port = (int)$this->prompt('Database port:', [
                 'required' => true,
                 'default' => $defaultPort,
                 'validator' => function(string $input): bool {
@@ -224,12 +239,14 @@ EOD;
             ]);
         }
 
+        userCredentials:
+
         // user
         if ($this->user) {
             $dbConfig->user = $this->user;
         } else {
             $dbConfig->user = $this->prompt('Database username:', [
-                'default' => $dbConfig->user,
+                'default' => $dbConfig->user ?: null,
             ]);
         }
 
@@ -241,17 +258,22 @@ EOD;
             $dbConfig->password = CliPrompt::hiddenPrompt(true);
         }
 
+        if ($badUserCredentials) {
+            $badUserCredentials = false;
+            goto test;
+        }
+
         // database
         if ($this->database) {
             $dbConfig->database = $this->database;
         } else if ($this->interactive || $dbConfig->database) {
             $dbConfig->database = $this->prompt('Database name:', [
                 'required' => true,
-                'default' => $dbConfig->database,
+                'default' => $dbConfig->database ?: null,
             ]);
         } else {
-            $this->stderr('The --database option must be set.'.PHP_EOL);
-            return;
+            $this->stderr('The --database option must be set.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
         }
 
         // schema
@@ -261,7 +283,7 @@ EOD;
             } else {
                 $dbConfig->schema = $this->prompt('Database schema:', [
                     'required' => true,
-                    'default' => $dbConfig->schema,
+                    'default' => $dbConfig->schema ?: 'public',
                 ]);
             }
         }
@@ -270,11 +292,11 @@ EOD;
         if ($this->tablePrefix) {
             $tablePrefix = $this->tablePrefix;
         } else {
-            $tablePrefix = $this->prompt('Database table prefix'.($dbConfig->tablePrefix ? ' (type "none" for none)' : '').':', [
-                'default' => $dbConfig->tablePrefix,
+            $tablePrefix = $this->prompt('Database table prefix' . ($dbConfig->tablePrefix ? ' (type "none" for none)' : '') . ':', [
+                'default' => $dbConfig->tablePrefix ?: null,
                 'validator' => function(string $input): bool {
                     if (strlen(StringHelper::ensureRight($input, '_')) > 6) {
-                        Console::stderr($this->ansiFormat('The table prefix must be 5 or less characters long.'.PHP_EOL, Console::FG_RED));
+                        Console::stderr($this->ansiFormat('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED));
                         return false;
                     }
                     return true;
@@ -288,9 +310,16 @@ EOD;
         }
 
         // Test the DB connection
-        $this->stdout('Testing database credentials... ', Console::FG_YELLOW);
+        $this->stdout('Testing database credentials ... ', Console::FG_YELLOW);
+
+        $originalServer = $dbConfig->server;
+        $originalPort = $dbConfig->port;
+
+        test:
+
         $dbConfig->updateDsn();
-        $db = Connection::createFromConfig($dbConfig);
+        /** @var Connection $db */
+        $db = Craft::createObject(App::dbConfig($dbConfig));
 
         try {
             $db->open();
@@ -305,41 +334,77 @@ EOD;
             // 2002: Connection timed out (server)
             /** @var \PDOException $pdoException */
             $pdoException = $e->getPrevious()->getPrevious() ?? $e->getPrevious() ?? $e;
-            $this->stderr('failed: '.$pdoException->getMessage().PHP_EOL, Console::FG_RED);
-            //$this->stdout(VarDumper::dumpAsString($e->getPrevious()));
-            $firstTime = false;
+            $this->stderr('failed: ' . $pdoException->getMessage() . PHP_EOL, Console::FG_RED);
 
-            if (!$this->interactive) {
-                return;
+            // Test some common issues
+            $message = $pdoException->getMessage();
+
+            if ($dbConfig->server === 'localhost' && $message === 'SQLSTATE[HY000] [2002] No such file or directory') {
+                // means the Unix socket doesn't exist - https://stackoverflow.com/a/22927341/1688568
+                // try 127.0.0.1 instead...
+                $this->stdout('Trying with 127.0.0.1 instead of localhost ... ', Console::FG_YELLOW);
+                $dbConfig->server = '127.0.0.1';
+                goto test;
             }
 
+            if ($dbConfig->port === 3306 && $message === 'SQLSTATE[HY000] [2002] Connection refused') {
+                // try 8889 instead (default MAMP port)...
+                $this->stdout('Trying with port 8889 instead of 3306 ... ', Console::FG_YELLOW);
+                $dbConfig->port = 8889;
+                goto test;
+            }
+
+            if (
+                strpos($message, 'Access denied for user') !== false ||
+                strpos($message, 'no password supplied') !== false ||
+                strpos($message, 'password authentication failed for user') !== false
+            ) {
+                $this->stdout('Try with a different username and/or password.' . PHP_EOL, Console::FG_YELLOW);
+                $badUserCredentials = true;
+                goto userCredentials;
+            }
+
+            if (!$this->interactive) {
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            // Restore the original server/port values
+            $dbConfig->server = $originalServer;
+            $dbConfig->port = $originalPort;
+
+            $firstTime = false;
             goto top;
         }
 
         Craft::$app->set('db', $db);
         Craft::$app->setIsInstalled(null);
 
-        $this->stdout('success!'.PHP_EOL, Console::FG_GREEN);
-        $this->stdout('Saving database credentials to your .env file... ', Console::FG_YELLOW);
+        $this->stdout('success!' . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Saving database credentials to your .env file ... ', Console::FG_YELLOW);
 
         if (
-            $this->_setEnvVar('DB_DRIVER', $dbConfig->driver) &&
-            $this->_setEnvVar('DB_SERVER', $dbConfig->server) &&
-            $this->_setEnvVar('DB_PORT', $dbConfig->port) &&
-            $this->_setEnvVar('DB_USER', $dbConfig->user) &&
-            $this->_setEnvVar('DB_PASSWORD', $dbConfig->password) &&
-            $this->_setEnvVar('DB_DATABASE', $dbConfig->database) &&
-            $this->_setEnvVar('DB_SCHEMA', $dbConfig->schema) &&
-            $this->_setEnvVar('DB_TABLE_PREFIX', $tablePrefix)
+            !$this->_setEnvVar('DB_DRIVER', $dbConfig->driver) ||
+            !$this->_setEnvVar('DB_SERVER', $dbConfig->server) ||
+            !$this->_setEnvVar('DB_PORT', $dbConfig->port) ||
+            !$this->_setEnvVar('DB_USER', $dbConfig->user) ||
+            !$this->_setEnvVar('DB_PASSWORD', $dbConfig->password) ||
+            !$this->_setEnvVar('DB_DATABASE', $dbConfig->database) ||
+            !$this->_setEnvVar('DB_SCHEMA', $dbConfig->schema) ||
+            !$this->_setEnvVar('DB_TABLE_PREFIX', $tablePrefix)
         ) {
-            $this->stdout('done'.PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
+
+        $this->stdout('done' . PHP_EOL, Console::FG_YELLOW);
+        return ExitCode::OK;
     }
 
     /**
      * Alias for setup/db-creds.
+     *
+     * @return int
      */
-    public function actionDb()
+    public function actionDb(): int
     {
         return $this->actionDbCreds();
     }
@@ -357,11 +422,11 @@ EOD;
         $script = FileHelper::normalizePath(Craft::$app->getRequest()->getScriptFile());
         if (!Platform::isWindows() && ($home = getenv('HOME')) !== false) {
             $home = FileHelper::normalizePath($home);
-            if (strpos($script, $home.DIRECTORY_SEPARATOR) === 0) {
-                $script = '~'.substr($script, strlen($home));
+            if (strpos($script, $home . DIRECTORY_SEPARATOR) === 0) {
+                $script = '~' . substr($script, strlen($home));
             }
         }
-        $this->stdout(PHP_EOL.'    '.$script.' '.$command.PHP_EOL.PHP_EOL);
+        $this->stdout(PHP_EOL . '    ' . $script . ' ' . $command . PHP_EOL . PHP_EOL);
     }
 
     /**
@@ -377,16 +442,28 @@ EOD;
         $path = $configService->getDotEnvPath();
 
         if (!file_exists($path)) {
-            if ($this->confirm(PHP_EOL."A .env file doesn't exist at {$path}. Would you like to create one?", true)) {
-                FileHelper::writeToFile($path, '');
-                $this->stdout("{$path} created. Note you still need to set up PHP dotenv for its values to take effect.".PHP_EOL, Console::FG_YELLOW);
+            if ($this->confirm(PHP_EOL . "A .env file doesn't exist at {$path}. Would you like to create one?", true)) {
+                try {
+                    FileHelper::writeToFile($path, '');
+                } catch (\Throwable $e) {
+                    $this->stderr("Unable to create {$path}: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
+                    return false;
+                }
+
+                $this->stdout("{$path} created. Note you still need to set up PHP dotenv for its values to take effect." . PHP_EOL, Console::FG_YELLOW);
             } else {
-                $this->stdout(PHP_EOL.'Action aborted.'.PHP_EOL, Console::FG_YELLOW);
+                $this->stdout(PHP_EOL . 'Action aborted.' . PHP_EOL, Console::FG_YELLOW);
                 return false;
             }
         }
 
-        $configService->setDotEnvVar($name, $value);
+        try {
+            $configService->setDotEnvVar($name, $value);
+        } catch (\Throwable $e) {
+            $this->stderr("Unable to set {$name} on {$path}: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
+            return false;
+        }
+
         return true;
     }
 }

@@ -34,20 +34,35 @@ class FieldGroup extends Model
      */
     public $name;
 
+    /**
+     * @var string|null UID
+     */
+    public $uid;
+
     // Public Methods
     // =========================================================================
 
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function attributeLabels()
     {
         return [
-            [['id'], 'number', 'integerOnly' => true],
-            [['name'], 'string', 'max' => 255],
-            [['name'], UniqueValidator::class, 'targetClass' => FieldGroupRecord::class],
-            [['name'], 'required'],
+            'name' => Craft::t('app', 'Name'),
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['id'], 'number', 'integerOnly' => true];
+        $rules[] = [['name'], 'string', 'max' => 255];
+        $rules[] = [['name'], UniqueValidator::class, 'targetClass' => FieldGroupRecord::class];
+        $rules[] = [['name'], 'required'];
+        return $rules;
     }
 
     /**
@@ -57,7 +72,7 @@ class FieldGroup extends Model
      */
     public function __toString(): string
     {
-        return (string)$this->name;
+        return (string)$this->name ?: static::class;
     }
 
     /**

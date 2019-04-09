@@ -80,7 +80,7 @@ abstract class FlysystemVolume extends Volume
         }
 
         if (!$success) {
-            throw new VolumeException('Couldn’t create file at '.$path);
+            throw new VolumeException('Couldn’t create file at ' . $path);
         }
     }
 
@@ -97,7 +97,7 @@ abstract class FlysystemVolume extends Volume
         }
 
         if (!$success) {
-            throw new VolumeException('Couldn’t update '.$path);
+            throw new VolumeException('Couldn’t update ' . $path);
         }
     }
 
@@ -123,7 +123,7 @@ abstract class FlysystemVolume extends Volume
         }
 
         if (!$success) {
-            throw new VolumeException('Couldn’t delete '.$path);
+            throw new VolumeException('Couldn’t delete ' . $path);
         }
 
         $this->invalidateCdnPath($path);
@@ -143,7 +143,7 @@ abstract class FlysystemVolume extends Volume
         }
 
         if (!$success) {
-            throw new VolumeException('Couldn’t rename '.$path.' to '.$newPath);
+            throw new VolumeException('Couldn’t rename ' . $path . ' to ' . $newPath);
         }
     }
 
@@ -161,7 +161,7 @@ abstract class FlysystemVolume extends Volume
         }
 
         if (!$success) {
-            throw new VolumeException('Couldn’t copy '.$path.' to '.$newPath);
+            throw new VolumeException('Couldn’t copy ' . $path . ' to ' . $newPath);
         }
     }
 
@@ -173,7 +173,7 @@ abstract class FlysystemVolume extends Volume
         $stream = $this->filesystem(['disable_asserts' => true])->readStream($uriPath);
 
         if (!$stream) {
-            throw new AssetException('Could not open create the stream for “'.$uriPath.'”');
+            throw new AssetException('Could not open create the stream for “' . $uriPath . '”');
         }
 
         return $stream;
@@ -201,7 +201,7 @@ abstract class FlysystemVolume extends Volume
     public function folderExists(string $path): bool
     {
         // Calling adapter directly instead of filesystem to avoid losing the trailing slash (if any)
-        return $this->adapter()->has(rtrim($path, '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
+        return $this->adapter()->has(rtrim($path, '/') . ($this->foldersHaveTrailingSlashes ? '/' : ''));
     }
 
     /**
@@ -216,7 +216,7 @@ abstract class FlysystemVolume extends Volume
         }
 
         if (!$this->filesystem()->createDir($path)) {
-            throw new VolumeException('Couldn’t create '.$path);
+            throw new VolumeException('Couldn’t create ' . $path);
         }
     }
 
@@ -232,7 +232,7 @@ abstract class FlysystemVolume extends Volume
         }
 
         if (!$success) {
-            throw new VolumeException('Couldn’t delete '.$path);
+            throw new VolumeException('Couldn’t delete ' . $path);
         }
     }
 
@@ -252,7 +252,7 @@ abstract class FlysystemVolume extends Volume
 
         $newPath = implode('/', $parts);
 
-        $pattern = '/^'.preg_quote($path, '/').'/';
+        $pattern = '/^' . preg_quote($path, '/') . '/';
 
         // Rename every file and build a list of directories
         foreach ($fileList as $object) {
@@ -267,7 +267,7 @@ abstract class FlysystemVolume extends Volume
         // It's possible for a folder object to not exist on remote volumes, so to throw an exception
         // we must make sure that there are no files AS WELL as no folder.
         if (empty($fileList) && !$this->folderExists($path)) {
-            throw new VolumeObjectNotFoundException('No folder exists at path: '.$path);
+            throw new VolumeObjectNotFoundException('No folder exists at path: ' . $path);
         }
 
         // The files are moved, but the directories remain. Delete them.

@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -19,6 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $handle Handle
  * @property string $context Context
  * @property string $instructions Instructions
+ * @property bool $searchable Searchable
  * @property string $translationMethod Translation method
  * @property string $translationKeyFormat Translation key format
  * @property string $type Type
@@ -75,7 +77,7 @@ class Field extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%fields}}';
+        return Table::FIELDS;
     }
 
     /**

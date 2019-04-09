@@ -14,7 +14,13 @@
 
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
 
-{% set requireEmailVerification = craft.app.systemSettings.getSettings('users').requireEmailVerification %}
+{% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') %}
+
+{% if craft.app.request.isPost %}
+    {% set currentGroupIds = craft.app.request.getBodyParam('groups') ?: [] %}
+{% else %}
+    {% set currentGroupIds = user.getGroups()|column('id') %}
+{% endif %}
 
 {% set hiddenInputs %}
     {{ csrfInput() }}
@@ -48,7 +54,7 @@
 {% endblock %}
 
 {% block content %}
-    <form id="userform" method="post" accept-charset="UTF-8" autocomplete="off" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}" data-confirm-unload>
+    <form id="userform" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}" data-confirm-unload>
         <input type="hidden" name="action" value="users/save-user">
         {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
         {{ hiddenInputs }}
@@ -74,6 +80,7 @@
                     name: 'email',
                     value: user.email,
                     required: true,
+                    type: 'email',
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                 }) }}
 
@@ -85,7 +92,7 @@
                     }) }}
                 {% endif %}
 
-            {% elseif user.getIsCurrent() or currentUser.admin or currentUser.can('changeUserEmails') %}
+            {% elseif user.getIsCurrent() or currentUser.admin or currentUser.can('administrateUsers') %}
 
                 {{ forms.textField({
                     label: "Email"|t('app'),
@@ -94,6 +101,7 @@
                     name: 'email',
                     value: user.email,
                     required: true,
+                    type: 'email',
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                 }) }}
 
@@ -103,8 +111,13 @@
                         id: 'newPassword',
                         name: 'newPassword',
                         type: 'password',
+                        autocomplete: 'new-password',
                         errors: user.getErrors('newPassword')
                     }) }}
+
+                    {% js %}
+                        new Craft.PasswordInput('#newPassword');
+                    {% endjs %}
                 {% endif %}
 
                 {% if currentUser.admin %}
@@ -118,16 +131,14 @@
             {% endif %}
         </div>
 
-        {% if CraftEdition == CraftPro %}
-            {% for tab in user.getFieldLayout().getTabs() %}
-                <div id="{{ tab.getHtmlId() }}" class="hidden">
-                    {% include "_includes/fields" with {
-                        fields:  tab.getFields(),
-                        element: user
-                    } only %}
-                </div>
-            {% endfor %}
-        {% endif %}
+        {% for tab in user.getFieldLayout().getTabs() %}
+            <div id="profile-{{ tab.getHtmlId() }}" class="hidden">
+                {% include "_includes/fields" with {
+                    fields:  tab.getFields(),
+                    element: user
+                } only %}
+            </div>
+        {% endfor %}
 
         {% if CraftEdition == CraftPro and (currentUser.can('assignUserGroups') or currentUser.can('assignUserPermissions')) %}
             <div id="perms" class="hidden">
@@ -136,7 +147,6 @@
                     <h2>{{ "User Groups"|t('app') }}</h2>
 
                     {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
-                    {% set currentGroupIds = user.getGroups()|column('id') %}
 
                     {% set userGroupsInput %}
                         <input type="hidden" name="groups" value="">
@@ -198,8 +208,15 @@
                 {% set languageInput %}
                     <div class="select">
                         <select id="language" name="preferredLanguage">
-                            {% set allAppLocales = craft.app.i18n.getAppLocales()|multisort('displayName') %}
+                            {% set allAppLocales = craft.app.i18n.getAppLocales()|multisort('displayName')|index('id') %}
                             {% set userLanguage = user.getPreferredLanguage() ?: craft.app.language %}
+
+                            {% if allAppLocales[userLanguage] is not defined %}
+                                {% set userLanguage = userLanguage|replace('/-.*/', '') %}
+                                {% if allAppLocales[userLanguage] is not defined %}
+                                    {% set userLanguage = 'en' %}
+                                {% endif %}
+                            {% endif %}
 
                             {% for locale in allAppLocales %}
                                 <option value="{{ locale.id }}" {% if locale.id == userLanguage %}selected{% endif %}>{{ locale.getDisplayName() }}</option>
@@ -267,7 +284,7 @@
                                         <ul>
                                             {% for actionItem in actionList %}
                                                 <li><a
-                                                        {%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% endif %}
+                                                        {%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% if actionItem.id == 'delete-btn' %} class="error"{% endif %}{% endif %}
                                                         {%- if actionItem.action is defined %} class="formsubmit" data-action="{{ actionItem.action }}"{% endif -%}
                                                     >{{ actionItem.label }}</a>
                                                 </li>
@@ -327,8 +344,10 @@
     {% endif %}
 
     new Craft.ElevatedSessionForm('#userform', [
+        {% if not isNewUser %}
         '#email',
         '#newPassword',
+        {% endif %}
         '#admin:not(:checked)',
         '#user-groups input[type="checkbox"]:not(:checked)',
         '#permissions input[type="checkbox"]:not(:checked)'

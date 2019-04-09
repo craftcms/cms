@@ -1,12 +1,12 @@
-{% set volumeId = craft.app.getSystemSettings.getSetting('users', 'photoVolumeId') %}
-{% if volumeId %}
+{% set volumeUid = craft.app.getSystemSettings.getSetting('users', 'photoVolumeUid') %}
+{% if volumeUid %}
     <div class="user-photo" data-user="{{ user.id }}">
         <div id="current-photo">
             <img sizes="100px" srcset="{{ user.getThumbUrl(100) }} 100w, {{ user.getThumbUrl(200) }} 200w" alt="">
         </div>
             <div class="user-photo-controls">
                 <input type="file" name="photo" class="hidden" />
-                {% if user.photoId %}
+                {% if user.photo %}
                     <div class="btn upload-photo">{{ "Change photo"|t('app') }}</div>
                     <div class="btn delete-photo">{{ "Delete photo"|t('app') }}</div><br /><br />
                     <div class="btn edit-photo" data-photoid="{{ user.photoId }}">{{ "Edit photo"|t('app') }}</div>

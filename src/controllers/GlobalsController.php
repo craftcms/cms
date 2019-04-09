@@ -43,7 +43,7 @@ class GlobalsController extends Controller
             throw new ForbiddenHttpException('User not permitted to edit any global content');
         }
 
-        return $this->redirect('globals/'.$editableSets[0]->handle);
+        return $this->redirect('globals/' . $editableSets[0]->handle);
     }
 
     /**
@@ -108,7 +108,7 @@ class GlobalsController extends Controller
 
         $globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-        Craft::$app->getElements()->deleteElementById($globalSetId, GlobalSet::class);
+        Craft::$app->getGlobals()->deleteGlobalSetById($globalSetId);
 
         return $this->asJson(['success' => true]);
     }
@@ -138,7 +138,7 @@ class GlobalsController extends Controller
                 $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
                 if (!$site) {
-                    throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
+                    throw new NotFoundHttpException('Invalid site handle: ' . $siteHandle);
                 }
 
                 // Make sure the user has permission to edit that site
@@ -169,7 +169,7 @@ class GlobalsController extends Controller
             ->all();
 
         foreach ($globalSets as $thisGlobalSet) {
-            if (Craft::$app->getUser()->checkPermission('editGlobalSet:'.$thisGlobalSet->id)) {
+            if (Craft::$app->getUser()->checkPermission('editGlobalSet:' . $thisGlobalSet->uid)) {
                 $editableGlobalSets[$thisGlobalSet->handle] = $thisGlobalSet;
             }
         }
@@ -181,6 +181,9 @@ class GlobalsController extends Controller
         if ($globalSet === null) {
             $globalSet = $editableGlobalSets[$globalSetHandle];
         }
+
+        // Body class
+        $bodyClass = 'edit-global-set site--' . $site->handle;
 
         // Define the content tabs
         // ---------------------------------------------------------------------
@@ -194,7 +197,7 @@ class GlobalsController extends Controller
             if ($globalSet->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
                     /** @var Field $field */
-                    if ($hasErrors = $globalSet->hasErrors($field->handle)) {
+                    if ($hasErrors = $globalSet->hasErrors($field->handle . '.*')) {
                         break;
                     }
                 }
@@ -202,13 +205,14 @@ class GlobalsController extends Controller
 
             $tabs[] = [
                 'label' => Craft::t('site', $tab->name),
-                'url' => '#'.$tab->getHtmlId(),
+                'url' => '#' . $tab->getHtmlId(),
                 'class' => $hasErrors ? 'error' : null
             ];
         }
 
         // Render the template!
         return $this->renderTemplate('globals/_edit', compact(
+            'bodyClass',
             'editableGlobalSets',
             'globalSet',
             'tabs'
@@ -228,17 +232,22 @@ class GlobalsController extends Controller
         $globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('setId');
         $siteId = Craft::$app->getRequest()->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
 
-        // Make sure the user is allowed to edit this global set and site
-        $this->requirePermission('editGlobalSet:'.$globalSetId);
-
-        if (Craft::$app->getIsMultiSite()) {
-            $this->requirePermission('editSite:'.$siteId);
-        }
-
+        $site = Craft::$app->getSites()->getSiteById($siteId);
         $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId, $siteId);
 
         if (!$globalSet) {
             throw new NotFoundHttpException('Global set not found');
+        }
+
+        if (!$site) {
+            throw new NotFoundHttpException('Site not found');
+        }
+
+        // Make sure the user is allowed to edit this global set and site
+        $this->requirePermission('editGlobalSet:' . $globalSet->uid);
+
+        if (Craft::$app->getIsMultiSite()) {
+            $this->requirePermission('editSite:' . $site->uid);
         }
 
         $globalSet->setFieldValuesFromRequest('fields');

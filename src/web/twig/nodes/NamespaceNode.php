@@ -8,6 +8,8 @@
 namespace craft\web\twig\nodes;
 
 use Craft;
+use Twig\Compiler;
+use Twig\Node\Node;
 
 /**
  * Class NamespaceNode
@@ -15,7 +17,7 @@ use Craft;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class NamespaceNode extends \Twig_Node
+class NamespaceNode extends Node
 {
     // Public Methods
     // =========================================================================
@@ -23,7 +25,7 @@ class NamespaceNode extends \Twig_Node
     /**
      * @inheritdoc
      */
-    public function compile(\Twig_Compiler $compiler)
+    public function compile(Compiler $compiler)
     {
         $compiler
             ->addDebugInfo($this)
@@ -32,8 +34,8 @@ class NamespaceNode extends \Twig_Node
             ->raw(";\n")
             ->write("if (\$_namespace) {\n")
             ->indent()
-            ->write('$_originalNamespace = '.Craft::class."::\$app->getView()->getNamespace();\n")
-            ->write(Craft::class.'::$app->getView()->setNamespace('.Craft::class."::\$app->getView()->namespaceInputName(\$_namespace));\n")
+            ->write('$_originalNamespace = ' . Craft::class . "::\$app->getView()->getNamespace();\n")
+            ->write(Craft::class . '::$app->getView()->setNamespace(' . Craft::class . "::\$app->getView()->namespaceInputName(\$_namespace));\n")
             ->write("ob_start();\n")
             ->write("try {\n")
             ->indent()
@@ -45,8 +47,8 @@ class NamespaceNode extends \Twig_Node
             ->write("throw \$e;\n")
             ->outdent()
             ->write("}\n")
-            ->write('echo '.Craft::class."::\$app->getView()->namespaceInputs(ob_get_clean(), \$_namespace);\n")
-            ->write(Craft::class."::\$app->getView()->setNamespace(\$_originalNamespace);\n")
+            ->write('echo ' . Craft::class . "::\$app->getView()->namespaceInputs(ob_get_clean(), \$_namespace);\n")
+            ->write(Craft::class . "::\$app->getView()->setNamespace(\$_originalNamespace);\n")
             ->outdent()
             ->write("} else {\n")
             ->indent()

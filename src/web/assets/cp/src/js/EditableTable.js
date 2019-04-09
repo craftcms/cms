@@ -76,7 +76,7 @@ Craft.EditableTable = Garnish.Base.extend(
             var $rows = this.$tbody.children();
 
             for (var i = 0; i < $rows.length; i++) {
-                new Craft.EditableTable.Row(this, $rows[i]);
+                this.createRowObj($rows[i]);
             }
 
             this.$addRowBtn = this.$table.next('.add');
@@ -117,15 +117,21 @@ Craft.EditableTable = Garnish.Base.extend(
             this.updateAddRowButton();
             // onDeleteRow callback
             this.settings.onDeleteRow(row.$tr);
+
+            row.destroy();
         },
         canAddRow: function() {
+            if (this.settings.staticRows) {
+                return false;
+            }
+
             if (this.settings.maxRows) {
                 return (this.rowCount < this.settings.maxRows);
             }
 
             return true;
         },
-        addRow: function() {
+        addRow: function(focus) {
             if (!this.canAddRow()) {
                 return;
             }
@@ -134,28 +140,70 @@ Craft.EditableTable = Garnish.Base.extend(
                 $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
             $tr.appendTo(this.$tbody);
-            new Craft.EditableTable.Row(this, $tr);
+            var row = this.createRowObj($tr);
             this.sorter.addItems($tr);
 
             // Focus the first input in the row
-            $tr.find('input,textarea,select').first().trigger('focus');
+            if (focus !== false) {
+                $tr.find('input,textarea,select').first().trigger('focus');
+            }
 
             this.rowCount++;
             this.updateAddRowButton();
 
             // onAddRow callback
             this.settings.onAddRow($tr);
+
+            return row;
         },
 
         createRow: function(rowId, columns, baseName, values) {
             return Craft.EditableTable.createRow(rowId, columns, baseName, values);
-        }
+        },
+
+        createRowObj: function($tr) {
+            return new Craft.EditableTable.Row(this, $tr);
+        },
+
+        focusOnNextRow: function($tr, tdIndex, blurTd) {
+            var $nextTr = $tr.next('tr');
+            var nextRow;
+
+            if ($nextTr.length) {
+                nextRow = $nextTr.data('editable-table-row');
+            } else {
+                nextRow = this.addRow(false);
+            }
+
+            // Focus on the same cell in the next row
+            if (!nextRow) {
+                return;
+            }
+
+            if (!nextRow.$tds[tdIndex]) {
+                return;
+            }
+
+            if ($(nextRow.$tds[tdIndex]).hasClass('disabled')) {
+                if ($nextTr) {
+                    this.focusOnNextRow($nextTr, tdIndex, blurTd);
+                }
+                return;
+            }
+
+            var $input = $('textarea,input.text', nextRow.$tds[tdIndex]);
+            if ($input.length) {
+                $(blurTd).trigger('blur');
+                $input.trigger('focus');
+            }
+        },
     },
     {
         textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'time'],
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
+            staticRows: false,
             minRows: null,
             maxRows: null,
             onAddRow: $.noop,
@@ -236,7 +284,14 @@ Craft.EditableTable = Garnish.Base.extend(
                             Craft.ui.createSelect({
                                 name: name,
                                 options: col.options,
-                                value: value,
+                                value: value || (function() {
+                                    for (var key in col.options) {
+                                        if (col.options.hasOwnProperty(key) && col.options[key].default) {
+                                            return typeof col.options[key].value !== 'undefined' ? col.options[key].value : key;
+                                        }
+                                    }
+                                    return null;
+                                })(),
                                 'class': 'small'
                             }).appendTo($cell);
                             break;
@@ -301,9 +356,12 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             this.table = table;
             this.$tr = $(tr);
             this.$tds = this.$tr.children();
+            this.id = this.$tr.attr('data-id');
+
+            this.$tr.data('editable-table-row', this);
 
             // Get the row ID, sans prefix
-            var id = parseInt(this.$tr.attr('data-id').substr(this.table.settings.rowIdPrefix.length));
+            var id = parseInt(this.id.substr(this.table.settings.rowIdPrefix.length));
 
             if (id > this.table.biggestId) {
                 this.table.biggestId = id;
@@ -334,8 +392,9 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                         onHeightChange: $.proxy(this, 'onTextareaHeightChange')
                     }));
 
+                    this.addListener($textarea, 'keypress', {tdIndex: i, type: col.type}, 'handleKeypress');
+
                     if (col.type === 'singleline' || col.type === 'number') {
-                        this.addListener($textarea, 'keypress', {type: col.type}, 'validateKeypress');
                         this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
                         $textarea.trigger('textchange');
                     }
@@ -366,7 +425,9 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 col = this.table.columns[colId];
 
                 if (col.autopopulate && typeof textareasByColId[col.autopopulate] !== 'undefined' && !textareasByColId[colId].val()) {
-                    new Craft.HandleGenerator(textareasByColId[colId], textareasByColId[col.autopopulate]);
+                    new Craft.HandleGenerator(textareasByColId[colId], textareasByColId[col.autopopulate], {
+                        allowNonAlphaStart: true
+                    });
                 }
             }
 
@@ -402,13 +463,19 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             $.data(ev.currentTarget, 'ignoreNextFocus', true);
         },
 
-        validateKeypress: function(ev) {
+        handleKeypress: function(ev) {
             var keyCode = ev.keyCode ? ev.keyCode : ev.charCode;
+            var ctrl = Garnish.isCtrlKeyPressed(ev);
 
-            if (!Garnish.isCtrlKeyPressed(ev) && (
-                    (keyCode === Garnish.RETURN_KEY) ||
-                    (ev.data.type === 'number' && !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes))
-                )) {
+            // Going to the next row?
+            if (keyCode === Garnish.RETURN_KEY && (ev.data.type !== 'multiline' || ctrl)) {
+                ev.preventDefault();
+                this.table.focusOnNextRow(this.$tr, ev.data.tdIndex, ev.currentTarget);
+                return;
+            }
+
+            // Was this an invalid number character?
+            if (ev.data.type === 'number' && !ctrl && !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes)) {
                 ev.preventDefault();
             }
         },

@@ -46,11 +46,9 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
         $config->set('Attr.DefaultInvalidImageAlt', '');
 
         // Add support for some HTML5 elements
-        // see http://htmlpurifier.org/phorum/read.php?3,6731,6731
-        $config->set('HTML.DefinitionID', '1');
         // see https://github.com/mewebstudio/Purifier/issues/32#issuecomment-182502361
         // see https://gist.github.com/lluchs/3303693
-        if ($def = $config->maybeGetRawHTMLDefinition()) {
+        if ($def = $config->getDefinition('HTML', true)) {
             // Content model actually excludes several tags, not modelled here
             $def->addElement('address', 'Block', 'Flow', 'Common');
             $def->addElement('hgroup', 'Block', 'Required: h1 | h2 | h3 | h4 | h5 | h6', 'Common');
@@ -70,6 +68,9 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
             // http://developers.whatwg.org/edits.html
             $def->addElement('ins', 'Block', 'Flow', 'Common', ['cite' => 'URI', 'datetime' => 'CDATA']);
             $def->addElement('del', 'Block', 'Flow', 'Common', ['cite' => 'URI', 'datetime' => 'CDATA']);
+
+            // https://github.com/ezyang/htmlpurifier/issues/152#issuecomment-414192516
+            $def->addAttribute('a', 'download', 'URI');
         }
     }
 }

@@ -5,7 +5,7 @@ use craft\models\DeprecationError;
 
 /** @var $panel craft\debug\DeprecatedPanel */
 ?>
-<h1>Deprecation Errors</h1>
+<h1>Deprecation Warnings</h1>
 <?php
 
 array_walk($panel->data, function(&$log) {

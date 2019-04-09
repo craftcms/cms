@@ -38,6 +38,8 @@ class SitesController extends Controller
     {
         // All actions require an admin account
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**
@@ -54,7 +56,7 @@ class SitesController extends Controller
 
         if ($groupId) {
             if (($group = $sitesService->getGroupById($groupId)) === null) {
-                throw new NotFoundHttpException('Invalid site group ID: '.$groupId);
+                throw new NotFoundHttpException('Invalid site group ID: ' . $groupId);
             }
             $sites = $sitesService->getSitesByGroupId($groupId);
         } else {
@@ -171,7 +173,7 @@ class SitesController extends Controller
                 }
             }
 
-            $title = $site->name;
+            $title = trim($site->name) ?: Craft::t('app', 'Edit Site');
         } else {
             if ($site === null) {
                 $site = new Site();

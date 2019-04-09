@@ -67,7 +67,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
      */
     public function rules()
     {
-        $rules = [];
+        $rules = parent::rules();
 
         // Only validate the ID if it's not a new widget
         if (!$this->getIsNew()) {

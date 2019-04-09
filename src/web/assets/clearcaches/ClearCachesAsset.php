@@ -20,14 +20,14 @@ class ClearCachesAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
         ];
 
         $this->js = [
-            'ClearCachesUtility'.$this->dotJs(),
+            'ClearCachesUtility' . $this->dotJs(),
         ];
 
         parent::init();

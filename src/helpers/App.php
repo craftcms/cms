@@ -8,7 +8,30 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\config\DbConfig;
+use craft\db\Command;
+use craft\db\Connection;
+use craft\db\mysql\Schema as MysqlSchema;
+use craft\db\pgsql\Schema as PgsqlSchema;
+use craft\elements\User;
+use craft\errors\MissingComponentException;
+use craft\log\FileTarget;
+use craft\mail\Mailer;
+use craft\mail\Message;
+use craft\mail\transportadapters\Sendmail;
+use craft\models\MailSettings;
+use craft\services\ProjectConfig as ProjectConfigService;
+use craft\web\AssetManager;
+use craft\web\Request as WebRequest;
+use craft\web\Session;
+use craft\web\User as WebUser;
+use craft\web\View;
+use yii\base\InvalidArgumentException;
+use yii\caching\FileCache;
 use yii\helpers\Inflector;
+use yii\log\Dispatcher;
+use yii\log\Logger;
+use yii\mutex\FileMutex;
 
 /**
  * App helper.
@@ -40,6 +63,24 @@ class App
     }
 
     /**
+     * Returns the handle of the given Craft edition.
+     *
+     * @param int $edition An edition’s ID.
+     * @return string The edition’s name.
+     */
+    public static function editionHandle(int $edition): string
+    {
+        switch ($edition) {
+            case Craft::Solo:
+                return 'solo';
+            case Craft::Pro:
+                return 'pro';
+            default:
+                throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition);
+        }
+    }
+
+    /**
      * Returns the name of the given Craft edition.
      *
      * @param int $edition An edition’s ID.
@@ -47,7 +88,33 @@ class App
      */
     public static function editionName(int $edition): string
     {
-        return ($edition == Craft::Pro) ? 'Pro' : 'Solo';
+        switch ($edition) {
+            case Craft::Solo:
+                return 'Solo';
+            case Craft::Pro:
+                return 'Pro';
+            default:
+                throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition);
+        }
+    }
+
+    /**
+     * Returns the ID of a Craft edition by its handle.
+     *
+     * @param string $handle An edition’s handle
+     * @return int The edition’s ID
+     * @throws InvalidArgumentException if $handle is invalid
+     */
+    public static function editionIdByHandle(string $handle): int
+    {
+        switch ($handle) {
+            case 'solo':
+                return Craft::Solo;
+            case 'pro':
+                return Craft::Pro;
+            default:
+                throw new InvalidArgumentException('Invalid Craft edition handle: ' . $handle);
+        }
     }
 
     /**
@@ -72,7 +139,7 @@ class App
      */
     public static function phpVersion(): string
     {
-        return PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.'.'.PHP_RELEASE_VERSION;
+        return PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
     }
 
     /**
@@ -95,7 +162,7 @@ class App
      */
     public static function normalizeVersion(string $version): string
     {
-        return preg_replace('/^([^~+-]+).*$/', '$1', $version);
+        return preg_replace('/^([^\s~+-]+).*$/', '$1', $version);
     }
 
     /**
@@ -106,12 +173,71 @@ class App
      */
     public static function phpConfigValueAsBool(string $var): bool
     {
-        $value = ini_get($var);
+        $value = trim(ini_get($var));
 
         // Supposedly “On” values will always be normalized to '1' but who can trust PHP...
+        return ($value === '1' || strtolower($value) === 'on');
+    }
 
-        /** @noinspection TypeUnsafeComparisonInspection */
-        return ($value == 1 || strtolower($value) === 'on');
+    /**
+     * Retrieves a disk size PHP config setting and normalizes it into bytes.
+     *
+     * @param string $var The PHP config setting to retrieve.
+     * @return int|float The value normalized into bytes.
+     */
+    public static function phpConfigValueInBytes(string $var)
+    {
+        $value = trim(ini_get($var));
+        $unit = strtolower(substr($value, -1, 1));
+        $value = (int)$value;
+
+        switch ($unit) {
+            case 'g':
+                $value *= 1024;
+            // no break (cumulative multiplier)
+            case 'm':
+                $value *= 1024;
+            // no break (cumulative multiplier)
+            case 'k':
+                $value *= 1024;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Tests whether ini_set() works.
+     *
+     * @return bool
+     */
+    public static function testIniSet(): bool
+    {
+        $oldValue = ini_get('memory_limit');
+        $oldBytes = static::phpConfigValueInBytes('memory_limit');
+
+        // When the old value is not equal to '-1', add 1MB to the limit set at the moment
+        if ($oldBytes === -1) {
+            $testBytes = 1024 * 1024 * 442;
+        } else {
+            $testBytes = $oldBytes + 1024 * 1024;
+        }
+
+        $testValue = sprintf('%sM', ceil($testBytes / (1024 * 1024)));
+        set_error_handler(function() {
+        });
+        $result = ini_set('memory_limit', $testValue);
+        $newValue = ini_get('memory_limit');
+        ini_set('memory_limit', $oldValue);
+        restore_error_handler();
+
+        // ini_set can return false or an empty string depending on your php version / FastCGI.
+        // If ini_set has been disabled in php.ini, the value will be null because of our muted error handler
+        return (
+            $result !== null &&
+            $result !== false &&
+            $result !== '' &&
+            $result !== $newValue
+        );
     }
 
     /**
@@ -140,7 +266,7 @@ class App
     {
         $classParts = explode('\\', $class);
 
-        return StringHelper::toLowerCase(Inflector::camel2words(array_pop($classParts)));
+        return strtolower(Inflector::camel2words(array_pop($classParts)));
     }
 
     /**
@@ -150,13 +276,11 @@ class App
      */
     public static function maxPowerCaptain()
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-        if ($generalConfig->phpMaxMemoryLimit !== '') {
-            @ini_set('memory_limit', $generalConfig->phpMaxMemoryLimit);
-        } else {
-            // Grab. It. All.
-            @ini_set('memory_limit', -1);
+        // Don't mess with the memory_limit, even at the config's request, if it's already set to -1 or >= 1.5GB
+        $memoryLimit = static::phpConfigValueInBytes('memory_limit');
+        if ($memoryLimit !== -1 && $memoryLimit < 1024 * 1024 * 1536) {
+            $maxMemoryLimit = Craft::$app->getConfig()->getGeneral()->phpMaxMemoryLimit;
+            @ini_set('memory_limit', $maxMemoryLimit ?: '1536M');
         }
 
         // Try to disable the max execution time
@@ -188,5 +312,332 @@ class App
         }
 
         return $licenseKey;
+    }
+
+    /**
+     * Returns the backtrace as a string (omitting the final frame where this method was called).
+     *
+     * @param int $limit The max number of stack frames to be included (0 means no limit)
+     */
+    public static function backtrace(int $limit = 0): string
+    {
+        $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit ? $limit + 1 : 0);
+        array_shift($frames);
+        $trace = '';
+
+        foreach ($frames as $i => $frame) {
+            $trace .= ($i !== 0 ? "\n" : '') .
+                '#' . $i . ' ' .
+                ($frame['class'] ?? '') .
+                ($frame['type'] ?? '') .
+                ($frame['function'] ?? '') . '()' .
+                (isset($frame['file']) ? ' called at [' . ($frame['file'] ?? '') . ':' . ($frame['line'] ?? '') . ']' : '');
+        }
+
+        return $trace;
+    }
+
+    // App component configs
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns the `assetManager` component config for web requests.
+     *
+     * @return array
+     */
+    public static function assetManagerConfig(): array
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        return [
+            'class' => AssetManager::class,
+            'basePath' => $generalConfig->resourceBasePath,
+            'baseUrl' => $generalConfig->resourceBaseUrl,
+            'fileMode' => $generalConfig->defaultFileMode,
+            'dirMode' => $generalConfig->defaultDirMode,
+            'appendTimestamp' => true,
+        ];
+    }
+
+    /**
+     * Returns the `cache` component config.
+     *
+     * @return array
+     */
+    public static function cacheConfig(): array
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        return [
+            'class' => FileCache::class,
+            'cachePath' => Craft::$app->getPath()->getCachePath(),
+            'fileMode' => $generalConfig->defaultFileMode,
+            'dirMode' => $generalConfig->defaultDirMode,
+            'defaultDuration' => $generalConfig->cacheDuration,
+        ];
+    }
+
+    /**
+     * Returns the `db` component config.
+     *
+     * @param DbConfig|null $dbConfig The database config settings
+     * @return array
+     */
+    public static function dbConfig(DbConfig $dbConfig = null): array
+    {
+        if ($dbConfig === null) {
+            $dbConfig = Craft::$app->getConfig()->getDb();
+        }
+
+        if ($dbConfig->driver === DbConfig::DRIVER_MYSQL) {
+            $schemaConfig = [
+                'class' => MysqlSchema::class,
+            ];
+        } else {
+            $schemaConfig = [
+                'class' => PgsqlSchema::class,
+                'defaultSchema' => $dbConfig->schema,
+            ];
+        }
+
+        return [
+            'class' => Connection::class,
+            'driverName' => $dbConfig->driver,
+            'dsn' => $dbConfig->dsn,
+            'username' => $dbConfig->user,
+            'password' => $dbConfig->password,
+            'charset' => $dbConfig->charset,
+            'tablePrefix' => $dbConfig->tablePrefix,
+            'schemaMap' => [
+                $dbConfig->driver => $schemaConfig,
+            ],
+            'commandMap' => [
+                $dbConfig->driver => Command::class,
+            ],
+            'attributes' => $dbConfig->attributes,
+            'enableSchemaCache' => !YII_DEBUG,
+        ];
+    }
+
+    /**
+     * Returns the system email settings.
+     *
+     * @return MailSettings
+     */
+    public static function mailSettings(): MailSettings
+    {
+        $settings = Craft::$app->getProjectConfig()->get('email') ?? [];
+        return new MailSettings($settings);
+    }
+
+    /**
+     * Returns the `mailer` component config.
+     *
+     * @param MailSettings|null $settings The system mail settings
+     * @return array
+     */
+    public static function mailerConfig(MailSettings $settings = null): array
+    {
+        if ($settings === null) {
+            $settings = static::mailSettings();
+        }
+
+        try {
+            $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
+        } catch (MissingComponentException $e) {
+            // Fallback to the PHP mailer
+            $adapter = new Sendmail();
+        }
+
+        return [
+            'class' => Mailer::class,
+            'messageClass' => Message::class,
+            'from' => [
+                Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName)
+            ],
+            'template' => Craft::parseEnv($settings->template),
+            'transport' => $adapter->defineTransport(),
+        ];
+    }
+
+    /**
+     * Returns the `mutex` component config.
+     *
+     * @return array
+     */
+    public static function mutexConfig(): array
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        return [
+            'class' => FileMutex::class,
+            'fileMode' => $generalConfig->defaultFileMode,
+            'dirMode' => $generalConfig->defaultDirMode,
+        ];
+    }
+
+    /**
+     * Returns the `log` component config.
+     *
+     * @return array|null
+     */
+    public static function logConfig()
+    {
+        // Only log console requests and web requests that aren't getAuthTimeout requests
+        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
+        if (!$isConsoleRequest && !Craft::$app->getUser()->enableSession) {
+            return null;
+        }
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        $target = [
+            'class' => FileTarget::class,
+            'fileMode' => $generalConfig->defaultFileMode,
+            'dirMode' => $generalConfig->defaultDirMode,
+            'includeUserIp' => $generalConfig->storeUserIps,
+        ];
+
+        if ($isConsoleRequest) {
+            $target['logFile'] = '@storage/logs/console.log';
+        } else {
+            $target['logFile'] = '@storage/logs/web.log';
+
+            // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
+            if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                $target['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
+            }
+        }
+
+        return [
+            'class' => Dispatcher::class,
+            'targets' => [
+                $target,
+            ]
+        ];
+    }
+
+    /**
+     * Returns the `projectConfig` component config.
+     */
+    public static function projectConfigConfig(): array
+    {
+        return [
+            'class' => ProjectConfigService::class,
+            'readOnly' => !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
+        ];
+    }
+
+    /**
+     * Returns the `session` component config for web requests.
+     *
+     * @return array
+     */
+    public static function sessionConfig(): array
+    {
+        $stateKeyPrefix = md5('Craft.' . Session::class . '.' . Craft::$app->id);
+
+        return [
+            'class' => Session::class,
+            'flashParam' => $stateKeyPrefix . '__flash',
+            'authAccessParam' => $stateKeyPrefix . '__auth_access',
+            'name' => Craft::$app->getConfig()->getGeneral()->phpSessionName,
+            'cookieParams' => Craft::cookieConfig(),
+        ];
+    }
+
+    /**
+     * Returns the `user` component config for web requests.
+     *
+     * @return array
+     */
+    public static function userConfig(): array
+    {
+        $configService = Craft::$app->getConfig();
+        $generalConfig = $configService->getGeneral();
+        $request = Craft::$app->getRequest();
+
+        if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
+            $loginUrl = UrlHelper::siteUrl($generalConfig->getLoginPath());
+        } else {
+            $loginUrl = UrlHelper::cpUrl('login');
+        }
+
+        $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->id);
+
+        return [
+            'class' => WebUser::class,
+            'identityClass' => User::class,
+            'enableAutoLogin' => true,
+            'autoRenewCookie' => true,
+            'loginUrl' => $loginUrl,
+            'authTimeout' => $generalConfig->userSessionDuration ?: null,
+            'identityCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_identity']),
+            'usernameCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_username']),
+            'idParam' => $stateKeyPrefix . '__id',
+            'tokenParam' => $stateKeyPrefix . '__token',
+            'authTimeoutParam' => $stateKeyPrefix . '__expire',
+            'absoluteAuthTimeoutParam' => $stateKeyPrefix . '__absoluteExpire',
+            'returnUrlParam' => $stateKeyPrefix . '__returnUrl',
+        ];
+    }
+
+    /**
+     * Returns the `view` component config.
+     *
+     * @return array
+     */
+    public static function viewConfig(): array
+    {
+        $config = [
+            'class' => View::class,
+        ];
+
+        $request = Craft::$app->getRequest();
+
+        if ($request->getIsCpRequest()) {
+            $headers = $request->getHeaders();
+            $config['registeredAssetBundles'] = explode(',', $headers->get('X-Registered-Asset-Bundles', ''));
+            $config['registeredJsFiles'] = explode(',', $headers->get('X-Registered-Js-Files', ''));
+        }
+
+        return $config;
+    }
+
+    /**
+     * Returns the `request` component config for web requests.
+     *
+     * @return array
+     */
+    public static function webRequestConfig(): array
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        $config = [
+            'class' => WebRequest::class,
+            'enableCookieValidation' => true,
+            'cookieValidationKey' => $generalConfig->securityKey,
+            'enableCsrfValidation' => $generalConfig->enableCsrfProtection,
+            'enableCsrfCookie' => $generalConfig->enableCsrfCookie,
+            'csrfParam' => $generalConfig->csrfTokenName,
+        ];
+
+        if ($generalConfig->trustedHosts !== null) {
+            $config['trustedHosts'] = $generalConfig->trustedHosts;
+        }
+
+        if ($generalConfig->secureHeaders !== null) {
+            $config['secureHeaders'] = $generalConfig->secureHeaders;
+        }
+
+        if ($generalConfig->ipHeaders !== null) {
+            $config['ipHeaders'] = $generalConfig->ipHeaders;
+        }
+
+        if ($generalConfig->secureProtocolHeaders !== null) {
+            $config['secureProtocolHeaders'] = $generalConfig->secureProtocolHeaders;
+        }
+
+        return $config;
     }
 }

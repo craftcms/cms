@@ -42,7 +42,7 @@ class MigrateException extends Exception
         $this->ownerHandle = $ownerHandle;
 
         if ($message === null) {
-            $message = 'An error occurred while migrating '.$ownerName.'.';
+            $message = 'An error occurred while migrating ' . $ownerName . '.';
         }
 
         parent::__construct($message, $code, $previous);

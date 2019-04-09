@@ -9,14 +9,18 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\db\ElementQuery;
+use craft\errors\DeprecationException;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
+use Twig\Template as TwigTemplate;
 use yii\base\Component;
+use yii\db\IntegrityException;
 
 /**
  * Deprecator service.
@@ -31,18 +35,18 @@ class Deprecator extends Component
     // =========================================================================
 
     /**
+     * @var bool Whether deprecation warnings should throw exceptions rather than being logged.
+     */
+    public $throwExceptions = false;
+
+    /**
      * @var string|false Whether deprecation errors should be logged in the database ('db'),
      * error logs ('logs'), or not at all (false).
      *
-     * Changing this will prevent deprecation errors from showing up in the "Deprecation Errors" utility
+     * Changing this will prevent deprecation errors from showing up in the "Deprecation Warnings" utility
      * or in the "Deprecated" panel in the Debug Toolbar.
      */
     public $logTarget = 'db';
-
-    /**
-     * @var string
-     */
-    private static $_tableName = '{{%deprecationerrors}}';
 
     /**
      * @var DeprecationError[] The deprecation errors that were logged in the current request
@@ -62,23 +66,40 @@ class Deprecator extends Component
      *
      * @param string $key
      * @param string $message
+     * @param string|null $file
+     * @param int|null $line
+     * @throws DeprecationException
      */
-    public function log(string $key, string $message)
+    public function log(string $key, string $message, string $file = null, int $line = null)
     {
         if ($this->logTarget === false) {
             return;
         }
 
-        if ($this->logTarget === 'logs' ||  !Craft::$app->getIsInstalled()) {
+        // todo: maybe remove the Craft version check after the next breakpoint
+        // (depending on whether the minimum version warning shows up before any config deprecation errors)
+        if (
+            $this->logTarget === 'logs' ||
+            !Craft::$app->getIsInstalled() ||
+            version_compare(Craft::$app->getInfo()->version, '3.0.0-alpha.2910', '<')
+        ) {
             Craft::warning($message, 'deprecation-error');
             return;
         }
 
         // Get the debug backtrace
         $traces = debug_backtrace();
-        list($file, $line) = $this->_findOrigin($traces);
-        $fingerprint = $file.($line ? ':'.$line : '');
-        $index = $key.'-'.$fingerprint;
+
+        if ($file === null) {
+            list($file, $line) = $this->_findOrigin($traces);
+        }
+
+        if ($this->throwExceptions) {
+            throw new DeprecationException($message, $file, $line);
+        }
+
+        $fingerprint = $file . ($line ? ':' . $line : '');
+        $index = $key . '-' . $fingerprint;
 
         // Don't log the same key/fingerprint twice in the same request
         if (isset($this->_requestLogs[$index])) {
@@ -96,9 +117,9 @@ class Deprecator extends Component
         ]);
 
         $db = Craft::$app->getDb();
-        $db->createCommand()
+        $command = $db->createCommand()
             ->upsert(
-                self::$_tableName,
+                Table::DEPRECATIONERRORS,
                 [
                     'key' => $log->key,
                     'fingerprint' => $log->fingerprint
@@ -109,10 +130,14 @@ class Deprecator extends Component
                     'line' => $log->line,
                     'message' => $log->message,
                     'traces' => Json::encode($log->traces),
-                ])
-            ->execute();
+                ]);
 
-        $log->id = $db->getLastInsertID();
+        try {
+            $command->execute();
+            $log->id = $db->getLastInsertID();
+        } catch (IntegrityException $e) {
+            // todo: remove this try/catch after the next breakpoint
+        }
     }
 
     /**
@@ -133,7 +158,7 @@ class Deprecator extends Component
     public function getTotalLogs(): int
     {
         return (new Query())
-            ->from([self::$_tableName])
+            ->from([Table::DEPRECATIONERRORS])
             ->count('[[id]]');
     }
 
@@ -187,7 +212,7 @@ class Deprecator extends Component
     public function deleteLogById(int $id): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(self::$_tableName, ['id' => $id])
+            ->delete(Table::DEPRECATIONERRORS, ['id' => $id])
             ->execute();
 
         return (bool)$affectedRows;
@@ -201,7 +226,7 @@ class Deprecator extends Component
     public function deleteAllLogs(): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(self::$_tableName)
+            ->delete(Table::DEPRECATIONERRORS)
             ->execute();
 
         return (bool)$affectedRows;
@@ -228,7 +253,7 @@ class Deprecator extends Component
                 'message',
                 'traces',
             ])
-            ->from([self::$_tableName]);
+            ->from([Table::DEPRECATIONERRORS]);
     }
 
     /**
@@ -264,7 +289,7 @@ class Deprecator extends Component
             $templateCodeLine = $traces[$templateTrace]['line'] ?? null;
             $template = $traces[$templateTrace + 1]['object'] ?? null;
 
-            if ($template instanceof \Twig_Template) {
+            if ($template instanceof TwigTemplate) {
                 $templateName = $template->getTemplateName();
                 $file = Craft::$app->getView()->resolveTemplate($templateName) ?: $templateName;
                 $line = $this->_findTemplateLine($template, $templateCodeLine);
@@ -332,11 +357,11 @@ class Deprecator extends Component
     /**
      * Returns the Twig template that should be associated with the deprecation error, if any.
      *
-     * @param \Twig_Template $template
+     * @param TwigTemplate $template
      * @param int|null $actualCodeLine
      * @return int|null
      */
-    private function _findTemplateLine(\Twig_Template $template, int $actualCodeLine = null)
+    private function _findTemplateLine(TwigTemplate $template, int $actualCodeLine = null)
     {
         if ($actualCodeLine === null) {
             return null;
@@ -382,12 +407,12 @@ class Deprecator extends Component
                 $strValue = $value ? 'true' : 'false';
             } else if (is_string($value)) {
                 if (strlen($value) > 64) {
-                    $strValue = '"'.StringHelper::substr($value, 0, 64).'..."';
+                    $strValue = '"' . StringHelper::substr($value, 0, 64) . '..."';
                 } else {
-                    $strValue = '"'.$value.'"';
+                    $strValue = '"' . $value . '"';
                 }
             } else if (is_array($value)) {
-                $strValue = '['.$this->_argsToString($value).']';
+                $strValue = '[' . $this->_argsToString($value) . ']';
             } else if ($value === null) {
                 $strValue = 'null';
             } else if (is_resource($value)) {
@@ -397,9 +422,9 @@ class Deprecator extends Component
             }
 
             if (is_string($key)) {
-                $strArgs[] = '"'.$key.'" => '.$strValue;
+                $strArgs[] = '"' . $key . '" => ' . $strValue;
             } else if ($isAssoc) {
-                $strArgs[] = $key.' => '.$strValue;
+                $strArgs[] = $key . ' => ' . $strValue;
             } else {
                 $strArgs[] = $strValue;
             }

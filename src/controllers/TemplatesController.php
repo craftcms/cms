@@ -37,7 +37,14 @@ class TemplatesController extends Controller
     /**
      * @inheritdoc
      */
-    public $allowAnonymous = true;
+    public $allowAnonymous = [
+        'offline' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'manual-update-notification' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'config-sync-kickoff' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'incompatible-config-alert' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'requirements-check' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'render-error' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+    ];
 
     // Public Methods
     // =========================================================================
@@ -47,9 +54,19 @@ class TemplatesController extends Controller
      */
     public function beforeAction($action)
     {
-        $actionSegments = Craft::$app->getRequest()->getActionSegments();
+        $request = Craft::$app->getRequest();
+        $actionSegments = $request->getActionSegments();
         if (isset($actionSegments[0]) && strtolower($actionSegments[0]) === 'templates') {
             throw new ForbiddenHttpException();
+        }
+
+        if ($action->id === 'render') {
+            // Allow anonymous access to the Login template even if the site is offline
+            if ($request->getIsLoginRequest()) {
+                $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
+            } else if ($request->getIsSiteRequest()) {
+                $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
+            }
         }
 
         return parent::beforeAction($action);
@@ -67,7 +84,7 @@ class TemplatesController extends Controller
     {
         // Does that template exist?
         if (!$this->getView()->doesTemplateExist($template)) {
-            throw new NotFoundHttpException('Template not found: '.$template);
+            throw new NotFoundHttpException('Template not found: ' . $template);
         }
 
         // Merge any additional route params
@@ -106,6 +123,26 @@ class TemplatesController extends Controller
     }
 
     /**
+     * Renders the Project Config Sync kickoff template.
+     *
+     * @return Response
+     */
+    public function actionConfigSyncKickoff(): Response
+    {
+        return $this->renderTemplate('_special/configsync');
+    }
+
+    /**
+     * Renders the incompatible project config alert template.
+     *
+     * @return Response
+     */
+    public function actionIncompatibleConfigAlert(): Response
+    {
+        return $this->renderTemplate('_special/incompatibleconfigs');
+    }
+
+    /**
      * @return Response|null
      * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */
@@ -128,7 +165,7 @@ class TemplatesController extends Controller
 
                 foreach ($reqCheck->getResult()['requirements'] as $req) {
                     if ($req['error'] === true) {
-                        $message .= $req['memo'].'<br />';
+                        $message .= $req['memo'] . '<br />';
                     }
                 }
 
@@ -172,12 +209,12 @@ class TemplatesController extends Controller
         if (Craft::$app->getRequest()->getIsSiteRequest()) {
             $prefix = Craft::$app->getConfig()->getGeneral()->errorTemplatePrefix;
 
-            if ($this->getView()->doesTemplateExist($prefix.$statusCode)) {
-                $template = $prefix.$statusCode;
-            } else if ($statusCode == 503 && $this->getView()->doesTemplateExist($prefix.'offline')) {
-                $template = $prefix.'offline';
-            } else if ($this->getView()->doesTemplateExist($prefix.'error')) {
-                $template = $prefix.'error';
+            if ($this->getView()->doesTemplateExist($prefix . $statusCode)) {
+                $template = $prefix . $statusCode;
+            } else if ($statusCode == 503 && $this->getView()->doesTemplateExist($prefix . 'offline')) {
+                $template = $prefix . 'offline';
+            } else if ($this->getView()->doesTemplateExist($prefix . 'error')) {
+                $template = $prefix . 'error';
             }
         }
 

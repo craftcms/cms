@@ -30,7 +30,7 @@ That comes with some limitations on what you can do with the code:
 
 ### Code of Conduct
 
-Please take a couple minutes to read through Craft’s [code of conduct](https://github.com/craftcms/docs/blob/v3/en/coc.md). By participating here, you are expected to uphold this code. Please report unacceptable behavior to [support@craftcms.com][support].
+Please take a couple minutes to read through Craft’s [code of conduct](https://docs.craftcms.com/v3/coc.html). By participating here, you are expected to uphold this code. Please report unacceptable behavior to [support@craftcms.com][support].
 
 ## Security Disclosures
 
@@ -54,7 +54,7 @@ Craft’s Control Panel translations are located at [src/translations/](https://
 
 ## Core Enhancements
 
-If you would like to work on a new core feature or improvement, first suggest the idea on [UserVoice][uservoice] if it’s not there already, and bring up the idea in the `#contribute` channel in [Craft Slack][slack]. As much as we appreciate community contributions, we are pretty selective about which sorts of features should make it into Craft itself rather than a plugin, so don’t take it the wrong way if we advise you to pursue the idea as a plugin instead.
+If you would like to work on a new core feature or improvement, first create a [Github issue](https://github.com/craftcms/cms/issues) for it if there’s not one already. As much as we appreciate community contributions, we are pretty selective about which sorts of features should make it into Craft itself rather than a plugin, so don’t take it the wrong way if we advise you to pursue the idea as a plugin instead.
 
 ## Pull Requests
 
@@ -65,7 +65,4 @@ Thanks for being awesome.
 
 :cocktail:
 
-
 [support]: mailto:support@craftcms.com
-[uservoice]: https://craftcms.uservoice.com/forums/285221-feature-requests
-[slack]: https://craftcms.com/community#slack

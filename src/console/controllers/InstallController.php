@@ -9,10 +9,13 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\elements\User;
+use craft\helpers\Install as InstallHelper;
 use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
+use yii\base\Exception;
 use yii\console\Controller;
+use yii\console\ExitCode;
 use yii\helpers\Console;
 
 /**
@@ -82,12 +85,14 @@ class InstallController extends Controller
 
     /**
      * Runs the install migration
+     *
+     * @return int
      */
-    public function actionCraft()
+    public function actionCraft(): int
     {
         if (Craft::$app->getIsInstalled()) {
-            $this->stdout('Craft is already installed!'.PHP_EOL, Console::FG_YELLOW);
-            return;
+            $this->stdout('Craft is already installed!' . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
         }
 
         // Validate the arguments
@@ -112,16 +117,27 @@ class InstallController extends Controller
         }
 
         if (!empty($errors)) {
-            $this->stderr('Invalid arguments:'.PHP_EOL.'    - '.implode(PHP_EOL.'    - ', $errors).PHP_EOL);
-            return;
+            $this->stderr('Invalid arguments:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $errors) . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
         }
 
         $username = $this->username ?: $this->prompt('Username:', ['validator' => [$this, 'validateUsername'], 'default' => 'admin']);
         $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => [$this, 'validateEmail']]);
         $password = $this->password ?: $this->_passwordPrompt();
-        $siteName = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'validator' => [$this, 'validateSiteName']]);
-        $siteUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => '@web', 'validator' => [$this, 'validateSiteUrl']]);
-        $language = $this->language ?: $this->prompt('Site language:', ['validator' => [$this, 'validateLanguage'], 'default' => 'en-US']);
+        $siteName = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'default' => InstallHelper::defaultSiteName(), 'validator' => [$this, 'validateSiteName']]);
+        $siteUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => InstallHelper::defaultSiteUrl(), 'validator' => [$this, 'validateSiteUrl']]);
+        $language = $this->language ?: $this->prompt('Site language:', ['default' => InstallHelper::defaultSiteLanguage(), 'validator' => [$this, 'validateLanguage']]);
+
+        // Try to save the site URL to a DEFAULT_SITE_URL environment variable
+        // if it's not already set to an alias or environment variable
+        if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$') {
+            try {
+                Craft::$app->getConfig()->setDotEnvVar('DEFAULT_SITE_URL', $siteUrl);
+                $siteUrl = '$DEFAULT_SITE_URL';
+            } catch (Exception $e) {
+                // that's fine, we'll just store the entered URL
+            }
+        }
 
         $site = new Site([
             'name' => $siteName,
@@ -139,44 +155,48 @@ class InstallController extends Controller
         ]);
 
         // Run the install migration
-        $this->stdout('*** installing Craft'.PHP_EOL, Console::FG_YELLOW);
+        $this->stdout('*** installing Craft' . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
         $migrator = Craft::$app->getMigrator();
         $result = $migrator->migrateUp($migration);
 
         if ($result === false) {
-            $this->stdout('*** failed to install Craft'.PHP_EOL.PHP_EOL, Console::FG_RED);
-            return;
+            $this->stderr('*** failed to install Craft' . PHP_EOL . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $time = sprintf('%.3f', microtime(true) - $start);
-        $this->stdout("*** installed Craft successfully (time: {$time}s)".PHP_EOL.PHP_EOL, Console::FG_GREEN);
+        $this->stdout("*** installed Craft successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
         // Mark all existing migrations as applied
         foreach ($migrator->getNewMigrations() as $name) {
             $migrator->addMigrationHistory($name);
         }
+
+        return ExitCode::OK;
     }
 
     /**
      * Installs a plugin
      *
      * @param string $handle
+     * @return int
      */
-    public function actionPlugin(string $handle)
+    public function actionPlugin(string $handle): int
     {
-        $this->stdout("*** installing {$handle}".PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("*** installing {$handle}" . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
 
         try {
             Craft::$app->plugins->installPlugin($handle);
         } catch (\Throwable $e) {
-            $this->stdout("*** failed to install {$handle}: {$e->getMessage()}".PHP_EOL.PHP_EOL, Console::FG_RED);
-            return;
+            $this->stderr("*** failed to install {$handle}: {$e->getMessage()}" . PHP_EOL . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $time = sprintf('%.3f', microtime(true) - $start);
-        $this->stdout("*** installed {$handle} successfully (time: {$time}s)".PHP_EOL.PHP_EOL, Console::FG_GREEN);
+        $this->stdout("*** installed {$handle} successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
     }
 
     /**
@@ -271,7 +291,7 @@ class InstallController extends Controller
         top:
         $this->stdout('Password: ');
         if (($password = CliPrompt::hiddenPrompt(true)) === '') {
-            $this->stdout('Invalid input.'.PHP_EOL);
+            $this->stdout('Invalid input.' . PHP_EOL);
             goto top;
         }
         if (!$this->validatePassword($password, $error)) {
@@ -280,7 +300,7 @@ class InstallController extends Controller
         }
         $this->stdout('Confirm: ');
         if (!($matched = ($password === CliPrompt::hiddenPrompt(true)))) {
-            $this->stdout('Passwords didn\'t match, try again.'.PHP_EOL, Console::FG_RED);
+            $this->stdout('Passwords didn\'t match, try again.' . PHP_EOL, Console::FG_RED);
             goto top;
         }
         return $password;

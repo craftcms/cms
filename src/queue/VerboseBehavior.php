@@ -27,10 +27,10 @@ class VerboseBehavior extends \yii\queue\cli\VerboseBehavior
         }
 
         $description = $event->job->getDescription();
-        $extra = 'attempt: '.$event->attempt;
+        $extra = 'attempt: ' . $event->attempt;
 
         if ($pid = $event->sender->getWorkerPid()) {
-            $extra .= ', pid: '.$pid;
+            $extra .= ', pid: ' . $pid;
         }
 
         return " [{$event->id}] {$description} ({$extra})";

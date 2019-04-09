@@ -21,17 +21,17 @@ class SearchQuery
     // =========================================================================
 
     /**
-     * @var string|null
+     * @var string
      */
     private $_query;
 
     /**
-     * @var array|null
+     * @var array
      */
     private $_termOptions;
 
     /**
-     * @var array|null
+     * @var SearchQueryTerm[]|SearchQueryTermGroup
      */
     private $_tokens;
 
@@ -119,6 +119,8 @@ class SearchQuery
                 list(, $term->attribute, $colons, $token) = $match;
                 if ($colons === '::') {
                     $term->exact = true;
+                    $term->subLeft = false;
+                    $term->subRight = false;
                 }
             }
 
@@ -129,7 +131,7 @@ class SearchQuery
                 if (StringHelper::last($token, 1) === StringHelper::first($token, 1)) {
                     $token = mb_substr($token, 1, -1);
                 } else {
-                    $token = mb_substr($token, 1).' '.strtok(StringHelper::first($token, 1));
+                    $token = mb_substr($token, 1) . ' ' . strtok(StringHelper::first($token, 1));
                 }
 
                 $term->phrase = true;

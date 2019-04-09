@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use yii\base\InvalidConfigException;
+
 /**
  * Request trait.
  * This provides request methods that are common between craft\web\Request and craft\console\Request.
@@ -17,6 +19,19 @@ namespace craft\base;
  */
 trait RequestTrait
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var bool
+     */
+    public $isWebrootAliasSetDynamically = false;
+
+    /**
+     * @var bool
+     */
+    public $isWebAliasSetDynamically = false;
+
     // Public Methods
     // =========================================================================
 
@@ -24,6 +39,7 @@ trait RequestTrait
      * Returns the requested script name being used to access Craft (e.g. “index.php”).
      *
      * @return string
+     * @throws InvalidConfigException
      */
     public function getScriptFilename(): string
     {

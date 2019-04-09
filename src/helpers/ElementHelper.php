@@ -83,7 +83,7 @@ class ElementHelper
             $testSlug = $element->slug;
 
             if ($i > 0) {
-                $testSlug .= $slugWordSeparator.$i;
+                $testSlug .= $slugWordSeparator . $i;
             }
 
             $originalSlug = $element->slug;
@@ -92,18 +92,14 @@ class ElementHelper
             $testUri = self::_renderUriFormat($uriFormat, $element);
 
             // Make sure we're not over our max length.
-            if (strlen($testUri) > 255) {
+            if (mb_strlen($testUri) > 255) {
                 // See how much over we are.
-                $overage = strlen($testUri) - 255;
+                $overage = mb_strlen($testUri) - 255;
 
                 // Do we have anything left to chop off?
-                if (strlen($overage) > strlen($element->slug) - strlen($slugWordSeparator.$i)) {
+                if ($overage < mb_strlen($element->slug)) {
                     // Chop off the overage amount from the slug
-                    $testSlug = $element->slug;
-                    $testSlug = substr($testSlug, 0, -$overage);
-
-                    // Update the slug
-                    $element->slug = $testSlug;
+                    $element->slug = mb_substr($element->slug, 0, -$overage);
 
                     // Let's try this again.
                     $i--;
@@ -143,7 +139,7 @@ class ElementHelper
 
         // If the URI format contains {id} but the element doesn't have one yet, preserve the {id} tag
         if (!$element->id && strpos($uriFormat, '{id') !== false) {
-            $variables['id'] = $element->tempId = 'id-'.StringHelper::randomString(10);
+            $variables['id'] = $element->tempId = 'id-' . StringHelper::randomString(10);
         }
 
         $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element, $variables);
@@ -165,17 +161,29 @@ class ElementHelper
     {
         /** @var Element $element */
         $query = (new Query())
-            ->from(['{{%elements_sites}}'])
+            ->from(['{{%elements_sites}} elements_sites'])
+            ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
-                'siteId' => $element->siteId,
-                'uri' => $testUri
+                'elements_sites.siteId' => $element->siteId,
+                'elements.dateDeleted' => null,
             ]);
 
-        if ($element->id) {
-            $query->andWhere(['not', ['elementId' => $element->id]]);
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $query->andWhere([
+                'elements_sites.uri' => $testUri,
+            ]);
+        } else {
+            // Postgres is case-sensitive
+            $query->andWhere([
+                'lower([[elements_sites.uri]])' => mb_strtolower($testUri),
+            ]);
         }
 
-        return (int)$query->count('[[id]]') === 0;
+        if ($element->id) {
+            $query->andWhere(['not', ['elements.id' => $element->id]]);
+        }
+
+        return (int)$query->count() === 0;
     }
 
     /**
@@ -186,10 +194,7 @@ class ElementHelper
      */
     public static function doesUriFormatHaveSlugTag(string $uriFormat): bool
     {
-        $element = (object)['slug' => StringHelper::randomString()];
-        $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
-
-        return StringHelper::contains($uri, $element->slug);
+        return (bool)preg_match('/\bslug\b/', $uriFormat);
     }
 
     /**
@@ -204,6 +209,7 @@ class ElementHelper
     public static function supportedSitesForElement(ElementInterface $element): array
     {
         $sites = [];
+        $siteUidMap = ArrayHelper::map(Craft::$app->getSites()->getAllSites(), 'id', 'uid');
 
         foreach ($element->getSupportedSites() as $site) {
             if (!is_array($site)) {
@@ -211,8 +217,11 @@ class ElementHelper
                     'siteId' => $site,
                 ];
             } else if (!isset($site['siteId'])) {
-                throw new Exception('Missing "siteId" key in '.get_class($element).'::getSupportedSites()');
+                throw new Exception('Missing "siteId" key in ' . get_class($element) . '::getSupportedSites()');
             }
+
+            $site['siteUid'] = $siteUidMap[$site['siteId']];
+
             $sites[] = array_merge([
                 'enabledByDefault' => true,
             ], $site);
@@ -232,7 +241,7 @@ class ElementHelper
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteId'])) {
+                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteUid'])) {
                         return true;
                     }
                 }
@@ -257,7 +266,7 @@ class ElementHelper
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteId'])) {
+                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteUid'])) {
                         $siteIds[] = $siteInfo['siteId'];
                     }
                 }

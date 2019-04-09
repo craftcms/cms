@@ -117,7 +117,9 @@ class Command extends \yii\db\Command
 
         // todo: hack for BC with our old upsert() method. Remove in Craft 4
         // Merge any updateColumn data into insertColumns
-        $insertColumns = array_merge($updateColumns, $insertColumns);
+        if (is_array($updateColumns)) {
+            $insertColumns = array_merge($updateColumns, $insertColumns);
+        }
 
         parent::upsert($table, $insertColumns, $updateColumns, $params);
         return $this;
@@ -188,5 +190,37 @@ class Command extends \yii\db\Command
         $sql = $this->db->getQueryBuilder()->renameSequence($oldName, $newName);
 
         return $this->setSql($sql);
+    }
+
+    /**
+     * Creates a SQL statement for soft-deleting a row.
+     *
+     * @param string $table The table to be updated.
+     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params The parameters to be bound to the command.
+     * @return static The command object itself.
+     */
+    public function softDelete(string $table, $condition = '', array $params = []): Command
+    {
+        return $this->update($table, [
+            'dateDeleted' => Db::prepareDateForDb(new \DateTime()),
+        ], $condition, $params, false);
+    }
+
+    /**
+     * Creates a SQL statement for restoring a soft-deleted row.
+     *
+     * @param string $table The table to be updated.
+     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params The parameters to be bound to the command.
+     * @return static The command object itself.
+     */
+    public function restore(string $table, $condition = '', array $params = []): Command
+    {
+        return $this->update($table, [
+            'dateDeleted' => null,
+        ], $condition, $params, false);
     }
 }

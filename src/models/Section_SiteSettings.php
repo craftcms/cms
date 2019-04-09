@@ -85,7 +85,7 @@ class Section_SiteSettings extends Model
         }
 
         if (($this->_section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
-            throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
+            throw new InvalidConfigException('Invalid section ID: ' . $this->sectionId);
         }
 
         return $this->_section;
@@ -114,7 +114,7 @@ class Section_SiteSettings extends Model
         }
 
         if (($site = Craft::$app->getSites()->getSiteById($this->siteId)) === null) {
-            throw new InvalidConfigException('Invalid site ID: '.$this->siteId);
+            throw new InvalidConfigException('Invalid site ID: ' . $this->siteId);
         }
 
         return $site;
@@ -143,11 +143,10 @@ class Section_SiteSettings extends Model
      */
     public function rules()
     {
-        $rules = [
-            [['id', 'sectionId', 'siteId'], 'number', 'integerOnly' => true],
-            [['siteId'], SiteIdValidator::class],
-            [['template'], 'string', 'max' => 500],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['id', 'sectionId', 'siteId'], 'number', 'integerOnly' => true];
+        $rules[] = [['siteId'], SiteIdValidator::class];
+        $rules[] = [['template'], 'string', 'max' => 500];
 
         if ($this->getSection()->type == Section::TYPE_SINGLE) {
             $rules[] = ['uriFormat', SingleSectionUriValidator::class];

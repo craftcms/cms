@@ -8,6 +8,7 @@
 namespace craft\db\mysql;
 
 use Craft;
+use craft\db\Table;
 use craft\db\TableSchema;
 use craft\helpers\FileHelper;
 use yii\db\Exception;
@@ -79,7 +80,7 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function quoteDatabaseName(string $name): string
     {
-        return '`'.$name.'`';
+        return '`' . $name . '`';
     }
 
     /**
@@ -95,7 +96,7 @@ class Schema extends \yii\db\mysql\Schema
         } catch (Exception $e) {
             // Specifically look for a "SAVEPOINT does not exist" error.
             if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
-                Craft::warning('Tried to release a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
+                Craft::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
             } else {
                 throw $e;
             }
@@ -115,7 +116,7 @@ class Schema extends \yii\db\mysql\Schema
         } catch (Exception $e) {
             // Specifically look for a "SAVEPOINT does not exist" error.
             if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
-                Craft::warning('Tried to roll back a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
+                Craft::warning('Tried to roll back a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
             } else {
                 throw $e;
             }
@@ -145,48 +146,37 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultBackupCommand(): string
     {
-        $defaultTableIgnoreList = [
-            '{{%assetindexdata}}',
-            '{{%assettransformindex}}',
-            '{{%cache}}',
-            '{{%sessions}}',
-            '{{%templatecaches}}',
-            '{{%templatecachecriteria}}',
-            '{{%templatecacheelements}}',
-        ];
-
-        $dbSchema = Craft::$app->getDb()->getSchema();
-
-        foreach ($defaultTableIgnoreList as $key => $ignoreTable) {
-            $defaultTableIgnoreList[$key] = ' --ignore-table={database}.'.$dbSchema->getRawTableName($ignoreTable);
-        }
-
         $defaultArgs =
-            ' --defaults-extra-file="'.$this->_createDumpConfigFile().'"'.
-            ' --add-drop-table'.
-            ' --comments'.
-            ' --create-options'.
-            ' --dump-date'.
-            ' --no-autocommit'.
-            ' --routines'.
-            ' --set-charset'.
+            ' --defaults-extra-file="' . $this->_createDumpConfigFile() . '"' .
+            ' --add-drop-table' .
+            ' --comments' .
+            ' --create-options' .
+            ' --dump-date' .
+            ' --no-autocommit' .
+            ' --routines' .
+            ' --set-charset' .
             ' --triggers';
 
-        $schemaDump = 'mysqldump'.
-            $defaultArgs.
-            ' --single-transaction'.
-            ' --no-data'.
-            ' --result-file="{file}"'.
+        $ignoreTableArgs = [];
+        foreach (Craft::$app->getDb()->getIgnoredBackupTables() as $table) {
+            $ignoreTableArgs[] = "--ignore-table={database}.{$table}";
+        }
+
+        $schemaDump = 'mysqldump' .
+            $defaultArgs .
+            ' --single-transaction' .
+            ' --no-data' .
+            ' --result-file="{file}"' .
             ' {database}';
 
-        $dataDump = 'mysqldump'.
-            $defaultArgs.
-            ' --no-create-info'.
-            implode('', $defaultTableIgnoreList).
-            ' {database}'.
+        $dataDump = 'mysqldump' .
+            $defaultArgs .
+            ' --no-create-info' .
+            ' ' . implode(' ', $ignoreTableArgs) .
+            ' {database}' .
             ' >> "{file}"';
 
-        return $schemaDump.' && '.$dataDump;
+        return $schemaDump . ' && ' . $dataDump;
     }
 
     /**
@@ -197,9 +187,9 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        return 'mysql'.
-            ' --defaults-extra-file="'.$this->_createDumpConfigFile().'"'.
-            ' {database}'.
+        return 'mysql' .
+            ' --defaults-extra-file="' . $this->_createDumpConfigFile() . '"' .
+            ' {database}' .
             ' < "{file}"';
     }
 
@@ -208,8 +198,10 @@ class Schema extends \yii\db\mysql\Schema
      *
      * ```php
      * [
-     *     'IndexName1' => ['col1' [, ...]],
-     *     'IndexName2' => ['col2' [, ...]],
+     *     'IndexName' => [
+     *         'columns' => ['col1' [, ...]],
+     *         'unique' => false
+     *     ],
      * ]
      * ```
      *
@@ -224,12 +216,15 @@ class Schema extends \yii\db\mysql\Schema
         $sql = $this->getCreateTableSql($table);
         $indexes = [];
 
-        $regexp = '/KEY\s+([^\(\s]+)\s*\(([^\(\)]+)\)/mi';
+        $regexp = '/(UNIQUE\s+)?KEY\s+([^\(\s]+)\s*\(([^\(\)]+)\)/mi';
         if (preg_match_all($regexp, $sql, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {
-                $indexName = str_replace('`', '', $match[1]);
-                $indexColumns = array_map('trim', explode(',', str_replace('`', '', $match[2])));
-                $indexes[$indexName] = $indexColumns;
+                $indexName = str_replace('`', '', $match[2]);
+                $indexColumns = array_map('trim', explode(',', str_replace('`', '', $match[3])));
+                $indexes[$indexName] = [
+                    'columns' => $indexColumns,
+                    'unique' => !empty($match[1]),
+                ];
             }
         }
 
@@ -314,17 +309,17 @@ SQL;
      */
     private function _createDumpConfigFile(): string
     {
-        $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.'my.cnf';
+        $filePath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . 'my.cnf';
 
         $dbConfig = Craft::$app->getConfig()->getDb();
-        $contents = '[client]'.PHP_EOL.
-            'user='.$dbConfig->user.PHP_EOL.
-            'password="'.addslashes($dbConfig->password).'"'.PHP_EOL.
-            'host='.$dbConfig->server.PHP_EOL.
-            'port='.$dbConfig->port;
+        $contents = '[client]' . PHP_EOL .
+            'user=' . $dbConfig->user . PHP_EOL .
+            'password="' . addslashes($dbConfig->password) . '"' . PHP_EOL .
+            'host=' . $dbConfig->server . PHP_EOL .
+            'port=' . $dbConfig->port;
 
         if ($dbConfig->unixSocket) {
-            $contents .= PHP_EOL.'socket='.$dbConfig->unixSocket;
+            $contents .= PHP_EOL . 'socket=' . $dbConfig->unixSocket;
         }
 
         FileHelper::writeToFile($filePath, $contents);

@@ -20,7 +20,7 @@ class InstallerAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__.'/dist';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
@@ -31,7 +31,7 @@ class InstallerAsset extends AssetBundle
         ];
 
         $this->js = [
-            'install'.$this->dotJs(),
+            'install' . $this->dotJs(),
         ];
 
         parent::init();

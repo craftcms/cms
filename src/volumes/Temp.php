@@ -3,7 +3,6 @@
 namespace craft\volumes;
 
 use Craft;
-use craft\helpers\UrlHelper;
 
 /**
  * The temporary volume class. Handles the implementation of a temporary volume

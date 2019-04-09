@@ -13,7 +13,7 @@ use yii\helpers\ArrayHelper;
 use yii\web\NotFoundHttpException;
 
 /**
- * Debugger panel that collects and displays deprecation error logs.
+ * Debugger panel that collects and displays deprecation warnings.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -42,7 +42,7 @@ class DeprecatedPanel extends Panel
     }
 
     /**
-     * @throws NotFoundHttpException if a `trace` parameter is in the query string, but its value isn’t a valid deprecation error log’s ID
+     * @throws NotFoundHttpException if a `trace` parameter is in the query string, but its value isn’t a valid deprecation warning’s ID
      */
     public function getDetail()
     {
@@ -58,7 +58,7 @@ class DeprecatedPanel extends Panel
             $log = Craft::$app->getDeprecator()->getLogById($logId);
 
             if ($log === null) {
-                throw new NotFoundHttpException('The requested deprecation error log could not be found.');
+                throw new NotFoundHttpException('The requested deprecation warning could not be found.');
             }
 
             return Craft::$app->getView()->render('@app/views/debug/deprecated/traces', [

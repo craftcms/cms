@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Category;
+use craft\elements\Entry;
 use craft\errors\InvalidTypeException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
@@ -118,7 +119,7 @@ class ElementsController extends BaseElementsController
         Craft::configure($element, $params);
 
         // Set the custom field values
-        $element->setFieldValuesFromRequest($namespace.'.fields');
+        $element->setFieldValuesFromRequest($namespace . '.fields');
 
         // Now save it
         if ($element->enabled && $element->enabledForSite) {
@@ -126,6 +127,12 @@ class ElementsController extends BaseElementsController
         }
 
         if (Craft::$app->getElements()->saveElement($element)) {
+            // todo: super hacky. Adjust when we add revision support to all element types
+            // If this is an entry, should we save a new version?
+            if (($element instanceof Entry) && $element->getSection()->enableVersioning) {
+                Craft::$app->getEntryRevisions()->saveVersion($element);
+            }
+
             $response = [
                 'success' => true,
                 'id' => $element->id,
@@ -171,8 +178,7 @@ class ElementsController extends BaseElementsController
             $categories = Category::find()
                 ->id($categoryIds)
                 ->siteId($request->getParam('siteId'))
-                ->status(null)
-                ->enabledForSite(false)
+                ->anyStatus()
                 ->all();
 
             // Fill in the gaps
@@ -207,10 +213,12 @@ class ElementsController extends BaseElementsController
     {
         $elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
         $siteId = Craft::$app->getRequest()->getBodyParam('siteId', null);
+        $size = Craft::$app->getRequest()->getBodyParam('size', null);
+        $viewMode = Craft::$app->getRequest()->getBodyParam('viewMode', null);
         $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
 
         $view = $this->getView();
-        $html = $view->renderTemplate('_elements/element', ['element' => $element]);
+        $html = $view->renderTemplate('_elements/element', compact('element', 'size', 'viewMode'));
         $headHtml = $view->getHeadHtml();
 
         return $this->asJson(['html' => $html, 'headHtml' => $headHtml]);
@@ -261,10 +269,12 @@ class ElementsController extends BaseElementsController
         $attributes = $request->getBodyParam('attributes', []);
         $element = $this->_getEditorElementInternal($elementId, $elementType, $siteId, $attributes);
 
+        $site = Craft::$app->getSites()->getSiteById($siteId);
+
         /** @var Element $element */
         // Make sure the user is allowed to edit this site
-        $userService = Craft::$app->getUser();
-        if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userService->checkPermission('editSite:'.$siteId)) {
+        $userSession = Craft::$app->getUser();
+        if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userSession->checkPermission('editSite:' . $site->uid)) {
             // Find the first site the user does have permission to edit
             $elementSiteIds = [];
             $newSiteId = null;
@@ -274,7 +284,7 @@ class ElementsController extends BaseElementsController
             }
 
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                if (in_array($siteId, $elementSiteIds, false) && $userService->checkPermission('editSite:'.$siteId)) {
+                if (in_array($siteId, $elementSiteIds, false) && $userSession->checkPermission('editSite:' . $site->uid)) {
                     $newSiteId = $siteId;
                     break;
                 }
@@ -321,7 +331,7 @@ class ElementsController extends BaseElementsController
             $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);
 
             if (!$element) {
-                throw new BadRequestHttpException('No element exists with the ID '.$elementId);
+                throw new BadRequestHttpException('No element exists with the ID ' . $elementId);
             }
         } else {
             $element = new $elementType();
@@ -372,21 +382,21 @@ class ElementsController extends BaseElementsController
 
         $response['siteId'] = $element->siteId;
 
-        $namespace = 'editor_'.StringHelper::randomString(10);
+        $namespace = 'editor_' . StringHelper::randomString(10);
         $this->getView()->setNamespace($namespace);
 
-        $response['html'] = '<input type="hidden" name="namespace" value="'.$namespace.'">';
+        $response['html'] = '<input type="hidden" name="namespace" value="' . $namespace . '">';
 
         if ($element->id !== null) {
-            $response['html'] .= '<input type="hidden" name="elementId" value="'.$element->id.'">';
+            $response['html'] .= '<input type="hidden" name="elementId" value="' . $element->id . '">';
         }
 
         if ($element->siteId !== null) {
-            $response['html'] .= '<input type="hidden" name="siteId" value="'.$element->siteId.'">';
+            $response['html'] .= '<input type="hidden" name="siteId" value="' . $element->siteId . '">';
         }
 
-        $response['html'] .= '<div class="meta">'.
-            $this->getView()->namespaceInputs((string)$element->getEditorHtml()).
+        $response['html'] .= '<div class="meta">' .
+            $this->getView()->namespaceInputs((string)$element->getEditorHtml()) .
             '</div>';
 
         $view = $this->getView();

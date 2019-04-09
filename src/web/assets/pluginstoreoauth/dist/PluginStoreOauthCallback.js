@@ -14,9 +14,18 @@
                 this.$graphic = $('#graphic');
                 this.$status = $('#status');
 
-                setTimeout($.proxy(function() {
-                    this.postActionRequest();
-                }, this), 500);
+                if (!this.settings.error) {
+                    setTimeout($.proxy(function() {
+                        this.postActionRequest();
+                    }, this), 500);
+                }  else {
+                    var errorMsg = this.settings.message ? this.settings.message : this.settings.error;
+                    this.$status.html(errorMsg);
+
+                    setTimeout($.proxy(function() {
+                        window.location = this.settings.redirectUrl;
+                    }, this), 1000)
+                }
             },
 
             postActionRequest: function() {
@@ -26,7 +35,6 @@
                 Craft.postActionRequest('plugin-store/save-token', fragments, $.proxy(function(response, textStatus, jqXHR)
                 {
                     if (textStatus == 'success') {
-
                         if(response.error) {
                             this.showError(response.error);
                         } else {
@@ -39,7 +47,7 @@
                                 if(typeof(this.settings.redirectUrl) != 'undefined') {
                                     window.location = this.settings.redirectUrl;
                                 } else {
-                                    window.location = Craft.getCpUrl('myaccount');
+                                    window.location = Craft.getCpUrl('plugin-store');
                                 }
                             }, this), 500);
                         }
@@ -84,7 +92,7 @@
 
                 $cancelBtn = $('<a/>', {
                     'class': 'btn big',
-                    'href': Craft.getCpUrl('myaccount'),
+                    'href': Craft.getCpUrl('plugin-store'),
                     text: "Cancel",
                 }).appendTo($buttonContainer);
 

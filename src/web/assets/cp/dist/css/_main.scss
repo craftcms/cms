@@ -468,6 +468,19 @@ td {
   vertical-align: middle;
 }
 
+body.ltr table[dir='rtl'] {
+  th,
+  td {
+    text-align: right;
+  }
+}
+body.rtl table[dir='ltr'] {
+  th,
+  td {
+    text-align: left;
+  }
+}
+
 th.right,
 td.right {
   float: none;
@@ -592,12 +605,25 @@ td.right {
     vertical-align: baseline;
     width: 100%;
     line-height: 1.375;
-    content: 'info';
     color: $lightTextColor;
   }
 
-  &:hover:before {
-    color: $linkColor;
+  &:not(.warning) {
+    &:before {
+      content: 'info';
+    }
+    &:hover:before {
+      color: $linkColor;
+    }
+  }
+
+  &.warning {
+    &:before {
+      content: 'alert';
+    }
+    &:hover:before {
+      color: $warningColor;
+    }
   }
 }
 
@@ -799,13 +825,20 @@ ul.icons li a:hover {
     background: #fff;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
   }
+
+  .flex {
+    align-items: flex-start;
+  }
 }
 
 .flex {
   display: flex;
   align-items: center;
   align-content: stretch;
-  flex-wrap: wrap;
+
+  &:not(.flex-nowrap) {
+    flex-wrap: wrap;
+  }
 
   & > * {
     margin-bottom: 7px;
@@ -838,7 +871,7 @@ ul.icons li a:hover {
     &:not(.hidden) {
       & + .btn,
       & + .btngroup {
-        margin-left: 5px;
+        @include margin-left(5px);
       }
     }
   }
@@ -865,7 +898,7 @@ ul.icons li a:hover {
 
   &:focus {
     outline: none;
-    box-shadow: inset 0 0 0 1px $darkHairlineColorAlpha, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 0 0 1px $blue, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 1px rgba(0, 0, 0, 0.1);
   }
 
   &:active,
@@ -1327,6 +1360,41 @@ div.btn.submit input {
   }
 }
 
+/* pagination */
+.pagination {
+  table.data + & {
+    margin-top: 24px;
+  }
+
+  .page-link {
+    padding: 4px 13px 8px;
+    border-radius: $btnBorderRadius;
+    color: $textColor;
+
+    &:before {
+      font-size: 1.2em;
+    }
+
+    &:not(.disabled) {
+      transition: box-shadow linear 100ms;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: none;
+        box-shadow: inset 0 0 0 1px $linkColor;
+      }
+    }
+
+    &.disabled {
+      opacity: 1;
+      background: $bgColor;
+      font-weight: bold;
+      color: $lightTextColor;
+    }
+  }
+}
+
 /* action buttons */
 .actions {
   @include floatright;
@@ -1404,9 +1472,19 @@ td.thin {
 }
 
 /* data */
-table.data th:not(:first-child),
-table.data td:not(:first-child) {
-  @include padding-left(14px);
+body.ltr table.data:not([dir='rtl']),
+body.rtl table.data[dir='ltr'] {
+  th:not(:first-child),
+  td:not(:first-child) {
+    padding-left: 14px;
+  }
+}
+body.rtl table.data:not([dir='ltr']),
+body.ltr table.data[dir='rtl'] {
+  th:not(:first-child),
+  td:not(:first-child) {
+    padding-right: 14px;
+  }
 }
 
 table.data thead th,
@@ -1782,7 +1860,7 @@ $checkboxPadding: 20px;
     .toggle {
       display: block;
       position: absolute;
-      top: 9px;
+      top: 13px;
       @include margin-left(-20px);
     }
 
@@ -1804,7 +1882,7 @@ $checkboxPadding: 20px;
       &.has-checkbox {
         .checkbox {
           position: absolute;
-          top: 106px;
+          top: 108px;
           @include left(4px);
         }
 
@@ -1822,6 +1900,15 @@ $checkboxPadding: 20px;
         }
       }
     }
+  }
+}
+
+.export-form {
+  position: relative;
+  .spinner {
+    position: absolute;
+    bottom: 0;
+    @include right(-24px);
   }
 }
 
@@ -2071,6 +2158,10 @@ table.editable {
 
         &.textual {
           vertical-align: top;
+
+          textarea {
+            resize: none;
+          }
         }
 
         &:not(.textual) {
@@ -2131,6 +2222,10 @@ table.editable {
           textarea::placeholder {
             @include sans-serif-font;
           }
+        }
+
+        .flex > * {
+          margin-bottom: 0;
         }
       }
     }
@@ -2198,6 +2293,7 @@ table.editable {
 
     &:focus {
       border-style: solid;
+      border-color: $blue;
     }
   }
 }
@@ -2232,7 +2328,7 @@ ul.tree,
   border: 1px solid transparent;
 }
 
-.status:not(.on):not(.live):not(.active):not(.enabled):not(.locked):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
+.status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
   border-color: rgba(0, 0, 0, 0.40);
 }
 
@@ -2247,7 +2343,6 @@ ul.tree,
 /* green */
 
 .status.orange,
-.status.locked,
 .status.pending {
   background-color: $orange;
 }
@@ -2489,6 +2584,10 @@ ul.tree,
       line-height: 18px;
     }
 
+    &.lightswitch-field > .heading {
+      flex: 1;
+    }
+
     & > .input {
       .flex {
         flex-wrap: nowrap;
@@ -2517,6 +2616,10 @@ ul.tree,
   & > .data > .value {
     padding: 8px 0;
     width: calc(100% - 112px);
+  }
+
+  & > .field.lightswitch-field > .input {
+    width: auto;
   }
 
   & > .field {
@@ -2907,6 +3010,8 @@ ul.tree,
 
           img {
             display: block;
+            max-width: 100%;
+            max-height: 190px;
           }
         }
 
@@ -3053,10 +3158,20 @@ ul.tree,
 }
 
 /* logout warning/login/elevated session modals */
+.logoutwarningmodalshade,
+.loginmodalshade {
+  z-index: 101;
+}
+
 #logoutwarningmodal,
 #loginmodal,
 #elevatedsessionmodal {
   width: 500px;
+}
+
+#logoutwarningmodal,
+#loginmodal {
+  z-index: 101;
 }
 
 #loginmodal,
@@ -3075,6 +3190,12 @@ ul.tree,
 
 /* delete user modal */
 .deleteusermodal {
+  .content-summary {
+    margin: -24px -24px 24px;
+    padding: 24px;
+    background: $lightBgColor;
+  }
+
   .options {
     label {
       display: inline-block;
@@ -3095,6 +3216,14 @@ ul.tree,
       @include margin-left(-4px);
     }
   }
+}
+
+.dropdownsettingsmodal {
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  max-width: 400px;
 }
 
 /* ----------------------------------------
@@ -3174,6 +3303,19 @@ ul.tree,
   }
 }
 
+.menubtn,
+.menu {
+  span.icon {
+    display: inline-block;
+    margin-top: -1px;
+    width: 10px;
+    margin-right: 10px;
+    text-align: center;
+    font-size: 14px;
+    color: $lightTextColor;
+  }
+}
+
 .menu ul li a:not(.sel):not(.disabled):hover,
 .menu ul li a:not(.sel):not(.disabled):hover .light,
 .menu:not(:hover) ul li a:not(.disabled).hover,
@@ -3247,9 +3389,49 @@ ul.tree,
 .shadow-box {
   border-radius: $paneBorderRadius;
   border: 1px solid #ccc;
-  overflow: hidden;
   width: 100%;
   box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1);
+}
+
+table.shadow-box {
+  thead:first-child,
+  tbody:first-child {
+    tr:first-child {
+      th:first-child,
+      td:first-child {
+        &,
+        &.disabled:after {
+          border-top-left-radius: $paneBorderRadius - 1;
+        }
+      }
+      th:last-child,
+      td:last-child {
+        &,
+        &.disabled:after {
+          border-top-right-radius: $paneBorderRadius - 1;
+        }
+      }
+    }
+  }
+  thead:last-child,
+  tbody:last-child {
+    tr:last-child {
+      th:first-child,
+      td:first-child {
+        &,
+        &.disabled:after {
+          border-bottom-left-radius: $paneBorderRadius - 1;
+        }
+      }
+      th:last-child,
+      td:last-child {
+        &,
+        &.disabled:after {
+          border-bottom-right-radius: $paneBorderRadius - 1;
+        }
+      }
+    }
+  }
 }
 
 .text:not(.selectize-text),
@@ -3390,12 +3572,21 @@ textarea.text.fullwidth {
     }
   }
 
+  & > .notice,
   & > .warning {
     margin: 2px 0 0;
 
     &:before {
       @include margin(-2px, 2px, 0, 0);
       @include icon;
+      width: 1em;
+    }
+
+    &.notice:before {
+      content: 'lightbulb';
+    }
+
+    &.warning:before {
       content: 'alert';
     }
   }
@@ -3413,8 +3604,23 @@ textarea.text.fullwidth {
 .checkboxfield.has-instructions .instructions {
   margin-top: 2px;
   color: $mediumTextColor;
+
   img {
     max-width: 100%;
+  }
+
+  ul,
+  ol {
+    margin: 1em 0;
+    @include padding-left(2em);
+  }
+
+  ul li {
+    list-style-type: disc;
+  }
+
+  li + li {
+    margin-top: 0.25em;
   }
 }
 
@@ -3422,7 +3628,6 @@ textarea.text.fullwidth {
 .nested-fields {
   margin: -24px;
   padding: 24px 24px 0;
-  overflow: hidden;
 
   &.hidden {
     display: block;
@@ -3518,7 +3723,7 @@ div.checkbox.indeterminate:before {
 input.checkbox:focus + label:before,
 :focus div.checkbox:before {
   outline: none;
-  box-shadow: 0 0 0 1px $darkHairlineColorAlpha;
+  box-shadow: 0 0 0 1px $blue;
 }
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) {
@@ -3569,6 +3774,7 @@ input.checkbox:focus + label:before,
 .input.errors > .text,
 .input.errors > .border-box,
 .input.errors > .passwordwrapper > .text,
+.input.errors > .autosuggest-container .text,
 .text.error {
   border: 1px solid $errorColor !important;
 }
@@ -3756,6 +3962,7 @@ input:-ms-input-placeholder {
 
 .select:not(.selectize) select {
   @include select-input-styles;
+  white-space: pre;
 
   option {
     background: #fff;
@@ -3886,7 +4093,7 @@ body .selectize-dropdown .active {
   @include margin-left(1px);
   -padding: 10px;
   width: 210px;
-  height: 240px;
+  height: 242px;
   z-index: 101 !important;
 }
 
@@ -4018,25 +4225,59 @@ ul.errors li {
 }
 
 /* message pages */
-body.message .message-container {
+.message-container {
   position: absolute;
   z-index: 100;
   top: 0;
   @include left(0);
   width: 100%;
   height: 100%;
+
+  &.no-access {
+    background: rgba(50, 50, 50, 0.9);
+  }
+
+  .pane {
+    top: 50%;
+    margin-top: -33px !important;
+    margin-left: auto;
+    margin-right: auto;
+    width: 320px;
+  }
 }
 
-body.message .message-container.no-access {
-  background: rgba(50, 50, 50, 0.9);
+/* auto-suggest */
+.autosuggest-container {
+  position: relative;
 }
 
-body.message .message-container .pane {
-  top: 50%;
-  margin-top: -33px !important;
-  margin-left: auto;
-  margin-right: auto;
-  width: 320px;
+.autosuggest__results-container {
+  position: absolute;
+  z-index: 2;
+  width: 100%;
+  border-radius: $paneBorderRadius;
+  background: #fff;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  padding: 0 14px;
+  text-align: left;
+  @include sans-serif-font;
+  font-size: 1em !important;
+
+  .autosuggest__results_title {
+    @include h6-styles;
+    margin-top: 14px !important;
+  }
+
+  .autosuggest__results_item {
+    @include menu-option-styles;
+
+    &:hover,
+    &.autosuggest__results_item-highlighted {
+      @include menu-option-active-styles;
+      cursor: pointer;
+    }
+  }
 }
 
 /* ----------------------------------------

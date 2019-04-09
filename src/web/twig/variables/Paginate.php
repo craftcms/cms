@@ -8,7 +8,9 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\db\Paginator;
 use craft\helpers\UrlHelper;
+use yii\base\BaseObject;
 
 /**
  * Paginate variable class.
@@ -16,8 +18,31 @@ use craft\helpers\UrlHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Paginate
+class Paginate extends BaseObject
 {
+    // Static
+    // =========================================================================
+
+    /**
+     * Creates a new instance based on a Paginator object
+     *
+     * @param Paginator $paginator
+     * @return static
+     */
+    public static function create(Paginator $paginator): self
+    {
+        $pageResults = $paginator->getPageResults();
+        $pageOffset = $paginator->getPageOffset();
+
+        return new static([
+            'first' => $pageOffset + 1,
+            'last' => $pageOffset + count($pageResults),
+            'total' => $paginator->getTotalResults(),
+            'currentPage' => $paginator->getCurrentPage(),
+            'totalPages' => $paginator->getTotalPages(),
+        ]);
+    }
+
     // Properties
     // =========================================================================
 
@@ -62,29 +87,17 @@ class Paginate
             $params = [];
 
             if ($page != 1) {
-                $pageTrigger = Craft::$app->getConfig()->getGeneral()->pageTrigger;
-
-                if (!is_string($pageTrigger) || $pageTrigger === '') {
-                    $pageTrigger = 'p';
-                }
+                $pageTrigger = Craft::$app->getConfig()->getGeneral()->getPageTrigger();
 
                 // Is this query string-based pagination?
-                if ($pageTrigger[0] === '?') {
-                    $pageTrigger = trim($pageTrigger, '?=');
-
-                    // Avoid conflict with the path param
-                    $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-                    if ($pageTrigger === $pathParam) {
-                        $pageTrigger = $pathParam === 'p' ? 'pg' : 'p';
-                    }
-
-                    $params = [$pageTrigger => $page];
+                if (strpos($pageTrigger, '?') === 0) {
+                   $params = [trim($pageTrigger, '?=') => $page];
                 } else {
                     if ($path) {
                         $path .= '/';
                     }
 
-                    $path .= $pageTrigger.$page;
+                    $path .= $pageTrigger . $page;
                 }
             }
 

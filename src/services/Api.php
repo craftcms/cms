@@ -10,7 +10,6 @@ namespace craft\services;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser;
 use Craft;
-use craft\base\Plugin;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
@@ -133,7 +132,7 @@ class Api extends Component
     }
 
     /**
-     * Returns the plugin details.
+     * Returns plugin details.
      *
      * @param int $pluginId
      *
@@ -142,7 +141,21 @@ class Api extends Component
      */
     public function getPluginDetails(int $pluginId): array
     {
-        $response = $this->request('GET', 'plugin/'.$pluginId);
+        $response = $this->request('GET', 'plugin/' . $pluginId);
+        return Json::decode((string)$response->getBody());
+    }
+
+    /**
+     * Returns plugin changelog.
+     *
+     * @param int $pluginId
+     *
+     * @return array
+     * @throws RequestException if the API gave a non-2xx response
+     */
+    public function getPluginChangelog(int $pluginId): array
+    {
+        $response = $this->request('GET', 'plugin/' . $pluginId . '/changelog');
         return Json::decode((string)$response->getBody());
     }
 
@@ -156,7 +169,7 @@ class Api extends Component
      */
     public function getDeveloper(int $developerId): array
     {
-        $response = $this->request('GET', 'developer/'.$developerId);
+        $response = $this->request('GET', 'developer/' . $developerId);
         return Json::decode((string)$response->getBody());
     }
 
@@ -179,60 +192,67 @@ class Api extends Component
     }
 
     /**
-     * Returns optimized Composer requirements based on what’s currently installed,
-     * and the package requirements that should be installed.
+     * Returns a list of package names that Composer should be allowed to update when installing/updating packages.
      *
      * @param array $install Package name/version pairs to be installed
      * @return array
      * @throws RequestException if the API gave a non-2xx response
      * @throws Exception if composer.json can't be located
      */
-    public function getOptimizedComposerRequirements(array $install): array
+    public function getComposerWhitelist(array $install): array
     {
         $composerService = Craft::$app->getComposer();
 
-        // Get the currently-installed packages, if there's a composer.lock
+        // If there's no composer.lock or we can't decode it, then we're done
+        $lockPath = $composerService->getLockPath();
+        if ($lockPath === null) {
+            return array_keys($install);
+        }
+        $lockData = Json::decode(file_get_contents($lockPath));
+        if (empty($lockData) || empty($lockData['packages'])) {
+            return array_keys($install);
+        }
+
         $installed = [];
-        if (($lockPath = $composerService->getLockPath()) !== null) {
-            $lockData = Json::decode(file_get_contents($lockPath));
-            if (!empty($lockData['packages'])) {
-                // Get the installed package versions
-                $hashes = [];
-                foreach ($lockData['packages'] as $package) {
-                    $installed[$package['name']] = $package['version'];
 
-                    // Should we be including the hash as well?
-                    if (strpos($package['version'], 'dev-') === 0) {
-                        $hashes[$package['name']] = $package['dist']['reference'] ?? $package['source']['reference'];
-                    }
-                }
+        // Get the installed package versions
+        $hashes = [];
+        foreach ($lockData['packages'] as $package) {
+            $installed[$package['name']] = $package['version'];
 
-                // Check for aliases
-                $aliases = [];
-                if (!empty($lockData['aliases'])) {
-                    $versionParser = new VersionParser();
-                    foreach ($lockData['aliases'] as $alias) {
-                        // Make sure the package is installed, we haven't already assigned an alias to this package,
-                        // and the alias is for the same version as what's installed
-                        if (
-                            !isset($aliases[$alias['package']]) &&
-                            isset($installed[$alias['package']]) &&
-                            $alias['version'] === $versionParser->normalize($installed[$alias['package']])
-                        ) {
-                            $aliases[$alias['package']] = $alias['alias'];
-                        }
-                    }
-                }
-
-                // Append the hashes and aliases
-                foreach ($hashes as $name => $hash) {
-                    $installed[$name] .= '#'.$hash;
-                }
-
-                foreach ($aliases as $name => $alias) {
-                    $installed[$name] .= ' as '.$alias;
+            // Should we be including the hash as well?
+            if (strpos($package['version'], 'dev-') === 0) {
+                $hash = $package['dist']['reference'] ?? $package['source']['reference'] ?? null;
+                if ($hash !== null) {
+                    $hashes[$package['name']] = $hash;
                 }
             }
+        }
+
+        // Check for aliases
+        $aliases = [];
+        if (!empty($lockData['aliases'])) {
+            $versionParser = new VersionParser();
+            foreach ($lockData['aliases'] as $alias) {
+                // Make sure the package is installed, we haven't already assigned an alias to this package,
+                // and the alias is for the same version as what's installed
+                if (
+                    !isset($aliases[$alias['package']]) &&
+                    isset($installed[$alias['package']]) &&
+                    $alias['version'] === $versionParser->normalize($installed[$alias['package']])
+                ) {
+                    $aliases[$alias['package']] = $alias['alias'];
+                }
+            }
+        }
+
+        // Append the hashes and aliases
+        foreach ($hashes as $name => $hash) {
+            $installed[$name] .= '#' . $hash;
+        }
+
+        foreach ($aliases as $name => $alias) {
+            $installed[$name] .= ' as ' . $alias;
         }
 
         $jsonPath = Craft::$app->getComposer()->getJsonPath();
@@ -244,17 +264,14 @@ class Api extends Component
 
         $requestBody = [
             'require' => $composerConfig['require'],
+            'installed' => $installed,
             'platform' => $this->platformVersions(true),
             'install' => $install,
             'minimum-stability' => $minStability,
             'prefer-stable' => (bool)($composerConfig['prefer-stable'] ?? false),
         ];
 
-        if (!empty($installed)) {
-            $requestBody['installed'] = $installed;
-        }
-
-        $response = $this->request('POST', 'optimize-composer-reqs', [
+        $response = $this->request('POST', 'composer-whitelist', [
             RequestOptions::BODY => Json::encode($requestBody),
         ]);
 
@@ -287,7 +304,7 @@ class Api extends Component
      */
     public function getCart(string $orderNumber)
     {
-        $response = $this->request('GET', 'carts/'.$orderNumber);
+        $response = $this->request('GET', 'carts/' . $orderNumber);
         return Json::decode((string)$response->getBody());
     }
 
@@ -301,7 +318,7 @@ class Api extends Component
      */
     public function updateCart(string $orderNumber, array $data)
     {
-        $response = $this->request('POST', 'carts/'.$orderNumber, [
+        $response = $this->request('POST', 'carts/' . $orderNumber, [
             'headers' => $this->getPluginStoreHeaders(),
             RequestOptions::BODY => Json::encode($data),
         ]);
@@ -327,7 +344,7 @@ class Api extends Component
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (RequestException $e) {
-            if (($response = $e->getResponse()) === null) {
+            if (($response = $e->getResponse()) === null || $response->getStatusCode() === 500) {
                 throw $e;
             }
         }
@@ -336,7 +353,7 @@ class Api extends Component
         $cache = Craft::$app->getCache();
         $duration = 86400;
         if ($response->hasHeader('X-Craft-Allow-Trials')) {
-            $cache->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), (bool)$response->getHeaderLine('X-Craft-Allow-Trials'), $duration);
+            $cache->set('editionTestableDomain@' . Craft::$app->getRequest()->getHostName(), (bool)$response->getHeaderLine('X-Craft-Allow-Trials'), $duration);
         }
         if ($response->hasHeader('X-Craft-License-Status')) {
             $cache->set('licenseKeyStatus', $response->getHeaderLine('X-Craft-License-Status'), $duration);
@@ -355,16 +372,19 @@ class Api extends Component
                     $licensedEdition = Craft::Pro;
                     break;
                 default:
-                    Craft::error('Invalid X-Craft-License-Edition header value: '.$licensedEdition, __METHOD__);
+                    Craft::error('Invalid X-Craft-License-Edition header value: ' . $licensedEdition, __METHOD__);
             }
 
             $cache->set('licensedEdition', $licensedEdition, $duration);
         }
 
         $pluginLicenseStatuses = [];
+        $pluginLicenseEditions = [];
         $pluginsService = Craft::$app->getPlugins();
-        foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
-            $pluginLicenseStatuses[$pluginHandle] = LicenseKeyStatus::Unknown;
+        foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
+            if ($pluginInfo['isInstalled']) {
+                $pluginLicenseStatuses[$pluginHandle] = LicenseKeyStatus::Unknown;
+            }
         }
         if ($response->hasHeader('X-Craft-Plugin-License-Statuses')) {
             $pluginLicenseInfo = explode(',', $response->getHeaderLine('X-Craft-Plugin-License-Statuses'));
@@ -373,9 +393,17 @@ class Api extends Component
                 $pluginLicenseStatuses[$pluginHandle] = $pluginLicenseStatus;
             }
         }
+        if ($response->hasHeader('X-Craft-Plugin-License-Editions')) {
+            $pluginLicenseInfo = explode(',', $response->getHeaderLine('X-Craft-Plugin-License-Editions'));
+            foreach ($pluginLicenseInfo as $info) {
+                list($pluginHandle, $pluginLicenseEdition) = explode(':', $info);
+                $pluginLicenseEditions[$pluginHandle] = $pluginLicenseEdition;
+            }
+        }
         foreach ($pluginLicenseStatuses as $pluginHandle => $pluginLicenseStatus) {
+            $pluginLicenseEdition = $pluginLicenseEditions[$pluginHandle] ?? null;
             try {
-                $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus);
+                $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus, $pluginLicenseEdition);
             } catch (InvalidPluginException $pluginException) {
             }
         }
@@ -389,7 +417,7 @@ class Api extends Component
             if (App::licenseKey() !== null) {
                 $i = 0;
                 do {
-                    $newPath = "{$path}.".++$i;
+                    $newPath = "{$path}." . ++$i;
                 } while (file_exists($newPath));
                 $path = $newPath;
                 Craft::warning("A new license key was issued, but we already had one. Writing it to {$path} instead.", __METHOD__);
@@ -423,7 +451,7 @@ class Api extends Component
     {
         $headers = [
             'Accept' => 'application/json',
-            'X-Craft-System' => 'craft:'.Craft::$app->getVersion().';'.strtolower(Craft::$app->getEditionName()),
+            'X-Craft-System' => 'craft:' . Craft::$app->getVersion() . ';' . strtolower(Craft::$app->getEditionName()),
         ];
 
         // platform
@@ -455,13 +483,12 @@ class Api extends Component
         // plugin info
         $pluginLicenses = [];
         $pluginsService = Craft::$app->getPlugins();
-        /** @var Plugin[] $plugins */
-        $plugins = $pluginsService->getAllPlugins();
-        foreach ($plugins as $plugin) {
-            $handle = $plugin->getHandle();
-            $headers['X-Craft-System'] .= ",plugin-{$handle}:{$plugin->getVersion()}";
-            if (($licenseKey = $pluginsService->getPluginLicenseKey($handle)) !== null) {
-                $pluginLicenses[] = "{$handle}:{$licenseKey}";
+        foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
+            if ($pluginInfo['isInstalled']) {
+                $headers['X-Craft-System'] .= ",plugin-{$pluginHandle}:{$pluginInfo['version']};{$pluginInfo['edition']}";
+                if (($licenseKey = $pluginsService->getPluginLicenseKey($pluginHandle)) !== null) {
+                    $pluginLicenses[] = "{$pluginHandle}:{$licenseKey}";
+                }
             }
         }
         if (!empty($pluginLicenses)) {
@@ -519,7 +546,7 @@ class Api extends Component
         $craftIdToken = Craft::$app->getPluginStore()->getToken();
 
         if ($craftIdToken) {
-            $headers['Authorization'] = 'Bearer '.$craftIdToken->accessToken;
+            $headers['Authorization'] = 'Bearer ' . $craftIdToken->accessToken;
         }
 
         return $headers;

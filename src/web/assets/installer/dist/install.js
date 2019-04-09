@@ -32,6 +32,8 @@
 
                 this.addListener($('#beginbtn'), 'activate', 'showModal');
                 this.addListener(this.$dbDriverInput, 'change', 'updateDbPortInput');
+
+                new Craft.PasswordInput('#account-password');
             },
 
             showModal: function() {

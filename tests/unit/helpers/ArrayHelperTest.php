@@ -1,7 +1,8 @@
 <?php
+
 namespace app\helpers;
 
-use \craft\helpers\ArrayHelper;
+use craft\helpers\ArrayHelper;
 
 class ArrayHelperTest extends \Codeception\TestCase\Test
 {
@@ -37,7 +38,7 @@ class ArrayHelperTest extends \Codeception\TestCase\Test
 
     public function testFilterEmptyStringsFromArray()
     {
-        $this->assertSame([0 => 1, 1 => 2, 4 => null, 5 => 5], ArrayHelper::filterEmptyStringsFromArray([0 => 1, 1 => 2, 3 => '', 4 => null, 5=> 5]));
+        $this->assertSame([0 => 1, 1 => 2, 4 => null, 5 => 5], ArrayHelper::filterEmptyStringsFromArray([0 => 1, 1 => 2, 3 => '', 4 => null, 5 => 5]));
     }
 
     public function testFirstKey()

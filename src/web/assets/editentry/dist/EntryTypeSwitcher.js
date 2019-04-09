@@ -20,14 +20,14 @@
                     this.$spinner.addClass('hidden');
 
                     if (textStatus === 'success') {
+                        this.trigger('beforeTypeChange');
+
                         var $tabs = $('#tabs');
                         if ($tabs.length) {
                             $tabs.replaceWith(response.tabsHtml);
                         } else {
                             $(response.tabsHtml).insertBefore($('#content'))
                         }
-
-                        Craft.cp.initTabs();
 
                         $('#fields').html(response.fieldsHtml);
                         Craft.initUiElements($('#fields'));
@@ -38,6 +38,10 @@
                         if (typeof slugGenerator !== 'undefined') {
                             slugGenerator.setNewSource('#title');
                         }
+
+                        Craft.cp.initTabs();
+
+                        this.trigger('typeChange');
                     }
                 }, this));
             }

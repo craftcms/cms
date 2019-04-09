@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 
 /**
  * Element record class.
@@ -31,6 +32,6 @@ class Element extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%elements}}';
+        return Table::ELEMENTS;
     }
 }

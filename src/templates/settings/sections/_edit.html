@@ -26,8 +26,10 @@
         label: "Handle"|t('app'),
         instructions: "How you’ll refer to this section in the templates."|t('app'),
         id: 'handle',
-        class: 'code',
         name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
         value: section.handle,
         errors: section.getErrors('handle'),
         required: true
@@ -122,7 +124,7 @@
                 class: 'type-channel type-structure'~(section.type == 'single' ? ' hidden')
             },
             template: {
-                type: 'singleline',
+                type: 'template',
                 heading: "Template"|t('app'),
                 info: "Which template should be loaded when an entry’s URL is requested."|t('app'),
                 code: true
@@ -139,19 +141,24 @@
     }) }}
 
     {% if craft.app.getIsMultiSite() %}
-        <div class="type-channel {% if section.type != 'channel' %}hidden{% endif %}">
-            {{ forms.checkboxField({
-                label: 'Propagate entries across all enabled sites?'|t('app'),
-                instructions: 'Whether entries should be propagated across all the sites the section is enabled in. If this is disabled, each entry will only belong to the site it was created in.'|t('app'),
-                id: 'propagateEntries',
-                name: 'propagateEntries',
-                checked: section.propagateEntries,
-                warning: section.id and section.propagateEntries ? 'Changing this may result in data loss.'|t('app')
+        <div class="field type-channel type-structure {% if section.type == 'single' %}hidden{% endif %}">
+            {{ forms.selectField({
+                label: 'Propagation Method'|t('app'),
+                instructions: 'Of the enabled sites above, which sites should entries in this section be saved for?'|t('app'),
+                id: 'propagationMethod',
+                name: 'propagationMethod',
+                options: [
+                    { value: 'none', label: 'Only save entries in the site they were created in'|t('app') },
+                    { value: 'siteGroup', label: 'Save entries to other sites in the same site group'|t('app') },
+                    { value: 'language', label: 'Save entries to other sites with the same language'|t('app') },
+                    { value: 'all', label: 'Save entries to all sites enabled for this section'|t('app') },
+                ],
+                value: section.propagationMethod
             }) }}
         </div>
     {% endif %}
 
-    <div class="type-structure {% if section.type != 'structure' %}hidden{% endif %}">
+    <div class="field type-structure {% if section.type != 'structure' %}hidden{% endif %}">
         {{ forms.textField({
             label: "Max Levels"|t('app'),
             instructions: "The maximum number of levels this section can have. Leave blank if you don’t care."|t('app'),

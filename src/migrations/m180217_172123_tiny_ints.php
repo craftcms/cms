@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m180217_172123_tiny_ints migration.
@@ -14,14 +15,14 @@ class m180217_172123_tiny_ints extends Migration
      */
     public function safeUp()
     {
-        $this->alterColumn('{{%tokens}}', 'usageLimit', $this->tinyInteger()->unsigned());
-        $this->alterColumn('{{%tokens}}', 'usageCount', $this->tinyInteger()->unsigned());
-        $this->alterColumn('{{%users}}', 'invalidLoginCount', $this->tinyInteger()->unsigned());
+        $this->alterColumn(Table::TOKENS, 'usageLimit', $this->tinyInteger()->unsigned());
+        $this->alterColumn(Table::TOKENS, 'usageCount', $this->tinyInteger()->unsigned());
+        $this->alterColumn(Table::USERS, 'invalidLoginCount', $this->tinyInteger()->unsigned());
 
         if ($this->db->getIsPgsql()) {
             $this->execute('alter table {{%info}} alter column [[edition]] type smallint, alter column [[edition]] set not null');
         } else {
-            $this->alterColumn('{{%info}}', 'edition', $this->tinyInteger()->unsigned()->notNull());
+            $this->alterColumn(Table::INFO, 'edition', $this->tinyInteger()->unsigned()->notNull());
         }
     }
 

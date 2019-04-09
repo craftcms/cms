@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 
 /**
  * m180122_213433_propagate_entries_setting migration.
@@ -14,7 +15,7 @@ class m180122_213433_propagate_entries_setting extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn('{{%sections}}', 'propagateEntries', $this->boolean()->after('enableVersioning')->defaultValue(true)->notNull());
+        $this->addColumn(Table::SECTIONS, 'propagateEntries', $this->boolean()->after('enableVersioning')->defaultValue(true)->notNull());
     }
 
     /**

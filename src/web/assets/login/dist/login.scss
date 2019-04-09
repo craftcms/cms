@@ -26,6 +26,10 @@ html, body {
   word-wrap: break-word;
 }
 
+#login-fields {
+  overflow: hidden;
+}
+
 #login-form .field {
   margin: 0;
 }

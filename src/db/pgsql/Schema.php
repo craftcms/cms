@@ -9,6 +9,7 @@ namespace craft\db\pgsql;
 
 use Composer\Util\Platform;
 use Craft;
+use craft\db\Table;
 use craft\db\TableSchema;
 use yii\db\Exception;
 
@@ -53,7 +54,7 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function quoteDatabaseName(string $name): string
     {
-        return '"'.$name.'"';
+        return '"' . $name . '"';
     }
 
     /**
@@ -70,7 +71,7 @@ class Schema extends \yii\db\pgsql\Schema
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
             if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] === '3B001' && $e->errorInfo[1] == 7) {
-                Craft::warning('Tried to release a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
+                Craft::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
             } else {
                 throw $e;
             }
@@ -90,7 +91,7 @@ class Schema extends \yii\db\pgsql\Schema
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
             if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] === '3B001' && $e->errorInfo[1] == 7) {
-                Craft::warning('Tried to roll back a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
+                Craft::warning('Tried to roll back a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
             } else {
                 throw $e;
             }
@@ -104,7 +105,7 @@ class Schema extends \yii\db\pgsql\Schema
     {
         if ($sequenceName !== '') {
             if (strpos($sequenceName, '.') === false) {
-                $sequenceName = $this->defaultSchema.'.'.$this->getRawTableName($sequenceName);
+                $sequenceName = $this->defaultSchema . '.' . $this->getRawTableName($sequenceName);
             }
             $sequenceName .= '_id_seq';
         }
@@ -119,33 +120,25 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultBackupCommand()
     {
-        $defaultTableIgnoreList = [
-            '{{%assetindexdata}}',
-            '{{%assettransformindex}}',
-            '{{%cache}}',
-            '{{%sessions}}',
-            '{{%templatecaches}}',
-            '{{%templatecachecriteria}}',
-            '{{%templatecacheelements}}',
-        ];
-
-        $dbSchema = Craft::$app->getDb()->getSchema();
-
-        foreach ($defaultTableIgnoreList as $key => $ignoreTable) {
-            $defaultTableIgnoreList[$key] = " --exclude-table-data '{schema}.".$dbSchema->getRawTableName($ignoreTable)."'";
+        $ignoredTableArgs = [];
+        foreach (Craft::$app->getDb()->getIgnoredBackupTables() as $table) {
+            $ignoredTableArgs[] = "--exclude-table-data '{schema}.{$table}'";
         }
 
-        return $this->_pgpasswordCommand().
-            'pg_dump'.
-            ' --dbname={database}'.
-            ' --host={server}'.
-            ' --port={port}'.
-            ' --username={user}'.
-            ' --if-exists'.
-            ' --clean'.
-            ' --file="{file}"'.
-            ' --schema={schema}'.
-            implode('', $defaultTableIgnoreList);
+        return $this->_pgpasswordCommand() .
+            'pg_dump' .
+            ' --dbname={database}' .
+            ' --host={server}' .
+            ' --port={port}' .
+            ' --username={user}' .
+            ' --if-exists' .
+            ' --clean' .
+            ' --no-owner' .
+            ' --no-privileges' .
+            ' --no-acl' .
+            ' --file="{file}"' .
+            ' --schema={schema}' .
+            ' ' . implode(' ', $ignoredTableArgs);
     }
 
     /**
@@ -155,13 +148,13 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        return $this->_pgpasswordCommand().
-            'psql'.
-            ' --dbname={database}'.
-            ' --host={server}'.
-            ' --port={port}'.
-            ' --username={user}'.
-            ' --no-password'.
+        return $this->_pgpasswordCommand() .
+            'psql' .
+            ' --dbname={database}' .
+            ' --host={server}' .
+            ' --port={port}' .
+            ' --username={user}' .
+            ' --no-password' .
             ' < "{file}"';
     }
 
@@ -170,8 +163,10 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * ```php
      * [
-     *     'IndexName1' => ['col1' [, ...]],
-     *     'IndexName2' => ['col2' [, ...]],
+     *     'IndexName' => [
+     *         'columns' => ['col1' [, ...]],
+     *         'unique' => false
+     *     ],
      * ]
      * ```
      *
@@ -194,7 +189,9 @@ class Schema extends \yii\db\pgsql\Schema
                 // https://github.com/yiisoft/yii2/issues/10613
                 $column = substr($column, 1, -1);
             }
-            $indexes[$row['indexname']][] = $column;
+
+            $indexes[$row['indexname']]['columns'][] = $column;
+            $indexes[$row['indexname']]['unique'] = (bool)$row['isunique'];
         }
 
         return $indexes;
@@ -320,7 +317,8 @@ SQL;
     {
         $sql = 'SELECT
     i.relname as indexname,
-    pg_get_indexdef(idx.indexrelid, k + 1, TRUE) AS columnname
+    pg_get_indexdef(idx.indexrelid, k + 1, TRUE) AS columnname,
+    indisunique as isunique
 FROM (
   SELECT *, generate_subscripts(indkey, 1) AS k
   FROM pg_index

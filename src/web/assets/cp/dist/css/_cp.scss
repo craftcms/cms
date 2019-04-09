@@ -3,13 +3,13 @@
 
 $sidebarWidth: 225px;
 $detailsWidth: 350px;
-$minFullUiWidth: 1224px;
+$minFullUiWidth: 1200px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 $sidebarBgColor: hsl($hue, 20%, 25%);
 $sidebarLinkHoverBgColor: hsla($hue, 20%, 20%, 0.05);
 
-$editionStaticColor: hsl($hue, 20%, 5%);
+$editionStaticColor: hsl($hue, 20%, 8%);
 $editionHoverColor: hsl($hue, 20%, 70%);
 
 html,
@@ -45,11 +45,12 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   -webkit-overflow-scrolling: touch;
   @include light-on-dark-text;
   background: $sidebarBgColor;
-  box-shadow: none;
+  box-shadow: inset -1px 0 0 darken($sidebarBgColor, 10%);
 
   #devmode {
     flex: 0 0 4px;
     width: 100%;
+    min-height: 4px; // fixes Windows scaling bug (https://github.com/craftcms/cms/issues/3259)
     background: url(../images/dev-mode.svg) repeat-x 21px 0;
     cursor: help;
   }
@@ -63,6 +64,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   & > a,
   *:not(.has-subnav) > a {
     outline: none;
+    transition: background-color linear 100ms;
 
     &:hover,
     &.active,
@@ -71,7 +73,8 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background-color: darken($sidebarBgColor, 3%);
+      transition: none;
 
       .icon {
         opacity: 1;
@@ -80,7 +83,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
     &.active,
     &:active {
-      background: rgba(255, 255, 255, 0.07);
+      background: darken($sidebarBgColor, 6%);
     }
 
     .icon {
@@ -104,11 +107,9 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     display: flex;
     flex-direction: row;
     align-items: top;
-    @include padding(14px, 14px, 14px, 10px);
+    @include padding(28px, 14px, 28px, 10px);
     min-height: -webkit-min-content;
     min-height: -moz-min-content;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    background-clip: padding-box;
 
     &:after {
       display: none;
@@ -166,13 +167,13 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   }
 
   #devmode + #system-info {
-    padding-top: 12px;
-    padding-bottom: 12px;
+    padding-top: 26px;
+    padding-bottom: 26px;
   }
 
   nav {
     flex: 1;
-    margin: 13px 0 0;
+    margin: 12px 0 0;
   }
 
   #job-icon {
@@ -229,7 +230,8 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     li {
       &:not(.has-subnav) > a.sel {
         color: #fff;
-        background: rgba(255, 255, 255, 0.1);
+        background: darken($sidebarBgColor, 6%);
+        box-shadow: inset 0 0 0 1px darken($sidebarBgColor, 10%);
         border-color: $submitColor;
         opacity: 1;
 
@@ -456,22 +458,25 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   #crumbs {
     flex-direction: row;
     align-items: stretch;
-    padding: 0 24px;
-    font-size: 12px;
+    padding: 16px 24px 0;
+    font-size: 13px;
+    background: darken($bgColor, 3%);
 
     &.empty {
       display: none;
+
       & + #main #header {
-        padding-top: 20px;
-        padding-bottom: 20px;
+        padding-top: 33px;
+        padding-bottom: 33px;
       }
     }
 
     &:not(.empty) {
       display: flex;
+
       & + #main #header {
-        padding-top: 7px;
-        padding-bottom: 7px;
+        padding-top: 3px;
+        padding-bottom: 21px;
       }
     }
 
@@ -534,7 +539,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       padding-right: 24px;
       box-sizing: border-box;
       width: calc(100vw - #{$sidebarWidth});
-      background: $bgColor;
+      background: darken($bgColor, 3%);
       box-shadow: 0 1px 0 $hairlineColorAlpha;
 
       body.fixed-header & {
@@ -609,7 +614,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       }
 
       #sidebar,
-      #content-container,
+      #content,
       #details {
         overflow-y: auto;
       }
@@ -622,7 +627,6 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       }
 
       #content-container {
-        flex: 1;
         display: flex;
         min-height: 0;
         flex-direction: column;
@@ -630,26 +634,40 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
         #tabs {
           position: relative;
-          z-index: 1;
-          box-shadow: inset 0 -1px 0 $hairlineColor;
+          z-index: 2;
           min-height: 40px;
           overflow: hidden;
+          margin: -4px 0 -10px;
+          padding: 5px 0 10px;
+          box-sizing: border-box;
+
+          &:after {
+            content: '.';
+            font-size: 0;
+            display: block;
+            position: absolute;
+            pointer-events: none;
+            bottom: 0;
+            left: 0;
+            width: calc(100% - 1px);
+            height: 10px;
+            background: linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0));
+            box-shadow: 0 -1px 0 $hairlineColor;
+          }
 
           ul {
             display: flex;
             flex-direction: row;
-            width: calc(100% + 1px);
+            width: calc(100% - 1px);
 
             li {
-              box-sizing: border-box;
-              @include border-right(1px solid $hairlineColorAlpha);
-
               a {
                 position: relative;
                 display: block;
-                padding: 10px 24px;
+                padding: 8px 24px;
                 white-space: nowrap;
                 overflow: hidden;
+                box-sizing: border-box;
 
                 &:after {
                   content: '.';
@@ -685,8 +703,15 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
                 &.sel {
                   color: $textColor;
                   background: #fff;
+                  padding-top: 10px;
                   padding-bottom: 10px;
+                  margin: -4px -1px 0;
                   cursor: default;
+                  background-clip: padding-box;
+                  border-radius: $menuBorderRadius $menuBorderRadius 0 0;
+                  border: solid $hairlineColorAlpha;
+                  border-width: 1px 1px 0;
+                  z-index: 1;
 
                   &:after {
                     body.ltr & {
@@ -706,30 +731,43 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
         #content {
           flex: 1;
           background: #fff;
-          padding: 24px 24px 48px;
+          background-clip: padding-box;
+          padding: 24px 24px 0;
           word-wrap: break-word;
+          @include border-right(1px solid $hairlineColorAlpha);
+
+          & > *:last-child {
+            padding-bottom: 48px;
+          }
+        }
+
+        #footer {
+          z-index: 1;
+          box-shadow: 0 -1px 0 $hairlineColorAlpha;
+          padding: 10px 24px;
+          background: #fff;
+
+          & > *,
+          .flex > * {
+            margin-bottom: 0;
+          }
         }
       }
 
       #details {
         flex: 0 0 $detailsWidth;
         width: $detailsWidth;
-        background: darken($bgColor, 3%);
-        padding-bottom: 32px;
-
-        body.ltr & {
-          box-shadow: inset 1px 0 0 $hairlineColorAlpha;
-        }
-
-        body.rtl & {
-          box-shadow: inset -1px 0 0 $hairlineColorAlpha;
-        }
+        padding: 24px 0 32px;
 
         .meta {
           padding: 16px 24px;
 
           &.read-only {
-            background: darken($bgColor, 6%);
+            background: darken($bgColor, 3%);
+
+            &:first-child {
+              margin-top: 30px;
+            }
           }
 
           & > .field,
@@ -748,7 +786,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
           }
 
           & > .field + .field {
-            border-top-color: darken($bgColor, 15%);
+            border-top-color: $hairlineColorAlpha;
           }
 
           .text::placeholder,
@@ -764,7 +802,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
         hr {
           margin: 0;
-          border-top-color: darken($bgColor, 15%);
+          border-top-color: $hairlineColorAlpha;
         }
 
         .spinner {
@@ -784,7 +822,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   }
 }
 
-// Hide the sidebar at < 1224
+// Hide the sidebar at < 1200
 @media only screen and (max-width: $minFullUiWidth - 1px) {
   #global-container {
     position: relative;
@@ -814,8 +852,8 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
     #main {
       #header {
         width: 100vw;
-        padding-top: 7px !important;
-        padding-bottom: 7px !important;
+        padding-top: 3px !important;
+        padding-bottom: 21px !important;
 
         body.ltr.fixed-header & {
           left: 0;
@@ -838,10 +876,6 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
       #main-content {
         width: 100vw;
-
-        #content-container {
-          width: 100% !important;
-        }
       }
     }
   }
@@ -907,12 +941,35 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
           }
         }
 
+        #content-container {
+          width: 100% !important;
+        }
+
         #details {
           flex-basis: auto;
           width: auto;
           box-shadow: inset 0 1px 0 $hairlineColorAlpha !important;
+          padding-top: 0;
         }
       }
+    }
+  }
+}
+
+// Tighten up the padding at < 768
+@media only screen and (max-width: 767px) {
+  #main-container {
+    #crumbs,
+    #main #header,
+    #main #main-content #content-container #tabs ul li a,
+    #main #main-content #content-container #content,
+    #main #main-content #details .meta {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    #main #main-content #content-container #tabs ul li a:after {
+      width: 12px;
     }
   }
 }
@@ -986,19 +1043,24 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
 /* notifications */
 #notifications-wrapper {
-  position: fixed;
-  top: 0;
+  position: relative;
   z-index: 101;
-  @include left(0);
-  width: 100%;
   pointer-events: none;
+
+  body.fixed-header & {
+    position: fixed;
+    width: 100%;
+  }
 }
 
 #notifications {
-  text-align: center;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
 
   .notification {
-    display: inline-block;
     padding: 5px 10px;
     border-radius: 0 0 3px 3px;
     border-width: 0 1px 1px;
@@ -1183,10 +1245,13 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       position: relative;
 
       &:not(.has-subnav) > a {
+        transition: background-color linear 100ms;
+
         &:hover {
           text-decoration: none;
           color: $textColor;
           background: $sidebarLinkHoverBgColor;
+          transition: none;
         }
 
         &.sel {
@@ -1280,7 +1345,7 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
 
       .toggle {
         position: absolute;
-        top: 10px;
+        top: 7px;
       }
 
       ul {

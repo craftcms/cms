@@ -135,7 +135,7 @@
 
                 var data = {
                     key: this.message.key,
-                    language: (this.$languageSelect.length ? this.$languageSelect.val() : Craft.language),
+                    language: (this.$languageSelect.length ? this.$languageSelect.val() : Craft.primarySiteLanguage),
                     subject: this.$subjectInput.val(),
                     body: this.$bodyInput.val()
                 };
@@ -168,7 +168,7 @@
                     if (textStatus === 'success') {
                         if (response.success) {
                             // Only update the page if we're editing the current language's message
-                            if (data.language === Craft.language) {
+                            if (data.language === Craft.primarySiteLanguage) {
                                 this.message.updateHtmlFromModal();
                             }
 

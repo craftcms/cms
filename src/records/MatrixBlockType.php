@@ -8,6 +8,7 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\Table;
 use craft\validators\HandleValidator;
 use yii\db\ActiveQueryInterface;
 
@@ -70,7 +71,7 @@ class MatrixBlockType extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%matrixblocktypes}}';
+        return Table::MATRIXBLOCKTYPES;
     }
 
     /**

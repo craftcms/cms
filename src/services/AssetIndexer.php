@@ -7,6 +7,7 @@ use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
@@ -73,7 +74,7 @@ class AssetIndexer extends Component
             $this->storeIndexList($fileList, $sessionId, $volumeId);
 
             foreach ($skippedItems as &$skippedItem) {
-                $skippedItem = $volume->name.'/'.$skippedItem;
+                $skippedItem = $volume->name . '/' . $skippedItem;
             }
 
             unset($skippedItem);
@@ -84,7 +85,7 @@ class AssetIndexer extends Component
             // Ensure folders are in the DB
             $assets = Craft::$app->getAssets();
             foreach ($foldersFound as $fullPath) {
-                $folderId = $assets->ensureFolderByFullPathAndVolume(rtrim($fullPath, '/').'/', $volume);
+                $folderId = $assets->ensureFolderByFullPathAndVolume(rtrim($fullPath, '/') . '/', $volume);
                 $indexedFolderIds[$folderId] = true;
             }
 
@@ -98,7 +99,7 @@ class AssetIndexer extends Component
 
             foreach ($allFolders as $folderModel) {
                 if (!isset($indexedFolderIds[$folderModel->id])) {
-                    $missingFolders[$folderModel->id] = $volume->name.'/'.$folderModel->path;
+                    $missingFolders[$folderModel->id] = $volume->name . '/' . $folderModel->path;
                 }
             }
 
@@ -109,6 +110,7 @@ class AssetIndexer extends Component
                 'skippedFiles' => $skippedItems
             ];
         } catch (\Throwable $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
             return ['error' => $exception->getMessage()];
         }
     }
@@ -131,8 +133,13 @@ class AssetIndexer extends Component
                 $path = $value['path'];
                 $segments = explode('/', $path);
 
-                foreach ($segments as $segment) {
-                    if (isset($segment[0]) && $segment[0] === '_' && $value['type'] === 'dir') {
+                $segmentCount = count($segments);
+
+                for ($segmentIndex = 0; $segmentIndex < $segmentCount; $segmentIndex++) {
+                    $currentSegment = $segments[$segmentIndex];
+
+                    // Skip if segment begins with an underscore and (this is a directory or not the last segment)
+                    if (isset($currentSegment[0]) && $currentSegment[0] === '_' && ($value['type'] === 'dir' || $segmentIndex + 1 < $segmentCount)) {
                         return false;
                     }
                 }
@@ -167,8 +174,16 @@ class AssetIndexer extends Component
      */
     public function extractSkippedItemsFromIndexList(array &$indexList): array
     {
-        $skippedItems = array_filter($indexList, function($entry) {
-            return preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $entry['basename']);
+        $isMysql = Craft::$app->getDb()->getIsMysql();
+
+        $skippedItems = array_filter($indexList, function($entry) use ($isMysql) {
+            if (preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $entry['basename'])) {
+                return true;
+            }
+            if ($isMysql && StringHelper::containsMb4($entry['basename'])) {
+                return true;
+            }
+            return false;
         });
 
         $indexList = array_diff_key($indexList, $skippedItems);
@@ -206,12 +221,12 @@ class AssetIndexer extends Component
         $values = [];
 
         foreach ($indexList as $entry) {
-            $values[] = [$volumeId, $sessionId, $entry['path'], $entry['size'], Db::prepareDateForDb(new \DateTime('@'.$entry['timestamp'])), false, false];
+            $values[] = [$volumeId, $sessionId, $entry['path'], $entry['size'], Db::prepareDateForDb(new \DateTime('@' . $entry['timestamp'])), false, false];
         }
 
         Craft::$app->getDb()->createCommand()
             ->batchInsert(
-                '{{%assetindexdata}}',
+                Table::ASSETINDEXDATA,
                 $attributes,
                 $values)
             ->execute();
@@ -227,12 +242,21 @@ class AssetIndexer extends Component
      */
     public function processIndexForVolume(string $sessionId, int $volumeId, bool $cacheImages = false)
     {
+        $mutex = Craft::$app->getMutex();
+        $lockName = 'idx--' . $sessionId;
+
+        if (!$mutex->acquire($lockName, 5)) {
+            throw new Exception('Could not acquire a lock for the indexing session "' . $sessionId . '".');
+        }
+
         if (($indexEntryModel = $this->getNextIndexEntry($sessionId, $volumeId)) === null) {
             return false;
         }
 
         // Mark as started.
         $this->updateIndexEntry($indexEntryModel->id, ['inProgress' => true]);
+
+        $mutex->release($lockName);
 
         try {
             $asset = $this->_indexFileByIndexData($indexEntryModel, $cacheImages);
@@ -267,7 +291,7 @@ class AssetIndexer extends Component
                 'completed',
                 'inProgress',
             ])
-            ->from(['{{%assetindexdata}}'])
+            ->from([Table::ASSETINDEXDATA])
             ->where([
                 'volumeId' => $volumeId,
                 'sessionId' => $sessionId,
@@ -292,7 +316,7 @@ class AssetIndexer extends Component
 
         Craft::$app->getDb()->createCommand()
             ->update(
-                '{{%assetindexdata}}',
+                Table::ASSETINDEXDATA,
                 $data,
                 ['id' => $entryId])
             ->execute();
@@ -312,7 +336,7 @@ class AssetIndexer extends Component
         // Load the record IDs of the files that were indexed.
         $processedFiles = (new Query())
             ->select(['recordId'])
-            ->from(['{{%assetindexdata}}'])
+            ->from([Table::ASSETINDEXDATA])
             ->where([
                 'and',
                 ['sessionId' => $sessionId],
@@ -323,7 +347,7 @@ class AssetIndexer extends Component
         // Load the processed volume IDs for that sessions.
         $volumeIds = (new Query())
             ->select(['DISTINCT([[volumeId]])'])
-            ->from(['{{%assetindexdata}}'])
+            ->from([Table::ASSETINDEXDATA])
             ->where(['sessionId' => $sessionId])
             ->column();
 
@@ -339,12 +363,14 @@ class AssetIndexer extends Component
             ->from(['{{%assets}} fi'])
             ->innerJoin('{{%volumefolders}} fo', '[[fi.folderId]] = [[fo.id]]')
             ->innerJoin('{{%volumes}} s', '[[s.id]] = [[fi.volumeId]]')
+            ->innerJoin('{{%elements}} e', '[[e.id]] = [[fi.id]]')
             ->where(['fi.volumeId' => $volumeIds])
+            ->andWhere(['e.dateDeleted' => null])
             ->all();
 
         foreach ($assets as $asset) {
             if (!isset($processedFiles[$asset['assetId']])) {
-                $output[$asset['assetId']] = $asset['volumeName'].'/'.$asset['path'].$asset['filename'];
+                $output[$asset['assetId']] = $asset['volumeName'] . '/' . $asset['path'] . $asset['filename'];
             }
         }
 
@@ -365,8 +391,11 @@ class AssetIndexer extends Component
     {
 
         $fileInfo = $volume->getFileMetadata($path);
+        $folderPath = dirname($path);
 
-        Craft::$app->getAssets()->ensureFolderByFullPathAndVolume(dirname($path).'/', $volume);
+        if ($folderPath !== '.') {
+            Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($folderPath . '/', $volume);
+        }
 
         $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
@@ -378,7 +407,12 @@ class AssetIndexer extends Component
             'completed' => false
         ]);
 
-        $record = new AssetIndexDataRecord($indexEntry->toArray());
+        $recordData = $indexEntry->toArray();
+
+        // For some reason Postgres chokes if we don't do that.
+        unset($recordData['id']);
+
+        $record = new AssetIndexDataRecord($recordData);
         $record->save();
 
         $indexEntry->id = $record->id;
@@ -412,7 +446,7 @@ class AssetIndexer extends Component
             $path = '';
         } else {
             $parentId = false;
-            $path = $dirname.'/';
+            $path = $dirname . '/';
         }
 
         $assets = Craft::$app->getAssets();

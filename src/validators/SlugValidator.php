@@ -33,6 +33,11 @@ class SlugValidator extends Validator
      */
     public $limitAutoSlugsToAscii;
 
+    /**
+     * @var string|null The language to pull ASCII character mappings for, if [[limitAutoSlugsToAscii]] is enabled.
+     */
+    public $language;
+
     // Public Methods
     // =========================================================================
 
@@ -66,7 +71,7 @@ class SlugValidator extends Validator
             $slug = str_replace(['.', '_', '-'], ' ', $model->{$this->sourceAttribute});
 
             if ($this->limitAutoSlugsToAscii) {
-                $slug = StringHelper::toAscii($slug);
+                $slug = StringHelper::toAscii($slug, $this->language);
             }
         }
 

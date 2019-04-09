@@ -27,7 +27,7 @@ class JqueryUiAsset extends AssetBundle
         ];
 
         $this->js = [
-            'jquery-ui'.$this->dotJs(),
+            'jquery-ui' . $this->dotJs(),
         ];
 
         parent::init();

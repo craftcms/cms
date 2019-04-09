@@ -8,13 +8,12 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
-use craft\helpers\App;
+use craft\elements\db\ElementQueryInterface;
+use craft\events\ResaveElementEvent;
 use craft\queue\BaseJob;
-use yii\base\Exception;
+use craft\services\Elements;
 
 /**
  * ResaveElements job
@@ -45,38 +44,23 @@ class ResaveElements extends BaseJob
      */
     public function execute($queue)
     {
-        $class = $this->elementType;
-
         // Let's save ourselves some trouble and just clear all the caches for this element class
-        Craft::$app->getTemplateCaches()->deleteCachesByElementType($class);
+        Craft::$app->getTemplateCaches()->deleteCachesByElementType($this->elementType);
 
-        // Now find the affected element IDs
         /** @var ElementQuery $query */
-        $query = $class::find();
-        if (!empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
-        }
-        $query
-            ->offset(null)
-            ->limit(null)
-            ->orderBy(null);
+        $query = $this->_query();
+        $count = $query->count();
+        $elementsService = Craft::$app->getElements();
 
-        $totalElements = $query->count();
-        $currentElement = 0;
-
-        try {
-            foreach ($query->each() as $element) {
-                $this->setProgress($queue, $currentElement++ / $totalElements);
-
-                /** @var Element $element */
-                $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                if (!Craft::$app->getElements()->saveElement($element)) {
-                    throw new Exception('Couldn’t save element '.$element->id.' ('.get_class($element).') due to validation errors.');
-                }
+        $callback = function(ResaveElementEvent $e) use ($queue, $query, $count) {
+            if ($e->query === $query) {
+                $this->setProgress($queue, $e->position / $count);
             }
-        } catch (QueryAbortedException $e) {
-            // Fail silently
-        }
+        };
+
+        $elementsService->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $callback);
+        $elementsService->resaveElements($query);
+        $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $callback);
     }
 
     // Protected Methods
@@ -87,8 +71,37 @@ class ResaveElements extends BaseJob
      */
     protected function defaultDescription(): string
     {
-        return Craft::t('app', 'Resaving {class} elements', [
-            'class' => App::humanizeClass($this->elementType)
+        /** @var ElementQuery $query */
+        $query = $this->_query();
+        /** @var ElementInterface $elementType */
+        $elementType = $query->elementType;
+        $totalElements = $query->count();
+        return Craft::t('app', 'Resaving {type}', [
+            'type' => mb_strtolower($totalElements == 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
         ]);
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns the element query based on the criteria.
+     *
+     * @return ElementQueryInterface
+     */
+    private function _query(): ElementQueryInterface
+    {
+        $query = $this->elementType::find();
+
+        if (!empty($this->criteria)) {
+            Craft::configure($query, $this->criteria);
+        }
+
+        $query
+            ->offset(null)
+            ->limit(null)
+            ->orderBy(null);
+
+        return $query;
     }
 }

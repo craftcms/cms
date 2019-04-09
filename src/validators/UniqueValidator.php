@@ -7,6 +7,7 @@
 
 namespace craft\validators;
 
+use Craft;
 use craft\helpers\StringHelper;
 use yii\base\Model;
 use yii\db\ActiveRecord;
@@ -39,6 +40,11 @@ class UniqueValidator extends YiiUniqueValidator
      */
     protected $originalModel;
 
+    /**
+     * @var bool Whether a case-insensitive check should be performed.
+     */
+    public $caseInsensitive = false;
+
     // Protected Methods
     // =========================================================================
 
@@ -47,53 +53,62 @@ class UniqueValidator extends YiiUniqueValidator
      */
     public function validateAttribute($model, $attribute)
     {
-        if ($this->targetClass) {
-            // Run validation on the record instead of here
-            /** @var ActiveRecord $record */
-            $record = new $this->targetClass();
-
-            // Set the primary key values on the record, if they're set
-            $pks = $record::primaryKey();
+        if ($targetClass = $this->targetClass) {
+            // Exclude this model's row using the filter
+            /** @var ActiveRecord|string $targetClass */
+            $pks = $targetClass::primaryKey();
             if ($this->pk !== null) {
                 $pkMap = is_string($this->pk) ? StringHelper::split($this->pk) : $this->pk;
             } else {
                 $pkMap = $pks;
             }
-            $isNewRecord = true;
+
+            $exists = false;
+            $filter = ['and'];
+            $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($targetClass::tableName());
 
             foreach ($pkMap as $k => $v) {
                 if (is_int($k)) {
-                    $sourcePk = $v;
-                    $targetPk = $pks[$k];
+                    $pkAttribute = $v;
+                    $pkColumn = $pks[$k];
                 } else {
-                    $sourcePk = $k;
-                    $targetPk = $v;
+                    $pkAttribute = $k;
+                    $pkColumn = $v;
                 }
-                if ($model->$sourcePk) {
-                    $record->$targetPk = $model->$sourcePk;
-                    $isNewRecord = false;
+
+                if ($model->$pkAttribute) {
+                    $exists = true;
+                    $filter[] = ['not', ["$tableName.$pkColumn" => $model->$pkAttribute]];
                 }
             }
 
-            $record->setIsNewRecord($isNewRecord);
-
-            // Set the new attribute value(s) on the record
-            $targetAttribute = $this->targetAttribute ?? $attribute;
-
-            if (is_array($targetAttribute)) {
-                foreach ($targetAttribute as $k => $v) {
-                    $record->$v = is_int($k) ? $model->$v : $model->$k;
-                }
-            } else {
-                $record->$targetAttribute = $model->$attribute;
+            if ($exists) {
+                $this->filter = $filter;
             }
+        }
 
-            // Validate the record, but make sure any errors are added to the model
-            $this->originalModel = $model;
-            parent::validateAttribute($record, $attribute);
-            $this->originalModel = null;
-        } else {
-            parent::validateAttribute($model, $attribute);
+        $originalAttributes = [];
+        $originalTargetAttribute = $this->targetAttribute;
+
+        if ($this->caseInsensitive && Craft::$app->getDb()->getIsPgsql()) {
+            // Convert targetAttribute to an array of ['attribute' => 'lower([[column]])'] conditions
+            // and set the model attributes to lowercase
+            $targetAttributes = (array)($this->targetAttribute ?? $attribute);
+            $newTargetAttributes = [];
+            foreach ($targetAttributes as $k => $v) {
+                $a = is_int($k) ? $v : $k;
+                $originalAttributes[$a] = $model->$a;
+                $model->$a = mb_strtolower($model->$a);
+                $newTargetAttributes[$a] = "lower([[{$v}]])";
+            }
+            $this->targetAttribute = $newTargetAttributes;
+        }
+
+        parent::validateAttribute($model, $attribute);
+
+        $this->targetAttribute = $originalTargetAttribute;
+        foreach ($originalAttributes as $k => $v) {
+            $model->$k = $v;
         }
     }
 

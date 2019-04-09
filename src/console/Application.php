@@ -10,6 +10,7 @@ namespace craft\console;
 use Craft;
 use craft\base\ApplicationTrait;
 use craft\errors\MissingComponentException;
+use craft\helpers\Console;
 use craft\queue\QueueLogBehavior;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -80,6 +81,21 @@ class Application extends \yii\console\Application
     /**
      * @inheritdoc
      */
+    public function runAction($route, $params = [])
+    {
+        if (!$this->getIsInstalled()) {
+            list($firstSeg) = explode('/', $route, 2);
+            if ($route !== 'install/plugin' && !in_array($firstSeg, ['install', 'setup'], true)) {
+                Console::outputWarning('Craft isn’t installed yet!');
+            }
+        }
+
+        return parent::runAction($route, $params);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setTimeZone($value)
     {
         parent::setTimeZone($value);
@@ -89,7 +105,7 @@ class Application extends \yii\console\Application
             try {
                 new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
             } catch (\IntlException $e) {
-                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: ".intl_get_error_message());
+                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
         }
