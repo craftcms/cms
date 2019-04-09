@@ -16,6 +16,7 @@
 - Fixed a bug where entry drafts weren’t showing previous changes to Matrix fields on the draft. ([#4105](https://github.com/craftcms/cms/issues/4105))
 - Fixed a bug where the `project-config/sync` console command was not performing schema checks.
 - Fixed a bug where sometimes project.yaml changes were not being picked up. ([#4028](https://github.com/craftcms/cms/issues/4028))
+- Fixed a bug where project config rebuild would restore deleted content. ([#4100](https://github.com/craftcms/cms/issues/4100))
 
 ## 3.1.21.1 - 2019-04-04
 
