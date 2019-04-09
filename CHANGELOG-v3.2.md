@@ -13,6 +13,7 @@
 - Element index pages now have an “Export…” button that will export all of the elements in the current view (across all pages) or up to a custom limit, in either CSV, XLS, XLSX, or ODS format. ([#994](https://github.com/craftcms/cms/issues/994))
 - The `_layouts/cp` Control Panel template now supports a `footer` block, which will be output below the main content area.
 - Added `craft\base\ElementInterface::pluralDisplayName()`, which element type classes can use to define the plural of their display name.
+- Added `craft\helpers\Component::validateComponentClass()`.
 - Added `craft\models\Section::$propagationMethod`.
 - Added `craft\services\Elements::resaveElements()` along with `EVENT_BEFORE_RESAVE_ELEMENTS`, `EVENT_AFTER_RESAVE_ELEMENTS`, `EVENT_BEFORE_RESAVE_ELEMENT`, and `EVENT_AFTER_RELAVE_ELEMENT` events. ([#3482](https://github.com/craftcms/cms/issues/3482))
 - Added `craft\web\Request::getIsLoginRequest()` and `craft\console\Request::getIsLoginRequest()`.
