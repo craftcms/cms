@@ -97,6 +97,14 @@ abstract class Field extends SavableComponent implements FieldInterface
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function getPHPDocType(): string
+    {
+        return 'mixed';
+    }
+
     // Properties
     // =========================================================================
 

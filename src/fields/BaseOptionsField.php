@@ -26,6 +26,17 @@ use yii\db\Schema;
  */
 abstract class BaseOptionsField extends Field implements PreviewableFieldInterface
 {
+    // Static
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public static function getPHPDocType(): string
+    {
+        return '\\craft\\fields\\data\\SingleOptionFieldData|\\craft\\fields\\data\\MultiOptionsFieldData';
+    }
+
     // Properties
     // =========================================================================
 

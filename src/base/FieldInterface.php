@@ -44,6 +44,31 @@ interface FieldInterface extends SavableComponentInterface
      */
     public static function supportedTranslationMethods(): array;
 
+    /**
+     * Returns the PHPDoc definition of the field for the `ContentBehavior` and `ElementQueryBehavior`
+     * This value will be inserted into
+     *
+     *  - ElementQueryBehavior
+     *  -> "@method self fieldHandle(Field::getPHPDocType() $value) Sets the [[fieldHandle]] property"
+     * - ContentBehavior
+     *  -> "@var Field::getPHPDocType() Value for field with the handle “fieldHandle”."
+     *
+     * You can insert a single value like "int" or multiple values separated by `|`
+     *
+     * public static function getPHPDocType()
+     * {
+     *      return 'int|mixed|\\craft\\elements\\db\\ElementQuery'
+     * }
+     *
+     * This will allow you to enable autocomplete for (new Entry())->fieldHandle->
+     * note: you can't just return Field::class since it will require the use of the correct namespace
+     * Field::class will return `craft\\elements\\db\\ElementQuery` for example
+     * but we need `\\craft\\elements\\db\\ElementQuery`
+     *
+     * @return string
+     */
+    public static function getPHPDocType(): string;
+
     // Public Methods
     // =========================================================================
 

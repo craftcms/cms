@@ -146,12 +146,40 @@ class Craft extends Yii
             } else {
                 $column = 'handle';
             }
-
-            $fieldHandles = (new Query())
-                ->distinct(true)
-                ->from(['{{%fields}}'])
-                ->select([$column])
-                ->column();
+            // create an array of field handles and their types
+            //
+            //  [
+            //      'fieldHandle' => [
+            //          'type',
+            //          'type'
+            //      ],
+            //      'myTextField' => [
+            //          'craft\fields\PlainText',   // <- global usage
+            //          'craft\fields\Categories'   // <- used in a matrix field, no global context
+            //      ]
+            //  ]
+            $fieldHandles = [];
+            $fieldsWithTypes = [];
+            $fields = (new Query())
+                //->distinct(true)
+                ->from([Table::FIELDS])
+                ->select([$column, 'type'])
+                ->all();
+            // index it properly
+            foreach ($fields as $field){
+                $index = $field['handle'];
+                $fieldClass = $field['type'];
+                $docType = $fieldClass::getPHPDocType();
+                if(isset($fieldsWithTypes[$index]) && in_array($docType, $fieldsWithTypes[$index], true)){
+                    // we already have this field type in the array
+                    continue;
+                }
+                $fieldsWithTypes[$index][] = $docType;
+            }
+            // now that we have the unique field types for all contexts build the PHPDoc string
+            foreach ($fieldsWithTypes as $handle => $types){
+                $fieldHandles[$handle] = implode('|', $types);
+            }
         } else {
             $fieldHandles = [];
         }
@@ -160,21 +188,21 @@ class Craft extends Yii
             $handles = [];
             $properties = [];
 
-            foreach ($fieldHandles as $handle) {
+            foreach ($fieldHandles as $handle => $docType) {
                 $handles[] = <<<EOD
         '{$handle}' => true,
 EOD;
 
                 $properties[] = <<<EOD
     /**
-     * @var mixed Value for field with the handle “{$handle}”.
+     * @var {$docType} Value for field with the handle “{$handle}”.
      */
     public \${$handle};
 EOD;
             }
 
             self::_writeFieldAttributesFile(
-                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentBehavior.php.template',
+                static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ContentBehavior.php.template',
                 ['{VERSION}', '/* HANDLES */', '/* PROPERTIES */'],
                 [$storedFieldVersion, implode("\n", $handles), implode("\n\n", $properties)],
                 $contentBehaviorFile
@@ -184,14 +212,14 @@ EOD;
         if (!$isElementQueryBehaviorFileValid) {
             $methods = [];
 
-            foreach ($fieldHandles as $handle) {
+            foreach ($fieldHandles as $handle => $docType) {
                 $methods[] = <<<EOD
- * @method self {$handle}(mixed \$value) Sets the [[{$handle}]] property
+ * @method self {$handle}({$docType} \$value) Sets the [[{$handle}]] property
 EOD;
             }
 
             self::_writeFieldAttributesFile(
-                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php.template',
+                static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php.template',
                 ['{VERSION}', '{METHOD_DOCS}'],
                 [$storedFieldVersion, implode("\n", $methods)],
                 $elementQueryBehaviorFile

@@ -73,6 +73,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         return Craft::t('app', 'Choose');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function getPHPDocType(): string
+    {
+        return '\\craft\\elements\\db\\ElementQuery';
+    }
+
     // Properties
     // =========================================================================
 
