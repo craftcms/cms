@@ -434,7 +434,19 @@ class Cp extends Component
             return [];
         }
 
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root));
+        $directory = new \RecursiveDirectoryIterator($root);
+
+        $filter = new \RecursiveCallbackFilterIterator($directory, function ($current, $key, $iterator) {
+          // Skip hidden files and directories,
+          // and `node_modules` folder, if exists, since it does OOM the PHP runtime
+          //(TODO: @brandonkelly maybe you know of better filtering)
+          if ($current->getFilename()[0] === '.' || $current->getFilename() === 'node_modules') {
+            return false;
+          }
+          return true;
+        });
+
+        $iterator = new \RecursiveIteratorIterator($filter);
         /** @var \SplFileInfo[] $files */
         $files = [];
         $pathLengths = [];
