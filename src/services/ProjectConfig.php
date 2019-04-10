@@ -447,6 +447,7 @@ class ProjectConfig extends Component
     public function applyYamlChanges()
     {
         $this->_applyingYamlChanges = true;
+        Craft::$app->getCache()->delete(self::CACHE_KEY);
 
         $changes = $this->_getPendingChanges();
 
@@ -1410,6 +1411,7 @@ class ProjectConfig extends Component
                 'name',
             ])
             ->from([Table::SITEGROUPS])
+            ->where(['dateDeleted' => null])
             ->pairs();
 
         foreach ($siteGroups as $uid => $name) {
@@ -1443,6 +1445,8 @@ class ProjectConfig extends Component
             ])
             ->from(['{{%sites}} sites'])
             ->innerJoin('{{%sitegroups}} siteGroups', '[[sites.groupId]] = [[siteGroups.id]]')
+            ->where(['sites.dateDeleted' => null])
+            ->andWhere(['siteGroups.dateDeleted' => null])
             ->all();
 
         foreach ($sites as $site) {
@@ -1475,6 +1479,8 @@ class ProjectConfig extends Component
             ])
             ->from(['{{%sections}} sections'])
             ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
+            ->where(['sections.dateDeleted' => null])
+            ->andWhere(['structures.dateDeleted' => null])
             ->all();
 
         $sectionData = [];
@@ -1509,6 +1515,8 @@ class ProjectConfig extends Component
             ->from(['{{%sections_sites}} sections_sites'])
             ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_sites.siteId]]')
             ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[sections_sites.sectionId]]')
+            ->where(['sites.dateDeleted' => null])
+            ->andWhere(['sections.dateDeleted' => null])
             ->all();
 
         foreach ($sectionSiteRows as $sectionSiteRow) {
@@ -1532,6 +1540,8 @@ class ProjectConfig extends Component
             ])
             ->from(['{{%entrytypes}} as entrytypes'])
             ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entrytypes.sectionId]]')
+            ->where(['sections.dateDeleted' => null])
+            ->andWhere(['entrytypes.dateDeleted' => null])
             ->all();
 
         $layoutIds = ArrayHelper::getColumn($entryTypeRows, 'fieldLayoutId');
@@ -1738,6 +1748,7 @@ class ProjectConfig extends Component
                 'volumes.uid',
             ])
             ->from(['{{%volumes}} volumes'])
+            ->where(['volumes.dateDeleted' => null])
             ->all();
 
         $layoutIds = [];
@@ -1780,6 +1791,7 @@ class ProjectConfig extends Component
             ->select(['id'])
             ->from([Table::FIELDLAYOUTS])
             ->where(['type' => User::class])
+            ->where(['dateDeleted' => null])
             ->scalar();
 
         if ($layoutId) {
@@ -1842,6 +1854,8 @@ class ProjectConfig extends Component
             ])
             ->from(['{{%categorygroups}} groups'])
             ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[groups.structureId]]')
+            ->where(['groups.dateDeleted' => null])
+            ->andWhere(['structures.dateDeleted' => null])
             ->all();
 
         $groupData = [];
@@ -1888,6 +1902,8 @@ class ProjectConfig extends Component
             ->from(['{{%categorygroups_sites}} groups_sites'])
             ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[groups_sites.siteId]]')
             ->innerJoin('{{%categorygroups}} groups', '[[groups.id]] = [[groups_sites.groupId]]')
+            ->where(['groups.dateDeleted' => null])
+            ->andWhere(['sites.dateDeleted' => null])
             ->all();
 
         foreach ($groupSiteRows as $groupSiteRow) {
@@ -1915,6 +1931,7 @@ class ProjectConfig extends Component
                 'groups.fieldLayoutId',
             ])
             ->from(['{{%taggroups}} groups'])
+            ->where(['groups.dateDeleted' => null])
             ->all();
 
         $groupData = [];
@@ -2085,6 +2102,7 @@ class ProjectConfig extends Component
             ->innerJoin('{{%fieldlayouts}} AS layouts', '[[layoutFields.layoutId]] = [[layouts.id]]')
             ->innerJoin('{{%fields}} AS fields', '[[layoutFields.fieldId]] = [[fields.id]]')
             ->where(['layouts.id' => $layoutIds])
+            ->andWhere(['layouts.dateDeleted' => null])
             ->orderBy(['tabs.sortOrder' => SORT_ASC, 'layoutFields.sortOrder' => SORT_ASC])
             ->all();
 

@@ -43,6 +43,11 @@ class ProjectConfigController extends Controller
 
         $projectConfig = Craft::$app->getProjectConfig();
 
+        if (!$projectConfig->getAreConfigSchemaVersionsCompatible()) {
+            $this->stdout('Your `project.yaml` file was created for different versions of Craft and/or plugins than what’s currently installed. Try running `composer install` from your terminal to resolve.' . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
         // Do we need to create a new config file?
         if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
             $this->stdout('No project.yaml file found. Generating one from internal config ... ', Console::FG_YELLOW);

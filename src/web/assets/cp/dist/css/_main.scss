@@ -628,7 +628,30 @@ td.right {
 }
 
 .info-hud {
-  max-width: 250px;
+
+  table {
+    max-width: 280px;
+    table-layout: auto;
+  }
+
+  td {
+    word-wrap: break-word;
+    width: 100%;
+  }
+
+}
+
+@media (max-width: 450px) {
+
+  .info-hud {
+
+    table {
+      table-layout: fixed;
+      width: 100%;
+    }
+
+  }
+
 }
 
 /* ----------------------------------------
