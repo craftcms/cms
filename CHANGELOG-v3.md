@@ -14,9 +14,9 @@
 ### Fixed
 - Fixed a PHP error that could occur during asset indexing in some cases.
 - Fixed a bug where entry drafts weren’t showing previous changes to Matrix fields on the draft. ([#4105](https://github.com/craftcms/cms/issues/4105))
-- Fixed a bug where the `project-config/sync` console command was not performing schema checks.
-- Fixed a bug where sometimes project.yaml changes were not being picked up. ([#4028](https://github.com/craftcms/cms/issues/4028))
-- Fixed a bug where project config rebuild would restore deleted content. ([#4100](https://github.com/craftcms/cms/issues/4100))
+- Fixed a bug where `project.yaml` changes weren’t always getting picked up. ([#4028](https://github.com/craftcms/cms/issues/4028))
+- Fixed a bug where the `project-config/rebuild` command would restore soft-deleted components. ([#4100](https://github.com/craftcms/cms/issues/4100))
+- Fixed a bug where the `project-config/sync` command was not performing schema checks.
 - Fixed an error that occurred when backing up the database if the database password contained a `$` character. ([#4115](https://github.com/craftcms/cms/issues/4115))
 
 ## 3.1.21.1 - 2019-04-04
