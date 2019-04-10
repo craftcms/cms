@@ -8,12 +8,10 @@
     import PluginGrid from './PluginGrid'
 
     export default {
-
         components: {
             PluginGrid,
         },
 
         props: ['plugins'],
-
     }
 </script>

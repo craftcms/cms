@@ -6,7 +6,7 @@
         </div>
 
         <template v-if="loading">
-            <div class="spinner"></div>
+            <spinner class="mt-4"></spinner>
         </template>
         <template v-else>
             <plugin-index :plugins="pluginsToRender"></plugin-index>
@@ -21,7 +21,6 @@
     import PluginsHelper from '../../helpers/plugins'
 
     export default {
-
         components: {
             PluginIndex,
             SortPlugins,
@@ -40,7 +39,6 @@
         },
 
         computed: {
-
             ...mapGetters({
                 getCategoryById: 'pluginStore/getCategoryById',
                 getPluginsByCategory: 'pluginStore/getPluginsByCategory',
@@ -49,7 +47,6 @@
             pluginsToRender() {
                 return PluginsHelper.sortPlugins(this.plugins, this.sortingOptions);
             }
-
         },
 
         created() {
@@ -61,6 +58,5 @@
                 this.loading = false
             }.bind(this), 1)
         },
-
     }
 </script>

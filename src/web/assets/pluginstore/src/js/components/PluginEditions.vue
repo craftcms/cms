@@ -8,13 +8,11 @@
     import PluginEdition from './PluginEdition'
 
     export default {
-
         props: ['plugin'],
 
         components: {
             PluginEdition
         }
-
     }
 </script>
 

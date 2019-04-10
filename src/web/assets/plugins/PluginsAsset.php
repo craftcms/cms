@@ -52,6 +52,7 @@ class PluginsAsset extends AssetBundle
                 'Documentation',
                 'Install',
                 'Missing',
+                '<a>Renew now</a> for another year of updates.',
                 'Status',
                 'Switch',
                 'This license is for the {name} edition.',

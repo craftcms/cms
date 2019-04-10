@@ -103,7 +103,7 @@
             & > .edition-name {
               color: $mediumDarkTextColor;
               letter-spacing: 1.5px;
-              padding-right: 5.8px;
+              padding-right: 5px;
               text-transform: uppercase;
               transition: color linear 100ms;
             }
@@ -221,6 +221,17 @@
 
           .btn, .spinner {
             margin: 0;
+          }
+        }
+
+        .expired {
+          margin-top: 1em;
+
+          &:before {
+            @include margin(-2px, 2px, 0, 0);
+            @include icon;
+            width: 1em;
+            content: 'alert';
           }
         }
       }

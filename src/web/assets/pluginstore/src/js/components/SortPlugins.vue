@@ -8,7 +8,6 @@
     import SortMenuBtn from './SortMenuBtn'
 
     export default {
-
         props: ['sortingOptions'],
 
         components: {
@@ -28,11 +27,9 @@
         },
 
         watch: {
-
             options() {
                 this.$emit('update:sortingOptions', this.options)
             },
-
         },
 
         mounted() {
@@ -43,6 +40,5 @@
                 price: this.$options.filters.t("Price", 'app'),
             }
         }
-
     }
 </script>

@@ -158,7 +158,9 @@ class PluginStoreController extends Controller
         $redirectUrl = Craft::$app->getSession()->get('pluginStoreConnectRedirectUrl');
 
         $options = [
-            'redirectUrl' => $redirectUrl
+            'redirectUrl' => $redirectUrl,
+            'error' => Craft::$app->getRequest()->getParam('error'),
+            'message' => Craft::$app->getRequest()->getParam('message')
         ];
 
         $this->getView()->registerJs('new Craft.PluginStoreOauthCallback(' . Json::encode($options) . ');');

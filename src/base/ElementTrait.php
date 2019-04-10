@@ -136,6 +136,11 @@ trait ElementTrait
     public $propagating = false;
 
     /**
+     * @var bool Whether the element is being resaved by a ResaveElement job or a `resave` console command.
+     */
+    public $resaving = false;
+
+    /**
      * @var ElementInterface|null The element that this element is being duplicated by.
      */
     public $duplicateOf;

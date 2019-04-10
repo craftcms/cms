@@ -251,6 +251,7 @@ class ResaveController extends Controller
             /** @var Element $element */
             $this->stdout("    - Resaving {$element} ({$element->id}) ... ");
             $element->setScenario(Element::SCENARIO_ESSENTIALS);
+            $element->resaving = true;
             try {
                 if (!$elementsService->saveElement($element)) {
                     $this->stderr('failed: ' . implode(', ', $element->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);

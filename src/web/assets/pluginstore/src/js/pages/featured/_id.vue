@@ -10,13 +10,11 @@
     import PluginGrid from '../../components/PluginGrid'
 
     export default {
-
         components: {
             PluginGrid,
         },
 
         computed: {
-
             ...mapGetters({
                 getFeaturedPlugin: 'pluginStore/getFeaturedPlugin',
                 getPluginsByIds: 'pluginStore/getPluginsByIds',
@@ -25,8 +23,6 @@
             featuredPlugin() {
                 return this.getFeaturedPlugin(this.$route.params.id)
             }
-
         },
-
     }
 </script>

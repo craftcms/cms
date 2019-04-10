@@ -10,10 +10,8 @@
     import CmsEditions from '../components/upgradecraft/CmsEditions'
 
     export default {
-
         components: {
             CmsEditions
         }
-
     }
 </script>

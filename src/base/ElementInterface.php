@@ -27,7 +27,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the handle that should be used to refer to this element type from reference tags.
      *
-     * @return string|null The reference handle, or null if the elemnet type doesn’t support reference tags
+     * @return string|null The reference handle, or null if the element type doesn’t support reference tags
      */
     public static function refHandle();
 
@@ -229,7 +229,7 @@ interface ElementInterface extends ComponentInterface
      *   [[getThumbUrl()]] method to define your elements’ thumb URL.) (Optional)
      * - **`structureId`** – The ID of the Structure that contains the elements in this source. If set, Structure View
      *   will be available to this source. (Optional)
-     * - **`newChildUrl`** – The URL that should be loaded when a usel select’s the “New child” menu option on an
+     * - **`newChildUrl`** – The URL that should be loaded when a user selects the “New child” menu option on an
      *   element in this source while it is in Structure View. (Optional)
      * - **`nested`** – An array of sources that are nested within this one. Each nested source can have the same keys
      *   as top-level sources.

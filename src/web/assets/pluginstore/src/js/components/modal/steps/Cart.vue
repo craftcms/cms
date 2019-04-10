@@ -15,7 +15,7 @@
                             <th></th>
                             <th>{{ "Item"|t('app') }}</th>
                             <th>{{ "Updates"|t('app') }}</th>
-                            <th></th>
+                            <th class="w-10"></th>
                         </tr>
                         </thead>
                         <tbody v-for="(item, itemKey) in cartItems" :key="'item' + itemKey">
@@ -48,10 +48,10 @@
 
                                 <td class="expiry-date">
                                     <template v-if="item.lineItem.purchasable.type === 'cms-edition' || (item.lineItem.purchasable.type === 'plugin-edition' && item.lineItem.options.licenseKey.substr(0, 4) === 'new:')">
-                                        <select-input v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
+                                        <dropdown v-model="selectedExpiryDates[itemKey]" :options="itemExpiryDateOptions(itemKey)" @input="onSelectedExpiryDateChange(itemKey)" />
                                     </template>
 
-                                    <div v-if="itemLoading(itemKey)" class="spinner"></div>
+                                    <spinner v-if="itemLoading(itemKey)"></spinner>
                                 </td>
                                 <td class="price">
                                     <strong>{{ item.lineItem.price|currency }}</strong>
@@ -81,7 +81,14 @@
                                 <td class="blank-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="price">
-                                    <a role="button" @click="removeFromCart(itemKey)">{{ "Remove"|t('app') }}</a>
+                                    <div class="w-16">
+                                        <template v-if="!removeFromCartLoading(itemKey)">
+                                            <a role="button" @click="removeFromCart(itemKey)">{{ "Remove"|t('app') }}</a>
+                                        </template>
+                                        <template v-else>
+                                            <spinner class="sm"></spinner>
+                                        </template>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -95,7 +102,7 @@
                     </table>
 
                     <div class="py-4">
-                        <a @click="payment()" class="btn submit">{{ "Checkout"|t('app') }}</a>
+                        <btn kind="primary" @click="payment()">{{ "Checkout"|t('app') }}</btn>
                     </div>
                 </template>
 
@@ -135,7 +142,16 @@
                                     <edition-badge v-if="activeTrialPluginEditions[plugin.handle] && plugin.editions.length > 1" :name="activeTrialPluginEditions[plugin.handle].name"></edition-badge>
                                 </td>
                                 <td><strong v-if="activeTrialPluginEditions[plugin.handle]">{{activeTrialPluginEditions[plugin.handle].price|currency}}</strong></td>
-                                <td class="thin"><a class="btn" @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)">{{ "Add to cart"|t('app') }}</a></td>
+                                <td class="w-1/4">
+                                    <div class="text-right">
+                                        <template v-if="!activeTrialLoading(plugin.handle)">
+                                            <a @click="addToCart(plugin, pluginLicenseInfo[plugin.handle].edition)" :loading="activeTrialLoading(plugin.handle)">{{ "Add to cart"|t('app') }}</a>
+                                        </template>
+                                        <template v-else>
+                                            <spinner size="sm"></spinner>
+                                        </template>
+                                    </div>
+                                </td>
                             </template>
                         </tr>
                     </tbody>
@@ -153,10 +169,11 @@
     import EditionBadge from '../../EditionBadge'
 
     export default {
-
         data() {
             return {
                 loadingItems: {},
+                loadingActiveTrials: {},
+                loadingRemoveFromCart: {},
             }
         },
 
@@ -166,7 +183,6 @@
         },
 
         computed: {
-
             ...mapState({
                 cart: state => state.cart.cart,
                 craftLogo: state => state.craft.craftLogo,
@@ -207,16 +223,16 @@
                     }
                 })
             },
-
         },
 
         methods: {
-
             ...mapActions({
                 removeFromCart: 'cart/removeFromCart'
             }),
 
             addToCart(plugin, editionHandle) {
+                this.$set(this.loadingActiveTrials, plugin.handle, true)
+
                 const item = {
                     type: 'plugin-edition',
                     plugin: plugin.handle,
@@ -224,8 +240,26 @@
                 }
 
                 this.$store.dispatch('cart/addToCart', [item])
+                    .then(() => {
+                        this.$delete(this.loadingActiveTrials, plugin.handle)
+                    })
                     .catch(response => {
+                        this.$delete(this.loadingActiveTrials, plugin.handle)
                         const errorMessage = response.errors && response.errors[0] && response.errors[0].message ? response.errors[0].message : 'Couldn’t add item to cart.';
+                        this.$root.displayError(errorMessage)
+                    })
+            },
+
+            removeFromCart(itemKey) {
+                this.$set(this.loadingRemoveFromCart, itemKey, true)
+
+                this.$store.dispatch('cart/removeFromCart', itemKey)
+                    .then(() => {
+                        this.$delete(this.loadingRemoveFromCart, itemKey)
+                    })
+                    .catch(response => {
+                        this.$delete(this.loadingRemoveFromCart, itemKey)
+                        const errorMessage = response.errors && response.errors[0] && response.errors[0].message ? response.errors[0].message : 'Couldn’t remove item from cart.';
                         this.$root.displayError(errorMessage)
                     })
             },
@@ -318,11 +352,26 @@
                 return true
             },
 
+            activeTrialLoading(pluginHandle) {
+                if (!this.loadingActiveTrials[pluginHandle]) {
+                    return false
+                }
+
+                return true
+            },
+
+            removeFromCartLoading(itemKey) {
+                if (!this.loadingRemoveFromCart[itemKey]) {
+                    return false
+                }
+
+                return true
+            },
+
             updatesUntil(date) {
                 return this.$options.filters.t("Updates until {date}", 'app', {date})
             }
         },
-
     }
 </script>
 
@@ -360,9 +409,15 @@
                     margin-bottom: 0;
                 }
 
-                .spinner {
-                    @apply .relative .ml-2;
-                    top: -2px;
+                .c-spinner {
+                    @apply .relative .ml-4;
+                    top: 6px;
+                }
+            }
+
+            td.thin {
+                .c-btn {
+                    white-space: nowrap;
                 }
             }
         }
