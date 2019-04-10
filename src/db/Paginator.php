@@ -216,6 +216,16 @@ class Paginator extends BaseObject
     }
 
     /**
+     * Sets the results for the current page.
+     *
+     * @param array
+     */
+    public function setPageResults(array $pageResults)
+    {
+        $this->_pageResults = $pageResults;
+    }
+
+    /**
      * Returns the offset of the first result returned by [[getPageResults()]]
      *
      * @return int|float
