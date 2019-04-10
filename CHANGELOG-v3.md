@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that occurred when installing a missing plugin from the Settings → Plugins page.
+
 ## 3.1.22 - 2019-04-10
 
 ### Added
