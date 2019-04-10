@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.0-alpha.3 - 2019-04-10
 
 ### Added
 - Table fields can now have Dropdown columns. ([#811](https://github.com/craftcms/cms/issues/811))
