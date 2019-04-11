@@ -489,13 +489,24 @@ class App
             return null;
         }
 
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
         $target = [
             'class' => FileTarget::class,
+            'fileMode' => $generalConfig->defaultFileMode,
+            'dirMode' => $generalConfig->defaultDirMode,
+            'includeUserIp' => $generalConfig->storeUserIps,
         ];
 
-        // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
-        if (!$isConsoleRequest && !YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-            $target['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
+        if ($isConsoleRequest) {
+            $target['logFile'] = '@storage/logs/console.log';
+        } else {
+            $target['logFile'] = '@storage/logs/web.log';
+
+            // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
+            if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                $target['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
+            }
         }
 
         return [

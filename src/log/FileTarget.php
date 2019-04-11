@@ -19,23 +19,4 @@ use craft\base\LogTrait;
 class FileTarget extends \yii\log\FileTarget
 {
     use LogTrait;
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
-        $this->fileMode = $generalConfig->defaultFileMode;
-        $this->dirMode = $generalConfig->defaultDirMode;
-
-        if ($isConsoleRequest) {
-            $this->logFile = '@storage/logs/console.log';
-        } else {
-            $this->logFile = '@storage/logs/web.log';
-        }
-    }
 }
