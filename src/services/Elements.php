@@ -548,18 +548,12 @@ class Elements extends Component
 
             // Update the element across the other sites?
             if ($propagate && $element::isLocalized() && Craft::$app->getIsMultiSite()) {
-                Craft::$app->getQueue()->push(new PropagateElements([
-                    'elementType' => get_class($element),
-                    'criteria' => [
-                        'id' => $element->id,
-                        'siteId' => $element->siteId,
-                        'status' => null,
-                        'enabledForSite' => false,
-                    ],
-                    'description' => $element::hasTitles()
-                        ? Craft::t('app', 'Propagating {title}', ['title' => $element->title])
-                        : null,
-                ]));
+                foreach ($supportedSites as $siteInfo) {
+                    // Skip the master site
+                    if ($siteInfo['siteId'] != $element->siteId) {
+                        $this->_propagateElement($element, $isNewElement, $siteInfo);
+                    }
+                }
             }
 
             $transaction->commit();
