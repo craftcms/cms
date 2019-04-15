@@ -5,6 +5,7 @@
 {% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
 {% set params = parentIdParam ? { parentId: parentIdParam } : null %}
 
+<div class="btngroup">
 <div id="revision-btn" class="btn menubtn"{% if showSiteLabel %} data-icon="world"{% endif %}>{{ revisionLabel }}</div>
 
 <div class="menu">
@@ -90,3 +91,4 @@
         "Notes",
     ]) %}
 {% endif %}
+</div>
