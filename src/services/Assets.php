@@ -717,13 +717,14 @@ class Assets extends Component
 
             // hail Mary
             try {
-                $image = Craft::$app->getImages()->loadImage($imageSource, false, $svgSize)
-                    ->scaleToFit($width, $height);
+                $image = Craft::$app->getImages()->loadImage($imageSource, false, $svgSize);
 
+                // Prevent resize of all layers
                 if ($image instanceof Raster) {
                     $image->disableAnimation();
                 }
 
+                $image->scaleToFit($width, $height);
                 $image->saveAs($path);
             } catch (ImageException $exception) {
                 Craft::warning($exception->getMessage());

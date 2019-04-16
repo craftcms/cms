@@ -795,9 +795,9 @@ class Sites extends Component
             // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
             $queue = Craft::$app->getQueue();
             $elementTypes = [
+                GlobalSet::class,
                 Asset::class,
                 Category::class,
-                GlobalSet::class,
                 Tag::class,
             ];
 
