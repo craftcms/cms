@@ -70,9 +70,10 @@ class ProjectConfigController extends Controller
 
             $this->stdout('Applying changes from project.yaml ... ', Console::FG_YELLOW);
             try {
+                $forceUpdate = $projectConfig->forceUpdate;
                 $projectConfig->forceUpdate = $this->force;
                 $projectConfig->applyYamlChanges();
-                $projectConfig->forceUpdate = false;
+                $projectConfig->forceUpdate = $forceUpdate;
             } catch (\Throwable $e) {
                 $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
                 Craft::$app->getErrorHandler()->logException($e);
