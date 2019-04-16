@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed an error where re-saving a site would reset its sorting order. ([#4147](https://github.com/craftcms/cms/issues/4147))
+- Fixed a SQL error that could occur when updating to Craft 3.1. ([#3663](https://github.com/craftcms/cms/issues/3663))
 
 ## 3.1.23 - 2019-04-16
 
