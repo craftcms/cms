@@ -772,8 +772,8 @@ class Install extends Migration
         $this->createIndex(null, Table::FIELDS, ['handle', 'context'], true);
         $this->createIndex(null, Table::FIELDS, ['groupId'], false);
         $this->createIndex(null, Table::FIELDS, ['context'], false);
-        $this->createIndex(null, Table::GLOBALSETS, ['name'], true);
-        $this->createIndex(null, Table::GLOBALSETS, ['handle'], true);
+        $this->createIndex(null, Table::GLOBALSETS, ['name'], false);
+        $this->createIndex(null, Table::GLOBALSETS, ['handle'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['ownerId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['fieldId'], false);
