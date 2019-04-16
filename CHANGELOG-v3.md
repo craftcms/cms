@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Updated Twig to ~2.8.1.
+
 ## 3.1.23 - 2019-04-16
 
 ### Added
