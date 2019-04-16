@@ -1,9 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.23 - 2019-04-16
 
 ### Added
-- Added the `--force` option to the `project-config/sync` command that forces project config to re-save everything that's not new or removed.
+- The `project-config/sync` command now has a `--force` option, which forces the project config to treat all preexisting config values as new. ([#4126](https://github.com/craftcms/cms/issues/4126))
 - Added `craft\base\LogTargetTrait`, which can be used by custom `log` components, to gain security and privacy features provided by Craft’s built-in file target. ([#4127](https://github.com/craftcms/cms/pull/4127))
 
 ### Changed
