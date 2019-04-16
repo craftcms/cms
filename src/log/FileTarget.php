@@ -7,8 +7,7 @@
 
 namespace craft\log;
 
-use Craft;
-use craft\base\LogTrait;
+use craft\base\LogTargetTrait;
 
 /**
  * Class FileTarget
@@ -18,5 +17,5 @@ use craft\base\LogTrait;
  */
 class FileTarget extends \yii\log\FileTarget
 {
-    use LogTrait;
+    use LogTargetTrait;
 }
