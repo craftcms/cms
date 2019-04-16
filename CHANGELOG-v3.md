@@ -7,6 +7,7 @@
 
 ### Changed
 - When creating a new site, global sets are now propagated to it before other element types. ([#3446](https://github.com/craftcms/cms/issues/3446))
+- Locked Twig down to ~2.7.2, to avoid a bug in 2.8.0. ([twigphp/Twig#2942](https://github.com/twigphp/Twig/issues/2942))
 
 ### Fixed
 - Fixed an error that occurred when installing a missing plugin from the Settings → Plugins page. ([#4140](https://github.com/craftcms/cms/issues/4140))
