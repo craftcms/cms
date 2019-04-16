@@ -5,6 +5,9 @@
 ### Changed
 - Updated Twig to ~2.8.1.
 
+### Fixed
+- Fixed an error where re-saving a site would reset its sorting order. ([#4147](https://github.com/craftcms/cms/issues/4147))
+
 ## 3.1.23 - 2019-04-16
 
 ### Added
