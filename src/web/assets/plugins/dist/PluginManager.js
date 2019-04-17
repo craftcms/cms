@@ -130,6 +130,13 @@
                                     .append(
                                         $('<input/>', {
                                             type: 'hidden',
+                                            name: 'edition',
+                                            value: info.licensedEdition
+                                        })
+                                    )
+                                    .append(
+                                        $('<input/>', {
+                                            type: 'hidden',
                                             name: 'version',
                                             value: info.latestVersion
                                         })

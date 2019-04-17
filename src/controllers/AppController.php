@@ -443,12 +443,12 @@ class AppController extends Controller
                         $allPluginInfo[$handle]['licenseKey'] === $pluginLicenseInfo['key']
                     ) {
                         $result[$handle] = [
-                            'edition' => $pluginLicenseInfo['edition'],
+                            'edition' => null,
                             'isComposerInstalled' => false,
                             'isInstalled' => false,
                             'isEnabled' => false,
                             'licenseKey' => $pluginLicenseInfo['key'],
-                            'licensedEdition' => null,
+                            'licensedEdition' => $pluginLicenseInfo['edition'],
                             'licenseKeyStatus' => LicenseKeyStatus::Valid,
                             'licenseIssues' => [],
                             'name' => $pluginInfo['name'],

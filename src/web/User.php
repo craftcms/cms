@@ -404,7 +404,8 @@ class User extends \yii\web\User
         $session = Craft::$app->getSession();
 
         // Save the username cookie if they're not being impersonated
-        if ($session->get(UserElement::IMPERSONATE_KEY) === null) {
+        $impersonating = $session->get(UserElement::IMPERSONATE_KEY) !== null;
+        if (!$impersonating) {
             $this->sendUsernameCookie($identity);
         }
 
@@ -415,7 +416,9 @@ class User extends \yii\web\User
         $session->remove($this->elevatedSessionTimeoutParam);
 
         // Update the user record
-        Craft::$app->getUsers()->handleValidLogin($identity);
+        if (!$impersonating) {
+            Craft::$app->getUsers()->handleValidLogin($identity);
+        }
 
         parent::afterLogin($identity, $cookieBased, $duration);
     }
