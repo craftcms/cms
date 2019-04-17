@@ -37,7 +37,7 @@ Use `craft.app.language` to toggle specific parts of your templates, depending o
 {% endif %}
 ```
 
-You can also take advantage of Craft’s static translation support for strings throughout your templates.
+You can also take advantage of Craft’s [static translation](https://docs.craftcms.com/v3/static-translations.html) support for strings throughout your templates.
 
 ```twig
 {{ "Welcome!"|t }}
