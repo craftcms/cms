@@ -685,7 +685,7 @@ class Elements extends Component
         $element->getFieldValues();
         /** @var Element $mainClone */
         $mainClone = clone $element;
-        $mainClone->setAttributes($newAttributes);
+        $mainClone->setAttributes($newAttributes, false);
         $mainClone->duplicateOf = $element;
         $mainClone->id = null;
         $mainClone->contentId = null;

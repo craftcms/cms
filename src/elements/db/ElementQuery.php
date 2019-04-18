@@ -1832,18 +1832,20 @@ class ElementQuery extends Query implements ElementQueryInterface
                     '[[structureelements.elementId]] = [[subquery.elementsId]]',
                     '[[structureelements.structureId]] = [[subquery.structureId]]',
                 ]);
+            $existsQuery = (new Query())
+                ->from([Table::STRUCTURES])
+                ->where('[[id]] = [[structureelements.structureId]]');
+            // todo: remove schema version condition after next beakpoint
+            $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+            if (version_compare($schemaVersion, '3.1.0', '>=')) {
+                $existsQuery->andWhere(['dateDeleted' => null]);
+            }
             $this->subQuery
                 ->addSelect(['structureelements.structureId'])
                 ->leftJoin('{{%structureelements}} structureelements', [
                     'and',
                     '[[structureelements.elementId]] = [[elements.id]]',
-                    [
-                        'exists',
-                        (new Query())
-                            ->from([Table::STRUCTURES])
-                            ->where('[[id]] = [[structureelements.structureId]]')
-                            ->andWhere(['dateDeleted' => null])
-                    ],
+                    ['exists', $existsQuery],
                 ]);
         }
 

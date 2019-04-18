@@ -67,7 +67,7 @@ class IndexAssetsController extends Controller
      * @param int $startAt
      * @return int
      */
-    public function actionOne($handle, $startAt = 0)
+    public function actionOne($handle, $startAt = 0): int
     {
         $path = '';
 
