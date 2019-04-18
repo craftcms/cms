@@ -1459,6 +1459,11 @@ class ProjectConfig extends Component
         foreach ($sites as $site) {
             $uid = $site['uid'];
             unset($site['uid'], $site['groupId']);
+
+            $site['sortOrder'] = (int)$site['sortOrder'];
+            $site['hasUrls'] = (bool)$site['hasUrls'];
+            $site['primary'] = (bool)$site['primary'];
+
             $data[$uid] = $site;
         }
 
@@ -1496,7 +1501,7 @@ class ProjectConfig extends Component
             if (!empty($section['structure'])) {
                 $section['structure'] = [
                     'uid' => $section['structure'],
-                    'maxLevels' => $section['structureMaxLevels']
+                    'maxLevels' => $section['structureMaxLevels'] ? (int)$section['structureMaxLevels'] : null,
                 ];
             } else {
                 unset($section['structure']);
@@ -1530,6 +1535,10 @@ class ProjectConfig extends Component
             $sectionUid = $sectionSiteRow['sectionUid'];
             $siteUid = $sectionSiteRow['siteUid'];
             unset($sectionSiteRow['sectionUid'], $sectionSiteRow['siteUid']);
+
+            $sectionSiteRow['hasUrls'] = (bool)$sectionSiteRow['hasUrls'];
+            $sectionSiteRow['enabledByDefault'] = (bool)$sectionSiteRow['enabledByDefault'];
+
             $sectionData[$sectionUid]['siteSettings'][$siteUid] = $sectionSiteRow;
         }
 
@@ -1565,6 +1574,9 @@ class ProjectConfig extends Component
             $uid = $entryType['uid'];
 
             unset($entryType['fieldLayoutId'], $entryType['sectionUid'], $entryType['uid'], $layout['uid']);
+
+            $entryType['hasTitleField'] = (bool)$entryType['hasTitleField'];
+            $entryType['sortOrder'] = (int)$entryType['sortOrder'];
 
             $entryType['fieldLayouts'] = [$layoutUid => $layout];
             $sectionData[$sectionUid]['entryTypes'][$uid] = $entryType;
@@ -1633,6 +1645,9 @@ class ProjectConfig extends Component
             $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
             $fieldInstance = $fieldService->getFieldById($fieldRow['id']);
             $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
+
+            $fieldRow['searchable'] = (bool)$fieldRow['searchable'];
+
             $fields[$fieldRow['uid']] = $fieldRow;
         }
 
@@ -1676,6 +1691,9 @@ class ProjectConfig extends Component
             unset($matrixBlockType['fieldId']);
 
             $layoutIds[] = $matrixBlockType['fieldLayoutId'];
+
+            $matrixBlockType['sortOrder'] = (int)$matrixBlockType['sortOrder'];
+
             $blockTypeData[$fieldId][$matrixBlockType['uid']] = $matrixBlockType;
         }
 
@@ -1718,6 +1736,9 @@ class ProjectConfig extends Component
 
             $fieldUid = $matrixSubfieldRow['uid'];
             unset($matrixSubfieldRow['uid'], $matrixSubfieldRow['id'], $matrixSubfieldRow['context']);
+
+            $matrixSubfieldRow['searchable'] = (bool)$matrixSubfieldRow['searchable'];
+
             $matrixSubFields[$blockTypeUid][$fieldUid] = $matrixSubfieldRow;
         }
 
@@ -1779,6 +1800,10 @@ class ProjectConfig extends Component
 
             $uid = $volume['uid'];
             unset($volume['fieldLayoutId'], $volume['uid']);
+
+            $volume['hasUrls'] = (bool)$volume['hasUrls'];
+            $volume['sortOrder'] = (int)$volume['sortOrder'];
+
             $data[$uid] = $volume;
         }
 
@@ -1838,8 +1863,6 @@ class ProjectConfig extends Component
             ];
         }
 
-        $data['permissions'] = array_unique(array_values($permissions));
-
         return $data;
     }
 
@@ -1879,7 +1902,7 @@ class ProjectConfig extends Component
             if (!empty($group['structure'])) {
                 $group['structure'] = [
                     'uid' => $group['structure'],
-                    'maxLevels' => $group['structureMaxLevels']
+                    'maxLevels' => $group['structureMaxLevels'] ? (int)$group['structureMaxLevels'] : null,
                 ];
             } else {
                 unset($group['structure']);
@@ -1917,6 +1940,9 @@ class ProjectConfig extends Component
             $groupUid = $groupSiteRow['groupUid'];
             $siteUid = $groupSiteRow['siteUid'];
             unset($groupSiteRow['siteUid'], $groupSiteRow['groupUid']);
+
+            $groupSiteRow['hasUrls'] = (bool)$groupSiteRow['hasUrls'];
+
             $groupData[$groupUid]['siteSettings'][$siteUid] = $groupSiteRow;
         }
 
@@ -2061,6 +2087,9 @@ class ProjectConfig extends Component
 
         foreach ($transformRows as &$row) {
             unset($row['uid']);
+            $row['width'] = (int)$row['width'];
+            $row['height'] = (int)$row['height'];
+            $row['quality'] = $row['quality'] ? (int)$row['quality'] : null;
         }
 
         return $transformRows;
@@ -2120,14 +2149,14 @@ class ProjectConfig extends Component
                 $layout['tabs'][$fieldRow['tabUid']] =
                     [
                         'name' => $fieldRow['tabName'],
-                        'sortOrder' => $fieldRow['tabOrder'],
+                        'sortOrder' => (int)$fieldRow['tabOrder'],
                     ];
             }
 
             $tab = &$layout['tabs'][$fieldRow['tabUid']];
 
-            $field['required'] = $fieldRow['required'];
-            $field['sortOrder'] = $fieldRow['fieldOrder'];
+            $field['required'] = (bool)$fieldRow['required'];
+            $field['sortOrder'] = (int)$fieldRow['fieldOrder'];
 
             $tab['fields'][$fieldRow['fieldUid']] = $field;
         }
