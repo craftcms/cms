@@ -557,6 +557,9 @@ class DashboardController extends Controller
         if ($iconPath === null) {
             return $this->_getDefaultWidgetIconSvg($widget);
         }
+        
+        if (strpos($iconPath, '<svg') === 0)
+        	return $iconPath;
 
         if (!is_file($iconPath)) {
             Craft::warning("Widget icon file doesn't exist: {$iconPath}", __METHOD__);
