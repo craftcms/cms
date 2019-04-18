@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- `craft\services\Elements::deleteElement()` now has a `$hardDelete` argument.
 - `craft\services\Elements::saveElement()` now immediately propagates elements if `$propagate` is `true`, as it used to.
 
 ## 3.2.0-alpha.3 - 2019-04-10

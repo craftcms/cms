@@ -1039,16 +1039,17 @@ class Elements extends Component
      * Deletes an element.
      *
      * @param ElementInterface $element The element to be deleted
+     * @param bool Whether the element should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the element was deleted successfully
      * @throws \Throwable
      */
-    public function deleteElement(ElementInterface $element): bool
+    public function deleteElement(ElementInterface $element, $hardDelete = false): bool
     {
         /** @var Element $element */
         // Fire a 'beforeDeleteElement' event
         $event = new DeleteElementEvent([
             'element' => $element,
-            'hardDelete' => false,
+            'hardDelete' => $hardDelete,
         ]);
         $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, $event);
 
@@ -1081,7 +1082,7 @@ class Elements extends Component
             // this element is suddenly going to show up in a new query)
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
-            if ($event->hardDelete) {
+            if ($hardDelete || $event->hardDelete) {
                 Craft::$app->getDb()->createCommand()
                     ->delete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
