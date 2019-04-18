@@ -203,7 +203,7 @@ class Routes extends Component
             'template' => $template,
             'uriParts' => $uriParts,
             'uriPattern' => $uriPattern,
-            'sortOrder' => $sortOrder,
+            'sortOrder' => (int)$sortOrder,
             'siteUid' => $siteUid
         ];
 

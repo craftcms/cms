@@ -709,7 +709,7 @@ class Fields extends Component
             'name' => $field->name,
             'handle' => $field->handle,
             'instructions' => $field->instructions,
-            'searchable' => $field->searchable,
+            'searchable' => (bool)$field->searchable,
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
             'type' => get_class($field),
