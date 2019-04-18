@@ -9,6 +9,7 @@
 - Fixed an error where re-saving a site would reset its sorting order. ([#4147](https://github.com/craftcms/cms/issues/4147))
 - Fixed a SQL error that could occur when updating to Craft 3.1. ([#3663](https://github.com/craftcms/cms/issues/3663))
 - Fixed a bug where Craft wasn’t returning a `1` exit code for console requests if the server was running under PHP 7. ([#4153](https://github.com/craftcms/cms/issues/4153))
+- Fixed a bug where `craft\services\Elements::duplicateElements()` would only ignore non-safe attributes passed to the `$newAttributes` argument.
 
 ## 3.1.23 - 2019-04-16
 
