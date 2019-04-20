@@ -8,5 +8,10 @@
  */
 
 return [
-    'devMode' => true
+    'devMode'=>true,
+    'cpTrigger' => 'adminustriggerus',
+    'siteUrl' => 'https://test.craftcms.dev/',
+    'slugWordSeparator' => '--',
+    'allowUppercaseInSlug' => true,
+    'securityKey' => getenv('SECURITY_KEY')
 ];

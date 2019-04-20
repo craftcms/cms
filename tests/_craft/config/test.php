@@ -11,6 +11,16 @@ $basePath = dirname(dirname(dirname(__DIR__)));
 $srcPath = $basePath . '/src';
 $vendorPath = $basePath . '/vendor';
 
+Craft::setAlias('@craftunitsupport', $srcPath.'/test');
+Craft::setAlias('@craftunittemplates', $basePath.'/tests/_craft/templates');
+Craft::setAlias('@craftunitfixtures', $basePath.'/tests/fixtures');
+Craft::setAlias('@craft', $srcPath);
+Craft::setAlias('@testsfolder', $basePath.'/tests');
+Craft::setAlias('@crafttestsfolder', $basePath.'/tests/_craft');
+Craft::setAlias('@vendor', $basePath.'/vendor');
+
+$customConfig = \craft\test\Craft::getTestSetupConfig();
+
 // Load the config
 $config = ArrayHelper::merge(
     [
@@ -25,6 +35,11 @@ $config = ArrayHelper::merge(
     require $srcPath . '/config/app.php',
     require $srcPath . '/config/app.web.php'
 );
+
+if (is_array($customConfig)) {
+    // Merge in any custom variables and config
+    $config = ArrayHelper::merge($config, $customConfig);
+}
 
 $config['vendorPath'] = $vendorPath;
 

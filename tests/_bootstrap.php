@@ -12,12 +12,13 @@ $devMode = true;
 
 $vendorPath = realpath(CRAFT_VENDOR_PATH);
 $craftPath = __DIR__ . '/_craft';
+$basePath = dirname(__DIR__);
 
-$configPath = realpath($craftPath . '/config');
-$contentMigrationsPath = realpath($craftPath . '/migrations');
-$storagePath = realpath($craftPath . '/storage');
-$templatesPath = realpath($craftPath . '/templates');
-$translationsPath = realpath($craftPath . '/translations');
+$configPath = realpath($craftPath.'/config');
+$contentMigrationsPath = realpath($craftPath.'/migrations');
+$storagePath = realpath($craftPath.'/storage');
+$templatesPath = realpath($craftPath.'/templates');
+$translationsPath = realpath($craftPath.'/translations');
 
 // Log errors to craft/storage/logs/phperrors.log
 
@@ -38,6 +39,10 @@ $srcPath = dirname(__DIR__) . '/src';
 $libPath = dirname(__DIR__) . '/lib';
 require $vendorPath . '/yiisoft/yii2/Yii.php';
 require $srcPath . '/Craft.php';
+
+if (file_exists(__DIR__.'/.env')) {
+    (new Dotenv\Dotenv(__DIR__))->load();
+}
 
 // Set aliases
 
