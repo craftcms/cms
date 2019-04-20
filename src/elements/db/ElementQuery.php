@@ -483,6 +483,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function offsetExists($name): bool
     {
         if (is_numeric($name)) {
+            // Cached?
+            if (($cachedResult = $this->getCachedResult()) !== null) {
+                return $name < count($cachedResult);
+            }
+
             $offset = $this->offset;
             $limit = $this->limit;
 
@@ -1256,6 +1261,14 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function exists($db = null)
+    {
+        return ($this->getCachedResult() !== null) ?: parent::exists($db);
     }
 
     /**

@@ -66,6 +66,7 @@
 ## Unreleased (3.1)
 
 ### Changed
+- Craft now saves new entry versions every time an entry is saved, unless it’s being propagated or resaved.
 - Updated Twig to ~2.8.1.
 
 ### Fixed

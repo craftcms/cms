@@ -279,11 +279,6 @@ class EntryRevisionsController extends BaseEntriesController
             return null;
         }
 
-        // Should we save a new version?
-        if ($version->getSection()->enableVersioning) {
-            $revisionsService->saveVersion($version);
-        }
-
         Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry reverted to past version.'));
 
         return $this->redirectToPostedUrl($version);
