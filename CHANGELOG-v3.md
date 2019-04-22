@@ -3,12 +3,16 @@
 ## Unreleased
 
 ### Changed
+- Renamed `craft\base\WidgetInterface::iconPath()` to `icon()`, and it now can return the actual SVG contents if desired. ([#4156](https://github.com/craftcms/cms/pull/4156))
 - `craft\db\ActiveRecord` no longer sets the `uid`, `dateCreated`, or `dateUpdated` values for new records if they were already explicitly set.
 - `craft\db\ActiveRecord` no longer updates the `dateUpdated` value for existing records if nothing else changed or if `dateUpdated` had already been explicitly changed.
 - `craft\services\Elements::deleteElement()` now has a `$hardDelete` argument.
 - `craft\services\Elements::saveElement()` now immediately propagates elements if `$propagate` is `true`, as it used to.
 - `craft\services\Elements::saveElement()` now preserves the `uid`, `dateCreated`, and `dateUpdated` values on new elements if they were explicitly set. ([#2909](https://github.com/craftcms/cms/issues/2909))
 - `craft\services\Elements::saveElement()` now preserves existing elements’ current `dateUpdated` value when propagating or auto-resaving elements.
+
+### Deprecated
+- Deprecated `craft\base\Widget::iconPath()`. Use `icon()` instead.
 
 ## 3.2.0-alpha.3 - 2019-04-10
 
