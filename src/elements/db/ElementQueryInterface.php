@@ -393,8 +393,44 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @since 3.2
      */
     public function unique(bool $value = true);
+
+    /**
+     * If [[unique()]] is set, this determines which site should be selected when querying multi-site elements.
+     *
+     * For example, if element “Foo” exists in Site A and Site B, and element “Bar” exists in Site B and Site C,
+     * and this is set to `['c', 'b', 'a']`, then Foo will be returned for Site C, and Bar will be returned
+     * for Site B.
+     *
+     * If this isn’t set, then preference goes to the current site.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch unique {elements} from Site A, or Site B if they don’t exist in Site A #}
+     * {% set {elements-var} = {twig-method}
+     *     .site('*')
+     *     .unique()
+     *     .preferSites(['a', 'b'])
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch unique {elements} from Site A, or Site B if they don’t exist in Site A
+     * ${elements-var} = {php-method}
+     *     ->site('*')
+     *     ->unique()
+     *     ->preferSites(['a', 'b'])
+     *     ->all();
+     * ```
+     *
+     * @param array|null $value The property value
+     * @return static self reference
+     * @since 3.2
+     */
+    public function preferSites(array $value = null);
 
     /**
      * Narrows the query results based on whether the {elements} are enabled in the site they’re being queried in, per the [[site()]] parameter.
