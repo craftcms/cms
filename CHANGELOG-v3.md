@@ -14,6 +14,9 @@
 ### Deprecated
 - Deprecated `craft\base\Widget::iconPath()`. Use `icon()` instead.
 
+### Fixed
+- Fixed a SQL error that could occur when using the `unique` element query param.
+
 ## 3.2.0-alpha.3 - 2019-04-10
 
 ### Added
