@@ -15,8 +15,8 @@ class m161013_175052_newParentId extends Migration
      */
     public function safeUp()
     {
-        $this->replace(Table::ENTRYDRAFTS, 'data', '"parentId":', '"newParentId":');
-        $this->replace(Table::ENTRYVERSIONS, 'data', '"parentId":', '"newParentId":');
+        $this->replace('{{%entrydrafts}}', 'data', '"parentId":', '"newParentId":');
+        $this->replace('{{%entryversions}}', 'data', '"parentId":', '"newParentId":');
     }
 
     /**

@@ -24,7 +24,6 @@ use yii\db\ActiveQueryInterface;
  * @property Section $section Section
  * @property EntryType $type Type
  * @property User $author Author
- * @property EntryVersion[] $versions Versions
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -80,15 +79,5 @@ class Entry extends ActiveRecord
     public function getAuthor(): ActiveQueryInterface
     {
         return $this->hasOne(User::class, ['id' => 'authorId']);
-    }
-
-    /**
-     * Returns the entry’s versions.
-     *
-     * @return ActiveQueryInterface The relational query object.
-     */
-    public function getVersions(): ActiveQueryInterface
-    {
-        return $this->hasMany(EntryVersion::class, ['elementId' => 'id']);
     }
 }

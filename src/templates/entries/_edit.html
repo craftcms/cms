@@ -3,8 +3,8 @@
 
 {% set sectionHandle = section.handle %}
 {% set isSingle = section.type == 'single' %}
-{% set isVersion = className(entry) == 'craft\\models\\EntryVersion' %}
-{% set isDraft = entry.id and className(entry) == 'craft\\models\\EntryDraft' %}
+{% set isRevision = entry.revisionId is not empty %}
+{% set isDraft = entry.draftId is not empty %}
 
 {% set canPublish = currentUser.can('publishEntries'~permissionSuffix) %}
 {% set canSave = (
@@ -92,7 +92,7 @@
             {% endif %}
         </div>
 
-    {% elseif isVersion %}
+    {% elseif isRevision %}
 
         {# Are they allowed to publish changes? #}
         {% if
@@ -102,7 +102,7 @@
 
             <input type="hidden" name="action" value="entry-revisions/revert-entry-to-version">
             {{ redirectInput(entry.getCpEditUrl()) }}
-            <input type="hidden" name="versionId" value="{{ entry.versionId }}">
+            <input type="hidden" name="revisionId" value="{{ entry.revisionId }}">
 
             <div class="secondary-buttons">
                 <input type="button" class="btn submit formsubmit" value="{{ 'Revert entry to this version'|t('app') }}">
@@ -144,7 +144,7 @@
                     {% endif %}
                 </ul>
 
-                {% if not isSingle and not isVersion and canDeleteEntry %}
+                {% if not isSingle and not isRevision and canDeleteEntry %}
                     <hr>
                     <ul>
                         <li><a class="formsubmit error" data-action="entries/delete-entry" data-confirm="{{ 'Are you sure you want to delete this entry?'|t('app') }}" data-redirect="{{ 'entries#'|hash }}">{{ 'Delete'|t('app') }}</a></li>
@@ -165,17 +165,17 @@
 
 
 {% block content %}
-    {% if not isVersion %}
+    {% if not isRevision %}
         <input type="hidden" name="sectionId" value="{{ section.id }}">
         {% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
         {% if craft.app.getIsMultiSite() %}<input type="hidden" name="siteId" value="{{ entry.siteId }}">{% endif %}
     {% else %}
-        <input type="hidden" name="versionId" value="{{ entry.versionId }}">
+        <input type="hidden" name="revisionId" value="{{ entry.revisionId }}">
     {% endif %}
 
     <div id="fields">
         {% include "entries/_fields" with {
-            static: isVersion
+            static: isRevision
         } %}
     </div>
 
@@ -207,8 +207,8 @@
                     autocapitalize: false,
                     value: entry.slug,
                     placeholder: "Enter slug"|t('app'),
-                    errors: (not isVersion ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
-                    disabled: isVersion
+                    errors: (not isRevision ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
+                    disabled: isRevision
                 }) }}
 
                 {% if parentOptionCriteria is defined %}
@@ -245,7 +245,7 @@
                     name: 'postDate',
                     value: (entry.postDate ? entry.postDate : null),
                     errors: entry.getErrors('postDate'),
-                    disabled: isVersion
+                    disabled: isRevision
                 }) }}
 
                 {{ forms.dateTimeField({
@@ -254,7 +254,7 @@
                     name: 'expiryDate',
                     value: (entry.expiryDate ? entry.expiryDate : null),
                     errors: entry.getErrors('expiryDate'),
-                    disabled: isVersion
+                    disabled: isRevision
                 }) }}
             {% endif %}
 
@@ -264,7 +264,7 @@
                     id: 'enabled',
                     name: 'enabled',
                     on: entry.enabled,
-                    disabled: isVersion,
+                    disabled: isRevision,
                     toggle: 'enabledForSite-field'
                 }) }}
             {% endif %}
@@ -276,7 +276,7 @@
                     id: 'enabledForSite',
                     name: 'enabledForSite',
                     on: entry.enabledForSite,
-                    disabled: isVersion
+                    disabled: isRevision
                 }) }}
             {% endif %}
         </div><!-- #settings -->
@@ -291,10 +291,17 @@
                     <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
                     <div class="value">{{ entry.dateUpdated|datetime('short') }}</div>
                 </div>
-                {% if entry.revisionNotes %}
+                {% if isRevision %}
+                    {% set revisionNotes = entry.revisionNotes %}
+                {% elseif not isDraft and currentRevision is defined %}
+                    {% set revisionNotes = currentRevision.revisionNotes %}
+                {% else %}
+                    {% set revisionNotes = null %}
+                {% endif %}
+                {% if revisionNotes %}
                     <div class="data">
                         <h5 class="heading">{{ "Notes"|t('app') }}</h5>
-                        <div class="value">{{ entry.revisionNotes }}</div>
+                        <div class="value">{{ revisionNotes }}</div>
                     </div>
                 {% endif %}
             </div>
@@ -305,7 +312,7 @@
     {# Give plugins a chance to add other things here #}
     {% hook "cp.entries.edit.details" %}
 
-    {% if not isDraft and not isVersion and canSave and section.enableVersioning %}
+    {% if not isDraft and canSave and section.enableVersioning %}
         <div class="meta">
             <textarea id="revision-notes" name="revisionNotes" class="text fullwidth" placeholder="{{ 'Notes about your changes'|t('app') }}" autocomplete="off"></textarea>
         </div>

@@ -966,20 +966,6 @@ class Sites extends Component
 
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            Table::ENTRYDRAFTS,
-                            ['siteId' => $transferContentTo],
-                            ['entryId' => $entryIds])
-                        ->execute();
-
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            Table::ENTRYVERSIONS,
-                            ['siteId' => $transferContentTo],
-                            ['entryId' => $entryIds])
-                        ->execute();
-
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
                             Table::RELATIONS,
                             ['sourceSiteId' => $transferContentTo],
                             [

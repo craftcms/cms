@@ -477,6 +477,8 @@ class Elements extends Component
 
             // Set the attributes
             $elementRecord->uid = $element->uid;
+            $elementRecord->draftId = $element->draftId;
+            $elementRecord->revisionId = $element->revisionId;
             $elementRecord->fieldLayoutId = $element->fieldLayoutId = $element->fieldLayoutId ?? $element->getFieldLayout()->id ?? null;
             $elementRecord->enabled = (bool)$element->enabled;
             $elementRecord->archived = (bool)$element->archived;
@@ -556,11 +558,10 @@ class Elements extends Component
                 Craft::$app->getContent()->saveContent($element);
             }
 
-            // It is now officially saved
-            $element->afterSave($isNewElement);
-
             // Update search index
-            Craft::$app->getSearch()->indexElementAttributes($element);
+            if (!$element->draftId && !$element->revisionId) {
+                Craft::$app->getSearch()->indexElementAttributes($element);
+            }
 
             // Update the element across the other sites?
             if ($propagate && $element::isLocalized() && Craft::$app->getIsMultiSite()) {
@@ -571,6 +572,9 @@ class Elements extends Component
                     }
                 }
             }
+
+            // It is now officially saved
+            $element->afterSave($isNewElement);
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -696,15 +700,22 @@ class Elements extends Component
      */
     public function duplicateElement(ElementInterface $element, array $newAttributes = []): ElementInterface
     {
-        // Create our first clone for the $element's site
+        // Make sure the element exists
         /** @var Element $element */
+        if (!$element->id) {
+            throw new Exception('Attempting to duplicate an unsaved element.');
+        }
+
+        // Create our first clone for the $element's site
         $element->getFieldValues();
         /** @var Element $mainClone */
         $mainClone = clone $element;
-        $mainClone->setAttributes($newAttributes, false);
-        $mainClone->duplicateOf = $element;
         $mainClone->id = null;
         $mainClone->contentId = null;
+        $mainClone->duplicateOf = $element;
+
+        $mainClone->setRevisionNotes(ArrayHelper::remove($newAttributes, 'revisionNotes'));
+        $mainClone->setAttributes($newAttributes, false);
 
         // Make sure the element actually supports its own site ID
         $supportedSites = ElementHelper::supportedSitesForElement($mainClone);
@@ -726,7 +737,18 @@ class Elements extends Component
             // Propagate it
             foreach ($supportedSites as $siteInfo) {
                 if ($siteInfo['siteId'] != $mainClone->siteId) {
-                    $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
+                    $siteQuery = $element::find()
+                        ->id($element->id ?: false)
+                        ->siteId($siteInfo['siteId'])
+                        ->anyStatus();
+
+                    if ($element->draftId) {
+                        $siteQuery->drafts();
+                    } else if ($element->revisionId) {
+                        $siteQuery->revisions();
+                    }
+
+                    $siteElement = $siteQuery->one();
 
                     if ($siteElement === null) {
                         throw new Exception('Element ' . $element->id . ' doesn’t exist in the site ' . $siteInfo['siteId']);
@@ -734,12 +756,12 @@ class Elements extends Component
 
                     /** @var Element $siteClone */
                     $siteClone = clone $siteElement;
-                    $siteClone->setAttributes($newAttributes, false);
                     $siteClone->duplicateOf = $siteElement;
                     $siteClone->propagating = true;
                     $siteClone->id = $mainClone->id;
                     $siteClone->siteId = $siteInfo['siteId'];
                     $siteClone->contentId = null;
+                    $siteClone->setAttributes($newAttributes, false);
 
                     if (!$this->saveElement($siteClone, false, false)) {
                         throw new InvalidElementException($siteClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $siteInfo['siteId']);

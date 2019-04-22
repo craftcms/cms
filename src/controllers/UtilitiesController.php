@@ -453,7 +453,11 @@ class UtilitiesController extends Controller
             $elements = (new Query())
                 ->select(['id', 'type'])
                 ->from([Table::ELEMENTS])
-                ->where(['dateDeleted' => null])
+                ->where([
+                    'draftId' => null,
+                    'revisionId' => null,
+                    'dateDeleted' => null,
+                ])
                 ->all();
 
             $batch = [];

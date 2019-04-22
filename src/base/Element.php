@@ -9,6 +9,8 @@ namespace craft\base;
 
 use Craft;
 use craft\behaviors\ContentBehavior;
+use craft\behaviors\DraftBehavior;
+use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
@@ -84,6 +86,7 @@ use yii\validators\Validator;
  * @property int $totalDescendants The total number of descendants that the element has
  * @property string|null $uriFormat The URI format used to generate this element’s URL
  * @property string|null $url The element’s full URL
+ * @property-write string|null $revisionNotes revision notes to be saved
  * @mixin ContentBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -728,6 +731,12 @@ abstract class Element extends Component implements ElementInterface
     // =========================================================================
 
     /**
+     * @var string|null Revision notes to be saved
+     * @see setRevisionNotes()
+     */
+    protected $revisionNotes;
+
+    /**
      * @var
      */
     private $_fieldsByHandle;
@@ -1191,6 +1200,16 @@ abstract class Element extends Component implements ElementInterface
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSourceId(): int
+    {
+        /** @var DraftBehavior|RevisionBehavior|null $behavior */
+        $behavior = $this->getBehavior('draft') ?: $this->getBehavior('revision');
+        return $behavior ? $behavior->sourceId : $this->id;
     }
 
     /**
@@ -1785,6 +1804,14 @@ abstract class Element extends Component implements ElementInterface
     public function getHasFreshContent(): bool
     {
         return ($this->contentId === null && !$this->hasErrors());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setRevisionNotes(string $notes = null)
+    {
+        $this->revisionNotes = $notes;
     }
 
     // Indexes, etc.

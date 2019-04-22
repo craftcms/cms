@@ -385,6 +385,13 @@ interface ElementInterface extends ComponentInterface
     public function getId();
 
     /**
+     * Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.
+     *
+     * @return int
+     */
+    public function getSourceId(): int;
+
+    /**
      * Returns the field layout used by this element.
      *
      * @return FieldLayout|null
@@ -735,6 +742,13 @@ interface ElementInterface extends ComponentInterface
      * @return bool Whether the element’s content is fresh
      */
     public function getHasFreshContent(): bool;
+
+    /**
+     * Sets the revision notes to be saved.
+     *
+     * @param string|null $notes
+     */
+    public function setRevisionNotes(string $notes = null);
 
     // Indexes, etc.
     // -------------------------------------------------------------------------

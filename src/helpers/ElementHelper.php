@@ -165,6 +165,8 @@ class ElementHelper
             ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
                 'elements_sites.siteId' => $element->siteId,
+                'elements.draftId' => null,
+                'elements.revisionId' => null,
                 'elements.dateDeleted' => null,
             ]);
 
@@ -180,7 +182,9 @@ class ElementHelper
         }
 
         if ($element->id) {
-            $query->andWhere(['not', ['elements.id' => $element->id]]);
+            $query->andWhere(['not', [
+                'elements.id' => $element->getSourceId(),
+            ]]);
         }
 
         return (int)$query->count() === 0;

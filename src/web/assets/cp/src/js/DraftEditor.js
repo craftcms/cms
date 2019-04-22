@@ -1,7 +1,7 @@
 (function($) {
     /** global: Craft */
     /** global: Garnish */
-    Craft.EntryDraftEditor = Garnish.Base.extend(
+    Craft.DraftEditor = Garnish.Base.extend(
         {
             $revisionBtn: null,
             $editBtn: null,
@@ -128,7 +128,7 @@
                     notes: this.$notesInput.val()
                 };
 
-                Craft.postActionRequest('entry-revisions/update-draft-meta', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('drafts/update-draft-meta', data, $.proxy(function(response, textStatus) {
                     this.loading = false;
                     this.$saveBtn.removeClass('active');
                     this.$spinner.addClass('hidden');

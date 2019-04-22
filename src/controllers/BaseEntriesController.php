@@ -8,8 +8,8 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\behaviors\DraftBehavior;
 use craft\elements\Entry;
-use craft\models\EntryDraft;
 use craft\models\Section;
 use craft\web\Controller;
 
@@ -49,28 +49,24 @@ abstract class BaseEntriesController extends Controller
         if (!$entry->id || $duplicate) {
             // Make sure they have permission to create new entries in this section
             $this->requirePermission('createEntries' . $permissionSuffix);
-        } else {
-            switch (get_class($entry)) {
-                case Entry::class:
-                    // If it's another user's entry (and it's not a Single), make sure they have permission to edit those
-                    if (
-                        $entry->authorId != $userSession->getIdentity()->id &&
-                        $entry->getSection()->type !== Section::TYPE_SINGLE
-                    ) {
-                        $this->requirePermission('editPeerEntries' . $permissionSuffix);
-                    }
+            return;
+        }
 
-                    break;
-
-                case EntryDraft::class:
-                    // If it's another user's draft, make sure they have permission to edit those
-                    /** @var EntryDraft $entry */
-                    if (!$entry->creatorId || $entry->creatorId != $userSession->getIdentity()->id) {
-                        $this->requirePermission('editPeerEntryDrafts' . $permissionSuffix);
-                    }
-
-                    break;
+        if ($entry->draftId) {
+            // If it's another user's draft, make sure they have permission to edit those
+            /** @var Entry|DraftBehavior $entry */
+            if ($entry->creatorId != $userSession->getId()) {
+                $this->requirePermission('editPeerEntryDrafts' . $permissionSuffix);
             }
+            return;
+        }
+
+        // If it's another user's entry (and it's not a Single), make sure they have permission to edit those
+        if (
+            $entry->authorId != $userSession->getIdentity()->id &&
+            $entry->getSection()->type !== Section::TYPE_SINGLE
+        ) {
+            $this->requirePermission('editPeerEntries' . $permissionSuffix);
         }
     }
 }

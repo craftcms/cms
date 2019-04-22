@@ -10,6 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\base\Field;
+use craft\behaviors\DraftBehavior;
+use craft\behaviors\RevisionBehavior;
+use craft\db\Query;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
@@ -18,8 +21,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
-use craft\models\EntryDraft;
-use craft\models\EntryVersion;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\models\Site;
@@ -70,19 +71,19 @@ class EntriesController extends BaseEntriesController
      * @param string $sectionHandle The section’s handle
      * @param int|null $entryId The entry’s ID, if editing an existing entry.
      * @param int|null $draftId The entry draft’s ID, if editing an existing draft.
-     * @param int|null $versionId The entry version’s ID, if editing an existing version.
+     * @param int|null $revisionId The entry revision’s ID, if editing an existing revision.
      * @param string|null $siteHandle The site handle, if specified.
      * @param Entry|null $entry The entry being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditEntry(string $sectionHandle, int $entryId = null, int $draftId = null, int $versionId = null, string $siteHandle = null, Entry $entry = null): Response
+    public function actionEditEntry(string $sectionHandle, int $entryId = null, int $draftId = null, int $revisionId = null, string $siteHandle = null, Entry $entry = null): Response
     {
         $variables = [
             'sectionHandle' => $sectionHandle,
             'entryId' => $entryId,
             'draftId' => $draftId,
-            'versionId' => $versionId,
+            'revisionId' => $revisionId,
             'entry' => $entry
         ];
 
@@ -229,17 +230,15 @@ class EntriesController extends BaseEntriesController
         } else {
             $variables['revisionLabel'] = '';
         }
-        switch (get_class($entry)) {
-            case EntryDraft::class:
-                /** @var EntryDraft $entry */
-                $variables['revisionLabel'] .= $entry->name;
-                break;
-            case EntryVersion::class:
-                /** @var EntryVersion $entry */
-                $variables['revisionLabel'] .= Craft::t('app', 'Version {num}', ['num' => $entry->num]);
-                break;
-            default:
-                $variables['revisionLabel'] .= Craft::t('app', 'Current');
+
+        if ($entry->draftId) {
+            /** @var Entry|DraftBehavior $entry */
+            $variables['revisionLabel'] .= $entry->draftName;
+        } else if ($entry->revisionId) {
+            /** @var Entry|RevisionBehavior $entry */
+            $variables['revisionLabel'] .= Craft::t('app', 'Revision {num}', ['num' => $entry->revisionNum]);
+        } else {
+            $variables['revisionLabel'] .= Craft::t('app', 'Current');
         }
 
         if ($entry->id === null) {
@@ -309,9 +308,9 @@ class EntriesController extends BaseEntriesController
                     'previewAction' => Craft::$app->getSecurity()->hashData('entries/preview-entry'),
                     'previewParams' => [
                         'sectionId' => $section->id,
-                        'entryId' => $entry->id,
+                        'entryId' => $entry->id ? $entry->getSourceId() : null,
                         'siteId' => $entry->siteId,
-                        'versionId' => $entry instanceof EntryVersion ? $entry->versionId : null,
+                        'revisionId' => $entry->revisionId,
                     ]
                 ]) . ');');
 
@@ -319,31 +318,24 @@ class EntriesController extends BaseEntriesController
 
             // Should we show the Share button too?
             if ($entry->id !== null) {
-                $className = get_class($entry);
-
-                // If we're looking at the live version of an entry, just use
-                // the entry's main URL as its share URL
-                if ($className === Entry::class && $entry->getStatus() === Entry::STATUS_LIVE) {
+                if ($entry->draftId) {
+                    /** @var Entry|DraftBehavior $entry */
+                    $variables['shareUrl'] = UrlHelper::actionUrl('entries/share-entry', [
+                        'draftId' => $entry->draftId,
+                    ]);
+                } else if ($entry->revisionId) {
+                    /** @var Entry|RevisionBehavior $entry */
+                    $variables['shareUrl'] = UrlHelper::actionUrl('entries/share-entry', [
+                        'revisionId' => $entry->revisionId,
+                    ]);
+                } else if ($entry->getStatus() === Entry::STATUS_LIVE) {
+                    // just use the entry's main URL as its share URL
                     $variables['shareUrl'] = $entry->getUrl();
                 } else {
-                    switch ($className) {
-                        case EntryDraft::class:
-                            /** @var EntryDraft $entry */
-                            $shareParams = ['draftId' => $entry->draftId];
-                            break;
-                        case EntryVersion::class:
-                            /** @var EntryVersion $entry */
-                            $shareParams = ['versionId' => $entry->versionId];
-                            break;
-                        default:
-                            $shareParams = [
-                                'entryId' => $entry->id,
-                                'siteId' => $entry->siteId
-                            ];
-                            break;
-                    }
-
-                    $variables['shareUrl'] = UrlHelper::actionUrl('entries/share-entry', $shareParams);
+                    $variables['shareUrl'] = UrlHelper::actionUrl('entries/share-entry', [
+                        'entryId' => $entry->id,
+                        'siteId' => $entry->siteId,
+                    ]);
                 }
             }
         } else {
@@ -353,7 +345,7 @@ class EntriesController extends BaseEntriesController
         // Set the base CP edit URL
 
         // Can't just use the entry's getCpEditUrl() because that might include the site handle when we don't want it
-        $variables['baseCpEditUrl'] = "entries/{$section->handle}/{id}-{slug}";
+        $variables['baseCpEditUrl'] = "entries/{$section->handle}/{sourceId}-{slug}";
 
         // Set the "Continue Editing" URL
         /** @noinspection PhpUnhandledExceptionInspection */
@@ -430,10 +422,14 @@ class EntriesController extends BaseEntriesController
         $this->requirePostRequest();
 
         // Are we previewing a version?
-        $versionId = Craft::$app->getRequest()->getBodyParam('versionId');
+        $revisionId = Craft::$app->getRequest()->getBodyParam('revisionId');
 
-        if ($versionId) {
-            $entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
+        if ($revisionId) {
+            $entry = Entry::find()
+                ->revisionId($revisionId)
+                ->siteId(Craft::$app->getRequest()->getBodyParam('siteId'))
+                ->anyStatus()
+                ->one();
 
             if (!$entry) {
                 throw new NotFoundHttpException('Entry version not found');
@@ -639,13 +635,13 @@ class EntriesController extends BaseEntriesController
      * @param int|null $entryId
      * @param int|null $siteId
      * @param int|null $draftId
-     * @param int|null $versionId
+     * @param int|null $revisionId
      * @return Response
      * @throws Exception
      * @throws NotFoundHttpException if the requested entry/revision cannot be found
      * @throws ServerErrorHttpException if the section is not configured properly
      */
-    public function actionShareEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $versionId = null): Response
+    public function actionShareEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $revisionId = null): Response
     {
         if ($entryId !== null) {
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
@@ -656,21 +652,29 @@ class EntriesController extends BaseEntriesController
 
             $params = ['entryId' => $entryId, 'siteId' => $entry->siteId];
         } else if ($draftId !== null) {
-            $entry = Craft::$app->getEntryRevisions()->getDraftById($draftId);
+            $entry = Entry::find()
+                ->draftId($draftId)
+                ->siteId($siteId)
+                ->anyStatus()
+                ->one();
 
             if (!$entry) {
                 throw new NotFoundHttpException('Entry draft not found');
             }
 
             $params = ['draftId' => $draftId];
-        } else if ($versionId !== null) {
-            $entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
+        } else if ($revisionId !== null) {
+            $entry = Entry::find()
+                ->revisionId($revisionId)
+                ->siteId($siteId)
+                ->anyStatus()
+                ->one();
 
             if (!$entry) {
-                throw new NotFoundHttpException('Entry version not found');
+                throw new NotFoundHttpException('Entry revision not found');
             }
 
-            $params = ['versionId' => $versionId];
+            $params = ['revisionId' => $revisionId];
         } else {
             throw new NotFoundHttpException('Entry not found');
         }
@@ -704,20 +708,28 @@ class EntriesController extends BaseEntriesController
      * @param int|null $entryId
      * @param int|null $siteId
      * @param int|null $draftId
-     * @param int|null $versionId
+     * @param int|null $revisionId
      * @return Response
      * @throws NotFoundHttpException if the requested category cannot be found
      */
-    public function actionViewSharedEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $versionId = null): Response
+    public function actionViewSharedEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $revisionId = null): Response
     {
         $this->requireToken();
 
         if ($entryId !== null) {
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
         } else if ($draftId !== null) {
-            $entry = Craft::$app->getEntryRevisions()->getDraftById($draftId);
-        } else if ($versionId !== null) {
-            $entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
+            $entry = Entry::find()
+                ->draftId($draftId)
+                ->siteId($siteId)
+                ->anyStatus()
+                ->one();
+        } else if ($revisionId !== null) {
+            $entry = Entry::find()
+                ->revisionId($revisionId)
+                ->siteId($siteId)
+                ->anyStatus()
+                ->one();
         }
 
         if (empty($entry)) {
@@ -796,12 +808,36 @@ class EntriesController extends BaseEntriesController
 
         if (empty($variables['entry'])) {
             if (!empty($variables['entryId'])) {
+                // Get the structure ID
+                $structureId = (new Query())
+                    ->select(['sections.structureId'])
+                    ->from(['{{%entries}} entries'])
+                    ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entries.sectionId]]')
+                    ->where(['entries.id' => $variables['entryId']])
+                    ->scalar();
+
                 if (!empty($variables['draftId'])) {
-                    $variables['entry'] = Craft::$app->getEntryRevisions()->getDraftById($variables['draftId']);
-                } else if (!empty($variables['versionId'])) {
-                    $variables['entry'] = Craft::$app->getEntryRevisions()->getVersionById($variables['versionId']);
+                    $variables['entry'] = Entry::find()
+                        ->draftId($variables['draftId'])
+                        ->structureId($structureId)
+                        ->siteId($site->id)
+                        ->anyStatus()
+                        ->one();
+                } else if (!empty($variables['revisionId'])) {
+                    $variables['entry'] = Entry::find()
+                        ->revisionId($variables['revisionId'])
+                        ->structureId($structureId)
+                        ->structureId($structureId)
+                        ->siteId($site->id)
+                        ->anyStatus()
+                        ->one();
                 } else {
-                    $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'], $site->id);
+                    $variables['entry'] = Entry::find()
+                        ->id($variables['entryId'])
+                        ->structureId($structureId)
+                        ->siteId($site->id)
+                        ->anyStatus()
+                        ->one();
                 }
 
                 if (!$variables['entry']) {
@@ -849,21 +885,12 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         if ($variables['entry']->id) {
-            $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entry']->id, $site->id, 1, true);
-            /** @var EntryVersion $currentVersion */
-            $currentVersion = reset($versions);
-
-            if ($currentVersion !== false) {
-                if ($currentVersion->creatorId) {
-                    $variables['currentVersionCreator'] = $currentVersion->getCreator();
-                }
-                $variables['currentVersionEditTime'] = $currentVersion->dateUpdated;
-
-                // Are we editing the "current" version?
-                if (get_class($variables['entry']) === Entry::class) {
-                    $variables['entry']->revisionNotes = $currentVersion->revisionNotes;
-                }
-            }
+            $variables['currentRevision'] = Entry::find()
+                ->revisionOf($variables['entry']->getSourceId())
+                ->dateCreated($variables['entry']->dateUpdated)
+                ->anyStatus()
+                ->orderBy(['num' => SORT_DESC])
+                ->one();
         }
 
         // Get the entry type
@@ -991,7 +1018,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Revision notes
-        $entry->revisionNotes = $request->getBodyParam('revisionNotes');
+        $entry->setRevisionNotes($request->getBodyParam('revisionNotes'));
     }
 
     /**
