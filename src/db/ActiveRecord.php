@@ -50,7 +50,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
                 $this->dateCreated = $now;
             }
 
-            if ($this->hasAttribute('dateUpdated' && !isset($this->dateUpdated))) {
+            if ($this->hasAttribute('dateUpdated') && !isset($this->dateUpdated)) {
                 $this->dateUpdated = $now;
             }
 
