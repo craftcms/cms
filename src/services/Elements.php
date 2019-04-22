@@ -476,9 +476,25 @@ class Elements extends Component
             }
 
             // Set the attributes
+            $elementRecord->uid = $element->uid;
             $elementRecord->fieldLayoutId = $element->fieldLayoutId = $element->fieldLayoutId ?? $element->getFieldLayout()->id ?? null;
             $elementRecord->enabled = (bool)$element->enabled;
             $elementRecord->archived = (bool)$element->archived;
+
+            if ($isNewElement) {
+                if (isset($element->dateCreated)) {
+                    $elementRecord->dateCreated = Db::prepareValueForDb($element->dateCreated);
+                }
+                if (isset($element->dateUpdated)) {
+                    $elementRecord->dateUpdated = Db::prepareValueForDb($element->dateUpdated);
+                }
+            } else if ($element->propagating || $element->resaving) {
+                // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
+                $elementRecord->markAttributeDirty('dateUpdated');
+            } else {
+                // Force a new dateUpdated value
+                $elementRecord->dateUpdated = Db::prepareValueForDb(new \DateTime());
+            }
 
             // Save the element record
             $elementRecord->save(false);
