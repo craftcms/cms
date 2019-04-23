@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-# Unreleased
+# 3.2.0-alpha.4 - 2019-04-23
 
 ### Added
 - Added the `preferSites` element query param, which can be used to set the preferred sites that should be used for multi-site element queries, when the `unique` param is also enabled.
