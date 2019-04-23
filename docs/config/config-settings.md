@@ -2402,6 +2402,11 @@ If set to `true`, a hard copy of your system’s project config will be saved in
 and any changes to `config/project.yaml` will be applied back to the system, making it possible for
 multiple environments to share the same project config despite having separate databases.
 
+::: warning
+Make sure you’ve read the entire [Project Config](https://docs.craftcms.com/v3/project-config.html)
+documentation, and carefully follow the “Enabling the Project Config File” steps when enabling this setting.
+:::
+
 
 
 ### `useSecureCookies`
