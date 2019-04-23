@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.24 - 2019-04-23
 
 ### Added
 - Added `craft\services\Fields::getFieldIdsByLayoutId()`.
