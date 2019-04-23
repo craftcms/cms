@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Craft now correctly typecasts all core boolean and integer values saved to the project config. ([#3695](https://github.com/craftcms/cms/issues/3695))
 - Craft now saves new entry versions every time an entry is saved, unless it’s being propagated or resaved.
 - `craft\services\Path::getStoragePath()` now has a `$create` argument.
 - Updated Twig to ~2.8.1.
