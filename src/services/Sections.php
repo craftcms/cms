@@ -1190,7 +1190,6 @@ class Sections extends Component
             return;
         }
 
-        $fieldsService = Craft::$app->getFields();
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
@@ -1205,36 +1204,21 @@ class Sections extends Component
             $entryTypeRecord->sectionId = $section->id;
             $entryTypeRecord->uid = $entryTypeUid;
 
-            $resaveEntries = false;
-
             if (!empty($data['fieldLayouts'])) {
-                // Get the old field IDs
-                $oldFieldIds = $entryTypeRecord->fieldLayoutId
-                    ? $fieldsService->getFieldIdsByLayoutId($entryTypeRecord->fieldLayoutId)
-                    : [];
-                sort($oldFieldIds, SORT_NUMERIC);
-
                 // Save the field layout
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
                 $layout->id = $entryTypeRecord->fieldLayoutId;
                 $layout->type = Entry::class;
                 $layout->uid = key($data['fieldLayouts']);
-                $fieldsService->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout);
                 $entryTypeRecord->fieldLayoutId = $layout->id;
-
-                // See if any field changes were just made
-                $newFieldIds = $fieldsService->getFieldIdsByLayoutId($layout->id);
-                sort($newFieldIds, SORT_NUMERIC);
-                if ($newFieldIds !== $oldFieldIds) {
-                    $resaveEntries = true;
-                }
             } else if ($entryTypeRecord->fieldLayoutId) {
                 // Delete the field layout
-                $fieldsService->deleteLayoutById($entryTypeRecord->fieldLayoutId);
+                Craft::$app->getFields()->deleteLayoutById($entryTypeRecord->fieldLayoutId);
                 $entryTypeRecord->fieldLayoutId = null;
             }
 
-            $resaveEntries = $resaveEntries || (
+            $resaveEntries = (
                 $entryTypeRecord->handle !== $entryTypeRecord->getOldAttribute('handle') ||
                 $entryTypeRecord->hasTitleField != $entryTypeRecord->getOldAttribute('hasTitleField') ||
                 $entryTypeRecord->titleFormat !== $entryTypeRecord->getOldAttribute('titleFormat') ||
