@@ -9,7 +9,10 @@
 namespace craft\test;
 
 
+use Closure;
 use Codeception\Test\Unit;
+use ReflectionClass;
+use ReflectionObject;
 
 /**
  * Unit tests for TestCase
@@ -31,7 +34,7 @@ class TestCase extends Unit
      */
     protected function setInaccessibleProperty($object, $propertyName, $value, $revoke = true)
     {
-        $class = new \ReflectionClass($object);
+        $class = new ReflectionClass($object);
         while (!$class->hasProperty($propertyName)) {
             $class = $class->getParentClass();
         }
@@ -47,7 +50,7 @@ class TestCase extends Unit
      * Returns a callback/Closure that checks whether the passed in object is an instance of the $class param
      *
      * @param string $class
-     * @return \Closure
+     * @return Closure
      */
     public function assertObjectIsInstanceOfClassCallback(string $class)
     {
@@ -66,7 +69,7 @@ class TestCase extends Unit
      */
     protected function getInaccessibleProperty($object, $propertyName, $revoke = true)
     {
-        $class = new \ReflectionClass($object);
+        $class = new ReflectionClass($object);
         while (!$class->hasProperty($propertyName)) {
             $class = $class->getParentClass();
         }
@@ -90,7 +93,7 @@ class TestCase extends Unit
      */
     protected function invokeMethod($object, $method, $args = [], $revoke = true)
     {
-        $reflection = new \ReflectionObject($object);
+        $reflection = new ReflectionObject($object);
         $method = $reflection->getMethod($method);
         $method->setAccessible(true);
         $result = $method->invokeArgs($object, $args);

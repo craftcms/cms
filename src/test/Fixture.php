@@ -9,6 +9,7 @@
 namespace craft\test;
 
 
+use yii\db\Exception;
 use yii\db\TableSchema;
 use yii\test\ActiveFixture;
 
@@ -56,7 +57,7 @@ class Fixture extends ActiveFixture
      * @param $tableName
      * @param $toBeDeletedRow
      * @return int
-     * @throws \yii\db\Exception
+     * @throws Exception
      */
     public function deleteRow($tableName, $toBeDeletedRow)
     {

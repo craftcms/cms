@@ -11,7 +11,9 @@ namespace craft\test\elementfixtures;
 
 use craft\db\Query;
 use craft\elements\Entry;
+use craft\services\Section;
 use craft\test\Craft;
+use yii\base\ErrorException;
 
 /**
  * Unit tests for EntriesFixture
@@ -43,7 +45,7 @@ class EntriesFixture extends ElementFixture
      * We load the section data only once we need it. This gives other fixtures (see for e.g. craftunit\fixtures\SectionsFixture) the
      * time to add their data.
      *
-     * @throws \yii\base\ErrorException
+     * @throws ErrorException
      */
     public function load(): void
     {
@@ -55,7 +57,7 @@ class EntriesFixture extends ElementFixture
     public function ensureDataExists() : bool
     {
         if (!$this->sectionIds || !$this->typeIds) {
-            /** @var \craft\services\Section */
+            /** @var Section */
             $sectionService = \Craft::$app->getSections();
 
             // Get all section and type id's
