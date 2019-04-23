@@ -459,7 +459,7 @@ class Sections extends Component
 
             $configData['structure'] = [
                 'uid' => $structureUid,
-                'maxLevels' => $section->maxLevels ? (int)$section->maxLevels : null,
+                'maxLevels' => (int)$section->maxLevels ?: null,
             ];
         }
 

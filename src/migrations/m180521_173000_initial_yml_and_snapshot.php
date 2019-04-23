@@ -183,7 +183,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             if (!empty($section['structure'])) {
                 $section['structure'] = [
                     'uid' => $section['structure'],
-                    'maxLevels' => $section['structureMaxLevels'] ? (int)$section['structureMaxLevels'] : null,
+                    'maxLevels' => (int)$section['structureMaxLevels'] ?: null,
                 ];
             } else {
                 unset($section['structure']);
@@ -191,7 +191,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
             $uid = $section['uid'];
             unset($section['id'], $section['structureMaxLevels'], $section['uid']);
-            
+
             $section['enableVersioning'] = (bool)$section['enableVersioning'];
             $section['propagateEntries'] = (bool)$section['propagateEntries'];
 
@@ -555,7 +555,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             if (!empty($group['structure'])) {
                 $group['structure'] = [
                     'uid' => $group['structure'],
-                    'maxLevels' => $group['structureMaxLevels'] ? (int)$group['structureMaxLevels'] : null,
+                    'maxLevels' => (int)$group['structureMaxLevels'] ?: null,
                 ];
             } else {
                 unset($group['structure']);

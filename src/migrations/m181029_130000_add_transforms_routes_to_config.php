@@ -71,7 +71,7 @@ class m181029_130000_add_transforms_routes_to_config extends Migration
             unset($row['uid']);
             $row['width'] = (int)$row['width'];
             $row['height'] = (int)$row['height'];
-            $row['quality'] = $row['quality'] ? (int)$row['quality'] : null;
+            $row['quality'] = (int)$row['quality'] ?: null;
         }
 
         Craft::$app->getProjectConfig()->set('imageTransforms', $transformRows);
