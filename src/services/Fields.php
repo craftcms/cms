@@ -1047,15 +1047,14 @@ class Fields extends Component
     public function getFieldIdsByLayoutIds(array $layoutIds): array
     {
         $results = (new Query())
-            ->select(['flf.layoutId', 'fields.id'])
-            ->from(['{{%fields}} fields'])
-            ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')
-            ->where(['flf.layoutId' => $layoutIds])
+            ->select(['layoutId', 'fieldId'])
+            ->from([Table::FIELDLAYOUTFIELDS])
+            ->where(['layoutId' => $layoutIds])
             ->all();
 
         $fieldIdsByLayoutId = [];
         foreach ($results as $result) {
-            $fieldIdsByLayoutId[$result['layoutId']][] = $result['id'];
+            $fieldIdsByLayoutId[$result['layoutId']][] = $result['fieldId'];
         }
 
         return $fieldIdsByLayoutId;
