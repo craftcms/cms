@@ -2,6 +2,7 @@
 
 define('YII_ENV', 'test');
 
+
 // Use the current installation of Craft
 define('CRAFT_STORAGE_PATH', __DIR__ . '/_craft/storage');
 define('CRAFT_TEMPLATES_PATH', __DIR__ . '/_craft/templates');
