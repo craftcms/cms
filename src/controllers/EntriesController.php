@@ -532,15 +532,6 @@ class EntriesController extends BaseEntriesController
             }
         }
 
-        // Make sure the entry has at least one version if the section has versioning enabled
-        $revisionsService = Craft::$app->getEntryRevisions();
-        if ($entry->getSection()->enableVersioning && $entry->id && !$revisionsService->doesEntryHaveVersions($entry->id, $entry->siteId)) {
-            $currentEntry = Craft::$app->getEntries()->getEntryById($entry->id, $entry->siteId);
-            $currentEntry->revisionCreatorId = $entry->authorId;
-            $currentEntry->revisionNotes = 'Revision from ' . Craft::$app->getFormatter()->asDatetime($entry->dateUpdated);
-            $revisionsService->saveVersion($currentEntry);
-        }
-
         // Save the entry (finally!)
         if ($entry->enabled && $entry->enabledForSite) {
             $entry->setScenario(Element::SCENARIO_LIVE);
@@ -561,11 +552,6 @@ class EntriesController extends BaseEntriesController
             ]);
 
             return null;
-        }
-
-        // Should we save a new version?
-        if ($entry->getSection()->enableVersioning) {
-            $revisionsService->saveVersion($entry);
         }
 
         if ($request->getAcceptsJson()) {
