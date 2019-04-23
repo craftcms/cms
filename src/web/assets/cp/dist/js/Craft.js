@@ -1,4 +1,4 @@
-/*!   - 2019-04-05 */
+/*!   - 2019-04-23 */
 (function($){
 
 /** global: Craft */
@@ -13702,7 +13702,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
             this.clearLoginError();
 
             var data = {
-                password: this.$passwordInput.val()
+                currentPassword: this.$passwordInput.val()
             };
 
             Craft.postActionRequest('users/start-elevated-session', data, $.proxy(function(response, textStatus) {

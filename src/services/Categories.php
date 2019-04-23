@@ -267,7 +267,7 @@ class Categories extends Component
             'handle' => $group->handle,
             'structure' => [
                 'uid' => $structureUid,
-                'maxLevels' => $group->maxLevels,
+                'maxLevels' => (int)$group->maxLevels ?: null,
             ],
             'siteSettings' => []
         ];
@@ -301,7 +301,7 @@ class Categories extends Component
         foreach ($allSiteSettings as $siteId => $settings) {
             $siteUid = Db::uidById(Table::SITES, $siteId);
             $configData['siteSettings'][$siteUid] = [
-                'hasUrls' => $settings['hasUrls'],
+                'hasUrls' => (bool)$settings['hasUrls'],
                 'uriFormat' => $settings['uriFormat'],
                 'template' => $settings['template'],
             ];
