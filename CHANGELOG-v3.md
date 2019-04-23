@@ -8,6 +8,7 @@
 ### Changed
 - Craft now correctly typecasts all core boolean and integer values saved to the project config. ([#3695](https://github.com/craftcms/cms/issues/3695))
 - Craft now saves new entry versions every time an entry is saved, unless it’s being propagated or resaved.
+- `users/save-user` and `users/start-elevated-session` requests now check for a `currentPassword` body param in addition to `password`, when looking for the user’s current password. ([#4169](https://github.com/craftcms/cms/issues/4169))
 - `craft\services\Path::getStoragePath()` now has a `$create` argument.
 - Updated Twig to ~2.8.1.
 
