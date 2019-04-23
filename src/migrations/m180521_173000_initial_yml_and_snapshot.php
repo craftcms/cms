@@ -143,6 +143,11 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
         foreach ($sites as $site) {
             $uid = $site['uid'];
             unset($site['uid'], $site['groupId']);
+
+            $site['sortOrder'] = (int)$site['sortOrder'];
+            $site['hasUrls'] = (bool)$site['hasUrls'];
+            $site['primary'] = (bool)$site['primary'];
+
             $data[$uid] = $site;
         }
 
@@ -178,7 +183,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             if (!empty($section['structure'])) {
                 $section['structure'] = [
                     'uid' => $section['structure'],
-                    'maxLevels' => $section['structureMaxLevels']
+                    'maxLevels' => (int)$section['structureMaxLevels'] ?: null,
                 ];
             } else {
                 unset($section['structure']);
@@ -186,6 +191,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
             $uid = $section['uid'];
             unset($section['id'], $section['structureMaxLevels'], $section['uid']);
+
+            $section['enableVersioning'] = (bool)$section['enableVersioning'];
+            $section['propagateEntries'] = (bool)$section['propagateEntries'];
 
             $sectionData[$uid] = $section;
             $sectionData[$uid]['entryTypes'] = [];
@@ -210,6 +218,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $sectionUid = $sectionSiteRow['sectionUid'];
             $siteUid = $sectionSiteRow['siteUid'];
             unset($sectionSiteRow['sectionUid'], $sectionSiteRow['siteUid']);
+
+            $sectionSiteRow['hasUrls'] = (bool)$sectionSiteRow['hasUrls'];
+            $sectionSiteRow['enabledByDefault'] = (bool)$sectionSiteRow['enabledByDefault'];
+
             $sectionData[$sectionUid]['siteSettings'][$siteUid] = $sectionSiteRow;
         }
 
@@ -240,6 +252,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $uid = $entryType['uid'];
 
             unset($entryType['fieldLayoutId'], $entryType['sectionUid'], $entryType['uid'], $layout['uid']);
+
+            $entryType['hasTitleField'] = (bool)$entryType['hasTitleField'];
+            $entryType['sortOrder'] = (int)$entryType['sortOrder'];
 
             $entryType['fieldLayouts'] = [$layoutUid => $layout];
             $sectionData[$sectionUid]['entryTypes'][$uid] = $entryType;
@@ -308,6 +323,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
             $fieldInstance = $fieldService->getFieldById($fieldRow['id']);
             $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
+
+            $fieldRow['searchable'] = (bool)$fieldRow['searchable'];
+
             $fields[$fieldRow['uid']] = $fieldRow;
         }
 
@@ -351,6 +369,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             unset($matrixBlockType['fieldId']);
 
             $layoutIds[] = $matrixBlockType['fieldLayoutId'];
+
+            $matrixBlockType['sortOrder'] = (int)$matrixBlockType['sortOrder'];
+
             $blockTypeData[$fieldId][$matrixBlockType['uid']] = $matrixBlockType;
         }
 
@@ -409,9 +430,12 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             }
 
             $volume['settings'] = Json::decodeIfJson($volume['settings']);
-
             $uid = $volume['uid'];
             unset($volume['fieldLayoutId'], $volume['uid']);
+
+            $volume['hasUrls'] = (bool)$volume['hasUrls'];
+            $volume['sortOrder'] = (int)$volume['sortOrder'];
+
             $data[$uid] = $volume;
         }
 
@@ -531,7 +555,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             if (!empty($group['structure'])) {
                 $group['structure'] = [
                     'uid' => $group['structure'],
-                    'maxLevels' => $group['structureMaxLevels']
+                    'maxLevels' => (int)$group['structureMaxLevels'] ?: null,
                 ];
             } else {
                 unset($group['structure']);
@@ -567,6 +591,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $groupUid = $groupSiteRow['groupUid'];
             $siteUid = $groupSiteRow['siteUid'];
             unset($groupSiteRow['siteUid'], $groupSiteRow['groupUid']);
+
+            $groupSiteRow['hasUrls'] = (bool)$groupSiteRow['hasUrls'];
+
             $groupData[$groupUid]['siteSettings'][$siteUid] = $groupSiteRow;
         }
 
@@ -742,14 +769,14 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 $layout['tabs'][$fieldRow['tabUid']] =
                     [
                         'name' => $fieldRow['tabName'],
-                        'sortOrder' => $fieldRow['tabOrder'],
+                        'sortOrder' => (int)$fieldRow['tabOrder'],
                     ];
             }
 
             $tab = &$layout['tabs'][$fieldRow['tabUid']];
 
-            $field['required'] = $fieldRow['required'];
-            $field['sortOrder'] = $fieldRow['fieldOrder'];
+            $field['required'] = (bool)$fieldRow['required'];
+            $field['sortOrder'] = (int)$fieldRow['fieldOrder'];
 
             $tab['fields'][$fieldRow['fieldUid']] = $field;
         }

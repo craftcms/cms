@@ -459,7 +459,7 @@ class Sections extends Component
 
             $configData['structure'] = [
                 'uid' => $structureUid,
-                'maxLevels' => $section->maxLevels,
+                'maxLevels' => (int)$section->maxLevels ?: null,
             ];
         }
 
@@ -478,8 +478,8 @@ class Sections extends Component
         foreach ($allSiteSettings as $siteId => $settings) {
             $siteUid = Db::uidById(Table::SITES, $siteId);
             $configData['siteSettings'][$siteUid] = [
-                'enabledByDefault' => $settings['enabledByDefault'],
-                'hasUrls' => $settings['hasUrls'],
+                'enabledByDefault' => (bool)$settings['enabledByDefault'],
+                'hasUrls' => (bool)$settings['hasUrls'],
                 'uriFormat' => $settings['uriFormat'],
                 'template' => $settings['template'],
             ];
@@ -1135,10 +1135,10 @@ class Sections extends Component
         $configData = [
             'name' => $entryType->name,
             'handle' => $entryType->handle,
-            'hasTitleField' => $entryType->hasTitleField,
+            'hasTitleField' => (bool)$entryType->hasTitleField,
             'titleLabel' => $entryType->titleLabel,
             'titleFormat' => $entryType->titleFormat,
-            'sortOrder' => $sortOrder,
+            'sortOrder' => (int)$sortOrder,
         ];
 
         $fieldLayout = $entryType->getFieldLayout();
