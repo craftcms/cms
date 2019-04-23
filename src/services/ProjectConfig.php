@@ -2087,8 +2087,8 @@ class ProjectConfig extends Component
 
         foreach ($transformRows as &$row) {
             unset($row['uid']);
-            $row['width'] = (int)$row['width'];
-            $row['height'] = (int)$row['height'];
+            $row['width'] = (int)$row['width'] ?: null;
+            $row['height'] = (int)$row['height'] ?: null;
             $row['quality'] = (int)$row['quality'] ?: null;
         }
 
