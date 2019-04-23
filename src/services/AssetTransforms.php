@@ -208,13 +208,13 @@ class AssetTransforms extends Component
         $configData = [
             'format' => $transform->format,
             'handle' => $transform->handle,
-            'height' => (int)$transform->height,
+            'height' => (int)$transform->height ?: null,
             'interlace' => $transform->interlace,
             'mode' => $transform->mode,
             'name' => $transform->name,
             'position' => $transform->position,
             'quality' => (int)$transform->quality ?: null,
-            'width' => (int)$transform->width
+            'width' => (int)$transform->width ?: null,
         ];
 
         $configPath = self::CONFIG_TRANSFORM_KEY . '.' . $transform->uid;
