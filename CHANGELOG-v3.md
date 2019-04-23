@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Fields::getFieldIdsByLayoutId()`.
+
 ### Changed
 - Craft now correctly typecasts all core boolean and integer values saved to the project config. ([#3695](https://github.com/craftcms/cms/issues/3695))
 - Craft now saves new entry versions every time an entry is saved, unless it’s being propagated or resaved.
@@ -10,6 +13,7 @@
 
 ### Fixed
 - Fixed an error where re-saving a site would reset its sorting order. ([#4147](https://github.com/craftcms/cms/issues/4147))
+- Fixed a bug where Craft wasn’t auto-resaving entries after a field was added or removed from an entry type. ([#3482](https://github.com/craftcms/cms/issues/3482))
 - Fixed a SQL error that could occur when updating to Craft 3.1. ([#3663](https://github.com/craftcms/cms/issues/3663))
 - Fixed an error that occurred when an SVG with `/` characters in its `id` attributes was passed to the `svg()` Twig function. ([#4155](https://github.com/craftcms/cms/issues/4155))
 - Fixed a bug where passing `:empty:` or `:notempty:` to a Matrix field param on an element query could return incorrect results for fields that had soft-deleted blocks. ([#4161](https://github.com/craftcms/cms/issues/4161))

@@ -1039,6 +1039,21 @@ class Fields extends Component
     }
 
     /**
+     * Returns the field IDs for a given layout ID.
+     *
+     * @param int $layoutId The field layout ID
+     * @return int[]
+     */
+    public function getFieldIdsByLayoutId(int $layoutId): array
+    {
+        return (new Query())
+            ->select(['fieldId'])
+            ->from([Table::FIELDLAYOUTFIELDS])
+            ->where(['layoutId' => $layoutId])
+            ->column();
+    }
+
+    /**
      * Returns the field IDs grouped by layout IDs, for a given set of layout IDs.
      *
      * @param int[] $layoutIds The field layout IDs
