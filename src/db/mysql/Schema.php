@@ -323,10 +323,10 @@ SQL;
         }
 
         FileHelper::writeToFile($filePath, $contents);
-        // Chmod the file. On some distribution, the php user write files too 'open', which generate a :
-        // [Warning] World-writable config file 'my.cnf' is ignored
-        // Therefore preventing the dump as it uses incorrect settings
-        chmod($filePath, 0644); 
+
+        // Avoid a “world-writable config file 'my.cnf' is ignored” warning
+        chmod($filePath, 0644);
+
         return $filePath;
     }
 }
