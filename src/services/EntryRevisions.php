@@ -278,11 +278,6 @@ class EntryRevisions extends Component
         // Delete the draft
         $this->deleteDraft($draft);
 
-        // Should we save a new version?
-        if ($draft->getSection()->enableVersioning) {
-            $this->saveVersion($draft);
-        }
-
         // Fire an 'afterPublishDraft' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_PUBLISH_DRAFT)) {
             $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([

@@ -694,7 +694,7 @@ class Db
             ->where(['uid' => $uid])
             ->scalar();
 
-        return $id ? (int)$id : null;
+        return (int)$id ?: null;
     }
 
     /**

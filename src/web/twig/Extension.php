@@ -954,11 +954,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 return 'class=' . $matches[1] . implode(' ', $newClasses) . $matches[1];
             }, $svg);
             foreach ($ids as $id) {
-                $quotedId = preg_quote($id, '\\');
+                $quotedId = preg_quote($id, '/');
                 $svg = preg_replace("/#{$quotedId}\b(?!\-)/", "#{$ns}{$id}", $svg);
             }
             foreach ($classes as $c) {
-                $quotedClass = preg_quote($c, '\\');
+                $quotedClass = preg_quote($c, '/');
                 $svg = preg_replace("/\.{$quotedClass}\b(?!\-)/", ".{$ns}{$c}", $svg);
             }
         }

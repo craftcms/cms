@@ -587,7 +587,7 @@ class Elements extends Component
         $element->getFieldValues();
         /** @var Element $mainClone */
         $mainClone = clone $element;
-        $mainClone->setAttributes($newAttributes);
+        $mainClone->setAttributes($newAttributes, false);
         $mainClone->duplicateOf = $element;
         $mainClone->id = null;
         $mainClone->contentId = null;
@@ -620,7 +620,7 @@ class Elements extends Component
 
                     /** @var Element $siteClone */
                     $siteClone = clone $siteElement;
-                    $siteClone->setAttributes($newAttributes);
+                    $siteClone->setAttributes($newAttributes, false);
                     $siteClone->duplicateOf = $siteElement;
                     $siteClone->propagating = true;
                     $siteClone->id = $mainClone->id;

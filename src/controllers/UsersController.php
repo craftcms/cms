@@ -246,7 +246,8 @@ class UsersController extends Controller
      */
     public function actionStartElevatedSession()
     {
-        $password = Craft::$app->getRequest()->getBodyParam('password');
+        $request = Craft::$app->getRequest();
+        $password = $request->getBodyParam('currentPassword') ?? $request->getBodyParam('password');
 
         try {
             $success = Craft::$app->getUser()->startElevatedSession($password);
@@ -1758,13 +1759,13 @@ class UsersController extends Controller
             return false;
         }
 
-        $currentHashedPassword = $currentUser->password;
-
-        try {
-            $currentPassword = Craft::$app->getRequest()->getRequiredParam('password');
-        } catch (BadRequestHttpException $e) {
+        $request = Craft::$app->getRequest();
+        $currentPassword = $request->getParam('currentPassword') ?? $request->getParam('password');
+        if ($currentPassword === null) {
             return false;
         }
+
+        $currentHashedPassword = $currentUser->password;
 
         try {
             return Craft::$app->getSecurity()->validatePassword($currentPassword, $currentHashedPassword);
