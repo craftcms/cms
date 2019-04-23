@@ -67,7 +67,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
         initialize: function() {
             if (this.initialized) {
-                return;
+                return false;
             }
 
             this.initialized = true;
@@ -82,6 +82,7 @@ Craft.EditableTable = Garnish.Base.extend(
             this.$addRowBtn = this.$table.next('.add');
             this.updateAddRowButton();
             this.addListener(this.$addRowBtn, 'activate', 'addRow');
+            return true;
         },
         initializeIfVisible: function() {
             this.removeListener(Garnish.$win, 'resize');

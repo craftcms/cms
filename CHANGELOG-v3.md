@@ -20,6 +20,7 @@
 
 ### Fixed
 - Fixed a SQL error that could occur when using the `unique` element query param.
+- Fixed a bug where Table fields would forget their Dropdown columns’ options when edited.
 
 ## 3.2.0-alpha.3 - 2019-04-10
 
