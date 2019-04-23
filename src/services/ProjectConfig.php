@@ -1501,7 +1501,7 @@ class ProjectConfig extends Component
             if (!empty($section['structure'])) {
                 $section['structure'] = [
                     'uid' => $section['structure'],
-                    'maxLevels' => $section['structureMaxLevels'] ? (int)$section['structureMaxLevels'] : null,
+                    'maxLevels' => (int)$section['structureMaxLevels'] ?: null,
                 ];
             } else {
                 unset($section['structure']);
@@ -1902,7 +1902,7 @@ class ProjectConfig extends Component
             if (!empty($group['structure'])) {
                 $group['structure'] = [
                     'uid' => $group['structure'],
-                    'maxLevels' => $group['structureMaxLevels'] ? (int)$group['structureMaxLevels'] : null,
+                    'maxLevels' => (int)$group['structureMaxLevels'] ?: null,
                 ];
             } else {
                 unset($group['structure']);
@@ -2089,7 +2089,7 @@ class ProjectConfig extends Component
             unset($row['uid']);
             $row['width'] = (int)$row['width'];
             $row['height'] = (int)$row['height'];
-            $row['quality'] = $row['quality'] ? (int)$row['quality'] : null;
+            $row['quality'] = (int)$row['quality'] ?: null;
         }
 
         return $transformRows;
