@@ -5,6 +5,9 @@
 ### Changed
 - Craft now registers its project config event handlers before loading plugins. ([#3943](https://github.com/craftcms/cms/issues/3943))
 
+### Fixed
+- Fixed an error where rebuilding the project config would not typecast the `propagateEntries` and `enableVersioning` section settings correctly. ([#3695](https://github.com/craftcms/cms/issues/3695))
+
 ## 3.1.24 - 2019-04-23
 
 ### Added
