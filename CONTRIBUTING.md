@@ -12,7 +12,6 @@ The following is a set of guidelines for contributing to Craft CMS and its first
 - [Code of Conduct](#code-of-conduct)
 - [Security Disclosures](#security-disclosures)
 - [Bug Reports & Feature Requests](#bug-reports--feature-requests)
-- [Documentation Edits](#documentation-edits)
 - [Control Panel Translations](#control-panel-translations)
 - [Core Enhancements](#core-enhancements)
 - [Pull Requests](#pull-requests)
@@ -43,10 +42,6 @@ Before submitting bug reports and feature requests, please search through [open 
 If you do find a similar issue, upvote it by adding a :thumbsup: [reaction](https://github.com/blog/2119-add-reactions-to-pull-requests-issues-and-comments). Only leave a comment if you have relevant information to add.
 
 If no one has filed the issue yet, [submit a new one](https://github.com/craftcms/cms/issues/new). Please include a clear description of the issue, and as much relevant information as possible, including a code sample demonstrating the the issue.
-
-## Documentation Edits
-
-Craft’s documentation has its own repo, [craftcms/docs](https://github.com/craftcms/docs). Improvements or corrections to them can be submitted as a pull request.
 
 ## Control Panel Translations
 
