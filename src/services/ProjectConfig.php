@@ -1647,6 +1647,7 @@ class ProjectConfig extends Component
             $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
 
             $fieldRow['searchable'] = (bool)$fieldRow['searchable'];
+            $fieldRow['settings'] = $fieldInstance->getSettings();
 
             $fields[$fieldRow['uid']] = $fieldRow;
         }
@@ -1728,6 +1729,8 @@ class ProjectConfig extends Component
             $matrixSubfieldRow['settings'] = Json::decodeIfJson($matrixSubfieldRow['settings']);
             $fieldInstance = $fieldService->getFieldById($matrixSubfieldRow['id']);
             $matrixSubfieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
+            $matrixSubfieldRow['settings'] = $fieldInstance->getSettings();
+
             list (, $blockTypeUid) = explode(':', $matrixSubfieldRow['context']);
 
             if (empty($matrixSubFields[$blockTypeUid])) {

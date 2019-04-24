@@ -81,7 +81,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     public $contentTable;
 
     /**
-     * @var int Whether each site should get its own unique set of blocks
+     * @var bool Whether each site should get its own unique set of blocks
      */
     public $localizeBlocks = false;
 
@@ -106,6 +106,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         $rules = parent::rules();
         $rules[] = [['minBlocks', 'maxBlocks'], 'integer', 'min' => 0];
         return $rules;
+    }
+
+    /**
+     * @inheritdocs
+     */
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+        $settings['minBlocks'] = (int)$settings['minBlocks'] ?: null;
+        $settings['maxBlocks'] = (int)$settings['maxBlocks'] ?: null;
+        $settings['localizeBlocks'] = (bool)$settings['localizeBlocks'];
+
+        return $settings;
     }
 
     /**

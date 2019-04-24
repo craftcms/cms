@@ -4,6 +4,7 @@
 
 ### Changed
 - Craft now registers its project config event handlers before loading plugins. ([#3943](https://github.com/craftcms/cms/issues/3943))
+- Craft now correctly typecasts all core field setting boolean and integer values saved to the project config. ([#3695](https://github.com/craftcms/cms/issues/3695))
 
 ## 3.1.24 - 2019-04-23
 
