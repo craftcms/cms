@@ -109,21 +109,6 @@ class Number extends Field implements PreviewableFieldInterface
     }
 
     /**
-     * @inheritdocs
-     */
-    public function getSettings(): array
-    {
-        $settings = parent::getSettings();
-        $settings['size'] = (int)$settings['size'] ?: null;
-        $settings['decimals'] = (int)$settings['decimals'];
-        $settings['min'] = (int)$settings['min'];
-        $settings['max'] = (int)$settings['max'] ?: null;
-        $settings['defaultValue'] = (int)$settings['defaultValue'];
-
-        return $settings;
-    }
-
-    /**
      * @inheritdoc
      */
     public function rules()

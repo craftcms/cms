@@ -84,20 +84,6 @@ class PlainText extends Field implements PreviewableFieldInterface
     }
 
     /**
-     * @inheritdocs
-     */
-    public function getSettings(): array
-    {
-        $settings = parent::getSettings();
-        $settings['multiline'] = (bool)$settings['multiline'];
-        $settings['code'] = (bool)$settings['code'];
-        $settings['initialRows'] = (int)$settings['initialRows'];
-        $settings['charLimit'] = (int)$settings['charLimit'] ?: null;
-
-        return $settings;
-    }
-
-    /**
      * @inheritdoc
      */
     public function rules()

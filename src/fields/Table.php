@@ -117,18 +117,6 @@ class Table extends Field
     }
 
     /**
-     * @inheritdocs
-     */
-    public function getSettings(): array
-    {
-        $settings = parent::getSettings();
-        $settings['maxRows'] = (int)$settings['maxRows'] ?: null;
-        $settings['minRows'] = (int)$settings['minRows'] ?: null;
-
-        return $settings;
-    }
-
-    /**
      * @inheritdoc
      */
     public function rules()
