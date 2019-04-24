@@ -1,5 +1,4 @@
-Contributing to Craft CMS
-=========================
+# Contributing to Craft CMS
 
 Thanks for taking the time to contribute! We really appreciate it.
 
