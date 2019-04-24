@@ -325,7 +325,6 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
 
             $fieldRow['searchable'] = (bool)$fieldRow['searchable'];
-            $fieldRow['settings'] = $fieldInstance->getSettings();
 
             $fields[$fieldRow['uid']] = $fieldRow;
         }

@@ -44,17 +44,6 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     // =========================================================================
 
     /**
-     * @inheritdocs
-     */
-    public function getSettings(): array
-    {
-        $settings = parent::getSettings();
-        $settings['default'] = (bool)$settings['default'];
-
-        return $settings;
-    }
-
-    /**
      * @inheritdoc
      */
     public function getContentColumnType(): string

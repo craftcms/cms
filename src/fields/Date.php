@@ -101,19 +101,6 @@ class Date extends Field implements PreviewableFieldInterface
     }
 
     /**
-     * @inheritdocs
-     */
-    public function getSettings(): array
-    {
-        $settings = parent::getSettings();
-        $settings['showDate'] = (bool)$settings['showDate'];
-        $settings['showTime'] = (bool)$settings['showTime'];
-        $settings['minuteIncrement'] = (int)$settings['minuteIncrement'];
-
-        return $settings;
-    }
-
-    /**
      * @inheritdoc
      */
     public function rules()

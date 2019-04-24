@@ -204,18 +204,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     }
 
     /**
-     * @inheritdocs
-     */
-    public function getSettings(): array
-    {
-        $settings = parent::getSettings();
-        $settings['limit'] = (int)$settings['limit'] ?: null;
-        $settings['localizeRelations'] = (bool)$settings['selectionLabel'];
-
-        return $settings;
-    }
-
-    /**
      * @inheritdoc
      */
     public function getSettingsHtml()
