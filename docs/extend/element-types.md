@@ -110,6 +110,32 @@ public function afterSave(bool $isNew)
 }
 ```
 
+These methods will be called automatically when calling <api:craft\services\Elements::saveElement()> from a Service or Controller.  Here is an example of a method that would create our Element and save it within our ProductService:
+
+```php
+public static function saveNewProduct($model) {
+  $product = new JobElement([
+    'price' => $model->price,
+    'currency' => $model->currency
+  ]);
+
+  $db = \Craft::$app->getDb();
+  $transaction = $db->beginTransaction();
+  try {
+    $product->setFieldValuesFromRequest('fields');
+    Craft::$app->getElements()->saveElement($product);
+
+    $transaction->commit();
+  } catch (\Throwable $e) {
+    $transaction->rollBack();
+
+    throw $e;
+  }
+}
+```
+
+`afterSave()` and `beforeSave()` should never be called manually -- instead, rely on <api:craft\services\Elements::saveElement()> to take care of these calls for you. Simply add to `afterSave()` or `beforeSave()` if you need to additional logic when committing changes.
+
 ### Element Query Class
 
 All element types need a corresponding element query class. Element query classes are an extension of [query builders](https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder), tuned for fetching elements.
@@ -328,7 +354,7 @@ $product->fieldLayoutId = $productType->fieldLayoutId;
 
 If the `$fieldLayoutId`  property is set, <api:craft\services\Elements::saveElement()> will store it in the `elements.fieldLayoutId` column in the database, and your elements will be re-populated with the values when they are fetched down the road.
 
-Alternatively, you can override the `getFieldLayout()` method, and fetch/return the field layout yourself. This might be preferrable if your element type only has a single field layout (like user accounts).
+Alternatively, you can override the `getFieldLayout()` method, and fetch/return the field layout yourself. This might be preferable if your element type only has a single field layout (like user accounts).
 
 ```php
 public function getFieldLayout()
@@ -451,7 +477,7 @@ protected static function defineActions(string $source = null): array
 
 All element types are [soft-deletable](soft-deletes.md) out of the box, however it’s up to each element type to decide whether they should be restorable.
 
-To make an element restorable, just add the <api:craft\elements\actions\Restore> action to the array returned by your static `defineActions()` method. Craft will automatically hide it during normal index views, and show it when someone selects the “Trashed” status option. 
+To make an element restorable, just add the <api:craft\elements\actions\Restore> action to the array returned by your static `defineActions()` method. Craft will automatically hide it during normal index views, and show it when someone selects the “Trashed” status option.
 
 ### Sort Options
 
