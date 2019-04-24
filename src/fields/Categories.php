@@ -74,6 +74,17 @@ class Categories extends BaseRelationField
     }
 
     /**
+     * @inheritdocs
+     */
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+        $settings['branchLimit'] = (int)$settings['branchLimit'] ?: null;
+
+        return $settings;
+    }
+
+    /**
      * @inheritdoc
      */
     public function normalizeValue($value, ElementInterface $element = null)

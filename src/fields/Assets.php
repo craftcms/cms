@@ -133,6 +133,18 @@ class Assets extends BaseRelationField
     }
 
     /**
+     * @inheritdocs
+     */
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+        $settings['useSingleFolder'] = (bool)$settings['useSingleFolder'];
+        $settings['restrictFiles'] = (bool)$settings['restrictFiles'];
+
+        return $settings;
+    }
+
+    /**
      * @inheritdoc
      */
     public function rules()

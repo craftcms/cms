@@ -62,6 +62,17 @@ class Url extends Field implements PreviewableFieldInterface
     }
 
     /**
+     * @inheritdocs
+     */
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+        $settings['maxLength'] = (int)$settings['maxLength'];
+
+        return $settings;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getContentColumnType(): string
