@@ -45,7 +45,19 @@ If no one has filed the issue yet, [submit a new one](https://github.com/craftcm
 
 ## Documentation Edits
 
-Craft’s documentation has its own repo, [craftcms/docs](https://github.com/craftcms/docs). Improvements or corrections to them can be submitted as a pull request.
+Craft’s documentation lives within the [docs/](https://github.com/craftcms/cms/tree/develop/docs) folder within this repo. Improvements or corrections to them can be submitted as a pull request.
+
+The documentation is powered by [VuePress](https://vuepress.vuejs.org/). To preview documentation changes before committing them, go to the `docs/` folder within your terminal, and run these commands:
+
+```bash
+# Install npm dependencies
+npm install
+
+# Build + run the VuePress dev server
+npm run docs:dev
+```
+
+Once the VuePress dev server is up and running, you’ll be able to view the docs at `http://localhost:8000/`. Changes you make to the `.md` files within `docs/` will automatically trigger a live reload of the pages in the browser.
 
 ## Control Panel Translations
 
