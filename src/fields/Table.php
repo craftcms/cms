@@ -446,8 +446,6 @@ class Table extends Field
             return true;
         }
 
-        $validator = null;
-
         switch ($type) {
             case 'color':
                 /** @var ColorData $value */
