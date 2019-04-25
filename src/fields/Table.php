@@ -19,7 +19,6 @@ use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use yii\db\Schema;
-use yii\validators\Validator;
 use yii\validators\EmailValidator;
 
 /**
@@ -443,28 +442,30 @@ class Table extends Field
      */
     private function _validateCellValue(string $type, $value, string &$error = null): bool
     {
-        if (!$value) {
+        if ($value === null || $value === '') {
             return true;
         }
 
         $validator = null;
 
-        if ($type === 'color') {
-            /** @var ColorData $value */
-            $value = $value->getHex();
-            $validator = new ColorValidator();
-        } elseif ($type === 'url') {
-            $validator = new UrlValidator();
-        } elseif ($type === 'email') {
-            $validator = new EmailValidator();
+        switch ($type) {
+            case 'color':
+                /** @var ColorData $value */
+                $value = $value->getHex();
+                $validator = new ColorValidator();
+                break;
+            case 'url':
+                $validator = new UrlValidator();
+                break;
+            case 'email':
+                $validator = new EmailValidator();
+                break;
+            default:
+                return true;
         }
 
-        if ($validator instanceof Validator) {
-            $validator->message = str_replace('{attribute}', '{value}', $validator->message);
-            return $validator->validate($value, $error);
-        }
-
-        return true;
+        $validator->message = str_replace('{attribute}', '{value}', $validator->message);
+        return $validator->validate($value, $error);
     }
 
     /**
