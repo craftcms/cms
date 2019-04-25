@@ -1221,13 +1221,13 @@ trait ApplicationTrait
      */
     private function _postInit()
     {
+        // Register all the listeners for config items
+        $this->_registerConfigListeners();
+
         // Load the plugins
         $this->getPlugins()->loadPlugins();
 
         $this->_isInitialized = true;
-
-        // Register all the listeners for config items
-        $this->_registerConfigListeners();
 
         // Fire an 'init' event
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
