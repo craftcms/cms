@@ -90,14 +90,14 @@ class UsersController extends Controller
      * @inheritdoc
      */
     protected $allowAnonymous = [
-        'login',
-        'logout',
-        'get-remaining-session-time',
-        'send-password-reset-email',
-        'send-activation-email',
-        'save-user',
-        'set-password',
-        'verify-email'
+        'get-remaining-session-time' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'logout' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'save-user' => self::ALLOW_ANONYMOUS_LIVE,
+        'send-activation-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'send-password-reset-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'set-password' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'verify-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     // Public Methods
@@ -131,7 +131,6 @@ class UsersController extends Controller
         }
 
         if (!Craft::$app->getRequest()->getIsPost()) {
-            $this->_enforceOfflineLoginPage();
             return null;
         }
 
@@ -1636,7 +1635,6 @@ class UsersController extends Controller
             'errorMessage' => $event->message,
         ]);
 
-        $this->_enforceOfflineLoginPage();
         return null;
     }
 
@@ -1676,27 +1674,6 @@ class UsersController extends Controller
         }
 
         return $this->redirectToPostedUrl($userSession->getIdentity(), $returnUrl);
-    }
-
-    /**
-     * Ensures that either the site is online or the user is specifically requesting the login path.
-     *
-     * @throws ServiceUnavailableHttpException
-     */
-    private function _enforceOfflineLoginPage()
-    {
-        if (!Craft::$app->getIsLive()) {
-            $request = Craft::$app->getRequest();
-            if ($request->getIsCpRequest()) {
-                $loginPath = 'login';
-            } else {
-                $loginPath = trim(Craft::$app->getConfig()->getGeneral()->getLoginPath(), '/');
-            }
-
-            if ($request->getPathInfo() !== $loginPath) {
-                throw new ServiceUnavailableHttpException();
-            }
-        }
     }
 
     /**

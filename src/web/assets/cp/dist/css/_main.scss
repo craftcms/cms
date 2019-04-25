@@ -858,7 +858,10 @@ ul.icons li a:hover {
   display: flex;
   align-items: center;
   align-content: stretch;
-  flex-wrap: wrap;
+
+  &:not(.flex-nowrap) {
+    flex-wrap: wrap;
+  }
 
   & > * {
     margin-bottom: 7px;
@@ -1382,19 +1385,24 @@ div.btn.submit input {
 
 /* pagination */
 .pagination {
-  margin: 24px 0;
+  table.data + & {
+    margin-top: 24px;
+  }
 
   .page-link {
-    padding: 0 9px 3px;
+    padding: 4px 13px 8px;
     border-radius: $btnBorderRadius;
+    color: $textColor;
 
     &:before {
-      font-size: 1em;
+      font-size: 1.2em;
     }
 
     &:not(.disabled) {
       transition: box-shadow linear 100ms;
       box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+
       &:hover {
         text-decoration: none;
         box-shadow: inset 0 0 0 1px $linkColor;
@@ -1918,6 +1926,15 @@ $checkboxPadding: 20px;
   }
 }
 
+.export-form {
+  position: relative;
+  .spinner {
+    position: absolute;
+    bottom: 0;
+    @include right(-24px);
+  }
+}
+
 .thumbviewhelper {
   margin: -7px;
   padding: 7px;
@@ -2228,6 +2245,10 @@ table.editable {
           textarea::placeholder {
             @include sans-serif-font;
           }
+        }
+
+        .flex > * {
+          margin-bottom: 0;
         }
       }
     }
@@ -3218,6 +3239,14 @@ ul.tree,
       @include margin-left(-4px);
     }
   }
+}
+
+.dropdownsettingsmodal {
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  max-width: 400px;
 }
 
 /* ----------------------------------------

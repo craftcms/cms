@@ -41,6 +41,8 @@ class VolumesController extends Controller
     {
         // All asset volume actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**

@@ -653,13 +653,8 @@ class AssetsController extends Controller
                 throw new BadRequestHttpException('The folder cannot be found');
             }
 
-            // Check the permissions to save in the resolved folder.
-            $this->_requirePermissionByAsset('saveAssetInVolume', $asset);
-
-            // If replacing, check for permissions to replace existing Asset files.
-            if ($replace) {
-                $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
-            }
+            // Check the permissions.
+            $this->_requirePermissionByAsset('editImagesInVolume', $asset);
 
             // Verify parameter adequacy
             if (!in_array($viewportRotation, [0, 90, 180, 270], false)) {

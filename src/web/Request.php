@@ -102,6 +102,11 @@ class Request extends \yii\web\Request
     /**
      * @var bool
      */
+    private $_isLoginRequest = false;
+
+    /**
+     * @var bool
+     */
     private $_checkedRequestType = false;
 
     /**
@@ -210,28 +215,16 @@ class Request extends \yii\web\Request
         }
 
         // Is this a paginated request?
-        $pageTrigger = Craft::$app->getConfig()->getGeneral()->pageTrigger;
-
-        if (!is_string($pageTrigger) || $pageTrigger === '') {
-            $pageTrigger = 'p';
-        }
+        $pageTrigger = $generalConfig->getPageTrigger();
 
         // Is this query string-based pagination?
-        if ($pageTrigger[0] === '?') {
-            $pageTrigger = trim($pageTrigger, '?=');
-
-            // Avoid conflict with the path param
-            $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-            if ($pageTrigger === $pathParam) {
-                $pageTrigger = $pathParam === 'p' ? 'pg' : 'p';
-            }
-
-            $this->_pageNum = (int)$this->getQueryParam($pageTrigger, '1');
+        if (strpos($pageTrigger, '?') === 0) {
+            $this->_pageNum = (int)$this->getQueryParam(trim($pageTrigger, '?='), '1');
         } else if (!empty($this->_segments)) {
             // Match against the entire path string as opposed to just the last segment so that we can support
             // "/page/2"-style pagination URLs
             $path = implode('/', $this->_segments);
-            $pageTrigger = preg_quote($generalConfig->pageTrigger, '/');
+            $pageTrigger = preg_quote($pageTrigger, '/');
 
             if (preg_match("/^(?:(.*)\/)?{$pageTrigger}(\d+)$/", $path, $match)) {
                 // Capture the page num
@@ -436,9 +429,24 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns whether the current request is solely an action request.
+     * Returns whether this was a Login request.
+     *
+     * @return bool
+     * @since 3.2.0
      */
-    public function getIsSingleActionRequest()
+    public function getIsLoginRequest(): bool
+    {
+        $this->_checkRequestType();
+        return $this->_isLoginRequest;
+    }
+
+    /**
+     * Returns whether the current request is solely an action request.
+     *
+     * @return bool
+     * @deprecated in 3.2
+     */
+    public function getIsSingleActionRequest(): bool
     {
         $this->_checkRequestType();
         return $this->_isSingleActionRequest;
@@ -1209,6 +1217,7 @@ class Request extends \yii\web\Request
                     switch ($this->_path) {
                         case $loginPath:
                             $this->_actionSegments = ['users', 'login'];
+                            $this->_isLoginRequest = true;
                             break;
                         case $logoutPath:
                             $this->_actionSegments = ['users', 'logout'];

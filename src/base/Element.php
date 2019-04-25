@@ -226,6 +226,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Elements');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function refHandle()
     {
         return null;

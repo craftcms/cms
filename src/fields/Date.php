@@ -38,6 +38,14 @@ class Date extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Date/Time');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return DateTime::class . '|null';
+    }
+
     // Properties
     // =========================================================================
 

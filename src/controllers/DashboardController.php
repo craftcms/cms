@@ -552,23 +552,27 @@ class DashboardController extends Controller
      */
     private function _getWidgetIconSvg(WidgetInterface $widget): string
     {
-        $iconPath = $widget::iconPath();
+        $icon = $widget::icon();
 
-        if ($iconPath === null) {
+        if ($icon === null) {
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
-        if (!is_file($iconPath)) {
-            Craft::warning("Widget icon file doesn't exist: {$iconPath}", __METHOD__);
+        if (stripos($icon, '<svg') !== false) {
+            return $icon;
+        }
+
+        if (!is_file($icon)) {
+            Craft::warning("Widget icon file doesn't exist: {$icon}", __METHOD__);
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
-        if (!FileHelper::isSvg($iconPath)) {
-            Craft::warning("Widget icon file is not an SVG: {$iconPath}", __METHOD__);
+        if (!FileHelper::isSvg($icon)) {
+            Craft::warning("Widget icon file is not an SVG: {$icon}", __METHOD__);
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
-        return file_get_contents($iconPath);
+        return file_get_contents($icon);
     }
 
     /**

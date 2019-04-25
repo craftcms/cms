@@ -1,12 +1,92 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.0-alpha.4 - 2019-04-23
+
+### Added
+- Added the `preferSites` element query param, which can be used to set the preferred sites that should be used for multi-site element queries, when the `unique` param is also enabled.
+
+### Changed
+- Relational fields are now capable of selecting elements from multiple sites, if they haven’t been locked down to only related elements from a single site. ([#3584](https://github.com/craftcms/cms/issues/3584))
+- Renamed `craft\base\WidgetInterface::iconPath()` to `icon()`, and it now can return the actual SVG contents if desired. ([#4156](https://github.com/craftcms/cms/pull/4156))
+- `craft\db\ActiveRecord` no longer sets the `uid`, `dateCreated`, or `dateUpdated` values for new records if they were already explicitly set.
+- `craft\db\ActiveRecord` no longer updates the `dateUpdated` value for existing records if nothing else changed or if `dateUpdated` had already been explicitly changed.
+- `craft\services\Elements::deleteElement()` now has a `$hardDelete` argument.
+- `craft\services\Elements::saveElement()` now immediately propagates elements if `$propagate` is `true`, as it used to.
+- `craft\services\Elements::saveElement()` now preserves the `uid`, `dateCreated`, and `dateUpdated` values on new elements if they were explicitly set. ([#2909](https://github.com/craftcms/cms/issues/2909))
+- `craft\services\Elements::saveElement()` now preserves existing elements’ current `dateUpdated` value when propagating or auto-resaving elements.
+
+### Deprecated
+- Deprecated `craft\base\Widget::iconPath()`. Use `icon()` instead.
+
+### Fixed
+- Fixed a SQL error that could occur when using the `unique` element query param.
+- Fixed a bug where Table fields would forget their Dropdown columns’ options when edited.
+
+## 3.2.0-alpha.3 - 2019-04-10
+
+### Added
+- Table fields can now have Dropdown columns. ([#811](https://github.com/craftcms/cms/issues/811))
+- Added `craft\base\FieldInterface::valueType()`. ([#3894](https://github.com/craftcms/cms/issues/3894))
+- Added `craft\helpers\Component::validateComponentClass()`.
+- Added `craft\services\Elements::resaveElements()` along with `EVENT_BEFORE_RESAVE_ELEMENTS`, `EVENT_AFTER_RESAVE_ELEMENTS`, `EVENT_BEFORE_RESAVE_ELEMENT`, and `EVENT_AFTER_RELAVE_ELEMENT` events. ([#3482](https://github.com/craftcms/cms/issues/3482))
+
+### Removed
+- Removed the `--batch-size` option from `resave/*` actions.
+
+### Fixed
+- Fixed a bug where Control Panel pages that didn’t have a dedicated controller action weren’t ensuring that a user was logged in.
+
+## 3.2.0-alpha.2.1 - 2019-04-04
+
+### Fixed
+- Fixed a SQL error that could occur when updating to Craft 3.2.
+- Fixed a bug where underscores were getting stripped from element slugs. ([#4096](https://github.com/craftcms/cms/issues/4096))
+
+## 3.2.0-alpha.2 - 2019-04-03
+
+> {warning} If you’re coming from 3.2.0-alpha.1, please run `./craft project-config/rebuild` after updating to 3.2.0-alpha.2 or later.
+
+### Added
+- Sections now have a “Propagation Method” setting, enabling entries to only be propagated to other sites in the same site group, or with the same language. ([#3554](https://github.com/craftcms/cms/issues/3554))
+- Element index pages are now paginated for non-Structure views. ([#818](https://github.com/craftcms/cms/issues/818))
+- Element index pages now have an “Export…” button that will export all of the elements in the current view (across all pages) or up to a custom limit, in either CSV, XLS, XLSX, or ODS format. ([#994](https://github.com/craftcms/cms/issues/994))
+- The `_layouts/cp` Control Panel template now supports a `footer` block, which will be output below the main content area.
+- Added `craft\base\ElementInterface::pluralDisplayName()`, which element type classes can use to define the plural of their display name.
+- Added `craft\models\Section::$propagationMethod`.
+- Added `craft\web\Request::getIsLoginRequest()` and `craft\console\Request::getIsLoginRequest()`.
+
+### Changed
+- Craft now propagates elements over background jobs, speeding up the initial element save request. ([#4064](https://github.com/craftcms/cms/issues/4064))
+- The Control Panel now shows the sidebar on screens that are at least 1,000 pixels wide. ([#4079](https://github.com/craftcms/cms/issues/4079))
+- Anonymous/offline/Control Panel access validation now takes place from `craft\web\Controller::beforeAction()` rather than `craft\web\Application::handleRequest()`, giving controllers a chance to do things like set CORS headers before a `ForbiddenHttpException` or `ServiceUnavailableHttpException` is thrown. ([#4008](https://github.com/craftcms/cms/issues/4008))
+- Controllers can now set `$allowAnonymous` to a combination of bitwise integers `self::ALLOW_ANONYMOUS_LIVE` and `self::ALLOW_ANONYMOUS_OFFLINE`, or an array of action ID/bitwise integer pairs, to define whether their actions should be accessible anonymously even when the system is offline.
+- `craft\queue\jobs\PropagateElements` no longer needs to be configured with a `siteId`, and no longer propagates elements to sites if they were updated in the target site more recently than the source site.
+- `craft\services\Elements::propagateElement()` now has a `$siteElement` argument.
+
+### Deprecated
+- Deprecated `craft\models\Section::$propagateEntries`. Use `$propagationMethod` instead.
+- Deprecated `craft\web\Request::getIsSingleActionRequest()` and `craft\console\Request::getIsSingleActionRequest()`.
+
+## 3.2.0-alpha.1 - 2019-03-14
+
+### Added
+- The `site` element query params now support passing multiple site handles, or `'*'`, to query elements across multiple sites at once. ([#2854](https://github.com/craftcms/cms/issues/2854))
+- Added the `unique` element query param, which can be used to prevent duplicate elements when querying elements across multiple sites.
+
+### Changed
+- Renamed `craft\helpers\ArrayHelper::filterByValue()` to `where()`.
+
+### Deprecated
+- Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
+
+## Unreleased (3.1)
 
 ### Changed
 - Craft now registers its project config event handlers before loading plugins. ([#3943](https://github.com/craftcms/cms/issues/3943))
 
 ### Fixed
 - Fixed an error where rebuilding the project config would not typecast the `propagateEntries` and `enableVersioning` section settings correctly. ([#3695](https://github.com/craftcms/cms/issues/3695))
+- Fixed a bug where the Edit Draft HUD would include the current site name in the default Draft Name value for multi-site entries. ([#4171](https://github.com/craftcms/cms/issues/4171))
 
 ## 3.1.24 - 2019-04-23
 

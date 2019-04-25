@@ -44,6 +44,24 @@ interface FieldInterface extends SavableComponentInterface
      */
     public static function supportedTranslationMethods(): array;
 
+    /**
+     * Returns the PHPDoc type this field’s values will have.
+     *
+     * It will be used by generated `ContentBehavior` and `ElementQueryBehavior` classes.
+     *
+     * If the values can be of more than one type, return multiple types separated by `|`s.
+     *
+     * ```php
+     * public static function phpDocType()
+     * {
+     *      return 'int|mixed|\\craft\\elements\\db\\ElementQuery';
+     * }
+     * ```
+     *
+     * @return string
+     */
+    public static function valueType(): string;
+
     // Public Methods
     // =========================================================================
 

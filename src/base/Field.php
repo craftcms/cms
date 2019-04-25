@@ -114,6 +114,14 @@ abstract class Field extends SavableComponent implements FieldInterface
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'mixed';
+    }
+
     // Properties
     // =========================================================================
 

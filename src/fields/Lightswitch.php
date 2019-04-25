@@ -32,6 +32,14 @@ class Lightswitch extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Lightswitch');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'bool';
+    }
+
     // Properties
     // =========================================================================
 

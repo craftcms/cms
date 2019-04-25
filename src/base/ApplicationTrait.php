@@ -455,7 +455,7 @@ trait ApplicationTrait
             return $on;
         }
 
-        return $this->getProjectConfig()->get('system.live');
+        return (bool)$this->getProjectConfig()->get('system.live');
     }
 
     /**

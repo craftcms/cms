@@ -301,7 +301,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function dateUpdated($value);
 
     /**
-     * Determines which site the {elements} should be queried in.
+     * Determines which site(s) the {elements} should be queried in.
      *
      * The current site will be used by default.
      *
@@ -310,7 +310,15 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | Value | Fetches {elements}…
      * | - | -
      * | `'foo'` | from the site with a handle of `foo`.
+     * | `['foo', 'bar']` | from a site with a handle of `foo` or `bar`.
+     * | `['not', 'foo', 'bar']` | not in a site with a handle of `foo` or `bar`.
      * | a [[Site]] object | from the site represented by the object.
+     * | `'*'` | from any site.
+     *
+     * ::: tip
+     * If multiple sites are specified, elements that belong to multiple sites will be returned multiple times. If you
+     * only want unique elements to be returned, use [[unique()]] in conjunction with this.
+     * :::
      *
      * ---
      *
@@ -328,13 +336,13 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *     ->all();
      * ```
      *
-     * @param string|Site $value The property value
+     * @param string|string[]|Site $value The property value
      * @return static self reference
      */
     public function site($value);
 
     /**
-     * Determines which site the {elements} should be queried in, per the site’s ID.
+     * Determines which site(s) the {elements} should be queried in, per the site’s ID.
      *
      * The current site will be used by default.
      *
@@ -354,10 +362,75 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *     ->all();
      * ```
      *
-     * @param int|null $value The property value
+     * @param int|int[]|string|null $value The property value
      * @return static self reference
      */
-    public function siteId(int $value = null);
+    public function siteId($value);
+
+    /**
+     * Determines whether only elements with unique IDs should be returned by the query.
+     *
+     * This should be used when querying elements from multiple sites at the same time, if “duplicate” results is not
+     * desired.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch unique {elements} across all sites #}
+     * {% set {elements-var} = {twig-method}
+     *     .site('*')
+     *     .unique()
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch unique {elements} across all sites
+     * ${elements-var} = {php-method}
+     *     ->site('*')
+     *     ->unique()
+     *     ->all();
+     * ```
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     * @since 3.2
+     */
+    public function unique(bool $value = true);
+
+    /**
+     * If [[unique()]] is set, this determines which site should be selected when querying multi-site elements.
+     *
+     * For example, if element “Foo” exists in Site A and Site B, and element “Bar” exists in Site B and Site C,
+     * and this is set to `['c', 'b', 'a']`, then Foo will be returned for Site C, and Bar will be returned
+     * for Site B.
+     *
+     * If this isn’t set, then preference goes to the current site.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch unique {elements} from Site A, or Site B if they don’t exist in Site A #}
+     * {% set {elements-var} = {twig-method}
+     *     .site('*')
+     *     .unique()
+     *     .preferSites(['a', 'b'])
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch unique {elements} from Site A, or Site B if they don’t exist in Site A
+     * ${elements-var} = {php-method}
+     *     ->site('*')
+     *     ->unique()
+     *     ->preferSites(['a', 'b'])
+     *     ->all();
+     * ```
+     *
+     * @param array|null $value The property value
+     * @return static self reference
+     * @since 3.2
+     */
+    public function preferSites(array $value = null);
 
     /**
      * Narrows the query results based on whether the {elements} are enabled in the site they’re being queried in, per the [[site()]] parameter.

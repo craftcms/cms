@@ -34,6 +34,14 @@ class Number extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Number');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'int|float|null';
+    }
+
     // Properties
     // =========================================================================
 

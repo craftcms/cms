@@ -20,6 +20,7 @@ use craft\helpers\ElementHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The ElementIndexesController class is a controller that handles various element index related actions.
@@ -230,8 +231,10 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Returns the source tree HTML for an element index.
+     *
+     * @return Response
      */
-    public function actionGetSourceTreeHtml()
+    public function actionGetSourceTreeHtml(): Response
     {
         $this->requireAcceptsJson();
 
@@ -242,6 +245,43 @@ class ElementIndexesController extends BaseElementsController
                 'sources' => $sources
             ])
         ]);
+    }
+
+    /**
+     * Creates an export token.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ServerErrorHttpException
+     * @since 3.2.0
+     */
+    public function actionCreateExportToken(): Response
+    {
+        if (!$this->sourceKey) {
+            throw new BadRequestHttpException('Request missing required body param');
+        }
+
+        if ($this->context !== 'index') {
+            throw new BadRequestHttpException('Request missing index context');
+        }
+
+        $request = Craft::$app->getRequest();
+
+        $token = Craft::$app->getTokens()->createToken([
+            'export/export',
+            [
+                'elementType' => $this->elementType,
+                'sourceKey' => $this->sourceKey,
+                'criteria' => $request->getBodyParam('criteria', []),
+                'format' => $request->getRequiredBodyParam('format'),
+            ]
+        ], 1, (new \DateTime())->add(new \DateInterval('PT1H')));
+
+        if (!$token) {
+            throw new ServerErrorHttpException(Craft::t('app', 'Could not create a Live Preview token.'));
+        }
+
+        return $this->asJson(compact('token'));
     }
 
     // Protected Methods
@@ -374,7 +414,12 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function elementResponseData(bool $includeContainer, bool $includeActions): array
     {
-        $responseData = [];
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType;
+
+        $responseData = [
+            'count' => $this->elementQuery->count(),
+        ];
 
         $view = $this->getView();
 
@@ -387,8 +432,6 @@ class ElementIndexesController extends BaseElementsController
 
         $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
         $showCheckboxes = !empty($this->actions);
-        /** @var string|ElementInterface $elementType */
-        $elementType = $this->elementType;
 
         $responseData['html'] = $elementType::indexHtml(
             $this->elementQuery,
@@ -423,7 +466,13 @@ class ElementIndexesController extends BaseElementsController
 
         foreach ($actions as $i => $action) {
             // $action could be a string or config array
-            if (!$action instanceof ElementActionInterface) {
+            if ($action instanceof ElementActionInterface) {
+                $action->setElementType($elementType);
+            } else {
+                if (is_string($action)) {
+                    $action = ['type' => $action];
+                }
+                $action['elementType'] = $elementType;
                 $actions[$i] = $action = Craft::$app->getElements()->createAction($action);
 
                 if ($actions[$i] === null) {
@@ -438,9 +487,6 @@ class ElementIndexesController extends BaseElementsController
             } else if ($action instanceof Restore) {
                 unset($actions[$i]);
             }
-
-            /** @var ElementActionInterface $action */
-            $action->setElementType($elementType);
         }
 
         return array_values($actions);

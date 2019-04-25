@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\TagQuery;
 use craft\elements\Tag;
 use craft\models\TagGroup;
 
@@ -47,6 +48,14 @@ class Tags extends BaseRelationField
     public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add a tag');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return TagQuery::class;
     }
 
     // Properties

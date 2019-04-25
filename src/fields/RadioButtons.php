@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\fields\data\SingleOptionFieldData;
 
 /**
  * RadioButtons represents a Radio Buttons field.
@@ -27,6 +28,14 @@ class RadioButtons extends BaseOptionsField
     public static function displayName(): string
     {
         return Craft::t('app', 'Radio Buttons');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return SingleOptionFieldData::class;
     }
 
     // Public Methods

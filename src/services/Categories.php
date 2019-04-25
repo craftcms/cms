@@ -139,7 +139,7 @@ class Categories extends Component
     public function getEditableGroups(): array
     {
         $userSession = Craft::$app->getUser();
-        return ArrayHelper::filterByValue($this->getAllGroups(), function(CategoryGroup $group) use ($userSession) {
+        return ArrayHelper::where($this->getAllGroups(), function(CategoryGroup $group) use ($userSession) {
             return $userSession->checkPermission('editCategories:' . $group->uid);
         });
     }

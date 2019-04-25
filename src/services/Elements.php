@@ -14,10 +14,12 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\MatrixBlock;
@@ -29,6 +31,8 @@ use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\events\ResaveElementEvent;
+use craft\events\ResaveElementsEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
@@ -37,6 +41,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\FindAndReplace;
+use craft\queue\jobs\PropagateElements;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
@@ -112,6 +117,26 @@ class Elements extends Component
      * @event ElementEvent The event that is triggered after an element is saved.
      */
     const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
+
+    /**
+     * @event ElementEvent The event that is triggered before resaving a batch of elements.
+     */
+    const EVENT_BEFORE_RESAVE_ELEMENTS = 'beforeResaveElements';
+
+    /**
+     * @event ElementEvent The event that is triggered after resaving a batch of elements.
+     */
+    const EVENT_AFTER_RESAVE_ELEMENTS = 'afterResaveElements';
+
+    /**
+     * @event ElementEvent The event that is triggered before an element is resaved.
+     */
+    const EVENT_BEFORE_RESAVE_ELEMENT = 'beforeResaveElement';
+
+    /**
+     * @event ElementEvent The event that is triggered after an element is resaved.
+     */
+    const EVENT_AFTER_RESAVE_ELEMENT = 'afterResaveElement';
 
     /**
      * @event ElementEvent The event that is triggered before an element’s slug and URI are updated, usually following a Structure move.
@@ -415,13 +440,17 @@ class Elements extends Component
             throw new Exception('Attempting to save an element in an unsupported site.');
         }
 
+        // If the element only supports a single site, ensure it's enabled for that site
+        if (count($supportedSites) === 1) {
+            $element->enabledForSite = true;
+        }
+
         // Set a dummy title if there isn't one already and the element type has titles
         if (!$runValidation && $element::hasContent() && $element::hasTitles() && !$element->validate(['title'])) {
-            $humanClass = App::humanizeClass(get_class($element));
             if ($isNewElement) {
-                $element->title = Craft::t('app', 'New {class}', ['class' => $humanClass]);
+                $element->title = Craft::t('app', 'New {type}', ['type' => $element::displayName()]);
             } else {
-                $element->title = "{$humanClass} {$element->id}";
+                $element->title = $element::displayName() . ' ' .$element->id;
             }
         }
 
@@ -447,9 +476,25 @@ class Elements extends Component
             }
 
             // Set the attributes
+            $elementRecord->uid = $element->uid;
             $elementRecord->fieldLayoutId = $element->fieldLayoutId = $element->fieldLayoutId ?? $element->getFieldLayout()->id ?? null;
             $elementRecord->enabled = (bool)$element->enabled;
             $elementRecord->archived = (bool)$element->archived;
+
+            if ($isNewElement) {
+                if (isset($element->dateCreated)) {
+                    $elementRecord->dateCreated = Db::prepareValueForDb($element->dateCreated);
+                }
+                if (isset($element->dateUpdated)) {
+                    $elementRecord->dateUpdated = Db::prepareValueForDb($element->dateUpdated);
+                }
+            } else if ($element->propagating || $element->resaving) {
+                // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
+                $elementRecord->markAttributeDirty('dateUpdated');
+            } else {
+                // Force a new dateUpdated value
+                $elementRecord->dateUpdated = Db::prepareValueForDb(new \DateTime());
+            }
 
             // Save the element record
             $elementRecord->save(false);
@@ -569,6 +614,75 @@ class Elements extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Resaves all elements that match a given element query.
+     *
+     * @param ElementQueryInterface $query The element query to fetch elements with
+     * @param bool $continueOnError Whether to continue going if an error occurs
+     * @throws \Throwable if reasons
+     * @since 3.2.0
+     */
+    public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false)
+    {
+        // Fire a 'beforeSaveElements' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
+            $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENTS, new ResaveElementsEvent([
+                'query' => $query,
+            ]));
+        }
+
+        $position = 0;
+
+        try {
+            /** @var ElementQuery $query */
+            foreach ($query->each() as $element) {
+                $position++;
+
+                /** @var Element $element */
+                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                $element->resaving = true;
+
+                // Fire a 'beforeSaveElement' event
+                if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
+                    $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new ResaveElementEvent([
+                        'query' => $query,
+                        'element' => $element,
+                        'position' => $position,
+                    ]));
+                }
+
+                $e = null;
+                try {
+                    $this->saveElement($element);
+                } catch (\Throwable $e) {
+                    if (!$continueOnError) {
+                        throw $e;
+                    }
+                    Craft::$app->getErrorHandler()->logException($e);
+                }
+
+                // Fire an 'afterSaveElement' event
+                if ($this->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENT)) {
+                    $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENT, new ResaveElementEvent([
+                        'query' => $query,
+                        'element' => $element,
+                        'position' => $position,
+                        'exception' => $e,
+                    ]));
+                }
+            }
+        } catch (QueryAbortedException $e) {
+            // Fail silently
+        }
+
+        // Fire an 'afterSaveElements' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENTS)) {
+            $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENTS, new ResaveElementsEvent([
+                'query' => $query,
+            ]));
+        }
     }
 
     /**
@@ -941,16 +1055,17 @@ class Elements extends Component
      * Deletes an element.
      *
      * @param ElementInterface $element The element to be deleted
+     * @param bool Whether the element should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the element was deleted successfully
      * @throws \Throwable
      */
-    public function deleteElement(ElementInterface $element): bool
+    public function deleteElement(ElementInterface $element, $hardDelete = false): bool
     {
         /** @var Element $element */
         // Fire a 'beforeDeleteElement' event
         $event = new DeleteElementEvent([
             'element' => $element,
-            'hardDelete' => false,
+            'hardDelete' => $hardDelete,
         ]);
         $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, $event);
 
@@ -983,7 +1098,7 @@ class Elements extends Component
             // this element is suddenly going to show up in a new query)
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
-            if ($event->hardDelete) {
+            if ($hardDelete || $event->hardDelete) {
                 Craft::$app->getDb()->createCommand()
                     ->delete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
@@ -1475,9 +1590,11 @@ class Elements extends Component
      *
      * @param ElementInterface $element The element to propagate
      * @param int $siteId The site ID that the element should be propagated to
+     * @param ElementInterface|null $siteElement The element loaded for the propagated site (only pass this if you
+     * already had a reason to load it)
      * @throws Exception if the element couldn't be propagated
      */
-    public function propagateElement(ElementInterface $element, int $siteId)
+    public function propagateElement(ElementInterface $element, int $siteId, ElementInterface $siteElement = null)
     {
         /** @var Element $element */
         $isNewElement = !$element->id;
@@ -1494,7 +1611,7 @@ class Elements extends Component
             throw new Exception('Attempting to propagate an element to an unsupported site.');
         }
 
-        $this->_propagateElement($element, $isNewElement, $siteInfo);
+        $this->_propagateElement($element, $isNewElement, $siteInfo, $siteElement);
     }
 
     // Private Methods
@@ -1506,15 +1623,15 @@ class Elements extends Component
      * @param ElementInterface $element
      * @param bool $isNewElement
      * @param array $siteInfo
+     * @param ElementInterface|null $siteElement The element loaded for the propagated site
      * @throws Exception if the element couldn't be propagated
      */
-    private function _propagateElement(ElementInterface $element, bool $isNewElement, array $siteInfo)
+    private function _propagateElement(ElementInterface $element, bool $isNewElement, array $siteInfo, ElementInterface $siteElement = null)
     {
         /** @var Element $element */
         // Try to fetch the element in this site
         /** @var Element|null $siteElement */
-        $siteElement = null;
-        if (!$isNewElement) {
+        if ($siteElement === null && !$isNewElement) {
             $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
         }
 

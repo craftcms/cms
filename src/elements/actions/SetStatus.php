@@ -46,6 +46,19 @@ class SetStatus extends ElementAction
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        // Only allow the "Disabled for site" option if there are multiple sites and the element type is localized
+        if ($this->allowDisabledForSite) {
+            $this->allowDisabledForSite = $this->elementType && $this->elementType::isLocalized() && Craft::$app->getIsMultiSite();
+        }
+
+        parent::init();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Set Status');
@@ -74,14 +87,8 @@ class SetStatus extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $allowDisabledForSite = (
-            $this->allowDisabledForSite &&
-            Craft::$app->getIsMultiSite() &&
-            $this->elementType::isLocalized()
-        );
-
         return Craft::$app->getView()->renderTemplate('_components/elementactions/SetStatus/trigger', [
-            'allowDisabledForSite' => $allowDisabledForSite,
+            'allowDisabledForSite' => $this->allowDisabledForSite,
         ]);
     }
 

@@ -61,6 +61,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return MatrixBlockQuery::class;
+    }
+
     // Properties
     // =========================================================================
 
