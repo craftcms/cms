@@ -15,9 +15,12 @@ use craft\fields\data\ColorData;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
+use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use yii\db\Schema;
+use yii\validators\Validator;
+use yii\validators\EmailValidator;
 
 /**
  * Table represents a Table field.
@@ -161,11 +164,13 @@ class Table extends Field
             'checkbox' => Craft::t('app', 'Checkbox'),
             'color' => Craft::t('app', 'Color'),
             'date' => Craft::t('app', 'Date'),
+            'email' => Craft::t('app', 'Email'),
             'lightswitch' => Craft::t('app', 'Lightswitch'),
             'multiline' => Craft::t('app', 'Multi-line text'),
             'number' => Craft::t('app', 'Number'),
             'singleline' => Craft::t('app', 'Single-line text'),
             'time' => Craft::t('app', 'Time'),
+            'url' => Craft::t('app', 'URL'),
         ];
 
         // Make sure they are sorted alphabetically (post-translation)
@@ -390,12 +395,25 @@ class Table extends Field
      */
     private function _validateCellValue(string $type, $value, string &$error = null): bool
     {
-        if ($type === 'color' && $value !== null) {
+        if (!$value) {
+            return true;
+        }
+
+        $validator = null;
+
+        if ($type === 'color') {
             /** @var ColorData $value */
+            $value = $value->getHex();
             $validator = new ColorValidator();
+        } elseif ($type === 'url') {
+            $validator = new UrlValidator();
+        } elseif ($type === 'email') {
+            $validator = new EmailValidator();
+        }
+
+        if ($validator instanceof Validator) {
             $validator->message = str_replace('{attribute}', '{value}', $validator->message);
-            $hex = $value->getHex();
-            return $validator->validate($hex, $error);
+            return $validator->validate($value, $error);
         }
 
         return true;
