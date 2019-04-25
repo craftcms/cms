@@ -1687,6 +1687,7 @@ $elementThumbPadding: 30 + $elementInnerSpacing;
     display: block;
     max-width: 100%;
     max-height: 100%;
+    object-fit: contain;
     background: url(../images/checkers.svg) 0 0;
     flex-shrink: 0;
     pointer-events: none;
