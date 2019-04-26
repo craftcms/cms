@@ -29,11 +29,11 @@ That comes with some limitations on what you can do with the code:
 
 ### Code of Conduct
 
-Please take a couple minutes to read through Craft’s [code of conduct](https://docs.craftcms.com/v3/coc.html). By participating here, you are expected to uphold this code. Please report unacceptable behavior to [support@craftcms.com][support].
+Please take a couple minutes to read through Craft’s [code of conduct](https://docs.craftcms.com/v3/coc.html). By participating here, you are expected to uphold this code. Please report unacceptable behavior to us from [craftcms.com/contact](https://craftcms.com/contact).
 
 ## Security Disclosures
 
-If you discover a security vulnerability, please review our [Security Policy](https://github.com/craftcms/cms/wiki/Security-Policy), then report the issue directly to [support@craftcms.com][support]. We will review and respond privately via email.
+If you discover a security vulnerability, please review our [Security Policy](https://github.com/craftcms/cms/wiki/Security-Policy), then report the issue directly to us from [craftcms.com/contact](https://craftcms.com/contact). We will review and respond privately via email.
 
 ## Bug Reports & Feature Requests
 
@@ -76,4 +76,3 @@ Thanks for being awesome.
 
 :cocktail:
 
-[support]: mailto:support@craftcms.com
