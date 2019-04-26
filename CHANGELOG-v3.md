@@ -5,6 +5,7 @@
 ### Changed
 - Craft now registers its project config event handlers before loading plugins. ([#3943](https://github.com/craftcms/cms/issues/3943))
 - The Control Panel now uses jQuery 3.4.0. ([#4183](https://github.com/craftcms/cms/issues/4183))
+- `behavior` and `behaviors` are now reserved field handles. ([#4184](https://github.com/craftcms/cms/issues/4184))
 
 ### Fixed
 - Fixed an error where rebuilding the project config would not typecast the `propagateEntries` and `enableVersioning` section settings correctly. ([#3695](https://github.com/craftcms/cms/issues/3695))
