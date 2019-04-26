@@ -76,3 +76,14 @@ The build script supports the following options:
 * Use HTML5 "placeholder" attributes for input and text fields.
 * Make sure to use <label> tags.
 
+## Download a pre-built version Craft 2
+You can download previous versions of Craft from our CDN, download.buildwithcraft.com. The zips are available with the following URL format:
+
+https://download.craftcms.com/craft/{version}/{version}.{build}/Craft-{version}.{build}.zip
+For example, for Craft 2.6.2788, the download URL would be:
+
+https://download.craftcms.com/craft/2.6/2.6.2788/Craft-2.6.2788.zip
+
+Note that downloading Craft releases directly still binds you to Craft’s license agreement.
+
+Keep in mind that Craft does not support rolling back to previous versions automatically. If you’ve already updated your site past a certain release and want to go back to it, you’ll need to find and restore a database backup that was created with the version you’re going back to.
