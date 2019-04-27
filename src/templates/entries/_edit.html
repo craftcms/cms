@@ -293,7 +293,7 @@
                 </div>
                 {% if isRevision %}
                     {% set revisionNotes = entry.revisionNotes %}
-                {% elseif not isDraft and currentRevision is defined %}
+                {% elseif not isDraft and currentRevision %}
                     {% set revisionNotes = currentRevision.revisionNotes %}
                 {% else %}
                     {% set revisionNotes = null %}

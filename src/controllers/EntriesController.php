@@ -891,6 +891,8 @@ class EntriesController extends BaseEntriesController
                 ->anyStatus()
                 ->orderBy(['num' => SORT_DESC])
                 ->one();
+        } else {
+            $variables['currentRevision'] = null;
         }
 
         // Get the entry type

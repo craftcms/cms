@@ -51,7 +51,7 @@
             <li><a{% if not entry.draftId and not entry.revisionId %} class="sel"{% endif %} href="{{ entry.getCpEditUrl() }}">{{ "Current"|t('app') }}
                 <span class="light">
                     {{ currentRevisionEditTime|timestamp('short') }}
-                    {%- if currentRevision is defined %}, {{ currentRevision.creator }}{% endif %}
+                    {%- if currentRevision %}, {{ currentRevision.creator }}{% endif %}
                 </span>
             </a></li>
         </ul>
