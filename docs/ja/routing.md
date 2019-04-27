@@ -24,7 +24,7 @@ Craft はリクエストを次のように処理します。
 
    URL がエレメントの URI にマッチする場合、Craft はエレメントにそのリクエストのルーティング方法を決定させます。例えば、ある[エントリの](sections-and-entries.md) URI がリクエストされた場合、エントリはそのセクションの設定で指定されたテンプレートにリクエストをルーティングし、`entry` 変数が事前定義され、リクエストされたエントリをセットします。
 
-   ::: tip
+    ::: tip
     モジュールとプラグインは、[EVENT_SET_ROUTE](api:craft\base\Element::EVENT_SET_ROUTE) イベントを使用してエレメントルートを上書きできます。
     :::
 
@@ -36,7 +36,7 @@ Craft はリクエストを次のように処理します。
 
    Craft はその URI が有効な[テンプレートパス](dev/README.md#template-paths)かどうかをチェックします。そうであれば、Craft はマッチしたテンプレートを返します。
 
-   ::: tip
+    ::: tip
     いずれかの URI セグメントがアンダースコア（例：`blog/_archive/index`）ではじまる場合、Craft はこのステップをスキップします。
     :::
 
@@ -44,7 +44,7 @@ Craft はリクエストを次のように処理します。
 
    上記のチェックがいずれも成功しなかった場合、Craft は [NotFoundHttpException](api:yii\web\NotFoundHttpException) を返します。[Dev Mode](config:devMode) が有効な場合、例外についてのエラーレポートが表示されます。そうでなければ、404 エラーが返されます。
 
-   ::: tip
+    ::: tip
     `404.twig` テンプレートを `templates/` ディレクトリのルートに配置することで、サイトの404ページをカスタマイズできます。`http://my-project.test/404` にアクセスすることで、[Dev Mode](config:devMode) が有効になっている場合でも、このページをテストできます。
     :::
 
@@ -88,6 +88,7 @@ URI 設定では、次のトークンが利用可能です。
 * `month` – 月の数値表現（1-12 または 01-12）
 * `number` – 任意の正の整数
 * `page` – 任意の正の整数
+* `uid` – A v4 compatible UUID (universally unique ID)
 * `slug` – スラッシュ（/）を除く、任意の文字列
 * `tag` – スラッシュ（/）を除く、任意の文字列
 * `year` – 4桁の連続する数字
@@ -120,6 +121,7 @@ Craft は[名前付けされたパラメータ](https://www.yiiframework.com/doc
 
 - `{handle}` – フィールドハンドル、ボリュームハンドルなどとマッチします。
 - `{slug}` – エントリスラグ、カテゴリスラグなどとマッチします。
+- `{uid}` – matches a v4 UUID.
 
 ```php
 return [

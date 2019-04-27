@@ -49,7 +49,7 @@ Craft のいくつかの設定やファンクションでは、基本ファイ�
 - サイトのベース URL 設定
 - ボリュームのベース URL 設定
 - ローカルボリュームのファイルシステムパス設定
-- <config:resourceBasePath> と <config:resourceBaseUrl> のコンフィグ設定
+- コンフィグ設定の <config:resourceBasePath> と <config:resourceBaseUrl>
 - Twig ファンクションの [svg()](../dev/functions.md#svg-svg-sanitize)
 
 次のエイリアスは、そのまま利用可能です。
@@ -70,7 +70,7 @@ Craft のいくつかの設定やファンクションでは、基本ファイ�
 | `@web` | リクエストのために読み込まれた `index.php` ファイルを含むフォルダの URL |
 | `@webroot` | リクエストのために読み込まれた `index.php` ファイルを含むフォルダのパス |
 
-<config:aliases> コンフィグ設定を利用して、追加の独自エイリアスを定義することができます。例えば、アセットボリュームが存在するベース URL とベースパスを定義するエイリアスを作成したいかもしれません。
+コンフィグ設定 <config:aliases> を利用して、追加の独自エイリアスを定義することができます。例えば、アセットボリュームが存在するベース URL とベースパスを定義するエイリアスを作成したいかもしれません。
 
 ```php
 'aliases' => [
@@ -97,26 +97,18 @@ ASSETS_BASE_PATH=/path/to/web/assets
 ],
 ```
 
-## ボリューム設定の上書き
-
-設定ファイルでボリューム設定を定義することを好む場合、`config/volumes.php` で設定できます。このファイルは配列を返さなければならず、キーにはボリュームのハンドルをマップし、値には上書きする設定を定義してあるネストされた配列を持たせます。
-
-::: warning
-Craft が上書きのために `config/volumes.php` をチェックしはじめる前に、コントロールパネルでボリュームを作成しておく必要があります。
+::: tip
+設定でエイリアスを参照する場合、URL やパスに追加のセグメントを付加することができます。例えば、`@assetBaseUrl/user-photos` をボリュームのベース URL  にセットできます。
 :::
 
-```php
-return [
-    'siteAssets' => [
-        'path' => getenv('ASSETS_BASE_PATH').'/site',
-        'url' => getenv('ASSETS_BASE_URL').'/site',
-    ],
-    'companyLogos' => [
-        'path' => getenv('ASSETS_BASE_PATH').'/logos',
-        'url' => getenv('ASSETS_BASE_URL').'/logos',
-    ],
-];
+::: tip
+[alias()](../dev/functions.html#alias-string) ファンクションに渡すことによって、テンプレート内でエイリアスをパースできます。
+
+```twig
+{{ alias('@assetBaseUrl') }}
 ```
+
+:::
 
 ## URL ルール
 

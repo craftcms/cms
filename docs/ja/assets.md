@@ -8,13 +8,21 @@
 
 「設定 > アセット」から、プロジェクトのボリュームを管理できます。
 
-すべてのボリュームは、その中に含まれるアセットがパプリック URL を持つかどうか、持つ場合に**ベース URL** をどうするかを選択できます。ベース URL は `index.php` ファイルを含むディレクトリの URL を意味する `@web` のような[エイリアス](config/README.md#aliases)ではじめることができます。例えば、ローカルボリュームのディレクトリが `web/assets/images/` に位置する場合、ベース URL を `@web/assets/images` にセットできます。
+すべてのボリュームは、その中に含まれるアセットがパプリック URL を持つかどうか、持つ場合に**ベース URL** をどうするかを選択できます。
+
+::: tip
+ボリュームのベース URL は環境変数をセットしたり、エイリアスではじめることができます。詳細については、[環境設定](config/environments.md)を参照してください。
+:::
 
 ### ローカルボリューム
 
 デフォルトで、ボリュームの1つのタイプ「ローカル」を作成できます。ローカルボリュームは、ローカルウェブサーバー上のディレクトリを表します。
 
-ローカルボリュームは、**ファイルシステムのパス**という1つの設定があります。この設定を使用して、サーバー上のボリュームのルートディレクトリからのパスを定義します。このパスは `index.php` ファイルを含むディレクトリのパスを表す `@webroot` のような[エイリアス](config/README.md#aliases)ではじめることができます。例えば、ローカルボリュームのディレクトリが `web/assets/images/` に位置する場合、ファイルシステムのパスを `@webroot/assets/images` にセットできます。
+ローカルボリュームは、**ファイルシステムのパス**という1つの設定があります。この設定を使用して、サーバー上のボリュームのルートディレクトリからのパスを定義します。
+
+::: tip
+ボリュームのファイルシステムのパスは環境変数をセットしたり、エイリアスではじめることができます。詳細については、[環境設定](config/environments.md)を参照してください。
+:::
 
 Craft もしくは PHP が、作成したディレクトリに書き込み可能でなければならないことに注意してください。
 
@@ -22,11 +30,11 @@ Craft もしくは PHP が、作成したディレクトリに書き込み可能
 
 Amazon S3 のようなリモートストレージサービスにアセットを保存したい場合は、インテグレーション機能を提供するプラグインをインストールできます。
 
-- [Amazon S3](https://github.com/craftcms/aws-s3) (first party)
-- [Google Cloud Storage](https://github.com/craftcms/google-cloud) (first party)
-- [Rackspace Cloud Files](https://github.com/craftcms/rackspace) (first party)
-- [DigitalOcean Spaces](https://github.com/vaersaagod/dospaces) (Værsågod)
-- [fortrabbit Object Storage](https://github.com/fortrabbit/craft-object-storage) (fortrabbit)
+- [Amazon S3](https://github.com/craftcms/aws-s3)（ファーストパーティ）
+- [Google Cloud Storage](https://github.com/craftcms/google-cloud)（ファーストパーティ）
+- [Rackspace Cloud Files](https://github.com/craftcms/rackspace)（ファーストパーティ）
+- [DigitalOcean Spaces](https://github.com/vaersaagod/dospaces)（Værsågod）
+- [fortrabbit Object Storage](https://github.com/fortrabbit/craft-object-storage)（fortrabbit）
 
 ## アセットのカスタムフィールド
 

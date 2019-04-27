@@ -26,8 +26,8 @@ Composer がすべてをロードするのに、数分かかるでしょう。�
 
 作業に適したアーカイブ形式をダウンロードします。
 
-- **zip**: <https://craftcms.com/latest-v3.zip>
-- **tar.gz**: <https://craftcms.com/latest-v3.tar.gz>
+- **zip**: [3.0.41](https://download.craftcdn.com/craft/3.0/Craft-3.0.41.zip), [latest](https://craftcms.com/latest-v3.zip)
+- **tar.gz**: [3.0.41](https://download.craftcdn.com/craft/3.0/Craft-3.0.41.tar.gz), [latest](https://craftcms.com/latest-v3.tar.gz)
 
 新しい Craft プロジェクトを稼働したい場所でアーカイブを展開します。
 
@@ -133,7 +133,7 @@ Craft のダウンロードに Composer を利用した場合、おそらく安�
 
 Craft プロジェクトをホストするための新しいウェブサーバーを用意してください。ドキュメントルートは `web/` ディレクトリ（または、リネームしたディレクトリ）を指すようにします。
 
-[MAMP](https://mamp.info) や他のローカルホスティングツールを使用していない場合、`hosts` ファイルを更新して、選択したホスト名にローカルコンピュータへ要求をルーティングする必要があるかもしれません。
+[MAMP](https://mamp.info) や他のローカルホスティングツールを使用していない場合、`hosts` ファイルを更新して、選択したホスト名にローカルコンピュータへ要求をルーティングする必要があるかもしれません。 
 
 - **macOS/Linux/Unix**: `/etc/hosts`
 - **Windows**: `\Windows\System32\drivers\etc\hosts`

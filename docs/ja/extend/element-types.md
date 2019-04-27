@@ -56,7 +56,7 @@ class Product extends Element
 
 `elements` データベーステーブルのカラムにフィットしない、エレメント自身について保存したいことがあるでしょう。そこで、その情報を保持するための新しいテーブルを作成する必要があります。
 
-（まだ用意していない場合）[インストールマイグレーション](plugin-migrations.md#install-migrations)を作成し、 `safeUp()` メソッドにこれを追加してください。
+（まだ用意していない場合）[インストールマイグレーション](migrations.md#plugin-install-migrations)を作成し、 `safeUp()` メソッドにこれを追加してください。
 
 ```php
 if (!$this->db->tableExists('{{%products}}')) {
@@ -447,6 +447,12 @@ protected static function defineActions(string $source = null): array
 }
 ```
 
+### 復元アクション
+
+すべてのエレメントは、デフォルトで[ソフトデリート](soft-deletes.md)できます。しかしながら、復元可能かどうかはそれぞれのエレメントタイプによって決まります。
+
+要素を復元可能にするには、static な `defineActions()` メソッドによって返される配列に <api:craft\elements\actions\Restore> アクションを追加するだけです。Craft は通常のインデックスビューから自動的にそれを隠し、ステータスオプションで「破棄済み」を選択したときだけ表示します。
+
 ### ソートオプション
 
 エレメントクラスに protected static な `defineSortOptions()` メソッドを追加することで、エレメントインデックス向けのソートオプションを定義できます。
@@ -672,7 +678,7 @@ public function getCpEditUrl()
 <?php
 namespace ns\prefix\fields;
 
-use craft\fields\BaseRelationsField;
+use craft\fields\BaseRelationField;
 use ns\prefix\elements\Product;
 
 class Products extends BaseRelationField
