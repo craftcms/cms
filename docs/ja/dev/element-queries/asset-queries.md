@@ -124,8 +124,8 @@ $assets = \craft\elements\Asset::find()
 
 ```php
 // Fetch assets created last month
-$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+$start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+$end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
 
 $assets = \craft\elements\Asset::find()
     ->dateCreated(['and', ">= {$start}", "< {$end}"])
@@ -159,7 +159,7 @@ $assets = \craft\elements\Asset::find()
 
 ```php
 // Fetch assets modified in the last month
-$start = new \DateTime('30 days ago')->format(\DateTime::ATOM);
+$start = (new \DateTime('30 days ago'))->format(\DateTime::ATOM);
 
 $assets = \craft\elements\Asset::find()
     ->dateModified(">= {$start}")
@@ -193,7 +193,7 @@ $assets = \craft\elements\Asset::find()
 
 ```php
 // Fetch assets updated in the last week
-$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+$lastWeek = (new \DateTime('1 week ago'))->format(\DateTime::ATOM);
 
 $assets = \craft\elements\Asset::find()
     ->dateUpdated(">= {$lastWeek}")
@@ -518,14 +518,14 @@ $assets = \craft\elements\Asset::find()
 ```twig
 {# Fetch all assets in order of date created #}
 {% set assets = craft.assets()
-    .orderBy('elements.dateCreated asc')
+    .orderBy('dateCreated asc')
     .all() %}
 ```
 
 ```php
 // Fetch all assets in order of date created
 $assets = \craft\elements\Asset::find()
-    ->orderBy('elements.dateCreated asc')
+    ->orderBy('dateCreated asc')
     ->all();
 ```
 
@@ -535,7 +535,7 @@ $assets = \craft\elements\Asset::find()
 
 特定の他のエレメントと関連付けられたアセットだけに、クエリの結果を絞り込みます。
 
-このパラメーターがどのように機能するかの詳細については、[リレーション](../../relations.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[リレーション](https://docs.craftcms.com/v3/relations.html)を参照してください。
 
 ::: code
 
@@ -559,7 +559,7 @@ $assets = \craft\elements\Asset::find()
 
 検索クエリにマッチするアセットだけに、クエリの結果を絞り込みます。
 
-このパラメーターがどのように機能するかの詳細については、[検索](../../searching.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[検索](https://docs.craftcms.com/v3/searching.html)を参照してください。
 
 ::: code
 
@@ -704,6 +704,28 @@ $assets = \craft\elements\Asset::find()
 
 :::
 
+### `trashed`
+
+ソフトデリートされたアセットだけに、クエリの結果を絞り込みます。
+
+::: code
+
+```twig
+{# Fetch trashed assets #}
+{% set assets = {twig-function}
+    .trashed()
+    .all() %}
+```
+
+```php
+// Fetch trashed assets
+$assets = \craft\elements\Asset::find()
+    ->trashed()
+    ->all();
+```
+
+:::
+
 ### `uid`
 
 アセットの UID に基づいて、クエリの結果を絞り込みます。
@@ -825,7 +847,7 @@ $assets = \craft\elements\Asset::find()
 
 関連付けられたエレメントを eager-loaded した状態で、マッチしたアセットをクエリが返します。
 
-このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](../eager-loading-elements.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](https://docs.craftcms.com/v3/dev/eager-loading-elements.html)を参照してください。
 
 ::: code
 

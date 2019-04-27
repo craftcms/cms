@@ -124,8 +124,8 @@ $globalSets = \craft\elements\GlobalSet::find()
 
 ```php
 // Fetch global sets created last month
-$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+$start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+$end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
 
 $globalSets = \craft\elements\GlobalSet::find()
     ->dateCreated(['and', ">= {$start}", "< {$end}"])
@@ -159,7 +159,7 @@ $globalSets = \craft\elements\GlobalSet::find()
 
 ```php
 // Fetch global sets updated in the last week
-$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+$lastWeek = (new \DateTime('1 week ago'))->format(\DateTime::ATOM);
 
 $globalSets = \craft\elements\GlobalSet::find()
     ->dateUpdated(">= {$lastWeek}")
@@ -333,14 +333,14 @@ $globalSets = \craft\elements\GlobalSet::find()
 ```twig
 {# Fetch all global sets in order of date created #}
 {% set globalSets = craft.globalSets()
-    .orderBy('elements.dateCreated asc')
+    .orderBy('dateCreated asc')
     .all() %}
 ```
 
 ```php
 // Fetch all global sets in order of date created
 $globalSets = \craft\elements\GlobalSet::find()
-    ->orderBy('elements.dateCreated asc')
+    ->orderBy('dateCreated asc')
     ->all();
 ```
 
@@ -350,7 +350,7 @@ $globalSets = \craft\elements\GlobalSet::find()
 
 特定の他のエレメントと関連付けられたグローバル設定だけに、クエリの結果を絞り込みます。
 
-このパラメーターがどのように機能するかの詳細については、[リレーション](../../relations.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[リレーション](https://docs.craftcms.com/v3/relations.html)を参照してください。
 
 ::: code
 
@@ -374,7 +374,7 @@ $globalSets = \craft\elements\GlobalSet::find()
 
 検索クエリにマッチするグローバル設定だけに、クエリの結果を絞り込みます。
 
-このパラメーターがどのように機能するかの詳細については、[検索](../../searching.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[検索](https://docs.craftcms.com/v3/searching.html)を参照してください。
 
 ::: code
 
@@ -455,6 +455,28 @@ $globalSets = \craft\elements\GlobalSet::find()
 
 :::
 
+### `trashed`
+
+ソフトデリートされたグローバル設定だけに、クエリの結果を絞り込みます。
+
+::: code
+
+```twig
+{# Fetch trashed global sets #}
+{% set globalSets = {twig-function}
+    .trashed()
+    .all() %}
+```
+
+```php
+// Fetch trashed global sets
+$globalSets = \craft\elements\GlobalSet::find()
+    ->trashed()
+    ->all();
+```
+
+:::
+
 ### `uid`
 
 グローバル設定の UID に基づいて、クエリの結果を絞り込みます。
@@ -481,7 +503,7 @@ $globalSet = \craft\elements\GlobalSet::find()
 
 関連付けられたエレメントを eager-loaded した状態で、マッチしたグローバル設定をクエリが返します。
 
-このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](../eager-loading-elements.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](https://docs.craftcms.com/v3/dev/eager-loading-elements.html)を参照してください。
 
 ::: code
 
