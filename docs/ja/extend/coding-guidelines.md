@@ -37,7 +37,7 @@ Craft や Craft プラグイン向けのコードを書くときには、この�
 
 - 文字列（`'some\nmspace\Foo'`）または <api:yii\base\BaseObject::className()> よりむしろ [::class](http://php.net/manual/en/language.oop5.basic.php#language.oop5.basic.class.class) キーワード（`Foo::class`）を使用して、クラス名を参照してください。
 
-- 暗黙的（例：`$array` がまだ定義されていない状態での `$array[] = 'foo'`）よりむしろ明示的（`$array = []`）に配列を初期化してください。
+- 暗黙的（例：`$array` がまだ定義されていない状態での `$array[] = 'foo'`）よりむしろ明示的（`$array = []`）に配列を初期化してください。 
 
 - クラスが拡張されている場合に `static::` が壊れるため、プライベートな static ファンクションを呼び出す際、`static::_foo()` ではなく `self::_foo()` を使用してください。
 
@@ -153,7 +153,7 @@ public function foo(string $bar = null)
 
 ### インターフェース 対  実装クラス
 
-パブリックサービスメソッド上の `@param`、`@return`、`@var`、`@method` および `@property` タグは、（該当する場合）実装クラスではなくインターフェースを参照します。
+`パブリックサービスメソッド上の @param`、`@return`、`@var`、`@method` および `@property` タグは、（該当する場合）実装クラスではなくインターフェースを参照します。
 
 ```php
 // Bad:
@@ -279,9 +279,9 @@ $this->requireAcceptsJson();
 
 - テーブル / カラム名や値を自動的に引用するように、可能な限り Yii の[宣言条件構文](api:yii\db\QueryInterface::where())を使用してください。
 - 一貫性のために、次のものを使用してください。
-   - ``['in', 'col', $values]` の代わりに ['col' => $values]`
-   - ``['=', 'col', $value]` の代わりに ['col' => $value]`
-   - ``['like', 'col', '%value%', false]` の代わりに ['like', 'col', 'value']`
+   - `['in', 'col', $values]` の代わりに `['col' => $values]`
+   - `['=', 'col', $value]` の代わりに `['col' => $value]`
+   - `['like', 'col', '%value%', false]` の代わりに `['like', 'col', 'value']`
       *（`%` は `value` が片側にのみ必要な場合を除きます。）*
 - `NULL` を検索する場合、`['col' => null]` 構文を使用してください。
 - `NOT NULL` を検索する場合、`['not', ['col' => null]]` 構文を使用してください。

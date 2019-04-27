@@ -48,6 +48,16 @@
 {% endif %}
 ```
 
+## `devMode`
+
+コンフィグ設定 <config:devMode> が現在有効になっているかどうか。
+
+```twig
+{% if devMode %}
+    Craft is running in dev mode.
+{% endif %}
+```
+
 ## `loginUrl`
 
 <config:loginPath> コンフィグ設定に基づく、サイトのログインページの URL。

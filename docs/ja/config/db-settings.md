@@ -135,8 +135,7 @@ PDO コンストラクタに渡す PDO 属性の key => value ペアの配列。
 
 - MySQL: http://php.net/manual/en/ref.pdo-mysql.connection.php
 - PostgreSQL: http://php.net/manual/en/ref.pdo-pgsql.connection.php
-これを設定すると、[$server](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-server)、[$port](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-port)、[$user](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-user)、[$password](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-password)、[$database](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-database)、
-[$driver](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-driver) および [$unixSocket](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-unixsocket) コンフィグ設定は無視されます。
+これを設定すると、コンフィグ設定の [server](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#server)、[port](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#port)、[user](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#user)、[password](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#password)、[database](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#database)、[driver](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#driver)、および、[unixSocket](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#unixsocket) は無視されます。
 
 ### `password`
 
@@ -250,7 +249,7 @@ MySQL のみ。セットされている場合、（yiic で使用される）CLI
 
 ホスティング環境によって提供された場合、データベースの接続 URL。
 
-セットされている場合、[$driver](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-driver)、[$user](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-user)、[$database](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-database)、[$server](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-server)、[$port](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-port)、および、 [$database](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#property-database) の値は、そこから抽出されます。
+これがセットされている場合、[driver](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#driver)、[user](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#user)、[database](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#database)、[server](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#server)、[port](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#port)、および、[database](https://docs.craftcms.com/api/v3/craft-config-dbconfig.html#database) の値は、そこから抽出されます。
 
 ### `user`
 

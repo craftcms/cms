@@ -78,54 +78,7 @@ Craft には、2つの一般的なモデル操作メソッドがあります。
 
 クラス指向メソッドの制御フロー図です。
 
-```
-╔════════════════════════════╗
-║ saveRecipe(Recipe $recipe) ║
-╚════════════════════════════╝
-               │
-               ▼
-  ┌────────────────────────┐
-  │ beforeSaveRecipe event │
-  └────────────────────────┘
-               │
-               ▼
-               Λ
-              ╱ ╲
-             ╱   ╲              ┏━━━━━━━━━━━━━━┓
-          validates? ─── no ───▶┃ return false ┃
-             ╲   ╱              ┗━━━━━━━━━━━━━━┛
-              ╲ ╱
-               V
-               │
-              yes
-               │
-               ▼
-     ┌───────────────────┐
-     │ begin transaction │
-     │      (maybe)      │
-     └───────────────────┘
-               │
-               ▼
-      ┌─────────────────┐
-      │ save the recipe │
-      └─────────────────┘
-               │
-               ▼
-      ┌─────────────────┐
-      │ end transaction │
-      │     (maybe)     │
-      └─────────────────┘
-               │
-               ▼
-   ┌───────────────────────┐
-   │ afterSaveRecipe event │
-   └───────────────────────┘
-               │
-               ▼
-        ┏━━━━━━━━━━━━━┓
-        ┃ return true ┃
-        ┗━━━━━━━━━━━━━┛
-```
+![An example flow for a saveRecipe() method.](../images/save-component--class.png =612x1176)
 
 ::: tip
 操作が複数データベースの変更を含む場合、データベーストランザクションで操作をラップする必要があるだけです。
@@ -165,68 +118,7 @@ public function saveRecipe(Recipe $recipe, $runValidation = true)
 
 インターフェース指向メソッドの制御フロー図です。
 
-```
-╔═════════════════════════════════════════════════╗
-║ saveIngredient(IngredientInterface $ingredient) ║
-╚═════════════════════════════════════════════════╝
-                         │
-                         ▼
-          ┌────────────────────────────┐
-          │ beforeSaveIngredient event │
-          └────────────────────────────┘
-                         │
-                         ▼
-                         Λ
-                        ╱ ╲
-                       ╱   ╲                        ┏━━━━━━━━━━━━━━┓
-             $ingredient->beforeSave() ── false ───▶┃ return false ┃
-                       ╲   ╱                        ┗━━━━━━━━━━━━━━┛
-                        ╲ ╱
-                         V
-                         │
-                        true
-                         │
-                         ▼
-                         Λ
-                        ╱ ╲
-                       ╱   ╲              ┏━━━━━━━━━━━━━━┓
-                    validates? ─── no ───▶┃ return false ┃
-                       ╲   ╱              ┗━━━━━━━━━━━━━━┛
-                        ╲ ╱
-                         V
-                         │
-                        yes
-                         │
-                         ▼
-               ┌───────────────────┐
-               │ begin transaction │
-               └───────────────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │ save the ingredient │
-              └─────────────────────┘
-                         │
-                         ▼
-           ┌──────────────────────────┐
-           │ $ingredient->afterSave() │
-           └──────────────────────────┘
-                         │
-                         ▼
-                ┌─────────────────┐
-                │ end transaction │
-                └─────────────────┘
-                         │
-                         ▼
-           ┌───────────────────────────┐
-           │ afterSaveIngredient event │
-           └───────────────────────────┘
-                         │
-                         ▼
-                  ┏━━━━━━━━━━━━━┓
-                  ┃ return true ┃
-                  ┗━━━━━━━━━━━━━┛
-```
+![An example flow for a saveIngredient() method.](../images/save-component--interface.png =660x1488)
 
 完全なコードの実例は、次のようになります。
 

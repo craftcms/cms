@@ -4,6 +4,10 @@
 
 `config/app.web.php` および `config/app.console.php` から、ウェブリクエストやコンソールリクエストだけに対して Craft のアプリケーション設定をカスタマイズすることもできます。
 
+::: tip
+Craft のデフォルト設定は [src/config/app.php](https://github.com/craftcms/cms/blob/master/src/config/app.php)、[app.web.php](https://github.com/craftcms/cms/blob/master/src/config/app.web.php)、および、[app.console.php](https://github.com/craftcms/cms/blob/master/src/config/app.console.php)によって定義されています。既存のアプリケーションコンポーネントを上書きする必要がある場合、これらのファイルを参照してください。
+:::
+
 [[toc]]
 
 ## Cache コンポーネント
@@ -58,19 +62,45 @@ Redis キャッシュストレージを利用するには、あらかじめ [yii
 <?php
 return [
     'components' => [
+        'redis' => [
+            'class' => yii\redis\Connection::class,
+            'hostname' => 'localhost',
+            'port' => 6379,
+            'password' => getenv('REDIS_PASSWORD'),
+        ],
         'cache' => [
             'class' => yii\redis\Cache::class,
             'defaultDuration' => 86400,
-            'redis' => [
-                'hostname' => 'localhost',
-                'port' => 6379,
-                'password' => getenv('REDIS_PASSWORD'),
-                'database' => 0,
-            ],
         ],
     ],
 ];
 ```
+
+## Session コンポーネント
+
+負荷分散された環境では、デフォルトの `session` コンポーネントを上書きして、PHP セッションデータを一元管理された場所（例：Redis）に保存したいかもしれません。
+
+```php
+<?php
+return [
+    'components' => [
+        'redis' => [
+            'class' => yii\redis\Connection::class,
+            'hostname' => 'localhost',
+            'port' => 6379,
+            'password' => getenv('REDIS_PASSWORD'),
+        ],
+        'session' => [
+            'class' => yii\redis\Session::class,
+            'as session' => craft\behaviors\SessionBehavior::class,
+        ],
+    ],
+];
+```
+
+::: tip
+`session` コンポーネントは、システムが依存するコンポーネントにメソッドを加える <api:craft\behaviors\SessionBehavior> ビヘイビアで設定**しなければなりません**。
+:::
 
 ## Mailer コンポーネント
 
@@ -82,7 +112,7 @@ return [
     'components' => [
         'mailer' => function() {
             // Get the stored email settings
-            $settings = Craft::$app->systemSettings->getEmailSettings();
+            $settings = craft\helpers\App::mailSettings();
 
             // Override the transport adapter class
             $settings->transportType = craft\mailgun\MailgunAdapter::class;
