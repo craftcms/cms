@@ -47,7 +47,7 @@
                     {% else %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
-                        {% set textual = (col.type in ['color', 'date', 'multiline', 'number', 'singleline', 'template', 'time']) %}
+                        {% set textual = (col.type in ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url']) %}
                         {% set isCode = col.code is defined or col.type == 'color' %}
                         <td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
                             {% block tablecell %}
@@ -92,6 +92,14 @@
                                         {% include "_includes/forms/time" with {
                                             name: cellName,
                                             value: value,
+                                            disabled: static
+                                        } only %}
+                                    {%- case 'email' or 'url' -%}
+                                        {% include "_includes/forms/text" with {
+                                            type: col.type,
+                                            name: cellName,
+                                            placeholder: col.placeholder ?? null,
+                                            value:  value,
                                             disabled: static
                                         } only %}
                                     {%- case 'template' -%}

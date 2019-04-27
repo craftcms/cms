@@ -15,9 +15,11 @@ use craft\fields\data\ColorData;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
+use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use yii\db\Schema;
+use yii\validators\EmailValidator;
 
 /**
  * Table represents a Table field.
@@ -183,11 +185,13 @@ class Table extends Field
             'color' => Craft::t('app', 'Color'),
             'date' => Craft::t('app', 'Date'),
             'select' => Craft::t('app', 'Dropdown'),
+            'email' => Craft::t('app', 'Email'),
             'lightswitch' => Craft::t('app', 'Lightswitch'),
             'multiline' => Craft::t('app', 'Multi-line text'),
             'number' => Craft::t('app', 'Number'),
             'singleline' => Craft::t('app', 'Single-line text'),
             'time' => Craft::t('app', 'Time'),
+            'url' => Craft::t('app', 'URL'),
         ];
 
         // Make sure they are sorted alphabetically (post-translation)
@@ -438,15 +442,28 @@ class Table extends Field
      */
     private function _validateCellValue(string $type, $value, string &$error = null): bool
     {
-        if ($type === 'color' && $value !== null) {
-            /** @var ColorData $value */
-            $validator = new ColorValidator();
-            $validator->message = str_replace('{attribute}', '{value}', $validator->message);
-            $hex = $value->getHex();
-            return $validator->validate($hex, $error);
+        if ($value === null || $value === '') {
+            return true;
         }
 
-        return true;
+        switch ($type) {
+            case 'color':
+                /** @var ColorData $value */
+                $value = $value->getHex();
+                $validator = new ColorValidator();
+                break;
+            case 'url':
+                $validator = new UrlValidator();
+                break;
+            case 'email':
+                $validator = new EmailValidator();
+                break;
+            default:
+                return true;
+        }
+
+        $validator->message = str_replace('{attribute}', '{value}', $validator->message);
+        return $validator->validate($value, $error);
     }
 
     /**

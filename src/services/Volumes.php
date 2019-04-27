@@ -303,10 +303,10 @@ class Volumes extends Component
             'name' => $volume->name,
             'handle' => $volume->handle,
             'type' => \get_class($volume),
-            'hasUrls' => $volume->hasUrls,
+            'hasUrls' => (bool)$volume->hasUrls,
             'url' => $volume->url,
             'settings' => $volume->getSettings(),
-            'sortOrder' => $volume->sortOrder,
+            'sortOrder' => (int)$volume->sortOrder,
         ];
 
         $fieldLayout = $volume->getFieldLayout();

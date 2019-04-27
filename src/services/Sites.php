@@ -660,10 +660,10 @@ class Sites extends Component
             'name' => $site->name,
             'handle' => $site->handle,
             'language' => $site->language,
-            'hasUrls' => $site->hasUrls,
+            'hasUrls' => (bool)$site->hasUrls,
             'baseUrl' => $site->baseUrl,
-            'sortOrder' => $site->sortOrder,
-            'primary' => $site->primary,
+            'sortOrder' => (int)$site->sortOrder,
+            'primary' => (bool)$site->primary,
         ];
 
         if ($isNewSite) {

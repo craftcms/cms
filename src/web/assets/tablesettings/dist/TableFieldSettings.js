@@ -50,9 +50,6 @@
                     onAddRow: $.proxy(this, 'onAddColumn'),
                     onDeleteRow: $.proxy(this, 'reconstructDefaultsTable')
                 });
-
-                this.initColumnSettingInputs(this.columnsTable.$tbody);
-                this.columnsTable.sorter.settings.onSortChange = $.proxy(this, 'reconstructDefaultsTable');
             },
 
             initDefaultsTable: function() {
@@ -145,6 +142,16 @@
         init: function(fieldSettings, id, baseName, columns, settings) {
             this.fieldSettings = fieldSettings;
             this.base(id, baseName, columns, settings);
+        },
+
+        initialize: function() {
+            if (!this.base()) {
+                return false;
+            }
+
+            this.fieldSettings.initColumnSettingInputs(this.$tbody);
+            this.sorter.settings.onSortChange = $.proxy(this.fieldSettings.reconstructDefaultsTable, this.fieldSettings);
+            return true;
         },
 
         createRowObj: function($tr) {

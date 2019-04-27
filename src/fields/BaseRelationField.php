@@ -261,8 +261,17 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         /** @var Element $class */
         $class = static::elementType();
         /** @var ElementQuery $query */
-        $query = $class::find()
-            ->siteId($this->targetSiteId($element));
+        $query = $class::find();
+
+        $targetSite = $this->targetSiteId($element);
+        if ($this->targetSiteId) {
+            $query->siteId($targetSite);
+        } else {
+            $query
+                ->siteId('*')
+                ->unique()
+                ->preferSites([$targetSite]);
+        }
 
         // $value will be an array of element IDs if there was a validation error or we're loading a draft/version.
         if (is_array($value)) {
@@ -490,7 +499,9 @@ JS;
             'elementType' => static::elementType(),
             'map' => $map,
             'criteria' => [
-                'siteId' => $targetSite
+                'siteId' => '*',
+                'unique' => true,
+                'preferSites' => [$targetSite],
             ],
         ];
     }
@@ -689,7 +700,9 @@ JS;
 
         $selectionCriteria = $this->inputSelectionCriteria();
         $selectionCriteria['enabledForSite'] = null;
-        $selectionCriteria['siteId'] = $this->targetSiteId($element);
+        if ($this->targetSiteId) {
+            $selectionCriteria['siteId'] = $this->targetSiteId($element);
+        }
 
         return [
             'jsClass' => $this->inputJsClass,
@@ -701,6 +714,7 @@ JS;
             'elements' => $value,
             'sources' => $this->inputSources($element),
             'criteria' => $selectionCriteria,
+            'showSiteMenu' => $this->targetSiteId ? false : 'auto',
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'limit' => $this->allowLimit ? $this->limit : null,
             'viewMode' => $this->viewMode(),

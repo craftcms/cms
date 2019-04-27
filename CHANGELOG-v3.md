@@ -1,14 +1,31 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## Unreleased (3.2)
+
+### Added
+- Table fields can now have Email and URL columns. ([#4180](https://github.com/craftcms/cms/pull/4180))
+
+## 3.2.0-alpha.4 - 2019-04-23
+
+### Added
+- Added the `preferSites` element query param, which can be used to set the preferred sites that should be used for multi-site element queries, when the `unique` param is also enabled.
 
 ### Changed
+- Relational fields are now capable of selecting elements from multiple sites, if they haven’t been locked down to only related elements from a single site. ([#3584](https://github.com/craftcms/cms/issues/3584))
+- Renamed `craft\base\WidgetInterface::iconPath()` to `icon()`, and it now can return the actual SVG contents if desired. ([#4156](https://github.com/craftcms/cms/pull/4156))
 - `craft\db\ActiveRecord` no longer sets the `uid`, `dateCreated`, or `dateUpdated` values for new records if they were already explicitly set.
 - `craft\db\ActiveRecord` no longer updates the `dateUpdated` value for existing records if nothing else changed or if `dateUpdated` had already been explicitly changed.
 - `craft\services\Elements::deleteElement()` now has a `$hardDelete` argument.
 - `craft\services\Elements::saveElement()` now immediately propagates elements if `$propagate` is `true`, as it used to.
 - `craft\services\Elements::saveElement()` now preserves the `uid`, `dateCreated`, and `dateUpdated` values on new elements if they were explicitly set. ([#2909](https://github.com/craftcms/cms/issues/2909))
 - `craft\services\Elements::saveElement()` now preserves existing elements’ current `dateUpdated` value when propagating or auto-resaving elements.
+
+### Deprecated
+- Deprecated `craft\base\Widget::iconPath()`. Use `icon()` instead.
+
+### Fixed
+- Fixed a SQL error that could occur when using the `unique` element query param.
+- Fixed a bug where Table fields would forget their Dropdown columns’ options when edited.
 
 ## 3.2.0-alpha.3 - 2019-04-10
 
@@ -70,14 +87,33 @@
 ## Unreleased (3.1)
 
 ### Changed
+- Craft now registers its project config event handlers before loading plugins. ([#3943](https://github.com/craftcms/cms/issues/3943))
+
+### Fixed
+- Fixed an error where rebuilding the project config would not typecast the `propagateEntries` and `enableVersioning` section settings correctly. ([#3695](https://github.com/craftcms/cms/issues/3695))
+- Fixed a bug where the Edit Draft HUD would include the current site name in the default Draft Name value for multi-site entries. ([#4171](https://github.com/craftcms/cms/issues/4171))
+
+## 3.1.24 - 2019-04-23
+
+### Added
+- Added `craft\services\Fields::getFieldIdsByLayoutId()`.
+
+### Changed
+- Craft now correctly typecasts all core boolean and integer values saved to the project config. ([#3695](https://github.com/craftcms/cms/issues/3695))
 - Craft now saves new entry versions every time an entry is saved, unless it’s being propagated or resaved.
+- `users/save-user` and `users/start-elevated-session` requests now check for a `currentPassword` body param in addition to `password`, when looking for the user’s current password. ([#4169](https://github.com/craftcms/cms/issues/4169))
+- `craft\services\Path::getStoragePath()` now has a `$create` argument.
 - Updated Twig to ~2.8.1.
 
 ### Fixed
 - Fixed an error where re-saving a site would reset its sorting order. ([#4147](https://github.com/craftcms/cms/issues/4147))
 - Fixed a SQL error that could occur when updating to Craft 3.1. ([#3663](https://github.com/craftcms/cms/issues/3663))
+- Fixed an error that occurred when an SVG with `/` characters in its `id` attributes was passed to the `svg()` Twig function. ([#4155](https://github.com/craftcms/cms/issues/4155))
+- Fixed a bug where passing `:empty:` or `:notempty:` to a Matrix field param on an element query could return incorrect results for fields that had soft-deleted blocks. ([#4161](https://github.com/craftcms/cms/issues/4161))
 - Fixed a bug where Craft wasn’t returning a `1` exit code for console requests if the server was running under PHP 7. ([#4153](https://github.com/craftcms/cms/issues/4153))
+- Fixed a “World-writable config file 'my.cnf' is ignored” warning that could occur when creating a database backup. ([#4163](https://github.com/craftcms/cms/pull/4163))
 - Fixed a bug where `craft\services\Elements::duplicateElements()` would only ignore non-safe attributes passed to the `$newAttributes` argument.
+- Fixed a bug where `craft\elements\db\ElementQuery::exists()` and `offsetExists()` were ignoring cached query results.
 
 ## 3.1.23 - 2019-04-16
 
@@ -98,6 +134,7 @@
 
 ## 3.1.22 - 2019-04-10
 
+### Added
 - Added `craft\base\ElementTrait::$resaving`, which indicates whether the element is currently being resaved via a `ResaveElements` job or a `resave` command. ([#3482](https://github.com/craftcms/cms/issues/3482))
 - Added `craft\db\Paginator::setPageResults()`. ([#4120](https://github.com/craftcms/cms/issues/4120))
 

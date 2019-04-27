@@ -223,8 +223,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var bool Whether only elements with unique IDs should be returned by the query.
      * @used-by unique()
+     * @since 3.2
      */
     public $unique = false;
+
+    /**
+     * @var array|null Determines which site should be selected when querying multi-site elements.
+     * @used-by preferSites()
+     * @since 3.2
+     */
+    public $preferSites = false;
 
     /**
      * @var bool Whether the elements must be enabled for the chosen site.
@@ -938,6 +946,17 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function unique(bool $value = true)
     {
         $this->unique = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $preferSites
+     * @since 3.2
+     */
+    public function preferSites(array $value = null)
+    {
+        $this->preferSites = $value;
         return $this;
     }
 
@@ -2483,13 +2502,35 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
+        $sitesService = Craft::$app->getSites();
+
+        if (!$this->preferSites) {
+            $preferSites = [$sitesService->getCurrentSite()->id];
+        } else {
+            $preferSites = [];
+            foreach ($this->preferSites as $preferSite) {
+                if (is_numeric($preferSite)) {
+                    $preferSites[] = $preferSite;
+                } else if ($site = $sitesService->getSiteByHandle($preferSite)) {
+                    $preferSites[] = $site->id;
+                }
+            }
+        }
+
+        $caseSql = 'case';
+        $caseParams = [];
+        foreach ($preferSites as $index => $siteId) {
+            $param = 'preferSites' . $index;
+            $caseSql .= " when [[elements_sites.siteId]] = :{$param} then {$index}";
+            $caseParams[$param] = $siteId;
+        }
+        $caseSql .= ' else ' . count($preferSites) . ' end';
+
         $subSelectSql = (clone $this->subQuery)
             ->select(['elements_sites.id'])
             ->andWhere('[[subElements.id]] = [[tmpElements.id]]')
             ->orderBy([
-                new Expression('case when [[elements_sites.siteId]] = :currentSiteId then 0 else 1 end', [
-                    'currentSiteId' => Craft::$app->getSites()->getCurrentSite()->id
-                ]),
+                new Expression($caseSql, $caseParams),
                 'elements_sites.id' => SORT_ASC
             ])
             ->limit(1)
@@ -2504,7 +2545,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $subSelectSql = str_replace("{$qSubElements} {$qSubElements}", "{$qElements} {$qSubElements}", $subSelectSql);
 
         $this->subQuery
-            ->addSelect("({$subSelectSql}) as [[preferredElementsSitesId]]")
+            ->addSelect(new Expression("({$subSelectSql}) as [[preferredElementsSitesId]]"))
             ->where(null);
 
         $this->query
