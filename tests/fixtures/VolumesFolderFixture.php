@@ -31,9 +31,6 @@ class VolumesFolderFixture extends ActiveFixture
     {
         parent::load();
 
-        // Because the Sites() class memoizes on initialization we need to set() a new sites class
-        // with the updated fixture data
-
         \Craft::$app->set('volumes', new Volumes());
     }
 }

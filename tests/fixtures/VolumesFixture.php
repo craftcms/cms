@@ -28,19 +28,32 @@ class VolumesFixture extends Fixture
 
     const BASE_URL = 'https://cdn.test.craftcms.dev/';
 
+    /**
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
+     */
     public function load()
     {
         parent::load();
 
+        // Create the dirs
+        foreach ($this->getData() as $data) {
+            $settings = Json::decodeIfJson($data['settings']);
+            FileHelper::createDirectory($settings['path']);
+        }
+
         \Craft::$app->set('volumes', new Volumes());
     }
 
+    /**
+     * @throws \yii\base\ErrorException
+     */
     public function unload()
     {
-        // Clear the dir
+        // Remove the dirs
         foreach ($this->getData() as $data) {
             $settings = Json::decodeIfJson($data['settings']);
-            FileHelper::clearDirectory($settings['path']);
+            FileHelper::removeDirectory($settings['path']);
         }
 
         parent::unload();
