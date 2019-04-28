@@ -8,7 +8,10 @@ namespace craftunit\helpers;
 
 use Craft;
 use craft\helpers\App;
+use craft\mail\transportadapters\Sendmail;
+use craft\models\MailSettings;
 use craft\services\Entries;
+use craft\test\TestCase;
 use yii\base\Component;
 
 /**
@@ -18,7 +21,7 @@ use yii\base\Component;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
  */
-class AppTest extends \Codeception\Test\Unit
+class AppTest extends TestCase
 {
     /**
      * @var \UnitTester
@@ -130,7 +133,7 @@ class AppTest extends \Codeception\Test\Unit
             ['iam not a class!@#$%^&*()1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
         ];
     }
-    
+
     public function testMaxPowerCaptain(){
         $oldMemoryLimit = ini_get('memory_limit');
         $oldMaxExcecution = ini_get('max_execution_time');
@@ -175,20 +178,41 @@ class AppTest extends \Codeception\Test\Unit
 
     public function configsData()
     {
-        $viewRequirments = Craft::$app->getRequest()->getIsCpRequest() ? ['class', 'registeredAssetBundled', 'registeredJsFiled'] : ['class'];
         return [
             ['assetManagerConfig', ['class', 'basePath', 'baseUrl', 'fileMode', 'dirMode', 'appendTimestamp']],
             ['dbConfig', [ 'class', 'dsn', 'password', 'username',  'charset', 'tablePrefix',  'schemaMap',  'commandMap',  'attributes','enableSchemaCache' ]],
             ['webRequestConfig', [ 'class',  'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam',  ]],
             ['cacheConfig', [ 'class',  'cachePath', 'fileMode', 'dirMode', 'defaultDuration']],
-            ['mailerConfig', [ 'class',  'messageClass', 'from', 'template', 'transport']],
             ['mutexConfig', [ 'class',  'fileMode', 'dirMode']],
             ['logConfig', [ 'class',  'targets']],
             ['sessionConfig', [ 'class',  'flashParam', 'authAccessParam', 'name', 'cookieParams']],
             ['userConfig', [ 'class',  'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'identityCookie', 'usernameCookie', 'idParam', 'authTimeoutParam', 'absoluteAuthTimeoutParam', 'returnUrlParam']],
-            ['viewConfig', $viewRequirments],
-
         ];
+    }
+
+    /**
+     * TODO: See tests/unit/mail/MailerTest.php:46
+     * Mailer config now needs a mail settings
+     */
+    public function testMailerConfigIndexes()
+    {
+        $mailSettings = new MailSettings(['transportType' => Sendmail::class]);
+        $result = App::mailerConfig($mailSettings);
+
+        $this->assertFalse($this->areKeysMissing($result, ['class', 'messageClass', 'from', 'template', 'transport']));
+
+        // Make sure its a component
+        $this->assertTrue(in_array(Component::class, class_parents($result['class'])));
+        $this->assertTrue(class_exists($result['class']));
+    }
+
+    public function testViewConfigIndexes()
+    {
+        $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', true);
+        $this->testConfigIndexes('viewConfig', ['class', 'registeredAssetBundles', 'registeredJsFiles']);
+
+        $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', false);
+        $this->testConfigIndexes('viewConfig', ['class']);
     }
 
     private function areKeysMissing(array $configArray, array $desiredSchemaArray) : bool
