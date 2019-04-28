@@ -33,7 +33,6 @@ use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\ResaveElementEvent;
 use craft\events\ResaveElementsEvent;
-use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
@@ -41,7 +40,6 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\FindAndReplace;
-use craft\queue\jobs\PropagateElements;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
@@ -450,7 +448,7 @@ class Elements extends Component
             if ($isNewElement) {
                 $element->title = Craft::t('app', 'New {type}', ['type' => $element::displayName()]);
             } else {
-                $element->title = $element::displayName() . ' ' .$element->id;
+                $element->title = $element::displayName() . ' ' . $element->id;
             }
         }
 
