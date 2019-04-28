@@ -127,20 +127,28 @@ class AppTest extends \Codeception\Test\Unit
             ['entries', Entries::class],
             ['app test', self::class],
             ['std class', \stdClass::class],
-            ['iam not a  class!@#$%^&*()1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
+            ['iam not a class!@#$%^&*()1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
         ];
     }
-
-
+    
     public function testMaxPowerCaptain(){
+        $oldMemoryLimit = ini_get('memory_limit');
+        $oldMaxExcecution = ini_get('max_execution_time');
+
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $craftMemoryLimit = $generalConfig->phpMaxMemoryLimit;
-        $desiredMemLimit = $craftMemoryLimit !== '' ? $craftMemoryLimit : '-1';
+        $generalConfig->phpMaxMemoryLimit = '512M';
+
+        ini_set('memory_limit', '256M');
 
         App::maxPowerCaptain();
 
-        $this->assertSame($desiredMemLimit, ini_get('memory_limit'));
+        $this->assertSame($generalConfig->phpMaxMemoryLimit, ini_get('memory_limit'));
         $this->assertSame('0', ini_get('max_execution_time'));
+
+        ini_set('memory_limit', $oldMemoryLimit);
+        ini_set('max_execution_time', $oldMaxExcecution);
+
+        // TODO: 3.1 added new funcs. Test this
     }
 
     public function testLicenseKey()
