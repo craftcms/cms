@@ -10,6 +10,8 @@ use Codeception\Test\Unit;
 use craft\helpers\App;
 use craft\mail\Mailer;
 use craft\mail\Message;
+use craft\mail\transportadapters\Sendmail;
+use craft\models\MailSettings;
 
 /**
  * Unit tests for MailerTest
@@ -20,18 +22,37 @@ use craft\mail\Message;
  * Currently getMailer returns the TestMailer class (See line 264 of Codeception\Lib\Connector\Yii2) and not a craft\mail\Mailer object.
  * We need a way to test lines 89-167 of the craft\mail\Mailer object which is currently awkward.
  *
+ * One other option is to break out craft\mail\Mailer line 89-165 into a seperate method called prepareMessage(Message $message)
+ * This means we can test all that functionality without having to actually *send* the email.
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
  */
 class MailerTest extends Unit
 {
+    /**
+     * @var Mailer $mailer
+     */
     public $mailer;
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function _before()
     {
         parent::_before();
-        $this->mailer = \Craft::createObject(App::mailerConfig());
+
+        // TODO: This used to work without the config array.
+        // The introduction of project config throws: [TypeError] Argument 1 passed to craft\helpers\MailerHelper::createTransportAdapter() must be of the type string, null given, called in /home/cms/src/helpers/App.php on line 446
+        // So. If project config is off, and no MailSettings is passed, App::mailerConfig doesnt seem to work.
+        $mailSettings = new MailSettings([
+            'transportType' => Sendmail::class
+        ]);
+
+        $this->mailer = \Craft::createObject(App::mailerConfig(
+            $mailSettings
+        ));
     }
 
     /**
@@ -44,6 +65,7 @@ class MailerTest extends Unit
         $this->assertInstanceOf(Message::class, $res);
         $this->assertSame($key, $res->key);
         $this->assertSame($variables, $res->variables);
+        $this->mailer->send($res);
     }
     public function fromKeyComposition()
     {
