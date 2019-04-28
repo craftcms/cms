@@ -143,14 +143,14 @@ class SearchQueryTest extends Unit
         $emptyConfig['attribute'] = 'body';
 
         return [
-            ['i said "Hello"', ['Hello' => $quotedPhraseConfig], 3],
-            ['i said \'Hello\'', ['Hello' => $quotedPhraseConfig], 3],
-            ['i said -Hello', ['Hello' => $excludeTermConfig], 3],
-            ['i said *Hello', ['Hello' => $subtermLeft], 3],
-            ['i said Hello*', ['Hello' => $subTermRight], 3],
-            ['i said *Hello*', ['Hello' => $subtermLeft], 3],
-            ['i said body::"test"', ['test' => $attributeConfig], 3],
-            ['i said -body:*', ['index2' => $emptyConfig], 3],
+            ['i said "Hello"', ['2' => $quotedPhraseConfig], 3],
+            ['i said \'Hello\'', ['2' => $quotedPhraseConfig], 3],
+            ['i said -Hello', ['2' => $excludeTermConfig], 3],
+            ['i said *Hello', ['2' => $subtermLeft], 3],
+            ['i said Hello*', ['2' => $subTermRight], 3],
+            ['i said *Hello*', ['2' => $subtermLeft], 3],
+            ['i said body::"test"', ['2' => $attributeConfig], 3],
+            ['i said -body:*', ['2' => $emptyConfig], 3],
 
             ['i have spaces and lines', null, 5]
         ];
@@ -161,7 +161,7 @@ class SearchQueryTest extends Unit
      * @param $query
      * @param null $configOptions
      */
-    public function testSearchQuery($query, $configOptions = null, int $sizeOfArray = null)
+    public function testSearchQuery(string $query, array $configOptions = null, int $sizeOfArray = null)
     {
         $exploded = explode(' ', $query);
 
@@ -174,37 +174,51 @@ class SearchQueryTest extends Unit
 
         // Loop through the given tokens.
         foreach ($search->getTokens() as $index => $token) {
+            $whatItShouldBe = $this->getWhatItShouldBe($token, $configOptions, $index);
 
-            // If token term is an empty sring we try to find a config option by index+index_number
-            $searchTerm = $token->term;
-            if (!$searchTerm || $searchTerm === '') {
-                $searchTerm = 'index'.$index.'';
-            }
-
-            // Get wether the data provider gave us custom config options for this term based on the above searchParam
-            $config = $this->getConfigFromOptions($searchTerm, $configOptions);
-
-            // Setup the token objects for comparison based on the config above and the term of the token
-            $whatItShouldBe = $this->createDefaultTokenFromString($token->term, $config);
-            $whatItIs = $token;
-
-            $this->ensureIdenticalSearchTermObjects($whatItShouldBe, $whatItIs);
-
-            // Test that the index of the searchQueryTerm's is in the correct order by comparing to the exploded string.
-            $fromExplodedString = $this->createDefaultTokenFromString($exploded[$index], $config);
-            $this->ensureIdenticalSearchTermObjects($fromExplodedString, $whatItIs);
+            $this->ensureIdenticalSearchTermObjects($whatItShouldBe, $token);
         }
     }
 
     /**
-     * @param $string
+     * @dataProvider searchQueryData
+     */
+    public function testSearchQuerySortOrder(string $query, array $configOptions = null, int $sizeOfArray = null)
+    {
+        $exploded = explode(' ', $query);
+        $search = new SearchQuery($query);
+
+        foreach ($search->getTokens() as $index => $token) {
+            $config = $this->getConfigFromOptions($index, $configOptions);
+
+            $fromExplodedString = $this->createDefaultSearchQueryTermFromString($exploded[$index], $config);
+            $this->ensureIdenticalSearchTermObjects($fromExplodedString, $token);
+        }
+    }
+
+    /**
+     * @param $token
+     * @param $configOptions
+     * @param $index
+     * @return SearchQueryTerm
+     */
+    public function getWhatItShouldBe($token, $configOptions, $index)
+    {
+        // Get wether the data provider gave us custom config options for this term based on the above searchParam
+        $config = $this->getConfigFromOptions($index, $configOptions);
+
+        return $this->createDefaultSearchQueryTermFromString($token->term, $config);
+    }
+
+    /**
+     * @param $term
      * @param $config
      * @return SearchQueryTerm
      */
-    public function createDefaultTokenFromString($string, $config) : SearchQueryTerm
+    public function createDefaultSearchQueryTermFromString(string $term, array $config) : SearchQueryTerm
     {
         if (!isset($config['term'])) {
-            $config['term'] = $string;
+            $config['term'] = $term;
         }
 
         return new SearchQueryTerm($config);
