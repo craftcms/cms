@@ -32,7 +32,7 @@ class SearchQueryTest extends Unit
         'phrase' => null
     ];
 
-    public function testQueryGroupData() {
+    public function testSearchQueryGrouping() {
         $search = new SearchQuery('i live OR die');
 
         $options = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
@@ -129,11 +129,16 @@ class SearchQueryTest extends Unit
         $subTermRight = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
         $subTermRight['term'] = 'Hello';
 
+        $firstQuote = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $firstQuote['term'] = 'i';
+        $firstQuote['phrase'] = true;
+        
         $attributeConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
         $attributeConfig['term'] = 'test';
         $attributeConfig['phrase'] = true;
         $attributeConfig['attribute'] = 'body';
         $attributeConfig['exact'] = true;
+        $attributeConfig['subRight'] = false;
 
         $emptyConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
         $emptyConfig['term'] = '';
@@ -152,7 +157,8 @@ class SearchQueryTest extends Unit
             ['i said body::"test"', ['2' => $attributeConfig], 3],
             ['i said -body:*', ['2' => $emptyConfig], 3],
 
-            ['i have spaces and lines', null, 5]
+            ['i have spaces and lines', null, 5],
+            ['"i" said Hello', ['0' => $firstQuote], 3]
         ];
     }
 
