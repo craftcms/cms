@@ -65,7 +65,6 @@ class MailerTest extends Unit
         $this->assertInstanceOf(Message::class, $res);
         $this->assertSame($key, $res->key);
         $this->assertSame($variables, $res->variables);
-        $this->mailer->send($res);
     }
     public function fromKeyComposition()
     {
