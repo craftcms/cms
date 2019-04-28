@@ -221,7 +221,6 @@ class SearchServiceTest extends Unit
         foreach ($usernameOrEmails as $usernameOrEmail) {
             $userId = $this->getUserIdByEmailOrUserName($usernameOrEmail)->id;
             $ids[] = $typecastToInt === true ? (int)$userId : $userId;
-
         }
 
         return $ids;

@@ -15,6 +15,7 @@ use Codeception\Stub;
 use Codeception\TestInterface;
 use craft\config\DbConfig;
 use craft\db\Connection;
+use craft\elements\User;
 use craft\helpers\App;
 use craft\services\Security;
 use yii\base\Application;
@@ -154,6 +155,7 @@ class Craft extends Yii2
     {
         parent::_before($test);
 
+        App::maxPowerCaptain();
         /**
          * TODO:
          * There is a potential 'bug'/hampering feature with the Yii2 Codeception module.

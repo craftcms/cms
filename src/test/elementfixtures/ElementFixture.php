@@ -7,7 +7,11 @@
 namespace craft\test\elementfixtures;
 
 use Craft;
+use craft\errors\InvalidElementException;
+use craft\events\DeleteElementEvent;
+use craft\services\Elements;
 use yii\base\ErrorException;
+use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\test\ActiveFixture;
 use craft\base\Element;
@@ -62,7 +66,7 @@ abstract class ElementFixture extends ActiveFixture
                 $element->$handle = $value;
             }
             if (!Craft::$app->getElements()->saveElement($element)) {
-                throw new ErrorException(join(' ', $element->getErrorSummary(true)));
+                throw new ErrorException(implode(' ', $element->getErrorSummary(true)));
             }
             $this->data[$alias] = array_merge($data, ['id' => $element->id]);
         }
@@ -73,12 +77,25 @@ abstract class ElementFixture extends ActiveFixture
      */
     public function unload(): void
     {
+        // Create an event handler that ensures elements get hard deleted.
+        $eventHandler = function(DeleteElementEvent $event) {
+            $event->hardDelete = true;
+        };
+
+        // Ensure it gets hard deleted
+        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, $eventHandler);
+
         foreach ($this->getData() as $data) {
             $element = $this->getElement($data);
             if ($element) {
-                Craft::$app->getElements()->deleteElement($element);
+                if (!Craft::$app->getElements()->deleteElement($element)) {
+                    throw new InvalidElementException($element, 'Unable to delete element');
+                }
             }
         }
+
+        Event::off(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, $eventHandler);
+
         $this->data = [];
     }
 
@@ -104,7 +121,7 @@ abstract class ElementFixture extends ActiveFixture
         if (is_null($data)) {
             return new $modelClass();
         }
-        $query = $modelClass::find();
+        $query = $modelClass::find()->anyStatus();
         foreach ($data as $key => $value) {
             if ($this->isPrimaryKey($key)) {
                 $query = $query->$key($value);

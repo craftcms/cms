@@ -52,25 +52,6 @@ abstract class AssetFixture extends ElementFixture
     /**
      * {@inheritdoc}
      */
-    public function unload(): void
-    {
-        foreach ($this->getData() as $data) {
-            $element = $this->getElement($data);
-            if ($element) {
-                try {
-                    Craft::$app->getElements()->deleteElement($element);
-                } catch (\PHPUnit\Framework\Exception $e) {
-                    break; // do nothing while testing
-                }
-            }
-        }
-        $this->data = [];
-    }
-
-
-    /**
-     * {@inheritdoc}
-     */
     protected function isPrimaryKey(string $key): bool
     {
         return $key === 'volumeId' || $key === 'folderId' || $key === 'filename' || $key === 'title';
