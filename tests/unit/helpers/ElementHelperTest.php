@@ -36,16 +36,17 @@ class ElementHelperTest extends Unit
      */
     public function testCreateSlug($result, $input)
     {
+        $glue = \Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+        $result = str_replace('[seperator-here]', $glue, $result);
+
         $this->assertSame($result, ElementHelper::createSlug($input));
     }
 
     public function createSlugData()
     {
-        $glue = \Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
-
         return [
-            ['word'.$glue.'Word', 'wordWord'],
-            ['word'.$glue.'word', 'word word'],
+            ['word[seperator-here]Word', 'wordWord'],
+            ['word[seperator-here]word', 'word word'],
             ['word', 'word'],
             ['123456789', '123456789'],
             ['abc...dfg', 'abc...dfg'],
@@ -152,33 +153,5 @@ class ElementHelperTest extends Unit
         $this->assertSame($two, $three->getPrev());
 
         $this->assertNull($three->getNext());
-    }
-
-    /**
-     * @dataProvider findSourcesData
-     * @param      $result
-     * @param      $elementType
-     * @param      $sourceKey
-     * @param null $context
-     */
-    public function testFindSources($result, $sourceKey, $context = null)
-    {
-        $source = ElementHelper::findSource(ExampleElement::class, $sourceKey, $context);
-        $this->assertSame($result, $source);
-    }
-    public function findSourcesData()
-    {
-        return [
-            [null, 'not a source'],
-            [[
-                'key' => 'criteria1',
-                'label' => 'Criteria',
-                'criteria' => [
-                    'id' => '1'
-                ]
-            ], 'criteria1'],
-            [[], 'criteria2'],
-            [null, '*/criteria1'],
-        ];
     }
 }
