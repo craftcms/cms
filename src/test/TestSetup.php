@@ -235,10 +235,9 @@ class TestSetup
     }
 
     /**
-     * @return bool
      * @throws Exception
      */
-    public function setupCraftDb() : bool
+    public function setupCraftDb()
     {
         if ($this->connection->schema->getTableNames() !== []) {
             throw new Exception('Not allowed to setup the DB if it hasnt been cleansed');
