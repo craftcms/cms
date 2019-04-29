@@ -43,7 +43,7 @@ class ConfigHelperTest extends Unit
     public function sizeInBytesData()
     {
         return [
-            [5368709120.0, '5G'],
+            [5368709120, '5G'],
             [5242880, '5M'],
             [5120, '5K'],
             [5120, 'ABCDEFHIJFLKNOPQRSTUVWXYZ5K'],
