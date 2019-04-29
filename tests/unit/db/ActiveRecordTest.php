@@ -29,6 +29,10 @@ class ActiveRecordTest extends Unit
      * @var \UnitTester
      */
     public $tester;
+
+    /**
+     * Note this test is just here to verify that these are indeed craft\db\ActiveRecord classes.
+     */
     public function testIsCraftAr()
     {
         $this->assertInstanceOf(ActiveRecord::class, new Volume());
@@ -120,20 +124,44 @@ class ActiveRecordTest extends Unit
         $oneDayAgo = new \DateTime('-1 day', $utcTz);
         $now =  new \DateTime('now', $utcTz);
 
+        $uuid = StringHelper::UUID();
+
         $sesh = new Session();
         $sesh->userId = 1;
         $sesh->token = 'test';
         $sesh->dateCreated = $oneDayAgo;
         $sesh->dateUpdated = $oneDayAgo;
-        $sesh->uid = '00000000-0000-0000-0000-000000000000';
+        $sesh->uid = $uuid;
         $save = $sesh->save();
 
         $this->assertTrue($save);
 
         $this->assertSame($now->format('Y-m-d H:i:s'), $sesh->dateCreated);
         $this->assertSame($now->format('Y-m-d H:i:s'), $sesh->dateUpdated);
+        $this->assertSame($uuid, $sesh->uid);
+    }
+
+    public function testUUIDThatIsntValid()
+    {
+        $sesh = new Session();
+        $sesh->userId = 1;
+        $sesh->token = 'test';
+        $sesh->uid = '00000000|0000|0000|0000|000000000000';
+        $save = $sesh->save();
+
+        $this->assertTrue($save);
+        $this->assertSame('00000000|0000|0000|0000|000000000000', $sesh->uid);
+    }
+
+    public function testNoUUid()
+    {
+        $sesh = new Session();
+        $sesh->userId = 1;
+        $sesh->token = 'test';
+        $save = $sesh->save();
+
+        $this->assertTrue($save);
         $this->assertTrue(StringHelper::isUUID($sesh->uid));
-        $this->assertNotSame('00000000-0000-0000-0000-000000000000', $sesh->uid);
     }
 
     public function ensureSesh() : Session
