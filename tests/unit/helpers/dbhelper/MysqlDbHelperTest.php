@@ -122,7 +122,7 @@ class MysqlDbHelperTest extends Unit
             ['string', 254],
             ['text', 65534],
             ['mediumtext', 16777214],
-            ['string', 4294967294],
+            ['longtext', 4294967294],
             ['string', false],
             ['string', null],
         ];
