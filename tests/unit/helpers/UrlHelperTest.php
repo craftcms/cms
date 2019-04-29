@@ -255,6 +255,8 @@ class UrlHelperTest extends Unit
      */
     public function testUrlModifiers($result, $url, $modifier, $method)
     {
+        \Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls = true;
+
         $this->assertSame($result, UrlHelper::$method($url, $modifier));
     }
 
@@ -345,14 +347,8 @@ class UrlHelperTest extends Unit
      */
     public function urlWithTokenProvider()
     {
-        $requiredScheme = UrlHelper::getSchemeForTokenizedUrl();
-        if (strpos($requiredScheme, 'https') !== false) {
-            $https = true;
-            $baseUrl = self::ABSOLUTE_URL_HTTPS;
-        } else {
-            $https = false;
-            $baseUrl = self::ABSOLUTE_URL;
-        }
+        $https = true;
+        $baseUrl = self::ABSOLUTE_URL_HTTPS;
 
         return [
             [

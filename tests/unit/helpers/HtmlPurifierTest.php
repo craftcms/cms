@@ -53,7 +53,7 @@ class HtmlPurifierTest extends Unit
     {
         $config = \HTMLPurifier_Config::createDefault();
         HtmlPurifier::configure($config);
-        $this->assertSame('1', $config->get('HTML.DefinitionID'));
+        $this->assertNull($config->get('HTML.DefinitionID'));
         $this->assertSame('', $config->get('Attr.DefaultImageAlt'));
         $this->assertSame('', $config->get('Attr.DefaultInvalidImageAlt'));
 

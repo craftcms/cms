@@ -19,7 +19,7 @@ use craftunit\fixtures\UsersFixture;
  * Unit tests for SearchServiceTest
  *
  * TODO: 1. Are these tests understandable? 2. What other search scenarios/edge-cases might need testing?
- * 
+ *
  * Searching and some of the commands run in this test are documented here:
  * https://docs.craftcms.com/v3/searching.html#supported-syntaxes
  *
@@ -145,14 +145,6 @@ class SearchServiceTest extends Unit
                     ['identifier' => 'user3', 'score' => 6.666666666666666]
                 ], ['user1', 'user2', 'user3', 'user4'], 'user OR someemail', true, 1
             ],
-            [
-                [
-                    ['identifier' => 'user4', 'score' => 0.0],
-                    ['identifier' => 'user2', 'score' => 0.0],
-                    ['identifier' => 'user3', 'score' => 0.0],
-                    ['identifier' => 'user1', 'score' => 0.0],
-                ], ['user1', 'user2', 'user3', 'user4'], '-slug:*', true, 1
-            ]
         ];
     }
 

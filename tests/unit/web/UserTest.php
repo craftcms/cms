@@ -192,7 +192,14 @@ class UserTest extends TestCase
         // Ensure a specific value is set to when setting a session
         $this->ensureSetSessionIsOfValue(time() + $this->config->getGeneral()->elevatedSessionDuration);
 
-        // With a user and Craft::$app->getSecurity()->validatePassword() returning true it should return true and values should be set.
+        // With a user and Craft::$app->getSecurity()->validatePassword() returning true it should return null because the current user doesnt exist or doesnt have a password
+        $this->assertFalse($this->user->startElevatedSession($passwordHash));
+
+
+        $this->userElement->password = 'doesntmatter';
+        $this->setInaccessibleProperty(\Craft::$app->getUser(), '_identity', $this->userElement);
+
+        // With all the above and a current user with a password. Starting should work.
         $this->assertTrue($this->user->startElevatedSession($passwordHash));
     }
 
