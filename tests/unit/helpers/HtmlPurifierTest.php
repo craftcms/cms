@@ -49,28 +49,6 @@ class HtmlPurifierTest extends Unit
         ];
     }
 
-    /**
-     * TODO: Do we really want to test this as it depends on the $config option which makes it quite hard to change without breaking behaviour and slightly
-     * useless to test.....
-     * @dataProvider convertUtf8Data
-     *
-     * @param $result
-     * @param $input
-     */
-    public function testConvertToUtf8($result, $input, $config)
-    {
-        $converted = HtmlPurifier::convertToUtf8($input, $config);
-        $this->assertSame($result, $converted);
-    }
-    public function convertUtf8Data()
-    {
-        $config = \HTMLPurifier_Config::createDefault();
-
-        return [
-            ["\xF3\xBF\xBF\xBF", "\xF3\xBF\xBF\xBF", $config],
-        ];
-    }
-
     public function testConfigure()
     {
         $config = \HTMLPurifier_Config::createDefault();
