@@ -24,6 +24,12 @@ class FileHelperTest extends Unit
     public function _before()
     {
         FileHelper::clearDirectory(__DIR__ . '/sandbox/copyInto');
+
+        if (!is_dir(__DIR__.'/sandbox/isdirempty/yes')) {
+            FileHelper::createDirectory(__DIR__.'/sandbox/isdirempty/yes');
+        }
+
+        FileHelper::clearDirectory(__DIR__.'/sandbox/isdirempty/yes');
     }
 
     /**
@@ -233,7 +239,7 @@ class FileHelperTest extends Unit
      * @param $input
      * @param $options
      */
-    public function testFilenameSanitazion($result, $input, $options)
+    public function testFilenameSanitation($result, $input, $options)
     {
         $sanitized = FileHelper::sanitizeFilename($input, $options);
         $this->assertSame($result, $sanitized);
@@ -247,9 +253,7 @@ class FileHelperTest extends Unit
             ['im-a-file@.svg', 'im-a-file!@#$%^&*(.svg', []],
             ['i(c)m-a-file.svg', 'i£©m-a-file⚽🐧🎺.svg', ['asciiOnly' => true]],
             ['not||a||file', 'not a file', ['separator' => '||']],
-
-            // Set the seperator to an non-ascii char will results in it getting added and then stripped.
-            ['notafile', 'not a file', ['separator' => '🐧', 'asciiOnly' => true]],
+            ['not🐧a🐧file', 'not a file', ['separator' => '🐧', 'asciiOnly' => true]],
         ];
     }
 
