@@ -117,12 +117,14 @@ class ErrorHandlerTest extends TestCase
     {
         $this->assertSame($result, $this->invokeMethod($this->errorHandler, 'getTypeUrl', [$class, $method]));
     }
+
     public function getTypeUrlData() : array
     {
         return [
-            ['http://twig.sensiolabs.org/api/2.x/Twig_Template.html#method_render', '__TwigTemplate_', 'render'],
-            ['http://twig.sensiolabs.org/api/2.x/Twig_.html#method_render', 'Twig_', 'render'],
-            ['http://twig.sensiolabs.org/api/2.x/Twig_.html', 'Twig_', null],
+            ['http://twig.sensiolabs.org/api/2.x/Twig\Template.html#method_render', '__TwigTemplate_', 'render'],
+            ['http://twig.sensiolabs.org/api/2.x/Twig\.html#method_render', 'Twig\\', 'render'],
+            ['http://twig.sensiolabs.org/api/2.x/Twig\.html', 'Twig\\', null],
+            [null, 'Twig_', 'render'],
         ];
     }
 
