@@ -817,6 +817,17 @@ interface ElementInterface extends ComponentInterface
     public function afterSave(bool $isNew);
 
     /**
+     * Performs actions after an element is fully saved and propagated to other sites.
+     *
+     * ::: tip
+     * This will get called regardless of whether `$propagate` is `true` or `false` for [[\craft\services\Elements::saveElement()]].
+     * :::
+     *
+     * @param bool $isNew Whether the element is brand new
+     */
+    public function afterPropagate(bool $isNew);
+
+    /**
      * Performs actions before an element is deleted.
      *
      * @return bool Whether the element should be deleted

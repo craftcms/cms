@@ -343,6 +343,14 @@ interface FieldInterface extends SavableComponentInterface
     public function afterElementSave(ElementInterface $element, bool $isNew);
 
     /**
+     * Performs actions after the element has been fully saved and propagated to other sites.
+     *
+     * @param ElementInterface $element The element that was just saved and propagated
+     * @param bool $isNew Whether the element is brand new
+     */
+    public function afterElementPropagate(ElementInterface $element, bool $isNew);
+
+    /**
      * Performs actions before an element is deleted.
      *
      * @param ElementInterface $element The element that is about to be deleted

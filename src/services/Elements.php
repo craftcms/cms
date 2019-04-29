@@ -556,6 +556,9 @@ class Elements extends Component
                 Craft::$app->getContent()->saveContent($element);
             }
 
+            // It is now officially saved
+            $element->afterSave($isNewElement);
+
             // Update search index
             if (!$element->draftId && !$element->revisionId) {
                 Craft::$app->getSearch()->indexElementAttributes($element);
@@ -571,8 +574,10 @@ class Elements extends Component
                 }
             }
 
-            // It is now officially saved
-            $element->afterSave($isNewElement);
+            // It's now fully saved and propagated
+            if (!$element->propagating) {
+                $element->afterPropagate($isNewElement);
+            }
 
             $transaction->commit();
         } catch (\Throwable $e) {

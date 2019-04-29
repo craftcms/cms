@@ -190,6 +190,11 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_AFTER_SAVE = 'afterSave';
 
     /**
+     * @event ModelEvent The event that is triggered after the element is fully saved and propagated to other sites
+     */
+    const EVENT_AFTER_PROPAGATE = 'afterPropagate';
+
+    /**
      * @event ModelEvent The event that is triggered before the element is deleted
      * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting deleted.
      */
@@ -1921,6 +1926,24 @@ abstract class Element extends Component implements ElementInterface
         // Trigger an 'afterSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
             $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
+                'isNew' => $isNew,
+            ]));
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterPropagate(bool $isNew)
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            $field->afterElementPropagate($this, $isNew);
+        }
+
+        // Trigger an 'afterPropagate' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_PROPAGATE)) {
+            $this->trigger(self::EVENT_AFTER_PROPAGATE, new ModelEvent([
                 'isNew' => $isNew,
             ]));
         }

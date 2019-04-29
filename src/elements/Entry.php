@@ -1181,12 +1181,20 @@ EOD;
         }
 
         parent::afterSave($isNew);
+    }
 
+    /**
+     * @inheritdoc
+     */
+    public function afterPropagate(bool $isNew)
+    {
         // Save a new revision
         if ($this->_shouldSaveRevision()) {
             $creatorId = Craft::$app->getUser()->getId() ?? $this->authorId;
             Craft::$app->getRevisions()->createRevision($this, $creatorId, $this->revisionNotes);
         }
+
+        parent::afterPropagate($isNew);
     }
 
     /**
