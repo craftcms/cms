@@ -13,6 +13,7 @@ use craft\helpers\MigrationHelper;
 use craft\migrations\Install;
 use craft\models\Site;
 use craft\web\UploadedFile;
+use Dotenv\Dotenv;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception;
 
@@ -117,6 +118,53 @@ class TestSetup
         }
 
         return $migration->safeUp();
+    }
+
+    public static function configureCraft()
+    {
+        define('YII_ENV', 'test');
+
+        $vendorPath = realpath(CRAFT_VENDOR_PATH);
+        $craftPath = CRAFT_FOLDER_PATH;
+
+        $configPath = realpath($craftPath.'/config');
+        $contentMigrationsPath = realpath($craftPath.'/migrations');
+        $storagePath = realpath($craftPath.'/storage');
+        $templatesPath = realpath($craftPath.'/templates');
+        $translationsPath = realpath($craftPath.'/translations');
+
+        // Log errors to craft/storage/logs/phperrors.log
+        ini_set('log_errors', 1);
+        ini_set('error_log', $storagePath . '/logs/phperrors.log');
+
+        error_reporting(E_ALL);
+        ini_set('display_errors', 1);
+        defined('YII_DEBUG') || define('YII_DEBUG', true);
+        defined('YII_ENV') || define('YII_ENV', 'dev');
+        defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', '');
+
+        defined('CURLOPT_TIMEOUT_MS') || define('CURLOPT_TIMEOUT_MS', 155);
+        defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
+
+        $libPath = dirname(__DIR__, 2) . '/lib';
+
+        $srcPath  = dirname(__DIR__);
+
+        require $vendorPath . '/yiisoft/yii2/Yii.php';
+        require $srcPath.'/Craft.php';
+
+        if (file_exists(ENV_PATH.'/.env')) {
+            (new Dotenv(ENV_PATH))->load();
+        }
+
+        // Set aliases
+        \Craft::setAlias('@lib', $libPath);
+        \Craft::setAlias('@craft', $srcPath);
+        \Craft::setAlias('@config', $configPath);
+        \Craft::setAlias('@contentMigrations', $contentMigrationsPath);
+        \Craft::setAlias('@storage', $storagePath);
+        \Craft::setAlias('@templates', $templatesPath);
+        \Craft::setAlias('@translations', $translationsPath);
     }
 
     /**
