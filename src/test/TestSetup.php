@@ -9,9 +9,12 @@ namespace craft\test;
 use craft\db\Connection;
 use craft\db\Migration;
 use craft\db\MigrationManager;
+use craft\helpers\ArrayHelper;
 use craft\helpers\MigrationHelper;
 use craft\migrations\Install;
 use craft\models\Site;
+use craft\services\Config;
+use craft\web\Application;
 use craft\web\UploadedFile;
 use Dotenv\Dotenv;
 use yii\base\InvalidArgumentException;
@@ -82,7 +85,7 @@ class TestSetup
      * @return bool
      * @throws Exception
      */
-    public function clenseDb()
+    public function clenseDb() : bool
     {
         $tables = $this->connection->schema->getTableNames();
 
@@ -105,7 +108,7 @@ class TestSetup
      * @return false|null
      * @throws \Throwable
      */
-    public function validateAndApplyMigration(string $class, array $params)
+    public function validateAndApplyMigration(string $class, array $params) : bool
     {
         if (!class_exists($class)) {
             throw new InvalidArgumentException('Unable to ');
@@ -120,7 +123,68 @@ class TestSetup
         return $migration->safeUp();
     }
 
-    public static function configureCraft()
+    /**
+     * @return array
+     */
+    public static function createTestCraftObject() : array
+    {
+        $_SERVER['REMOTE_ADDR'] = '1.1.1.1';
+        $_SERVER['REMOTE_PORT'] = 654321;
+
+        $basePath = dirname(__DIR__, 2);
+
+        $srcPath = $basePath . '/src';
+        $vendorPath = CRAFT_VENDOR_PATH;
+
+        \Craft::setAlias('@craftunitsupport', $srcPath.'/test');
+        \Craft::setAlias('@craftunittemplates', $basePath.'/tests/_craft/templates');
+        \Craft::setAlias('@craftunitfixtures', $basePath.'/tests/fixtures');
+        \Craft::setAlias('@testsfolder', $basePath.'/tests');
+        \Craft::setAlias('@crafttestsfolder', $basePath.'/tests/_craft');
+
+        $customConfig = Craft::getTestSetupConfig();
+
+        // Load the config
+        $config = ArrayHelper::merge(
+            [
+                'components' => [
+                    'config' => [
+                        'class' => Config::class,
+                        'configDir' => CRAFT_FOLDER_PATH.'/config',
+                        'appDefaultsDir' => $srcPath . '/config/defaults',
+                    ],
+                ],
+            ],
+            require $srcPath . '/config/app.php',
+            require $srcPath . '/config/app.web.php'
+        );
+
+        if (is_array($customConfig)) {
+            // Merge in any custom variables and config
+            $config = ArrayHelper::merge($config, $customConfig);
+        }
+
+        $config['vendorPath'] = $vendorPath;
+
+        $config = ArrayHelper::merge($config, [
+            'components' => [
+                'sites' => [
+                    'currentSite' => 'default'
+                ]
+            ],
+        ]);
+
+        return ArrayHelper::merge($config, [
+            'class' => Application::class,
+            'id' => 'craft-test',
+            'basePath' => $srcPath
+        ]);
+    }
+
+    /**
+     * @return bool
+     */
+    public static function configureCraft() : bool
     {
         define('YII_ENV', 'test');
 
@@ -158,6 +222,7 @@ class TestSetup
         }
 
         // Set aliases
+        \Craft::setAlias('@vendor', $vendorPath);
         \Craft::setAlias('@lib', $libPath);
         \Craft::setAlias('@craft', $srcPath);
         \Craft::setAlias('@config', $configPath);
@@ -165,12 +230,15 @@ class TestSetup
         \Craft::setAlias('@storage', $storagePath);
         \Craft::setAlias('@templates', $templatesPath);
         \Craft::setAlias('@translations', $translationsPath);
+
+        return true;
     }
 
     /**
-     * @return void
+     * @return bool
+     * @throws Exception
      */
-    public function setupCraftDb()
+    public function setupCraftDb() : bool
     {
         if ($this->connection->schema->getTableNames() !== []) {
             throw new Exception('Not allowed to setup the DB if it hasnt been cleansed');
@@ -195,5 +263,4 @@ class TestSetup
 
         return $migration->safeUp();
     }
-
 }
