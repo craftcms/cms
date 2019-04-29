@@ -18,7 +18,8 @@ use craftunit\fixtures\UsersFixture;
 /**
  * Unit tests for SearchServiceTest
  *
- * TODO: Add tests for the smaller private methods.
+ * TODO: 1. Are these tests understandable? 2. What other search scenarios/edge-cases might need testing?
+ * 
  * Searching and some of the commands run in this test are documented here:
  * https://docs.craftcms.com/v3/searching.html#supported-syntaxes
  *
@@ -61,23 +62,23 @@ class SearchServiceTest extends Unit
 
     /**
      * Provide an array with input usernames
+     *
      * @return array
      */
     public function filterElementIdByQueryData()
     {
         return [
+            [['user1'], ['user1', 'user2', 'user3', 'user4'], 'user1@crafttest.com', true, 1, false],
+
             [['user4', 'user1', 'user2', 'user3'], ['user1', 'user2', 'user3', 'user4'], 'user', true, 1, false],
             [['user4', 'user1', 'user2', 'user3'], [], 'user', true, 1, false],
             [['user1', 'user2', 'user3'], ['user1', 'user2', 'user3'], 'user', true, 1, false],
             [['user4'], ['user1', 'user2', 'user3', 'user4'], 'user someemail', true, 1, false],
             [[], ['user1', 'user2', 'user3'], 'user someemail', true, 1, false ],
 
-            // Ironically you cant directly search via email address....
-            [[], [], 'user1@crafttest.com', true, 1, false],
-
             // This should work. If you want an empty slug you should try: -slug:*
-            [[], [], 'slug:', true, 1, false],
-            [[], [], 'slug:""', true, 1, false],
+            [[], ['user1', 'user2', 'user3', 'user4'], 'slug:', true, 1, false],
+            [[], ['user1', 'user2', 'user3', 'user4'], 'slug:""', true, 1, false],
 
             // User4 goes first as it has both user and someemail keywords
             [['user4', 'user1', 'user2', 'user3'], ['user1', 'user2', 'user3', 'user4'], 'user OR someemail', true, 1, false],
@@ -111,8 +112,7 @@ class SearchServiceTest extends Unit
     {
         return [
             [
-                [
-                    ['identifier' => 'user1', 'score' => 13.333333333333332]
+                [['identifier' => 'user1', 'score' => 13.333333333333332]
                 ], ['user1'], 'user', true, 1
             ],
             [
@@ -148,9 +148,9 @@ class SearchServiceTest extends Unit
             [
                 [
                     ['identifier' => 'user4', 'score' => 0.0],
-                    ['identifier' => 'user1', 'score' => 0.0],
                     ['identifier' => 'user2', 'score' => 0.0],
-                    ['identifier' => 'user3', 'score' => 0.0]
+                    ['identifier' => 'user3', 'score' => 0.0],
+                    ['identifier' => 'user1', 'score' => 0.0],
                 ], ['user1', 'user2', 'user3', 'user4'], '-slug:*', true, 1
             ]
         ];
