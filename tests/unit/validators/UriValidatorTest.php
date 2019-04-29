@@ -61,11 +61,14 @@ class UriValidatorTest extends Unit
             $this->assertFalse($validates);
         }
     }
+
     public function validateValueData()
     {
         return [
             [true, 'test'],
-            [true, ' '],
+            [false, ' '],
+            [false, ''],
+            [false, null],
             [false, 'integer', '/^\w+\((\d+)\)/'],
             [true, 'integer(9)', '/^\w+\((\d+)\)/'],
         ];
