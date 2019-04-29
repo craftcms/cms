@@ -18,6 +18,7 @@ use craftunit\fixtures\AssetsFixture;
 use craftunit\fixtures\VolumesFolderFixture;
 use craftunit\fixtures\VolumesFixture;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class AssetsHelper.
@@ -79,7 +80,7 @@ class AssetsHelperTest extends Unit
     public function testTempFilePath()
     {
         $tempPath = Assets::tempFilePath();
-        $this->assertNotFalse(strpos($tempPath, '\_craft\storage\runtime\temp'));
+        $this->assertNotFalse(strpos($tempPath, ''.DIRECTORY_SEPARATOR.'_craft'.DIRECTORY_SEPARATOR.'storage'.DIRECTORY_SEPARATOR.'runtime'.DIRECTORY_SEPARATOR.'temp'));
         $tempPath = Assets::tempFilePath('test');
         $this->assertNotFalse(strpos($tempPath, '.test'));
     }
@@ -144,8 +145,8 @@ class AssetsHelperTest extends Unit
     {
         return [
             ['Filename', 'filename'],
-            ['File Name Is With Chars', 'file.name_is-with chars'],
-            ['File Name Is With Chars!@#$%^&*()', 'file.name_is-with chars!@#$%^&*()'],
+            ['File name is with chars', 'file.name_is-with chars'],
+            ['File name is with chars', 'file.name_is-with chars!@#$%^&*()'],
         ];
     }
 
@@ -163,13 +164,13 @@ class AssetsHelperTest extends Unit
 
     public function fileKindLabelData()
     {
-        $returnArray = [];
-        foreach (Assets::getFileKinds() as $key => $fileKind) {
-            $returnArray[] = [$fileKind['label'], $key];
-        }
-
-        $returnArray[] = ['unknown', 'not a file'];
-        return $returnArray;
+        return [
+            ['Access', 'access'],
+            ['Audio', 'audio'],
+            ['Text', 'text'],
+            ['PHP', 'php'],
+            ['unknown', 'Raaa']
+        ];
     }
 
     /**
@@ -226,29 +227,7 @@ class AssetsHelperTest extends Unit
 
     public function testMaxUploadSize()
     {
-        $oldMaxFile = ini_get('upload_max_filesize');
-        $oldMaxPost = ini_get('post_max_size');
-        $memLimit = ini_get('memory_limit');
-
-        $this->setUploadIniValues();
-        $this->assertSame(16777216, Assets::getMaxUploadSize());
-
-        ini_set('memory_limit', '0M');
-        $this->assertSame(16777216, Assets::getMaxUploadSize());
-
-        $this->setUploadIniValues();
         \Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1;
         $this->assertSame(1, Assets::getMaxUploadSize());
-
-        ini_set('upload_max_filesize', $oldMaxFile);
-        ini_set('post_max_size', $oldMaxPost);
-        ini_set('memory_limit', $memLimit);
-    }
-
-    private function setUploadIniValues()
-    {
-        ini_set('upload_max_filesize', '500M');
-        ini_set('post_max_size', '500M');
-        ini_set('memory_limit', '16M');
     }
 }

@@ -206,7 +206,7 @@ class DbHelperTest extends Unit
             'smallint3-2' => ['smallint(3)', 100, 0],
             'smallint7' => ['integer(7)', 0, 1231224],
             'smallint9' => [ 'integer(9)', 0, 230221224],
-            'non-numeric' => ['integer(11)', null, null],
+            'non-numeric' => ['integer(10)', null, null],
             'decimals' => ['decimal(6,2)', 123, 1233, 2],
         ];
     }
@@ -298,13 +298,10 @@ class DbHelperTest extends Unit
         $jsonableClass->name = 'name';
         $serializable = new Serializable();
 
-        $excpectedDateTime = new \DateTime('2018-06-06 18:00:00');
-        $excpectedDateTime->setTimezone(new \DateTimeZone('UTC'));
-
         $dateTime = new \DateTime('2018-06-06 18:00:00');
 
         return [
-            [$excpectedDateTime->format('Y-m-d H:i:s'), $dateTime],
+            ['2018-06-06 18:00:00', $dateTime],
             ['{"name":"name"}', $jsonableClass],
             ['{"JsonArray":"SomeArray"}', $jsonableArray],
             ['Serialized data', $serializable],
@@ -479,7 +476,7 @@ class DbHelperTest extends Unit
         $dateTime = new \DateTime('2018-06-06 18:00:00');
 
         return [
-            [['{"date":"2018-06-06 18:00:00.000000","timezone_type":3,"timezone":"America/Los_Angeles"}'], [$dateTime]],
+            [['{"date":"2018-06-06 18:00:00.000000","timezone_type":3,"timezone":"UTC"}'], [$dateTime]],
             [['{"name":"name"}'], [$jsonableClass]],
             [['{"JsonArray":"SomeArray"}'], [$jsonableArray]],
             [['[]'], [$serializable]],
