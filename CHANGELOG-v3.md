@@ -1,6 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.1.25 - 2019-04-30
+## Unreleased
+
+### Fixed
+- Fixed an error that could occur when saving a Single section if one of its sites had been disabled.
+
+## 3.1.25 - 2019-04-40
 
 ### Added
 - Added the `|ascii` Twig filter. ([#4193](https://github.com/craftcms/cms/issues/4193))
