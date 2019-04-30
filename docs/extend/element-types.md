@@ -110,6 +110,10 @@ public function afterSave(bool $isNew)
 }
 ```
 
+::: tip
+`afterSave()` gets called by <api:craft\services\Elements::saveElement()>, after the main element rows in the `elements`, `elements_sites`, and `content` tables have been saved, and the element has been assigned an `id` and `uid` (if new).
+:::
+
 ### Element Query Class
 
 All element types need a corresponding element query class. Element query classes are an extension of [query builders](https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder), tuned for fetching elements.
@@ -328,7 +332,7 @@ $product->fieldLayoutId = $productType->fieldLayoutId;
 
 If the `$fieldLayoutId`  property is set, <api:craft\services\Elements::saveElement()> will store it in the `elements.fieldLayoutId` column in the database, and your elements will be re-populated with the values when they are fetched down the road.
 
-Alternatively, you can override the `getFieldLayout()` method, and fetch/return the field layout yourself. This might be preferrable if your element type only has a single field layout (like user accounts).
+Alternatively, you can override the `getFieldLayout()` method, and fetch/return the field layout yourself. This might be preferable if your element type only has a single field layout (like user accounts).
 
 ```php
 public function getFieldLayout()
@@ -362,6 +366,10 @@ public function getSupportedSites(): array
 ```
 
 The values in the array returned by `getSupportedSites()` can either be integers (site IDs) or an array with a `siteId` key and optionally an `enabledbyDefault` key (boolean) indicating whether the element should be enabled by default for that site.
+
+::: tip
+Elements that support multiple sites will have their `afterSave()` method called multiple times on save – once for each site that the element supports. You can tell whether it’s being called for the originally-submitted site versus a propagated site by checking `$this->propagating`.
+:::
 
 ## Statuses
 
@@ -451,7 +459,7 @@ protected static function defineActions(string $source = null): array
 
 All element types are [soft-deletable](soft-deletes.md) out of the box, however it’s up to each element type to decide whether they should be restorable.
 
-To make an element restorable, just add the <api:craft\elements\actions\Restore> action to the array returned by your static `defineActions()` method. Craft will automatically hide it during normal index views, and show it when someone selects the “Trashed” status option. 
+To make an element restorable, just add the <api:craft\elements\actions\Restore> action to the array returned by your static `defineActions()` method. Craft will automatically hide it during normal index views, and show it when someone selects the “Trashed” status option.
 
 ### Sort Options
 
@@ -657,6 +665,24 @@ The Edit Category page offers a relatively straightforward example of how it cou
   - [actionViewSharedCategory()](api:craft\controllers\CategoriesController::actionViewSharedCategory()) – renders a category’s front-end page for a Share Category token
 
 - Edit Category page template: [categories/_edit.html](https://github.com/craftcms/cms/blob/develop/src/templates/categories/_edit.html)
+
+Here’s a simple example of the code needed to save an element programatically, which could live within an `actionSave()` controller action:
+
+```php
+// Create a new product element
+$product = new Product();
+
+// Set the main properties from POST data
+$product->price = Craft::$app->request->getBodyParam('price');
+$product->currency = Craft::$app->request->getBodyParam('currency');
+$product->enabled = (bool)Craft::$app->request->getBodyParam('enabled');
+
+// Set custom field values from POST data in a `fields` namespace
+$entry->setFieldValuesFromRequest('fields');
+
+// Save the product
+$success = Craft::$app->elements->saveElement($product);
+```
 
 Once you’ve set up an edit page for your element type, you can add a [getCpEditUrl()](api:craft\base\ElementInterface::getCpEditUrl()) method to your element class, which will communicate your elements’ edit page URLs within the Control Panel.
 
