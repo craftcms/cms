@@ -110,31 +110,9 @@ public function afterSave(bool $isNew)
 }
 ```
 
-These methods will be called automatically when calling <api:craft\services\Elements::saveElement()> from a Service or Controller.  Here is an example of a method that would create our Element and save it within our ProductService:
-
-```php
-public static function saveNewProduct($model) {
-  $product = new JobElement([
-    'price' => $model->price,
-    'currency' => $model->currency
-  ]);
-
-  $db = \Craft::$app->getDb();
-  $transaction = $db->beginTransaction();
-  try {
-    $product->setFieldValuesFromRequest('fields');
-    Craft::$app->getElements()->saveElement($product);
-
-    $transaction->commit();
-  } catch (\Throwable $e) {
-    $transaction->rollBack();
-
-    throw $e;
-  }
-}
-```
-
-`afterSave()` and `beforeSave()` should never be called manually -- instead, rely on <api:craft\services\Elements::saveElement()> to take care of these calls for you. Simply add to `afterSave()` or `beforeSave()` if you need to additional logic when committing changes.
+::: tip
+`afterSave()` gets called by <api:craft\services\Elements::saveElement()>, after the main element rows in the `elements`, `elements_sites`, and `content` tables have been saved, and the element has been assigned an `id` and `uid` (if new).
+:::
 
 ### Element Query Class
 
@@ -388,6 +366,10 @@ public function getSupportedSites(): array
 ```
 
 The values in the array returned by `getSupportedSites()` can either be integers (site IDs) or an array with a `siteId` key and optionally an `enabledbyDefault` key (boolean) indicating whether the element should be enabled by default for that site.
+
+::: tip
+Elements that support multiple sites will have their `afterSave()` method called multiple times on save – once for each site that the element supports. You can tell whether it’s being called for the originally-submitted site versus a propagated site by checking `$this->propagating`.
+:::
 
 ## Statuses
 
@@ -683,6 +665,24 @@ The Edit Category page offers a relatively straightforward example of how it cou
   - [actionViewSharedCategory()](api:craft\controllers\CategoriesController::actionViewSharedCategory()) – renders a category’s front-end page for a Share Category token
 
 - Edit Category page template: [categories/_edit.html](https://github.com/craftcms/cms/blob/develop/src/templates/categories/_edit.html)
+
+Here’s a simple example of the code needed to save an element programatically, which could live within an `actionSave()` controller action:
+
+```php
+// Create a new product element
+$product = new Product();
+
+// Set the main properties from POST data
+$product->price = Craft::$app->request->getBodyParam('price');
+$product->currency = Craft::$app->request->getBodyParam('currency');
+$product->enabled = (bool)Craft::$app->request->getBodyParam('enabled');
+
+// Set custom field values from POST data in a `fields` namespace
+$entry->setFieldValuesFromRequest('fields');
+
+// Save the product
+$success = Craft::$app->elements->saveElement($product);
+```
 
 Once you’ve set up an edit page for your element type, you can add a [getCpEditUrl()](api:craft\base\ElementInterface::getCpEditUrl()) method to your element class, which will communicate your elements’ edit page URLs within the Control Panel.
 
