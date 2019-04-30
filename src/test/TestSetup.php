@@ -10,6 +10,7 @@ use craft\db\Connection;
 use craft\db\Migration;
 use craft\db\MigrationManager;
 use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\MigrationHelper;
 use craft\migrations\Install;
 use craft\models\Site;
@@ -17,14 +18,13 @@ use craft\services\Config;
 use craft\web\Application;
 use craft\web\UploadedFile;
 use Dotenv\Dotenv;
+use Symfony\Component\Yaml\Yaml;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception;
 
 /**
  * Class TestSetup.
  *
- *  TODO:This class will be rewritten to support plugins. The way it currently set's up the install migration
- *  will be altered.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0
@@ -53,7 +53,7 @@ class TestSetup
      */
     public static function warmCraft()
     {
-        $app = require dirname(__DIR__, 2).'/tests/_craft/config/test.php';
+        $app = self::createTestCraftObjectConfig();
         $app['isInstalled'] = false;
 
         return \Craft::createObject($app);
@@ -126,7 +126,7 @@ class TestSetup
     /**
      * @return array
      */
-    public static function createTestCraftObject() : array
+    public static function createTestCraftObjectConfig() : array
     {
         $_SERVER['REMOTE_ADDR'] = '1.1.1.1';
         $_SERVER['REMOTE_PORT'] = 654321;
@@ -232,6 +232,26 @@ class TestSetup
         \Craft::setAlias('@translations', $translationsPath);
 
         return true;
+    }
+
+    /**
+     * @param string $projectConfigFile
+     * @throws \yii\base\ErrorException
+     */
+    public function setupProjectConfig(string $projectConfigFile)
+    {
+        if (!is_file($projectConfigFile)) {
+            throw new InvalidArgumentException('Project config is not a file');
+        }
+
+        $projectConfigContents = file_get_contents($projectConfigFile);
+        $testSuiteProjectConfigPath = CRAFT_CONFIG_PATH.'/project.yaml';
+
+        copy($projectConfigFile, $testSuiteProjectConfigPath);
+
+        $array = Yaml::parse($projectConfigContents);
+
+        \Craft::$app->getProjectConfig()->applyConfigChanges($array);
     }
 
     /**
