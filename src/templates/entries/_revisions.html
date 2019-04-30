@@ -46,11 +46,11 @@
     {% endif %}
 
     <ul class="padded">
-        {% set currentRevisionEditTime = currentRevision.dateCreated ?? entry.dateUpdated %}
+        {% set currentRevisionEditTime = entry.currentRevision.dateCreated ?? entry.dateUpdated %}
         <li><a{% if not entry.draftId and not entry.revisionId %} class="sel"{% endif %} href="{{ entry.getCpEditUrl() }}">{{ "Current"|t('app') }}
                 <span class="light">
                     {{ currentRevisionEditTime|timestamp('short') }}
-                    {%- if currentRevision %}, {{ currentRevision.creator }}{% endif %}
+                    {%- if entry.currentRevision %}, {{ entry.currentRevision.creator }}{% endif %}
                 </span>
             </a></li>
     </ul>

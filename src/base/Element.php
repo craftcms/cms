@@ -786,6 +786,12 @@ abstract class Element extends Component implements ElementInterface
      */
     private $_eagerLoadedElements;
 
+    /**
+     * @var ElementInterface|false
+     * @see getCurrentRevision()
+     */
+    private $_currentRevision;
+
     // Public Methods
     // =========================================================================
 
@@ -1817,6 +1823,27 @@ abstract class Element extends Component implements ElementInterface
     public function setRevisionNotes(string $notes = null)
     {
         $this->revisionNotes = $notes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCurrentRevision()
+    {
+        if (!$this->id) {
+            return null;
+        }
+
+        if ($this->_currentRevision === null) {
+            $this->_currentRevision = static::find()
+                ->revisionOf($this->getSourceId())
+                ->dateCreated($this->dateUpdated)
+                ->anyStatus()
+                ->orderBy(['num' => SORT_DESC])
+                ->one() ?: false;
+        }
+
+        return $this->_currentRevision ?: null;
     }
 
     // Indexes, etc.

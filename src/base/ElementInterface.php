@@ -750,6 +750,13 @@ interface ElementInterface extends ComponentInterface
      */
     public function setRevisionNotes(string $notes = null);
 
+    /**
+     * Returns the element’s current revision, if one exists.
+     *
+     * @return ElementInterface|null
+     */
+    public function getCurrentRevision();
+
     // Indexes, etc.
     // -------------------------------------------------------------------------
 

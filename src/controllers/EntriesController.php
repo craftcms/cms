@@ -942,16 +942,6 @@ class EntriesController extends BaseEntriesController
             }
         }
 
-        // Get info about the current version
-        // ---------------------------------------------------------------------
-
-        $variables['currentRevision'] = Entry::find()
-            ->revisionOf($variables['entry']->getSourceId())
-            ->dateCreated($variables['entry']->dateUpdated)
-            ->anyStatus()
-            ->orderBy(['num' => SORT_DESC])
-            ->one();
-
         // Get the entry type
         // ---------------------------------------------------------------------
 
