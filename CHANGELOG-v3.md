@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.1.25 - 2019-04-40
+## 3.1.25 - 2019-04-30
 
 ### Added
 - Added the `|ascii` Twig filter. ([#4193](https://github.com/craftcms/cms/issues/4193))
