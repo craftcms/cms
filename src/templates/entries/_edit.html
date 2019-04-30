@@ -8,8 +8,7 @@
 
 {% set canPublish = currentUser.can('publishEntries'~permissionSuffix) %}
 {% set canSave = (
-    (entry.id or currentUser.can('createEntries'~permissionSuffix)) and
-    (not entry.id or not entry.enabled or canPublish) and
+    (not entry.enabled or canPublish) and
     (isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 ) %}
 
@@ -34,9 +33,7 @@
 {% endblock %}
 
 {% block contextMenu %}
-    {% if entry.id or showSiteLabel %}
-        {% include "entries/_revisions" %}
-    {% endif %}
+    {% include "entries/_revisions" %}
 {% endblock %}
 
 {% block actionButton %}
@@ -139,7 +136,7 @@
 
                     <li><a class="formsubmit" data-action="entry-revisions/save-draft" data-redirect="{{ (baseCpEditUrl~'/drafts/{draftId}#')|hash }}">{{ 'Save as a draft'|t('app') }}</a></li>
 
-                    {% if not isSingle and entry.id %}
+                    {% if not isSingle %}
                         <li><a class="formsubmit" data-param="duplicate" data-value="1" data-redirect="{{ (continueEditingUrl~'#')|hash }}">{{ "Save as a new entry"|t('app') }}</a></li>
                     {% endif %}
                 </ul>
@@ -167,7 +164,7 @@
 {% block content %}
     {% if not isRevision %}
         <input type="hidden" name="sectionId" value="{{ section.id }}">
-        {% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
+        <input type="hidden" name="entryId" value="{{ entry.id }}">
         {% if craft.app.getIsMultiSite() %}<input type="hidden" name="siteId" value="{{ entry.siteId }}">{% endif %}
     {% else %}
         <input type="hidden" name="revisionId" value="{{ entry.revisionId }}">
@@ -205,7 +202,7 @@
                     name: 'slug',
                     autocorrect: false,
                     autocapitalize: false,
-                    value: entry.slug,
+                    value: '__temp_' in entry.slug ? '' : entry.slug,
                     placeholder: "Enter slug"|t('app'),
                     errors: (not isRevision ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
                     disabled: isRevision
@@ -260,7 +257,7 @@
 
             {% if canPublish %}
                 {{ forms.lightswitchField({
-                    label: showSiteStatus ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
+                    label: isMultiSiteEntry ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
                     id: 'enabled',
                     name: 'enabled',
                     on: entry.enabled,
@@ -269,7 +266,7 @@
                 }) }}
             {% endif %}
 
-            {% if showSiteStatus %}
+            {% if isMultiSiteEntry %}
                 {{ forms.lightswitchField({
                     fieldClass: not entry.enabled ? 'hidden',
                     label: "Enabled for {site}"|t('app', { site: entry.site.name|t('site') }),
@@ -281,31 +278,29 @@
             {% endif %}
         </div><!-- #settings -->
 
-        {% if entry.id %}
-            <div class="meta read-only">
-                <div class="data">
-                    <h5 class="heading">{{ "Created at"|t('app') }}</h5>
-                    <div class="value">{{ entry.dateCreated|datetime('short') }}</div>
-                </div>
-                <div class="data">
-                    <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
-                    <div class="value">{{ entry.dateUpdated|datetime('short') }}</div>
-                </div>
-                {% if isRevision %}
-                    {% set revisionNotes = entry.revisionNotes %}
-                {% elseif not isDraft and currentRevision %}
-                    {% set revisionNotes = currentRevision.revisionNotes %}
-                {% else %}
-                    {% set revisionNotes = null %}
-                {% endif %}
-                {% if revisionNotes %}
-                    <div class="data">
-                        <h5 class="heading">{{ "Notes"|t('app') }}</h5>
-                        <div class="value">{{ revisionNotes }}</div>
-                    </div>
-                {% endif %}
+        <div class="meta read-only">
+            <div class="data">
+                <h5 class="heading">{{ "Created at"|t('app') }}</h5>
+                <div class="value">{{ entry.dateCreated|datetime('short') }}</div>
             </div>
-        {% endif %}
+            <div class="data">
+                <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
+                <div class="value">{{ entry.dateUpdated|datetime('short') }}</div>
+            </div>
+            {% if isRevision %}
+                {% set revisionNotes = entry.revisionNotes %}
+            {% elseif not isDraft and currentRevision %}
+                {% set revisionNotes = currentRevision.revisionNotes %}
+            {% else %}
+                {% set revisionNotes = null %}
+            {% endif %}
+            {% if revisionNotes %}
+                <div class="data">
+                    <h5 class="heading">{{ "Notes"|t('app') }}</h5>
+                    <div class="value">{{ revisionNotes }}</div>
+                </div>
+            {% endif %}
+        </div>
 
     {% endif %}
 
@@ -320,7 +315,7 @@
 {% endblock %}
 
 
-{% if not entry.slug %}
+{% if not entry.slug or '__temp_' in entry.slug %}
     {% js %}
         window.slugGenerator = new Craft.SlugGenerator('#title', '#slug', {
             charMap: {{ craft.cp.getAsciiCharMap(entry.site.language)|json_encode|raw }}

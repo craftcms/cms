@@ -849,6 +849,18 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   #main-container {
     max-width: none;
 
+    #crumbs {
+      display: flex !important;
+
+      body.no-header & {
+        padding-bottom: 16px;
+      }
+
+      #nav-toggle {
+        display: block;
+      }
+    }
+
     #main {
       #header {
         width: 100vw;
@@ -877,14 +889,6 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
       #main-content {
         width: 100vw;
       }
-    }
-  }
-
-  #crumbs {
-    display: flex !important;
-
-    #nav-toggle {
-      display: block;
     }
   }
 }

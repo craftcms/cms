@@ -1,10 +1,10 @@
 {% import "_includes/forms" as forms %}
 
-{% set drafts = entry.id ? craft.entries()
+{% set drafts = craft.entries()
     .draftOf(entry.sourceId)
     .siteId(entry.siteId)
     .anyStatus()
-    .all() : [] %}
+    .all() %}
 {% set baseUrl = "entries/#{sectionHandle}/#{craft.app.request.getSegment(3)}/" %}
 {% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
 {% set params = parentIdParam ? { parentId: parentIdParam } : null %}
@@ -13,7 +13,7 @@
 <div id="revision-btn" class="btn menubtn"{% if showSiteLabel %} data-icon="world"{% endif %}>{{ revisionLabel }}</div>
 
 <div class="menu">
-    {% if showSites %}
+    {% if isMultiSiteEntry %}
         {% set siteGroups = craft.app.sites.getAllGroups() %}
         {% for group in siteGroups %}
             {% set groupSiteIds = group.getSiteIds()|intersect(siteIds) %}
@@ -41,53 +41,51 @@
         {% endfor %}
     {% endif %}
 
-    {% if showSites and entry.id %}
+    {% if isMultiSiteEntry %}
         <hr>
     {% endif %}
 
-    {% if entry.id %}
-        <ul class="padded">
-            {% set currentRevisionEditTime = currentRevision.dateCreated ?? entry.dateUpdated %}
-            <li><a{% if not entry.draftId and not entry.revisionId %} class="sel"{% endif %} href="{{ entry.getCpEditUrl() }}">{{ "Current"|t('app') }}
+    <ul class="padded">
+        {% set currentRevisionEditTime = currentRevision.dateCreated ?? entry.dateUpdated %}
+        <li><a{% if not entry.draftId and not entry.revisionId %} class="sel"{% endif %} href="{{ entry.getCpEditUrl() }}">{{ "Current"|t('app') }}
                 <span class="light">
                     {{ currentRevisionEditTime|timestamp('short') }}
                     {%- if currentRevision %}, {{ currentRevision.creator }}{% endif %}
                 </span>
             </a></li>
-        </ul>
+    </ul>
 
-        {% if drafts %}
-            <h6>{{ "Drafts"|t('app') }}</h6>
-            <ul class="padded">
-                {% for draft in drafts %}
-                    <li><a{% if draft.draftId == entry.draftId %} class="sel"{% endif %} href="{{ url(baseUrl~'drafts/'~draft.draftId) }}">
+    {% if drafts %}
+        <h6>{{ "Drafts"|t('app') }}</h6>
+        <ul class="padded">
+            {% for draft in drafts %}
+                <li><a{% if draft.draftId == entry.draftId %} class="sel"{% endif %} href="{{ url(baseUrl~'drafts/'~draft.draftId) }}">
                         {{ draft.draftName }}
                         <span class="light">{{ "by {creator}"|t('app', { creator: draft.creator }) }}</span>
                     </a></li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+            {% endfor %}
+        </ul>
+    {% endif %}
 
-        {% if section.enableVersioning %}
-            {% set revisions = craft.entries()
-                .revisionOf(entry.sourceId)
-                .siteId(entry.siteId)
-                .anyStatus()
-                .offset(1)
-                .limit(10)
-                .orderBy('num desc')
-                .all() %}
-            {% if revisions %}
-                <h6>{{ "Recent Revisions"|t('app') }}</h6>
-                <ul class="padded">
-                    {% for revision in revisions %}
-                        <li><a{% if revision.revisionId == entry.revisionId %} class="sel"{% endif %} href="{{ url(baseUrl~'revisions/'~revision.revisionId) }}">
+    {% if section.enableVersioning %}
+        {% set revisions = craft.entries()
+            .revisionOf(entry.sourceId)
+            .siteId(entry.siteId)
+            .anyStatus()
+            .offset(1)
+            .limit(10)
+            .orderBy('num desc')
+            .all() %}
+        {% if revisions %}
+            <h6>{{ "Recent Revisions"|t('app') }}</h6>
+            <ul class="padded">
+                {% for revision in revisions %}
+                    <li><a{% if revision.revisionId == entry.revisionId %} class="sel"{% endif %} href="{{ url(baseUrl~'revisions/'~revision.revisionId) }}">
                             {{ "Revision {num}"|t('app', { num: revision.revisionNum }) }}
                             <span class="light">{{ revision.dateCreated|timestamp('short') }}, {{ revision.getCreator() }}</span>
                         </a></li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+                {% endfor %}
+            </ul>
         {% endif %}
     {% endif %}
 </div>

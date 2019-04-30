@@ -4577,6 +4577,71 @@ $titlebarBorderRadius: $paneBorderRadius - 1;
   @include margin-left(12px);
 }
 
+/* site pickers */
+body.sitepicker {
+  #main-container {
+    #main {
+      #main-content {
+        padding: 30px;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+    }
+  }
+}
+
+.sitepicker-group {
+  li {
+    &:not(:first-child) {
+      a {
+        margin-top: -1px;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+
+        &:not(:hover) {
+          border-top-color: transparent;
+        }
+      }
+    }
+
+    &:not(:last-child) {
+      a {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+    }
+
+    a {
+      display: block;
+      position: relative;
+      text-align: left;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid $hairlineColorAlpha;
+      border-radius: $btnBorderRadius;
+      @include padding(9px, 42px, 9px, 15px);
+      font-size: 16px;
+      line-height: 1.4;
+
+      &:after {
+        font-size: 14px;
+        position: absolute;
+        top: calc(50% - 7px);
+        @include right(12px);
+        margin: 0;
+        padding: 0;
+      }
+
+      &:hover {
+        border-color: $linkColor;
+        text-decoration: none;
+        z-index: 1;
+      }
+    }
+  }
+}
+
 /* ----------------------------------------
 /* IE hacks
 /* ----------------------------------------*/
