@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `|ascii` Twig filter. ([#4193](https://github.com/craftcms/cms/issues/4193))
+
 ### Changed
 - Craft now registers its project config event handlers before loading plugins. ([#3943](https://github.com/craftcms/cms/issues/3943))
 - The Control Panel now uses jQuery 3.4.0. ([#4183](https://github.com/craftcms/cms/issues/4183))
