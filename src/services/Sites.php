@@ -1028,12 +1028,9 @@ class Sites extends Component
                             ->execute();
 
                         $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
-                        $tablePrefixLength = strlen(Craft::$app->getDb()->tablePrefix);
 
                         foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
                             if (strpos($tableName, $matrixTablePrefix) === 0) {
-                                $tableName = substr($tableName, $tablePrefixLength);
-
                                 Craft::$app->getDb()->createCommand()
                                     ->delete(
                                         $tableName,
