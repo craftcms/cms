@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use yii\web\HttpException;
+use yii\web\NotFoundHttpException;
 
 /**
  * @inheritdoc
@@ -100,11 +101,22 @@ class Response extends \yii\web\Response
      * @param string|null $attachmentName
      * @param array $options
      * @return static self reference
+     * @throws NotFoundHttpException
      */
     public function sendFile($filePath, $attachmentName = null, $options = [])
     {
         $this->_clearOutputBuffer();
-        parent::sendFile($filePath, $attachmentName, $options);
+        try {
+            parent::sendFile($filePath, $attachmentName, $options);
+        } catch (\yii\base\ErrorException $e) {
+            // ErrorException is a Yii2 wrapper around \ErrorException, so we need
+            // to figure out whether we should handle this as a Not Found case.
+            if (preg_match('/failed to open stream/', $e->getMessage())) {
+                $fileName = basename($filePath);
+                throw new NotFoundHttpException("{$fileName} not found");
+            }
+            throw $e;
+        }
 
         return $this;
     }
