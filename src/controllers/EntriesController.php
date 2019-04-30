@@ -306,7 +306,7 @@ class EntriesController extends BaseEntriesController
 
         $variables['docTitle'] = $variables['title'] = trim($entry->title) ?: Craft::t('app', 'Edit Entry');
 
-        if (get_class($entry) !== Entry::class) {
+        if ($entry->draftId || $entry->revisionId) {
             $variables['docTitle'] .= ' (' . $variables['revisionLabel'] . ')';
         }
 
@@ -415,7 +415,8 @@ class EntriesController extends BaseEntriesController
 
         // Can the user delete the entry?
         $variables['canDeleteEntry'] = (
-            get_class($entry) === Entry::class &&
+            !$entry->draftId &&
+            !$entry->revisionId &&
             (
                 ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries' . $variables['permissionSuffix'])) ||
                 ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
