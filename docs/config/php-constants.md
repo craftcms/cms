@@ -66,7 +66,9 @@ define('CRAFT_SITE', 'de');
 
 The path to the [storage/](../directory-structure.md#storage) folder. (It is assumed to live within the base directory by default.)
 
-When changing the storage path, Craft checks to see if the target directory exists. If it does not, CRAFT_STORAGE_PATH will be ignored.
+::: tip
+Make sure you set this to a valid folder path, otherwise it will be ignored.
+:::
 
 ### `CRAFT_TEMPLATES_PATH`
 
