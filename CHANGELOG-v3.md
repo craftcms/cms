@@ -13,6 +13,7 @@
 ### Fixed
 - Fixed an error where rebuilding the project config would not typecast the `propagateEntries` and `enableVersioning` section settings correctly. ([#3695](https://github.com/craftcms/cms/issues/3695))
 - Fixed a bug where the Edit Draft HUD would include the current site name in the default Draft Name value for multi-site entries. ([#4171](https://github.com/craftcms/cms/issues/4171))
+- Fixed a bug where resource requests could send a 500 response if the resource didn’t exist. ([#4197](https://github.com/craftcms/cms/pull/4197))
 
 ## 3.1.24 - 2019-04-23
 
