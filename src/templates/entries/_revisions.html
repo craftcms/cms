@@ -83,7 +83,7 @@
 {% if className(entry) == 'craft\\models\\EntryDraft' %}
     <a id="editdraft-btn" class="btn edit icon" title="{{ 'Edit Draft Settings'|t('app') }}"></a>
     {% js %}
-        new Craft.EntryDraftEditor({{ entry.draftId }}, '{{ revisionLabel|e("js") }}', '{{ entry.revisionNotes|e("js") }}');
+        new Craft.EntryDraftEditor({{ entry.draftId }}, '{{ entry.name|e("js") }}', '{{ entry.revisionNotes|e("js") }}');
     {% endjs %}
     {% do view.registerTranslations('app', [
         "Draft Name",

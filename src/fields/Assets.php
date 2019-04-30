@@ -402,7 +402,7 @@ class Assets extends BaseRelationField
                     $assetIds[] = $asset->id;
                 }
 
-                // Add the with newly uploaded IDs to the mix.
+                // Add the newly uploaded IDs to the mix.
                 if (\is_array($query->id)) {
                     $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
                 } else {

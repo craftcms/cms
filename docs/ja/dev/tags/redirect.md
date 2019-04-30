@@ -26,3 +26,13 @@
 {% redirect "pricing" 301 %}
 ```
 
+### フラッシュメッセージ
+
+`with notice`、および / または、`with error` パラメータを使用して、次のリクエスト時にユーザーへ表示するフラッシュメッセージをオプションでセットできます。
+
+```twig
+{% if not currentUser.isInGroup('members') %}
+    {% redirect "pricing" 301 with notice "You have to be a member to access that!" %}
+{% endif %}
+```
+

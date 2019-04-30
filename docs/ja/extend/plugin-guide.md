@@ -56,7 +56,7 @@
     "email": "email@developer-website.tld",
     "issues": "https://github.com/developer/repo/issues?state=open",
     "source": "https://github.com/developer/repo",
-    "docs": "https://github.com/developer/repo"
+    "docs": "https://github.com/developer/repo/blob/master/README.md"
   },
   "require": {
     "craftcms/cms": "^3.1.0"
@@ -68,7 +68,8 @@
   },
   "extra": {
     "handle": "plugin-handle",
-    "name": "Plugin Name"
+    "name": "Plugin Name",
+    "documentationUrl": "https://github.com/developer/repo/blob/master/README.md"
   }
 }
 ```
@@ -80,9 +81,11 @@
 - `https://developer-website.tld` をコントロールパネルの開発者名にリンクするウェブサイトの URL にします。
 - `email@developer-website.tld` をサポートのメールアドレスにします。
 - `developer/repo` をプラグインが稼働している実際の GitHub アカウントとリポジトリ名にします。
+- `master` を GitHub リポジトリの実際のプライマリブランチ名にします。
 - `namespace\\prefix\\` を名前空間接頭辞にします。（これは JSON であるため、二重バックスラッシュを使用し、最後が `\\` でなければならない点に注意してください。）
 - `plugin-handle` をプラグインハンドルにします。
 - `Plugin Name` をプラグイン名にします。
+- [Craft License](https://craftcms.github.io/license/) を使用する計画の場合、`MIT` を `proprietary` にします（「プラグインストアでの配布」ページの[ライセンスの選択](plugin-store.md#choose-a-license)を参照してください）。
 
 [MIT](https://opensource.org/licenses/MIT) よりむしろ [Craft license](https://craftcms.github.io/license/) でプラグインをリリースしたい場合、`license` 値を `"proprietary"` に変更してください。
 
@@ -105,7 +108,7 @@
 - `components` – プラグイン上に存在するべき [component configs] を定義するオブジェクト。
 
 ::: tip
-Composer が厳密に要求しているわけではありませんが、プラグインを開発する際にいくつかのことが簡単に行えるよう、`composer.json` へ明示的に `version` を設定することをお勧めします。そして、アップデートし続けることを忘れないでください！
+Composer が厳密に要求しているわけではありませんが、プラグインを開発する際にいくつかのことが簡単に行えるよう `composer.json` へ明示的に`version` を設定することをお勧めします。そして、アップデートし続けることを忘れないでください！
 :::
 
 ::: warning

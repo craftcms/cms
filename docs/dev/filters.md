@@ -2,6 +2,20 @@
 
 In addition to the template filters that [Twig comes with](https://twig.symfony.com/doc/filters/index.html), Craft provides a few of its own.
 
+## `ascii`
+
+Converts a string to ASCII characters.
+
+```twig
+{{ 'über'|ascii }} → uber
+```
+
+By default, the current site’s language will be used when choosing ASCII character mappings. You can override that by passing in a different locale ID.
+
+```twig
+{{ 'über'|ascii('de') }} → ueber
+```
+
 ## `atom`
 
 Converts a date to an ISO-8601 timestamp (e.g. `2019-01-29T10:00:00-08:00`), which should be used for Atom feeds, among other things.

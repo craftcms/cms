@@ -6,6 +6,7 @@
 - [css](tags/css.md)
 - [exit](tags/exit.md)
 - [header](tags/header.md)
+- [hook](tags/hook.md)
 - [js](tags/js.md)
 - [nav](tags/nav.md)
 - [paginate](tags/paginate.md)

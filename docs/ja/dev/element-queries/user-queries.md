@@ -123,7 +123,7 @@ $elements = ElementClass::find()
 
 直接ユーザーアカウントにセットされているかユーザーグループの1つを通してセットされている、特定のユーザー権限を持つユーザーだけに、クエリの結果を絞り込みます。
 
-Craft によって定義された利用可能なユーザー権限のリストは、[ユーザー](../../users.html)を参照してください。
+Craft によって定義された利用可能なユーザー権限のリストは、[ユーザー](https://docs.craftcms.com/v3/users.html)を参照してください。
 
 ::: code
 
@@ -169,8 +169,8 @@ $elements = ElementClass::find()
 
 ```php
 // Fetch elements created last month
-$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+$start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+$end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
 
 $elements = ElementClass::find()
     ->dateCreated(['and', ">= {$start}", "< {$end}"])
@@ -204,7 +204,7 @@ $elements = ElementClass::find()
 
 ```php
 // Fetch elements updated in the last week
-$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+$lastWeek = (new \DateTime('1 week ago'))->format(\DateTime::ATOM);
 
 $elements = ElementClass::find()
     ->dateUpdated(">= {$lastWeek}")
@@ -441,7 +441,7 @@ $elements = ElementClass::find()
 
 ```php
 // Fetch elements that logged in recently
-$aWeekAgo = new \DateTime('7 days ago')->format(\DateTime::ATOM);
+$aWeekAgo = (new \DateTime('7 days ago'))->format(\DateTime::ATOM);
 
 $elements = ElementClass::find()
     ->lastLoginDate(">= {$aWeekAgo}")
@@ -532,14 +532,14 @@ $elements = ElementClass::find()
 ```twig
 {# Fetch all elements in order of date created #}
 {% set elements = craft.queryFunction()
-    .orderBy('elements.dateCreated asc')
+    .orderBy('dateCreated asc')
     .all() %}
 ```
 
 ```php
 // Fetch all elements in order of date created
 $elements = ElementClass::find()
-    ->orderBy('elements.dateCreated asc')
+    ->orderBy('dateCreated asc')
     ->all();
 ```
 
@@ -549,7 +549,7 @@ $elements = ElementClass::find()
 
 特定の他のエレメントと関連付けられたエレメントだけに、クエリの結果を絞り込みます。
 
-このパラメーターがどのように機能するかの詳細については、[リレーション](../../relations.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[リレーション](https://docs.craftcms.com/v3/relations.html)を参照してください。
 
 ::: code
 
@@ -573,7 +573,7 @@ $elements = ElementClass::find()
 
 検索結果にマッチするエレメントだけに、クエリの結果を絞り込みます。
 
-このパラメーターがどのように機能するかの詳細については、[検索](../../searching.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[検索](https://docs.craftcms.com/v3/searching.html)を参照してください。
 
 ::: code
 
@@ -608,10 +608,10 @@ $elements = ElementClass::find()
 | 値 | 取得するエレメント
 | - | -
 | `'active'` _（デフォルト）_ | 有効なアカウント。
-| `'locked'` | ロックされているアカウント。
 | `'suspended'` | 停止されているアカウント。
 | `'pending'` | アクティベーションが保留されているアカウント。
-| `['active', 'locked']` | active または locked のアカウント。
+| `'locked'` | （それが有効か停止されているかに関わらず）ロックされているアカウント。
+| `['active', 'suspended']` | 有効、または、停止されているアカウント。
 
 ::: code
 
@@ -626,6 +626,28 @@ $elements = ElementClass::find()
 // Fetch active and locked elements
 $elements = ElementClass::find()
     ->status(['active', 'locked'])
+    ->all();
+```
+
+:::
+
+### `trashed`
+
+ソフトデリートされたエレメントだけに、クエリの結果を絞り込みます。
+
+::: code
+
+```twig
+{# Fetch trashed elements #}
+{% set elements = {twig-function}
+    .trashed()
+    .all() %}
+```
+
+```php
+// Fetch trashed elements
+$elements = ElementClass::find()
+    ->trashed()
     ->all();
 ```
 
@@ -692,7 +714,7 @@ $element = ElementClass::find()
 
 関連付けられたエレメントを eager-loaded した状態で、マッチしたエレメントをクエリが返します。
 
-このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](../eager-loading-elements.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](https://docs.craftcms.com/v3/dev/eager-loading-elements.html)を参照してください。
 
 ::: code
 
