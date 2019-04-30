@@ -66,6 +66,10 @@ define('CRAFT_SITE', 'de');
 
 The path to the [storage/](../directory-structure.md#storage) folder. (It is assumed to live within the base directory by default.)
 
+::: tip
+Make sure you set this to a valid folder path, otherwise it will be ignored.
+:::
+
 ### `CRAFT_TEMPLATES_PATH`
 
 The path to the [templates/](../directory-structure.md#templates) folder. (It is assumed to live within the base directory by default.)
