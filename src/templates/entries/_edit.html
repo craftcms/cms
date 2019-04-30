@@ -33,7 +33,9 @@
 {% endblock %}
 
 {% block contextMenu %}
-    {% include "entries/_revisions" %}
+    {% include "_includes/revisionmenu" with {
+        element: entry
+    } %}
 {% endblock %}
 
 {% block actionButton %}

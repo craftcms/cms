@@ -245,6 +245,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('unique', 'array_unique'),
             new TwigFilter('values', 'array_values'),
             new TwigFilter('without', [$this, 'withoutFilter']),
+            new TwigFilter('withoutKey', [$this, 'withoutKeyFilter']),
         ];
     }
 
@@ -411,6 +412,20 @@ class Extension extends AbstractExtension implements GlobalsInterface
             ArrayHelper::removeValue($arr, $value);
         }
 
+        return $arr;
+    }
+
+    /**
+     * Returns an array without a certain key.
+     *
+     * @param mixed $arr
+     * @param string $key
+     * @return array
+     */
+    public function withoutKeyFilter($arr, string $key): array
+    {
+        $arr = (array)$arr;
+        ArrayHelper::remove($arr, $key);
         return $arr;
     }
 

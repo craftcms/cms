@@ -154,26 +154,27 @@ class EntriesController extends BaseEntriesController
     /**
      * Called when a user beings up an entry for editing before being displayed.
      *
-     * @param string $sectionHandle The section’s handle
+     * @param string $section The section’s handle
      * @param int|null $entryId The entry’s ID, if editing an existing entry.
      * @param int|null $draftId The entry draft’s ID, if editing an existing draft.
      * @param int|null $revisionId The entry revision’s ID, if editing an existing revision.
-     * @param string|null $siteHandle The site handle, if specified.
+     * @param string|null $site The site handle, if specified.
      * @param Entry|null $entry The entry being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditEntry(string $sectionHandle, int $entryId = null, int $draftId = null, int $revisionId = null, string $siteHandle = null, Entry $entry = null): Response
+    public function actionEditEntry(string $section, int $entryId = null, int $draftId = null, int $revisionId = null, string $site = null, Entry $entry = null): Response
     {
         $variables = [
-            'sectionHandle' => $sectionHandle,
+            'sectionHandle' => $section,
             'entryId' => $entryId,
             'draftId' => $draftId,
             'revisionId' => $revisionId,
             'entry' => $entry
         ];
 
-        if ($siteHandle !== null) {
+        if ($site !== null) {
+            $siteHandle = $site;
             $variables['site'] = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$variables['site']) {
@@ -405,13 +406,21 @@ class EntriesController extends BaseEntriesController
 
         // Set the "Continue Editing" URL
         /** @noinspection PhpUnhandledExceptionInspection */
-        $siteSegment = (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->getCurrentSite()->id != $site->id ? "/{$site->handle}" : '');
-        $variables['continueEditingUrl'] = $variables['baseCpEditUrl'] .
-            (isset($variables['draftId']) ? '/drafts/' . $variables['draftId'] : '') .
-            $siteSegment;
+        $params = [];
+        if (Craft::$app->getIsMultiSite()) {
+            $params['site'] = $site->handle;
+        }
+        if (isset($variables['draftId'])) {
+            $params['draftId'] = $variables['draftId'];
+        }
+        $variables['continueEditingUrl'] = UrlHelper::url($variables['baseCpEditUrl'], $params);
 
         // Set the "Save and add another" URL
-        $variables['nextEntryUrl'] = "entries/{$section->handle}/new{$siteSegment}";
+        $params = [];
+        if (Craft::$app->getIsMultiSite()) {
+            $params['site'] = $site->handle;
+        }
+        $variables['nextEntryUrl'] = UrlHelper::url("entries/{$section->handle}/new", $params);
 
         // Can the user delete the entry?
         $variables['canDeleteEntry'] = (

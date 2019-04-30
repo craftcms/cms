@@ -926,15 +926,15 @@ class Entry extends Element
         $section = $this->getSection();
 
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
-        $url = UrlHelper::cpUrl('entries/' . $section->handle . '/' . $this->getSourceId() .
-            ($this->slug && strpos($this->slug, '__') !== 0 ? '-' . $this->slug : '')
-        );
+        $path = 'entries/' . $section->handle . '/' . $this->getSourceId() .
+            ($this->slug && strpos($this->slug, '__') !== 0 ? '-' . $this->slug : '');
 
+        $params = [];
         if (Craft::$app->getIsMultiSite()) {
-            $url .= '/' . $this->getSite()->handle;
+            $params['site'] = $this->getSite()->handle;
         }
 
-        return $url;
+        return UrlHelper::cpUrl($path, $params);
     }
 
     /**
