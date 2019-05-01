@@ -66,7 +66,7 @@ abstract class ElementFixture extends ActiveFixture
         foreach ($this->getData() as $alias => $data) {
             $element = $this->getElement();
 
-            // If they want to add a date deleted. Store it but don set that as an element property
+            // If they want to add a date deleted. Store it but dont set that as an element property
             $dateDeleted = null;
             if (isset($data['dateDeleted'])) {
                 $dateDeleted = $data['dateDeleted'];
