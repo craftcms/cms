@@ -1,8 +1,6 @@
 <?php
 
 return [
-    // Used at:
-    // SearchServiceTest
     [
         'username' => 'user1',
         'email' => 'user1@crafttest.com',

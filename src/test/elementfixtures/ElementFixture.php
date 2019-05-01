@@ -7,12 +7,15 @@
 namespace craft\test\elementfixtures;
 
 use Craft;
+use craft\db\Query;
 use craft\errors\InvalidElementException;
 use craft\events\DeleteElementEvent;
 use craft\services\Elements;
 use yii\base\ErrorException;
 use yii\base\Event;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\db\Exception;
 use yii\test\ActiveFixture;
 use craft\base\Element;
 
@@ -62,12 +65,33 @@ abstract class ElementFixture extends ActiveFixture
         $this->data = [];
         foreach ($this->getData() as $alias => $data) {
             $element = $this->getElement();
+
+            // If they want to add a date deleted. Store it but don set that as an element property
+            $dateDeleted = null;
+            if (isset($data['dateDeleted'])) {
+                $dateDeleted = $data['dateDeleted'];
+                unset($data['dateDeleted']);
+            }
+
             foreach ($data as $handle => $value) {
                 $element->$handle = $value;
             }
+
             if (!Craft::$app->getElements()->saveElement($element)) {
-                throw new ErrorException(implode(' ', $element->getErrorSummary(true)));
+                throw new InvalidElementException($element, implode(' ', $element->getErrorSummary(true)));
             }
+
+            // Add it here
+            if ($dateDeleted) {
+                $elementRecord = \craft\records\Element::find()
+                    ->where(['id' => $element->id])
+                    ->one();
+                $elementRecord->dateDeleted = $dateDeleted;
+                if (!$elementRecord->save()) {
+                    throw new Exception('Unable to set element as deleted');
+                }
+            }
+
             $this->data[$alias] = array_merge($data, ['id' => $element->id]);
         }
     }
