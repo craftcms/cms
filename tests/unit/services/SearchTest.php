@@ -27,7 +27,7 @@ use craftunit\fixtures\UsersFixture;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
  */
-class SearchServiceTest extends Unit
+class SearchTest extends Unit
 {
     public function _fixtures()
     {

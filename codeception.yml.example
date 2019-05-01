@@ -29,9 +29,10 @@ modules:
             configFile: 'tests/_craft/config/test.php'
             entryUrl: 'https://test.craftcms.dev/'
             entryScript: 'index.php'
+            projectConfig: 'tests/_data/project.yaml'
             modules: [{'class': 'modules\base\ExampleModule', 'handle': 'example-module'}]
             migrations: [{'class': 'craft\migrations\ExampleMigration', 'params': {tableName: 'exampletable'}}]
             plugins: [{'class': 'craftcms\base\ExamplePlugin', 'handle': 'example-plugin'}]
             cleanup: true # Should tests and fixtures be cleaned
             transaction: true # Wrap in transaction
-            dbSetup: {clean: false, setupCraft: false, setupMigrations: false}
+            dbSetup: {clean: true, setupCraft: true, setupMigrations: true} # What DB setup work do we need to do.

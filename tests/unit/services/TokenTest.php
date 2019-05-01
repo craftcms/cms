@@ -16,7 +16,7 @@ use craft\services\Tokens;
  *
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  */
-class TokenServiceTest extends Unit
+class TokenTest extends Unit
 {
     /**
      * @var \UnitTester $tester
