@@ -343,8 +343,8 @@ $entries = \craft\elements\Entry::find()
 
 ```php
 // Fetch entries created last month
-$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+$start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+$end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
 
 $entries = \craft\elements\Entry::find()
     ->dateCreated(['and', ">= {$start}", "< {$end}"])
@@ -378,7 +378,7 @@ $entries = \craft\elements\Entry::find()
 
 ```php
 // Fetch entries updated in the last week
-$lastWeek = new \DateTime('1 week ago')->format(\DateTime::ATOM);
+$lastWeek = (new \DateTime('1 week ago'))->format(\DateTime::ATOM);
 
 $entries = \craft\elements\Entry::find()
     ->dateUpdated(">= {$lastWeek}")
@@ -481,6 +481,8 @@ $entries = \craft\elements\Entry::find()
 
 | 値 | 取得するエントリ
 | - | -
+| `':empty:'` | 有効期限日を持たない。
+| `':notempty:'` | 有効期限日を持つ。
 | `'>= 2020-04-01'` | 2020-04-01 以降に有効期限が切れるもの。
 | `'< 2020-05-01'` | 2020-05-01 より前に有効期限が切れるもの。
 | `['and', '>= 2020-04-04', '< 2020-05-01']` | 2020-04-01 から 2020-05-01 の間に有効期限が切れるもの。
@@ -498,7 +500,7 @@ $entries = \craft\elements\Entry::find()
 
 ```php
 // Fetch entries expiring this month
-$nextMonth = new \DateTime('first day of next month')->format(\DateTime::ATOM);
+$nextMonth = (new \DateTime('first day of next month'))->format(\DateTime::ATOM);
 
 $entries = \craft\elements\Entry::find()
     ->expiryDate("< {$nextMonth}")
@@ -750,14 +752,14 @@ $entries = \craft\elements\Entry::find()
 ```twig
 {# Fetch all entries in order of date created #}
 {% set entries = craft.entries()
-    .orderBy('elements.dateCreated asc')
+    .orderBy('dateCreated asc')
     .all() %}
 ```
 
 ```php
 // Fetch all entries in order of date created
 $entries = \craft\elements\Entry::find()
-    ->orderBy('elements.dateCreated asc')
+    ->orderBy('dateCreated asc')
     ->all();
 ```
 
@@ -847,8 +849,8 @@ $entries = \craft\elements\Entry::find()
 
 ```php
 // Fetch entries posted last month
-$start = new \DateTime('first day of next month')->format(\DateTime::ATOM);
-$end = new \DateTime('first day of this month')->format(\DateTime::ATOM);
+$start = (new \DateTime('first day of last month'))->format(\DateTime::ATOM);
+$end = (new \DateTime('first day of this month'))->format(\DateTime::ATOM);
 
 $entries = \craft\elements\Entry::find()
     ->postDate(['and', ">= {$start}", "< {$end}"])
@@ -890,7 +892,7 @@ $entry = \craft\elements\Entry::find()
 
 特定の他のエレメントと関連付けられたエントリだけに、クエリの結果を絞り込みます。
 
-このパラメーターがどのように機能するかの詳細については、[リレーション](../../relations.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[リレーション](https://docs.craftcms.com/v3/relations.html)を参照してください。
 
 ::: code
 
@@ -914,7 +916,7 @@ $entries = \craft\elements\Entry::find()
 
 検索クエリにマッチするエントリだけに、クエリの結果を絞り込みます。
 
-このパラメーターがどのように機能するかの詳細については、[検索](../../searching.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[検索](https://docs.craftcms.com/v3/searching.html)を参照してください。
 
 ::: code
 
@@ -1193,6 +1195,28 @@ $entries = \craft\elements\Entry::find()
 
 :::
 
+### `trashed`
+
+ソフトデリートされたエントリだけに、クエリの結果を絞り込みます。
+
+::: code
+
+```twig
+{# Fetch trashed entries #}
+{% set entries = {twig-function}
+    .trashed()
+    .all() %}
+```
+
+```php
+// Fetch trashed entries
+$entries = \craft\elements\Entry::find()
+    ->trashed()
+    ->all();
+```
+
+:::
+
 ### `type`
 
 エントリの入力タイプに基づいて、クエリの結果を絞り込みます。
@@ -1324,7 +1348,7 @@ $entry = \craft\elements\Entry::find()
 
 関連付けられたエレメントを eager-loaded した状態で、マッチしたエントリをクエリが返します。
 
-このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](../eager-loading-elements.html)を参照してください。
+このパラメーターがどのように機能するかの詳細については、[エレメントのEager-Loading](https://docs.craftcms.com/v3/dev/eager-loading-elements.html)を参照してください。
 
 ::: code
 

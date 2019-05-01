@@ -34,6 +34,26 @@
 
 ## テンプレート記法
 
+### エントリフィールドによるエレメントの照会
+
+エントリフィールドを持つ[エレメントを照会](dev/element-queries/README.md)する場合、フィールドのハンドルにちなんで名付けられたクエリパラメータを使用して、エントリフィールドのデータに基づいた結果をフィルタできます。
+
+利用可能な値には、次のものが含まれます。
+
+| 値 | 取得するエレメント
+| - | -
+| `':empty:'` | 関連付けられたエントリを持たない。
+| `':notempty:'` | 少なくとも1つの関連付けられたエントリを持つ。
+
+```twig
+{# Fetch entries with a related entry #}
+{% set entries = craft.entries()
+    .<FieldHandle>(':notempty:')
+    .all() %}
+```
+
+### エントリフィールドデータの操作
+
 テンプレート内でエントリフィールドのエレメントを取得する場合、エントリフィールドのハンドルを利用して、関連付けられたエントリにアクセスできます。
 
 ```twig
@@ -41,8 +61,6 @@
 ```
 
 これは、所定のフィールドで関連付けられたすべてのエントリを出力するよう定義された[エレメントクエリ](dev/element-queries/entry-queries.md)を提供します。
-
-### 実例
 
 関連付けられたすべてのエントリをループするには、[all()](api:craft\db\Query::all()) を呼び出して、結果をループ処理します。
 
@@ -74,7 +92,7 @@
 {% endif %}
 ```
 
-エントリクエリで[パラメータ](dev/element-queries/entry-queries.md#parameters)をセットすることもできます。例えば、`news` セクションに含まれるエントリだけを取得するには、[sectionId](dev/element-queries/entry-queries.md#sectionid) パラメータをセットします。
+エントリクエリで[パラメータ](dev/element-queries/entry-queries.md#parameters)をセットすることもできます。例えば、`news` セクションに含まれるエントリだけを取得するには、[section](dev/element-queries/entry-queries.md#section) パラメータをセットしてください。
 
 ```twig
 {% set relatedEntries = entry.<FieldHandle>
@@ -82,7 +100,7 @@
     .all() %}
 ```
 
-### 関連項目
+## 関連項目
 
 * [エントリクエリ](dev/element-queries/entry-queries.md)
 * <api:craft\elements\Entry>

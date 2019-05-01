@@ -48,7 +48,7 @@ You can include tips, warnings, and other notes in your release notes using this
 
 > {warning} A word of warning.
 
-> {note} A note.
+> {note} A serious note.
 ```
 
 Any updates that contain one of these will be auto-expanded on the Utilities → Updates page.

@@ -27,6 +27,26 @@
 
 ## テンプレート記法
 
+### 行列フィールドによるエレメントの照会
+
+行列フィールドを持つ[エレメントを照会](dev/element-queries/README.md)する場合、フィールドのハンドルにちなんで名付けられたクエリパラメータを使用して、行列フィールドのデータに基づいた結果をフィルタできます。
+
+利用可能な値には、次のものが含まれます。
+
+| 値 | 取得するエレメント
+| - | -
+| `':empty:'` | 行列ブロックを持たない。
+| `':notempty:'` | 少なくとも1つの行列ブロックを持つ。
+
+```twig
+{# Fetch entries with a Matrix block #}
+{% set entries = craft.entries()
+    .<FieldHandle>(':notempty:')
+    .all() %}
+```
+
+### 行列フィールドデータの操作
+
 テンプレート内で行列フィールドを出力するには、行列フィールドに対して [for ループ](https://twig.symfony.com/doc/tags/for.html) を使用します。
 
 ```twig
@@ -115,7 +135,7 @@ for ループ内に記述されたすべてのコードは、 フィールドに
 {{ entry.myMatrixField|length }}
 ```
 
-### 関連項目
+## 関連項目
 
 * [エレメントクエリ](dev/element-queries/README.md)
 * <api:craft\elements\MatrixBlock>

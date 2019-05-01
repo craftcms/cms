@@ -32,14 +32,14 @@ my-project.test/
 
 ## クラスのオートロードの設定
 
-次に、プロジェクト内の `composer.json` ファイルに [`autoload`](https://getcomposer.org/doc/04-schema.md#autoload) フィールドを設定し、モジュールのクラスを見つける方法を Composer に伝える必要があります。例えば、モジュールの名前空間が `foo` で `modules/foo/` に位置している場合、次のように追加します。
+次に、プロジェクト内の `composer.json` ファイルに [`autoload`](https://getcomposer.org/doc/04-schema.md#autoload) フィールドを設定し、モジュールのクラスを見つける方法を Composer に伝える必要があります。例えば、モジュールの名前空間が `bar` で `modules/foo/` に位置している場合、次のように追加します。
 
 ```json
 {
   // ...
   "autoload": {
     "psr-4": {
-      "foo\\": "modules/foo/"
+      "bar\\": "modules/foo/"
     }
   }
 }
@@ -81,12 +81,17 @@ return [
 
 ```php
 <?php
-namespace foo;
+namespace bar;
+
+use Craft;
 
 class Module extends \yii\base\Module
 {
     public function init()
     {
+        // Define a custom alias named after the namespace
+        Craft::setAlias('@bar', __DIR__);
+
         parent::init();
 
         // Custom initialization code goes here...
@@ -94,7 +99,7 @@ class Module extends \yii\base\Module
 }
 ```
 
-`foo` を実際のモジュールの名前空間に置き換えてください。
+`bar` をあなたのモジュールの名前空間に、`'@bar'` を実際の名前空間に基づく[エイリアス](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases)に置き換えてください（全ての `\` は `/` に置き換えます）。
 
 ## 参考文献
 

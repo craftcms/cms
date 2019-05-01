@@ -1,9 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased (3.2)
+## 3.2.0-alpha.5 - 2019-05-01
 
 ### Added
+- Added the “Temp Uploads Location” system setting (available from Settings → Assets → Settings), which makes it possible to choose the volume and path that temporary asset uploads should be stored. ([#4010](https://github.com/craftcms/cms/issues/4010))
 - Table fields can now have Email and URL columns. ([#4180](https://github.com/craftcms/cms/pull/4180))
+
+### Fixed
+- Fixed a bug where multi-site element queries could return incomplete results if the `offset` or `limit` params were set.
 
 ## 3.2.0-alpha.4 - 2019-04-23
 
@@ -86,12 +90,26 @@
 
 ## Unreleased (3.1)
 
+### Fixed
+- Fixed an error that could occur when saving a Single section if one of its sites had been disabled.
+- Fixed a SQL error that would occur when deleting a site and transferring its content to another if you were using a database table prefix.
+- Fixed an error that could occur when deleting a site.
+
+## 3.1.25 - 2019-04-30
+
+### Added
+- Added the `|ascii` Twig filter. ([#4193](https://github.com/craftcms/cms/issues/4193))
+
 ### Changed
 - Craft now registers its project config event handlers before loading plugins. ([#3943](https://github.com/craftcms/cms/issues/3943))
+- The Control Panel now uses jQuery 3.4.0. ([#4183](https://github.com/craftcms/cms/issues/4183))
+- `behavior` and `behaviors` are now reserved field handles. ([#4184](https://github.com/craftcms/cms/issues/4184))
+- The Updates utility no longer shows notices for expired plugins if no updates are actually available. ([#4186](https://github.com/craftcms/cms/issues/4186))
 
 ### Fixed
 - Fixed an error where rebuilding the project config would not typecast the `propagateEntries` and `enableVersioning` section settings correctly. ([#3695](https://github.com/craftcms/cms/issues/3695))
 - Fixed a bug where the Edit Draft HUD would include the current site name in the default Draft Name value for multi-site entries. ([#4171](https://github.com/craftcms/cms/issues/4171))
+- Fixed a bug where resource requests could send a 500 response if the resource didn’t exist. ([#4197](https://github.com/craftcms/cms/pull/4197))
 
 ## 3.1.24 - 2019-04-23
 
