@@ -5,6 +5,9 @@
 ### Added
 - Table fields can now have Email and URL columns. ([#4180](https://github.com/craftcms/cms/pull/4180))
 
+### Fixed
+- Fixed a bug where multi-site element queries could return incomplete results if the `offset` or `limit` params were set.
+
 ## 3.2.0-alpha.4 - 2019-04-23
 
 ### Added

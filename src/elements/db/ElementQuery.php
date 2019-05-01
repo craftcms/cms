@@ -2306,12 +2306,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
         $subSelectSql = str_replace("{$qSubElements} {$qSubElements}", "{$qElements} {$qSubElements}", $subSelectSql);
 
-        $this->subQuery
-            ->addSelect(new Expression("({$subSelectSql}) as [[preferredElementsSitesId]]"))
-            ->where(null);
-
-        $this->query
-            ->andWhere('[[elements_sites.id]] = [[preferredElementsSitesId]]');
+        $this->subQuery->where(new Expression("[[elements_sites.id]] = ({$subSelectSql})"));
     }
 
     /**
