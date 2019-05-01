@@ -3,6 +3,7 @@
 ## Unreleased (3.2)
 
 ### Added
+- Added the “Temp Uploads Location” system setting (available from Settings → Assets → Settings), which makes it possible to choose the volume and path that temporary asset uploads should be stored. ([#4010](https://github.com/craftcms/cms/issues/4010))
 - Table fields can now have Email and URL columns. ([#4180](https://github.com/craftcms/cms/pull/4180))
 
 ### Fixed

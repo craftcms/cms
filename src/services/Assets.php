@@ -957,9 +957,34 @@ class Assets extends Component
      *
      * @param User|null $userModel
      * @return VolumeFolder
+     * @throws VolumeException
      */
     public function getUserTemporaryUploadFolder(User $userModel = null)
     {
+        if ($userModel) {
+            $folderName = 'user_' . $userModel->id;
+        } else {
+            // A little obfuscation never hurt anyone
+            $folderName = 'user_' . sha1(Craft::$app->getSession()->id);
+        }
+
+        // Is there a designated temp uploads volume?
+        $assetSettings = Craft::$app->getProjectConfig()->get('assets');
+        if (isset($assetSettings['tempVolumeUid'])) {
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($assetSettings['tempVolumeUid']);
+            if (!$volume) {
+                throw new VolumeException(Craft::t('app', 'The volume set for temp asset storage is not valid.'));
+            }
+            /** @var Volume $volume */
+            $path = (isset($assetSettings['tempSubpath']) ? $assetSettings['tempSubpath'] . '/' : '') .
+                $folderName;
+            $folderId = $this->ensureFolderByFullPathAndVolume($path, $volume, false);
+            return $this->findFolder([
+                'volumeId' => $volume->id,
+                'id' => $folderId,
+            ]);
+        }
+
         $volumeTopFolder = $this->findFolder([
             'volumeId' => ':empty:',
             'parentId' => ':empty:'
@@ -971,13 +996,6 @@ class Assets extends Component
             $tempVolume = new Temp();
             $volumeTopFolder->name = $tempVolume->name;
             $this->storeFolderRecord($volumeTopFolder);
-        }
-
-        if ($userModel) {
-            $folderName = 'user_' . $userModel->id;
-        } else {
-            // A little obfuscation never hurt anyone
-            $folderName = 'user_' . sha1(Craft::$app->getSession()->id);
         }
 
         $folder = $this->findFolder([
@@ -995,9 +1013,6 @@ class Assets extends Component
 
         FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
 
-        /**
-         * @var VolumeFolder $folder ;
-         */
         return $folder;
     }
 
