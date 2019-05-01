@@ -908,6 +908,8 @@ class Sites extends Component
             return false;
         }
 
+        $projectConfig = Craft::$app->getProjectConfig();
+
         // TODO: Move this code into entries module, etc.
         // Get the section IDs that are enabled for this site
         $sectionIds = (new Query())
@@ -931,12 +933,25 @@ class Sites extends Component
         if (!empty($soloSectionIds)) {
             // Should we enable those for a different site?
             if ($transferContentTo !== null) {
+                $transferContentToSite = $this->getSiteById($transferContentTo);
+
                 Craft::$app->getDb()->createCommand()
                     ->update(
                         Table::SECTIONS_SITES,
                         ['siteId' => $transferContentTo],
                         ['sectionId' => $soloSectionIds])
                     ->execute();
+
+                // Update the project config too
+                $muteEvents = $projectConfig->muteEvents;
+                $projectConfig->muteEvents = true;
+                foreach ($projectConfig->get(Sections::CONFIG_SECTIONS_KEY) as $sectionUid => $sectionConfig) {
+                    if (count($sectionConfig['siteSettings']) === 1 && isset($sectionConfig['siteSettings'][$site->uid])) {
+                        $sectionConfig['siteSettings'][$transferContentToSite->uid] = ArrayHelper::remove($sectionConfig['siteSettings'], $site->uid);
+                        $projectConfig->set(Sections::CONFIG_SECTIONS_KEY . '.' . $sectionUid, $sectionConfig);
+                    }
+                }
+                $projectConfig->muteEvents = $muteEvents;
 
                 // Get all of the entry IDs in those sections
                 $entryIds = (new Query())
@@ -1028,12 +1043,9 @@ class Sites extends Component
                             ->execute();
 
                         $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
-                        $tablePrefixLength = strlen(Craft::$app->getDb()->tablePrefix);
 
                         foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
                             if (strpos($tableName, $matrixTablePrefix) === 0) {
-                                $tableName = substr($tableName, $tablePrefixLength);
-
                                 Craft::$app->getDb()->createCommand()
                                     ->delete(
                                         $tableName,
@@ -1075,7 +1087,7 @@ class Sites extends Component
             }
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_SITES_KEY . '.' . $site->uid);
+        $projectConfig->remove(self::CONFIG_SITES_KEY . '.' . $site->uid);
         return true;
     }
 
