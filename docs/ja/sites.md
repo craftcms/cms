@@ -70,16 +70,16 @@ Craft はデフォルトサイトをプライマリサイトとしてセット�
 
 すべてのサイトはベース URL を持っていて、Craft がエントリや他のサイトコンテンツの動的なリンクを生成する際に出発点として使用します。
 
-サイトは `https://craftcms.com` や `https//craftcms.com/beta` のように同じドメイン名をすべて共有したり、`https://www.craftcms.com` や `https://beta.craftcms.com` のように異なるドメインを持たせることができます。
+マルチサイトは `https://craftcms.com/` や `https://craftcms.com/de/` のように同じホスト名を共有したり、`https://craftcms.com/` や `https://de.craftcms.com/` のように異なるホスト名を持つこともできます。
 
-異なるドメイン名で稼働するサイトを作成したい場合、DNS レコードがそのサーバーを指していることを確認してください。さらに、ウェブサーバーがそのドメインへのトラフィックを `web/` ディレクトリに向けるように設定されていることを確認してください。
+異なるホスト名でサイトを作成したい場合、それに対するトラフィックを処理するようサーバーを設定しなければなりません。ホスト名は現在のサイトと同じウェブルート（`web/`）を指すことも、独自の別のウェブルートにすることもできます。後者の場合、`.htaccess`、および、`index.php` ファイルを新しいウェブルートへ確実にコピーしてください。
 
 ::: tip
-`https://site-a.com` と `https://site-b.com` のような異なるルートドメインを使用する複数サイトを持つ場合、Craft の [license enforcements works](https://craftcms.com/support/license-enforcement) の仕組みによって、_すべて_ のサイトのためにアクセスする Craft コントロールパネルのドメインをその中の1つから選択することができます。
+`https://site-a.com` と `https://site-b.com` のような異なるルートドメインを使用するマルチサイトを持つ場合、Craft の [license enforcements works](https://craftcms.com/support/license-enforcement) の仕組みによって、_すべて_ のサイトのためにアクセスする Craft コントロールパネルのドメインをその中の1つから選択することができます。
 :::
 
-::: tip
-必要とするならうまくできますが、Craft では新しいサイトのために追加の `web/` ディレクトリを作成する必要はありません。
+::: warning
+サイトのベース URL を定義する場合、`@web` エイリアスを使用しないでください。それは [cache poisoning](https://www.owasp.org/index.php/Cache_Poisoning) の脆弱性をもたらすことができ、リクエストされたサイトを Craft が確実に判断することができなくなります。
 :::
 
 ## すべての有効サイトにエントリを広げる

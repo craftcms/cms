@@ -81,7 +81,7 @@
             },
 
             processUpdate: function(updateInfo, isPlugin) {
-                if (!updateInfo.releases.length && updateInfo.status !== 'expired') {
+                if (!updateInfo.releases.length) {
                     return;
                 }
 

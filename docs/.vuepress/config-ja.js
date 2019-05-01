@@ -34,8 +34,9 @@ module.exports = {
                     'plugin-guide',
                     'updating-plugins',
                     'plugin-settings',
-                    'plugin-migrations',
+                    'project-config',
                     'changelogs-and-updates',
+                    'plugin-editions',
                     'plugin-store',
                 ]
             },
@@ -62,9 +63,10 @@ module.exports = {
                 ]
             },
             {
-                title: 'その他',
+                title: '追加情報',
                 collapsable: false,
                 children: [
+                    'migrations',
                     'user-permissions',
                     'translation-categories',
                     'asset-bundles',
@@ -73,6 +75,8 @@ module.exports = {
                     'template-roots',
                     'extending-twig',
                     'template-hooks',
+                    'soft-deletes',
+                    'environmental-settings',
                     // 'front-end-controllers',
                 ]
             }
@@ -148,32 +152,18 @@ module.exports = {
                 children: [
                     '',
                     'coc',
-                    ['how-to-use-the-documentation', 'このドキュメントの使い方'],
+                    'directory-structure',
                 ]
             },
             {
-                title: 'Craft のインストール',
+                title: 'インストールとアップデート',
                 collapsable: false,
                 children: [
                     'requirements',
                     'installation',
-                ]
-            },
-            {
-                title: 'Craft のアップデート',
-                collapsable: false,
-                children: [
-                    'upgrade',
                     'updating',
+                    'upgrade',
                     'changes-in-craft-3',
-                ]
-            },
-            {
-                title: 'はじめに',
-                collapsable: false,
-                children: [
-                    'the-pieces-of-craft',
-                    'directory-structure',
                 ]
             },
             {
@@ -209,6 +199,28 @@ module.exports = {
                 ]
             },
             {
+                title: 'フィールドタイプ',
+                collapsable: false,
+                children: [
+                    'assets-fields',
+                    'categories-fields',
+                    'checkboxes-fields',
+                    'color-fields',
+                    'date-time-fields',
+                    'dropdown-fields',
+                    'entries-fields',
+                    'lightswitch-fields',
+                    'matrix-fields',
+                    'multi-select-fields',
+                    'number-fields',
+                    'plain-text-fields',
+                    'radio-buttons-fields',
+                    'table-fields',
+                    'tags-fields',
+                    'users-fields',
+                ]
+            },
+            {
                 title: '開発',
                 collapsable: false,
                 children: [
@@ -217,10 +229,11 @@ module.exports = {
                 ]
             },
             {
-                title: '高度な話題',
+                title: '追加情報',
                 collapsable: false,
                 children: [
-                    'content-migrations',
+                    'project-config',
+                    'gc',
                     'reference-tags',
                 ]
             },

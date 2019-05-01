@@ -84,14 +84,21 @@
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
 
-## Unreleased (3.1)
+## 3.1.25 - 2019-04-30
+
+### Added
+- Added the `|ascii` Twig filter. ([#4193](https://github.com/craftcms/cms/issues/4193))
 
 ### Changed
 - Craft now registers its project config event handlers before loading plugins. ([#3943](https://github.com/craftcms/cms/issues/3943))
+- The Control Panel now uses jQuery 3.4.0. ([#4183](https://github.com/craftcms/cms/issues/4183))
+- `behavior` and `behaviors` are now reserved field handles. ([#4184](https://github.com/craftcms/cms/issues/4184))
+- The Updates utility no longer shows notices for expired plugins if no updates are actually available. ([#4186](https://github.com/craftcms/cms/issues/4186))
 
 ### Fixed
 - Fixed an error where rebuilding the project config would not typecast the `propagateEntries` and `enableVersioning` section settings correctly. ([#3695](https://github.com/craftcms/cms/issues/3695))
 - Fixed a bug where the Edit Draft HUD would include the current site name in the default Draft Name value for multi-site entries. ([#4171](https://github.com/craftcms/cms/issues/4171))
+- Fixed a bug where resource requests could send a 500 response if the resource didn’t exist. ([#4197](https://github.com/craftcms/cms/pull/4197))
 
 ## 3.1.24 - 2019-04-23
 

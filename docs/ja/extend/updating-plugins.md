@@ -137,7 +137,7 @@ $results = (new Query())
 
 ### 操作クエリ
 
-操作クエリは、Craft 2 の [`DbCommand`](https://docs.craftcms.com/api/v2/craft-dbcommand.html) クラスと同様に（`Craft::$app->db->createCommand()` 経由でアクセスされる）<api:craft\db\Command> のヘルパーメソッドから構築できます。
+操作クエリは、Craft 2 の [`DbCommand`](https://docs.craftcms.com/api/v2/craft-dbcommand.html) クラスと同様に（ `Craft::$app->db->createCommand()` 経由でアクセスされる）<api:craft\db\Command> のヘルパーメソッドから構築できます。
 
 1つの顕著な違いは、ヘルパーメソッドはもはや自動的にクエリを実行しません。そのため、`execute()` の呼び出しを連鎖させる必要があります。
 
@@ -181,7 +181,7 @@ $tablePrefix = Craft::$app->config->db->tablePrefix;
 
 ## ファイル
 
-- `IOHelper` は、Yii の <api:yii\helpers\BaseFileHelper> を拡張する <api:craft\helpers\FileHelper> で置き換えられました。
+- `IOHelper` は Yii の  <api:yii\helpers\BaseFileHelper> を拡張する <api:craft\helpers\FileHelper> で置き換えられました。
 - <api:craft\helpers\FileHelper> および <api:craft\services\Path> メソッドから返されるディレクトリパスには、スラッシュが含まれなくなりました。
 - Craft のファイルシステムパスは、ハードコードされたスラッシュ（`/`）ではなく、（環境に依存して `/` または `\` のどちらかがセットされる）PHP 定数の `DIRECTORY_SEPARATOR` を使用します。
 
@@ -837,7 +837,7 @@ $html = \Craft::$app->view->renderTemplate('plugin-handle/path/to/template');
 
 ### コントロールパネルテンプレートフック
 
-The following Control Panel [template hooks](template-hooks.md) have been renamed:
+次のコントロールパネル[テンプレートフック](template-hooks.md)はリネームされました。
 
 | 旧 | 新 |
 | -------------------------------- | ---------------------------- |
@@ -937,9 +937,9 @@ Craft 2 インストール向けにプラグインにマイグレーションパ
 
 Craft がプラグインを**アップデート**なのか、**新規インストール**なのか判断させることを最初に決定する必要があります。プラグインハンドルが（`UpperCamelCase` から `kebab-case` になる他に）変更されない場合、Craft は新しいバージョンの**アップデート**とみなします。しかし、ハンドルがより重要な形で変わっているなら、Craft はそれを認識せず、完全に新しいプラグインとして判断します。
 
-ハンドルが（一般的に）同じ名前で止まる場合、“`craft3_upgrade`” のように名付けられた新しい[マイグレーション](plugin-migrations.md)を作成してください。アップグレードコードは、他のマイグレーション同様に `safeUp()` メソッドに入れます。
+ハンドルが（一般的に）同じ名前で止まる場合、“`craft3_upgrade`” のように名付けられた新しい[マイグレーション](migrations.md)を作成してください。アップグレードコードは、他のマイグレーション同様に `safeUp()` メソッドに入れます。
 
-ハンドルが変更されている場合、代わりに[インストールマイグレーション](plugin-migrations.md#install-migrations)にアップグレードコードを配置する必要があります。これを出発点として使用してください。
+ハンドルが変更されている場合、代わりに[インストールマイグレーション](migrations.md#plugin-install-migrations)にアップグレードコードを配置する必要があります。これを出発点として使用してください。
 
 ```php
 <?php
@@ -993,7 +993,9 @@ class Install extends Migration
 }
 ```
 
-プラグインの以前のハンドル（`kebab-case` と `onewordalllowercase`）を `<old-handle>` と `<oldhandle>` に置き換えてください。そして、`_upgradeFromCraft2()` メソッドの最後（`return` 文の前）に、追加のアップグレードコードを配置してください。（プラグインの新規インストール向けの）通常のインストールマイグレーションコードは、`safeUp()` の最後に入れる必要があります。
+`<old-handle>` と `<oldhandle>` を以前のプラグインハンドル（`kebab-case` と `onewordalllowercase`）に、`<new-handle>` を新しいプラグインハンドルに置き換えてください。
+
+追加のアップグレード処理を加える必要がある場合、`_upgradeFromCraft2()` メソッドの最後（`return` 文の前）に配置してください。（プラグインの新規インストール向けの）通常のインストールマイグレーションコードは、`safeUp()` の最後に入れる必要があります。
 
 ### コンポーネントクラス名
 

@@ -34,7 +34,6 @@ $findConfig = function($constName, $argName) {
                 $parts = explode('=', $arg);
                 $value = $parts[1];
                 unset($_SERVER['argv'][$key]);
-
                 return $value;
             }
         }
@@ -45,7 +44,6 @@ $findConfig = function($constName, $argName) {
 
 $findConfigPath = function($constName, $argName) use ($findConfig) {
     $path = $findConfig($constName, $argName);
-
     return $path ? realpath($path) : null;
 };
 
@@ -57,7 +55,6 @@ $createFolder = function($path) {
         if (!mkdir($path, 0755, true)) {
             // Set a 503 response header so things like Varnish won't cache a bad page.
             http_response_code(503);
-
             exit('Tried to create a folder at ' . $path . ', but could not.' . PHP_EOL);
         }
 
@@ -74,17 +71,13 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
     if ($realPath === false || !is_dir($realPath) || !@file_exists($realPath . '/.')) {
         // Set a 503 response header so things like Varnish won't cache a bad page.
         http_response_code(503);
-
         exit(($realPath !== false ? $realPath : $path) . ' doesn\'t exist or isn\'t writable by PHP. Please fix that.' . PHP_EOL);
     }
 
-    if ($writableToo) {
-        if (!is_writable($realPath)) {
-            // Set a 503 response header so things like Varnish won't cache a bad page.
-            http_response_code(503);
-
-            exit($realPath . ' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
-        }
+    if ($writableToo && !is_writable($realPath)) {
+        // Set a 503 response header so things like Varnish won't cache a bad page.
+        http_response_code(503);
+        exit($realPath . ' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
     }
 };
 

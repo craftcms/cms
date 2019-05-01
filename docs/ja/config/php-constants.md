@@ -44,6 +44,15 @@ define('CRAFT_ENVIRONMENT', getenv('ENVIRONMENT') ?: 'production');
 
 ファイル名を含めた Craft がライセンスキーファイルを保存するパス。（デフォルトでは、[config/](../directory-structure.md#config) フォルダ内に `license.key` が保存されます。）
 
+### `CRAFT_LOG_PHP_ERRORS`
+
+Craft が PHP の [log_errors](http://php.net/manual/en/errorfunc.configuration.php#ini.log-errors) 設定をセットすることを抑制し、`php.ini` 内の設定に任せるよう `false` をセットすることもできます。
+
+```php
+// Don't send PHP error logs to storage/logs/phperrors.log
+define('CRAFT_LOG_PHP_ERRORS', false);
+```
+
 ### `CRAFT_SITE`
 
 Craft がこの `index.php` ファイルから提供するべき、サイトハンドル、または、サイト ID。（明確な理由がある場合のみ、これをセットしてください。セットされていなければ、Craft はリクエスト URL を調査することで正しいサイトを自動的に配信します。）
