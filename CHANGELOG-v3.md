@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Craft now stores the Default User Group’s UID in the project config, in case the group’s ID is different across environments.
+
 ### Fixed
 - Fixed an error that could occur when saving a Single section if one of its sites had been disabled.
 - Fixed a SQL error that would occur when deleting a site and transferring its content to another if you were using a database table prefix.
