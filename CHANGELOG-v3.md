@@ -7,6 +7,8 @@
 - Fixed a SQL error that would occur when deleting a site and transferring its content to another if you were using a database table prefix.
 - Fixed an error that could occur when deleting a site.
 - Fixed a PHP compile error that could occur when paginating a query. ([#4208](https://github.com/craftcms/cms/pull/4208))
+- Fixed an error that could occur on the Settings → Users → Settings page if the project config was missing its `users` key. ([#4206](https://github.com/craftcms/cms/issues/4206))
+- Fixed a bug where Craft wasn’t requiring email verification for new user accounts if the project config was missing its `users` key.
 
 ## 3.1.25 - 2019-04-30
 
