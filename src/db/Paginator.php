@@ -188,7 +188,7 @@ class Paginator extends BaseObject
             return $this->_pageResults;
         }
 
-        $pageOffset =  ($this->query->offset ?? 0) + $this->getPageOffset();
+        $pageOffset = ($this->query->offset ?? 0) + $this->getPageOffset();
 
         // Have we reached the last page, and would the default page size bleed past the total results?
         if ($this->pageSize * $this->currentPage > $this->getTotalResults()) {
