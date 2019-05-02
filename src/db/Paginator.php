@@ -10,7 +10,7 @@ namespace craft\db;
 use craft\helpers\ArrayHelper;
 use yii\base\BaseObject;
 use yii\db\Connection as YiiConnection;
-use yii\db\Query;
+use yii\db\Query as YiiQuery;
 use yii\db\QueryInterface;
 use yii\di\Instance;
 
@@ -57,7 +57,7 @@ class Paginator extends BaseObject
     public $pageSize = 100;
 
     /**
-     * @var QueryInterface|Query The query being paginated
+     * @var QueryInterface|YiiQuery The query being paginated
      */
     protected $query;
 
