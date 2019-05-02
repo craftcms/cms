@@ -982,9 +982,15 @@ class Users extends Component
     public function assignUserToDefaultGroup(User $user): bool
     {
         // Make sure there's a default group
-        $defaultGroupId = Craft::$app->getProjectConfig()->get('users.defaultGroup');
+        $uid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
 
-        if (!$defaultGroupId) {
+        if (!$uid) {
+            return false;
+        }
+
+        $group = Craft::$app->getUserGroups()->getGroupByUid($uid);
+
+        if (!$group) {
             return false;
         }
 
@@ -998,7 +1004,7 @@ class Users extends Component
             return false;
         }
 
-        if (!$this->assignUserToGroups($user->id, [$defaultGroupId])) {
+        if (!$this->assignUserToGroups($user->id, [$group->id])) {
             return false;
         }
 
