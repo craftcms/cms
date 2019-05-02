@@ -10,7 +10,7 @@ namespace craft\db;
 use craft\helpers\ArrayHelper;
 use yii\base\BaseObject;
 use yii\db\Connection as YiiConnection;
-use yii\db\Query;
+// use yii\db\Query;
 use yii\db\QueryInterface;
 use yii\di\Instance;
 
