@@ -6,6 +6,7 @@
 - Fixed an error that could occur when saving a Single section if one of its sites had been disabled.
 - Fixed a SQL error that would occur when deleting a site and transferring its content to another if you were using a database table prefix.
 - Fixed an error that could occur when deleting a site.
+- Fixed a PHP compile error that could occur when paginating a query. ([#4208](https://github.com/craftcms/cms/pull/4208))
 
 ## 3.1.25 - 2019-04-30
 
