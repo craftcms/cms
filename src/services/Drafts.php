@@ -113,8 +113,8 @@ class Drafts extends Component
 
         if ($name === null || $name === '') {
             $totalDrafts = $source::find()
-                ->drafts()
-                ->id($source->id)
+                ->draftOf($source)
+                ->siteId($source->siteId)
                 ->anyStatus()
                 ->count();
             $name = Craft::t('app', 'Draft {num}', ['num' => $totalDrafts + 1]);
