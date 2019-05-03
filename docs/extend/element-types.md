@@ -493,7 +493,7 @@ protected static function defineTableAttributes(): array
 ```
 
 ::: tip
-The first attribute you list here is a special case. It defines the header for the first column in the table view, which is the only one admins can’t remove. Its values will be the element string representations (whatever their `__toString()` methods return).
+The first attribute you list here is a special case. It defines the header for the first column in the table view, which is the only one admins can’t remove. Its default value will be the element string representation but this can be overwritten by updating `getName()`.
 :::
 
 If it’s a big list, you can also limit which columns should be visible by default for new [sources](#sources) by adding a protected `defineDefaultTableAttributes()` method to your element class:
@@ -606,7 +606,7 @@ protected function route()
 
 ### Editor HUDs
 
-To make your elements editable via Element Editor HUDs when double-clicked on within the index page or relation fields, add a `getIsEditable()` method to your element class, which returns whether the current user has permission to edit the element:
+To make your elements editable via Element Editor HUDs when double-clicked on an element within the index page or relation fields, add a `getIsEditable()` method to your element class, which returns whether the current user has permission to edit the element:
 
 ```php
 public function getIsEditable(): bool

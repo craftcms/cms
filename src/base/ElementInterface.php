@@ -434,6 +434,13 @@ interface ElementInterface extends ComponentInterface
     public function getLink();
 
     /**
+     * Returns a string to be used in for links to edit this element.
+     *
+     * @return string|null
+     */
+    public function getName();
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null
