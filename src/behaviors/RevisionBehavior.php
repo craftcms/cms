@@ -21,6 +21,9 @@ use yii\validators\UrlValidator;
  * RevisionBehavior is applied to element revisions.
  *
  * @property ElementInterface|Element $owner
+ * @property-read ElementInterface|Element $source
+ * @property-read User $creator
+ * @property-read string $revisionLabel
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2
  */
@@ -90,5 +93,17 @@ class RevisionBehavior extends Behavior
             ->id($this->creatorId)
             ->anyStatus()
             ->one();
+    }
+
+    /**
+     * Returns the revision label.
+     *
+     * @return string
+     */
+    public function getRevisionLabel(): string
+    {
+        return Craft::t('app', 'Revision {num}', [
+            'num' => $this->revisionNum,
+        ]);
     }
 }

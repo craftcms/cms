@@ -18,6 +18,8 @@ use yii\base\Behavior;
  * DraftBehavior is applied to element drafts.
  *
  * @property Element $owner
+ * @property-read ElementInterface|Element $source
+ * @property-read User $creator
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2
  */
@@ -49,8 +51,22 @@ class DraftBehavior extends Behavior
     public function events()
     {
         return [
+            Element::EVENT_AFTER_PROPAGATE => [$this, 'handleSave'],
             Element::EVENT_AFTER_DELETE => [$this, 'handleDelete'],
         ];
+    }
+
+    /**
+     * Updates the row in the `drafts` table after the draft element is saved.
+     */
+    public function handleSave()
+    {
+        Craft::$app->getDb()->createCommand()
+            ->update(Table::DRAFTS, [
+                'name' => $this->draftName,
+                'notes' => $this->draftNotes,
+            ], ['id' => $this->owner->draftId], [], false)
+            ->execute();
     }
 
     /**

@@ -69,6 +69,17 @@ $.extend(Craft,
         },
 
         /**
+         * Escapes special regular expression characters.
+         *
+         * @param {string} tr
+         * @return string
+         */
+        escapeRegex: function(str) {
+            // h/t https://stackoverflow.com/a/9310752
+            return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        },
+
+        /**
          * Returns the text in a string that might contain HTML tags.
          *
          * @param {string} str

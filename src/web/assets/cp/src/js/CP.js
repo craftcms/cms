@@ -137,15 +137,13 @@ Craft.CP = Garnish.Base.extend(
                 return;
             }
 
-            if (!Craft.forceConfirmUnload) {
-                this.initialFormValues = [];
-            }
+            var $form;
 
             for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                var $form = $(this.$confirmUnloadForms);
+                $form = this.$confirmUnloadForms.eq(i);
 
                 if (!Craft.forceConfirmUnload) {
-                    this.initialFormValues[i] = $form.serialize();
+                    $form.data('initialSerializedValue', $form.serialize());
                 }
 
                 this.addListener($form, 'submit', function() {
@@ -155,6 +153,7 @@ Craft.CP = Garnish.Base.extend(
 
             this.addListener(Garnish.$win, 'beforeunload', function(ev) {
                 var confirmUnload = false;
+                var $form;
                 if (
                     Craft.forceConfirmUnload ||
                     (
@@ -165,7 +164,8 @@ Craft.CP = Garnish.Base.extend(
                     confirmUnload = true;
                 } else {
                     for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                        if (this.initialFormValues[i] !== $(this.$confirmUnloadForms[i]).serialize()) {
+                        $form = this.$confirmUnloadForms.eq(i);
+                        if ($form.data('initialSerializedValue') !== $form.serialize()) {
                             confirmUnload = true;
                             break;
                         }

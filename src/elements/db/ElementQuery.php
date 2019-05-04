@@ -674,7 +674,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof ElementInterface) {
             /** @var Element $value */
-            $this->draftOf = $value->id;
+            $this->draftOf = $value->getSourceId();
         } else if (is_numeric($value)) {
             $this->draftOf = $value;
         } else {
@@ -733,7 +733,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof ElementInterface) {
             /** @var Element $value */
-            $this->revisionOf = $value->id;
+            $this->revisionOf = $value->getSourceId();
         } else if (is_numeric($value)) {
             $this->revisionOf = $value;
         } else {

@@ -42,14 +42,14 @@ class Drafts extends Component
     const EVENT_AFTER_CREATE_DRAFT = 'afterCreateDraft';
 
     /**
-     * @event DraftEvent The event that is triggered before a draft is published.
+     * @event DraftEvent The event that is triggered before a draft is applied to its source element.
      */
-    const EVENT_BEFORE_PUBLISH_DRAFT = 'beforePublishDraft';
+    const EVENT_BEFORE_APPLY_DRAFT = 'beforeApplyDraft';
 
     /**
-     * @event DraftEvent The event that is triggered after a draft is published.
+     * @event DraftEvent The event that is triggered after a draft is applied to its source element.
      */
-    const EVENT_AFTER_PUBLISH_DRAFT = 'afterPublishDraft';
+    const EVENT_AFTER_APPLY_DRAFT = 'afterApplyDraft';
 
     // Public Methods
     // =========================================================================
@@ -173,39 +173,21 @@ class Drafts extends Component
     }
 
     /**
-     * Updates the name and notes of a draft.
+     * Applies a draft onto its source element.
      *
-     * @param int $draftId
-     * @param string $name
-     * @param string|null $notes
-     * @throws DbException
-     */
-    public function updateDraftName(int $draftId, string $name, string $notes = null)
-    {
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::DRAFTS, [
-                'name' => $name,
-                'notes' => $notes
-            ], ['id' => $draftId], [], false)
-            ->execute();
-    }
-
-    /**
-     * Publishes a draft.
-     *
-     * @param ElementInterface $draft
-     * @return ElementInterface The new source element
+     * @param ElementInterface $draft The draft
+     * @return ElementInterface The updated source element
      * @throws \Throwable
      */
-    public function publishDraft(ElementInterface $draft): ElementInterface
+    public function applyDraft(ElementInterface $draft): ElementInterface
     {
         /** @var Element|DraftBehavior $draft */
         /** @var Element $source */
         $source = $draft->getSource();
 
-        // Fire a 'beforePublishDraft' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_PUBLISH_DRAFT)) {
-            $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, new DraftEvent([
+        // Fire a 'beforeApplyDraft' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DRAFT)) {
+            $this->trigger(self::EVENT_BEFORE_APPLY_DRAFT, new DraftEvent([
                 'source' => $source,
                 'creatorId' => $draft->creatorId,
                 'draftName' => $draft->draftName,
@@ -222,7 +204,7 @@ class Drafts extends Component
                 'id' => $source->id,
                 'uid' => $source->uid,
                 'draftId' => null,
-                'revisionNotes' => $draft->draftNotes,
+                'revisionNotes' => $draft->draftNotes ?: $draft->draftName,
             ]);
 
             // Now delete the draft
@@ -234,9 +216,9 @@ class Drafts extends Component
             throw $e;
         }
 
-        // Fire an 'afterPublishDraft' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_PUBLISH_DRAFT)) {
-            $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
+        // Fire an 'afterApplyDraft' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_APPLY_DRAFT)) {
+            $this->trigger(self::EVENT_AFTER_APPLY_DRAFT, new DraftEvent([
                 'source' => $newSource,
                 'creatorId' => $draft->creatorId,
                 'draftName' => $draft->draftName,

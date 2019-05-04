@@ -1,5 +1,7 @@
 {#
-    Shows a revision menu for an element
+    Shows a revision menu for an element.
+
+    Only an existing element should be passed to this.
 #}
 
 {% import "_includes/forms" as forms %}
@@ -24,10 +26,22 @@
 {% set baseParams = craft.app.request.queryParams|withoutKey(craft.app.config.general.pathParam)|withoutKey('draftId')|withoutKey('revisionId')|withoutKey('siteId') %}
 {% set supportedSites = craft.app.isMultiSite ? element.supportedSites : [element.site] %}
 {% set isMultiSiteElement = supportedSites|length > 1 %}
+{% set showSiteLabel = showSiteLabel ?? isMultiSiteElement %}
 {% set baseUrl = element.getCpEditUrl() %}
 
-<div class="btngroup">
-    <div id="revision-btn" class="btn menubtn"{% if showSiteLabel %} data-icon="world"{% endif %}>{{ revisionLabel }}</div>
+<div id="revision-btngroup" class="btngroup">
+    <div id="revision-btn" class="btn menubtn"{% if showSiteLabel %} data-icon="world"{% endif %}>
+        {% if showSiteLabel %}{{ element.site.name|t('site') }} –{% endif %}
+        <span id="revision-label">
+            {%- if element.draftId %}
+                {{- element.draftName }}
+            {%- elseif element.revisionId %}
+                {{- element.revisionLabel }}
+            {%- else %}
+                {{- 'Current'|t('app') }}
+            {%- endif -%}
+        </span>
+    </div>
 
     <div class="menu">
         {% if isMultiSiteElement %}
@@ -56,13 +70,10 @@
                     </ul>
                 {% endif %}
             {% endfor %}
-        {% endif %}
-
-        {% if isMultiSiteElement %}
             <hr>
         {% endif %}
 
-        <ul class="padded">
+        <ul class="padded revision-group-current">
             {% set currentRevisionEditTime = element.currentRevision.dateCreated ?? element.dateUpdated %}
             <li>
                 <a{% if not element.draftId and not element.revisionId %} class="sel"{% endif %} href="{{ baseUrl }}">{{ "Current"|t('app') }}
@@ -75,13 +86,13 @@
 
         {% if drafts %}
             <h6>{{ "Drafts"|t('app') }}</h6>
-            <ul class="padded">
+            <ul class="padded revision-group-drafts">
                 {% for draft in drafts %}
                     {% set url = url(baseUrl, baseParams|merge({ draftId: draft.draftId })) %}
                     <li>
                         <a{% if draft.draftId == element.draftId %} class="sel"{% endif %} href="{{ url }}">
-                            {{ draft.draftName }}
-                            <span class="light">{{ "by {creator}"|t('app', { creator: draft.creator }) }}</span>
+                            <span class="draft-name">{{ draft.draftName }}</span>
+                            <span class="draft-creator light">{{ "by {creator}"|t('app', { creator: draft.creator }) }}</span>
                         </a>
                     </li>
                 {% endfor %}
@@ -90,12 +101,12 @@
 
         {% if revisions %}
             <h6>{{ "Recent Revisions"|t('app') }}</h6>
-            <ul class="padded">
+            <ul class="padded" id="revision-group-revisions">
                 {% for revision in revisions %}
                     <li>
                         {% set url = url(baseUrl, baseParams|merge({ revisionId: revision.revisionId })) %}
                         <a{% if revision.revisionId == element.revisionId %} class="sel"{% endif %} href="{{ url }}">
-                            {{ "Revision {num}"|t('app', { num: revision.revisionNum }) }}
+                            {{ revision.revisionLabel }}
                             <span class="light">{{ revision.dateCreated|timestamp('short') }}, {{ revision.getCreator() }}</span>
                         </a>
                     </li>
@@ -103,16 +114,7 @@
             </ul>
         {% endif %}
     </div>
-
-    {% if element.draftId %}
-        {% do craft.app.session.authorize('editDraft:' ~ element.draftId) %}
-        <a id="editdraft-btn" class="btn edit icon" title="{{ 'Edit Draft Settings'|t('app') }}"></a>
-        {% js %}
-        new Craft.DraftEditor({{ element.draftId }}, '{{ element.draftName|e("js") }}', '{{ element.draftNotes|e("js") }}');
-    {% endjs %}
-        {% do view.registerTranslations('app', [
-            "Draft Name",
-            "Notes",
-        ]) %}
-    {% endif %}
 </div>
+
+<div id="revision-spinner" class="spinner hidden" title="{{ 'Saving'|t('app') }}"></div>
+<div id="revision-saved" class="checkmark-icon invisible" title="{{ 'Saved'|t('app') }}"></div>

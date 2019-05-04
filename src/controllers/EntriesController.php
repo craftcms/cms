@@ -288,28 +288,9 @@ class EntriesController extends BaseEntriesController
         // Body class
         $variables['bodyClass'] = 'edit-entry site--' . $site->handle;
 
-        // Page title w/ revision label
-        if ($variables['isMultiSiteEntry']) {
-            $variables['revisionLabel'] = Craft::t('site', $entry->getSite()->name) . ' – ';
-        } else {
-            $variables['revisionLabel'] = '';
-        }
-
-        if ($entry->draftId) {
-            /** @var Entry|DraftBehavior $entry */
-            $variables['revisionLabel'] .= $entry->draftName;
-        } else if ($entry->revisionId) {
-            /** @var Entry|RevisionBehavior $entry */
-            $variables['revisionLabel'] .= Craft::t('app', 'Revision {num}', ['num' => $entry->revisionNum]);
-        } else {
-            $variables['revisionLabel'] .= Craft::t('app', 'Current');
-        }
-
-        $variables['docTitle'] = $variables['title'] = trim($entry->title) ?: Craft::t('app', 'Edit Entry');
-
-        if ($entry->draftId || $entry->revisionId) {
-            $variables['docTitle'] .= ' (' . $variables['revisionLabel'] . ')';
-        }
+        // Page title
+        $variables['docTitle'] = $this->docTitle($entry);
+        $variables['title'] = $this->pageTitle($entry);
 
         // Breadcrumbs
         $variables['crumbs'] = [
@@ -399,29 +380,6 @@ class EntriesController extends BaseEntriesController
             $variables['showPreviewBtn'] = false;
         }
 
-        // Set the base CP edit URL
-
-        // Can't just use the entry's getCpEditUrl() because that might include the site handle when we don't want it
-        $variables['baseCpEditUrl'] = "entries/{$section->handle}/{sourceId}-{slug}";
-
-        // Set the "Continue Editing" URL
-        /** @noinspection PhpUnhandledExceptionInspection */
-        $params = [];
-        if (Craft::$app->getIsMultiSite()) {
-            $params['site'] = $site->handle;
-        }
-        if (isset($variables['draftId'])) {
-            $params['draftId'] = $variables['draftId'];
-        }
-        $variables['continueEditingUrl'] = UrlHelper::url($variables['baseCpEditUrl'], $params);
-
-        // Set the "Save and add another" URL
-        $params = [];
-        if (Craft::$app->getIsMultiSite()) {
-            $params['site'] = $site->handle;
-        }
-        $variables['nextEntryUrl'] = UrlHelper::url("entries/{$section->handle}/new", $params);
-
         // Can the user delete the entry?
         $variables['canDeleteEntry'] = (
             !$entry->draftId &&
@@ -431,10 +389,6 @@ class EntriesController extends BaseEntriesController
                 ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
             )
         );
-
-        // Full page form variables
-        $variables['fullPageForm'] = true;
-        $variables['saveShortcutRedirect'] = $variables['continueEditingUrl'];
 
         // Render the template!
         return $this->renderTemplate('entries/_edit', $variables);
@@ -925,6 +879,8 @@ class EntriesController extends BaseEntriesController
         // Determine whether we're showing the site label & site-specific entry status
         // ---------------------------------------------------------------------
 
+        // Show the site label in the revision menu as long as the section is enabled for multiple sites,
+        // even if the entry itself is only enabled for one site
         $variables['showSiteLabel'] = (
             Craft::$app->getIsMultiSite() &&
             count($variables['section']->getSiteSettings()) > 1
