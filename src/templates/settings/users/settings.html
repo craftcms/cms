@@ -7,8 +7,17 @@
 
 
 {% if settings is not defined %}
-    {% set settings = craft.app.projectConfig.get('users') %}
+    {% set settings = craft.app.projectConfig.get('users') ?? [] %}
 {% endif %}
+
+{# set defaults #}
+{% set settings = {
+    photoVolumeUid: null,
+    photoSubpath: null,
+    requireEmailVerification: true,
+    allowPublicRegistration: false,
+    defaultGroup: null,
+}|merge(settings) %}
 
 {% set allVolumes = craft.app.volumes.getAllVolumes() %}
 {% set volumeList = [] %}
@@ -51,7 +60,7 @@
                 first: true,
                 label: "User Photo Location"|t('app'),
                 instructions: "Where do you want to store user photos? Note that the subfolder path can contain variables like <code>{username}</code>."|t('app')
-            }, assetLocationInput(volumeList, settings.photoVolumeUid ?? null, settings.photoSubpath ?? null)) }}
+            }, assetLocationInput(volumeList, settings.photoVolumeUid, settings.photoSubpath)) }}
         {% else %}
             {{ forms.field({
                 first: true,
@@ -77,7 +86,7 @@
             <div id="publicRegistrationSettings" class="nested-fields{% if not settings.allowPublicRegistration %} hidden{% endif %}">
                 {% set groups = [{ label: "None"|t('app'), value: '' }] %}
                 {% for group in craft.app.userGroups.getAllGroups() %}
-                    {% set groups = groups|merge([{ label: group.name, value: group.id }]) %}
+                    {% set groups = groups|merge([{ label: group.name, value: group.uid }]) %}
                 {% endfor %}
 
                 {{ forms.selectField({
