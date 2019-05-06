@@ -97,9 +97,8 @@ class ElementHelperTest extends Unit
     public function testSetUniqueUri($result, $config)
     {
         $example = new ExampleElement($config);
-        $uri = ElementHelper::setUniqueUri($example);
+        $this->assertNull(ElementHelper::setUniqueUri($example));
 
-        $this->assertNull($uri);
         foreach ($result as $key => $res) {
             $this->assertSame($res, $example->$key);
         }
