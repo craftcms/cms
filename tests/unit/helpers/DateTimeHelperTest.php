@@ -306,10 +306,6 @@ class DateTimeHelperTest extends Unit
                 ['date' => '08-09-2018', 'time' => '08:00 PM'],
                 $dt,
             ],
-            'array-format' => [
-                ['date' => '08-09-2018', 'time' => '08:00 PM'],
-                $dt,
-            ],
             'w3c-format' => [
                 '2018-08-09T20:00:00',
                 $dt,
