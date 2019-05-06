@@ -215,7 +215,7 @@ class GcTest extends Unit
             ->asArray()
             ->all();
 
-        $this->assertSame($totalEntries - $expectedRemoval, count($entries));
+        $this->assertCount($totalEntries - $expectedRemoval, $entries);
 
         // Check any non allowed titles. Fail if an entry exists with a title that isnt allowed.
         foreach ($notAllowedTitles as $notAllowedTitle) {

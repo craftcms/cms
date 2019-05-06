@@ -197,12 +197,12 @@ class ViewTest extends TestCase
     public function testRenderTemplate()
     {
         // Assert that the _renderingTemplate prop goes in and comes out as null.
-        $this->assertSame(null, $this->getInaccessibleProperty($this->view, '_renderingTemplate'));
+        $this->assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
 
         $result = $this->view->renderTemplate('withvar', ['name' => 'Giel Tettelaar']);
 
         $this->assertSame($result, 'Hello iam Giel Tettelaar');
-        $this->assertSame(null, $this->getInaccessibleProperty($this->view, '_renderingTemplate'));
+        $this->assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
 
         // Test that templates can work without variables.
         $result = $this->view->renderTemplate('novar');

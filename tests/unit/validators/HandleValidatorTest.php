@@ -86,7 +86,7 @@ class HandleValidatorTest extends Unit
 
         $validatorResult = $this->handleValidator->validateAttribute($this->model, 'exampleParam');
 
-        $this->assertSame(null, $validatorResult);
+        $this->assertNull($validatorResult);
 
         if ($mustValidate) {
             $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());

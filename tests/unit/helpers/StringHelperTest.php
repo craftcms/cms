@@ -620,7 +620,7 @@ class StringHelperTest extends Unit
     public function testUUID()
     {
         $uuid = StringHelper::UUID();
-        $this->assertSame(1, preg_match('/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i', $uuid));
+        $this->assertRegExp('/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i', $uuid);
         $this->assertSame(36, strlen($uuid));
     }
 
@@ -761,7 +761,7 @@ class StringHelperTest extends Unit
     public function testLines($result, $input)
     {
         $lines = StringHelper::lines($input);
-        $this->assertSame($result, count($lines));
+        $this->assertCount($result, $lines);
     }
     public function linesData(): array
     {

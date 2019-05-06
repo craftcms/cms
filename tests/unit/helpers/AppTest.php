@@ -127,7 +127,7 @@ class AppTest extends TestCase
         $this->assertSame($result, $humanizedClass);
 
         // Make sure we dont have any uppercase characters.
-        $this->assertSame(0, preg_match('/[A-Z]/', $humanizedClass));
+        $this->assertNotRegExp('/[A-Z]/', $humanizedClass);
     }
 
     public function classHumanizationData(): array
@@ -181,7 +181,7 @@ class AppTest extends TestCase
         $this->assertTrue(class_exists($config['class']));
 
         // Make sure its a component
-        $this->assertTrue(in_array(Component::class, class_parents($config['class'])));
+        $this->assertContains(Component::class, class_parents($config['class']));
     }
 
     public function configsData(): array
@@ -210,7 +210,7 @@ class AppTest extends TestCase
         $this->assertFalse($this->areKeysMissing($result, ['class', 'messageClass', 'from', 'template', 'transport']));
 
         // Make sure its a component
-        $this->assertTrue(in_array(Component::class, class_parents($result['class'])));
+        $this->assertContains(Component::class, class_parents($result['class']));
         $this->assertTrue(class_exists($result['class']));
     }
 
