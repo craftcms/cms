@@ -205,10 +205,10 @@ class ImageHelperTest extends Unit
     public function imageByStreamData()
     {
         return [
-            [[400, 300], fopen(dirname(__FILE__, 3).'\_data\assets\files\example-gif.gif', 'r')],
-            [[960, 640], fopen(dirname(__FILE__, 3).'\_data\assets\files\background.jpg', 'r')],
-            [[200, 200], fopen(dirname(__FILE__, 3).'\_data\assets\files\google.png', 'r')],
-            [false, fopen(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg', 'r')],
+            [[400, 300], fopen(dirname(__FILE__, 3).'\_data\assets\files\example-gif.gif', 'rb')],
+            [[960, 640], fopen(dirname(__FILE__, 3).'\_data\assets\files\background.jpg', 'rb')],
+            [[200, 200], fopen(dirname(__FILE__, 3).'\_data\assets\files\google.png', 'rb')],
+            [false, fopen(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg', 'rb')],
 
             // TODO: Generate a bunch of invalid image formats that generate exceptions.
 
