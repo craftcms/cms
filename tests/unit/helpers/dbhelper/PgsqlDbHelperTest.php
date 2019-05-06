@@ -37,7 +37,7 @@ class PgsqlDbHelperTest extends Unit
     {
         $isSupported = Db::isTypeSupported($type);
         $this->assertSame($supported, Db::isTypeSupported($type));
-        $this->assertInternalType('boolean', $isSupported);
+        $this->assertIsBool($isSupported);
     }
 
     public function sqlTypesData(): array

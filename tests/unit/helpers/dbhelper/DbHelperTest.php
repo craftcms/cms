@@ -160,7 +160,7 @@ class DbHelperTest extends Unit
     {
         $escapeResult = Db::escapeParam($input);
         $this->assertSame($result, $escapeResult);
-        $this->assertInternalType('string', $escapeResult);
+        $this->assertIsString($escapeResult);
     }
 
     public function escapeParamData(): array

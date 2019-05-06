@@ -72,7 +72,7 @@ class ConfigHelperTest extends Unit
     {
         $durationResult = ConfigHelper::durationInSeconds($input);
         $this->assertSame($result, $durationResult);
-        $this->assertInternalType('integer', $durationResult);
+        $this->assertIsInt($durationResult);
     }
 
     public function durationInSecondsData(): array

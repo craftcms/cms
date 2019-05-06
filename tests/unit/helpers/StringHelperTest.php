@@ -400,7 +400,7 @@ class StringHelperTest extends Unit
     {
         $isWhitespace = StringHelper::isWhitespace($input);
         $this->assertSame($result, $isWhitespace);
-        $this->assertInternalType('boolean', $isWhitespace);
+        $this->assertIsBool($isWhitespace);
     }
 
     public function whitespaceProvider(): array
@@ -455,7 +455,7 @@ class StringHelperTest extends Unit
     {
         $delimitedString = StringHelper::delimit($input, $delimited);
         $this->assertSame($result, $delimitedString);
-        $this->assertInternalType('string', $delimitedString);
+        $this->assertIsString($delimitedString);
     }
 
     public function delimitData(): array
@@ -543,7 +543,7 @@ class StringHelperTest extends Unit
     {
         $mb4String = StringHelper::encodeMb4($input);
        $this->assertSame($result, $mb4String);
-        $this->assertInternalType('string', $mb4String);
+        $this->assertIsString($mb4String);
 
         $this->assertFalse(StringHelper::containsMb4($mb4String));
     }

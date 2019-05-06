@@ -52,7 +52,7 @@ class DateTimeHelperTest extends Unit
     public function testContsants($result, $input)
     {
         $this->assertSame($result, $input);
-        $this->assertInternalType('integer', $input);
+        $this->assertIsInt($input);
     }
 
     public function constantsData(): array
@@ -92,7 +92,7 @@ class DateTimeHelperTest extends Unit
     {
         $toHuman = DateTimeHelper::secondsToHumanTimeDuration($input, $showSeconds);
         $this->assertSame($result, $toHuman);
-        $this->assertInternalType('string', $toHuman);
+        $this->assertIsString($toHuman);
     }
 
     public function secondsToHumanTimeData(): array
@@ -623,7 +623,7 @@ class DateTimeHelperTest extends Unit
     {
         $abbreviated = DateTimeHelper::timeZoneAbbreviation($input);
         $this->assertSame($result, $abbreviated);
-        $this->assertInternalType('string', $abbreviated);
+        $this->assertIsString($abbreviated);
     }
     public function timezoneAbbreviationData(): array
     {
@@ -643,7 +643,7 @@ class DateTimeHelperTest extends Unit
     {
         $isValidTimestamp = DateTimeHelper::isValidTimeStamp($input);
         $this->assertSame($result, $isValidTimestamp);
-        $this->assertInternalType('bool', $isValidTimestamp);
+        $this->assertIsBool($isValidTimestamp);
     }
     public function isValidTimestampData(): array
     {

@@ -64,7 +64,7 @@ class ArrayValidatorTest extends Unit
     {
         $this->assertTrue(strlen($validator->$variableName) > 2);
 
-        $this->assertInternalType('string', $validator->$variableName);
+        $this->assertIsString($validator->$variableName);
     }
 
     public function paramsToTestOnEmpty(): array

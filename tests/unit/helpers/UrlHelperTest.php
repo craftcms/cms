@@ -84,7 +84,7 @@ class UrlHelperTest extends Unit
     {
         $urlHelperResult = UrlHelper::$method($url);
         $this->assertSame($urlHelperResult, $result);
-        $this->assertInternalType('boolean', $urlHelperResult);
+        $this->assertIsBool($urlHelperResult);
     }
 
     /**

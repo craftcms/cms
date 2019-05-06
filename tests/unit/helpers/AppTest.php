@@ -50,7 +50,7 @@ class AppTest extends TestCase
     {
         $isValid = App::isValidEdition($input);
         $this->assertSame($result, $isValid);
-        $this->assertInternalType('boolean', $isValid);
+        $this->assertIsBool($isValid);
     }
 
     public function validEditionsData(): array
@@ -80,7 +80,7 @@ class AppTest extends TestCase
     {
         $version = App::normalizeVersion($input);
         $this->assertSame($result, App::normalizeVersion($input));
-        $this->assertInternalType('string', $version);
+        $this->assertIsString($version);
     }
 
 

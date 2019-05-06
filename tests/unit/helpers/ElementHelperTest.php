@@ -73,7 +73,7 @@ class ElementHelperTest extends Unit
     {
         $doesIt = ElementHelper::doesUriFormatHaveSlugTag($input);
         $this->assertSame($result, $doesIt);
-        $this->assertInternalType('boolean', $doesIt);
+        $this->assertIsBool($doesIt);
     }
     public function doesuriHaveSlugTagData(): array
     {
