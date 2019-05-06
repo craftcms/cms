@@ -9,6 +9,7 @@ use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\helpers\Db;
 use UnitTester;
+use yii\base\Exception;
 
 /**
  * Unit tests for the DB Helper class where its output may need to be mysql specific. Will be skipped if db isnt mysql.
@@ -121,7 +122,7 @@ class MysqlDbHelperTest extends Unit
      * @dataProvider getTextualCollumnType
      * @param $result
      * @param $input
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function testGetTextualCollumnTypeByContentLength($result, $input)
     {

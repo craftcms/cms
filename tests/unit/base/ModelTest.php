@@ -14,6 +14,7 @@ use Craft;
 use craft\test\mockclasses\models\ExampleModel;
 use DateTime;
 use DateTimeZone;
+use Exception;
 
 /**
  * Unit tests for ModelTest
@@ -57,7 +58,7 @@ class ModelTest extends Unit
      * @dataProvider dateTimeAttributes
      * @param $paramName
      * @param $dateForInput
-     * @throws \Exception
+     * @throws Exception
      */
     public function testDateTimeAttributes($paramName, $dateForInput)
     {

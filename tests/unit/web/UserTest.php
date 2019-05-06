@@ -12,6 +12,7 @@ namespace craftunit\web;
 use Codeception\Stub;
 use Craft;
 use craft\elements\User;
+use craft\errors\UserLockedException;
 use craft\services\Config;
 use craft\services\Security;
 use craft\test\TestCase;
@@ -183,7 +184,7 @@ class UserTest extends TestCase
 
     /**
      * @throws InvalidConfigException
-     * @throws \craft\errors\UserLockedException
+     * @throws UserLockedException
      */
     public function testStartElevatedSessionSetting()
     {

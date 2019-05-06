@@ -2,8 +2,6 @@
 
 namespace craftunit\helpers;
 
-
-use;
 use Codeception\Test\Unit;
 use Craft;
 use craft\db\pgsql\Schema;

@@ -8,11 +8,10 @@ namespace craftunit\helpers\filehelper;
 
 use Codeception\Test\Unit;
 use craft\helpers\FileHelper;
-use Symfony\Component\Filesystem\Exception\IOException;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
-useuse yii\base\InvalidConfigException;
+use yii\base\InvalidConfigException;
 
 /**
  * Class FileHelperTest.

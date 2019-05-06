@@ -21,6 +21,7 @@ use craftunit\fixtures\VolumesFixture;
 use UnitTester;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 
 /**
  * Class AssetsHelper.
@@ -49,7 +50,7 @@ class AssetsHelperTest extends Unit
     /**
      * @param $resultUrl
      * @param $params
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      * @dataProvider urlGenerationData
      */
     public function testUrlGeneration($resultUrl, $params)

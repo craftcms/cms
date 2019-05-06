@@ -15,6 +15,8 @@ use function mb_strpos;
 use stdClass;
 use UnitTester;
 use yii\base\ErrorException;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * Unit tests for the String Helper class.
@@ -585,8 +587,8 @@ class StringHelperTest extends Unit
     /**
      * @dataProvider encDecData
      * @param $input
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function testEncDec( $input)
     {

@@ -16,6 +16,10 @@ use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
 use craftunit\fixtures\SitesFixture;
+use Throwable;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use UnitTester;
 use yii\base\Event;
 use yii\base\Exception;
@@ -186,9 +190,9 @@ class ViewTest extends TestCase
      * Test that Craft::$app->getView()->renderTemplates(); Seems to work correctly with twig. Doesnt impact global props
      * and respects passed in variables.
      *
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
     public function testRenderTemplate()
     {
@@ -225,7 +229,7 @@ class ViewTest extends TestCase
      * @param $object
      * @param array $variables
      * @throws Exception
-     * @throws \Throwable
+     * @throws Throwable
      * @dataProvider renderObjectTemplateData
      */
     public function testRenderObjectTemplate($result, $template, $object, array $variables = [])

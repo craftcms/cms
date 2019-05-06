@@ -2,8 +2,6 @@
 
 namespace craftunit\helpers;
 
-
-use;
 use Craft;
 use craft\helpers\Db;
 use craft\test\mockclasses\serializable\Serializable;

@@ -19,6 +19,7 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use stdClass;
+use UnitTester;
 
 /**
  * Unit tests for the ActiveRecord class craft cms implements
@@ -31,7 +32,7 @@ class ActiveRecordTest extends Unit
 {
 
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     public $tester;
 
@@ -61,8 +62,8 @@ class ActiveRecordTest extends Unit
         sleep(5);
 
         $dateTimeZone = new DateTimeZone('UTC');
-        $date = new \DateTime('now', $dateTimeZone);
-        $oldDate  = new \DateTime($sesh->dateUpdated, $dateTimeZone);
+        $date = new DateTime('now', $dateTimeZone);
+        $oldDate  = new DateTime($sesh->dateUpdated, $dateTimeZone);
 
         // TODO: can $this->greaterThan be used? Might need more research....
         $this->assertGreaterThan($oldDate, $date);
@@ -107,10 +108,10 @@ class ActiveRecordTest extends Unit
         $jsonableClass->name = 'name';
         $serializable = new Serializable();
 
-        $excpectedDateTime = new \DateTime('2018-06-06 18:00:00');
+        $excpectedDateTime = new DateTime('2018-06-06 18:00:00');
         $excpectedDateTime->setTimezone(new DateTimeZone('UTC'));
 
-        $dateTime = new \DateTime('2018-06-06 18:00:00');
+        $dateTime = new DateTime('2018-06-06 18:00:00');
 
         return [
             [$excpectedDateTime->format('Y-m-d H:i:s'), $dateTime],
@@ -128,8 +129,8 @@ class ActiveRecordTest extends Unit
     public function testOverrides()
     {
         $utcTz = new DateTimeZone('UTC');
-        $oneDayAgo = new \DateTime('-1 day', $utcTz);
-        $now =  new \DateTime('now', $utcTz);
+        $oneDayAgo = new DateTime('-1 day', $utcTz);
+        $now =  new DateTime('now', $utcTz);
 
         $uuid = StringHelper::UUID();
 
