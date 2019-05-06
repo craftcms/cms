@@ -4,6 +4,7 @@
 
 ### Changed
 - Craft now stores the Default User Group’s UID in the project config, in case the group’s ID is different across environments.
+- `craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET` event handlers can now change the filename of the replaced asset before it is saved.
 
 ### Fixed
 - Fixed an error that could occur when saving a Single section if one of its sites had been disabled.
