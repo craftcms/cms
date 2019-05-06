@@ -36,6 +36,7 @@ class HandleValidatorTest extends Unit
     protected $tester;
 
     protected $reservedWords =  ['bird', 'is', 'the', 'word'];
+
     public function _before()
     {
         $this->model = new ExampleModel();

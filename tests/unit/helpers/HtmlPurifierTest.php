@@ -39,7 +39,7 @@ class HtmlPurifierTest extends Unit
         return [
             ['test', 'test'],
             ['null byte: ', "null byte: \0"],
-            ["あ（い）う（え）お", "あ（い）う（え）お\0"],
+            ['あ（い）う（え）お', "あ（い）う（え）お\0"],
             ['', "\1\2\3\4\5\6\7"],
             ['', "\x7F"],
             ['', "\xC2\x80"],

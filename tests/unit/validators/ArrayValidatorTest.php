@@ -62,7 +62,7 @@ class ArrayValidatorTest extends Unit
      */
     public function testMessagingOnEmptyInputArray(ArrayValidator $validator, $variableName)
     {
-        $this->assertTrue((strlen($validator->$variableName) > 2));
+        $this->assertTrue(strlen($validator->$variableName) > 2);
 
         $this->assertInternalType('string', $validator->$variableName);
     }

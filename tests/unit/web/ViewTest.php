@@ -315,12 +315,12 @@ class ViewTest extends TestCase
         Craft::$app->language = 'nl';
 
         // Basic test that register translations gets rendered
-        $js = $this->generateTranslationJs('app', ["1 month" => "1 maand", "1 minute" => "1 minuut"]);
+        $js = $this->generateTranslationJs('app', ['1 month' => '1 maand', '1 minute' => '1 minuut']);
         $this->assertRegisterJsInputValues($js, View::POS_BEGIN);
         $this->view->registerTranslations('app', ['1 month', '1 minute']);
 
         // Non existing translations get ignored
-        $js = $this->generateTranslationJs('app', ["1 month" => "1 maand"]);
+        $js = $this->generateTranslationJs('app', ['1 month' => '1 maand']);
         $this->assertRegisterJsInputValues($js, View::POS_BEGIN);
         $this->view->registerTranslations('app', ['1 month', 'not an existing translation23131321313']);
     }
