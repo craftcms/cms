@@ -105,7 +105,6 @@ class UserTest extends TestCase
      * meaning that it will return 49 seconds remaining instead of 50 (because between setting the session stub and processesing the remaining session time
      * a second will have passed). Solve this.
      *
-     * @throws InvalidConfigException
      */
     public function testGetRemainingSessionTimeMath()
     {
@@ -183,7 +182,6 @@ class UserTest extends TestCase
     }
 
     /**
-     * @throws InvalidConfigException
      * @throws UserLockedException
      */
     public function testStartElevatedSessionSetting()

@@ -211,7 +211,7 @@ class FileHelperTest extends Unit
      * @param $result
      * @param $file
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function testGetMimeTypeOnFalse($result, $file)
     {
