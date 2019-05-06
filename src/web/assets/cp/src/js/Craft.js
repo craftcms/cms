@@ -157,16 +157,9 @@ $.extend(Craft,
                 path = '';
             }
 
-            // Return path if it appears to be an absolute URL.
-            if (path.search('://') !== -1 || path[0] === '/') {
-                return path;
-            }
-
-            path = Craft.trim(path, '/');
-
+            // Normalize the params
             var anchor = '';
 
-            // Normalize the params
             if ($.isPlainObject(params)) {
                 var aParams = [];
 
@@ -201,6 +194,13 @@ $.extend(Craft,
                 params = path.substr(qpos + 1) + (params ? '&' + params : '');
                 path = path.substr(0, qpos);
             }
+
+            // Return path if it appears to be an absolute URL.
+            if (path.search('://') !== -1 || path[0] === '/') {
+                return path + (params ? '?' + params : '');
+            }
+
+            path = Craft.trim(path, '/');
 
             // Put it all together
             var url;
