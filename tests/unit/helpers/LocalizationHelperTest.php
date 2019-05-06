@@ -153,7 +153,7 @@ class LocalizationHelperTest extends Unit
      */
     public function testFindMissingTranslation($result, $input)
     {
-        $this->assertSame($result, Localization::findMissingTranslation($input););
+        $this->assertSame($result, Localization::findMissingTranslation($input));
     }
 
     public function findMissingTranslationData(): array
