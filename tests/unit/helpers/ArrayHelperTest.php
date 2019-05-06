@@ -251,7 +251,7 @@ class ArrayHelperTest extends Unit
                 ['name' => 'john'],
                 ['name' => 'michael'],
             ],
-            ['name'],
+            'name',
             'john',
             true
         ));
