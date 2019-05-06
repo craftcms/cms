@@ -60,7 +60,7 @@ class PasswordValidatorTest extends Unit
             $this->passwordValidator->currentPassword = $currentPass;
         }
 
-        $result = $this->passwordValidator->validateAttribute($this->model, 'exampleParam');
+        $this->passwordValidator->validateAttribute($this->model, 'exampleParam');
 
         if ($mustValidate) {
             $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());

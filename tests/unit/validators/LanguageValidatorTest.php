@@ -77,7 +77,7 @@ class LanguageValidatorTest extends Unit
         $model = new ExampleModel(['exampleParam' => $input]);
 
         $this->languageValidator->onlySiteLanguages = $onlySiteLocalIds;
-        $langVal = $this->languageValidator->validateAttribute($model, 'exampleParam');
+        $this->languageValidator->validateAttribute($model, 'exampleParam');
 
         if (!$mustValidate) {
             $this->assertArrayHasKey('exampleParam', $model->getErrors());

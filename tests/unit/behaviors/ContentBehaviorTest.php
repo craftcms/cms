@@ -46,7 +46,7 @@ class ContentBehaviorTest extends Unit
     public function testExistsInContentBehavior(string $handle)
     {
         // Make sure it exists
-        $contentBe = new ContentBehavior();
+        new ContentBehavior();
 
         $this->assertInstanceOf(Field::class, Craft::$app->getFields()->getFieldByHandle($handle));
         $this->assertTrue(property_exists(ContentBehavior::class, $handle));

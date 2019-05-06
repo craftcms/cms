@@ -310,7 +310,7 @@ class FileHelperTest extends Unit
      */
     public function testWriteToFile($content, $file, $contents, $options, $removeDir = false, $removeableDir = '')
     {
-        $writeToFile = FileHelper::writeToFile($file, $contents, $options);
+        FileHelper::writeToFile($file, $contents, $options);
 
         $this->assertTrue(is_file($file));
         $this->assertSame($content, file_get_contents($file));

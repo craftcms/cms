@@ -126,9 +126,9 @@ class ArrayValidatorTest extends Unit
     public function testCountValidation()
     {
         $this->model->exampleParam = [1, 2, 3, 4, 5, 6, 7];
-        $result = $this->arrayValidator->validateAttribute($this->model, 'exampleParam');
+        $this->arrayValidator->validateAttribute($this->model, 'exampleParam');
 
-         $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+        $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         $this->assertSame('aint right', $this->model->getErrors('exampleParam')[0]);
     }
 }

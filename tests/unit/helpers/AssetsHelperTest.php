@@ -11,16 +11,11 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\db\Query;
 use craft\elements\Asset;
 use craft\helpers\Assets;
-use craft\helpers\ConfigHelper;
 use craftunit\fixtures\AssetsFixture;
-use craftunit\fixtures\VolumesFolderFixture;
-use craftunit\fixtures\VolumesFixture;
 use UnitTester;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**

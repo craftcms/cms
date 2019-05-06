@@ -282,7 +282,7 @@ class RequestTest extends TestCase
     public function testCheckRequestTypeWithTokenParam()
     {
         $this->request->setBodyParams([Craft::$app->getConfig()->getGeneral()->tokenParam => 'something']);
-        $checked = $this->checkRequestType();
+        $this->checkRequestType();
 
         $this->assertTrue($this->getInaccessibleProperty($this->request, '_checkedRequestType'));
 

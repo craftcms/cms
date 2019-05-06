@@ -174,8 +174,6 @@ class SearchQueryTest extends Unit
      */
     public function testSearchQuery(string $query, array $configOptions = null, int $sizeOfArray = null)
     {
-        $exploded = explode(' ', $query);
-
         $search = new SearchQuery($query);
 
         // If we have to count the array. Count the array.

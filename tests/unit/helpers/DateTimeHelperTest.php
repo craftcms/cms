@@ -194,7 +194,6 @@ class DateTimeHelperTest extends Unit
      */
     public function testUtcDefault($format)
     {
-        $utc = new DateTimeZone('UTC');
         $toDateTime = DateTimeHelper::toDateTime($format, false, false);
         $this->assertSame($this->utcTimezone->getName(), $toDateTime->getTimezone()->getName());
     }
