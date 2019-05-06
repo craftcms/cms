@@ -19,7 +19,6 @@ use UnitTester;
 use yii\base\Action;
 use yii\base\Exception;
 use yii\base\ExitException;
-use yiiunit\TestCase;
 
 /**
  * Unit tests for ControllerTest

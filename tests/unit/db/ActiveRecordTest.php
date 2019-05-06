@@ -9,7 +9,6 @@ namespace craftunit\db;
 
 use Codeception\Test\Unit;
 use craft\db\ActiveRecord;
-use craft\db\Query;
 use craft\helpers\StringHelper;
 use craft\records\Session;
 use craft\records\Volume;
