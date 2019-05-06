@@ -42,8 +42,8 @@ class SearchTest extends Unit
 
     /**
      * @dataProvider filterElementIdByQueryData
-     * @param $result
-     * @param $elementIds
+     * @param $usernameOrEmailsForResult
+     * @param $usernameOrEmailsForQuery
      * @param $query
      * @param bool $scoreResults
      * @param null $siteId
@@ -89,12 +89,11 @@ class SearchTest extends Unit
 
     /**
      * @dataProvider filterScoresData
-     * @param $result
-     * @param $elementIds
+     * @param $scoresAndNames
+     * @param $usernameOrEmailsForQuery
      * @param $query
      * @param bool $scoreResults
      * @param null $siteId
-     * @param bool $returnScores
      */
     public function testFilterScores($scoresAndNames, $usernameOrEmailsForQuery, $query, $scoreResults = true, $siteId = null)
     {
@@ -190,7 +189,7 @@ class SearchTest extends Unit
     /**
      * @param $attributeName
      * @param $searchIndex
-     * @return array
+     * @return string
      */
     private function getSearchIndexValueByAttribute($attributeName, $searchIndex) : string
     {

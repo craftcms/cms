@@ -55,6 +55,7 @@ class RequestTest extends TestCase
     /**
      * @param $result
      * @param $header
+     * @param bool $detectTablets
      * @dataProvider isMobileBrowserDataProvider
      */
     public function testIsMobileBrowser($result, $header, $detectTablets = false)

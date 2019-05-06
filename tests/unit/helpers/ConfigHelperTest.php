@@ -64,6 +64,9 @@ class ConfigHelperTest extends Unit
 
     /**
      * @dataProvider durationInSecondsData
+     * @param $result
+     * @param $input
+     * @throws InvalidConfigException
      */
     public function testDurationInSeconds($result, $input)
     {
@@ -114,6 +117,7 @@ class ConfigHelperTest extends Unit
      *
      * @param $result
      * @param $input
+     * @param null $handle
      */
     public function testLocalizedValue($result, $input, $handle = null)
     {

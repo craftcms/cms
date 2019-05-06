@@ -50,6 +50,7 @@ class PasswordValidatorTest extends Unit
      * @dataProvider passwordValidationData
      * @param      $inputValue
      * @param bool $mustValidate
+     * @param string|null $currentPass
      */
     public function testValidation($inputValue, bool $mustValidate, string $currentPass = null)
     {
@@ -81,7 +82,9 @@ class PasswordValidatorTest extends Unit
     /**
      * @dataProvider customConfigData
      * @param $input
-     * @param $mustvalidate
+     * @param $mustValidate
+     * @param $min
+     * @param $max
      */
     public function testCustomConfig($input, $mustValidate, $min, $max)
     {
@@ -146,6 +149,7 @@ class PasswordValidatorTest extends Unit
      * @dataProvider isEmptyData
      * @param $result
      * @param $input
+     * @param $isEmptyVal
      */
     public function testIsEmpty($result, $input, $isEmptyVal)
     {

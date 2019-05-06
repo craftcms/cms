@@ -46,6 +46,7 @@ class UriFormatValidatorTest extends Unit
      * @dataProvider validateAttributeData
      * @param $mustValidate
      * @param $input
+     * @param bool $requireSlug
      */
     public function testValidateAttribute($mustValidate, $input, $requireSlug = false)
     {

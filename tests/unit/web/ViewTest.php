@@ -99,6 +99,8 @@ class ViewTest extends TestCase
     /**
      * @param $result
      * @param $templatePath
+     * @param null $templateMode
+     * @throws Exception
      * @dataProvider doesTemplateExistData
      */
     public function testDoesTemplateExistsInSite($result, $templatePath, $templateMode = null)
@@ -135,10 +137,13 @@ class ViewTest extends TestCase
     }
 
     /**
-     * @see          testDoesTemplateExistsInSite
      * @param $result
-     * @param $input
+     * @param $basePath
+     * @param $name
+     * @param null $templateExtensions
+     * @param null $viewTemplateNameExtensions
      * @dataProvider privateResolveTemplateData
+     * @see          testDoesTemplateExistsInSite
      */
     public function testPrivateResolveTemplate($result, $basePath, $name, $templateExtensions = null, $viewTemplateNameExtensions = null)
     {
@@ -180,9 +185,10 @@ class ViewTest extends TestCase
     /**
      * Test that Craft::$app->getView()->renderTemplates(); Seems to work correctly with twig. Doesnt impact global props
      * and respects passed in variables.
-     * @param $result
-     * @param $template
-     * @param $variables
+     *
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
      */
     public function testRenderTemplate()
     {
@@ -217,7 +223,9 @@ class ViewTest extends TestCase
      * @param $result
      * @param $template
      * @param $object
-     * @param $variables
+     * @param array $variables
+     * @throws Exception
+     * @throws \Throwable
      * @dataProvider renderObjectTemplateData
      */
     public function testRenderObjectTemplate($result, $template, $object, array $variables = [])

@@ -168,8 +168,9 @@ class SearchQueryTest extends Unit
 
     /**
      * @dataProvider searchQueryData
-     * @param $query
-     * @param null $configOptions
+     * @param string $query
+     * @param array $configOptions
+     * @param int|null $sizeOfArray
      */
     public function testSearchQuery(string $query, array $configOptions = null, int $sizeOfArray = null)
     {
@@ -192,6 +193,9 @@ class SearchQueryTest extends Unit
 
     /**
      * @dataProvider searchQueryData
+     * @param string $query
+     * @param array|null $configOptions
+     * @param int|null $sizeOfArray
      */
     public function testSearchQuerySortOrder(string $query, array $configOptions = null, int $sizeOfArray = null)
     {

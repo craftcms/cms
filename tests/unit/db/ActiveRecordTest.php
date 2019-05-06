@@ -82,6 +82,8 @@ class ActiveRecordTest extends Unit
 
     /**
      * @dataProvider dataForDbPrepare
+     * @param $result
+     * @param $input
      */
     public function testPrepValForDb($result, $input)
     {

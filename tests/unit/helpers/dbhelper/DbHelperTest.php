@@ -81,6 +81,11 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider parseParamDataProvider
+     * @param $result
+     * @param $collumn
+     * @param $value
+     * @param string $defaultOperator
+     * @param bool $caseInsensitive
      */
     public function testParseParamGeneral($result, $collumn, $value, $defaultOperator = '=', $caseInsensitive = false)
     {
@@ -150,6 +155,8 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider escapeParamData
+     * @param string $result
+     * @param string $input
      */
     public function testEscapeParam(string $result, string $input)
     {
@@ -169,6 +176,8 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider collumnTypeParsingData
+     * @param $result
+     * @param string $input
      */
     public function testCollumnTypeParsing($result, string $input)
     {
@@ -193,6 +202,11 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider numericCollumnTypesData
+     * @param $result
+     * @param $int1
+     * @param $int2
+     * @param null $decimals
+     * @throws \yii\base\Exception
      */
     public function testGetNumericCollumnType($result, $int1, $int2, $decimals = null)
     {
@@ -219,6 +233,8 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider collumnLengthParseData
+     * @param $result
+     * @param $input
      */
     public function testCollumnLengthParsing($result, $input)
     {
@@ -240,6 +256,8 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider simplifiedCollumnData
+     * @param $result
+     * @param $input
      */
     public function testGetSimplifiedCollumnType($result, $input)
     {
@@ -262,7 +280,13 @@ class DbHelperTest extends Unit
 
     /**
      * // TODO: Set this up with a fixture or a migration so that we can *actually* delete tables
+     *
      * @dataProvider deleteTablesData
+     * @param $result
+     * @param string $table
+     * @param string $condition
+     * @param array $params
+     * @throws Exception
      */
     public function testDeleteIfExists($result, string $table, $condition = '', array $params = [])
     {

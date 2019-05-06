@@ -121,6 +121,7 @@ class FileHelperTest extends Unit
      *
      * @param $result
      * @param $input
+     * @throws ErrorException
      */
     public function testIsDirEmpty($result, $input)
     {
@@ -211,7 +212,7 @@ class FileHelperTest extends Unit
      * @param $result
      * @param $file
      *
-     * @throws
+     * @throws \yii\base\InvalidConfigException
      */
     public function testGetMimeTypeOnFalse($result, $file)
     {
@@ -300,10 +301,13 @@ class FileHelperTest extends Unit
     /**
      * @dataProvider writeToFileData
      *
-     * @param $results
+     * @param $content
      * @param $file
      * @param $contents
      * @param $options
+     * @param bool $removeDir
+     * @param string $removeableDir
+     * @throws ErrorException
      */
     public function testWriteToFile($content, $file, $contents, $options, $removeDir = false, $removeableDir = '')
     {

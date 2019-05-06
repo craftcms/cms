@@ -183,6 +183,7 @@ class UserTest extends TestCase
 
     /**
      * @throws InvalidConfigException
+     * @throws \craft\errors\UserLockedException
      */
     public function testStartElevatedSessionSetting()
     {
@@ -209,8 +210,8 @@ class UserTest extends TestCase
 
     /**
      * Sets the Craft::$app->getSession(); to a stub where the get() method returns what you want.
+     *
      * @param int $returnValue
-     * @throws InvalidConfigException
      */
     private function passwordValidationStub($returnValue)
     {
@@ -220,7 +221,6 @@ class UserTest extends TestCase
     /**
      * Ensure that the param $value is equal to the value that is trying to be set to the session.
      * @param $value
-     * @throws InvalidConfigException
      */
     private function ensureSetSessionIsOfValue($value)
     {
@@ -232,7 +232,6 @@ class UserTest extends TestCase
     /**
      * Sets the Craft::$app->getSession(); to a stub where the get() method returns what you want.
      * @param int $returnValue
-     * @throws InvalidConfigException
      */
     private function sessionGetStub($returnValue)
     {

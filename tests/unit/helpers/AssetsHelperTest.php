@@ -47,8 +47,9 @@ class AssetsHelperTest extends Unit
     }
 
     /**
-     * @param $result
-     * @param $input
+     * @param $resultUrl
+     * @param $params
+     * @throws \yii\base\InvalidConfigException
      * @dataProvider urlGenerationData
      */
     public function testUrlGeneration($resultUrl, $params)
@@ -74,9 +75,6 @@ class AssetsHelperTest extends Unit
 
 
     /**
-     * @param $result
-     * @param $input
-     *
      * @throws Exception
      */
     public function testTempFilePath()

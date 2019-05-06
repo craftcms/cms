@@ -27,6 +27,8 @@ class JsonHelperTest extends Test
 
     /**
      * @dataProvider jsonDecodabledData
+     * @param $result
+     * @param $input
      */
     public function testDecodeIfJson($result, $input)
     {

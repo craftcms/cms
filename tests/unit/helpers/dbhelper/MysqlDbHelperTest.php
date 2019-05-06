@@ -33,6 +33,8 @@ class MysqlDbHelperTest extends Unit
 
     /**
      * @dataProvider sqlTypesData
+     * @param $type
+     * @param $supported
      */
     public function testTypeSupport($type, $supported)
     {
@@ -79,6 +81,11 @@ class MysqlDbHelperTest extends Unit
 
     /**
      * @dataProvider parseParamData
+     * @param $result
+     * @param $collumn
+     * @param $value
+     * @param string $defaultOperator
+     * @param bool $caseInsensitive
      */
     public function testParseParamGeneral($result, $collumn, $value, $defaultOperator = '=', $caseInsensitive = false)
     {
@@ -112,6 +119,9 @@ class MysqlDbHelperTest extends Unit
 
     /**
      * @dataProvider getTextualCollumnType
+     * @param $result
+     * @param $input
+     * @throws \yii\base\Exception
      */
     public function testGetTextualCollumnTypeByContentLength($result, $input)
     {

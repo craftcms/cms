@@ -76,7 +76,7 @@ class HandleValidatorTest extends Unit
     /**
      * @dataProvider handleValidationData
      *
-     * @param bool $result
+     * @param bool $mustValidate
      * @param      $input
      */
     public function testHandleValidation(bool $mustValidate, $input)

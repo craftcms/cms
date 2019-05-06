@@ -69,7 +69,7 @@ class AppTest extends Unit
 
     /**
      * @param $instance
-     * @param $maps
+     * @param $map
      * @throws InvalidConfigException
      * @dataProvider craftAppGetMethods
      */

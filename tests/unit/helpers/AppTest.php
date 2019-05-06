@@ -43,6 +43,8 @@ class AppTest extends TestCase
 
     /**
      * @dataProvider validEditionsData
+     * @param $result
+     * @param $input
      */
     public function testIsValidEdition($result, $input)
     {
@@ -116,6 +118,8 @@ class AppTest extends TestCase
 
     /**
      * @dataProvider classHumanizationData
+     * @param $result
+     * @param $input
      */
     public function testClassHumanization($result, $input)
     {
@@ -164,6 +168,8 @@ class AppTest extends TestCase
 
     /**
      * @dataProvider configsData
+     * @param $method
+     * @param $desiredConfig
      */
     public function testConfigIndexes($method, $desiredConfig)
     {

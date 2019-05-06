@@ -72,9 +72,13 @@ class UrlHelperTest extends Unit
 
     /**
      * Tests various methods of the UrlHelper which check that a URL confirms to a specification. I.E. Is it protocol relative or absolute
+     *
      * @dataProvider protocolRelativeUrlData
      * @dataProvider absoluteUrlData
      * @dataProvider fulUrlData
+     * @param $url
+     * @param bool $result
+     * @param $method
      */
     public function testIsUrlFunction($url, bool $result, $method)
     {
@@ -136,7 +140,10 @@ class UrlHelperTest extends Unit
     /**
      * Test that adding params to urls works under various circumstances
      * @dataProvider urlWithParamsData()
-     */
+     * @param $result
+     * @param $url
+     * @param $params
+*/
     public function testUrlWithParams($result, $url, $params)
     {
         $this->assertSame($result, UrlHelper::urlWithParams($url, $params));
@@ -190,7 +197,11 @@ class UrlHelperTest extends Unit
      * the cpTrigger variable inst easily accessible in the dataProvider methods.
      *
      * @dataProvider cpUrlCreationData
-     */
+     * @param $result
+     * @param $inputUrl
+     * @param $params
+     * @param string $scheme
+*/
     public function testCpUrlCreation($result, $inputUrl, $params, $scheme = 'https')
     {
         // Make sure https is enabled for the base url.
@@ -250,11 +261,11 @@ class UrlHelperTest extends Unit
      * @dataProvider urlWithTokenProvider
      * @dataProvider urlWithParamsProvider
      * @dataProvider stripQueryStringProvider
-     * @param      $url
-     * @param      $data
      * @param bool $result
+     * @param      $url
+     * @param $modifier
      * @param      $method
-     */
+*/
     public function testUrlModifiers($result, $url, $modifier, $method)
     {
         Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls = true;
@@ -457,11 +468,12 @@ class UrlHelperTest extends Unit
      * @dataProvider urlFunctionDataProvider
      *
      * @param             $result
-     * @param string      $path
-     * @param null        $params
+     * @param string $path
+     * @param null $params
      * @param string|null $scheme
-     * @param bool|null   $showScriptName
-     */
+     * @param bool|null $showScriptName
+     * @param bool $isNonCompletedUrl
+*/
     public function testUrlFunction($result, string $path = '', $params = null, string $scheme = null, bool $showScriptName = null, bool $isNonCompletedUrl = false)
     {
         if ($isNonCompletedUrl === true || !UrlHelper::isAbsoluteUrl($result)) {
@@ -583,6 +595,7 @@ class UrlHelperTest extends Unit
      * @param null $params
      * @param null $scheme
      * @param null $siteId
+     * @throws Exception
      */
     public function testSiteUrl($result, $path, $params = null, $scheme = null, $siteId = null)
     {

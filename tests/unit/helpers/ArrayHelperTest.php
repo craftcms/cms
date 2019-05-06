@@ -27,6 +27,8 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider toArrayData
+     * @param $result
+     * @param $input
      */
     public function testToArray($result, $input)
     {
@@ -47,6 +49,10 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider prependOrAppendData
+     * @param $result
+     * @param $inputArray
+     * @param $appendable
+     * @param $preOrAppend
      */
     public function testPrependOrAppend($result, $inputArray, $appendable, $preOrAppend)
     {
@@ -150,7 +156,7 @@ class ArrayHelperTest extends Unit
      * @dataProvider withoutValueData
      * @param $result
      * @param $array
-     * @param $key
+     * @param $value
      */
     public function testWithoutValue($result, $array, $value)
     {

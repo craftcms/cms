@@ -469,9 +469,12 @@ class StringHelperTest extends Unit
 
         ];
     }
+
     /**
      * @dataProvider ensureRightData
+     * @param $result
      * @param $input
+     * @param $ensure
      */
     public function testEnsureRight($result, $input, $ensure)
     {
@@ -498,9 +501,8 @@ class StringHelperTest extends Unit
     /**
      * @dataProvider randomStringWithCharsData
      *
-     * @param $result
      * @param $valid
-     * @param $length
+     * @param int $length
      */
     public function testRandomStringWithChars($valid, int $length)
     {
@@ -582,8 +584,9 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider encDecData
-     * @param $result
      * @param $input
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
      */
     public function testEncDec( $input)
     {
@@ -611,8 +614,6 @@ class StringHelperTest extends Unit
     }
 
     /**
-     * @param $result
-     * @param $input
      */
     public function testUUID()
     {

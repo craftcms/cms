@@ -39,6 +39,9 @@ class LanguageValidatorTest extends Unit
     }
 
     /**
+     * @param $result
+     * @param $input
+     * @param bool $onlySiteLangs
      * @throws NotSupportedException
      * @dataProvider validateValueData
      */
@@ -63,8 +66,9 @@ class LanguageValidatorTest extends Unit
     }
 
     /**
-     * @param $result
+     * @param $mustValidate
      * @param $input
+     * @param bool $onlySiteLocalIds
      * @dataProvider validateAttributeData
      */
     public function testValidateAtrribute($mustValidate, $input, $onlySiteLocalIds = true)

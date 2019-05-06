@@ -80,8 +80,9 @@ class ComponentHelperTest extends Unit
 
     /**
      * @dataProvider failingComponentCreationData
+     * @param array $settings
      * @param $desiredParent
-     * @param string   $requiredException
+     * @param string $requiredException
      */
     public function testFailedComponentExceptions(array $settings, $desiredParent, string $requiredException)
     {

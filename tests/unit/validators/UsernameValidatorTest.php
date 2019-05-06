@@ -40,6 +40,7 @@ class UsernameValidatorTest extends Unit
      * @dataProvider validateValueData
      * @param $result
      * @param $input
+     * @throws \yii\base\NotSupportedException
      */
     public function testValidateValue($result, $input)
     {

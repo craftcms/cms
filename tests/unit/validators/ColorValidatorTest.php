@@ -84,9 +84,8 @@ class ColorValidatorTest extends Unit
 
     /**
      * @dataProvider colorValidatorAttributes
-     * @param $result
      * @param $input
-     * @param $attributeName
+     * @param bool $mustValidate
      */
     public function testAttributeValidation($input, bool $mustValidate)
     {

@@ -27,6 +27,8 @@ class ModelTest extends Unit
     /**
      * @param $result
      * @param $input
+     * @param $searchParam
+     * @param $paramName
      * @dataProvider hasErrorsData
      */
     public function testHasErrors($result, $input, $searchParam, $paramName)
@@ -51,7 +53,11 @@ class ModelTest extends Unit
 
     /**
      * Test the DateTimeAttributes function of the base Model
+     *
      * @dataProvider dateTimeAttributes
+     * @param $paramName
+     * @param $dateForInput
+     * @throws \Exception
      */
     public function testDateTimeAttributes($paramName, $dateForInput)
     {

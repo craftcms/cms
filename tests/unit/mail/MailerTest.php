@@ -59,7 +59,11 @@ class MailerTest extends Unit
 
     /**
      * Tests mail from key composition
+     *
      * @dataProvider fromKeyComposition
+     * @param $key
+     * @param array $variables
+     * @throws InvalidConfigException
      */
     public function testFromKeyComposition($key, array $variables = [])
     {

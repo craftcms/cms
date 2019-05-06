@@ -92,6 +92,7 @@ class ElementHelperTest extends Unit
      * @dataProvider setUniqueUriData
      * @param $result
      * @param $config
+     * @throws OperationAbortedException
      */
     public function testSetUniqueUri($result, $config)
     {

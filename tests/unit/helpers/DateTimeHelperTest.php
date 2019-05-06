@@ -46,6 +46,8 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider constantsData
+     * @param $result
+     * @param $input
      */
     public function testContsants($result, $input)
     {
@@ -82,6 +84,9 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider secondsToHumanTimeData
+     * @param $result
+     * @param $input
+     * @param bool $showSeconds
      */
     public function testSecondsToHumanTimeDuration($result, $input, $showSeconds = true)
     {
@@ -118,7 +123,8 @@ class DateTimeHelperTest extends Unit
      * @dataProvider formatsWithTimezone
      *
      * @param           $format
-     * @param DateTime $expectedResult
+     * @param Closure $expectedResult
+     * @throws Exception
      */
     public function testUtcIgnorance($format, Closure $expectedResult)
     {
@@ -161,6 +167,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @dataProvider invalidToDateTimeFormatsData
      * @param $format
+     * @throws Exception
      */
     public function testToDateTimeInvalidFormats($format)
     {
@@ -184,6 +191,7 @@ class DateTimeHelperTest extends Unit
      *
      * @dataProvider simpleDateTimeFormats
      * @param $format
+     * @throws Exception
      */
     public function testUtcDefault($format)
     {
@@ -206,10 +214,11 @@ class DateTimeHelperTest extends Unit
     /**
      * Test that dateTime is created with the passed in timezone IF $setSystemTimezone is set to false.
      *
-     *@dataProvider toDateTimeWithTzFormats
+     * @dataProvider toDateTimeWithTzFormats
      * @param               $format
-     * @param DateTime      $expectedResult
+     * @param DateTime $expectedResult
      * @param DateTimeZone $expectedTimezone
+     * @throws Exception
      */
     public function testToDateTimeRespectsTz($format, DateTime $expectedResult, DateTimeZone $expectedTimezone)
     {
@@ -252,6 +261,8 @@ class DateTimeHelperTest extends Unit
      * @dataProvider toDateTimeFormats
      * @param          $format
      * @param Closure $expectedResult
+     * @param null $closureParam
+     * @throws Exception
      */
     public function testToDateTimeCreation($format, Closure $expectedResult, $closureParam = null)
     {
@@ -354,6 +365,7 @@ class DateTimeHelperTest extends Unit
      * @dataProvider isIso8601Data
      * @param $result
      * @param $input
+     * @param bool $convert
      */
     public function testIso86($result, $input, $convert = false)
     {
@@ -393,6 +405,7 @@ class DateTimeHelperTest extends Unit
      * @param $result
      * @param $inputString
      *
+     * @param bool $showSeconds
      * @throws Exception
      */
     public function testHumanIntervalDuration($result, $inputString, $showSeconds = true)
@@ -501,6 +514,9 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider withinLastData
+     * @param $result
+     * @param $dateTime
+     * @param $interval
      */
     public function testIsWithinLast($result, $dateTime, $interval)
     {
@@ -535,10 +551,9 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider secondsToIntervalData
-     * @param $result
+     * @param $shortResult
+     * @param $longResult
      * @param $input
-     * @param $shortFormat
-     * @param $longFormat
      */
     public function testSecondsToInterval($shortResult, $longResult, $input)
     {
@@ -590,6 +605,7 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @return array
+     * @throws Exception
      */
     public function toIso8601Data()
     {
