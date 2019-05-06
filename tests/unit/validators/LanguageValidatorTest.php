@@ -91,7 +91,7 @@ class LanguageValidatorTest extends Unit
         $returnArray = [];
         foreach ($this->validateValueData() as $item) {
             $mustValidate = true;
-            if (isset($item[0]) && $item[0]) {
+            if (!empty($item[0])) {
                 $mustValidate = false;
             }
 
