@@ -43,7 +43,7 @@ class ConfigHelperTest extends Unit
         $this->assertSame($result, ConfigHelper::sizeInBytes($input));
     }
 
-    public function sizeInBytesData()
+    public function sizeInBytesData(): array
     {
         return [
             [5368709120, '5G'],
@@ -75,7 +75,7 @@ class ConfigHelperTest extends Unit
         $this->assertInternalType('integer', $durationResult);
     }
 
-    public function durationInSecondsData()
+    public function durationInSecondsData(): array
     {
         return [
             [86400, 'P1D'],
@@ -124,7 +124,7 @@ class ConfigHelperTest extends Unit
         $this->assertSame($result, ConfigHelper::localizedValue($input, $handle));
     }
 
-    public function localizedValueData()
+    public function localizedValueData(): array
     {
         $exampleModel = new ExampleModel();
         $exampleModel->exampleParam = 'imaparam';

@@ -95,7 +95,7 @@ class HandleValidatorTest extends Unit
         }
     }
 
-    public function handleValidationData()
+    public function handleValidationData(): array
     {
         return [
             [true, 'iamAHandle'],

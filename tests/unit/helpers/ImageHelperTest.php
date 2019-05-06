@@ -48,7 +48,7 @@ class ImageHelperTest extends Unit
         $calculate = Image::calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
         $this->assertSame($result, $calculate);
     }
-    public function calculateMissingImensionData()
+    public function calculateMissingImensionData(): array
     {
         return [
             [[1, 1], 1, 1, 1, 1],
@@ -72,7 +72,7 @@ class ImageHelperTest extends Unit
         $canManipulate = Image::canManipulateAsImage($input);
         $this->assertSame($result, $canManipulate);
     }
-    public function canManipulateAsImageData()
+    public function canManipulateAsImageData(): array
     {
         return [
             [true, 'jpg'],
@@ -105,7 +105,7 @@ class ImageHelperTest extends Unit
         $imageInfo = Image::pngImageInfo($input);
         $this->assertSame($result, $imageInfo);
     }
-    public function pngImageInfoData()
+    public function pngImageInfoData(): array
     {
         return [
             [[
@@ -137,7 +137,7 @@ class ImageHelperTest extends Unit
         $canHavExit = Image::canHaveExifData($input);
         $this->assertSame($result, $canHavExit);
     }
-    public function canHaveExitData()
+    public function canHaveExitData(): array
     {
         return [
             [true, dirname(__FILE__, 3).'\_data\assets\files\background.jpg'],
@@ -160,7 +160,7 @@ class ImageHelperTest extends Unit
         $imageSize = Image::imageSize($input);
         $this->assertSame($result, $imageSize);
     }
-    public function imageSizeData()
+    public function imageSizeData(): array
     {
         return [
             [[960, 640], dirname(__FILE__, 3).'\_data\assets\files\background.jpg'],
@@ -180,7 +180,7 @@ class ImageHelperTest extends Unit
         $parsed = Image::parseSvgSize($input);
         $this->assertSame($result, $parsed);
     }
-    public function parseSvgData()
+    public function parseSvgData(): array
     {
         return [
             [[140.0, 41.0], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg')],
@@ -202,7 +202,7 @@ class ImageHelperTest extends Unit
         $stream = Image::imageSizeByStream($input);
         $this->assertSame($result, $stream);
     }
-    public function imageByStreamData()
+    public function imageByStreamData(): array
     {
         return [
             [[400, 300], fopen(dirname(__FILE__, 3).'\_data\assets\files\example-gif.gif', 'rb')],

@@ -53,7 +53,7 @@ class LanguageValidatorTest extends Unit
 
         $this->assertSame($result, $validated);
     }
-    public function validateValueData()
+    public function validateValueData(): array
     {
         return [
             [['{value} is not a valid site language.', []], 'nolang'],
@@ -86,7 +86,7 @@ class LanguageValidatorTest extends Unit
             $this->assertSame([], $model->getErrors());
         }
     }
-    public function validateAttributeData()
+    public function validateAttributeData(): array
     {
         $returnArray = [];
         foreach ($this->validateValueData() as $item) {

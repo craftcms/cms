@@ -98,7 +98,7 @@ class FileHelperTest extends Unit
         $this->assertSame($result, $normalized);
     }
 
-    public function pathNormalizedData()
+    public function pathNormalizedData(): array
     {
         return [
             ['Im a string', 'Im a string', DIRECTORY_SEPARATOR],
@@ -128,7 +128,7 @@ class FileHelperTest extends Unit
         $this->assertSame($result, $isEmpty);
     }
 
-    public function isDirEmptyData()
+    public function isDirEmptyData(): array
     {
         return [
             [true, __DIR__ . '/sandbox/isdirempty/yes'],
@@ -164,7 +164,7 @@ class FileHelperTest extends Unit
         $this->assertTrue($result, $isWritable);
     }
 
-    public function isWritableDataProvider()
+    public function isWritableDataProvider(): array
     {
         return [
             [true, __DIR__ . '/sandbox/iswritable/dir'],
@@ -191,7 +191,7 @@ class FileHelperTest extends Unit
         $this->assertSame($result, $mimeType);
     }
 
-    public function mimeTypeData()
+    public function mimeTypeData(): array
     {
         return [
             ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
@@ -219,7 +219,7 @@ class FileHelperTest extends Unit
         $this->assertSame($result, $mimeType);
     }
 
-    public function mimeTypeFalseData()
+    public function mimeTypeFalseData(): array
     {
         return [
             ['text/plain', dirname(__DIR__, 3) . '/_data/assets/files/test.html'],
@@ -247,7 +247,7 @@ class FileHelperTest extends Unit
         $this->assertSame($result, $sanitized);
     }
 
-    public function sanitizedFilenameData()
+    public function sanitizedFilenameData(): array
     {
         return [
             ['notafile', 'notafile', []],
@@ -322,7 +322,7 @@ class FileHelperTest extends Unit
         }
 
     }
-    public function writeToFileData()
+    public function writeToFileData(): array
     {
         $sandboxDir = __DIR__.'/sandbox/writeto';
         return [

@@ -40,7 +40,7 @@ class PgsqlDbHelperTest extends Unit
         $this->assertInternalType('boolean', $isSupported);
     }
 
-    public function sqlTypesData()
+    public function sqlTypesData(): array
     {
         // TODO: This is the best way to test it but is it worth 20mb and 3 seconds of time?
         $mysqlSchema = new \craft\db\mysql\Schema();
@@ -69,7 +69,7 @@ class PgsqlDbHelperTest extends Unit
         $capacity = Db::getTextualColumnStorageCapacity($input);
         $this->assertSame($result, $capacity);
     }
-    public function textualStorageData()
+    public function textualStorageData(): array
     {
         return [
             [null, Schema::TYPE_TEXT],
@@ -89,7 +89,7 @@ class PgsqlDbHelperTest extends Unit
         $this->assertSame($result, Db::parseParam($collumn, $value, $defaultOperator, $caseInsensitive));
     }
 
-    public function parseParamData()
+    public function parseParamData(): array
     {
         return [
             'multi-:empty:-param' => [
@@ -114,7 +114,7 @@ class PgsqlDbHelperTest extends Unit
         $this->assertSame($result, $textualCapacity);
     }
 
-    public function getTextualCollumnType()
+    public function getTextualCollumnType(): array
     {
         return [
             ['text', 254],

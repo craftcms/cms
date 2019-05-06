@@ -33,7 +33,7 @@ use yii\base\Exception;
  */
 class ViewTest extends TestCase
 {
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'sites' => [
@@ -73,7 +73,7 @@ class ViewTest extends TestCase
         $this->assertSame($result, $this->view->normalizeObjectTemplate($input));
     }
 
-    public function normalizeObjectTemplateData()
+    public function normalizeObjectTemplateData(): array
     {
         return [
             ['{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}', '{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}'],
@@ -122,7 +122,7 @@ class ViewTest extends TestCase
         }
     }
 
-    public function doesTemplateExistData()
+    public function doesTemplateExistData(): array
     {
         return [
             ['@craftunittemplates/index.html', ''],
@@ -166,7 +166,7 @@ class ViewTest extends TestCase
         $this->assertSame(Craft::getAlias($result), $resolved);
     }
 
-    public function privateResolveTemplateData()
+    public function privateResolveTemplateData(): array
     {
         return [
             ['@craftunittemplates/template.twig', '@craftunittemplates', 'template'],
@@ -238,7 +238,7 @@ class ViewTest extends TestCase
         $this->assertSame($result, $res);
     }
 
-    public function renderObjectTemplateData()
+    public function renderObjectTemplateData(): array
     {
         $model = new ExampleModel();
         $model->exampleParam = 'Example Param';
@@ -359,7 +359,7 @@ class ViewTest extends TestCase
         $this->assertSame($result, $namespaced);
     }
 
-    public function namespaceInputsData()
+    public function namespaceInputsData(): array
     {
         return [
             ['', ''],
@@ -395,7 +395,7 @@ class ViewTest extends TestCase
         $namespaced = $this->view->namespaceInputName($string, $namespace);
         $this->assertSame($result, $namespaced);
     }
-    public function namespaceInputNameData()
+    public function namespaceInputNameData(): array
     {
         return [
             ['', ''],
@@ -422,7 +422,7 @@ class ViewTest extends TestCase
         $namespaced = $this->view->namespaceInputId($string, $namespace);
         $this->assertSame($result, $namespaced);
     }
-    public function namespaceInputIdData()
+    public function namespaceInputIdData(): array
     {
         return [
             ['', ''],
@@ -452,7 +452,7 @@ class ViewTest extends TestCase
         $roots = $this->getTemplateRoots($which);
         $this->assertSame($result, $roots);
     }
-    public function getTemplateRootsData()
+    public function getTemplateRootsData(): array
     {
         return [
             [['random-roots' => [null]], 'random-roots', ['random-roots' => null]],
@@ -493,7 +493,7 @@ class ViewTest extends TestCase
 
     // Helpers
     // =========================================================================
-    private function generateTranslationJs($category, array $messages)
+    private function generateTranslationJs($category, array $messages): string
     {
         $category = Json::encode($category);
         $js = '';

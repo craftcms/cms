@@ -44,7 +44,7 @@ class ElementHelperTest extends Unit
         $this->assertSame($result, ElementHelper::createSlug($input));
     }
 
-    public function createSlugData()
+    public function createSlugData(): array
     {
         return [
             ['word[seperator-here]Word', 'wordWord'],
@@ -75,7 +75,7 @@ class ElementHelperTest extends Unit
         $this->assertSame($result, $doesIt);
         $this->assertInternalType('boolean', $doesIt);
     }
-    public function doesuriHaveSlugTagData()
+    public function doesuriHaveSlugTagData(): array
     {
         return [
             [false, ''],
@@ -104,7 +104,7 @@ class ElementHelperTest extends Unit
             $this->assertSame($res, $example->$key);
         }
     }
-    public function setUniqueUriData()
+    public function setUniqueUriData(): array
     {
         return [
             [['uri' => null], ['uriFormat' => null]],

@@ -109,7 +109,7 @@ class SearchQueryTest extends Unit
     /**
      *
      */
-    public function searchQueryData()
+    public function searchQueryData(): array
     {
         // The $searchQueryTerm->term property will not contain the "" double quotes and will have ['phrase'] set to true
         $quotedPhraseConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
@@ -214,7 +214,7 @@ class SearchQueryTest extends Unit
      * @param $index
      * @return SearchQueryTerm
      */
-    public function getWhatItShouldBe($token, $configOptions, $index)
+    public function getWhatItShouldBe($token, $configOptions, $index): SearchQueryTerm
     {
         // Get wether the data provider gave us custom config options for this term based on the above searchParam
         $config = $this->getConfigFromOptions($index, $configOptions);

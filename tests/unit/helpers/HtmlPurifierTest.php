@@ -33,7 +33,7 @@ class HtmlPurifierTest extends Unit
         $cleaned = HtmlPurifier::cleanUtf8($input);
         $this->assertSame($result, $cleaned);
     }
-    public function utf8CleanData()
+    public function utf8CleanData(): array
     {
         // https://github.com/ezyang/htmlpurifier/blob/master/tests/HTMLPurifier/EncoderTest.php#L21
         return [

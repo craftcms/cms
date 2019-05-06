@@ -90,7 +90,7 @@ class DbHelperTest extends Unit
         $this->assertSame($result, Db::parseParam($collumn, $value, $defaultOperator, $caseInsensitive));
     }
 
-    public function parseParamDataProvider()
+    public function parseParamDataProvider(): array
     {
         return [
             'basic' => [
@@ -163,7 +163,7 @@ class DbHelperTest extends Unit
         $this->assertInternalType('string', $escapeResult);
     }
 
-    public function escapeParamData()
+    public function escapeParamData(): array
     {
         return [
             ['\*', '*'],
@@ -182,7 +182,7 @@ class DbHelperTest extends Unit
         $this->assertSame($result, Db::parseColumnType($input));
     }
 
-    public function collumnTypeParsingData()
+    public function collumnTypeParsingData(): array
     {
         return [
             ['test', 'test'],
@@ -211,7 +211,7 @@ class DbHelperTest extends Unit
         $this->assertSame($result, Db::getNumericalColumnType($int1, $int2, $decimals));
     }
 
-    public function numericCollumnTypesData()
+    public function numericCollumnTypesData(): array
     {
         return [
             'smallint1-minus' => ['smallint(1)', -0, -5],
@@ -239,7 +239,7 @@ class DbHelperTest extends Unit
         $this->assertSame($result, Db::parseColumnLength($input));
     }
 
-    public function collumnLengthParseData()
+    public function collumnLengthParseData(): array
     {
         return [
             [2, 'integer(2)'],
@@ -262,7 +262,7 @@ class DbHelperTest extends Unit
         $this->assertSame($result, Db::getSimplifiedColumnType($input));
     }
 
-    public function simplifiedCollumnData()
+    public function simplifiedCollumnData(): array
     {
         return [
             ['textual', 'Textual'],
@@ -291,7 +291,7 @@ class DbHelperTest extends Unit
         $this->assertSame($result, Db::deleteIfExists($table, $condition, $params));
     }
 
-    public function deleteTablesData()
+    public function deleteTablesData(): array
     {
         return [
             [0, '{{%users}} users', "[[users.id]] = 1234567890 and [[users.uid]] = 'THISISNOTAUID'"]
@@ -319,7 +319,7 @@ class DbHelperTest extends Unit
         $this->assertSame($result, $prepped);
     }
 
-    public function dataForDbPrepare()
+    public function dataForDbPrepare(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
         $jsonableClass = new stdClass();
@@ -382,7 +382,7 @@ class DbHelperTest extends Unit
         $areCompatible = Db::areColumnTypesCompatible($columnA, $columnB);
         $this->assertSame($result, $areCompatible);
     }
-    public function columnCompatibilityData()
+    public function columnCompatibilityData(): array
     {
         return [
             [true, 'Tinytext', 'Longtext'],
@@ -407,7 +407,7 @@ class DbHelperTest extends Unit
         $this->assertSame($result, $isNumeric);
     }
 
-    public function isNumericData()
+    public function isNumericData(): array
     {
         return [
             [false, 'integer(1)'],
@@ -431,7 +431,7 @@ class DbHelperTest extends Unit
         $capacity = Db::getTextualColumnStorageCapacity($input);
         $this->assertSame($result, $capacity);
     }
-    public function textualStorageData()
+    public function textualStorageData(): array
     {
         return [
             [1, Schema::TYPE_CHAR],
@@ -451,7 +451,7 @@ class DbHelperTest extends Unit
         $allowed = Db::getMaxAllowedValueForNumericColumn($input);
         $this->assertSame($result, $allowed);
     }
-    public function getMaxAllowedValueForNumericColumnData()
+    public function getMaxAllowedValueForNumericColumnData(): array
     {
         return [
             [2147483647, 'integer(9)'],
@@ -471,7 +471,7 @@ class DbHelperTest extends Unit
         $allowed = Db::getMinAllowedValueForNumericColumn($input);
         $this->assertSame($result, $allowed);
     }
-    public function getMinAllowedValueForNumericColumnData()
+    public function getMinAllowedValueForNumericColumnData(): array
     {
         return [
             [-2147483648, 'integer(9)'],
@@ -491,7 +491,7 @@ class DbHelperTest extends Unit
         $prepared = Db::prepareValuesForDb($input);
         $this->assertSame($result, $prepared);
     }
-    public function prepareValuesForDbData()
+    public function prepareValuesForDbData(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
         $jsonableClass = new stdClass();

@@ -44,7 +44,7 @@ class MysqlDbHelperTest extends Unit
         $this->assertInternalType('boolean', $isSupported);
     }
 
-    public function sqlTypesData()
+    public function sqlTypesData(): array
     {
         // TODO: This is the best way to test it but is it worth 20mb and 3 seconds of time?
         $mysqlSchema = new MysqlSchema();
@@ -73,7 +73,7 @@ class MysqlDbHelperTest extends Unit
         $capacity = Db::getTextualColumnStorageCapacity($input);
         $this->assertSame($result, $capacity);
     }
-    public function textualStorageData()
+    public function textualStorageData(): array
     {
         return [
             [null, MysqlSchema::TYPE_ENUM],
@@ -93,7 +93,7 @@ class MysqlDbHelperTest extends Unit
         $this->assertSame($result, Db::parseParam($collumn, $value, $defaultOperator, $caseInsensitive));
     }
 
-    public function parseParamData()
+    public function parseParamData(): array
     {
         return [
             'multi-:empty:-param' => [
@@ -130,7 +130,7 @@ class MysqlDbHelperTest extends Unit
         $this->assertSame($result, $textualCapacity);
     }
 
-    public function getTextualCollumnType()
+    public function getTextualCollumnType(): array
     {
         return [
             ['string', 254],

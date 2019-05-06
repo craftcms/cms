@@ -91,7 +91,7 @@ class UrlHelperTest extends Unit
      * Add tests for whether urls are qualified as absolute.
      * @return array
      */
-    public function absoluteUrlData()
+    public function absoluteUrlData(): array
     {
         return [
             'absolute-url' => [ self::ABSOLUTE_URL, true, 'isAbsoluteUrl' ],
@@ -107,7 +107,7 @@ class UrlHelperTest extends Unit
      * Add tests for whether URLS are qualified as a full url.
      * @return array
      */
-    public function fulUrlData()
+    public function fulUrlData(): array
     {
         return [
             'absolute-url' => [ self::ABSOLUTE_URL, true, 'isFullUrl' ],
@@ -128,7 +128,7 @@ class UrlHelperTest extends Unit
      * Add tests for whether URLS are qualified as root relative
      * @return array
      */
-    public function protocolRelativeUrlData()
+    public function protocolRelativeUrlData(): array
     {
         return [
             'root-relative-true' => [ '/22', true, 'isRootRelativeUrl'],
@@ -149,7 +149,7 @@ class UrlHelperTest extends Unit
         $this->assertSame($result, UrlHelper::urlWithParams($url, $params));
     }
 
-    public function urlWithParamsData()
+    public function urlWithParamsData(): array
     {
         return [
             '#' => [
@@ -222,7 +222,7 @@ class UrlHelperTest extends Unit
     /**
      * @return array
      */
-    public function cpUrlCreationData()
+    public function cpUrlCreationData(): array
     {
         return [
             'test-empty' => ['', '', []],
@@ -277,7 +277,7 @@ class UrlHelperTest extends Unit
      * Tests for UrlHelper::stripQueryString() method
      * @return array
      */
-    public function stripQueryStringProvider()
+    public function stripQueryStringProvider(): array
     {
         return [
             'invalid-query-string' => [
@@ -312,7 +312,7 @@ class UrlHelperTest extends Unit
      * Tests for UrlHelper::urlWithParams() method
      * @return array
      */
-    public function urlWithParamsProvider()
+    public function urlWithParamsProvider(): array
     {
         return [
             'with-fragment' => [
@@ -358,7 +358,7 @@ class UrlHelperTest extends Unit
      * Tests for UrlHelper::urlWithToken()
      * @return array
      */
-    public function urlWithTokenProvider()
+    public function urlWithTokenProvider(): array
     {
         $https = true;
         $baseUrl = self::ABSOLUTE_URL_HTTPS;
@@ -401,7 +401,7 @@ class UrlHelperTest extends Unit
      * Tests for UrlHelper::urlWithScheme()
      * @return array
      */
-    public function urlWithSchemeProvider()
+    public function urlWithSchemeProvider(): array
     {
         return [
                 'no-scheme' => [
@@ -493,7 +493,7 @@ class UrlHelperTest extends Unit
         $this->assertSame($result, UrlHelper::url($path, $params, $scheme, $showScriptName));
     }
 
-    public function urlFunctionDataProvider()
+    public function urlFunctionDataProvider(): array
     {
         return [
             'base' => ['endpoint', 'endpoint',  null,  null, null, true],
@@ -533,7 +533,7 @@ class UrlHelperTest extends Unit
         return $url;
     }
 
-    public function determineUrlScheme()
+    public function determineUrlScheme(): string
     {
         return !Craft::$app->getRequest()->getIsConsoleRequest() && Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
     }
@@ -602,7 +602,7 @@ class UrlHelperTest extends Unit
         $siteUrl = UrlHelper::siteUrl($path, $params, $scheme, $siteId);
         $this->assertSame($result, $siteUrl);
     }
-    public function siteUrlData()
+    public function siteUrlData(): array
     {
         return [
             ['http://test.craftcms.dev/index.php?p=endpoint', 'endpoint'],

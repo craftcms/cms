@@ -48,7 +48,7 @@ class UsernameValidatorTest extends Unit
         $validated = $this->usernameValidator->validateValue($input);
         $this->assertSame($result, $validated);
     }
-    public function validateValueData()
+    public function validateValueData(): array
     {
         return [
             [null, 'asdfghjkl1234567890'],

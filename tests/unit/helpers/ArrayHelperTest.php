@@ -40,7 +40,7 @@ class ArrayHelperTest extends Unit
      * TODO: Example with a \stdClass?
      * @return array
      */
-    public function toArrayData()
+    public function toArrayData(): array
     {
         return[
             [[], null], [[1,2,3], [1,2,3]]
@@ -60,7 +60,7 @@ class ArrayHelperTest extends Unit
         $this->assertSame($result, $inputArray);
     }
 
-    public function prependOrAppendData()
+    public function prependOrAppendData(): array
     {
         return [
             [[1, 2, 3, 4],  [1, 2, 3], 4, false],
@@ -98,7 +98,7 @@ class ArrayHelperTest extends Unit
         $this->assertSame($result, $inputArray);
     }
 
-    public function renameDataProvider()
+    public function renameDataProvider(): array
     {
         return [
             [['fizz' => 'plop', 'foo2' => 'bar'], ['foo' => 'bar', 'fizz' => 'plop'], 'foo', 'foo2'],
@@ -119,7 +119,7 @@ class ArrayHelperTest extends Unit
         $this->assertSame($result, $firstVal);
     }
 
-    public function firstValueData()
+    public function firstValueData(): array
     {
         $std = new stdClass();
         $std->a = '22';
@@ -142,7 +142,7 @@ class ArrayHelperTest extends Unit
         $this->assertSame($result, $without);
     }
 
-    public function withoutData()
+    public function withoutData(): array
     {
         return [
             [[], ['key' => 'value'], 'key'],
@@ -164,7 +164,7 @@ class ArrayHelperTest extends Unit
         $this->assertSame($result, $without);
     }
 
-    public function withoutValueData()
+    public function withoutValueData(): array
     {
         return [
             [[], ['key' => 'value'], 'value'],

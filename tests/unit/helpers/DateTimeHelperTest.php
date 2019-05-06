@@ -55,7 +55,7 @@ class DateTimeHelperTest extends Unit
         $this->assertInternalType('integer', $input);
     }
 
-    public function constantsData()
+    public function constantsData(): array
     {
         return [
             [86400, DateTimeHelper::SECONDS_DAY],
@@ -95,7 +95,7 @@ class DateTimeHelperTest extends Unit
         $this->assertInternalType('string', $toHuman);
     }
 
-    public function secondsToHumanTimeData()
+    public function secondsToHumanTimeData(): array
     {
         return [
             ['22 seconds', 22],
@@ -143,7 +143,7 @@ class DateTimeHelperTest extends Unit
         $this->assertSame($expectedResult->format('Y-m-d H:i:s'), $toDateTime->format('Y-m-d H:i:s'));
     }
 
-    public function formatsWithTimezone()
+    public function formatsWithTimezone(): array
     {
         $dt = function() {
             $dt = new DateTime('2018-08-09 20:00:00', new DateTimeZone('Asia/Tokyo'));
@@ -174,7 +174,7 @@ class DateTimeHelperTest extends Unit
         $this->assertFalse(DateTimeHelper::toDateTime($format));
     }
 
-    public function invalidToDateTimeFormatsData()
+    public function invalidToDateTimeFormatsData(): array
     {
         return [
             'no-params' => [['date' => '', 'time' => '']],
@@ -200,7 +200,7 @@ class DateTimeHelperTest extends Unit
         $this->assertSame($this->utcTimezone->getName(), $toDateTime->getTimezone()->getName());
     }
 
-    public function simpleDateTimeFormats()
+    public function simpleDateTimeFormats(): array
     {
         return [
             'mysql' => ['2018-08-08 20:00:00'],
@@ -230,7 +230,7 @@ class DateTimeHelperTest extends Unit
         $this->assertSame($expectedResult->format('Y-m-d H:i:s'), $toDateTime->format('Y-m-d H:i:s'));
     }
 
-    public function toDateTimeWithTzFormats()
+    public function toDateTimeWithTzFormats(): array
     {
         $basicDateTimeCreator = function ($timezone){
             $tz = new DateTimezone($timezone);
@@ -273,7 +273,7 @@ class DateTimeHelperTest extends Unit
         $this->assertInstanceOf(DateTime::class, $toDateTime);
     }
 
-    public function toDateTimeFormats()
+    public function toDateTimeFormats(): array
     {
         // Because we dont have access to Craft::$app here we smuggle this in via callback and call it in the test function. Which does have access to Craft::$app.
         $dt = function ($dateParam = '2018-08-09 20:00:00') {
@@ -346,7 +346,7 @@ class DateTimeHelperTest extends Unit
         $this->assertSame($result, $normalized);
     }
 
-    public function timezoneNormalizeData()
+    public function timezoneNormalizeData(): array
     {
         return [
             ['America/New_York', 'EST'],
@@ -378,7 +378,7 @@ class DateTimeHelperTest extends Unit
         $this->assertSame($result, $isIso);
     }
 
-    public function isIso8601Data()
+    public function isIso8601Data(): array
     {
         $dateTimeObject = new DateTime('2018-09-21');
 
@@ -413,7 +413,7 @@ class DateTimeHelperTest extends Unit
 
         $this->assertSame($result, $fromInterval);
     }
-    public function humanIntervalDurationData()
+    public function humanIntervalDurationData(): array
     {
         return [
             ['1 day', 'P1D'],
@@ -523,7 +523,7 @@ class DateTimeHelperTest extends Unit
         $this->assertSame($result, $isWthinLast);
     }
 
-    public function withinLastData()
+    public function withinLastData(): array
     {
         $tomorow = new DateTime('tomorrow');
         $yesterday = new DateTime('yesterday');
@@ -561,7 +561,7 @@ class DateTimeHelperTest extends Unit
         $this->assertSame($longResult, (int)$interval->format('%s%d%h%m'));
     }
 
-    public function secondsToIntervalData()
+    public function secondsToIntervalData(): array
     {
         return [
             [10, 10000, 10],
@@ -583,7 +583,7 @@ class DateTimeHelperTest extends Unit
         $seconds = DateTimeHelper::intervalToSeconds(new DateInterval($period));
         $this->assertSame($result, $seconds);
     }
-    public function intervalToSecondsData()
+    public function intervalToSecondsData(): array
     {
         return [
             [86400, 'P1D'],
@@ -606,7 +606,7 @@ class DateTimeHelperTest extends Unit
      * @return array
      * @throws Exception
      */
-    public function toIso8601Data()
+    public function toIso8601Data(): array
     {
         $amsterdamTime = new DateTime('2018-08-08 20:00:00', new DateTimeZone('Europe/Amsterdam'));
         $tokyoTime = new DateTime('2018-08-08 20:00:00', new DateTimeZone('Asia/Tokyo'));
@@ -629,7 +629,7 @@ class DateTimeHelperTest extends Unit
         $this->assertSame($result, $abbreviated);
         $this->assertInternalType('string', $abbreviated);
     }
-    public function timezoneAbbreviationData()
+    public function timezoneAbbreviationData(): array
     {
         return [
             // TODO: Summer and winter time.... >.< This test fails in summer time: ['CET', 'Europe/Amsterdam'],
@@ -649,7 +649,7 @@ class DateTimeHelperTest extends Unit
         $this->assertSame($result, $isValidTimestamp);
         $this->assertInternalType('bool', $isValidTimestamp);
     }
-    public function isValidTimestampData()
+    public function isValidTimestampData(): array
     {
         $amsterdamTime = new DateTime('2018-12-30 20:00:00', new DateTimeZone('Europe/Amsterdam'));
         $tokyoTime = new DateTime('2018-12-30 20:00:00', new DateTimeZone('Asia/Tokyo'));
@@ -677,7 +677,7 @@ class DateTimeHelperTest extends Unit
         $isValid = DateTimeHelper::isValidIntervalString($input);
         $this->assertSame($result, $isValid);
     }
-    public function isInvalidIntervalString()
+    public function isInvalidIntervalString(): array
     {
         return [
             [true, '1 day'],
@@ -704,7 +704,7 @@ class DateTimeHelperTest extends Unit
         $offset = DateTimeHelper::timezoneOffset($input);
         $this->assertSame($result, $offset);
     }
-    public function timezoneOffsetData()
+    public function timezoneOffsetData(): array
     {
         return [
             ['+00:00', 'UTC'],

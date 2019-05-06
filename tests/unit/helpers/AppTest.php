@@ -53,7 +53,7 @@ class AppTest extends TestCase
         $this->assertInternalType('boolean', $isValid);
     }
 
-    public function validEditionsData()
+    public function validEditionsData(): array
     {
         return [
             [true, Craft::Pro],
@@ -84,7 +84,7 @@ class AppTest extends TestCase
     }
 
 
-    public function versionListData()
+    public function versionListData(): array
     {
         return [
             ['version', 'version 21'],
@@ -130,7 +130,7 @@ class AppTest extends TestCase
         $this->assertSame(0, preg_match('/[A-Z]/', $humanizedClass));
     }
 
-    public function classHumanizationData()
+    public function classHumanizationData(): array
     {
         return [
             ['entries', Entries::class],
@@ -184,7 +184,7 @@ class AppTest extends TestCase
         $this->assertTrue(in_array(Component::class, class_parents($config['class'])));
     }
 
-    public function configsData()
+    public function configsData(): array
     {
         return [
             ['assetManagerConfig', ['class', 'basePath', 'baseUrl', 'fileMode', 'dirMode', 'appendTimestamp']],

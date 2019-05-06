@@ -45,7 +45,7 @@ class LocalizationHelperTest extends Unit
         $this->assertSame($result, $normalized);
     }
 
-    public function languageNormalizationData()
+    public function languageNormalizationData(): array
     {
         return [
             ['nl', 'nl'],
@@ -81,7 +81,7 @@ class LocalizationHelperTest extends Unit
         $this->assertSame($result, $normalization);
     }
 
-    public function numberNormalizationData()
+    public function numberNormalizationData(): array
     {
         return [
             ['2000000000', '20,0000,0000', null],
@@ -114,7 +114,7 @@ class LocalizationHelperTest extends Unit
         $this->assertSame($result, $data);
     }
 
-    public function localeDataData()
+    public function localeDataData(): array
     {
         $dir = dirname(__DIR__, 3).'/src/config/locales/nl.php';
         $nlTranslation = require_once $dir;
@@ -157,7 +157,7 @@ class LocalizationHelperTest extends Unit
         $this->assertSame($result, $missing);
     }
 
-    public function findMissingTranslationData()
+    public function findMissingTranslationData(): array
     {
         return [
         ];

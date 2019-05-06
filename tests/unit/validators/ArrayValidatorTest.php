@@ -67,7 +67,7 @@ class ArrayValidatorTest extends Unit
         $this->assertInternalType('string', $validator->$variableName);
     }
 
-    public function paramsToTestOnEmpty()
+    public function paramsToTestOnEmpty(): array
     {
         $newValidator = new ArrayValidator(['min' => 1, 'max' => 10, 'count' => 4]);
 
@@ -106,7 +106,7 @@ class ArrayValidatorTest extends Unit
         }
     }
 
-    public function arrayValidatorValues()
+    public function arrayValidatorValues(): array
     {
         return [
             [[1, 2, 3, 4 ], true],

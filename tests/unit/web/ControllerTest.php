@@ -176,11 +176,11 @@ class ControllerTest extends Unit
     // Helpers
     // =========================================================================
 
-    private function determineUrlScheme()
+    private function determineUrlScheme(): string
     {
         return !Craft::$app->getRequest()->getIsConsoleRequest() && Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
     }
-    private function getBaseUrlForRedirect()
+    private function getBaseUrlForRedirect(): string
     {
         $scheme = $this->determineUrlScheme();
         return UrlHelper::urlWithScheme(Craft::$app->getConfig()->getGeneral()->siteUrl.'index.php', $scheme);

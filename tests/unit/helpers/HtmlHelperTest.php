@@ -37,7 +37,7 @@ class HtmlHelperTest extends Unit
         $this->assertSame($result, Html::encodeParams($input, $variables));
     }
 
-    public function htmlEncodingDataProvider()
+    public function htmlEncodingDataProvider(): array
     {
         $htmlTagString = '<p>Im a paragraph. What am i, {whatIsThis}</p>';
         $pureVariableString = '{variable1}, {variable2}';

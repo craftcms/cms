@@ -69,7 +69,7 @@ class PasswordValidatorTest extends Unit
         }
     }
 
-    public function passwordValidationData()
+    public function passwordValidationData(): array
     {
         return [
             ['22', false],
@@ -99,7 +99,7 @@ class PasswordValidatorTest extends Unit
         }
 
     }
-    public function customConfigData()
+    public function customConfigData(): array
     {
         return [
             ['password', false, 0, 0],
@@ -131,7 +131,7 @@ class PasswordValidatorTest extends Unit
             $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
     }
-    public function forceDiffValidation()
+    public function forceDiffValidation(): array
     {
         return [
             [false, 'test', 'test'],
@@ -157,7 +157,7 @@ class PasswordValidatorTest extends Unit
         $isEmpty = $this->passwordValidator->isEmpty($input);
         $this->assertSame($result, $isEmpty);
     }
-    public function isEmptyData()
+    public function isEmptyData(): array
     {
         $toString = new ToStringTest('im a test');
         return [
@@ -172,7 +172,7 @@ class PasswordValidatorTest extends Unit
             $passval->isEmpty(1);
         });
     }
-    public static function testReturn()
+    public static function testReturn(): string
     {
         return 'im a test';
     }

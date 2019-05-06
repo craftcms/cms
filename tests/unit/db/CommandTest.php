@@ -96,7 +96,7 @@ class CommandTest extends Unit
      * @return array
      * @throws Exception
      */
-    public function updateSesh($values)
+    public function updateSesh($values): array
     {
         $command = Craft::$app->getDb()->createCommand()
             ->update('{{%sessions}}', $values)->execute();

@@ -53,7 +53,7 @@ class GcTest extends Unit
     /**
      * @return array
      */
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'sessions' => [
@@ -133,7 +133,7 @@ class GcTest extends Unit
         $this->assertCount($remainingCount, $items);
         $this->assertSame(ArrayHelper::firstValue($items)['id'], $leftoverId);
     }
-    public function gcDataProvider()
+    public function gcDataProvider(): array
     {
         return [
             [1, '1005', Session::tableName(), ['1003', '1004', '1005']],

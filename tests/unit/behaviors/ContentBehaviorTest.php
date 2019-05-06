@@ -25,7 +25,7 @@ use UnitTester;
  */
 class ContentBehaviorTest extends Unit
 {
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'fields' => [

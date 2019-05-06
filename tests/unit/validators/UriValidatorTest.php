@@ -62,7 +62,7 @@ class UriValidatorTest extends Unit
         }
     }
 
-    public function validateValueData()
+    public function validateValueData(): array
     {
         return [
             [true, 'test'],

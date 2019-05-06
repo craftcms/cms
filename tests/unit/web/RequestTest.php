@@ -25,7 +25,7 @@ use yii\web\BadRequestHttpException;
  */
 class RequestTest extends TestCase
 {
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'sites' => [
@@ -65,7 +65,7 @@ class RequestTest extends TestCase
         $this->assertSame($result, $this->request->isMobileBrowser($detectTablets));
     }
 
-    public function isMobileBrowserDataProvider()
+    public function isMobileBrowserDataProvider(): array
     {
         // https://deviceatlas.com/blog/list-of-user-agent-strings
         return [
@@ -171,7 +171,7 @@ class RequestTest extends TestCase
         $this->assertSame($result, $this->request->getUserIP($filterFlag));
     }
 
-    public function getUserIpData()
+    public function getUserIpData(): array
     {
         return [
             ['123.123.123.123', 'Client-IP', '123.123.123.123'],
@@ -199,7 +199,7 @@ class RequestTest extends TestCase
         $this->assertSame($result, $this->request->getClientOs());
     }
 
-    public function getClientOsData()
+    public function getClientOsData(): array
     {
         return [
             ['Linux', 'Mozilla/5.0 (Linux; Android 6.0; HTC One X10 Build/MRA58K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/61.0.3163.98 Mobile Safari/537.36'],
@@ -265,7 +265,7 @@ class RequestTest extends TestCase
         $gotten = $this->getParam($name, $defaultValue, $params);
         $this->assertSame($result, $gotten);
     }
-    public function getParamData()
+    public function getParamData(): array
     {
         return [
             [['param1', 'param2', 'param3'], null, null, ['param1', 'param2', 'param3']],
@@ -320,7 +320,7 @@ class RequestTest extends TestCase
 
         $this->checkRequestAndAssertIsSingleAction();
     }
-    public function checkRequestSpecialPathData()
+    public function checkRequestSpecialPathData(): array
     {
         return [
             ['login'],

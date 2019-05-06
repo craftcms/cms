@@ -101,7 +101,7 @@ class ActiveRecordTest extends Unit
         $this->assertSame($result, $vol->settings);
     }
 
-    public function dataForDbPrepare()
+    public function dataForDbPrepare(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
         $jsonableClass = new stdClass();

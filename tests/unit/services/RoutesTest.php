@@ -60,7 +60,7 @@ class RoutesTest extends Unit
         $this->assertTrue(StringHelper::isUUID($routeUUID));
     }
 
-    public function saveRouteDataProvider()
+    public function saveRouteDataProvider(): array
     {
         return [
             [

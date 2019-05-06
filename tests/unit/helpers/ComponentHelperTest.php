@@ -48,7 +48,7 @@ class ComponentHelperTest extends Unit
         );
     }
 
-    public function successfulComponentCreationData()
+    public function successfulComponentCreationData(): array
     {
         return [
             'string-to-class-conversion' => [
@@ -100,7 +100,7 @@ class ComponentHelperTest extends Unit
      *
      * @return array
      */
-    public function failingComponentCreationData()
+    public function failingComponentCreationData(): array
     {
         return [
             'invalid-required-parent-class' => [
@@ -158,7 +158,7 @@ class ComponentHelperTest extends Unit
         $this->assertSame($result, Component::mergeSettings($mergable));
     }
 
-    public function settingsArraysData()
+    public function settingsArraysData(): array
     {
         $mergedComponentArray = [
             'name' => 'Component',

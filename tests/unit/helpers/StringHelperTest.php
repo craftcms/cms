@@ -62,7 +62,7 @@ class StringHelperTest extends Unit
         $this->assertSame($result, $endsWith);
     }
 
-    public function endsWithData()
+    public function endsWithData(): array
     {
         return [
             [true, 'thisisastring a', 'a'],
@@ -89,7 +89,7 @@ class StringHelperTest extends Unit
         $this->assertSame($result, $toCamel);
     }
 
-    public function camelCaseData()
+    public function camelCaseData(): array
     {
         return [
             ['craftCms', 'Craft Cms'],
@@ -115,7 +115,7 @@ class StringHelperTest extends Unit
         $containsAll = StringHelper::containsAll($haystack, $needle, $caseSensitive);
         $this->assertSame($result, $containsAll);
     }
-    public function containsAllData()
+    public function containsAllData(): array
     {
         return [
             [true, 'haystack', ['haystack']],
@@ -147,7 +147,7 @@ class StringHelperTest extends Unit
         $this->assertSame($result, $uppercaseFirst);
     }
 
-    public function uppercaseFirstData()
+    public function uppercaseFirstData(): array
     {
         return [
             ['Craftcms', 'craftcms'],
@@ -169,7 +169,7 @@ class StringHelperTest extends Unit
         $index = StringHelper::indexOf($haystack, $needle);
         $this->assertSame($result, $index);
     }
-    public function indexOfData()
+    public function indexOfData(): array
     {
         return [
             [2, 'thisisstring', 'is'],
@@ -208,7 +208,7 @@ class StringHelperTest extends Unit
         $this->assertSame($result, $toSnake);
     }
 
-    public function snakeCaseData()
+    public function snakeCaseData(): array
     {
         return [
             ['craft_cms', 'CRAFT CMS'],
@@ -231,7 +231,7 @@ class StringHelperTest extends Unit
         $this->assertSame($result, $isMb4);
     }
 
-    public function mb4Data()
+    public function mb4Data(): array
     {
         return [
             [true, '😀😘'],
@@ -257,7 +257,7 @@ class StringHelperTest extends Unit
         $this->assertSame($result, $charsArray);
     }
 
-    public function charsAsArrayData()
+    public function charsAsArrayData(): array
     {
         return [
             [[], ''],
@@ -279,7 +279,7 @@ class StringHelperTest extends Unit
         $this->assertSame($result, $toAscii);
     }
 
-    public function toAsciiData()
+    public function toAsciiData(): array
     {
         return [
             ['', ''],
@@ -303,7 +303,7 @@ class StringHelperTest extends Unit
         $this->assertSame($result, $stripped);
     }
 
-    public function firstData()
+    public function firstData(): array
     {
         return [
             ['', '', 1],
@@ -326,7 +326,7 @@ class StringHelperTest extends Unit
         $this->assertSame($result, $stripped);
     }
 
-    public function stripHtmlData()
+    public function stripHtmlData(): array
     {
         return [
             ['hello', '<p>hello</p>'],
@@ -348,7 +348,7 @@ class StringHelperTest extends Unit
         $this->assertSame($result, $isUUID);
     }
 
-    public function uuidDataProvider()
+    public function uuidDataProvider(): array
     {
         return [
             [true, StringHelper::UUID()],
@@ -377,7 +377,7 @@ class StringHelperTest extends Unit
         $whitespaceGone = StringHelper::collapseWhitespace($input);
         $this->assertSame($result, $whitespaceGone);
     }
-    public function collapseWhitespaceData()
+    public function collapseWhitespaceData(): array
     {
         return [
             ['', '  '],
@@ -403,7 +403,7 @@ class StringHelperTest extends Unit
         $this->assertInternalType('boolean', $isWhitespace);
     }
 
-    public function whitespaceProvider()
+    public function whitespaceProvider(): array
     {
         return [
             [true, ''],
@@ -432,7 +432,7 @@ class StringHelperTest extends Unit
         $this->assertSame($result, $splitString);
     }
 
-    public function splitData()
+    public function splitData(): array
     {
         return [
             [['22', '23'], '22, 23'],
@@ -458,7 +458,7 @@ class StringHelperTest extends Unit
         $this->assertInternalType('string', $delimitedString);
     }
 
-    public function delimitData()
+    public function delimitData(): array
     {
         return [
             ['', '    ', '|'],
@@ -483,7 +483,7 @@ class StringHelperTest extends Unit
         $this->assertSame($result, StringHelper::ensureRight($input, $ensure));
     }
 
-    public function ensureRightData()
+    public function ensureRightData(): array
     {
         return [
             ['hello', 'hello', 'o'],
@@ -521,7 +521,7 @@ class StringHelperTest extends Unit
         }
     }
 
-    public function randomStringWithCharsData()
+    public function randomStringWithCharsData(): array
     {
         return [
             ['asdfghjklxcvbnmqwertyuiop', 10],
@@ -548,7 +548,7 @@ class StringHelperTest extends Unit
         $this->assertFalse(StringHelper::containsMb4($mb4String));
     }
 
-    public function mb4EncodingProvider()
+    public function mb4EncodingProvider(): array
     {
         return [
             ['&#x1f525;', '🔥'],
@@ -572,7 +572,7 @@ class StringHelperTest extends Unit
         $utf8 = StringHelper::convertToUtf8($input);
         $this->assertSame($result, $utf8);
     }
-    public function convertToUtf8Data()
+    public function convertToUtf8Data(): array
     {
         return [
             ['κόσμε', 'κόσμε'],
@@ -596,7 +596,7 @@ class StringHelperTest extends Unit
         $this->assertStringStartsWith('base64:', $enc);
         $this->assertSame($input, StringHelper::decdec($enc));
     }
-    public function encDecData()
+    public function encDecData(): array
     {
         return [
             ['1234567890asdfghjkl'],
@@ -635,7 +635,7 @@ class StringHelperTest extends Unit
         $string = StringHelper::toString($input, $glue);
         $this->assertSame($result, $string);
     }
-    public function toStringData()
+    public function toStringData(): array
     {
         return [
             ['test', 'test'],
@@ -666,7 +666,7 @@ class StringHelperTest extends Unit
             $this->assertContains($char, $validChars);
         }
     }
-    public function randomStringData()
+    public function randomStringData(): array
     {
         return [
             [],
@@ -685,7 +685,7 @@ class StringHelperTest extends Unit
         $pascal = StringHelper::toPascalCase($input);
         $this->assertSame($result, $pascal);
     }
-    public function toPascalCaseData()
+    public function toPascalCaseData(): array
     {
         return [
             ['TestS2SZw2', 'test s 2 s zw 2'],
@@ -711,7 +711,7 @@ class StringHelperTest extends Unit
         $camel = StringHelper::toCamelCase($input);
         $this->assertSame($result, $camel);
     }
-    public function toCamelCaseData()
+    public function toCamelCaseData(): array
     {
         return [
             ['testS2SZw2', 'test s 2 s zw 2'],
@@ -737,7 +737,7 @@ class StringHelperTest extends Unit
         $kebab = StringHelper::toKebabCase($input);
         $this->assertSame($result, $kebab);
     }
-    public function toKebabCaseData()
+    public function toKebabCaseData(): array
     {
         return [
             ['test-s-2-s-zw-2', 'test s 2 s zw 2'],
@@ -763,7 +763,7 @@ class StringHelperTest extends Unit
         $lines = StringHelper::lines($input);
         $this->assertSame($result, count($lines));
     }
-    public function linesData()
+    public function linesData(): array
     {
         return [
             [4, 'test
@@ -798,7 +798,7 @@ class StringHelperTest extends Unit
         $uppercase = StringHelper::toUpperCase($input);
         $this->assertSame($result, $uppercase);
     }
-    public function toUppercaseData()
+    public function toUppercaseData(): array
     {
         return [
             ['TEST S 2 S ZW 2', 'test s 2 s zw 2'],
@@ -824,7 +824,7 @@ class StringHelperTest extends Unit
         $trim = StringHelper::trim($input);
         $this->assertSame($result, $trim);
     }
-    public function trimData()
+    public function trimData(): array
     {
         return [
             ['😂 😁', '😂 😁 '],
@@ -846,7 +846,7 @@ class StringHelperTest extends Unit
         $toTitleCase = StringHelper::toTitleCase($input);
         $this->assertSame($result, $toTitleCase);
     }
-    public function toTitleCase()
+    public function toTitleCase(): array
     {
         return [
             ['Test S 2 S Zw 2', 'test s 2 s zw 2'],
@@ -872,7 +872,7 @@ class StringHelperTest extends Unit
         $toLower = StringHelper::toLowerCase($input);
         $this->assertSame($result, $toLower);
     }
-    public function toLowerCaseData()
+    public function toLowerCaseData(): array
     {
         return [
             ['test s 2 s zw 2', 'test s 2 s zw 2'],
@@ -898,7 +898,7 @@ class StringHelperTest extends Unit
         $titelize = StringHelper::titleize($input);
         $this->assertSame($result, $titelize);
     }
-    public function titelizeData()
+    public function titelizeData(): array
     {
         return [
             ['Test S 2 S Zw 2', 'test s 2 s zw 2'],
@@ -924,7 +924,7 @@ class StringHelperTest extends Unit
         $swap = StringHelper::swapCase($input);
         $this->assertSame($result, $swap);
     }
-    public function swapCaseData()
+    public function swapCaseData(): array
     {
         return [
             ['TEST S 2 S ZW 2', 'test s 2 s zw 2'],
@@ -952,7 +952,7 @@ class StringHelperTest extends Unit
         $substr = StringHelper::substr($input, $start, $length);
         $this->assertSame($result, $substr);
     }
-    public function substrData()
+    public function substrData(): array
     {
         return [
             ['st s', 'test s 2 s zw 2', 2, 4],

@@ -84,7 +84,7 @@ class AppTest extends Unit
 
 
     }
-    public function craftAppGetMethods()
+    public function craftAppGetMethods(): array
     {
         return [
             [Api::class, ['getApi', 'api']],

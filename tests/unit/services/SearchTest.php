@@ -30,7 +30,7 @@ use craftunit\fixtures\UsersFixture;
  */
 class SearchTest extends Unit
 {
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'users' => [
@@ -66,7 +66,7 @@ class SearchTest extends Unit
      *
      * @return array
      */
-    public function filterElementIdByQueryData()
+    public function filterElementIdByQueryData(): array
     {
         return [
             [['user1'], ['user1', 'user2', 'user3', 'user4'], 'user1@crafttest.com', true, 1, false],
@@ -108,7 +108,7 @@ class SearchTest extends Unit
 
         $this->assertSame($result, $filtered);
     }
-    public function filterScoresData()
+    public function filterScoresData(): array
     {
         return [
             [
@@ -207,7 +207,7 @@ class SearchTest extends Unit
      * @param bool $typecastToInt
      * @return array
      */
-    private function usernameEmailArrayToIdList(array $usernameOrEmails, bool $typecastToInt = true)
+    private function usernameEmailArrayToIdList(array $usernameOrEmails, bool $typecastToInt = true): array
     {
         $ids = [];
         foreach ($usernameOrEmails as $usernameOrEmail) {
@@ -222,7 +222,7 @@ class SearchTest extends Unit
      * @param array $usernameOrEmailsAndScores
      * @return array
      */
-    private function scoreList(array $usernameOrEmailsAndScores)
+    private function scoreList(array $usernameOrEmailsAndScores): array
     {
         $ids = [];
         foreach ($usernameOrEmailsAndScores as $usernameOrEmailAndScore) {
@@ -237,7 +237,7 @@ class SearchTest extends Unit
      * @param string $emailOrUsername
      * @return User|null
      */
-    private function getUserIdByEmailOrUserName(string $emailOrUsername)
+    private function getUserIdByEmailOrUserName(string $emailOrUsername): ?User
     {
         return Craft::$app->getUsers()->getUserByUsernameOrEmail($emailOrUsername);
     }

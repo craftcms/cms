@@ -35,7 +35,7 @@ class JsonHelperTest extends Test
         $this->assertSame($result, Json::decodeIfJson($input));
     }
 
-    public function jsonDecodabledData()
+    public function jsonDecodabledData(): array
     {
         $basicArray = [
             'WHAT DO WE WANT' => 'JSON',

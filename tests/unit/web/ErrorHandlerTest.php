@@ -106,7 +106,7 @@ class ErrorHandlerTest extends TestCase
     {
         $this->assertSame($message, $this->errorHandler->getExceptionName($exception));
     }
-    public function exceptionTypeAndNameData()
+    public function exceptionTypeAndNameData(): array
     {
         return [
             [new Twig_Error_Syntax('Twig go boom'), 'Twig Syntax Error'],
@@ -158,7 +158,7 @@ class ErrorHandlerTest extends TestCase
         $isCore = $this->errorHandler->isCoreFile(Craft::getAlias($input));
         $this->assertSame($result, $isCore);
     }
-    public function isCoreFileData()
+    public function isCoreFileData(): array
     {
         $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
         $vendorPath = Craft::getAlias('@vendor');

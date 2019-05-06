@@ -63,7 +63,7 @@ class UriFormatValidatorTest extends Unit
             $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
     }
-    public function validateAttributeData()
+    public function validateAttributeData(): array
     {
         return [
             [true, ''],

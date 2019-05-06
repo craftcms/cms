@@ -38,7 +38,7 @@ class AssetsHelperTest extends Unit
     protected $tester;
 
 
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'assets' => [
@@ -67,7 +67,7 @@ class AssetsHelperTest extends Unit
         $this->assertSame($resultUrl, Assets::generateUrl($volume, $asset));
     }
 
-    public function urlGenerationData()
+    public function urlGenerationData(): array
     {
         return [
             ['https://cdn.test.craftcms.dev/test-volume-1/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']]
@@ -100,7 +100,7 @@ class AssetsHelperTest extends Unit
         $this->assertSame($result, $assetName);
     }
 
-    public function prepareAssetNameData()
+    public function prepareAssetNameData(): array
     {
         return [
             ['name.', 'name', true, false],
@@ -142,7 +142,7 @@ class AssetsHelperTest extends Unit
         $this->assertSame($result, $file2Title);
     }
 
-    public function filename2TitleData()
+    public function filename2TitleData(): array
     {
         return [
             ['Filename', 'filename'],
@@ -163,7 +163,7 @@ class AssetsHelperTest extends Unit
         $this->assertSame($result, $label);
     }
 
-    public function fileKindLabelData()
+    public function fileKindLabelData(): array
     {
         return [
             ['Access', 'access'],
@@ -186,7 +186,7 @@ class AssetsHelperTest extends Unit
         $this->assertSame($result, $kind);
     }
 
-    public function fileKindByExtensionData()
+    public function fileKindByExtensionData(): array
     {
         return [
             ['unknown', 'html'],
@@ -206,7 +206,7 @@ class AssetsHelperTest extends Unit
         $location = Assets::parseFileLocation($input);
         $this->assertSame($result, $location);
     }
-    public function parseFileLocationData()
+    public function parseFileLocationData(): array
     {
         return [
             [['2', '.'], '{folder:2}.'],

@@ -72,7 +72,7 @@ class MailerTest extends Unit
         $this->assertSame($key, $res->key);
         $this->assertSame($variables, $res->variables);
     }
-    public function fromKeyComposition()
+    public function fromKeyComposition(): array
     {
         return[
             ['account_activation', []],

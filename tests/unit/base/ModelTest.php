@@ -39,7 +39,7 @@ class ModelTest extends Unit
 
         $this->assertSame($result, $model1->hasErrors($searchParam));
     }
-    public function hasErrorsData()
+    public function hasErrorsData(): array
     {
         return [
             [true, 'error', 'fields.*', 'fields[body]'],
@@ -71,7 +71,7 @@ class ModelTest extends Unit
         $this->assertSame($dateTime->getTimezone()->getName(), $model->$paramName->getTimezone()->getName());
     }
 
-    public function dateTimeAttributes()
+    public function dateTimeAttributes(): array
     {
         return [
             // Craft defaults

@@ -50,7 +50,7 @@ class ResponseTest extends Unit
         $type = $this->response->getContentType();
         $this->assertSame($result, $type);
     }
-    public function getContentTypeData()
+    public function getContentTypeData(): array
     {
         return [
             ['text/html', Response::FORMAT_HTML],
