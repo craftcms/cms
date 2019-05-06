@@ -234,8 +234,7 @@ class DateTimeHelperTest extends Unit
     {
         $basicDateTimeCreator = function ($timezone){
             $tz = new DateTimezone($timezone);
-            $dt = new DateTime('2018-08-09 20:00:00', $tz);
-            return $dt;
+            return new DateTime('2018-08-09 20:00:00', $tz);
         };
 
         return [

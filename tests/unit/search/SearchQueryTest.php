@@ -200,9 +200,7 @@ class SearchQueryTest extends Unit
     public function testSearchQuerySortOrder(string $query, array $configOptions = null, int $sizeOfArray = null)
     {
         $exploded = explode(' ', $query);
-        $search = new SearchQuery($query);
-
-        foreach ($search->getTokens() as $index => $token) {
+        foreach ((new SearchQuery($query))->getTokens() as $index => $token) {
             $config = $this->getConfigFromOptions($index, $configOptions);
 
             $fromExplodedString = $this->createDefaultSearchQueryTermFromString($exploded[$index], $config);

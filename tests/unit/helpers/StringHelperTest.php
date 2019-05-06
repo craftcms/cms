@@ -662,8 +662,7 @@ class StringHelperTest extends Unit
             $validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
         }
 
-        $randomCharArray = str_split($random);
-        foreach ($randomCharArray as $char) {
+        foreach (str_split($random) as $char) {
             $this->assertContains($char, $validChars);
         }
     }
