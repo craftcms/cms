@@ -24,7 +24,7 @@ use yii\base\InvalidConfigException;
  * Currently getMailer returns the TestMailer class (See line 264 of Codeception\Lib\Connector\Yii2) and not a craft\mail\Mailer object.
  * We need a way to test lines 89-167 of the craft\mail\Mailer object which is currently awkward.
  *
- * One other option is to break out craft\mail\Mailer line 89-165 into a seperate method called prepareMessage(Message $message)
+ * One other option is to break out craft\mail\Mailer line 89-165 into a separate method called prepareMessage(Message $message)
  * This means we can test all that functionality without having to actually *send* the email.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

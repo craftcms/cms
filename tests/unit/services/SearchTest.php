@@ -59,7 +59,7 @@ class SearchTest extends Unit
     }
 
     /**
-     * Provide an array with input usernames
+     * Provide an array with input user names
      *
      * @return array
      */
@@ -94,7 +94,7 @@ class SearchTest extends Unit
      */
     public function testFilterScores($scoresAndNames, $usernameOrEmailsForQuery, $query, $scoreResults = true, $siteId = null)
     {
-        // Repackage the dataProvider input into what the filter funciton will return.
+        // Repackage the dataProvider input into what the filter function will return.
         $result = $this->scoreList($scoresAndNames, true, true);
 
         // Get the user ids to send into the filter function

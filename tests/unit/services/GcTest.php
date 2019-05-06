@@ -215,7 +215,7 @@ class GcTest extends Unit
 
         $this->assertCount($totalEntries - $expectedRemoval, $entries);
 
-        // Check any non allowed titles. Fail if an entry exists with a title that isnt allowed.
+        // Check any non allowed titles. Fail if an entry exists with a title that isn't allowed.
         foreach ($notAllowedTitles as $notAllowedTitle) {
             $doesEntryExistWithThisTitle = ArrayHelper::filterByValue($entries, 'title', $notAllowedTitle);
             if ($doesEntryExistWithThisTitle) {

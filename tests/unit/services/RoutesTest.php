@@ -123,7 +123,7 @@ class RoutesTest extends Unit
                 [['validHandle', 'date'], 'noArray'], '_test'
             ],
 
-            // TODO: Well more a question.Shouldnt emojis (UTF-8) be allowed in routes?
+            // TODO: Well more a question. Shouldn't emojis (UTF-8) be allowed in routes?
             [
                 [
                     'template' => '_test',

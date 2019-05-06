@@ -61,7 +61,7 @@ class CommandTest extends Unit
         $this->assertGreaterThan($oldDate, $date);
 
         // Save it again. Ensure dateUpdated is now current.
-        $session = $this->updateSesh($session);
+        $session = $this->updateSession($session);
 
         $this->assertSame($session['dateUpdated'], $date->format('Y-m-d H:i:s'));
     }
@@ -96,7 +96,7 @@ class CommandTest extends Unit
      * @return array
      * @throws Exception
      */
-    public function updateSesh($values): array
+    public function updateSession($values): array
     {
         $command = Craft::$app->getDb()->createCommand()
             ->update('{{%sessions}}', $values)->execute();

@@ -12,7 +12,7 @@ use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 
 /**
- * Unit tests for SearcTest
+ * Unit tests for SearchTest
  *
  * Searching and some of the commands run in this test are documented here:
  * https://docs.craftcms.com/v3/searching.html#supported-syntaxes
@@ -213,7 +213,7 @@ class SearchQueryTest extends Unit
      */
     public function getWhatItShouldBe($token, $configOptions, $index): SearchQueryTerm
     {
-        // Get wether the data provider gave us custom config options for this term based on the above searchParam
+        // Get whether the data provider gave us custom config options for this term based on the above searchParam
         $config = $this->getConfigFromOptions($index, $configOptions);
 
         return $this->createDefaultSearchQueryTermFromString($token->term, $config);

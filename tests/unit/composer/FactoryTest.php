@@ -47,7 +47,7 @@ class FactoryTest extends TestCase
         $downloadManager = new DownloadManager(new NullIO());
         $archiveManager = $this->factory->createArchiveManager($config, $downloadManager);
 
-        // Ensure that zip and phar archivers arent added.
+        // Ensure that zip and phar archivers aren't added.
         $this->assertSame([], $this->getInaccessibleProperty($archiveManager, 'archivers'));
     }
 }

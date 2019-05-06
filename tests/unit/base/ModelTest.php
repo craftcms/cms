@@ -93,7 +93,7 @@ class ModelTest extends Unit
         $this->assertSame('2018-11-12 20:00:00', $model->exampleParam);
     }
     /**
-     * Test that if you create an empty model and then set the param it isnt converted to \DateTime
+     * Test that if you create an empty model and then set the param it isn't converted to \DateTime
      */
     public function testRetroFittingDoesntWork()
     {

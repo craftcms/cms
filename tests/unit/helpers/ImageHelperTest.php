@@ -36,7 +36,7 @@ class ImageHelperTest extends Unit
     }
 
     /**
-     * @dataProvider calculateMissingImensionData
+     * @dataProvider calculateMissingDimensionData
      * @param $result
      * @param $targetWidth
      * @param $targetHeight
@@ -48,7 +48,7 @@ class ImageHelperTest extends Unit
         $calculate = Image::calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
         $this->assertSame($result, $calculate);
     }
-    public function calculateMissingImensionData(): array
+    public function calculateMissingDimensionData(): array
     {
         return [
             [[1, 1], 1, 1, 1, 1],

@@ -113,7 +113,7 @@ class AppTest extends TestCase
         @ini_set('date.timezone', $timezoneValue);
 
         $this->assertFalse(App::phpConfigValueAsBool(''));
-        $this->assertFalse(App::phpConfigValueAsBool('This isnt a config value'));
+        $this->assertFalse(App::phpConfigValueAsBool('This is not a config value'));
     }
 
     /**
@@ -142,7 +142,7 @@ class AppTest extends TestCase
 
     public function testMaxPowerCaptain(){
         $oldMemoryLimit = ini_get('memory_limit');
-        $oldMaxExeccution = ini_get('max_execution_time');
+        $oldMaxExecution= ini_get('max_execution_time');
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $generalConfig->phpMaxMemoryLimit = '512M';
@@ -155,7 +155,7 @@ class AppTest extends TestCase
         $this->assertSame('0', ini_get('max_execution_time'));
 
         ini_set('memory_limit', $oldMemoryLimit);
-        ini_set('max_execution_time', $oldMaxExeccution);
+        ini_set('max_execution_time', $oldMaxExecution);
 
         // TODO: 3.1 added new funcs. Test this
     }

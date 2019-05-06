@@ -12,7 +12,7 @@ use UnitTester;
 use yii\base\Exception;
 
 /**
- * Unit tests for the DB Helper class where its output may need to be mysql specific. Will be skipped if db isnt mysql.
+ * Unit tests for the DB Helper class where its output may need to be mysql specific. Will be skipped if db isn't mysql.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>

@@ -201,7 +201,7 @@ class ViewTest extends TestCase
 
         $result = $this->view->renderTemplate('withvar', ['name' => 'Giel Tettelaar']);
 
-        $this->assertSame($result, 'Hello iam Giel Tettelaar');
+        $this->assertSame($result, 'Hello I am Giel Tettelaar');
         $this->assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
 
         // Test that templates can work without variables.

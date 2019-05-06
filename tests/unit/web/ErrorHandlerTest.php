@@ -73,7 +73,7 @@ class ErrorHandlerTest extends TestCase
             'renderException' => $this->assertObjectIsInstanceOfClassCallback(Exception::class)
         ]);
 
-        $exception = new Twig_Error_Runtime('A twig error occured');
+        $exception = new Twig_Error_Runtime('A Twig error occurred');
         $this->setInaccessibleProperty($exception, 'previous', new Exception('Im not a twig error'));
         $this->errorHandler->handleException($exception);
     }

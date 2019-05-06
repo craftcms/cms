@@ -56,7 +56,7 @@ class SearchHelperTest extends Unit
             ['', 'test', ['test']],
             ['🎧𢵌😀😘⛄', '🎧𢵌😀😘⛄'],
 
-            // Ignorance isnt mb-4 safe
+            // Ignorance isn't mb-4 safe
             ['🎧𢵌😀😘⛄', '🎧𢵌😀😘⛄', ['😀']]
 
         ];

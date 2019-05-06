@@ -56,7 +56,7 @@ class LocalizationHelperTest extends Unit
         ];
     }
 
-    public function testLanugageNormalizationExceptions()
+    public function testLanguageNormalizationExceptions()
     {
         $this->tester->expectThrowable(InvalidArgumentException::class, function () {
             Localization::normalizeLanguage('dutch');

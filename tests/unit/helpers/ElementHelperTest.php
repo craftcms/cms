@@ -39,7 +39,7 @@ class ElementHelperTest extends Unit
     public function testCreateSlug($result, $input)
     {
         $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
-        $result = str_replace('[seperator-here]', $glue, $result);
+        $result = str_replace('[separator-here]', $glue, $result);
 
         $this->assertSame($result, ElementHelper::createSlug($input));
     }
@@ -47,8 +47,8 @@ class ElementHelperTest extends Unit
     public function createSlugData(): array
     {
         return [
-            ['word[seperator-here]Word', 'wordWord'],
-            ['word[seperator-here]word', 'word word'],
+            ['word[separator-here]Word', 'wordWord'],
+            ['word[separator-here]word', 'word word'],
             ['word', 'word'],
             ['123456789', '123456789'],
             ['abc...dfg', 'abc...dfg'],
