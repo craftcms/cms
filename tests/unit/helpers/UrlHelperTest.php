@@ -498,7 +498,6 @@ class UrlHelperTest extends Unit
         return [
             'base' => ['endpoint', 'endpoint',  null,  null, null, true],
             'full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
-            'full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
             'scheme-override' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
             'scheme-override-param-add' => [
                 self::ABSOLUTE_URL_HTTPS.'?param1=entry1&param2=entry2',
