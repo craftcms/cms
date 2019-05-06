@@ -193,9 +193,8 @@ class SearchQueryTest extends Unit
      * @dataProvider searchQueryData
      * @param string $query
      * @param array|null $configOptions
-     * @param int|null $sizeOfArray
      */
-    public function testSearchQuerySortOrder(string $query, array $configOptions = null, int $sizeOfArray = null)
+    public function testSearchQuerySortOrder(string $query, array $configOptions = null)
     {
         $exploded = explode(' ', $query);
         foreach ((new SearchQuery($query))->getTokens() as $index => $token) {

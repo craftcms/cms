@@ -184,10 +184,4 @@ class ControllerTest extends Unit
         $scheme = $this->determineUrlScheme();
         return UrlHelper::urlWithScheme(Craft::$app->getConfig()->getGeneral()->siteUrl.'index.php', $scheme);
     }
-    private function setMockUser()
-    {
-        Craft::$app->getUser()->setIdentity(
-            Craft::$app->getUsers()->getUserById('1')
-        );
-    }
 }

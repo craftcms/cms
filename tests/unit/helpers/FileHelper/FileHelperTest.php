@@ -262,12 +262,11 @@ class FileHelperTest extends Unit
     /**
      * @dataProvider mimeTypeData
      *
-     * @param $result
      * @param $input
      * @param $magicFile
      * @param $checkExtension
      */
-    public function testIsSvg($result, $input, $magicFile, $checkExtension)
+    public function testIsSvg($input, $magicFile, $checkExtension)
     {
         $result = false;
         if (strpos($input, '.svg') !== false) {
@@ -286,7 +285,7 @@ class FileHelperTest extends Unit
      * @param $magicFile
      * @param $checkExtension
      */
-    public function testIsGif($result, $input, $magicFile, $checkExtension)
+    public function testIsGif($input, $magicFile, $checkExtension)
     {
         $result = false;
         if (strpos($input, '.gif') !== false) {

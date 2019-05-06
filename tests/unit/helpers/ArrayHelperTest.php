@@ -263,7 +263,7 @@ class ArrayHelperTest extends Unit
                     ['name' => 'john'],
                     ['name' => 'michael'],
                 ],
-                function ($array, $default){
+                function ($array){
                     return $array['name'];
                 },
                 'john',

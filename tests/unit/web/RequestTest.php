@@ -364,10 +364,6 @@ class RequestTest extends TestCase
         return $this->invokeMethod($this->request, '_getParam', [$name, $defaultValue, $params]);
 
     }
-    private function requestedSite($siteService)
-    {
-        return $this->invokeMethod($this->request, '_requestedSite', [$siteService]);
-    }
     private function isCsrfValidForUser($token)
     {
         return $this->invokeMethod($this->request, 'csrfTokenValidForCurrentUser', [$token]);
