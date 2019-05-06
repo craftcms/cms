@@ -36,7 +36,7 @@ class CommandTest extends Unit
      */
     public function testInsertDateCreated()
     {
-        $session = $this->ensureSesh();
+        $session = $this->ensureSession();
 
         $date = new DateTime('now', new DateTimeZone('UTC'));
 
@@ -48,7 +48,7 @@ class CommandTest extends Unit
      */
     public function testDateUpdatedOnInsertAndUpdate()
     {
-        $session = $this->ensureSesh();
+        $session = $this->ensureSession();
 
         // Ensure that there is a diff in dates....
         sleep(5);
@@ -72,7 +72,7 @@ class CommandTest extends Unit
      * @return array
      * @throws Exception
      */
-    public function ensureSesh() : array
+    public function ensureSession() : array
     {
         $command = Craft::$app->getDb()->createCommand()
             ->insert('{{%sessions}}',

@@ -269,7 +269,7 @@ class ArrayHelperTest extends Unit
                 'john',
                 true
             ));
-        // Make sure that filter by value hasnt made any changes to the array content e.t.c.
+        // Make sure that filter by value hasn't made any changes to the array content, etc.
         $mockedUp = [
             [
                 'name' => '',

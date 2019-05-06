@@ -19,7 +19,7 @@ use UnitTester;
 /**
  * Unit tests for the DateTime Helper class.
  *
- * TODO: This suite must be more effecient with some global variables.
+ * TODO: This suite must be more efficient with some global variables.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
@@ -48,7 +48,7 @@ class DateTimeHelperTest extends Unit
      * @param $result
      * @param $input
      */
-    public function testContsants($result, $input)
+    public function testConstants($result, $input)
     {
         $this->assertSame($result, $input);
         $this->assertIsInt($input);
@@ -177,8 +177,8 @@ class DateTimeHelperTest extends Unit
     {
         return [
             'no-params' => [['date' => '', 'time' => '']],
-            'invalid-seperator' => ['2018/08/09 20:00:00'],
-            'invalid-seperator-2' => ['2018.08.09 20:00:00'],
+            'invalid-separator' => ['2018/08/09 20:00:00'],
+            'invalid-separator-2' => ['2018.08.09 20:00:00'],
             'null-type' => [null],
             'empty-string' => [''],
             'empty-array' => [[]]
@@ -292,11 +292,11 @@ class DateTimeHelperTest extends Unit
                 '2018-08-09 20:00:00',
                 $dt,
             ],
-            'array-diff-seperator' => [
+            'array-diff-separator' => [
                 ['date' => '08/09/2018', 'time' => '08:00 PM'],
                 $dt,
             ],
-            'array-diff-seperator-2' => [
+            'array-diff-separator-2' => [
                 ['date' => '08.09.2018', 'time' => '08:00 PM'],
                 $dt,
             ],
@@ -513,13 +513,13 @@ class DateTimeHelperTest extends Unit
      */
     public function testIsWithinLast($result, $dateTime, $interval)
     {
-        $isWthinLast = DateTimeHelper::isWithinLast($dateTime, $interval);
-        $this->assertSame($result, $isWthinLast);
+        $isWithinLast = DateTimeHelper::isWithinLast($dateTime, $interval);
+        $this->assertSame($result, $isWithinLast);
     }
 
     public function withinLastData(): array
     {
-        $tomorow = new DateTime('tomorrow');
+        $tomorrow = new DateTime('tomorrow');
         $yesterday = new DateTime('yesterday');
         $aYearAgo = new DateTime('2010-08-8 20:00:00');
 
@@ -537,7 +537,7 @@ class DateTimeHelperTest extends Unit
             [true, $hourAgo, '4 hours'],
 
             [false, $aYearAgo, 25],
-            [false, $tomorow, 0],
+            [false, $tomorrow, 0],
         ];
     }
 

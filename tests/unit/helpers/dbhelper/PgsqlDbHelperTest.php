@@ -79,14 +79,14 @@ class PgsqlDbHelperTest extends Unit
     /**
      * @dataProvider parseParamData
      * @param $result
-     * @param $collumn
+     * @param $column
      * @param $value
      * @param string $defaultOperator
      * @param bool $caseInsensitive
      */
-    public function testParseParamGeneral($result, $collumn, $value, $defaultOperator = '=', $caseInsensitive = false)
+    public function testParseParamGeneral($result, $column, $value, $defaultOperator = '=', $caseInsensitive = false)
     {
-        $this->assertSame($result, Db::parseParam($collumn, $value, $defaultOperator, $caseInsensitive));
+        $this->assertSame($result, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
     }
 
     public function parseParamData(): array
@@ -104,17 +104,17 @@ class PgsqlDbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider getTextualCollumnType
+     * @dataProvider getTextualColumnType
      * @param $result
      * @param $input
      */
-    public function testGetTextualCollumnTypeByContentLength($result, $input)
+    public function testGetTextualColumnTypeByContentLength($result, $input)
     {
         $textualCapacity = Db::getTextualColumnStorageCapacity($input);
         $this->assertSame($result, $textualCapacity);
     }
 
-    public function getTextualCollumnType(): array
+    public function getTextualColumnType(): array
     {
         return [
             ['text', 254],

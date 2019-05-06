@@ -46,7 +46,7 @@ class ActiveRecordTest extends Unit
 
     public function testDateCreated()
     {
-        $session = $this->ensureSesh();
+        $session = $this->ensureSession();
 
         $date = new DateTime('now', new DateTimeZone('UTC'));
 
@@ -55,7 +55,7 @@ class ActiveRecordTest extends Unit
 
     public function testDateUpdated()
     {
-        $session = $this->ensureSesh();
+        $session = $this->ensureSession();
 
         // Ensure that there is a diff in dates....
         sleep(5);
@@ -75,7 +75,7 @@ class ActiveRecordTest extends Unit
 
     public function testUuid()
     {
-        $session = $this->ensureSesh();
+        $session = $this->ensureSession();
 
         $this->assertTrue(StringHelper::isUUID($session->uid));
     }
@@ -107,13 +107,13 @@ class ActiveRecordTest extends Unit
         $jsonableClass->name = 'name';
         $serializable = new Serializable();
 
-        $excpectedDateTime = new DateTime('2018-06-06 18:00:00');
-        $excpectedDateTime->setTimezone(new DateTimeZone('UTC'));
+        $expectedDateTime = new DateTime('2018-06-06 18:00:00');
+        $expectedDateTime->setTimezone(new DateTimeZone('UTC'));
 
         $dateTime = new DateTime('2018-06-06 18:00:00');
 
         return [
-            [$excpectedDateTime->format('Y-m-d H:i:s'), $dateTime],
+            [$expectedDateTime->format('Y-m-d H:i:s'), $dateTime],
             ['{"name":"name"}', $jsonableClass],
             ['{"JsonArray":"SomeArray"}', $jsonableArray],
             ['Serialized data', $serializable],
@@ -121,7 +121,7 @@ class ActiveRecordTest extends Unit
         ];
     }
     /**
-     * Test that values cannot be overrriden
+     * Test that values cannot be overwritten
      *
      * @throws Exception
      */
@@ -171,7 +171,7 @@ class ActiveRecordTest extends Unit
         $this->assertTrue(StringHelper::isUUID($session->uid));
     }
 
-    public function ensureSesh() : Session
+    public function ensureSession() : Session
     {
         $session = new Session();
         $session->userId = 1;

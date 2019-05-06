@@ -76,7 +76,7 @@ class ContentBehaviorTest extends Unit
         $field->handle = 'testRetrofittingDontWork1';
 
         if (!Craft::$app->getFields()->saveField($field)) {
-            throw new InvalidArgumentException('Couldnt save field');
+            throw new InvalidArgumentException("Couldn't save field");
         }
 
         $cBehavior = new ContentBehavior();

@@ -66,7 +66,7 @@ class DbHelperTest extends Unit
             ]
         ]
     ];
-    const EMPTY_COLLUMN_PARSEPARAM = [
+    const EMPTY_COLUMN_PARSEPARAM = [
         'or',
         [
             'in',
@@ -80,14 +80,14 @@ class DbHelperTest extends Unit
     /**
      * @dataProvider parseParamDataProvider
      * @param $result
-     * @param $collumn
+     * @param $column
      * @param $value
      * @param string $defaultOperator
      * @param bool $caseInsensitive
      */
-    public function testParseParamGeneral($result, $collumn, $value, $defaultOperator = '=', $caseInsensitive = false)
+    public function testParseParamGeneral($result, $column, $value, $defaultOperator = '=', $caseInsensitive = false)
     {
-        $this->assertSame($result, Db::parseParam($collumn, $value, $defaultOperator, $caseInsensitive));
+        $this->assertSame($result, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
     }
 
     public function parseParamDataProvider(): array
@@ -173,16 +173,16 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider collumnTypeParsingData
+     * @dataProvider columnTypeParsingData
      * @param $result
      * @param string $input
      */
-    public function testCollumnTypeParsing($result, string $input)
+    public function testColumnTypeParsing($result, string $input)
     {
         $this->assertSame($result, Db::parseColumnType($input));
     }
 
-    public function collumnTypeParsingData(): array
+    public function columnTypeParsingData(): array
     {
         return [
             ['test', 'test'],
@@ -199,19 +199,19 @@ class DbHelperTest extends Unit
 
 
     /**
-     * @dataProvider numericCollumnTypesData
+     * @dataProvider numericColumnTypesData
      * @param $result
      * @param $int1
      * @param $int2
      * @param null $decimals
      * @throws \yii\base\Exception
      */
-    public function testGetNumericCollumnType($result, $int1, $int2, $decimals = null)
+    public function testGetNumericColumnType($result, $int1, $int2, $decimals = null)
     {
         $this->assertSame($result, Db::getNumericalColumnType($int1, $int2, $decimals));
     }
 
-    public function numericCollumnTypesData(): array
+    public function numericColumnTypesData(): array
     {
         return [
             'smallint1-minus' => ['smallint(1)', -0, -5],
@@ -230,16 +230,16 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider collumnLengthParseData
+     * @dataProvider columnLengthParseData
      * @param $result
      * @param $input
      */
-    public function testCollumnLengthParsing($result, $input)
+    public function testColumnLengthParsing($result, $input)
     {
         $this->assertSame($result, Db::parseColumnLength($input));
     }
 
-    public function collumnLengthParseData(): array
+    public function columnLengthParseData(): array
     {
         return [
             [2, 'integer(2)'],
@@ -253,16 +253,16 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider simplifiedCollumnData
+     * @dataProvider simplifiedColumnData
      * @param $result
      * @param $input
      */
-    public function testGetSimplifiedCollumnType($result, $input)
+    public function testGetSimplifiedColumnType($result, $input)
     {
         $this->assertSame($result, Db::getSimplifiedColumnType($input));
     }
 
-    public function simplifiedCollumnData(): array
+    public function simplifiedColumnData(): array
     {
         return [
             ['textual', 'Textual'],
@@ -466,7 +466,7 @@ class DbHelperTest extends Unit
      * @param $result
      * @param $input
      */
-    public function testGetMinAllowedValueForNumericCollumn($result, $input)
+    public function testGetMinAllowedValueForNumericColumn($result, $input)
     {
         $allowed = Db::getMinAllowedValueForNumericColumn($input);
         $this->assertSame($result, $allowed);

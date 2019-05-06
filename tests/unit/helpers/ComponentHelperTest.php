@@ -35,7 +35,7 @@ class ComponentHelperTest extends Unit
     protected $tester;
 
     /**
-     * Tests wheter the $callback will evaluate to an instance of the componentInterface.
+     * Tests whether the $callback will evaluate to an instance of the componentInterface.
      *
      * @dataProvider successfulComponentCreationData
      * @param $callback
@@ -56,14 +56,14 @@ class ComponentHelperTest extends Unit
                     return Component::createComponent(ComponentExample::class);
                 },
             ],
-          'succesfull-basic' => [
+          'successful-basic' => [
               function(){
                   return Component::createComponent([
                       'type' => ComponentExample::class,
                   ]);
               },
           ],
-            'dependancy-heavy' => [
+            'dependency-heavy' => [
                 function() {
                     return Component::createComponent([
                         'type' => DependencyHeavyComponent::class,
@@ -127,13 +127,13 @@ class ComponentHelperTest extends Unit
                 null,
                 InvalidConfigException::class,
             ],
-            'incorrect-dependancies' => [
+            'incorrect-dependencies' => [
                 [
                     'type' => DependencyHeavyComponent::class,
-                    'notavaliddependancy' => 'value1',
-                    'notavaliddependancy2' => 'value2',
+                    'notavaliddependency' => 'value1',
+                    'notavaliddependency2' => 'value2',
                     'settings' => [
-                        'notavaliddependancy3' => 'value'
+                        'notavaliddependency3' => 'value'
                     ]
                 ],
                 null,
@@ -150,12 +150,12 @@ class ComponentHelperTest extends Unit
 
     /**
      * @dataProvider settingsArraysData
-     * @param $mergable
+     * @param $mergeable
      * @param $result
      */
-    public function testSettingsMerging($mergable, $result)
+    public function testSettingsMerging($mergeable, $result)
     {
-        $this->assertSame($result, Component::mergeSettings($mergable));
+        $this->assertSame($result, Component::mergeSettings($mergeable));
     }
 
     public function settingsArraysData(): array

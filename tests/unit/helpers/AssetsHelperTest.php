@@ -113,7 +113,7 @@ class AssetsHelperTest extends Unit
         $this->assertSame('test.text', Assets::prepareAssetName('tes§t.text'));
     }
 
-    public function testConfigSeperator()
+    public function testConfigSeparator()
     {
         Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = '||';
         $this->assertSame('te||st.notafile', Assets::prepareAssetName('te st.notafile'));

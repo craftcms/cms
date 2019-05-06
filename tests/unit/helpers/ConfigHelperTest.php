@@ -130,7 +130,7 @@ class ConfigHelperTest extends Unit
         $exampleModel->exampleParam = 'imaparam';
 
         return [
-            // Ensure if array that it is accesed by the handle and returns the value of the index.
+            // Ensure if array that it is accessed by the handle and returns the value of the index.
             ['imavalue', ['imahandle' => 'imavalue'], 'imahandle'],
 
             // If variable is callable.  Ensure the handle gets passed into the callable.

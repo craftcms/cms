@@ -142,7 +142,7 @@ class AppTest extends TestCase
 
     public function testMaxPowerCaptain(){
         $oldMemoryLimit = ini_get('memory_limit');
-        $oldMaxExcecution = ini_get('max_execution_time');
+        $oldMaxExeccution = ini_get('max_execution_time');
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $generalConfig->phpMaxMemoryLimit = '512M';
@@ -155,7 +155,7 @@ class AppTest extends TestCase
         $this->assertSame('0', ini_get('max_execution_time'));
 
         ini_set('memory_limit', $oldMemoryLimit);
-        ini_set('max_execution_time', $oldMaxExcecution);
+        ini_set('max_execution_time', $oldMaxExeccution);
 
         // TODO: 3.1 added new funcs. Test this
     }
@@ -177,7 +177,7 @@ class AppTest extends TestCase
 
         $this->assertFalse($this->areKeysMissing($config, $desiredConfig));
 
-        // Make sure we aren't passing in anything unkown or invalid.
+        // Make sure we aren't passing in anything unknown or invalid.
         $this->assertTrue(class_exists($config['class']));
 
         // Make sure its a component
