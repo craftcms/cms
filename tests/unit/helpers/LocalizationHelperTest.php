@@ -117,7 +117,7 @@ class LocalizationHelperTest extends Unit
     public function localeDataData(): array
     {
         $dir = dirname(__DIR__, 3).'/src/config/locales/nl.php';
-        $nlTranslation = require_once $dir;
+        $nlTranslation = require $dir;
 
         return [
             [[
