@@ -13,6 +13,7 @@ use Composer\Downloader\DownloadManager;
 use Composer\IO\NullIO;
 use craft\composer\Factory;
 use craft\test\TestCase;
+use UnitTester;
 
 /**
  * Unit tests for craft\composer\Factory
@@ -29,7 +30,7 @@ class FactoryTest extends TestCase
     protected $factory;
 
     /**
-     * @var \UnitTester $tester
+     * @var UnitTester $tester
      */
     protected $tester;
 

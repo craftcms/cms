@@ -10,8 +10,11 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Localization;
+use function dirname;
+use UnitTester;
 use yii\base\InvalidArgumentException;
 use yii\i18n\MissingTranslationEvent;
 
@@ -25,7 +28,7 @@ use yii\i18n\MissingTranslationEvent;
 class LocalizationHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -91,8 +94,8 @@ class LocalizationHelperTest extends Unit
     public function testNumberNormalizationCustomLocale()
     {
         $locale = null;
-        foreach (\Craft::$app->getI18n()->getAllLocaleIds() as $localeId) {
-            if ($localeId !== \Craft::$app->language) {
+        foreach (Craft::$app->getI18n()->getAllLocaleIds() as $localeId) {
+            if ($localeId !== Craft::$app->language) {
                 $locale = $localeId;
             }
         }
@@ -136,10 +139,10 @@ class LocalizationHelperTest extends Unit
     public function testCustomConfigPathDirGetsMerged()
     {
         $this->markTestSkipped();
-        $oldConfigPath = \Craft::$app->getConfig()->configDir;
-        \Craft::$app->getConfig()->configDir = \dirname(__DIR__, 3).'/_data/assets/files';
+        $oldConfigPath = Craft::$app->getConfig()->configDir;
+        Craft::$app->getConfig()->configDir = dirname(__DIR__, 3).'/_data/assets/files';
         $this->assertSame([], Localization::localeData('a-locale-id'));
-        \Craft::$app->getConfig()->configDir = $oldConfigPath;
+        Craft::$app->getConfig()->configDir = $oldConfigPath;
     }
 
     /**

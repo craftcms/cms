@@ -12,6 +12,7 @@ namespace craftunit\helpers;
 use Codeception\Test\Unit;
 use craft\helpers\Number;
 use craft\test\mockclasses\ToStringTest;
+use UnitTester;
 
 /**
  * Class NumberHelperTest.
@@ -23,7 +24,7 @@ use craft\test\mockclasses\ToStringTest;
 class NumberHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 

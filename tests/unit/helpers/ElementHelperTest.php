@@ -10,9 +10,11 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\errors\OperationAbortedException;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
+use UnitTester;
 
 /**
  * Class ElementHelperTest.
@@ -24,7 +26,7 @@ use craft\test\mockclasses\elements\ExampleElement;
 class ElementHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -36,7 +38,7 @@ class ElementHelperTest extends Unit
      */
     public function testCreateSlug($result, $input)
     {
-        $glue = \Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+        $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
         $result = str_replace('[seperator-here]', $glue, $result);
 
         $this->assertSame($result, ElementHelper::createSlug($input));
@@ -56,7 +58,7 @@ class ElementHelperTest extends Unit
 
     public function testLowerRemoveFromCreateSlug()
     {
-        $general =  \Craft::$app->getConfig()->getGeneral();
+        $general =  Craft::$app->getConfig()->getGeneral();
         $general->allowUppercaseInSlug = false;
 
         $this->assertSame('word'.$general->slugWordSeparator.'word', ElementHelper::createSlug('word WORD'));
@@ -120,7 +122,7 @@ class ElementHelperTest extends Unit
     }
     public function testMaxSlugIncrementExceptions()
     {
-        \Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = 0;
+        Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = 0;
         $this->tester->expectThrowable(OperationAbortedException::class, function () {
             $el = new ExampleElement(['uriFormat' => 'test/{slug}']);
             ElementHelper::setUniqueUri($el);

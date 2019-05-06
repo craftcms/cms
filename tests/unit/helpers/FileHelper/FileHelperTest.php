@@ -9,8 +9,10 @@ namespace craftunit\helpers\filehelper;
 use Codeception\Test\Unit;
 use craft\helpers\FileHelper;
 use Symfony\Component\Filesystem\Exception\IOException;
+use UnitTester;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
+useuse yii\base\InvalidConfigException;
 
 /**
  * Class FileHelperTest.
@@ -33,7 +35,7 @@ class FileHelperTest extends Unit
     }
 
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -181,7 +183,7 @@ class FileHelperTest extends Unit
      * @param $magicFile
      * @param $checkExtension
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function testGetMimeType($result, $file, $magicFile, $checkExtension)
     {
@@ -209,7 +211,7 @@ class FileHelperTest extends Unit
      * @param $result
      * @param $file
      *
-     * @throws \yii\base\InvalidConfigException\
+     * @throws
      */
     public function testGetMimeTypeOnFalse($result, $file)
     {

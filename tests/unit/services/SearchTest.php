@@ -7,6 +7,7 @@
 namespace craftunit\services;
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\db\Query;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -55,7 +56,7 @@ class SearchTest extends Unit
         $forQuery = $this->usernameEmailArrayToIdList($usernameOrEmailsForQuery);
 
         // Filter them
-        $filtered = \Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, $returnScores);
+        $filtered = Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, $returnScores);
 
         $this->assertSame($result, $filtered);
     }
@@ -104,7 +105,7 @@ class SearchTest extends Unit
         $forQuery = $this->usernameEmailArrayToIdList($usernameOrEmailsForQuery);
 
         // Filter them
-        $filtered = \Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, true);
+        $filtered = Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, true);
 
         $this->assertSame($result, $filtered);
     }
@@ -153,7 +154,7 @@ class SearchTest extends Unit
         $result = $this->usernameEmailArrayToIdList(['user1', 'user2', 'user3'], true);
         $forQuery = $this->usernameEmailArrayToIdList(['user1', 'user2', 'user3'], false);
 
-        $filtered = \Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, 'user');
+        $filtered = Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, 'user');
 
         $this->assertSame($result, $filtered);
     }
@@ -175,7 +176,7 @@ class SearchTest extends Unit
 
 
         // Index them.
-        \Craft::$app->getSearch()->indexElementAttributes($user);
+        Craft::$app->getSearch()->indexElementAttributes($user);
 
         // Get the data from the DB
         $searchIndex = (new Query())->select('*')->from('{{%searchindex}}')->where(['elementId' => $user->id])->all();
@@ -239,6 +240,6 @@ class SearchTest extends Unit
      */
     private function getUserIdByEmailOrUserName(string $emailOrUsername)
     {
-        return \Craft::$app->getUsers()->getUserByUsernameOrEmail($emailOrUsername);
+        return Craft::$app->getUsers()->getUserByUsernameOrEmail($emailOrUsername);
     }
 }

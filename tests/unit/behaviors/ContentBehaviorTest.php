@@ -7,11 +7,14 @@
 namespace craftunit\behaviors;
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\base\Field;
 use craft\behaviors\ContentBehavior;
 use craft\fields\PlainText;
 
 use craftunit\fixtures\FieldsFixture;
+use InvalidArgumentException;
+use UnitTester;
 
 /**
  * Unit tests for ContentBehavior
@@ -32,7 +35,7 @@ class ContentBehaviorTest extends Unit
     }
 
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     public $tester;
 
@@ -45,7 +48,7 @@ class ContentBehaviorTest extends Unit
         // Make sure it exists
         $contentBe = new ContentBehavior();
 
-        $this->assertInstanceOf(Field::class, \Craft::$app->getFields()->getFieldByHandle($handle));
+        $this->assertInstanceOf(Field::class, Craft::$app->getFields()->getFieldByHandle($handle));
         $this->assertTrue(property_exists(ContentBehavior::class, $handle));
         $this->assertArrayHasKey($handle, ContentBehavior::$fieldHandles);
     }
@@ -72,8 +75,8 @@ class ContentBehaviorTest extends Unit
         $field->name = 'testRetrofittingDontWork1';
         $field->handle = 'testRetrofittingDontWork1';
 
-        if (!\Craft::$app->getFields()->saveField($field)) {
-            throw new \InvalidArgumentException('Couldnt save field');
+        if (!Craft::$app->getFields()->saveField($field)) {
+            throw new InvalidArgumentException('Couldnt save field');
         }
 
         $cBehavior = new ContentBehavior();
@@ -81,8 +84,8 @@ class ContentBehaviorTest extends Unit
         $this->assertArrayHasKey('testRetrofittingDontWork1', ContentBehavior::$fieldHandles);
 
         // Cleanup and remove the column from the content table.
-        if (!\Craft::$app->getFields()->deleteField($field)) {
-            throw new \InvalidArgumentException('Unable to delete field: '.$field->name.'');
+        if (!Craft::$app->getFields()->deleteField($field)) {
+            throw new InvalidArgumentException('Unable to delete field: '.$field->name.'');
         }
     }
 }

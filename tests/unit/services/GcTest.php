@@ -8,6 +8,7 @@
 namespace craftunit\services;
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\db\Query;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -24,6 +25,9 @@ use craftunit\fixtures\SectionsFixture;
 use craftunit\fixtures\SessionsFixture;
 use craftunit\fixtures\UsersFixture;
 use craftunit\fixtures\VolumesFixture;
+use DateInterval;
+use DateTime;
+use UnitTester;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -37,7 +41,7 @@ use yii\base\InvalidArgumentException;
 class GcTest extends Unit
 {
     /**
-     * @var \UnitTester $tester
+     * @var UnitTester $tester
      */
     protected $tester;
 
@@ -77,7 +81,7 @@ class GcTest extends Unit
     {
         parent::_before();
 
-        $this->gc = \Craft::$app->getGc();
+        $this->gc = Craft::$app->getGc();
     }
 
     public function testRunForDeletedEntriesWithDefaultDuration()
@@ -90,7 +94,7 @@ class GcTest extends Unit
     public function testRunForDeletedEntriesWithCustomDuration()
     {
         // 5 Days
-        \Craft::$app->getConfig()->getGeneral()->softDeleteDuration = 432000;
+        Craft::$app->getConfig()->getGeneral()->softDeleteDuration = 432000;
 
         $this->doEntryTest(2, [
             'Deleted 40 days ago',
@@ -145,7 +149,7 @@ class GcTest extends Unit
     public function testRunForExpiringUsers()
     {
         // 2 days
-        \Craft::$app->getConfig()->getGeneral()->purgePendingUsersDuration = 172800;
+        Craft::$app->getConfig()->getGeneral()->purgePendingUsersDuration = 172800;
 
         // Create then with 3 days
         $this->createExpiringPendingUsers();
@@ -179,7 +183,7 @@ class GcTest extends Unit
 
     private function createExpiringPendingUsers()
     {
-        $date = (new \DateTime('now'))->sub(new \DateInterval('P3D'))->format('Y-m-d H:i:s');
+        $date = (new DateTime('now'))->sub(new DateInterval('P3D'))->format('Y-m-d H:i:s');
 
         $userRecords = \craft\records\User::find()
             ->where(['username' => ['user1', 'user2']])

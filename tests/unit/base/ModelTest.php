@@ -10,7 +10,10 @@ namespace craftunit\models;
 
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\test\mockclasses\models\ExampleModel;
+use DateTime;
+use DateTimeZone;
 
 /**
  * Unit tests for ModelTest
@@ -54,8 +57,8 @@ class ModelTest extends Unit
     {
         $model = new ExampleModel([$paramName => $dateForInput]);
 
-        $dateTime = new \DateTime($dateForInput, new \DateTimeZone('UTC'));
-        $dateTime->setTimezone(new \DateTimeZone(\Craft::$app->getTimeZone()));
+        $dateTime = new DateTime($dateForInput, new DateTimeZone('UTC'));
+        $dateTime->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()));
 
         $this->assertSame($dateTime->format('Y-m-d H:i:s'), $model->$paramName->format('Y-m-d H:i:s'));
         $this->assertSame($dateTime->getTimezone()->getName(), $model->$paramName->getTimezone()->getName());

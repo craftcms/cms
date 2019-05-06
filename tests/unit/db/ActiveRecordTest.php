@@ -14,6 +14,11 @@ use craft\helpers\StringHelper;
 use craft\records\Session;
 use craft\records\Volume;
 use craft\test\mockclasses\serializable\Serializable;
+use craft\volumes\Local;
+use DateTime;
+use DateTimeZone;
+use Exception;
+use stdClass;
 
 /**
  * Unit tests for the ActiveRecord class craft cms implements
@@ -43,7 +48,7 @@ class ActiveRecordTest extends Unit
     {
         $sesh = $this->ensureSesh();
 
-        $date = new \DateTime('now', new \DateTimeZone('UTC'));
+        $date = new DateTime('now', new DateTimeZone('UTC'));
 
         $this->assertSame($sesh->dateCreated, $date->format('Y-m-d H:i:s'));
     }
@@ -55,7 +60,7 @@ class ActiveRecordTest extends Unit
         // Ensure that there is a diff in dates....
         sleep(5);
 
-        $dateTimeZone = new \DateTimeZone('UTC');
+        $dateTimeZone = new DateTimeZone('UTC');
         $date = new \DateTime('now', $dateTimeZone);
         $oldDate  = new \DateTime($sesh->dateUpdated, $dateTimeZone);
 
@@ -84,7 +89,7 @@ class ActiveRecordTest extends Unit
         $vol->name = 'NaN';
         $vol->handle = 'NaN';
         $vol->name = 'nan';
-        $vol->type = \craft\volumes\Local::class;
+        $vol->type = Local::class;
         $vol->settings = $input;
 
         $save = $vol->save();
@@ -96,12 +101,12 @@ class ActiveRecordTest extends Unit
     public function dataForDbPrepare()
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
-        $jsonableClass = new \stdClass();
+        $jsonableClass = new stdClass();
         $jsonableClass->name = 'name';
         $serializable = new Serializable();
 
         $excpectedDateTime = new \DateTime('2018-06-06 18:00:00');
-        $excpectedDateTime->setTimezone(new \DateTimeZone('UTC'));
+        $excpectedDateTime->setTimezone(new DateTimeZone('UTC'));
 
         $dateTime = new \DateTime('2018-06-06 18:00:00');
 
@@ -116,11 +121,11 @@ class ActiveRecordTest extends Unit
     /**
      * Test that values cannot be overrriden
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function testOverrides()
     {
-        $utcTz = new \DateTimeZone('UTC');
+        $utcTz = new DateTimeZone('UTC');
         $oneDayAgo = new \DateTime('-1 day', $utcTz);
         $now =  new \DateTime('now', $utcTz);
 

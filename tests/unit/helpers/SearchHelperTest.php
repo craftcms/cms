@@ -9,6 +9,7 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Search;
+use UnitTester;
 
 /**
  * Unit tests for the Search Helper class.
@@ -20,7 +21,7 @@ use craft\helpers\Search;
 class SearchHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 

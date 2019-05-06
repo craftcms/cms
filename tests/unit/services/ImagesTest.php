@@ -9,7 +9,9 @@ namespace craftunit\services;
 
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\services\Images;
+use UnitTester;
 
 
 /**
@@ -22,7 +24,7 @@ use craft\services\Images;
 class ImagesTest extends Unit
 {
     /**
-     * @var \UnitTester $tester
+     * @var UnitTester $tester
      */
     protected $tester;
 
@@ -34,6 +36,6 @@ class ImagesTest extends Unit
     public function _before()
     {
         parent::_before();
-        $this->images = \Craft::$app->getImages();
+        $this->images = Craft::$app->getImages();
     }
 }

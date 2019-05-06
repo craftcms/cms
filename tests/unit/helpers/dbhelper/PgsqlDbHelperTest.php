@@ -3,8 +3,13 @@
 namespace craftunit\helpers;
 
 
+use;
 use Codeception\Test\Unit;
+use Craft;
+use craft\db\pgsql\Schema;
 use craft\helpers\Db;
+use UnitTester;
+
 /**
  * Unit tests for the DB Helper class where its output may need to be pgsql specific. Will be skipped if db isnt pgsql.
  *
@@ -15,12 +20,12 @@ use craft\helpers\Db;
 class PgsqlDbHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
     public function _before()
     {
-        if (!\Craft::$app->getDb()->getIsPgsql()) {
+        if (!Craft::$app->getDb()->getIsPgsql()) {
             $this->markTestSkipped();
         }
     }
@@ -39,7 +44,7 @@ class PgsqlDbHelperTest extends Unit
     {
         // TODO: This is the best way to test it but is it worth 20mb and 3 seconds of time?
         $mysqlSchema = new \craft\db\mysql\Schema();
-        $pgsqlSchema = new \craft\db\pgsql\Schema();
+        $pgsqlSchema = new Schema();
         $returnArray = [];
 
         foreach ($pgsqlSchema->typeMap as $key => $value) {
@@ -57,7 +62,7 @@ class PgsqlDbHelperTest extends Unit
     /**
      * @dataProvider textualStorageData
      * @param $result
-     * @param $input\
+     * @param $input
      */
     public function testGetTextualColumnStorageCapacity($result, $input)
     {
@@ -67,7 +72,7 @@ class PgsqlDbHelperTest extends Unit
     public function textualStorageData()
     {
         return [
-            [null, \craft\db\pgsql\Schema::TYPE_TEXT],
+            [null, Schema::TYPE_TEXT],
         ];
     }
 

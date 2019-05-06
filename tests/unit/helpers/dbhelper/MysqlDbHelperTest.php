@@ -4,8 +4,11 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
-use craft\db\mysql\Schema;
+use Craft;
+use craft\db\mysql\Schema as MysqlSchema;
+use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\helpers\Db;
+use UnitTester;
 
 /**
  * Unit tests for the DB Helper class where its output may need to be mysql specific. Will be skipped if db isnt mysql.
@@ -17,13 +20,13 @@ use craft\helpers\Db;
 class MysqlDbHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
     protected function _before()
     {
-        if (!\Craft::$app->getDb()->getIsMysql()) {
+        if (!Craft::$app->getDb()->getIsMysql()) {
             $this->markTestSkipped();
         }
     }
@@ -41,8 +44,8 @@ class MysqlDbHelperTest extends Unit
     public function sqlTypesData()
     {
         // TODO: This is the best way to test it but is it worth 20mb and 3 seconds of time?
-        $mysqlSchema = new \craft\db\mysql\Schema();
-        $pgsqlSchema = new \craft\db\pgsql\Schema();
+        $mysqlSchema = new MysqlSchema();
+        $pgsqlSchema = new PgsqlSchema();
         $returnArray = [];
 
         foreach ($mysqlSchema->typeMap as $key => $value) {
@@ -60,7 +63,7 @@ class MysqlDbHelperTest extends Unit
     /**
      * @dataProvider textualStorageData
      * @param $result
-     * @param $input\
+     * @param $input
      */
     public function testGetTextualColumnStorageCapacity($result, $input)
     {
@@ -70,7 +73,7 @@ class MysqlDbHelperTest extends Unit
     public function textualStorageData()
     {
         return [
-            [null, Schema::TYPE_ENUM],
+            [null, MysqlSchema::TYPE_ENUM],
         ];
     }
 

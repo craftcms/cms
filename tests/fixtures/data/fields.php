@@ -1,5 +1,11 @@
 <?php
 
+use craft\fields\Assets;
+use craft\fields\Entries;
+use craft\fields\Number;
+use craft\fields\PlainText;
+use craft\fields\Table;
+
 return [
     [
         'name' => 'Test field',
@@ -8,26 +14,26 @@ return [
     [
         'name' => 'Test field',
         'handle' => 'testField2',
-        'fieldType' => \craft\fields\Number::class,
+        'fieldType' => Number::class,
     ],
     [
         'name' => 'Test field',
         'handle' => 'testField3',
-        'fieldType' => \craft\fields\Assets::class
+        'fieldType' => Assets::class
     ],
     [
         'name' => 'Test field',
         'handle' => 'testField4',
-        'fieldType' => \craft\fields\Table::class
+        'fieldType' => Table::class
     ],
     [
         'name' => 'Test field',
         'handle' => 'testField5',
-        'fieldType' => \craft\fields\Entries::class
+        'fieldType' => Entries::class
     ],
     [
         'name' => 'Test field',
         'handle' => 'testField6',
-        'fieldType' => \craft\fields\PlainText::class
+        'fieldType' => PlainText::class
     ]
 ];

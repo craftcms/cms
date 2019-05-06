@@ -9,6 +9,7 @@ namespace craftunit\validators;
 use Codeception\Test\Unit;
 use craft\validators\ColorValidator;
 use craft\test\mockclasses\models\ExampleModel;
+use ErrorException;
 
 /**
  * Class ColorValidatorTest.
@@ -76,7 +77,7 @@ class ColorValidatorTest extends Unit
      */
     public function testColorNormaliationException()
     {
-        $this->tester->expectException(\ErrorException::class, function (){
+        $this->tester->expectException(ErrorException::class, function (){
             ColorValidator::normalizeColor('');
         });
     }

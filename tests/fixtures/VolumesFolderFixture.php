@@ -9,6 +9,7 @@
 namespace craftunit\fixtures;
 
 
+use Craft;
 use craft\records\VolumeFolder;
 use craft\services\Volumes;
 use yii\test\ActiveFixture;
@@ -31,6 +32,6 @@ class VolumesFolderFixture extends ActiveFixture
     {
         parent::load();
 
-        \Craft::$app->set('volumes', new Volumes());
+        Craft::$app->set('volumes', new Volumes());
     }
 }

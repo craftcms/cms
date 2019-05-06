@@ -7,6 +7,7 @@
 namespace craftunit;
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\db\MigrationManager;
 use craft\feeds\Feeds;
 use craft\i18n\Locale;
@@ -50,6 +51,8 @@ use craft\services\UserPermissions;
 use craft\services\Users;
 use craft\services\Utilities;
 use craft\services\Volumes;
+use UnitTester;
+use yii\base\InvalidConfigException;
 use yii\mutex\Mutex;
 
 /**
@@ -62,23 +65,23 @@ use yii\mutex\Mutex;
 class AppTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     public $tester;
 
     /**
      * @param $instance
      * @param $maps
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      * @dataProvider craftAppGetMethods
      */
     public function testCraftAppGetMethods($instance, $map)
     {
         $func = $map[0];
-        $this->assertInstanceOf($instance, \Craft::$app->$func());
-        $this->assertInstanceOf($instance, \Craft::$app->get($map[1]));
+        $this->assertInstanceOf($instance, Craft::$app->$func());
+        $this->assertInstanceOf($instance, Craft::$app->get($map[1]));
         // http://www.php.net/manual/en/language.variables.variable.php#example-107
-        $this->assertInstanceOf($instance, \Craft::$app->{$map[1]});
+        $this->assertInstanceOf($instance, Craft::$app->{$map[1]});
 
 
 

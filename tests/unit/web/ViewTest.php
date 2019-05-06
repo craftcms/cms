@@ -8,6 +8,7 @@ namespace craftunit\web;
 
 
 use Codeception\Stub;
+use Craft;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\Json;
 use craft\test\mockclasses\arrayable\ExampleArrayble;
@@ -15,6 +16,7 @@ use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
 use craftunit\fixtures\SitesFixture;
+use UnitTester;
 use yii\base\Event;
 use yii\base\Exception;
 
@@ -37,7 +39,7 @@ class ViewTest extends TestCase
     }
 
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -50,7 +52,7 @@ class ViewTest extends TestCase
     {
         parent::_before();
 
-        $this->view = \Craft::createObject(View::class);
+        $this->view = Craft::createObject(View::class);
 
         // By default we want to be in site mode.
         $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
@@ -86,10 +88,10 @@ class ViewTest extends TestCase
     public function testDoesTemplateExistWithCustomSite()
     {
         // Ensure that the current site is the one with the testSite3 handle
-        \Craft::$app->getSites()->setCurrentSite(\Craft::$app->getSites()->getSiteByHandle('testSite3'));
+        Craft::$app->getSites()->setCurrentSite(Craft::$app->getSites()->getSiteByHandle('testSite3'));
 
         $this->assertSame(
-            \Craft::getAlias('@craftunittemplates/testSite3/craft.twig'),
+            Craft::getAlias('@craftunittemplates/testSite3/craft.twig'),
             $this->view->resolveTemplate('craft')
         );
     }
@@ -110,7 +112,7 @@ class ViewTest extends TestCase
         if ($result === false) {
             $this->assertFalse($doesIt);
         } else {
-            $this->assertSame(\Craft::getAlias($result), $doesIt);
+            $this->assertSame(Craft::getAlias($result), $doesIt);
         }
     }
 
@@ -151,8 +153,8 @@ class ViewTest extends TestCase
         }
 
         // Lets test stuff.
-        $resolved = $this->resolveTemplate(\Craft::getAlias($basePath), $name);
-        $this->assertSame(\Craft::getAlias($result), $resolved);
+        $resolved = $this->resolveTemplate(Craft::getAlias($basePath), $name);
+        $this->assertSame(Craft::getAlias($result), $resolved);
     }
 
     public function privateResolveTemplateData()
@@ -252,13 +254,13 @@ class ViewTest extends TestCase
 
     public function testSetSiteTemplateMode()
     {
-        $genConf = \Craft::$app->getConfig()->getGeneral();
+        $genConf = Craft::$app->getConfig()->getGeneral();
         $genConf->defaultTemplateExtensions = ['doStuff', 'random'];
         $genConf->indexTemplateFilenames = ['template', 'raaaa'];
 
         $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
         $this->assertSame(
-            \Craft::getAlias('@crafttestsfolder/templates'),
+            Craft::getAlias('@crafttestsfolder/templates'),
             $this->view->templatesPath
         );
         $this->assertSame(
@@ -275,7 +277,7 @@ class ViewTest extends TestCase
     {
         $this->view->setTemplateMode(View::TEMPLATE_MODE_CP);
         $this->assertSame(
-            \Craft::$app->getPath()->getCpTemplatesPath(),
+            Craft::$app->getPath()->getCpTemplatesPath(),
             $this->view->templatesPath
         );
 
@@ -298,7 +300,7 @@ class ViewTest extends TestCase
 
     public function testRegisterTranslations()
     {
-        \Craft::$app->language = 'nl';
+        Craft::$app->language = 'nl';
 
         // Basic test that register translations gets rendered
         $js = $this->generateTranslationJs('app', ["1 month" => "1 maand", "1 minute" => "1 minuut"]);

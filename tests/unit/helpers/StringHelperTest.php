@@ -6,9 +6,14 @@
  */
 namespace craftunit\helpers;
 
+use Codeception\Test\Unit;
 use craft\helpers\StringHelper;
 use craft\helpers\Stringy;
 use craft\test\mockclasses\ToStringTest;
+use function mb_strlen;
+use function mb_strpos;
+use stdClass;
+use UnitTester;
 use yii\base\ErrorException;
 
 /**
@@ -18,10 +23,10 @@ use yii\base\ErrorException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
  */
-class StringHelperTest extends \Codeception\Test\Unit
+class StringHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -500,13 +505,13 @@ class StringHelperTest extends \Codeception\Test\Unit
     public function testRandomStringWithChars($valid, int $length)
     {
         $str = StringHelper::randomStringWithChars($valid, $length);
-        $strLen = \mb_strlen($str);
+        $strLen = mb_strlen($str);
 
         $this->assertSame($length, $strLen);
 
         // Loop through the string and see if any of the characters arent on the list of allowed chars.
         for ($i = 0; $i<$strLen; $i++) {
-            if (\mb_strpos($valid, $str[$i]) === false) {
+            if (mb_strpos($valid, $str[$i]) === false) {
                 $this->fail('Invalid chars');
             }
         }
@@ -631,7 +636,7 @@ class StringHelperTest extends \Codeception\Test\Unit
     {
         return [
             ['test', 'test'],
-            ['', new \stdClass()],
+            ['', new stdClass()],
             ['ima string', new ToStringTest('ima string')],
             ['t,e,s,t', ['t', 'e', 's', 't']],
             ['t|e|s|t', ['t', 'e', 's', 't'], '|'],

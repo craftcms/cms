@@ -9,9 +9,11 @@
 namespace craftunit\web;
 
 
+use Craft;
 use craft\test\TestCase;
 use craft\web\Request;
 use craftunit\fixtures\SitesFixture;
+use UnitTester;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -37,7 +39,7 @@ class RequestTest extends TestCase
     public $request;
 
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     public $tester;
 
@@ -278,7 +280,7 @@ class RequestTest extends TestCase
     // =========================================================================
     public function testCheckRequestTypeWithTokenParam()
     {
-        $this->request->setBodyParams([\Craft::$app->getConfig()->getGeneral()->tokenParam => 'something']);
+        $this->request->setBodyParams([Craft::$app->getConfig()->getGeneral()->tokenParam => 'something']);
         $checked = $this->checkRequestType();
 
         $this->assertTrue($this->getInaccessibleProperty($this->request, '_checkedRequestType'));
@@ -289,7 +291,7 @@ class RequestTest extends TestCase
     public function testCheckRequestTypeWithDirectTrigger()
     {
         $this->setInaccessibleProperty($this->request, '_segments', [
-            \Craft::$app->getConfig()->getGeneral()->actionTrigger,
+            Craft::$app->getConfig()->getGeneral()->actionTrigger,
             'do-stuff'
         ]);
 
@@ -328,7 +330,7 @@ class RequestTest extends TestCase
 
     public function testCheckRequestTypeOnSiteRequestWithSpecialPathTriggerLogin()
     {
-        $genConfig = \Craft::$app->getConfig()->getGeneral();
+        $genConfig = Craft::$app->getConfig()->getGeneral();
 
         $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
         $this->setInaccessibleProperty($this->request, '_path', trim($genConfig->getLoginPath(), '/'));
@@ -336,7 +338,7 @@ class RequestTest extends TestCase
     }
     public function testCheckRequestTypeOnSiteRequestWithSpecialPathTriggerLogout()
     {
-        $genConfig = \Craft::$app->getConfig()->getGeneral();
+        $genConfig = Craft::$app->getConfig()->getGeneral();
 
         $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
         $this->setInaccessibleProperty($this->request, '_path', trim($genConfig->getLogoutPath(), '/'));
@@ -376,9 +378,9 @@ class RequestTest extends TestCase
 
     private function setMockUser()
     {
-        \Craft::$app->getUser()->setIdentity(
-            \Craft::$app->getUsers()->getUserById('1')
+        Craft::$app->getUser()->setIdentity(
+            Craft::$app->getUsers()->getUserById('1')
         );
-        \Craft::$app->getUser()->getIdentity()->password = '$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK';
+        Craft::$app->getUser()->getIdentity()->password = '$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK';
     }
 }

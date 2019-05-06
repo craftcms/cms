@@ -11,6 +11,7 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\HtmlPurifier;
+use HTMLPurifier_Config;
 
 /**
  * Class HtmlPurifierTest.
@@ -51,7 +52,7 @@ class HtmlPurifierTest extends Unit
 
     public function testConfigure()
     {
-        $config = \HTMLPurifier_Config::createDefault();
+        $config = HTMLPurifier_Config::createDefault();
         HtmlPurifier::configure($config);
         $this->assertNull($config->get('HTML.DefinitionID'));
         $this->assertSame('', $config->get('Attr.DefaultImageAlt'));

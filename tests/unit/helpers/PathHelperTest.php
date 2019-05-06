@@ -9,6 +9,7 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Path;
+use UnitTester;
 
 
 /**
@@ -21,7 +22,7 @@ use craft\helpers\Path;
 class PathHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 

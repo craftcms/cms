@@ -6,11 +6,15 @@
  */
 namespace craftunit\fixtures;
 
+use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\records\Volume;
 use craft\services\Volumes;
 use craft\test\Fixture;
+use yii\base\ErrorException;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\test\ActiveFixture;
 
 /**
@@ -29,8 +33,8 @@ class VolumesFixture extends Fixture
     const BASE_URL = 'https://cdn.test.craftcms.dev/';
 
     /**
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function load()
     {
@@ -42,11 +46,11 @@ class VolumesFixture extends Fixture
             FileHelper::createDirectory($settings['path']);
         }
 
-        \Craft::$app->set('volumes', new Volumes());
+        Craft::$app->set('volumes', new Volumes());
     }
 
     /**
-     * @throws \yii\base\ErrorException
+     * @throws ErrorException
      */
     public function unload()
     {

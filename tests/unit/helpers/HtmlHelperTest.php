@@ -7,7 +7,9 @@
 namespace craftunit\helpers;
 
 
+use Codeception\Test\Unit;
 use craft\helpers\Html;
+use UnitTester;
 
 /**
  * Unit tests for the HTML Helper class.
@@ -16,10 +18,10 @@ use craft\helpers\Html;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
  */
-class HtmlHelperTest extends \Codeception\Test\Unit
+class HtmlHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 

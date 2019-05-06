@@ -1,2 +1,5 @@
 <?php
-return \craft\test\TestSetup::createTestCraftObjectConfig();
+
+use craft\test\TestSetup;
+
+return TestSetup::createTestCraftObjectConfig();

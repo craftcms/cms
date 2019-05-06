@@ -7,6 +7,7 @@
 namespace craftunit\helpers;
 
 
+use Closure;
 use Codeception\Test\Unit;
 use craft\base\ComponentInterface;
 use craft\errors\MissingComponentException;
@@ -14,6 +15,8 @@ use craft\helpers\Component;
 use craft\test\mockclasses\components\ComponentExample;
 use craft\test\mockclasses\components\DependencyHeavyComponent;
 use craft\test\mockclasses\components\ExtendedComponentExample;
+use Exception;
+use UnitTester;
 use yii\base\InvalidConfigException;
 
 /**
@@ -27,7 +30,7 @@ class ComponentHelperTest extends Unit
 {
 
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -37,7 +40,7 @@ class ComponentHelperTest extends Unit
      * @dataProvider successfulComponentCreationData
      * @param $callback
      */
-    public function testSuccessfulComponentCreation(\Closure $callback)
+    public function testSuccessfulComponentCreation(Closure $callback)
     {
         $this->assertInstanceOf(
             ComponentInterface::class,
@@ -133,7 +136,7 @@ class ComponentHelperTest extends Unit
                     ]
                 ],
                 null,
-                \Exception::class,
+                Exception::class,
             ]
 
         ];

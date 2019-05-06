@@ -9,6 +9,7 @@ namespace craftunit\validators;
 
 use Codeception\Test\Unit;
 use craft\validators\UsernameValidator;
+use UnitTester;
 
 
 /**
@@ -26,7 +27,7 @@ class UsernameValidatorTest extends Unit
     protected $usernameValidator;
 
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 

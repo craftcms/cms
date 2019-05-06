@@ -9,6 +9,7 @@
 namespace craftunit\fixtures;
 
 
+use Craft;
 use craft\records\Site;
 use craft\services\Sites;
 use craft\test\Fixture;
@@ -25,6 +26,6 @@ class SitesFixture extends Fixture
         // Because the Sites() class memoizes on initialization we need to set() a new sites class
         // with the updated fixture data
 
-        \Craft::$app->set('sites', new Sites());
+        Craft::$app->set('sites', new Sites());
     }
 }

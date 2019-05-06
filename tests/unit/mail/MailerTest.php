@@ -7,11 +7,13 @@
 namespace craftunit\mail;
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\helpers\App;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
+use yii\base\InvalidConfigException;
 
 /**
  * Unit tests for MailerTest
@@ -37,7 +39,7 @@ class MailerTest extends Unit
     public $mailer;
 
     /**
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function _before()
     {
@@ -50,7 +52,7 @@ class MailerTest extends Unit
             'transportType' => Sendmail::class
         ]);
 
-        $this->mailer = \Craft::createObject(App::mailerConfig(
+        $this->mailer = Craft::createObject(App::mailerConfig(
             $mailSettings
         ));
     }

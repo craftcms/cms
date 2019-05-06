@@ -11,6 +11,7 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Image;
+use UnitTester;
 
 /**
  * Class ImageHelperTest.
@@ -23,7 +24,7 @@ use craft\helpers\Image;
 class ImageHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 

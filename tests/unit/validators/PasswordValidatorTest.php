@@ -8,9 +8,11 @@
 namespace craftunit\validators;
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\mockclasses\ToStringTest;
 use craft\validators\UserPasswordValidator;
+use UnitTester;
 use yii\base\ErrorException;
 
 
@@ -24,7 +26,7 @@ use yii\base\ErrorException;
 class PasswordValidatorTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -116,7 +118,7 @@ class PasswordValidatorTest extends Unit
     public function testForceDiffValidation($mustValidate, $input, $currentPassword)
     {
         $this->passwordValidator->forceDifferent = true;
-        $this->passwordValidator->currentPassword = \Craft::$app->getSecurity()->hashPassword($currentPassword);
+        $this->passwordValidator->currentPassword = Craft::$app->getSecurity()->hashPassword($currentPassword);
         $this->model->exampleParam = $input;
         $this->passwordValidator->validateAttribute($this->model, 'exampleParam');
 

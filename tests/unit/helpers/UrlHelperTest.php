@@ -8,9 +8,11 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\db\Query;
 use craft\helpers\UrlHelper;
 use craftunit\fixtures\SitesFixture;
+use UnitTester;
 use yii\base\Exception;
 
 /**
@@ -23,7 +25,7 @@ use yii\base\Exception;
 class UrlHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -35,7 +37,7 @@ class UrlHelperTest extends Unit
 
     protected function _before()
     {
-        $generalConfig = \Craft::$app->getConfig()->getGeneral();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
         $this->cpTrigger = $generalConfig->cpTrigger;
         $configSiteUrl = $generalConfig->siteUrl;
 
@@ -53,7 +55,7 @@ class UrlHelperTest extends Unit
             $configSiteUrl .= $this->entryScript;
         }
 
-        if (\Craft::$app->getRequest()->getIsConsoleRequest()) {
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
             $this->baseUrlWithScript = $configSiteUrl ?: $this->entryScript;
         } else {
             $this->baseUrlWithScript = $configSiteUrl ?: '/';
@@ -255,7 +257,7 @@ class UrlHelperTest extends Unit
      */
     public function testUrlModifiers($result, $url, $modifier, $method)
     {
-        \Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls = true;
+        Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls = true;
 
         $this->assertSame($result, UrlHelper::$method($url, $modifier));
     }
@@ -521,7 +523,7 @@ class UrlHelperTest extends Unit
 
     public function determineUrlScheme()
     {
-        return !\Craft::$app->getRequest()->getIsConsoleRequest() && \Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
+        return !Craft::$app->getRequest()->getIsConsoleRequest() && Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
     }
 
     /**
@@ -558,14 +560,14 @@ class UrlHelperTest extends Unit
         $this->assertSame('sftp://volkswagen', UrlHelper::hostInfo('sftp://volkswagen////222////222'));
 
         // If nothing is passed to the hostInfo() your mileage may vary depending on request type. So we need to know what to expect before hand..
-        $expectedValue = \Craft::$app->getRequest()->getIsConsoleRequest() ? '' : \Craft::$app->getRequest()->getHostInfo();
+        $expectedValue = Craft::$app->getRequest()->getIsConsoleRequest() ? '' : Craft::$app->getRequest()->getHostInfo();
         $this->assertSame($expectedValue, UrlHelper::hostInfo(''));
     }
 
     public function testSchemeForTokenizedBasedOnConfig()
     {
         // Run down the logic to see what we will need to require.
-        $config =  \Craft::$app->getConfig()->getGeneral();
+        $config =  Craft::$app->getConfig()->getGeneral();
 
         $config->useSslOnTokenizedUrls = true;
         $this->assertSame('https', UrlHelper::getSchemeForTokenizedUrl());

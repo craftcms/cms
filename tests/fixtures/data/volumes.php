@@ -1,16 +1,19 @@
 <?php
 
+use craft\volumes\Local;
+use craftunit\fixtures\VolumesFixture;
+
 return [
     'basic-volume' => [
         'id' => '1000',
         'name' => 'Test volume 1',
         'handle' => 'testVolume1',
-        'type' => \craft\volumes\Local::class,
+        'type' => Local::class,
         'url' => null,
         'hasUrls' => true,
         'settings' => json_encode([
             'path' => dirname(__FILE__, 3).'/_data/assets/volume-folder-1/',
-            'url' => \craftunit\fixtures\VolumesFixture::BASE_URL
+            'url' => VolumesFixture::BASE_URL
         ]),
         'sortOrder' => 5,
         'fieldLayoutId' => null,
@@ -21,11 +24,11 @@ return [
         'id' => '1001',
         'name' => 'Test volume 2',
         'handle' => 'testVolume2',
-        'type' => \craft\volumes\Local::class,
+        'type' => Local::class,
         'url' => null,
         'settings' => json_encode([
             'path' => dirname(__FILE__, 3).'/_data/assets/volume-folder-1/',
-            'url' => \craftunit\fixtures\VolumesFixture::BASE_URL
+            'url' => VolumesFixture::BASE_URL
         ]),
         'hasUrls' => true,
         'sortOrder' => 6,
@@ -39,11 +42,11 @@ return [
         'id' => '1002',
         'name' => 'Test volume 3',
         'handle' => 'testVolume3',
-        'type' => \craft\volumes\Local::class,
+        'type' => Local::class,
         'url' => null,
         'settings' => json_encode([
             'path' => dirname(__FILE__, 3).'/_data/assets/volume-folder-1/',
-            'url' => \craftunit\fixtures\VolumesFixture::BASE_URL
+            'url' => VolumesFixture::BASE_URL
         ]),
         'hasUrls' => true,
         'sortOrder' => 7,

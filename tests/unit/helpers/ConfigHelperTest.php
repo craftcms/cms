@@ -12,6 +12,9 @@ namespace craftunit\helpers;
 use Codeception\Test\Unit;
 use craft\helpers\ConfigHelper;
 use craft\test\mockclasses\models\ExampleModel;
+use DateTime;
+use stdClass;
+use UnitTester;
 use yii\base\ErrorException;
 use yii\base\InvalidConfigException;
 
@@ -25,7 +28,7 @@ use yii\base\InvalidConfigException;
 class ConfigHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -95,12 +98,12 @@ class ConfigHelperTest extends Unit
         });
 
         $this->tester->expectThrowable(ErrorException::class, function (){
-            $dateTime = new \DateTime('2018-08-08 20:0:00');
+            $dateTime = new DateTime('2018-08-08 20:0:00');
             ConfigHelper::durationInSeconds($dateTime);
         });
 
         $this->tester->expectThrowable(ErrorException::class, function (){
-            $std = new \stdClass();
+            $std = new stdClass();
             $std->a = 'a';
             ConfigHelper::durationInSeconds($std);
         });

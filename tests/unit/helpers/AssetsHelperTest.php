@@ -10,6 +10,7 @@ namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\helpers\Assets;
@@ -17,6 +18,7 @@ use craft\helpers\ConfigHelper;
 use craftunit\fixtures\AssetsFixture;
 use craftunit\fixtures\VolumesFolderFixture;
 use craftunit\fixtures\VolumesFixture;
+use UnitTester;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 
@@ -30,7 +32,7 @@ s * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
 class AssetsHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -75,7 +77,7 @@ class AssetsHelperTest extends Unit
      * @param $result
      * @param $input
      *
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function testTempFilePath()
     {
@@ -113,19 +115,19 @@ class AssetsHelperTest extends Unit
 
     public function testPrepareAssetNameAsciiRemove()
     {
-        \Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii = true;
+        Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii = true;
         $this->assertSame('test.text', Assets::prepareAssetName('tes§t.text'));
     }
 
     public function testConfigSeperator()
     {
-        \Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = '||';
+        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = '||';
         $this->assertSame('te||st.notafile', Assets::prepareAssetName('te st.notafile'));
 
-        \Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = [];
+        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = [];
         $this->assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
 
-        \Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = 123;
+        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = 123;
         $this->assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
     }
 
@@ -198,7 +200,7 @@ class AssetsHelperTest extends Unit
      * @param $result
      * @param $input
      *
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function testParseFileLocation($result, $input)
     {
@@ -227,7 +229,7 @@ class AssetsHelperTest extends Unit
 
     public function testMaxUploadSize()
     {
-        \Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1;
+        Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1;
         $this->assertSame(1, Assets::getMaxUploadSize());
     }
 }

@@ -9,9 +9,11 @@ namespace craftunit\services;
 
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\fields\BaseRelationField;
 use craft\fields\Entries;
 use craft\services\Relations;
+use UnitTester;
 
 
 /**
@@ -24,7 +26,7 @@ use craft\services\Relations;
 class RelationsTest extends Unit
 {
     /**
-     * @var \UnitTester $tester
+     * @var UnitTester $tester
      */
     protected $tester;
 
@@ -41,7 +43,7 @@ class RelationsTest extends Unit
     public function _before()
     {
         parent::_before();
-        $this->relations = \Craft::$app->getRelations();
+        $this->relations = Craft::$app->getRelations();
         $this->entriesField = $this->getEntriesField();
     }
 

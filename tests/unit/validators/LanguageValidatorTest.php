@@ -12,6 +12,8 @@ use craft\helpers\ArrayHelper;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\validators\LanguageValidator;
 use craftunit\fixtures\SitesFixture;
+use UnitTester;
+use yii\base\NotSupportedException;
 
 /**
  * Class LanguageValidatorTest
@@ -21,7 +23,7 @@ use craftunit\fixtures\SitesFixture;
 class LanguageValidatorTest extends Unit
 {
     /**
-     * @var \UnitTester $tester
+     * @var UnitTester $tester
      */
     protected $tester;
 
@@ -37,7 +39,7 @@ class LanguageValidatorTest extends Unit
     }
 
     /**
-     * @throws \yii\base\NotSupportedException
+     * @throws NotSupportedException
      * @dataProvider validateValueData
      */
     public function testValidateValue($result, $input, $onlySiteLangs = true)

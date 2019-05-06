@@ -10,8 +10,16 @@ namespace craftunit\web;
 
 
 use Codeception\Stub;
+use Craft;
 use craft\test\TestCase;
 use craft\web\ErrorHandler;
+use Exception;
+use Throwable;
+use Twig_Error_Loader;
+use Twig_Error_Runtime;
+use Twig_Error_Syntax;
+use UnitTester;
+use yii\base\ErrorException;
 use yii\web\HttpException;
 
 /**
@@ -24,7 +32,7 @@ use yii\web\HttpException;
 class ErrorHandlerTest extends TestCase
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -37,16 +45,16 @@ class ErrorHandlerTest extends TestCase
     {
         parent::_before();
         // Create a dir in compiled templates. See self::144
-        $path = \Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
+        $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
         mkdir($path.'/created_path');
 
-        $this->errorHandler = \Craft::createObject(ErrorHandler::class);
+        $this->errorHandler = Craft::createObject(ErrorHandler::class);
     }
 
     public function _after()
     {
         // Remove the dir created in _before
-        $path = \Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
+        $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
         rmdir($path.'/created_path');
 
         parent::_after();
@@ -54,19 +62,19 @@ class ErrorHandlerTest extends TestCase
 
     /**
      * Test that Twig runtime errors use the previous error (if it exists).
-     * @throws \Exception
+     * @throws Exception
      */
     public function testHandleTwigException()
     {
         // Disable clear output as this throws: Test code or tested code did not (only) close its own output buffers
         $this->errorHandler = Stub::construct(ErrorHandler::class, [], [
-            'logException' => $this->assertObjectIsInstanceOfClassCallback(\Exception::class),
+            'logException' => $this->assertObjectIsInstanceOfClassCallback(Exception::class),
             'clearOutput' => null,
-            'renderException' => $this->assertObjectIsInstanceOfClassCallback(\Exception::class)
+            'renderException' => $this->assertObjectIsInstanceOfClassCallback(Exception::class)
         ]);
 
-        $exception = new \Twig_Error_Runtime('A twig error occured');
-        $this->setInaccessibleProperty($exception, 'previous', new \Exception('Im not a twig error'));
+        $exception = new Twig_Error_Runtime('A twig error occured');
+        $this->setInaccessibleProperty($exception, 'previous', new Exception('Im not a twig error'));
         $this->errorHandler->handleException($exception);
     }
 
@@ -85,25 +93,25 @@ class ErrorHandlerTest extends TestCase
 
         // Test 404's are treated with a different file
         $this->errorHandler->handleException($exception);
-        $this->assertSame(\Craft::getAlias('@crafttestsfolder/storage/logs/web-404s.log'), \Craft::$app->getLog()->targets[0]->logFile);
+        $this->assertSame(Craft::getAlias('@crafttestsfolder/storage/logs/web-404s.log'), Craft::$app->getLog()->targets[0]->logFile);
     }
 
 
     /**
-     * @param \Throwable $exception
+     * @param Throwable $exception
      * @param $message
      * @dataProvider exceptionTypeAndNameData
      */
-    public function testGetExceptionName(\Throwable $exception, $message)
+    public function testGetExceptionName(Throwable $exception, $message)
     {
         $this->assertSame($message, $this->errorHandler->getExceptionName($exception));
     }
     public function exceptionTypeAndNameData()
     {
         return [
-            [new \Twig_Error_Syntax('Twig go boom'), 'Twig Syntax Error'],
-            [new \Twig_Error_Loader('Twig go boom'), 'Twig Template Loading Error'],
-            [new \Twig_Error_Runtime('Twig go boom'), 'Twig Runtime Error'],
+            [new Twig_Error_Syntax('Twig go boom'), 'Twig Syntax Error'],
+            [new Twig_Error_Loader('Twig go boom'), 'Twig Template Loading Error'],
+            [new Twig_Error_Runtime('Twig go boom'), 'Twig Runtime Error'],
         ];
     }
 
@@ -129,7 +137,7 @@ class ErrorHandlerTest extends TestCase
     }
 
     /**
-     * @throws \yii\base\ErrorException
+     * @throws ErrorException
      */
     public function testHandleError()
     {
@@ -147,14 +155,14 @@ class ErrorHandlerTest extends TestCase
      */
     public function testIsCoreFile($result, $input)
     {
-        $isCore = $this->errorHandler->isCoreFile(\Craft::getAlias($input));
+        $isCore = $this->errorHandler->isCoreFile(Craft::getAlias($input));
         $this->assertSame($result, $isCore);
     }
     public function isCoreFileData()
     {
-        $path = \Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
-        $vendorPath = \Craft::getAlias('@vendor');
-        $craftPath = \Craft::getAlias('@craft');
+        $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
+        $vendorPath = Craft::getAlias('@vendor');
+        $craftPath = Craft::getAlias('@craft');
 
         return [
             [true, $path.'/created_path'],

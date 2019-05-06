@@ -10,11 +10,14 @@ namespace craftunit\web;
 
 
 use Codeception\Stub;
+use Craft;
 use craft\elements\User;
 use craft\services\Config;
 use craft\services\Security;
 use craft\test\TestCase;
 use craft\web\Session;
+use UnitTester;
+use yii\base\InvalidConfigException;
 
 /**
  * Unit tests for UserTest
@@ -26,7 +29,7 @@ use craft\web\Session;
 class UserTest extends TestCase
 {
     /**
-     * @var \UnitTester $tester
+     * @var UnitTester $tester
      */
     public $tester;
 
@@ -49,8 +52,8 @@ class UserTest extends TestCase
     {
         parent::_before();
         $this->userElement = $this->getUser();
-        $this->config = \Craft::$app->getConfig();
-        $this->user = \Craft::$app->getUser();
+        $this->config = Craft::$app->getConfig();
+        $this->user = Craft::$app->getUser();
     }
 
     public function testSendUsernameCookie()
@@ -60,7 +63,7 @@ class UserTest extends TestCase
         $this->user->sendUsernameCookie($this->userElement);
 
         // Assert that the cookie is correct
-        $cookie = \Craft::$app->getResponse()->getCookies()->get($this->getUsernameCookieName());
+        $cookie = Craft::$app->getResponse()->getCookies()->get($this->getUsernameCookieName());
 
         $this->assertSame($this->userElement->username, $cookie->value);
         $this->assertSame(time() + 20, $cookie->expire);
@@ -75,7 +78,7 @@ class UserTest extends TestCase
         $this->config->getGeneral()->rememberUsernameDuration = 0;
         $this->user->sendUsernameCookie($this->userElement);
 
-        $cookie = \Craft::$app->getResponse()->getCookies()->get($this->getUsernameCookieName());
+        $cookie = Craft::$app->getResponse()->getCookies()->get($this->getUsernameCookieName());
 
         $this->assertSame('', $cookie->value);
         $this->assertSame(1, $cookie->expire);
@@ -101,7 +104,7 @@ class UserTest extends TestCase
      * meaning that it will return 49 seconds remaining instead of 50 (because between setting the session stub and processesing the remaining session time
      * a second will have passed). Solve this.
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function testGetRemainingSessionTimeMath()
     {
@@ -111,7 +114,7 @@ class UserTest extends TestCase
         $this->sessionGetStub(time() + 50);
 
         // Session expiry (set above) minus time() should return 50.
-        $this->assertSame(50, \Craft::$app->getUser()->getRemainingSessionTime());
+        $this->assertSame(50, Craft::$app->getUser()->getRemainingSessionTime());
     }
 
     /**
@@ -157,8 +160,8 @@ class UserTest extends TestCase
     public function testGetElevatedSession()
     {
         // Setup a password and a mismatching hash to work with.
-        $passwordHash = \Craft::$app->getSecurity()->hashPassword('this is not the correct password');
-        $this->userElement->password = \Craft::$app->getSecurity()->hashPassword('this is a password');
+        $passwordHash = Craft::$app->getSecurity()->hashPassword('this is not the correct password');
+        $this->userElement->password = Craft::$app->getSecurity()->hashPassword('this is a password');
 
         // Ensure no user is logged in.
         $this->user->setIdentity(null);
@@ -179,11 +182,11 @@ class UserTest extends TestCase
     }
 
     /**
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function testStartElevatedSessionSetting()
     {
-        $passwordHash = \Craft::$app->getSecurity()->hashPassword('this is not the correct password');
+        $passwordHash = Craft::$app->getSecurity()->hashPassword('this is not the correct password');
         $this->user->setIdentity($this->userElement);
 
         // Ensure password validation always works.
@@ -197,7 +200,7 @@ class UserTest extends TestCase
 
 
         $this->userElement->password = 'doesntmatter';
-        $this->setInaccessibleProperty(\Craft::$app->getUser(), '_identity', $this->userElement);
+        $this->setInaccessibleProperty(Craft::$app->getUser(), '_identity', $this->userElement);
 
         // With all the above and a current user with a password. Starting should work.
         $this->assertTrue($this->user->startElevatedSession($passwordHash));
@@ -207,7 +210,7 @@ class UserTest extends TestCase
     /**
      * Sets the Craft::$app->getSession(); to a stub where the get() method returns what you want.
      * @param int $returnValue
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     private function passwordValidationStub($returnValue)
     {
@@ -217,7 +220,7 @@ class UserTest extends TestCase
     /**
      * Ensure that the param $value is equal to the value that is trying to be set to the session.
      * @param $value
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     private function ensureSetSessionIsOfValue($value)
     {
@@ -229,7 +232,7 @@ class UserTest extends TestCase
     /**
      * Sets the Craft::$app->getSession(); to a stub where the get() method returns what you want.
      * @param int $returnValue
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     private function sessionGetStub($returnValue)
     {
@@ -238,11 +241,11 @@ class UserTest extends TestCase
 
     private function getUser()
     {
-        return \Craft::$app->getUsers()->getUserById('1');
+        return Craft::$app->getUsers()->getUserById('1');
     }
 
     private function getUsernameCookieName()
     {
-        return \Craft::$app->getUser()->usernameCookie['name'];
+        return Craft::$app->getUser()->usernameCookie['name'];
     }
 }

@@ -3,9 +3,15 @@
 namespace craftunit\helpers;
 
 
+use;
+use Craft;
 use craft\helpers\Db;
 use craft\test\mockclasses\serializable\Serializable;
 use Codeception\Test\Unit;
+use DateTime;
+use DateTimeZone;
+use stdClass;
+use UnitTester;
 use yii\db\Exception;
 use yii\db\Schema;
 
@@ -19,7 +25,7 @@ use yii\db\Schema;
 class DbHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -29,9 +35,9 @@ class DbHelperTest extends Unit
 
     protected function _before()
     {
-        $this->systemTimezone = new \DateTimeZone(\Craft::$app->getTimeZone());
-        $this->utcTimezone = new \DateTimeZone('UTC');
-        $this->asiaTokyoTimezone = new \DateTimeZone('Asia/Tokyo');
+        $this->systemTimezone = new DateTimeZone(Craft::$app->getTimeZone());
+        $this->utcTimezone = new DateTimeZone('UTC');
+        $this->asiaTokyoTimezone = new DateTimeZone('Asia/Tokyo');
     }
 
     protected function _after()
@@ -294,11 +300,11 @@ class DbHelperTest extends Unit
     public function dataForDbPrepare()
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
-        $jsonableClass = new \stdClass();
+        $jsonableClass = new stdClass();
         $jsonableClass->name = 'name';
         $serializable = new Serializable();
 
-        $dateTime = new \DateTime('2018-06-06 18:00:00');
+        $dateTime = new DateTime('2018-06-06 18:00:00');
 
         return [
             ['2018-06-06 18:00:00', $dateTime],
@@ -316,10 +322,10 @@ class DbHelperTest extends Unit
      */
     public function testPrepareDateForDb()
     {
-        $date = new \DateTime('2018-08-08 20:00:00', $this->utcTimezone);
+        $date = new DateTime('2018-08-08 20:00:00', $this->utcTimezone);
         $this->assertSame($date->format('Y-m-d H:i:s'), Db::prepareDateForDb($date));
 
-        $date = new \DateTime('2018-08-08 20:00:00', $this->asiaTokyoTimezone);
+        $date = new DateTime('2018-08-08 20:00:00', $this->asiaTokyoTimezone);
         $dbPrepared = Db::prepareDateForDb($date);
 
         // Ensure db makes no changes.
@@ -332,7 +338,7 @@ class DbHelperTest extends Unit
 
         // One test to ensure that when a date time is passed in via, for example, string format but with a timezone
         // It is created as a \DateTime with its predefined timezone, set to system, set to utc and then formatted as MySql format.
-        $date = new \DateTime('2018-08-09 20:00:00', new \DateTimeZone('+09:00'));
+        $date = new DateTime('2018-08-09 20:00:00', new DateTimeZone('+09:00'));
         $preparedWithTz = Db::prepareDateForDb('2018-08-09T20:00:00+09:00');
 
         $date->setTimezone($this->systemTimezone);
@@ -396,7 +402,7 @@ class DbHelperTest extends Unit
     /**
      * @dataProvider textualStorageData
      * @param $result
-     * @param $input\
+     * @param $input
      */
     public function testGetTextualColumnStorageCapacity($result, $input)
     {
@@ -466,14 +472,14 @@ class DbHelperTest extends Unit
     public function prepareValuesForDbData()
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
-        $jsonableClass = new \stdClass();
+        $jsonableClass = new stdClass();
         $jsonableClass->name = 'name';
         $serializable = new Serializable();
 
-        $excpectedDateTime = new \DateTime('2018-06-06 18:00:00');
-        $excpectedDateTime->setTimezone(new \DateTimeZone('UTC'));
+        $excpectedDateTime = new DateTime('2018-06-06 18:00:00');
+        $excpectedDateTime->setTimezone(new DateTimeZone('UTC'));
 
-        $dateTime = new \DateTime('2018-06-06 18:00:00');
+        $dateTime = new DateTime('2018-06-06 18:00:00');
 
         return [
             [['{"date":"2018-06-06 18:00:00.000000","timezone_type":3,"timezone":"UTC"}'], [$dateTime]],

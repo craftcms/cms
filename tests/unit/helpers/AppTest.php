@@ -12,6 +12,8 @@ use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
 use craft\services\Entries;
 use craft\test\TestCase;
+use stdClass;
+use UnitTester;
 use yii\base\Component;
 
 /**
@@ -24,7 +26,7 @@ use yii\base\Component;
 class AppTest extends TestCase
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -129,7 +131,7 @@ class AppTest extends TestCase
         return [
             ['entries', Entries::class],
             ['app test', self::class],
-            ['std class', \stdClass::class],
+            ['std class', stdClass::class],
             ['iam not a class!@#$%^&*()1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
         ];
     }

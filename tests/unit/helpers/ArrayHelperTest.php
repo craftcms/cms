@@ -6,7 +6,10 @@
  */
 namespace craftunit\helpers;
 
+use Codeception\Test\Unit;
 use \craft\helpers\ArrayHelper;
+use stdClass;
+use UnitTester;
 
 /**
  * Unit tests for the Array Helper class.
@@ -15,10 +18,10 @@ use \craft\helpers\ArrayHelper;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
  */
-class ArrayHelperTest extends \Codeception\Test\Unit
+class ArrayHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -112,7 +115,7 @@ class ArrayHelperTest extends \Codeception\Test\Unit
 
     public function firstValueData()
     {
-        $std = new \stdClass();
+        $std = new stdClass();
         $std->a = '22';
         return [
             ['test', ['test']],
