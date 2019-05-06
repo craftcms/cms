@@ -46,38 +46,38 @@ class ActiveRecordTest extends Unit
 
     public function testDateCreated()
     {
-        $sesh = $this->ensureSesh();
+        $session = $this->ensureSesh();
 
         $date = new DateTime('now', new DateTimeZone('UTC'));
 
-        $this->assertSame($sesh->dateCreated, $date->format('Y-m-d H:i:s'));
+        $this->assertSame($session->dateCreated, $date->format('Y-m-d H:i:s'));
     }
 
     public function testDateUpdated()
     {
-        $sesh = $this->ensureSesh();
+        $session = $this->ensureSesh();
 
         // Ensure that there is a diff in dates....
         sleep(5);
 
         $dateTimeZone = new DateTimeZone('UTC');
         $date = new DateTime('now', $dateTimeZone);
-        $oldDate  = new DateTime($sesh->dateUpdated, $dateTimeZone);
+        $oldDate  = new DateTime($session->dateUpdated, $dateTimeZone);
 
         // TODO: can $this->greaterThan be used? Might need more research....
         $this->assertGreaterThan($oldDate, $date);
 
         // Save it again. Ensure dateUpdated is now current.
-        $sesh->save();
+        $session->save();
 
-        $this->assertSame($sesh->dateUpdated, $date->format('Y-m-d H:i:s'));
+        $this->assertSame($session->dateUpdated, $date->format('Y-m-d H:i:s'));
     }
 
     public function testUuid()
     {
-        $sesh = $this->ensureSesh();
+        $session = $this->ensureSesh();
 
-        $this->assertTrue(StringHelper::isUUID($sesh->uid));
+        $this->assertTrue(StringHelper::isUUID($session->uid));
     }
 
     /**
@@ -133,53 +133,53 @@ class ActiveRecordTest extends Unit
 
         $uuid = StringHelper::UUID();
 
-        $sesh = new Session();
-        $sesh->userId = 1;
-        $sesh->token = 'test';
-        $sesh->dateCreated = $oneDayAgo;
-        $sesh->dateUpdated = $oneDayAgo;
-        $sesh->uid = $uuid;
-        $save = $sesh->save();
+        $session = new Session();
+        $session->userId = 1;
+        $session->token = 'test';
+        $session->dateCreated = $oneDayAgo;
+        $session->dateUpdated = $oneDayAgo;
+        $session->uid = $uuid;
+        $save = $session->save();
 
         $this->assertTrue($save);
 
-        $this->assertSame($now->format('Y-m-d H:i:s'), $sesh->dateCreated);
-        $this->assertSame($now->format('Y-m-d H:i:s'), $sesh->dateUpdated);
-        $this->assertSame($uuid, $sesh->uid);
+        $this->assertSame($now->format('Y-m-d H:i:s'), $session->dateCreated);
+        $this->assertSame($now->format('Y-m-d H:i:s'), $session->dateUpdated);
+        $this->assertSame($uuid, $session->uid);
     }
 
     public function testUUIDThatIsntValid()
     {
-        $sesh = new Session();
-        $sesh->userId = 1;
-        $sesh->token = 'test';
-        $sesh->uid = '00000000|0000|0000|0000|000000000000';
-        $save = $sesh->save();
+        $session = new Session();
+        $session->userId = 1;
+        $session->token = 'test';
+        $session->uid = '00000000|0000|0000|0000|000000000000';
+        $save = $session->save();
 
         $this->assertTrue($save);
-        $this->assertSame('00000000|0000|0000|0000|000000000000', $sesh->uid);
+        $this->assertSame('00000000|0000|0000|0000|000000000000', $session->uid);
     }
 
     public function testNoUUid()
     {
-        $sesh = new Session();
-        $sesh->userId = 1;
-        $sesh->token = 'test';
-        $save = $sesh->save();
+        $session = new Session();
+        $session->userId = 1;
+        $session->token = 'test';
+        $save = $session->save();
 
         $this->assertTrue($save);
-        $this->assertTrue(StringHelper::isUUID($sesh->uid));
+        $this->assertTrue(StringHelper::isUUID($session->uid));
     }
 
     public function ensureSesh() : Session
     {
-        $sesh = new Session();
-        $sesh->userId = 1;
-        $sesh->token = 'test';
-        $save = $sesh->save();
+        $session = new Session();
+        $session->userId = 1;
+        $session->token = 'test';
+        $save = $session->save();
 
         $this->assertTrue($save);
 
-        return $sesh;
+        return $session;
     }
 }

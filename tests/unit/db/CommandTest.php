@@ -36,11 +36,11 @@ class CommandTest extends Unit
      */
     public function testInsertDateCreated()
     {
-        $sesh = $this->ensureSesh();
+        $session = $this->ensureSesh();
 
         $date = new DateTime('now', new DateTimeZone('UTC'));
 
-        $this->assertSame($sesh['dateCreated'], $date->format('Y-m-d H:i:s'));
+        $this->assertSame($session['dateCreated'], $date->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -48,22 +48,22 @@ class CommandTest extends Unit
      */
     public function testDateUpdatedOnInsertAndUpdate()
     {
-        $sesh = $this->ensureSesh();
+        $session = $this->ensureSesh();
 
         // Ensure that there is a diff in dates....
         sleep(5);
 
         $dateTimeZone = new DateTimeZone('UTC');
         $date = new DateTime('now', $dateTimeZone);
-        $oldDate  = new DateTime($sesh['dateUpdated'], $dateTimeZone);
+        $oldDate  = new DateTime($session['dateUpdated'], $dateTimeZone);
 
         // TODO: can $this->greaterThan be used? Might need more research....
         $this->assertGreaterThan($oldDate, $date);
 
         // Save it again. Ensure dateUpdated is now current.
-        $sesh = $this->updateSesh($sesh);
+        $session = $this->updateSesh($session);
 
-        $this->assertSame($sesh['dateUpdated'], $date->format('Y-m-d H:i:s'));
+        $this->assertSame($session['dateUpdated'], $date->format('Y-m-d H:i:s'));
     }
 
 
