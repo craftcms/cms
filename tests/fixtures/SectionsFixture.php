@@ -9,7 +9,6 @@
 namespace craftunit\fixtures;
 
 use Craft;
-use craft\db\Query;
 use craft\records\Section as SectionRecord;
 use craft\records\Section;
 use craft\services\Sections;

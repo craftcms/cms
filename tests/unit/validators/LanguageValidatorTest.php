@@ -11,7 +11,6 @@ use Codeception\Test\Unit;
 use craft\helpers\ArrayHelper;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\validators\LanguageValidator;
-use craftunit\fixtures\SitesFixture;
 use UnitTester;
 use yii\base\NotSupportedException;
 

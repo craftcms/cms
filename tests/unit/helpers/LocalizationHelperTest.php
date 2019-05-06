@@ -13,10 +13,8 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Localization;
-use function dirname;
 use UnitTester;
 use yii\base\InvalidArgumentException;
-use yii\i18n\MissingTranslationEvent;
 
 /**
  * Class LocalizationHelper.

@@ -10,7 +10,6 @@ namespace craftunit\services;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\fields\BaseRelationField;
 use craft\fields\Entries;
 use craft\services\Relations;
 use UnitTester;

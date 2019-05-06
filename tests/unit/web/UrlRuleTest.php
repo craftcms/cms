@@ -9,7 +9,6 @@
 namespace craftunit\web;
 
 
-use Codeception\Stub;
 use Codeception\Test\Unit;
 use craft\web\UrlRule;
 

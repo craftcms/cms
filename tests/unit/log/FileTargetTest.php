@@ -7,7 +7,6 @@
 namespace craftunit\log;
 
 use Codeception\Stub;
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\User;
 use craft\log\FileTarget;

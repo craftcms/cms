@@ -9,9 +9,7 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\db\Query;
 use craft\helpers\UrlHelper;
-use craftunit\fixtures\SitesFixture;
 use UnitTester;
 use yii\base\Exception;
 

@@ -7,7 +7,6 @@
 namespace craftunit\composer;
 
 
-use Codeception\Test\Unit;
 use Composer\Config;
 use Composer\Downloader\DownloadManager;
 use Composer\IO\NullIO;

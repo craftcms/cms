@@ -9,16 +9,12 @@
 namespace craftunit\web;
 
 
-use Codeception\Stub;
 use Craft;
 use craft\elements\User;
 use craft\errors\UserLockedException;
 use craft\services\Config;
-use craft\services\Security;
 use craft\test\TestCase;
-use craft\web\Session;
 use UnitTester;
-use yii\base\InvalidConfigException;
 
 /**
  * Unit tests for UserTest

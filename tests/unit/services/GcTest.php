@@ -11,8 +11,6 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\db\Query;
 use craft\elements\Entry;
-use craft\elements\User;
-use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
 use craft\records\EntryType;
 use craft\records\Section;

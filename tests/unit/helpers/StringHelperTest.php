@@ -8,7 +8,6 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\StringHelper;
-use craft\helpers\Stringy;
 use craft\test\mockclasses\ToStringTest;
 use function mb_strlen;
 use function mb_strpos;
