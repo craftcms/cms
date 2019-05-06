@@ -11,8 +11,6 @@ use Craft;
 use craft\db\MigrationManager;
 use craft\feeds\Feeds;
 use craft\i18n\Locale;
-use craft\mail\Mailer;
-use craft\mutex\FileMutex;
 use craft\queue\Queue;
 use craft\services\Api;
 use craft\services\AssetIndexer;
