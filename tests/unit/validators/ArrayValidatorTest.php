@@ -15,9 +15,10 @@ use craft\test\mockclasses\models\ExampleModel;
  * Class ArrayValidator.
  *
  * TODO: Test the validateValue() function using $this->model->validate();
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class ArrayValidatorTest extends Unit
 {

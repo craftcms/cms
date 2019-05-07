@@ -8,7 +8,6 @@
 use Codeception\Actor;
 use Codeception\Lib\Friend;
 
-
 /**
  * Inherited Methods
  * @method void wantToTest($text)
@@ -23,12 +22,12 @@ use Codeception\Lib\Friend;
  * @method Friend haveFriend($name, $actorClass = null)
  *
  * @SuppressWarnings(PHPMD)
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.1
  */
 class AcceptanceTester extends Actor
 {
     use _generated\AcceptanceTesterActions;
-
-   /**
-    * Define custom actions here
-    */
 }

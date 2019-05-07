@@ -12,6 +12,13 @@ use craft\records\Site;
 use craft\services\Sites;
 use craft\test\Fixture;
 
+/**
+ * Class SitesFixture
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.1
+ */
 class SitesFixture extends Fixture
 {
     public $modelClass = Site::class;

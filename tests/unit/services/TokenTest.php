@@ -19,7 +19,9 @@ use UnitTester;
 /**
  * Class TokenServiceTest
  *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.1
  */
 class TokenTest extends Unit
 {

@@ -14,6 +14,10 @@ use Codeception\Module;
  *
  * Here you can define custom actions.
  * All public methods declared in this helper class will be available in $I
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.1
  */
 class Acceptance extends Module
 {

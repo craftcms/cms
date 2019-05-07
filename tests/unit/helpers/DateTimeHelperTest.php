@@ -20,10 +20,9 @@ use UnitTester;
 /**
  * Unit tests for the DateTime Helper class.
  *
- * TODO: This suite must be more efficient with some global variables.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class DateTimeHelperTest extends Unit
 {

@@ -7,11 +7,18 @@
 
 namespace Helper;
 
-// here you can define custom actions
-// all public methods declared in helper class will be available in $I
-
 use Codeception\Module;
 
+/**
+ * Class Unit
+ *
+ * Here you can define custom actions.
+ * All public methods declared in helper class will be available in $I
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.1
+ */
 class Unit extends Module
 {
 
