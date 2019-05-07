@@ -110,6 +110,12 @@ class PreviewController extends Controller
             Craft::$app->getElements()->setPlaceholderElement($element);
         }
 
+        // Prevent the browser from caching the response
+        Craft::$app->getResponse()->getHeaders()
+            ->set('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->set('Pragma', 'no-cache')
+            ->set('Expires', '0');
+
         // Clear out the request token and re-route the request
         $request = Craft::$app->getRequest();
         $request->setToken(null);
