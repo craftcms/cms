@@ -8,7 +8,6 @@
 namespace craftunit\fixtures;
 
 use Craft;
-use craft\records\Section as SectionRecord;
 use craft\records\Section;
 use craft\services\Sections;
 use craft\test\Fixture;
@@ -23,7 +22,7 @@ use craft\test\Fixture;
 class SectionsFixture extends Fixture
 {
     public $dataFile = __DIR__.'/data/sections.php';
-    public $modelClass = SectionRecord::class;
+    public $modelClass = Section::class;
     public $depends = [SectionSettingFixture::class];
 
     public function load()
