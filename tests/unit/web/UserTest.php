@@ -118,7 +118,7 @@ class UserTest extends TestCase
     public function testGetHasElevatedSession()
     {
         $this->user->setIdentity(null);
-        $this->assertSame(0, $this->user->getElevatedSessionTimeout($this->userElement));
+        $this->assertSame(0, $this->user->getElevatedSessionTimeout());
 
         $this->config->getGeneral()->elevatedSessionDuration = 0;
 

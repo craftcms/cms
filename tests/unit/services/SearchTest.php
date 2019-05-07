@@ -96,7 +96,7 @@ class SearchTest extends Unit
     public function testFilterScores($scoresAndNames, $usernameOrEmailsForQuery, $query, $scoreResults = true, $siteId = null)
     {
         // Repackage the dataProvider input into what the filter function will return.
-        $result = $this->_scoreList($scoresAndNames, true, true);
+        $result = $this->_scoreList($scoresAndNames);
 
         // Get the user ids to send into the filter function
         $forQuery = $this->_usernameEmailArrayToIdList($usernameOrEmailsForQuery);
