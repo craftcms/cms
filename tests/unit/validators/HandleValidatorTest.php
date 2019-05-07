@@ -34,15 +34,15 @@ class HandleValidatorTest extends Unit
      */
     protected $tester;
 
-    protected $reservedWords =  ['bird', 'is', 'the', 'word'];
+    protected static $reservedWords =  ['bird', 'is', 'the', 'word'];
 
     public function _before()
     {
         $this->model = new ExampleModel();
-        $this->handleValidator = new HandleValidator(['reservedWords' => $this->reservedWords]);
+        $this->handleValidator = new HandleValidator(['reservedWords' => self::$reservedWords]);
 
-        $this->assertSame($this->reservedWords, $this->handleValidator->reservedWords);
-        $this->reservedWords  = array_merge($this->reservedWords, HandleValidator::$baseReservedWords);
+        $this->assertSame(self::$reservedWords, $this->handleValidator->reservedWords);
+        self::$reservedWords  = array_merge(self::$reservedWords, HandleValidator::$baseReservedWords);
     }
 
     public function testStaticConstants()
@@ -62,7 +62,7 @@ class HandleValidatorTest extends Unit
     public function testStaticConstantsArentAllowed()
     {
 
-        foreach ($this->reservedWords as $reservedWord) {
+        foreach (self::$ as $reservedWord) {
             $this->model->exampleParam = $reservedWord;
             $this->handleValidator->validateAttribute($this->model, 'exampleParam');
 
