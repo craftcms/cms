@@ -13036,8 +13036,9 @@ Craft.DraftEditor = Garnish.Base.extend(
                             }).insertAfter($draftHeading);
                         }
                         var $draftLi = $('<li/>').appendTo($draftsUl);
-                        var $draftA = $('<a><span class="draft-name"></span> <span class="draft-creator light"></span></a>', {
+                        var $draftA = $('<a/>', {
                             'class': 'sel',
+                            html: '<span class="draft-name"></span> <span class="draft-creator light"></span>',
                         }).appendTo($draftLi);
                         revisionMenu.addOptions($draftA);
                         revisionMenu.selectOption($draftA);
@@ -16977,8 +16978,6 @@ Craft.Preview = Garnish.Base.extend(
                 $('<div/>', {'class': 'flex-grow'}).appendTo($editorHeader);
                 this.$spinner = $('<div/>', {'class': 'spinner hidden', title: Craft.t('app', 'Saving')}).appendTo($editorHeader);
                 this.$savedIcon = $('<div/>', {'class': 'checkmark-icon invisible', title: Craft.t('app', 'Saved')}).appendTo($editorHeader);
-                $('<div/>', {'class': 'flex-grow'}).appendTo($editorHeader);
-                var $saveBtn = $('<div/>', {'class': 'btn submit', text: Craft.t('app', 'Save')}).appendTo($editorHeader);
 
                 if (this.draftEditor.settings.previewContexts.length > 1) {
                     var $previewHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$previewContainer);
@@ -17013,7 +17012,6 @@ Craft.Preview = Garnish.Base.extend(
                 });
 
                 this.addListener($closeBtn, 'click', 'close');
-                this.addListener($saveBtn, 'click', 'save');
             }
 
             // Set the sizes
@@ -17274,15 +17272,7 @@ Craft.Preview = Garnish.Base.extend(
     {
         defaultEditorWidth: 0.33,
         minEditorWidthInPx: 320,
-        dragHandleWidth: 4,
-
-        defaults: {
-            fields: null,
-            extraFields: null,
-            previewUrl: null,
-            previewAction: null,
-            previewParams: {}
-        }
+        dragHandleWidth: 2,
     });
 
 /** global: Craft */

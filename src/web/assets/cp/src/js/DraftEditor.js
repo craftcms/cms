@@ -249,8 +249,9 @@ Craft.DraftEditor = Garnish.Base.extend(
                             }).insertAfter($draftHeading);
                         }
                         var $draftLi = $('<li/>').appendTo($draftsUl);
-                        var $draftA = $('<a><span class="draft-name"></span> <span class="draft-creator light"></span></a>', {
+                        var $draftA = $('<a/>', {
                             'class': 'sel',
+                            html: '<span class="draft-name"></span> <span class="draft-creator light"></span>',
                         }).appendTo($draftLi);
                         revisionMenu.addOptions($draftA);
                         revisionMenu.selectOption($draftA);
