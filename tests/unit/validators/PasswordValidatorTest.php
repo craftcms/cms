@@ -158,7 +158,6 @@ class PasswordValidatorTest extends Unit
     }
     public function isEmptyData(): array
     {
-        $toString = new ToStringTest('im a test');
         return [
             ['im a test', '', self::class.'::testReturn' ],
         ];
