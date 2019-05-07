@@ -221,6 +221,19 @@ class UrlHelper
      */
     public static function siteUrl(string $path = '', $params = null, string $scheme = null, int $siteId = null): string
     {
+        // Return $path if it appears to be an absolute URL.
+        if (static::isAbsoluteUrl($path) || static::isProtocolRelativeUrl($path)) {
+            if ($params) {
+                $path = static::urlWithParams($path, $params);
+            }
+
+            if ($scheme !== null) {
+                $path = static::urlWithScheme($path, $scheme);
+            }
+
+            return $path;
+        }
+
         // Does this URL point to a different site?
         $sites = Craft::$app->getSites();
 
