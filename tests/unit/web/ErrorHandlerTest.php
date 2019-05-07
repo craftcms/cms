@@ -13,9 +13,9 @@ use craft\test\TestCase;
 use craft\web\ErrorHandler;
 use Exception;
 use Throwable;
-use Twig_Error_Loader;
-use Twig_Error_Runtime;
-use Twig_Error_Syntax;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\web\HttpException;
@@ -71,7 +71,7 @@ class ErrorHandlerTest extends TestCase
             'renderException' => $this->assertObjectIsInstanceOfClassCallback(Exception::class)
         ]);
 
-        $exception = new Twig_Error_Runtime('A Twig error occurred');
+        $exception = new RuntimeError('A Twig error occurred');
         $this->setInaccessibleProperty($exception, 'previous', new Exception('Im not a twig error'));
         $this->errorHandler->handleException($exception);
     }
@@ -107,9 +107,9 @@ class ErrorHandlerTest extends TestCase
     public function exceptionTypeAndNameData(): array
     {
         return [
-            [new Twig_Error_Syntax('Twig go boom'), 'Twig Syntax Error'],
-            [new Twig_Error_Loader('Twig go boom'), 'Twig Template Loading Error'],
-            [new Twig_Error_Runtime('Twig go boom'), 'Twig Runtime Error'],
+            [new SyntaxError('Twig go boom'), 'Twig Syntax Error'],
+            [new LoaderError('Twig go boom'), 'Twig Template Loading Error'],
+            [new RuntimeError('Twig go boom'), 'Twig Runtime Error'],
         ];
     }
 
