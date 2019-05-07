@@ -7,7 +7,6 @@
 
 namespace craftunit\services;
 
-
 use Codeception\Test\Unit;
 use Craft;
 use craft\services\Security;

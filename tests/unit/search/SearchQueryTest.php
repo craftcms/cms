@@ -4,6 +4,7 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit\search;
 
 use Codeception\Test\Unit;

@@ -5,7 +5,6 @@
  * @license https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\fixtures;
 
 use craft\test\fixtures\FieldFixture;

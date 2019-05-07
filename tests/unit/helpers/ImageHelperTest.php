@@ -5,9 +5,7 @@
  * @license   https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\helpers;
-
 
 use Codeception\Test\Unit;
 use craft\helpers\Image;

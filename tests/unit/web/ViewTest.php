@@ -4,8 +4,8 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
-namespace craftunit\web;
 
+namespace craftunit\web;
 
 use Codeception\Stub;
 use Craft;

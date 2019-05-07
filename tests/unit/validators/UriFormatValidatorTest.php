@@ -5,9 +5,7 @@
  * @license   https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\validators;
-
 
 use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;

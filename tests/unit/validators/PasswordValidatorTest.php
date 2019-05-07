@@ -15,7 +15,6 @@ use craft\validators\UserPasswordValidator;
 use UnitTester;
 use yii\base\ErrorException;
 
-
 /**
  * Class PasswordValidatorTest.
  *

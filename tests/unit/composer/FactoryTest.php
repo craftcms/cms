@@ -4,8 +4,8 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
-namespace craftunit\composer;
 
+namespace craftunit\composer;
 
 use Composer\Config;
 use Composer\Downloader\DownloadManager;

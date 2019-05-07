@@ -7,13 +7,11 @@
 
 namespace craftunit\services;
 
-
 use Codeception\Test\Unit;
 use Craft;
 use craft\fields\Entries;
 use craft\services\Relations;
 use UnitTester;
-
 
 /**
  * Unit tests for RelationTest

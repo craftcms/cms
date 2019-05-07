@@ -4,8 +4,8 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
-namespace craftunit\helpers;
 
+namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Html;

@@ -7,7 +7,6 @@
 
 namespace craftunit\validators;
 
-
 use Codeception\Test\Unit;
 use craft\validators\HandleValidator;
 use craft\test\mockclasses\models\ExampleModel;

@@ -6,7 +6,6 @@
  */
 namespace craftunit\db;
 
-
 use Codeception\Test\Unit;
 use craft\db\ActiveRecord;
 use craft\helpers\StringHelper;

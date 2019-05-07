@@ -12,7 +12,6 @@ use craft\validators\UsernameValidator;
 use UnitTester;
 use yii\base\NotSupportedException;
 
-
 /**
  * Class UsernameValidatorTest.
  *

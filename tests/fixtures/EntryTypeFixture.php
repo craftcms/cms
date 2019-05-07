@@ -5,9 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\fixtures;
-
 
 use craft\records\EntryType;
 use craft\test\Fixture;

@@ -1,5 +1,6 @@
 <?php
-// Here you can initialize variables that will be available to your tests
+// You can initialize variables that will be available to your unit tests here.
+
 // Autoload the fixtures
 use Codeception\Util\Autoload;
 

@@ -1,13 +1,11 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: Giel Tettelaar
- * Date: 19/12/2018
- * Time: 14:20
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craftunit\fixtures;
-
 
 use Craft;
 use craft\records\Site;

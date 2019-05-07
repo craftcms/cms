@@ -7,12 +7,10 @@
 
 namespace craftunit\services;
 
-
 use Codeception\Test\Unit;
 use Craft;
 use craft\services\Images;
 use UnitTester;
-
 
 /**
  * Unit tests for ImagesTest
