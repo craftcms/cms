@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased (3.2)
+
+### Fixed
+- Fixed an error that could occur when updating to 3.2.0-alpha.5 if there were any user groups defined without any permissions. ([#4214](https://github.com/craftcms/cms/pull/4214))
+
 ## 3.2.0-alpha.5 - 2019-05-01
 
 ### Added
