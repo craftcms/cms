@@ -62,7 +62,7 @@ class HandleValidatorTest extends Unit
     public function testStaticConstantsArentAllowed()
     {
 
-        foreach (self::$ as $reservedWord) {
+        foreach (self::$reservedWords as $reservedWord) {
             $this->model->exampleParam = $reservedWord;
             $this->handleValidator->validateAttribute($this->model, 'exampleParam');
 
