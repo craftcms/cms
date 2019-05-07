@@ -103,6 +103,7 @@ class PreviewController extends Controller
         // Clear out the request token and re-route the request
         $request = Craft::$app->getRequest();
         $request->setToken(null);
+        Craft::$app->getUrlManager()->setRouteParams([], false);
         return Craft::$app->handleRequest($request, true);
     }
 }

@@ -186,11 +186,16 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * Sets params to be passed to the routed controller action.
      *
-     * @param array $params
+     * @param array $params The route params
+     * @param bool $merge Whether these params should be merged with existing params
      */
-    public function setRouteParams(array $params)
+    public function setRouteParams(array $params, bool $merge = false)
     {
-        $this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
+        if ($merge) {
+            $this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
+        } else {
+            $this->_routeParams = $params;
+        }
     }
 
     /**
