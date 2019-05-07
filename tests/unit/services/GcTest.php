@@ -15,6 +15,7 @@ use craft\helpers\ArrayHelper;
 use craft\records\EntryType;
 use craft\records\Section;
 use craft\records\Session;
+use craft\records\User;
 use craft\records\Volume;
 use craft\services\Gc;
 use craftunit\fixtures\EntriesFixture;
@@ -183,7 +184,7 @@ class GcTest extends Unit
     {
         $date = (new DateTime('now'))->sub(new DateInterval('P3D'))->format('Y-m-d H:i:s');
 
-        $userRecords = \craft\records\User::find()
+        $userRecords = User::find()
             ->where(['username' => ['user1', 'user2']])
             ->all();
 
