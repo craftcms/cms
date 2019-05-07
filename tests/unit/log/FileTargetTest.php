@@ -65,7 +65,7 @@ class FileTargetTest extends TestCase
     public function testFullMessagePrefix()
     {
         $craftApp = clone Craft::$app;
-        $this->mockCraftForFullMessagePrefix();
+        $this->_mockCraftForFullMessagePrefix();
 
         $this->fileTarget->includeUserIp = true;
 
@@ -80,7 +80,7 @@ class FileTargetTest extends TestCase
      * @internal Is there a better way to handle Craft::$app mocking
      * @throws Exception
      */
-    private function mockCraftForFullMessagePrefix()
+    private function _mockCraftForFullMessagePrefix()
     {
         $identityStub = Stub::make(User::class, ['getId' => '666']);
 

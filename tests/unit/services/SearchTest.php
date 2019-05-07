@@ -50,8 +50,8 @@ class SearchTest extends Unit
     public function testFilterElementIdsByQuery($usernameOrEmailsForResult, $usernameOrEmailsForQuery, $query, $scoreResults = true, $siteId = null, $returnScores = false)
     {
         // Repackage the dataProvider data into something that can be used by the filter function
-        $result = $this->usernameEmailArrayToIdList($usernameOrEmailsForResult);
-        $forQuery = $this->usernameEmailArrayToIdList($usernameOrEmailsForQuery);
+        $result = $this->_usernameEmailArrayToIdList($usernameOrEmailsForResult);
+        $forQuery = $this->_usernameEmailArrayToIdList($usernameOrEmailsForQuery);
 
         // Filter them
         $filtered = Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, $returnScores);
@@ -96,10 +96,10 @@ class SearchTest extends Unit
     public function testFilterScores($scoresAndNames, $usernameOrEmailsForQuery, $query, $scoreResults = true, $siteId = null)
     {
         // Repackage the dataProvider input into what the filter function will return.
-        $result = $this->scoreList($scoresAndNames, true, true);
+        $result = $this->_scoreList($scoresAndNames, true, true);
 
         // Get the user ids to send into the filter function
-        $forQuery = $this->usernameEmailArrayToIdList($usernameOrEmailsForQuery);
+        $forQuery = $this->_usernameEmailArrayToIdList($usernameOrEmailsForQuery);
 
         // Filter them
         $filtered = Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, true);
@@ -148,8 +148,8 @@ class SearchTest extends Unit
 
     public function testElementQueryReturnsInt()
     {
-        $result = $this->usernameEmailArrayToIdList(['user1', 'user2', 'user3'], true);
-        $forQuery = $this->usernameEmailArrayToIdList(['user1', 'user2', 'user3'], false);
+        $result = $this->_usernameEmailArrayToIdList(['user1', 'user2', 'user3'], true);
+        $forQuery = $this->_usernameEmailArrayToIdList(['user1', 'user2', 'user3'], false);
 
         $filtered = Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, 'user');
 
@@ -178,10 +178,10 @@ class SearchTest extends Unit
         // Get the data from the DB
         $searchIndex = (new Query())->select('*')->from('{{%searchindex}}')->where(['elementId' => $user->id])->all();
 
-        $this->assertSame(' testindexelementattributes1 test com ', $this->getSearchIndexValueByAttribute('email', $searchIndex));
-        $this->assertSame(' john smith ', $this->getSearchIndexValueByAttribute('firstname', $searchIndex));
-        $this->assertSame(' wil k er son ', $this->getSearchIndexValueByAttribute('lastname', $searchIndex));
-        $this->assertSame(' john smith wil k er son ', $this->getSearchIndexValueByAttribute('fullname', $searchIndex));
+        $this->assertSame(' testindexelementattributes1 test com ', $this->_getSearchIndexValueByAttribute('email', $searchIndex));
+        $this->assertSame(' john smith ', $this->_getSearchIndexValueByAttribute('firstname', $searchIndex));
+        $this->assertSame(' wil k er son ', $this->_getSearchIndexValueByAttribute('lastname', $searchIndex));
+        $this->assertSame(' john smith wil k er son ', $this->_getSearchIndexValueByAttribute('fullname', $searchIndex));
     }
 
     /**
@@ -189,7 +189,7 @@ class SearchTest extends Unit
      * @param $searchIndex
      * @return string
      */
-    private function getSearchIndexValueByAttribute($attributeName, $searchIndex) : string
+    private function _getSearchIndexValueByAttribute($attributeName, $searchIndex) : string
     {
         foreach (ArrayHelper::filterByValue($searchIndex, 'attribute', $attributeName) as $array) {
             if (isset($array['keywords'])) {
@@ -205,11 +205,11 @@ class SearchTest extends Unit
      * @param bool $typecastToInt
      * @return array
      */
-    private function usernameEmailArrayToIdList(array $usernameOrEmails, bool $typecastToInt = true): array
+    private function _usernameEmailArrayToIdList(array $usernameOrEmails, bool $typecastToInt = true): array
     {
         $ids = [];
         foreach ($usernameOrEmails as $usernameOrEmail) {
-            $userId = $this->getUserIdByEmailOrUserName($usernameOrEmail)->id;
+            $userId = $this->_getUserIdByEmailOrUserName($usernameOrEmail)->id;
             $ids[] = $typecastToInt === true ? (int)$userId : $userId;
         }
 
@@ -220,11 +220,11 @@ class SearchTest extends Unit
      * @param array $usernameOrEmailsAndScores
      * @return array
      */
-    private function scoreList(array $usernameOrEmailsAndScores): array
+    private function _scoreList(array $usernameOrEmailsAndScores): array
     {
         $ids = [];
         foreach ($usernameOrEmailsAndScores as $usernameOrEmailAndScore) {
-            $userId = $this->getUserIdByEmailOrUserName($usernameOrEmailAndScore['identifier'])->id;
+            $userId = $this->_getUserIdByEmailOrUserName($usernameOrEmailAndScore['identifier'])->id;
             $ids[$userId] = $usernameOrEmailAndScore['score'];
         }
 
@@ -235,7 +235,7 @@ class SearchTest extends Unit
      * @param string $emailOrUsername
      * @return User|null
      */
-    private function getUserIdByEmailOrUserName(string $emailOrUsername): ?User
+    private function _getUserIdByEmailOrUserName(string $emailOrUsername): ?User
     {
         return Craft::$app->getUsers()->getUserByUsernameOrEmail($emailOrUsername);
     }

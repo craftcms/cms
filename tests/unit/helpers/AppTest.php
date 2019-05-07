@@ -176,7 +176,7 @@ class AppTest extends TestCase
     {
         $config = App::$method();
 
-        $this->assertFalse($this->areKeysMissing($config, $desiredConfig));
+        $this->assertFalse($this->_areKeysMissing($config, $desiredConfig));
 
         // Make sure we aren't passing in anything unknown or invalid.
         $this->assertTrue(class_exists($config['class']));
@@ -208,7 +208,7 @@ class AppTest extends TestCase
         $mailSettings = new MailSettings(['transportType' => Sendmail::class]);
         $result = App::mailerConfig($mailSettings);
 
-        $this->assertFalse($this->areKeysMissing($result, ['class', 'messageClass', 'from', 'template', 'transport']));
+        $this->assertFalse($this->_areKeysMissing($result, ['class', 'messageClass', 'from', 'template', 'transport']));
 
         // Make sure its a component
         $this->assertContains(Component::class, class_parents($result['class']));
@@ -224,7 +224,7 @@ class AppTest extends TestCase
         $this->testConfigIndexes('viewConfig', ['class']);
     }
 
-    private function areKeysMissing(array $configArray, array $desiredSchemaArray) : bool
+    private function _areKeysMissing(array $configArray, array $desiredSchemaArray) : bool
     {
         foreach ($desiredSchemaArray as $desiredSchemaItem) {
             if (!array_key_exists($desiredSchemaItem, $configArray)) {

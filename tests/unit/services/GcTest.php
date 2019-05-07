@@ -84,7 +84,7 @@ class GcTest extends Unit
 
     public function testRunForDeletedEntriesWithDefaultDuration()
     {
-        $this->doEntryTest(1, [
+        $this->_doEntryTest(1, [
             'Deleted 40 days ago',
         ]);
     }
@@ -94,7 +94,7 @@ class GcTest extends Unit
         // 5 Days
         Craft::$app->getConfig()->getGeneral()->softDeleteDuration = 432000;
 
-        $this->doEntryTest(2, [
+        $this->_doEntryTest(2, [
             'Deleted 40 days ago',
             'Deleted 25 days ago',
         ]);
@@ -104,7 +104,7 @@ class GcTest extends Unit
     public function testRunDeleteAllTrashed()
     {
         $this->gc->deleteAllTrashed = true;
-        $this->doEntryTest(3, [
+        $this->_doEntryTest(3, [
             'Deleted 40 days ago',
             'Deleted 25 days ago',
             'Deleted today'
@@ -150,7 +150,7 @@ class GcTest extends Unit
         Craft::$app->getConfig()->getGeneral()->purgePendingUsersDuration = 172800;
 
         // Create then with 3 days
-        $this->createExpiringPendingUsers();
+        $this->_createExpiringPendingUsers();
 
         $this->gc->run(true);
 
@@ -179,7 +179,7 @@ class GcTest extends Unit
         $this->assertEmpty($user4);
     }
 
-    private function createExpiringPendingUsers()
+    private function _createExpiringPendingUsers()
     {
         $date = (new DateTime('now'))->sub(new DateInterval('P3D'))->format('Y-m-d H:i:s');
 
@@ -205,7 +205,7 @@ class GcTest extends Unit
      * @param int $expectedRemoval
      * @param array|null $notAllowedTitles
      */
-    private function doEntryTest(int $expectedRemoval, array $notAllowedTitles = null)
+    private function _doEntryTest(int $expectedRemoval, array $notAllowedTitles = null)
     {
         $totalEntries = (new Query())->select('*')->from('{{%entries}}')->count();
         $this->gc->run(true);

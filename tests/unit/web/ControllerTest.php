@@ -98,7 +98,7 @@ class ControllerTest extends Unit
 
     public function testRedirectToPostedUrl()
     {
-        $baseUrl = $this->getBaseUrlForRedirect();
+        $baseUrl = $this->_getBaseUrlForRedirect();
         $redirect = Craft::$app->getSecurity()->hashData('craft/do/stuff');
 
         // Default
@@ -118,7 +118,7 @@ class ControllerTest extends Unit
 
     public function testRedirectToPostedWithSetDefault()
     {
-        $baseUrl = $this->getBaseUrlForRedirect();
+        $baseUrl = $this->_getBaseUrlForRedirect();
         $withDefault = $this->controller->redirectToPostedUrl(null, 'craft/do/stuff');
         $this->assertSame($baseUrl.'?p=craft/do/stuff', $withDefault->headers->get('Location'));
 
@@ -146,7 +146,7 @@ class ControllerTest extends Unit
     public function testRedirect()
     {
         $this->assertSame(
-            $this->getBaseUrlForRedirect().'?p=do/stuff',
+            $this->_getBaseUrlForRedirect().'?p=do/stuff',
             $this->controller->redirect('do/stuff')->headers->get('Location')
         );
 
@@ -173,13 +173,13 @@ class ControllerTest extends Unit
     // Helpers
     // =========================================================================
 
-    private function determineUrlScheme(): string
+    private function _determineUrlScheme(): string
     {
         return !Craft::$app->getRequest()->getIsConsoleRequest() && Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
     }
-    private function getBaseUrlForRedirect(): string
+    private function _getBaseUrlForRedirect(): string
     {
-        $scheme = $this->determineUrlScheme();
+        $scheme = $this->_determineUrlScheme();
         return UrlHelper::urlWithScheme(Craft::$app->getConfig()->getGeneral()->siteUrl.'index.php', $scheme);
     }
 }

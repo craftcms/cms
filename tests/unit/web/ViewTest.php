@@ -162,7 +162,7 @@ class ViewTest extends TestCase
         }
 
         // Lets test stuff.
-        $resolved = $this->resolveTemplate(Craft::getAlias($basePath), $name);
+        $resolved = $this->_resolveTemplate(Craft::getAlias($basePath), $name);
         $this->assertSame(Craft::getAlias($result), $resolved);
     }
 
@@ -315,13 +315,13 @@ class ViewTest extends TestCase
         Craft::$app->language = 'nl';
 
         // Basic test that register translations gets rendered
-        $js = $this->generateTranslationJs('app', ['1 month' => '1 maand', '1 minute' => '1 minuut']);
-        $this->assertRegisterJsInputValues($js, View::POS_BEGIN);
+        $js = $this->_generateTranslationJs('app', ['1 month' => '1 maand', '1 minute' => '1 minuut']);
+        $this->_assertRegisterJsInputValues($js, View::POS_BEGIN);
         $this->view->registerTranslations('app', ['1 month', '1 minute']);
 
         // Non existing translations get ignored
-        $js = $this->generateTranslationJs('app', ['1 month' => '1 maand']);
-        $this->assertRegisterJsInputValues($js, View::POS_BEGIN);
+        $js = $this->_generateTranslationJs('app', ['1 month' => '1 maand']);
+        $this->_assertRegisterJsInputValues($js, View::POS_BEGIN);
         $this->view->registerTranslations('app', ['1 month', 'not an existing translation23131321313']);
     }
 
@@ -449,7 +449,7 @@ class ViewTest extends TestCase
             $event->roots = $rootsToBeAdded;
         });
 
-        $roots = $this->getTemplateRoots($which);
+        $roots = $this->_getTemplateRoots($which);
         $this->assertSame($result, $roots);
     }
     public function getTemplateRootsData(): array
@@ -466,10 +466,10 @@ class ViewTest extends TestCase
     public function testGetTemplateRootsEvents()
     {
         $this->tester->expectEvent(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function () {
-            $this->getTemplateRoots('cp');
+            $this->_getTemplateRoots('cp');
         });
         $this->tester->expectEvent(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function () {
-            $this->getTemplateRoots('doesnt-matter-what-this-is');
+            $this->_getTemplateRoots('doesnt-matter-what-this-is');
         });
     }
 
@@ -486,14 +486,14 @@ class ViewTest extends TestCase
         $resultString .= '}';
 
         // Set a stub and ensure that _registeredJs is correctly formatting js but dont bother registering it....
-        $this->assertRegisterJsInputValues($resultString, View::POS_HEAD);
+        $this->_assertRegisterJsInputValues($resultString, View::POS_HEAD);
 
-        $this->registeredJs('randomprop', ['name' => 'value']);
+        $this->_registeredJs('randomprop', ['name' => 'value']);
     }
 
     // Helpers
     // =========================================================================
-    private function generateTranslationJs($category, array $messages): string
+    private function _generateTranslationJs($category, array $messages): string
     {
         $category = Json::encode($category);
         $js = '';
@@ -511,7 +511,7 @@ if (typeof Craft.translations[{$category}] === 'undefined') {
 JS;
     }
 
-    private function assertRegisterJsInputValues($desiredJs, $desiredPosition)
+    private function _assertRegisterJsInputValues($desiredJs, $desiredPosition)
     {
         $this->view = Stub::construct(
             View::class,
@@ -523,15 +523,15 @@ JS;
         );
     }
 
-    private function registeredJs($property, $names)
+    private function _registeredJs($property, $names)
     {
         return $this->invokeMethod($this->view, '_registeredJs', [$property, $names]);
     }
-    private function getTemplateRoots($which)
+    private function _getTemplateRoots($which)
     {
         return $this->invokeMethod($this->view, '_getTemplateRoots', [$which]);
     }
-    private function resolveTemplate($basePath, $name)
+    private function _resolveTemplate($basePath, $name)
     {
         return $this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name]);
     }

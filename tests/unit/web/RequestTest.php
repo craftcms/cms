@@ -219,11 +219,11 @@ class RequestTest extends TestCase
 
     public function testGenerateCsrfToken()
     {
-        $token = $this->generateCsrfToken();
+        $token = $this->_generateCsrfToken();
         $this->assertSame(40, strlen($token));
 
-        $this->setMockUser();
-        $newToken = $this->generateCsrfToken();
+        $this->_setMockUser();
+        $newToken = $this->_generateCsrfToken();
         $tokenComponents = explode('|', $newToken);
 
         $this->assertNotSame($newToken, $token);
@@ -236,18 +236,18 @@ class RequestTest extends TestCase
 
     public function testCsrfTokenValidForCurrentUser()
     {
-        $this->setMockUser();
-        $token = $this->generateCsrfToken();
+        $this->_setMockUser();
+        $token = $this->_generateCsrfToken();
 
-        $this->assertTrue($this->isCsrfValidForUser($token));
+        $this->assertTrue($this->_isCsrfValidForUser($token));
     }
 
     public function testCsrfTokenValidFailure()
     {
-        $token = $this->generateCsrfToken();
+        $token = $this->_generateCsrfToken();
 
-        $this->assertTrue($this->isCsrfValidForUser($token));
-        $this->assertTrue($this->isCsrfValidForUser('RANDOM'));
+        $this->assertTrue($this->_isCsrfValidForUser($token));
+        $this->assertTrue($this->_isCsrfValidForUser('RANDOM'));
     }
 
     /**
@@ -260,7 +260,7 @@ class RequestTest extends TestCase
      */
     public function testGetParam($result, string $name = null, $defaultValue, array $params)
     {
-        $gotten = $this->getParam($name, $defaultValue, $params);
+        $gotten = $this->_getParam($name, $defaultValue, $params);
         $this->assertSame($result, $gotten);
     }
     public function getParamData(): array
@@ -280,7 +280,7 @@ class RequestTest extends TestCase
     public function testCheckRequestTypeWithTokenParam()
     {
         $this->request->setBodyParams([Craft::$app->getConfig()->getGeneral()->tokenParam => 'something']);
-        $this->checkRequestType();
+        $this->_checkRequestType();
 
         $this->assertTrue($this->getInaccessibleProperty($this->request, '_checkedRequestType'));
 
@@ -346,32 +346,32 @@ class RequestTest extends TestCase
 
     public function checkRequestAndAssertIsSingleAction()
     {
-        $this->checkRequestType();
+        $this->_checkRequestType();
         $this->assertTrue($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
     }
 
     // Helpers
     // =========================================================================
 
-    private function checkRequestType()
+    private function _checkRequestType()
     {
         return $this->invokeMethod($this->request, '_checkRequestType');
     }
-    private function getParam(string $name = null, $defaultValue, array $params)
+    private function _getParam(string $name = null, $defaultValue, array $params)
     {
         return $this->invokeMethod($this->request, '_getParam', [$name, $defaultValue, $params]);
 
     }
-    private function isCsrfValidForUser($token)
+    private function _isCsrfValidForUser($token)
     {
         return $this->invokeMethod($this->request, 'csrfTokenValidForCurrentUser', [$token]);
     }
-    private function generateCsrfToken()
+    private function _generateCsrfToken()
     {
         return $this->invokeMethod($this->request, 'generateCsrfToken');
     }
 
-    private function setMockUser()
+    private function _setMockUser()
     {
         Craft::$app->getUser()->setIdentity(
             Craft::$app->getUsers()->getUserById('1')
