@@ -149,6 +149,13 @@ class Request extends \yii\web\Request
      */
     private $_encodedBodyParams = false;
 
+    /**
+     * @var string|false
+     * @see getToken()
+     * @see setToken()
+     */
+    public $_token;
+
     // Public Methods
     // =========================================================================
 
@@ -381,9 +388,24 @@ class Request extends \yii\web\Request
      */
     public function getToken()
     {
-        $param = Craft::$app->getConfig()->getGeneral()->tokenParam;
-        return $this->getQueryParam($param)
-            ?? $this->getHeaders()->get('X-Craft-Token');
+        if ($this->_token === null) {
+            $param = Craft::$app->getConfig()->getGeneral()->tokenParam;
+            $this->_token = $this->getQueryParam($param)
+                ?? $this->getHeaders()->get('X-Craft-Token')
+                ?? false;
+        }
+
+        return $this->_token ?: null;
+    }
+
+    /**
+     * Sets the token for the request.
+     *
+     * @param string|null $token
+     */
+    public function setToken(string $token = null)
+    {
+        $this->_token = $token ?? false;
     }
 
     /**

@@ -82,8 +82,8 @@ body.rtl .text.ltr {
 .go:after,
 .menubtn:after,
 .required:after,
-.livepreviewbtn:before,
-.sharebtn:before,
+#preview-btn:before,
+#share-btn:before,
 .toggle:before,
 a.fieldtoggle:before,
 [data-icon]:before,
@@ -152,18 +152,19 @@ body.rtl [data-icon-after=structure]:after {
   color: #9d2dcc;
 }
 
-.livepreviewbtn,
-.sharebtn {
+#preview-btn,
+#share-btn {
   &:before {
     @include margin-right(7px);
   }
 }
 
-.livepreviewbtn:before {
+#preview-btn:before {
+  margin-top: -2px;
   content: 'view';
 }
 
-.sharebtn:before {
+#share-btn:before {
   body.ltr & {
     content: 'share';
   }
@@ -1177,8 +1178,8 @@ ul.icons li a:hover {
 }
 
 .btn.big[data-icon]:before,
-.livepreviewbtn:before,
-.sharebtn:before {
+#preview-btn:before,
+#share-btn:before {
   @include margin-left(-2px);
 }
 

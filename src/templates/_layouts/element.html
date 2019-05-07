@@ -4,6 +4,7 @@
     The following variables should be defined by the sub-template:
 
     - element: the source element or one of its drafts/revisions
+    - previewContexts (optional): additional locations that should be available for previewing the element
     - canDeleteDraft (optional): whether the current user is allowed to delete the draft (if it is one).
       If the current user created the draft, then it will be deletable regardless.
     - canUpdateSource (optional): whether the current user is allowed to update the source element
@@ -18,9 +19,17 @@
 
 {% extends '_layouts/cp' %}
 
+{% set previewContexts = previewContexts ?? [] %}
+{% if element.uri %}
+    {% set previewContexts = [{
+        label: 'Primary {type} page'|t('app', { type: element.displayName()|lower }),
+        url: element.uri
+    }]|merge(previewContexts) %}
+{% endif %}
+{% set enablePreview = previewContexts and not craft.app.request.isMobileBrowser(true) %}
+
 {% set canDeleteDraft = element.draftId and ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) %}
 {% set canUpdateSource = canUpdateSource ?? false %}
-{% set showPreviewBtn = showPreviewBtn ?? false %}
 {% set shareUrl = shareUrl ?? null %}
 {% set revertSourceAction = revertSourceAction ?? null %}
 
@@ -28,17 +37,23 @@
     {% set fullPageForm = true %}
 {% endif %}
 
+{% if element.draftId %}
+    {% do craft.app.session.authorize('previewDraft:' ~ element.draftId) %}
+{% elseif not element.revisionId %}
+    {% do craft.app.session.authorize('previewElement:' ~ element.id) %}
+{% endif %}
+
 {% block header %}
     {{ block('pageTitle') }}
     {{ block('contextMenu') }}
     <div class="flex-grow"></div>
-    {% if showPreviewBtn or shareUrl %}
-        {% if showPreviewBtn %}
-            <div class="btn livepreviewbtn">{{ "Live Preview"|t('app') }}</div>
-        {% endif %}
-        {% if shareUrl %}
-            <a href="{{ shareUrl }}" class="btn sharebtn" rel="noopener" target="_blank">{{ 'Share'|t('app') }}</a>
-        {% endif %}
+    {% if not element.revisionId and previewContexts %}
+        <div class="btngroup">
+            {% if enablePreview %}
+                <div id="preview-btn" class="btn">{{ "Preview"|t('app') }}</div>
+            {% endif %}
+            <div id="share-btn" class="btn">{{ 'Share'|t('app') }}</div>
+        </div>
     {% endif %}
     {{ block('actionButton') }}
 {% endblock %}
@@ -74,8 +89,21 @@
 {% endblock %}
 
 {% if not element.revisionId %}
+    {% set normalizedPreviewContexts = [] %}
+    {% set scheme = craft.app.request.isSecureConnection ? 'https': null %}
+    {% for context in previewContexts %}
+        {% set path = context.url ?? view.renderObjectTemplate(context.urlFormat, element) %}
+        {% set normalizedPreviewContexts = normalizedPreviewContexts|merge([{
+            label: context.label|t('site'),
+            url: siteUrl(path, scheme=scheme, siteId=element.siteId)
+        }]) %}
+    {% endfor %}
+
     {% set settings = {
+        elementType: className(element),
         sourceId: element.sourceId,
+        siteId: element.siteId,
+        isLive: not element.draftId and not element.revisionId and element.enabled and element.enabledForSite,
         sourceEditUrl: element.cpEditUrl,
         draftId: element.draftId,
         draftName: element.draftId ? element.draftName : null,
@@ -85,6 +113,8 @@
         saveDraftAction: saveDraftAction,
         deleteDraftAction: deleteDraftAction,
         applyDraftAction: applyDraftAction,
+        enablePreview: enablePreview,
+        previewContexts: normalizedPreviewContexts,
     } %}
     {% js %}
         new Craft.DraftEditor({{ settings|json_encode|raw }});

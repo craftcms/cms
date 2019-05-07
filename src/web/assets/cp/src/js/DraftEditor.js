@@ -24,6 +24,9 @@ Craft.DraftEditor = Garnish.Base.extend(
         duplicatedElements: null,
         applying: false,
 
+        preview: null,
+        previewToken: null,
+
         init: function(settings) {
             this.setSettings(settings, Craft.DraftEditor.defaults);
 
@@ -39,7 +42,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             // Just to be safe
-            Craft.cp.$primaryForm.data('initialSerializedValue', Craft.cp.$primaryForm.serialize());
+            Craft.cp.$primaryForm.data('initialSerializedValue', this.getFormData());
 
             this.addListener(Garnish.$bod, 'keypress keyup change focus blur click mousedown mouseup', function(ev) {
                 clearTimeout(this.timeout);
@@ -47,6 +50,34 @@ Craft.DraftEditor = Garnish.Base.extend(
             });
 
             this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
+
+            if (this.settings.previewContexts.length) {
+                if (this.settings.enablePreview) {
+                    this.addListener($('#preview-btn'), 'click', 'openPreview');
+                }
+
+                var $shareBtn = $('#share-btn');
+
+                if (this.settings.previewContexts.length === 1) {
+                    this.addListener($shareBtn, 'click', function() {
+                        this.openShareLink(this.settings.previewContexts[0].url);
+                    });
+                } else {
+                    this.createShareMenu($shareBtn);
+                }
+            }
+        },
+
+        spinners: function() {
+            return this.isPreviewActive()
+                ? this.$spinner.add(this.preview.$spinner)
+                : this.$spinner;
+        },
+
+        savedIcons: function() {
+            return this.isPreviewActive()
+                ? this.$savedIcon.add(this.preview.$savedIcon)
+                : this.$savedIcon;
         },
 
         createEditMetaBtn: function() {
@@ -57,14 +88,101 @@ Craft.DraftEditor = Garnish.Base.extend(
             this.addListener(this.$editMetaBtn, 'click', 'showMetaHud');
         },
 
+        createShareMenu: function($shareBtn) {
+            $shareBtn.addClass('menubtn');
+
+            var $menu = $('<div/>', {'class': 'menu'}).insertAfter($shareBtn);
+            var $ul = $('<ul/>').appendTo($menu);
+            var $li, $a;
+            var $a;
+
+            for (var i = 0; i < this.settings.previewContexts.length; i++) {
+                $li = $('<li/>').appendTo($ul);
+                $a = $('<a/>', {
+                    text: this.settings.previewContexts[i].label,
+                    data: {
+                        url: this.settings.previewContexts[i].url,
+                    }
+                }).appendTo($li);
+                this.addListener($a, 'click', {
+                    url: this.settings.previewContexts[i].url,
+                }, function(ev) {
+                    this.openShareLink(ev.data.url);
+                });
+            }
+        },
+
+        getPreviewToken: function(then) {
+            if (this.previewToken) {
+                then(this.previewToken);
+                return;
+            }
+
+            Craft.postActionRequest('preview/create-token', {
+                elementType: this.settings.elementType,
+                sourceId: this.settings.sourceId,
+                siteId: this.settings.siteId,
+                draftId: this.settings.draftId,
+            }, $.proxy(function(response, textStatus) {
+                if (textStatus === 'success') {
+                    this.previewToken = response.token;
+                    then(this.previewToken);
+                }
+            }, this));
+        },
+
+        getTokenizedPreviewUrl: function(url, then) {
+            // No need for a token if we're looking at a live element
+            if (this.settings.isLive) {
+                then(url);
+                return;
+            }
+
+            this.getPreviewToken(function(token) {
+                then(Craft.getUrl(url, {token: token}));
+            });
+        },
+
+        openShareLink: function(url) {
+            this.getTokenizedPreviewUrl(url, function(url) {
+                window.open(url);
+            });
+        },
+
+        getPreview: function() {
+            if (!this.preview) {
+                this.preview = new Craft.Preview(this);
+            }
+            return this.preview;
+        },
+
+        openPreview: function() {
+            this.getPreview().open();
+        },
+
+        getFormData: function() {
+            var data = Craft.cp.$primaryForm.serialize();
+
+            if (this.isPreviewActive()) {
+                // Replace the temp input with the preview form data
+                data = data.replace('__PREVIEW_FIELDS__=1', this.preview.$editor.serialize());
+            }
+
+            return data;
+        },
+
         checkForm: function(force) {
             this.timeout = null;
 
             // Has anything changed?
-            var data = Craft.cp.$primaryForm.serialize();
+            var data = this.getFormData();
             if (force || data !== Craft.cp.$primaryForm.data('initialSerializedValue')) {
                 this.saveDraft(data);
             }
+        },
+
+        isPreviewActive: function() {
+            return this.preview && this.preview.isActive;
         },
 
         saveDraft: function(data) {
@@ -78,8 +196,8 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             this.saving = true;
-            this.$spinner.removeClass('hidden');
-            this.$savedIcon.removeClass('invisible').addClass('hidden');
+            this.spinners().removeClass('hidden');
+            this.savedIcons().removeClass('invisible').addClass('hidden');
             if (this.$saveMetaBtn) {
                 this.$saveMetaBtn.addClass('active');
             }
@@ -87,7 +205,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             var url = Craft.getActionUrl(this.settings.saveDraftAction);
 
             Craft.postActionRequest(url, this.prepareData(data), $.proxy(function(response, textStatus) {
-                this.$spinner.addClass('hidden');
+                this.spinners().addClass('hidden');
                 if (this.$saveMetaBtn) {
                     this.$saveMetaBtn.removeClass('active');
                 }
@@ -113,12 +231,14 @@ Craft.DraftEditor = Garnish.Base.extend(
                     if (!this.settings.draftId) {
                         history.replaceState({}, '', document.location.href + (document.location.href.match(/\?/) ? ':' : '?') + 'draftId=' + response.draftId);
                         this.settings.draftId = response.draftId;
+                        this.settings.isLive = false;
                         this.settings.canDeleteDraft = true;
+                        this.previewToken = null;
                         this.createEditMetaBtn();
                         $('#apply-btn').removeClass('disabled');
 
                         // Add it to the revision menu
-                        revisionMenu.$options.removeClass('sel');;
+                        revisionMenu.$options.removeClass('sel');
                         var $draftsUl = revisionMenu.$container.find('.revision-group-drafts');
                         if (!$draftsUl.length) {
                             var $draftHeading = $('<h6/>', {
@@ -157,7 +277,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             for (var oldId in this.duplicatedElements) {
                 if (this.duplicatedElements.hasOwnProperty(oldId)) {
                     data = data.replace(new RegExp(Craft.escapeRegex(encodeURIComponent('][' + oldId + ']')), 'g'),
-                    '][' + this.duplicatedElements[oldId] + ']');
+                        '][' + this.duplicatedElements[oldId] + ']');
                 }
             }
 
@@ -173,7 +293,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         afterUpdate: function(data) {
             Craft.cp.$primaryForm.data('initialSerializedValue', data);
-            this.$savedIcon.removeClass('hidden');
+            this.savedIcons().removeClass('hidden');
 
             this.trigger('update');
 
@@ -191,8 +311,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             if (!this.metaHud) {
                 this.createMetaHud();
                 this.onMetaHudShow();
-            }
-            else {
+            } else {
                 this.metaHud.show();
             }
 
@@ -303,7 +422,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                 return;
             }
 
-            Craft.postActionRequest(this.settings.deleteDraftAction, { draftId: this.settings.draftId }, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.deleteDraftAction, {draftId: this.settings.draftId}, $.proxy(function(response, textStatus) {
                 if (textStatus === 'success') {
                     window.location.href = this.settings.sourceEditUrl;
                 }
@@ -320,7 +439,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             this.applying = true;
             $('#apply-btn').addClass('disabled');
 
-            var data = Craft.cp.$primaryForm.serialize();
+            var data = this.getFormData();
 
             Craft.postActionRequest(this.settings.applyDraftAction, this.prepareData(data), $.proxy(function(response, textStatus) {
                 if (textStatus === 'success') {
@@ -331,7 +450,9 @@ Craft.DraftEditor = Garnish.Base.extend(
     },
     {
         defaults: {
+            elementType: null,
             sourceId: null,
+            siteId: null,
             sourceEditUrl: null,
             draftId: null,
             draftName: null,
@@ -340,6 +461,8 @@ Craft.DraftEditor = Garnish.Base.extend(
             saveDraftAction: null,
             deleteDraftAction: null,
             applyDraftAction: null,
+            enablePreview: false,
+            previewContexts: [],
         }
     }
 );

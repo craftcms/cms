@@ -150,11 +150,22 @@ class Application extends \yii\web\Application
      * Handles the specified request.
      *
      * @param Request $request the request to be handled
+     * @param bool $skipSpecialHandling Whether to skip the special case request handling stuff and go straight to
+     * the normal routing logic
      * @return Response the resulting response
      * @throws \Throwable if reasons
      */
-    public function handleRequest($request): Response
+    public function handleRequest($request, bool $skipSpecialHandling = false): Response
     {
+        if ($skipSpecialHandling) {
+            try {
+                return parent::handleRequest($request);
+            } catch (\Throwable $e) {
+                $this->_unregisterDebugModule();
+                throw $e;
+            }
+        }
+
         // Process resource requests before anything else
         $this->_processResourceRequest($request);
 

@@ -199,6 +199,8 @@ JS;
             'Replace the folder (all existing files will be deleted)',
             'Save as a new asset',
             'Save',
+            'Saved',
+            'Saving',
             'Score',
             'Search in subfolders',
             'second',

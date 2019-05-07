@@ -122,6 +122,9 @@ class EntryRevisionsController extends BaseEntriesController
             }
         }
 
+        // Make sure the user is authorized to preview the draft
+        Craft::$app->getSession()->authorize('previewDraft:' . $draft->draftId);
+
         /** @var ElementInterface|DraftBehavior */
         if ($request->getAcceptsJson()) {
             return $this->asJson([

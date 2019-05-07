@@ -46,6 +46,7 @@ use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 
 /**
  * The Elements service provides APIs for managing elements.
@@ -175,6 +176,13 @@ class Elements extends Component
     private $_placeholderElements;
 
     /**
+     * @var array
+     * @see setPlaceholderElement()
+     * @see getElementByUri()
+     */
+    private $_placeholderUris;
+
+    /**
      * @var string[]
      */
     private $_elementTypesByRefHandle = [];
@@ -256,6 +264,11 @@ class Elements extends Component
         if ($siteId === null) {
             /** @noinspection PhpUnhandledExceptionInspection */
             $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        }
+
+        // See if we already have a placeholder for this element URI
+        if (isset($this->_placeholderUris[$uri][$siteId])) {
+            return $this->_placeholderUris[$uri][$siteId];
         }
 
         // First get the element ID and type
@@ -1429,11 +1442,13 @@ class Elements extends Component
     }
 
     /**
-     * Stores a placeholder element that [[findElements()]] should use instead of populating a new element with a
+     * Stores a placeholder element that element queries should use instead of populating a new element with a
      * matching ID and site ID.
+     *
      * This is used by Live Preview and Sharing features.
      *
      * @param ElementInterface $element The element currently being edited by Live Preview.
+     * @throws InvalidArgumentException if the element is missing an ID
      * @see getPlaceholderElement()
      */
     public function setPlaceholderElement(ElementInterface $element)
@@ -1441,23 +1456,27 @@ class Elements extends Component
         /** @var Element $element */
         // Won't be able to do anything with this if it doesn't have an ID or site ID
         if (!$element->id || !$element->siteId) {
-            return;
+            throw new InvalidArgumentException('Placeholder element is missing an ID');
         }
 
-        $this->_placeholderElements[$element->id][$element->siteId] = $element;
+        $this->_placeholderElements[$element->getSourceId()][$element->siteId] = $element;
+
+        if ($element->uri) {
+            $this->_placeholderUris[$element->uri][$element->siteId] = $element;
+        }
     }
 
     /**
      * Returns a placeholder element by its ID and site ID.
      *
-     * @param int $id The element’s ID
+     * @param int $sourceId The element’s ID
      * @param int $siteId The element’s site ID
      * @return ElementInterface|null The placeholder element if one exists, or null.
      * @see setPlaceholderElement()
      */
-    public function getPlaceholderElement(int $id, int $siteId)
+    public function getPlaceholderElement(int $sourceId, int $siteId)
     {
-        return $this->_placeholderElements[$id][$siteId] ?? null;
+        return $this->_placeholderElements[$sourceId][$siteId] ?? null;
     }
 
     /**

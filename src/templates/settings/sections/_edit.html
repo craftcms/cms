@@ -169,6 +169,27 @@
             errors: section.getErrors('maxLevels')
         }) }}
     </div>
+
+    {{ forms.editableTableField({
+        label: 'Preview Contexts'|t('app'),
+        instructions: 'Additional locations that should be available for previewing entries in this section.',
+        id: 'previewContexts',
+        name: 'previewContexts',
+        cols: {
+            label: {
+                type: 'singleline',
+                heading: 'Label'|t('app'),
+            },
+            urlFormat: {
+                type: 'singleline',
+                heading: 'URL Format'|t('app'),
+                info: 'The URL/URI to use for this context.'|t('app'),
+                code: true,
+            }
+        },
+        rows: section.previewContexts,
+        errors: section.getErrors('previewContexts')
+    }) }}
 {% endblock %}
 
 

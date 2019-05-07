@@ -96,6 +96,11 @@ class Section extends Model
     public $propagateEntries = true;
 
     /**
+     * @var array Preview contexts
+     */
+    public $previewContexts = [];
+
+    /**
      * @var string|null Section's UID
      */
     public $uid;
@@ -164,6 +169,7 @@ class Section extends Model
         $rules[] = [['name', 'handle', 'type', 'propagationMethod', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
+        $rules[] = [['previewContexts'], 'validatePreviewContexts'];
         return $rules;
     }
 
@@ -190,6 +196,32 @@ class Section extends Model
             if (!$siteSettings->validate()) {
                 $this->addModelErrors($siteSettings, "siteSettings[{$i}]");
             }
+        }
+    }
+
+    /**
+     * Validates the preview contexts.
+     */
+    public function validatePreviewContexts()
+    {
+        $hasErrors = false;
+
+        foreach ($this->previewContexts as &$context) {
+            $context['label'] = trim($context['label']);
+            if ($context['label'] === '') {
+                $context['label'] = ['value' => $context['label'], 'hasErrors' => true];
+                $hasErrors = true;
+            }
+
+            $context['urlFormat'] = trim($context['urlFormat']);
+            if ($context['urlFormat'] === '') {
+                $context['urlFormat'] = ['value' => $context['urlFormat'], 'hasErrors' => true];
+                $hasErrors = true;
+            }
+        }
+
+        if ($hasErrors) {
+            $this->addError('previewContexts', Craft::t('app', 'All values are required.'));
         }
     }
 
