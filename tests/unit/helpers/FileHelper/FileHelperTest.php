@@ -281,7 +281,6 @@ class FileHelperTest extends Unit
     /**
      * @dataProvider mimeTypeData
      *
-     * @param $result
      * @param $input
      * @param $magicFile
      * @param $checkExtension
