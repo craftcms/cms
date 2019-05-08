@@ -32,6 +32,12 @@ class MysqlDbHelperTest extends Unit
      */
     protected $tester;
 
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
     /**
      * @dataProvider sqlTypesDataProvider
      * @param $type
