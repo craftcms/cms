@@ -6,9 +6,7 @@
  * All of your system's general configuration settings go in here.
  * You can see a list of the default settings in craft/app/config/defaults/general.php
  */
-
-return [
-    'useProjectConfigFile' => true,
+$config = [
     'devMode'=>true,
     'cpTrigger' => 'adminustriggerus',
     'siteUrl' => 'https://test.craftcms.dev/',
@@ -16,3 +14,9 @@ return [
     'allowUppercaseInSlug' => true,
     'securityKey' => getenv('SECURITY_KEY')
 ];
+
+
+$testConfig = \craft\test\Craft::$testConfig;
+$config['useProjectConfigFile'] = (isset($testConfig['projectConfig']) && $testConfig['projectConfig']);
+
+return $config;

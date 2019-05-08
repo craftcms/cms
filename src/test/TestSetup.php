@@ -25,6 +25,8 @@ use yii\db\Exception;
 /**
  * Class TestSetup.
  *
+ * TODO: Lets just make all methods that dont depend on $this->connection static.
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0
@@ -159,6 +161,7 @@ class TestSetup
             require $srcPath . '/config/app.web.php'
         );
 
+
         if (is_array($customConfig)) {
             // Merge in any custom variables and config
             $config = ArrayHelper::merge($config, $customConfig);
@@ -204,7 +207,6 @@ class TestSetup
         error_reporting(E_ALL);
         ini_set('display_errors', 1);
         defined('YII_DEBUG') || define('YII_DEBUG', true);
-        defined('YII_ENV') || define('YII_ENV', 'dev');
         defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', '');
 
         defined('CURLOPT_TIMEOUT_MS') || define('CURLOPT_TIMEOUT_MS', 155);
@@ -214,7 +216,7 @@ class TestSetup
 
         $srcPath  = dirname(__DIR__);
 
-        require $vendorPath . '/yiisoft/yii2/Yii.php';
+        require $libPath . '/yii2/Yii.php';
         require $srcPath.'/Craft.php';
 
         if (file_exists(ENV_PATH.'/.env')) {
@@ -238,20 +240,24 @@ class TestSetup
      * @param string $projectConfigFile
      * @throws \yii\base\ErrorException
      */
-    public function setupProjectConfig(string $projectConfigFile)
+    public static function setupProjectConfig(string $projectConfigFile, bool $mergeExistingConfig = false)
     {
         if (!is_file($projectConfigFile)) {
             throw new InvalidArgumentException('Project config is not a file');
         }
 
-        $projectConfigContents = file_get_contents($projectConfigFile);
         $testSuiteProjectConfigPath = CRAFT_CONFIG_PATH.'/project.yaml';
+        $contents = file_get_contents($projectConfigFile);
+        $arrayContents = Yaml::parse($contents);
 
-        copy($projectConfigFile, $testSuiteProjectConfigPath);
+        // Do we need to take into account the existing project config file?
+        if ($mergeExistingConfig === true && is_file($testSuiteProjectConfigPath)) {
+            $existingConfig = file_get_contents($testSuiteProjectConfigPath);
+            $arrayContents = array_merge($arrayContents, $existingConfig);
+        }
 
-        $array = Yaml::parse($projectConfigContents);
-
-        \Craft::$app->getProjectConfig()->applyConfigChanges($array);
+        // Write to the file.
+        file_put_contents($testSuiteProjectConfigPath, Yaml::dump($arrayContents));
     }
 
     /**

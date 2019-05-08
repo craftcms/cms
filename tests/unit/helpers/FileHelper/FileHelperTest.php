@@ -193,7 +193,7 @@ class FileHelperTest extends Unit
     {
         return [
             ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
-            ['text/plain', dirname(__DIR__, 3) . '/_data/assets/files/empty-file.text', null, true],
+            ['inode/x-empty', dirname(__DIR__, 3) . '/_data/assets/files/empty-file.text', null, true],
             ['text/html', dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, true],
             ['image/gif', dirname(__DIR__, 3) . '/_data/assets/files/example-gif.gif', null, true],
             ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],

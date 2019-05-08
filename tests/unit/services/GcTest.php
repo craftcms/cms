@@ -96,7 +96,6 @@ class GcTest extends Unit
             'Deleted 40 days ago',
             'Deleted 25 days ago',
         ]);
-
     }
 
     public function testRunDeleteAllTrashed()
@@ -209,6 +208,7 @@ class GcTest extends Unit
         $this->gc->run(true);
         $entries = Entry::find()
             ->asArray()
+            ->trashed(null)
             ->all();
 
         $this->assertSame($totalEntries - $expectedRemoval, count($entries));

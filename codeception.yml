@@ -29,6 +29,7 @@ modules:
             configFile: 'tests/_craft/config/test.php'
             entryUrl: 'https://test.craftcms.dev/'
             entryScript: 'index.php'
+            projectConfig: {}
             modules: []
             migrations: []
             plugins: []

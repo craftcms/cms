@@ -14,27 +14,14 @@ use Codeception\Module\Yii2;
 use Codeception\Stub;
 use Codeception\TestInterface;
 use Composer\IO\NullIO;
-use Composer\Json\JsonFile;
-use Composer\Package\CompletePackage;
-use Composer\Package\Package;
-use Composer\Package\RootPackage;
-use Composer\Repository\ArrayRepository;
-use Composer\Repository\InstalledFilesystemRepository;
-use Composer\Repository\RepositoryFactory;
 use craft\composer\Factory;
 use craft\composer\Installer;
 use craft\config\DbConfig;
 use craft\db\Connection;
-use craft\db\Query;
-use craft\elements\User;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
-use craft\helpers\FileHelper;
-use craft\helpers\Json;
-use craft\records\Plugin;
-use craft\services\Composer;
-use craft\services\Security;
+use craft\services\ProjectConfig;
 use yii\base\Application;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
@@ -42,6 +29,19 @@ use yii\base\Module;
 
 /**
  * Craft module for codeception
+ *
+ * TODO: LINE 115
+ * There is a potential 'bug'/hampering feature with the Yii2 Codeception module.
+ * DB connections initialized through the configFile param (see https://codeception.com/docs/modules/Yii2)
+ * Are not captured by the Yii2Connector\ConnectionWatcher and Yii2Connector\TransactionForcer i.e. all DB interacitons done through
+ * Craft::$app->getDb() are not stored and roll'd back in transacitons.
+ *
+ * This is probably because the starting of the app (triggered by $this->client->startApp()) is done BEFORE the
+ * DB event listeners are registered. Moving the order of these listeners to the top of the _before function means the conneciton
+ * is registered.
+ *
+ * What i need to investigate is whether iam doing something wrong in the src/tests/_craft/config/test.php or if this is PR 'worthy'
+ * For now: Remounting the DB object using Craft::$app->set() after the event listeners are called works perfectly fine.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -70,12 +70,6 @@ class Craft extends Yii2
      */
     protected $triggeredEvents = [];
     protected $requiredEvents = [];
-
-    /**
-     * The DB connection that is used to apply migrations and db setups
-     * @var Connection $dbConnection
-     */
-    private $dbConnection;
 
     /**
      * A static version of the config for use on the tests/_craft/config/test.php file
@@ -110,7 +104,59 @@ class Craft extends Yii2
         $this->setupDb();
 
         parent::_initialize();
+    }
 
+    /**
+     * @param TestInterface $test
+     * @throws InvalidConfigException
+     * @throws \yii\base\ErrorException
+     */
+    public function _before(TestInterface $test)
+    {
+        parent::_before($test);
+
+        // Re-apply project config
+        if ($this->refreshProjectConfigPerTest()) {
+            \Craft::$app->getProjectConfig()->applyYamlChanges();
+        }
+
+        App::maxPowerCaptain();
+
+        $db = \Craft::createObject(
+            \craft\helpers\App::dbConfig(self::createDbConfig())
+        );
+
+        \Craft::$app->set('db', $db);
+    }
+
+    /**
+     * @param TestInterface $test
+     * @throws \yii\db\Exception
+     */
+    public function _after(TestInterface $test)
+    {
+        parent::_after($test);
+
+        ob_start();
+
+        // Create a Craft::$app object
+        TestSetup::warmCraft();
+
+        // https://github.com/yiisoft/yii2/issues/11633 || The (possibly) MyISAM {{%searchindex}} table doesnt support transactions.
+        // So we manually delete any rows in there except if the element id is 1 (The user added when creating the DB)
+        \Craft::$app->getDb()->createCommand()
+            ->delete('{{%searchindex}}', 'elementId != 1')
+            ->execute();
+
+        if ($this->refreshProjectConfigPerTest()) {
+            // Tests over. Reset the project config to its original state.
+            TestSetup::setupProjectConfig($this->_getConfig('projectConfig'));
+            \Craft::$app->getProjectConfig()->applyYamlChanges();
+        }
+
+        // Dont output anything or we get header's already sent exception
+        ob_end_clean();
+        TestSetup::tearDownCraft();
     }
 
     /**
@@ -122,44 +168,56 @@ class Craft extends Yii2
     {
         ob_start();
 
-        // Create a Craft::$app object
-        TestSetup::warmCraft();
+        try {
+            // Create a Craft::$app object
+            TestSetup::warmCraft();
 
-        $this->dbConnection = \Craft::createObject(App::dbConfig(self::createDbConfig()));
+            $dbConnection = \Craft::createObject(App::dbConfig(self::createDbConfig()));
 
-        \Craft::$app->set('db', $this->dbConnection);
+            \Craft::$app->set('db', $dbConnection);
 
-        // Create a testSetup object
-        $testSetup = self::createTestSetup($this->dbConnection);
+            // Create a testSetup object
+            $testSetup = self::createTestSetup($dbConnection);
 
-        // Get rid of everything.
-        if ($this->_getConfig('dbSetup')['clean'] === true) {
-            $testSetup->clenseDb();
-        }
-
-        // Install the db from install.php
-        if ($this->_getConfig('dbSetup')['setupCraft'] === true) {
-            $testSetup->setupCraftDb();
-        }
-
-        // Ready to rock.
-        \Craft::$app->setIsInstalled();
-
-        // Apply migrations
-        if ($this->_getConfig('dbSetup')['setupMigrations'] === true) {
-            foreach ($this->_getConfig('migrations') as $migration) {
-                $testSetup->validateAndApplyMigration($migration['class'], $migration['params']);
+            // Get rid of everything.
+            if ($this->_getConfig('dbSetup')['clean'] === true) {
+                $testSetup->clenseDb();
             }
-        }
 
-        // Setup the project config from the passed file.
-        if ($this->_getConfig('projectConfig')) {
-            $testSetup->setupProjectConfig($this->_getConfig('projectConfig'));
-        }
+            // Setup the project config from the passed file.
+            $projectConfig = $this->_getConfig('projectConfig');
+            if ($projectConfig && isset($projectConfig['file'])) {
+                // Just set it up.
+                TestSetup::setupProjectConfig($projectConfig['file']);
+            }
 
-        // Add any plugins
-        foreach ($this->_getConfig('plugins') as $plugin) {
-            $this->installPlugin($plugin);
+            // Install the db from install.php
+            if ($this->_getConfig('dbSetup')['setupCraft'] === true) {
+                $testSetup->setupCraftDb();
+            }
+
+            // Ready to rock.
+            \Craft::$app->setIsInstalled();
+
+            // Apply migrations
+            if ($this->_getConfig('dbSetup')['setupMigrations'] === true) {
+                foreach ($this->_getConfig('migrations') as $migration) {
+                    $testSetup->validateAndApplyMigration($migration['class'], $migration['params']);
+                }
+            }
+
+            // Add any plugins
+            foreach ($this->_getConfig('plugins') as $plugin) {
+                $this->installPlugin($plugin);
+            }
+
+            // Trigger the end of a 'request'. This lets project config do its stuff.
+            // TODO: Probably Craft::$app->getProjectConfig->saveModifiedConfigData() but i feel the below is more solid.
+            \Craft::$app->trigger(Application::EVENT_AFTER_REQUEST);
+        } catch (\Throwable $exception) {
+            // Get clean and throw a tantrum.
+            ob_end_clean();
+            throw $exception;
         }
 
         // Dont output anything or we get header's already sent exception
@@ -238,51 +296,6 @@ class Craft extends Yii2
     }
 
     /**
-     * @param TestInterface $test
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function _before(TestInterface $test)
-    {
-        parent::_before($test);
-
-        App::maxPowerCaptain();
-        /**
-         * TODO:
-         * There is a potential 'bug'/hampering feature with the Yii2 Codeception module.
-         * DB connections initialized through the configFile param (see https://codeception.com/docs/modules/Yii2)
-         * Are not captured by the Yii2Connector\ConnectionWatcher and Yii2Connector\TransactionForcer i.e. all DB interacitons done through
-         * Craft::$app->getDb() are not stored and roll'd back in transacitons.
-         *
-         * This is probably because the starting of the app (triggered by $this->client->startApp()) is done BEFORE the
-         * DB event listeners are registered. Moving the order of these listeners to the top of the _before function means the conneciton
-         * is registered.
-         *
-         * What i need to investigate is whether iam doing something wrong in the src/tests/_craft/config/test.php or if this is PR 'worthy'
-         * For now: Remounting the DB object using Craft::$app->set() after the event listeners are called works perfectly fine.
-         */
-        $db = \Craft::createObject(
-            \craft\helpers\App::dbConfig(self::createDbConfig())
-        );
-
-        \Craft::$app->set('db', $db);
-    }
-
-    /**
-     * @param TestInterface $test
-     * @throws \yii\db\Exception
-     */
-    public function _after(TestInterface $test)
-    {
-        // https://github.com/yiisoft/yii2/issues/11633 || The (possibly) MyISAM {{%searchindex}} table doesnt support transactions.
-        // So we manually delete any rows in there except if the element id is 1 (The user added when creating the DB)
-        parent::_after($test);
-
-        \Craft::$app->getDb()->createCommand()
-            ->delete('{{%searchindex}}', 'elementId != 1')
-            ->execute();
-    }
-
-    /**
      * Gets any custom test setup config based on variables in this class.
      * The array returned in here gets merged with what is returned in tests/_craft/config/test.php
      *
@@ -304,6 +317,42 @@ class Craft extends Yii2
         return $returnArray;
     }
 
+    /**
+     * @inheritdoc
+     *
+     * Completely based on parent except we use CraftConnector. Gives us more control
+     */
+    protected function recreateClient()
+    {
+        $entryUrl = $this->_getConfig('entryUrl');
+        $entryFile = $this->_getConfig('entryScript') ?: basename($entryUrl);
+        $entryScript = $this->_getConfig('entryScript') ?: parse_url($entryUrl, PHP_URL_PATH);
+
+        $this->client = new CraftConnector([
+            'SCRIPT_FILENAME' => $entryFile,
+            'SCRIPT_NAME' => $entryScript,
+            'SERVER_NAME' => parse_url($entryUrl, PHP_URL_HOST),
+            'SERVER_PORT' => parse_url($entryUrl, PHP_URL_PORT) ?: '80',
+            'HTTPS' => parse_url($entryUrl, PHP_URL_SCHEME) === 'https'
+        ]);
+
+        $this->configureClient($this->_getConfig());
+    }
+
+    /**
+     * Check if the codeception file wants us to set it up only once
+     * @return bool
+     */
+    protected function refreshProjectConfigPerTest() : bool
+    {
+        $projectConfig = $this->_getConfig('projectConfig');
+
+        if(!$projectConfig) {
+            return false;
+        }
+
+        return ($projectConfig && array_key_exists('once', $projectConfig) && $projectConfig['once'] === false);
+    }
     // Helper and to-be-directly used in test methods.
     // =========================================================================
 
@@ -343,6 +392,12 @@ class Craft extends Yii2
         $module->set($component, Stub::construct(get_class($componentInstance), [$constructParams], $methods));
     }
 
+    /**
+     * @param string $component
+     * @param array $methods
+     * @param array $constructParams
+     * @throws InvalidConfigException
+     */
     public function mockCraftMethods(string $component, array $methods = [], array $constructParams = [])
     {
         return $this->mockMethods(\Craft::$app, $component, $methods, $constructParams);
