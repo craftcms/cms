@@ -921,9 +921,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Returns the user's full name or username.
-     *
-     * @return string
+     * @inheritdoc
      */
     public function getName(): string
     {
