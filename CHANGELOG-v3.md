@@ -4,6 +4,7 @@
 
 ### Changed
 - Craft now stores the Default User Group’s UID in the project config, in case the group’s ID is different across environments.
+- Improved the performance of background jobs. ([#4219](https://github.com/craftcms/cms/pull/4219))
 
 ### Fixed
 - Fixed an error that could occur when saving a Single section if one of its sites had been disabled.
