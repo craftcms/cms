@@ -245,8 +245,8 @@ class UrlHelperTest extends Unit
                 'https'
             ],
             'test-url-gets-ignored' => [
-                '/https://test.craftcms.dev&param1=entry1&param2=entry2',
-                'https://test.craftcms.dev',
+                '/https://test.craftcms.test&param1=entry1&param2=entry2',
+                'https://test.craftcms.test',
                 ['param1' => 'entry1', 'param2' => 'entry2'],
                 'https'
             ]
@@ -603,7 +603,7 @@ class UrlHelperTest extends Unit
     public function siteUrlData(): array
     {
         return [
-            ['http://test.craftcms.dev/index.php?p=endpoint', 'endpoint'],
+            ['http://test.craftcms.test/index.php?p=endpoint', 'endpoint'],
         ];
     }
     public function testSiteUrlExceptions()

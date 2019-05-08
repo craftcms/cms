@@ -21,8 +21,14 @@ use HTMLPurifier_Config;
  */
 class HtmlPurifierTest extends Unit
 {
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
     /**
-     * @dataProvider utf8CleanData
+     * @dataProvider utf8CleanDataProvider
      * @param $result
      * @param $input
      */
@@ -31,7 +37,26 @@ class HtmlPurifierTest extends Unit
         $cleaned = HtmlPurifier::cleanUtf8($input);
         $this->assertSame($result, $cleaned);
     }
-    public function utf8CleanData(): array
+
+    /**
+     *
+     */
+    public function testConfigure()
+    {
+        $config = HTMLPurifier_Config::createDefault();
+        HtmlPurifier::configure($config);
+        $this->assertNull($config->get('HTML.DefinitionID'));
+        $this->assertSame('', $config->get('Attr.DefaultImageAlt'));
+        $this->assertSame('', $config->get('Attr.DefaultInvalidImageAlt'));
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function utf8CleanDataProvider(): array
     {
         // https://github.com/ezyang/htmlpurifier/blob/master/tests/HTMLPurifier/EncoderTest.php#L21
         return [
@@ -46,15 +71,5 @@ class HtmlPurifierTest extends Unit
             ['', "\xED\xB0\x80"],
             ['😀😘', '😀😘'],
         ];
-    }
-
-    public function testConfigure()
-    {
-        $config = HTMLPurifier_Config::createDefault();
-        HtmlPurifier::configure($config);
-        $this->assertNull($config->get('HTML.DefinitionID'));
-        $this->assertSame('', $config->get('Attr.DefaultImageAlt'));
-        $this->assertSame('', $config->get('Attr.DefaultInvalidImageAlt'));
-
     }
 }

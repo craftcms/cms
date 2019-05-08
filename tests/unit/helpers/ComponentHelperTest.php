@@ -28,16 +28,24 @@ use yii\base\InvalidConfigException;
  */
 class ComponentHelperTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
 
     /**
      * @var UnitTester
      */
     protected $tester;
 
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
     /**
      * Tests whether the $callback will evaluate to an instance of the componentInterface.
      *
-     * @dataProvider successfulComponentCreationData
+     * @dataProvider successfulComponentCreationDataProvider
      * @param $callback
      */
     public function testSuccessfulComponentCreation(Closure $callback)
@@ -48,7 +56,47 @@ class ComponentHelperTest extends Unit
         );
     }
 
-    public function successfulComponentCreationData(): array
+    /**
+     * @dataProvider failingComponentCreationDataProvider
+     * @param array $settings
+     * @param $desiredParent
+     * @param string $requiredException
+     */
+    public function testFailedComponentExceptions(array $settings, $desiredParent, string $requiredException)
+    {
+        $this->tester->expectThrowable(
+            $requiredException,
+            function () use($settings, $desiredParent){
+                Component::createComponent($settings, $desiredParent);
+            }
+            );
+    }
+
+    /**
+     * @todo Figure out a way to test plugin functionality. Probably create a mock plugin under /_support/mockclasses
+     */
+    public function testComponentCreation()
+    {
+
+    }
+
+    /**
+     * @dataProvider settingsArraysDataProvider
+     * @param $mergeable
+     * @param $result
+     */
+    public function testSettingsMerging($mergeable, $result)
+    {
+        $this->assertSame($result, Component::mergeSettings($mergeable));
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function successfulComponentCreationDataProvider(): array
     {
         return [
             'string-to-class-conversion' => [
@@ -56,13 +104,13 @@ class ComponentHelperTest extends Unit
                     return Component::createComponent(ComponentExample::class);
                 },
             ],
-          'successful-basic' => [
-              function(){
-                  return Component::createComponent([
-                      'type' => ComponentExample::class,
-                  ]);
-              },
-          ],
+            'successful-basic' => [
+                function(){
+                    return Component::createComponent([
+                        'type' => ComponentExample::class,
+                    ]);
+                },
+            ],
             'dependency-heavy' => [
                 function() {
                     return Component::createComponent([
@@ -79,35 +127,19 @@ class ComponentHelperTest extends Unit
     }
 
     /**
-     * @dataProvider failingComponentCreationData
-     * @param array $settings
-     * @param $desiredParent
-     * @param string $requiredException
-     */
-    public function testFailedComponentExceptions(array $settings, $desiredParent, string $requiredException)
-    {
-        $this->tester->expectThrowable(
-            $requiredException,
-            function () use($settings, $desiredParent){
-                Component::createComponent($settings, $desiredParent);
-            }
-            );
-    }
-
-    /**
      * Returns data for failed component creations. Defines settings, the required exception
      * and if the 'type' class must have a class as parent.
      *
      * @return array
      */
-    public function failingComponentCreationData(): array
+    public function failingComponentCreationDataProvider(): array
     {
         return [
             'invalid-required-parent-class' => [
                 ['type' => ExtendedComponentExample::class],
                 'random\\class\\that\\doesnt\\exist',
                 InvalidConfigException::class,
-                ],
+            ],
             'class-doesnt-exist' => [
                 [
                     'type' => 'i\\dont\\exist\\as\\a\\class'
@@ -143,22 +175,10 @@ class ComponentHelperTest extends Unit
         ];
     }
 
-    public function testComponentCreation()
-    {
-        // TODO: Figure out a way to test plugin functionality. Probably create a mock plugin under /_support/mockclasses
-    }
-
     /**
-     * @dataProvider settingsArraysData
-     * @param $mergeable
-     * @param $result
+     * @return array
      */
-    public function testSettingsMerging($mergeable, $result)
-    {
-        $this->assertSame($result, Component::mergeSettings($mergeable));
-    }
-
-    public function settingsArraysData(): array
+    public function settingsArraysDataProvider(): array
     {
         $mergedComponentArray = [
             'name' => 'Component',

@@ -21,13 +21,22 @@ use UnitTester;
  */
 class ArrayHelperTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UnitTester
      */
     protected $tester;
 
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
     /**
-     * @dataProvider toArrayData
+     * @dataProvider toArrayDataProvider
      * @param $result
      * @param $input
      */
@@ -38,18 +47,7 @@ class ArrayHelperTest extends Unit
     }
 
     /**
-     * TODO: Example with a \stdClass?
-     * @return array
-     */
-    public function toArrayData(): array
-    {
-        return[
-            [[], null], [[1,2,3], [1,2,3]]
-        ];
-    }
-
-    /**
-     * @dataProvider prependOrAppendData
+     * @dataProvider prependOrAppendDataProvider
      * @param $result
      * @param $inputArray
      * @param $appendable
@@ -61,21 +59,17 @@ class ArrayHelperTest extends Unit
         $this->assertSame($result, $inputArray);
     }
 
-    public function prependOrAppendData(): array
-    {
-        return [
-            [[1, 2, 3, 4],  [1, 2, 3], 4, false],
-            [[4, 1, 2, 3],  [1, 2, 3], 4, true],
-            [[1, 2, 3, ['22']],  [1, 2, 3], ['22'], false],
-            [[1, 2, 3, null],  [1, 2, 3], null, false],
-        ];
-    }
-
+    /**
+     *
+     */
     public function testFilterEmptyStringsFromArray()
     {
         $this->assertSame([0 => 1, 1 => 2, 4 => null, 5 => 5], ArrayHelper::filterEmptyStringsFromArray([0 => 1, 1 => 2, 3 => '', 4 => null, 5 => 5]));
     }
 
+    /**
+     *
+     */
     public function testFirstKey()
     {
         $this->assertNull(ArrayHelper::firstKey([]));
@@ -99,18 +93,8 @@ class ArrayHelperTest extends Unit
         $this->assertSame($result, $inputArray);
     }
 
-    public function renameDataProvider(): array
-    {
-        return [
-            [['fizz' => 'plop', 'foo2' => 'bar'], ['foo' => 'bar', 'fizz' => 'plop'], 'foo', 'foo2'],
-            [['foo' => 'bar', 'fizz' => 'plop', 'fooY' => null], ['foo' => 'bar', 'fizz' => 'plop'], 'fooX', 'fooY'],
-            [['foo' => 'bar', 'fizz' => 'plop'], ['foo' => 'bar', 'fizz' => 'plop'], 'fooX', 'foo'],
-            [['foo' => 'bar', 'fizz' => 'plop', 'fooY' => 'test'], ['foo' => 'bar', 'fizz' => 'plop'], 'fooX', 'fooY', 'test'],
-        ];
-    }
-
     /**
-     * @dataProvider firstValueData
+     * @dataProvider firstValueDataProvider
      * @param $result
      * @param $input
      */
@@ -120,19 +104,8 @@ class ArrayHelperTest extends Unit
         $this->assertSame($result, $firstVal);
     }
 
-    public function firstValueData(): array
-    {
-        $std = new stdClass();
-        $std->a = '22';
-        return [
-            ['test', ['test']],
-            [['test'], [['test']]],
-            [$std, ['key' => $std]]
-        ];
-    }
-
     /**
-     * @dataProvider withoutData
+     * @dataProvider withoutDataProvider
      * @param $result
      * @param $array
      * @param $key
@@ -143,18 +116,8 @@ class ArrayHelperTest extends Unit
         $this->assertSame($result, $without);
     }
 
-    public function withoutData(): array
-    {
-        return [
-            [[], ['key' => 'value'], 'key'],
-            [['key' => 'value'], ['key' => 'value', 'key2' => 'value2'], 'key2'],
-            [['key' => 'value'], ['key' => 'value'], 'notakey'],
-            [[], ['value'], 0],
-        ];
-    }
-
     /**
-     * @dataProvider withoutValueData
+     * @dataProvider withoutValueDataProvider
      * @param $result
      * @param $array
      * @param $value
@@ -165,16 +128,9 @@ class ArrayHelperTest extends Unit
         $this->assertSame($result, $without);
     }
 
-    public function withoutValueData(): array
-    {
-        return [
-            [[], ['key' => 'value'], 'value'],
-            [['key' => 'value'], ['key' => 'value'], 'notavalue'],
-            [[], ['value'], 'value'],
-            [[], ['key' => 'value', 'key2' => 'value'], 'value'],
-        ];
-    }
-
+    /**
+     *
+     */
     public function testFilterbyValue()
     {
         $array = [
@@ -286,5 +242,85 @@ class ArrayHelperTest extends Unit
         ];
 
         $this->assertSame($array, $mockedUp);
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @todo Example with a \stdClass?
+     * @return array
+     */
+    public function toArrayDataProvider(): array
+    {
+        return[
+            [[], null], [[1,2,3], [1,2,3]]
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function prependOrAppendDataProvider(): array
+    {
+        return [
+            [[1, 2, 3, 4],  [1, 2, 3], 4, false],
+            [[4, 1, 2, 3],  [1, 2, 3], 4, true],
+            [[1, 2, 3, ['22']],  [1, 2, 3], ['22'], false],
+            [[1, 2, 3, null],  [1, 2, 3], null, false],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function renameDataProvider(): array
+    {
+        return [
+            [['fizz' => 'plop', 'foo2' => 'bar'], ['foo' => 'bar', 'fizz' => 'plop'], 'foo', 'foo2'],
+            [['foo' => 'bar', 'fizz' => 'plop', 'fooY' => null], ['foo' => 'bar', 'fizz' => 'plop'], 'fooX', 'fooY'],
+            [['foo' => 'bar', 'fizz' => 'plop'], ['foo' => 'bar', 'fizz' => 'plop'], 'fooX', 'foo'],
+            [['foo' => 'bar', 'fizz' => 'plop', 'fooY' => 'test'], ['foo' => 'bar', 'fizz' => 'plop'], 'fooX', 'fooY', 'test'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function firstValueDataProvider(): array
+    {
+        $std = new stdClass();
+        $std->a = '22';
+        return [
+            ['test', ['test']],
+            [['test'], [['test']]],
+            [$std, ['key' => $std]]
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function withoutDataProvider(): array
+    {
+        return [
+            [[], ['key' => 'value'], 'key'],
+            [['key' => 'value'], ['key' => 'value', 'key2' => 'value2'], 'key2'],
+            [['key' => 'value'], ['key' => 'value'], 'notakey'],
+            [[], ['value'], 0],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function withoutValueDataProvider(): array
+    {
+        return [
+            [[], ['key' => 'value'], 'value'],
+            [['key' => 'value'], ['key' => 'value'], 'notavalue'],
+            [[], ['value'], 'value'],
+            [[], ['key' => 'value', 'key2' => 'value'], 'value'],
+        ];
     }
 }

@@ -20,10 +20,19 @@ use UnitTester;
  */
 class HtmlHelperTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UnitTester
      */
     protected $tester;
+
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
 
     /**
      * @dataProvider htmlEncodingDataProvider
@@ -37,6 +46,12 @@ class HtmlHelperTest extends Unit
         $this->assertSame($result, Html::encodeParams($input, $variables));
     }
 
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
     public function htmlEncodingDataProvider(): array
     {
         $htmlTagString = '<p>Im a paragraph. What am i, {whatIsThis}</p>';

@@ -14,18 +14,29 @@ use UnitTester;
 /**
  * Class ImageHelperTest.
  *
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.1
  */
 class ImageHelperTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UnitTester
      */
     protected $tester;
 
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
+    /**
+     *
+     */
     public function testConstants()
     {
         $this->assertSame(3, Image::EXIF_IFD0_ROTATE_180);
@@ -103,6 +114,102 @@ class ImageHelperTest extends Unit
         $imageInfo = Image::pngImageInfo($input);
         $this->assertSame($result, $imageInfo);
     }
+
+    /**
+     * @dataProvider canHaveExitData
+     * @param $result
+     * @param $input
+     */
+    public function testCanHaveExifData($result, $input)
+    {
+        $canHavExit = Image::canHaveExifData($input);
+        $this->assertSame($result, $canHavExit);
+    }
+
+    /**
+     * @dataProvider imageSizeData
+     * @param $result
+     * @param $input
+     */
+    public function testImageSize($result, $input)
+    {
+        $imageSize = Image::imageSize($input);
+        $this->assertSame($result, $imageSize);
+    }
+
+    /**
+     * @dataProvider parseSvgData
+     * @param $result
+     * @param $input
+     */
+    public function testParseSvgImageSize($result, $input)
+    {
+        $parsed = Image::parseSvgSize($input);
+        $this->assertSame($result, $parsed);
+    }
+
+    /**
+     * @dataProvider imageByStreamData
+     * @param $result
+     * @param $input
+     */
+    public function testImageByStream($result, $input)
+    {
+        $stream = Image::imageSizeByStream($input);
+        $this->assertSame($result, $stream);
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    public function imageByStreamData(): array
+    {
+        return [
+            [[400, 300], fopen(dirname(__FILE__, 3).'\_data\assets\files\example-gif.gif', 'rb')],
+            [[960, 640], fopen(dirname(__FILE__, 3).'\_data\assets\files\background.jpg', 'rb')],
+            [[200, 200], fopen(dirname(__FILE__, 3).'\_data\assets\files\google.png', 'rb')],
+            [false, fopen(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg', 'rb')],
+
+            // TODO: Generate a bunch of invalid image formats that generate exceptions.
+
+        ];
+    }
+
+    public function parseSvgData(): array
+    {
+        return [
+            [[140.0, 41.0], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg')],
+            [[100.0, 100.0], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\gng.svg')],
+
+            // This svg is same as craft-logo but we removed viewbox="" and height=""/width="" so it returns 100.0 100.0 instead of 140.0 41.0
+            [[100, 100], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\no-dimension-svg.svg')],
+            [[100, 100], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\google.png')],
+        ];
+    }
+
+    public function imageSizeData(): array
+    {
+        return [
+            [[960, 640], dirname(__FILE__, 3).'\_data\assets\files\background.jpg'],
+            [[200, 200], dirname(__FILE__, 3).'\_data\assets\files\google.png'],
+            [[0, 0], dirname(__FILE__, 3).'\_data\assets\files\random.tiff'],
+            [[100.0, 100.0], dirname(__FILE__, 3).'\_data\assets\files\gng.svg'],
+        ];
+    }
+
+    public function canHaveExitData(): array
+    {
+        return [
+            [true, dirname(__FILE__, 3).'\_data\assets\files\background.jpg'],
+            [true, dirname(__FILE__, 3).'\_data\assets\files\background.jpeg'],
+            [true, dirname(__FILE__, 3).'\_data\assets\files\random.tiff'],
+
+            [false, dirname(__FILE__, 3).'\_data\assets\files\random.tif'],
+            [false, dirname(__FILE__, 3).'\_data\assets\files\empty-file.text'],
+            [false, dirname(__FILE__, 3).'\_data\assets\files\google.png'],
+        ];
+    }
+
     public function pngImageInfoData(): array
     {
         return [
@@ -122,94 +229,6 @@ class ImageHelperTest extends Unit
             [false, ''],
             [false, dirname(__FILE__, 3).'\_data\assets\files\ign.jpg'],
             // TODO: Test empty unpack() function  and invalid IHDR chunks and INVALID color value. See coverage for more.
-        ];
-    }
-
-    /**
-     * @dataProvider canHaveExitData
-     * @param $result
-     * @param $input
-     */
-    public function testCanHaveExifData($result, $input)
-    {
-        $canHavExit = Image::canHaveExifData($input);
-        $this->assertSame($result, $canHavExit);
-    }
-    public function canHaveExitData(): array
-    {
-        return [
-            [true, dirname(__FILE__, 3).'\_data\assets\files\background.jpg'],
-            [true, dirname(__FILE__, 3).'\_data\assets\files\background.jpeg'],
-            [true, dirname(__FILE__, 3).'\_data\assets\files\random.tiff'],
-
-            [false, dirname(__FILE__, 3).'\_data\assets\files\random.tif'],
-            [false, dirname(__FILE__, 3).'\_data\assets\files\empty-file.text'],
-            [false, dirname(__FILE__, 3).'\_data\assets\files\google.png'],
-        ];
-    }
-
-    /**
-     * @dataProvider imageSizeData
-     * @param $result
-     * @param $input
-     */
-    public function testImageSize($result, $input)
-    {
-        $imageSize = Image::imageSize($input);
-        $this->assertSame($result, $imageSize);
-    }
-    public function imageSizeData(): array
-    {
-        return [
-            [[960, 640], dirname(__FILE__, 3).'\_data\assets\files\background.jpg'],
-            [[200, 200], dirname(__FILE__, 3).'\_data\assets\files\google.png'],
-            [[0, 0], dirname(__FILE__, 3).'\_data\assets\files\random.tiff'],
-            [[100.0, 100.0], dirname(__FILE__, 3).'\_data\assets\files\gng.svg'],
-        ];
-    }
-
-    /**
-     * @dataProvider parseSvgData
-     * @param $result
-     * @param $input
-     */
-    public function testParseSvgImageSize($result, $input)
-    {
-        $parsed = Image::parseSvgSize($input);
-        $this->assertSame($result, $parsed);
-    }
-    public function parseSvgData(): array
-    {
-        return [
-            [[140.0, 41.0], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg')],
-            [[100.0, 100.0], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\gng.svg')],
-
-            // This svg is same as craft-logo but we removed viewbox="" and height=""/width="" so it returns 100.0 100.0 instead of 140.0 41.0
-            [[100, 100], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\no-dimension-svg.svg')],
-            [[100, 100], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\google.png')],
-        ];
-    }
-
-    /**
-     * @dataProvider imageByStreamData
-     * @param $result
-     * @param $input
-     */
-    public function testImageByStream($result, $input)
-    {
-        $stream = Image::imageSizeByStream($input);
-        $this->assertSame($result, $stream);
-    }
-    public function imageByStreamData(): array
-    {
-        return [
-            [[400, 300], fopen(dirname(__FILE__, 3).'\_data\assets\files\example-gif.gif', 'rb')],
-            [[960, 640], fopen(dirname(__FILE__, 3).'\_data\assets\files\background.jpg', 'rb')],
-            [[200, 200], fopen(dirname(__FILE__, 3).'\_data\assets\files\google.png', 'rb')],
-            [false, fopen(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg', 'rb')],
-
-            // TODO: Generate a bunch of invalid image formats that generate exceptions.
-
         ];
     }
 }

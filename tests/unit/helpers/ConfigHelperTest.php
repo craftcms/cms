@@ -25,13 +25,22 @@ use yii\base\InvalidConfigException;
  */
 class ConfigHelperTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UnitTester
      */
     protected $tester;
 
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
     /**
-     * @dataProvider sizeInBytesData
+     * @dataProvider sizeInBytesDataProvider
      *
      * @param $result
      * @param $input
@@ -41,27 +50,8 @@ class ConfigHelperTest extends Unit
         $this->assertSame($result, ConfigHelper::sizeInBytes($input));
     }
 
-    public function sizeInBytesData(): array
-    {
-        return [
-            [5368709120, '5G'],
-            [5242880, '5M'],
-            [5120, '5K'],
-            [5120, 'ABCDEFHIJFLKNOPQRSTUVWXYZ5K'],
-            [5, '5ABCDEFHIJFKLKNOPQRSTUVWXYZ'],
-            [5120, '!@#$%^5K&*()'],
-            [4, '4'],
-            [5, 5],
-            [0, 'M5'],
-            [0, false],
-            [1, true],
-            [0, null],
-        ];
-    }
-
-
     /**
-     * @dataProvider durationInSecondsData
+     * @dataProvider durationInSecondsDataProvider
      * @param $result
      * @param $input
      * @throws InvalidConfigException
@@ -73,20 +63,9 @@ class ConfigHelperTest extends Unit
         $this->assertIsInt($durationResult);
     }
 
-    public function durationInSecondsData(): array
-    {
-        return [
-            [86400, 'P1D'],
-            [90000, 'P1DT1H'],
-            [2, 2],
-            [12312, 12312],
-            [1, 1],
-            [0, 0],
-            [0, false],
-            [0, '0'],
-        ];
-    }
-
+    /**
+     *
+     */
     public function testDurationSecondsException()
     {
         $this->tester->expectThrowable(
@@ -111,7 +90,7 @@ class ConfigHelperTest extends Unit
     }
 
     /**
-     * @dataProvider localizedValueData
+     * @dataProvider localizedValueDataProvider
      *
      * @param $result
      * @param $input
@@ -122,7 +101,13 @@ class ConfigHelperTest extends Unit
         $this->assertSame($result, ConfigHelper::localizedValue($input, $handle));
     }
 
-    public function localizedValueData(): array
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function localizedValueDataProvider(): array
     {
         $exampleModel = new ExampleModel();
         $exampleModel->exampleParam = 'imaparam';
@@ -144,6 +129,44 @@ class ConfigHelperTest extends Unit
             [true, true],
             [12345678901234567890,12345678901234567890 ],
 
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function sizeInBytesDataProvider(): array
+    {
+        return [
+            [5368709120, '5G'],
+            [5242880, '5M'],
+            [5120, '5K'],
+            [5120, 'ABCDEFHIJFLKNOPQRSTUVWXYZ5K'],
+            [5, '5ABCDEFHIJFKLKNOPQRSTUVWXYZ'],
+            [5120, '!@#$%^5K&*()'],
+            [4, '4'],
+            [5, 5],
+            [0, 'M5'],
+            [0, false],
+            [1, true],
+            [0, null],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function durationInSecondsDataProvider(): array
+    {
+        return [
+            [86400, 'P1D'],
+            [90000, 'P1DT1H'],
+            [2, 2],
+            [12312, 12312],
+            [1, 1],
+            [0, 0],
+            [0, false],
+            [0, '0'],
         ];
     }
 }

@@ -25,12 +25,16 @@ use yii\base\InvalidConfigException;
  */
 class AssetsHelperTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UnitTester
      */
     protected $tester;
 
-
+    // Public Methods
+    // =========================================================================
     public function _fixtures(): array
     {
         return [
@@ -40,11 +44,14 @@ class AssetsHelperTest extends Unit
         ];
     }
 
+    // Tests
+    // =========================================================================
+
     /**
      * @param $resultUrl
      * @param $params
      * @throws InvalidConfigException
-     * @dataProvider urlGenerationData
+     * @dataProvider urlGenerationDataProvider
      */
     public function testUrlGeneration($resultUrl, $params)
     {
@@ -60,14 +67,6 @@ class AssetsHelperTest extends Unit
         $this->assertSame($resultUrl, Assets::generateUrl($volume, $asset));
     }
 
-    public function urlGenerationData(): array
-    {
-        return [
-            ['https://cdn.test.craftcms.test/test-volume-1/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']]
-        ];
-    }
-
-
     /**
      * @throws Exception
      */
@@ -80,7 +79,7 @@ class AssetsHelperTest extends Unit
     }
 
     /**
-     * @dataProvider prepareAssetNameData
+     * @dataProvider prepareAssetNameDataProvider
      *
      * @param $result
      * @param $name
@@ -93,24 +92,18 @@ class AssetsHelperTest extends Unit
         $this->assertSame($result, $assetName);
     }
 
-    public function prepareAssetNameData(): array
-    {
-        return [
-            ['name.', 'name', true, false],
-            ['NAME.', 'NAME', true, false],
-
-            ['te-@st.notaf ile', 'te !@#$%^&*()st.notaf ile', true, false],
-            ['', '', false, false],
-            ['-.', '', true, false],
-        ];
-    }
-
+    /**
+     *
+     */
     public function testPrepareAssetNameAsciiRemove()
     {
         Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii = true;
         $this->assertSame('test.text', Assets::prepareAssetName('tes§t.text'));
     }
 
+    /**
+     *
+     */
     public function testConfigSeparator()
     {
         Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = '||';
@@ -124,7 +117,7 @@ class AssetsHelperTest extends Unit
     }
 
     /**
-     * @dataProvider filename2TitleData
+     * @dataProvider filename2TitleDataProvider
      *
      * @param $result
      * @param $input
@@ -135,17 +128,8 @@ class AssetsHelperTest extends Unit
         $this->assertSame($result, $file2Title);
     }
 
-    public function filename2TitleData(): array
-    {
-        return [
-            ['Filename', 'filename'],
-            ['File name is with chars', 'file.name_is-with chars'],
-            ['File name is with chars', 'file.name_is-with chars!@#$%^&*()'],
-        ];
-    }
-
     /**
-     * @dataProvider fileKindLabelData
+     * @dataProvider fileKindLabelDataProvider
      *
      * @param $result
      * @param $input
@@ -156,19 +140,8 @@ class AssetsHelperTest extends Unit
         $this->assertSame($result, $label);
     }
 
-    public function fileKindLabelData(): array
-    {
-        return [
-            ['Access', 'access'],
-            ['Audio', 'audio'],
-            ['Text', 'text'],
-            ['PHP', 'php'],
-            ['unknown', 'Raaa']
-        ];
-    }
-
     /**
-     * @dataProvider fileKindByExtensionData
+     * @dataProvider fileKindByExtensionDataProvider
      *
      * @param $result
      * @param $input
@@ -179,16 +152,8 @@ class AssetsHelperTest extends Unit
         $this->assertSame($result, $kind);
     }
 
-    public function fileKindByExtensionData(): array
-    {
-        return [
-            ['unknown', 'html'],
-            ['access', 'file.accdb'],
-        ];
-    }
-
     /**
-     * @dataProvider parseFileLocationData
+     * @dataProvider parseFileLocationDataProvider
      * @param $result
      * @param $input
      *
@@ -199,13 +164,10 @@ class AssetsHelperTest extends Unit
         $location = Assets::parseFileLocation($input);
         $this->assertSame($result, $location);
     }
-    public function parseFileLocationData(): array
-    {
-        return [
-            [['2', '.'], '{folder:2}.'],
-            [['2', '.!@#$%^&*()'], '{folder:2}.!@#$%^&*()']
-        ];
-    }
+
+    /**
+     *
+     */
     public function testParseFileLocationException()
     {
         $this->tester->expectThrowable(Exception::class, function (){
@@ -219,9 +181,88 @@ class AssetsHelperTest extends Unit
         });
     }
 
+    /**
+     *
+     */
     public function testMaxUploadSize()
     {
         Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1;
         $this->assertSame(1, Assets::getMaxUploadSize());
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function urlGenerationDataProvider(): array
+    {
+        return [
+            ['https://cdn.test.craftcms.test/test-volume-1/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']]
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function prepareAssetNameDataProvider(): array
+    {
+        return [
+            ['name.', 'name', true, false],
+            ['NAME.', 'NAME', true, false],
+
+            ['te-@st.notaf ile', 'te !@#$%^&*()st.notaf ile', true, false],
+            ['', '', false, false],
+            ['-.', '', true, false],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function filename2TitleDataProvider(): array
+    {
+        return [
+            ['Filename', 'filename'],
+            ['File name is with chars', 'file.name_is-with chars'],
+            ['File name is with chars', 'file.name_is-with chars!@#$%^&*()'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function fileKindLabelDataProvider(): array
+    {
+        return [
+            ['Access', 'access'],
+            ['Audio', 'audio'],
+            ['Text', 'text'],
+            ['PHP', 'php'],
+            ['unknown', 'Raaa']
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function parseFileLocationDataProvider(): array
+    {
+        return [
+            [['2', '.'], '{folder:2}.'],
+            [['2', '.!@#$%^&*()'], '{folder:2}.!@#$%^&*()']
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function fileKindByExtensionDataProvider(): array
+    {
+        return [
+            ['unknown', 'html'],
+            ['access', 'file.accdb'],
+        ];
     }
 }

@@ -26,16 +26,31 @@ use yii\base\Component;
  */
 class AppHelperTest extends TestCase
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UnitTester
      */
     protected $tester;
 
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
+    /**
+     *
+     */
     public function testEditions()
     {
         $this->assertEquals([Craft::Solo, Craft::Pro], App::editions());
     }
 
+    /**
+     *
+     */
     public function testEditionName()
     {
         $this->assertEquals('Solo', App::editionName(Craft::Solo));
@@ -43,7 +58,7 @@ class AppHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider validEditionsData
+     * @dataProvider validEditionsDataProviders
      * @param $result
      * @param $input
      */
@@ -54,26 +69,8 @@ class AppHelperTest extends TestCase
         $this->assertIsBool($isValid);
     }
 
-    public function validEditionsData(): array
-    {
-        return [
-            [true, Craft::Pro],
-            [true, Craft::Solo],
-            [true, '1'],
-            [true, 0],
-            [true, 1],
-            [true, true],
-            [false, null],
-            [false, false],
-            [false, 4],
-            [false, 2],
-            [false, 3],
-        ];
-    }
-
     /**
-     * @dataProvider versionListData
-     *
+     * @dataProvider versionListDataProvider
      * @param $result
      * @param $input
      */
@@ -84,23 +81,9 @@ class AppHelperTest extends TestCase
         $this->assertIsString($version);
     }
 
-
-    public function versionListData(): array
-    {
-        return [
-            ['version', 'version 21'],
-            ['v120.19.2', 'v120.19.2--beta'],
-            ['version', 'version'],
-            ['2\0\0', '2\0\0'],
-            ['2', '2+2+2'],
-            ['2', '2-0-0'],
-            ['~2', '~2'],
-            ['', ''],
-            ['\*v^2.0.0(beta)', '\*v^2.0.0(beta)'],
-
-        ];
-    }
-
+    /**
+     *
+     */
     public function testPhpConfigValueAsBool()
     {
         $displayErrorsValue = ini_get('display_errors');
@@ -118,7 +101,7 @@ class AppHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider classHumanizationData
+     * @dataProvider classHumanizationDataProvider
      * @param $result
      * @param $input
      */
@@ -131,16 +114,9 @@ class AppHelperTest extends TestCase
         $this->assertNotRegExp('/[A-Z]/', $humanizedClass);
     }
 
-    public function classHumanizationData(): array
-    {
-        return [
-            ['entries', Entries::class],
-            ['app helper test', self::class],
-            ['std class', stdClass::class],
-            ['iam not a class!@#$%^&*()1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
-        ];
-    }
-
+    /**
+     * @todo 3.1 added new functions to test.
+     */
     public function testMaxPowerCaptain(){
         $oldMemoryLimit = ini_get('memory_limit');
         $oldMaxExecution= ini_get('max_execution_time');
@@ -157,18 +133,19 @@ class AppHelperTest extends TestCase
 
         ini_set('memory_limit', $oldMemoryLimit);
         ini_set('max_execution_time', $oldMaxExecution);
-
-        // TODO: 3.1 added new funcs. Test this
-    }
-
-    public function testLicenseKey()
-    {
-        $this->assertSame(250, strlen(App::licenseKey()));
-        // TODO: More needed here to test with constant and invalid file path. See coverage report for more info.
     }
 
     /**
-     * @dataProvider configsData
+     * @todo More needed here to test with constant and invalid file path.
+     * See coverage report for more info.
+     */
+    public function testLicenseKey()
+    {
+        $this->assertSame(250, strlen(App::licenseKey()));
+    }
+
+    /**
+     * @dataProvider configsDataProvider
      * @param $method
      * @param $desiredConfig
      */
@@ -185,7 +162,62 @@ class AppHelperTest extends TestCase
         $this->assertContains(Component::class, class_parents($config['class']));
     }
 
-    public function configsData(): array
+    /**
+     * Mailer config now needs a mail settings
+     *
+     * @todo: See tests/unit/mail/MailerTest.php:46
+     */
+    public function testMailerConfigIndexes()
+    {
+        $mailSettings = new MailSettings(['transportType' => Sendmail::class]);
+        $result = App::mailerConfig($mailSettings);
+
+        $this->assertFalse($this->_areKeysMissing($result, ['class', 'messageClass', 'from', 'template', 'transport']));
+
+        // Make sure its a component
+        $this->assertContains(Component::class, class_parents($result['class']));
+        $this->assertTrue(class_exists($result['class']));
+    }
+
+    /**
+     *
+     */
+    public function testViewConfigIndexes()
+    {
+        $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', true);
+        $this->testConfigIndexes('viewConfig', ['class', 'registeredAssetBundles', 'registeredJsFiles']);
+
+        $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', false);
+        $this->testConfigIndexes('viewConfig', ['class']);
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function validEditionsDataProviders(): array
+    {
+        return [
+            [true, Craft::Pro],
+            [true, Craft::Solo],
+            [true, '1'],
+            [true, 0],
+            [true, 1],
+            [true, true],
+            [false, null],
+            [false, false],
+            [false, 4],
+            [false, 2],
+            [false, 3],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function configsDataProvider(): array
     {
         return [
             ['assetManagerConfig', ['class', 'basePath', 'baseUrl', 'fileMode', 'dirMode', 'appendTimestamp']],
@@ -200,30 +232,45 @@ class AppHelperTest extends TestCase
     }
 
     /**
-     * TODO: See tests/unit/mail/MailerTest.php:46
-     * Mailer config now needs a mail settings
+     * @return array
      */
-    public function testMailerConfigIndexes()
+    public function classHumanizationDataProvider(): array
     {
-        $mailSettings = new MailSettings(['transportType' => Sendmail::class]);
-        $result = App::mailerConfig($mailSettings);
-
-        $this->assertFalse($this->_areKeysMissing($result, ['class', 'messageClass', 'from', 'template', 'transport']));
-
-        // Make sure its a component
-        $this->assertContains(Component::class, class_parents($result['class']));
-        $this->assertTrue(class_exists($result['class']));
+        return [
+            ['entries', Entries::class],
+            ['app helper test', self::class],
+            ['std class', stdClass::class],
+            ['iam not a class!@#$%^&*()1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
+        ];
     }
 
-    public function testViewConfigIndexes()
+    /**
+     * @return array
+     */
+    public function versionListDataProvider(): array
     {
-        $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', true);
-        $this->testConfigIndexes('viewConfig', ['class', 'registeredAssetBundles', 'registeredJsFiles']);
+        return [
+            ['version', 'version 21'],
+            ['v120.19.2', 'v120.19.2--beta'],
+            ['version', 'version'],
+            ['2\0\0', '2\0\0'],
+            ['2', '2+2+2'],
+            ['2', '2-0-0'],
+            ['~2', '~2'],
+            ['', ''],
+            ['\*v^2.0.0(beta)', '\*v^2.0.0(beta)'],
 
-        $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', false);
-        $this->testConfigIndexes('viewConfig', ['class']);
+        ];
     }
 
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * @param array $configArray
+     * @param array $desiredSchemaArray
+     * @return bool
+     */
     private function _areKeysMissing(array $configArray, array $desiredSchemaArray) : bool
     {
         foreach ($desiredSchemaArray as $desiredSchemaItem) {

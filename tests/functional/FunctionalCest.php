@@ -7,6 +7,7 @@
 
 namespace tests\functional;
 
+use AcceptanceTester;
 use craft\elements\User;
 use FunctionalTester;
 
@@ -26,15 +27,15 @@ class FunctionalCest
     // =========================================================================
 
     /**
-     * @param FunctionalTester $I
+     * @param AcceptanceTester $I
      */
-    public function _before(\AcceptanceTester $I)
+    public function _before(AcceptanceTester $I)
     {
         $user = User::find()
             ->admin()
             ->one();
 
-        \Craft::$app->getUser()->setIdentity($user);
+        Craft::$app->getUser()->setIdentity($user);
     }
 
     /**

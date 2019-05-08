@@ -23,13 +23,22 @@ use UnitTester;
  */
 class ElementHelperTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UnitTester
      */
     protected $tester;
 
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
     /**
-     * @dataProvider createSlugData
+     * @dataProvider createSlugDataProvider
      *
      * @param $result
      * @param $input
@@ -42,18 +51,9 @@ class ElementHelperTest extends Unit
         $this->assertSame($result, ElementHelper::createSlug($input));
     }
 
-    public function createSlugData(): array
-    {
-        return [
-            ['word[separator-here]Word', 'wordWord'],
-            ['word[separator-here]word', 'word word'],
-            ['word', 'word'],
-            ['123456789', '123456789'],
-            ['abc...dfg', 'abc...dfg'],
-            ['abc...dfg', 'abc...(dfg)'],
-        ];
-    }
-
+    /**
+     *
+     */
     public function testLowerRemoveFromCreateSlug()
     {
         $general =  Craft::$app->getConfig()->getGeneral();
@@ -63,7 +63,7 @@ class ElementHelperTest extends Unit
     }
 
     /**
-     * @dataProvider doesuriHaveSlugTagData
+     * @dataProvider doesUriHaveSlugTagDataProvider
      * @param $result
      * @param $input
      */
@@ -73,21 +73,9 @@ class ElementHelperTest extends Unit
         $this->assertSame($result, $doesIt);
         $this->assertIsBool($doesIt);
     }
-    public function doesuriHaveSlugTagData(): array
-    {
-        return [
-            [false, ''],
-            [true, '{slug}'],
-            [true, 'entry/slug'],
-            [true, 'entry/{slug}'],
-            [false, 'entry/{notASlug}'],
-            [false, 'entry/{SLUG}'],
-            [false, 'entry/data'],
-        ];
-    }
 
     /**
-     * @dataProvider setUniqueUriData
+     * @dataProvider setUniqueUriDataProvider
      * @param $result
      * @param $config
      * @throws OperationAbortedException
@@ -101,23 +89,10 @@ class ElementHelperTest extends Unit
             $this->assertSame($res, $example->$key);
         }
     }
-    public function setUniqueUriData(): array
-    {
-        return [
-            [['uri' => null], ['uriFormat' => null]],
-            [['uri' => ''], ['uriFormat' => '']],
-            [['uri' => 'craft'], ['uriFormat' => '{slug}', 'slug' => 'craft']],
-            [['uri' => 'test'], ['uriFormat' => 'test/{slug}']],
-            [['uri' => 'test/test'], ['uriFormat' => 'test/{slug}', 'slug' => 'test']],
-            [['uri' => 'test/tes.!@#$%^&*()_t'], ['uriFormat' => 'test/{slug}', 'slug' => 'tes.!@#$%^&*()_t']],
 
-            // 254 chars.
-            [['uri' => 'test/asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssssssss'], ['uriFormat' => 'test/{slug}', 'slug' => 'asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssssssss']],
-
-            // TODO: Test the line 100.
-            // TODO: Test _isUniqueUri and setup fixtures that add data to elements_sites
-        ];
-    }
+    /**
+     *
+     */
     public function testMaxSlugIncrementExceptions()
     {
         Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = 0;
@@ -126,7 +101,11 @@ class ElementHelperTest extends Unit
             ElementHelper::setUniqueUri($el);
         });
     }
-    public function maxLength()
+
+    /**
+     *
+     */
+    public function testMaxLength()
     {
         // 256 length slug. Oh no we dont.
         $this->tester->expectThrowable(OperationAbortedException::class, function () {
@@ -138,6 +117,9 @@ class ElementHelperTest extends Unit
         });
     }
 
+    /**
+     *
+     */
     public function testSetNextOnPrevElement()
     {
         $editable = [
@@ -145,6 +127,7 @@ class ElementHelperTest extends Unit
             $two = new ExampleElement(['id' => '2']),
             $three = new ExampleElement(['id' => '3'])
         ];
+
         ElementHelper::setNextPrevOnElements($editable);
         $this->assertNull($one->getPrev());
 
@@ -153,5 +136,58 @@ class ElementHelperTest extends Unit
         $this->assertSame($two, $three->getPrev());
 
         $this->assertNull($three->getNext());
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function createSlugDataProvider(): array
+    {
+        return [
+            ['word[separator-here]Word', 'wordWord'],
+            ['word[separator-here]word', 'word word'],
+            ['word', 'word'],
+            ['123456789', '123456789'],
+            ['abc...dfg', 'abc...dfg'],
+            ['abc...dfg', 'abc...(dfg)'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function doesUriHaveSlugTagDataProvider(): array
+    {
+        return [
+            [false, ''],
+            [true, '{slug}'],
+            [true, 'entry/slug'],
+            [true, 'entry/{slug}'],
+            [false, 'entry/{notASlug}'],
+            [false, 'entry/{SLUG}'],
+            [false, 'entry/data'],
+        ];
+    }
+
+    /**
+     * @todo Test line 100. Test _isUniqueUri and setup fixtures that add data to elements_sites
+     * @return array
+     */
+    public function setUniqueUriDataProvider(): array
+    {
+        return [
+            [['uri' => null], ['uriFormat' => null]],
+            [['uri' => ''], ['uriFormat' => '']],
+            [['uri' => 'craft'], ['uriFormat' => '{slug}', 'slug' => 'craft']],
+            [['uri' => 'test'], ['uriFormat' => 'test/{slug}']],
+            [['uri' => 'test/test'], ['uriFormat' => 'test/{slug}', 'slug' => 'test']],
+            [['uri' => 'test/tes.!@#$%^&*()_t'], ['uriFormat' => 'test/{slug}', 'slug' => 'tes.!@#$%^&*()_t']],
+
+            // 254 chars.
+            [['uri' => 'test/asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssssssss'], ['uriFormat' => 'test/{slug}', 'slug' => 'asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssssssss']],
+        ];
     }
 }
