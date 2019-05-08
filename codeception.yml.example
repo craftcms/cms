@@ -29,7 +29,7 @@ modules:
             configFile: 'tests/_craft/config/test.php'
             entryUrl: 'https://test.craftcms.dev/'
             entryScript: 'index.php'
-            projectConfig: 'tests/_data/project.yaml'
+            projectConfig: {file: 'file', once: true}
             modules: [{'class': 'modules\base\ExampleModule', 'handle': 'example-module'}]
             migrations: [{'class': 'craft\migrations\ExampleMigration', 'params': {tableName: 'exampletable'}}]
             plugins: [{'class': 'craftcms\base\ExamplePlugin', 'handle': 'example-plugin'}]
