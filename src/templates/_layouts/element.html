@@ -19,8 +19,9 @@
 
 {% extends '_layouts/cp' %}
 
+{% set source = element.draftId or element.revisionId ? element.source : element %}
 {% set previewContexts = previewContexts ?? [] %}
-{% if element.uri %}
+{% if source.uri %}
     {% set previewContexts = [{
         label: 'Primary {type} page'|t('app', { type: element.displayName()|lower }),
         url: element.uri
