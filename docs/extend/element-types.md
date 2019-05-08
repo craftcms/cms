@@ -509,7 +509,7 @@ protected static function defineTableAttributes(): array
 ```
 
 ::: tip
-The first attribute you list here is a special case. It defines the header for the first column in the table view, which is the only one admins can’t remove. Its values will be the element string representations (whatever their `__toString()` methods return).
+The first attribute you list here is a special case. It defines the header for the first column in the table view, which is the only one admins can’t remove. Its values will come from your elements’ <api:craft\base\ElementInterface::getName()> method.
 :::
 
 If it’s a big list, you can also limit which columns should be visible by default for new [sources](#sources) by adding a protected `defineDefaultTableAttributes()` method to your element class:

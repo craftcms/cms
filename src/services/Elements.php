@@ -1542,6 +1542,10 @@ class Elements extends Component
                     $sourceElementType = $elementTypesByPath[$sourcePath];
                     $map = $sourceElementType::eagerLoadingMap($elementsByPath[$sourcePath], $segment);
 
+                    if ($map === null) {
+                        break;
+                    }
+
                     if ($map && !empty($map['map'])) {
                         // Remember the element type in case there are more segments after this
                         $elementTypesByPath[$targetPath] = $map['elementType'];

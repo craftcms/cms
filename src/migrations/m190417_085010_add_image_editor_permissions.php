@@ -54,11 +54,15 @@ class m190417_085010_add_image_editor_permissions extends Migration
                 $newPermissions = [];
                 foreach ($groupUids as $groupUid) {
                     $permissions = $projectConfig->get('users.groups.' . $groupUid . '.permissions');
-                    foreach ($volumeUids as $volumeUid) {
-                        if (in_array('saveassetinvolume:' . $volumeUid, $permissions, true) &&
-                            in_array('deletefilesandfoldersinvolume:' . $volumeUid, $permissions, true)) {
-                            $permissionName = 'editimagesinvolume:' . $volumeUid;
-                            $newPermissions[$groupUid][] = $permissionName;
+                    
+                    // If user group permissions are defined
+                    if ($permissions !== null) {
+                        foreach ($volumeUids as $volumeUid) {
+                            if (in_array('saveassetinvolume:' . $volumeUid, $permissions, true) &&
+                                in_array('deletefilesandfoldersinvolume:' . $volumeUid, $permissions, true)) {
+                                $permissionName = 'editimagesinvolume:' . $volumeUid;
+                                $newPermissions[$groupUid][] = $permissionName;
+                            }
                         }
                     }
                 }
