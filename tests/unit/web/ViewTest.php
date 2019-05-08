@@ -4,10 +4,11 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit\web;
 
-
 use Codeception\Stub;
+use Craft;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\Json;
 use craft\test\mockclasses\arrayable\ExampleArrayble;
@@ -15,6 +16,11 @@ use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
 use craftunit\fixtures\SitesFixture;
+use Throwable;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
+use UnitTester;
 use yii\base\Event;
 use yii\base\Exception;
 
@@ -23,11 +29,11 @@ use yii\base\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class ViewTest extends TestCase
 {
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'sites' => [
@@ -37,7 +43,7 @@ class ViewTest extends TestCase
     }
 
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -50,7 +56,7 @@ class ViewTest extends TestCase
     {
         parent::_before();
 
-        $this->view = \Craft::createObject(View::class);
+        $this->view = Craft::createObject(View::class);
 
         // By default we want to be in site mode.
         $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
@@ -67,7 +73,7 @@ class ViewTest extends TestCase
         $this->assertSame($result, $this->view->normalizeObjectTemplate($input));
     }
 
-    public function normalizeObjectTemplateData()
+    public function normalizeObjectTemplateData(): array
     {
         return [
             ['{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}', '{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}'],
@@ -86,10 +92,10 @@ class ViewTest extends TestCase
     public function testDoesTemplateExistWithCustomSite()
     {
         // Ensure that the current site is the one with the testSite3 handle
-        \Craft::$app->getSites()->setCurrentSite(\Craft::$app->getSites()->getSiteByHandle('testSite3'));
+        Craft::$app->getSites()->setCurrentSite(Craft::$app->getSites()->getSiteByHandle('testSite3'));
 
         $this->assertSame(
-            \Craft::getAlias('@craftunittemplates/testSite3/craft.twig'),
+            Craft::getAlias('@craftunittemplates/testSite3/craft.twig'),
             $this->view->resolveTemplate('craft')
         );
     }
@@ -97,6 +103,8 @@ class ViewTest extends TestCase
     /**
      * @param $result
      * @param $templatePath
+     * @param null $templateMode
+     * @throws Exception
      * @dataProvider doesTemplateExistData
      */
     public function testDoesTemplateExistsInSite($result, $templatePath, $templateMode = null)
@@ -110,11 +118,11 @@ class ViewTest extends TestCase
         if ($result === false) {
             $this->assertFalse($doesIt);
         } else {
-            $this->assertSame(\Craft::getAlias($result), $doesIt);
+            $this->assertSame(Craft::getAlias($result), $doesIt);
         }
     }
 
-    public function doesTemplateExistData()
+    public function doesTemplateExistData(): array
     {
         return [
             ['@craftunittemplates/index.html', ''],
@@ -133,10 +141,13 @@ class ViewTest extends TestCase
     }
 
     /**
-     * @see          testDoesTemplateExistsInSite
      * @param $result
-     * @param $input
+     * @param $basePath
+     * @param $name
+     * @param null $templateExtensions
+     * @param null $viewTemplateNameExtensions
      * @dataProvider privateResolveTemplateData
+     * @see          testDoesTemplateExistsInSite
      */
     public function testPrivateResolveTemplate($result, $basePath, $name, $templateExtensions = null, $viewTemplateNameExtensions = null)
     {
@@ -151,11 +162,11 @@ class ViewTest extends TestCase
         }
 
         // Lets test stuff.
-        $resolved = $this->resolveTemplate(\Craft::getAlias($basePath), $name);
-        $this->assertSame(\Craft::getAlias($result), $resolved);
+        $resolved = $this->_resolveTemplate(Craft::getAlias($basePath), $name);
+        $this->assertSame(Craft::getAlias($result), $resolved);
     }
 
-    public function privateResolveTemplateData()
+    public function privateResolveTemplateData(): array
     {
         return [
             ['@craftunittemplates/template.twig', '@craftunittemplates', 'template'],
@@ -178,19 +189,20 @@ class ViewTest extends TestCase
     /**
      * Test that Craft::$app->getView()->renderTemplates(); Seems to work correctly with twig. Doesnt impact global props
      * and respects passed in variables.
-     * @param $result
-     * @param $template
-     * @param $variables
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
     public function testRenderTemplate()
     {
         // Assert that the _renderingTemplate prop goes in and comes out as null.
-        $this->assertSame(null, $this->getInaccessibleProperty($this->view, '_renderingTemplate'));
+        $this->assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
 
         $result = $this->view->renderTemplate('withvar', ['name' => 'Giel Tettelaar']);
 
-        $this->assertSame($result, 'Hello iam Giel Tettelaar');
-        $this->assertSame(null, $this->getInaccessibleProperty($this->view, '_renderingTemplate'));
+        $this->assertSame($result, 'Hello I am Giel Tettelaar');
+        $this->assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
 
         // Test that templates can work without variables.
         $result = $this->view->renderTemplate('novar');
@@ -215,7 +227,9 @@ class ViewTest extends TestCase
      * @param $result
      * @param $template
      * @param $object
-     * @param $variables
+     * @param array $variables
+     * @throws Exception
+     * @throws Throwable
      * @dataProvider renderObjectTemplateData
      */
     public function testRenderObjectTemplate($result, $template, $object, array $variables = [])
@@ -224,7 +238,7 @@ class ViewTest extends TestCase
         $this->assertSame($result, $res);
     }
 
-    public function renderObjectTemplateData()
+    public function renderObjectTemplateData(): array
     {
         $model = new ExampleModel();
         $model->exampleParam = 'Example Param';
@@ -252,13 +266,13 @@ class ViewTest extends TestCase
 
     public function testSetSiteTemplateMode()
     {
-        $genConf = \Craft::$app->getConfig()->getGeneral();
+        $genConf = Craft::$app->getConfig()->getGeneral();
         $genConf->defaultTemplateExtensions = ['doStuff', 'random'];
         $genConf->indexTemplateFilenames = ['template', 'raaaa'];
 
         $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
         $this->assertSame(
-            \Craft::getAlias('@crafttestsfolder/templates'),
+            Craft::getAlias('@crafttestsfolder/templates'),
             $this->view->templatesPath
         );
         $this->assertSame(
@@ -275,7 +289,7 @@ class ViewTest extends TestCase
     {
         $this->view->setTemplateMode(View::TEMPLATE_MODE_CP);
         $this->assertSame(
-            \Craft::$app->getPath()->getCpTemplatesPath(),
+            Craft::$app->getPath()->getCpTemplatesPath(),
             $this->view->templatesPath
         );
 
@@ -298,16 +312,16 @@ class ViewTest extends TestCase
 
     public function testRegisterTranslations()
     {
-        \Craft::$app->language = 'nl';
+        Craft::$app->language = 'nl';
 
         // Basic test that register translations gets rendered
-        $js = $this->generateTranslationJs('app', ["1 month" => "1 maand", "1 minute" => "1 minuut"]);
-        $this->assertRegisterJsInputValues($js, View::POS_BEGIN);
+        $js = $this->_generateTranslationJs('app', ['1 month' => '1 maand', '1 minute' => '1 minuut']);
+        $this->_assertRegisterJsInputValues($js, View::POS_BEGIN);
         $this->view->registerTranslations('app', ['1 month', '1 minute']);
 
         // Non existing translations get ignored
-        $js = $this->generateTranslationJs('app', ["1 month" => "1 maand"]);
-        $this->assertRegisterJsInputValues($js, View::POS_BEGIN);
+        $js = $this->_generateTranslationJs('app', ['1 month' => '1 maand']);
+        $this->_assertRegisterJsInputValues($js, View::POS_BEGIN);
         $this->view->registerTranslations('app', ['1 month', 'not an existing translation23131321313']);
     }
 
@@ -345,7 +359,7 @@ class ViewTest extends TestCase
         $this->assertSame($result, $namespaced);
     }
 
-    public function namespaceInputsData()
+    public function namespaceInputsData(): array
     {
         return [
             ['', ''],
@@ -381,7 +395,7 @@ class ViewTest extends TestCase
         $namespaced = $this->view->namespaceInputName($string, $namespace);
         $this->assertSame($result, $namespaced);
     }
-    public function namespaceInputNameData()
+    public function namespaceInputNameData(): array
     {
         return [
             ['', ''],
@@ -408,7 +422,7 @@ class ViewTest extends TestCase
         $namespaced = $this->view->namespaceInputId($string, $namespace);
         $this->assertSame($result, $namespaced);
     }
-    public function namespaceInputIdData()
+    public function namespaceInputIdData(): array
     {
         return [
             ['', ''],
@@ -435,10 +449,10 @@ class ViewTest extends TestCase
             $event->roots = $rootsToBeAdded;
         });
 
-        $roots = $this->getTemplateRoots($which);
+        $roots = $this->_getTemplateRoots($which);
         $this->assertSame($result, $roots);
     }
-    public function getTemplateRootsData()
+    public function getTemplateRootsData(): array
     {
         return [
             [['random-roots' => [null]], 'random-roots', ['random-roots' => null]],
@@ -452,10 +466,10 @@ class ViewTest extends TestCase
     public function testGetTemplateRootsEvents()
     {
         $this->tester->expectEvent(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function () {
-            $this->getTemplateRoots('cp');
+            $this->_getTemplateRoots('cp');
         });
         $this->tester->expectEvent(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function () {
-            $this->getTemplateRoots('doesnt-matter-what-this-is');
+            $this->_getTemplateRoots('doesnt-matter-what-this-is');
         });
     }
 
@@ -472,14 +486,14 @@ class ViewTest extends TestCase
         $resultString .= '}';
 
         // Set a stub and ensure that _registeredJs is correctly formatting js but dont bother registering it....
-        $this->assertRegisterJsInputValues($resultString, View::POS_HEAD);
+        $this->_assertRegisterJsInputValues($resultString, View::POS_HEAD);
 
-        $this->registeredJs('randomprop', ['name' => 'value']);
+        $this->_registeredJs('randomprop', ['name' => 'value']);
     }
 
     // Helpers
     // =========================================================================
-    private function generateTranslationJs($category, array $messages)
+    private function _generateTranslationJs($category, array $messages): string
     {
         $category = Json::encode($category);
         $js = '';
@@ -497,7 +511,7 @@ if (typeof Craft.translations[{$category}] === 'undefined') {
 JS;
     }
 
-    private function assertRegisterJsInputValues($desiredJs, $desiredPosition)
+    private function _assertRegisterJsInputValues($desiredJs, $desiredPosition)
     {
         $this->view = Stub::construct(
             View::class,
@@ -509,15 +523,15 @@ JS;
         );
     }
 
-    private function registeredJs($property, $names)
+    private function _registeredJs($property, $names)
     {
         return $this->invokeMethod($this->view, '_registeredJs', [$property, $names]);
     }
-    private function getTemplateRoots($which)
+    private function _getTemplateRoots($which)
     {
         return $this->invokeMethod($this->view, '_getTemplateRoots', [$which]);
     }
-    private function resolveTemplate($basePath, $name)
+    private function _resolveTemplate($basePath, $name)
     {
         return $this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name]);
     }

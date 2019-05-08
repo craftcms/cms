@@ -80,7 +80,7 @@ class IndexAssetsController extends Controller
         $volume = Craft::$app->getVolumes()->getVolumeByHandle($handle);
 
         if (!$volume) {
-            $this->stdout('No volume exists with the handle “' . $handle . '”.', Console::FG_RED);
+            $this->stderr("No volume exists with the handle “{$handle}”."  . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 

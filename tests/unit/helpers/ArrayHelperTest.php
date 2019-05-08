@@ -4,26 +4,32 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit\helpers;
 
+use Codeception\Test\Unit;
 use \craft\helpers\ArrayHelper;
+use stdClass;
+use UnitTester;
 
 /**
  * Unit tests for the Array Helper class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
-class ArrayHelperTest extends \Codeception\Test\Unit
+class ArrayHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
     /**
      * @dataProvider toArrayData
+     * @param $result
+     * @param $input
      */
     public function testToArray($result, $input)
     {
@@ -35,7 +41,7 @@ class ArrayHelperTest extends \Codeception\Test\Unit
      * TODO: Example with a \stdClass?
      * @return array
      */
-    public function toArrayData()
+    public function toArrayData(): array
     {
         return[
             [[], null], [[1,2,3], [1,2,3]]
@@ -44,6 +50,10 @@ class ArrayHelperTest extends \Codeception\Test\Unit
 
     /**
      * @dataProvider prependOrAppendData
+     * @param $result
+     * @param $inputArray
+     * @param $appendable
+     * @param $preOrAppend
      */
     public function testPrependOrAppend($result, $inputArray, $appendable, $preOrAppend)
     {
@@ -51,7 +61,7 @@ class ArrayHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $inputArray);
     }
 
-    public function prependOrAppendData()
+    public function prependOrAppendData(): array
     {
         return [
             [[1, 2, 3, 4],  [1, 2, 3], 4, false],
@@ -89,7 +99,7 @@ class ArrayHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $inputArray);
     }
 
-    public function renameDataProvider()
+    public function renameDataProvider(): array
     {
         return [
             [['fizz' => 'plop', 'foo2' => 'bar'], ['foo' => 'bar', 'fizz' => 'plop'], 'foo', 'foo2'],
@@ -110,9 +120,9 @@ class ArrayHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $firstVal);
     }
 
-    public function firstValueData()
+    public function firstValueData(): array
     {
-        $std = new \stdClass();
+        $std = new stdClass();
         $std->a = '22';
         return [
             ['test', ['test']],
@@ -133,7 +143,7 @@ class ArrayHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $without);
     }
 
-    public function withoutData()
+    public function withoutData(): array
     {
         return [
             [[], ['key' => 'value'], 'key'],
@@ -147,7 +157,7 @@ class ArrayHelperTest extends \Codeception\Test\Unit
      * @dataProvider withoutValueData
      * @param $result
      * @param $array
-     * @param $key
+     * @param $value
      */
     public function testWithoutValue($result, $array, $value)
     {
@@ -155,7 +165,7 @@ class ArrayHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $without);
     }
 
-    public function withoutValueData()
+    public function withoutValueData(): array
     {
         return [
             [[], ['key' => 'value'], 'value'],
@@ -242,7 +252,7 @@ class ArrayHelperTest extends \Codeception\Test\Unit
                 ['name' => 'john'],
                 ['name' => 'michael'],
             ],
-            ['name'],
+            'name',
             'john',
             true
         ));
@@ -254,13 +264,13 @@ class ArrayHelperTest extends \Codeception\Test\Unit
                     ['name' => 'john'],
                     ['name' => 'michael'],
                 ],
-                function ($array, $default){
+                function ($array){
                     return $array['name'];
                 },
                 'john',
                 true
             ));
-        // Make sure that filter by value hasnt made any changes to the array content e.t.c.
+        // Make sure that filter by value hasn't made any changes to the array content, etc.
         $mockedUp = [
             [
                 'name' => '',

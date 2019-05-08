@@ -444,6 +444,7 @@ class Application extends \yii\web\Application
      *
      * @param Request $request
      * @throws BadRequestHttpException
+     * @throws NotFoundHttpException
      */
     private function _processResourceRequest(Request $request)
     {
@@ -478,6 +479,9 @@ class Application extends \yii\web\Application
             throw new BadRequestHttpException('Invalid resource path: ' . $filePath);
         }
         $publishedPath = $this->getAssetManager()->getPublishedPath(Craft::getAlias($sourcePath), true) . DIRECTORY_SEPARATOR . $filePath;
+        if (!file_exists($publishedPath)) {
+            throw new NotFoundHttpException($filePath . ' does not exist.');
+        }
         $this->getResponse()
             ->sendFile($publishedPath, null, ['inline' => true]);
         $this->end();

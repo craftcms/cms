@@ -8,7 +8,7 @@ This isn’t an exhaustive list of things that you can’t do. Rather, take it i
 
 This code of conduct applies to all spaces used by the Craft community for communication. This includes Craft Slack, Craft CMS Stack Exchange, GitHub, Twitter, Facebook, meetups, conferences, and any other relevant forums. Violations of this code outside of any spaces managed by the Craft team will still affect a person’s ability to participate within them.
 
-If you believe someone is violating the code of conduct, we ask that you report it by emailing [support@craftcms.com](mailto:support@craftcms.com). We take all reports seriously, and your identity will remain confidential.
+If you believe someone is violating the code of conduct, we ask that you report it by contacting us from [craftcms.com/contact](https://craftcms.com/contact). We take all reports seriously, and your identity will remain confidential.
 
 - **Be friendly and patient.**
 - **Be welcoming.** We strive to be a community that welcomes and supports people of all backgrounds and identities. This includes, but is not limited to members of any race, ethnicity, culture, national origin, colour, immigration status, social and economic class, educational level, sex, sexual orientation, gender identity and expression, age, size, family status, political belief, religion, and mental and physical ability.

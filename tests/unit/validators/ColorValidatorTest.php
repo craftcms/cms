@@ -4,18 +4,20 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.github.io/license/
  */
+
 namespace craftunit\validators;
 
 use Codeception\Test\Unit;
 use craft\validators\ColorValidator;
 use craft\test\mockclasses\models\ExampleModel;
+use ErrorException;
 
 /**
  * Class ColorValidatorTest.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class ColorValidatorTest extends Unit
 {
@@ -57,7 +59,7 @@ class ColorValidatorTest extends Unit
         $this->assertTrue($result);
     }
 
-    public function colorNormalizationData()
+    public function colorNormalizationData(): array
     {
         return [
             ['#ffc10e', 'ffc10e'],
@@ -76,16 +78,15 @@ class ColorValidatorTest extends Unit
      */
     public function testColorNormaliationException()
     {
-        $this->tester->expectException(\ErrorException::class, function (){
+        $this->tester->expectException(ErrorException::class, function (){
             ColorValidator::normalizeColor('');
         });
     }
 
     /**
      * @dataProvider colorValidatorAttributes
-     * @param $result
      * @param $input
-     * @param $attributeName
+     * @param bool $mustValidate
      */
     public function testAttributeValidation($input, bool $mustValidate)
     {
@@ -103,7 +104,7 @@ class ColorValidatorTest extends Unit
         $this->model->exampleParam = null;
     }
 
-    public function colorValidatorAttributes()
+    public function colorValidatorAttributes(): array
     {
         return [
             ['#ffc', true],

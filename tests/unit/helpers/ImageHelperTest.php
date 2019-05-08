@@ -5,12 +5,11 @@
  * @license   https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\helpers;
-
 
 use Codeception\Test\Unit;
 use craft\helpers\Image;
+use UnitTester;
 
 /**
  * Class ImageHelperTest.
@@ -18,12 +17,12 @@ use craft\helpers\Image;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class ImageHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -35,7 +34,7 @@ class ImageHelperTest extends Unit
     }
 
     /**
-     * @dataProvider calculateMissingImensionData
+     * @dataProvider calculateMissingDimensionData
      * @param $result
      * @param $targetWidth
      * @param $targetHeight
@@ -47,7 +46,7 @@ class ImageHelperTest extends Unit
         $calculate = Image::calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
         $this->assertSame($result, $calculate);
     }
-    public function calculateMissingImensionData()
+    public function calculateMissingDimensionData(): array
     {
         return [
             [[1, 1], 1, 1, 1, 1],
@@ -71,7 +70,7 @@ class ImageHelperTest extends Unit
         $canManipulate = Image::canManipulateAsImage($input);
         $this->assertSame($result, $canManipulate);
     }
-    public function canManipulateAsImageData()
+    public function canManipulateAsImageData(): array
     {
         return [
             [true, 'jpg'],
@@ -104,7 +103,7 @@ class ImageHelperTest extends Unit
         $imageInfo = Image::pngImageInfo($input);
         $this->assertSame($result, $imageInfo);
     }
-    public function pngImageInfoData()
+    public function pngImageInfoData(): array
     {
         return [
             [[
@@ -136,7 +135,7 @@ class ImageHelperTest extends Unit
         $canHavExit = Image::canHaveExifData($input);
         $this->assertSame($result, $canHavExit);
     }
-    public function canHaveExitData()
+    public function canHaveExitData(): array
     {
         return [
             [true, dirname(__FILE__, 3).'\_data\assets\files\background.jpg'],
@@ -159,7 +158,7 @@ class ImageHelperTest extends Unit
         $imageSize = Image::imageSize($input);
         $this->assertSame($result, $imageSize);
     }
-    public function imageSizeData()
+    public function imageSizeData(): array
     {
         return [
             [[960, 640], dirname(__FILE__, 3).'\_data\assets\files\background.jpg'],
@@ -179,7 +178,7 @@ class ImageHelperTest extends Unit
         $parsed = Image::parseSvgSize($input);
         $this->assertSame($result, $parsed);
     }
-    public function parseSvgData()
+    public function parseSvgData(): array
     {
         return [
             [[140.0, 41.0], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg')],
@@ -201,13 +200,13 @@ class ImageHelperTest extends Unit
         $stream = Image::imageSizeByStream($input);
         $this->assertSame($result, $stream);
     }
-    public function imageByStreamData()
+    public function imageByStreamData(): array
     {
         return [
-            [[400, 300], fopen(dirname(__FILE__, 3).'\_data\assets\files\example-gif.gif', 'r')],
-            [[960, 640], fopen(dirname(__FILE__, 3).'\_data\assets\files\background.jpg', 'r')],
-            [[200, 200], fopen(dirname(__FILE__, 3).'\_data\assets\files\google.png', 'r')],
-            [false, fopen(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg', 'r')],
+            [[400, 300], fopen(dirname(__FILE__, 3).'\_data\assets\files\example-gif.gif', 'rb')],
+            [[960, 640], fopen(dirname(__FILE__, 3).'\_data\assets\files\background.jpg', 'rb')],
+            [[200, 200], fopen(dirname(__FILE__, 3).'\_data\assets\files\google.png', 'rb')],
+            [false, fopen(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg', 'rb')],
 
             // TODO: Generate a bunch of invalid image formats that generate exceptions.
 

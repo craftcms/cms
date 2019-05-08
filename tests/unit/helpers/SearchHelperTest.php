@@ -9,18 +9,19 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Search;
+use UnitTester;
 
 /**
  * Unit tests for the Search Helper class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class SearchHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -37,7 +38,7 @@ class SearchHelperTest extends Unit
         $keyword = Search::normalizeKeywords($keyword, $ignore, $processMap, $language);
         $this->assertSame($result, $keyword);
     }
-    public function keywordNormalizationData()
+    public function keywordNormalizationData(): array
     {
         return [
             ['test', 'test'],
@@ -55,7 +56,7 @@ class SearchHelperTest extends Unit
             ['', 'test', ['test']],
             ['🎧𢵌😀😘⛄', '🎧𢵌😀😘⛄'],
 
-            // Ignorance isnt mb-4 safe
+            // Ignorance isn't mb-4 safe
             ['🎧𢵌😀😘⛄', '🎧𢵌😀😘⛄', ['😀']]
 
         ];

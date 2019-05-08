@@ -1,27 +1,30 @@
 <?php
 /**
- * @copyright Copyright (c) Global Network Group
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\validators;
-
 
 use Codeception\Test\Unit;
 use craft\helpers\ArrayHelper;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\validators\LanguageValidator;
-use craftunit\fixtures\SitesFixture;
+use UnitTester;
+use yii\base\NotSupportedException;
 
 /**
  * Class LanguageValidatorTest
  *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.1
  */
 class LanguageValidatorTest extends Unit
 {
     /**
-     * @var \UnitTester $tester
+     * @var UnitTester $tester
      */
     protected $tester;
 
@@ -37,7 +40,10 @@ class LanguageValidatorTest extends Unit
     }
 
     /**
-     * @throws \yii\base\NotSupportedException
+     * @param $result
+     * @param $input
+     * @param bool $onlySiteLangs
+     * @throws NotSupportedException
      * @dataProvider validateValueData
      */
     public function testValidateValue($result, $input, $onlySiteLangs = true)
@@ -48,7 +54,7 @@ class LanguageValidatorTest extends Unit
 
         $this->assertSame($result, $validated);
     }
-    public function validateValueData()
+    public function validateValueData(): array
     {
         return [
             [['{value} is not a valid site language.', []], 'nolang'],
@@ -61,8 +67,9 @@ class LanguageValidatorTest extends Unit
     }
 
     /**
-     * @param $result
+     * @param $mustValidate
      * @param $input
+     * @param bool $onlySiteLocalIds
      * @dataProvider validateAttributeData
      */
     public function testValidateAtrribute($mustValidate, $input, $onlySiteLocalIds = true)
@@ -72,7 +79,7 @@ class LanguageValidatorTest extends Unit
         $model = new ExampleModel(['exampleParam' => $input]);
 
         $this->languageValidator->onlySiteLanguages = $onlySiteLocalIds;
-        $langVal = $this->languageValidator->validateAttribute($model, 'exampleParam');
+        $this->languageValidator->validateAttribute($model, 'exampleParam');
 
         if (!$mustValidate) {
             $this->assertArrayHasKey('exampleParam', $model->getErrors());
@@ -80,12 +87,12 @@ class LanguageValidatorTest extends Unit
             $this->assertSame([], $model->getErrors());
         }
     }
-    public function validateAttributeData()
+    public function validateAttributeData(): array
     {
         $returnArray = [];
         foreach ($this->validateValueData() as $item) {
             $mustValidate = true;
-            if (isset($item[0]) && $item[0]) {
+            if (!empty($item[0])) {
                 $mustValidate = false;
             }
 

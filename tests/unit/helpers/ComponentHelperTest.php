@@ -4,9 +4,10 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit\helpers;
 
-
+use Closure;
 use Codeception\Test\Unit;
 use craft\base\ComponentInterface;
 use craft\errors\MissingComponentException;
@@ -14,6 +15,8 @@ use craft\helpers\Component;
 use craft\test\mockclasses\components\ComponentExample;
 use craft\test\mockclasses\components\DependencyHeavyComponent;
 use craft\test\mockclasses\components\ExtendedComponentExample;
+use Exception;
+use UnitTester;
 use yii\base\InvalidConfigException;
 
 /**
@@ -21,23 +24,23 @@ use yii\base\InvalidConfigException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class ComponentHelperTest extends Unit
 {
 
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
     /**
-     * Tests wheter the $callback will evaluate to an instance of the componentInterface.
+     * Tests whether the $callback will evaluate to an instance of the componentInterface.
      *
      * @dataProvider successfulComponentCreationData
      * @param $callback
      */
-    public function testSuccessfulComponentCreation(\Closure $callback)
+    public function testSuccessfulComponentCreation(Closure $callback)
     {
         $this->assertInstanceOf(
             ComponentInterface::class,
@@ -45,7 +48,7 @@ class ComponentHelperTest extends Unit
         );
     }
 
-    public function successfulComponentCreationData()
+    public function successfulComponentCreationData(): array
     {
         return [
             'string-to-class-conversion' => [
@@ -53,14 +56,14 @@ class ComponentHelperTest extends Unit
                     return Component::createComponent(ComponentExample::class);
                 },
             ],
-          'succesfull-basic' => [
+          'successful-basic' => [
               function(){
                   return Component::createComponent([
                       'type' => ComponentExample::class,
                   ]);
               },
           ],
-            'dependancy-heavy' => [
+            'dependency-heavy' => [
                 function() {
                     return Component::createComponent([
                         'type' => DependencyHeavyComponent::class,
@@ -77,8 +80,9 @@ class ComponentHelperTest extends Unit
 
     /**
      * @dataProvider failingComponentCreationData
+     * @param array $settings
      * @param $desiredParent
-     * @param string   $requiredException
+     * @param string $requiredException
      */
     public function testFailedComponentExceptions(array $settings, $desiredParent, string $requiredException)
     {
@@ -96,7 +100,7 @@ class ComponentHelperTest extends Unit
      *
      * @return array
      */
-    public function failingComponentCreationData()
+    public function failingComponentCreationData(): array
     {
         return [
             'invalid-required-parent-class' => [
@@ -123,17 +127,17 @@ class ComponentHelperTest extends Unit
                 null,
                 InvalidConfigException::class,
             ],
-            'incorrect-dependancies' => [
+            'incorrect-dependencies' => [
                 [
                     'type' => DependencyHeavyComponent::class,
-                    'notavaliddependancy' => 'value1',
-                    'notavaliddependancy2' => 'value2',
+                    'notavaliddependency' => 'value1',
+                    'notavaliddependency2' => 'value2',
                     'settings' => [
-                        'notavaliddependancy3' => 'value'
+                        'notavaliddependency3' => 'value'
                     ]
                 ],
                 null,
-                \Exception::class,
+                Exception::class,
             ]
 
         ];
@@ -146,15 +150,15 @@ class ComponentHelperTest extends Unit
 
     /**
      * @dataProvider settingsArraysData
-     * @param $mergable
+     * @param $mergeable
      * @param $result
      */
-    public function testSettingsMerging($mergable, $result)
+    public function testSettingsMerging($mergeable, $result)
     {
-        $this->assertSame($result, Component::mergeSettings($mergable));
+        $this->assertSame($result, Component::mergeSettings($mergeable));
     }
 
-    public function settingsArraysData()
+    public function settingsArraysData(): array
     {
         $mergedComponentArray = [
             'name' => 'Component',

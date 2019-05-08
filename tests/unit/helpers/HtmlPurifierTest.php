@@ -5,12 +5,11 @@
  * @license   https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\helpers;
-
 
 use Codeception\Test\Unit;
 use craft\helpers\HtmlPurifier;
+use HTMLPurifier_Config;
 
 /**
  * Class HtmlPurifierTest.
@@ -18,7 +17,7 @@ use craft\helpers\HtmlPurifier;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class HtmlPurifierTest extends Unit
 {
@@ -32,13 +31,13 @@ class HtmlPurifierTest extends Unit
         $cleaned = HtmlPurifier::cleanUtf8($input);
         $this->assertSame($result, $cleaned);
     }
-    public function utf8CleanData()
+    public function utf8CleanData(): array
     {
         // https://github.com/ezyang/htmlpurifier/blob/master/tests/HTMLPurifier/EncoderTest.php#L21
         return [
             ['test', 'test'],
             ['null byte: ', "null byte: \0"],
-            ["あ（い）う（え）お", "あ（い）う（え）お\0"],
+            ['あ（い）う（え）お', "あ（い）う（え）お\0"],
             ['', "\1\2\3\4\5\6\7"],
             ['', "\x7F"],
             ['', "\xC2\x80"],
@@ -51,7 +50,7 @@ class HtmlPurifierTest extends Unit
 
     public function testConfigure()
     {
-        $config = \HTMLPurifier_Config::createDefault();
+        $config = HTMLPurifier_Config::createDefault();
         HtmlPurifier::configure($config);
         $this->assertNull($config->get('HTML.DefinitionID'));
         $this->assertSame('', $config->get('Attr.DefaultImageAlt'));

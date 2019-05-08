@@ -7,9 +7,10 @@
 
 namespace craftunit\services;
 
-
 use Codeception\Test\Unit;
+use Craft;
 use craft\services\Security;
+use UnitTester;
 
 /**
  * Unit tests for SecurityTest
@@ -17,12 +18,12 @@ use craft\services\Security;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class SecurityTest extends Unit
 {
     /**
-     * @var \UnitTester $tester
+     * @var UnitTester $tester
      */
     protected $tester;
 
@@ -35,7 +36,7 @@ class SecurityTest extends Unit
     {
         parent::_before();
 
-        $this->security = \Craft::$app->security;
+        $this->security = Craft::$app->security;
     }
 
     /**

@@ -1,45 +1,132 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craftunit\helpers;
 
-
 use Codeception\Test\Unit;
+use Craft;
+use craft\db\pgsql\Schema;
 use craft\helpers\Db;
+use UnitTester;
+
 /**
- * Unit tests for the DB Helper class where its output may need to be pgsql specific. Will be skipped if db isnt pgsql.
+ * Unit tests for the DB Helper class where its output may need to be pgsql specific. Will be skipped if db isn't pgsql.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class PgsqlDbHelperTest extends Unit
 {
-    /**
-     * @var \UnitTester
-     */
-    protected $tester;
-    public function _before()
-    {
-        if (!\Craft::$app->getDb()->getIsPgsql()) {
-            $this->markTestSkipped();
-        }
-    }
+    // Public Properties
+    // =========================================================================
 
     /**
-     * @dataProvider sqlTypesData
+     * @var UnitTester
+     */
+    protected $tester;
+
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
+    /**
+     * @dataProvider sqlTypesDataProvider
+     * @param $type
+     * @param $supported
      */
     public function testTypeSupport($type, $supported)
     {
         $isSupported = Db::isTypeSupported($type);
         $this->assertSame($supported, Db::isTypeSupported($type));
-        $this->assertInternalType('boolean', $isSupported);
+        $this->assertIsBool($isSupported);
     }
 
-    public function sqlTypesData()
+    /**
+     * @dataProvider textualStorageDataProvider
+     * @param $result
+     * @param $input
+     */
+    public function testGetTextualColumnStorageCapacity($result, $input)
     {
-        // TODO: This is the best way to test it but is it worth 20mb and 3 seconds of time?
+        $capacity = Db::getTextualColumnStorageCapacity($input);
+        $this->assertSame($result, $capacity);
+    }
+
+    /**
+     * @dataProvider parseParamDataProvider
+     * @param $result
+     * @param $column
+     * @param $value
+     * @param string $defaultOperator
+     * @param bool $caseInsensitive
+     */
+    public function testParseParamGeneral($result, $column, $value, $defaultOperator = '=', $caseInsensitive = false)
+    {
+        $this->assertSame($result, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
+    }
+
+    /**
+     * @dataProvider getTextualColumnTypeDataProvider
+     * @param $result
+     * @param $input
+     */
+    public function testGetTextualColumnTypeByContentLength($result, $input)
+    {
+        $textualCapacity = Db::getTextualColumnStorageCapacity($input);
+        $this->assertSame($result, $textualCapacity);
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function parseParamDataProvider(): array
+    {
+        return [
+            'multi-:empty:-param' => [
+                [
+                    'or',
+                    [ 'not', ['content_table' => null], ],
+                    ['!=', 'content_table', 'field_2']
+                ],
+                'content_table', ':empty:, field_2', '!='
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function getTextualColumnTypeDataProvider(): array
+    {
+        return [
+            ['text', 254],
+            ['text', 65534],
+            ['text', 16777214],
+            ['text', 4294967294],
+            ['text', false],
+            ['text', null],
+        ];
+    }
+
+    /**
+     * @todo This is the best way to test it but is it worth 20mb and 3 seconds of time?
+     *
+     * @return array
+     */
+    public function sqlTypesDataProvider(): array
+    {
         $mysqlSchema = new \craft\db\mysql\Schema();
-        $pgsqlSchema = new \craft\db\pgsql\Schema();
+        $pgsqlSchema = new Schema();
         $returnArray = [];
 
         foreach ($pgsqlSchema->typeMap as $key => $value) {
@@ -55,63 +142,23 @@ class PgsqlDbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider textualStorageData
-     * @param $result
-     * @param $input\
+     * @return array
      */
-    public function testGetTextualColumnStorageCapacity($result, $input)
-    {
-        $capacity = Db::getTextualColumnStorageCapacity($input);
-        $this->assertSame($result, $capacity);
-    }
-    public function textualStorageData()
+    public function textualStorageDataProvider(): array
     {
         return [
-            [null, \craft\db\pgsql\Schema::TYPE_TEXT],
+            [null, Schema::TYPE_TEXT],
         ];
     }
 
-    /**
-     * @dataProvider parseParamData
-     */
-    public function testParseParamGeneral($result, $collumn, $value, $defaultOperator = '=', $caseInsensitive = false)
-    {
-        $this->assertSame($result, Db::parseParam($collumn, $value, $defaultOperator, $caseInsensitive));
-    }
+    // Protected Methods
+    // =========================================================================
 
-    public function parseParamData()
+    protected function _before()
     {
-        return [
-            'multi-:empty:-param' => [
-                [
-                    'or',
-                    [ 'not', ['content_table' => null], ],
-                    ['!=', 'content_table', 'field_2']
-                ],
-                'content_table', ':empty:, field_2', '!='
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider getTextualCollumnType
-     */
-    public function testGetTextualCollumnTypeByContentLength($result, $input)
-    {
-        $textualCapacity = Db::getTextualColumnStorageCapacity($input);
-        $this->assertSame($result, $textualCapacity);
-    }
-
-    public function getTextualCollumnType()
-    {
-        return [
-            ['text', 254],
-            ['text', 65534],
-            ['text', 16777214],
-            ['text', 4294967294],
-            ['text', false],
-            ['text', null],
-        ];
+        if (!Craft::$app->getDb()->getIsPgsql()) {
+            $this->markTestSkipped();
+        }
     }
 
 }

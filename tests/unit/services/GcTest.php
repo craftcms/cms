@@ -8,14 +8,14 @@
 namespace craftunit\services;
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\db\Query;
 use craft\elements\Entry;
-use craft\elements\User;
-use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
 use craft\records\EntryType;
 use craft\records\Section;
 use craft\records\Session;
+use craft\records\User;
 use craft\records\Volume;
 use craft\services\Gc;
 use craftunit\fixtures\EntriesFixture;
@@ -24,20 +24,24 @@ use craftunit\fixtures\SectionsFixture;
 use craftunit\fixtures\SessionsFixture;
 use craftunit\fixtures\UsersFixture;
 use craftunit\fixtures\VolumesFixture;
+use DateInterval;
+use DateTime;
+use UnitTester;
 use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for SearchServiceTest
  *
  * TODO: Test search index removal
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class GcTest extends Unit
 {
     /**
-     * @var \UnitTester $tester
+     * @var UnitTester $tester
      */
     protected $tester;
 
@@ -49,7 +53,7 @@ class GcTest extends Unit
     /**
      * @return array
      */
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'sessions' => [
@@ -77,12 +81,12 @@ class GcTest extends Unit
     {
         parent::_before();
 
-        $this->gc = \Craft::$app->getGc();
+        $this->gc = Craft::$app->getGc();
     }
 
     public function testRunForDeletedEntriesWithDefaultDuration()
     {
-        $this->doEntryTest(1, [
+        $this->_doEntryTest(1, [
             'Deleted 40 days ago',
         ]);
     }
@@ -90,9 +94,9 @@ class GcTest extends Unit
     public function testRunForDeletedEntriesWithCustomDuration()
     {
         // 5 Days
-        \Craft::$app->getConfig()->getGeneral()->softDeleteDuration = 432000;
+        Craft::$app->getConfig()->getGeneral()->softDeleteDuration = 432000;
 
-        $this->doEntryTest(2, [
+        $this->_doEntryTest(2, [
             'Deleted 40 days ago',
             'Deleted 25 days ago',
         ]);
@@ -101,7 +105,7 @@ class GcTest extends Unit
     public function testRunDeleteAllTrashed()
     {
         $this->gc->deleteAllTrashed = true;
-        $this->doEntryTest(3, [
+        $this->_doEntryTest(3, [
             'Deleted 40 days ago',
             'Deleted 25 days ago',
             'Deleted today'
@@ -128,7 +132,7 @@ class GcTest extends Unit
         $this->assertCount($remainingCount, $items);
         $this->assertSame(ArrayHelper::firstValue($items)['id'], $leftoverId);
     }
-    public function gcDataProvider()
+    public function gcDataProvider(): array
     {
         return [
             [1, '1005', Session::tableName(), ['1003', '1004', '1005']],
@@ -144,10 +148,10 @@ class GcTest extends Unit
     public function testRunForExpiringUsers()
     {
         // 2 days
-        \Craft::$app->getConfig()->getGeneral()->purgePendingUsersDuration = 172800;
+        Craft::$app->getConfig()->getGeneral()->purgePendingUsersDuration = 172800;
 
         // Create then with 3 days
-        $this->createExpiringPendingUsers();
+        $this->_createExpiringPendingUsers();
 
         $this->gc->run(true);
 
@@ -176,11 +180,11 @@ class GcTest extends Unit
         $this->assertEmpty($user4);
     }
 
-    private function createExpiringPendingUsers()
+    private function _createExpiringPendingUsers()
     {
-        $date = (new \DateTime('now'))->sub(new \DateInterval('P3D'))->format('Y-m-d H:i:s');
+        $date = (new DateTime('now'))->sub(new DateInterval('P3D'))->format('Y-m-d H:i:s');
 
-        $userRecords = \craft\records\User::find()
+        $userRecords = User::find()
             ->where(['username' => ['user1', 'user2']])
             ->all();
 
@@ -202,7 +206,7 @@ class GcTest extends Unit
      * @param int $expectedRemoval
      * @param array|null $notAllowedTitles
      */
-    private function doEntryTest(int $expectedRemoval, array $notAllowedTitles = null)
+    private function _doEntryTest(int $expectedRemoval, array $notAllowedTitles = null)
     {
         $totalEntries = (new Query())->select('*')->from('{{%entries}}')->count();
         $this->gc->run(true);
@@ -211,9 +215,9 @@ class GcTest extends Unit
             ->trashed(null)
             ->all();
 
-        $this->assertSame($totalEntries - $expectedRemoval, count($entries));
+        $this->assertCount($totalEntries - $expectedRemoval, $entries);
 
-        // Check any non allowed titles. Fail if an entry exists with a title that isnt allowed.
+        // Check any non allowed titles. Fail if an entry exists with a title that isn't allowed.
         foreach ($notAllowedTitles as $notAllowedTitle) {
             $doesEntryExistWithThisTitle = ArrayHelper::filterByValue($entries, 'title', $notAllowedTitle);
             if ($doesEntryExistWithThisTitle) {

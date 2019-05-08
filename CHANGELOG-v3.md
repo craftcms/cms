@@ -3,13 +3,51 @@
 ## Unreleased
 
 ### Changed
+- Craft now stores the Default User Group’s UID in the project config, in case the group’s ID is different across environments.
+
+### Fixed
+- Fixed an error that could occur when saving a Single section if one of its sites had been disabled.
+- Fixed a SQL error that would occur when deleting a site and transferring its content to another if you were using a database table prefix.
+- Fixed an error that could occur when deleting a site.
+- Fixed a PHP compile error that could occur when paginating a query. ([#4208](https://github.com/craftcms/cms/pull/4208))
+- Fixed an error that could occur on the Settings → Users → Settings page if the project config was missing its `users` key. ([#4206](https://github.com/craftcms/cms/issues/4206))
+- Fixed a bug where Craft wasn’t requiring email verification for new user accounts if the project config was missing its `users` key.
+
+## 3.1.25 - 2019-04-40
+
+### Added
+- Added the `|ascii` Twig filter. ([#4193](https://github.com/craftcms/cms/issues/4193))
+
+### Changed
+- Craft now registers its project config event handlers before loading plugins. ([#3943](https://github.com/craftcms/cms/issues/3943))
+- The Control Panel now uses jQuery 3.4.0. ([#4183](https://github.com/craftcms/cms/issues/4183))
+- `behavior` and `behaviors` are now reserved field handles. ([#4184](https://github.com/craftcms/cms/issues/4184))
+- The Updates utility no longer shows notices for expired plugins if no updates are actually available. ([#4186](https://github.com/craftcms/cms/issues/4186))
+
+### Fixed
+- Fixed an error where rebuilding the project config would not typecast the `propagateEntries` and `enableVersioning` section settings correctly. ([#3695](https://github.com/craftcms/cms/issues/3695))
+- Fixed a bug where the Edit Draft HUD would include the current site name in the default Draft Name value for multi-site entries. ([#4171](https://github.com/craftcms/cms/issues/4171))
+- Fixed a bug where resource requests could send a 500 response if the resource didn’t exist. ([#4197](https://github.com/craftcms/cms/pull/4197))
+
+## 3.1.24 - 2019-04-23
+
+### Added
+- Added `craft\services\Fields::getFieldIdsByLayoutId()`.
+
+### Changed
+- Craft now correctly typecasts all core boolean and integer values saved to the project config. ([#3695](https://github.com/craftcms/cms/issues/3695))
 - Craft now saves new entry versions every time an entry is saved, unless it’s being propagated or resaved.
+- `users/save-user` and `users/start-elevated-session` requests now check for a `currentPassword` body param in addition to `password`, when looking for the user’s current password. ([#4169](https://github.com/craftcms/cms/issues/4169))
+- `craft\services\Path::getStoragePath()` now has a `$create` argument.
 - Updated Twig to ~2.8.1.
 
 ### Fixed
 - Fixed an error where re-saving a site would reset its sorting order. ([#4147](https://github.com/craftcms/cms/issues/4147))
 - Fixed a SQL error that could occur when updating to Craft 3.1. ([#3663](https://github.com/craftcms/cms/issues/3663))
+- Fixed an error that occurred when an SVG with `/` characters in its `id` attributes was passed to the `svg()` Twig function. ([#4155](https://github.com/craftcms/cms/issues/4155))
+- Fixed a bug where passing `:empty:` or `:notempty:` to a Matrix field param on an element query could return incorrect results for fields that had soft-deleted blocks. ([#4161](https://github.com/craftcms/cms/issues/4161))
 - Fixed a bug where Craft wasn’t returning a `1` exit code for console requests if the server was running under PHP 7. ([#4153](https://github.com/craftcms/cms/issues/4153))
+- Fixed a “World-writable config file 'my.cnf' is ignored” warning that could occur when creating a database backup. ([#4163](https://github.com/craftcms/cms/pull/4163))
 - Fixed a bug where `craft\services\Elements::duplicateElements()` would only ignore non-safe attributes passed to the `$newAttributes` argument.
 - Fixed a bug where `craft\elements\db\ElementQuery::exists()` and `offsetExists()` were ignoring cached query results.
 

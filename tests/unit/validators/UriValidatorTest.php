@@ -7,7 +7,6 @@
 
 namespace craftunit\validators;
 
-
 use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\validators\UriValidator;
@@ -17,7 +16,7 @@ use craft\validators\UriValidator;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class UriValidatorTest extends Unit
 {
@@ -62,7 +61,7 @@ class UriValidatorTest extends Unit
         }
     }
 
-    public function validateValueData()
+    public function validateValueData(): array
     {
         return [
             [true, 'test'],

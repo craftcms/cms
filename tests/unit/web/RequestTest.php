@@ -5,13 +5,13 @@
  * @license https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\web;
 
-
+use Craft;
 use craft\test\TestCase;
 use craft\web\Request;
 use craftunit\fixtures\SitesFixture;
+use UnitTester;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -19,11 +19,11 @@ use yii\web\BadRequestHttpException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class RequestTest extends TestCase
 {
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'sites' => [
@@ -37,7 +37,7 @@ class RequestTest extends TestCase
     public $request;
 
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     public $tester;
 
@@ -53,6 +53,7 @@ class RequestTest extends TestCase
     /**
      * @param $result
      * @param $header
+     * @param bool $detectTablets
      * @dataProvider isMobileBrowserDataProvider
      */
     public function testIsMobileBrowser($result, $header, $detectTablets = false)
@@ -62,7 +63,7 @@ class RequestTest extends TestCase
         $this->assertSame($result, $this->request->isMobileBrowser($detectTablets));
     }
 
-    public function isMobileBrowserDataProvider()
+    public function isMobileBrowserDataProvider(): array
     {
         // https://deviceatlas.com/blog/list-of-user-agent-strings
         return [
@@ -168,7 +169,7 @@ class RequestTest extends TestCase
         $this->assertSame($result, $this->request->getUserIP($filterFlag));
     }
 
-    public function getUserIpData()
+    public function getUserIpData(): array
     {
         return [
             ['123.123.123.123', 'Client-IP', '123.123.123.123'],
@@ -196,7 +197,7 @@ class RequestTest extends TestCase
         $this->assertSame($result, $this->request->getClientOs());
     }
 
-    public function getClientOsData()
+    public function getClientOsData(): array
     {
         return [
             ['Linux', 'Mozilla/5.0 (Linux; Android 6.0; HTC One X10 Build/MRA58K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/61.0.3163.98 Mobile Safari/537.36'],
@@ -218,11 +219,11 @@ class RequestTest extends TestCase
 
     public function testGenerateCsrfToken()
     {
-        $token = $this->generateCsrfToken();
+        $token = $this->_generateCsrfToken();
         $this->assertSame(40, strlen($token));
 
-        $this->setMockUser();
-        $newToken = $this->generateCsrfToken();
+        $this->_setMockUser();
+        $newToken = $this->_generateCsrfToken();
         $tokenComponents = explode('|', $newToken);
 
         $this->assertNotSame($newToken, $token);
@@ -235,18 +236,18 @@ class RequestTest extends TestCase
 
     public function testCsrfTokenValidForCurrentUser()
     {
-        $this->setMockUser();
-        $token = $this->generateCsrfToken();
+        $this->_setMockUser();
+        $token = $this->_generateCsrfToken();
 
-        $this->assertTrue($this->isCsrfValidForUser($token));
+        $this->assertTrue($this->_isCsrfValidForUser($token));
     }
 
     public function testCsrfTokenValidFailure()
     {
-        $token = $this->generateCsrfToken();
+        $token = $this->_generateCsrfToken();
 
-        $this->assertTrue($this->isCsrfValidForUser($token));
-        $this->assertTrue($this->isCsrfValidForUser('RANDOM'));
+        $this->assertTrue($this->_isCsrfValidForUser($token));
+        $this->assertTrue($this->_isCsrfValidForUser('RANDOM'));
     }
 
     /**
@@ -259,10 +260,10 @@ class RequestTest extends TestCase
      */
     public function testGetParam($result, string $name = null, $defaultValue, array $params)
     {
-        $gotten = $this->getParam($name, $defaultValue, $params);
+        $gotten = $this->_getParam($name, $defaultValue, $params);
         $this->assertSame($result, $gotten);
     }
-    public function getParamData()
+    public function getParamData(): array
     {
         return [
             [['param1', 'param2', 'param3'], null, null, ['param1', 'param2', 'param3']],
@@ -278,8 +279,8 @@ class RequestTest extends TestCase
     // =========================================================================
     public function testCheckRequestTypeWithTokenParam()
     {
-        $this->request->setBodyParams([\Craft::$app->getConfig()->getGeneral()->tokenParam => 'something']);
-        $checked = $this->checkRequestType();
+        $this->request->setBodyParams([Craft::$app->getConfig()->getGeneral()->tokenParam => 'something']);
+        $this->_checkRequestType();
 
         $this->assertTrue($this->getInaccessibleProperty($this->request, '_checkedRequestType'));
 
@@ -289,7 +290,7 @@ class RequestTest extends TestCase
     public function testCheckRequestTypeWithDirectTrigger()
     {
         $this->setInaccessibleProperty($this->request, '_segments', [
-            \Craft::$app->getConfig()->getGeneral()->actionTrigger,
+            Craft::$app->getConfig()->getGeneral()->actionTrigger,
             'do-stuff'
         ]);
 
@@ -317,7 +318,7 @@ class RequestTest extends TestCase
 
         $this->checkRequestAndAssertIsSingleAction();
     }
-    public function checkRequestSpecialPathData()
+    public function checkRequestSpecialPathData(): array
     {
         return [
             ['login'],
@@ -328,7 +329,7 @@ class RequestTest extends TestCase
 
     public function testCheckRequestTypeOnSiteRequestWithSpecialPathTriggerLogin()
     {
-        $genConfig = \Craft::$app->getConfig()->getGeneral();
+        $genConfig = Craft::$app->getConfig()->getGeneral();
 
         $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
         $this->setInaccessibleProperty($this->request, '_path', trim($genConfig->getLoginPath(), '/'));
@@ -336,7 +337,7 @@ class RequestTest extends TestCase
     }
     public function testCheckRequestTypeOnSiteRequestWithSpecialPathTriggerLogout()
     {
-        $genConfig = \Craft::$app->getConfig()->getGeneral();
+        $genConfig = Craft::$app->getConfig()->getGeneral();
 
         $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
         $this->setInaccessibleProperty($this->request, '_path', trim($genConfig->getLogoutPath(), '/'));
@@ -345,40 +346,36 @@ class RequestTest extends TestCase
 
     public function checkRequestAndAssertIsSingleAction()
     {
-        $this->checkRequestType();
+        $this->_checkRequestType();
         $this->assertTrue($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
     }
 
     // Helpers
     // =========================================================================
 
-    private function checkRequestType()
+    private function _checkRequestType()
     {
         return $this->invokeMethod($this->request, '_checkRequestType');
     }
-    private function getParam(string $name = null, $defaultValue, array $params)
+    private function _getParam(string $name = null, $defaultValue, array $params)
     {
         return $this->invokeMethod($this->request, '_getParam', [$name, $defaultValue, $params]);
 
     }
-    private function requestedSite($siteService)
-    {
-        return $this->invokeMethod($this->request, '_requestedSite', [$siteService]);
-    }
-    private function isCsrfValidForUser($token)
+    private function _isCsrfValidForUser($token)
     {
         return $this->invokeMethod($this->request, 'csrfTokenValidForCurrentUser', [$token]);
     }
-    private function generateCsrfToken()
+    private function _generateCsrfToken()
     {
         return $this->invokeMethod($this->request, 'generateCsrfToken');
     }
 
-    private function setMockUser()
+    private function _setMockUser()
     {
-        \Craft::$app->getUser()->setIdentity(
-            \Craft::$app->getUsers()->getUserById('1')
+        Craft::$app->getUser()->setIdentity(
+            Craft::$app->getUsers()->getUserById('1')
         );
-        \Craft::$app->getUser()->getIdentity()->password = '$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK';
+        Craft::$app->getUser()->getIdentity()->password = '$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK';
     }
 }

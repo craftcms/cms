@@ -91,14 +91,14 @@ class FieldLayout extends Model
         foreach ($this->getTabs() as $tab) {
             $tabData = [
                 'name' => $tab->name,
-                'sortOrder' => $tab->sortOrder,
+                'sortOrder' => (int)$tab->sortOrder,
             ];
 
             /** @var Field $field */
             foreach ($tab->getFields() as $field) {
                 $tabData['fields'][$field->uid] = [
-                    'required' => $field->required,
-                    'sortOrder' => $field->sortOrder
+                    'required' => (bool)$field->required,
+                    'sortOrder' => (int)$field->sortOrder
                 ];
             }
             $output['tabs'][] = $tabData;

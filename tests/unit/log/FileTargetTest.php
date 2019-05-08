@@ -4,23 +4,26 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit\log;
 
 use Codeception\Stub;
-use Codeception\Test\Unit;
+use Craft;
 use craft\elements\User;
 use craft\log\FileTarget;
 use craft\test\TestCase;
 use craft\web\Application;
 use craft\web\Request;
 use craft\web\Session;
+use Exception;
+use UnitTester;
 
 /**
  * Unit tests for FileTarget
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class FileTargetTest extends TestCase
 {
@@ -30,7 +33,7 @@ class FileTargetTest extends TestCase
     public $fileTarget;
 
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     public $tester;
 
@@ -53,48 +56,45 @@ class FileTargetTest extends TestCase
 
     public function testGetMessagePrefixWithNullCraft()
     {
-        $craftApp = \Craft::$app;
-        \Craft::$app = null;
+        $craftApp = Craft::$app;
+        Craft::$app = null;
         $this->assertSame('', $this->fileTarget->getMessagePrefix('message'));
-        \Craft::$app = $craftApp;
+        Craft::$app = $craftApp;
     }
 
     public function testFullMessagePrefix()
     {
-        $craftApp = clone \Craft::$app;
-        $this->mockCraftForFullMessagePrefix();
+        $craftApp = clone Craft::$app;
+        $this->_mockCraftForFullMessagePrefix();
 
         $this->fileTarget->includeUserIp = true;
 
         $this->assertSame('[192.168.10.10][666][999]', $this->fileTarget->getMessagePrefix('message'));
 
-        \Craft::$app = $craftApp;
+        Craft::$app = $craftApp;
     }
 
     /**
      * Mocks the Craft::$app object so that it overrides the components we need for self::testFullMessagePrefix
      * TODO: See @internal
      * @internal Is there a better way to handle Craft::$app mocking
-     * @throws \Exception
+     * @throws Exception
      */
-    private function mockCraftForFullMessagePrefix()
+    private function _mockCraftForFullMessagePrefix()
     {
         $identityStub = Stub::make(User::class, ['getId' => '666']);
 
-        $stubArray = \Craft::$app->getComponents();
+        $stubArray = Craft::$app->getComponents();
 
         $stubArray['request']  = Stub::construct(Request::class, [], ['getUserIp' => '192.168.10.10']);
         $stubArray['user'] = Stub::construct(\craft\web\User::class, [['identityClass' => User::class]], ['getIdentity' => $identityStub]);
         $stubArray['session'] = Stub::construct(Session::class, [], ['getIsActive' => true, 'getId' => '999']);
 
-        \Craft::$app = Stub::make(Application::class, [
+        Craft::$app = Stub::make(Application::class, [
             'has' => true,
             'getRequest' => $stubArray['request'],
             'get' => function ($type) use ($stubArray) {
-                if (isset($stubArray[$type])) {
-                    return $stubArray[$type];
-                }
-                return null;
+                return $stubArray[$type] ?? null;
             }]
         );
     }

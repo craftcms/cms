@@ -5,25 +5,24 @@
  * @license   https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\helpers;
-
 
 use Codeception\Test\Unit;
 use craft\helpers\Number;
 use craft\test\mockclasses\ToStringTest;
+use UnitTester;
 
 /**
  * Class NumberHelperTest.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class NumberHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -37,7 +36,7 @@ class NumberHelperTest extends Unit
         $word = Number::word($input);
         $this->assertSame($result, $word);
     }
-    public function wordData()
+    public function wordData(): array
     {
         return [
             ['22', 22],
@@ -58,7 +57,7 @@ class NumberHelperTest extends Unit
         $upperAlpha = Number::upperAlpha($input);
         $this->assertSame($result, $upperAlpha);
     }
-    public function upperAlphaData()
+    public function upperAlphaData(): array
     {
         return [
             ['W', 23],
@@ -82,7 +81,7 @@ class NumberHelperTest extends Unit
         $lowerAlpha = Number::lowerAlpha($input);
         $this->assertSame($result, $lowerAlpha);
     }
-    public function lowerAlphaData()
+    public function lowerAlphaData(): array
     {
         return [
             ['w', 23],
@@ -106,7 +105,7 @@ class NumberHelperTest extends Unit
         $upperRoman = Number::upperRoman($input);
         $this->assertSame($result, $upperRoman);
     }
-    public function upperRomanData()
+    public function upperRomanData(): array
     {
         return [
             ['II', 2],
@@ -128,7 +127,7 @@ class NumberHelperTest extends Unit
         $lower = Number::lowerRoman($input);
         $this->assertSame($result, $lower);
     }
-    public function lowerRomanData()
+    public function lowerRomanData(): array
     {
         return [
             ['ii', 2],
@@ -150,7 +149,7 @@ class NumberHelperTest extends Unit
         $numeric = Number::makeNumeric($input);
         $this->assertSame($result, $numeric);
     }
-    public function makeNumericData()
+    public function makeNumericData(): array
     {
         $toStringClass = new ToStringTest('50');
 

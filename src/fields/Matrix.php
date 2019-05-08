@@ -437,13 +437,22 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         if ($value === ':notempty:' || $value === ':empty:') {
-            $alias = 'matrixblocks_' . $this->handle;
-            $operator = ($value === ':notempty:' ? '!=' : '=');
+            $ns = $this->handle . '_' . StringHelper::randomString(5);
+            $condition = ['exists', (new Query())
+                ->from(TableName::MATRIXBLOCKS . " matrixblocks_$ns")
+                ->innerJoin(TableName::ELEMENTS . " elements_$ns", "[[elements_$ns.id]] = [[matrixblocks_$ns.id]]")
+                ->where("[[matrixblocks_$ns.ownerId]] = [[elements.id]]")
+                ->andWhere([
+                    "matrixblocks_$ns.fieldId" => $this->id,
+                    "elements_$ns.dateDeleted" => null,
+                ])
+            ];
 
-            $query->subQuery->andWhere(
-                "(select count([[{$alias}.id]]) from {{%matrixblocks}} {{{$alias}}} where [[{$alias}.ownerId]] = [[elements.id]] and [[{$alias}.fieldId]] = :fieldId) {$operator} 0",
-                [':fieldId' => $this->id]
-            );
+            if ($value === ':notempty:') {
+                $query->subQuery->andWhere($condition);
+            } else {
+                $query->subQuery->andWhere(['not', $condition]);
+            }
         } else if ($value !== null) {
             return false;
         }

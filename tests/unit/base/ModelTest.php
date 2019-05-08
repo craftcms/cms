@@ -5,26 +5,38 @@
  * @license https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\models;
 
-
 use Codeception\Test\Unit;
+use Craft;
 use craft\test\mockclasses\models\ExampleModel;
+use DateTime;
+use DateTimeZone;
+use Exception;
 
 /**
  * Unit tests for ModelTest
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class ModelTest extends Unit
 {
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
     /**
+     * Tests a model for errors.
+     *
      * @param $result
      * @param $input
-     * @dataProvider hasErrorsData
+     * @param $searchParam
+     * @param $paramName
+     * @dataProvider hasErrorsDataProvider
      */
     public function testHasErrors($result, $input, $searchParam, $paramName)
     {
@@ -33,44 +45,24 @@ class ModelTest extends Unit
 
         $this->assertSame($result, $model1->hasErrors($searchParam));
     }
-    public function hasErrorsData()
-    {
-        return [
-            [true, 'error', 'fields.*', 'fields[body]'],
-            [true, 'error', 'fields.*', 'fields.body'],
-            [true, 'error', 'fields.*', 'fields[body'],
-            [true, 'error', 'fields.*', 'fields.[body'],
-            [true, 'error', 'fields.*', 'fields.[body]'],
-
-            [true, 'error', 'exampleParam', 'exampleParam'],
-        ];
-    }
 
     /**
      * Test the DateTimeAttributes function of the base Model
-     * @dataProvider dateTimeAttributes
+     *
+     * @dataProvider dateTimeAttributesDataProvider
+     * @param $paramName
+     * @param $dateForInput
+     * @throws Exception
      */
     public function testDateTimeAttributes($paramName, $dateForInput)
     {
         $model = new ExampleModel([$paramName => $dateForInput]);
 
-        $dateTime = new \DateTime($dateForInput, new \DateTimeZone('UTC'));
-        $dateTime->setTimezone(new \DateTimeZone(\Craft::$app->getTimeZone()));
+        $dateTime = new DateTime($dateForInput, new DateTimeZone('UTC'));
+        $dateTime->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()));
 
         $this->assertSame($dateTime->format('Y-m-d H:i:s'), $model->$paramName->format('Y-m-d H:i:s'));
         $this->assertSame($dateTime->getTimezone()->getName(), $model->$paramName->getTimezone()->getName());
-    }
-
-    public function dateTimeAttributes()
-    {
-        return [
-            // Craft defaults
-            ['dateCreated', '2018-11-12 20:00:00'],
-            ['dateUpdated', '2018-11-12 20:00:00'],
-
-            // Added by ExampleModel
-            ['exampleDateParam', '2018-11-12 20:00:00'],
-        ];
     }
 
     /**
@@ -83,7 +75,7 @@ class ModelTest extends Unit
         $this->assertSame('2018-11-12 20:00:00', $model->exampleParam);
     }
     /**
-     * Test that if you create an empty model and then set the param it isnt converted to \DateTime
+     * Test that if you create an empty model and then set the param it isn't converted to \DateTime
      */
     public function testRetroFittingDoesntWork()
     {
@@ -111,7 +103,7 @@ class ModelTest extends Unit
     }
 
     /**
-     * What happens if both models have errors
+     * What happens if both models have errors?
      */
     public function testMergingWithExistingParams()
     {
@@ -131,7 +123,7 @@ class ModelTest extends Unit
     }
 
     /**
-     * Test what happens when we pass in an attribute prefix at addModelErrors
+     * Test what happens when we pass in an attribute prefix at addModelErrors.
      */
     public function testAttributePrefix()
     {
@@ -149,5 +141,39 @@ class ModelTest extends Unit
 
         $this->assertSame('thisAintGood', $model1->getErrors()['exampleParam'][0]);
         $this->assertSame('alsoAintGood', $model1->getErrors()['-custom-.exampleParam'][0]);
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function dateTimeAttributesDataProvider(): array
+    {
+        return [
+            // Craft defaults
+            ['dateCreated', '2018-11-12 20:00:00'],
+            ['dateUpdated', '2018-11-12 20:00:00'],
+
+            // Added by ExampleModel
+            ['exampleDateParam', '2018-11-12 20:00:00'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function hasErrorsDataProvider(): array
+    {
+        return [
+            [true, 'error', 'fields.*', 'fields[body]'],
+            [true, 'error', 'fields.*', 'fields.body'],
+            [true, 'error', 'fields.*', 'fields[body'],
+            [true, 'error', 'fields.*', 'fields.[body'],
+            [true, 'error', 'fields.*', 'fields.[body]'],
+
+            [true, 'error', 'exampleParam', 'exampleParam'],
+        ];
     }
 }

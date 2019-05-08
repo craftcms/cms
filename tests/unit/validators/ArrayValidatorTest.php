@@ -5,9 +5,7 @@
  * @license   https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\validators;
-
 
 use Codeception\Test\Unit;
 use craft\validators\ArrayValidator;
@@ -17,9 +15,10 @@ use craft\test\mockclasses\models\ExampleModel;
  * Class ArrayValidator.
  *
  * TODO: Test the validateValue() function using $this->model->validate();
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class ArrayValidatorTest extends Unit
 {
@@ -62,12 +61,12 @@ class ArrayValidatorTest extends Unit
      */
     public function testMessagingOnEmptyInputArray(ArrayValidator $validator, $variableName)
     {
-        $this->assertTrue((strlen($validator->$variableName) > 2));
+        $this->assertTrue(strlen($validator->$variableName) > 2);
 
-        $this->assertInternalType('string', $validator->$variableName);
+        $this->assertIsString($validator->$variableName);
     }
 
-    public function paramsToTestOnEmpty()
+    public function paramsToTestOnEmpty(): array
     {
         $newValidator = new ArrayValidator(['min' => 1, 'max' => 10, 'count' => 4]);
 
@@ -106,7 +105,7 @@ class ArrayValidatorTest extends Unit
         }
     }
 
-    public function arrayValidatorValues()
+    public function arrayValidatorValues(): array
     {
         return [
             [[1, 2, 3, 4 ], true],
@@ -126,9 +125,9 @@ class ArrayValidatorTest extends Unit
     public function testCountValidation()
     {
         $this->model->exampleParam = [1, 2, 3, 4, 5, 6, 7];
-        $result = $this->arrayValidator->validateAttribute($this->model, 'exampleParam');
+        $this->arrayValidator->validateAttribute($this->model, 'exampleParam');
 
-         $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+        $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         $this->assertSame('aint right', $this->model->getErrors('exampleParam')[0]);
     }
 }

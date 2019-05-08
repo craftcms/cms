@@ -4,22 +4,24 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit\helpers;
 
-
+use Codeception\Test\Unit;
 use craft\helpers\Html;
+use UnitTester;
 
 /**
  * Unit tests for the HTML Helper class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
-class HtmlHelperTest extends \Codeception\Test\Unit
+class HtmlHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -35,7 +37,7 @@ class HtmlHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, Html::encodeParams($input, $variables));
     }
 
-    public function htmlEncodingDataProvider()
+    public function htmlEncodingDataProvider(): array
     {
         $htmlTagString = '<p>Im a paragraph. What am i, {whatIsThis}</p>';
         $pureVariableString = '{variable1}, {variable2}';

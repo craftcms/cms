@@ -5,30 +5,30 @@
  * @license https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\web;
 
-
 use Codeception\Test\Unit;
+use Craft;
 use craft\helpers\UrlHelper;
 use craft\test\mockclasses\controllers\TestController;
 use craft\web\Response;
 use craft\web\View;
+use UnitTester;
 use yii\base\Action;
+use yii\base\Exception;
 use yii\base\ExitException;
-use yiiunit\TestCase;
 
 /**
  * Unit tests for ControllerTest
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class ControllerTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -40,7 +40,7 @@ class ControllerTest extends Unit
     {
         parent::_before();
         $_SERVER['REQUEST_URI'] = 'https://craftcms.com/admin/dashboard';
-        $this->controller = new TestController('test', \Craft::$app);
+        $this->controller = new TestController('test', Craft::$app);
     }
     public function testBeforeAction()
     {
@@ -55,8 +55,8 @@ class ControllerTest extends Unit
     public function testRunActionJsonError()
     {
         // We accept JSON.
-        \Craft::$app->getRequest()->setAcceptableContentTypes(['application/json' => true]);
-        \Craft::$app->getRequest()->headers->set('Accept', 'application/json');
+        Craft::$app->getRequest()->setAcceptableContentTypes(['application/json' => true]);
+        Craft::$app->getRequest()->headers->set('Accept', 'application/json');
 
         /* @var Response $resp */
         $resp = $this->controller->runAction('me-dont-exist');
@@ -68,7 +68,7 @@ class ControllerTest extends Unit
     public function testTemplateRendering()
     {
         // We need to render a template from the site dir.
-        \Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
 
         $response = $this->controller->renderTemplate('template');
 
@@ -80,13 +80,13 @@ class ControllerTest extends Unit
 
     /**
      * If the content-type headers are already set. Render Template should ignore attempting to set them.
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function testTemplateRenderingIfHeadersAlreadySet()
     {
         // We need to render a template from the site dir.
-        \Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
-        \Craft::$app->getResponse()->getHeaders()->set('content-type', 'HEADERS');
+        Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        Craft::$app->getResponse()->getHeaders()->set('content-type', 'HEADERS');
 
         $response = $this->controller->renderTemplate('template');
 
@@ -98,8 +98,8 @@ class ControllerTest extends Unit
 
     public function testRedirectToPostedUrl()
     {
-        $baseUrl = $this->getBaseUrlForRedirect();
-        $redirect = \Craft::$app->getSecurity()->hashData('craft/do/stuff');
+        $baseUrl = $this->_getBaseUrlForRedirect();
+        $redirect = Craft::$app->getSecurity()->hashData('craft/do/stuff');
 
         // Default
         $default = $this->controller->redirectToPostedUrl();
@@ -111,14 +111,14 @@ class ControllerTest extends Unit
         );
 
         // What happens when we pass in a param.
-        \Craft::$app->getRequest()->setBodyParams(['redirect' => $redirect]);
+        Craft::$app->getRequest()->setBodyParams(['redirect' => $redirect]);
         $default = $this->controller->redirectToPostedUrl();
         $this->assertSame($baseUrl.'?p=craft/do/stuff', $default->headers->get('Location'));
     }
 
     public function testRedirectToPostedWithSetDefault()
     {
-        $baseUrl = $this->getBaseUrlForRedirect();
+        $baseUrl = $this->_getBaseUrlForRedirect();
         $withDefault = $this->controller->redirectToPostedUrl(null, 'craft/do/stuff');
         $this->assertSame($baseUrl.'?p=craft/do/stuff', $withDefault->headers->get('Location'));
 
@@ -146,7 +146,7 @@ class ControllerTest extends Unit
     public function testRedirect()
     {
         $this->assertSame(
-            $this->getBaseUrlForRedirect().'?p=do/stuff',
+            $this->_getBaseUrlForRedirect().'?p=do/stuff',
             $this->controller->redirect('do/stuff')->headers->get('Location')
         );
 
@@ -173,19 +173,13 @@ class ControllerTest extends Unit
     // Helpers
     // =========================================================================
 
-    private function determineUrlScheme()
+    private function _determineUrlScheme(): string
     {
-        return !\Craft::$app->getRequest()->getIsConsoleRequest() && \Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
+        return !Craft::$app->getRequest()->getIsConsoleRequest() && Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
     }
-    private function getBaseUrlForRedirect()
+    private function _getBaseUrlForRedirect(): string
     {
-        $scheme = $this->determineUrlScheme();
-        return UrlHelper::urlWithScheme(\Craft::$app->getConfig()->getGeneral()->siteUrl.'index.php', $scheme);
-    }
-    private function setMockUser()
-    {
-        \Craft::$app->getUser()->setIdentity(
-            \Craft::$app->getUsers()->getUserById('1')
-        );
+        $scheme = $this->_determineUrlScheme();
+        return UrlHelper::urlWithScheme(Craft::$app->getConfig()->getGeneral()->siteUrl.'index.php', $scheme);
     }
 }

@@ -4,24 +4,31 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit\helpers;
 
+use Codeception\Test\Unit;
 use craft\helpers\StringHelper;
-use craft\helpers\Stringy;
 use craft\test\mockclasses\ToStringTest;
+use function mb_strlen;
+use function mb_strpos;
+use stdClass;
+use UnitTester;
 use yii\base\ErrorException;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * Unit tests for the String Helper class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
-class StringHelperTest extends \Codeception\Test\Unit
+class StringHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -55,7 +62,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $endsWith);
     }
 
-    public function endsWithData()
+    public function endsWithData(): array
     {
         return [
             [true, 'thisisastring a', 'a'],
@@ -82,7 +89,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $toCamel);
     }
 
-    public function camelCaseData()
+    public function camelCaseData(): array
     {
         return [
             ['craftCms', 'Craft Cms'],
@@ -108,7 +115,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $containsAll = StringHelper::containsAll($haystack, $needle, $caseSensitive);
         $this->assertSame($result, $containsAll);
     }
-    public function containsAllData()
+    public function containsAllData(): array
     {
         return [
             [true, 'haystack', ['haystack']],
@@ -140,7 +147,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $uppercaseFirst);
     }
 
-    public function uppercaseFirstData()
+    public function uppercaseFirstData(): array
     {
         return [
             ['Craftcms', 'craftcms'],
@@ -162,7 +169,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $index = StringHelper::indexOf($haystack, $needle);
         $this->assertSame($result, $index);
     }
-    public function indexOfData()
+    public function indexOfData(): array
     {
         return [
             [2, 'thisisstring', 'is'],
@@ -201,7 +208,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $toSnake);
     }
 
-    public function snakeCaseData()
+    public function snakeCaseData(): array
     {
         return [
             ['craft_cms', 'CRAFT CMS'],
@@ -224,7 +231,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $isMb4);
     }
 
-    public function mb4Data()
+    public function mb4Data(): array
     {
         return [
             [true, '😀😘'],
@@ -250,7 +257,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $charsArray);
     }
 
-    public function charsAsArrayData()
+    public function charsAsArrayData(): array
     {
         return [
             [[], ''],
@@ -272,7 +279,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $toAscii);
     }
 
-    public function toAsciiData()
+    public function toAsciiData(): array
     {
         return [
             ['', ''],
@@ -296,7 +303,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $stripped);
     }
 
-    public function firstData()
+    public function firstData(): array
     {
         return [
             ['', '', 1],
@@ -319,7 +326,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $stripped);
     }
 
-    public function stripHtmlData()
+    public function stripHtmlData(): array
     {
         return [
             ['hello', '<p>hello</p>'],
@@ -341,7 +348,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $isUUID);
     }
 
-    public function uuidDataProvider()
+    public function uuidDataProvider(): array
     {
         return [
             [true, StringHelper::UUID()],
@@ -370,7 +377,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $whitespaceGone = StringHelper::collapseWhitespace($input);
         $this->assertSame($result, $whitespaceGone);
     }
-    public function collapseWhitespaceData()
+    public function collapseWhitespaceData(): array
     {
         return [
             ['', '  '],
@@ -393,10 +400,10 @@ class StringHelperTest extends \Codeception\Test\Unit
     {
         $isWhitespace = StringHelper::isWhitespace($input);
         $this->assertSame($result, $isWhitespace);
-        $this->assertInternalType('boolean', $isWhitespace);
+        $this->assertIsBool($isWhitespace);
     }
 
-    public function whitespaceProvider()
+    public function whitespaceProvider(): array
     {
         return [
             [true, ''],
@@ -425,7 +432,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertSame($result, $splitString);
     }
 
-    public function splitData()
+    public function splitData(): array
     {
         return [
             [['22', '23'], '22, 23'],
@@ -448,10 +455,10 @@ class StringHelperTest extends \Codeception\Test\Unit
     {
         $delimitedString = StringHelper::delimit($input, $delimited);
         $this->assertSame($result, $delimitedString);
-        $this->assertInternalType('string', $delimitedString);
+        $this->assertIsString($delimitedString);
     }
 
-    public function delimitData()
+    public function delimitData(): array
     {
         return [
             ['', '    ', '|'],
@@ -464,16 +471,19 @@ class StringHelperTest extends \Codeception\Test\Unit
 
         ];
     }
+
     /**
      * @dataProvider ensureRightData
+     * @param $result
      * @param $input
+     * @param $ensure
      */
     public function testEnsureRight($result, $input, $ensure)
     {
         $this->assertSame($result, StringHelper::ensureRight($input, $ensure));
     }
 
-    public function ensureRightData()
+    public function ensureRightData(): array
     {
         return [
             ['hello', 'hello', 'o'],
@@ -493,26 +503,25 @@ class StringHelperTest extends \Codeception\Test\Unit
     /**
      * @dataProvider randomStringWithCharsData
      *
-     * @param $result
      * @param $valid
-     * @param $length
+     * @param int $length
      */
     public function testRandomStringWithChars($valid, int $length)
     {
         $str = StringHelper::randomStringWithChars($valid, $length);
-        $strLen = \mb_strlen($str);
+        $strLen = mb_strlen($str);
 
         $this->assertSame($length, $strLen);
 
         // Loop through the string and see if any of the characters arent on the list of allowed chars.
         for ($i = 0; $i<$strLen; $i++) {
-            if (\mb_strpos($valid, $str[$i]) === false) {
+            if (mb_strpos($valid, $str[$i]) === false) {
                 $this->fail('Invalid chars');
             }
         }
     }
 
-    public function randomStringWithCharsData()
+    public function randomStringWithCharsData(): array
     {
         return [
             ['asdfghjklxcvbnmqwertyuiop', 10],
@@ -534,12 +543,12 @@ class StringHelperTest extends \Codeception\Test\Unit
     {
         $mb4String = StringHelper::encodeMb4($input);
        $this->assertSame($result, $mb4String);
-        $this->assertInternalType('string', $mb4String);
+        $this->assertIsString($mb4String);
 
         $this->assertFalse(StringHelper::containsMb4($mb4String));
     }
 
-    public function mb4EncodingProvider()
+    public function mb4EncodingProvider(): array
     {
         return [
             ['&#x1f525;', '🔥'],
@@ -563,7 +572,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $utf8 = StringHelper::convertToUtf8($input);
         $this->assertSame($result, $utf8);
     }
-    public function convertToUtf8Data()
+    public function convertToUtf8Data(): array
     {
         return [
             ['κόσμε', 'κόσμε'],
@@ -577,8 +586,9 @@ class StringHelperTest extends \Codeception\Test\Unit
 
     /**
      * @dataProvider encDecData
-     * @param $result
      * @param $input
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function testEncDec( $input)
     {
@@ -586,7 +596,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $this->assertStringStartsWith('base64:', $enc);
         $this->assertSame($input, StringHelper::decdec($enc));
     }
-    public function encDecData()
+    public function encDecData(): array
     {
         return [
             ['1234567890asdfghjkl'],
@@ -606,13 +616,11 @@ class StringHelperTest extends \Codeception\Test\Unit
     }
 
     /**
-     * @param $result
-     * @param $input
      */
     public function testUUID()
     {
         $uuid = StringHelper::UUID();
-        $this->assertSame(1, preg_match('/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i', $uuid));
+        $this->assertRegExp('/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i', $uuid);
         $this->assertSame(36, strlen($uuid));
     }
 
@@ -627,11 +635,11 @@ class StringHelperTest extends \Codeception\Test\Unit
         $string = StringHelper::toString($input, $glue);
         $this->assertSame($result, $string);
     }
-    public function toStringData()
+    public function toStringData(): array
     {
         return [
             ['test', 'test'],
-            ['', new \stdClass()],
+            ['', new stdClass()],
             ['ima string', new ToStringTest('ima string')],
             ['t,e,s,t', ['t', 'e', 's', 't']],
             ['t|e|s|t', ['t', 'e', 's', 't'], '|'],
@@ -654,12 +662,11 @@ class StringHelperTest extends \Codeception\Test\Unit
             $validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
         }
 
-        $randomCharArray = str_split($random);
-        foreach ($randomCharArray as $char) {
+        foreach (str_split($random) as $char) {
             $this->assertContains($char, $validChars);
         }
     }
-    public function randomStringData()
+    public function randomStringData(): array
     {
         return [
             [],
@@ -678,7 +685,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $pascal = StringHelper::toPascalCase($input);
         $this->assertSame($result, $pascal);
     }
-    public function toPascalCaseData()
+    public function toPascalCaseData(): array
     {
         return [
             ['TestS2SZw2', 'test s 2 s zw 2'],
@@ -704,7 +711,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $camel = StringHelper::toCamelCase($input);
         $this->assertSame($result, $camel);
     }
-    public function toCamelCaseData()
+    public function toCamelCaseData(): array
     {
         return [
             ['testS2SZw2', 'test s 2 s zw 2'],
@@ -730,7 +737,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $kebab = StringHelper::toKebabCase($input);
         $this->assertSame($result, $kebab);
     }
-    public function toKebabCaseData()
+    public function toKebabCaseData(): array
     {
         return [
             ['test-s-2-s-zw-2', 'test s 2 s zw 2'],
@@ -754,9 +761,9 @@ class StringHelperTest extends \Codeception\Test\Unit
     public function testLines($result, $input)
     {
         $lines = StringHelper::lines($input);
-        $this->assertSame($result, count($lines));
+        $this->assertCount($result, $lines);
     }
-    public function linesData()
+    public function linesData(): array
     {
         return [
             [4, 'test
@@ -791,7 +798,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $uppercase = StringHelper::toUpperCase($input);
         $this->assertSame($result, $uppercase);
     }
-    public function toUppercaseData()
+    public function toUppercaseData(): array
     {
         return [
             ['TEST S 2 S ZW 2', 'test s 2 s zw 2'],
@@ -817,7 +824,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $trim = StringHelper::trim($input);
         $this->assertSame($result, $trim);
     }
-    public function trimData()
+    public function trimData(): array
     {
         return [
             ['😂 😁', '😂 😁 '],
@@ -839,7 +846,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $toTitleCase = StringHelper::toTitleCase($input);
         $this->assertSame($result, $toTitleCase);
     }
-    public function toTitleCase()
+    public function toTitleCase(): array
     {
         return [
             ['Test S 2 S Zw 2', 'test s 2 s zw 2'],
@@ -865,7 +872,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $toLower = StringHelper::toLowerCase($input);
         $this->assertSame($result, $toLower);
     }
-    public function toLowerCaseData()
+    public function toLowerCaseData(): array
     {
         return [
             ['test s 2 s zw 2', 'test s 2 s zw 2'],
@@ -891,7 +898,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $titelize = StringHelper::titleize($input);
         $this->assertSame($result, $titelize);
     }
-    public function titelizeData()
+    public function titelizeData(): array
     {
         return [
             ['Test S 2 S Zw 2', 'test s 2 s zw 2'],
@@ -917,7 +924,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $swap = StringHelper::swapCase($input);
         $this->assertSame($result, $swap);
     }
-    public function swapCaseData()
+    public function swapCaseData(): array
     {
         return [
             ['TEST S 2 S ZW 2', 'test s 2 s zw 2'],
@@ -945,7 +952,7 @@ class StringHelperTest extends \Codeception\Test\Unit
         $substr = StringHelper::substr($input, $start, $length);
         $this->assertSame($result, $substr);
     }
-    public function substrData()
+    public function substrData(): array
     {
         return [
             ['st s', 'test s 2 s zw 2', 2, 4],

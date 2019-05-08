@@ -4,6 +4,7 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit\helpers;
 
 use Craft;
@@ -12,6 +13,8 @@ use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
 use craft\services\Entries;
 use craft\test\TestCase;
+use stdClass;
+use UnitTester;
 use yii\base\Component;
 
 /**
@@ -19,12 +22,12 @@ use yii\base\Component;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class AppTest extends TestCase
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -41,15 +44,17 @@ class AppTest extends TestCase
 
     /**
      * @dataProvider validEditionsData
+     * @param $result
+     * @param $input
      */
     public function testIsValidEdition($result, $input)
     {
         $isValid = App::isValidEdition($input);
         $this->assertSame($result, $isValid);
-        $this->assertInternalType('boolean', $isValid);
+        $this->assertIsBool($isValid);
     }
 
-    public function validEditionsData()
+    public function validEditionsData(): array
     {
         return [
             [true, Craft::Pro],
@@ -76,11 +81,11 @@ class AppTest extends TestCase
     {
         $version = App::normalizeVersion($input);
         $this->assertSame($result, App::normalizeVersion($input));
-        $this->assertInternalType('string', $version);
+        $this->assertIsString($version);
     }
 
 
-    public function versionListData()
+    public function versionListData(): array
     {
         return [
             ['version', 'version 21'],
@@ -109,11 +114,13 @@ class AppTest extends TestCase
         @ini_set('date.timezone', $timezoneValue);
 
         $this->assertFalse(App::phpConfigValueAsBool(''));
-        $this->assertFalse(App::phpConfigValueAsBool('This isnt a config value'));
+        $this->assertFalse(App::phpConfigValueAsBool('This is not a config value'));
     }
 
     /**
      * @dataProvider classHumanizationData
+     * @param $result
+     * @param $input
      */
     public function testClassHumanization($result, $input)
     {
@@ -121,22 +128,22 @@ class AppTest extends TestCase
         $this->assertSame($result, $humanizedClass);
 
         // Make sure we dont have any uppercase characters.
-        $this->assertSame(0, preg_match('/[A-Z]/', $humanizedClass));
+        $this->assertNotRegExp('/[A-Z]/', $humanizedClass);
     }
 
-    public function classHumanizationData()
+    public function classHumanizationData(): array
     {
         return [
             ['entries', Entries::class],
             ['app test', self::class],
-            ['std class', \stdClass::class],
+            ['std class', stdClass::class],
             ['iam not a class!@#$%^&*()1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
         ];
     }
 
     public function testMaxPowerCaptain(){
         $oldMemoryLimit = ini_get('memory_limit');
-        $oldMaxExcecution = ini_get('max_execution_time');
+        $oldMaxExecution= ini_get('max_execution_time');
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $generalConfig->phpMaxMemoryLimit = '512M';
@@ -149,7 +156,7 @@ class AppTest extends TestCase
         $this->assertSame('0', ini_get('max_execution_time'));
 
         ini_set('memory_limit', $oldMemoryLimit);
-        ini_set('max_execution_time', $oldMaxExcecution);
+        ini_set('max_execution_time', $oldMaxExecution);
 
         // TODO: 3.1 added new funcs. Test this
     }
@@ -162,21 +169,23 @@ class AppTest extends TestCase
 
     /**
      * @dataProvider configsData
+     * @param $method
+     * @param $desiredConfig
      */
     public function testConfigIndexes($method, $desiredConfig)
     {
         $config = App::$method();
 
-        $this->assertFalse($this->areKeysMissing($config, $desiredConfig));
+        $this->assertFalse($this->_areKeysMissing($config, $desiredConfig));
 
-        // Make sure we aren't passing in anything unkown or invalid.
+        // Make sure we aren't passing in anything unknown or invalid.
         $this->assertTrue(class_exists($config['class']));
 
         // Make sure its a component
-        $this->assertTrue(in_array(Component::class, class_parents($config['class'])));
+        $this->assertContains(Component::class, class_parents($config['class']));
     }
 
-    public function configsData()
+    public function configsData(): array
     {
         return [
             ['assetManagerConfig', ['class', 'basePath', 'baseUrl', 'fileMode', 'dirMode', 'appendTimestamp']],
@@ -199,10 +208,10 @@ class AppTest extends TestCase
         $mailSettings = new MailSettings(['transportType' => Sendmail::class]);
         $result = App::mailerConfig($mailSettings);
 
-        $this->assertFalse($this->areKeysMissing($result, ['class', 'messageClass', 'from', 'template', 'transport']));
+        $this->assertFalse($this->_areKeysMissing($result, ['class', 'messageClass', 'from', 'template', 'transport']));
 
         // Make sure its a component
-        $this->assertTrue(in_array(Component::class, class_parents($result['class'])));
+        $this->assertContains(Component::class, class_parents($result['class']));
         $this->assertTrue(class_exists($result['class']));
     }
 
@@ -215,7 +224,7 @@ class AppTest extends TestCase
         $this->testConfigIndexes('viewConfig', ['class']);
     }
 
-    private function areKeysMissing(array $configArray, array $desiredSchemaArray) : bool
+    private function _areKeysMissing(array $configArray, array $desiredSchemaArray) : bool
     {
         foreach ($desiredSchemaArray as $desiredSchemaItem) {
             if (!array_key_exists($desiredSchemaItem, $configArray)) {

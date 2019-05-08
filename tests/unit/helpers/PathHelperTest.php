@@ -9,19 +9,19 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Path;
-
+use UnitTester;
 
 /**
  * Class PathHelperTest.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class PathHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -35,7 +35,7 @@ class PathHelperTest extends Unit
         $isContained = Path::ensurePathIsContained($input);
         $this->assertSame($result, $isContained);
     }
-    public function isPathContainedData()
+    public function isPathContainedData(): array
     {
         return [
             [true, '/'],

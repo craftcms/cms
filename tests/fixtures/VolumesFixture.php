@@ -4,14 +4,18 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.github.io/license/
  */
+
 namespace craftunit\fixtures;
 
+use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\records\Volume;
 use craft\services\Volumes;
 use craft\test\Fixture;
-use yii\test\ActiveFixture;
+use yii\base\ErrorException;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * Class VolumesFixture.
@@ -19,18 +23,34 @@ use yii\test\ActiveFixture;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class VolumesFixture extends Fixture
 {
-    public $modelClass = Volume::class;
-    public $dataFile = __DIR__.'/data/volumes.php';
+    // Constants
+    // =========================================================================
 
-    const BASE_URL = 'https://cdn.test.craftcms.dev/';
+    const BASE_URL = 'https://cdn.test.craftcms.test/';
+
+    // Properties
+    // =========================================================================
 
     /**
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
+     * @inheritdoc
+     */
+    public $modelClass = Volume::class;
+
+    /**
+     * @inheritdoc
+     */
+    public $dataFile = __DIR__.'/data/volumes.php';
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     * @throws Exception
      */
     public function load()
     {
@@ -42,11 +62,12 @@ class VolumesFixture extends Fixture
             FileHelper::createDirectory($settings['path']);
         }
 
-        \Craft::$app->set('volumes', new Volumes());
+        Craft::$app->set('volumes', new Volumes());
     }
 
     /**
-     * @throws \yii\base\ErrorException
+     * @inheritdoc
+     * @throws ErrorException
      */
     public function unload()
     {

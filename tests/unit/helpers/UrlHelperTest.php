@@ -4,13 +4,14 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit\helpers;
 
 
 use Codeception\Test\Unit;
-use craft\db\Query;
+use Craft;
 use craft\helpers\UrlHelper;
-use craftunit\fixtures\SitesFixture;
+use UnitTester;
 use yii\base\Exception;
 
 /**
@@ -18,12 +19,12 @@ use yii\base\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class UrlHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -35,11 +36,11 @@ class UrlHelperTest extends Unit
 
     protected function _before()
     {
-        $generalConfig = \Craft::$app->getConfig()->getGeneral();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
         $this->cpTrigger = $generalConfig->cpTrigger;
         $configSiteUrl = $generalConfig->siteUrl;
 
-        $craft = $this->getModule('\craft\test\Craft');
+        $craft = $this->getModule(\craft\test\Craft::class);
         $this->entryScript = $craft->_getConfig('entryScript');
         $this->entryUrl = $craft->_getConfig('entryUrl');
 
@@ -53,7 +54,7 @@ class UrlHelperTest extends Unit
             $configSiteUrl .= $this->entryScript;
         }
 
-        if (\Craft::$app->getRequest()->getIsConsoleRequest()) {
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
             $this->baseUrlWithScript = $configSiteUrl ?: $this->entryScript;
         } else {
             $this->baseUrlWithScript = $configSiteUrl ?: '/';
@@ -70,22 +71,26 @@ class UrlHelperTest extends Unit
 
     /**
      * Tests various methods of the UrlHelper which check that a URL confirms to a specification. I.E. Is it protocol relative or absolute
+     *
      * @dataProvider protocolRelativeUrlData
      * @dataProvider absoluteUrlData
      * @dataProvider fulUrlData
+     * @param $url
+     * @param bool $result
+     * @param $method
      */
     public function testIsUrlFunction($url, bool $result, $method)
     {
         $urlHelperResult = UrlHelper::$method($url);
         $this->assertSame($urlHelperResult, $result);
-        $this->assertInternalType('boolean', $urlHelperResult);
+        $this->assertIsBool($urlHelperResult);
     }
 
     /**
      * Add tests for whether urls are qualified as absolute.
      * @return array
      */
-    public function absoluteUrlData()
+    public function absoluteUrlData(): array
     {
         return [
             'absolute-url' => [ self::ABSOLUTE_URL, true, 'isAbsoluteUrl' ],
@@ -101,7 +106,7 @@ class UrlHelperTest extends Unit
      * Add tests for whether URLS are qualified as a full url.
      * @return array
      */
-    public function fulUrlData()
+    public function fulUrlData(): array
     {
         return [
             'absolute-url' => [ self::ABSOLUTE_URL, true, 'isFullUrl' ],
@@ -122,7 +127,7 @@ class UrlHelperTest extends Unit
      * Add tests for whether URLS are qualified as root relative
      * @return array
      */
-    public function protocolRelativeUrlData()
+    public function protocolRelativeUrlData(): array
     {
         return [
             'root-relative-true' => [ '/22', true, 'isRootRelativeUrl'],
@@ -134,13 +139,16 @@ class UrlHelperTest extends Unit
     /**
      * Test that adding params to urls works under various circumstances
      * @dataProvider urlWithParamsData()
-     */
+     * @param $result
+     * @param $url
+     * @param $params
+*/
     public function testUrlWithParams($result, $url, $params)
     {
         $this->assertSame($result, UrlHelper::urlWithParams($url, $params));
     }
 
-    public function urlWithParamsData()
+    public function urlWithParamsData(): array
     {
         return [
             '#' => [
@@ -188,7 +196,11 @@ class UrlHelperTest extends Unit
      * the cpTrigger variable inst easily accessible in the dataProvider methods.
      *
      * @dataProvider cpUrlCreationData
-     */
+     * @param $result
+     * @param $inputUrl
+     * @param $params
+     * @param string $scheme
+*/
     public function testCpUrlCreation($result, $inputUrl, $params, $scheme = 'https')
     {
         // Make sure https is enabled for the base url.
@@ -209,7 +221,7 @@ class UrlHelperTest extends Unit
     /**
      * @return array
      */
-    public function cpUrlCreationData()
+    public function cpUrlCreationData(): array
     {
         return [
             'test-empty' => ['', '', []],
@@ -248,14 +260,14 @@ class UrlHelperTest extends Unit
      * @dataProvider urlWithTokenProvider
      * @dataProvider urlWithParamsProvider
      * @dataProvider stripQueryStringProvider
-     * @param      $url
-     * @param      $data
      * @param bool $result
+     * @param      $url
+     * @param $modifier
      * @param      $method
-     */
+*/
     public function testUrlModifiers($result, $url, $modifier, $method)
     {
-        \Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls = true;
+        Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls = true;
 
         $this->assertSame($result, UrlHelper::$method($url, $modifier));
     }
@@ -264,7 +276,7 @@ class UrlHelperTest extends Unit
      * Tests for UrlHelper::stripQueryString() method
      * @return array
      */
-    public function stripQueryStringProvider()
+    public function stripQueryStringProvider(): array
     {
         return [
             'invalid-query-string' => [
@@ -299,7 +311,7 @@ class UrlHelperTest extends Unit
      * Tests for UrlHelper::urlWithParams() method
      * @return array
      */
-    public function urlWithParamsProvider()
+    public function urlWithParamsProvider(): array
     {
         return [
             'with-fragment' => [
@@ -345,7 +357,7 @@ class UrlHelperTest extends Unit
      * Tests for UrlHelper::urlWithToken()
      * @return array
      */
-    public function urlWithTokenProvider()
+    public function urlWithTokenProvider(): array
     {
         $https = true;
         $baseUrl = self::ABSOLUTE_URL_HTTPS;
@@ -388,7 +400,7 @@ class UrlHelperTest extends Unit
      * Tests for UrlHelper::urlWithScheme()
      * @return array
      */
-    public function urlWithSchemeProvider()
+    public function urlWithSchemeProvider(): array
     {
         return [
                 'no-scheme' => [
@@ -455,11 +467,12 @@ class UrlHelperTest extends Unit
      * @dataProvider urlFunctionDataProvider
      *
      * @param             $result
-     * @param string      $path
-     * @param null        $params
+     * @param string $path
+     * @param null $params
      * @param string|null $scheme
-     * @param bool|null   $showScriptName
-     */
+     * @param bool|null $showScriptName
+     * @param bool $isNonCompletedUrl
+*/
     public function testUrlFunction($result, string $path = '', $params = null, string $scheme = null, bool $showScriptName = null, bool $isNonCompletedUrl = false)
     {
         if ($isNonCompletedUrl === true || !UrlHelper::isAbsoluteUrl($result)) {
@@ -479,11 +492,10 @@ class UrlHelperTest extends Unit
         $this->assertSame($result, UrlHelper::url($path, $params, $scheme, $showScriptName));
     }
 
-    public function urlFunctionDataProvider()
+    public function urlFunctionDataProvider(): array
     {
         return [
             'base' => ['endpoint', 'endpoint',  null,  null, null, true],
-            'full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
             'full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
             'scheme-override' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
             'scheme-override-param-add' => [
@@ -519,9 +531,9 @@ class UrlHelperTest extends Unit
         return $url;
     }
 
-    public function determineUrlScheme()
+    public function determineUrlScheme(): string
     {
-        return !\Craft::$app->getRequest()->getIsConsoleRequest() && \Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
+        return !Craft::$app->getRequest()->getIsConsoleRequest() && Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
     }
 
     /**
@@ -558,14 +570,14 @@ class UrlHelperTest extends Unit
         $this->assertSame('sftp://volkswagen', UrlHelper::hostInfo('sftp://volkswagen////222////222'));
 
         // If nothing is passed to the hostInfo() your mileage may vary depending on request type. So we need to know what to expect before hand..
-        $expectedValue = \Craft::$app->getRequest()->getIsConsoleRequest() ? '' : \Craft::$app->getRequest()->getHostInfo();
+        $expectedValue = Craft::$app->getRequest()->getIsConsoleRequest() ? '' : Craft::$app->getRequest()->getHostInfo();
         $this->assertSame($expectedValue, UrlHelper::hostInfo(''));
     }
 
     public function testSchemeForTokenizedBasedOnConfig()
     {
         // Run down the logic to see what we will need to require.
-        $config =  \Craft::$app->getConfig()->getGeneral();
+        $config =  Craft::$app->getConfig()->getGeneral();
 
         $config->useSslOnTokenizedUrls = true;
         $this->assertSame('https', UrlHelper::getSchemeForTokenizedUrl());
@@ -581,13 +593,14 @@ class UrlHelperTest extends Unit
      * @param null $params
      * @param null $scheme
      * @param null $siteId
+     * @throws Exception
      */
     public function testSiteUrl($result, $path, $params = null, $scheme = null, $siteId = null)
     {
         $siteUrl = UrlHelper::siteUrl($path, $params, $scheme, $siteId);
         $this->assertSame($result, $siteUrl);
     }
-    public function siteUrlData()
+    public function siteUrlData(): array
     {
         return [
             ['http://test.craftcms.dev/index.php?p=endpoint', 'endpoint'],

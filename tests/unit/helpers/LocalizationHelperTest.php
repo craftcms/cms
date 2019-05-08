@@ -5,27 +5,26 @@
  * @license   https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\helpers;
 
-
 use Codeception\Test\Unit;
+use Craft;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Localization;
+use UnitTester;
 use yii\base\InvalidArgumentException;
-use yii\i18n\MissingTranslationEvent;
 
 /**
  * Class LocalizationHelper.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class LocalizationHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -42,7 +41,7 @@ class LocalizationHelperTest extends Unit
         $this->assertSame($result, $normalized);
     }
 
-    public function languageNormalizationData()
+    public function languageNormalizationData(): array
     {
         return [
             ['nl', 'nl'],
@@ -55,7 +54,7 @@ class LocalizationHelperTest extends Unit
         ];
     }
 
-    public function testLanugageNormalizationExceptions()
+    public function testLanguageNormalizationExceptions()
     {
         $this->tester->expectThrowable(InvalidArgumentException::class, function () {
             Localization::normalizeLanguage('dutch');
@@ -78,7 +77,7 @@ class LocalizationHelperTest extends Unit
         $this->assertSame($result, $normalization);
     }
 
-    public function numberNormalizationData()
+    public function numberNormalizationData(): array
     {
         return [
             ['2000000000', '20,0000,0000', null],
@@ -91,8 +90,8 @@ class LocalizationHelperTest extends Unit
     public function testNumberNormalizationCustomLocale()
     {
         $locale = null;
-        foreach (\Craft::$app->getI18n()->getAllLocaleIds() as $localeId) {
-            if ($localeId !== \Craft::$app->language) {
+        foreach (Craft::$app->getI18n()->getAllLocaleIds() as $localeId) {
+            if ($localeId !== Craft::$app->language) {
                 $locale = $localeId;
             }
         }
@@ -111,10 +110,10 @@ class LocalizationHelperTest extends Unit
         $this->assertSame($result, $data);
     }
 
-    public function localeDataData()
+    public function localeDataData(): array
     {
         $dir = dirname(__DIR__, 3).'/src/config/locales/nl.php';
-        $nlTranslation = require_once $dir;
+        $nlTranslation = require $dir;
 
         return [
             [[
@@ -136,10 +135,10 @@ class LocalizationHelperTest extends Unit
     public function testCustomConfigPathDirGetsMerged()
     {
         $this->markTestSkipped();
-        $oldConfigPath = \Craft::$app->getConfig()->configDir;
-        \Craft::$app->getConfig()->configDir = \dirname(__DIR__, 3).'/_data/assets/files';
+        $oldConfigPath = Craft::$app->getConfig()->configDir;
+        Craft::$app->getConfig()->configDir = dirname(__DIR__, 3).'/_data/assets/files';
         $this->assertSame([], Localization::localeData('a-locale-id'));
-        \Craft::$app->getConfig()->configDir = $oldConfigPath;
+        Craft::$app->getConfig()->configDir = $oldConfigPath;
     }
 
     /**
@@ -150,11 +149,10 @@ class LocalizationHelperTest extends Unit
      */
     public function testFindMissingTranslation($result, $input)
     {
-        $missing = Localization::findMissingTranslation($input);
-        $this->assertSame($result, $missing);
+        $this->assertSame($result, Localization::findMissingTranslation($input));
     }
 
-    public function findMissingTranslationData()
+    public function findMissingTranslationData(): array
     {
         return [
         ];

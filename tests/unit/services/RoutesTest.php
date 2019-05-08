@@ -7,10 +7,11 @@
 
 namespace craftunit\services;
 
-
 use Codeception\Test\Unit;
+use Craft;
 use craft\helpers\StringHelper;
 use craft\services\Routes;
+use UnitTester;
 
 /**
  * Unit tests for RoutesTest
@@ -18,12 +19,12 @@ use craft\services\Routes;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class RoutesTest extends Unit
 {
     /**
-     * @var \UnitTester $tester
+     * @var UnitTester $tester
      */
     protected $tester;
 
@@ -35,7 +36,7 @@ class RoutesTest extends Unit
     public function _before()
     {
         parent::_before();
-        $this->routes = \Craft::$app->getRoutes();
+        $this->routes = Craft::$app->getRoutes();
     }
 
     /**
@@ -52,13 +53,13 @@ class RoutesTest extends Unit
 
         $this->assertSame(
             $result,
-            \Craft::$app->getProjectConfig()->get(Routes::CONFIG_ROUTES_KEY.'.'.$routeUUID)
+            Craft::$app->getProjectConfig()->get(Routes::CONFIG_ROUTES_KEY.'.'.$routeUUID)
         );
 
         $this->assertTrue(StringHelper::isUUID($routeUUID));
     }
 
-    public function saveRouteDataProvider()
+    public function saveRouteDataProvider(): array
     {
         return [
             [
@@ -121,7 +122,7 @@ class RoutesTest extends Unit
                 [['validHandle', 'date'], 'noArray'], '_test'
             ],
 
-            // TODO: Well more a question.Shouldnt emojis (UTF-8) be allowed in routes?
+            // TODO: Well more a question. Shouldn't emojis (UTF-8) be allowed in routes?
             [
                 [
                     'template' => '_test',

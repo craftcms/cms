@@ -246,7 +246,8 @@ class UsersController extends Controller
      */
     public function actionStartElevatedSession()
     {
-        $password = Craft::$app->getRequest()->getBodyParam('password');
+        $request = Craft::$app->getRequest();
+        $password = $request->getBodyParam('currentPassword') ?? $request->getBodyParam('password');
 
         try {
             $success = Craft::$app->getUser()->startElevatedSession($password);
@@ -923,7 +924,7 @@ class UsersController extends Controller
         $request = Craft::$app->getRequest();
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
-        $requireEmailVerification = Craft::$app->getProjectConfig()->get('users.requireEmailVerification');
+        $requireEmailVerification = Craft::$app->getProjectConfig()->get('users.requireEmailVerification') ?? true;
 
         // Get the user being edited
         // ---------------------------------------------------------------------
@@ -959,7 +960,8 @@ class UsersController extends Controller
                 $this->requirePermission('registerUsers');
             } else {
                 // Make sure public registration is allowed
-                if (!Craft::$app->getProjectConfig()->get('users.allowPublicRegistration')) {
+                $allowPublicRegistration = Craft::$app->getProjectConfig()->get('users.allowPublicRegistration') ?? false;
+                if (!$allowPublicRegistration) {
                     throw new ForbiddenHttpException('Public registration is not allowed');
                 }
 
@@ -1758,13 +1760,13 @@ class UsersController extends Controller
             return false;
         }
 
-        $currentHashedPassword = $currentUser->password;
-
-        try {
-            $currentPassword = Craft::$app->getRequest()->getRequiredParam('password');
-        } catch (BadRequestHttpException $e) {
+        $request = Craft::$app->getRequest();
+        $currentPassword = $request->getParam('currentPassword') ?? $request->getParam('password');
+        if ($currentPassword === null) {
             return false;
         }
+
+        $currentHashedPassword = $currentUser->password;
 
         try {
             return Craft::$app->getSecurity()->validatePassword($currentPassword, $currentHashedPassword);

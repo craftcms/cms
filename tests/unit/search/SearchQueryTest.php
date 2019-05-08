@@ -4,6 +4,7 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit\search;
 
 use Codeception\Test\Unit;
@@ -12,14 +13,14 @@ use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 
 /**
- * Unit tests for SearcTest
+ * Unit tests for SearchTest
  *
  * Searching and some of the commands run in this test are documented here:
  * https://docs.craftcms.com/v3/searching.html#supported-syntaxes
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class SearchQueryTest extends Unit
 {
@@ -109,7 +110,7 @@ class SearchQueryTest extends Unit
     /**
      *
      */
-    public function searchQueryData()
+    public function searchQueryData(): array
     {
         // The $searchQueryTerm->term property will not contain the "" double quotes and will have ['phrase'] set to true
         $quotedPhraseConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
@@ -168,13 +169,12 @@ class SearchQueryTest extends Unit
 
     /**
      * @dataProvider searchQueryData
-     * @param $query
-     * @param null $configOptions
+     * @param string $query
+     * @param array $configOptions
+     * @param int|null $sizeOfArray
      */
     public function testSearchQuery(string $query, array $configOptions = null, int $sizeOfArray = null)
     {
-        $exploded = explode(' ', $query);
-
         $search = new SearchQuery($query);
 
         // If we have to count the array. Count the array.
@@ -192,13 +192,13 @@ class SearchQueryTest extends Unit
 
     /**
      * @dataProvider searchQueryData
+     * @param string $query
+     * @param array|null $configOptions
      */
-    public function testSearchQuerySortOrder(string $query, array $configOptions = null, int $sizeOfArray = null)
+    public function testSearchQuerySortOrder(string $query, array $configOptions = null)
     {
         $exploded = explode(' ', $query);
-        $search = new SearchQuery($query);
-
-        foreach ($search->getTokens() as $index => $token) {
+        foreach ((new SearchQuery($query))->getTokens() as $index => $token) {
             $config = $this->getConfigFromOptions($index, $configOptions);
 
             $fromExplodedString = $this->createDefaultSearchQueryTermFromString($exploded[$index], $config);
@@ -212,9 +212,9 @@ class SearchQueryTest extends Unit
      * @param $index
      * @return SearchQueryTerm
      */
-    public function getWhatItShouldBe($token, $configOptions, $index)
+    public function getWhatItShouldBe($token, $configOptions, $index): SearchQueryTerm
     {
-        // Get wether the data provider gave us custom config options for this term based on the above searchParam
+        // Get whether the data provider gave us custom config options for this term based on the above searchParam
         $config = $this->getConfigFromOptions($index, $configOptions);
 
         return $this->createDefaultSearchQueryTermFromString($token->term, $config);

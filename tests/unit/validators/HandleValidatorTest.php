@@ -7,7 +7,6 @@
 
 namespace craftunit\validators;
 
-
 use Codeception\Test\Unit;
 use craft\validators\HandleValidator;
 use craft\test\mockclasses\models\ExampleModel;
@@ -17,7 +16,7 @@ use craft\test\mockclasses\models\ExampleModel;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class HandleValidatorTest extends Unit
 {
@@ -35,14 +34,15 @@ class HandleValidatorTest extends Unit
      */
     protected $tester;
 
-    protected $reservedWords =  ['bird', 'is', 'the', 'word'];
+    protected static $reservedWords =  ['bird', 'is', 'the', 'word'];
+
     public function _before()
     {
         $this->model = new ExampleModel();
-        $this->handleValidator = new HandleValidator(['reservedWords' => $this->reservedWords]);
+        $this->handleValidator = new HandleValidator(['reservedWords' => self::$reservedWords]);
 
-        $this->assertSame($this->reservedWords, $this->handleValidator->reservedWords);
-        $this->reservedWords  = array_merge($this->reservedWords, HandleValidator::$baseReservedWords);
+        $this->assertSame(self::$reservedWords, $this->handleValidator->reservedWords);
+        self::$reservedWords  = array_merge(self::$reservedWords, HandleValidator::$baseReservedWords);
     }
 
     public function testStaticConstants()
@@ -62,7 +62,7 @@ class HandleValidatorTest extends Unit
     public function testStaticConstantsArentAllowed()
     {
 
-        foreach ($this->reservedWords as $reservedWord) {
+        foreach (self::$reservedWords as $reservedWord) {
             $this->model->exampleParam = $reservedWord;
             $this->handleValidator->validateAttribute($this->model, 'exampleParam');
 
@@ -76,7 +76,7 @@ class HandleValidatorTest extends Unit
     /**
      * @dataProvider handleValidationData
      *
-     * @param bool $result
+     * @param bool $mustValidate
      * @param      $input
      */
     public function testHandleValidation(bool $mustValidate, $input)
@@ -85,7 +85,7 @@ class HandleValidatorTest extends Unit
 
         $validatorResult = $this->handleValidator->validateAttribute($this->model, 'exampleParam');
 
-        $this->assertSame(null, $validatorResult);
+        $this->assertNull($validatorResult);
 
         if ($mustValidate) {
             $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());
@@ -94,7 +94,7 @@ class HandleValidatorTest extends Unit
         }
     }
 
-    public function handleValidationData()
+    public function handleValidationData(): array
     {
         return [
             [true, 'iamAHandle'],

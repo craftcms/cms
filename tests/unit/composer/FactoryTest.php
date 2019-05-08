@@ -4,42 +4,56 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit\composer;
 
-
-use Codeception\Test\Unit;
 use Composer\Config;
 use Composer\Downloader\DownloadManager;
 use Composer\IO\NullIO;
 use craft\composer\Factory;
 use craft\test\TestCase;
+use UnitTester;
 
 /**
  * Unit tests for craft\composer\Factory
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class FactoryTest extends TestCase
 {
+    // Properties
+    // =========================================================================
+
     /**
      * @var Factory $factory
      */
     protected $factory;
 
     /**
-     * @var \UnitTester $tester
+     * @var UnitTester $tester
      */
     protected $tester;
 
-    public function _before()
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
     {
         $this->factory = new Factory();
     }
 
+    // Tests
+    // =========================================================================
+
     /**
-     * TODO: Test creation without DownloadManager passed in?
+     * Test creating an archive manager.
+     *
+     * @todo Test creation without DownloadManager passed in?
      */
     public function testCreateArchiveManager()
     {
@@ -47,7 +61,7 @@ class FactoryTest extends TestCase
         $downloadManager = new DownloadManager(new NullIO());
         $archiveManager = $this->factory->createArchiveManager($config, $downloadManager);
 
-        // Ensure that zip and phar archivers arent added.
+        // Ensure that zip and phar archivers aren't added.
         $this->assertSame([], $this->getInaccessibleProperty($archiveManager, 'archivers'));
     }
 }

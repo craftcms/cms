@@ -5,32 +5,50 @@
  * @license https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\fixtures;
 
-use craft\db\Query;
-use craft\records\Section as SectionRecord;
+use Craft;
 use craft\records\Section;
 use craft\services\Sections;
 use craft\test\Fixture;
 
 /**
- * Unit tests for SectionsFixture
+ * Class SectionsFixture
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class SectionsFixture extends Fixture
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public $dataFile = __DIR__.'/data/sections.php';
-    public $modelClass = SectionRecord::class;
+
+    /**
+     * @inheritdoc
+     */
+    public $modelClass = Section::class;
+
+    /**
+     * @inheritdoc
+     */
     public $depends = [SectionSettingFixture::class];
 
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public function load()
     {
         parent::load();
 
-        \Craft::$app->set('sections', new Sections());
+        Craft::$app->set('sections', new Sections());
     }
 }

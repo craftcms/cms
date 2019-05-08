@@ -5,10 +5,9 @@
  * @license   https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\fixtures;
 
-
+use Craft;
 use craft\records\VolumeFolder;
 use craft\services\Volumes;
 use yii\test\ActiveFixture;
@@ -16,21 +15,40 @@ use yii\test\ActiveFixture;
 /**
  * Class VolumeFolderFixture.
  *
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class VolumesFolderFixture extends ActiveFixture
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public $modelClass = VolumeFolder::class;
+
+    /**
+     * @inheritdoc
+     */
     public $dataFile = __DIR__.'/data/volumefolder.php';
+
+    /**
+     * @inheritdoc
+     */
     public $depends = [VolumesFixture::class];
 
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public function load()
     {
         parent::load();
 
-        \Craft::$app->set('volumes', new Volumes());
+        Craft::$app->set('volumes', new Volumes());
     }
 }

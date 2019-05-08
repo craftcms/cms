@@ -9,14 +9,15 @@ namespace craftunit\validators;
 
 use Codeception\Test\Unit;
 use craft\validators\UsernameValidator;
-
+use UnitTester;
+use yii\base\NotSupportedException;
 
 /**
  * Class UsernameValidatorTest.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class UsernameValidatorTest extends Unit
 {
@@ -26,7 +27,7 @@ class UsernameValidatorTest extends Unit
     protected $usernameValidator;
 
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -39,13 +40,14 @@ class UsernameValidatorTest extends Unit
      * @dataProvider validateValueData
      * @param $result
      * @param $input
+     * @throws NotSupportedException
      */
     public function testValidateValue($result, $input)
     {
         $validated = $this->usernameValidator->validateValue($input);
         $this->assertSame($result, $validated);
     }
-    public function validateValueData()
+    public function validateValueData(): array
     {
         return [
             [null, 'asdfghjkl1234567890'],

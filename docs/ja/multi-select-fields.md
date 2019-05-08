@@ -8,53 +8,83 @@
 
 * **マルチセレクトボックスのオプション** – フィールドで利用可能なオプションを定義します。オプションの値とラベルを別々に設定したり、デフォルトで選択状態にしておくものを選択できます。
 
-## テンプレートの実例
+## テンプレート記法
 
-#### 選択されたオプションをループ
+### マルチセレクトボックスフィールドによるエレメントの照会
+
+マルチセレクトボックスフィールドを持つ[エレメントを照会](dev/element-queries/README.md)する場合、フィールドのハンドルにちなんで名付けられたクエリパラメータを使用して、マルチセレクトボックスフィールドのデータに基づいた結果をフィルタできます。
+
+利用可能な値には、次のものが含まれます。
+
+| 値 | 取得するエレメント
+| - | -
+| `'*"foo"*'` | `foo` オプションが選択されている。
+| `'not *"foo"*'` | `foo` オプションが選択されていない。
 
 ```twig
-{% for option in entry.multiselectFieldHandle %}
+{# Fetch entries with the 'foo' option selected #}
+{% set entries = craft.entries()
+    .<FieldHandle>('*"foo"*')
+    .all() %}
+```
+
+### マルチセレクトボックスフィールドデータの操作
+
+テンプレート内でマルチセレクトボックスフィールドのエレメントを取得する場合、マルチセレクトボックスフィールドのハンドルを利用して、そのデータにアクセスできます。
+
+```twig
+{% set value = entry.<FieldHandle> %}
+```
+
+それは、フィールドデータを含む <api:craft\fields\data\MultiOptionsFieldData> オブジェクトを提供します。
+
+選択されたオプションすべてをループするには、フィールド値を反復してください。
+
+```twig
+{% for option in entry.<FieldHandle> %}
     Label: {{ option.label }}
     Value: {{ option }} or {{ option.value }}
 {% endfor %}
 ```
 
-#### 利用可能なすべてのオブションをループ
+利用可能なオプションすべてをループするには、[options](api:craft\fields\data\MultiOptionsFieldData::getOptions()) プロパティを反復してください。
 
 ```twig
-{% for option in entry.multiselectFieldHandle.options %}
+{% for option in entry.<FieldHandle>.options %}
     Label:    {{ option.label }}
     Value:    {{ option }} or {{ option.value }}
     Selected: {{ option.selected ? 'Yes' : 'No' }}
 {% endfor %}
 ```
 
-#### いずれかのオプションが選択されているかを確認
+いずれかのオプションが選択されているかを確認するには、[length](https://twig.symfony.com/doc/2.x/filters/length.html) フィルタを使用してください。
 
 ```twig
-{% if entry.multiselectFieldHandle|length %}
+{% if entry.<FieldHandle>|length %}
 ```
 
-#### 特定のオプションが選択されているかを確認
+特定のオプションが選択されているかを確認するには、[contains()](api:craft\fields\data\MultiOptionsFieldData::contains()) を使用してください。
 
 ```twig
-{% if entry.multiselectFieldHandle.contains('optionValue') %}
+{% if entry.<FieldHandle>.contains('foo') %}
 ```
 
-#### 投稿フォーム
+### 投稿フォームでマルチセレクトボックスフィールドを保存
+
+マルチセレクトボックスフィールドを含める必要がある[投稿フォーム](dev/examples/entry-form.md)がある場合、出発点としてこのテンプレートを使用してください。
 
 ```twig
-{% set field = craft.app.fields.getFieldByHandle('multiselectFieldHandle') %}
+{% set field = craft.app.fields.getFieldByHandle('<FieldHandle>') %}
 
 {# Include a hidden input first so Craft knows to update the
    existing value, if no options are selected. #}
-<input type="hidden" name="fields[multiselectFieldHandle]" value="">
+<input type="hidden" name="fields[<FieldHandle>]" value="">
 
-<select multiple name="fields[multiselectFieldHandle][]">
+<select multiple name="fields[<FieldHandle>][]">
     {% for option in field.options %}
 
         {% set selected = entry is defined
-            ? entry.multiselectFieldHandle.contains(option.value)
+            ? entry.<FieldHandle>.contains(option.value)
             : option.default %}
 
         <option value="{{ option.value }}"

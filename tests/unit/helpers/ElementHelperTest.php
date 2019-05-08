@@ -5,26 +5,26 @@
  * @license   https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\helpers;
 
-
 use Codeception\Test\Unit;
+use Craft;
 use craft\errors\OperationAbortedException;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
+use UnitTester;
 
 /**
  * Class ElementHelperTest.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class ElementHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -36,17 +36,17 @@ class ElementHelperTest extends Unit
      */
     public function testCreateSlug($result, $input)
     {
-        $glue = \Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
-        $result = str_replace('[seperator-here]', $glue, $result);
+        $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+        $result = str_replace('[separator-here]', $glue, $result);
 
         $this->assertSame($result, ElementHelper::createSlug($input));
     }
 
-    public function createSlugData()
+    public function createSlugData(): array
     {
         return [
-            ['word[seperator-here]Word', 'wordWord'],
-            ['word[seperator-here]word', 'word word'],
+            ['word[separator-here]Word', 'wordWord'],
+            ['word[separator-here]word', 'word word'],
             ['word', 'word'],
             ['123456789', '123456789'],
             ['abc...dfg', 'abc...dfg'],
@@ -56,7 +56,7 @@ class ElementHelperTest extends Unit
 
     public function testLowerRemoveFromCreateSlug()
     {
-        $general =  \Craft::$app->getConfig()->getGeneral();
+        $general =  Craft::$app->getConfig()->getGeneral();
         $general->allowUppercaseInSlug = false;
 
         $this->assertSame('word'.$general->slugWordSeparator.'word', ElementHelper::createSlug('word WORD'));
@@ -71,9 +71,9 @@ class ElementHelperTest extends Unit
     {
         $doesIt = ElementHelper::doesUriFormatHaveSlugTag($input);
         $this->assertSame($result, $doesIt);
-        $this->assertInternalType('boolean', $doesIt);
+        $this->assertIsBool($doesIt);
     }
-    public function doesuriHaveSlugTagData()
+    public function doesuriHaveSlugTagData(): array
     {
         return [
             [false, ''],
@@ -90,18 +90,18 @@ class ElementHelperTest extends Unit
      * @dataProvider setUniqueUriData
      * @param $result
      * @param $config
+     * @throws OperationAbortedException
      */
     public function testSetUniqueUri($result, $config)
     {
         $example = new ExampleElement($config);
-        $uri = ElementHelper::setUniqueUri($example);
+        $this->assertNull(ElementHelper::setUniqueUri($example));
 
-        $this->assertNull($uri);
         foreach ($result as $key => $res) {
             $this->assertSame($res, $example->$key);
         }
     }
-    public function setUniqueUriData()
+    public function setUniqueUriData(): array
     {
         return [
             [['uri' => null], ['uriFormat' => null]],
@@ -120,7 +120,7 @@ class ElementHelperTest extends Unit
     }
     public function testMaxSlugIncrementExceptions()
     {
-        \Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = 0;
+        Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = 0;
         $this->tester->expectThrowable(OperationAbortedException::class, function () {
             $el = new ExampleElement(['uriFormat' => 'test/{slug}']);
             ElementHelper::setUniqueUri($el);

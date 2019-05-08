@@ -1,20 +1,13 @@
 # サーバー要件
 
-これらは Craft を正常にインストールし、適切に動作させるための要件です。
-
-## サーバーの確認
-
-Craft をインストールする前に、サーバーが要件を満たしているか調べることは重要です。以下の要件を再確認してください。または、要件を満たすかどうかを素早くチェックできる [Craft Server Check](https://github.com/craftcms/server-check) スクリプトを使ってください。
-
-_サーバー担当ではありませんか？このページのリンクをサーバー管理者に送ってください。_
-
-## サーバー要件
+::: tip
+[Craft Server Check](https://github.com/craftcms/server-check) スクリプトを使うことで、サーバーが Craft の要件を満たしているかどうかを素早く確認できます。
+:::
 
 Craft は次の項目が必要です。
 
 * PHP 7.0 以降
-* with InnoDB の MySQL 5.5 以降（または、MariaDB 5.5 以降）、 または、PostgreSQL 9.5 以降
-* ウェブサーバー（Apache、Nginx、IIS）
+* with InnoDB の MySQL 5.5 以降、MariaDB 5.5 以降、または、PostgreSQL 9.5 以降
 * 少なくとも 256MB の PHP 割当メモリ
 * 少なくとも 200MB の空きディスク容量
 
@@ -52,7 +45,7 @@ Craft は次の PHP エクステンションが必要です。
 
 Craft のデータベースに接続するユーザーには、次の特権がなければなりません。
 
-#### MySQL, MariaDB
+#### MySQL/MariaDB
 
 * `SELECT`
 * `INSERT`
@@ -75,21 +68,23 @@ Craft のデータベースに接続するユーザーには、次の特権が�
 * `REFERENCES`
 * `CONNECT`
 
-## CP のブラウザ要件
+## コントロールパネルのブラウザ要件
 
 Craft のコントロールパネルは、モダンブラウザが必要です。
 
-### Windows と macOS
+#### Windows と macOS
 
 * Chrome 29 以降
 * Firefox 28 以降
 * Safari 9.0 以降
 * Microsoft Edge
 
-### モバイル
+#### モバイル
 
 * iOS: Safari 9.1 以降
 * Android: Chrome 4.4 以降
 
-メモ：Craft の CP のブラウザ要件は、実際のウェブサイトとは関係がありません。もしあなたがつらい仕事を苦にせず、IE 6 で完璧に表示されるサイトを望むのであれば、あたなの望む通りにできます。
+::: tip
+Craft の CP のブラウザ要件は、実際のウェブサイトとは関係がありません。もしあなたがつらい仕事を苦にせず、IE 6 で完璧に表示されるサイトを望むのであれば、あたなの望む通りにできます。
+:::
 

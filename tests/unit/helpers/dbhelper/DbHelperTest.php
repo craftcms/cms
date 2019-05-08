@@ -1,11 +1,20 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craftunit\helpers;
 
-
+use Craft;
 use craft\helpers\Db;
 use craft\test\mockclasses\serializable\Serializable;
 use Codeception\Test\Unit;
+use DateTime;
+use DateTimeZone;
+use stdClass;
+use UnitTester;
 use yii\db\Exception;
 use yii\db\Schema;
 
@@ -14,29 +23,13 @@ use yii\db\Schema;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class DbHelperTest extends Unit
 {
-    /**
-     * @var \UnitTester
-     */
-    protected $tester;
+    // Constants
+    // =========================================================================
 
-    protected $systemTimezone;
-    protected $utcTimezone;
-    protected $asiaTokyoTimezone;
-
-    protected function _before()
-    {
-        $this->systemTimezone = new \DateTimeZone(\Craft::$app->getTimeZone());
-        $this->utcTimezone = new \DateTimeZone('UTC');
-        $this->asiaTokyoTimezone = new \DateTimeZone('Asia/Tokyo');
-    }
-
-    protected function _after()
-    {
-    }
     const MULTI_PARSEPARAM_NOT = [
         'or',
         [
@@ -62,7 +55,8 @@ class DbHelperTest extends Unit
             ]
         ]
     ];
-    const EMPTY_COLLUMN_PARSEPARAM = [
+
+    const EMPTY_COLUMN_PARSEPARAM = [
         'or',
         [
             'in',
@@ -73,15 +67,247 @@ class DbHelperTest extends Unit
         ]
     ];
 
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var UnitTester
+     */
+    protected $tester;
+
+    /**
+     * @var DateTimeZone
+     */
+    protected $systemTimezone;
+
+    /**
+     * @var DateTimeZone
+     */
+    protected $utcTimezone;
+
+    /**
+     * @var DateTimeZone
+     */
+    protected $asiaTokyoTimezone;
+
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
     /**
      * @dataProvider parseParamDataProvider
+     * @param $result
+     * @param $column
+     * @param $value
+     * @param string $defaultOperator
+     * @param bool $caseInsensitive
      */
-    public function testParseParamGeneral($result, $collumn, $value, $defaultOperator = '=', $caseInsensitive = false)
+    public function testParseParamGeneral($result, $column, $value, $defaultOperator = '=', $caseInsensitive = false)
     {
-        $this->assertSame($result, Db::parseParam($collumn, $value, $defaultOperator, $caseInsensitive));
+        $this->assertSame($result, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
     }
 
-    public function parseParamDataProvider()
+    /**
+     * @dataProvider escapeParamDataProvider
+     * @param string $result
+     * @param string $input
+     */
+    public function testEscapeParam(string $result, string $input)
+    {
+        $escapeResult = Db::escapeParam($input);
+        $this->assertSame($result, $escapeResult);
+        $this->assertIsString($escapeResult);
+    }
+
+    /**
+     * @dataProvider columnTypeParsingDataProvider
+     * @param $result
+     * @param string $input
+     */
+    public function testColumnTypeParsing($result, string $input)
+    {
+        $this->assertSame($result, Db::parseColumnType($input));
+    }
+
+    /**
+     * @dataProvider numericColumnTypesDataProvider
+     * @param $result
+     * @param $int1
+     * @param $int2
+     * @param null $decimals
+     * @throws \yii\base\Exception
+     */
+    public function testGetNumericColumnType($result, $int1, $int2, $decimals = null)
+    {
+        $this->assertSame($result, Db::getNumericalColumnType($int1, $int2, $decimals));
+    }
+
+    /**
+     * @dataProvider columnLengthParseDataProvider
+     * @param $result
+     * @param $input
+     */
+    public function testColumnLengthParsing($result, $input)
+    {
+        $this->assertSame($result, Db::parseColumnLength($input));
+    }
+
+    /**
+     * @dataProvider simplifiedColumnDataProvider
+     * @param $result
+     * @param $input
+     */
+    public function testGetSimplifiedColumnType($result, $input)
+    {
+        $this->assertSame($result, Db::getSimplifiedColumnType($input));
+    }
+
+    /**
+     * @todo Set this up with a fixture or a migration so that we can *actually* delete tables
+     *
+     * @dataProvider deleteTablesDataProvider
+     * @param $result
+     * @param string $table
+     * @param string $condition
+     * @param array $params
+     * @throws Exception
+     */
+    public function testDeleteIfExists($result, string $table, $condition = '', array $params = [])
+    {
+        $this->assertSame($result, Db::deleteIfExists($table, $condition, $params));
+    }
+
+    /*
+     * Tests that a Yii\Db\Exception will be thrown if the table *literally* doesnt exist in the schema.
+     */
+    public function testDeleteIfExistsException()
+    {
+        $this->tester->expectThrowable(Exception::class, function () {
+            Db::deleteIfExists('iamnotatable12345678900987654321');
+        });
+    }
+
+    /**
+     * @dataProvider dataForDbPrepareDataProvider
+     * @param $result
+     * @param $input
+     */
+    public function testValuePrepareForDb($result, $input)
+    {
+        $prepped = Db::prepareValueForDb($input);
+        $this->assertSame($result, $prepped);
+    }
+
+    /**
+     * @todo Refactor this test to make it slightly clearer.
+     */
+    public function testPrepareDateForDb()
+    {
+        $date = new DateTime('2018-08-08 20:00:00', $this->utcTimezone);
+        $this->assertSame($date->format('Y-m-d H:i:s'), Db::prepareDateForDb($date));
+
+        $date = new DateTime('2018-08-08 20:00:00', $this->asiaTokyoTimezone);
+        $dbPrepared = Db::prepareDateForDb($date);
+
+        // Ensure db makes no changes.
+        $this->assertSame('2018-08-08 20:00:00', $date->format('Y-m-d H:i:s'));
+        $this->assertSame('Asia/Tokyo', $date->getTimezone()->getName());
+
+        // Set the time to utc from tokyo and ensure its the same as that from prepare.
+        $date->setTimezone($this->utcTimezone);
+        $this->assertSame($date->format('Y-m-d H:i:s'), $dbPrepared);
+
+        // One test to ensure that when a date time is passed in via, for example, string format but with a timezone
+        // It is created as a \DateTime with its predefined timezone, set to system, set to utc and then formatted as MySql format.
+        $date = new DateTime('2018-08-09 20:00:00', new DateTimeZone('+09:00'));
+        $preparedWithTz = Db::prepareDateForDb('2018-08-09T20:00:00+09:00');
+
+        $date->setTimezone($this->systemTimezone);
+        $date->setTimezone($this->utcTimezone);
+        $this->assertSame($date->format('Y-m-d H:i:s'), $preparedWithTz);
+
+        // Test that an invalid format will return null.
+        $this->assertNull(Db::prepareDateForDb(['date' => '']));
+    }
+
+    /**
+     * @dataProvider columnCompatibilityDataProvider
+     * @param $result
+     * @param $columnA
+     * @param $columnB
+     */
+    public function testColumnCompatibility($result, $columnA, $columnB)
+    {
+        $areCompatible = Db::areColumnTypesCompatible($columnA, $columnB);
+        $this->assertSame($result, $areCompatible);
+    }
+
+    /**
+     * @todo Why do all these fail?
+     *
+     * @dataProvider isNumericDataProvider
+     * @param $result
+     * @param $input
+     */
+    public function testIsNumericColumnType($result, $input)
+    {
+        $isNumeric = Db::isNumericColumnType($input);
+        $this->assertSame($result, $isNumeric);
+    }
+
+    /**
+     * @dataProvider textualStorageDataProvider
+     * @param $result
+     * @param $input
+     */
+    public function testGetTextualColumnStorageCapacity($result, $input)
+    {
+        $capacity = Db::getTextualColumnStorageCapacity($input);
+        $this->assertSame($result, $capacity);
+    }
+
+    /**
+     * @dataProvider getMaxAllowedValueForNumericColumnDataProvider
+     * @param $result
+     * @param $input
+     */
+    public function testGetMaxAllowedValueForNumericColumn($result, $input)
+    {
+        $allowed = Db::getMaxAllowedValueForNumericColumn($input);
+        $this->assertSame($result, $allowed);
+    }
+
+    /**
+     * @dataProvider getMinAllowedValueForNumericColumnDataProvider
+     * @param $result
+     * @param $input
+     */
+    public function testGetMinAllowedValueForNumericColumn($result, $input)
+    {
+        $allowed = Db::getMinAllowedValueForNumericColumn($input);
+        $this->assertSame($result, $allowed);
+    }
+
+    /**
+     * @dataProvider prepareValuesForDbDataProvider
+     * @param $result
+     * @param $input
+     */
+    public function testPrepareValueForDb($result, $input)
+    {
+        $prepared = Db::prepareValuesForDb($input);
+        $this->assertSame($result, $prepared);
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function parseParamDataProvider(): array
     {
         return [
             'basic' => [
@@ -106,10 +332,10 @@ class DbHelperTest extends Unit
             ],
             'empty' => [
                 ['or',[
-                        'in',
-                        '',[
-                            'field_1',
-                        ]]],
+                    'in',
+                    '',[
+                        'field_1',
+                    ]]],
                 '', 'field_1',
             ],
             'random-symbol' => [
@@ -143,16 +369,9 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider escapeParamData
+     * @return array
      */
-    public function testEscapeParam(string $result, string $input)
-    {
-        $escapeResult = Db::escapeParam($input);
-        $this->assertSame($result, $escapeResult);
-        $this->assertInternalType('string', $escapeResult);
-    }
-
-    public function escapeParamData()
+    public function escapeParamDataProvider(): array
     {
         return [
             ['\*', '*'],
@@ -162,14 +381,9 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider collumnTypeParsingData
+     * @return array
      */
-    public function testCollumnTypeParsing($result, string $input)
-    {
-        $this->assertSame($result, Db::parseColumnType($input));
-    }
-
-    public function collumnTypeParsingData()
+    public function columnTypeParsingDataProvider(): array
     {
         return [
             ['test', 'test'],
@@ -184,16 +398,10 @@ class DbHelperTest extends Unit
         ];
     }
 
-
     /**
-     * @dataProvider numericCollumnTypesData
+     * @return array
      */
-    public function testGetNumericCollumnType($result, $int1, $int2, $decimals = null)
-    {
-        $this->assertSame($result, Db::getNumericalColumnType($int1, $int2, $decimals));
-    }
-
-    public function numericCollumnTypesData()
+    public function numericColumnTypesDataProvider(): array
     {
         return [
             'smallint1-minus' => ['smallint(1)', -0, -5],
@@ -212,14 +420,9 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider collumnLengthParseData
+     * @return array
      */
-    public function testCollumnLengthParsing($result, $input)
-    {
-        $this->assertSame($result, Db::parseColumnLength($input));
-    }
-
-    public function collumnLengthParseData()
+    public function columnLengthParseDataProvider(): array
     {
         return [
             [2, 'integer(2)'],
@@ -233,14 +436,9 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider simplifiedCollumnData
+     * @return array
      */
-    public function testGetSimplifiedCollumnType($result, $input)
-    {
-        $this->assertSame($result, Db::getSimplifiedColumnType($input));
-    }
-
-    public function simplifiedCollumnData()
+    public function simplifiedColumnDataProvider(): array
     {
         return [
             ['textual', 'Textual'],
@@ -255,50 +453,27 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * // TODO: Set this up with a fixture or a migration so that we can *actually* delete tables
-     * @dataProvider deleteTablesData
+     * @return array
      */
-    public function testDeleteIfExists($result, string $table, $condition = '', array $params = [])
-    {
-        $this->assertSame($result, Db::deleteIfExists($table, $condition, $params));
-    }
-
-    public function deleteTablesData()
+    public function deleteTablesDataProvider(): array
     {
         return [
             [0, '{{%users}} users', "[[users.id]] = 1234567890 and [[users.uid]] = 'THISISNOTAUID'"]
         ];
     }
 
-    /*
-     * Tests that a Yii\Db\Exception will be thrown if the table *Literaly* doesnt exist in the schema.
-     */
-    public function testDeleteIfExistsException()
-    {
-        $this->tester->expectThrowable(Exception::class, function () {
-            Db::deleteIfExists('iamnotatable12345678900987654321');
-        });
-    }
-
     /**
-     * @dataProvider dataForDbPrepare
-     * @param $result
-     * @param $input
+     * @return array
+     * @throws \Exception
      */
-    public function testValuePrepareForDb($result, $input)
-    {
-        $prepped = Db::prepareValueForDb($input);
-        $this->assertSame($result, $prepped);
-    }
-
-    public function dataForDbPrepare()
+    public function dataForDbPrepareDataProvider(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
-        $jsonableClass = new \stdClass();
+        $jsonableClass = new stdClass();
         $jsonableClass->name = 'name';
         $serializable = new Serializable();
 
-        $dateTime = new \DateTime('2018-06-06 18:00:00');
+        $dateTime = new DateTime('2018-06-06 18:00:00');
 
         return [
             ['2018-06-06 18:00:00', $dateTime],
@@ -312,49 +487,9 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * TODO: Refactor this test to make it slightly clearer.
+     * @return array
      */
-    public function testPrepareDateForDb()
-    {
-        $date = new \DateTime('2018-08-08 20:00:00', $this->utcTimezone);
-        $this->assertSame($date->format('Y-m-d H:i:s'), Db::prepareDateForDb($date));
-
-        $date = new \DateTime('2018-08-08 20:00:00', $this->asiaTokyoTimezone);
-        $dbPrepared = Db::prepareDateForDb($date);
-
-        // Ensure db makes no changes.
-        $this->assertSame('2018-08-08 20:00:00', $date->format('Y-m-d H:i:s'));
-        $this->assertSame('Asia/Tokyo', $date->getTimezone()->getName());
-
-        // Set the time to utc from tokyo and ensure its the same as that from prepare.
-        $date->setTimezone($this->utcTimezone);
-        $this->assertSame($date->format('Y-m-d H:i:s'), $dbPrepared);
-
-        // One test to ensure that when a date time is passed in via, for example, string format but with a timezone
-        // It is created as a \DateTime with its predefined timezone, set to system, set to utc and then formatted as MySql format.
-        $date = new \DateTime('2018-08-09 20:00:00', new \DateTimeZone('+09:00'));
-        $preparedWithTz = Db::prepareDateForDb('2018-08-09T20:00:00+09:00');
-
-        $date->setTimezone($this->systemTimezone);
-        $date->setTimezone($this->utcTimezone);
-        $this->assertSame($date->format('Y-m-d H:i:s'), $preparedWithTz);
-
-        // Test that an invalid format will return null.
-        $this->assertNull(Db::prepareDateForDb(['date' => '']));
-    }
-
-    /**
-     * @dataProvider columnCompatibilityData
-     * @param $result
-     * @param $columnA
-     * @param $columnB
-     */
-    public function testColumnCompatibility($result, $columnA, $columnB)
-    {
-        $areCompatible = Db::areColumnTypesCompatible($columnA, $columnB);
-        $this->assertSame($result, $areCompatible);
-    }
-    public function columnCompatibilityData()
+    public function columnCompatibilityDataProvider(): array
     {
         return [
             [true, 'Tinytext', 'Longtext'],
@@ -368,18 +503,9 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * TODO: Why do all these fail?
-     * @dataProvider isNumericData
-     * @param $result
-     * @param $input
+     * @return array
      */
-    public function testIsNumericColumnType($result, $input)
-    {
-        $isNumeric = Db::isNumericColumnType($input);
-        $this->assertSame($result, $isNumeric);
-    }
-
-    public function isNumericData()
+    public function isNumericDataProvider(): array
     {
         return [
             [false, 'integer(1)'],
@@ -394,16 +520,9 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider textualStorageData
-     * @param $result
-     * @param $input\
+     * @return array
      */
-    public function testGetTextualColumnStorageCapacity($result, $input)
-    {
-        $capacity = Db::getTextualColumnStorageCapacity($input);
-        $this->assertSame($result, $capacity);
-    }
-    public function textualStorageData()
+    public function textualStorageDataProvider(): array
     {
         return [
             [1, Schema::TYPE_CHAR],
@@ -414,16 +533,9 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider getMaxAllowedValueForNumericColumnData
-     * @param $result
-     * @param $input
+     * @return array
      */
-    public function testGetMaxAllowedValueForNumericColumn($result, $input)
-    {
-        $allowed = Db::getMaxAllowedValueForNumericColumn($input);
-        $this->assertSame($result, $allowed);
-    }
-    public function getMaxAllowedValueForNumericColumnData()
+    public function getMaxAllowedValueForNumericColumnDataProvider(): array
     {
         return [
             [2147483647, 'integer(9)'],
@@ -434,16 +546,9 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider getMinAllowedValueForNumericColumnData
-     * @param $result
-     * @param $input
+     * @return array
      */
-    public function testGetMinAllowedValueForNumericCollumn($result, $input)
-    {
-        $allowed = Db::getMinAllowedValueForNumericColumn($input);
-        $this->assertSame($result, $allowed);
-    }
-    public function getMinAllowedValueForNumericColumnData()
+    public function getMinAllowedValueForNumericColumnDataProvider(): array
     {
         return [
             [-2147483648, 'integer(9)'],
@@ -454,26 +559,20 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider prepareValuesForDbData
-     * @param $result
-     * @param $input
+     * @return array
+     * @throws \Exception
      */
-    public function testPrepareValueForDb($result, $input)
-    {
-        $prepared = Db::prepareValuesForDb($input);
-        $this->assertSame($result, $prepared);
-    }
-    public function prepareValuesForDbData()
+    public function prepareValuesForDbDataProvider(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
-        $jsonableClass = new \stdClass();
+        $jsonableClass = new stdClass();
         $jsonableClass->name = 'name';
         $serializable = new Serializable();
 
-        $excpectedDateTime = new \DateTime('2018-06-06 18:00:00');
-        $excpectedDateTime->setTimezone(new \DateTimeZone('UTC'));
+        $excpectedDateTime = new DateTime('2018-06-06 18:00:00');
+        $excpectedDateTime->setTimezone(new DateTimeZone('UTC'));
 
-        $dateTime = new \DateTime('2018-06-06 18:00:00');
+        $dateTime = new DateTime('2018-06-06 18:00:00');
 
         return [
             [['{"date":"2018-06-06 18:00:00.000000","timezone_type":3,"timezone":"UTC"}'], [$dateTime]],
@@ -483,5 +582,15 @@ class DbHelperTest extends Unit
             [[false], [false]],
             [['😀😘'], ['😀😘']]
         ];
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    protected function _before()
+    {
+        $this->systemTimezone = new DateTimeZone(Craft::$app->getTimeZone());
+        $this->utcTimezone = new DateTimeZone('UTC');
+        $this->asiaTokyoTimezone = new DateTimeZone('Asia/Tokyo');
     }
 }

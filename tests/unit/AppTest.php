@@ -4,14 +4,14 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit;
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\db\MigrationManager;
 use craft\feeds\Feeds;
 use craft\i18n\Locale;
-use craft\mail\Mailer;
-use craft\mutex\FileMutex;
 use craft\queue\Queue;
 use craft\services\Api;
 use craft\services\AssetIndexer;
@@ -50,6 +50,8 @@ use craft\services\UserPermissions;
 use craft\services\Users;
 use craft\services\Utilities;
 use craft\services\Volumes;
+use UnitTester;
+use yii\base\InvalidConfigException;
 use yii\mutex\Mutex;
 
 /**
@@ -57,33 +59,33 @@ use yii\mutex\Mutex;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class AppTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     public $tester;
 
     /**
      * @param $instance
-     * @param $maps
-     * @throws \yii\base\InvalidConfigException
+     * @param $map
+     * @throws InvalidConfigException
      * @dataProvider craftAppGetMethods
      */
     public function testCraftAppGetMethods($instance, $map)
     {
         $func = $map[0];
-        $this->assertInstanceOf($instance, \Craft::$app->$func());
-        $this->assertInstanceOf($instance, \Craft::$app->get($map[1]));
+        $this->assertInstanceOf($instance, Craft::$app->$func());
+        $this->assertInstanceOf($instance, Craft::$app->get($map[1]));
         // http://www.php.net/manual/en/language.variables.variable.php#example-107
-        $this->assertInstanceOf($instance, \Craft::$app->{$map[1]});
+        $this->assertInstanceOf($instance, Craft::$app->{$map[1]});
 
 
 
     }
-    public function craftAppGetMethods()
+    public function craftAppGetMethods(): array
     {
         return [
             [Api::class, ['getApi', 'api']],

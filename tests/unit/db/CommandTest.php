@@ -5,72 +5,82 @@
  * @license https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\db;
 
-
 use Codeception\Test\Unit;
+use Craft;
 use craft\db\Command;
 use craft\db\Query;
+use DateTime;
+use DateTimeZone;
+use yii\db\Exception;
 
 /**
  * Unit tests for CommandTest
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class CommandTest extends Unit
 {
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
+    /**
+     *
+     */
     public function testEnsureCommand()
     {
-        $this->assertInstanceOf(Command::class, \Craft::$app->getDb()->createCommand());
+        $this->assertInstanceOf(Command::class, Craft::$app->getDb()->createCommand());
     }
 
     /**
-     * @throws \yii\db\Exception
+     * @throws Exception
      */
     public function testInsertDateCreated()
     {
-        $sesh = $this->ensureSesh();
+        $session = $this->ensureSession();
+        $date = new DateTime('now', new DateTimeZone('UTC'));
 
-        $date = new \DateTime('now', new \DateTimeZone('UTC'));
-
-        $this->assertSame($sesh['dateCreated'], $date->format('Y-m-d H:i:s'));
+        $this->assertSame($session['dateCreated'], $date->format('Y-m-d H:i:s'));
     }
 
     /**
-     * @throws \yii\db\Exception
+     * @throws Exception
      */
     public function testDateUpdatedOnInsertAndUpdate()
     {
-        $sesh = $this->ensureSesh();
+        $session = $this->ensureSession();
 
         // Ensure that there is a diff in dates....
         sleep(5);
 
-        $dateTimeZone = new \DateTimeZone('UTC');
-        $date = new \DateTime('now', $dateTimeZone);
-        $oldDate  = new \DateTime($sesh['dateUpdated'], $dateTimeZone);
+        $dateTimeZone = new DateTimeZone('UTC');
+        $date = new DateTime('now', $dateTimeZone);
+        $oldDate  = new DateTime($session['dateUpdated'], $dateTimeZone);
 
         // TODO: can $this->greaterThan be used? Might need more research....
         $this->assertGreaterThan($oldDate, $date);
 
         // Save it again. Ensure dateUpdated is now current.
-        $sesh = $this->updateSesh($sesh);
+        $session = $this->updateSession($session);
 
-        $this->assertSame($sesh['dateUpdated'], $date->format('Y-m-d H:i:s'));
+        $this->assertSame($session['dateUpdated'], $date->format('Y-m-d H:i:s'));
     }
-
 
     /**
      * Ensure a session row exists
+     *
      * @return array
-     * @throws \yii\db\Exception
+     * @throws Exception
      */
-    public function ensureSesh() : array
+    public function ensureSession() : array
     {
-        $command = \Craft::$app->getDb()->createCommand()
+        $command = Craft::$app->getDb()->createCommand()
             ->insert('{{%sessions}}',
                 [
                     'userId' => 1,
@@ -87,14 +97,15 @@ class CommandTest extends Unit
     }
 
     /**
-     * Updates a session row
+     * Updates a session row.
+     *
      * @param $values
      * @return array
-     * @throws \yii\db\Exception
+     * @throws Exception
      */
-    public function updateSesh($values)
+    public function updateSession($values): array
     {
-        $command = \Craft::$app->getDb()->createCommand()
+        $command = Craft::$app->getDb()->createCommand()
             ->update('{{%sessions}}', $values)->execute();
 
         $this->assertGreaterThan(0, $command);
@@ -107,6 +118,7 @@ class CommandTest extends Unit
 
     /**
      * Gets a session row
+     *
      * @param array $params
      * @return array
      */

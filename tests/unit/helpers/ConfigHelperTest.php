@@ -5,13 +5,14 @@
  * @license   https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\helpers;
-
 
 use Codeception\Test\Unit;
 use craft\helpers\ConfigHelper;
 use craft\test\mockclasses\models\ExampleModel;
+use DateTime;
+use stdClass;
+use UnitTester;
 use yii\base\ErrorException;
 use yii\base\InvalidConfigException;
 
@@ -20,12 +21,12 @@ use yii\base\InvalidConfigException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class ConfigHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -40,7 +41,7 @@ class ConfigHelperTest extends Unit
         $this->assertSame($result, ConfigHelper::sizeInBytes($input));
     }
 
-    public function sizeInBytesData()
+    public function sizeInBytesData(): array
     {
         return [
             [5368709120, '5G'],
@@ -61,15 +62,18 @@ class ConfigHelperTest extends Unit
 
     /**
      * @dataProvider durationInSecondsData
+     * @param $result
+     * @param $input
+     * @throws InvalidConfigException
      */
     public function testDurationInSeconds($result, $input)
     {
         $durationResult = ConfigHelper::durationInSeconds($input);
         $this->assertSame($result, $durationResult);
-        $this->assertInternalType('integer', $durationResult);
+        $this->assertIsInt($durationResult);
     }
 
-    public function durationInSecondsData()
+    public function durationInSecondsData(): array
     {
         return [
             [86400, 'P1D'],
@@ -95,12 +99,12 @@ class ConfigHelperTest extends Unit
         });
 
         $this->tester->expectThrowable(ErrorException::class, function (){
-            $dateTime = new \DateTime('2018-08-08 20:0:00');
+            $dateTime = new DateTime('2018-08-08 20:0:00');
             ConfigHelper::durationInSeconds($dateTime);
         });
 
         $this->tester->expectThrowable(ErrorException::class, function (){
-            $std = new \stdClass();
+            $std = new stdClass();
             $std->a = 'a';
             ConfigHelper::durationInSeconds($std);
         });
@@ -111,19 +115,20 @@ class ConfigHelperTest extends Unit
      *
      * @param $result
      * @param $input
+     * @param null $handle
      */
     public function testLocalizedValue($result, $input, $handle = null)
     {
         $this->assertSame($result, ConfigHelper::localizedValue($input, $handle));
     }
 
-    public function localizedValueData()
+    public function localizedValueData(): array
     {
         $exampleModel = new ExampleModel();
         $exampleModel->exampleParam = 'imaparam';
 
         return [
-            // Ensure if array that it is accesed by the handle and returns the value of the index.
+            // Ensure if array that it is accessed by the handle and returns the value of the index.
             ['imavalue', ['imahandle' => 'imavalue'], 'imahandle'],
 
             // If variable is callable.  Ensure the handle gets passed into the callable.

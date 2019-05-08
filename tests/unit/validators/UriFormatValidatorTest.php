@@ -5,9 +5,7 @@
  * @license   https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\validators;
-
 
 use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
@@ -18,7 +16,7 @@ use craft\validators\UriFormatValidator;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since 3.1
  */
 class UriFormatValidatorTest extends Unit
 {
@@ -46,6 +44,7 @@ class UriFormatValidatorTest extends Unit
      * @dataProvider validateAttributeData
      * @param $mustValidate
      * @param $input
+     * @param bool $requireSlug
      */
     public function testValidateAttribute($mustValidate, $input, $requireSlug = false)
     {
@@ -62,7 +61,7 @@ class UriFormatValidatorTest extends Unit
             $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
     }
-    public function validateAttributeData()
+    public function validateAttributeData(): array
     {
         return [
             [true, ''],

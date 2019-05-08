@@ -246,7 +246,7 @@ class CategoryQuery extends ElementQuery
                     ->from([Table::CATEGORYGROUPS])
                     ->where(Db::parseParam('id', $this->groupId))
                     ->scalar();
-                $this->structureId = $structureId ? (int)$structureId : false;
+                $this->structureId = (int)$structureId ?: false;
             }
 
             $this->subQuery->andWhere(Db::parseParam('categories.groupId', $this->groupId));

@@ -239,7 +239,7 @@ class Matrix extends Component
             'field' => $parentField->uid,
             'name' => $blockType->name,
             'handle' => $blockType->handle,
-            'sortOrder' => $blockType->sortOrder,
+            'sortOrder' => (int)$blockType->sortOrder,
         ];
 
         // Now, take care of the field layout for this block type

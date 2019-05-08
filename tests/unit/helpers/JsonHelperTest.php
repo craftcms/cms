@@ -4,34 +4,38 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit\helpers;
 
-
+use Codeception\TestCase\Test;
 use craft\helpers\Json;
+use UnitTester;
 
 /**
  * Unit tests for the Json Helper class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
-class JsonHelperTest extends \Codeception\TestCase\Test
+class JsonHelperTest extends Test
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
     /**
-     * @dataProvider jsonDecodabledData
+     * @dataProvider jsonDecodableData
+     * @param $result
+     * @param $input
      */
     public function testDecodeIfJson($result, $input)
     {
         $this->assertSame($result, Json::decodeIfJson($input));
     }
 
-    public function jsonDecodabledData()
+    public function jsonDecodableData(): array
     {
         $basicArray = [
             'WHAT DO WE WANT' => 'JSON',

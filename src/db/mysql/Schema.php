@@ -324,6 +324,9 @@ SQL;
 
         FileHelper::writeToFile($filePath, $contents);
 
+        // Avoid a “world-writable config file 'my.cnf' is ignored” warning
+        chmod($filePath, 0644);
+
         return $filePath;
     }
 }

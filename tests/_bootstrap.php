@@ -1,5 +1,7 @@
 <?php
 
+use craft\test\TestSetup;
+
 ini_set('date.timezone', 'UTC');
 
 // Use the current installation of Craft
@@ -12,4 +14,4 @@ define('CRAFT_SRC_PATH',dirname(__DIR__) . '/src');
 define('ENV_PATH', __DIR__);
 $devMode = true;
 
-\craft\test\TestSetup::configureCraft();
+TestSetup::configureCraft();

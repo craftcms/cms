@@ -5,9 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\web;
-
 
 use Codeception\Test\Unit;
 use craft\web\Response;
@@ -17,7 +15,7 @@ use craft\web\Response;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class ResponseTest extends Unit
 {
@@ -50,7 +48,7 @@ class ResponseTest extends Unit
         $type = $this->response->getContentType();
         $this->assertSame($result, $type);
     }
-    public function getContentTypeData()
+    public function getContentTypeData(): array
     {
         return [
             ['text/html', Response::FORMAT_HTML],

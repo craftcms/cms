@@ -5,37 +5,33 @@
  * @license https://craftcms.github.io/license/
  */
 
-
 namespace craftunit\helpers;
 
-
 use Codeception\Test\Unit;
-use craft\db\Query;
+use Craft;
 use craft\elements\Asset;
 use craft\helpers\Assets;
-use craft\helpers\ConfigHelper;
 use craftunit\fixtures\AssetsFixture;
-use craftunit\fixtures\VolumesFolderFixture;
-use craftunit\fixtures\VolumesFixture;
+use UnitTester;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 
 /**
  * Class AssetsHelper.
  *
-s * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class AssetsHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
 
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'assets' => [
@@ -45,8 +41,9 @@ class AssetsHelperTest extends Unit
     }
 
     /**
-     * @param $result
-     * @param $input
+     * @param $resultUrl
+     * @param $params
+     * @throws InvalidConfigException
      * @dataProvider urlGenerationData
      */
     public function testUrlGeneration($resultUrl, $params)
@@ -63,7 +60,7 @@ class AssetsHelperTest extends Unit
         $this->assertSame($resultUrl, Assets::generateUrl($volume, $asset));
     }
 
-    public function urlGenerationData()
+    public function urlGenerationData(): array
     {
         return [
             ['https://cdn.test.craftcms.dev/test-volume-1/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']]
@@ -72,10 +69,7 @@ class AssetsHelperTest extends Unit
 
 
     /**
-     * @param $result
-     * @param $input
-     *
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function testTempFilePath()
     {
@@ -99,7 +93,7 @@ class AssetsHelperTest extends Unit
         $this->assertSame($result, $assetName);
     }
 
-    public function prepareAssetNameData()
+    public function prepareAssetNameData(): array
     {
         return [
             ['name.', 'name', true, false],
@@ -113,19 +107,19 @@ class AssetsHelperTest extends Unit
 
     public function testPrepareAssetNameAsciiRemove()
     {
-        \Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii = true;
+        Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii = true;
         $this->assertSame('test.text', Assets::prepareAssetName('tes§t.text'));
     }
 
-    public function testConfigSeperator()
+    public function testConfigSeparator()
     {
-        \Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = '||';
+        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = '||';
         $this->assertSame('te||st.notafile', Assets::prepareAssetName('te st.notafile'));
 
-        \Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = [];
+        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = [];
         $this->assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
 
-        \Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = 123;
+        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = 123;
         $this->assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
     }
 
@@ -141,7 +135,7 @@ class AssetsHelperTest extends Unit
         $this->assertSame($result, $file2Title);
     }
 
-    public function filename2TitleData()
+    public function filename2TitleData(): array
     {
         return [
             ['Filename', 'filename'],
@@ -162,7 +156,7 @@ class AssetsHelperTest extends Unit
         $this->assertSame($result, $label);
     }
 
-    public function fileKindLabelData()
+    public function fileKindLabelData(): array
     {
         return [
             ['Access', 'access'],
@@ -185,7 +179,7 @@ class AssetsHelperTest extends Unit
         $this->assertSame($result, $kind);
     }
 
-    public function fileKindByExtensionData()
+    public function fileKindByExtensionData(): array
     {
         return [
             ['unknown', 'html'],
@@ -198,14 +192,14 @@ class AssetsHelperTest extends Unit
      * @param $result
      * @param $input
      *
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function testParseFileLocation($result, $input)
     {
         $location = Assets::parseFileLocation($input);
         $this->assertSame($result, $location);
     }
-    public function parseFileLocationData()
+    public function parseFileLocationData(): array
     {
         return [
             [['2', '.'], '{folder:2}.'],
@@ -227,7 +221,7 @@ class AssetsHelperTest extends Unit
 
     public function testMaxUploadSize()
     {
-        \Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1;
+        Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1;
         $this->assertSame(1, Assets::getMaxUploadSize());
     }
 }
