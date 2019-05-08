@@ -21,7 +21,6 @@ use craft\db\Connection;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
-use craft\services\ProjectConfig;
 use yii\base\Application;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
@@ -421,14 +420,14 @@ class Craft extends Yii2
     public static function createDbConfig() : DbConfig
     {
         return new DbConfig([
-            'password' => getenv('TEST_DB_PASS'),
-            'user' => getenv('TEST_DB_USER'),
-            'database' => getenv('TEST_DB_NAME'),
-            'tablePrefix' => getenv('TEST_DB_TABLE_PREFIX'),
-            'driver' => getenv('TEST_DB_DRIVER'),
-            'port' => getenv('TEST_DB_PORT'),
-            'schema' => getenv('TEST_DB_SCHEMA'),
-            'server' => getenv('TEST_DB_SERVER'),
+            'password' => getenv('DB_PASSWORD'),
+            'user' => getenv('DB_USER'),
+            'database' => getenv('DB_DATABASE'),
+            'tablePrefix' => getenv('DB_TABLE_PREFIX'),
+            'driver' => getenv('DB_DRIVER'),
+            'port' => getenv('DB_PORT'),
+            'schema' => getenv('DB_SCHEMA'),
+            'server' => getenv('DB_SERVER'),
         ]);
     }
 
