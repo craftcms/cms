@@ -63,7 +63,7 @@ class AssetsHelperTest extends Unit
     public function urlGenerationData(): array
     {
         return [
-            ['https://cdn.test.craftcms.dev/test-volume-1/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']]
+            ['https://cdn.test.craftcms.test/test-volume-1/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']]
         ];
     }
 

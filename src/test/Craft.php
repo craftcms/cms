@@ -242,6 +242,14 @@ class Craft extends Yii2
     }
 
     /**
+     * @return string
+     */
+    public static function getCodeceptionName() : string
+    {
+        return '\craft\test\Craft';
+    }
+
+    /**
      * TODO: This is a WIP. Currently its a proof of concept.
      *
      * The problem is how do we update vendor/craftcms/plugins.php file. As far as i can see this is a requirment for ensuring plugins work.

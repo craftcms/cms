@@ -40,7 +40,7 @@ class UrlHelperTest extends Unit
         $this->cpTrigger = $generalConfig->cpTrigger;
         $configSiteUrl = $generalConfig->siteUrl;
 
-        $craft = $this->getModule(\craft\test\Craft::class);
+        $craft = $this->getModule(\craft\test\Craft::getCodeceptionName());
         $this->entryScript = $craft->_getConfig('entryScript');
         $this->entryUrl = $craft->_getConfig('entryUrl');
 

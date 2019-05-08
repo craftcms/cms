@@ -24,7 +24,7 @@ use yii\base\Component;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.1
  */
-class AppTest extends TestCase
+class AppHelperTest extends TestCase
 {
     /**
      * @var UnitTester
