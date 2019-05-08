@@ -73,8 +73,14 @@ abstract class BaseJob extends BaseObject implements JobInterface
      */
     protected function setProgress($queue, float $progress)
     {
-        if ($progress !== $this->_progress && $queue instanceof QueueInterface) {
-            $queue->setProgress(round(100 * $progress));
+        $progress = round(100 * $progress);
+
+        if ($progress !== $this->_progress) {
+            $this->_progress = $progress;
+
+            if ($queue instanceof QueueInterface) {
+                $queue->setProgress($progress);
+            }
         }
     }
 }

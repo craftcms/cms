@@ -539,7 +539,7 @@ class Sections extends Component
 
             if ($section->type === Section::TYPE_SINGLE) {
                 // Ensure & get the single entry
-                $entry = $this->_ensureSingleEntry($section);
+                $entry = $this->_ensureSingleEntry($section, $configData['siteSettings']);
 
                 // Deal with the section's entry types
                 if (!$isNewSection) {
@@ -773,7 +773,7 @@ class Sections extends Component
             $section->type === Section::TYPE_SINGLE &&
             !Craft::$app->getProjectConfig()->areChangesPending($event->path . '.' . self::CONFIG_ENTRYTYPES_KEY)
         ) {
-            $this->_ensureSingleEntry($section);
+            $this->_ensureSingleEntry($section, $siteSettingData);
         }
 
         // Fire an 'afterSaveSection' event
@@ -1509,16 +1509,19 @@ class Sections extends Component
      * Ensures that the given Single section has its one and only entry, and returns it.
      *
      * @param Section $section
+     * @param array|null $siteSettings
      * @return Entry The
      * @see saveSection()
      * @throws Exception if reasons
      */
-    private function _ensureSingleEntry(Section $section): Entry
+    private function _ensureSingleEntry(Section $section, array $siteSettings = null): Entry
     {
         // Get all the entries that currently exist for this section
         // ---------------------------------------------------------------------
 
-        $siteSettings = Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.siteSettings');
+        if ($siteSettings === null) {
+            $siteSettings = Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.siteSettings');
+        }
 
         if (empty($siteSettings)) {
             throw new Exception('No site settings exist for section ' . $section->id);

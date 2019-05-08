@@ -26,10 +26,11 @@
 <style lang="scss">
     .screenshots {
         @apply .overflow-auto .flex .-mx-4;
+        -webkit-overflow-scrolling: touch;
 
         .screenshot {
             @apply .px-4 .flex-no-shrink .flex-no-grow;
-            flex-basis: 50%;
+            flex-basis: 90%;
 
             img {
                 @apply .rounded;
@@ -37,10 +38,18 @@
         }
     }
 
+    @media (min-width: 672px) {
+        .screenshots {
+            .screenshot {
+                flex-basis: 45%;
+            }
+        }
+    }
+
     @media only screen and (min-width: 1400px) {
         .screenshots {
             .screenshot {
-                flex-basis: 33.3333%;
+                flex-basis: 31%;
             }
         }
     }
