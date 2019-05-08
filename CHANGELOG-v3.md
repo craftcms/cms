@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.26 - 209-05-08
 
 ### Changed
 - The “Update all” button on the Updates utility is now shown even if the page contains some uninstallable updates. ([#4230](https://github.com/craftcms/cms/issues/4230))
@@ -11,7 +11,6 @@
 
 ### Fixed
 - Fixed an error that could occur when saving a Single section if one of its sites had been disabled.
-- Fixed a SQL error that would occur when deleting a site and transferring its content to another if you were using a database table prefix.
 - Fixed an error that could occur when deleting a site.
 - Fixed a PHP compile error that could occur when paginating a query. ([#4208](https://github.com/craftcms/cms/pull/4208))
 - Fixed an error that could occur on the Settings → Users → Settings page if the project config was missing its `users` key. ([#4206](https://github.com/craftcms/cms/issues/4206))
