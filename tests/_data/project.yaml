@@ -51,7 +51,7 @@ system:
   edition: pro
   name: 'Craft CMS Testing'
   live: true
-  schemaVersion: 3.1.27
+  schemaVersion: 3.1.28
   timeZone: America/Los_Angeles
 users:
   allowPublicRegistration: false

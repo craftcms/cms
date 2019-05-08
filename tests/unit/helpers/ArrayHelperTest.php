@@ -8,7 +8,7 @@
 namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
-use \craft\helpers\ArrayHelper;
+use craft\helpers\ArrayHelper;
 use stdClass;
 use UnitTester;
 
