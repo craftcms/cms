@@ -1274,7 +1274,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getName()
+    public function getName(): string
     {
         return (string)$this;
     }
