@@ -22,20 +22,14 @@ Craft.Preview = Garnish.Base.extend(
 
         isActive: false,
         activeContext: 0,
+        url: null,
         fields: null,
-        loading: false,
 
         dragger: null,
         dragStartEditorWidth: null,
 
-        _updateIframeAgain: false,
         _slideInOnIframeLoad: false,
-        _handleSuccessProxy: null,
-        _handleErrorProxy: null,
         _updateIframeProxy: null,
-
-        _scrollX: null,
-        _scrollY: null,
 
         _editorWidth: null,
         _editorWidthInPx: null,
@@ -43,8 +37,6 @@ Craft.Preview = Garnish.Base.extend(
         init: function(draftEditor) {
             this.draftEditor = draftEditor;
 
-            this._handleSuccessProxy = $.proxy(this, 'handleSuccess');
-            this._handleErrorProxy = $.proxy(this, 'handleError');
             this._updateIframeProxy = $.proxy(this,'updateIframe');
 
             this.$tempInput = $('<input/>', {type: 'hidden', name: '__PREVIEW_FIELDS__', value: '1'});
@@ -289,74 +281,40 @@ Craft.Preview = Garnish.Base.extend(
                 return false;
             }
 
-            if (this.loading) {
-                this._updateIframeAgain = true;
-                return false;
-            }
-
-            this.loading = true;
-
-            var $doc = this.$iframe ? $(this.$iframe[0].contentWindow.document) : null;
-
-            this._scrollX = resetScroll !== true && $doc ? $doc.scrollLeft() : 0;
-            this._scrollY = resetScroll !== true && $doc ? $doc.scrollTop() : 0;
-
             var url = this.draftEditor.settings.previewContexts[this.activeContext].url;
 
             this.draftEditor.getTokenizedPreviewUrl(url, $.proxy(function(url) {
-                $.ajax({
-                    url: url,
-                    method: 'GET',
-                    success: this._handleSuccessProxy,
-                    error: this._handleErrorProxy
+                // Possible to just refresh the iframe?
+                if (this.$iframe && url === this.url && Craft.isSameHost(url)) {
+                    this.$iframe[0].contentWindow.location.reload();
+                    this.afterUpdateIframe();
+                    return;
+                }
+
+                var $iframe = $('<iframe/>', {
+                    'class': 'lp-preview',
+                    frameborder: 0,
+                    src: url,
                 });
-            }, this));
-        },
 
-        handleSuccess: function(data) {
-            var html = data +
-                '<script type="text/javascript">window.scrollTo(' + this._scrollX + ', ' + this._scrollY + ');</script>';
-
-            // Create a new iframe
-            var $iframe = $('<iframe/>', {'class': 'lp-preview', frameborder: 0});
-            if (this.$iframe) {
-                $iframe.insertBefore(this.$iframe);
-            } else {
-                $iframe.appendTo(this.$previewContainer);
-            }
-
-            this.addListener($iframe, 'load', function() {
                 if (this.$iframe) {
-                    this.$iframe.remove();
+                    this.$iframe.replaceWith($iframe);
+                } else {
+                    $iframe.appendTo(this.$previewContainer);
                 }
+
+                this.url = url;
                 this.$iframe = $iframe;
-
-                if (this._slideInOnIframeLoad) {
-                    this.slideIn();
-                    this._slideInOnIframeLoad = false;
-                }
-
-                this.removeListener($iframe, 'load');
-            });
-
-            Garnish.requestAnimationFrame($.proxy(function() {
-                $iframe[0].contentWindow.document.open();
-                $iframe[0].contentWindow.document.write(html);
-                $iframe[0].contentWindow.document.close();
-                this.onResponse();
+                this.afterUpdateIframe();
             }, this));
         },
 
-        handleError: function() {
-            this.onResponse();
-        },
+        afterUpdateIframe: function() {
+            this.trigger('afterUpdateIframe');
 
-        onResponse: function() {
-            this.loading = false;
-
-            if (this._updateIframeAgain) {
-                this._updateIframeAgain = false;
-                this.updateIframe();
+            if (this._slideInOnIframeLoad) {
+                this.slideIn();
+                this._slideInOnIframeLoad = false;
             }
         },
 
