@@ -4,6 +4,7 @@
 
 ### Changed
 - Craft now stores the Default User Group’s UID in the project config, in case the group’s ID is different across environments.
+- `craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET` event handlers can now change the filename of the replaced asset before it is saved.
 - Improved the performance of background jobs. ([#4219](https://github.com/craftcms/cms/pull/4219))
 - Improved the Plugin Store’s screenshots with arrows for navigation and pinch-to-zoom capability for touch devices.
 
