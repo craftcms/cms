@@ -2,6 +2,9 @@
 
 ## Unreleased (3.2)
 
+### Changed
+- `craft\base\ElementInterface::eagerLoadingMap()` and `craft\base\EagerLoadingFieldInterface::getEagerLoadingMap()` can now return `null` to opt out of eager-loading. ([#4220](https://github.com/craftcms/cms/pull/4220))
+
 ### Fixed
 - Fixed an error that could occur when updating to 3.2.0-alpha.5 if there were any user groups defined without any permissions. ([#4214](https://github.com/craftcms/cms/pull/4214))
 

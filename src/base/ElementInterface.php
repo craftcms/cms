@@ -368,7 +368,8 @@ interface ElementInterface extends ComponentInterface
      *
      * @param ElementInterface[] $sourceElements An array of the source elements
      * @param string $handle The property handle used to identify which target elements should be included in the map
-     * @return array|false The eager-loading element ID mappings, or false if no mappings exist
+     * @return array|false|null The eager-loading element ID mappings, false if no mappings exist, or null if the result
+     * should be ignored
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle);
 
