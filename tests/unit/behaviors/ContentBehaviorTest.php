@@ -42,7 +42,7 @@ class ContentBehaviorTest extends Unit
 
     /**
      * @param $handle
-     * @dataProvider existingFieldHandlesData
+     * @dataProvider existingFieldHandlesDataProvider
      */
     public function testExistsInContentBehavior(string $handle)
     {
@@ -83,7 +83,7 @@ class ContentBehaviorTest extends Unit
     /**
      * @return array
      */
-    public function existingFieldHandlesData() : array
+    public function existingFieldHandlesDataProvider() : array
     {
         return [
             // TODO: Help needed. Saving fields with fixtures doesnt update the ContentBehavior class props. I cant find a way to solve this.

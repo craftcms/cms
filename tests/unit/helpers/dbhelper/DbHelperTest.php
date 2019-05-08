@@ -110,7 +110,7 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider escapeParamData
+     * @dataProvider escapeParamDataProvider
      * @param string $result
      * @param string $input
      */
@@ -122,7 +122,7 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider columnTypeParsingData
+     * @dataProvider columnTypeParsingDataProvider
      * @param $result
      * @param string $input
      */
@@ -132,7 +132,7 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider numericColumnTypesData
+     * @dataProvider numericColumnTypesDataProvider
      * @param $result
      * @param $int1
      * @param $int2
@@ -145,7 +145,7 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider columnLengthParseData
+     * @dataProvider columnLengthParseDataProvider
      * @param $result
      * @param $input
      */
@@ -155,7 +155,7 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider simplifiedColumnData
+     * @dataProvider simplifiedColumnDataProvider
      * @param $result
      * @param $input
      */
@@ -167,7 +167,7 @@ class DbHelperTest extends Unit
     /**
      * @todo Set this up with a fixture or a migration so that we can *actually* delete tables
      *
-     * @dataProvider deleteTablesData
+     * @dataProvider deleteTablesDataProvider
      * @param $result
      * @param string $table
      * @param string $condition
@@ -190,7 +190,7 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider dataForDbPrepare
+     * @dataProvider dataForDbPrepareDataProvider
      * @param $result
      * @param $input
      */
@@ -233,7 +233,7 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider columnCompatibilityData
+     * @dataProvider columnCompatibilityDataProvider
      * @param $result
      * @param $columnA
      * @param $columnB
@@ -247,7 +247,7 @@ class DbHelperTest extends Unit
     /**
      * @todo Why do all these fail?
      *
-     * @dataProvider isNumericData
+     * @dataProvider isNumericDataProvider
      * @param $result
      * @param $input
      */
@@ -258,7 +258,7 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider textualStorageData
+     * @dataProvider textualStorageDataProvider
      * @param $result
      * @param $input
      */
@@ -269,7 +269,7 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider getMaxAllowedValueForNumericColumnData
+     * @dataProvider getMaxAllowedValueForNumericColumnDataProvider
      * @param $result
      * @param $input
      */
@@ -280,7 +280,7 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider getMinAllowedValueForNumericColumnData
+     * @dataProvider getMinAllowedValueForNumericColumnDataProvider
      * @param $result
      * @param $input
      */
@@ -291,7 +291,7 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider prepareValuesForDbData
+     * @dataProvider prepareValuesForDbDataProvider
      * @param $result
      * @param $input
      */
@@ -371,7 +371,7 @@ class DbHelperTest extends Unit
     /**
      * @return array
      */
-    public function escapeParamData(): array
+    public function escapeParamDataProvider(): array
     {
         return [
             ['\*', '*'],
@@ -383,7 +383,7 @@ class DbHelperTest extends Unit
     /**
      * @return array
      */
-    public function columnTypeParsingData(): array
+    public function columnTypeParsingDataProvider(): array
     {
         return [
             ['test', 'test'],
@@ -401,7 +401,7 @@ class DbHelperTest extends Unit
     /**
      * @return array
      */
-    public function numericColumnTypesData(): array
+    public function numericColumnTypesDataProvider(): array
     {
         return [
             'smallint1-minus' => ['smallint(1)', -0, -5],
@@ -422,7 +422,7 @@ class DbHelperTest extends Unit
     /**
      * @return array
      */
-    public function columnLengthParseData(): array
+    public function columnLengthParseDataProvider(): array
     {
         return [
             [2, 'integer(2)'],
@@ -438,7 +438,7 @@ class DbHelperTest extends Unit
     /**
      * @return array
      */
-    public function simplifiedColumnData(): array
+    public function simplifiedColumnDataProvider(): array
     {
         return [
             ['textual', 'Textual'],
@@ -455,7 +455,7 @@ class DbHelperTest extends Unit
     /**
      * @return array
      */
-    public function deleteTablesData(): array
+    public function deleteTablesDataProvider(): array
     {
         return [
             [0, '{{%users}} users', "[[users.id]] = 1234567890 and [[users.uid]] = 'THISISNOTAUID'"]
@@ -466,7 +466,7 @@ class DbHelperTest extends Unit
      * @return array
      * @throws \Exception
      */
-    public function dataForDbPrepare(): array
+    public function dataForDbPrepareDataProvider(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
         $jsonableClass = new stdClass();
@@ -489,7 +489,7 @@ class DbHelperTest extends Unit
     /**
      * @return array
      */
-    public function columnCompatibilityData(): array
+    public function columnCompatibilityDataProvider(): array
     {
         return [
             [true, 'Tinytext', 'Longtext'],
@@ -505,7 +505,7 @@ class DbHelperTest extends Unit
     /**
      * @return array
      */
-    public function isNumericData(): array
+    public function isNumericDataProvider(): array
     {
         return [
             [false, 'integer(1)'],
@@ -522,7 +522,7 @@ class DbHelperTest extends Unit
     /**
      * @return array
      */
-    public function textualStorageData(): array
+    public function textualStorageDataProvider(): array
     {
         return [
             [1, Schema::TYPE_CHAR],
@@ -535,7 +535,7 @@ class DbHelperTest extends Unit
     /**
      * @return array
      */
-    public function getMaxAllowedValueForNumericColumnData(): array
+    public function getMaxAllowedValueForNumericColumnDataProvider(): array
     {
         return [
             [2147483647, 'integer(9)'],
@@ -548,7 +548,7 @@ class DbHelperTest extends Unit
     /**
      * @return array
      */
-    public function getMinAllowedValueForNumericColumnData(): array
+    public function getMinAllowedValueForNumericColumnDataProvider(): array
     {
         return [
             [-2147483648, 'integer(9)'],
@@ -562,7 +562,7 @@ class DbHelperTest extends Unit
      * @return array
      * @throws \Exception
      */
-    public function prepareValuesForDbData(): array
+    public function prepareValuesForDbDataProvider(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
         $jsonableClass = new stdClass();

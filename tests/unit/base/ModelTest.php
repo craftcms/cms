@@ -36,7 +36,7 @@ class ModelTest extends Unit
      * @param $input
      * @param $searchParam
      * @param $paramName
-     * @dataProvider hasErrorsData
+     * @dataProvider hasErrorsDataProvider
      */
     public function testHasErrors($result, $input, $searchParam, $paramName)
     {
@@ -49,7 +49,7 @@ class ModelTest extends Unit
     /**
      * Test the DateTimeAttributes function of the base Model
      *
-     * @dataProvider dateTimeAttributes
+     * @dataProvider dateTimeAttributesDataProvider
      * @param $paramName
      * @param $dateForInput
      * @throws Exception
@@ -149,7 +149,7 @@ class ModelTest extends Unit
     /**
      * @return array
      */
-    public function dateTimeAttributes(): array
+    public function dateTimeAttributesDataProvider(): array
     {
         return [
             // Craft defaults
@@ -164,7 +164,7 @@ class ModelTest extends Unit
     /**
      * @return array
      */
-    public function hasErrorsData(): array
+    public function hasErrorsDataProvider(): array
     {
         return [
             [true, 'error', 'fields.*', 'fields[body]'],

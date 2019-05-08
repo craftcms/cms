@@ -24,20 +24,16 @@ use yii\base\Exception;
  */
 class MysqlDbHelperTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UnitTester
      */
     protected $tester;
 
-    protected function _before()
-    {
-        if (!Craft::$app->getDb()->getIsMysql()) {
-            $this->markTestSkipped();
-        }
-    }
-
     /**
-     * @dataProvider sqlTypesData
+     * @dataProvider sqlTypesDataProvider
      * @param $type
      * @param $supported
      */
@@ -46,25 +42,6 @@ class MysqlDbHelperTest extends Unit
         $isSupported = Db::isTypeSupported($type);
         $this->assertSame($supported, Db::isTypeSupported($type));
         $this->assertIsBool($isSupported);
-    }
-
-    public function sqlTypesData(): array
-    {
-        // TODO: This is the best way to test it but is it worth 20mb and 3 seconds of time?
-        $mysqlSchema = new MysqlSchema();
-        $pgsqlSchema = new PgsqlSchema();
-        $returnArray = [];
-
-        foreach ($mysqlSchema->typeMap as $key => $value) {
-            $returnArray[] = [$key, true];
-        }
-        foreach ($pgsqlSchema->typeMap as $key => $value) {
-            if (!isset($mysqlSchema->typeMap[$key])) {
-                $returnArray[] = [$key, false];
-            }
-        }
-
-        return  $returnArray;
     }
 
     /**
@@ -85,7 +62,7 @@ class MysqlDbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider parseParamData
+     * @dataProvider parseParamDataProvider
      * @param $result
      * @param $column
      * @param $value
@@ -97,7 +74,40 @@ class MysqlDbHelperTest extends Unit
         $this->assertSame($result, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
     }
 
-    public function parseParamData(): array
+    /**
+     * @dataProvider getTextualColumnTypeDataProvider
+     * @param $result
+     * @param $input
+     * @throws Exception
+     */
+    public function testGetTextualColumnTypeByContentLength($result, $input)
+    {
+        $textualCapacity = Db::getTextualColumnTypeByContentLength((int)$input);
+        $this->assertSame($result, $textualCapacity);
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function getTextualColumnTypeDataProvider(): array
+    {
+        return [
+            ['string', 254],
+            ['text', 65534],
+            ['mediumtext', 16777214],
+            ['longtext', 4294967294],
+            ['string', false],
+            ['string', null],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function parseParamDataProvider(): array
     {
         return [
             'multi-:empty:-param' => [
@@ -109,7 +119,7 @@ class MysqlDbHelperTest extends Unit
                             'or',
                             ['content_table' => null],
                             ['content_table' => '']
-                    ],
+                        ],
                     ],
                     [
                         '!=',
@@ -123,26 +133,38 @@ class MysqlDbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider getTextualColumnType
-     * @param $result
-     * @param $input
-     * @throws Exception
+     * @return array
      */
-    public function testGetTextualColumnTypeByContentLength($result, $input)
+    public function sqlTypesDataProvider(): array
     {
-        $textualCapacity = Db::getTextualColumnTypeByContentLength((int)$input);
-        $this->assertSame($result, $textualCapacity);
+        // TODO: This is the best way to test it but is it worth 20mb and 3 seconds of time?
+        $mysqlSchema = new MysqlSchema();
+        $pgsqlSchema = new PgsqlSchema();
+        $returnArray = [];
+
+        foreach ($mysqlSchema->typeMap as $key => $value) {
+            $returnArray[] = [$key, true];
+        }
+
+        foreach ($pgsqlSchema->typeMap as $key => $value) {
+            if (!isset($mysqlSchema->typeMap[$key])) {
+                $returnArray[] = [$key, false];
+            }
+        }
+
+        return  $returnArray;
     }
 
-    public function getTextualColumnType(): array
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
     {
-        return [
-            ['string', 254],
-            ['text', 65534],
-            ['mediumtext', 16777214],
-            ['longtext', 4294967294],
-            ['string', false],
-            ['string', null],
-        ];
+        if (!Craft::$app->getDb()->getIsMysql()) {
+            $this->markTestSkipped();
+        }
     }
 }
