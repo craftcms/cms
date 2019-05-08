@@ -52,10 +52,11 @@
     "zendframework/zend-feed": "^2.8.0"
   },
   "require-dev": {
-    "codeception/codeception": "^2.4",
-    "codeception/mockery-module": "~0.2.2",
-    "codeception/specify": "~0.4.6",
-    "codeception/verify": "~0.3.3"
+    "codeception/codeception": "^3.0",
+    "codeception/mockery-module": "^0.3",
+    "codeception/specify": "^0.4",
+    "codeception/verify": "^1.0",
+    "vlucas/phpdotenv": "^3.0"
   },
   "provide": {
     "bower-asset/bootstrap": "3.3.* | 3.2.* | 3.1.*",

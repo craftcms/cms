@@ -219,10 +219,6 @@ class TestSetup
         require $libPath . '/yii2/Yii.php';
         require $srcPath.'/Craft.php';
 
-        if (file_exists(ENV_PATH.'/.env')) {
-            (new Dotenv(ENV_PATH))->load();
-        }
-
         // Set aliases
         \Craft::setAlias('@vendor', $vendorPath);
         \Craft::setAlias('@lib', $libPath);
