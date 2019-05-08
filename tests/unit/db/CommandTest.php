@@ -24,6 +24,15 @@ use yii\db\Exception;
  */
 class CommandTest extends Unit
 {
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
+    /**
+     *
+     */
     public function testEnsureCommand()
     {
         $this->assertInstanceOf(Command::class, Craft::$app->getDb()->createCommand());
@@ -35,7 +44,6 @@ class CommandTest extends Unit
     public function testInsertDateCreated()
     {
         $session = $this->ensureSession();
-
         $date = new DateTime('now', new DateTimeZone('UTC'));
 
         $this->assertSame($session['dateCreated'], $date->format('Y-m-d H:i:s'));
@@ -64,9 +72,9 @@ class CommandTest extends Unit
         $this->assertSame($session['dateUpdated'], $date->format('Y-m-d H:i:s'));
     }
 
-
     /**
      * Ensure a session row exists
+     *
      * @return array
      * @throws Exception
      */
@@ -89,7 +97,8 @@ class CommandTest extends Unit
     }
 
     /**
-     * Updates a session row
+     * Updates a session row.
+     *
      * @param $values
      * @return array
      * @throws Exception
@@ -109,6 +118,7 @@ class CommandTest extends Unit
 
     /**
      * Gets a session row
+     *
      * @param array $params
      * @return array
      */

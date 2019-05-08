@@ -18,5 +18,11 @@ use craft\test\fixtures\FieldFixture;
  */
 class FieldsFixture extends FieldFixture
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public $dataFile = __DIR__.'/data/fields.php';
 }

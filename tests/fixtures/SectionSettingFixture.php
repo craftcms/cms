@@ -19,6 +19,16 @@ use craft\test\Fixture;
  */
 class SectionSettingFixture extends Fixture
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public $dataFile = __DIR__.'/data/section-settings.php';
+
+    /**
+     * @inheritdoc
+     */
     public $modelClass = Section_SiteSettings::class;
 }

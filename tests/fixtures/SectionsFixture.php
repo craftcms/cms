@@ -21,10 +21,30 @@ use craft\test\Fixture;
  */
 class SectionsFixture extends Fixture
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public $dataFile = __DIR__.'/data/sections.php';
+
+    /**
+     * @inheritdoc
+     */
     public $modelClass = Section::class;
+
+    /**
+     * @inheritdoc
+     */
     public $depends = [SectionSettingFixture::class];
 
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public function load()
     {
         parent::load();

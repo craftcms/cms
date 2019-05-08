@@ -21,10 +21,30 @@ use yii\test\ActiveFixture;
  */
 class VolumesFolderFixture extends ActiveFixture
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public $modelClass = VolumeFolder::class;
+
+    /**
+     * @inheritdoc
+     */
     public $dataFile = __DIR__.'/data/volumefolder.php';
+
+    /**
+     * @inheritdoc
+     */
     public $depends = [VolumesFixture::class];
 
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public function load()
     {
         parent::load();

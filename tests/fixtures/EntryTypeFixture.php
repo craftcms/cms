@@ -19,7 +19,21 @@ use craft\test\Fixture;
  */
 class EntryTypeFixture extends Fixture
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public $dataFile = __DIR__.'/data/entry-types.php';
+
+    /**
+     * @inheritdoc
+     */
     public $modelClass = EntryType::class;
+
+    /**
+     * @inheritdoc
+     */
     public $depends = [SectionsFixture::class];
 }

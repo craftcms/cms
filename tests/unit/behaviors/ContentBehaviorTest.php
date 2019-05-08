@@ -26,19 +26,19 @@ use UnitTester;
  */
 class ContentBehaviorTest extends Unit
 {
-    public function _fixtures(): array
-    {
-        return [
-            'fields' => [
-                'class' => FieldsFixture::class,
-            ]
-        ];
-    }
+    // Properties
+    // =========================================================================
 
     /**
      * @var UnitTester
      */
     public $tester;
+
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
 
     /**
      * @param $handle
@@ -54,21 +54,8 @@ class ContentBehaviorTest extends Unit
         $this->assertArrayHasKey($handle, ContentBehavior::$fieldHandles);
     }
 
-    public function existingFieldHandlesData() : array
-    {
-        return [
-            // TODO: Help needed. Saving fields with fixtures doesnt update the ContentBehavior class props. I cant find a way to solve this.
-            //['testField'],
-            //['testField2'],
-            //['testField3'],
-            //['testField4'],
-            //['testField5'],
-
-        ];
-    }
-
     /**
-     * Test that adding a field doesnt automatically mod the ContentBehavior
+     * Test that adding a field doesnt automatically modify the ContentBehavior
      */
     public function testRetrofittingDontWork()
     {
@@ -88,5 +75,24 @@ class ContentBehaviorTest extends Unit
         if (!Craft::$app->getFields()->deleteField($field)) {
             throw new InvalidArgumentException('Unable to delete field: '.$field->name.'');
         }
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function existingFieldHandlesData() : array
+    {
+        return [
+            // TODO: Help needed. Saving fields with fixtures doesnt update the ContentBehavior class props. I cant find a way to solve this.
+            //['testField'],
+            //['testField2'],
+            //['testField3'],
+            //['testField4'],
+            //['testField5'],
+
+        ];
     }
 }

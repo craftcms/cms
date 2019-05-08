@@ -27,25 +27,9 @@ use yii\db\Schema;
  */
 class DbHelperTest extends Unit
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
+    // Constants
+    // =========================================================================
 
-    protected $systemTimezone;
-    protected $utcTimezone;
-    protected $asiaTokyoTimezone;
-
-    protected function _before()
-    {
-        $this->systemTimezone = new DateTimeZone(Craft::$app->getTimeZone());
-        $this->utcTimezone = new DateTimeZone('UTC');
-        $this->asiaTokyoTimezone = new DateTimeZone('Asia/Tokyo');
-    }
-
-    protected function _after()
-    {
-    }
     const MULTI_PARSEPARAM_NOT = [
         'or',
         [
@@ -71,6 +55,7 @@ class DbHelperTest extends Unit
             ]
         ]
     ];
+
     const EMPTY_COLUMN_PARSEPARAM = [
         'or',
         [
@@ -81,6 +66,35 @@ class DbHelperTest extends Unit
             ]
         ]
     ];
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var UnitTester
+     */
+    protected $tester;
+
+    /**
+     * @var DateTimeZone
+     */
+    protected $systemTimezone;
+
+    /**
+     * @var DateTimeZone
+     */
+    protected $utcTimezone;
+
+    /**
+     * @var DateTimeZone
+     */
+    protected $asiaTokyoTimezone;
+
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
 
     /**
      * @dataProvider parseParamDataProvider
@@ -95,67 +109,6 @@ class DbHelperTest extends Unit
         $this->assertSame($result, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
     }
 
-    public function parseParamDataProvider(): array
-    {
-        return [
-            'basic' => [
-                ['or', [ 'in', 'foo', [ 'bar']]],
-                'foo', 'bar'
-            ],
-            'multi-array-format' => [
-                self::MULTI_PARSEPARAM,
-                'content_table', ['field_1', 'field_2'],
-            ],
-            'multi-split-by-comma' => [
-                self::MULTI_PARSEPARAM,
-                'content_table', 'field_1, field_2'
-            ],
-            'multi-not-param' => [
-                self::MULTI_PARSEPARAM_NOT,
-                'content_table', 'field_1, field_2', 'not',
-            ],
-            'multi-not-symbol' => [
-                self::MULTI_PARSEPARAM_NOT,
-                'content_table', 'field_1, field_2', '!='
-            ],
-            'empty' => [
-                ['or',[
-                        'in',
-                        '',[
-                            'field_1',
-                        ]]],
-                '', 'field_1',
-            ],
-            'random-symbol' => [
-                ['or',
-                    ['raaa',  'content_table', 'field_1'],
-                ],
-                'content_table', 'field_1', 'raaa',
-            ],
-            'random-symbol-multi' => [
-                ['or',
-                    ['raaa',  'content_table', 'field_1'],
-                    [ 'raaa', 'content_table', 'field_2' ]
-                ],
-                'content_table', 'field_1, field_2', 'raaa',
-            ],
-            ['', 'content_table', 'not'],
-            ['', 'content', []],
-            ['', '', ''],
-            ['', 'content', null],
-            ['', 'contentCol', ''],
-
-            'firstval-or' =>[
-                ['or', ['in', 'content_table', ['field_1', 'field_2']]],
-                'content_table', ['or', 'field_1', 'field_2'],
-            ],
-            'firstval-not' =>[
-                ['and', ['not in', 'content_table', ['field_1', 'field_2']]],
-                'content_table', ['not', 'field_1', 'field_2'],
-            ],
-        ];
-    }
-
     /**
      * @dataProvider escapeParamData
      * @param string $result
@@ -168,15 +121,6 @@ class DbHelperTest extends Unit
         $this->assertIsString($escapeResult);
     }
 
-    public function escapeParamData(): array
-    {
-        return [
-            ['\*', '*'],
-            ['\,', ','],
-            ['\,\*', ',*']
-        ];
-    }
-
     /**
      * @dataProvider columnTypeParsingData
      * @param $result
@@ -186,22 +130,6 @@ class DbHelperTest extends Unit
     {
         $this->assertSame($result, Db::parseColumnType($input));
     }
-
-    public function columnTypeParsingData(): array
-    {
-        return [
-            ['test', 'test'],
-            [null, '!@#$%^&*()craftcms'],
-            ['craftcms', 'craftcms!@#$%^&*()'],
-            ['craft', 'craft,cms'],
-            ['123', '123 craft'],
-            ['craft', 'CRAFT'],
-            [null, '🎧𢵌 😀😘⛄'],
-            [null, 'Δδ'],
-            [null, '"craftcms"']
-        ];
-    }
-
 
     /**
      * @dataProvider numericColumnTypesData
@@ -216,24 +144,6 @@ class DbHelperTest extends Unit
         $this->assertSame($result, Db::getNumericalColumnType($int1, $int2, $decimals));
     }
 
-    public function numericColumnTypesData(): array
-    {
-        return [
-            'smallint1-minus' => ['smallint(1)', -0, -5],
-            'smallint1' => ['smallint(1)', 0, 5],
-            'smallint1-minus-string' => [ 'smallint(1)', '-2', '-5',],
-            'smallint1-string' => ['smallint(1)', '0', '5'],
-            'smallint0' => ['smallint(0)', 0, 0],
-            'smallint2' => ['smallint(2)', 0, 10],
-            'smallint3' => ['smallint(3)', 0, 100],
-            'smallint3-2' => ['smallint(3)', 100, 0],
-            'smallint7' => ['integer(7)', 0, 1231224],
-            'smallint9' => [ 'integer(9)', 0, 230221224],
-            'non-numeric' => ['integer(10)', null, null],
-            'decimals' => ['decimal(6,2)', 123, 1233, 2],
-        ];
-    }
-
     /**
      * @dataProvider columnLengthParseData
      * @param $result
@@ -242,19 +152,6 @@ class DbHelperTest extends Unit
     public function testColumnLengthParsing($result, $input)
     {
         $this->assertSame($result, Db::parseColumnLength($input));
-    }
-
-    public function columnLengthParseData(): array
-    {
-        return [
-            [2, 'integer(2)'],
-            [null, '2'],
-            [100, 'craftcms(100)'],
-            [null, '(100)'],
-            [null, '!@#$%^&*(100)'],
-            [null, '!@#$%^&*(100)'],
-            [null, '(integer(2))'],
-        ];
     }
 
     /**
@@ -267,22 +164,8 @@ class DbHelperTest extends Unit
         $this->assertSame($result, Db::getSimplifiedColumnType($input));
     }
 
-    public function simplifiedColumnData(): array
-    {
-        return [
-            ['textual', 'Textual'],
-            ['numeric', 'Integer'],
-            ['raaa', 'RAAA'],
-            ['textual', 'Tinytext'],
-            ['numeric', 'Decimal'],
-            ['textual', 'Longtext'],
-            ['textual', 'string!@#$%^&*()'],
-            ['!@#$%', '!@#$%']
-        ];
-    }
-
     /**
-     * // TODO: Set this up with a fixture or a migration so that we can *actually* delete tables
+     * @todo Set this up with a fixture or a migration so that we can *actually* delete tables
      *
      * @dataProvider deleteTablesData
      * @param $result
@@ -296,15 +179,8 @@ class DbHelperTest extends Unit
         $this->assertSame($result, Db::deleteIfExists($table, $condition, $params));
     }
 
-    public function deleteTablesData(): array
-    {
-        return [
-            [0, '{{%users}} users', "[[users.id]] = 1234567890 and [[users.uid]] = 'THISISNOTAUID'"]
-        ];
-    }
-
     /*
-     * Tests that a Yii\Db\Exception will be thrown if the table *Literaly* doesnt exist in the schema.
+     * Tests that a Yii\Db\Exception will be thrown if the table *literally* doesnt exist in the schema.
      */
     public function testDeleteIfExistsException()
     {
@@ -324,28 +200,8 @@ class DbHelperTest extends Unit
         $this->assertSame($result, $prepped);
     }
 
-    public function dataForDbPrepare(): array
-    {
-        $jsonableArray = ['JsonArray' => 'SomeArray'];
-        $jsonableClass = new stdClass();
-        $jsonableClass->name = 'name';
-        $serializable = new Serializable();
-
-        $dateTime = new DateTime('2018-06-06 18:00:00');
-
-        return [
-            ['2018-06-06 18:00:00', $dateTime],
-            ['{"name":"name"}', $jsonableClass],
-            ['{"JsonArray":"SomeArray"}', $jsonableArray],
-            ['Serialized data', $serializable],
-            [false, false],
-            // TODO: MB4.
-            ['😀😘', '😀😘']
-        ];
-    }
-
     /**
-     * TODO: Refactor this test to make it slightly clearer.
+     * @todo Refactor this test to make it slightly clearer.
      */
     public function testPrepareDateForDb()
     {
@@ -387,6 +243,252 @@ class DbHelperTest extends Unit
         $areCompatible = Db::areColumnTypesCompatible($columnA, $columnB);
         $this->assertSame($result, $areCompatible);
     }
+
+    /**
+     * @todo Why do all these fail?
+     *
+     * @dataProvider isNumericData
+     * @param $result
+     * @param $input
+     */
+    public function testIsNumericColumnType($result, $input)
+    {
+        $isNumeric = Db::isNumericColumnType($input);
+        $this->assertSame($result, $isNumeric);
+    }
+
+    /**
+     * @dataProvider textualStorageData
+     * @param $result
+     * @param $input
+     */
+    public function testGetTextualColumnStorageCapacity($result, $input)
+    {
+        $capacity = Db::getTextualColumnStorageCapacity($input);
+        $this->assertSame($result, $capacity);
+    }
+
+    /**
+     * @dataProvider getMaxAllowedValueForNumericColumnData
+     * @param $result
+     * @param $input
+     */
+    public function testGetMaxAllowedValueForNumericColumn($result, $input)
+    {
+        $allowed = Db::getMaxAllowedValueForNumericColumn($input);
+        $this->assertSame($result, $allowed);
+    }
+
+    /**
+     * @dataProvider getMinAllowedValueForNumericColumnData
+     * @param $result
+     * @param $input
+     */
+    public function testGetMinAllowedValueForNumericColumn($result, $input)
+    {
+        $allowed = Db::getMinAllowedValueForNumericColumn($input);
+        $this->assertSame($result, $allowed);
+    }
+
+    /**
+     * @dataProvider prepareValuesForDbData
+     * @param $result
+     * @param $input
+     */
+    public function testPrepareValueForDb($result, $input)
+    {
+        $prepared = Db::prepareValuesForDb($input);
+        $this->assertSame($result, $prepared);
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function parseParamDataProvider(): array
+    {
+        return [
+            'basic' => [
+                ['or', [ 'in', 'foo', [ 'bar']]],
+                'foo', 'bar'
+            ],
+            'multi-array-format' => [
+                self::MULTI_PARSEPARAM,
+                'content_table', ['field_1', 'field_2'],
+            ],
+            'multi-split-by-comma' => [
+                self::MULTI_PARSEPARAM,
+                'content_table', 'field_1, field_2'
+            ],
+            'multi-not-param' => [
+                self::MULTI_PARSEPARAM_NOT,
+                'content_table', 'field_1, field_2', 'not',
+            ],
+            'multi-not-symbol' => [
+                self::MULTI_PARSEPARAM_NOT,
+                'content_table', 'field_1, field_2', '!='
+            ],
+            'empty' => [
+                ['or',[
+                    'in',
+                    '',[
+                        'field_1',
+                    ]]],
+                '', 'field_1',
+            ],
+            'random-symbol' => [
+                ['or',
+                    ['raaa',  'content_table', 'field_1'],
+                ],
+                'content_table', 'field_1', 'raaa',
+            ],
+            'random-symbol-multi' => [
+                ['or',
+                    ['raaa',  'content_table', 'field_1'],
+                    [ 'raaa', 'content_table', 'field_2' ]
+                ],
+                'content_table', 'field_1, field_2', 'raaa',
+            ],
+            ['', 'content_table', 'not'],
+            ['', 'content', []],
+            ['', '', ''],
+            ['', 'content', null],
+            ['', 'contentCol', ''],
+
+            'firstval-or' =>[
+                ['or', ['in', 'content_table', ['field_1', 'field_2']]],
+                'content_table', ['or', 'field_1', 'field_2'],
+            ],
+            'firstval-not' =>[
+                ['and', ['not in', 'content_table', ['field_1', 'field_2']]],
+                'content_table', ['not', 'field_1', 'field_2'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function escapeParamData(): array
+    {
+        return [
+            ['\*', '*'],
+            ['\,', ','],
+            ['\,\*', ',*']
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function columnTypeParsingData(): array
+    {
+        return [
+            ['test', 'test'],
+            [null, '!@#$%^&*()craftcms'],
+            ['craftcms', 'craftcms!@#$%^&*()'],
+            ['craft', 'craft,cms'],
+            ['123', '123 craft'],
+            ['craft', 'CRAFT'],
+            [null, '🎧𢵌 😀😘⛄'],
+            [null, 'Δδ'],
+            [null, '"craftcms"']
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function numericColumnTypesData(): array
+    {
+        return [
+            'smallint1-minus' => ['smallint(1)', -0, -5],
+            'smallint1' => ['smallint(1)', 0, 5],
+            'smallint1-minus-string' => [ 'smallint(1)', '-2', '-5',],
+            'smallint1-string' => ['smallint(1)', '0', '5'],
+            'smallint0' => ['smallint(0)', 0, 0],
+            'smallint2' => ['smallint(2)', 0, 10],
+            'smallint3' => ['smallint(3)', 0, 100],
+            'smallint3-2' => ['smallint(3)', 100, 0],
+            'smallint7' => ['integer(7)', 0, 1231224],
+            'smallint9' => [ 'integer(9)', 0, 230221224],
+            'non-numeric' => ['integer(10)', null, null],
+            'decimals' => ['decimal(6,2)', 123, 1233, 2],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function columnLengthParseData(): array
+    {
+        return [
+            [2, 'integer(2)'],
+            [null, '2'],
+            [100, 'craftcms(100)'],
+            [null, '(100)'],
+            [null, '!@#$%^&*(100)'],
+            [null, '!@#$%^&*(100)'],
+            [null, '(integer(2))'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function simplifiedColumnData(): array
+    {
+        return [
+            ['textual', 'Textual'],
+            ['numeric', 'Integer'],
+            ['raaa', 'RAAA'],
+            ['textual', 'Tinytext'],
+            ['numeric', 'Decimal'],
+            ['textual', 'Longtext'],
+            ['textual', 'string!@#$%^&*()'],
+            ['!@#$%', '!@#$%']
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function deleteTablesData(): array
+    {
+        return [
+            [0, '{{%users}} users', "[[users.id]] = 1234567890 and [[users.uid]] = 'THISISNOTAUID'"]
+        ];
+    }
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function dataForDbPrepare(): array
+    {
+        $jsonableArray = ['JsonArray' => 'SomeArray'];
+        $jsonableClass = new stdClass();
+        $jsonableClass->name = 'name';
+        $serializable = new Serializable();
+
+        $dateTime = new DateTime('2018-06-06 18:00:00');
+
+        return [
+            ['2018-06-06 18:00:00', $dateTime],
+            ['{"name":"name"}', $jsonableClass],
+            ['{"JsonArray":"SomeArray"}', $jsonableArray],
+            ['Serialized data', $serializable],
+            [false, false],
+            // TODO: MB4.
+            ['😀😘', '😀😘']
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public function columnCompatibilityData(): array
     {
         return [
@@ -401,17 +503,8 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * TODO: Why do all these fail?
-     * @dataProvider isNumericData
-     * @param $result
-     * @param $input
+     * @return array
      */
-    public function testIsNumericColumnType($result, $input)
-    {
-        $isNumeric = Db::isNumericColumnType($input);
-        $this->assertSame($result, $isNumeric);
-    }
-
     public function isNumericData(): array
     {
         return [
@@ -427,15 +520,8 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider textualStorageData
-     * @param $result
-     * @param $input
+     * @return array
      */
-    public function testGetTextualColumnStorageCapacity($result, $input)
-    {
-        $capacity = Db::getTextualColumnStorageCapacity($input);
-        $this->assertSame($result, $capacity);
-    }
     public function textualStorageData(): array
     {
         return [
@@ -447,15 +533,8 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider getMaxAllowedValueForNumericColumnData
-     * @param $result
-     * @param $input
+     * @return array
      */
-    public function testGetMaxAllowedValueForNumericColumn($result, $input)
-    {
-        $allowed = Db::getMaxAllowedValueForNumericColumn($input);
-        $this->assertSame($result, $allowed);
-    }
     public function getMaxAllowedValueForNumericColumnData(): array
     {
         return [
@@ -467,15 +546,8 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider getMinAllowedValueForNumericColumnData
-     * @param $result
-     * @param $input
+     * @return array
      */
-    public function testGetMinAllowedValueForNumericColumn($result, $input)
-    {
-        $allowed = Db::getMinAllowedValueForNumericColumn($input);
-        $this->assertSame($result, $allowed);
-    }
     public function getMinAllowedValueForNumericColumnData(): array
     {
         return [
@@ -487,15 +559,9 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider prepareValuesForDbData
-     * @param $result
-     * @param $input
+     * @return array
+     * @throws \Exception
      */
-    public function testPrepareValueForDb($result, $input)
-    {
-        $prepared = Db::prepareValuesForDb($input);
-        $this->assertSame($result, $prepared);
-    }
     public function prepareValuesForDbData(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
@@ -516,5 +582,15 @@ class DbHelperTest extends Unit
             [[false], [false]],
             [['😀😘'], ['😀😘']]
         ];
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    protected function _before()
+    {
+        $this->systemTimezone = new DateTimeZone(Craft::$app->getTimeZone());
+        $this->utcTimezone = new DateTimeZone('UTC');
+        $this->asiaTokyoTimezone = new DateTimeZone('Asia/Tokyo');
     }
 }

@@ -20,7 +20,7 @@ use stdClass;
 use UnitTester;
 
 /**
- * Unit tests for the ActiveRecord class craft cms implements
+ * Unit tests for the ActiveRecord class Craft implements.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -28,11 +28,19 @@ use UnitTester;
  */
 class ActiveRecordTest extends Unit
 {
+    // Properties
+    // =========================================================================
 
     /**
      * @var UnitTester
      */
     public $tester;
+
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
 
     /**
      * Note this test is just here to verify that these are indeed craft\db\ActiveRecord classes.
@@ -43,6 +51,9 @@ class ActiveRecordTest extends Unit
         $this->assertInstanceOf(ActiveRecord::class, new Session());
     }
 
+    /**
+     * @throws Exception
+     */
     public function testDateCreated()
     {
         $session = $this->ensureSession();
@@ -52,6 +63,9 @@ class ActiveRecordTest extends Unit
         $this->assertSame($session->dateCreated, $date->format('Y-m-d H:i:s'));
     }
 
+    /**
+     * @throws Exception
+     */
     public function testDateUpdated()
     {
         $session = $this->ensureSession();
@@ -72,6 +86,9 @@ class ActiveRecordTest extends Unit
         $this->assertSame($session->dateUpdated, $date->format('Y-m-d H:i:s'));
     }
 
+    /**
+     *
+     */
     public function testUuid()
     {
         $session = $this->ensureSession();
@@ -99,6 +116,10 @@ class ActiveRecordTest extends Unit
         $this->assertSame($result, $vol->settings);
     }
 
+    /**
+     * @return array
+     * @throws Exception
+     */
     public function dataForDbPrepare(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
@@ -120,7 +141,7 @@ class ActiveRecordTest extends Unit
         ];
     }
     /**
-     * Test that values cannot be overwritten
+     * Test that values cannot be overwritten.
      *
      * @throws Exception
      */
@@ -147,6 +168,9 @@ class ActiveRecordTest extends Unit
         $this->assertSame($uuid, $session->uid);
     }
 
+    /**
+     *
+     */
     public function testUUIDThatIsntValid()
     {
         $session = new Session();
@@ -159,6 +183,9 @@ class ActiveRecordTest extends Unit
         $this->assertSame('00000000|0000|0000|0000|000000000000', $session->uid);
     }
 
+    /**
+     *
+     */
     public function testNoUUid()
     {
         $session = new Session();
@@ -170,6 +197,9 @@ class ActiveRecordTest extends Unit
         $this->assertTrue(StringHelper::isUUID($session->uid));
     }
 
+    /**
+     * @return Session
+     */
     public function ensureSession() : Session
     {
         $session = new Session();
@@ -178,7 +208,6 @@ class ActiveRecordTest extends Unit
         $save = $session->save();
 
         $this->assertTrue($save);
-
         return $session;
     }
 }

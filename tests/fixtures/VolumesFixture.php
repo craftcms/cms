@@ -27,14 +27,30 @@ use yii\base\InvalidConfigException;
  */
 class VolumesFixture extends Fixture
 {
-    public $modelClass = Volume::class;
-    public $dataFile = __DIR__.'/data/volumes.php';
+    // Constants
+    // =========================================================================
 
-    const BASE_URL = 'https://cdn.test.craftcms.dev/';
+    const BASE_URL = 'https://cdn.test.craftcms.test/';
+
+    // Properties
+    // =========================================================================
 
     /**
+     * @inheritdoc
+     */
+    public $modelClass = Volume::class;
+
+    /**
+     * @inheritdoc
+     */
+    public $dataFile = __DIR__.'/data/volumes.php';
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
      * @throws Exception
-     * @throws InvalidConfigException
      */
     public function load()
     {
@@ -50,6 +66,7 @@ class VolumesFixture extends Fixture
     }
 
     /**
+     * @inheritdoc
      * @throws ErrorException
      */
     public function unload()

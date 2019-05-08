@@ -19,6 +19,16 @@ use craft\test\Fixture;
  */
 class SessionsFixture extends Fixture
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public $dataFile = __DIR__.'/data/sessions.php';
+
+    /**
+     * @inheritdoc
+     */
     public $modelClass = Session::class;
 }

@@ -18,5 +18,11 @@ use craft\test\elementfixtures\UserFixture;
  */
 class UsersFixture extends UserFixture
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public $dataFile = __DIR__.'/data/users.php';
 }

@@ -18,15 +18,15 @@ use FunctionalTester;
  */
 class LoginCest
 {
-    public function _before(FunctionalTester $I)
-    {
-    }
+    // Public Methods
+    // =========================================================================
 
-    public function _after(FunctionalTester $I)
-    {
-    }
+    // Tests
+    // =========================================================================
 
-    // tests
+    /**
+     * @param FunctionalTester $I
+     */
     public function seeTemplateHomepageTest(FunctionalTester $I)
     {
         $I->amOnPage('/');

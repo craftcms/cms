@@ -19,6 +19,16 @@ use craft\test\elementfixtures\AssetFixture;
  */
 class AssetsFixture extends AssetFixture
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
     public $dataFile = __DIR__.'/data/assets.php';
+
+    /**
+     * @inheritdoc
+     */
     public $depends = [VolumesFixture::class, VolumesFolderFixture::class];
 }

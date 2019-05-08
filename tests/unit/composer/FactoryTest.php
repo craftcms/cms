@@ -23,6 +23,9 @@ use UnitTester;
  */
 class FactoryTest extends TestCase
 {
+    // Properties
+    // =========================================================================
+
     /**
      * @var Factory $factory
      */
@@ -33,13 +36,24 @@ class FactoryTest extends TestCase
      */
     protected $tester;
 
-    public function _before()
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
     {
         $this->factory = new Factory();
     }
 
+    // Tests
+    // =========================================================================
+
     /**
-     * TODO: Test creation without DownloadManager passed in?
+     * Test creating an archive manager.
+     *
+     * @todo Test creation without DownloadManager passed in?
      */
     public function testCreateArchiveManager()
     {
