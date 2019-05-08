@@ -26,6 +26,7 @@
 <style lang="scss">
     .screenshots {
         @apply .overflow-auto .flex .-mx-4;
+        -webkit-overflow-scrolling: touch;
 
         .screenshot {
             @apply .px-4 .flex-no-shrink .flex-no-grow;
