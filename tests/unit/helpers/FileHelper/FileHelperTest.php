@@ -161,10 +161,10 @@ class FileHelperTest extends Unit
      *
      * @throws InvalidConfigException
      */
-    public function testGetMimeType($result, $file, $magicFile, $checkExtension)
+    public function testGetMimeType($file, $magicFile, $checkExtension, $actualMimeType)
     {
         $mimeType = FileHelper::getMimeType($file, $magicFile, $checkExtension);
-        $this->assertSame($result, $mimeType);
+        $this->assertSame($actualMimeType, $mimeType);
     }
 
     /**
@@ -338,14 +338,14 @@ class FileHelperTest extends Unit
     public function mimeTypeDataProvider(): array
     {
         return [
-            ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
-            ['inode/x-empty', dirname(__DIR__, 3) . '/_data/assets/files/empty-file.text', null, true],
-            ['text/html', dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, true],
-            ['image/gif', dirname(__DIR__, 3) . '/_data/assets/files/example-gif.gif', null, true],
-            ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
-            ['image/svg+xml', dirname(__DIR__, 3) . '/_data/assets/files/gng.svg', null, true],
-            ['application/xml', dirname(__DIR__, 3) . '/_data/assets/files/random.xml', null, true],
-            ['directory', __DIR__, null, true],
+            [dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true, 'application/pdf'],
+            [dirname(__DIR__, 3) . '/_data/assets/files/empty-file.text', null, true, 'inode/x-empty'],
+            [dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, true, 'text/html'],
+            [dirname(__DIR__, 3) . '/_data/assets/files/example-gif.gif', null, true, 'image/gif'],
+            [dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true, 'application/pdf'],
+            [dirname(__DIR__, 3) . '/_data/assets/files/gng.svg', null, true, 'image/svg+xml'],
+            [dirname(__DIR__, 3) . '/_data/assets/files/random.xml', null, true, 'application/xml'],
+            [__DIR__, null, true, 'directory'],
         ];
     }
 
