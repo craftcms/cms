@@ -32,4 +32,12 @@ return [
         'propagateEntries' => true,
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
     ],
+    [
+        'id' => '1003',
+        'name' => 'With URI 1',
+        'handle' => 'withUri1',
+        'type' => 'channel',
+        'enableVersioning' => false,
+        'propagateEntries' => true,
+    ],
 ];

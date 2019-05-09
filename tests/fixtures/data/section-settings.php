@@ -32,5 +32,14 @@ return [
         'uriFormat' => null,
         'template' => null,
         'enabledByDefault' => true,
+    ],
+    [
+        'id' => '1003',
+        'sectionId' => '1003',
+        'siteId' => '1',
+        'hasUrls' => true,
+        'uriFormat' => 'some-uri/{slug}',
+        'template' => 'index',
+        'enabledByDefault' => true,
     ]
 ];

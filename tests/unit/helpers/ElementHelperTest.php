@@ -12,6 +12,7 @@ use Craft;
 use craft\errors\OperationAbortedException;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
+use craftunit\fixtures\EntriesFixture;
 use UnitTester;
 use Exception;
 
@@ -34,6 +35,18 @@ class ElementHelperTest extends Unit
 
     // Public Methods
     // =========================================================================
+
+    // Fixtures
+    // =========================================================================
+
+    public function _fixtures()
+    {
+        return [
+            'entries' => [
+                'class' => EntriesFixture::class
+            ]
+        ];
+    }
 
     // Tests
     // =========================================================================
@@ -108,7 +121,6 @@ class ElementHelperTest extends Unit
      */
     public function testMaxLength()
     {
-
         try {
             $el = new ExampleElement([
                 'uriFormat' => 'test/{slug}',
@@ -179,7 +191,6 @@ class ElementHelperTest extends Unit
     }
 
     /**
-     * @todo Test line 100. Test _isUniqueUri and setup fixtures that add data to elements_sites
      * @return array
      */
     public function setUniqueUriDataProvider(): array
@@ -194,6 +205,10 @@ class ElementHelperTest extends Unit
 
             // 254 chars.
             [['uri' => 'test/asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssssssss'], ['uriFormat' => 'test/{slug}', 'slug' => 'asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssssssss']],
+
+            [['uri' => 'some-uri/With--URL--2--1'], ['uriFormat' => 'some-uri/{slug}', 'slug' => 'With--URL--2']],
+            [['uri' => 'some-uri/With--URL--1--1'], ['uriFormat' => 'some-uri/{slug}', 'slug' => 'With--URL--1']],
+            [['uri' => 'different-uri/With--URL--1'], ['uriFormat' => 'different-uri/{slug}', 'slug' => 'With--URL--1']],
         ];
     }
 }

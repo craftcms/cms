@@ -31,4 +31,15 @@ return [
         'title' => 'Deleted 25 days ago',
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P25D'))->format('Y-m-d H:i:s')
     ],
+
+    [
+        'sectionId' => '1003',
+        'typeId' => '1003',
+        'title' => 'With URL 1',
+    ],
+    [
+        'sectionId' => '1003',
+        'typeId' => '1003',
+        'title' => 'With URL 2',
+    ],
 ];
