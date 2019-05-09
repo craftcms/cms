@@ -63,7 +63,6 @@ class CommandTest extends Unit
         $date = new DateTime('now', $dateTimeZone);
         $oldDate  = new DateTime($session['dateUpdated'], $dateTimeZone);
 
-        // TODO: can $this->greaterThan be used? Might need more research....
         $this->assertGreaterThan($oldDate, $date);
 
         // Save it again. Ensure dateUpdated is now current.
