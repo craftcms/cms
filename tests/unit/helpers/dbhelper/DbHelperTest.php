@@ -481,8 +481,8 @@ class DbHelperTest extends Unit
             ['{"JsonArray":"SomeArray"}', $jsonableArray],
             ['Serialized data', $serializable],
             [false, false],
-            // TODO: MB4.
-            ['😀😘', '😀😘']
+            ['😀😘', '😀😘'],
+            ['🆔', '🆔']
         ];
     }
 
