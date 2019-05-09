@@ -76,7 +76,7 @@ class Craft extends Yii2
      * @var array
      */
     public static $testConfig;
-
+    
     /**
      * Craft constructor.
      * We need to merge the config settings here as this is the earliest point in the instance's existance.
@@ -131,7 +131,9 @@ class Craft extends Yii2
 
     /**
      * @param TestInterface $test
-     * @throws \yii\db\Exception
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws \yii\base\ErrorException
      */
     public function _after(TestInterface $test)
     {
@@ -161,8 +163,6 @@ class Craft extends Yii2
 
     /**
      * @throws \Throwable
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\db\Exception
      */
     public function setupDb()
     {

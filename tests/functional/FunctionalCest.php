@@ -28,15 +28,17 @@ class FunctionalCest
     // =========================================================================
 
     /**
-     * @param AcceptanceTester $I
+     * @param FunctionalTester $I
      */
-    public function _before(AcceptanceTester $I)
+    public function _before(FunctionalTester $I)
     {
-        $user = User::find()
+        $userEl = User::find()
             ->admin()
             ->one();
 
-        Craft::$app->getUser()->setIdentity($user);
+        Craft::$app->getUser()->setIdentity($userEl);
+
+        $I->amLoggedInAs($userEl);
     }
 
     /**

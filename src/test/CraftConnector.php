@@ -5,11 +5,11 @@
  * @license https://craftcms.github.io/license/
  */
 
-
 namespace craft\test;
 
 
 use Codeception\Lib\Connector\Yii2;
+use yii\mail\MessageInterface;
 use yii\web\Application;
 
 
@@ -22,12 +22,33 @@ use yii\web\Application;
  */
 class CraftConnector extends Yii2
 {
+    // Private properties
+    // =========================================================================
+
+    /**
+     * @var array $emails
+     */
+    private $emails;
+
+    // Public functions
+    // =========================================================================
+
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function startApp()
     {
         parent::startApp();
         \Craft::$app = \Yii::$app;
+
+        \Craft::$app->set('mailer', ['class' => TestMailer::class, 'callback' => function (MessageInterface $message) {
+            $this->emails[] = $message;
+        }]);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function resetApplication()
     {
         parent::resetApplication();
