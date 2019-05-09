@@ -167,6 +167,14 @@ class TestSetup
             $config = ArrayHelper::merge($config, $customConfig);
         }
 
+        // Use app.php from the config dir aswell.
+        $craftPath = CRAFT_CONFIG_PATH;
+        $appConfigPath = $craftPath.'/app.php';
+        if (is_file($appConfigPath)) {
+            $appConfig = require $appConfigPath;
+            $config = ArrayHelper::merge($config, $appConfig);
+        }
+
         $config['vendorPath'] = $vendorPath;
 
         $config = ArrayHelper::merge($config, [
@@ -192,7 +200,6 @@ class TestSetup
         define('YII_ENV', 'test');
 
         $vendorPath = realpath(CRAFT_VENDOR_PATH);
-        $craftPath = CRAFT_FOLDER_PATH;
 
         $configPath = realpath(CRAFT_CONFIG_PATH);
         $contentMigrationsPath = realpath(CRAFT_MIGRATIONS_PATH);
