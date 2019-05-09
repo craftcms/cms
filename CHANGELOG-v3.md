@@ -8,7 +8,7 @@
 ### Changed
 - Editing your own user photo no longer requires any permissions.
 
-## 3.1.26 - 209-05-08
+## 3.1.26 - 2019-05-08
 
 ### Changed
 - The “Update all” button on the Updates utility is now shown even if the page contains some uninstallable updates. ([#4230](https://github.com/craftcms/cms/issues/4230))
