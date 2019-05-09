@@ -310,7 +310,7 @@ class Elements extends Component
      *
      * @param int $elementId The element’s ID.
      * @param int $siteId The site to search for the element’s URI in.
-     * @return string|null The element’s URI, or `null`.
+     * @return string|null|false The element’s URI, `null`, or `false`.
      */
     public function getElementUriForSite(int $elementId, int $siteId)
     {
