@@ -1761,7 +1761,7 @@ JS;
 
         $html .= '<span class="title">';
 
-        $label = HtmlHelper::encode($element->getName());
+        $label = HtmlHelper::encode($element->getUiLabel());
 
         if ($context['context'] === 'index' && !$element->trashed && ($cpEditUrl = $element->getCpEditUrl())) {
             $cpEditUrl = HtmlHelper::encode($cpEditUrl);

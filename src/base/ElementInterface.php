@@ -443,11 +443,11 @@ interface ElementInterface extends ComponentInterface
     public function getLink();
 
     /**
-     * Returns a string to be used in for links to edit this element.
+     * Returns what the element should be called within the Control Panel.
      *
      * @return string
      */
-    public function getName(): string;
+    public function getUiLabel(): string;
 
     /**
      * Returns the reference string to this element.

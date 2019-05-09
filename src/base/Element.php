@@ -1271,7 +1271,7 @@ abstract class Element extends Component implements ElementInterface
         $url = $this->getUrl();
 
         if ($url !== null) {
-            $link = '<a href="' . $url . '">' . Html::encode($this->getName()) . '</a>';
+            $link = '<a href="' . $url . '">' . Html::encode($this->getUiLabel()) . '</a>';
 
             return Template::raw($link);
         }
@@ -1282,7 +1282,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getName(): string
+    public function getUiLabel(): string
     {
         return (string)$this;
     }
