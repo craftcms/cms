@@ -8,16 +8,13 @@ namespace craft\test;
 
 use craft\db\Connection;
 use craft\db\Migration;
-use craft\db\MigrationManager;
 use craft\helpers\ArrayHelper;
-use craft\helpers\FileHelper;
 use craft\helpers\MigrationHelper;
 use craft\migrations\Install;
 use craft\models\Site;
 use craft\services\Config;
 use craft\web\Application;
 use craft\web\UploadedFile;
-use Dotenv\Dotenv;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception;
@@ -25,28 +22,14 @@ use yii\db\Exception;
 /**
  * Class TestSetup.
  *
- * TODO: Lets just make all methods that dont depend on $this->connection static.
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.0
  */
 class TestSetup
 {
-    public function __construct(Connection $connection)
-    {
-        $this->connection = $connection;
-    }
-
-    /**
-     * @var Connection
-     */
-    private $connection;
-
-    /**
-     * @var bool
-     */
-    private $hasBeenCleansed = false;
+    // Public Methods
+    // =========================================================================
 
     /**
      * Creates a craft object to play with. Ensures the Craft::$app service locator is working.
@@ -84,24 +67,24 @@ class TestSetup
     }
 
     /**
+     * @param Connection $connection
      * @return bool
      * @throws Exception
      */
-    public function clenseDb() : bool
+    public static function clenseDb(Connection $connection) : bool
     {
-        $tables = $this->connection->schema->getTableNames();
+        $tables = $connection->schema->getTableNames();
 
         foreach ($tables as $table) {
             MigrationHelper::dropTable($table);
         }
 
 
-        $tables = $this->connection->schema->getTableNames();
+        $tables = $connection->schema->getTableNames();
         if ($tables !== []) {
             throw new Exception('Unable to setup test enviroment');
         }
 
-        $this->hasBeenCleansed = true;
         return true;
     }
 
@@ -110,7 +93,7 @@ class TestSetup
      * @return false|null
      * @throws \Throwable
      */
-    public function validateAndApplyMigration(string $class, array $params) : bool
+    public static function validateAndApplyMigration(string $class, array $params) : bool
     {
         if (!class_exists($class)) {
             throw new InvalidArgumentException('Unable to ');
@@ -264,14 +247,17 @@ class TestSetup
     }
 
     /**
+     * @param Connection $connection
+     * @return void
      * @throws Exception
      */
-    public function setupCraftDb()
+    public static function setupCraftDb(Connection $connection)
     {
-        if ($this->connection->schema->getTableNames() !== []) {
+        if ($connection->schema->getTableNames() !== []) {
             throw new Exception('Not allowed to setup the DB if it hasnt been cleansed');
         }
 
+        // TODO: set prim site with project config data....
         $site = new Site([
             'name' => 'Craft test site',
             'handle' => 'default',
@@ -282,13 +268,13 @@ class TestSetup
         ]);
 
         $migration = new Install([
-            'db' => $this->connection,
+            'db' => $connection,
             'username' => 'craftcms',
             'password' => 'craftcms2018!!',
             'email' => 'support@craftcms.com',
             'site' => $site,
         ]);
 
-        return $migration->safeUp();
+        $migration->safeUp();
     }
 }

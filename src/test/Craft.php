@@ -25,6 +25,7 @@ use yii\base\Application;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
+use yii\db\Exception;
 
 /**
  * Craft module for codeception
@@ -173,14 +174,15 @@ class Craft extends Yii2
 
             $dbConnection = \Craft::createObject(App::dbConfig(self::createDbConfig()));
 
-            \Craft::$app->set('db', $dbConnection);
+            if (!$dbConnection instanceof Connection) {
+                throw new Exception('Unable to establish a DB connection to setup the DB');
+            }
 
-            // Create a testSetup object
-            $testSetup = self::createTestSetup($dbConnection);
+            \Craft::$app->set('db', $dbConnection);
 
             // Get rid of everything.
             if ($this->_getConfig('dbSetup')['clean'] === true) {
-                $testSetup->clenseDb();
+                TestSetup::clenseDb($dbConnection);
             }
 
             // Setup the project config from the passed file.
@@ -192,7 +194,7 @@ class Craft extends Yii2
 
             // Install the db from install.php
             if ($this->_getConfig('dbSetup')['setupCraft'] === true) {
-                $testSetup->setupCraftDb();
+                TestSetup::setupCraftDb($dbConnection);
             }
 
             // Ready to rock.
@@ -201,7 +203,7 @@ class Craft extends Yii2
             // Apply migrations
             if ($this->_getConfig('dbSetup')['setupMigrations'] === true) {
                 foreach ($this->_getConfig('migrations') as $migration) {
-                    $testSetup->validateAndApplyMigration($migration['class'], $migration['params']);
+                    TestSetup::validateAndApplyMigration($migration['class'], $migration['params']);
                 }
             }
 
@@ -429,14 +431,5 @@ class Craft extends Yii2
             'schema' => getenv('DB_SCHEMA'),
             'server' => getenv('DB_SERVER'),
         ]);
-    }
-
-    /**
-     * @param Connection $connection
-     * @return TestSetup
-     */
-    public static function createTestSetup(Connection $connection) : TestSetup
-    {
-        return new TestSetup($connection);
     }
 }
