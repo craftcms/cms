@@ -791,8 +791,6 @@ class StringHelperTest extends Unit
     }
 
     /**
-     * @todo Add 4 byte chars to this test.
-     *
      * @return array
      */
     public function mb4DataProvider(): array
@@ -806,6 +804,7 @@ class StringHelperTest extends Unit
             [false, '!@#$%^&*()_'],
             [false, '⛄'],
             [false, ''],
+            [true, '𨳊']
         ];
     }
 
