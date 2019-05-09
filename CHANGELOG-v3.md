@@ -5,6 +5,9 @@
 ### Fixed
 - Fixed a bug where rebuilding project config could set an incorrect value for user field layout.
 
+### Changed
+- Editing your own user photo no longer requires any permissions.
+
 ## 3.1.26 - 209-05-08
 
 ### Changed
