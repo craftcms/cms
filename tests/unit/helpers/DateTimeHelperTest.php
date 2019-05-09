@@ -782,9 +782,12 @@ class DateTimeHelperTest extends Unit
     public function timezoneAbbreviationData(): array
     {
         return [
-            // TODO: Summer and winter time.... >.< This test fails in summer time: ['CET', 'Europe/Amsterdam'],
             ['JST', 'Asia/Tokyo'],
             ['GMT+0900', '+0900'],
+            ['-03', 'America/Buenos_Aires'],
+            ['GMT', 'Etc/GMT+0'],
+            ['+1245', 'NZ-CHAT'],
+            ['EST', 'Jamaica']
         ];
     }
 
