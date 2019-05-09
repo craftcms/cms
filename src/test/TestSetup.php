@@ -194,11 +194,11 @@ class TestSetup
         $vendorPath = realpath(CRAFT_VENDOR_PATH);
         $craftPath = CRAFT_FOLDER_PATH;
 
-        $configPath = realpath($craftPath.'/config');
-        $contentMigrationsPath = realpath($craftPath.'/migrations');
-        $storagePath = realpath($craftPath.'/storage');
-        $templatesPath = realpath($craftPath.'/templates');
-        $translationsPath = realpath($craftPath.'/translations');
+        $configPath = realpath(CRAFT_CONFIG_PATH);
+        $contentMigrationsPath = realpath(CRAFT_MIGRATIONS_PATH);
+        $storagePath = realpath(CRAFT_STORAGE_PATH);
+        $templatesPath = realpath(CRAFT_TEMPLATES_PATH);
+        $translationsPath = realpath(CRAFT_TRANSLATIONS_PATH);
 
         // Log errors to craft/storage/logs/phperrors.log
         ini_set('log_errors', 1);
