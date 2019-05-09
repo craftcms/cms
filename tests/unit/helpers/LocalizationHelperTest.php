@@ -101,18 +101,6 @@ class LocalizationHelperTest extends Unit
         $this->assertSame($result, $data);
     }
 
-    /*
-     * @todo Fix this method and find a way to alter the PathService $_configPath variable.
-     */
-    public function testCustomConfigPathDirGetsMerged()
-    {
-        $this->markTestSkipped();
-        $oldConfigPath = Craft::$app->getConfig()->configDir;
-        Craft::$app->getConfig()->configDir = dirname(__DIR__, 3).'/_data/assets/files';
-        $this->assertSame([], Localization::localeData('a-locale-id'));
-        Craft::$app->getConfig()->configDir = $oldConfigPath;
-    }
-
     /**
      * @dataProvider findMissingTranslationDataProvider
      *
