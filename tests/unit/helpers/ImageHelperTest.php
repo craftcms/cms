@@ -45,7 +45,7 @@ class ImageHelperTest extends Unit
     }
 
     /**
-     * @dataProvider calculateMissingDimensionData
+     * @dataProvider calculateMissingDimensionDataProvider
      * @param $result
      * @param $targetWidth
      * @param $targetHeight
@@ -57,22 +57,9 @@ class ImageHelperTest extends Unit
         $calculate = Image::calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
         $this->assertSame($result, $calculate);
     }
-    public function calculateMissingDimensionData(): array
-    {
-        return [
-            [[1, 1], 1, 1, 1, 1],
-            [[10, 2], 10, 2, 4, 2],
-            [[4, 2], 0, 2, 4, 2],
-            [[2, 1], 2, 0, 4, 2],
-            [[0, 0], 0, 0, 4.2891, 2.12321],
-            [[28971, 14342], 28971.251, 0, 4.2891, 2.12321],
-            [[2491031, 1233121], 0, 1233121.123213, 4.2891, 2.12321],
-            [[12, 1233121], 12.12, 1233121.123213, 0, 4324],
-        ];
-    }
 
     /**
-     * @dataProvider canManipulateAsImageData
+     * @dataProvider canManipulateAsImageDataProvider
      * @param $result
      * @param $input
      */
@@ -81,31 +68,17 @@ class ImageHelperTest extends Unit
         $canManipulate = Image::canManipulateAsImage($input);
         $this->assertSame($result, $canManipulate);
     }
-    public function canManipulateAsImageData(): array
-    {
-        return [
-            [true, 'jpg'],
-            [true, 'jpeg'],
-            [true, 'gif'],
-            [true, 'png'],
-            [true, 'svg'],
-            [true, 'SVG'],
-            [false, '.SVG'],
-            [false, 'stuffsvg'],
-            [false, 'pdf'],
-            [false, 'json'],
-            [false, 'html'],
-            [false, 'htm']
-        ];
-    }
 
+    /**
+     *
+     */
     public function testWebSafeFormats()
     {
         $this->assertSame(['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp'], Image::webSafeFormats());
     }
 
     /**
-     * @dataProvider pngImageInfoData
+     * @dataProvider pngImageInfoDataProvider
      * @param $result
      * @param $input
      */
@@ -116,7 +89,7 @@ class ImageHelperTest extends Unit
     }
 
     /**
-     * @dataProvider canHaveExitData
+     * @dataProvider canHaveExitDataProvider
      * @param $result
      * @param $input
      */
@@ -127,7 +100,7 @@ class ImageHelperTest extends Unit
     }
 
     /**
-     * @dataProvider imageSizeData
+     * @dataProvider imageSizeDataProvider
      * @param $result
      * @param $input
      */
@@ -138,7 +111,7 @@ class ImageHelperTest extends Unit
     }
 
     /**
-     * @dataProvider parseSvgData
+     * @dataProvider parseSvgDataProvider
      * @param $result
      * @param $input
      */
@@ -149,7 +122,7 @@ class ImageHelperTest extends Unit
     }
 
     /**
-     * @dataProvider imageByStreamData
+     * @dataProvider imageByStreamDataProvider
      * @param $result
      * @param $input
      */
@@ -162,20 +135,24 @@ class ImageHelperTest extends Unit
     // Data Providers
     // =========================================================================
 
-    public function imageByStreamData(): array
+    /**
+     * @todo Generate a bunch of invalid image formats that generate exceptions.
+     * @return array
+     */
+    public function imageByStreamDataProvider(): array
     {
         return [
             [[400, 300], fopen(dirname(__FILE__, 3).'\_data\assets\files\example-gif.gif', 'rb')],
             [[960, 640], fopen(dirname(__FILE__, 3).'\_data\assets\files\background.jpg', 'rb')],
             [[200, 200], fopen(dirname(__FILE__, 3).'\_data\assets\files\google.png', 'rb')],
             [false, fopen(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg', 'rb')],
-
-            // TODO: Generate a bunch of invalid image formats that generate exceptions.
-
         ];
     }
 
-    public function parseSvgData(): array
+    /**
+     * @return array
+     */
+    public function parseSvgDataProvider(): array
     {
         return [
             [[140.0, 41.0], file_get_contents(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg')],
@@ -187,7 +164,10 @@ class ImageHelperTest extends Unit
         ];
     }
 
-    public function imageSizeData(): array
+    /**
+     * @return array
+     */
+    public function imageSizeDataProvider(): array
     {
         return [
             [[960, 640], dirname(__FILE__, 3).'\_data\assets\files\background.jpg'],
@@ -197,7 +177,10 @@ class ImageHelperTest extends Unit
         ];
     }
 
-    public function canHaveExitData(): array
+    /**
+     * @return array
+     */
+    public function canHaveExitDataProvider(): array
     {
         return [
             [true, dirname(__FILE__, 3).'\_data\assets\files\background.jpg'],
@@ -210,7 +193,10 @@ class ImageHelperTest extends Unit
         ];
     }
 
-    public function pngImageInfoData(): array
+    /**
+     * @return array
+     */
+    public function pngImageInfoDataProvider(): array
     {
         return [
             [[
@@ -229,6 +215,44 @@ class ImageHelperTest extends Unit
             [false, ''],
             [false, dirname(__FILE__, 3).'\_data\assets\files\ign.jpg'],
             // TODO: Test empty unpack() function  and invalid IHDR chunks and INVALID color value. See coverage for more.
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function calculateMissingDimensionDataProvider(): array
+    {
+        return [
+            [[1, 1], 1, 1, 1, 1],
+            [[10, 2], 10, 2, 4, 2],
+            [[4, 2], 0, 2, 4, 2],
+            [[2, 1], 2, 0, 4, 2],
+            [[0, 0], 0, 0, 4.2891, 2.12321],
+            [[28971, 14342], 28971.251, 0, 4.2891, 2.12321],
+            [[2491031, 1233121], 0, 1233121.123213, 4.2891, 2.12321],
+            [[12, 1233121], 12.12, 1233121.123213, 0, 4324],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function canManipulateAsImageDataProvider(): array
+    {
+        return [
+            [true, 'jpg'],
+            [true, 'jpeg'],
+            [true, 'gif'],
+            [true, 'png'],
+            [true, 'svg'],
+            [true, 'SVG'],
+            [false, '.SVG'],
+            [false, 'stuffsvg'],
+            [false, 'pdf'],
+            [false, 'json'],
+            [false, 'html'],
+            [false, 'htm']
         ];
     }
 }

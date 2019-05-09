@@ -23,14 +23,22 @@ use yii\base\InvalidArgumentException;
  */
 class LocalizationHelperTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UnitTester
      */
     protected $tester;
 
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
 
     /**
-     * @dataProvider languageNormalizationData
+     * @dataProvider languageNormalizationDataProvider
      *
      * @param $result
      * @param $input
@@ -41,19 +49,9 @@ class LocalizationHelperTest extends Unit
         $this->assertSame($result, $normalized);
     }
 
-    public function languageNormalizationData(): array
-    {
-        return [
-            ['nl', 'nl'],
-            ['en-US', 'en-US'],
-            ['af', 'af'],
-            ['af-NA', 'af-NA'],
-            ['en-AG', 'en-ag'],
-            ['en-AG', 'EN-AG'],
-
-        ];
-    }
-
+    /**
+     *
+     */
     public function testLanguageNormalizationExceptions()
     {
         $this->tester->expectThrowable(InvalidArgumentException::class, function () {
@@ -65,7 +63,7 @@ class LocalizationHelperTest extends Unit
     }
 
     /**
-     * @dataProvider numberNormalizationData
+     * @dataProvider numberNormalizationDataProvider
      *
      * @param $result
      * @param $input
@@ -77,16 +75,9 @@ class LocalizationHelperTest extends Unit
         $this->assertSame($result, $normalization);
     }
 
-    public function numberNormalizationData(): array
-    {
-        return [
-            ['2000000000', '20,0000,0000', null],
-            ['20 0000 0000', '20 0000 0000', null],
-            ['20.0000.0000', '20.0000.0000', null],
-            [2000000000, 2000000000, null],
-        ];
-    }
-
+    /**
+     *
+     */
     public function testNumberNormalizationCustomLocale()
     {
         $locale = null;
@@ -99,7 +90,7 @@ class LocalizationHelperTest extends Unit
         $this->assertSame('29999', Localization::normalizeNumber('2,99,99', $locale));
     }
     /**
-     * @dataProvider localeDataData
+     * @dataProvider localeDataDataProvider
      *
      * @param $result
      * @param $input
@@ -110,7 +101,74 @@ class LocalizationHelperTest extends Unit
         $this->assertSame($result, $data);
     }
 
-    public function localeDataData(): array
+    /*
+     * @todo Fix this method and find a way to alter the PathService $_configPath variable.
+     */
+    public function testCustomConfigPathDirGetsMerged()
+    {
+        $this->markTestSkipped();
+        $oldConfigPath = Craft::$app->getConfig()->configDir;
+        Craft::$app->getConfig()->configDir = dirname(__DIR__, 3).'/_data/assets/files';
+        $this->assertSame([], Localization::localeData('a-locale-id'));
+        Craft::$app->getConfig()->configDir = $oldConfigPath;
+    }
+
+    /**
+     * @dataProvider findMissingTranslationDataProvider
+     *
+     * @param $result
+     * @param $input
+     */
+    public function testFindMissingTranslation($result, $input)
+    {
+        $this->assertSame($result, Localization::findMissingTranslation($input));
+    }
+
+    // Tests
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function findMissingTranslationDataProvider(): array
+    {
+        return [
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function languageNormalizationDataProvider(): array
+    {
+        return [
+            ['nl', 'nl'],
+            ['en-US', 'en-US'],
+            ['af', 'af'],
+            ['af-NA', 'af-NA'],
+            ['en-AG', 'en-ag'],
+            ['en-AG', 'EN-AG'],
+
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function numberNormalizationDataProvider(): array
+    {
+        return [
+            ['2000000000', '20,0000,0000', null],
+            ['20 0000 0000', '20 0000 0000', null],
+            ['20.0000.0000', '20.0000.0000', null],
+            [2000000000, 2000000000, null],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function localeDataDataProvider(): array
     {
         $dir = dirname(__DIR__, 3).'/src/config/locales/nl.php';
         $nlTranslation = require $dir;
@@ -126,35 +184,6 @@ class LocalizationHelperTest extends Unit
             ['language', 'another-locale-id'],
             [['language2'], '/sub/another-locale-id'],
             [ArrayHelper::merge($nlTranslation, ['dutch' => 'a language']), 'nl']
-        ];
-    }
-
-    /*
-     * @TODO: Fix this method and find a way to alter the PathService $_configPath variable.
-     */
-    public function testCustomConfigPathDirGetsMerged()
-    {
-        $this->markTestSkipped();
-        $oldConfigPath = Craft::$app->getConfig()->configDir;
-        Craft::$app->getConfig()->configDir = dirname(__DIR__, 3).'/_data/assets/files';
-        $this->assertSame([], Localization::localeData('a-locale-id'));
-        Craft::$app->getConfig()->configDir = $oldConfigPath;
-    }
-
-    /**
-     * @dataProvider findMissingTranslationData
-     *
-     * @param $result
-     * @param $input
-     */
-    public function testFindMissingTranslation($result, $input)
-    {
-        $this->assertSame($result, Localization::findMissingTranslation($input));
-    }
-
-    public function findMissingTranslationData(): array
-    {
-        return [
         ];
     }
 }

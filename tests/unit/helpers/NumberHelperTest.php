@@ -21,13 +21,22 @@ use UnitTester;
  */
 class NumberHelperTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UnitTester
      */
     protected $tester;
 
+    // Public Properties
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
     /**
-     * @dataProvider wordData
+     * @dataProvider wordDataProvider
      * @param $result
      * @param $input
      */
@@ -36,7 +45,122 @@ class NumberHelperTest extends Unit
         $word = Number::word($input);
         $this->assertSame($result, $word);
     }
-    public function wordData(): array
+
+    /**
+     * @dataProvider upperAlphaDataProvider
+     *
+     * @param $result
+     * @param $input
+     */
+    public function testUpperAlpha($result, $input)
+    {
+        $upperAlpha = Number::upperAlpha($input);
+        $this->assertSame($result, $upperAlpha);
+    }
+
+    /**
+     * @dataProvider lowerAlphaDataProvider
+     *
+     * @param $result
+     * @param $input
+     */
+    public function testLowerAlpha($result, $input)
+    {
+        $lowerAlpha = Number::lowerAlpha($input);
+        $this->assertSame($result, $lowerAlpha);
+    }
+
+    /**
+     * @dataProvider upperRomanDataProvider
+     *
+     * @param $result
+     * @param $input
+     */
+    public function testUpperRoman($result, $input)
+    {
+        $upperRoman = Number::upperRoman($input);
+        $this->assertSame($result, $upperRoman);
+    }
+
+    /**
+     * @dataProvider lowerRomanDataProvider
+     *
+     * @param $result
+     * @param $input
+     */
+    public function testLowerRoman($result, $input)
+    {
+        $lower = Number::lowerRoman($input);
+        $this->assertSame($result, $lower);
+    }
+
+    /**
+     * @dataProvider makeNumericDataProvider
+     *
+     * @param $result
+     * @param $input
+     */
+    public function testMakeNumeric($result, $input)
+    {
+        $numeric = Number::makeNumeric($input);
+        $this->assertSame($result, $numeric);
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function makeNumericDataProvider(): array
+    {
+        $toStringClass = new ToStringTest('50');
+
+        return [
+            [0, false],
+            [1, true],
+            ['1000', '1000'],
+            ['50', $toStringClass],
+            [1, 'five'],
+            [1, [false]],
+            [0, []]
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function lowerRomanDataProvider(): array
+    {
+        return [
+            ['ii', 2],
+            ['', 0],
+            ['mmmmmmmmmmmmmmmmmmmmmmcxxxii', 22132.22],
+            ['', (int)7283231231231231292139.793123123123211237913231],
+            ['l', 50],
+            ['mi', 1001]
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function upperRomanDataProvider(): array
+    {
+        return [
+            ['II', 2],
+            ['', 0],
+            ['MMMMMMMMMMMMMMMMMMMMMMCXXXII', 22132.22],
+            ['', (int)7283231231231231292139.793123123123211237913231],
+            ['L', 50],
+            ['MI', 1001]
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function wordDataProvider(): array
     {
         return [
             ['22', 22],
@@ -48,16 +172,9 @@ class NumberHelperTest extends Unit
     }
 
     /**
-     * @dataProvider upperAlphaData
-     * @param $result
-     * @param $input
+     * @return array
      */
-    public function testUpperAlpha($result, $input)
-    {
-        $upperAlpha = Number::upperAlpha($input);
-        $this->assertSame($result, $upperAlpha);
-    }
-    public function upperAlphaData(): array
+    public function upperAlphaDataProvider(): array
     {
         return [
             ['W', 23],
@@ -72,16 +189,9 @@ class NumberHelperTest extends Unit
     }
 
     /**
-     * @dataProvider lowerAlphaData
-     * @param $result
-     * @param $input
+     * @return array
      */
-    public function testLowerAlpha($result, $input)
-    {
-        $lowerAlpha = Number::lowerAlpha($input);
-        $this->assertSame($result, $lowerAlpha);
-    }
-    public function lowerAlphaData(): array
+    public function lowerAlphaDataProvider(): array
     {
         return [
             ['w', 23],
@@ -94,76 +204,4 @@ class NumberHelperTest extends Unit
             ['', (int)7283231231231231292139.793123123123211237913231]
         ];
     }
-
-    /**
-     * @dataProvider upperRomanData
-     * @param $result
-     * @param $input
-     */
-    public function testUpperRoman($result, $input)
-    {
-        $upperRoman = Number::upperRoman($input);
-        $this->assertSame($result, $upperRoman);
-    }
-    public function upperRomanData(): array
-    {
-        return [
-            ['II', 2],
-            ['', 0],
-            ['MMMMMMMMMMMMMMMMMMMMMMCXXXII', 22132.22],
-            ['', (int)7283231231231231292139.793123123123211237913231],
-            ['L', 50],
-            ['MI', 1001]
-        ];
-    }
-
-    /**
-     * @dataProvider lowerRomanData
-     * @param $result
-     * @param $input
-     */
-    public function testLowerRoman($result, $input)
-    {
-        $lower = Number::lowerRoman($input);
-        $this->assertSame($result, $lower);
-    }
-    public function lowerRomanData(): array
-    {
-        return [
-            ['ii', 2],
-            ['', 0],
-            ['mmmmmmmmmmmmmmmmmmmmmmcxxxii', 22132.22],
-            ['', (int)7283231231231231292139.793123123123211237913231],
-            ['l', 50],
-            ['mi', 1001]
-        ];
-    }
-
-    /**
-     * @dataProvider makeNumericData
-     * @param $result
-     * @param $input
-     */
-    public function testMakeNumeric($result, $input)
-    {
-        $numeric = Number::makeNumeric($input);
-        $this->assertSame($result, $numeric);
-    }
-    public function makeNumericData(): array
-    {
-        $toStringClass = new ToStringTest('50');
-
-        return [
-            [0, false],
-            [1, true],
-            ['1000', '1000'],
-            ['50', $toStringClass],
-            [1, 'five'],
-            [1, [false]],
-            [0, []]
-
-        ];
-    }
-
-
 }
