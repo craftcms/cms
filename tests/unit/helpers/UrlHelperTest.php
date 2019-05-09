@@ -308,8 +308,6 @@ class UrlHelperTest extends Unit
     // =========================================================================
 
     /**
-     * @todo Add tests for whether urls are qualified as absolute.
-     *
      * @return array
      */
     public function absoluteUrlDataProvider(): array
@@ -325,8 +323,6 @@ class UrlHelperTest extends Unit
     }
 
     /**
-     * @todo Add tests for whether URLS are qualified as a full url.
-     *
      * @return array
      */
     public function fulUrlDataProvider(): array
