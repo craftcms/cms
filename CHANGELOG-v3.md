@@ -3,10 +3,8 @@
 ## Unreleased
 
 ### Fixed
-- Fixed a bug where rebuilding project config could set an incorrect value for user field layout.
-
-### Changed
-- Editing your own user photo no longer requires any permissions.
+- Fixed a bug where rebuilding the project config could set an incorrect value for the user field layout.
+- Fixed a bug Craft wouldn’t allow users to edit their own photos if they didn’t have upload/remove asset permissions.
 
 ## 3.1.26 - 2019-05-08
 
