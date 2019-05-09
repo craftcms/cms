@@ -208,20 +208,16 @@ class Section extends Model
 
         foreach ($this->previewContexts as &$context) {
             $context['label'] = trim($context['label']);
+            $context['urlFormat'] = trim($context['urlFormat']);
+
             if ($context['label'] === '') {
                 $context['label'] = ['value' => $context['label'], 'hasErrors' => true];
-                $hasErrors = true;
-            }
-
-            $context['urlFormat'] = trim($context['urlFormat']);
-            if ($context['urlFormat'] === '') {
-                $context['urlFormat'] = ['value' => $context['urlFormat'], 'hasErrors' => true];
                 $hasErrors = true;
             }
         }
 
         if ($hasErrors) {
-            $this->addError('previewContexts', Craft::t('app', 'All values are required.'));
+            $this->addError('previewContexts', Craft::t('app', 'All contexts must have a label.'));
         }
     }
 
