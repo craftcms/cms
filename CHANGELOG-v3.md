@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where rebuilding the project config could set an incorrect value for the user field layout.
 - Fixed a bug Craft wouldn’t allow users to edit their own photos if they didn’t have upload/remove asset permissions.
+- Fixed a bug where Craft wasn’t removing newline characters when pasting text into some single-line Table column types.
 
 ## 3.1.26 - 2019-05-08
 
