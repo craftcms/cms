@@ -9,6 +9,7 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\ArrayHelper;
+use craft\test\mockclasses\serializable\Serializable;
 use stdClass;
 use UnitTester;
 
@@ -248,13 +249,22 @@ class ArrayHelperTest extends Unit
     // =========================================================================
 
     /**
-     * @todo Example with a \stdClass?
      * @return array
      */
     public function toArrayDataProvider(): array
     {
+        $stdClass2 = new StdClass();
+        $stdClass2->subProp = 'value';
+
+        $stdClass = new StdClass();
+        $stdClass->prop1 = '11';
+        $stdClass->prop2 = '22';
+        $stdClass->prop3 = $stdClass2;
+
         return[
-            [[], null], [[1,2,3], [1,2,3]]
+            [[], null],
+            [[], null], [[1,2,3], [1,2,3]],
+            [['prop1' => '11', 'prop2' => '22', 'prop3' => ['subProp' => 'value']], $stdClass],
         ];
     }
 
