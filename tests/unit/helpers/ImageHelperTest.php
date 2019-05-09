@@ -7,9 +7,13 @@
 
 namespace craftunit\helpers;
 
+use Codeception\Stub;
 use Codeception\Test\Unit;
 use craft\helpers\Image;
 use UnitTester;
+use TypeError;
+use Craft;
+use yii\log\Logger;
 
 /**
  * Class ImageHelperTest.
@@ -132,20 +136,65 @@ class ImageHelperTest extends Unit
         $this->assertSame($result, $stream);
     }
 
+    /**
+     *
+     */
+    public function testNoResourceImageByStreamExceptions()
+    {
+        $this->tester->expectThrowable(TypeError::class, function() {
+            $db_link = @mysqli_connect('localhost', 'not_a_user', 'not_a_pass');
+            Image::imageSizeByStream($db_link);
+        });
+    }
+
+    /**
+     * @dataProvider exceptionTriggeringImageByStreamDataProvider
+     * @param $errorLogMessage
+     * @param $input
+     * @throws \Exception
+     */
+    public function testImageByStreamException($errorLogMessage, $input)
+    {
+        Craft::setLogger(
+            Stub::make(Logger::class, ['log' => function($message) use ($errorLogMessage) {
+                $this->assertSame($errorLogMessage, $message);
+            }])
+        );
+
+        $result = Image::imageSizeByStream($input);
+        $this->assertSame([], $result);
+    }
+
     // Data Providers
     // =========================================================================
 
     /**
-     * @todo Generate a bunch of invalid image formats that generate exceptions.
      * @return array
      */
     public function imageByStreamDataProvider(): array
     {
+        $dirnameFile3 = dirname(__FILE__, 3);
+
         return [
-            [[400, 300], fopen(dirname(__FILE__, 3).'\_data\assets\files\example-gif.gif', 'rb')],
-            [[960, 640], fopen(dirname(__FILE__, 3).'\_data\assets\files\background.jpg', 'rb')],
-            [[200, 200], fopen(dirname(__FILE__, 3).'\_data\assets\files\google.png', 'rb')],
-            [false, fopen(dirname(__FILE__, 3).'\_data\assets\files\craft-logo.svg', 'rb')],
+            [[400, 300], fopen($dirnameFile3.'\_data\assets\files\example-gif.gif', 'rb')],
+            [[960, 640], fopen($dirnameFile3.'\_data\assets\files\background.jpg', 'rb')],
+            [[200, 200], fopen($dirnameFile3.'\_data\assets\files\google.png', 'rb')],
+            [false, fopen($dirnameFile3.'\_data\assets\files\craft-logo.svg', 'rb')],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function exceptionTriggeringImageByStreamDataProvider() : array
+    {
+        $dirnameFile3 = dirname(__FILE__, 3);
+
+        return [
+            ['Unrecognized JPG file structure.', fopen($dirnameFile3.'\_data\assets\files\broken-jpg-structure.jpg', 'rb')],
+            ['Unrecognized image signature.', fopen($dirnameFile3.'\_data\assets\files\broken-gif-signature.gif', 'rb')],
+            ['Unrecognized image signature.', fopen($dirnameFile3.'\_data\assets\files\broken-png-signature.png', 'rb')],
+            ['Unrecognized PNG file structure.', fopen($dirnameFile3.'\_data\assets\files\invalid-ihdr.png', 'rb')],
         ];
     }
 
