@@ -329,7 +329,6 @@ class StringHelperTest extends Unit
     /**
      * @param $result
      * @param $input
-     * @todo Might need more tests here.
      *
      * @dataProvider convertToUtf8DataProvider
      */
