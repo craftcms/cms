@@ -248,24 +248,48 @@ class TestSetup
 
     /**
      * @param Connection $connection
-     * @return void
+     * @param Craft $craftTestModule
      * @throws Exception
      */
-    public static function setupCraftDb(Connection $connection)
+    public static function setupCraftDb(Connection $connection, Craft $craftTestModule)
     {
         if ($connection->schema->getTableNames() !== []) {
             throw new Exception('Not allowed to setup the DB if it hasnt been cleansed');
         }
 
-        // TODO: set prim site with project config data....
-        $site = new Site([
+        $siteConfig = [
             'name' => 'Craft test site',
             'handle' => 'default',
             'hasUrls' => true,
             'baseUrl' => 'https://craftcms.com',
             'language' => 'en-US',
             'primary' => true,
-        ]);
+        ];
+
+        // Replace the default site with what is desired by the project config (Currently). If project config is enabled.
+        $projectConfig = $craftTestModule->_getConfig('projectConfig');
+        if ($projectConfig && isset($projectConfig['file'])) {
+            $existingProjectConfig = Yaml::parse(
+                file_get_contents($projectConfig['file']) ?: ''
+            );
+
+            if ($existingProjectConfig && isset($existingProjectConfig['sites'])) {
+                $siteConfig = ArrayHelper::filterByValue(
+                    $existingProjectConfig['sites'],
+                    'primary',
+                    true
+                );
+
+                $siteConfig = ArrayHelper::firstValue(
+                    $siteConfig
+                );
+
+                // This isn't a `settable` property of craft/models/Site
+                unset($siteConfig['siteGroup']);
+            }
+        }
+
+        $site = new Site($siteConfig);
 
         $migration = new Install([
             'db' => $connection,
