@@ -16,6 +16,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
@@ -214,6 +215,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('filterByValue', [ArrayHelper::class, 'filterByValue']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$security, 'hashData']),
+            new TwigFilter('htmlTagAttributes', [$this, 'htmlTagAttributesFilter']),
             new TwigFilter('id', [$this->view, 'formatInputId']),
             new TwigFilter('index', [ArrayHelper::class, 'index']),
             new TwigFilter('indexOf', [$this, 'indexOfFilter']),
@@ -705,6 +707,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $array = array_merge($array);
         ArrayHelper::multisort($array, $key, $direction, $sortFlag);
         return $array;
+    }
+
+    /**
+     * Renders HTML tag attributes with [[\craft\helpers\Html::renderTagAttributes()]]
+     *
+     * @param array $attributes
+     * @return Markup
+     */
+    public function htmlTagAttributesFilter(array $attributes): Markup
+    {
+        return TemplateHelper::raw(Html::renderTagAttributes($attributes));
     }
 
     /**
