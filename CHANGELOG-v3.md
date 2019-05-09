@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where rebuilding project config could set an incorrect value for user field layout.
+
 ## 3.1.26 - 209-05-08
 
 ### Changed
