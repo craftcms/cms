@@ -16,7 +16,9 @@ use craft\web\Application;
 use craft\web\Request;
 use craft\web\Session;
 use Exception;
+use Throwable;
 use UnitTester;
+use yii\base\InvalidConfigException;
 
 /**
  * Unit tests for FileTarget
@@ -27,6 +29,9 @@ use UnitTester;
  */
 class FileTargetTest extends TestCase
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var FileTarget
      */
@@ -37,11 +42,16 @@ class FileTargetTest extends TestCase
      */
     public $tester;
 
-    public function _before()
-    {
-        $this->fileTarget = new FileTarget();
-    }
+    // Public Methods
+    // =========================================================================
 
+    // Tests
+    // =========================================================================
+
+    /**
+     * @throws InvalidConfigException
+     * @throws Throwable
+     */
     public function testgetMessagePrefixWithUserFunc()
     {
         $wasCalled = false;
@@ -54,6 +64,10 @@ class FileTargetTest extends TestCase
         $this->assertTrue($wasCalled);
     }
 
+    /**
+     * @throws InvalidConfigException
+     * @throws Throwable
+     */
     public function testGetMessagePrefixWithNullCraft()
     {
         $craftApp = Craft::$app;
@@ -62,6 +76,10 @@ class FileTargetTest extends TestCase
         Craft::$app = $craftApp;
     }
 
+    /**
+     * @throws InvalidConfigException
+     * @throws Throwable
+     */
     public function testFullMessagePrefix()
     {
         $craftApp = clone Craft::$app;
@@ -74,10 +92,20 @@ class FileTargetTest extends TestCase
         Craft::$app = $craftApp;
     }
 
+    // Protected Methods
+    // =========================================================================
+
+    protected function _before()
+    {
+        $this->fileTarget = new FileTarget();
+    }
+
+    // Private Methods
+    // =========================================================================
+
     /**
      * Mocks the Craft::$app object so that it overrides the components we need for self::testFullMessagePrefix
-     * TODO: See @internal
-     * @internal Is there a better way to handle Craft::$app mocking
+     *
      * @throws Exception
      */
     private function _mockCraftForFullMessagePrefix()
@@ -91,11 +119,11 @@ class FileTargetTest extends TestCase
         $stubArray['session'] = Stub::construct(Session::class, [], ['getIsActive' => true, 'getId' => '999']);
 
         Craft::$app = Stub::make(Application::class, [
-            'has' => true,
-            'getRequest' => $stubArray['request'],
-            'get' => function ($type) use ($stubArray) {
-                return $stubArray[$type] ?? null;
-            }]
+                'has' => true,
+                'getRequest' => $stubArray['request'],
+                'get' => function ($type) use ($stubArray) {
+                    return $stubArray[$type] ?? null;
+                }]
         );
     }
 }
