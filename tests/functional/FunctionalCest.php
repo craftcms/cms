@@ -10,6 +10,7 @@ namespace tests\functional;
 use AcceptanceTester;
 use craft\elements\User;
 use FunctionalTester;
+use Craft;
 
 /**
  * Class LoginCest

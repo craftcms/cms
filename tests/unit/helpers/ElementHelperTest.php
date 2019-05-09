@@ -13,6 +13,7 @@ use craft\errors\OperationAbortedException;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
 use UnitTester;
+use Exception;
 
 /**
  * Class ElementHelperTest.
@@ -93,7 +94,7 @@ class ElementHelperTest extends Unit
     /**
      *
      */
-    public function testMaxSlugIncrementExceptions()
+    public function testMaxSlugIncrementDoesntThrow()
     {
         Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = 0;
         $this->tester->expectThrowable(OperationAbortedException::class, function () {
@@ -107,14 +108,19 @@ class ElementHelperTest extends Unit
      */
     public function testMaxLength()
     {
-        // 256 length slug. Oh no we dont.
-        $this->tester->expectThrowable(OperationAbortedException::class, function () {
+
+        try {
             $el = new ExampleElement([
                 'uriFormat' => 'test/{slug}',
                 'slug' => 'asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssss22ssss'
             ]);
             ElementHelper::setUniqueUri($el);
-        });
+            $result = true;
+        } catch (Exception $exception) {
+            $result = false;
+        }
+
+        $this->assertTrue($result);
     }
 
     /**

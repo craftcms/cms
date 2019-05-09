@@ -258,7 +258,7 @@ class RequestTest extends TestCase
      * @param array $params
      * @dataProvider getParamData
      */
-    public function testGetParam($result, string $name = null, $defaultValue, array $params)
+    public function testGetParam($result, $defaultValue, array $params, string $name = null)
     {
         $gotten = $this->_getParam($name, $defaultValue, $params);
         $this->assertSame($result, $gotten);
@@ -266,11 +266,11 @@ class RequestTest extends TestCase
     public function getParamData(): array
     {
         return [
-            [['param1', 'param2', 'param3'], null, null, ['param1', 'param2', 'param3']],
-            ['param1', 0, null, ['param1', 'param2', 'param3']],
-            ['param1', 'key', null, ['key' => 'param1', 'param2', 'param3']],
-            ['val1', 'key.key2', null, ['key' => [ 'key2' => 'val1', 'key3' => 'val2'], 'param2', 'param3']],
-            ['DEFAULT', 'key.notaparam', 'DEFAULT', ['key' => 'param1', 'param2', 'param3']],
+            [['param1', 'param2', 'param3'], null, ['param1', 'param2', 'param3'], null],
+            ['param1', null, ['param1', 'param2', 'param3'], '0'],
+            ['param1', null, ['key' => 'param1', 'param2', 'param3'], 'key'],
+            ['val1', null, ['key' => [ 'key2' => 'val1', 'key3' => 'val2'], 'param2', 'param3'], 'key.key2'],
+            ['DEFAULT', 'DEFAULT', ['key' => 'param1', 'param2', 'param3'], 'key.notaparam'],
         ];
     }
 

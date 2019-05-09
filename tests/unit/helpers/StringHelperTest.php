@@ -406,7 +406,7 @@ class StringHelperTest extends Unit
         }
 
         foreach (str_split($random) as $char) {
-            $this->assertContains($char, $validChars);
+            $this->assertStringContainsString($char, $validChars);
         }
     }
 
@@ -919,12 +919,12 @@ class StringHelperTest extends Unit
     {
         return [
             ['asdfghjklxcvbnmqwertyuiop', 10],
-            ['1234567890', '22'],
+            ['1234567890', 22],
             ['!@#$%^&*()_{}|:"<>?', 0],
             ['!@#$%^&*()_{}|:"<>?', 8],
             ['                           ', 8],
             'tabs' => ['              ', 4],
-            ['asdfghjklxcvbnmqwertyuiop', '10']
+            ['asdfghjklxcvbnmqwertyuiop', 10]
         ];
     }
 
