@@ -51,9 +51,7 @@ class FactoryTest extends TestCase
     // =========================================================================
 
     /**
-     * Test creating an archive manager.
-     *
-     * @todo Test creation without DownloadManager passed in?
+     * Test creating an archive manager which doesnt have zip and phar archivers. .
      */
     public function testCreateArchiveManager()
     {
@@ -61,7 +59,6 @@ class FactoryTest extends TestCase
         $downloadManager = new DownloadManager(new NullIO());
         $archiveManager = $this->factory->createArchiveManager($config, $downloadManager);
 
-        // Ensure that zip and phar archivers aren't added.
         $this->assertSame([], $this->getInaccessibleProperty($archiveManager, 'archivers'));
     }
 }
