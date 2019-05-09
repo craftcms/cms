@@ -343,8 +343,6 @@ class UrlHelperTest extends Unit
     }
 
     /**
-     * @todo Add tests for whether URLS are qualified as root relative
-     *
      * @return array
      */
     public function protocolRelativeUrlDataProvider(): array
@@ -352,7 +350,8 @@ class UrlHelperTest extends Unit
         return [
             'root-relative-true' => [ '/22', true, 'isRootRelativeUrl'],
             'protocol-relative' => [ '//cdn.craftcms.com/22', false, 'isRootRelativeUrl' ],
-            'absolute-url-https-www' => [ self::ABSOLUTE_URL_HTTPS_WWW, false, 'isRootRelativeUrl' ]
+            'absolute-url-https-www' => [ self::ABSOLUTE_URL_HTTPS_WWW, false, 'isRootRelativeUrl' ],
+            'start-with-param' => ['?p=test', false, 'isRootRelativeUrl']
         ];
     }
 
