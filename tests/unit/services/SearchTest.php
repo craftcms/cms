@@ -12,6 +12,7 @@ use Craft;
 use craft\db\Query;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
+use craft\services\Search;
 use craftunit\fixtures\UsersFixture;
 
 /**
@@ -28,6 +29,19 @@ use craftunit\fixtures\UsersFixture;
  */
 class SearchTest extends Unit
 {
+    // Protected Properties
+    // =========================================================================
+
+    /**
+     * @var \UnitTester
+     */
+    protected $tester;
+
+    /**
+     * @var Search
+     */
+    protected $search;
+
     // Public Methods
     // =========================================================================
 
@@ -60,7 +74,7 @@ class SearchTest extends Unit
         $forQuery = $this->_usernameEmailArrayToIdList($usernameOrEmailsForQuery);
 
         // Filter them
-        $filtered = Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, $returnScores);
+        $filtered = $this->search->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, $returnScores);
 
         $this->assertSame($result, $filtered);
     }
@@ -83,7 +97,7 @@ class SearchTest extends Unit
         $forQuery = $this->_usernameEmailArrayToIdList($usernameOrEmailsForQuery);
 
         // Filter them
-        $filtered = Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, true);
+        $filtered = $this->search->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, true);
 
         $this->assertSame($result, $filtered);
     }
@@ -96,7 +110,7 @@ class SearchTest extends Unit
         $result = $this->_usernameEmailArrayToIdList(['user1', 'user2', 'user3'], true);
         $forQuery = $this->_usernameEmailArrayToIdList(['user1', 'user2', 'user3'], false);
 
-        $filtered = Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, 'user');
+        $filtered = $this->search->filterElementIdsByQuery($forQuery, 'user');
 
         $this->assertSame($result, $filtered);
     }
@@ -117,7 +131,7 @@ class SearchTest extends Unit
         $user->id = '666';
 
         // Index them.
-        Craft::$app->getSearch()->indexElementAttributes($user);
+        $this->search->indexElementAttributes($user);
 
         // Get the data from the DB
         $searchIndex = (new Query())->select('*')->from('{{%searchindex}}')->where(['elementId' => $user->id])->all();
@@ -198,6 +212,19 @@ class SearchTest extends Unit
                 ], ['user1', 'user2', 'user3', 'user4'], 'user OR someemail', true, 1
             ],
         ];
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
+    {
+        parent::_before();
+
+        $this->search = Craft::$app->getSearch();
     }
 
     // Private Methods
