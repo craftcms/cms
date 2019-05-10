@@ -109,11 +109,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public $viewMode;
 
     /**
-     * @var bool Whether to field should relate structural parents
-     */
-    public $relateParents = false;
-
-    /**
      * @var bool The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
      */
     public $limit;
@@ -137,21 +132,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @var bool Whether to allow the Limit setting
      */
     public $allowLimit = true;
-
-    /**
-     * @var bool Whether to allow the "Relate Parents" setting
-     */
-    public $allowRelateParents = true;
-
-    /**
-     * @var int|null Branch limit
-     */
-    public $branchLimit;
-
-    /**
-     * @var bool Whether to render the field as a structure
-     */
-    public $structure = false;
 
     /**
      * @var bool Whether to allow the “Large Thumbnails” view mode
@@ -213,11 +193,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         if (!$this->sources) {
             $this->sources = '*';
         }
-
-        if ($this->structure) {
-            $this->sortable = false;
-            $this->inputJsClass = 'Craft.StructureSelectInput';
-        }
     }
 
     /**
@@ -233,8 +208,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $attributes[] = 'limit';
         $attributes[] = 'selectionLabel';
         $attributes[] = 'localizeRelations';
-        $attributes[] = 'relateParents';
-        $attributes[] = 'branchLimit';
 
         return $attributes;
     }
@@ -306,21 +279,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $query
                 ->id(array_values(array_filter($value)))
                 ->fixedOrder();
-
-            if ($this->relateParents || $this->branchLimit) {
-                $elements = $query->all();
-                $categoriesService = Craft::$app->getCategories();
-
-                if ($this->relateParents) {
-                    $categoriesService->fillGapsInCategories($elements);
-                }
-
-                if ($this->branchLimit) {
-                    $categoriesService->applyBranchLimitToCategories($elements, $this->branchLimit);
-                }
-
-                $query->id(ArrayHelper::getColumn($elements, 'id'));
-            }
         } else if ($value !== '' && $element && $element->id) {
             $query->innerJoin(
                 '{{%relations}} relations',
@@ -763,8 +721,6 @@ JS;
             'viewMode' => $this->viewMode(),
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
             'sortable' => $this->sortable,
-            'branchLimit' => $this->branchLimit,
-            'structure' => $this->structure,
         ];
     }
 

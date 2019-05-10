@@ -19,7 +19,7 @@ use craft\helpers\ElementHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Categories extends BaseRelationField
+class Categories extends BaseStructureRelationField
 {
     // Static
     // =========================================================================
@@ -54,23 +54,6 @@ class Categories extends BaseRelationField
     public static function valueType(): string
     {
         return CategoryQuery::class;
-    }
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        $this->allowLimit = false;
-        $this->allowMultipleSources = false;
-        $this->allowRelateParents = false;
-        $this->relateParents = true;
-        $this->structure = true;
-
-        parent::init();
     }
 
     /**

@@ -8,18 +8,16 @@
 namespace craft\fields;
 
 use Craft;
-use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
-use craft\helpers\ElementHelper;
-use craft\models\Section;
+use craft\elements\db\EntryQuery;
 
 /**
- * Entries represents an Entries field.
+ * StructureEntries represents an Structure Entries field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Entries extends BaseRelationField
+class StructureEntries extends BaseStructureRelationField
 {
     // Static
     // =========================================================================
@@ -29,7 +27,7 @@ class Entries extends BaseRelationField
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Entries');
+        return Craft::t('app', 'Structure Entries');
     }
 
     /**
@@ -54,5 +52,17 @@ class Entries extends BaseRelationField
     public static function valueType(): string
     {
         return EntryQuery::class;
+    }
+
+    /**
+     * Returns the sources that should be available to choose from within the field's settings
+     *
+     * @return array
+     */
+    protected function availableSources(): array
+    {
+        return array_filter(parent::availableSources(), function ($source) {
+            return $source['structureId'] ?? false;
+        });
     }
 }

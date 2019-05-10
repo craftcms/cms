@@ -36,6 +36,7 @@ use craft\fields\MultiSelect as MultiSelectField;
 use craft\fields\Number as NumberField;
 use craft\fields\PlainText as PlainTextField;
 use craft\fields\RadioButtons as RadioButtonsField;
+use craft\fields\StructureEntries as StructureEntriesField;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Url as UrlField;
@@ -442,6 +443,7 @@ class Fields extends Component
             NumberField::class,
             PlainTextField::class,
             RadioButtonsField::class,
+            StructureEntriesField::class,
             TableField::class,
             TagsField::class,
             UrlField::class,
