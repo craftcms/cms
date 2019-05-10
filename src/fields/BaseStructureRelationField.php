@@ -70,12 +70,12 @@ abstract class BaseStructureRelationField extends BaseRelationField
                 ->all();
 
             // Fill in any gaps
-            $elementsService = Craft::$app->getCategories();
-            $elementsService->fillGapsInCategories($elements);
+            $structuresService = Craft::$app->getStructures();
+            $structuresService->fillGapsInElements($elements);
 
             // Enforce the branch limit
             if ($this->branchLimit) {
-                $elementsService->applyBranchLimitToCategories($elements, $this->branchLimit);
+                $structuresService->applyBranchLimitToElements($elements, $this->branchLimit);
             }
 
             $value = ArrayHelper::getColumn($elements, 'id');

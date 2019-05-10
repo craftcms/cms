@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\db\ElementQuery;
 use craft\errors\StructureNotFoundException;
 use craft\events\MoveElementEvent;
 use craft\models\Structure;
@@ -321,6 +322,72 @@ class Structures extends Component
         }
 
         return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', $mode);
+    }
+
+    /**
+     * Patches an array of structure elements, filling in any gaps in the tree.
+     *
+     * @param Element[] $elements
+     */
+    public function fillGapsInElements(array &$elements)
+    {
+        /** @var Element|null $prevElement */
+        $prevElement = null;
+        $patchedElements = [];
+
+        foreach ($elements as $i => $elements) {
+            // Did we just skip any elements?
+            if ($element->level != 1 && (
+                    ($i == 0) ||
+                    (!$element->isSiblingOf($prevElement) && !$element->isChildOf($prevElement))
+                )
+            ) {
+                // Merge in any missing ancestors
+                /** @var ElementQuery $ancestorQuery */
+                $ancestorQuery = $elements->getAncestors()
+                    ->anyStatus();
+
+                if ($prevElement) {
+                    $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevElement->lft]);
+                }
+
+                foreach ($ancestorQuery->all() as $ancestor) {
+                    $patchedElements[] = $ancestor;
+                }
+            }
+
+            $patchedElements[] = $elements;
+            $prevElement = $elements;
+        }
+
+        $elements = $patchedElements;
+    }
+
+    /**
+     * Filters an array of structure elements down to only <= X branches.
+     *
+     * @param Element[] $elements
+     * @param int $branchLimit
+     */
+    public function applyBranchLimitToElements(array &$elements, int $branchLimit)
+    {
+        $branchCount = 0;
+        $prevElement = null;
+
+        foreach ($elements as $i => $element) {
+            // Is this a new branch?
+            if ($prevElement === null || !$element->isDescendantOf($prevElement)) {
+                $branchCount++;
+
+                // Have we gone over?
+                if ($branchCount > $branchLimit) {
+                    array_splice($elements, $i);
+                    break;
+                }
+            }
+
+            $prevElement = $element;
+        }
     }
 
     // Private Methods
