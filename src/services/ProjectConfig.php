@@ -1826,7 +1826,7 @@ class ProjectConfig extends Component
             ->select(['id'])
             ->from([Table::FIELDLAYOUTS])
             ->where(['type' => User::class])
-            ->where(['dateDeleted' => null])
+            ->andWhere(['dateDeleted' => null])
             ->scalar();
 
         if ($layoutId) {

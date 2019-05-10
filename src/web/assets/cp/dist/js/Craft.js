@@ -1,4 +1,4 @@
-/*!   - 2019-04-23 */
+/*!   - 2019-05-09 */
 (function($){
 
 /** global: Craft */
@@ -12816,7 +12816,7 @@ Craft.EditableTable = Garnish.Base.extend(
         },
     },
     {
-        textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'time'],
+        textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'template', 'time'],
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
@@ -13001,11 +13001,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                     }));
 
                     this.addListener($textarea, 'keypress', {tdIndex: i, type: col.type}, 'handleKeypress');
-
-                    if (col.type === 'singleline' || col.type === 'number') {
-                        this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
-                        $textarea.trigger('textchange');
-                    }
+                    this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
+                    $textarea.trigger('textchange');
 
                     textareasByColId[colId] = $textarea;
                 } else if (col.type === 'checkbox' && col.radioMode) {
@@ -13089,6 +13086,10 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         },
 
         validateValue: function(ev) {
+            if (ev.data.type === 'multiline') {
+                return;
+            }
+
             var safeValue;
 
             if (ev.data.type === 'number') {

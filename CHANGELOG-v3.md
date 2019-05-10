@@ -1,6 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.1.26 - 209-05-08
+## Unreleased
+
+### Fixed
+- Fixed a bug where rebuilding the project config could set an incorrect value for the user field layout.
+- Fixed a bug Craft wouldn’t allow users to edit their own photos if they didn’t have upload/remove asset permissions.
+- Fixed a bug where Craft wasn’t removing newline characters when pasting text into some single-line Table column types.
+
+## 3.1.26 - 2019-05-08
 
 ### Changed
 - The “Update all” button on the Updates utility is now shown even if the page contains some uninstallable updates. ([#4230](https://github.com/craftcms/cms/issues/4230))
