@@ -28,7 +28,7 @@ class CraftConnector extends Yii2
     /**
      * @var array $emails
      */
-    private $emails;
+    protected $emails;
 
     // Public functions
     // =========================================================================
@@ -44,6 +44,14 @@ class CraftConnector extends Yii2
         \Craft::$app->set('mailer', ['class' => TestMailer::class, 'callback' => function (MessageInterface $message) {
             $this->emails[] = $message;
         }]);
+    }
+
+    /**
+     * @return array|MessageInterface
+     */
+    public function getEmails() : array
+    {
+        return $this->emails;
     }
 
     /**

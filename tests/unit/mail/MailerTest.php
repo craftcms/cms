@@ -7,13 +7,13 @@
 
 namespace craftunit\mail;
 
-use Codeception\Test\Unit;
 use Craft;
-use craft\helpers\App;
-use craft\mail\Mailer;
+use craft\elements\User;
+use craft\helpers\ArrayHelper;
 use craft\mail\Message;
-use craft\mail\transportadapters\Sendmail;
-use craft\models\MailSettings;
+use craft\models\SystemMessage;
+use craft\test\TestCase;
+use craft\test\TestMailer;
 use yii\base\InvalidConfigException;
 
 /**
@@ -23,15 +23,20 @@ use yii\base\InvalidConfigException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.1
  */
-class MailerTest extends Unit
+class MailerTest extends TestCase
 {
     // Public Properties
     // =========================================================================
 
     /**
-     * @var Mailer $mailer
+     * @var TestMailer $mailer
      */
     public $mailer;
+
+    /**
+     * @var \UnitTester
+     */
+    protected $tester;
 
     // Public Methods
     // =========================================================================
@@ -56,6 +61,124 @@ class MailerTest extends Unit
         $this->assertSame($variables, $res->variables);
     }
 
+    /**
+     * @throws InvalidConfigException
+     */
+    public function testSendMail()
+    {
+        $this->_sendMail();
+
+        $this->assertInstanceOf(Message::class, $this->tester->grabLastSentEmail());
+    }
+
+    /**
+     * @throws InvalidConfigException
+     * @throws \craft\errors\SiteNotFoundException
+     */
+    public function testSendMailLanguageDetermination()
+    {
+        $this->_testSendMailLanguage(true, 'nl');
+        $this->_testSendMailLanguage(false, 'en-US');
+    }
+
+    /**
+     * @throws InvalidConfigException
+     */
+    public function testDefaultFrom()
+    {
+        $this->mailer->from = 'info@craftcms.com';
+
+        $this->_sendMail();
+
+        $this->assertSame(
+            $this->mailer->from,
+            ArrayHelper::firstKey($this->tester->grabLastSentEmail()->getFrom())
+        );
+    }
+
+    /**
+     *
+     */
+    public function testEmailVariables()
+    {
+        $this->_sendMail();
+
+        $variables = $this->tester->grabLastSentEmail()->variables;
+
+        $this->assertSame('1', $variables['user']->id);
+        $this->assertSame('https://craftcms.com', $variables['link']);
+    }
+
+    /**
+     * @throws \yii\base\ErrorException
+     * @throws \yii\base\Exception
+     * @throws \yii\base\NotSupportedException
+     * @throws \yii\web\ServerErrorHttpException
+     */
+    public function testMessageProperties()
+    {
+        Craft::$app->getProjectConfig()->set('email', ['fromName' => '$FROM_EMAIL_NAME', 'fromEmail' => '$FROM_EMAIL_ADDRESS']);
+        $this->tester->mockCraftMethods('systemMessages', ['getMessage' => new SystemMessage([
+            'body' => '{{fromEmail}} || {{fromName}}',
+            'subject' => '{{fromName}} || {{fromEmail}}',
+        ])]);
+
+        $this->_sendMail();
+
+        /* @var Message $lastMessage */
+        $lastMessage = $this->tester->grabLastSentEmail();
+
+        $this->assertSame('Craft CMS || info@craftcms.com', $lastMessage->getSubject());
+        $this->assertStringContainsString('info@craftcms.com || Craft CMS', $lastMessage->swiftMessage->toString());
+    }
+
+    /**
+     *
+     */
+    public function testSendMessageCustomTemplate()
+    {
+        // Only works for rich peeps.
+        Craft::$app->setEdition(Craft::Pro);
+        $this->mailer->template = 'withvar';
+
+        $this->_sendMail();
+
+        $lastMessage = $this->tester->grabLastSentEmail();
+        $this->assertStringContainsString('Hello iam This is a name', $lastMessage->swiftMessage->toString());
+    }
+
+    /**
+     *
+     */
+    public function testToEmailAddress()
+    {
+        Craft::$app->getConfig()->getGeneral()->testToEmailAddress = ['giel@yellowflash.net', 'info@craftcms.com'];
+
+        $this->_sendMail();
+        $lastMessage = $this->tester->grabLastSentEmail();
+
+        $this->assertSame([
+            'giel@yellowflash.net' => 'Test Recipient',
+            'info@craftcms.com' => 'Test Recipient'
+        ], $lastMessage->to);
+    }
+
+    /**
+     *
+     */
+    public function testToEmailAddressWithCustomName()
+    {
+        Craft::$app->getConfig()->getGeneral()->testToEmailAddress = ['giel@yellowflash.net' => 'Giel', 'info@craftcms.com' => 'Craft CMS'];
+
+        $this->_sendMail();
+        $lastMessage = $this->tester->grabLastSentEmail();
+
+        $this->assertSame([
+            'giel@yellowflash.net' => 'Giel',
+            'info@craftcms.com' => 'Craft CMS'
+        ], $lastMessage->to);
+    }
+
     // Data Providers
     // =========================================================================
 
@@ -73,19 +196,44 @@ class MailerTest extends Unit
     // Protected Methods
     // =========================================================================
 
+    protected function _sendMail()
+    {
+        $user = Craft::$app->getUsers()->getUserById('1');
+        $this->mailer->send($this->mailer->composeFromKey('account_activation', [
+            'user' => $user,
+            'link' => 'https://craftcms.com',
+            'name' => 'This is a name'
+        ]));
+    }
+
+    /**
+     * @param bool $isCpRequest
+     * @param string $desiredLang
+     * @throws InvalidConfigException
+     * @throws \craft\errors\SiteNotFoundException
+     */
+    protected function _testSendMailLanguage(bool $isCpRequest, string $desiredLang)
+    {
+        $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', $isCpRequest);
+
+        Craft::$app->getSites()->getPrimarySite()->language = 'nl';
+        Craft::$app->language = 'en-US';
+
+        $this->mailer->send($this->mailer->composeFromKey('account_activation', [
+            'user' => new User(),
+            'link' => 'https://craftcms.com'
+        ]));
+
+        $this->assertSame($desiredLang, $this->tester->grabLastSentEmail()->language);
+    }
+
     /**
      * @inheritDoc
      */
     protected function _before()
     {
         parent::_before();
-        
-        $mailSettings = new MailSettings([
-            'transportType' => Sendmail::class
-        ]);
 
-        $this->mailer = Craft::createObject(App::mailerConfig(
-            $mailSettings
-        ));
+        $this->mailer = Craft::$app->getMailer();
     }
 }
