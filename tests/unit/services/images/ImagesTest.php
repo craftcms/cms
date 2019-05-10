@@ -15,7 +15,7 @@ use craft\services\Images;
 use UnitTester;
 use yii\base\Exception;
 use Craft;
-
+use Imagick;
 /**
  * Unit tests for images service.
  *
@@ -65,7 +65,6 @@ class ImagesTest extends Unit
      */
     public function testCleanImageSvg()
     {
-        // http://svg.enshrined.co.uk/
         $this->images->cleanImage(
             $this->sandboxPath.'dirty-svg.svg'
         );
@@ -87,7 +86,6 @@ class ImagesTest extends Unit
     {
         Craft::$app->getConfig()->getGeneral()->sanitizeSvgUploads = false;
 
-        // http://svg.enshrined.co.uk/
         $this->images->cleanImage(
             $this->sandboxPath.'dirty-svg.svg'
         );
@@ -101,6 +99,82 @@ class ImagesTest extends Unit
             StringHelper::contains($contents, '<this>')
         );
     }
+
+    /**
+     * @todo Need a little more investigation on how rotation works.
+     */
+    public function testRotateImageByExifData()
+    {
+        $this->markTestSkipped();
+        $this->_failIfNoImagick();
+
+        // Clean it
+        $this->images->cleanImage($this->sandboxPath.'image-rotated-180.jpg');
+
+        // Check rotation.
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testCleanImageRotatesOrientation()
+    {
+        $this->_failIfNoImagick();
+
+        $this->images->cleanImage($this->sandboxPath.'image-rotated-180.jpg');
+        $currentExif = $this->images->getExifData($this->sandboxPath.'image-rotated-180.jpg');
+        $this->assertSame(\Imagick::ORIENTATION_UNDEFINED, $currentExif['ifd0.Orientation']);
+    }
+
+    /**
+     * Tests respect for the transformGifs config setting.
+     * @throws Exception
+     */
+    public function testCleanImageDoesntDoGifWhenSettingDisabled()
+    {
+        $this->_failIfNoImagick();
+
+        Craft::$app->getConfig()->getGeneral()->transformGifs = false;
+
+        $oldContents = file_get_contents($this->sandboxPath.'example-gif.gif');
+        $this->assertNull($this->images->cleanImage($this->sandboxPath.'example-gif.gif'));
+        $this->assertSame($oldContents, file_get_contents($this->sandboxPath.'example-gif.gif'));
+
+        Craft::$app->getConfig()->getGeneral()->transformGifs = true;
+        $this->images->cleanImage($this->sandboxPath.'example-gif.gif');
+        $this->assertNotSame($oldContents, file_get_contents($this->sandboxPath.'example-gif.gif'));
+    }
+
+    /**
+     * @todo With data provider for different image types?
+     */
+    public function testGetExifData()
+    {
+        $exifData = $this->images->getExifData($this->sandboxPath.'image-rotated-180.jpg');
+
+        $requiredValues = [
+            'ifd0.Orientation' => 3,
+            'ifd0.XResolution' => '72/1',
+            'ifd0.YResolution' => '72/1',
+            'ifd0.ResolutionUnit' => 2,
+            'ifd0.YCbCrPositioning' => 1
+        ];
+
+        foreach ($requiredValues as $key => $value) {
+            $this->assertSame($value, $exifData[$key]);
+        }
+    }
+
+    /**
+     * Test that false is returned (and not for example an exeption being thrown) when calling exif based functions.
+     */
+    public function testNoExifFalses()
+    {
+        $this->assertNull($this->images->getExifData($this->sandboxPath.'craft-logo.svg'));
+        $this->assertFalse($this->images->rotateImageByExifData($this->sandboxPath.'craft-logo.svg'));
+        $this->assertFalse($this->images->stripOrientationFromExifData($this->sandboxPath.'craft-logo.svg'));
+    }
+
     // Data Providers
     // =========================================================================
 
@@ -127,7 +201,7 @@ class ImagesTest extends Unit
     {
         parent::_before();
         $this->path = dirname(__DIR__, 3).'/_data/assets/files/';
-        $this->sandboxPath = dirname(__DIR__).'/sandbox/';
+        $this->sandboxPath = dirname(__DIR__).'/images/sandbox/';
 
         $this->images = Craft::$app->getImages();
 
@@ -137,6 +211,22 @@ class ImagesTest extends Unit
 
         FileHelper::clearDirectory($this->sandboxPath);
 
-        copy($this->path.'unclean/dirty-svg.svg', $this->sandboxPath.'dirty-svg.svg');
+        copy($this->path.'dirty-svg.svg', $this->sandboxPath.'dirty-svg.svg');
+        copy($this->path.'image-rotated-180.jpg', $this->sandboxPath.'image-rotated-180.jpg');
+        copy($this->path.'craft-logo.svg', $this->sandboxPath.'craft-logo.svg');
+        copy($this->path.'example-gif.gif', $this->sandboxPath.'example-gif.gif');
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     *
+     */
+    private function _failIfNoImagick()
+    {
+        if (!($this->images->getIsImagick() && method_exists(Imagick::class, 'getImageOrientation'))) {
+            $this->fail('Need imagick to test this function. Please install it.');
+        }
     }
 }
