@@ -10,7 +10,6 @@ namespace craftunit\validators;
 use Codeception\Test\Unit;
 use Craft;
 use craft\test\mockclasses\models\ExampleModel;
-use craft\test\mockclasses\ToStringTest;
 use craft\validators\UserPasswordValidator;
 use UnitTester;
 use yii\base\ErrorException;

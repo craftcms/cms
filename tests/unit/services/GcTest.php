@@ -26,6 +26,7 @@ use craftunit\fixtures\UsersFixture;
 use craftunit\fixtures\VolumesFixture;
 use DateInterval;
 use DateTime;
+use Exception;
 use UnitTester;
 use yii\base\InvalidArgumentException;
 
@@ -247,7 +248,7 @@ class GcTest extends Unit
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     private function _createExpiringPendingUsers()
     {

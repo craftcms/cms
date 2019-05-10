@@ -71,7 +71,7 @@ class ColorValidatorTest extends Unit
     /**
      * Passing an empty string will return an exception.
      */
-    public function testColorNormaliationException()
+    public function testColorNormalizationException()
     {
         $this->tester->expectException(ErrorException::class, function (){
             ColorValidator::normalizeColor('');

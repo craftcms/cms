@@ -9,12 +9,18 @@ namespace craftunit\mail;
 
 use Craft;
 use craft\elements\User;
+use craft\errors\SiteNotFoundException;
 use craft\helpers\ArrayHelper;
 use craft\mail\Message;
 use craft\models\SystemMessage;
 use craft\test\TestCase;
 use craft\test\TestMailer;
+use UnitTester;
+use yii\base\ErrorException;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
+use yii\web\ServerErrorHttpException;
 
 /**
  * Unit tests for MailerTest
@@ -34,7 +40,7 @@ class MailerTest extends TestCase
     public $mailer;
 
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -62,18 +68,17 @@ class MailerTest extends TestCase
     }
 
     /**
-     * @throws InvalidConfigException
+     *
      */
     public function testSendMail()
     {
         $this->_sendMail();
-
         $this->assertInstanceOf(Message::class, $this->tester->grabLastSentEmail());
     }
 
     /**
      * @throws InvalidConfigException
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     public function testSendMailLanguageDetermination()
     {
@@ -82,7 +87,7 @@ class MailerTest extends TestCase
     }
 
     /**
-     * @throws InvalidConfigException
+     *
      */
     public function testDefaultFrom()
     {
@@ -110,10 +115,10 @@ class MailerTest extends TestCase
     }
 
     /**
-     * @throws \yii\base\ErrorException
-     * @throws \yii\base\Exception
-     * @throws \yii\base\NotSupportedException
-     * @throws \yii\web\ServerErrorHttpException
+     * @throws ErrorException
+     * @throws Exception
+     * @throws NotSupportedException
+     * @throws ServerErrorHttpException
      */
     public function testMessageProperties()
     {
@@ -210,7 +215,7 @@ class MailerTest extends TestCase
      * @param bool $isCpRequest
      * @param string $desiredLang
      * @throws InvalidConfigException
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     protected function _testSendMailLanguage(bool $isCpRequest, string $desiredLang)
     {

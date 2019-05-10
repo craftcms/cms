@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use craft\db\Paginator;
 use craft\db\Query;
 use craft\records\Session;
+use UnitTester;
 
 /**
  * Unit tests for Paginator
@@ -30,7 +31,7 @@ class PaginatorTest extends Unit
     private $paginator;
 
     /**
-     * @var \UnitTester $tester
+     * @var UnitTester $tester
      */
     protected $tester;
 

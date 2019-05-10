@@ -9,7 +9,6 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\ArrayHelper;
-use craft\test\mockclasses\serializable\Serializable;
 use stdClass;
 use UnitTester;
 

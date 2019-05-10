@@ -15,7 +15,6 @@ use craft\services\Volumes;
 use craft\test\Fixture;
 use yii\base\ErrorException;
 use yii\base\Exception;
-use yii\base\InvalidConfigException;
 
 /**
  * Class VolumesFixture.

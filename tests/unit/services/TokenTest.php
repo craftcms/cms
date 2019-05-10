@@ -16,7 +16,6 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use UnitTester;
-use yii\base\InvalidConfigException;
 
 /**
  * Unit tests for the token service

@@ -96,7 +96,7 @@ class AppTest extends Unit
 
     // Data Providers
     // =========================================================================
-    
+
     /**
      * @return array
      */

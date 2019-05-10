@@ -13,7 +13,6 @@ use craft\base\Field;
 use craft\behaviors\ContentBehavior;
 use craft\fields\PlainText;
 
-use craftunit\fixtures\FieldsFixture;
 use InvalidArgumentException;
 use UnitTester;
 

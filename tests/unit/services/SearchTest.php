@@ -14,6 +14,7 @@ use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\services\Search;
 use craftunit\fixtures\UsersFixture;
+use UnitTester;
 
 /**
  * Unit tests for the search service
@@ -33,7 +34,7 @@ class SearchTest extends Unit
     // =========================================================================
 
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 

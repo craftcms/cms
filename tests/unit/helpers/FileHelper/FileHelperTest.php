@@ -154,11 +154,10 @@ class FileHelperTest extends Unit
     /**
      * @dataProvider mimeTypeDataProvider
      *
-     * @param $result
      * @param $file
      * @param $magicFile
      * @param $checkExtension
-     *
+     * @param $actualMimeType
      * @throws InvalidConfigException
      */
     public function testGetMimeType($file, $magicFile, $checkExtension, $actualMimeType)

@@ -108,7 +108,7 @@ class ImagesTest extends Unit
         $this->_failIfNoImagick();
 
         $this->images->cleanImage($this->sandboxPath.'image-rotated-180.jpg');
-        $image = new \Imagick($this->sandboxPath.'image-rotated-180.jpg');
+        $image = new Imagick($this->sandboxPath.'image-rotated-180.jpg');
         $this->assertSame(0, $image->getImageOrientation());
     }
 
@@ -121,7 +121,7 @@ class ImagesTest extends Unit
 
         $this->images->cleanImage($this->sandboxPath.'image-rotated-180.jpg');
         $currentExif = $this->images->getExifData($this->sandboxPath.'image-rotated-180.jpg');
-        $this->assertSame(\Imagick::ORIENTATION_UNDEFINED, $currentExif['ifd0.Orientation']);
+        $this->assertSame(Imagick::ORIENTATION_UNDEFINED, $currentExif['ifd0.Orientation']);
     }
 
     /**

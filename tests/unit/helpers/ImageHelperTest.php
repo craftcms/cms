@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection PhpParamsInspection */
+
 /**
  * @link      https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -151,6 +152,7 @@ class ImageHelperTest extends Unit
     {
         $this->tester->expectThrowable(TypeError::class, function() {
             $db_link = @mysqli_connect('localhost', 'not_a_user', 'not_a_pass');
+            /** @noinspection PhpParamsInspection */
             Image::imageSizeByStream($db_link);
         });
     }

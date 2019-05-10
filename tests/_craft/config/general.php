@@ -17,6 +17,6 @@ $config = [
 
 
 $testConfig = \craft\test\Craft::$testConfig;
-$config['useProjectConfigFile'] = (isset($testConfig['projectConfig']) && $testConfig['projectConfig']);
+$config['useProjectConfigFile'] = !empty($testConfig['projectConfig']);
 
 return $config;
