@@ -339,12 +339,11 @@ class Structures extends Component
             // Did we just skip any elements?
             if ($element->level != 1 && (
                     ($i == 0) ||
-                    (!$element->isSiblingOf($prevElement) && !$element->isChildOf($prevElement))
-                )
+                    (!$element->isSiblingOf($prevElement) && !$element->isChildOf($prevElement)))
             ) {
                 // Merge in any missing ancestors
                 /** @var ElementQuery $ancestorQuery */
-                $ancestorQuery = $elements->getAncestors()
+                $ancestorQuery = $element->getAncestors()
                     ->anyStatus();
 
                 if ($prevElement) {
@@ -356,10 +355,10 @@ class Structures extends Component
                 }
             }
 
-            $patchedElements[] = $elements;
-            $prevElement = $elements;
+            $patchedElements[] = $element;
+            $prevElement = $element;
         }
-
+        
         $elements = $patchedElements;
     }
 
