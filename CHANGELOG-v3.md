@@ -8,6 +8,7 @@
 - Fixed a bug where Craft wasn’t removing newline characters when pasting text into some single-line Table column types.
 - Fixed a bug where project config syncing could have inconsistent results on load-balanced environments. ([](https://github.com/craftcms/cms/issues/4136))
 - Fixed a bug where the Plugin Store was not able to load developer details. ([#4241](https://github.com/craftcms/cms/issues/4241))
+- Fixed a bug that could occur when Craft generated URLs with multi-byte characters in the query string.
 
 ## 3.1.26 - 2019-05-08
 
