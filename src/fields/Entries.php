@@ -10,8 +10,6 @@ namespace craft\fields;
 use Craft;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
-use craft\helpers\ElementHelper;
-use craft\models\Section;
 
 /**
  * Entries represents an Entries field.
