@@ -11,6 +11,8 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Category;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidTypeException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
@@ -155,42 +157,55 @@ class ElementsController extends BaseElementsController
     }
 
     /**
-     * Returns the HTML for a Categories field input, based on a given list of selected category IDs.
+     * Returns the HTML for a Structure field input, based on a given list of selected element IDs.
      *
      * @return Response
      */
-    public function actionGetCategoriesInputHtml(): Response
+    public function actionGetStructureInputHtml(): Response
     {
         $request = Craft::$app->getRequest();
-        $categoryIds = $request->getParam('categoryIds', []);
+        $elementIds = $request->getParam('elementIds', []);
+        $elementType = $request->getRequiredParam('elementType');
 
-        /** @var Category[] $categories */
-        $categories = [];
+        // TODO: should probably move the code inside try{} to a helper method
+        try {
+            if (!is_subclass_of($elementType, ElementInterface::class)) {
+                throw new InvalidTypeException($elementType, ElementInterface::class);
+            }
+        } catch (InvalidTypeException $e) {
+            throw new BadRequestHttpException($e->getMessage());
+        }
 
-        if (!empty($categoryIds)) {
-            $categories = Category::find()
-                ->id($categoryIds)
+        /** @var Element $elementType */
+        $elements = [];
+        if (!empty($elementIds)) {
+            $elements = $elementType::find()
+                ->id($elementIds)
                 ->siteId($request->getParam('siteId'))
                 ->anyStatus()
                 ->all();
 
             // Fill in the gaps
-            $categoriesService = Craft::$app->getCategories();
-            $categoriesService->fillGapsInCategories($categories);
+            $elementsService = Craft::$app->getCategories();
+            $elementsService->fillGapsInCategories($elements);
 
             // Enforce the branch limit
             if ($branchLimit = $request->getParam('branchLimit')) {
-                $categoriesService->applyBranchLimitToCategories($categories, $branchLimit);
+                $elementsService->applyBranchLimitToCategories($elements, $branchLimit);
             }
         }
 
-        $html = $this->getView()->renderTemplate('_components/fieldtypes/Categories/input',
+        $html = $this->getView()->renderTemplate(
+            '_includes/forms/elementSelect.html',
             [
-                'elements' => $categories,
+                'elements' => $elements,
                 'id' => $request->getParam('id'),
                 'name' => $request->getParam('name'),
                 'selectionLabel' => $request->getParam('selectionLabel'),
-            ]);
+                'structure' => true,
+                'elementType' => $elementType,
+            ]
+        );
 
         return $this->asJson([
             'html' => $html,
