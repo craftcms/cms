@@ -18,6 +18,7 @@ use craft\db\Table as TableName;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\SiteNotFoundException;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -108,7 +109,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public $viewMode;
 
     /**
-     * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
+     * @var bool Whether to field should relate structural parents
+     */
+    public $relateParents = false;
+
+    /**
+     * @var bool The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
      */
     public $limit;
 
@@ -131,6 +137,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @var bool Whether to allow the Limit setting
      */
     public $allowLimit = true;
+
+    /**
+     * @var bool Whether to allow the "Relate Parents" setting
+     */
+    public $allowRelateParents = true;
 
     /**
      * @var bool Whether to allow the “Large Thumbnails” view mode
@@ -207,6 +218,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $attributes[] = 'limit';
         $attributes[] = 'selectionLabel';
         $attributes[] = 'localizeRelations';
+        $attributes[] = 'relateParents';
 
         return $attributes;
     }
@@ -278,6 +290,13 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $query
                 ->id(array_values(array_filter($value)))
                 ->fixedOrder();
+
+            if ($this->relateParents) {
+                $elements = $query->all();
+                $categoriesService = Craft::$app->getCategories();
+                $categoriesService->fillGapsInCategories($elements);
+                $query->id(ArrayHelper::getColumn($elements, 'id'));
+            }
         } else if ($value !== '' && $element && $element->id) {
             $query->innerJoin(
                 '{{%relations}} relations',

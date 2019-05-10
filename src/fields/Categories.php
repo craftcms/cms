@@ -76,6 +76,8 @@ class Categories extends BaseRelationField
         parent::init();
         $this->allowLimit = false;
         $this->allowMultipleSources = false;
+        $this->allowRelateParents = false;
+        $this->relateParents = true;
         $this->settingsTemplate = '_components/fieldtypes/Categories/settings';
         $this->inputTemplate = '_components/fieldtypes/Categories/input';
         $this->inputJsClass = 'Craft.CategorySelectInput';
@@ -94,10 +96,6 @@ class Categories extends BaseRelationField
                 ->id(array_values(array_filter($value)))
                 ->anyStatus()
                 ->all();
-
-            // Fill in any gaps
-            $categoriesService = Craft::$app->getCategories();
-            $categoriesService->fillGapsInCategories($categories);
 
             // Enforce the branch limit
             if ($this->branchLimit) {

@@ -63,6 +63,18 @@
     {% endblock %}
 
     {% block advancedSettings %}
+        {% block relateParents %}
+            {% if field.allowRelateParents %}
+                {{ forms.lightswitchField({
+                    label: "Relate Parents"|t('app'),
+                    instructions: "Automatically relate structural parents of selected {type}."|t('app', { type: field.displayName()|lower }),
+                    id: 'relateParents',
+                    name: 'relateParents',
+                    on: field.relateParents,
+                }) }}
+            {% endif %}
+        {% endblock %}
+
         {% if craft.app.getIsMultiSite() %}
             <hr>
             <a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</a>
