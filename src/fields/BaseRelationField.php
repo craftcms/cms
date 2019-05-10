@@ -144,6 +144,16 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public $allowRelateParents = true;
 
     /**
+     * @var int|null Branch limit
+     */
+    public $branchLimit;
+
+    /**
+     * @var bool Whether to render the field as a structure
+     */
+    public $structure = false;
+
+    /**
      * @var bool Whether to allow the “Large Thumbnails” view mode
      */
     protected $allowLargeThumbsView = false;
@@ -203,6 +213,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         if (!$this->sources) {
             $this->sources = '*';
         }
+
+        if ($this->structure) {
+            $this->sortable = false;
+            $this->inputTemplate = '_components/fieldtypes/Categories/input';
+            $this->inputJsClass = 'Craft.CategorySelectInput';
+        }
     }
 
     /**
@@ -219,6 +235,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $attributes[] = 'selectionLabel';
         $attributes[] = 'localizeRelations';
         $attributes[] = 'relateParents';
+        $attributes[] = 'branchLimit';
 
         return $attributes;
     }
@@ -291,10 +308,18 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 ->id(array_values(array_filter($value)))
                 ->fixedOrder();
 
-            if ($this->relateParents) {
+            if ($this->relateParents || $this->branchLimit) {
                 $elements = $query->all();
                 $categoriesService = Craft::$app->getCategories();
-                $categoriesService->fillGapsInCategories($elements);
+
+                if ($this->relateParents) {
+                    $categoriesService->fillGapsInCategories($elements);
+                }
+
+                if ($this->branchLimit) {
+                    $categoriesService->applyBranchLimitToCategories($elements, $this->branchLimit);
+                }
+
                 $query->id(ArrayHelper::getColumn($elements, 'id'));
             }
         } else if ($value !== '' && $element && $element->id) {
@@ -739,6 +764,8 @@ JS;
             'viewMode' => $this->viewMode(),
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
             'sortable' => $this->sortable,
+            'branchLimit' => $this->branchLimit,
+            'structure' => $this->structure,
         ];
     }
 

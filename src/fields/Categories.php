@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
-use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 
 /**
@@ -57,14 +56,6 @@ class Categories extends BaseRelationField
         return CategoryQuery::class;
     }
 
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var int|null Branch limit
-     */
-    public $branchLimit;
-
     // Public Methods
     // =========================================================================
 
@@ -73,39 +64,14 @@ class Categories extends BaseRelationField
      */
     public function init()
     {
-        parent::init();
         $this->allowLimit = false;
         $this->allowMultipleSources = false;
         $this->allowRelateParents = false;
         $this->relateParents = true;
         $this->settingsTemplate = '_components/fieldtypes/Categories/settings';
-        $this->inputTemplate = '_components/fieldtypes/Categories/input';
-        $this->inputJsClass = 'Craft.CategorySelectInput';
-        $this->sortable = false;
-    }
+        $this->structure = true;
 
-    /**
-     * @inheritdoc
-     */
-    public function normalizeValue($value, ElementInterface $element = null)
-    {
-        if (is_array($value)) {
-            /** @var Category[] $categories */
-            $categories = Category::find()
-                ->siteId($this->targetSiteId($element))
-                ->id(array_values(array_filter($value)))
-                ->anyStatus()
-                ->all();
-
-            // Enforce the branch limit
-            if ($this->branchLimit) {
-                $categoriesService->applyBranchLimitToCategories($categories, $this->branchLimit);
-            }
-
-            $value = ArrayHelper::getColumn($categories, 'id');
-        }
-
-        return parent::normalizeValue($value, $element);
+        parent::init();
     }
 
     /**
@@ -123,16 +89,5 @@ class Categories extends BaseRelationField
         }
 
         return parent::getInputHtml($value, $element);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
-    {
-        $variables = parent::inputTemplateVariables($value, $element);
-        $variables['branchLimit'] = $this->branchLimit;
-
-        return $variables;
     }
 }

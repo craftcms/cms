@@ -10,6 +10,8 @@ namespace craft\fields;
 use Craft;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use craft\helpers\ElementHelper;
+use craft\models\Section;
 
 /**
  * Entries represents an Entries field.
@@ -52,5 +54,23 @@ class Entries extends BaseRelationField
     public static function valueType(): string
     {
         return EntryQuery::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        // If there is a single structure source, render the field as a structure
+        if (is_array($this->sources) && count($this->sources) === 1) {
+            $source = ElementHelper::findSource(static::elementType(), $this->sources[0]);
+            $type = $source['data']['type'] ?? null;
+
+            if ($type === Section::TYPE_STRUCTURE) {
+                $this->structure = true;
+            }
+        }
+
+        parent::init();
     }
 }
