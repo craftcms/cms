@@ -6,6 +6,7 @@
 - Fixed a bug where rebuilding the project config could set an incorrect value for the user field layout.
 - Fixed a bug Craft wouldn’t allow users to edit their own photos if they didn’t have upload/remove asset permissions.
 - Fixed a bug where Craft wasn’t removing newline characters when pasting text into some single-line Table column types.
+- Fixed a bug where project config syncing could have inconsistent results on load-balanced environments. ([](https://github.com/craftcms/cms/issues/4136))
 
 ## 3.1.26 - 2019-05-08
 
