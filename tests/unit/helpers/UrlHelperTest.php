@@ -125,20 +125,6 @@ class UrlHelperTest extends Unit
     }
 
     /**
-     * Test that adding params to urls works under various circumstances
-     *
-     * @dataProvider urlWithParamsDataProvider
-     *
-     * @param $result
-     * @param $url
-     * @param $params
-    */
-    public function testUrlWithParams($result, $url, $params)
-    {
-        $this->assertSame($result, UrlHelper::urlWithParams($url, $params));
-    }
-
-    /**
      * Test that CP Urls are created. We do some hand modification work to construct an 'expected' result based on the cp trigger
      * config variable. We cant do this (yet)(https://github.com/Codeception/Codeception/issues/4087) as the Craft::$app var and thus
      * the cpTrigger variable inst easily accessible in the dataProvider methods.
@@ -173,7 +159,7 @@ class UrlHelperTest extends Unit
      *
      * @dataProvider urlWithSchemeDataProvider
      * @dataProvider urlWithTokenDataProvider
-     * @dataProvider urlWithParamsDataProvider
+     * @dataProvider urlWithParametersDataProvider
      * @dataProvider stripQueryStringDataProvider
      *
      * @param bool $result
@@ -359,50 +345,6 @@ class UrlHelperTest extends Unit
     /**
      * @return array
      */
-    public function urlWithParamsDataProvider(): array
-    {
-        return [
-            '#' => [
-                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2#anchor',
-                self::ABSOLUTE_URL_HTTPS_WWW,
-                ['param1' => 'name', 'param2' => 'name2', '#' => 'anchor']
-            ],
-            'basic-array' => [
-                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2',
-                self::ABSOLUTE_URL_HTTPS_WWW,
-                ['param1' => 'name', 'param2' => 'name2']
-            ],
-            'empty-array' => [
-                self::ABSOLUTE_URL_HTTPS_WWW,
-                self::ABSOLUTE_URL_HTTPS_WWW,
-                []
-            ],
-            '4-spaces' => [
-                self::ABSOLUTE_URL_HTTPS_WWW.'?    ',
-                self::ABSOLUTE_URL_HTTPS_WWW,
-                '    '
-            ],
-            'numerical-index-array'  => [
-                self::ABSOLUTE_URL_HTTPS_WWW.'?0=someparam',
-                self::ABSOLUTE_URL_HTTPS_WWW,
-                ['someparam']
-            ],
-            'query-string' => [
-                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2',
-                self::ABSOLUTE_URL_HTTPS_WWW,
-                '?param1=name&param2=name2'
-            ],
-            'pre-queried-url' => [
-                self::ABSOLUTE_URL_HTTPS_WWW.'?param3=name3&param1=name&param2=name2',
-                self::ABSOLUTE_URL_HTTPS_WWW.'?param3=name3',
-                '?param1=name&param2=name2'
-            ],
-        ];
-    }
-
-    /**
-     * @return array
-     */
     public function cpUrlCreationDataProvider(): array
     {
         return [
@@ -485,24 +427,6 @@ class UrlHelperTest extends Unit
                 ['param1' => 'entry1', '#' => 'some-hashtag'],
                 'urlWithParams'
             ],
-            [
-                self::ABSOLUTE_URL_HTTPS.'?param1=entry1',
-                self::ABSOLUTE_URL_HTTPS,
-                ['param1' => 'entry1'],
-                'urlWithParams'
-            ],
-            [
-                self::ABSOLUTE_URL_HTTPS.'?param1=entry1&param2=entry2',
-                self::ABSOLUTE_URL_HTTPS,
-                ['param1' => 'entry1', 'param2' => 'entry2'],
-                'urlWithParams'
-            ],
-            [
-                self::ABSOLUTE_URL_HTTPS.'?param1=entry1&param2=entry2',
-                self::ABSOLUTE_URL_HTTPS,
-                'param1=entry1&param2=entry2',
-                'urlWithParams'
-            ],
             'anchor-gets-kept' => [
                 self::ABSOLUTE_URL_HTTPS.'#anchor?param1=entry1&param2=entry2',
                 self::ABSOLUTE_URL_HTTPS.'#anchor',
@@ -513,6 +437,48 @@ class UrlHelperTest extends Unit
                 self::ABSOLUTE_URL_HTTPS_WWW.'#anchor?param3=entry3&param1=entry1&param2=entry2',
                 self::ABSOLUTE_URL_HTTPS_WWW.'#anchor?param3=entry3',
                 '?param1=entry1&param2=entry2',
+                'urlWithParams'
+            ],
+            '#' => [
+                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2#anchor',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                ['param1' => 'name', 'param2' => 'name2', '#' => 'anchor'],
+                'urlWithParams'
+            ],
+            'basic-array' => [
+                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                ['param1' => 'name', 'param2' => 'name2'],
+                'urlWithParams'
+            ],
+            'empty-array' => [
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                [],
+                'urlWithParams'
+            ],
+            '4-spaces' => [
+                self::ABSOLUTE_URL_HTTPS_WWW.'?    ',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '    ',
+                'urlWithParams'
+            ],
+            'numerical-index-array'  => [
+                self::ABSOLUTE_URL_HTTPS_WWW.'?0=someparam',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                ['someparam'],
+                'urlWithParams'
+            ],
+            'query-string' => [
+                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1=name&param2=name2',
+                'urlWithParams'
+            ],
+            'pre-queried-url' => [
+                self::ABSOLUTE_URL_HTTPS_WWW.'?param3=name3&param1=name&param2=name2',
+                self::ABSOLUTE_URL_HTTPS_WWW.'?param3=name3',
+                '?param1=name&param2=name2',
                 'urlWithParams'
             ],
         ];
