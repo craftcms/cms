@@ -104,6 +104,6 @@ class SecurityTest extends Unit
     {
         parent::_before();
 
-        $this->security = Craft::$app->security;
+        $this->security = Craft::$app->getSecurity();
     }
 }
