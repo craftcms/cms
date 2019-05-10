@@ -9,13 +9,12 @@ namespace craftunit\services;
 
 
 use Codeception\Test\Unit;
-use craft\helpers\ConfigHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\services\Images;
 use UnitTester;
 use yii\base\Exception;
-
+use Craft;
 
 /**
  * Unit tests for images service.
@@ -86,7 +85,7 @@ class ImagesTest extends Unit
      */
     public function testDontCleanWithConfigSetting()
     {
-        \Craft::$app->getConfig()->getGeneral()->sanitizeSvgUploads = false;
+        Craft::$app->getConfig()->getGeneral()->sanitizeSvgUploads = false;
 
         // http://svg.enshrined.co.uk/
         $this->images->cleanImage(
@@ -126,11 +125,11 @@ class ImagesTest extends Unit
      */
     protected function _before()
     {
+        parent::_before();
         $this->path = dirname(__DIR__, 3).'/_data/assets/files/';
         $this->sandboxPath = dirname(__DIR__).'/sandbox/';
 
-        parent::_before();
-        $this->images = \Craft::$app->getImages();
+        $this->images = Craft::$app->getImages();
 
         if (!is_dir($this->sandboxPath)) {
             FileHelper::createDirectory($this->sandboxPath);
