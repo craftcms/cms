@@ -78,6 +78,7 @@ class RevisionBehavior extends Behavior
     {
         return $this->owner::find()
             ->id($this->sourceId)
+            ->siteId($this->owner->siteId)
             ->anyStatus()
             ->one();
     }

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
+use craft\behaviors\RevisionBehavior;
 use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use craft\models\Section;
@@ -295,7 +296,8 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Permission enforcement
-        $entry = Craft::$app->getEntries()->getEntryById($revision->id, $revision->siteId);
+        /** @var Entry|RevisionBehavior $revision */
+        $entry = $revision->getSource();
 
         if (!$entry) {
             throw new ServerErrorHttpException('Entry version is missing its entry');

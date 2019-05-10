@@ -34,7 +34,7 @@
 {% set shareUrl = shareUrl ?? null %}
 {% set revertSourceAction = revertSourceAction ?? null %}
 
-{% if canUpdateSource %}
+{% if canUpdateSource and not element.revisionId %}
     {% set fullPageForm = true %}
 {% endif %}
 
@@ -67,7 +67,8 @@
     {% if canUpdateSource %}
         {% if element.revisionId and revertSourceAction %}
             <div class="spacer"></div>
-            <form type="submit">
+            <form method="post" accept-charset="UTF-8">
+                {{ csrfInput() }}
                 <input type="hidden" name="action" value="{{ revertSourceAction }}">
                 {{ redirectInput(element.cpEditUrl) }}
                 <input type="hidden" name="revisionId" value="{{ element.revisionId }}">
