@@ -41,7 +41,7 @@ Craft.StructureSelectInput = Craft.BaseElementSelectInput.extend(
                 name: this.settings.name,
                 branchLimit: this.settings.branchLimit,
                 selectionLabel: this.settings.selectionLabel,
-                entryType: this.settings.entryType
+                elementType: this.settings.elementType
             };
 
             Craft.postActionRequest('elements/get-structure-input-html', data, $.proxy(function(response, textStatus) {
