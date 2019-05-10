@@ -56,7 +56,8 @@
     "codeception/mockery-module": "^0.3",
     "codeception/specify": "^0.4",
     "codeception/verify": "^1.0",
-    "vlucas/phpdotenv": "^3.0"
+    "vlucas/phpdotenv": "^3.0",
+    "league/factory-muffin": "^3.0"
   },
   "provide": {
     "bower-asset/bootstrap": "3.3.* | 3.2.* | 3.1.*",
