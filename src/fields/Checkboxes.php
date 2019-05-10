@@ -38,6 +38,14 @@ class Checkboxes extends BaseOptionsField
         return MultiOptionsFieldData::class;
     }
 
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public $multi = true;
+
     // Public Methods
     // =========================================================================
 

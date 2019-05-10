@@ -38,6 +38,14 @@ class Dropdown extends BaseOptionsField
         return SingleOptionFieldData::class;
     }
 
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public $optgroups = true;
+
     // Public Methods
     // =========================================================================
 
