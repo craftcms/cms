@@ -40,22 +40,64 @@ class PaginatorTest extends Unit
     // Tests
     // =========================================================================
 
+    /**
+     *
+     */
+    public function testTotalResults()
+    {
+        $this->setPaginator();
+        $this->assertSame('100', $this->paginator->getTotalResults());
+    }
+
+    /**
+     *
+     */
+    public function testTotalResultsWithQueryOffset()
+    {
+        $this->setPaginator(['offset' => 5]);
+        $this->assertSame(95, $this->paginator->getTotalResults());
+    }
+
+    /**
+     *
+     */
+    public function testTotalPages()
+    {
+        $this->setPaginator([], ['pageSize' => '25']);
+        $this->assertSame(4, $this->paginator->getTotalPages());
+    }
+
+    /**
+     *
+     */
+    public function testTotalPagesWithOneOverflow()
+    {
+        $this->setPaginator([], ['pageSize' => '25'], 101);
+        $this->assertSame(5, $this->paginator->getTotalPages());
+    }
+
 
     // Protected Methods
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * @param array $queryParams
+     * @param array $config
+     * @param int $requiredSessions
+     * @return void
      */
-    protected function _before()
+    protected function setPaginator(array $queryParams = [], array $config = [], int $requiredSessions = 100)
     {
-        parent::_before();
+        $this->tester->haveMultiple(Session::class, $requiredSessions);
 
-        $this->tester->haveMultiple(Session::class, 100);
+        $query = (new Query())->select('*')->from(Session::tableName());
+        foreach ($queryParams as $key => $value) {
+            $query->$key = $value;
+        }
 
         $this->paginator = new Paginator(
-            (new Query())->select('*')->from(Session::tableName()),
-            []
+            $query,
+            $config
         );
     }
 }
