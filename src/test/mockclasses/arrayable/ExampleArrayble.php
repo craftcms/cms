@@ -27,7 +27,7 @@ class ExampleArrayble implements Arrayable
 
     public $extraField;
 
-    public function extraFields()
+    public function extraFields(): array
     {
         return [
             'extraField'

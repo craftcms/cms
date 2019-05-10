@@ -16,7 +16,11 @@ use craft\services\Config;
 use craft\web\Application;
 use craft\web\UploadedFile;
 use Symfony\Component\Yaml\Yaml;
+use Throwable;
+use yii\base\ErrorException;
+use yii\base\Event;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\db\Exception;
 
 /**
@@ -33,8 +37,9 @@ class TestSetup
 
     /**
      * Creates a craft object to play with. Ensures the Craft::$app service locator is working.
+     *
      * @return mixed
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public static function warmCraft()
     {
@@ -57,8 +62,8 @@ class TestSetup
         $_REQUEST = [];
 
         UploadedFile::reset();
-        if (method_exists(\yii\base\Event::class, 'offAll')) {
-            \yii\base\Event::offAll();
+        if (method_exists(Event::class, 'offAll')) {
+            Event::offAll();
         }
         \Craft::setLogger(null);
 
@@ -89,9 +94,9 @@ class TestSetup
     }
 
     /**
-     * @param Migration $migration
+     * @param string $class
+     * @param array $params
      * @return false|null
-     * @throws \Throwable
      */
     public static function validateAndApplyMigration(string $class, array $params) : bool
     {
@@ -216,7 +221,7 @@ class TestSetup
 
     /**
      * @param string $projectConfigFile
-     * @throws \yii\base\ErrorException
+     * @param bool $mergeExistingConfig
      */
     public static function setupProjectConfig(string $projectConfigFile, bool $mergeExistingConfig = false)
     {
@@ -246,7 +251,7 @@ class TestSetup
     public static function setupCraftDb(Connection $connection, Craft $craftTestModule)
     {
         if ($connection->schema->getTableNames() !== []) {
-            throw new Exception('Not allowed to setup the DB if it hasnt been cleansed');
+            throw new Exception('Not allowed to setup the DB if it has not been cleansed');
         }
 
         $siteConfig = [

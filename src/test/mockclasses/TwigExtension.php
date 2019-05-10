@@ -7,9 +7,7 @@
 
 namespace craft\test\mockclasses;
 
-
-
-use Twig_Extension;
+use Twig\Extension\AbstractExtension;
 
 /**
  * Mock twig extension class
@@ -18,7 +16,7 @@ use Twig_Extension;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.0
  */
-class TwigExtension extends Twig_Extension
+class TwigExtension extends AbstractExtension
 {
 
 }

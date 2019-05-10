@@ -7,13 +7,11 @@
 namespace craft\test\elementfixtures;
 
 use Craft;
-use craft\db\Query;
 use craft\errors\InvalidElementException;
 use craft\events\DeleteElementEvent;
 use craft\services\Elements;
-use yii\base\ErrorException;
+use Throwable;
 use yii\base\Event;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\test\ActiveFixture;
@@ -97,7 +95,9 @@ abstract class ElementFixture extends ActiveFixture
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
+     * @throws InvalidElementException
+     * @throws Throwable
      */
     public function unload(): void
     {
@@ -111,10 +111,8 @@ abstract class ElementFixture extends ActiveFixture
 
         foreach ($this->getData() as $data) {
             $element = $this->getElement($data);
-            if ($element) {
-                if (!Craft::$app->getElements()->deleteElement($element)) {
-                    throw new InvalidElementException($element, 'Unable to delete element');
-                }
+            if ($element && !Craft::$app->getElements()->deleteElement($element)) {
+                throw new InvalidElementException($element, 'Unable to delete element');
             }
         }
 
@@ -139,10 +137,10 @@ abstract class ElementFixture extends ActiveFixture
      *
      * @return Element
      */
-    public function getElement(array $data = null)
+    public function getElement(array $data = null): Element
     {
         $modelClass = $this->modelClass;
-        if (is_null($data)) {
+        if ($data === null) {
             return new $modelClass();
         }
 

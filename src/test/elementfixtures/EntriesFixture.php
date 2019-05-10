@@ -9,11 +9,8 @@
 namespace craft\test\elementfixtures;
 
 
-use craft\db\Query;
 use craft\elements\Entry;
-use craft\services\Section;
-use craft\test\Craft;
-use yii\base\ErrorException;
+use craft\services\Sections;
 
 /**
  * Unit tests for EntriesFixture
@@ -45,7 +42,8 @@ class EntriesFixture extends ElementFixture
      * We load the section data only once we need it. This gives other fixtures (see for e.g. craftunit\fixtures\SectionsFixture) the
      * time to add their data.
      *
-     * @throws ErrorException
+     * @throws \craft\errors\InvalidElementException
+     * @throws \yii\db\Exception
      */
     public function load(): void
     {
@@ -57,16 +55,14 @@ class EntriesFixture extends ElementFixture
     public function ensureDataExists() : bool
     {
         if (!$this->sectionIds || !$this->typeIds) {
-            /** @var Section */
+            /** @var Sections */
             $sectionService = \Craft::$app->getSections();
 
             // Get all section and type id's
-            $sections = $sectionService->getAllSections();
-            foreach ($sections as $section) {
+            foreach ($sectionService->getAllSections() as $section) {
                 $this->sectionIds[$section->handle] = $section->id;
                 $this->typeIds[$section->handle] = [];
-                $types = $sectionService->getEntryTypesBySectionId($section->id);
-                foreach ($types as $type) {
+                foreach ($sectionService->getEntryTypesBySectionId($section->id) as $type) {
                     $this->typeIds[$section->handle][$type->handle] = $type->id;
                 }
             }
@@ -80,6 +76,6 @@ class EntriesFixture extends ElementFixture
      */
     protected function isPrimaryKey(string $key): bool
     {
-        return $key === 'sectionId' || $key === 'typeId' || $key === 'title';
+        return in_array($key, ['sectionId', 'typeId', 'title']);
     }
 }

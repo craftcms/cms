@@ -9,13 +9,9 @@
 namespace craft\test\fixtures;
 
 
-use craft\behaviors\ContentBehavior;
-use craft\behaviors\ElementQueryBehavior;
 use craft\fields\PlainText;
-use craft\helpers\FileHelper;
 use craft\records\Field;
 use craft\services\Fields;
-use craft\test\Craft;
 use craft\test\Fixture;
 use yii\base\InvalidArgumentException;
 
@@ -59,12 +55,10 @@ class FieldFixture extends Fixture
     {
         $fieldsThatDidntSave = [];
         foreach ($this->getData() as $toBeDeletedRow) {
-            $field = \Craft::$app->getFields()->getFieldByHandle($toBeDeletedRow['handle']);
+            $field = Craft::$app->getFields()->getFieldByHandle($toBeDeletedRow['handle']);
 
-            if ($field) {
-                if (!\Craft::$app->getFields()->deleteField($field)) {
-                    $fieldsThatDidntSave[$field->handle] = $field->name;
-                }
+            if ($field && !Craft::$app->getFields()->deleteField($field)) {
+                $fieldsThatDidntSave[$field->handle] = $field->name;
             }
         }
         if ($fieldsThatDidntSave !== []) {

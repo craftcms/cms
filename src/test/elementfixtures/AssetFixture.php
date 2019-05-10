@@ -7,7 +7,9 @@
 namespace craft\test\elementfixtures;
 
 use Craft;
+use craft\base\Element;
 use craft\elements\Asset;
+use ErrorException;
 
 /**
  * Class AssetFixture.
@@ -32,20 +34,22 @@ abstract class AssetFixture extends ElementFixture
      */
     public function load(): void
     {
-
         $this->data = [];
         foreach ($this->getData() as $alias => $data) {
             $element = $this->getElement();
-            foreach ($data as $handle => $value) {
-                $element->$handle = $value;
-            }
 
-            $result = Craft::$app->getElements()->saveElement($element);
+            if ($element) {
+                foreach ($data as $handle => $value) {
+                    $element->$handle = $value;
+                }
 
-            if (!$result) {
-                throw new ErrorException(join(' ', $element->getErrorSummary(true)));
+                $result = Craft::$app->getElements()->saveElement($element);
+
+                if (!$result) {
+                    throw new ErrorException(implode(' ', $element->getErrorSummary(true)));
+                }
+                $this->data[$alias] = array_merge($data, ['id' => $element->id]);
             }
-            $this->data[$alias] = array_merge($data, ['id' => $element->id]);
         }
     }
 
@@ -54,7 +58,7 @@ abstract class AssetFixture extends ElementFixture
      */
     protected function isPrimaryKey(string $key): bool
     {
-        return $key === 'volumeId' || $key === 'folderId' || $key === 'filename' || $key === 'title';
+        return in_array($key, ['volumeId', 'folderId', 'filename', 'title']);
     }
 
     /**
@@ -62,13 +66,14 @@ abstract class AssetFixture extends ElementFixture
      *
      * @param array $data
      *
-     * @return Asset
+     * @return Element
      */
-    public function getElement(array $data = null): ?Asset
+    public function getElement(array $data = null): Element
     {
+        /* @var Asset $element */
         $element = parent::getElement($data);
 
-        if (is_null($data)) {
+        if ($data === null) {
             $element->avoidFilenameConflicts = true;
             $element->setScenario(Asset::SCENARIO_REPLACE);
         }

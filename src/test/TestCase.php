@@ -12,6 +12,7 @@ namespace craft\test;
 use Closure;
 use Codeception\Test\Unit;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionObject;
 
 /**
@@ -26,10 +27,12 @@ class TestCase extends Unit
 
     /**
      * Sets an inaccessible object property to a designated value.
+     *
      * @param $object
      * @param $propertyName
      * @param $value
      * @param bool $revoke whether to make property inaccessible after setting
+     * @throws \ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L155
      */
     protected function setInaccessibleProperty($object, $propertyName, $value, $revoke = true)
@@ -52,7 +55,7 @@ class TestCase extends Unit
      * @param string $class
      * @return Closure
      */
-    public function assertObjectIsInstanceOfClassCallback(string $class)
+    public function assertObjectIsInstanceOfClassCallback(string $class): callable
     {
         return function ($object) use ($class) {
             $this->assertSame($class, get_class($object));
@@ -65,6 +68,7 @@ class TestCase extends Unit
      * @param $propertyName
      * @param bool $revoke whether to make property inaccessible after getting
      * @return mixed
+     * @throws \ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L176
      */
     protected function getInaccessibleProperty($object, $propertyName, $revoke = true)
@@ -89,12 +93,13 @@ class TestCase extends Unit
      * @param array $args
      * @param bool $revoke whether to make method inaccessible after execution
      * @return mixed
+     * @throws ReflectionException
+     *
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L134
      */
     protected function invokeMethod($object, $method, $args = [], $revoke = true)
     {
-        $reflection = new ReflectionObject($object);
-        $method = $reflection->getMethod($method);
+        $method = (new ReflectionObject($object))->getMethod($method);
         $method->setAccessible(true);
         $result = $method->invokeArgs($object, $args);
         if ($revoke) {

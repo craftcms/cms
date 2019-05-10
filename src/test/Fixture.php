@@ -41,7 +41,8 @@ class Fixture extends ActiveFixture
 
     /**
      * @param TableSchema $table
-     * @param array $column
+     * @param array $row
+     * @param string $column
      * @return array $row
      */
     public function ensureColumnIntegrity(TableSchema $table, array $row, string $column) : array
@@ -59,7 +60,7 @@ class Fixture extends ActiveFixture
      * @return int
      * @throws Exception
      */
-    public function deleteRow($tableName, $toBeDeletedRow)
+    public function deleteRow($tableName, $toBeDeletedRow): int
     {
         return $this->db->createCommand()->delete($tableName, $toBeDeletedRow)->execute();
     }

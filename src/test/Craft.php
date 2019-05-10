@@ -21,7 +21,11 @@ use craft\db\Connection;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use ReflectionException;
+use ReflectionObject;
+use Throwable;
 use yii\base\Application;
+use yii\base\ErrorException;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
@@ -30,14 +34,15 @@ use yii\db\Exception;
 /**
  * Craft module for codeception
  *
- * TODO: LINE 115
+ * @todo LINE 115
+ *
  * There is a potential 'bug'/hampering feature with the Yii2 Codeception module.
  * DB connections initialized through the configFile param (see https://codeception.com/docs/modules/Yii2)
- * Are not captured by the Yii2Connector\ConnectionWatcher and Yii2Connector\TransactionForcer i.e. all DB interacitons done through
- * Craft::$app->getDb() are not stored and roll'd back in transacitons.
+ * Are not captured by the Yii2Connector\ConnectionWatcher and Yii2Connector\TransactionForcer i.e. all DB interactions done through
+ * Craft::$app->getDb() are not stored and roll'd back in transactions.
  *
  * This is probably because the starting of the app (triggered by $this->client->startApp()) is done BEFORE the
- * DB event listeners are registered. Moving the order of these listeners to the top of the _before function means the conneciton
+ * DB event listeners are registered. Moving the order of these listeners to the top of the _before function means the connection
  * is registered.
  *
  * What i need to investigate is whether iam doing something wrong in the src/tests/_craft/config/test.php or if this is PR 'worthy'
@@ -45,7 +50,7 @@ use yii\db\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class Craft extends Yii2
 {
@@ -78,7 +83,7 @@ class Craft extends Yii2
 
     /**
      * Craft constructor.
-     * We need to merge the config settings here as this is the earliest point in the instance's existance.
+     * We need to merge the config settings here as this is the earliest point in the instance's existence.
      * Doing it in _initialize() wont work as the config variables have already been added.
      *
      * @param ModuleContainer $moduleContainer
@@ -87,15 +92,13 @@ class Craft extends Yii2
     public function __construct(ModuleContainer $moduleContainer, $config = null)
     {
         // Merge our config with Yii'2 config.
-        $this->config = array_merge(parent::_getConfig(), $this->addedConfig);
+        $this->config = array_merge($this->_getConfig(), $this->addedConfig);
 
         parent::__construct($moduleContainer, $config);
     }
 
     /**
-     * @throws \Throwable
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\db\Exception
+     * @throws Throwable
      */
     public function _initialize()
     {
@@ -108,7 +111,6 @@ class Craft extends Yii2
     /**
      * @param TestInterface $test
      * @throws InvalidConfigException
-     * @throws \yii\base\ErrorException
      */
     public function _before(TestInterface $test)
     {
@@ -122,7 +124,7 @@ class Craft extends Yii2
         App::maxPowerCaptain();
 
         $db = \Craft::createObject(
-            \craft\helpers\App::dbConfig(self::createDbConfig())
+            App::dbConfig(self::createDbConfig())
         );
 
         \Craft::$app->set('db', $db);
@@ -132,7 +134,7 @@ class Craft extends Yii2
      * @param TestInterface $test
      * @throws Exception
      * @throws InvalidConfigException
-     * @throws \yii\base\ErrorException
+     * @throws ErrorException
      */
     public function _after(TestInterface $test)
     {
@@ -161,7 +163,7 @@ class Craft extends Yii2
     }
 
     /**
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function setupDb()
     {
@@ -214,7 +216,7 @@ class Craft extends Yii2
             // Trigger the end of a 'request'. This lets project config do its stuff.
             // TODO: Probably Craft::$app->getProjectConfig->saveModifiedConfigData() but i feel the below is more solid.
             \Craft::$app->trigger(Application::EVENT_AFTER_REQUEST);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             // Get clean and throw a tantrum.
             ob_end_clean();
             throw $exception;
@@ -228,8 +230,8 @@ class Craft extends Yii2
     /**
      * @param array $plugin
      * @throws InvalidConfigException
-     * @throws \Throwable
-     * @throws \craft\errors\InvalidPluginException
+     * @throws Throwable
+     * @throws InvalidPluginException
      */
     public function installPlugin(array $plugin) {
         if (isset($plugin['isAtRoot']) && $plugin['isAtRoot'] === true) {
@@ -246,33 +248,34 @@ class Craft extends Yii2
      */
     public static function getCodeceptionName() : string
     {
-        return '\craft\test\Craft';
+        return __CLASS__;
     }
 
     /**
      * TODO: This is a WIP. Currently its a proof of concept.
      *
-     * The problem is how do we update vendor/craftcms/plugins.php file. As far as i can see this is a requirment for ensuring plugins work.
+     * The problem is how do we update vendor/craftcms/plugins.php file. As far as i can see this is a requirement for ensuring plugins work.
      * Updating this file is difficult if the plugin is not in the /vendors directory. I.E. If it is the project root
+     *
+     * @param array $pluginArray
+     * @throws InvalidPluginException
+     * @throws ReflectionException
      *
      * @internal This is not the final version.
      * 1. Is there a better what to accessing the plugins.php file than creating a composerInstance? Surely there is.
      * 2. If not. Should the craft plugin installer be edited. Namely the addPlugin method be made public.
      *
-     * Bassicly we can sum up this todo down to: How are we going to ensure that vendor/craftcms/plugins.php contains the plugins defined by the codeception file.
-     *
-     * @param array $pluginArray
-     * @throws InvalidPluginException
+     * Basically we can sum up this todo down to: How are we going to ensure that vendor/craftcms/plugins.php contains the plugins defined by the codeception file.
      */
     public function addPluginFromRoot(array $pluginArray)
     {
         $rootPath = dirname(CRAFT_VENDOR_PATH);
 
         if (!is_file($rootPath . '/composer.json')) {
-            throw new InvalidPluginException($pluginArray['handle'], 'Selected plugin to be at root. Which it isnt.');
+            throw new InvalidPluginException($pluginArray['handle'], 'Selected plugin to be at root, but it is not.');
         }
-        $factory = new Factory();
-        $composer = $factory->createComposer(new NullIO());
+
+        $composer = (new Factory())->createComposer(new NullIO());
 
         $installer = new Installer(new NullIO(), $composer);
 
@@ -289,17 +292,26 @@ class Craft extends Yii2
     }
 
     /**
-     * TODO: Remove once final version of above is published.
+     * @todo Remove once final version of above is published.
+     *
+     * @param $object
+     * @param $method
+     * @param array $args
+     * @param bool $revoke
+     * @return mixed
+     * @throws ReflectionException
      */
     protected function invokeMethod($object, $method, $args = [], $revoke = true)
     {
-        $reflection = new \ReflectionObject($object);
-        $method = $reflection->getMethod($method);
+        $method = (new ReflectionObject($object))->getMethod($method);
         $method->setAccessible(true);
+
         $result = $method->invokeArgs($object, $args);
+
         if ($revoke) {
             $method->setAccessible(false);
         }
+
         return $result;
     }
 
@@ -343,7 +355,7 @@ class Craft extends Yii2
     // =========================================================================
 
     /**
-     * Ensure that an event is trigered by the $callback() function.
+     * Ensure that an event is triggered by the $callback() function.
      *
      *
      * @param string $class
@@ -368,7 +380,8 @@ class Craft extends Yii2
     /**
      * @param Module $module
      * @param string $component
-     * @param $methods
+     * @param array $methods
+     * @param array $constructParams
      * @throws InvalidConfigException
      */
     public function mockMethods(Module $module, string $component, array $methods = [], array $constructParams = [])

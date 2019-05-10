@@ -7,11 +7,13 @@
 
 namespace craft\test;
 
+use Closure;
 use craft\mail\Mailer;
 use craft\mail\Message;
+use yii\mail\MessageInterface;
 
 /**
- * Exactly the same as Codeception\Lib\Connector\Yii2\TestMailer except that we overide based on Crafts own mailer class.
+ * Exactly the same as Codeception\Lib\Connector\Yii2\TestMailer except that we override based on Crafts own mailer class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -28,7 +30,7 @@ class TestMailer extends Mailer
     public $messageClass = Message::class;
 
     /**
-     * @var \Closure
+     * @var Closure
      */
     public $callback;
 
@@ -46,7 +48,7 @@ class TestMailer extends Mailer
     }
 
     /**
-     * @param \yii\mail\MessageInterface $message
+     * @param MessageInterface $message
      * @return bool
      */
     protected function saveMessage($message) : bool
