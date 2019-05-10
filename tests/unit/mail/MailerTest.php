@@ -79,10 +79,7 @@ class MailerTest extends Unit
     protected function _before()
     {
         parent::_before();
-
-        // TODO: This used to work without the config array.
-        // The introduction of project config throws: [TypeError] Argument 1 passed to craft\helpers\MailerHelper::createTransportAdapter() must be of the type string, null given, called in /home/cms/src/helpers/App.php on line 446
-        // So. If project config is off, and no MailSettings is passed, App::mailerConfig doesnt seem to work.
+        
         $mailSettings = new MailSettings([
             'transportType' => Sendmail::class
         ]);
