@@ -16,6 +16,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
@@ -731,6 +732,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('alias', [Craft::class, 'getAlias']),
             new TwigFunction('actionInput', [$this, 'actionInputFunction']),
             new TwigFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
+            new TwigFunction('attr', [$this, 'attrFunction']),
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
@@ -759,6 +761,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('getHeadHtml', [$this, 'getHeadHtml']),
             new TwigFunction('getFootHtml', [$this, 'getFootHtml']),
         ];
+    }
+
+    /**
+     * Renders HTML tag attributes with [[\craft\helpers\Html::renderTagAttributes()]]
+     *
+     * @param array $attributes
+     * @return Markup
+     */
+    public function attrFunction(array $config): Markup
+    {
+        return TemplateHelper::raw(Html::renderTagAttributes($config));
     }
 
     /**

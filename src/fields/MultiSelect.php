@@ -38,17 +38,21 @@ class MultiSelect extends BaseOptionsField
         return MultiOptionsFieldData::class;
     }
 
-    // Public Methods
+    // Properties
     // =========================================================================
 
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        parent::init();
-        $this->multi = true;
-    }
+    public $multi = true;
+
+    /**
+     * @inheritdoc
+     */
+    public $optgroups = true;
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * @inheritdoc

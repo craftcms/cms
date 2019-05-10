@@ -1034,7 +1034,7 @@ JS;
      * The template mode defines:
      * - the base path that templates should be looked for in
      * - the default template file extensions that should be automatically added when looking for templates
-     * - the "index" template filenames that sholud be checked when looking for templates
+     * - the "index" template filenames that should be checked when looking for templates
      *
      * @param string $templateMode Either 'site' or 'cp'
      * @throws Exception if $templateMode is invalid

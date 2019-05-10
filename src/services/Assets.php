@@ -152,11 +152,13 @@ class Assets extends Component
     {
         // Fire a 'beforeReplaceFile' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REPLACE_ASSET)) {
-            $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, new ReplaceAssetEvent([
+            $event = new ReplaceAssetEvent([
                 'asset' => $asset,
                 'replaceWith' => $pathOnServer,
                 'filename' => $filename
-            ]));
+            ]);
+            $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, $event);
+            $filename = $event->filename;
         }
 
         $asset->tempFilePath = $pathOnServer;

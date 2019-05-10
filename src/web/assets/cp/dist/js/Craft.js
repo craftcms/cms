@@ -1,4 +1,4 @@
-/*!   - 2019-05-08 */
+/*!   - 2019-05-10 */
 (function($){
 
 /** global: Craft */
@@ -13504,7 +13504,7 @@ Craft.EditableTable = Garnish.Base.extend(
         },
     },
     {
-        textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'time'],
+        textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'template', 'time'],
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
@@ -13654,6 +13654,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
         $tr: null,
         $tds: null,
+        tds: null,
         $textareas: null,
         $deleteBtn: null,
 
@@ -13661,6 +13662,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             this.table = table;
             this.$tr = $(tr);
             this.$tds = this.$tr.children();
+            this.tds = [];
             this.id = this.$tr.attr('data-id');
 
             this.$tr.data('editable-table-row', this);
@@ -13677,7 +13679,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             var textareasByColId = {};
 
             var i = 0;
-            var colId, col;
+            var colId, col, td, $textarea, $checkbox;
 
             for (colId in this.table.columns) {
                 if (!this.table.columns.hasOwnProperty(colId)) {
@@ -13685,9 +13687,10 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 }
 
                 col = this.table.columns[colId];
+                td = this.tds[colId] = this.$tds[i];
 
                 if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes)) {
-                    var $textarea = $('textarea, input.text', this.$tds[i]);
+                    $textarea = $('textarea, input.text', td);
                     this.$textareas = this.$textareas.add($textarea);
 
                     this.addListener($textarea, 'focus', 'onTextareaFocus');
@@ -13698,21 +13701,26 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                     }));
 
                     this.addListener($textarea, 'keypress', {tdIndex: i, type: col.type}, 'handleKeypress');
-
-                    if (col.type === 'singleline' || col.type === 'number') {
-                        this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
-                        $textarea.trigger('textchange');
-                    }
+                    this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
+                    $textarea.trigger('textchange');
 
                     textareasByColId[colId] = $textarea;
-                } else if (col.type === 'checkbox' && col.radioMode) {
-                    var $checkbox = $('input[type="checkbox"]', this.$tds[i]);
-                    if (typeof this.table.radioCheckboxes[colId] === 'undefined') {
-                        this.table.radioCheckboxes[colId] = [];
-                    }
-                    this.table.radioCheckboxes[colId].push($checkbox[0]);
+                } else if (col.type === 'checkbox') {
+                    $checkbox = $('input[type="checkbox"]', td);
 
-                    this.addListener($checkbox, 'change', {colId: colId}, 'onRadioCheckboxChange');
+                    if (col.radioMode) {
+                        if (typeof this.table.radioCheckboxes[colId] === 'undefined') {
+                            this.table.radioCheckboxes[colId] = [];
+                        }
+                        this.table.radioCheckboxes[colId].push($checkbox[0]);
+                        this.addListener($checkbox, 'change', {colId: colId}, 'onRadioCheckboxChange');
+                    }
+
+                    if (col.toggle) {
+                        this.addListener($checkbox, 'change', {colId: colId}, function(ev) {
+                            this.applyToggleCheckbox(ev.data.colId);
+                        });
+                    }
                 }
 
                 i++;
@@ -13720,6 +13728,17 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
             // Now that all of the text cells have been nice-ified, let's normalize the heights
             this.onTextareaHeightChange();
+
+            // See if we need to apply any checkbox toggles now that we've indexed all the TDs
+            for (colId in this.table.columns) {
+                if (!this.table.columns.hasOwnProperty(colId)) {
+                    continue;
+                }
+                col = this.table.columns[colId];
+                if (col.type === 'checkbox' && col.toggle) {
+                    this.applyToggleCheckbox(colId);
+                }
+            }
 
             // Now look for any autopopulate columns
             for (colId in this.table.columns) {
@@ -13764,6 +13783,28 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             }
         },
 
+        applyToggleCheckbox: function(checkboxColId) {
+            var checkboxCol = this.table.columns[checkboxColId];
+            var checked = $('input[type="checkbox"]', this.tds[checkboxColId]).prop('checked');
+            var colId, colIndex, neg;
+            for (var i = 0; i < checkboxCol.toggle.length; i++) {
+                colId = checkboxCol.toggle[i];
+                colIndex = this.table.colum;
+                if (neg = colId[0] === '!') {
+                    colId = colId.substr(1);
+                }
+                if ((checked && !neg) || (!checked && neg))  {
+                    $(this.tds[colId])
+                        .removeClass('disabled')
+                        .find('textarea, input').prop('disabled', false);
+                } else {
+                    $(this.tds[colId])
+                        .addClass('disabled')
+                        .find('textarea, input').prop('disabled', true);
+                }
+            }
+        },
+
         ignoreNextTextareaFocus: function(ev) {
             $.data(ev.currentTarget, 'ignoreNextFocus', true);
         },
@@ -13786,6 +13827,10 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         },
 
         validateValue: function(ev) {
+            if (ev.data.type === 'multiline') {
+                return;
+            }
+
             var safeValue;
 
             if (ev.data.type === 'number') {
