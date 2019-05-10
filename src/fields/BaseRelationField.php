@@ -109,7 +109,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public $viewMode;
 
     /**
-     * @var bool The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
+     * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
      */
     public $limit;
 
