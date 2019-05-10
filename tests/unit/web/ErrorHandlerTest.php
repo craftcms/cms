@@ -21,7 +21,7 @@ use yii\base\ErrorException;
 use yii\web\HttpException;
 
 /**
- * Unit tests for ErrorHandlerTest
+ * Unit tests for ErrorHandler
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -29,43 +29,28 @@ use yii\web\HttpException;
  */
 class ErrorHandlerTest extends TestCase
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UnitTester
      */
     protected $tester;
 
     /**
-     * @var ErrorHandler $errorHandler
+     * @var ErrorHandler
      */
     protected $errorHandler;
 
-    /**
-     * @inheritDoc
-     */
-    protected function _before()
-    {
-        parent::_before();
-        // Create a dir in compiled templates. See self::144
-        $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
-        mkdir($path.'/created_path');
+    // Public Methods
+    // =========================================================================
 
-        $this->errorHandler = Craft::createObject(ErrorHandler::class);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function _after()
-    {
-        // Remove the dir created in _before
-        $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
-        rmdir($path.'/created_path');
-
-        parent::_after();
-    }
+    // Tests
+    // =========================================================================
 
     /**
      * Test that Twig runtime errors use the previous error (if it exists).
+     *
      * @throws Exception
      */
     public function testHandleTwigException()
@@ -82,6 +67,9 @@ class ErrorHandlerTest extends TestCase
         $this->errorHandler->handleException($exception);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testHandle404Exception()
     {
         // Disable clear output as this throws: Test code or tested code did not (only) close its own output buffers
@@ -92,14 +80,13 @@ class ErrorHandlerTest extends TestCase
         ]);
 
         // Oops. Page not found
-        $exception = new HttpException('Im an error');
+        $exception = new HttpException('I am an error.');
         $exception->statusCode = 404;
 
         // Test 404's are treated with a different file
         $this->errorHandler->handleException($exception);
         $this->assertSame(Craft::getAlias('@crafttestsfolder/storage/logs/web-404s.log'), Craft::$app->getLog()->targets[0]->logFile);
     }
-
 
     /**
      * @dataProvider exceptionTypeAndNameDataProvider
@@ -110,14 +97,6 @@ class ErrorHandlerTest extends TestCase
     public function testGetExceptionName(Throwable $exception, $message)
     {
         $this->assertSame($message, $this->errorHandler->getExceptionName($exception));
-    }
-    public function exceptionTypeAndNameDataProvider(): array
-    {
-        return [
-            [new SyntaxError('Twig go boom'), 'Twig Syntax Error'],
-            [new LoaderError('Twig go boom'), 'Twig Template Loading Error'],
-            [new RuntimeError('Twig go boom'), 'Twig Runtime Error'],
-        ];
     }
 
     /**
@@ -130,16 +109,6 @@ class ErrorHandlerTest extends TestCase
     public function testGetTypeUrl($result, $class, $method)
     {
         $this->assertSame($result, $this->invokeMethod($this->errorHandler, 'getTypeUrl', [$class, $method]));
-    }
-
-    public function getTypeUrlDataProvider() : array
-    {
-        return [
-            ['http://twig.sensiolabs.org/api/2.x/Twig\Template.html#method_render', '__TwigTemplate_', 'render'],
-            ['http://twig.sensiolabs.org/api/2.x/Twig\.html#method_render', 'Twig\\', 'render'],
-            ['http://twig.sensiolabs.org/api/2.x/Twig\.html', 'Twig\\', null],
-            [null, 'Twig_', 'render'],
-        ];
     }
 
     /**
@@ -165,6 +134,38 @@ class ErrorHandlerTest extends TestCase
         $isCore = $this->errorHandler->isCoreFile(Craft::getAlias($input));
         $this->assertSame($result, $isCore);
     }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function exceptionTypeAndNameDataProvider(): array
+    {
+        return [
+            [new SyntaxError('Twig go boom'), 'Twig Syntax Error'],
+            [new LoaderError('Twig go boom'), 'Twig Template Loading Error'],
+            [new RuntimeError('Twig go boom'), 'Twig Runtime Error'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function getTypeUrlDataProvider() : array
+    {
+        return [
+            ['http://twig.sensiolabs.org/api/2.x/Twig\Template.html#method_render', '__TwigTemplate_', 'render'],
+            ['http://twig.sensiolabs.org/api/2.x/Twig\.html#method_render', 'Twig\\', 'render'],
+            ['http://twig.sensiolabs.org/api/2.x/Twig\.html', 'Twig\\', null],
+            [null, 'Twig_', 'render'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public function isCoreFileDataProvider(): array
     {
         $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
@@ -180,5 +181,34 @@ class ErrorHandlerTest extends TestCase
             [false, $craftPath.'/web/twig'],
             [false, __DIR__]
         ];
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
+    {
+        parent::_before();
+
+        // Create a dir in compiled templates. See self::144
+        $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
+        mkdir($path.'/created_path');
+
+        $this->errorHandler = Craft::createObject(ErrorHandler::class);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function _after()
+    {
+        // Remove the dir created in _before
+        $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
+        rmdir($path.'/created_path');
+
+        parent::_after();
     }
 }

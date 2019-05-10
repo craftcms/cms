@@ -23,21 +23,24 @@ use yii\base\NotSupportedException;
  */
 class LanguageValidatorTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
-     * @var UnitTester $tester
+     * @var UnitTester
      */
     protected $tester;
 
     /**
-     * @var LanguageValidator $languageValidator
+     * @var LanguageValidator
      */
     protected $languageValidator;
 
-    protected function _before()
-    {
-        parent::_before();
-        $this->languageValidator = new LanguageValidator();
-    }
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
 
     /**
      * @dataProvider validateValueDataProvider
@@ -54,17 +57,6 @@ class LanguageValidatorTest extends Unit
         $validated = $this->languageValidator->validateValue($input);
 
         $this->assertSame($result, $validated);
-    }
-    public function validateValueDataProvider(): array
-    {
-        return [
-            [['{value} is not a valid site language.', []], 'nolang'],
-            [null, 'en-US'],
-            [null, 'nl'],
-            [['{value} is not a valid site language.', []], 'de'],
-            [null, 'de', false],
-            [['{value} is not a valid site language.', []], 'nolang', false]
-        ];
     }
 
     /**
@@ -89,9 +81,17 @@ class LanguageValidatorTest extends Unit
             $this->assertSame([], $model->getErrors());
         }
     }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
     public function validateAttributeDataProvider(): array
     {
         $returnArray = [];
+
         foreach ($this->validateValueDataProvider() as $item) {
             $mustValidate = true;
             if (!empty($item[0])) {
@@ -118,4 +118,30 @@ class LanguageValidatorTest extends Unit
         ]);
     }
 
+    /**
+     * @return array
+     */
+    public function validateValueDataProvider(): array
+    {
+        return [
+            [['{value} is not a valid site language.', []], 'nolang'],
+            [null, 'en-US'],
+            [null, 'nl'],
+            [['{value} is not a valid site language.', []], 'de'],
+            [null, 'de', false],
+            [['{value} is not a valid site language.', []], 'nolang', false]
+        ];
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     *
+     */
+    protected function _before()
+    {
+        parent::_before();
+        $this->languageValidator = new LanguageValidator();
+    }
 }

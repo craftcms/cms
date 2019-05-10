@@ -17,9 +17,12 @@ use UnitTester;
 use yii\base\Action;
 use yii\base\Exception;
 use yii\base\ExitException;
+use yii\base\InvalidConfigException;
+use yii\base\InvalidRouteException;
+use yii\web\BadRequestHttpException;
 
 /**
- * Unit tests for ControllerTest
+ * Unit tests for Controller
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -27,6 +30,9 @@ use yii\base\ExitException;
  */
 class ControllerTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UnitTester
      */
@@ -37,15 +43,15 @@ class ControllerTest extends Unit
      */
     private $controller;
 
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
     /**
-     * @inheritDoc
+     *
      */
-    protected function _before()
-    {
-        parent::_before();
-        $_SERVER['REQUEST_URI'] = 'https://craftcms.com/admin/dashboard';
-        $this->controller = new TestController('test', Craft::$app);
-    }
     public function testBeforeAction()
     {
         $this->tester->expectThrowable(ExitException::class, function () {
@@ -56,6 +62,9 @@ class ControllerTest extends Unit
         $this->assertTrue($this->controller->beforeAction(new Action('allow-anonymous', $this->controller)));
     }
 
+    /**
+     * @throws InvalidRouteException
+     */
     public function testRunActionJsonError()
     {
         // We accept JSON.
@@ -69,6 +78,9 @@ class ControllerTest extends Unit
         $this->assertSame(Response::FORMAT_JSON, $resp->format);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testTemplateRendering()
     {
         // We need to render a template from the site dir.
@@ -84,6 +96,7 @@ class ControllerTest extends Unit
 
     /**
      * If the content-type headers are already set. Render Template should ignore attempting to set them.
+     *
      * @throws Exception
      */
     public function testTemplateRenderingIfHeadersAlreadySet()
@@ -100,6 +113,11 @@ class ControllerTest extends Unit
         $this->assertSame('HEADERS', $response->getHeaders()->get('content-type'));
     }
 
+    /**
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws BadRequestHttpException
+     */
     public function testRedirectToPostedUrl()
     {
         $baseUrl = $this->_getBaseUrlForRedirect();
@@ -120,6 +138,9 @@ class ControllerTest extends Unit
         $this->assertSame($baseUrl.'?p=craft/do/stuff', $default->headers->get('Location'));
     }
 
+    /**
+     * @throws BadRequestHttpException
+     */
     public function testRedirectToPostedWithSetDefault()
     {
         $baseUrl = $this->_getBaseUrlForRedirect();
@@ -128,18 +149,29 @@ class ControllerTest extends Unit
 
     }
 
+    /**
+     *
+     */
     public function testAsJsonP()
     {
         $result = $this->controller->asJsonP(['test' => 'test']);
         $this->assertSame(Response::FORMAT_JSONP, $result->format);
         $this->assertSame(['test' => 'test'], $result->data);
     }
+
+    /**
+     *
+     */
     public function testAsRaw()
     {
         $result = $this->controller->asRaw(['test' => 'test']);
         $this->assertSame(Response::FORMAT_RAW, $result->format);
         $this->assertSame(['test' => 'test'], $result->data);
     }
+
+    /**
+     *
+     */
     public function testAsErrorJson()
     {
         $result = $this->controller->asErrorJson('im an error');
@@ -147,6 +179,9 @@ class ControllerTest extends Unit
         $this->assertSame(['error' => 'im an error'], $result->data);
     }
 
+    /**
+     *
+     */
     public function testRedirect()
     {
         $this->assertSame(
@@ -174,13 +209,27 @@ class ControllerTest extends Unit
         );
     }
 
-    // Helpers
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
+    {
+        parent::_before();
+        $_SERVER['REQUEST_URI'] = 'https://craftcms.com/admin/dashboard';
+        $this->controller = new TestController('test', Craft::$app);
+    }
+
+    // Private Methods
     // =========================================================================
 
     private function _determineUrlScheme(): string
     {
         return !Craft::$app->getRequest()->getIsConsoleRequest() && Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
     }
+
     private function _getBaseUrlForRedirect(): string
     {
         $scheme = $this->_determineUrlScheme();

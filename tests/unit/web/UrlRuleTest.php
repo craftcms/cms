@@ -11,7 +11,7 @@ use Codeception\Test\Unit;
 use craft\web\UrlRule;
 
 /**
- * Unit tests for UrlRuleTest
+ * Unit tests for UrlRule
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -19,6 +19,15 @@ use craft\web\UrlRule;
  */
 class UrlRuleTest extends Unit
 {
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
+    /**
+     *
+     */
     public function testUrlRule()
     {
         $rule = new UrlRule(['template' => 'templates/index', 'pattern' => '{handle}', 'variables' => ['2', '22']]);

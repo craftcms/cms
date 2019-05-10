@@ -20,6 +20,9 @@ use craft\test\mockclasses\models\ExampleModel;
  */
 class HandleValidatorTest extends Unit
 {
+    // Public Methods
+    // =========================================================================
+
     /**
      * @var HandleValidator
      */
@@ -29,24 +32,22 @@ class HandleValidatorTest extends Unit
      * @var ExampleModel
      */
     protected $model;
+
     /*
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
+    /**
+     * @var array
+     */
     protected static $reservedWords =  ['bird', 'is', 'the', 'word'];
 
-    /**
-     * @inheritDoc
-     */
-    protected function _before()
-    {
-        $this->model = new ExampleModel();
-        $this->handleValidator = new HandleValidator(['reservedWords' => self::$reservedWords]);
+    // Public Methods
+    // =========================================================================
 
-        $this->assertSame(self::$reservedWords, $this->handleValidator->reservedWords);
-        self::$reservedWords  = array_merge(self::$reservedWords, HandleValidator::$baseReservedWords);
-    }
+    // Tests
+    // =========================================================================
 
     public function testStaticConstants()
     {
@@ -62,9 +63,11 @@ class HandleValidatorTest extends Unit
         );
     }
 
+    /**
+     *
+     */
     public function testStaticConstantsArentAllowed()
     {
-
         foreach (self::$reservedWords as $reservedWord) {
             $this->model->exampleParam = $reservedWord;
             $this->handleValidator->validateAttribute($this->model, 'exampleParam');
@@ -97,6 +100,12 @@ class HandleValidatorTest extends Unit
         }
     }
 
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
     public function handleValidationDataProvider(): array
     {
         return [
@@ -109,5 +118,20 @@ class HandleValidatorTest extends Unit
             [false, '123'],
             [false, 'iam A Handle'],
         ];
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
+    {
+        $this->model = new ExampleModel();
+        $this->handleValidator = new HandleValidator(['reservedWords' => self::$reservedWords]);
+
+        $this->assertSame(self::$reservedWords, $this->handleValidator->reservedWords);
+        self::$reservedWords  = array_merge(self::$reservedWords, HandleValidator::$baseReservedWords);
     }
 }

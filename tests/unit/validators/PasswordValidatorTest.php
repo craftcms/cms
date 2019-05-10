@@ -24,8 +24,11 @@ use yii\base\ErrorException;
  */
 class PasswordValidatorTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
-     * @var UnitTester $tester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -39,14 +42,11 @@ class PasswordValidatorTest extends Unit
      */
     protected $model;
 
-    /**
-     * @inheritDoc
-     */
-    protected function _before()
-    {
-        $this->passwordValidator = new UserPasswordValidator();
-        $this->model = new ExampleModel();
-    }
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
 
     /**
      * @dataProvider passwordValidationDataProvider
@@ -72,16 +72,6 @@ class PasswordValidatorTest extends Unit
         }
     }
 
-    public function passwordValidationDataProvider(): array
-    {
-        return [
-            ['22', false],
-            ['123456', true],
-            ['!@#$%^&*()', true],
-            ['161charsoaudsoidsaiadsjdsapoisajdpodsapaasdjosadojdsaodsapojdaposjosdakshjdsahksakhjhsadskajaskjhsadkdsakdsjhadsahkksadhdaskldskldslkdaslkadslkdsalkdsalkdsalkdsa', false]
-        ];
-    }
-
     /**
      * @dataProvider customConfigDataProvider
      *
@@ -102,18 +92,6 @@ class PasswordValidatorTest extends Unit
             $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
 
-    }
-    public function customConfigDataProvider(): array
-    {
-        return [
-            ['password', false, 0, 0],
-            ['3', false, 2, 0],
-            ['123', true, 3, 3],
-            ['123', true, 2, 3],
-            ['123', true, 3, 4],
-            ['', true, -1, 0],
-            [null, false, -1, 0],
-        ];
     }
 
     /**
@@ -136,6 +114,65 @@ class PasswordValidatorTest extends Unit
             $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
     }
+
+    /**
+     * @dataProvider isEmptyDataProvider
+     *
+     * @param $result
+     * @param $input
+     * @param $isEmptyVal
+     */
+    public function testIsEmpty($result, $input, $isEmptyVal)
+    {
+        $this->passwordValidator->isEmpty = $isEmptyVal;
+        $isEmpty = $this->passwordValidator->isEmpty($input);
+        $this->assertSame($result, $isEmpty);
+    }
+
+    public function testToStringExpectException()
+    {
+        $passVal = $this->passwordValidator;
+        $this->tester->expectThrowable(ErrorException::class, function () use ($passVal) {
+            $passVal->isEmpty = 'craft_increment';
+            $passVal->isEmpty(1);
+        });
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function passwordValidationDataProvider(): array
+    {
+        return [
+            ['22', false],
+            ['123456', true],
+            ['!@#$%^&*()', true],
+            ['161charsoaudsoidsaiadsjdsapoisajdpodsapaasdjosadojdsaodsapojdaposjosdakshjdsahksakhjhsadskajaskjhsadkdsakdsjhadsahkksadhdaskldskldslkdaslkadslkdsalkdsalkdsalkdsa', false]
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function customConfigDataProvider(): array
+    {
+        return [
+            ['password', false, 0, 0],
+            ['3', false, 2, 0],
+            ['123', true, 3, 3],
+            ['123', true, 2, 3],
+            ['123', true, 3, 4],
+            ['', true, -1, 0],
+            [null, false, -1, 0],
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public function forceDiffValidationDataProvider(): array
     {
         return [
@@ -151,35 +188,24 @@ class PasswordValidatorTest extends Unit
     }
 
     /**
-     * @dataProvider isEmptyDataProvider
-     *
-     * @param $result
-     * @param $input
-     * @param $isEmptyVal
+     * @return array
      */
-    public function testIsEmpty($result, $input, $isEmptyVal)
-    {
-        $this->passwordValidator->isEmpty = $isEmptyVal;
-        $isEmpty = $this->passwordValidator->isEmpty($input);
-        $this->assertSame($result, $isEmpty);
-    }
     public function isEmptyDataProvider(): array
     {
         return [
             ['im a test', '', self::class.'::testReturn' ],
         ];
     }
-    public function testToStringExpectException()
-    {
-        $passVal = $this->passwordValidator;
-        $this->tester->expectThrowable(ErrorException::class, function () use ($passVal) {
-            $passVal->isEmpty = 'craft_increment';
-            $passVal->isEmpty(1);
-        });
-    }
-    public static function testReturn(): string
-    {
-        return 'im a test';
-    }
 
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
+    {
+        $this->passwordValidator = new UserPasswordValidator();
+        $this->model = new ExampleModel();
+    }
 }

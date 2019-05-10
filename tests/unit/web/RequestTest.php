@@ -15,7 +15,7 @@ use UnitTester;
 use yii\web\BadRequestHttpException;
 
 /**
- * Unit tests for RequestTest
+ * Unit tests for Request
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -23,14 +23,9 @@ use yii\web\BadRequestHttpException;
  */
 class RequestTest extends TestCase
 {
-    public function _fixtures(): array
-    {
-        return [
-            'sites' => [
-                'class' => SitesFixture::class
-            ]
-        ];
-    }
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var Request
      */
@@ -41,17 +36,20 @@ class RequestTest extends TestCase
      */
     public $tester;
 
-    /**
-     * @inheritDoc
-     */
-    protected function _before()
-    {
-        parent::_before();
+    // Public Methods
+    // =========================================================================
 
-        $this->request = new Request([
-            'cookieValidationKey' => 'lashdao8u09ud09u09231uoij098wqe'
-        ]);
+    public function _fixtures(): array
+    {
+        return [
+            'sites' => [
+                'class' => SitesFixture::class
+            ]
+        ];
     }
+
+    // Tests
+    // =========================================================================
 
     /**
      * @dataProvider isMobileBrowserDataProvider
@@ -67,9 +65,264 @@ class RequestTest extends TestCase
         $this->assertSame($result, $this->request->isMobileBrowser($detectTablets));
     }
 
+    /**
+     * @throws BadRequestHttpException
+     */
+    public function testGetRequiredParam()
+    {
+        $this->request->setBodyParams(['test' => 'RAAA']);
+        $this->assertSame('RAAA', $this->request->getRequiredParam('test'));
+
+        $this->tester->expectThrowable(BadRequestHttpException::class, function () {
+            $this->request->getRequiredParam('not-a-param');
+        });
+    }
+
+    /**
+     *
+     */
+    public function testGetParamWithBody()
+    {
+        $this->request->setBodyParams(['bodyTest' => 'RAAA']);
+        $this->assertSame('RAAA', $this->request->getParam('bodyTest'));
+    }
+
+    /**
+     *
+     */
+    public function testGetParamWithQuery()
+    {
+        $this->request->setQueryParams(['queryTest' => 'RAAA']);
+        $this->assertSame('RAAA', $this->request->getParam('queryTest'));
+    }
+
+    /**
+     *
+     */
+    public function testGetParamDefault()
+    {
+        $this->assertSame('default', $this->request->getParam('not-a-param', 'default'));
+    }
+
+    /**
+     * @throws BadRequestHttpException
+     */
+    public function testGetRequiredQueryParam()
+    {
+        $this->request->setBodyParams(['bodyTest' => 'RAAA']);
+        $this->tester->expectThrowable(BadRequestHttpException::class, function () {
+            $this->request->getRequiredQueryParam('bodyTest');
+        });
+
+        $this->request->setQueryParams(['queryTest' => 'RAAA']);
+        $this->assertSame('RAAA', $this->request->getRequiredQueryParam('queryTest'));
+    }
+
+    /**
+     * @throws BadRequestHttpException
+     */
+    public function testGetRequiredBodyParam()
+    {
+        $this->request->setQueryParams(['queryTest' => 'RAAA']);
+        $this->tester->expectThrowable(BadRequestHttpException::class, function () {
+            $this->request->getRequiredBodyParam('queryTest');
+        });
+
+        $this->request->setBodyParams(['bodyTest' => 'RAAA']);
+        $this->assertSame('RAAA', $this->request->getRequiredBodyParam('bodyTest'));
+    }
+
+    /**
+     * @dataProvider getUserIpDataProvider
+     *
+     * @param $result
+     * @param $headerName
+     * @param $headerValue
+     * @param int $filterFlag
+     */
+    public function testGetUserIp($result, $headerName, $headerValue, $filterFlag = 0)
+    {
+        $this->request->headers->set($headerName, $headerValue);
+        $this->assertSame($result, $this->request->getUserIP($filterFlag));
+    }
+
+    /**
+     * @dataProvider getClientOsDataProvider
+     *
+     * @param $result
+     * @param $header
+     */
+    public function testGetClientOs($result, $header)
+    {
+        $this->request->headers->set('User-Agent', $header);
+        $this->assertSame($result, $this->request->getClientOs());
+    }
+
+    /**
+     *
+     */
+    public function testGetCsrfToken()
+    {
+        $token = $this->request->getCsrfToken();
+
+        $otherToken = $this->request->getCsrfToken();
+        $this->assertSame($token, $otherToken);
+
+        $this->assertNotSame($token, $this->request->getCsrfToken(true));
+    }
+
+    /**
+     *
+     */
+    public function testGenerateCsrfToken()
+    {
+        $token = $this->_generateCsrfToken();
+        $this->assertSame(40, strlen($token));
+
+        $this->_setMockUser();
+        $newToken = $this->_generateCsrfToken();
+        $tokenComponents = explode('|', $newToken);
+
+        $this->assertNotSame($newToken, $token);
+
+        // Ensure that the data we want exists and is according to our desired specs
+        $this->assertSame('1', $tokenComponents['2']);
+        $this->assertSame(40, strlen($tokenComponents['0']));
+        $this->assertSame('$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK', $tokenComponents['3']);
+    }
+
+    /**
+     *
+     */
+    public function testCsrfTokenValidForCurrentUser()
+    {
+        $this->_setMockUser();
+        $token = $this->_generateCsrfToken();
+
+        $this->assertTrue($this->_isCsrfValidForUser($token));
+    }
+
+    /**
+     *
+     */
+    public function testCsrfTokenValidFailure()
+    {
+        $token = $this->_generateCsrfToken();
+
+        $this->assertTrue($this->_isCsrfValidForUser($token));
+        $this->assertTrue($this->_isCsrfValidForUser('RANDOM'));
+    }
+
+    /**
+     * @dataProvider getParamDataProvider
+     *
+     * @param $result
+     * @param string|null $name
+     * @param $defaultValue
+     * @param array $params
+     */
+    public function testGetParam($result, $defaultValue, array $params, string $name = null)
+    {
+        $gotten = $this->_getParam($name, $defaultValue, $params);
+        $this->assertSame($result, $gotten);
+    }
+
+    /**
+     *
+     */
+    public function testCheckRequestTypeWithTokenParam()
+    {
+        $this->request->setBodyParams([Craft::$app->getConfig()->getGeneral()->tokenParam => 'something']);
+        $this->_checkRequestType();
+
+        $this->assertTrue($this->getInaccessibleProperty($this->request, '_checkedRequestType'));
+
+        $this->assertFalse($this->getInaccessibleProperty($this->request, '_isActionRequest'));
+        $this->assertFalse($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
+    }
+
+    /**
+     *
+     */
+    public function testCheckRequestTypeWithDirectTrigger()
+    {
+        $this->setInaccessibleProperty($this->request, '_segments', [
+            Craft::$app->getConfig()->getGeneral()->actionTrigger,
+            'do-stuff'
+        ]);
+
+        $this->checkRequestAndAssertIsSingleAction();
+    }
+
+    /**
+     *
+     */
+    public function testCheckRequestTypeWithQueryTrigger()
+    {
+        // We want a CP request
+        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
+        $this->request->setQueryParams(['action' => 'do/stuff']);
+
+        $this->checkRequestAndAssertIsSingleAction();
+    }
+
+    /**
+     * @dataProvider checkRequestSpecialPathDataProvider
+     *
+     * @param $path
+     */
+    public function testCheckRequestTypeOnCpRequestWithSpecialPathTrigger($path)
+    {
+        // We want a CP request
+        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
+        $this->setInaccessibleProperty($this->request, '_path', $path);
+
+        $this->checkRequestAndAssertIsSingleAction();
+    }
+
+    /**
+     *
+     */
+    public function testCheckRequestTypeOnSiteRequestWithSpecialPathTriggerLogin()
+    {
+        $genConfig = Craft::$app->getConfig()->getGeneral();
+
+        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
+        $this->setInaccessibleProperty($this->request, '_path', trim($genConfig->getLoginPath(), '/'));
+        $this->checkRequestAndAssertIsSingleAction();
+    }
+
+    /**
+     *
+     */
+    public function testCheckRequestTypeOnSiteRequestWithSpecialPathTriggerLogout()
+    {
+        $genConfig = Craft::$app->getConfig()->getGeneral();
+
+        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
+        $this->setInaccessibleProperty($this->request, '_path', trim($genConfig->getLogoutPath(), '/'));
+        $this->checkRequestAndAssertIsSingleAction();
+    }
+
+    /**
+     *
+     */
+    public function checkRequestAndAssertIsSingleAction()
+    {
+        $this->_checkRequestType();
+        $this->assertTrue($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * https://deviceatlas.com/blog/list-of-user-agent-strings
+     *
+     * @return array
+     */
     public function isMobileBrowserDataProvider(): array
     {
-        // https://deviceatlas.com/blog/list-of-user-agent-strings
         return [
             [true, 'Mozilla/5.0 (Linux; Android 7.0; SM-G892A Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/60.0.3112.107 Mobile Safari/537.36'],
             [true, 'Mozilla/5.0 (Linux; Android 6.0.1; SM-G935S Build/MMB29K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/55.0.2883.91 Mobile Safari/537.36'],
@@ -107,73 +360,9 @@ class RequestTest extends TestCase
         ];
     }
 
-    // Get & Get Required param testing
-    // =========================================================================
-
-    public function testGetRequiredParam()
-    {
-        $this->request->setBodyParams(['test' => 'RAAA']);
-        $this->assertSame('RAAA', $this->request->getRequiredParam('test'));
-
-        $this->tester->expectThrowable(BadRequestHttpException::class, function () {
-            $this->request->getRequiredParam('not-a-param');
-        });
-    }
-
-    public function testGetParamWithBody()
-    {
-        $this->request->setBodyParams(['bodyTest' => 'RAAA']);
-        $this->assertSame('RAAA', $this->request->getParam('bodyTest'));
-    }
-
-    public function testGetParamWithQuery()
-    {
-        $this->request->setQueryParams(['queryTest' => 'RAAA']);
-        $this->assertSame('RAAA', $this->request->getParam('queryTest'));
-    }
-
-    public function testGetParamDefault()
-    {
-        $this->assertSame('default', $this->request->getParam('not-a-param', 'default'));
-    }
-
-    public function testGetRequiredQueryParam()
-    {
-        $this->request->setBodyParams(['bodyTest' => 'RAAA']);
-        $this->tester->expectThrowable(BadRequestHttpException::class, function () {
-            $this->request->getRequiredQueryParam('bodyTest');
-        });
-
-        $this->request->setQueryParams(['queryTest' => 'RAAA']);
-        $this->assertSame('RAAA', $this->request->getRequiredQueryParam('queryTest'));
-    }
-
-    public function testGetRequiredBodyParam()
-    {
-        $this->request->setQueryParams(['queryTest' => 'RAAA']);
-        $this->tester->expectThrowable(BadRequestHttpException::class, function () {
-            $this->request->getRequiredBodyParam('queryTest');
-        });
-
-        $this->request->setBodyParams(['bodyTest' => 'RAAA']);
-        $this->assertSame('RAAA', $this->request->getRequiredBodyParam('bodyTest'));
-    }
-
-
     /**
-     * @dataProvider getUserIpDataProvider
-     *
-     * @param $result
-     * @param $headerName
-     * @param $headerValue
-     * @param int $filterFlag
+     * @return array
      */
-    public function testGetUserIp($result, $headerName, $headerValue, $filterFlag = 0)
-    {
-        $this->request->headers->set($headerName, $headerValue);
-        $this->assertSame($result, $this->request->getUserIP($filterFlag));
-    }
-
     public function getUserIpDataProvider(): array
     {
         return [
@@ -192,17 +381,8 @@ class RequestTest extends TestCase
     }
 
     /**
-     * @dataProvider getClientOsDataProvider
-     *
-     * @param $result
-     * @param $header
+     * @return array
      */
-    public function testGetClientOs($result, $header)
-    {
-        $this->request->headers->set('User-Agent', $header);
-        $this->assertSame($result, $this->request->getClientOs());
-    }
-
     public function getClientOsDataProvider(): array
     {
         return [
@@ -213,62 +393,9 @@ class RequestTest extends TestCase
         ];
     }
 
-    public function testGetCsrfToken()
-    {
-        $token = $this->request->getCsrfToken();
-
-        $otherToken = $this->request->getCsrfToken();
-        $this->assertSame($token, $otherToken);
-
-        $this->assertNotSame($token, $this->request->getCsrfToken(true));
-    }
-
-    public function testGenerateCsrfToken()
-    {
-        $token = $this->_generateCsrfToken();
-        $this->assertSame(40, strlen($token));
-
-        $this->_setMockUser();
-        $newToken = $this->_generateCsrfToken();
-        $tokenComponents = explode('|', $newToken);
-
-        $this->assertNotSame($newToken, $token);
-
-        // Ensure that the data we want exists and is according to our desired specs
-        $this->assertSame('1', $tokenComponents['2']);
-        $this->assertSame(40, strlen($tokenComponents['0']));
-        $this->assertSame('$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK', $tokenComponents['3']);
-    }
-
-    public function testCsrfTokenValidForCurrentUser()
-    {
-        $this->_setMockUser();
-        $token = $this->_generateCsrfToken();
-
-        $this->assertTrue($this->_isCsrfValidForUser($token));
-    }
-
-    public function testCsrfTokenValidFailure()
-    {
-        $token = $this->_generateCsrfToken();
-
-        $this->assertTrue($this->_isCsrfValidForUser($token));
-        $this->assertTrue($this->_isCsrfValidForUser('RANDOM'));
-    }
-
     /**
-     * @dataProvider getParamDataProvider
-     *
-     * @param $result
-     * @param string|null $name
-     * @param $defaultValue
-     * @param array $params
+     * @return array
      */
-    public function testGetParam($result, $defaultValue, array $params, string $name = null)
-    {
-        $gotten = $this->_getParam($name, $defaultValue, $params);
-        $this->assertSame($result, $gotten);
-    }
     public function getParamDataProvider(): array
     {
         return [
@@ -280,51 +407,9 @@ class RequestTest extends TestCase
         ];
     }
 
-
-    // Tests for _checkRequestType
-    // =========================================================================
-    public function testCheckRequestTypeWithTokenParam()
-    {
-        $this->request->setBodyParams([Craft::$app->getConfig()->getGeneral()->tokenParam => 'something']);
-        $this->_checkRequestType();
-
-        $this->assertTrue($this->getInaccessibleProperty($this->request, '_checkedRequestType'));
-
-        $this->assertFalse($this->getInaccessibleProperty($this->request, '_isActionRequest'));
-        $this->assertFalse($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
-    }
-    public function testCheckRequestTypeWithDirectTrigger()
-    {
-        $this->setInaccessibleProperty($this->request, '_segments', [
-            Craft::$app->getConfig()->getGeneral()->actionTrigger,
-            'do-stuff'
-        ]);
-
-        $this->checkRequestAndAssertIsSingleAction();
-    }
-
-    public function testCheckRequestTypeWithQueryTrigger()
-    {
-        // We want a CP request
-        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
-        $this->request->setQueryParams(['action' => 'do/stuff']);
-
-        $this->checkRequestAndAssertIsSingleAction();
-    }
-
     /**
-     * @dataProvider checkRequestSpecialPathDataProvider
-     *
-     * @param $path
+     * @return array
      */
-    public function testCheckRequestTypeOnCpRequestWithSpecialPathTrigger($path)
-    {
-        // We want a CP request
-        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
-        $this->setInaccessibleProperty($this->request, '_path', $path);
-
-        $this->checkRequestAndAssertIsSingleAction();
-    }
     public function checkRequestSpecialPathDataProvider(): array
     {
         return [
@@ -334,50 +419,64 @@ class RequestTest extends TestCase
         ];
     }
 
-    public function testCheckRequestTypeOnSiteRequestWithSpecialPathTriggerLogin()
-    {
-        $genConfig = Craft::$app->getConfig()->getGeneral();
-
-        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
-        $this->setInaccessibleProperty($this->request, '_path', trim($genConfig->getLoginPath(), '/'));
-        $this->checkRequestAndAssertIsSingleAction();
-    }
-    public function testCheckRequestTypeOnSiteRequestWithSpecialPathTriggerLogout()
-    {
-        $genConfig = Craft::$app->getConfig()->getGeneral();
-
-        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
-        $this->setInaccessibleProperty($this->request, '_path', trim($genConfig->getLogoutPath(), '/'));
-        $this->checkRequestAndAssertIsSingleAction();
-    }
-
-    public function checkRequestAndAssertIsSingleAction()
-    {
-        $this->_checkRequestType();
-        $this->assertTrue($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
-    }
-
-    // Helpers
+    // Protected Methods
     // =========================================================================
 
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
+    {
+        parent::_before();
+
+        $this->request = new Request([
+            'cookieValidationKey' => 'lashdao8u09ud09u09231uoij098wqe'
+        ]);
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * @return mixed
+     */
     private function _checkRequestType()
     {
         return $this->invokeMethod($this->request, '_checkRequestType');
     }
+
+    /**
+     * @param string|null $name
+     * @param $defaultValue
+     * @param array $params
+     * @return mixed
+     */
     private function _getParam(string $name = null, $defaultValue, array $params)
     {
         return $this->invokeMethod($this->request, '_getParam', [$name, $defaultValue, $params]);
 
     }
+
+    /**
+     * @param $token
+     * @return mixed
+     */
     private function _isCsrfValidForUser($token)
     {
         return $this->invokeMethod($this->request, 'csrfTokenValidForCurrentUser', [$token]);
     }
+
+    /**
+     * @return mixed
+     */
     private function _generateCsrfToken()
     {
         return $this->invokeMethod($this->request, 'generateCsrfToken');
     }
 
+    /**
+     *
+     */
     private function _setMockUser()
     {
         Craft::$app->getUser()->setIdentity(

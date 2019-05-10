@@ -20,6 +20,9 @@ use craft\validators\UriFormatValidator;
  */
 class UriFormatValidatorTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UriFormatValidator
      */
@@ -30,18 +33,15 @@ class UriFormatValidatorTest extends Unit
      */
     protected $model;
     /*
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
-    /**
-     * @inheritDoc
-     */
-    protected function _before()
-    {
-        $this->model = new ExampleModel();
-        $this->uriFormatValidator = new UriFormatValidator();
-    }
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
 
     /**
      * @dataProvider validateAttributeDataProvider
@@ -65,6 +65,13 @@ class UriFormatValidatorTest extends Unit
             $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
     }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
     public function validateAttributeDataProvider(): array
     {
         return [
@@ -75,5 +82,17 @@ class UriFormatValidatorTest extends Unit
             [false, 'entry/{test}/test', true],
 
         ];
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
+    {
+        $this->model = new ExampleModel();
+        $this->uriFormatValidator = new UriFormatValidator();
     }
 }

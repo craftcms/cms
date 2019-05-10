@@ -20,6 +20,9 @@ use craft\validators\UriValidator;
  */
 class UriValidatorTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UriValidator
      */
@@ -30,18 +33,15 @@ class UriValidatorTest extends Unit
      */
     protected $model;
     /*
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
-    /**
-     * @inheritDoc
-     */
-    protected function _before()
-    {
-        $this->model = new ExampleModel();
-        $this->uriValidator = new UriValidator();
-    }
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
 
     /**
      * @dataProvider validateValueDataProvider
@@ -65,6 +65,12 @@ class UriValidatorTest extends Unit
         }
     }
 
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
     public function validateValueDataProvider(): array
     {
         return [
@@ -75,5 +81,17 @@ class UriValidatorTest extends Unit
             [false, 'integer', '/^\w+\((\d+)\)/'],
             [true, 'integer(9)', '/^\w+\((\d+)\)/'],
         ];
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
+    {
+        $this->model = new ExampleModel();
+        $this->uriValidator = new UriValidator();
     }
 }

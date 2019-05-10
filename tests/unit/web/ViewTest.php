@@ -33,6 +33,25 @@ use yii\base\Exception;
  */
 class ViewTest extends TestCase
 {
+    // Public Properties
+    // =========================================================================
+
+    /**
+     * @var UnitTester
+     */
+    protected $tester;
+
+    /**
+     * @var View
+     */
+    protected $view;
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @return array
+     */
     public function _fixtures(): array
     {
         return [
@@ -42,29 +61,8 @@ class ViewTest extends TestCase
         ];
     }
 
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
-     * @var View $view
-     */
-    protected $view;
-
-    /**
-     * @inheritDoc
-     */
-    protected function _before()
-    {
-        parent::_before();
-
-        $this->view = Craft::createObject(View::class);
-
-        // By default we want to be in site mode.
-        $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
-    }
-
+    // Tests
+    // =========================================================================
 
     /**
      * @dataProvider normalizeObjectTemplateDataProvider
@@ -77,22 +75,9 @@ class ViewTest extends TestCase
         $this->assertSame($result, $this->view->normalizeObjectTemplate($input));
     }
 
-    public function normalizeObjectTemplateDataProvider(): array
-    {
-        return [
-            ['{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}', '{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}'],
-            ['{{ (_variables.foo ?? object.foo)|raw }}', '{foo}'],
-            ['{{ (_variables.foo ?? object.foo).bar|raw }}', '{foo.bar}'],
-            ['{foo : \'bar\'}', '{foo : \'bar\'}'],
-            ['{{foo}}', '{{foo}}'],
-            ['{% foo %}', '{% foo %}'],
-            ['{{ (_variables.foo ?? object.foo).fn({bar: baz})|raw }}', '{foo.fn({bar: baz})}'],
-            ['{{ (_variables.foo ?? object.foo).fn({bar: {baz: 1}})|raw }}', '{foo.fn({bar: {baz: 1}})}'],
-            ['{{ (_variables.foo ?? object.foo).fn(\'bar:baz\')|raw }}', '{foo.fn(\'bar:baz\')}'],
-            ['{{ (_variables.foo ?? object.foo).fn({\'bar\': baz})|raw }}', '{foo.fn({\'bar\': baz})}']
-        ];
-    }
-
+    /**
+     *
+     */
     public function testDoesTemplateExistWithCustomSite()
     {
         // Ensure that the current site is the one with the testSite3 handle
@@ -127,24 +112,6 @@ class ViewTest extends TestCase
         }
     }
 
-    public function doesTemplateExistDataProvider(): array
-    {
-        return [
-            ['@craftunittemplates/index.html', ''],
-            ['@craftunittemplates/template.twig', 'template'],
-            [false, 'doesntExist'],
-            [false, '@craftunittemplates/index.html'],
-            ['@craftunittemplates/testSite3/index.twig', 'testSite3/index.twig'],
-            ['@craftunittemplates/testSite3/index.twig', 'testSite3'],
-            ['@craftunittemplates/testSite3/index.twig', 'testSite3/'],
-
-            // Cp Paths
-            ['@craft/templates/index.html', '', View::TEMPLATE_MODE_CP],
-            ['@craft/templates/index.html', 'index', View::TEMPLATE_MODE_CP],
-            ['@craft/templates/entries/index.html', 'entries', View::TEMPLATE_MODE_CP],
-        ];
-    }
-
     /**
      * @dataProvider privateResolveTemplateDataProvider
      *
@@ -172,26 +139,6 @@ class ViewTest extends TestCase
         $this->assertSame(Craft::getAlias($result), $resolved);
     }
 
-    public function privateResolveTemplateDataProvider(): array
-    {
-        return [
-            ['@craftunittemplates/template.twig', '@craftunittemplates', 'template'],
-            ['@craftunittemplates/index.html', '@craftunittemplates', 'index'],
-            ['@craftunittemplates/doubleindex/index.html', '@craftunittemplates/doubleindex', 'index'],
-
-            // Index is found by default
-            ['@craftunittemplates/index.html', '@craftunittemplates', ''],
-
-            // Assert that registering custom extensions works.
-            ['@craftunittemplates/dotxml.xml', '@craftunittemplates', 'dotxml', ['xml']],
-            [null, '@craftunittemplates', 'dotxml'],
-            ['@craftunittemplates/dotxml.xml', '@craftunittemplates', 'dotxml.xml',],
-
-            // Allow change in index names
-            ['@craftunittemplates/template.twig', '@craftunittemplates', '', null, ['template']],
-        ];
-    }
-
     /**
      * Test that Craft::$app->getView()->renderTemplates(); Seems to work correctly with twig. Doesnt impact global props
      * and respects passed in variables.
@@ -216,6 +163,12 @@ class ViewTest extends TestCase
         $this->assertSame($result, 'I have no vars');
     }
 
+    /**
+     * @throws Exception
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     */
     public function testRenderMacro()
     {
         $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
@@ -223,6 +176,10 @@ class ViewTest extends TestCase
         $this->assertSame('Craft-CMS', $result);
     }
 
+    /**
+     * @throws LoaderError
+     * @throws SyntaxError
+     */
     public function testRenderString()
     {
         $result = $this->view->renderString('{{ arg1 }}-{{ arg2 }}', ['arg1' => 'Craft', 'arg2' => 'CMS']);
@@ -245,32 +202,9 @@ class ViewTest extends TestCase
         $this->assertSame($result, $res);
     }
 
-    public function renderObjectTemplateDataProvider(): array
-    {
-        $model = new ExampleModel();
-        $model->exampleParam = 'Example Param';
-
-        $arrayable = new ExampleArrayble();
-        $arrayable->exampleArrayableParam = 'Example param';
-        $arrayable->extraField = 'ExtraField';
-
-        return [
-            // No tags. Then it returns the template
-            ['[[ exampleParam ]]', '[[ exampleParam ]]', $model, ['vars' => 'vars']],
-
-            // Base arrayable test
-            ['Example paramExample param', '{ exampleArrayableParam }{ object.exampleArrayableParam }', $arrayable],
-            ['ExtraFieldExtraField', '{ extraField }{ object.extraField }', $arrayable],
-
-            // Base model test
-            ['Example ParamExample Param', '{{ exampleParam }}{{ object.exampleParam }}', $model],
-            ['Example ParamExample Param', '{ exampleParam }{ object.exampleParam }', $model],
-
-            // Test that model params dont overide variable params.
-            ['IM DIFFERENTExample Param', '{ exampleParam }{ object.exampleParam }', $model, ['exampleParam' => 'IM DIFFERENT']],
-        ];
-    }
-
+    /**
+     * @throws Exception
+     */
     public function testSetSiteTemplateMode()
     {
         $genConf = Craft::$app->getConfig()->getGeneral();
@@ -292,6 +226,10 @@ class ViewTest extends TestCase
             $this->getInaccessibleProperty($this->view, '_indexTemplateFilenames')
         );
     }
+
+    /**
+     * @throws Exception
+     */
     public function testSetCpTemplateMode()
     {
         $this->view->setTemplateMode(View::TEMPLATE_MODE_CP);
@@ -310,6 +248,10 @@ class ViewTest extends TestCase
             $this->getInaccessibleProperty($this->view, '_indexTemplateFilenames')
         );
     }
+
+    /**
+     *
+     */
     public function testTemplateModeException()
     {
         $this->tester->expectThrowable(Exception::class, function () {
@@ -317,6 +259,9 @@ class ViewTest extends TestCase
         });
     }
 
+    /**
+     *
+     */
     public function testRegisterTranslations()
     {
         Craft::$app->language = 'nl';
@@ -367,31 +312,6 @@ class ViewTest extends TestCase
         $this->assertSame($result, $namespaced);
     }
 
-    public function namespaceInputsDataProvider(): array
-    {
-        return [
-            ['', ''],
-            ['<input type="text" name="test">', '<input type="text" name="test">'],
-            ['<input type="text" name="namespace[test]">', '<input type="text" name="test">', 'namespace'],
-            ['<input type="text" for="namespace-test3" id="namespace-test2"  name="namespace[test]">', '<input type="text" for="test3" id="test2"  name="test">', 'namespace'],
-            ['<input type="text" value="im the input" name="namespace[test]">', '<input type="text" value="im the input" name="test">', 'namespace'],
-            ['<textarea id="namespace-test">Im the content</textarea>', '<textarea id="test">Im the content</textarea>', 'namespace'],
-            ['<not-html id="namespace-test"></not-html>', '<not-html id="test"></not-html>', 'namespace'],
-
-            ['<input im-not-html-tho="test2">', '<input im-not-html-tho="test2">', 'namespace'],
-            ['<input data-target="test2">', '<input data-target="test2">', 'namespace', false],
-
-            // Other attributes
-            ['<input data-target="namespace-test2">', '<input data-target="test2">', 'namespace', true],
-            ['<input aria-describedby="test2">', '<input aria-describedby="test2">', 'namespace', true],
-            ['<input aria-not-a-tag="test2">', '<input aria-not-a-tag="test2">', 'namespace', true],
-            ['<input data-reverse-target="namespace-test2">', '<input data-reverse-target="test2">', 'namespace', true],
-            ['<input data-target-prefix="namespace-test2">', '<input data-target-prefix="test2">', 'namespace', true],
-            ['<input aria-labelledby="namespace-test2">', '<input aria-labelledby="test2">', 'namespace', true],
-            ['<input data-random="test2">', '<input data-random="test2">', 'namespace', true],
-        ];
-    }
-
     /**
      * @dataProvider namespaceInputNameDataProvider
      *
@@ -403,20 +323,6 @@ class ViewTest extends TestCase
     {
         $namespaced = $this->view->namespaceInputName($string, $namespace);
         $this->assertSame($result, $namespaced);
-    }
-    public function namespaceInputNameDataProvider(): array
-    {
-        return [
-            ['', ''],
-            ['<input type="text" name="test">', '<input type="text" name="test">'],
-            ['namespace[<input type=]"namespace[text]"namespace[ name=]"namespace[test]"namespace[>]', '<input type="text" name="test">', 'namespace'],
-            ['!@#$%^&*()_+{}:"<>?[<input type=]"!@#$%^&*()_+{}:"<>?[text]"!@#$%^&*()_+{}:"<>?[ name=]"!@#$%^&*()_+{}:"<>?[test]"!@#$%^&*()_+{}:"<>?[>]', '<input type="text" name="test">', '!@#$%^&*()_+{}:"<>?'],
-            ['namespace[<input type=]"namespace[text]"namespace[ for=]"namespace[test3]"namespace[ id=]"namespace[test2]"namespace[  name=]"namespace[test]"namespace[>]', '<input type="text" for="test3" id="test2"  name="test">', 'namespace'],
-            ['namespace[<input im-not-html-tho=]"namespace[test2]"namespace[>]', '<input im-not-html-tho="test2">', 'namespace'],
-            ['namespace[<input type=]"namespace[text]"namespace[ value=]"namespace[im the input]"namespace[ name=]"namespace[test]"namespace[>]', '<input type="text" value="im the input" name="test">', 'namespace'],
-            ['namespace[<textarea id=]"namespace[test]"namespace[>Im the content</textarea>]', '<textarea id="test">Im the content</textarea>', 'namespace'],
-            ['namespace[<not-html id=]"namespace[test]"namespace[></not-html>]', '<not-html id="test"></not-html>', 'namespace'],
-        ];
     }
 
     /**
@@ -430,20 +336,6 @@ class ViewTest extends TestCase
     {
         $namespaced = $this->view->namespaceInputId($string, $namespace);
         $this->assertSame($result, $namespaced);
-    }
-    public function namespaceInputIdDataProvider(): array
-    {
-        return [
-            ['', ''],
-            ['<input type="text" name="test">', '<input type="text" name="test">'],
-            ['namespace-<input type="text" name="test">', '<input type="text" name="test">', 'namespace'],
-            ['!@#$%^&*()_+{}:"<>?-<input type="text" name="test">', '<input type="text" name="test">', '!@#$%^&*()_+{}:"<>?'],
-            ['namespace-<input type="text" for="test3" id="test2"  name="test">', '<input type="text" for="test3" id="test2"  name="test">', 'namespace'],
-            ['namespace-<input im-not-html-tho="test2">', '<input im-not-html-tho="test2">', 'namespace'],
-            ['namespace-<input type="text" value="im the input" name="test">', '<input type="text" value="im the input" name="test">', 'namespace'],
-            ['namespace-<textarea id="test">Im the content</textarea>', '<textarea id="test">Im the content</textarea>', 'namespace'],
-            ['namespace-<not-html id="test"></not-html>', '<not-html id="test"></not-html>', 'namespace'],
-        ];
     }
 
     /**
@@ -462,14 +354,7 @@ class ViewTest extends TestCase
         $roots = $this->_getTemplateRoots($which);
         $this->assertSame($result, $roots);
     }
-    public function getTemplateRootsDataProvider(): array
-    {
-        return [
-            [['random-roots' => [null]], 'random-roots', ['random-roots' => null]],
-            [['random-roots' => ['/linux/box/craft/templates']], 'random-roots', ['random-roots' => '/linux/box/craft/templates']],
-            [['random-roots' => [['windows/box/craft/templates', '/linux/box/craft/templates']]], 'random-roots', ['random-roots' => ['windows/box/craft/templates', '/linux/box/craft/templates']]],
-        ];
-    }
+
     /**
      * Testing these events is quite important as they are quite integral to this function working.
      */
@@ -501,8 +386,201 @@ class ViewTest extends TestCase
         $this->_registeredJs('randomprop', ['name' => 'value']);
     }
 
-    // Helpers
+    // Data Providers
     // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function normalizeObjectTemplateDataProvider(): array
+    {
+        return [
+            ['{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}', '{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}'],
+            ['{{ (_variables.foo ?? object.foo)|raw }}', '{foo}'],
+            ['{{ (_variables.foo ?? object.foo).bar|raw }}', '{foo.bar}'],
+            ['{foo : \'bar\'}', '{foo : \'bar\'}'],
+            ['{{foo}}', '{{foo}}'],
+            ['{% foo %}', '{% foo %}'],
+            ['{{ (_variables.foo ?? object.foo).fn({bar: baz})|raw }}', '{foo.fn({bar: baz})}'],
+            ['{{ (_variables.foo ?? object.foo).fn({bar: {baz: 1}})|raw }}', '{foo.fn({bar: {baz: 1}})}'],
+            ['{{ (_variables.foo ?? object.foo).fn(\'bar:baz\')|raw }}', '{foo.fn(\'bar:baz\')}'],
+            ['{{ (_variables.foo ?? object.foo).fn({\'bar\': baz})|raw }}', '{foo.fn({\'bar\': baz})}']
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function doesTemplateExistDataProvider(): array
+    {
+        return [
+            ['@craftunittemplates/index.html', ''],
+            ['@craftunittemplates/template.twig', 'template'],
+            [false, 'doesntExist'],
+            [false, '@craftunittemplates/index.html'],
+            ['@craftunittemplates/testSite3/index.twig', 'testSite3/index.twig'],
+            ['@craftunittemplates/testSite3/index.twig', 'testSite3'],
+            ['@craftunittemplates/testSite3/index.twig', 'testSite3/'],
+
+            // Cp Paths
+            ['@craft/templates/index.html', '', View::TEMPLATE_MODE_CP],
+            ['@craft/templates/index.html', 'index', View::TEMPLATE_MODE_CP],
+            ['@craft/templates/entries/index.html', 'entries', View::TEMPLATE_MODE_CP],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function privateResolveTemplateDataProvider(): array
+    {
+        return [
+            ['@craftunittemplates/template.twig', '@craftunittemplates', 'template'],
+            ['@craftunittemplates/index.html', '@craftunittemplates', 'index'],
+            ['@craftunittemplates/doubleindex/index.html', '@craftunittemplates/doubleindex', 'index'],
+
+            // Index is found by default
+            ['@craftunittemplates/index.html', '@craftunittemplates', ''],
+
+            // Assert that registering custom extensions works.
+            ['@craftunittemplates/dotxml.xml', '@craftunittemplates', 'dotxml', ['xml']],
+            [null, '@craftunittemplates', 'dotxml'],
+            ['@craftunittemplates/dotxml.xml', '@craftunittemplates', 'dotxml.xml',],
+
+            // Allow change in index names
+            ['@craftunittemplates/template.twig', '@craftunittemplates', '', null, ['template']],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function renderObjectTemplateDataProvider(): array
+    {
+        $model = new ExampleModel();
+        $model->exampleParam = 'Example Param';
+
+        $arrayable = new ExampleArrayble();
+        $arrayable->exampleArrayableParam = 'Example param';
+        $arrayable->extraField = 'ExtraField';
+
+        return [
+            // No tags. Then it returns the template
+            ['[[ exampleParam ]]', '[[ exampleParam ]]', $model, ['vars' => 'vars']],
+
+            // Base arrayable test
+            ['Example paramExample param', '{ exampleArrayableParam }{ object.exampleArrayableParam }', $arrayable],
+            ['ExtraFieldExtraField', '{ extraField }{ object.extraField }', $arrayable],
+
+            // Base model test
+            ['Example ParamExample Param', '{{ exampleParam }}{{ object.exampleParam }}', $model],
+            ['Example ParamExample Param', '{ exampleParam }{ object.exampleParam }', $model],
+
+            // Test that model params dont override variable params.
+            ['IM DIFFERENTExample Param', '{ exampleParam }{ object.exampleParam }', $model, ['exampleParam' => 'IM DIFFERENT']],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function namespaceInputsDataProvider(): array
+    {
+        return [
+            ['', ''],
+            ['<input type="text" name="test">', '<input type="text" name="test">'],
+            ['<input type="text" name="namespace[test]">', '<input type="text" name="test">', 'namespace'],
+            ['<input type="text" for="namespace-test3" id="namespace-test2"  name="namespace[test]">', '<input type="text" for="test3" id="test2"  name="test">', 'namespace'],
+            ['<input type="text" value="im the input" name="namespace[test]">', '<input type="text" value="im the input" name="test">', 'namespace'],
+            ['<textarea id="namespace-test">Im the content</textarea>', '<textarea id="test">Im the content</textarea>', 'namespace'],
+            ['<not-html id="namespace-test"></not-html>', '<not-html id="test"></not-html>', 'namespace'],
+
+            ['<input im-not-html-tho="test2">', '<input im-not-html-tho="test2">', 'namespace'],
+            ['<input data-target="test2">', '<input data-target="test2">', 'namespace', false],
+
+            // Other attributes
+            ['<input data-target="namespace-test2">', '<input data-target="test2">', 'namespace', true],
+            ['<input aria-describedby="test2">', '<input aria-describedby="test2">', 'namespace', true],
+            ['<input aria-not-a-tag="test2">', '<input aria-not-a-tag="test2">', 'namespace', true],
+            ['<input data-reverse-target="namespace-test2">', '<input data-reverse-target="test2">', 'namespace', true],
+            ['<input data-target-prefix="namespace-test2">', '<input data-target-prefix="test2">', 'namespace', true],
+            ['<input aria-labelledby="namespace-test2">', '<input aria-labelledby="test2">', 'namespace', true],
+            ['<input data-random="test2">', '<input data-random="test2">', 'namespace', true],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function namespaceInputNameDataProvider(): array
+    {
+        return [
+            ['', ''],
+            ['<input type="text" name="test">', '<input type="text" name="test">'],
+            ['namespace[<input type=]"namespace[text]"namespace[ name=]"namespace[test]"namespace[>]', '<input type="text" name="test">', 'namespace'],
+            ['!@#$%^&*()_+{}:"<>?[<input type=]"!@#$%^&*()_+{}:"<>?[text]"!@#$%^&*()_+{}:"<>?[ name=]"!@#$%^&*()_+{}:"<>?[test]"!@#$%^&*()_+{}:"<>?[>]', '<input type="text" name="test">', '!@#$%^&*()_+{}:"<>?'],
+            ['namespace[<input type=]"namespace[text]"namespace[ for=]"namespace[test3]"namespace[ id=]"namespace[test2]"namespace[  name=]"namespace[test]"namespace[>]', '<input type="text" for="test3" id="test2"  name="test">', 'namespace'],
+            ['namespace[<input im-not-html-tho=]"namespace[test2]"namespace[>]', '<input im-not-html-tho="test2">', 'namespace'],
+            ['namespace[<input type=]"namespace[text]"namespace[ value=]"namespace[im the input]"namespace[ name=]"namespace[test]"namespace[>]', '<input type="text" value="im the input" name="test">', 'namespace'],
+            ['namespace[<textarea id=]"namespace[test]"namespace[>Im the content</textarea>]', '<textarea id="test">Im the content</textarea>', 'namespace'],
+            ['namespace[<not-html id=]"namespace[test]"namespace[></not-html>]', '<not-html id="test"></not-html>', 'namespace'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function namespaceInputIdDataProvider(): array
+    {
+        return [
+            ['', ''],
+            ['<input type="text" name="test">', '<input type="text" name="test">'],
+            ['namespace-<input type="text" name="test">', '<input type="text" name="test">', 'namespace'],
+            ['!@#$%^&*()_+{}:"<>?-<input type="text" name="test">', '<input type="text" name="test">', '!@#$%^&*()_+{}:"<>?'],
+            ['namespace-<input type="text" for="test3" id="test2"  name="test">', '<input type="text" for="test3" id="test2"  name="test">', 'namespace'],
+            ['namespace-<input im-not-html-tho="test2">', '<input im-not-html-tho="test2">', 'namespace'],
+            ['namespace-<input type="text" value="im the input" name="test">', '<input type="text" value="im the input" name="test">', 'namespace'],
+            ['namespace-<textarea id="test">Im the content</textarea>', '<textarea id="test">Im the content</textarea>', 'namespace'],
+            ['namespace-<not-html id="test"></not-html>', '<not-html id="test"></not-html>', 'namespace'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function getTemplateRootsDataProvider(): array
+    {
+        return [
+            [['random-roots' => [null]], 'random-roots', ['random-roots' => null]],
+            [['random-roots' => ['/linux/box/craft/templates']], 'random-roots', ['random-roots' => '/linux/box/craft/templates']],
+            [['random-roots' => [['windows/box/craft/templates', '/linux/box/craft/templates']]], 'random-roots', ['random-roots' => ['windows/box/craft/templates', '/linux/box/craft/templates']]],
+        ];
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
+    {
+        parent::_before();
+
+        $this->view = Craft::createObject(View::class);
+
+        // By default we want to be in site mode.
+        $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * @param $category
+     * @param array $messages
+     * @return string
+     */
     private function _generateTranslationJs($category, array $messages): string
     {
         $category = Json::encode($category);
@@ -521,6 +599,11 @@ if (typeof Craft.translations[{$category}] === 'undefined') {
 JS;
     }
 
+    /**
+     * @param $desiredJs
+     * @param $desiredPosition
+     * @throws \Exception
+     */
     private function _assertRegisterJsInputValues($desiredJs, $desiredPosition)
     {
         $this->view = Stub::construct(
@@ -533,17 +616,32 @@ JS;
         );
     }
 
+    /**
+     * @param $property
+     * @param $names
+     * @return mixed
+     */
     private function _registeredJs($property, $names)
     {
         return $this->invokeMethod($this->view, '_registeredJs', [$property, $names]);
     }
+
+    /**
+     * @param $which
+     * @return mixed
+     */
     private function _getTemplateRoots($which)
     {
         return $this->invokeMethod($this->view, '_getTemplateRoots', [$which]);
     }
+
+    /**
+     * @param $basePath
+     * @param $name
+     * @return mixed
+     */
     private function _resolveTemplate($basePath, $name)
     {
         return $this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name]);
     }
-
 }

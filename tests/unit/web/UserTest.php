@@ -8,7 +8,8 @@
 namespace craftunit\web;
 
 use Craft;
-use craft\elements\User;
+use craft\elements\User as UserElement;
+use craft\web\User as WebUser;
 use craft\errors\UserLockedException;
 use craft\services\Config;
 use craft\test\TestCase;
@@ -23,13 +24,16 @@ use UnitTester;
  */
 class UserTest extends TestCase
 {
+    // Public Properties
+    // =========================================================================
+
     /**
-     * @var UnitTester $tester
+     * @var UnitTester
      */
     public $tester;
 
     /**
-     * @var User $userElement
+     * @var UserElement
      */
     public $userElement;
 
@@ -39,21 +43,19 @@ class UserTest extends TestCase
     public $config;
 
     /**
-     * @var \craft\web\User $user
+     * @var WebUser
      */
     public $user;
 
-    /**
-     * @inheritDoc
-     */
-    protected function _before()
-    {
-        parent::_before();
-        $this->userElement = $this->_getUser();
-        $this->config = Craft::$app->getConfig();
-        $this->user = Craft::$app->getUser();
-    }
+    // Public Methods
+    // =========================================================================
 
+    // Tests
+    // =========================================================================
+
+    /**
+     *
+     */
     public function testSendUsernameCookie()
     {
         // Send the cookie with a hardcoded time value
@@ -67,6 +69,9 @@ class UserTest extends TestCase
         $this->assertSame(time() + 20, $cookie->expire);
     }
 
+    /**
+     *
+     */
     public function testSendUsernameCookieDeletes()
     {
         // Ensure something is set
@@ -82,6 +87,9 @@ class UserTest extends TestCase
         $this->assertSame(1, $cookie->expire);
     }
 
+    /**
+     *
+     */
     public function testGetRemainingSessionTime()
     {
         // No identity. Remaining should be null.
@@ -101,7 +109,6 @@ class UserTest extends TestCase
      * @todo Currently this test can fail because the by the time getRemainingSessionTime gets to line 204 a (half) second may have passed
      * meaning that it will return 49 seconds remaining instead of 50 (because between setting the session stub and processing the remaining session time
      * a second will have passed). Solve this.
-     *
      */
     public function testGetRemainingSessionTimeMath()
     {
@@ -154,6 +161,9 @@ class UserTest extends TestCase
         $this->assertSame(0, $this->user->getElevatedSessionTimeout());
     }
 
+    /**
+     * @throws UserLockedException
+     */
     public function testGetElevatedSession()
     {
         // Setup a password and a mismatching hash to work with.
@@ -195,7 +205,6 @@ class UserTest extends TestCase
         // With a user and Craft::$app->getSecurity()->validatePassword() returning true it should return null because the current user doesnt exist or doesnt have a password
         $this->assertFalse($this->user->startElevatedSession($passwordHash));
 
-
         $this->userElement->password = 'doesntmatter';
         $this->setInaccessibleProperty(Craft::$app->getUser(), '_identity', $this->userElement);
 
@@ -203,6 +212,22 @@ class UserTest extends TestCase
         $this->assertTrue($this->user->startElevatedSession($passwordHash));
     }
 
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
+    {
+        parent::_before();
+        $this->userElement = $this->_getUser();
+        $this->config = Craft::$app->getConfig();
+        $this->user = Craft::$app->getUser();
+    }
+
+    // Private Methods
+    // =========================================================================
 
     /**
      * Sets the Craft::$app->getSession(); to a stub where the get() method returns what you want.
@@ -216,6 +241,7 @@ class UserTest extends TestCase
 
     /**
      * Ensure that the param $value is equal to the value that is trying to be set to the session.
+     *
      * @param $value
      */
     private function _ensureSetSessionIsOfValue($value)
@@ -227,6 +253,7 @@ class UserTest extends TestCase
 
     /**
      * Sets the Craft::$app->getSession(); to a stub where the get() method returns what you want.
+     *
      * @param int $returnValue
      */
     private function _sessionGetStub($returnValue)
@@ -234,11 +261,17 @@ class UserTest extends TestCase
         $this->tester->mockCraftMethods('session', ['get' => $returnValue]);
     }
 
-    private function _getUser()
+    /**
+     * @return UserElement|null
+     */
+    private function _getUser(): ?UserElement
     {
         return Craft::$app->getUsers()->getUserById('1');
     }
 
+    /**
+     * @return mixed
+     */
     private function _getUsernameCookieName()
     {
         return Craft::$app->getUser()->usernameCookie['name'];

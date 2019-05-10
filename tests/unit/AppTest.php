@@ -55,7 +55,7 @@ use yii\base\InvalidConfigException;
 use yii\mutex\Mutex;
 
 /**
- * Unit tests for AppTest
+ * Unit tests for App
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -63,10 +63,19 @@ use yii\mutex\Mutex;
  */
 class AppTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var UnitTester
      */
     public $tester;
+
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
 
     /**
      * @dataProvider craftAppGetMethodsDataProvider
@@ -83,9 +92,14 @@ class AppTest extends Unit
         // http://www.php.net/manual/en/language.variables.variable.php#example-107
         $this->assertInstanceOf($instance, Craft::$app->{$map[1]});
 
-
-
     }
+
+    // Data Providers
+    // =========================================================================
+    
+    /**
+     * @return array
+     */
     public function craftAppGetMethodsDataProvider(): array
     {
         return [
