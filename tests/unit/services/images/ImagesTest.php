@@ -153,7 +153,7 @@ class ImagesTest extends Unit
         $exifData = $this->images->getExifData($this->sandboxPath.'image-rotated-180.jpg');
 
         $requiredValues = [
-            'ifd0.Orientation' => 3,
+            'ifd0.Orientation' => 4,
             'ifd0.XResolution' => '72/1',
             'ifd0.YResolution' => '72/1',
             'ifd0.ResolutionUnit' => 2,
