@@ -68,7 +68,6 @@ class Categories extends BaseRelationField
         $this->allowMultipleSources = false;
         $this->allowRelateParents = false;
         $this->relateParents = true;
-        $this->settingsTemplate = '_components/fieldtypes/Categories/settings';
         $this->structure = true;
 
         parent::init();
