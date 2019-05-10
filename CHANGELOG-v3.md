@@ -101,16 +101,28 @@
 
 ## Unreleased (3.1)
 
+### Fixed
+- Fixed a bug where rebuilding the project config could set an incorrect value for the user field layout.
+- Fixed a bug Craft wouldn’t allow users to edit their own photos if they didn’t have upload/remove asset permissions.
+- Fixed a bug where Craft wasn’t removing newline characters when pasting text into some single-line Table column types.
+- Fixed a bug where project config syncing could have inconsistent results on load-balanced environments. ([](https://github.com/craftcms/cms/issues/4136))
+
+## 3.1.26 - 2019-05-08
+
 ### Changed
+- The “Update all” button on the Updates utility is now shown even if the page contains some uninstallable updates. ([#4230](https://github.com/craftcms/cms/issues/4230))
 - Craft now stores the Default User Group’s UID in the project config, in case the group’s ID is different across environments.
+- `craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET` event handlers can now change the filename of the replaced asset before it is saved.
+- Improved the performance of background jobs. ([#4219](https://github.com/craftcms/cms/pull/4219))
+- Improved the Plugin Store’s screenshots with arrows for navigation and pinch-to-zoom capability for touch devices.
 
 ### Fixed
 - Fixed an error that could occur when saving a Single section if one of its sites had been disabled.
-- Fixed a SQL error that would occur when deleting a site and transferring its content to another if you were using a database table prefix.
 - Fixed an error that could occur when deleting a site.
 - Fixed a PHP compile error that could occur when paginating a query. ([#4208](https://github.com/craftcms/cms/pull/4208))
 - Fixed an error that could occur on the Settings → Users → Settings page if the project config was missing its `users` key. ([#4206](https://github.com/craftcms/cms/issues/4206))
 - Fixed a bug where Craft wasn’t requiring email verification for new user accounts if the project config was missing its `users` key.
+- Fixed a bug where Craft wasn’t eager-loading elements in the same site as the source element, if that was different than the currently requested site. ([#3954](https://github.com/craftcms/cms/issues/3954))
 
 ## 3.1.25 - 2019-04-30
 

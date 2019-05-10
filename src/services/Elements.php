@@ -1442,6 +1442,7 @@ class Elements extends Component
      */
     public function eagerLoadElements(string $elementType, array $elements, $with)
     {
+        /** @var Element[] $elements */
         // Bail if there aren't even any elements
         if (empty($elements)) {
             return;
@@ -1529,6 +1530,9 @@ class Elements extends Component
                             $map['criteria'] ?? [],
                             $pathCriterias[$targetPath] ?? []
                         ));
+                        if (!$query->siteId) {
+                            $query->siteId = reset($elements)->siteId;
+                        }
                         $query->andWhere(['elements.id' => $uniqueTargetElementIds]);
                         /** @var Element[] $targetElements */
                         $targetElements = $query->all();
