@@ -101,7 +101,7 @@ class ImagesTest extends Unit
     }
 
     /**
-     * @todo Need a little more investigation on how rotation works.
+     * 
      */
     public function testRotateImageByExifData()
     {
