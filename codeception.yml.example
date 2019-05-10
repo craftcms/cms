@@ -30,7 +30,6 @@ modules:
             entryUrl: 'https://test.craftcms.dev/'
             entryScript: 'index.php'
             projectConfig: {file: 'file', once: true}
-            modules: [{'class': 'modules\base\ExampleModule', 'handle': 'example-module'}]
             migrations: [{'class': 'craft\migrations\ExampleMigration', 'params': {tableName: 'exampletable'}}]
             plugins: [{'class': 'craftcms\base\ExamplePlugin', 'handle': 'example-plugin'}]
             cleanup: true # Should tests and fixtures be cleaned

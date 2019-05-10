@@ -127,8 +127,6 @@ class TestSetup
         \Craft::setAlias('@testsfolder', $basePath.'/tests');
         \Craft::setAlias('@crafttestsfolder', $basePath.'/tests/_craft');
 
-        $customConfig = Craft::getTestSetupConfig();
-
         // Load the config
         $config = ArrayHelper::merge(
             [
@@ -143,12 +141,6 @@ class TestSetup
             require $srcPath . '/config/app.php',
             require $srcPath . '/config/app.web.php'
         );
-
-
-        if (is_array($customConfig)) {
-            // Merge in any custom variables and config
-            $config = ArrayHelper::merge($config, $customConfig);
-        }
 
         // Use app.php from the config dir aswell.
         $craftPath = CRAFT_CONFIG_PATH;

@@ -59,7 +59,6 @@ class Craft extends Yii2
     protected $addedConfig = [
         'plugins' => [],
         'migrations' => [],
-        'modules' => [],
         'setupDb' => null,
         'projectConfig' => null
     ];
@@ -76,7 +75,7 @@ class Craft extends Yii2
      * @var array
      */
     public static $testConfig;
-    
+
     /**
      * Craft constructor.
      * We need to merge the config settings here as this is the earliest point in the instance's existance.
@@ -302,28 +301,6 @@ class Craft extends Yii2
             $method->setAccessible(false);
         }
         return $result;
-    }
-
-    /**
-     * Gets any custom test setup config based on variables in this class.
-     * The array returned in here gets merged with what is returned in tests/_craft/config/test.php
-     *
-     * @return array
-     */
-    public static function getTestSetupConfig() : array
-    {
-        $returnArray = [];
-        $config = self::$testConfig;
-
-        // Add the modules to the config similar to how its done here: https://github.com/craftcms/craft/blob/master/config/app.php
-        if (isset($config['modules']) && is_array($config['modules'])) {
-            foreach ($config['modules'] as $module) {
-                $returnArray['modules'][$module['handle']] = $module['class'];
-                $returnArray['bootstrap'][] = $module['handle'];
-            }
-        }
-
-        return $returnArray;
     }
 
     /**

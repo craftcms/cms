@@ -30,7 +30,6 @@ modules:
             entryUrl: 'https://test.craftcms.test/'
             entryScript: 'index.php'
             projectConfig: {}
-            modules: []
             migrations: []
             plugins: []
             cleanup: true # Should tests and fixtures be cleaned
