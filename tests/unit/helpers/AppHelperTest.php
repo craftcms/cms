@@ -59,6 +59,7 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider validEditionsDataProviders
+     *
      * @param $result
      * @param $input
      */
@@ -71,6 +72,7 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider versionListDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -102,6 +104,7 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider classHumanizationDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -146,6 +149,7 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider configsDataProvider
+     *
      * @param $method
      * @param $desiredConfig
      */

@@ -74,7 +74,7 @@ class HandleValidatorTest extends Unit
     }
 
     /**
-     * @dataProvider handleValidationData
+     * @dataProvider handleValidationDataProvider
      *
      * @param bool $mustValidate
      * @param      $input
@@ -94,7 +94,7 @@ class HandleValidatorTest extends Unit
         }
     }
 
-    public function handleValidationData(): array
+    public function handleValidationDataProvider(): array
     {
         return [
             [true, 'iamAHandle'],

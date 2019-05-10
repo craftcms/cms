@@ -46,7 +46,8 @@ class PasswordValidatorTest extends Unit
     }
 
     /**
-     * @dataProvider passwordValidationData
+     * @dataProvider passwordValidationDataProvider
+     *
      * @param      $inputValue
      * @param bool $mustValidate
      * @param string|null $currentPass
@@ -68,7 +69,7 @@ class PasswordValidatorTest extends Unit
         }
     }
 
-    public function passwordValidationData(): array
+    public function passwordValidationDataProvider(): array
     {
         return [
             ['22', false],
@@ -79,7 +80,8 @@ class PasswordValidatorTest extends Unit
     }
 
     /**
-     * @dataProvider customConfigData
+     * @dataProvider customConfigDataProvider
+     *
      * @param $input
      * @param $mustValidate
      * @param $min
@@ -98,7 +100,7 @@ class PasswordValidatorTest extends Unit
         }
 
     }
-    public function customConfigData(): array
+    public function customConfigDataProvider(): array
     {
         return [
             ['password', false, 0, 0],
@@ -112,7 +114,8 @@ class PasswordValidatorTest extends Unit
     }
 
     /**
-     * @dataProvider forceDiffValidation
+     * @dataProvider forceDiffValidationDataProvider
+     *
      * @param $mustValidate
      * @param $input
      * @param $currentPassword
@@ -130,7 +133,7 @@ class PasswordValidatorTest extends Unit
             $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
     }
-    public function forceDiffValidation(): array
+    public function forceDiffValidationDataProvider(): array
     {
         return [
             [false, 'test', 'test'],
@@ -145,7 +148,8 @@ class PasswordValidatorTest extends Unit
     }
 
     /**
-     * @dataProvider isEmptyData
+     * @dataProvider isEmptyDataProvider
+     *
      * @param $result
      * @param $input
      * @param $isEmptyVal
@@ -156,7 +160,7 @@ class PasswordValidatorTest extends Unit
         $isEmpty = $this->passwordValidator->isEmpty($input);
         $this->assertSame($result, $isEmpty);
     }
-    public function isEmptyData(): array
+    public function isEmptyDataProvider(): array
     {
         return [
             ['im a test', '', self::class.'::testReturn' ],

@@ -96,15 +96,16 @@ class ErrorHandlerTest extends TestCase
 
 
     /**
+     * @dataProvider exceptionTypeAndNameDataProvider
+     *
      * @param Throwable $exception
      * @param $message
-     * @dataProvider exceptionTypeAndNameData
      */
     public function testGetExceptionName(Throwable $exception, $message)
     {
         $this->assertSame($message, $this->errorHandler->getExceptionName($exception));
     }
-    public function exceptionTypeAndNameData(): array
+    public function exceptionTypeAndNameDataProvider(): array
     {
         return [
             [new SyntaxError('Twig go boom'), 'Twig Syntax Error'],
@@ -114,17 +115,18 @@ class ErrorHandlerTest extends TestCase
     }
 
     /**
+     * @dataProvider getTypeUrlDataProvider
+     *
      * @param $result
      * @param $class
      * @param $method
-     * @dataProvider getTypeUrlData
      */
     public function testGetTypeUrl($result, $class, $method)
     {
         $this->assertSame($result, $this->invokeMethod($this->errorHandler, 'getTypeUrl', [$class, $method]));
     }
 
-    public function getTypeUrlData() : array
+    public function getTypeUrlDataProvider() : array
     {
         return [
             ['http://twig.sensiolabs.org/api/2.x/Twig\Template.html#method_render', '__TwigTemplate_', 'render'],
@@ -147,16 +149,17 @@ class ErrorHandlerTest extends TestCase
     }
 
     /**
+     * @dataProvider isCoreFileDataProvider
+     *
      * @param $result
      * @param $input
-     * @dataProvider isCoreFileData
      */
     public function testIsCoreFile($result, $input)
     {
         $isCore = $this->errorHandler->isCoreFile(Craft::getAlias($input));
         $this->assertSame($result, $isCore);
     }
-    public function isCoreFileData(): array
+    public function isCoreFileDataProvider(): array
     {
         $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
         $vendorPath = Craft::getAlias('@vendor');

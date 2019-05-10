@@ -37,6 +37,7 @@ class NumberHelperTest extends Unit
 
     /**
      * @dataProvider wordDataProvider
+     *
      * @param $result
      * @param $input
      */

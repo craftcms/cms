@@ -77,6 +77,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider camelCaseDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -88,6 +89,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider containsAllDataProvider
+     *
      * @param      $result
      * @param      $haystack
      * @param      $needle
@@ -112,6 +114,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider uppercaseFirstDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -123,6 +126,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider indexOfDataProvider
+     *
      * @param $result
      * @param $haystack
      * @param $needle
@@ -156,6 +160,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider snakeCaseDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -167,6 +172,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider mb4DataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -178,6 +184,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider charsAsArrayDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -189,6 +196,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toAsciiDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -200,6 +208,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider firstDataProvider
+     *
      * @param $result
      * @param $input
      * @param $requiredChars
@@ -212,6 +221,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider stripHtmlDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -223,6 +233,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider uuidDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -234,6 +245,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider collapseWhitespaceDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -245,6 +257,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider whitespaceDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -257,6 +270,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider splitDataProvider
+     *
      * @param        $result
      * @param        $input
      * @param string $splitter
@@ -269,6 +283,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider delimitDataProvider
+     *
      * @param $result
      * @param $input
      * @param $delimited
@@ -282,6 +297,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider ensureRightDataProvider
+     *
      * @param $result
      * @param $input
      * @param $ensure
@@ -314,6 +330,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider mb4EncodingDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -327,10 +344,10 @@ class StringHelperTest extends Unit
     }
 
     /**
+     * @dataProvider convertToUtf8DataProvider
+     *
      * @param $result
      * @param $input
-     *
-     * @dataProvider convertToUtf8DataProvider
      */
     public function testConvertToUtf8($result, $input)
     {
@@ -340,6 +357,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider encDecDataProvider
+     *
      * @param $input
      * @throws Exception
      * @throws InvalidConfigException
@@ -377,6 +395,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toStringDataProvider
+     *
      * @param $result
      * @param $input
      * @param $glue
@@ -389,6 +408,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider randomStringDataProvider
+     *
      * @param $length
      * @param $extendedChars
      */
@@ -411,6 +431,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toPascalCaseDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -422,6 +443,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toCamelCaseDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -433,6 +455,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toKebabCaseDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -444,6 +467,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider linesDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -455,6 +479,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toUppercaseDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -466,6 +491,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider trimDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -477,6 +503,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toTitleCaseDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -488,6 +515,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toLowerCaseDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -499,6 +527,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider titelizeDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -510,6 +539,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider swapCaseDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -521,6 +551,7 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider substrDataProvider
+     *
      * @param      $result
      * @param      $input
      * @param      $start

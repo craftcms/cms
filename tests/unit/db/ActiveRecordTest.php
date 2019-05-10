@@ -96,7 +96,8 @@ class ActiveRecordTest extends Unit
     }
 
     /**
-     * @dataProvider dataForDbPrepare
+     * @dataProvider dataForDbPrepareDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -119,7 +120,7 @@ class ActiveRecordTest extends Unit
      * @return array
      * @throws Exception
      */
-    public function dataForDbPrepare(): array
+    public function dataForDbPrepareDataProvider(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
         $jsonableClass = new stdClass();

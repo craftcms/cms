@@ -57,6 +57,7 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider constantsDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -90,6 +91,7 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider secondsToHumanTimeDataProvider
+     *
      * @param $result
      * @param $input
      * @param bool $showSeconds
@@ -111,7 +113,7 @@ class DateTimeHelperTest extends Unit
      *
      * @dataProvider formatsWithTimezoneDataProvider
      *
-     * @param           $format
+     * @param         $format
      * @param Closure $expectedResult
      * @throws Exception
      */
@@ -134,6 +136,7 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider invalidToDateTimeFormatsDataProvider
+     *
      * @param $format
      * @throws Exception
      */
@@ -145,7 +148,8 @@ class DateTimeHelperTest extends Unit
     /**
      * Test that if we set the $setToSystemTimezone value to false that toDateTime creates a tz in UTC.
      *
-     * @dataProvider simpleDateTimeFormatsProvider
+     * @dataProvider simpleDateTimeFormatsDataProvider
+     *
      * @param $format
      * @throws Exception
      */
@@ -159,6 +163,7 @@ class DateTimeHelperTest extends Unit
      * Test that dateTime is created with the passed in timezone IF $setSystemTimezone is set to false.
      *
      * @dataProvider toDateTimeWithTzFormatsDataProvider
+     *
      * @param              $format
      * @param DateTime     $expectedResult
      * @param DateTimeZone $expectedTimezone
@@ -176,9 +181,10 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider toDateTimeFormatsDataProvider
-     * @param          $format
+     *
+     * @param         $format
      * @param Closure $expectedResult
-     * @param null $closureParam
+     * @param null    $closureParam
      * @throws Exception
      */
     public function testToDateTimeCreation($format, Closure $expectedResult, $closureParam = null)
@@ -207,6 +213,7 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider timezoneNormalizeDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -218,6 +225,7 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider isIso8601DataProvider
+     *
      * @param $result
      * @param $input
      * @param bool $convert
@@ -234,9 +242,9 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider humanIntervalDurationDataProvider
+     *
      * @param $result
      * @param $inputString
-     *
      * @param bool $showSeconds
      * @throws Exception
      */
@@ -350,6 +358,7 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider withinLastDataProvider
+     *
      * @param $result
      * @param $dateTime
      * @param $interval
@@ -362,6 +371,7 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider secondsToIntervalDataProvider
+     *
      * @param $shortResult
      * @param $longResult
      * @param $input
@@ -375,6 +385,7 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider intervalToSecondsDataProvider
+     *
      * @param $result
      * @param $period
      *
@@ -388,6 +399,7 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider toIso8601DataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -398,7 +410,8 @@ class DateTimeHelperTest extends Unit
     }
 
     /**
-     * @dataProvider timezoneAbbreviationData
+     * @dataProvider timezoneAbbreviationDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -411,6 +424,7 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider isValidTimestampDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -423,6 +437,7 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider isInvalidIntervalStringDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -434,6 +449,7 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider timezoneOffsetDataDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -509,7 +525,7 @@ class DateTimeHelperTest extends Unit
      * @return array
      * @throws Exception
      */
-    public function simpleDateTimeFormatsProvider(): array
+    public function simpleDateTimeFormatsDataProvider(): array
     {
         return [
             'mysql' => ['2018-08-08 20:00:00'],
@@ -779,7 +795,10 @@ class DateTimeHelperTest extends Unit
         ];
     }
 
-    public function timezoneAbbreviationData(): array
+    /**
+     * @return array
+     */
+    public function timezoneAbbreviationDataProvider(): array
     {
         return [
             ['JST', 'Asia/Tokyo'],

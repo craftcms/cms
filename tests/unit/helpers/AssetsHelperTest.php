@@ -35,6 +35,7 @@ class AssetsHelperTest extends Unit
 
     // Public Methods
     // =========================================================================
+
     public function _fixtures(): array
     {
         return [
@@ -48,10 +49,11 @@ class AssetsHelperTest extends Unit
     // =========================================================================
 
     /**
+     * @dataProvider urlGenerationDataProvider
+     *
      * @param $resultUrl
      * @param $params
      * @throws InvalidConfigException
-     * @dataProvider urlGenerationDataProvider
      */
     public function testUrlGeneration($resultUrl, $params)
     {
@@ -154,6 +156,7 @@ class AssetsHelperTest extends Unit
 
     /**
      * @dataProvider parseFileLocationDataProvider
+     *
      * @param $result
      * @param $input
      *

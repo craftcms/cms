@@ -41,7 +41,8 @@ class UriValidatorTest extends Unit
     }
 
     /**
-     * @dataProvider validateValueData
+     * @dataProvider validateValueDataProvider
+     *
      * @param      $mustValidate
      * @param      $input
      * @param null $pattern
@@ -61,7 +62,7 @@ class UriValidatorTest extends Unit
         }
     }
 
-    public function validateValueData(): array
+    public function validateValueDataProvider(): array
     {
         return [
             [true, 'test'],

@@ -41,7 +41,8 @@ class UriFormatValidatorTest extends Unit
     }
 
     /**
-     * @dataProvider validateAttributeData
+     * @dataProvider validateAttributeDataProvider
+     *
      * @param $mustValidate
      * @param $input
      * @param bool $requireSlug
@@ -61,7 +62,7 @@ class UriFormatValidatorTest extends Unit
             $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
     }
-    public function validateAttributeData(): array
+    public function validateAttributeDataProvider(): array
     {
         return [
             [true, ''],

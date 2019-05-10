@@ -64,16 +64,17 @@ class ViewTest extends TestCase
 
 
     /**
+     * @dataProvider normalizeObjectTemplateDataProvider
+     *
      * @param $result
      * @param $input
-     * @dataProvider normalizeObjectTemplateData
      */
     public function testNormalizeObjectTemplate($result, $input)
     {
         $this->assertSame($result, $this->view->normalizeObjectTemplate($input));
     }
 
-    public function normalizeObjectTemplateData(): array
+    public function normalizeObjectTemplateDataProvider(): array
     {
         return [
             ['{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}', '{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}'],
@@ -101,11 +102,12 @@ class ViewTest extends TestCase
     }
 
     /**
+     * @dataProvider doesTemplateExistDataProvider
+     *
      * @param $result
      * @param $templatePath
      * @param null $templateMode
      * @throws Exception
-     * @dataProvider doesTemplateExistData
      */
     public function testDoesTemplateExistsInSite($result, $templatePath, $templateMode = null)
     {
@@ -122,7 +124,7 @@ class ViewTest extends TestCase
         }
     }
 
-    public function doesTemplateExistData(): array
+    public function doesTemplateExistDataProvider(): array
     {
         return [
             ['@craftunittemplates/index.html', ''],
@@ -141,12 +143,13 @@ class ViewTest extends TestCase
     }
 
     /**
+     * @dataProvider privateResolveTemplateDataProvider
+     *
      * @param $result
      * @param $basePath
      * @param $name
      * @param null $templateExtensions
      * @param null $viewTemplateNameExtensions
-     * @dataProvider privateResolveTemplateData
      * @see          testDoesTemplateExistsInSite
      */
     public function testPrivateResolveTemplate($result, $basePath, $name, $templateExtensions = null, $viewTemplateNameExtensions = null)
@@ -166,7 +169,7 @@ class ViewTest extends TestCase
         $this->assertSame(Craft::getAlias($result), $resolved);
     }
 
-    public function privateResolveTemplateData(): array
+    public function privateResolveTemplateDataProvider(): array
     {
         return [
             ['@craftunittemplates/template.twig', '@craftunittemplates', 'template'],
@@ -224,13 +227,14 @@ class ViewTest extends TestCase
     }
 
     /**
+     * @dataProvider renderObjectTemplateDataProvider
+     *
      * @param $result
      * @param $template
      * @param $object
      * @param array $variables
      * @throws Exception
      * @throws Throwable
-     * @dataProvider renderObjectTemplateData
      */
     public function testRenderObjectTemplate($result, $template, $object, array $variables = [])
     {
@@ -238,7 +242,7 @@ class ViewTest extends TestCase
         $this->assertSame($result, $res);
     }
 
-    public function renderObjectTemplateData(): array
+    public function renderObjectTemplateDataProvider(): array
     {
         $model = new ExampleModel();
         $model->exampleParam = 'Example Param';
@@ -347,11 +351,12 @@ class ViewTest extends TestCase
     }
 
     /**
+     * @dataProvider namespaceInputsDataProvider
+     *
      * @param $result
      * @param $html
      * @param null $namespace
      * @param bool $otherAttributes
-     * @dataProvider namespaceInputsData
      */
     public function testNamespaceInputs($result, $html, $namespace = null, $otherAttributes = true)
     {
@@ -359,7 +364,7 @@ class ViewTest extends TestCase
         $this->assertSame($result, $namespaced);
     }
 
-    public function namespaceInputsData(): array
+    public function namespaceInputsDataProvider(): array
     {
         return [
             ['', ''],
@@ -385,17 +390,18 @@ class ViewTest extends TestCase
     }
 
     /**
+     * @dataProvider namespaceInputNameDataProvider
+     *
      * @param $result
      * @param $string
      * @param $namespace
-     * @dataProvider namespaceInputNameData
      */
     public function testNamespaceInputName($result, $string, $namespace = null)
     {
         $namespaced = $this->view->namespaceInputName($string, $namespace);
         $this->assertSame($result, $namespaced);
     }
-    public function namespaceInputNameData(): array
+    public function namespaceInputNameDataProvider(): array
     {
         return [
             ['', ''],
@@ -411,18 +417,18 @@ class ViewTest extends TestCase
     }
 
     /**
+     * @dataProvider namespaceInputIdDataProvider
      *
      * @param $result
      * @param $string
      * @param $namespace
-     * @dataProvider namespaceInputIdData
      */
     public function testNamespaceInputId($result, $string, $namespace = null)
     {
         $namespaced = $this->view->namespaceInputId($string, $namespace);
         $this->assertSame($result, $namespaced);
     }
-    public function namespaceInputIdData(): array
+    public function namespaceInputIdDataProvider(): array
     {
         return [
             ['', ''],
@@ -438,10 +444,11 @@ class ViewTest extends TestCase
     }
 
     /**
+     * @dataProvider getTemplateRootsDataProvider
+     *
      * @param $result
      * @param $which
      * @param $rootsToBeAdded
-     * @dataProvider getTemplateRootsData
      */
     public function testGetTemplateRoots($result, $which, $rootsToBeAdded)
     {
@@ -452,7 +459,7 @@ class ViewTest extends TestCase
         $roots = $this->_getTemplateRoots($which);
         $this->assertSame($result, $roots);
     }
-    public function getTemplateRootsData(): array
+    public function getTemplateRootsDataProvider(): array
     {
         return [
             [['random-roots' => [null]], 'random-roots', ['random-roots' => null]],

@@ -41,8 +41,9 @@ class ContentBehaviorTest extends Unit
     // =========================================================================
 
     /**
-     * @param $handle
      * @dataProvider existingFieldHandlesDataProvider
+     *
+     * @param $handle
      */
     public function testExistsInContentBehavior(string $handle)
     {

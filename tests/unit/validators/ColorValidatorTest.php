@@ -46,7 +46,8 @@ class ColorValidatorTest extends Unit
     }
 
     /**
-     * @dataProvider colorNormalizationData
+     * @dataProvider colorNormalizationDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -59,7 +60,7 @@ class ColorValidatorTest extends Unit
         $this->assertTrue($result);
     }
 
-    public function colorNormalizationData(): array
+    public function colorNormalizationDataProvider(): array
     {
         return [
             ['#ffc10e', 'ffc10e'],
@@ -84,7 +85,8 @@ class ColorValidatorTest extends Unit
     }
 
     /**
-     * @dataProvider colorValidatorAttributes
+     * @dataProvider colorValidatorAttributesDataProvider
+     *
      * @param $input
      * @param bool $mustValidate
      */
@@ -104,7 +106,7 @@ class ColorValidatorTest extends Unit
         $this->model->exampleParam = null;
     }
 
-    public function colorValidatorAttributes(): array
+    public function colorValidatorAttributesDataProvider(): array
     {
         return [
             ['#ffc', true],

@@ -98,6 +98,7 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider parseParamDataProvider
+     *
      * @param $result
      * @param $column
      * @param $value
@@ -111,6 +112,7 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider escapeParamDataProvider
+     *
      * @param string $result
      * @param string $input
      */
@@ -123,6 +125,7 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider columnTypeParsingDataProvider
+     *
      * @param $result
      * @param string $input
      */
@@ -133,6 +136,7 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider numericColumnTypesDataProvider
+     *
      * @param $result
      * @param $int1
      * @param $int2
@@ -146,6 +150,7 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider columnLengthParseDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -156,6 +161,7 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider simplifiedColumnDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -168,6 +174,7 @@ class DbHelperTest extends Unit
      * @todo Set this up with a fixture or a migration so that we can *actually* delete tables
      *
      * @dataProvider deleteTablesDataProvider
+     *
      * @param $result
      * @param string $table
      * @param string $condition
@@ -191,6 +198,7 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider dataForDbPrepareDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -234,6 +242,7 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider columnCompatibilityDataProvider
+     *
      * @param $result
      * @param $columnA
      * @param $columnB
@@ -248,6 +257,7 @@ class DbHelperTest extends Unit
      * @todo Why do all these fail?
      *
      * @dataProvider isNumericDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -259,6 +269,7 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider textualStorageDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -270,6 +281,7 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider getMaxAllowedValueForNumericColumnDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -281,6 +293,7 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider getMinAllowedValueForNumericColumnDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -292,6 +305,7 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider prepareValuesForDbDataProvider
+     *
      * @param $result
      * @param $input
      */

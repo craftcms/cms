@@ -40,11 +40,12 @@ class LanguageValidatorTest extends Unit
     }
 
     /**
+     * @dataProvider validateValueDataProvider
+     *
      * @param $result
      * @param $input
      * @param bool $onlySiteLangs
      * @throws NotSupportedException
-     * @dataProvider validateValueData
      */
     public function testValidateValue($result, $input, $onlySiteLangs = true)
     {
@@ -54,7 +55,7 @@ class LanguageValidatorTest extends Unit
 
         $this->assertSame($result, $validated);
     }
-    public function validateValueData(): array
+    public function validateValueDataProvider(): array
     {
         return [
             [['{value} is not a valid site language.', []], 'nolang'],
@@ -67,10 +68,11 @@ class LanguageValidatorTest extends Unit
     }
 
     /**
+     * @dataProvider validateAttributeDataProvider
+     *
      * @param $mustValidate
      * @param $input
      * @param bool $onlySiteLocalIds
-     * @dataProvider validateAttributeData
      */
     public function testValidateAtrribute($mustValidate, $input, $onlySiteLocalIds = true)
     {
@@ -87,10 +89,10 @@ class LanguageValidatorTest extends Unit
             $this->assertSame([], $model->getErrors());
         }
     }
-    public function validateAttributeData(): array
+    public function validateAttributeDataProvider(): array
     {
         $returnArray = [];
-        foreach ($this->validateValueData() as $item) {
+        foreach ($this->validateValueDataProvider() as $item) {
             $mustValidate = true;
             if (!empty($item[0])) {
                 $mustValidate = false;

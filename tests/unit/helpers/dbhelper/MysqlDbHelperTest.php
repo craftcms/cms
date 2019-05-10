@@ -40,6 +40,7 @@ class MysqlDbHelperTest extends Unit
 
     /**
      * @dataProvider sqlTypesDataProvider
+     *
      * @param $type
      * @param $supported
      */
@@ -51,7 +52,8 @@ class MysqlDbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider textualStorageData
+     * @dataProvider textualStorageDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -60,7 +62,11 @@ class MysqlDbHelperTest extends Unit
         $capacity = Db::getTextualColumnStorageCapacity($input);
         $this->assertSame($result, $capacity);
     }
-    public function textualStorageData(): array
+
+    /**
+     * @return array
+     */
+    public function textualStorageDataProvider(): array
     {
         return [
             [null, MysqlSchema::TYPE_ENUM],
@@ -69,6 +75,7 @@ class MysqlDbHelperTest extends Unit
 
     /**
      * @dataProvider parseParamDataProvider
+     *
      * @param $result
      * @param $column
      * @param $value
@@ -82,6 +89,7 @@ class MysqlDbHelperTest extends Unit
 
     /**
      * @dataProvider getTextualColumnTypeDataProvider
+     *
      * @param $result
      * @param $input
      * @throws Exception

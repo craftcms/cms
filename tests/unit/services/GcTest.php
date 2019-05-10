@@ -30,9 +30,9 @@ use UnitTester;
 use yii\base\InvalidArgumentException;
 
 /**
- * Unit tests for SearchServiceTest
+ * Unit tests for the garbage collector service.
  *
- * TODO: Test search index removal
+ * @todo Test search index removal
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -40,15 +40,21 @@ use yii\base\InvalidArgumentException;
  */
 class GcTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
-     * @var UnitTester $tester
+     * @var UnitTester
      */
     protected $tester;
 
     /**
-     * @var Gc $gc
+     * @var Gc
      */
     protected $gc;
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * @return array
@@ -77,13 +83,12 @@ class GcTest extends Unit
         ];
     }
 
-    public function _before()
-    {
-        parent::_before();
+    // Tests
+    // =========================================================================
 
-        $this->gc = Craft::$app->getGc();
-    }
-
+    /**
+     *
+     */
     public function testRunForDeletedEntriesWithDefaultDuration()
     {
         $this->_doEntryTest(1, [
@@ -91,6 +96,9 @@ class GcTest extends Unit
         ]);
     }
 
+    /**
+     *
+     */
     public function testRunForDeletedEntriesWithCustomDuration()
     {
         // 5 Days
@@ -102,9 +110,13 @@ class GcTest extends Unit
         ]);
     }
 
+    /**
+     *
+     */
     public function testRunDeleteAllTrashed()
     {
         $this->gc->deleteAllTrashed = true;
+
         $this->_doEntryTest(3, [
             'Deleted 40 days ago',
             'Deleted 25 days ago',
@@ -114,10 +126,11 @@ class GcTest extends Unit
 
     /**
      * @dataProvider gcDataProvider
-     * @param int $remainingCount
+     *
+     * @param int    $remainingCount
      * @param string $leftoverId
      * @param string $table
-     * @param array $ids
+     * @param array  $ids
      */
     public function testGc(int $remainingCount, string $leftoverId, string $table, array $ids)
     {
@@ -132,19 +145,10 @@ class GcTest extends Unit
         $this->assertCount($remainingCount, $items);
         $this->assertSame(ArrayHelper::firstValue($items)['id'], $leftoverId);
     }
-    public function gcDataProvider(): array
-    {
-        return [
-            [1, '1005', Session::tableName(), ['1003', '1004', '1005']],
-            [1, '1000', Section::tableName(), ['1000', '1001', '1002']],
-            [1, '1000', EntryType::tableName(), ['1000', '1001', '1002']],
-            [1, '1000', Volume::tableName(), ['1000', '1001', '1002']],
 
-
-            // TODO: Other GC Tables.
-        ];
-    }
-
+    /**
+     *
+     */
     public function testRunForExpiringUsers()
     {
         // 2 days
@@ -180,30 +184,46 @@ class GcTest extends Unit
         $this->assertEmpty($user4);
     }
 
-    private function _createExpiringPendingUsers()
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @todo Other GC tables
+     *
+     * @return array
+     */
+    public function gcDataProvider(): array
     {
-        $date = (new DateTime('now'))->sub(new DateInterval('P3D'))->format('Y-m-d H:i:s');
-
-        $userRecords = User::find()
-            ->where(['username' => ['user1', 'user2']])
-            ->all();
-
-        foreach ($userRecords as $userRecord) {
-            $userRecord->verificationCodeIssuedDate = $date;
-            $userRecord->pending = true;
-
-            if (!$userRecord->save()) {
-                throw new InvalidArgumentException('Unable to update user');
-            }
-        }
+        return [
+            [1, '1005', Session::tableName(), ['1003', '1004', '1005']],
+            [1, '1000', Section::tableName(), ['1000', '1001', '1002']],
+            [1, '1000', EntryType::tableName(), ['1000', '1001', '1002']],
+            [1, '1000', Volume::tableName(), ['1000', '1001', '1002']],
+        ];
     }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     *
+     */
+    protected function _before()
+    {
+        parent::_before();
+
+        $this->gc = Craft::$app->getGc();
+    }
+
+    // Private Methods
+    // =========================================================================
 
     /**
      * Helper method to check entries are removed. You can pass $expectedRemove
-     * - to indicate how many entries should be deleted.
-     * and a $notAllowedTitles to indicate what titles are not allowed to be present.
+     * to indicate how many entries should be deleted and a $notAllowedTitles to
+     * indicate what titles are not allowed to be present.
      *
-     * @param int $expectedRemoval
+     * @param int        $expectedRemoval
      * @param array|null $notAllowedTitles
      */
     private function _doEntryTest(int $expectedRemoval, array $notAllowedTitles = null)
@@ -222,6 +242,27 @@ class GcTest extends Unit
             $doesEntryExistWithThisTitle = ArrayHelper::filterByValue($entries, 'title', $notAllowedTitle);
             if ($doesEntryExistWithThisTitle) {
                 $this->fail("Entries were deleted but an entry with title ($notAllowedTitle) still exists");
+            }
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function _createExpiringPendingUsers()
+    {
+        $date = (new DateTime('now'))->sub(new DateInterval('P3D'))->format('Y-m-d H:i:s');
+
+        $userRecords = User::find()
+            ->where(['username' => ['user1', 'user2']])
+            ->all();
+
+        foreach ($userRecords as $userRecord) {
+            $userRecord->verificationCodeIssuedDate = $date;
+            $userRecord->pending = true;
+
+            if (!$userRecord->save()) {
+                throw new InvalidArgumentException('Unable to update user');
             }
         }
     }

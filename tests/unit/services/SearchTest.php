@@ -17,7 +17,7 @@ use craftunit\fixtures\UsersFixture;
 /**
  * Unit tests for SearchServiceTest
  *
- * TODO: 1. Are these tests understandable? 2. What other search scenarios/edge-cases might need testing?
+ * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
  *
  * Searching and some of the commands run in this test are documented here:
  * https://docs.craftcms.com/v3/searching.html#supported-syntaxes
@@ -28,6 +28,9 @@ use craftunit\fixtures\UsersFixture;
  */
 class SearchTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     public function _fixtures(): array
     {
         return [
@@ -39,7 +42,8 @@ class SearchTest extends Unit
 
 
     /**
-     * @dataProvider filterElementIdByQueryData
+     * @dataProvider filterElementIdByQueryDataProvider
+     *
      * @param $usernameOrEmailsForResult
      * @param $usernameOrEmailsForQuery
      * @param $query
@@ -64,7 +68,7 @@ class SearchTest extends Unit
      *
      * @return array
      */
-    public function filterElementIdByQueryData(): array
+    public function filterElementIdByQueryDataProvider(): array
     {
         return [
             [['user1'], ['user1', 'user2', 'user3', 'user4'], 'user1@crafttest.com', true, 1, false],
@@ -86,7 +90,8 @@ class SearchTest extends Unit
     }
 
     /**
-     * @dataProvider filterScoresData
+     * @dataProvider filterScoresDataProvider
+     *
      * @param $scoresAndNames
      * @param $usernameOrEmailsForQuery
      * @param $query
@@ -106,7 +111,7 @@ class SearchTest extends Unit
 
         $this->assertSame($result, $filtered);
     }
-    public function filterScoresData(): array
+    public function filterScoresDataProvider(): array
     {
         return [
             [

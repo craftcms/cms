@@ -78,6 +78,7 @@ class ElementHelperTest extends Unit
 
     /**
      * @dataProvider doesUriHaveSlugTagDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -90,6 +91,7 @@ class ElementHelperTest extends Unit
 
     /**
      * @dataProvider setUniqueUriDataProvider
+     *
      * @param $result
      * @param $config
      * @throws OperationAbortedException

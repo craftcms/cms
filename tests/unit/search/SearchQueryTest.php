@@ -18,12 +18,17 @@ use craft\search\SearchQueryTermGroup;
  * Searching and some of the commands run in this test are documented here:
  * https://docs.craftcms.com/v3/searching.html#supported-syntaxes
  *
+ * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.1
  */
 class SearchQueryTest extends Unit
 {
+    // Constants
+    // =========================================================================
+
     const DEFAULT_SEARCH_QUERY_TERM_CONFIG = [
         'exclude' => false,
         'exact' => false,
@@ -33,6 +38,77 @@ class SearchQueryTest extends Unit
         'phrase' => null
     ];
 
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @param $token
+     * @param $configOptions
+     * @param $index
+     * @return SearchQueryTerm
+     */
+    public function getWhatItShouldBe($token, $configOptions, $index): SearchQueryTerm
+    {
+        // Get whether the data provider gave us custom config options for this term based on the above searchParam
+        $config = $this->getConfigFromOptions($index, $configOptions);
+
+        return $this->createDefaultSearchQueryTermFromString($token->term, $config);
+    }
+
+    /**
+     * @param $term
+     * @param $config
+     * @return SearchQueryTerm
+     */
+    public function createDefaultSearchQueryTermFromString(string $term, array $config) : SearchQueryTerm
+    {
+        if (!isset($config['term'])) {
+            $config['term'] = $term;
+        }
+
+        return new SearchQueryTerm($config);
+    }
+
+    /**
+     * Essentially a function that sees if the $key exists in the $config options and returns that. If it doesnt exist it returns
+     * self::DEFAULT_SEARCH_QUERY_TERM_CONFIG
+     *
+     * @param string|null $key
+     * @param array|null $configOptions
+     * @return array|mixed
+     */
+    public function getConfigFromOptions(string $key = null, array $configOptions = null)
+    {
+        if (!$configOptions) {
+            return self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        }
+
+        if (!array_key_exists($key, $configOptions) || !isset($configOptions[$key])) {
+            return self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        }
+
+        return $configOptions[$key];
+    }
+
+    /**
+     * Compare two searchQueryTerm objects to make sure they are the same.
+     *
+     * @param SearchQueryTerm $one
+     * @param SearchQueryTerm $two
+     */
+    public function ensureIdenticalSearchTermObjects(SearchQueryTerm $one, SearchQueryTerm $two)
+    {
+        $this->assertSame([
+            $one->exclude, $one->exact, $one->subLeft, $one->subRight,$one->attribute, $one->term, $one->phrase
+        ], [$two->exclude, $two->exact, $two->subLeft, $two->subRight, $two->attribute, $two->term, $two->phrase]);
+    }
+
+    // Tests
+    // =========================================================================
+
+    /**
+     *
+     */
     public function testSearchQueryGrouping() {
         $search = new SearchQuery('i live OR die');
 
@@ -50,10 +126,12 @@ class SearchQueryTest extends Unit
         $this->ensureIdenticalSearchTermObjects(new SearchQueryTerm($options), $search->getTokens()[1]->terms[1]);
     }
 
+    /**
+     *
+     */
     public function testOnlyOr()
     {
         $search = new SearchQuery('OR');
-
         $this->assertSame([], $search->getTokens());
     }
 
@@ -108,9 +186,53 @@ class SearchQueryTest extends Unit
     }
 
     /**
+     * @dataProvider searchQueryDataProviders
+     *
+     * @param string $query
+     * @param array $configOptions
+     * @param int|null $sizeOfArray
+     */
+    public function testSearchQuery(string $query, array $configOptions = null, int $sizeOfArray = null)
+    {
+        $search = new SearchQuery($query);
+
+        // If we have to count the array. Count the array.
+        if ($sizeOfArray !== null){
+            $this->assertCount($sizeOfArray, $search->getTokens());
+        }
+
+        // Loop through the given tokens.
+        foreach ($search->getTokens() as $index => $token) {
+            $whatItShouldBe = $this->getWhatItShouldBe($token, $configOptions, $index);
+
+            $this->ensureIdenticalSearchTermObjects($whatItShouldBe, $token);
+        }
+    }
+
+    /**
+     * @dataProvider searchQueryDataProviders
+     *
+     * @param string $query
+     * @param array|null $configOptions
+     */
+    public function testSearchQuerySortOrder(string $query, array $configOptions = null)
+    {
+        $exploded = explode(' ', $query);
+        foreach ((new SearchQuery($query))->getTokens() as $index => $token) {
+            $config = $this->getConfigFromOptions($index, $configOptions);
+
+            $fromExplodedString = $this->createDefaultSearchQueryTermFromString($exploded[$index], $config);
+            $this->ensureIdenticalSearchTermObjects($fromExplodedString, $token);
+        }
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
      *
      */
-    public function searchQueryData(): array
+    public function searchQueryDataProviders(): array
     {
         // The $searchQueryTerm->term property will not contain the "" double quotes and will have ['phrase'] set to true
         $quotedPhraseConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
@@ -165,105 +287,5 @@ class SearchQueryTest extends Unit
             ['i have spaces and lines', null, 5],
             ['"i" said Hello', ['0' => $firstQuote], 3]
         ];
-    }
-
-    /**
-     * @dataProvider searchQueryData
-     * @param string $query
-     * @param array $configOptions
-     * @param int|null $sizeOfArray
-     */
-    public function testSearchQuery(string $query, array $configOptions = null, int $sizeOfArray = null)
-    {
-        $search = new SearchQuery($query);
-
-        // If we have to count the array. Count the array.
-        if ($sizeOfArray !== null){
-            $this->assertCount($sizeOfArray, $search->getTokens());
-        }
-
-        // Loop through the given tokens.
-        foreach ($search->getTokens() as $index => $token) {
-            $whatItShouldBe = $this->getWhatItShouldBe($token, $configOptions, $index);
-
-            $this->ensureIdenticalSearchTermObjects($whatItShouldBe, $token);
-        }
-    }
-
-    /**
-     * @dataProvider searchQueryData
-     * @param string $query
-     * @param array|null $configOptions
-     */
-    public function testSearchQuerySortOrder(string $query, array $configOptions = null)
-    {
-        $exploded = explode(' ', $query);
-        foreach ((new SearchQuery($query))->getTokens() as $index => $token) {
-            $config = $this->getConfigFromOptions($index, $configOptions);
-
-            $fromExplodedString = $this->createDefaultSearchQueryTermFromString($exploded[$index], $config);
-            $this->ensureIdenticalSearchTermObjects($fromExplodedString, $token);
-        }
-    }
-
-    /**
-     * @param $token
-     * @param $configOptions
-     * @param $index
-     * @return SearchQueryTerm
-     */
-    public function getWhatItShouldBe($token, $configOptions, $index): SearchQueryTerm
-    {
-        // Get whether the data provider gave us custom config options for this term based on the above searchParam
-        $config = $this->getConfigFromOptions($index, $configOptions);
-
-        return $this->createDefaultSearchQueryTermFromString($token->term, $config);
-    }
-
-    /**
-     * @param $term
-     * @param $config
-     * @return SearchQueryTerm
-     */
-    public function createDefaultSearchQueryTermFromString(string $term, array $config) : SearchQueryTerm
-    {
-        if (!isset($config['term'])) {
-            $config['term'] = $term;
-        }
-
-        return new SearchQueryTerm($config);
-    }
-
-    /**
-     * Essentially a function that sees if the $key exists in the $config options and returns that. If it doesnt exist it returns
-     * self::DEFAULT_SEARCH_QUERY_TERM_CONFIG
-     *
-     * @param string|null $key
-     * @param array|null $configOptions
-     * @return array|mixed
-     */
-    public function getConfigFromOptions(string $key = null, array $configOptions = null)
-    {
-        if (!$configOptions) {
-            return self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
-        }
-
-        if (!array_key_exists($key, $configOptions) || !isset($configOptions[$key])) {
-            return self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
-        }
-
-        return $configOptions[$key];
-    }
-
-    /**
-     * Compare two searchQueryTerm objects to make sure they are the same.
-     * @param SearchQueryTerm $one
-     * @param SearchQueryTerm $two
-     */
-    public function ensureIdenticalSearchTermObjects(SearchQueryTerm $one, SearchQueryTerm $two)
-    {
-        $this->assertSame([
-            $one->exclude, $one->exact, $one->subLeft, $one->subRight,$one->attribute, $one->term, $one->phrase
-        ], [$two->exclude, $two->exact, $two->subLeft, $two->subRight, $two->attribute, $two->term, $two->phrase]);
     }
 }

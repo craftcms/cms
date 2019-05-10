@@ -38,6 +38,7 @@ class PgsqlDbHelperTest extends Unit
 
     /**
      * @dataProvider sqlTypesDataProvider
+     *
      * @param $type
      * @param $supported
      */
@@ -50,6 +51,7 @@ class PgsqlDbHelperTest extends Unit
 
     /**
      * @dataProvider textualStorageDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -61,6 +63,7 @@ class PgsqlDbHelperTest extends Unit
 
     /**
      * @dataProvider parseParamDataProvider
+     *
      * @param $result
      * @param $column
      * @param $value
@@ -74,6 +77,7 @@ class PgsqlDbHelperTest extends Unit
 
     /**
      * @dataProvider getTextualColumnTypeDataProvider
+     *
      * @param $result
      * @param $input
      */

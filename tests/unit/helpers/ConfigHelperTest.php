@@ -52,6 +52,7 @@ class ConfigHelperTest extends Unit
 
     /**
      * @dataProvider durationInSecondsDataProvider
+     *
      * @param $result
      * @param $input
      * @throws InvalidConfigException

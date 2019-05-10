@@ -38,6 +38,7 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider toArrayDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -49,6 +50,7 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider prependOrAppendDataProvider
+     *
      * @param $result
      * @param $inputArray
      * @param $appendable
@@ -96,6 +98,7 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider firstValueDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -107,6 +110,7 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider withoutDataProvider
+     *
      * @param $result
      * @param $array
      * @param $key
@@ -119,6 +123,7 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider withoutValueDataProvider
+     *
      * @param $result
      * @param $array
      * @param $value

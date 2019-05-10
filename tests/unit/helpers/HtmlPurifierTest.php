@@ -29,6 +29,7 @@ class HtmlPurifierTest extends Unit
 
     /**
      * @dataProvider utf8CleanDataProvider
+     *
      * @param $result
      * @param $input
      */

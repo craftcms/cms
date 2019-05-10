@@ -32,10 +32,11 @@ class ResponseTest extends Unit
     }
 
     /**
+     * @dataProvider getContentTypeDataProvider
+     *
      * @param $result
      * @param $format
      * @param null $header
-     * @dataProvider getContentTypeData
      */
     public function testGetContentType($result, $format, $header = null)
     {
@@ -48,7 +49,7 @@ class ResponseTest extends Unit
         $type = $this->response->getContentType();
         $this->assertSame($result, $type);
     }
-    public function getContentTypeData(): array
+    public function getContentTypeDataProvider(): array
     {
         return [
             ['text/html', Response::FORMAT_HTML],

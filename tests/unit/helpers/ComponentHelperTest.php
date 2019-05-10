@@ -46,6 +46,7 @@ class ComponentHelperTest extends Unit
      * Tests whether the $callback will evaluate to an instance of the componentInterface.
      *
      * @dataProvider successfulComponentCreationDataProvider
+     *
      * @param $callback
      */
     public function testSuccessfulComponentCreation(Closure $callback)
@@ -58,6 +59,7 @@ class ComponentHelperTest extends Unit
 
     /**
      * @dataProvider failingComponentCreationDataProvider
+     *
      * @param array $settings
      * @param $desiredParent
      * @param string $requiredException
@@ -82,6 +84,7 @@ class ComponentHelperTest extends Unit
 
     /**
      * @dataProvider settingsArraysDataProvider
+     *
      * @param $mergeable
      * @param $result
      */

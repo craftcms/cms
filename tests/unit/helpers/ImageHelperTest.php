@@ -10,6 +10,7 @@ namespace craftunit\helpers;
 use Codeception\Stub;
 use Codeception\Test\Unit;
 use craft\helpers\Image;
+use Exception;
 use UnitTester;
 use TypeError;
 use Craft;
@@ -50,6 +51,7 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider calculateMissingDimensionDataProvider
+     *
      * @param $result
      * @param $targetWidth
      * @param $targetHeight
@@ -64,6 +66,7 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider canManipulateAsImageDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -83,6 +86,7 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider pngImageInfoDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -94,6 +98,7 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider canHaveExitDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -105,6 +110,7 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider imageSizeDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -116,6 +122,7 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider parseSvgDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -127,6 +134,7 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider imageByStreamDataProvider
+     *
      * @param $result
      * @param $input
      */
@@ -149,9 +157,10 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider exceptionTriggeringImageByStreamDataProvider
+     *
      * @param $errorLogMessage
      * @param $input
-     * @throws \Exception
+     * @throws Exception
      */
     public function testImageByStreamException($errorLogMessage, $input)
     {

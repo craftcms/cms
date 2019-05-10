@@ -36,6 +36,7 @@ class JsonHelperTest extends Test
 
     /**
      * @dataProvider jsonDecodableDataProvider
+     *
      * @param $result
      * @param $input
      */

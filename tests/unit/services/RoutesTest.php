@@ -14,7 +14,7 @@ use craft\services\Routes;
 use UnitTester;
 
 /**
- * Unit tests for RoutesTest
+ * Unit tests for routes service.
  *
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -23,27 +23,32 @@ use UnitTester;
  */
 class RoutesTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
-     * @var UnitTester $tester
+     * @var UnitTester
      */
     protected $tester;
 
     /**
-     * @var Routes $routes
+     * @var Routes
      */
     protected $routes;
 
-    public function _before()
-    {
-        parent::_before();
-        $this->routes = Craft::$app->getRoutes();
-    }
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
 
     /**
      * @dataProvider saveRouteDataProvider
+     *
      * @param $result
-     * @param array $uriParts
-     * @param string $template
+     * @param array       $uriParts
+     * @param string      $template
      * @param string|null $siteUid
      * @param string|null $routeUid
      */
@@ -59,6 +64,12 @@ class RoutesTest extends Unit
         $this->assertTrue(StringHelper::isUUID($routeUUID));
     }
 
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
     public function saveRouteDataProvider(): array
     {
         return [
@@ -134,5 +145,14 @@ class RoutesTest extends Unit
                 [['😎', 'date'], ['😎', 'emoji']], '_test'
             ],
         ];
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    protected function _before()
+    {
+        parent::_before();
+        $this->routes = Craft::$app->getRoutes();
     }
 }

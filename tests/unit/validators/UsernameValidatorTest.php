@@ -37,7 +37,8 @@ class UsernameValidatorTest extends Unit
     }
 
     /**
-     * @dataProvider validateValueData
+     * @dataProvider validateValueDataProvider
+     *
      * @param $result
      * @param $input
      * @throws NotSupportedException
@@ -47,7 +48,7 @@ class UsernameValidatorTest extends Unit
         $validated = $this->usernameValidator->validateValue($input);
         $this->assertSame($result, $validated);
     }
-    public function validateValueData(): array
+    public function validateValueDataProvider(): array
     {
         return [
             [null, 'asdfghjkl1234567890'],

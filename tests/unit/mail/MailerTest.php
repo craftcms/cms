@@ -34,15 +34,58 @@ use yii\base\InvalidConfigException;
  */
 class MailerTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var Mailer $mailer
      */
     public $mailer;
 
+    // Public Methods
+    // =========================================================================
+
+    // Tests Methods
+    // =========================================================================
+
+    /**
+     * Tests mail from key composition
+     *
+     * @dataProvider fromKeyCompositionDataProvider
+     *
+     * @param $key
+     * @param array $variables
+     * @throws InvalidConfigException
+     */
+    public function testFromKeyComposition($key, array $variables = [])
+    {
+        $res = $this->mailer->composeFromKey($key, $variables);
+        $this->assertInstanceOf(Message::class, $res);
+        $this->assertSame($key, $res->key);
+        $this->assertSame($variables, $res->variables);
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function fromKeyCompositionDataProvider(): array
+    {
+        return[
+            ['account_activation', []],
+            ['not_a_key that exists']
+        ];
+    }
+
+    // Protected Methods
+    // =========================================================================
+
     /**
      * @throws InvalidConfigException
      */
-    public function _before()
+    protected function _before()
     {
         parent::_before();
 
@@ -56,28 +99,5 @@ class MailerTest extends Unit
         $this->mailer = Craft::createObject(App::mailerConfig(
             $mailSettings
         ));
-    }
-
-    /**
-     * Tests mail from key composition
-     *
-     * @dataProvider fromKeyComposition
-     * @param $key
-     * @param array $variables
-     * @throws InvalidConfigException
-     */
-    public function testFromKeyComposition($key, array $variables = [])
-    {
-        $res = $this->mailer->composeFromKey($key, $variables);
-        $this->assertInstanceOf(Message::class, $res);
-        $this->assertSame($key, $res->key);
-        $this->assertSame($variables, $res->variables);
-    }
-    public function fromKeyComposition(): array
-    {
-        return[
-            ['account_activation', []],
-            ['not_a_key that exists']
-        ];
     }
 }

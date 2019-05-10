@@ -69,10 +69,11 @@ class AppTest extends Unit
     public $tester;
 
     /**
+     * @dataProvider craftAppGetMethodsDataProvider
+     *
      * @param $instance
      * @param $map
      * @throws InvalidConfigException
-     * @dataProvider craftAppGetMethods
      */
     public function testCraftAppGetMethods($instance, $map)
     {
@@ -85,7 +86,7 @@ class AppTest extends Unit
 
 
     }
-    public function craftAppGetMethods(): array
+    public function craftAppGetMethodsDataProvider(): array
     {
         return [
             [Api::class, ['getApi', 'api']],

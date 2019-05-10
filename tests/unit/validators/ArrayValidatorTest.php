@@ -51,10 +51,10 @@ class ArrayValidatorTest extends Unit
     }
 
     /**
-     * Test that if messages arent provided when creating the array validator (I.E not setting the $tooMany message),
+     * Test that if messages aren't provided when creating the array validator (I.E not setting the $tooMany message),
      * they will be provided automatically.
      *
-     * @dataProvider paramsToTestOnEmpty
+     * @dataProvider paramsToTestOnEmptyDataProvider
      *
      * @param ArrayValidator $validator
      * @param $variableName
@@ -66,7 +66,7 @@ class ArrayValidatorTest extends Unit
         $this->assertIsString($validator->$variableName);
     }
 
-    public function paramsToTestOnEmpty(): array
+    public function paramsToTestOnEmptyDataProvider(): array
     {
         $newValidator = new ArrayValidator(['min' => 1, 'max' => 10, 'count' => 4]);
 
@@ -87,7 +87,8 @@ class ArrayValidatorTest extends Unit
     }
 
     /**
-     * @dataProvider arrayValidatorValues
+     * @dataProvider arrayValidatorValuesDataProvider
+     *
      * @param      $inputValue
      * @param bool $mustValidate
      */
@@ -105,7 +106,7 @@ class ArrayValidatorTest extends Unit
         }
     }
 
-    public function arrayValidatorValues(): array
+    public function arrayValidatorValuesDataProvider(): array
     {
         return [
             [[1, 2, 3, 4 ], true],

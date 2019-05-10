@@ -127,7 +127,8 @@ class UrlHelperTest extends Unit
     /**
      * Test that adding params to urls works under various circumstances
      *
-     * @dataProvider urlWithParamsDataProvider()
+     * @dataProvider urlWithParamsDataProvider
+     *
      * @param $result
      * @param $url
      * @param $params
@@ -475,7 +476,7 @@ class UrlHelperTest extends Unit
      *
      * @return array
      */
-    public function urlWithParamsProvider(): array
+    public function urlWithParametersDataProvider(): array
     {
         return [
             'with-fragment' => [
