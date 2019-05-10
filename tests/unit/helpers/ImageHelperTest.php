@@ -252,6 +252,8 @@ class ImageHelperTest extends Unit
     }
 
     /**
+     * @todo Test empty unpack() function and invalid IHDR chunks and INVALID color value. See coverage for more.
+     *
      * @return array
      */
     public function pngImageInfoDataProvider(): array
@@ -272,7 +274,6 @@ class ImageHelperTest extends Unit
             [false, dirname(__FILE__, 3).'\_data\assets\files\invalid-ihdr.png'],
             [false, ''],
             [false, dirname(__FILE__, 3).'\_data\assets\files\ign.jpg'],
-            // TODO: Test empty unpack() function  and invalid IHDR chunks and INVALID color value. See coverage for more.
         ];
     }
 

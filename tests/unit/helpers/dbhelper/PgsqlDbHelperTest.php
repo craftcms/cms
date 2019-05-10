@@ -123,8 +123,6 @@ class PgsqlDbHelperTest extends Unit
     }
 
     /**
-     * @todo This is the best way to test it but is it worth 20mb and 3 seconds of time?
-     *
      * @return array
      */
     public function sqlTypesDataProvider(): array

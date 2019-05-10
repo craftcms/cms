@@ -19,14 +19,14 @@ use yii\base\InvalidConfigException;
 /**
  * Unit tests for MailerTest
  *
- * TODO: Are we going to override the yii\mail\BaseMailer\TestMailer class in the Craft CMS module. So that we can
- * mock Craft::$app->getMailer()->send();
- *
  * Currently getMailer returns the TestMailer class (See line 264 of Codeception\Lib\Connector\Yii2) and not a craft\mail\Mailer object.
  * We need a way to test lines 89-167 of the craft\mail\Mailer object which is currently awkward.
  *
  * One other option is to break out craft\mail\Mailer line 89-165 into a separate method called prepareMessage(Message $message)
  * This means we can test all that functionality without having to actually *send* the email.
+ *
+ * @todo Are we going to override the yii\mail\BaseMailer\TestMailer class in the Craft CMS module. So that we can
+ * mock Craft::$app->getMailer()->send();
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>

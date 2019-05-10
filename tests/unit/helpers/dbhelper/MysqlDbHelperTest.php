@@ -151,7 +151,6 @@ class MysqlDbHelperTest extends Unit
      */
     public function sqlTypesDataProvider(): array
     {
-        // TODO: This is the best way to test it but is it worth 20mb and 3 seconds of time?
         $mysqlSchema = new MysqlSchema();
         $pgsqlSchema = new PgsqlSchema();
         $returnArray = [];

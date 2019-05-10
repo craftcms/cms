@@ -164,7 +164,7 @@ class SearchTest extends Unit
 
     /*
      * Creates a new User(); and runs indexElementAttributes on it to see how its property values are stored in the database.
-     * TODO: test with fields and multisite using entries
+     * @todo test with fields and multisite using entries
      */
     public function testIndexElementAttributes()
     {

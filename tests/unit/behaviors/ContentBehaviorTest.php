@@ -82,12 +82,13 @@ class ContentBehaviorTest extends Unit
     // =========================================================================
 
     /**
+     * @todo Help needed. Saving fields with fixtures doesnt update the ContentBehavior class props. I cant find a way to solve this.
+     *
      * @return array
      */
     public function existingFieldHandlesDataProvider() : array
     {
         return [
-            // TODO: Help needed. Saving fields with fixtures doesnt update the ContentBehavior class props. I cant find a way to solve this.
             //['testField'],
             //['testField2'],
             //['testField3'],
