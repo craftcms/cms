@@ -27,7 +27,7 @@ use yii\base\InvalidConfigException;
  */
 class TokenTest extends Unit
 {
-    // Protected Properties
+    // Public Properties
     // =========================================================================
 
     /**
