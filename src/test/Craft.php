@@ -182,7 +182,7 @@ class Craft extends Yii2
 
             // Get rid of everything.
             if ($this->_getConfig('dbSetup')['clean'] === true) {
-                TestSetup::clenseDb($dbConnection);
+                TestSetup::cleanseDb($dbConnection);
             }
 
             // Setup the project config from the passed file.

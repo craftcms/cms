@@ -71,7 +71,7 @@ class TestSetup
      * @return bool
      * @throws Exception
      */
-    public static function clenseDb(Connection $connection) : bool
+    public static function cleanseDb(Connection $connection) : bool
     {
         $tables = $connection->schema->getTableNames();
 
@@ -82,7 +82,7 @@ class TestSetup
 
         $tables = $connection->schema->getTableNames();
         if ($tables !== []) {
-            throw new Exception('Unable to setup test enviroment');
+            throw new Exception('Unable to setup test environment');
         }
 
         return true;
