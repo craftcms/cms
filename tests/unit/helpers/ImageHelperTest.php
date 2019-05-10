@@ -230,7 +230,7 @@ class ImageHelperTest extends Unit
         return [
             [[960, 640], dirname(__FILE__, 3).'\_data\assets\files\background.jpg'],
             [[200, 200], dirname(__FILE__, 3).'\_data\assets\files\google.png'],
-            [[0, 0], dirname(__FILE__, 3).'\_data\assets\files\random.tiff'],
+            [[1728, 2376], dirname(__FILE__, 3).'\_data\assets\files\random.tiff'],
             [[100.0, 100.0], dirname(__FILE__, 3).'\_data\assets\files\gng.svg'],
         ];
     }
