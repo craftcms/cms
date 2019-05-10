@@ -33,7 +33,7 @@ class LanguageValidatorTest extends Unit
      */
     protected $languageValidator;
 
-    public function _before()
+    protected function _before()
     {
         parent::_before();
         $this->languageValidator = new LanguageValidator();

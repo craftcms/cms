@@ -41,7 +41,10 @@ class RequestTest extends TestCase
      */
     public $tester;
 
-    public function _before()
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
     {
         parent::_before();
 

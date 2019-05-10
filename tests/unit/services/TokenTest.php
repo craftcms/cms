@@ -14,10 +14,12 @@ use craft\services\Tokens;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
+use Exception;
 use UnitTester;
+use yii\base\InvalidConfigException;
 
 /**
- * Class TokenServiceTest
+ * Unit tests for the token service
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -25,26 +27,31 @@ use UnitTester;
  */
 class TokenTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
-     * @var UnitTester $tester
+     * @var UnitTester
      */
     protected $tester;
 
     /**
-     * @var Tokens $token
+     * @var Tokens
      */
     protected $token;
 
-    public function _before()
-    {
-        parent::_before();
+    // Public Methods
+    // =========================================================================
 
-        $this->token = Craft::createObject(Tokens::class);
-    }
+    // Tests
+    // =========================================================================
 
+    /**
+     * @throws Exception
+     */
     public function testCreateToken()
     {
-        // Dont allow modification of the DateTime by ActiveRecord's before save
+        // Don't allow modification of the DateTime by ActiveRecord's before save
         Craft::$app->setTimeZone('UTC');
 
         $dt = new DateTime('2019-12-12 13:00:00');
@@ -61,11 +68,14 @@ class TokenTest extends Unit
         $this->assertEquals(32, strlen($token));
     }
 
+    /**
+     * @throws Exception
+     */
     public function testCreateTokenDefaults()
     {
         Craft::$app->getConfig()->getGeneral()->defaultTokenDuration = 10000;
 
-        // Dont allow modification of the DateTime by ActiveRecord's before save
+        // Don't allow modification of the DateTime by ActiveRecord's before save
         Craft::$app->setTimeZone('UTC');
         $token = $this->token->createToken('do/stuff');
 
@@ -82,7 +92,18 @@ class TokenTest extends Unit
         $this->assertNull($tokenRec->usageCount);
         $this->assertSame($expiryDate->format('Y-m-d H:i:s'), $tokenRec->expiryDate);
         $this->assertEquals(32, strlen($token));
-
     }
 
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
+    {
+        parent::_before();
+
+        $this->token = Craft::createObject(Tokens::class);
+    }
 }

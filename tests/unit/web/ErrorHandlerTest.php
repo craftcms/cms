@@ -39,7 +39,10 @@ class ErrorHandlerTest extends TestCase
      */
     protected $errorHandler;
 
-    public function _before()
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
     {
         parent::_before();
         // Create a dir in compiled templates. See self::144
@@ -49,7 +52,10 @@ class ErrorHandlerTest extends TestCase
         $this->errorHandler = Craft::createObject(ErrorHandler::class);
     }
 
-    public function _after()
+    /**
+     * @inheritDoc
+     */
+    protected function _after()
     {
         // Remove the dir created in _before
         $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');

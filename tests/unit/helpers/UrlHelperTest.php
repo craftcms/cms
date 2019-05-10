@@ -655,6 +655,9 @@ class UrlHelperTest extends Unit
     // Protected Methods
     // =========================================================================
 
+    /**
+     * @inheritDoc
+     */
     protected function _before()
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();

@@ -206,7 +206,7 @@ class GcTest extends Unit
     // =========================================================================
 
     /**
-     *
+     * @inheritDoc
      */
     protected function _before()
     {

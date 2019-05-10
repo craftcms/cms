@@ -21,6 +21,9 @@ use ErrorException;
  */
 class ColorValidatorTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var ColorValidator
      */
@@ -30,16 +33,21 @@ class ColorValidatorTest extends Unit
      * @var ExampleModel
      */
     protected $model;
+
     /*
      * @var \UnitTester
      */
     protected $tester;
-    public function _before()
-    {
-        $this->model = new ExampleModel();
-        $this->colorValidator = new ColorValidator();
-    }
 
+    // Public Methods
+    // =========================================================================
+
+    // Tests
+    // =========================================================================
+
+    /**
+     *
+     */
     public function testPattern()
     {
         $this->assertSame('/^#[0-9a-f]{6}$/', $this->colorValidator->pattern);
@@ -58,20 +66,6 @@ class ColorValidatorTest extends Unit
 
         $result = (mb_strpos($color, '#') !== false && mb_strlen($input) >= 0);
         $this->assertTrue($result);
-    }
-
-    public function colorNormalizationDataProvider(): array
-    {
-        return [
-            ['#ffc10e', 'ffc10e'],
-            ['#', '#'],
-            ['#1234567890qwertyuiop!@#$%^&*()', '1234567890qwertyuiop!@#$%^&*()'],
-            ['#12', '12'],
-            ['#!!@@##', '!@#'],
-            'three-chars-becomes-six' => ['#aassdd', 'asd'],
-            ['#aassdd', 'ASD'],
-            ['#a22d', 'a22d']
-        ];
     }
 
     /**
@@ -106,6 +100,29 @@ class ColorValidatorTest extends Unit
         $this->model->exampleParam = null;
     }
 
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function colorNormalizationDataProvider(): array
+    {
+        return [
+            ['#ffc10e', 'ffc10e'],
+            ['#', '#'],
+            ['#1234567890qwertyuiop!@#$%^&*()', '1234567890qwertyuiop!@#$%^&*()'],
+            ['#12', '12'],
+            ['#!!@@##', '!@#'],
+            'three-chars-becomes-six' => ['#aassdd', 'asd'],
+            ['#aassdd', 'ASD'],
+            ['#a22d', 'a22d']
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public function colorValidatorAttributesDataProvider(): array
     {
         return [
@@ -123,5 +140,17 @@ class ColorValidatorTest extends Unit
             ['rgba(255, 0, 0, 0.2)', false],
             ['255, 0, 0, 0.2', false]
         ];
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
+    {
+        $this->model = new ExampleModel();
+        $this->colorValidator = new ColorValidator();
     }
 }

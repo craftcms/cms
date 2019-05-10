@@ -121,6 +121,9 @@ class ImagesTest extends Unit
     // Protected Methods
     // =========================================================================
 
+    /**
+     * @inheritDoc
+     */
     protected function _before()
     {
         $this->path = dirname(__DIR__, 3).'/_data/assets/files/';

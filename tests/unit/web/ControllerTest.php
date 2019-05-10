@@ -36,7 +36,11 @@ class ControllerTest extends Unit
      * @var TestController
      */
     private $controller;
-    public function _before()
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
     {
         parent::_before();
         $_SERVER['REQUEST_URI'] = 'https://craftcms.com/admin/dashboard';

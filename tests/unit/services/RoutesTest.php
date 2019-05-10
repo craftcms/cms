@@ -150,6 +150,9 @@ class RoutesTest extends Unit
     // Protected Methods
     // =========================================================================
 
+    /**
+     * @inheritDoc
+     */
     protected function _before()
     {
         parent::_before();

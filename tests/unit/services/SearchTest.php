@@ -15,7 +15,7 @@ use craft\helpers\ArrayHelper;
 use craftunit\fixtures\UsersFixture;
 
 /**
- * Unit tests for SearchServiceTest
+ * Unit tests for the search service
  *
  * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
  *
@@ -28,7 +28,7 @@ use craftunit\fixtures\UsersFixture;
  */
 class SearchTest extends Unit
 {
-    // Public Properties
+    // Public Methods
     // =========================================================================
 
     public function _fixtures(): array
@@ -40,6 +40,8 @@ class SearchTest extends Unit
         ];
     }
 
+    // Tests
+    // =========================================================================
 
     /**
      * @dataProvider filterElementIdByQueryDataProvider
@@ -62,6 +64,72 @@ class SearchTest extends Unit
 
         $this->assertSame($result, $filtered);
     }
+
+    /**
+     * @dataProvider filterScoresDataProvider
+     *
+     * @param $scoresAndNames
+     * @param $usernameOrEmailsForQuery
+     * @param $query
+     * @param bool $scoreResults
+     * @param null $siteId
+     */
+    public function testFilterScores($scoresAndNames, $usernameOrEmailsForQuery, $query, $scoreResults = true, $siteId = null)
+    {
+        // Repackage the dataProvider input into what the filter function will return.
+        $result = $this->_scoreList($scoresAndNames);
+
+        // Get the user ids to send into the filter function
+        $forQuery = $this->_usernameEmailArrayToIdList($usernameOrEmailsForQuery);
+
+        // Filter them
+        $filtered = Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, true);
+
+        $this->assertSame($result, $filtered);
+    }
+
+    /**
+     *
+     */
+    public function testElementQueryReturnsInt()
+    {
+        $result = $this->_usernameEmailArrayToIdList(['user1', 'user2', 'user3'], true);
+        $forQuery = $this->_usernameEmailArrayToIdList(['user1', 'user2', 'user3'], false);
+
+        $filtered = Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, 'user');
+
+        $this->assertSame($result, $filtered);
+    }
+
+    /*
+     * Creates a new User(); and runs indexElementAttributes on it to see how its property values are stored in the database.
+     *
+     * @todo test with fields and multisite using entries
+     */
+    public function testIndexElementAttributes()
+    {
+        // Create a user
+        $user = new User();
+        $user->username = 'testIndexElementAttributes1';
+        $user->email = 'testIndexElementAttributes1@test.com';
+        $user->firstName = 'john smith';
+        $user->lastName = 'WIL K ER SON!';
+        $user->id = '666';
+
+        // Index them.
+        Craft::$app->getSearch()->indexElementAttributes($user);
+
+        // Get the data from the DB
+        $searchIndex = (new Query())->select('*')->from('{{%searchindex}}')->where(['elementId' => $user->id])->all();
+
+        $this->assertSame(' testindexelementattributes1 test com ', $this->_getSearchIndexValueByAttribute('email', $searchIndex));
+        $this->assertSame(' john smith ', $this->_getSearchIndexValueByAttribute('firstname', $searchIndex));
+        $this->assertSame(' wil k er son ', $this->_getSearchIndexValueByAttribute('lastname', $searchIndex));
+        $this->assertSame(' john smith wil k er son ', $this->_getSearchIndexValueByAttribute('fullname', $searchIndex));
+    }
+
+    // Data Providers
+    // =========================================================================
 
     /**
      * Provide an array with input user names
@@ -90,27 +158,8 @@ class SearchTest extends Unit
     }
 
     /**
-     * @dataProvider filterScoresDataProvider
-     *
-     * @param $scoresAndNames
-     * @param $usernameOrEmailsForQuery
-     * @param $query
-     * @param bool $scoreResults
-     * @param null $siteId
+     * @return array
      */
-    public function testFilterScores($scoresAndNames, $usernameOrEmailsForQuery, $query, $scoreResults = true, $siteId = null)
-    {
-        // Repackage the dataProvider input into what the filter function will return.
-        $result = $this->_scoreList($scoresAndNames);
-
-        // Get the user ids to send into the filter function
-        $forQuery = $this->_usernameEmailArrayToIdList($usernameOrEmailsForQuery);
-
-        // Filter them
-        $filtered = Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, true);
-
-        $this->assertSame($result, $filtered);
-    }
     public function filterScoresDataProvider(): array
     {
         return [
@@ -151,43 +200,8 @@ class SearchTest extends Unit
         ];
     }
 
-    public function testElementQueryReturnsInt()
-    {
-        $result = $this->_usernameEmailArrayToIdList(['user1', 'user2', 'user3'], true);
-        $forQuery = $this->_usernameEmailArrayToIdList(['user1', 'user2', 'user3'], false);
-
-        $filtered = Craft::$app->getSearch()->filterElementIdsByQuery($forQuery, 'user');
-
-        $this->assertSame($result, $filtered);
-    }
-
-
-    /*
-     * Creates a new User(); and runs indexElementAttributes on it to see how its property values are stored in the database.
-     * @todo test with fields and multisite using entries
-     */
-    public function testIndexElementAttributes()
-    {
-        // Create a user
-        $user = new User();
-        $user->username = 'testIndexElementAttributes1';
-        $user->email = 'testIndexElementAttributes1@test.com';
-        $user->firstName = 'john smith';
-        $user->lastName = 'WIL K ER SON!';
-        $user->id = '666';
-
-
-        // Index them.
-        Craft::$app->getSearch()->indexElementAttributes($user);
-
-        // Get the data from the DB
-        $searchIndex = (new Query())->select('*')->from('{{%searchindex}}')->where(['elementId' => $user->id])->all();
-
-        $this->assertSame(' testindexelementattributes1 test com ', $this->_getSearchIndexValueByAttribute('email', $searchIndex));
-        $this->assertSame(' john smith ', $this->_getSearchIndexValueByAttribute('firstname', $searchIndex));
-        $this->assertSame(' wil k er son ', $this->_getSearchIndexValueByAttribute('lastname', $searchIndex));
-        $this->assertSame(' john smith wil k er son ', $this->_getSearchIndexValueByAttribute('fullname', $searchIndex));
-    }
+    // Private Methods
+    // =========================================================================
 
     /**
      * @param $attributeName
@@ -213,6 +227,7 @@ class SearchTest extends Unit
     private function _usernameEmailArrayToIdList(array $usernameOrEmails, bool $typecastToInt = true): array
     {
         $ids = [];
+
         foreach ($usernameOrEmails as $usernameOrEmail) {
             $userId = $this->_getUserIdByEmailOrUserName($usernameOrEmail)->id;
             $ids[] = $typecastToInt === true ? (int)$userId : $userId;
@@ -228,6 +243,7 @@ class SearchTest extends Unit
     private function _scoreList(array $usernameOrEmailsAndScores): array
     {
         $ids = [];
+
         foreach ($usernameOrEmailsAndScores as $usernameOrEmailAndScore) {
             $userId = $this->_getUserIdByEmailOrUserName($usernameOrEmailAndScore['identifier'])->id;
             $ids[$userId] = $usernameOrEmailAndScore['score'];

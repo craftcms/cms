@@ -43,7 +43,10 @@ class UserTest extends TestCase
      */
     public $user;
 
-    public function _before()
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
     {
         parent::_before();
         $this->userElement = $this->_getUser();

@@ -601,6 +601,9 @@ class DbHelperTest extends Unit
     // Protected Methods
     // =========================================================================
 
+    /**
+     * @inheritDoc
+     */
     protected function _before()
     {
         $this->systemTimezone = new DateTimeZone(Craft::$app->getTimeZone());

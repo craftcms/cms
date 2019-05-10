@@ -156,6 +156,9 @@ class PgsqlDbHelperTest extends Unit
     // Protected Methods
     // =========================================================================
 
+    /**
+     * @inheritDoc
+     */
     protected function _before()
     {
         if (!Craft::$app->getDb()->getIsPgsql()) {

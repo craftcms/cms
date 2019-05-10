@@ -83,7 +83,7 @@ class MailerTest extends Unit
     // =========================================================================
 
     /**
-     * @throws InvalidConfigException
+     * @inheritDoc
      */
     protected function _before()
     {

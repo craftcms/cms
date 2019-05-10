@@ -34,7 +34,10 @@ class UriFormatValidatorTest extends Unit
      */
     protected $tester;
 
-    public function _before()
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
     {
         $this->model = new ExampleModel();
         $this->uriFormatValidator = new UriFormatValidator();

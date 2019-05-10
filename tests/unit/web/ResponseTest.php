@@ -24,7 +24,10 @@ class ResponseTest extends Unit
      */
     public $response;
 
-    public function _before()
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
     {
         parent::_before();
         

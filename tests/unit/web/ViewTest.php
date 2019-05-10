@@ -52,7 +52,10 @@ class ViewTest extends TestCase
      */
     protected $view;
 
-    public function _before()
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
     {
         parent::_before();
 

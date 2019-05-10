@@ -30,7 +30,7 @@ class FunctionalCest
     /**
      * @param FunctionalTester $I
      */
-    public function _before(FunctionalTester $I)
+    protected function _before(FunctionalTester $I)
     {
         $userEl = User::find()
             ->admin()

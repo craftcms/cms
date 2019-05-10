@@ -13,8 +13,7 @@ use craft\services\Security;
 use UnitTester;
 
 /**
- * Unit tests for SecurityTest
- *
+ * Unit tests for the security service
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -22,22 +21,24 @@ use UnitTester;
  */
 class SecurityTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
-     * @var UnitTester $tester
+     * @var UnitTester
      */
     protected $tester;
 
     /**
-     * @var Security $security
+     * @var Security
      */
     protected $security;
 
-    public function _before()
-    {
-        parent::_before();
+    // Public Methods
+    // =========================================================================
 
-        $this->security = Craft::$app->security;
-    }
+    // Tests
+    // =========================================================================
 
     /**
      * @dataProvider redactIfSensitiveDataProvider
@@ -54,6 +55,13 @@ class SecurityTest extends Unit
         $redacted = $this->security->redactIfSensitive($name, $value);
         $this->assertSame($result, $redacted);
     }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
     public function redactIfSensitiveDataProvider() : array
     {
         return [
@@ -84,5 +92,18 @@ class SecurityTest extends Unit
 
             ['not stuff craft cms', '', 'not stuff craft cms', ['not']],
         ];
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
+    {
+        parent::_before();
+
+        $this->security = Craft::$app->security;
     }
 }

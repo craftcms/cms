@@ -22,6 +22,9 @@ use craft\test\mockclasses\models\ExampleModel;
  */
 class ArrayValidatorTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var ArrayValidator
      */
@@ -32,26 +35,18 @@ class ArrayValidatorTest extends Unit
      */
     protected $model;
     /*
-     * @var \UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
-    public function _before()
-    {
-        $this->model = new ExampleModel();
-        $this->arrayValidator = new ArrayValidator(['count' => 5, 'max' => 10, 'min' => 4, 'tooFew' => 'aint got nuff', 'tooMany' => 'staahhpp', 'notEqual' => 'aint right']);
+    // Public Methods
+    // =========================================================================
 
-        // Test all variables are passed in and all good.
-        $this->assertSame(5, $this->arrayValidator->count);
-        $this->assertSame(10, $this->arrayValidator->max);
-        $this->assertSame(4, $this->arrayValidator->min);
-        $this->assertSame('aint got nuff', $this->arrayValidator->tooFew);
-        $this->assertSame('staahhpp', $this->arrayValidator->tooMany);
-        $this->assertSame('aint right', $this->arrayValidator->notEqual);
-    }
+    // Tests
+    // =========================================================================
 
     /**
-     * Test that if messages aren't provided when creating the array validator (I.E not setting the $tooMany message),
+     * Test that if messages aren't provided when creating the array validator (i.e. not setting the $tooMany message),
      * they will be provided automatically.
      *
      * @dataProvider paramsToTestOnEmptyDataProvider
@@ -66,15 +61,9 @@ class ArrayValidatorTest extends Unit
         $this->assertIsString($validator->$variableName);
     }
 
-    public function paramsToTestOnEmptyDataProvider(): array
-    {
-        $newValidator = new ArrayValidator(['min' => 1, 'max' => 10, 'count' => 4]);
-
-        return [
-            [$newValidator, 'message'], [$newValidator, 'tooFew'], [$newValidator, 'tooMany'], [$newValidator, 'notEqual']
-        ];
-    }
-
+    /**
+     *
+     */
     public function testCountArrayInputValue()
     {
         $newValidator = new ArrayValidator(['count' => [2, 5]]);
@@ -106,6 +95,37 @@ class ArrayValidatorTest extends Unit
         }
     }
 
+    /**
+     * Here we *specifically* test that if we pass in an array which as more than the minimum(4) and less than the maximum(10)
+     * BUT that is more than the count(5) an error will still be thrown.
+     */
+    public function testCountValidation()
+    {
+        $this->model->exampleParam = [1, 2, 3, 4, 5, 6, 7];
+        $this->arrayValidator->validateAttribute($this->model, 'exampleParam');
+
+        $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+        $this->assertSame('aint right', $this->model->getErrors('exampleParam')[0]);
+    }
+
+    // Data Providers
+    // =========================================================================
+
+    /**
+     * @return array
+     */
+    public function paramsToTestOnEmptyDataProvider(): array
+    {
+        $newValidator = new ArrayValidator(['min' => 1, 'max' => 10, 'count' => 4]);
+
+        return [
+            [$newValidator, 'message'], [$newValidator, 'tooFew'], [$newValidator, 'tooMany'], [$newValidator, 'notEqual']
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public function arrayValidatorValuesDataProvider(): array
     {
         return [
@@ -119,16 +139,23 @@ class ArrayValidatorTest extends Unit
         ];
     }
 
-    /**
-     * Here we *specifically* test that if we pass in an array which as more than the minimum(4) and less than the maximum(10)
-     * BUT that is more than the count(5) an error will still be thrown.
-     */
-    public function testCountValidation()
-    {
-        $this->model->exampleParam = [1, 2, 3, 4, 5, 6, 7];
-        $this->arrayValidator->validateAttribute($this->model, 'exampleParam');
+    // Protected Methods
+    // =========================================================================
 
-        $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
-        $this->assertSame('aint right', $this->model->getErrors('exampleParam')[0]);
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
+    {
+        $this->model = new ExampleModel();
+        $this->arrayValidator = new ArrayValidator(['count' => 5, 'max' => 10, 'min' => 4, 'tooFew' => 'aint got nuff', 'tooMany' => 'staahhpp', 'notEqual' => 'aint right']);
+
+        // Test all variables are passed in and all good.
+        $this->assertSame(5, $this->arrayValidator->count);
+        $this->assertSame(10, $this->arrayValidator->max);
+        $this->assertSame(4, $this->arrayValidator->min);
+        $this->assertSame('aint got nuff', $this->arrayValidator->tooFew);
+        $this->assertSame('staahhpp', $this->arrayValidator->tooMany);
+        $this->assertSame('aint right', $this->arrayValidator->notEqual);
     }
 }

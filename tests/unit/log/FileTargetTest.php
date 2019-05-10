@@ -95,6 +95,9 @@ class FileTargetTest extends TestCase
     // Protected Methods
     // =========================================================================
 
+    /**
+     * @inheritDoc
+     */
     protected function _before()
     {
         $this->fileTarget = new FileTarget();

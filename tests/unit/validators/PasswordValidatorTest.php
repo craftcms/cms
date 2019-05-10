@@ -39,7 +39,10 @@ class PasswordValidatorTest extends Unit
      */
     protected $model;
 
-    public function _before()
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
     {
         $this->passwordValidator = new UserPasswordValidator();
         $this->model = new ExampleModel();

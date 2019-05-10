@@ -36,7 +36,10 @@ class HandleValidatorTest extends Unit
 
     protected static $reservedWords =  ['bird', 'is', 'the', 'word'];
 
-    public function _before()
+    /**
+     * @inheritDoc
+     */
+    protected function _before()
     {
         $this->model = new ExampleModel();
         $this->handleValidator = new HandleValidator(['reservedWords' => self::$reservedWords]);
