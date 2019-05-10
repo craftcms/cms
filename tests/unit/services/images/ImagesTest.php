@@ -105,13 +105,11 @@ class ImagesTest extends Unit
      */
     public function testRotateImageByExifData()
     {
-        $this->markTestSkipped();
         $this->_failIfNoImagick();
 
-        // Clean it
         $this->images->cleanImage($this->sandboxPath.'image-rotated-180.jpg');
-
-        // Check rotation.
+        $image = new \Imagick($this->sandboxPath.'image-rotated-180.jpg');
+        $this->assertSame(0, $image->getImageOrientation());
     }
 
     /**
