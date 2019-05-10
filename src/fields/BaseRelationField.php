@@ -216,8 +216,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         if ($this->structure) {
             $this->sortable = false;
-            $this->inputTemplate = '_components/fieldtypes/Categories/input';
-            $this->inputJsClass = 'Craft.CategorySelectInput';
+            $this->inputJsClass = 'Craft.StructureSelectInput';
         }
     }
 

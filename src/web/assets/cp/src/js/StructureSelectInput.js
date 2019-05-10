@@ -1,9 +1,9 @@
 /** global: Craft */
 /** global: Garnish */
 /**
- * Category Select input
+ * Structure Select input
  */
-Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
+Craft.StructureSelectInput = Craft.BaseElementSelectInput.extend(
     {
         setSettings: function() {
             this.base.apply(this, arguments);
@@ -27,23 +27,24 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
             this.modal.disableSelectBtn();
             this.modal.showFooterSpinner();
 
-            // Get the new category HTML
-            var selectedCategoryIds = this.getSelectedElementIds();
+            // Get the new element HTML
+            var selectedElementIds = this.getSelectedElementIds();
 
             for (var i = 0; i < elements.length; i++) {
-                selectedCategoryIds.push(elements[i].id);
+                selectedElementIds.push(elements[i].id);
             }
 
             var data = {
-                categoryIds: selectedCategoryIds,
+                elementIds: selectedElementIds,
                 siteId: elements[0].siteId,
                 id: this.settings.id,
                 name: this.settings.name,
                 branchLimit: this.settings.branchLimit,
-                selectionLabel: this.settings.selectionLabel
+                selectionLabel: this.settings.selectionLabel,
+                entryType: this.settings.entryType
             };
 
-            Craft.postActionRequest('elements/get-categories-input-html', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('elements/get-structure-input-html', data, $.proxy(function(response, textStatus) {
                 this.modal.enable();
                 this.modal.enableCancelBtn();
                 this.modal.enableSelectBtn();
@@ -77,25 +78,25 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
         },
 
         removeElement: function($element) {
-            // Find any descendants this category might have
-            var $allCategories = $element.add($element.parent().siblings('ul').find('.element'));
+            // Find any descendants this element might have
+            var $allElements = $element.add($element.parent().siblings('ul').find('.element'));
 
             // Remove our record of them all at once
-            this.removeElements($allCategories);
+            this.removeElements($allElements);
 
             // Animate them away one at a time
-            for (var i = 0; i < $allCategories.length; i++) {
-                this._animateCategoryAway($allCategories, i);
+            for (var i = 0; i < $allElements.length; i++) {
+                this._animateElementAway($allElements, i);
             }
         },
 
-        _animateCategoryAway: function($allCategories, i) {
+        _animateElementAway: function($allElements, i) {
             var callback;
 
             // Is this the last one?
-            if (i === $allCategories.length - 1) {
+            if (i === $allElements.length - 1) {
                 callback = $.proxy(function() {
-                    var $li = $allCategories.first().parent().parent(),
+                    var $li = $allElements.first().parent().parent(),
                         $ul = $li.parent();
 
                     if ($ul[0] === this.$elementsContainer[0] || $li.siblings().length) {
@@ -108,7 +109,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
             }
 
             var func = $.proxy(function() {
-                this.animateElementAway($allCategories.eq(i), callback);
+                this.animateElementAway($allElements.eq(i), callback);
             }, this);
 
             if (i === 0) {

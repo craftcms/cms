@@ -1671,10 +1671,10 @@ body.rtl .add-category-form .texticon .text { padding-left: 30px; }
 body.ltr .add-category-form .texticon .spinner { right: 5px; }
 body.rtl .add-category-form .texticon .spinner { left: 5px; }
 
-.categoriesfield { position: relative; min-height: 30px; }
+.structureselect { position: relative; min-height: 30px; }
 
-body.ltr .categoriesfield .structure ul { margin-left: 12px; }
-body.rtl .categoriesfield .structure ul { margin-right: 12px; }
+body.ltr .structureselect .structure ul { margin-left: 12px; }
+body.rtl .structureselect .structure ul { margin-right: 12px; }
 
 /* ----------------------------------------
 /* IE hacks

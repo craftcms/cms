@@ -4568,12 +4568,12 @@ $titlebarBorderRadius: $paneBorderRadius - 1;
   @include right(5px);
 }
 
-.categoriesfield {
+.structureselect {
   position: relative;
   min-height: 30px;
 }
 
-.categoriesfield .structure ul {
+.structureselect .structure ul {
   @include margin-left(12px);
 }
 

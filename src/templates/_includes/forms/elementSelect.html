@@ -14,7 +14,7 @@
 {% set fieldId = (fieldId is defined ? fieldId : null) %}
 {% set branchLimit = (branchLimit is defined ? branchLimit : null) %}
 
-<div id="{{ id }}" class="{{ structure ? 'categoriesfield' : 'elementselect'}}"
+<div id="{{ id }}" class="{{ structure ? 'structureselect' : 'elementselect' }}"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     {% if structure %}
         <ul class="elements structure">
