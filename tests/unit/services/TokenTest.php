@@ -27,7 +27,7 @@ use yii\base\InvalidConfigException;
  */
 class TokenTest extends Unit
 {
-    // Public Properties
+    // Protected Properties
     // =========================================================================
 
     /**
@@ -104,6 +104,6 @@ class TokenTest extends Unit
     {
         parent::_before();
 
-        $this->token = Craft::createObject(Tokens::class);
+        $this->token = Craft::$app->getTokens();
     }
 }
