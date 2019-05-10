@@ -215,7 +215,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('filterByValue', [ArrayHelper::class, 'filterByValue']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$security, 'hashData']),
-            new TwigFilter('htmlTagAttributes', [$this, 'htmlTagAttributesFilter']),
             new TwigFilter('id', [$this->view, 'formatInputId']),
             new TwigFilter('index', [ArrayHelper::class, 'index']),
             new TwigFilter('indexOf', [$this, 'indexOfFilter']),
@@ -710,17 +709,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * Renders HTML tag attributes with [[\craft\helpers\Html::renderTagAttributes()]]
-     *
-     * @param array $attributes
-     * @return Markup
-     */
-    public function htmlTagAttributesFilter(array $attributes): Markup
-    {
-        return TemplateHelper::raw(Html::renderTagAttributes($attributes));
-    }
-
-    /**
      * @inheritdoc
      */
     public function getFunctions(): array
@@ -729,6 +717,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('alias', [Craft::class, 'getAlias']),
             new TwigFunction('actionInput', [$this, 'actionInputFunction']),
             new TwigFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
+            new TwigFunction('attr', [$this, 'attrFunction']),
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
@@ -757,6 +746,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('getHeadHtml', [$this, 'getHeadHtml']),
             new TwigFunction('getFootHtml', [$this, 'getFootHtml']),
         ];
+    }
+
+    /**
+     * Renders HTML tag attributes with [[\craft\helpers\Html::renderTagAttributes()]]
+     *
+     * @param array $attributes
+     * @return Markup
+     */
+    public function attrFunction(array $config): Markup
+    {
+        return TemplateHelper::raw(Html::renderTagAttributes($config));
     }
 
     /**
