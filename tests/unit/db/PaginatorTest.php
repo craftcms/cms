@@ -45,8 +45,17 @@ class PaginatorTest extends Unit
      */
     public function testTotalResults()
     {
-        $this->setPaginator();
-        $this->assertSame('100', $this->paginator->getTotalResults());
+        $this->setPaginator([], [], 10);
+        $this->assertSame('10', $this->paginator->getTotalResults());
+    }
+
+    /**
+     *
+     */
+    public function testTotalResultsWithQueryLimit()
+    {
+        $this->setPaginator(['limit' => 10], [], 25);
+        $this->assertSame(10, $this->paginator->getTotalResults());
     }
 
     /**
@@ -54,8 +63,8 @@ class PaginatorTest extends Unit
      */
     public function testTotalResultsWithQueryOffset()
     {
-        $this->setPaginator(['offset' => 5]);
-        $this->assertSame(95, $this->paginator->getTotalResults());
+        $this->setPaginator(['offset' => 5], [], 10);
+        $this->assertSame(5, $this->paginator->getTotalResults());
     }
 
     /**
@@ -76,6 +85,85 @@ class PaginatorTest extends Unit
         $this->assertSame(5, $this->paginator->getTotalPages());
     }
 
+    /**
+     *
+     */
+    public function testGetPageResults()
+    {
+        $this->setPaginator([], ['pageSize' => '2']);
+
+        $desiredResults = (new Query())->select('*')->from(Session::tableName())->limit('2')->all();
+        $this->assertSame($desiredResults, $this->paginator->getPageResults());
+    }
+
+    /**
+     *
+     */
+    public function testGetPageResultsSlices()
+    {
+        $this->setPaginator([], ['pageSize' => '2'], 10);
+
+        $desiredResults = (new Query())->select('*')->from(Session::tableName())->limit('4')->all();
+
+        // Should get the first two...
+        $this->assertSame([$desiredResults[0], $desiredResults[1]], $this->paginator->getPageResults());
+
+        // Next page. Other two results.
+        $this->paginator->setCurrentPage(2);
+        $this->assertSame([$desiredResults[2], $desiredResults[3]], $this->paginator->getPageResults());
+    }
+
+    /**
+     *
+     */
+    public function testGetPageResultsIncompleteResults()
+    {
+        $this->setPaginator([], ['pageSize' => '2'], 1);
+
+        $desiredResults = (new Query())->select('*')->from(Session::tableName())->limit('1')->all();
+        $this->assertSame($desiredResults, $this->paginator->getPageResults());
+    }
+
+    /**
+     *
+     */
+    public function testGetPageResultsNoPageSize()
+    {
+        $this->setPaginator([], ['pageSize' => null], 10);
+        $this->assertSame([], $this->paginator->getPageResults());
+    }
+
+    /**
+     *
+     */
+    public function testGetPageOffset()
+    {
+        $this->setPaginator([], [], 10);
+        $this->assertSame(0, $this->paginator->getPageOffset());
+    }
+
+    /**
+     *
+     */
+    public function testSetPageResultValidation()
+    {
+        $this->setPaginator([], [], 10);
+        $this->paginator->setCurrentPage(5);
+        $this->assertSame(1, $this->paginator->getCurrentPage());
+    }
+
+    /**
+     *
+     */
+    public function testSetPageResultValidationLastPage()
+    {
+        $this->setPaginator([], ['pageSize' => '5'], 10);
+        $this->paginator->setCurrentPage(2);
+        $this->assertSame(2, $this->paginator->getCurrentPage());
+
+        $this->paginator->setCurrentPage(3);
+        $this->assertSame(2, $this->paginator->getCurrentPage());
+    }
 
     // Protected Methods
     // =========================================================================
