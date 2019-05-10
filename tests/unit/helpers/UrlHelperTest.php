@@ -173,7 +173,7 @@ class UrlHelperTest extends Unit
      *
      * @dataProvider urlWithSchemeDataProvider
      * @dataProvider urlWithTokenDataProvider
-     * @dataProvider urlWithParamsProvider
+     * @dataProvider urlWithParamsDataProvider
      * @dataProvider stripQueryStringDataProvider
      *
      * @param bool $result
