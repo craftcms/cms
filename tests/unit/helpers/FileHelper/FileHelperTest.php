@@ -59,7 +59,7 @@ class FileHelperTest extends Unit
      */
     public function testCopyAndClear()
     {
-        $copyIntoDir = __DIR__ . '/sandbox/copyinto';
+        $copyIntoDir = __DIR__ . '/sandbox/copyInto';
         $copyFromDir = dirname(__DIR__, 3) . '/_data/assets/files';
 
         // Clear it.
@@ -409,7 +409,11 @@ class FileHelperTest extends Unit
      */
     protected function _before()
     {
-        FileHelper::clearDirectory(__DIR__ . '/sandbox/copyinto');
+        if (!is_dir(__DIR__ . '/sandbox/copyInto')) {
+            FileHelper::createDirectory(__DIR__ . '/sandbox/copyInto');
+        }
+        
+        FileHelper::clearDirectory(__DIR__ . '/sandbox/copyInto');
 
         if (!is_dir(__DIR__.'/sandbox/isdirempty/yes')) {
             FileHelper::createDirectory(__DIR__.'/sandbox/isdirempty/yes');
