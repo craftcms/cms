@@ -7,43 +7,42 @@
 
 namespace craft\test;
 
-
+use Craft;
 use Codeception\Lib\Connector\Yii2;
 use Yii;
-use yii\base\InvalidConfigException;
 use yii\mail\MessageInterface;
 use yii\web\Application;
 
-
 /**
- * CraftConnector
+ * Class CraftConnector
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class CraftConnector extends Yii2
 {
-    // Private properties
+    // Public Properties
     // =========================================================================
 
     /**
-     * @var array $emails
+     * @var array
      */
     protected $emails;
 
-    // Public functions
+    // Public Methods
     // =========================================================================
 
     /**
-     * @throws InvalidConfigException
+     *
      */
     public function startApp()
     {
         parent::startApp();
-        \Craft::$app = Yii::$app;
 
-        \Craft::$app->set('mailer', ['class' => TestMailer::class, 'callback' => function (MessageInterface $message) {
+        Craft::$app = Yii::$app;
+
+        Craft::$app->set('mailer', ['class' => TestMailer::class, 'callback' => function (MessageInterface $message) {
             $this->emails[] = $message;
         }]);
     }
@@ -63,7 +62,6 @@ class CraftConnector extends Yii2
     public function resetRequest(Application $app)
     {
         parent::resetRequest($app);
-
         $app->getRequest()->setIsConsoleRequest(false);
     }
 }

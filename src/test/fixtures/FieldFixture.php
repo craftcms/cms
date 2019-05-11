@@ -5,10 +5,9 @@
  * @license https://craftcms.github.io/license/
  */
 
-
 namespace craft\test\fixtures;
 
-
+use Craft;
 use craft\fields\PlainText;
 use craft\records\Field;
 use craft\services\Fields;
@@ -20,15 +19,28 @@ use yii\base\InvalidArgumentException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class FieldFixture extends Fixture
 {
+    // Public Properties
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
     public $modelClass = Field::class;
 
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
     public function load()
     {
         foreach ($this->getData() as $alias => $row) {
+
             if (isset($row['fieldType'])) {
                 $class = $row['fieldType'];
                 $field = new $class;
@@ -41,19 +53,22 @@ class FieldFixture extends Fixture
                 $field->$key = $value;
             }
 
-            if (!\Craft::$app->getFields()->saveField($field)) {
+            if (!Craft::$app->getFields()->saveField($field)) {
                 throw new InvalidArgumentException('Unable to save field');
             }
         }
 
-        \Craft::$app->set('fields', new Fields());
-
+        Craft::$app->set('fields', new Fields());
         // TODO: How do we updated content behavior here?
     }
 
+    /**
+     * @inheritDoc
+     */
     public function unload()
     {
         $fieldsThatDidntSave = [];
+
         foreach ($this->getData() as $toBeDeletedRow) {
             $field = Craft::$app->getFields()->getFieldByHandle($toBeDeletedRow['handle']);
 

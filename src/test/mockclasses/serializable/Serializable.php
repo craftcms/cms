@@ -14,10 +14,16 @@ use craft\base\Serializable as SerializableInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since  3.1
  */
 class Serializable implements SerializableInterface
 {
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @return mixed|string
+     */
     public function serialize()
     {
         return 'Serialized data';

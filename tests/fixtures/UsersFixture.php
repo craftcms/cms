@@ -7,7 +7,7 @@
 
 namespace craftunit\fixtures;
 
-use craft\test\elementfixtures\UserFixture;
+use craft\test\fixtures\elements\UserFixture;
 
 /**
  * Class UsersFixture

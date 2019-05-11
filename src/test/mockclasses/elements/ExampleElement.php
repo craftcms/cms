@@ -5,9 +5,7 @@
  * @license   https://craftcms.github.io/license/
  */
 
-
 namespace craft\test\mockclasses\elements;
-
 
 use craft\base\Element;
 
@@ -16,12 +14,24 @@ use craft\base\Element;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since  3.1
  */
 class ExampleElement extends Element
 {
+    // Public Properties
+    // =========================================================================
+
+    /**
+     * @var
+     */
     public $uriFormat;
 
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
     public function getUriFormat()
     {
         return $this->uriFormat;

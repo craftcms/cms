@@ -6,6 +6,8 @@
  */
 namespace craft\test;
 
+use Craft;
+use craft\test\Craft as CraftTest;
 use craft\db\Connection;
 use craft\db\Migration;
 use craft\helpers\ArrayHelper;
@@ -16,8 +18,6 @@ use craft\services\Config;
 use craft\web\Application;
 use craft\web\UploadedFile;
 use Symfony\Component\Yaml\Yaml;
-use Throwable;
-use yii\base\ErrorException;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -28,7 +28,7 @@ use yii\db\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since  3.1
  */
 class TestSetup
 {
@@ -46,7 +46,7 @@ class TestSetup
         $app = self::createTestCraftObjectConfig();
         $app['isInstalled'] = false;
 
-        return \Craft::createObject($app);
+        return Craft::createObject($app);
     }
 
     /**
@@ -65,9 +65,10 @@ class TestSetup
         if (method_exists(Event::class, 'offAll')) {
             Event::offAll();
         }
-        \Craft::setLogger(null);
 
-        \Craft::$app = null;
+        Craft::setLogger(null);
+
+        Craft::$app = null;
 
     }
 
@@ -86,8 +87,9 @@ class TestSetup
 
 
         $tables = $connection->schema->getTableNames();
+
         if ($tables !== []) {
-            throw new Exception('Unable to setup test environment');
+            throw new Exception('Unable to setup test environment.');
         }
 
         return true;
@@ -126,11 +128,11 @@ class TestSetup
         $srcPath = $basePath . '/src';
         $vendorPath = CRAFT_VENDOR_PATH;
 
-        \Craft::setAlias('@craftunitsupport', $srcPath.'/test');
-        \Craft::setAlias('@craftunittemplates', $basePath.'/tests/_craft/templates');
-        \Craft::setAlias('@craftunitfixtures', $basePath.'/tests/fixtures');
-        \Craft::setAlias('@testsfolder', $basePath.'/tests');
-        \Craft::setAlias('@crafttestsfolder', $basePath.'/tests/_craft');
+        Craft::setAlias('@craftunitsupport', $srcPath.'/test');
+        Craft::setAlias('@craftunittemplates', $basePath.'/tests/_craft/templates');
+        Craft::setAlias('@craftunitfixtures', $basePath.'/tests/fixtures');
+        Craft::setAlias('@testsfolder', $basePath.'/tests');
+        Craft::setAlias('@crafttestsfolder', $basePath.'/tests/_craft');
 
         // Load the config
         $config = ArrayHelper::merge(
@@ -147,9 +149,10 @@ class TestSetup
             require $srcPath . '/config/app.web.php'
         );
 
-        // Use app.php from the config dir aswell.
+        // Use app.php from the config dir as well.
         $craftPath = CRAFT_CONFIG_PATH;
         $appConfigPath = $craftPath.'/app.php';
+
         if (is_file($appConfigPath)) {
             $appConfig = require $appConfigPath;
             $config = ArrayHelper::merge($config, $appConfig);
@@ -207,14 +210,14 @@ class TestSetup
         require $srcPath.'/Craft.php';
 
         // Set aliases
-        \Craft::setAlias('@vendor', $vendorPath);
-        \Craft::setAlias('@lib', $libPath);
-        \Craft::setAlias('@craft', $srcPath);
-        \Craft::setAlias('@config', $configPath);
-        \Craft::setAlias('@contentMigrations', $contentMigrationsPath);
-        \Craft::setAlias('@storage', $storagePath);
-        \Craft::setAlias('@templates', $templatesPath);
-        \Craft::setAlias('@translations', $translationsPath);
+        Craft::setAlias('@vendor', $vendorPath);
+        Craft::setAlias('@lib', $libPath);
+        Craft::setAlias('@craft', $srcPath);
+        Craft::setAlias('@config', $configPath);
+        Craft::setAlias('@contentMigrations', $contentMigrationsPath);
+        Craft::setAlias('@storage', $storagePath);
+        Craft::setAlias('@templates', $templatesPath);
+        Craft::setAlias('@translations', $translationsPath);
 
         return true;
     }
@@ -245,10 +248,10 @@ class TestSetup
 
     /**
      * @param Connection $connection
-     * @param Craft $craftTestModule
+     * @param CraftTest $craftTestModule
      * @throws Exception
      */
-    public static function setupCraftDb(Connection $connection, Craft $craftTestModule)
+    public static function setupCraftDb(Connection $connection, CraftTest $craftTestModule)
     {
         if ($connection->schema->getTableNames() !== []) {
             throw new Exception('Not allowed to setup the DB if it has not been cleansed');
@@ -265,6 +268,7 @@ class TestSetup
 
         // Replace the default site with what is desired by the project config (Currently). If project config is enabled.
         $projectConfig = $craftTestModule->_getConfig('projectConfig');
+
         if ($projectConfig && isset($projectConfig['file'])) {
             $existingProjectConfig = Yaml::parse(
                 file_get_contents($projectConfig['file']) ?: ''

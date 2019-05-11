@@ -7,25 +7,41 @@
 
 namespace craft\test\mockclasses;
 
-
 /**
  * Class NumberToString.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since  3.1
  */
 class ToStringTest
 {
-    private $string;
+    // Private Properties
+    // =========================================================================
 
+    /**
+     * @var string
+     */
+    private $_string;
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * ToStringTest constructor.
+     *
+     * @param string $string
+     */
     public function __construct(string $string)
     {
-        $this->string = $string;
+        $this->_string = $string;
     }
 
+    /**
+     * @return string
+     */
     public function __toString()
     {
-        return $this->string;
+        return $this->_string;
     }
 }

@@ -6,7 +6,6 @@
  */
 namespace craft\test\mockclasses\models;
 
-
 use craft\base\Model;
 
 /**
@@ -14,23 +13,42 @@ use craft\base\Model;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since  3.1
  */
 class ExampleModel extends Model
 {
-    public $exampleParam;
-    public $exampleDateParam;
-
-    public $dateCreated;
-    public $dateUpdated;
+    // Public Properties
+    // =========================================================================
 
     /**
-     * @return array
+     * @var
+     */
+    public $exampleParam;
+
+    /**
+     * @var
+     */
+    public $exampleDateParam;
+
+    /**
+     * @var
+     */
+    public $dateCreated;
+
+    /**
+     * @var
+     */
+    public $dateUpdated;
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
      */
     public function datetimeAttributes(): array
     {
         $attr = parent::datetimeAttributes();
-
         $attr[] = 'exampleDateParam';
 
         return $attr;

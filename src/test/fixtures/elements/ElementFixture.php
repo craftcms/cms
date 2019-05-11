@@ -4,7 +4,8 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.github.io/license/
  */
-namespace craft\test\elementfixtures;
+
+namespace craft\test\fixtures\elements;
 
 use Craft;
 use craft\errors\InvalidElementException;
@@ -26,46 +27,54 @@ use craft\base\Element;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author  Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since  3.1
  */
 abstract class ElementFixture extends ActiveFixture
 {
+    // Public Methods
+    // =========================================================================
+
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function init(): void
     {
         parent::init();
+
         if (!($this->getElement() instanceof Element)) {
             throw new InvalidConfigException('"modelClass" must be an Element');
         }
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getModel($name)
     {
         if (!isset($this->data[$name])) {
             return null;
         }
+
         if (array_key_exists($name, $this->_models)) {
             return $this->_models[$name];
         }
+
         return $this->_models[$name] = $this->getElement($this->data[$name]);
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function load(): void
+    public function load()
     {
         $this->data = [];
+
         foreach ($this->getData() as $alias => $data) {
             $element = $this->getElement();
 
             // If they want to add a date deleted. Store it but dont set that as an element property
             $dateDeleted = null;
+
             if (isset($data['dateDeleted'])) {
                 $dateDeleted = $data['dateDeleted'];
                 unset($data['dateDeleted']);
@@ -84,7 +93,9 @@ abstract class ElementFixture extends ActiveFixture
                 $elementRecord = \craft\records\Element::find()
                     ->where(['id' => $element->id])
                     ->one();
+
                 $elementRecord->dateDeleted = $dateDeleted;
+
                 if (!$elementRecord->save()) {
                     throw new Exception('Unable to set element as deleted');
                 }
@@ -96,6 +107,7 @@ abstract class ElementFixture extends ActiveFixture
 
     /**
      * @inheritdoc
+     *
      * @throws InvalidElementException
      * @throws Throwable
      */
@@ -125,7 +137,6 @@ abstract class ElementFixture extends ActiveFixture
      * See if an element's handle is a primary key.
      *
      * @param string $key
-     *
      * @return bool
      */
     abstract protected function isPrimaryKey(string $key): bool;
@@ -134,17 +145,18 @@ abstract class ElementFixture extends ActiveFixture
      * Get element model.
      *
      * @param array|null $data The data to get the element by
-     *
      * @return Element
      */
-    public function getElement(array $data = null): Element
+    public function getElement(array $data = null)
     {
         $modelClass = $this->modelClass;
+
         if ($data === null) {
             return new $modelClass();
         }
 
         $query = $modelClass::find()->anyStatus()->trashed(null);
+
         foreach ($data as $key => $value) {
             if ($this->isPrimaryKey($key)) {
                 $query = $query->$key($value);

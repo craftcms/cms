@@ -7,38 +7,38 @@
 
 namespace craft\test\mockclasses\components;
 
-
 use craft\base\ComponentInterface;
 use Exception;
 use RuntimeException;
-use yii\base\InvalidConfigException;
 
 /**
- * Class DependencyHeavyComponent.
+ * Class DependencyHeavyComponentExample.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since  3.1
  */
-class DependencyHeavyComponent implements ComponentInterface
+class DependencyHeavyComponentExample implements ComponentInterface
 {
+    // Public Methods
+    // =========================================================================
+
     /**
-     * DependencyHeavyComponent constructor.
-     *
      * @param array $settings
-     *
      * @throws Exception
      */
     public function __construct(array $settings)
     {
         if (!isset($settings['dependency1'])) {
-            throw new RuntimeException('Dependency 1 doesnt exist');
+            throw new RuntimeException('Dependency 1 does not exist');
         }
+
         if (!isset($settings['dependency2'])) {
-            throw new RuntimeException('Dependency 2 doesnt exist');
+            throw new RuntimeException('Dependency 2 does not exist');
         }
+
         if (!isset($settings['settingsdependency1'])) {
-            throw new RuntimeException('Settings dependency 1 doesnt exist');
+            throw new RuntimeException('Settings dependency 1 does not exist');
         }
     }
 

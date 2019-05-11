@@ -5,28 +5,35 @@
  * @license https://craftcms.github.io/license/
  */
 
-
-namespace craft\test\elementfixtures;
-
+namespace craft\test\fixtures\elements;
 
 use craft\elements\User;
 
 /**
- * Unit tests for UserFixture
+ * Class UserFixture
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.0
+ * @since 3.1
  */
 class UserFixture extends ElementFixture
 {
-    public $modelClass = User::class;
+    // Public Properties
+    // =========================================================================
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
+     */
+    public $modelClass = User::class;
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritDoc
      */
     protected function isPrimaryKey(string $key): bool
     {
-        return $key === 'username' || $key === 'email';
+        return in_array($key, ['username', 'email']);
     }
 }

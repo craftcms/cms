@@ -12,10 +12,16 @@ namespace craft\test\mockclasses\components;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.0
+ * @since  3.1
  */
 class ExtendedComponentExample extends ComponentExample
 {
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @return string
+     */
     public static function displayName(): string
     {
         return 'Extended component example';

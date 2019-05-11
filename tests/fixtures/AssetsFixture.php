@@ -8,7 +8,7 @@
 
 namespace craftunit\fixtures;
 
-use craft\test\elementfixtures\AssetFixture;
+use craft\test\fixtures\elements\AssetFixture;
 
 /**
  * Class AssetsFixture.

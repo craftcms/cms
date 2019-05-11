@@ -7,7 +7,7 @@
 
 namespace craftunit\fixtures;
 
-use \craft\test\elementfixtures\EntriesFixture as BaseEntriesFixture;
+use craft\test\fixtures\elements\EntriesFixture as BaseEntriesFixture;
 
 /**
  * Class EntriesFixture

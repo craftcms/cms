@@ -21,7 +21,7 @@ use yii\mail\MessageInterface;
  */
 class TestMailer extends Mailer
 {
-    // Public properties
+    // Public Properties
     // =========================================================================
 
     /**
@@ -34,7 +34,7 @@ class TestMailer extends Mailer
      */
     public $callback;
 
-    // Protected functions
+    // Protected Methods
     // =========================================================================
 
     /**

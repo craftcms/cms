@@ -5,9 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-
 namespace craft\test;
-
 
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module\Yii2;
@@ -25,7 +23,6 @@ use ReflectionException;
 use ReflectionObject;
 use Throwable;
 use yii\base\Application;
-use yii\base\ErrorException;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
@@ -45,7 +42,7 @@ use yii\db\Exception;
  * DB event listeners are registered. Moving the order of these listeners to the top of the _before function means the connection
  * is registered.
  *
- * What i need to investigate is whether iam doing something wrong in the src/tests/_craft/config/test.php or if this is PR 'worthy'
+ * What I need to investigate is whether I am doing something wrong in the src/tests/_craft/config/test.php or if this is PR 'worthy'
  * For now: Remounting the DB object using Craft::$app->set() after the event listeners are called works perfectly fine.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -54,11 +51,19 @@ use yii\db\Exception;
  */
 class Craft extends Yii2
 {
-    // Setup work
+    // Public Properties
     // =========================================================================
 
     /**
+     * A static version of the config for use on the tests/_craft/config/test.php file
+     *
+     * @var array
+     */
+    public static $testConfig;
+
+    /**
      * Application config file must be set.
+     *
      * @var array
      */
     protected $addedConfig = [
@@ -70,21 +75,26 @@ class Craft extends Yii2
 
     /**
      * For expecting events code
+     *
      * @var array
      */
     protected $triggeredEvents = [];
-    protected $requiredEvents = [];
 
     /**
-     * A static version of the config for use on the tests/_craft/config/test.php file
+     * For expecting events code
+     *
      * @var array
      */
-    public static $testConfig;
+    protected $requiredEvents = [];
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * Craft constructor.
+     *
      * We need to merge the config settings here as this is the earliest point in the instance's existence.
-     * Doing it in _initialize() wont work as the config variables have already been added.
+     * Doing it in _initialize() won't work as the config variables have already been added.
      *
      * @param ModuleContainer $moduleContainer
      * @param null $config
@@ -98,19 +108,18 @@ class Craft extends Yii2
     }
 
     /**
-     * @throws Throwable
+     * @inheritDoc
      */
     public function _initialize()
     {
-        self::$testConfig = $this->_getConfig();
+        Craft::$testConfig = $this->_getConfig();
         $this->setupDb();
 
         parent::_initialize();
     }
 
     /**
-     * @param TestInterface $test
-     * @throws InvalidConfigException
+     * @inheritDoc
      */
     public function _before(TestInterface $test)
     {
@@ -132,9 +141,7 @@ class Craft extends Yii2
 
     /**
      * @param TestInterface $test
-     * @throws Exception
      * @throws InvalidConfigException
-     * @throws ErrorException
      */
     public function _after(TestInterface $test)
     {
@@ -291,6 +298,78 @@ class Craft extends Yii2
         $this->invokeMethod($installer, 'addPlugin', [$package]);
     }
 
+    // Helpers for test methods
+    // =========================================================================
+
+    /**
+     * Ensure that an event is triggered by the $callback() function.
+     *
+     * @param string $class
+     * @param string $eventName
+     * @param $callback
+     */
+    public function expectEvent(string $class, string $eventName, $callback)
+    {
+        // Add this event.
+        $requiredEvent = null;
+
+        // Listen to this event and log it.
+        Event::on($class, $eventName, function () use (&$requiredEvent) {
+            $requiredEvent = true;
+        });
+
+        $callback();
+
+        $this->assertTrue($requiredEvent, 'Asserting that an event is triggered.');
+    }
+
+    /**
+     * @param Module $module
+     * @param string $component
+     * @param array $methods
+     * @param array $constructParams
+     * @throws InvalidConfigException
+     */
+    public function mockMethods(Module $module, string $component, array $methods = [], array $constructParams = [])
+    {
+        $componentInstance = $module->get($component);
+
+        $module->set($component, Stub::construct(get_class($componentInstance), [$constructParams], $methods));
+    }
+
+    /**
+     * @param string $component
+     * @param array $methods
+     * @param array $constructParams
+     * @throws InvalidConfigException
+     */
+    public function mockCraftMethods(string $component, array $methods = [], array $constructParams = [])
+    {
+        return $this->mockMethods(\Craft::$app, $component, $methods, $constructParams);
+    }
+
+    /**
+     * Creates a DB config according to the loaded .env variables.
+     *
+     * @return DbConfig
+     */
+    public static function createDbConfig() : DbConfig
+    {
+        return new DbConfig([
+            'password' => getenv('DB_PASSWORD'),
+            'user' => getenv('DB_USER'),
+            'database' => getenv('DB_DATABASE'),
+            'tablePrefix' => getenv('DB_TABLE_PREFIX'),
+            'driver' => getenv('DB_DRIVER'),
+            'port' => getenv('DB_PORT'),
+            'schema' => getenv('DB_SCHEMA'),
+            'server' => getenv('DB_SERVER'),
+        ]);
+    }
+
+    // Protected Methods
+    // =========================================================================
+
     /**
      * @todo Remove once final version of above is published.
      *
@@ -339,6 +418,7 @@ class Craft extends Yii2
 
     /**
      * Check if the codeception file wants us to set it up only once
+     *
      * @return bool
      */
     protected function refreshProjectConfigPerTest() : bool
@@ -350,76 +430,5 @@ class Craft extends Yii2
         }
 
         return ($projectConfig && array_key_exists('once', $projectConfig) && $projectConfig['once'] === false);
-    }
-    // Helper and to-be-directly used in test methods.
-    // =========================================================================
-
-    /**
-     * Ensure that an event is triggered by the $callback() function.
-     *
-     *
-     * @param string $class
-     * @param string $eventName
-     * @param $callback
-     */
-    public function expectEvent(string $class, string $eventName, $callback)
-    {
-        // Add this event.
-        $requiredEvent = null;
-
-        // Listen to this event and log it.
-        Event::on($class, $eventName, function () use (&$requiredEvent) {
-            $requiredEvent = true;
-        });
-
-        $callback();
-
-        $this->assertTrue($requiredEvent, 'Asserting that an event is triggered');
-    }
-
-    /**
-     * @param Module $module
-     * @param string $component
-     * @param array $methods
-     * @param array $constructParams
-     * @throws InvalidConfigException
-     */
-    public function mockMethods(Module $module, string $component, array $methods = [], array $constructParams = [])
-    {
-        $componentInstance = $module->get($component);
-
-        $module->set($component, Stub::construct(get_class($componentInstance), [$constructParams], $methods));
-    }
-
-    /**
-     * @param string $component
-     * @param array $methods
-     * @param array $constructParams
-     * @throws InvalidConfigException
-     */
-    public function mockCraftMethods(string $component, array $methods = [], array $constructParams = [])
-    {
-        return $this->mockMethods(\Craft::$app, $component, $methods, $constructParams);
-    }
-
-    // Factories
-    // =========================================================================
-
-    /**
-     * Creates a DB config according to the loaded .ENV variables.
-     * @return DbConfig
-     */
-    public static function createDbConfig() : DbConfig
-    {
-        return new DbConfig([
-            'password' => getenv('DB_PASSWORD'),
-            'user' => getenv('DB_USER'),
-            'database' => getenv('DB_DATABASE'),
-            'tablePrefix' => getenv('DB_TABLE_PREFIX'),
-            'driver' => getenv('DB_DRIVER'),
-            'port' => getenv('DB_PORT'),
-            'schema' => getenv('DB_SCHEMA'),
-            'server' => getenv('DB_SERVER'),
-        ]);
     }
 }

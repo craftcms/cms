@@ -13,7 +13,7 @@ use craft\base\ComponentInterface;
 use craft\errors\MissingComponentException;
 use craft\helpers\Component;
 use craft\test\mockclasses\components\ComponentExample;
-use craft\test\mockclasses\components\DependencyHeavyComponent;
+use craft\test\mockclasses\components\DependencyHeavyComponentExample;
 use craft\test\mockclasses\components\ExtendedComponentExample;
 use Exception;
 use UnitTester;
@@ -117,7 +117,7 @@ class ComponentHelperTest extends Unit
             'dependency-heavy' => [
                 function() {
                     return Component::createComponent([
-                        'type' => DependencyHeavyComponent::class,
+                        'type' => DependencyHeavyComponentExample::class,
                         'dependency1' => 'value1',
                         'dependency2' => 'value2',
                         'settings' => [
@@ -164,7 +164,7 @@ class ComponentHelperTest extends Unit
             ],
             'incorrect-dependencies' => [
                 [
-                    'type' => DependencyHeavyComponent::class,
+                    'type' => DependencyHeavyComponentExample::class,
                     'notavaliddependency' => 'value1',
                     'notavaliddependency2' => 'value2',
                     'settings' => [
