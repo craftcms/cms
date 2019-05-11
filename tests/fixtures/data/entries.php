@@ -48,13 +48,11 @@ return [
     [
         'sectionId' => '1003',
         'typeId' => '1003',
-        'title' => 'Pending 1',
-        'status' => Entry::STATUS_PENDING
+        'title' => 'Pending 1'
     ],
     [
         'sectionId' => '1003',
         'typeId' => '1003',
-        'title' => 'Pending 2',
-        'status' => Entry::STATUS_PENDING
+        'title' => 'Pending 2'
     ],
 ];
