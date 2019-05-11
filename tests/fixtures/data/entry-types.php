@@ -47,5 +47,25 @@ return [
         'titleLabel' => 'Title',
         'titleFormat' => null,
         'sortOrder' => '4',
+    ],
+    [
+        'id' => '1004',
+        'sectionId' => '1004',
+        'fieldLayoutId' => null,
+        'name' => 'With versioning',
+        'handle' => 'withVersioning',
+        'titleLabel' => 'Title',
+        'titleFormat' => null,
+        'sortOrder' => '1',
+    ],
+    [
+        'id' => '1005',
+        'sectionId' => '1005',
+        'fieldLayoutId' => null,
+        'name' => 'Single',
+        'handle' => 'single',
+        'titleLabel' => 'Title',
+        'titleFormat' => null,
+        'sortOrder' => '1',
     ]
 ];

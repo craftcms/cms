@@ -40,4 +40,20 @@ return [
         'enableVersioning' => false,
         'propagateEntries' => true,
     ],
+    [
+        'id' => '1004',
+        'name' => 'With versioning',
+        'handle' => 'withVersioning',
+        'type' => 'channel',
+        'enableVersioning' => true,
+        'propagateEntries' => true,
+    ],
+    [
+        'id' => '1005',
+        'name' => 'Single',
+        'handle' => 'single',
+        'type' => 'single',
+        'enableVersioning' => true,
+        'propagateEntries' => true,
+    ],
 ];

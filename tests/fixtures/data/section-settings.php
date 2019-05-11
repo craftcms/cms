@@ -41,5 +41,23 @@ return [
         'uriFormat' => 'some-uri/{slug}',
         'template' => 'index',
         'enabledByDefault' => true,
+    ],
+    [
+        'id' => '1004',
+        'sectionId' => '1004',
+        'siteId' => '1',
+        'hasUrls' => true,
+        'uriFormat' => 'some-uri/{slug}',
+        'template' => 'test',
+        'enabledByDefault' => true,
+    ],
+    [
+        'id' => '1005',
+        'sectionId' => '1005',
+        'siteId' => '1',
+        'hasUrls' => true,
+        'uriFormat' => 'some-uri/{slug}',
+        'template' => 'secondtest',
+        'enabledByDefault' => true,
     ]
 ];
