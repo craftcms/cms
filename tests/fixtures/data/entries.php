@@ -5,6 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
+use \craft\elements\Entry;
+
 return [
     [
         'sectionId' => '1000',
@@ -41,5 +43,18 @@ return [
         'sectionId' => '1003',
         'typeId' => '1003',
         'title' => 'With URL 2',
+    ],
+
+    [
+        'sectionId' => '1003',
+        'typeId' => '1003',
+        'title' => 'Pending 1',
+        'status' => Entry::STATUS_PENDING
+    ],
+    [
+        'sectionId' => '1003',
+        'typeId' => '1003',
+        'title' => 'Pending 2',
+        'status' => Entry::STATUS_PENDING
     ],
 ];
