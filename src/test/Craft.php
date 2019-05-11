@@ -255,7 +255,7 @@ class Craft extends Yii2
      */
     public static function getCodeceptionName() : string
     {
-        return __CLASS__;
+        return '\craft\test\Craft';
     }
 
     /**

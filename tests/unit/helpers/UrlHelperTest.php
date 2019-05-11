@@ -9,6 +9,7 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\test\Craft as CraftTest;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\UrlHelper;
 use UnitTester;
@@ -630,7 +631,7 @@ class UrlHelperTest extends Unit
         $this->cpTrigger = $generalConfig->cpTrigger;
         $configSiteUrl = $generalConfig->siteUrl;
 
-        $craft = $this->getModule(\craft\test\Craft::getCodeceptionName());
+        $craft = $this->getModule(CraftTest::getCodeceptionName());
         $this->entryScript = $craft->_getConfig('entryScript');
         $this->entryUrl = $craft->_getConfig('entryUrl');
 
