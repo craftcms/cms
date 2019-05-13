@@ -8,6 +8,7 @@
 ### Changed
 - Craft no longer shows the status menu for element sources that define a status. ([#4249](https://github.com/craftcms/cms/issues/4249))
 - Element URI formats can now conditionally output an empty string, opting the element out of getting its own system URI. ([#4254](https://github.com/craftcms/cms/issues/4254))
+- Table fields now get validation errors if any column handles are entered in the format of “colX”.
 
 ### Fixed
 - Fixed a bug where rebuilding the project config could set an incorrect value for the user field layout.
@@ -18,6 +19,7 @@
 - Fixed a bug that could occur when Craft generated URLs with multi-byte characters in the query string.
 - Fixed a bug where you could get some character encoding issues in some environments when using PHP 7.3.
 - Fixed a bug where Craft wasn’t attempting to set a unique URI on duplicated elements. ([#4253](https://github.com/craftcms/cms/issues/4253))
+- Fixed a bug where Table fields could copy cell values to other cells if a column had a handle in the format of “colX”. ([#4200](https://github.com/craftcms/cms/issues/4200))
 
 ## 3.1.26 - 2019-05-08
 
