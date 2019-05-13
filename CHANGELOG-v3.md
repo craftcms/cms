@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Craft no longer shows the status menu for element sources that define a status. ([#4249](https://github.com/craftcms/cms/issues/4249))
+
 ### Fixed
 - Fixed a bug where rebuilding the project config could set an incorrect value for the user field layout.
 - Fixed a bug Craft wouldn’t allow users to edit their own photos if they didn’t have upload/remove asset permissions.
