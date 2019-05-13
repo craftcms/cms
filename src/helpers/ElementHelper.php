@@ -58,21 +58,24 @@ class ElementHelper
         // No URL format, no URI.
         if ($uriFormat === null) {
             $element->uri = null;
+            return;
+        }
 
+        // If the URL format returns an empty string, the URL format probably wrapped everything in a condition
+        $testUri = self::_renderUriFormat($uriFormat, $element);
+        if ($testUri === '') {
+            $element->uri = null;
             return;
         }
 
         // Does the URL format even have a {slug} tag?
         if (!static::doesUriFormatHaveSlugTag($uriFormat)) {
-            $testUri = self::_renderUriFormat($uriFormat, $element);
-
             // Make sure it's unique
             if (!self::_isUniqueUri($testUri, $element)) {
                 throw new OperationAbortedException('Could not find a unique URI for this element');
             }
 
             $element->uri = $testUri;
-
             return;
         }
 
@@ -114,7 +117,6 @@ class ElementHelper
                 // OMG!
                 $element->slug = $testSlug;
                 $element->uri = $testUri;
-
                 return;
             }
 

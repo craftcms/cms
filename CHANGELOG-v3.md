@@ -7,6 +7,7 @@
 
 ### Changed
 - Craft no longer shows the status menu for element sources that define a status. ([#4249](https://github.com/craftcms/cms/issues/4249))
+- Element URI formats can now conditionally output an empty string, opting the element out of getting its own system URI. ([#4254](https://github.com/craftcms/cms/issues/4254))
 
 ### Fixed
 - Fixed a bug where rebuilding the project config could set an incorrect value for the user field layout.
