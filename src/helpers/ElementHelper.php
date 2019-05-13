@@ -54,9 +54,11 @@ class ElementHelper
     {
         /** @var Element $element */
         $uriFormat = $element->getUriFormat();
+        $testUri = self::_renderUriFormat($uriFormat, $element);
 
         // No URL format, no URI.
-        if ($uriFormat === null) {
+        // If no URI after rendering, this element has been conditionally excluded.
+        if ($uriFormat === null || !$testUri) {
             $element->uri = null;
 
             return;
@@ -64,7 +66,6 @@ class ElementHelper
 
         // Does the URL format even have a {slug} tag?
         if (!static::doesUriFormatHaveSlugTag($uriFormat)) {
-            $testUri = self::_renderUriFormat($uriFormat, $element);
 
             // Make sure it's unique
             if (!self::_isUniqueUri($testUri, $element)) {
