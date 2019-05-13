@@ -40,7 +40,8 @@ class GqlController extends Controller
     // Public Methods
     // =========================================================================
 
-    public $allowAnonymous = true;
+    public $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
+
     /**
      * @inheritdoc
      */
