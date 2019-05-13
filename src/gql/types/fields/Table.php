@@ -20,14 +20,14 @@ class Table extends BaseField
                     'addRowLabel' => Type::string(),
                     'maxRows' => [
                         'name' => 'maxRows',
-                        'type' => Type::getNullableType(Type::int()),
+                        'type' => Type::int(),
                         'resolve' => function ($value) {
                             return is_numeric($value->maxRows) ? (int)$value->maxRows : null;
                         }
                     ],
                     'minRows' => [
                         'name' => 'minRows',
-                        'type' => Type::getNullableType(Type::int()),
+                        'type' => Type::int(),
                         'resolve' => function ($value) {
                             return is_numeric($value->minRows) ? (int)$value->minRows : null;
                         }
