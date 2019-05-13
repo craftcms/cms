@@ -18,8 +18,20 @@ class Table extends BaseField
             'fields' => function () {
                 return array_merge(self::getBaseFields(), [
                     'addRowLabel' => Type::string(),
-                    'maxRows' => Type::int(),
-                    'minRows' => Type::int(),
+                    'maxRows' => [
+                        'name' => 'maxRows',
+                        'type' => Type::getNullableType(Type::int()),
+                        'resolve' => function ($value) {
+                            return is_numeric($value->maxRows) ? (int)$value->maxRows : null;
+                        }
+                    ],
+                    'minRows' => [
+                        'name' => 'minRows',
+                        'type' => Type::getNullableType(Type::int()),
+                        'resolve' => function ($value) {
+                            return is_numeric($value->minRows) ? (int)$value->minRows : null;
+                        }
+                    ],
                     'columns' => [
                         'name' => 'columns',
                         'type' => Type::listOf(TableColumn::getType()),
