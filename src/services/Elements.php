@@ -25,6 +25,7 @@ use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
+use craft\errors\OperationAbortedException;
 use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
 use craft\events\MergeElementsEvent;
@@ -599,6 +600,13 @@ class Elements extends Component
             throw new Exception('Attempting to duplicate an element in an unsupported site.');
         }
 
+        // Set a unique URI on the clone
+        try {
+            ElementHelper::setUniqueUri($mainClone);
+        } catch (OperationAbortedException $e) {
+            // Oh well, not worth bailing over
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Start with $element's site
@@ -626,6 +634,13 @@ class Elements extends Component
                     $siteClone->id = $mainClone->id;
                     $siteClone->siteId = $siteInfo['siteId'];
                     $siteClone->contentId = null;
+
+                    // Set a unique URI on the site clone
+                    try {
+                        ElementHelper::setUniqueUri($siteClone);
+                    } catch (OperationAbortedException $e) {
+                        // Oh well, not worth bailing over
+                    }
 
                     if (!$this->saveElement($siteClone, false, false)) {
                         throw new InvalidElementException($siteClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $siteInfo['siteId']);
