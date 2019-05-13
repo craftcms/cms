@@ -102,6 +102,11 @@ class Request extends \yii\web\Request
     /**
      * @var bool
      */
+    private $_isLoginRequest = false;
+
+    /**
+     * @var bool
+     */
     private $_checkedRequestType = false;
 
     /**
@@ -436,9 +441,24 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns whether the current request is solely an action request.
+     * Returns whether this was a Login request.
+     *
+     * @return bool
+     * @since 3.2.0
      */
-    public function getIsSingleActionRequest()
+    public function getIsLoginRequest(): bool
+    {
+        $this->_checkRequestType();
+        return $this->_isLoginRequest;
+    }
+
+    /**
+     * Returns whether the current request is solely an action request.
+     *
+     * @return bool
+     * @deprecated in 3.2
+     */
+    public function getIsSingleActionRequest(): bool
     {
         $this->_checkRequestType();
         return $this->_isSingleActionRequest;
@@ -1209,6 +1229,7 @@ class Request extends \yii\web\Request
                     switch ($this->_path) {
                         case $loginPath:
                             $this->_actionSegments = ['users', 'login'];
+                            $this->_isLoginRequest = true;
                             break;
                         case $logoutPath:
                             $this->_actionSegments = ['users', 'logout'];

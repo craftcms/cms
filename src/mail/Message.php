@@ -123,29 +123,26 @@ class Message extends \yii\swiftmailer\Message
      */
     private function _normalizeEmails($emails)
     {
-        if (is_array($emails)) {
-            foreach ($emails as $key => $email) {
-                if (is_numeric($key)) {
-                    $emails[$key] = $this->_normalizeEmail($email);
+        if (!is_array($emails)) {
+            $emails = [$emails];
+        }
+
+        $normalized = [];
+
+        foreach ($emails as $key => $value) {
+            if ($value instanceof User) {
+                if (($name = $value->getFullName()) !== null) {
+                    $normalized[$value->email] = $name;
+                } else {
+                    $normalized[] = $value->email;
                 }
+            } else if (is_numeric($key)) {
+                $normalized[] = $value;
+            } else {
+                $normalized[$key] = $value;
             }
-        } else {
-            $emails = $this->_normalizeEmail($emails);
         }
 
-        return $emails;
-    }
-
-    /**
-     * @param string|User $email
-     * @return string|array
-     */
-    private function _normalizeEmail($email)
-    {
-        if ($email instanceof User) {
-            return [$email->email => $email->getName()];
-        }
-
-        return $email;
+        return $normalized;
     }
 }

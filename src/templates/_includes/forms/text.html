@@ -24,9 +24,14 @@
     {%- if showCharsLeft is defined and showCharsLeft %} data-show-chars-left{% endif %}
     {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
     {%- if autocomplete is not same as(null) %} autocomplete="{{ autocomplete is same as(true) ? 'on' : (autocomplete ?: 'off') }}"{% endif %}
+    {%- if not (autocorrect ?? true)  %} autocorrect="off"{% endif %}
+    {%- if not (autocapitalize ?? true)  %} autocapitalize="off"{% endif %}
     {%- if disabled is defined and disabled %} disabled {% endif %}
     {%- if readonly is defined and readonly %} readonly {% endif %}
     {%- if title is defined %} title="{{ title }}"{% endif %}
     {%- if placeholder is defined %} placeholder="{{ placeholder }}"{% endif %}
+    {%- if step is defined %} step="{{ step }}"{% endif %}
+    {%- if min is defined %} min="{{ min }}"{% endif %}
+    {%- if max is defined %} max="{{ max }}"{% endif %}
     {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
 {%- if type == 'password' %}</div>{% endif %}

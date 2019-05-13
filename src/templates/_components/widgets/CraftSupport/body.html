@@ -1,4 +1,4 @@
-{% macro screen(widget, showBackupOption, screen, placeholder, resultsIcon, resultsHeading, formAction, submitText) %}
+{% macro screen(widget, showBackupOption, bundleUrl, screen, placeholder, resultsIcon, resultsHeading, formAction, submitText) %}
     {% import "_includes/forms" as forms %}
     {% set idPrefix = 'cs-'~screen~random() %}
 
@@ -18,7 +18,35 @@
             <form class="cs-search-form" action="{{ formAction }}" method="get" target="_blank">
                 <div class="cs-search-params"></div>
                 <input type="submit" class="btn submit fullwidth disabled" value="{{ submitText }}">
-                <p>{{ "or <a>send to Craft Support</a>"|t('app')|raw }}</p>
+                {% if CraftEdition == CraftPro %}
+                    <p>{{ "or <a>send to Developer Support</a>"|t('app')|raw }}</p>
+                {% endif %}
+                <hr>
+                <h2>{{ 'More Resources'|t('app') }}</h2>
+                <div class="cs-logo-resources">
+                    <a href="https://craftcms.com/partners" target="_blank">
+                        <h3><img src="{{ bundleUrl }}/logos/craft-partners.svg" alt="Craft Support"></h3>
+                        <p>{{ 'Find an official Craft Partner'|t('app') }}</p>
+                    </a>
+                    <a href="https://craftcms.com/discord" target="_blank">
+                        <h3><img src="{{ bundleUrl }}/logos/discord.svg" alt="Discord"></h3>
+                        <p>{{ 'Meet the Craft community'|t('app') }}</p>
+                    </a>
+                    <a href="https://craftquest.io" target="_blank">
+                        <h3><img src="{{ bundleUrl }}/logos/craftquest.svg" alt="CraftQuest"></h3>
+                        <p>{{ 'Unlimited video training'|t('app') }}</p>
+                    </a>
+                </div>
+                <div class="cs-icon-resources">
+                    <a href="https://docs.craftcms.com/v3/" target="_blank">
+                        {{ svg('@app/icons/book.svg') }}
+                        <span>{{ 'Documentation'|t('app') }}</span>
+                    </a>
+                    <a href="https://craftcms.com/guides" target="_blank">
+                        {{ svg('@app/icons/magnifying-glass.svg') }}
+                        <span>{{ 'Guides'|t('app') }}</span>
+                    </a>
+                </div>
             </form>
             <form class="cs-support-form hidden" action="{{ actionUrl('dashboard/send-support-request') }}" method="post" target="{{ idPrefix }}-iframe" accept-charset="UTF-8" enctype="multipart/form-data">
                 {{ csrfInput() }}
@@ -91,6 +119,6 @@
     </div>
 </div>
 
-{{ screen(widget, showBackupOption, 'help', "Briefly describe your question."|t('app'), seIcon, "Similar questions on Stack Exchange"|t('app'), 'https://craftcms.stackexchange.com/questions/ask', "Ask on Stack Exchange"|t('app')) }}
+{{ screen(widget, showBackupOption, bundleUrl, 'help', "Briefly describe your question."|t('app'), seIcon, "Similar questions on Stack Exchange"|t('app'), 'https://craftcms.stackexchange.com/questions/ask', "Ask on Stack Exchange"|t('app')) }}
 
-{{ screen(widget, showBackupOption, 'feedback', "Briefly describe your issue or idea."|t('app'), ghIcon, "Similar issues on GitHub"|t('app'), 'https://github.com/craftcms/cms/issues/new', "Post on GitHub"|t('app')) }}
+{{ screen(widget, showBackupOption, bundleUrl, 'feedback', "Briefly describe your issue or idea."|t('app'), ghIcon, "Similar issues on GitHub"|t('app'), 'https://github.com/craftcms/cms/issues/new', "Post on GitHub"|t('app')) }}

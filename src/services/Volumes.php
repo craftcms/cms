@@ -157,7 +157,7 @@ class Volumes extends Component
     public function getViewableVolumes(): array
     {
         $userSession = Craft::$app->getUser();
-        return ArrayHelper::filterByValue($this->getAllVolumes(), function(VolumeInterface $volume) use ($userSession) {
+        return ArrayHelper::where($this->getAllVolumes(), function(VolumeInterface $volume) use ($userSession) {
             /** @var Volume $volume */
             return $userSession->checkPermission('viewVolume:' . $volume->uid);
         });
@@ -180,7 +180,7 @@ class Volumes extends Component
      */
     public function getPublicVolumes(): array
     {
-        return ArrayHelper::filterByValue($this->getAllVolumes(), 'hasUrls');
+        return ArrayHelper::where($this->getAllVolumes(), 'hasUrls');
     }
 
     /**
@@ -669,6 +669,9 @@ class Volumes extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $volumes = $projectConfig->get(self::CONFIG_VOLUME_KEY);
 
+        // Engage stealth mode
+        $projectConfig->muteEvents = true;
+
         // Loop through the volumes and prune the UID from field layouts.
         if (is_array($volumes)) {
             foreach ($volumes as $volumeUid => $volume) {
@@ -683,6 +686,12 @@ class Volumes extends Component
                 }
             }
         }
+
+        // Nuke all the layout fields from the DB
+        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+
+        // Allow events again
+        $projectConfig->muteEvents = false;
     }
 
     // Private Methods

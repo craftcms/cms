@@ -20,7 +20,7 @@ a { text-decoration: none; }
 
 input, textarea { margin: 0; font-family: 'Lucida Grande', sans-serif; font-size: 100%; }
 
-textarea { resize: none; }
+textarea { resize: vertical; }
 
 select { margin: 0; }
 
@@ -849,6 +849,7 @@ body.ltr table.editable tbody tr th ~ td:not(:first-child) { border-left: 1px so
 body.rtl table.editable tbody tr th ~ td:not(:first-child) { border-right: 1px solid #dbdddf; }
 table.editable tbody tr td { vertical-align: middle; text-align: center; background: #fff; }
 table.editable tbody tr td.textual { vertical-align: top; }
+table.editable tbody tr td.textual textarea { resize: none; }
 table.editable tbody tr td:not(.textual) { padding: 4px 10px; }
 table.editable tbody tr td.error { -webkit-box-shadow: inset 0 0 0 1px #da5a47; box-shadow: inset 0 0 0 1px #da5a47; }
 table.editable tbody tr td.disabled { position: relative; opacity: 1; }

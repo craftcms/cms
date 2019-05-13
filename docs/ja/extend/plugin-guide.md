@@ -59,7 +59,7 @@
     "docs": "https://github.com/developer/repo"
   },
   "require": {
-    "craftcms/cms": "^3.0.0"
+    "craftcms/cms": "^3.1.0"
   },
   "autoload": {
     "psr-4": {

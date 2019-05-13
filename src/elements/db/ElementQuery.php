@@ -29,8 +29,10 @@ use craft\models\Site;
 use craft\search\SearchQuery;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Connection;
+use yii\db\Expression;
 use yii\db\ExpressionInterface;
 
 /**
@@ -165,11 +167,18 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $dateUpdated;
 
     /**
-     * @var int|null The site ID that the elements should be returned in.
+     * @var int|int[]|string|null The site ID(s) that the elements should be returned in, or `'*'` if elements
+     * should be returned in all supported sites.
      * @used-by site()
      * @used-by siteId()
      */
     public $siteId;
+
+    /**
+     * @var bool Whether only elements with unique IDs should be returned by the query.
+     * @used-by unique()
+     */
+    public $unique = false;
 
     /**
      * @var bool Whether the elements must be enabled for the chosen site.
@@ -695,21 +704,34 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @throws Exception if $value is an invalid site handle
+     * @throws InvalidArgumentException if $value is invalid
      * @uses $siteId
      */
     public function site($value)
     {
-        if ($value instanceof Site) {
+        if ($value === '*' || $value === null) {
+            $this->siteId = $value;
+        } else if ($value instanceof Site) {
             $this->siteId = $value->id;
-        } else {
+        } else if (is_string($value)) {
             $site = Craft::$app->getSites()->getSiteByHandle($value);
-
             if (!$site) {
-                throw new Exception('Invalid site handle: ' . $value);
+                throw new InvalidArgumentException('Invalid site handle: ' . $value);
             }
-
             $this->siteId = $site->id;
+        } else {
+            if ($not = (strtolower(reset($value)) === 'not')) {
+                array_shift($value);
+            }
+            $this->siteId = [];
+            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+                if (in_array($site->handle, $value, true) === !$not) {
+                    $this->siteId[] = $site->id;
+                }
+            }
+            if (empty($this->siteId)) {
+                throw new InvalidArgumentException('Invalid site param: [' . ($not ? 'not, ' : '') . implode(', ', $value) . ']');
+            }
         }
 
         return $this;
@@ -719,7 +741,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $siteId
      */
-    public function siteId(int $value = null)
+    public function siteId($value)
     {
         $this->siteId = $value;
         return $this;
@@ -736,6 +758,17 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
         $this->site($value);
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $unique
+     * @since 3.2
+     */
+    public function unique(bool $value = true)
+    {
+        $this->unique = $value;
         return $this;
     }
 
@@ -1063,11 +1096,14 @@ class ElementQuery extends Query implements ElementQueryInterface
             ])
             ->from(['elements' => Table::ELEMENTS])
             ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
-            ->andWhere(['elements_sites.siteId' => $this->siteId])
             ->andWhere($this->where)
             ->offset($this->offset)
             ->limit($this->limit)
             ->addParams($this->params);
+
+        if ($this->siteId !== '*') {
+            $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
+        }
 
         if ($class::hasContent() && $this->contentTable !== null) {
             $this->customFields = $this->customFields();
@@ -1144,6 +1180,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (!$this->afterPrepare()) {
             throw new QueryAbortedException();
         }
+
+        $this->_applyUniqueParam($builder->db);
 
         // Pass the query back
         return $this->query;
@@ -1610,9 +1648,13 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _joinContentTable(string $class)
     {
         // Join in the content table on both queries
-        $this->subQuery->innerJoin($this->contentTable . ' content', '[[content.elementId]] = [[elements.id]]');
-        $this->subQuery->addSelect(['contentId' => 'content.id']);
-        $this->subQuery->andWhere(['content.siteId' => $this->siteId]);
+        $this->subQuery
+            ->innerJoin($this->contentTable . ' content', [
+                'and',
+                '[[content.elementId]] = [[elements.id]]',
+                '[[content.siteId]] = [[elements_sites.siteId]]',
+            ])
+            ->addSelect(['contentId' => 'content.id']);
 
         $this->query->innerJoin($this->contentTable . ' content', '[[content.id]] = [[subquery.contentId]]');
 
@@ -1970,7 +2012,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->query->select = ['elements.id'];
             $elementIds = $this->query->column();
             $this->query->select = $select;
-            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->siteId, true);
+            $siteId = $this->siteId === '*' ? null : $this->siteId;
+            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $siteId, true);
 
             $this->query->limit = $limit;
             $this->query->offset = $offset;
@@ -2125,6 +2168,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements.dateCreated',
                 'elements.dateUpdated',
                 'elements_sites.slug',
+                'elements_sites.siteId',
                 'elements_sites.uri',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
@@ -2154,6 +2198,49 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->join[] = $join;
             }
         }
+    }
+
+    /**
+     * Applies the 'unique' param to the query being prepared
+     *
+     * @param Connection $db
+     */
+    private function _applyUniqueParam(Connection $db)
+    {
+        if (!$this->unique || (
+            $this->siteId &&
+            $this->siteId !== '*' &&
+            (!is_array($this->siteId) || count($this->siteId) === 1)
+        )) {
+            return;
+        }
+
+        $subSelectSql = (clone $this->subQuery)
+            ->select(['elements_sites.id'])
+            ->andWhere('[[subElements.id]] = [[tmpElements.id]]')
+            ->orderBy([
+                new Expression('case when [[elements_sites.siteId]] = :currentSiteId then 0 else 1 end', [
+                    'currentSiteId' => Craft::$app->getSites()->getCurrentSite()->id
+                ]),
+                'elements_sites.id' => SORT_ASC
+            ])
+            ->limit(1)
+            ->getRawSql();
+
+        // `elements` => `subElements`
+        $qElements = $db->quoteTableName('elements');
+        $qSubElements = $db->quoteTableName('subElements');
+        $qTmpElements = $db->quoteTableName('tmpElements');
+        $subSelectSql = str_replace($qElements, $qSubElements, $subSelectSql);
+        $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
+        $subSelectSql = str_replace("{$qSubElements} {$qSubElements}", "{$qElements} {$qSubElements}", $subSelectSql);
+
+        $this->subQuery
+            ->addSelect("({$subSelectSql}) as [[preferredElementsSitesId]]")
+            ->where(null);
+
+        $this->query
+            ->andWhere('[[elements_sites.id]] = [[preferredElementsSitesId]]');
     }
 
     /**
@@ -2227,10 +2314,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param array $row
      * @return ElementInterface
      */
-    private function _createElement(array $row)
+    private function _createElement(array $row): ElementInterface
     {
         // Do we have a placeholder for this element?
-        if (($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $this->siteId)) !== null) {
+        if (($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null) {
             return $element;
         }
 
@@ -2238,8 +2325,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         $class = $this->elementType;
 
         // Instantiate the element
-        $row['siteId'] = $this->siteId;
-
         if ($this->structureId) {
             $row['structureId'] = $this->structureId;
         }

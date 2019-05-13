@@ -1,6 +1,6 @@
 {% set id = (id ?? 'date'~random())~'-date' -%}
 {% set name = name ?? null -%}
-{% set value = value ?? null -%}
+{% set value = (value ?? false) ? date(value, false) : null -%}
 
 <div class="datewrapper"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
