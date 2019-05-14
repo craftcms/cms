@@ -17,6 +17,7 @@ class FieldGroup extends SchemaObject
             'fields' => function () {
                 return array_merge(self::getCommonFields(), [
                     'name' => Type::nonNull(Type::string()),
+// TODO fields?
 //                    'fields' =>
                 ]);
             },

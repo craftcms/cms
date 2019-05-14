@@ -3,11 +3,13 @@ namespace craft\gql\interfaces;
 
 use craft\base\Field as BaseField;
 use craft\fields\Assets as AssetsField;
+use craft\fields\Matrix as MatrixField;
 use craft\fields\PlainText as PlainTextField;
 use craft\fields\Table as TableField;
 use craft\gql\common\SchemaObject;
 use craft\gql\types\FieldGroup;
 use craft\gql\types\fields\Assets;
+use craft\gql\types\fields\Matrix;
 use craft\gql\types\fields\PlainText;
 use craft\gql\types\fields\Table;
 use craft\gql\types\fields\UnsupportedField;
@@ -43,6 +45,8 @@ class Field extends SchemaObject {
                         return Assets::getType();
                     case TableField::class:
                         return Table::getType();
+                    case MatrixField::class:
+                        return Matrix::getType();
                     default:
                         return UnsupportedField::getType();
                 }

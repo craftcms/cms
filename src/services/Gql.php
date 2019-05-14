@@ -14,6 +14,7 @@ use craft\gql\types\AssetTransform;
 use craft\gql\types\CategoryGroup;
 use craft\gql\types\FieldGroup;
 use craft\gql\types\fields\Assets as AssetsField;
+use craft\gql\types\fields\Matrix as MatrixType;
 use craft\gql\types\fields\PlainText;
 use craft\gql\types\fields\Table;
 use craft\gql\types\fields\UnsupportedField;
@@ -119,6 +120,7 @@ class Gql extends Component
             AssetsField::getType(),
             PlainText::getType(),
             Table::getType(),
+            MatrixType::getType(),
             UnsupportedField::getType(),
 
         ];
