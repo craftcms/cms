@@ -125,7 +125,30 @@ class Table extends Field
         $rules[] = [['minRows'], 'compare', 'compareAttribute' => 'maxRows', 'operator' => '<=', 'type' => 'number', 'when' => [$this, 'hasMaxRows']];
         $rules[] = [['maxRows'], 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number', 'when' => [$this, 'hasMinRows']];
         $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
+        $rules[] = [['columns'], 'validateColumns'];
         return $rules;
+    }
+
+    /**
+     * Validatse the column configs.
+     */
+    public function validateColumns()
+    {
+        $hasErrors = false;
+        foreach ($this->columns as &$col) {
+            if ($col['handle'] && preg_match('/^col\d+$/', $col['handle'])) {
+                $col['handle'] = [
+                    'value' => $col['handle'],
+                    'hasErrors' => true,
+                ];
+                $hasErrors = true;
+            }
+        }
+        if ($hasErrors) {
+            $this->addError('columns', Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
+                'format' => 'colX',
+            ]));
+        }
     }
 
     /**
@@ -217,7 +240,8 @@ class Table extends Field
                 'cols' => $columnSettings,
                 'rows' => $this->columns,
                 'addRowLabel' => Craft::t('app', 'Add a column'),
-                'initJs' => false
+                'initJs' => false,
+                'errors' => $this->getErrors('columns'),
             ]
         ]);
 
@@ -297,7 +321,7 @@ class Table extends Field
         foreach ($value as &$row) {
             foreach ($this->columns as $colId => $col) {
                 $row[$colId] = $this->_normalizeCellValue($col['type'], $row[$colId] ?? null);
-                if ($col['handle']) {
+                if ($col['handle'] && !isset($this->columns[$col['handle']])) {
                     $row[$col['handle']] = $row[$colId];
                 }
             }
