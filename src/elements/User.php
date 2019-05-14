@@ -743,7 +743,7 @@ class User extends Element implements IdentityInterface
      */
     public function getFieldLayout()
     {
-        return Craft::$app->getFields()->getLayoutByType(static::class);
+        return Craft::$app->getFields()->getLayoutByType(self::class);
     }
 
     /**
