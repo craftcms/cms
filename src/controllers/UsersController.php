@@ -1221,11 +1221,11 @@ class UsersController extends Controller
      */
     public function actionUploadUserPhoto()
     {
-        $this->requireCpRequest();
         $this->requireAcceptsJson();
         $this->requireLogin();
 
-        $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
+        $request = Craft::$app->getRequest();
+        $userId = $request->getRequiredBodyParam('userId');
 
         if ($userId != Craft::$app->getUser()->getIdentity()->id) {
             $this->requirePermission('editUsers');
@@ -1248,9 +1248,17 @@ class UsersController extends Controller
             move_uploaded_file($file->tempName, $fileLocation);
             $users->saveUserPhoto($fileLocation, $user, $file->name);
 
-            $html = $this->getView()->renderTemplate('users/_photo', [
+            $view = $this->getView();
+            $templateMode = $view->getTemplateMode();
+            if ($templateMode === View::TEMPLATE_MODE_SITE && !$view->doesTemplateExist('users/_photo')) {
+                $view->setTemplateMode(View::TEMPLATE_MODE_CP);
+            }
+
+            $html = $view->renderTemplate('users/_photo', [
                 'user' => $user
             ]);
+
+            $view->setTemplateMode($templateMode);
 
             return $this->asJson([
                 'html' => $html,
