@@ -16,7 +16,7 @@
 - Fixed a bug where rebuilding the project config could set an incorrect value for the user field layout.
 - Fixed a bug Craft wouldn’t allow users to edit their own photos if they didn’t have upload/remove asset permissions.
 - Fixed a bug where Craft wasn’t removing newline characters when pasting text into some single-line Table column types.
-- Fixed a bug where project config syncing could have inconsistent results on load-balanced environments. ([](https://github.com/craftcms/cms/issues/4136))
+- Fixed a bug where project config syncing could have inconsistent results on load-balanced environments. ([#4136](https://github.com/craftcms/cms/issues/4136))
 - Fixed a bug where the Plugin Store was not able to load developer details. ([#4241](https://github.com/craftcms/cms/issues/4241))
 - Fixed a bug that could occur when Craft generated URLs with multi-byte characters in the query string.
 - Fixed a bug where you could get some character encoding issues in some environments when using PHP 7.3.
