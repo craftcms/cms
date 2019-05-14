@@ -23,6 +23,7 @@
 - Fixed a bug where you could get some character encoding issues in some environments when using PHP 7.3.
 - Fixed a bug where Craft wasn’t attempting to set a unique URI on duplicated elements. ([#4253](https://github.com/craftcms/cms/issues/4253))
 - Fixed a bug where Table fields could copy cell values to other cells if a column had a handle in the format of “colX”. ([#4200](https://github.com/craftcms/cms/issues/4200))
+- Fixed an error that could occur on the Login page if a custom Login Page Logo was selected. ([#4261](https://github.com/craftcms/cms/issues/4261))
 
 ## 3.1.26 - 2019-05-08
 
