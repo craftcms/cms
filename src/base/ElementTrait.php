@@ -154,4 +154,9 @@ trait ElementTrait
      * @var ElementInterface|null The element that this element is being duplicated by.
      */
     public $duplicateOf;
+
+    /**
+     * @var bool Whether the element is being hard-deleted.
+     */
+    public $hardDelete = false;
 }

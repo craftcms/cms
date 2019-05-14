@@ -1122,6 +1122,8 @@ class Elements extends Component
         ]);
         $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, $event);
 
+        $element->hardDelete = $hardDelete || $event->hardDelete;
+
         if (!$element->beforeDelete()) {
             return false;
         }
@@ -1151,7 +1153,7 @@ class Elements extends Component
             // this element is suddenly going to show up in a new query)
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
-            if ($hardDelete || $event->hardDelete) {
+            if ($element->hardDelete) {
                 Craft::$app->getDb()->createCommand()
                     ->delete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
