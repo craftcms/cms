@@ -13062,7 +13062,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
                     // Did we just create a draft?
                     if (!this.settings.draftId) {
-                        history.replaceState({}, '', document.location.href + (document.location.href.match(/\?/) ? ':' : '?') + 'draftId=' + response.draftId);
+                        history.replaceState({}, '', document.location.href + (document.location.href.match(/\?/) ? '&' : '?') + 'draftId=' + response.draftId);
                         this.settings.draftId = response.draftId;
                         this.settings.isLive = false;
                         this.settings.canDeleteDraft = true;
