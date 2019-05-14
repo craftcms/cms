@@ -11,7 +11,7 @@
 - Element URI formats can now conditionally output an empty string, opting the element out of getting its own system URI. ([#4254](https://github.com/craftcms/cms/issues/4254))
 - Table fields now get validation errors if any column handles are entered in the format of “colX”.
 - Craft no longer clear out users’ verification codes after login. ([#4257](https://github.com/craftcms/cms/issues/4257))
-- The `users/upload-user-photo` action is now available to front-end requests. ([#3932](https://github.com/craftcms/cms/issues/3932))
+- The `users/upload-user-photo` and `users/delete-user-photo` actions are now available to front-end requests. ([#3932](https://github.com/craftcms/cms/issues/3932))
 
 ### Fixed
 - Fixed a bug where rebuilding the project config could set an incorrect value for the user field layout.
