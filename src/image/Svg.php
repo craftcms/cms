@@ -216,8 +216,7 @@ class Svg extends Image
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
-        if (preg_match(self::SVG_WIDTH_RE, $this->_svgContent) && preg_match(self::SVG_HEIGHT_RE, $this->_svgContent)
-        ) {
+        if (preg_match(self::SVG_WIDTH_RE, $this->_svgContent) && preg_match(self::SVG_HEIGHT_RE, $this->_svgContent)) {
             $this->_svgContent = preg_replace(self::SVG_WIDTH_RE, "\${1}{$targetWidth}px\"", $this->_svgContent);
             $this->_svgContent = preg_replace(self::SVG_HEIGHT_RE, "\${1}{$targetHeight}px\"", $this->_svgContent);
         } else {
