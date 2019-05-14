@@ -101,7 +101,7 @@
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
 
-## Unreleased (3.1)
+## 3.1.27 - 2019-05-14
 
 ### Added
 - Added `craft\fields\Matrix::EVENT_SET_FIELD_BLOCK_TYPES`. ([#4252](https://github.com/craftcms/cms/issues/4252))
@@ -112,18 +112,19 @@
 - Element URI formats can now conditionally output an empty string, opting the element out of getting its own system URI. ([#4254](https://github.com/craftcms/cms/issues/4254))
 - Table fields now get validation errors if any column handles are entered in the format of “colX”.
 - Craft no longer clear out users’ verification codes after login. ([#4257](https://github.com/craftcms/cms/issues/4257))
+- The `users/upload-user-photo` and `users/delete-user-photo` actions are now available to front-end requests. ([#3932](https://github.com/craftcms/cms/issues/3932))
 
 ### Fixed
 - Fixed a bug where rebuilding the project config could set an incorrect value for the user field layout.
 - Fixed a bug Craft wouldn’t allow users to edit their own photos if they didn’t have upload/remove asset permissions.
 - Fixed a bug where Craft wasn’t removing newline characters when pasting text into some single-line Table column types.
-- Fixed a bug where project config syncing could have inconsistent results on load-balanced environments. ([](https://github.com/craftcms/cms/issues/4136))
+- Fixed a bug where project config syncing could have inconsistent results on load-balanced environments. ([#4136](https://github.com/craftcms/cms/issues/4136))
 - Fixed a bug where the Plugin Store was not able to load developer details. ([#4241](https://github.com/craftcms/cms/issues/4241))
 - Fixed a bug that could occur when Craft generated URLs with multi-byte characters in the query string.
 - Fixed a bug where you could get some character encoding issues in some environments when using PHP 7.3.
 - Fixed a bug where Craft wasn’t attempting to set a unique URI on duplicated elements. ([#4253](https://github.com/craftcms/cms/issues/4253))
 - Fixed a bug where Table fields could copy cell values to other cells if a column had a handle in the format of “colX”. ([#4200](https://github.com/craftcms/cms/issues/4200))
-- Fixed an error that could occur on the Login page if a custom Login Page Logo was selected and the Control Panel URL contained a port number. ([#4261](https://github.com/craftcms/cms/issues/4261))
+- Fixed an error that could occur on the Login page if a custom Login Page Logo was selected. ([#4261](https://github.com/craftcms/cms/issues/4261))
 
 ## 3.1.26 - 2019-05-08
 
