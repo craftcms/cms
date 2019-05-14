@@ -59,6 +59,24 @@ class MigrationHelper
     }
 
     /**
+     * Returns whether a table exists.
+     *
+     * @param string $tableName
+     * @return bool
+     */
+    public static function doesTableExist(string $tableName, Migration $migration = null)
+    {
+        $db = $migration ? $migration->db : Craft::$app->getDb();
+        $schema = $db->getSchema();
+        $schema->refresh();
+
+        $rawTableName = $schema->getRawTableName($tableName);
+        $table = $schema->getTableSchema($rawTableName);
+
+        return $table !== null;
+    }
+
+    /**
      * Returns whether a foreign key exists.
      *
      * @param string $tableName
