@@ -26,12 +26,20 @@ class CraftConnector extends Yii2
     // =========================================================================
 
     /**
-     * @var array
+     * @var array|MessageInterface
      */
     protected $emails;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function getEmails() : array
+    {
+        return $this->emails;
+    }
 
     /**
      *
