@@ -140,7 +140,7 @@ class TestSetup
                 'components' => [
                     'config' => [
                         'class' => Config::class,
-                        'configDir' => CRAFT_FOLDER_PATH.'/config',
+                        'configDir' => CRAFT_CONFIG_PATH,
                         'appDefaultsDir' => $srcPath . '/config/defaults',
                     ],
                 ],
