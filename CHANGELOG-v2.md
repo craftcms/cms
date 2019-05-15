@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where a user could not add more user groups to their account, even if they had the “Assign Usergroup Permissions” permission.
+
 ## 2.7.8 - 2019-04-02
 
 ### Changed
