@@ -82,6 +82,28 @@ module.exports = {
                 ]
             }
         ],
+        '/testing/': [
+            {
+                title: 'Testing Craft',
+                collapsable: false,
+                children: [
+                    ['', 'Introduction'],
+                    'getting-started',
+                    'examples',
+                    'plugins-and-modules'
+                ]
+            },
+            {
+                title: 'Craft testing framework',
+                collapsable: false,
+                children: [
+                    'framework/config-options',
+                    'framework/fixtures',
+                    'framework/mocking',
+                    'framework/test-setup'
+                ]
+            }
+        ],
         '/dev/': [
             {
                 title: 'Front-End Development',
@@ -227,6 +249,7 @@ module.exports = {
                 children: [
                     'dev/',
                     'extend/',
+                    'testing/'
                 ]
             },
             {
