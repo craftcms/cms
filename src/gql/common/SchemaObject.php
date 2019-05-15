@@ -25,4 +25,6 @@ abstract class SchemaObject
     }
 
     abstract public static function getType(): Type;
+
+    abstract public static function getFields(): array;
 }

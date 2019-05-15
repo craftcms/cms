@@ -16,18 +16,20 @@ class Matrix extends BaseField
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'MatrixField',
-            'fields' => function () {
-                return array_merge(self::getBaseFields(), [
-                    'minBlocks' => Type::int(),
-                    'maxBlock' => Type::int(),
-                    'contentTable' => Type::string(),
-                    'localizeBlocks' => Type::nonNull(Type::boolean()),
-                    'blockTypes' => Type::listOf(MatrixBlockType::getType()),
-                ]);
-            },
+            'fields' => self::class . '::getFields',
             'interfaces' => [
                 Field::getType()
             ]
         ]));
+    }
+
+    public static function getFields(): array {
+        return array_merge(parent::getCommonFields(), [
+            'minBlocks' => Type::int(),
+            'maxBlock' => Type::int(),
+            'contentTable' => Type::string(),
+            'localizeBlocks' => Type::nonNull(Type::boolean()),
+            'blockTypes' => Type::listOf(MatrixBlockType::getType()),
+        ]);
     }
 }

@@ -15,16 +15,18 @@ class StructureNode extends SchemaObject
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'StructureNode',
-            'fields' => function () {
-                return array_merge(parent::getCommonFields(), [
-                    'root' => Type::int(),
-                    'lft' => Type::nonNull(Type::int()),
-                    'rgt' => Type::nonNull(Type::int()),
-                    'level' => Type::nonNull(Type::int()),
-                    'element' => Type::string(),
-                    'structure' => Structure::getType(),
-                ]);
-            },
+            'fields' => self::class . '::getFields',
         ]));
+    }
+
+    public static function getFields(): array {
+        return array_merge(parent::getCommonFields(), [
+            'root' => Type::int(),
+            'lft' => Type::nonNull(Type::int()),
+            'rgt' => Type::nonNull(Type::int()),
+            'level' => Type::nonNull(Type::int()),
+            'element' => Type::string(),
+            'structure' => Structure::getType(),
+        ]);
     }
 }

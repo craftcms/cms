@@ -15,20 +15,22 @@ class Assets extends BaseRelationField
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'AssetsField',
-            'fields' => function () {
-                return array_merge(self::getBaseFields(), [
-                    'useSingleFolder' => Type::nonNull(Type::boolean()),
-                    'defaultUploadLocationSource' => Type::string(),
-                    'defaultUploadLocationSubpath' => Type::string(),
-                    'singleUploadLocationSource' => Type::string(),
-                    'singleUploadLocationSubpath' => Type::string(),
-                    'restrictFiles' => Type::boolean(),
-                    'allowedKinds' => Type::listOf(Type::string()),
-                ]);
-            },
+            'fields' => self::class . '::getFields',
             'interfaces' => [
                 Field::getType()
             ]
         ]));
+    }
+
+    public static function getFields(): array {
+        return array_merge(parent::getCommonFields(), [
+            'useSingleFolder' => Type::nonNull(Type::boolean()),
+            'defaultUploadLocationSource' => Type::string(),
+            'defaultUploadLocationSubpath' => Type::string(),
+            'singleUploadLocationSource' => Type::string(),
+            'singleUploadLocationSubpath' => Type::string(),
+            'restrictFiles' => Type::boolean(),
+            'allowedKinds' => Type::listOf(Type::string()),
+        ]);
     }
 }

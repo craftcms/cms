@@ -14,11 +14,14 @@ class CategoryGroup_SiteSettings extends BaseSiteSettings
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'CategoryGroup_SiteSettings',
-            'fields' => function () {
-                return array_merge(self::getSiteSettingFields(), [
-                    'categoryGroup' => CategoryGroup::getType()
-                ]);
-            },
+            'fields' => self::class . '::getFields',
         ]));
+    }
+
+    public static function getFields(): array
+    {
+        return array_merge(self::getCommonFields(), [
+            'categoryGroup' => CategoryGroup::getType()
+        ]);
     }
 }

@@ -9,7 +9,10 @@ use GraphQL\Type\Definition\Type;
  */
 abstract class BaseSiteSettings extends SchemaObject
 {
-    protected static function getSiteSettingFields(): array
+    /**
+     * @inheritdoc
+     */
+    protected static function getCommonFields(): array
     {
         return array_merge(parent::getCommonFields(), [
             'site' => Site::getType(),

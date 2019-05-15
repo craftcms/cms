@@ -16,19 +16,22 @@ class CategoryGroup extends SchemaObject
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'CategoryGroup',
-            'fields' => function () {
-                return array_merge(parent::getCommonFields(), [
-                    'name' => Type::nonNull(Type::string()),
-                    'handle' => Type::nonNull(Type::string()),
-                    'siteSettings' => [
-                        'name' => 'siteSettings',
-                        'type' => Type::listOf(CategoryGroup_SiteSettings::getType()),
-                        'resolve' => function(CategoryGroupModel $categoryGroup) {
-                            return $categoryGroup->getSiteSettings();
-                        }
-                    ]
-                ]);
-            },
+            'fields' => self::class . '::getFields',
         ]));
+    }
+
+    public static function getFields(): array
+    {
+        return array_merge(parent::getCommonFields(), [
+            'name' => Type::nonNull(Type::string()),
+            'handle' => Type::nonNull(Type::string()),
+            'siteSettings' => [
+                'name' => 'siteSettings',
+                'type' => Type::listOf(CategoryGroup_SiteSettings::getType()),
+                'resolve' => function(CategoryGroupModel $categoryGroup) {
+                    return $categoryGroup->getSiteSettings();
+                }
+            ]
+        ]);
     }
 }

@@ -15,12 +15,15 @@ class UnsupportedField extends BaseField
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'UnsupportedField',
-            'fields' => function () {
-                return self::getBaseFields();
-            },
+            'fields' => self::class . '::getFields',
             'interfaces' => [
                 Field::getType()
             ]
         ]));
+    }
+
+    public static function getFields(): array
+    {
+        return parent::getCommonFields();
     }
 }

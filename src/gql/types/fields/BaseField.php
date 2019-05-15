@@ -15,7 +15,7 @@ abstract class BaseField extends SchemaObject
      *
      * @return array
      */
-    protected static function getBaseFields(): array
+    protected static function getCommonFields(): array
     {
         return array_merge(parent::getCommonFields(), [
             'fieldGroup' => FieldGroup::getType(),

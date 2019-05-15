@@ -13,9 +13,9 @@ abstract class BaseRelationField extends BaseField
      *
      * @return array
      */
-    protected static function getBaseFields(): array
+    protected static function getCommonFields(): array
     {
-        return array_merge(parent::getBaseFields(), [
+        return array_merge(parent::getCommonFields(), [
             'sources' => [
                 'name' => 'sources',
                 'type' => Type::listOf(Type::string()),

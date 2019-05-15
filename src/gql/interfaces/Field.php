@@ -25,19 +25,7 @@ class Field extends SchemaObject {
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class,new InterfaceType([
             'name' => 'FieldInterface',
-            'fields' => function () {
-                return array_merge(parent::getCommonFields(), [
-                    'fieldGroup' => FieldGroup::getType(),
-                    'name' => Type::nonNull(Type::string()),
-                    'handle' => Type::nonNull(Type::string()),
-                    'context' => Type::nonNull(Type::string()),
-                    'instructions' => Type::string(),
-                    'searchable' => Type::nonNull(Type::boolean()),
-                    'translationMethod' => Type::nonNull(Type::string()),
-                    'translationKeyFormat' => Type::string(),
-                    'fieldType' => Type::nonNull(Type::string()),
-                ]);
-            },
+            'fields' => self::class . '::getFields',
             'resolveType' => function (BaseField $value) {
                 switch (get_class($value)) {
                     case PlainTextField::class:
@@ -53,5 +41,19 @@ class Field extends SchemaObject {
                 }
             }
         ]));
+    }
+
+    public static function getFields(): array {
+        return array_merge(parent::getCommonFields(), [
+            'fieldGroup' => FieldGroup::getType(),
+            'name' => Type::nonNull(Type::string()),
+            'handle' => Type::nonNull(Type::string()),
+            'context' => Type::nonNull(Type::string()),
+            'instructions' => Type::string(),
+            'searchable' => Type::nonNull(Type::boolean()),
+            'translationMethod' => Type::nonNull(Type::string()),
+            'translationKeyFormat' => Type::string(),
+            'fieldType' => Type::nonNull(Type::string()),
+        ]);
     }
 }

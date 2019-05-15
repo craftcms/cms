@@ -15,12 +15,15 @@ class Structure extends SchemaObject
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'Structure',
-            'fields' => function () {
-                return array_merge(parent::getCommonFields(), [
-                    'maxLevels' => Type::int(),
-                    'root' => StructureNode::getType(),
-                ]);
-            },
+            'fields' => self::class . '::getFields',
         ]));
+    }
+
+    public static function getFields(): array
+    {
+        return array_merge(parent::getCommonFields(), [
+            'maxLevels' => Type::int(),
+            'root' => StructureNode::getType(),
+        ]);
     }
 }

@@ -14,13 +14,19 @@ class TableColumn extends BaseField
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'TableColumn',
-            'fields' => [
-                'key' => Type::string(),
-                'heading' => Type::string(),
-                'handle' => Type::string(),
-                'width' => Type::string(),
-                'type' => Type::string(),
-            ],
+            'fields' => self::class . '::getFields',
         ]));
     }
+
+    public static function getFields(): array
+    {
+        return [
+            'key' => Type::string(),
+            'heading' => Type::string(),
+            'handle' => Type::string(),
+            'width' => Type::string(),
+            'type' => Type::string(),
+        ];
+    }
+
 }

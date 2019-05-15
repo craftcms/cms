@@ -14,10 +14,15 @@ class TableCell extends BaseField
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'TableCell',
-            'fields' => [
-                'columnKey' => Type::nonNull(Type::string()),
-                'content' => Type::string(),
-            ],
+            'fields' => self::class . '::getFields',
         ]));
+    }
+
+    public static function getFields(): array
+    {
+        return [
+            'columnKey' => Type::nonNull(Type::string()),
+            'content' => Type::string(),
+        ];
     }
 }

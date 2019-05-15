@@ -14,11 +14,14 @@ class Section_SiteSettings extends BaseSiteSettings
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'Section_SiteSettings',
-            'fields' => function () {
-                return array_merge(self::getSiteSettingFields(), [
-                    'section' => Section::getType()
-                ]);
-            },
+            'fields' => self::class . '::getFields',
         ]));
+    }
+
+    public static function getFields(): array
+    {
+        return array_merge(self::getCommonFields(), [
+            'section' => Section::getType()
+        ]);
     }
 }

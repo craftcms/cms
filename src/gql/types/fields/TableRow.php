@@ -14,24 +14,29 @@ class TableRow extends BaseField
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'TableRow',
-            'fields' => [
-                'cells' => [
-                    'type' => Type::listOf(TableCell::getType()),
-                    'name' => 'cells',
-                    'resolve' => function ($value) {
-                        $output = [];
-
-                        // Set it up so TableCell can recognize it.
-                        if (is_array($value)) {
-                            foreach ($value as $key => $content) {
-                                $output[] = ['columnKey' => $key, 'content' => $content];
-                            }
-                        }
-
-                        return $output;
-                    }
-                ]
-            ],
+            'fields' => self::class . '::getFields',
         ]));
+    }
+
+    public static function getFields(): array
+    {
+        return [
+            'cells' => [
+                'type' => Type::listOf(TableCell::getType()),
+                'name' => 'cells',
+                'resolve' => function ($value) {
+                    $output = [];
+
+                    // Set it up so TableCell can recognize it.
+                    if (is_array($value)) {
+                        foreach ($value as $key => $content) {
+                            $output[] = ['columnKey' => $key, 'content' => $content];
+                        }
+                    }
+
+                    return $output;
+                }
+            ]
+        ];
     }
 }

@@ -15,13 +15,16 @@ class FieldGroup extends SchemaObject
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'FieldGroup',
-            'fields' => function () {
-                return array_merge(parent::getCommonFields(), [
-                    'name' => Type::nonNull(Type::string()),
-// TODO fields?
-//                    'fields' =>
-                ]);
-            },
+            'fields' => self::class . '::getFields',
         ]));
+    }
+
+    public static function getFields(): array
+    {
+        return array_merge(parent::getCommonFields(), [
+            'name' => Type::nonNull(Type::string()),
+            // TODO fields?
+            // 'fields' =>
+        ]);
     }
 }

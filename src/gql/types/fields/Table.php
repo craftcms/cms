@@ -15,45 +15,47 @@ class Table extends BaseField
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'TableField',
-            'fields' => function () {
-                return array_merge(self::getBaseFields(), [
-                    'addRowLabel' => Type::string(),
-                    'maxRows' => [
-                        'name' => 'maxRows',
-                        'type' => Type::int(),
-                        'resolve' => function ($value) {
-                            return is_numeric($value->maxRows) ? (int)$value->maxRows : null;
-                        }
-                    ],
-                    'minRows' => [
-                        'name' => 'minRows',
-                        'type' => Type::int(),
-                        'resolve' => function ($value) {
-                            return is_numeric($value->minRows) ? (int)$value->minRows : null;
-                        }
-                    ],
-                    'columns' => [
-                        'name' => 'columns',
-                        'type' => Type::listOf(TableColumn::getType()),
-                        'resolve' => function ($value) {
-                            $output = $value->columns;
-                            if (is_array($value->columns)) {
-                                // Add the key alongside the definition
-                                foreach ($output as $key => &$column) {
-                                    $column['key'] = $key;
-                                }
-                            }
-
-                            return $output;
-                        },
-                    ],
-                    'defaults' => Type::listOf(TableRow::getType()),
-                    'columnType' => Type::nonNull(Type::string()),
-                ]);
-            },
+            'fields' => self::class . '::getFields',
             'interfaces' => [
                 Field::getType()
             ]
         ]));
+    }
+
+    public static function getFields(): array {
+        return array_merge(parent::getCommonFields(), [
+            'addRowLabel' => Type::string(),
+            'maxRows' => [
+                'name' => 'maxRows',
+                'type' => Type::int(),
+                'resolve' => function ($value) {
+                    return is_numeric($value->maxRows) ? (int)$value->maxRows : null;
+                }
+            ],
+            'minRows' => [
+                'name' => 'minRows',
+                'type' => Type::int(),
+                'resolve' => function ($value) {
+                    return is_numeric($value->minRows) ? (int)$value->minRows : null;
+                }
+            ],
+            'columns' => [
+                'name' => 'columns',
+                'type' => Type::listOf(TableColumn::getType()),
+                'resolve' => function ($value) {
+                    $output = $value->columns;
+                    if (is_array($value->columns)) {
+                        // Add the key alongside the definition
+                        foreach ($output as $key => &$column) {
+                            $column['key'] = $key;
+                        }
+                    }
+
+                    return $output;
+                },
+            ],
+            'defaults' => Type::listOf(TableRow::getType()),
+            'columnType' => Type::nonNull(Type::string()),
+        ]);
     }
 }
