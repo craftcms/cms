@@ -6,6 +6,10 @@
 
 Craft can be downloaded with [Composer](#downloading-with-composer) or by [manually downloading](#downloading-an-archive-file-manually) a zip or tar.gz archive. The end result will be the same, so go with whichever route you feel more comfortable with.
 
+::: tip
+A good and secure location for the Craft files is one level above the webroot. The only exception is the "web"-folder which needs to be web accessible, and it should either become the webroot itself with any name you desire (like "www" or "public_html"), or be placed in a subdirectory within the webroot.
+Update CRAFT_BASE_PATH in web/index.php to reflect the location of the remaining files and directories.
+
 ### Downloading with Composer
 
 ::: tip
@@ -29,7 +33,7 @@ Download the archive format you prefer to work with:
 - **zip**: [3.0.41](https://download.craftcdn.com/craft/3.0/Craft-3.0.41.zip), [latest](https://craftcms.com/latest-v3.zip)
 - **tar.gz**: [3.0.41](https://download.craftcdn.com/craft/3.0/Craft-3.0.41.tar.gz), [latest](https://craftcms.com/latest-v3.tar.gz)
 
-Extract the archive wherever you want your new Craft project to live. A good and secure location for these files is one level above the webroot. The exception is the "web"-folder which needs to be web accessible, and should either become the webroot itself with any name you desire (like "www" or "public_html"), or be placed in a subdirectory within the webroot. Update CRAFT_BASE_PATH in web/index.php to reflect the location of the remaining files and directories.
+Extract the archive wherever you want your new Craft project to live.
 
 ::: tip
 If you’re on macOS, be careful not to lose the hidden files in there (`.env`, `.env.example`, `.gitignore`, and `web/.htaccess`). You can press <kbd>Command</kbd>+<kbd>Shift</kbd>+<kbd>.</kbd> to toggle hidden file visibility in Finder.
