@@ -15,11 +15,15 @@
     - deleteDraftAction: the controller action that should be used to delete a draft
     - applyDraftAction: the controller action that should be used to apply a draft onto the source element
     - revertSourceAction: the controller action that should be used to revert the source element to a revision
+    - showStatusToggles: whether the “Enabled” / “Enabled” for <Site>” fields should be added to the details pane
 #}
 
 {% extends '_layouts/cp' %}
+{% import '_includes/forms' as forms %}
 
 {% set source = element.draftId or element.revisionId ? element.source : element %}
+{% set isMultiSiteElement = craft.app.isMultiSite and element.supportedSites|length > 1 %}
+
 {% set previewContexts = previewContexts ?? [] %}
 {% if source.uri %}
     {% set previewContexts = [{
@@ -43,6 +47,8 @@
 {% elseif not element.revisionId %}
     {% do craft.app.session.authorize('previewElement:' ~ element.id) %}
 {% endif %}
+
+{% set showStatusToggles = element.hasStatuses() and (showStatusToggles ?? true) %}
 
 {% block header %}
     {{ block('pageTitle') }}
@@ -88,6 +94,59 @@
         <input type="hidden" name="siteId" value="{{ element.siteId }}">
     {% endif %}
     {{ parent() }}
+{% endblock %}
+
+{% block details %}
+    <div id="settings" class="meta">
+        {% block settings %}
+            {% if showStatusToggles %}
+                {{ forms.lightswitchField({
+                    label: isMultiSiteElement ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
+                    id: 'enabled',
+                    name: 'enabled',
+                    on: element.enabled,
+                    disabled: element.revisionId,
+                    toggle: 'enabledForSite-field'
+                }) }}
+
+                {% if isMultiSiteElement %}
+                    {{ forms.lightswitchField({
+                        fieldClass: not element.enabled ? 'hidden',
+                        label: "Enabled for {site}"|t('app', { site: element.site.name|t('site') }),
+                        id: 'enabledForSite',
+                        name: 'enabledForSite',
+                        on: element.enabledForSite,
+                        disabled: element.revisionId
+                    }) }}
+                {% endif %}
+            {% endif %}
+        {% endblock %}
+    </div>
+    <div class="meta read-only">
+        {% block meta %}
+            <div class="data">
+                <h5 class="heading">{{ "Created at"|t('app') }}</h5>
+                <div class="value">{{ element.dateCreated|datetime('short') }}</div>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
+                <div class="value">{{ element.dateUpdated|datetime('short') }}</div>
+            </div>
+            {% if element.revisionId %}
+                {% set revisionNotes = element.revisionNotes %}
+            {% elseif not element.draftId and element.currentRevision %}
+                {% set revisionNotes = element.currentRevision.revisionNotes %}
+            {% else %}
+                {% set revisionNotes = null %}
+            {% endif %}
+            {% if revisionNotes %}
+                <div class="data">
+                    <h5 class="heading">{{ "Notes"|t('app') }}</h5>
+                    <div class="value">{{ revisionNotes }}</div>
+                </div>
+            {% endif %}
+        {% endblock %}
+    </div>
 {% endblock %}
 
 {% if not element.revisionId %}

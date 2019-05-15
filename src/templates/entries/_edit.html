@@ -16,6 +16,7 @@
     (isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 ) %}
 {% set canDeleteDraft = currentUser.can('deletePeerEntryDrafts'~permissionSuffix) %}
+{% set showStatusToggles = not isSingle %}
 
 
 {% hook "cp.entries.edit" %}
@@ -39,130 +40,83 @@
     {% hook "cp.entries.edit.content" %}
 {% endblock %}
 
-{% block details %}
-    {% if not isSingle or canUpdateSource %}
-        <div id="settings" class="meta">
+{% block settings %}
+    {% if not isSingle %}
+        {% if showEntryTypes %}
+            {{ forms.selectField({
+                label: "Entry Type"|t('app'),
+                id: 'entryType',
+                name: 'typeId',
+                value: entryType.id,
+                options: entryTypeOptions
+            }) }}
+        {% endif %}
 
-            {% if not isSingle %}
-                {% if showEntryTypes %}
-                    {{ forms.selectField({
-                        label: "Entry Type"|t('app'),
-                        id: 'entryType',
-                        name: 'typeId',
-                        value: entryType.id,
-                        options: entryTypeOptions
-                    }) }}
-                {% endif %}
+        {{ forms.textField({
+            label: "Slug"|t('app'),
+            siteId: entry.siteId,
+            id: 'slug',
+            name: 'slug',
+            autocorrect: false,
+            autocapitalize: false,
+            value: '__temp_' in entry.slug ? '' : entry.slug,
+            placeholder: "Enter slug"|t('app'),
+            errors: (not isRevision ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
+            disabled: isRevision
+        }) }}
 
-                {{ forms.textField({
-                    label: "Slug"|t('app'),
-                    siteId: entry.siteId,
-                    id: 'slug',
-                    name: 'slug',
-                    autocorrect: false,
-                    autocapitalize: false,
-                    value: '__temp_' in entry.slug ? '' : entry.slug,
-                    placeholder: "Enter slug"|t('app'),
-                    errors: (not isRevision ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
-                    disabled: isRevision
-                }) }}
+        {% if parentOptionCriteria is defined %}
+            {{ forms.elementSelectField({
+                label: "Parent"|t('app'),
+                id: 'parentId',
+                name: 'parentId',
+                elementType: elementType,
+                selectionLabel: "Choose"|t('app'),
+                sources: ['section:'~section.uid],
+                criteria: parentOptionCriteria,
+                limit: 1,
+                elements: (parent is defined and parent ? [parent]),
+                errors: entry.getErrors('parent')
+            }) }}
+        {% endif %}
 
-                {% if parentOptionCriteria is defined %}
-                    {{ forms.elementSelectField({
-                        label: "Parent"|t('app'),
-                        id: 'parentId',
-                        name: 'parentId',
-                        elementType: elementType,
-                        selectionLabel: "Choose"|t('app'),
-                        sources: ['section:'~section.uid],
-                        criteria: parentOptionCriteria,
-                        limit: 1,
-                        elements: (parent is defined and parent ? [parent]),
-                        errors: entry.getErrors('parent')
-                    }) }}
-                {% endif %}
+        {% if CraftEdition == CraftPro and currentUser.can('editPeerEntries'~permissionSuffix) %}
+            {{ forms.elementSelectField({
+                label: "Author"|t('app'),
+                id: 'author',
+                name: 'author',
+                elementType: userElementType,
+                selectionLabel: "Choose"|t('app'),
+                criteria: authorOptionCriteria,
+                limit: 1,
+                elements: (author is defined and author ? [author])
+            }) }}
+        {% endif %}
 
-                {% if CraftEdition == CraftPro and currentUser.can('editPeerEntries'~permissionSuffix) %}
-                    {{ forms.elementSelectField({
-                        label: "Author"|t('app'),
-                        id: 'author',
-                        name: 'author',
-                        elementType: userElementType,
-                        selectionLabel: "Choose"|t('app'),
-                        criteria: authorOptionCriteria,
-                        limit: 1,
-                        elements: (author is defined and author ? [author])
-                    }) }}
-                {% endif %}
+        {{ forms.dateTimeField({
+            label: "Post Date"|t('app'),
+            id: 'postDate',
+            name: 'postDate',
+            value: (entry.postDate ? entry.postDate : null),
+            errors: entry.getErrors('postDate'),
+            disabled: isRevision
+        }) }}
 
-                {{ forms.dateTimeField({
-                    label: "Post Date"|t('app'),
-                    id: 'postDate',
-                    name: 'postDate',
-                    value: (entry.postDate ? entry.postDate : null),
-                    errors: entry.getErrors('postDate'),
-                    disabled: isRevision
-                }) }}
-
-                {{ forms.dateTimeField({
-                    label: "Expiry Date"|t('app'),
-                    id: 'expiryDate',
-                    name: 'expiryDate',
-                    value: (entry.expiryDate ? entry.expiryDate : null),
-                    errors: entry.getErrors('expiryDate'),
-                    disabled: isRevision
-                }) }}
-            {% endif %}
-
-            {% if canUpdateSource %}
-                {{ forms.lightswitchField({
-                    label: isMultiSiteEntry ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
-                    id: 'enabled',
-                    name: 'enabled',
-                    on: entry.enabled,
-                    disabled: isRevision,
-                    toggle: 'enabledForSite-field'
-                }) }}
-            {% endif %}
-
-            {% if isMultiSiteEntry %}
-                {{ forms.lightswitchField({
-                    fieldClass: not entry.enabled ? 'hidden',
-                    label: "Enabled for {site}"|t('app', { site: entry.site.name|t('site') }),
-                    id: 'enabledForSite',
-                    name: 'enabledForSite',
-                    on: entry.enabledForSite,
-                    disabled: isRevision
-                }) }}
-            {% endif %}
-        </div><!-- #settings -->
-
-        <div class="meta read-only">
-            <div class="data">
-                <h5 class="heading">{{ "Created at"|t('app') }}</h5>
-                <div class="value">{{ entry.dateCreated|datetime('short') }}</div>
-            </div>
-            <div class="data">
-                <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
-                <div class="value">{{ entry.dateUpdated|datetime('short') }}</div>
-            </div>
-            {% if isRevision %}
-                {% set revisionNotes = entry.revisionNotes %}
-            {% elseif not isDraft and entry.currentRevision %}
-                {% set revisionNotes = entry.currentRevision.revisionNotes %}
-            {% else %}
-                {% set revisionNotes = null %}
-            {% endif %}
-            {% if revisionNotes %}
-                <div class="data">
-                    <h5 class="heading">{{ "Notes"|t('app') }}</h5>
-                    <div class="value">{{ revisionNotes }}</div>
-                </div>
-            {% endif %}
-        </div>
-
+        {{ forms.dateTimeField({
+            label: "Expiry Date"|t('app'),
+            id: 'expiryDate',
+            name: 'expiryDate',
+            value: (entry.expiryDate ? entry.expiryDate : null),
+            errors: entry.getErrors('expiryDate'),
+            disabled: isRevision
+        }) }}
     {% endif %}
 
+    {{ parent() }}
+{% endblock %}
+
+{% block details %}
+    {{ parent() }}
     {# Give plugins a chance to add other things here #}
     {% hook "cp.entries.edit.details" %}
 {% endblock %}
