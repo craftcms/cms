@@ -2,8 +2,8 @@
 namespace craft\gql\queries;
 
 use Craft;
+use craft\gql\types\SiteGroup as SiteGroupType;
 use GraphQL\Type\Definition\Type;
-use \craft\gql\types\SiteGroup as SiteGroupType;
 
 /**
  * Class SiteGroup

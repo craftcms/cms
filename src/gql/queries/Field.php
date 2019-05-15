@@ -2,9 +2,8 @@
 namespace craft\gql\queries;
 
 use Craft;
-use GraphQL\Type\Definition\Type;
-use \craft\gql\types\SiteGroup as SiteGroupType;
 use craft\gql\interfaces\Field as FieldInterface;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Class Field

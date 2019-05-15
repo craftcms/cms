@@ -1,8 +1,6 @@
 <?php
 namespace craft\gql\types\fields;
 
-use craft\gql\common\SchemaObject;
-use craft\gql\types\FieldGroup;
 use GraphQL\Type\Definition\Type;
 
 /**

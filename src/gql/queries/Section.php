@@ -2,8 +2,8 @@
 namespace craft\gql\queries;
 
 use Craft;
-use GraphQL\Type\Definition\Type;
 use craft\gql\types\Section as SectionType;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Class Section

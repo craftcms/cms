@@ -2,6 +2,7 @@
 namespace craft\gql\types;
 
 use craft\gql\common\SchemaObject;
+use craft\gql\TypeRegistry;
 use GraphQL\Type\Definition\EnumType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
@@ -13,7 +14,7 @@ class AssetTransform extends SchemaObject
 {
     public static function getType(): Type
     {
-        return static::hasType(self::class) ?: static::createType(self::class, new ObjectType([
+        return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'AssetTransform',
             'fields' => array_merge(self::getCommonFields(), [
                 'name' => Type::nonNull(Type::string()),

@@ -2,6 +2,7 @@
 namespace craft\gql\types;
 
 use craft\gql\common\SchemaObject;
+use craft\gql\TypeRegistry;
 use craft\models\Site as SiteModel;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
@@ -13,7 +14,7 @@ class Site extends SchemaObject
 {
     public static function getType(): Type
     {
-        return static::hasType(self::class) ?: static::createType(self::class, new ObjectType([
+        return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'Site',
             'fields' => function () {
                 return array_merge(self::getCommonFields(), [

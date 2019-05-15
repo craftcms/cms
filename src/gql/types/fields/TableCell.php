@@ -1,8 +1,7 @@
 <?php
 namespace craft\gql\types\fields;
 
-use craft\gql\interfaces\Field;
-use craft\helpers\Json;
+use craft\gql\TypeRegistry;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 
@@ -13,7 +12,7 @@ class TableCell extends BaseField
 {
     public static function getType(): Type
     {
-        return static::hasType(self::class) ?: static::createType(self::class, new ObjectType([
+        return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'TableCell',
             'fields' => [
                 'columnKey' => Type::nonNull(Type::string()),

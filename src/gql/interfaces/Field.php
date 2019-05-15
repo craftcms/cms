@@ -7,6 +7,7 @@ use craft\fields\Matrix as MatrixField;
 use craft\fields\PlainText as PlainTextField;
 use craft\fields\Table as TableField;
 use craft\gql\common\SchemaObject;
+use craft\gql\TypeRegistry;
 use craft\gql\types\FieldGroup;
 use craft\gql\types\fields\Assets;
 use craft\gql\types\fields\Matrix;
@@ -22,7 +23,7 @@ use GraphQL\Type\Definition\Type;
 class Field extends SchemaObject {
     public static function getType(): Type
     {
-        return static::hasType(self::class) ?: static::createType(self::class,new InterfaceType([
+        return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class,new InterfaceType([
             'name' => 'FieldInterface',
             'fields' => function () {
                 return array_merge(self::getCommonFields(), [
