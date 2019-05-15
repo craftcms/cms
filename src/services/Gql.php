@@ -19,6 +19,7 @@ use craft\gql\types\fields\PlainText;
 use craft\gql\types\fields\Table;
 use craft\gql\types\fields\UnsupportedField;
 use craft\gql\types\Section;
+use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\Site;
 use craft\gql\types\SiteGroup;
 use craft\gql\types\Structure;
@@ -124,6 +125,9 @@ class Gql extends Component
             UnsupportedField::getType(),
 
         ];
+
+        // Content
+        $typeList = array_merge($typeList, EntryTypeGenerator::getTypes());
 
         $event = new RegisterGqlTypeEvent([
             'types' => $typeList
