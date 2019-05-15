@@ -18,6 +18,8 @@ use craft\helpers\StringHelper;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use GraphQL\Type\Definition\StringType;
+use GraphQL\Type\Definition\Type;
 use yii\base\Arrayable;
 use yii\base\ErrorHandler;
 use yii\db\Schema;
@@ -542,6 +544,16 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'element' => $element,
             ]));
         }
+    }
+
+    /**
+     * Return the GQL type to be used for this type of field.
+     *
+     * @return StringType
+     */
+    public function getContentGqlType(): StringType
+    {
+        return Type::string();
     }
 
     // Protected Methods
