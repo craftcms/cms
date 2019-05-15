@@ -518,6 +518,14 @@ class UrlHelper
         $params = array_merge($baseParams, $params);
         $fragment = $fragment ?? $baseFragment;
 
+        // If this is a site URL and there was a token on the request, pass it along
+        if (!$cpUrl) {
+            $tokenParam = Craft::$app->getConfig()->getGeneral()->tokenParam;
+            if (!isset($params[$tokenParam]) && ($token = Craft::$app->getRequest()->getToken()) !== null) {
+                $params[$tokenParam] = $token;
+            }
+        }
+
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $request = Craft::$app->getRequest();
 

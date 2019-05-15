@@ -73,6 +73,11 @@ class UrlManager extends \yii\web\UrlManager
     // =========================================================================
 
     /**
+     * @var bool Whether [[parseRequest()]] should check for a token on the request and route the request based on that.
+     */
+    public $checkToken = true;
+
+    /**
      * @var array Params that should be included in the
      */
     private $_routeParams = [];
@@ -493,6 +498,10 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getTokenRoute(Request $request)
     {
+        if (!$this->checkToken) {
+            return false;
+        }
+
         $token = $request->getToken();
 
         if (YII_DEBUG) {

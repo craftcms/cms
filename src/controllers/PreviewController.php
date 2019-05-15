@@ -116,10 +116,10 @@ class PreviewController extends Controller
             ->set('Pragma', 'no-cache')
             ->set('Expires', '0');
 
-        // Clear out the request token and re-route the request
-        $request = Craft::$app->getRequest();
-        $request->setToken(null);
-        Craft::$app->getUrlManager()->setRouteParams([], false);
-        return Craft::$app->handleRequest($request, true);
+        // Re-route the request, this time ignoring the token
+        $urlManager = Craft::$app->getUrlManager();
+        $urlManager->checkToken = false;
+        $urlManager->setRouteParams([], false);
+        return Craft::$app->handleRequest(Craft::$app->getRequest(), true);
     }
 }
