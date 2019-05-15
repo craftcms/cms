@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where slugs could get double-hyphenated. ([#4266](https://github.com/craftcms/cms/issues/4266))
+- Fixed an error that would occur when installing Craft if the `allowAdminChanges` config setting was disabled. ([#4267](https://github.com/craftcms/cms/issues/4267))
 
 ## 3.1.27 - 2019-05-14
 
