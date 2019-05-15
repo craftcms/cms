@@ -282,6 +282,6 @@ class EntryRevisionsTest extends Unit
     protected function _before()
     {
         parent::_before();
-        $this->entryRevisions = \Craft::$app->getEntryRevisions();
+        $this->entryRevisions = Craft::$app->getEntryRevisions();
     }
 }

@@ -15,6 +15,7 @@ use craft\mail\Message;
 use craft\models\SystemMessage;
 use craft\test\TestCase;
 use craft\test\TestMailer;
+use ReflectionException;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -216,6 +217,7 @@ class MailerTest extends TestCase
      * @param string $desiredLang
      * @throws InvalidConfigException
      * @throws SiteNotFoundException
+     * @throws ReflectionException
      */
     protected function _testSendMailLanguage(bool $isCpRequest, string $desiredLang)
     {

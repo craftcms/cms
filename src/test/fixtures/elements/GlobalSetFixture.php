@@ -16,6 +16,7 @@ use craft\elements\GlobalSet;
  * Credit to: https://github.com/robuust/craft-fixtures
  *
  * @todo https://github.com/robuust/craft-fixtures/blob/master/src/base/GlobalSetFixture.php#L50 Why?
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>

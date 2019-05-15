@@ -144,6 +144,7 @@ class Craft extends Yii2
      * @param TestInterface $test
      * @throws Exception
      * @throws InvalidConfigException
+     * @throws \yii\base\Exception
      */
     public function _after(TestInterface $test)
     {
@@ -278,7 +279,7 @@ class Craft extends Yii2
     }
 
     /**
-     * TODO: This is a WIP. Currently its a proof of concept.
+     * @todo This is a WIP. Currently its a proof of concept.
      *
      * The problem is how do we update vendor/craftcms/plugins.php file. As far as i can see this is a requirement for ensuring plugins work.
      * Updating this file is difficult if the plugin is not in the /vendors directory. I.E. If it is the project root

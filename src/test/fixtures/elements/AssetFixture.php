@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Element;
 use craft\elements\Asset;
 use craft\records\VolumeFolder;
-use ErrorException;
 
 /**
  * Class AssetFixture.
@@ -19,6 +18,7 @@ use ErrorException;
  * Credit to: https://github.com/robuust/craft-fixtures
  *
  * @todo https://github.com/robuust/craft-fixtures/blob/master/src/base/AssetFixture.php#L60 ? Why override?
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -54,8 +54,7 @@ abstract class AssetFixture extends ElementFixture
     {
         parent::init();
 
-        $volumes = Craft::$app->getVolumes()->getAllVolumes();
-        foreach ($volumes as $volume) {
+        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
             $this->volumeIds[$volume->handle] = $volume->id;
             $this->folderIds[$volume->handle] = VolumeFolder::findOne([
                 'parentId' => null,

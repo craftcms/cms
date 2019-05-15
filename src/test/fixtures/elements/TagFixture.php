@@ -46,8 +46,7 @@ abstract class TagFixture extends ElementFixture
     {
         parent::init();
 
-        $groups = Craft::$app->getTags()->getAllTagGroups();
-        foreach ($groups as $group) {
+        foreach (Craft::$app->getTags()->getAllTagGroups() as $group) {
             $this->groupIds[$group->handle] = $group->id;
         }
     }

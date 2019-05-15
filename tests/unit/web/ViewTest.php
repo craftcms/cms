@@ -230,6 +230,7 @@ class ViewTest extends TestCase
 
     /**
      * @throws Exception
+     * @throws ReflectionException
      */
     public function testSetCpTemplateMode()
     {
@@ -345,6 +346,7 @@ class ViewTest extends TestCase
      * @param $result
      * @param $which
      * @param $rootsToBeAdded
+     * @throws ReflectionException
      */
     public function testGetTemplateRoots($result, $which, $rootsToBeAdded)
     {
@@ -621,6 +623,7 @@ JS;
      * @param $property
      * @param $names
      * @return mixed
+     * @throws ReflectionException
      */
     private function _registeredJs($property, $names)
     {

@@ -64,12 +64,11 @@ abstract class EntryFixture extends ElementFixture
     {
         parent::init();
 
-        $sections = Craft::$app->getSections()->getAllSections();
-        foreach ($sections as $section) {
+        foreach (Craft::$app->getSections()->getAllSections() as $section) {
             $this->sectionIds[$section->handle] = $section->id;
             $this->typeIds[$section->handle] = [];
-            $types = Craft::$app->getSections()->getEntryTypesBySectionId($section->id);
-            foreach ($types as $type) {
+
+            foreach (Craft::$app->getSections()->getEntryTypesBySectionId($section->id) as $type) {
                 $this->typeIds[$section->handle][$type->handle] = $type->id;
             }
         }

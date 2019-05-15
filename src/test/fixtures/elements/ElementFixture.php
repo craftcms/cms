@@ -9,10 +9,7 @@ namespace craft\test\fixtures\elements;
 
 use Craft;
 use craft\errors\InvalidElementException;
-use craft\events\DeleteElementEvent;
-use craft\services\Elements;
 use Throwable;
-use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\test\ActiveFixture;
@@ -20,7 +17,6 @@ use craft\base\Element;
 
 /**
  * Class ElementFixture is a base class for setting up fixtures for Craft 3's element types.
- * Based on https://github.com/robuust/craft-fixtures/blob/master/src/base/ElementFixture.php
  *
  * Credit to: https://github.com/robuust/craft-fixtures
  *
@@ -53,9 +49,7 @@ abstract class ElementFixture extends ActiveFixture
             throw new InvalidConfigException('"modelClass" must be an Element');
         }
 
-        $sites = Craft::$app->getSites()->getAllSites();
-
-        foreach ($sites as $site) {
+        foreach (Craft::$app->getSites()->getAllSites() as $site) {
             $this->siteIds[$site->handle] = $site->id;
         }
     }

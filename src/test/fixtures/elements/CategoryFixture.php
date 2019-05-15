@@ -45,8 +45,7 @@ abstract class CategoryFixture extends ElementFixture
     {
         parent::init();
 
-        $groups = Craft::$app->getCategories()->getAllGroups();
-        foreach ($groups as $group) {
+        foreach (Craft::$app->getCategories()->getAllGroups() as $group) {
             $this->groupIds[$group->handle] = $group->id;
         }
     }

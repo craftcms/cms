@@ -11,6 +11,7 @@ use Craft;
 use craft\test\TestCase;
 use craft\web\Request;
 use craftunit\fixtures\SitesFixture;
+use ReflectionException;
 use UnitTester;
 use yii\web\BadRequestHttpException;
 
@@ -270,6 +271,7 @@ class RequestTest extends TestCase
      * @dataProvider checkRequestSpecialPathDataProvider
      *
      * @param $path
+     * @throws ReflectionException
      */
     public function testCheckRequestTypeOnCpRequestWithSpecialPathTrigger($path)
     {
@@ -439,6 +441,7 @@ class RequestTest extends TestCase
 
     /**
      * @return mixed
+     * @throws ReflectionException
      */
     private function _checkRequestType()
     {
@@ -450,6 +453,7 @@ class RequestTest extends TestCase
      * @param $defaultValue
      * @param array $params
      * @return mixed
+     * @throws ReflectionException
      */
     private function _getParam(string $name = null, $defaultValue, array $params)
     {
@@ -460,6 +464,7 @@ class RequestTest extends TestCase
     /**
      * @param $token
      * @return mixed
+     * @throws ReflectionException
      */
     private function _isCsrfValidForUser($token)
     {
@@ -468,6 +473,7 @@ class RequestTest extends TestCase
 
     /**
      * @return mixed
+     * @throws ReflectionException
      */
     private function _generateCsrfToken()
     {

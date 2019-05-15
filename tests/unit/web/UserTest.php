@@ -13,6 +13,7 @@ use craft\web\User as WebUser;
 use craft\errors\UserLockedException;
 use craft\services\Config;
 use craft\test\TestCase;
+use ReflectionException;
 use UnitTester;
 
 /**
@@ -190,6 +191,7 @@ class UserTest extends TestCase
 
     /**
      * @throws UserLockedException
+     * @throws ReflectionException
      */
     public function testStartElevatedSessionSetting()
     {

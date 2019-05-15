@@ -12,6 +12,7 @@ use Craft;
 use craft\test\TestCase;
 use craft\web\ErrorHandler;
 use Exception;
+use ReflectionException;
 use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -105,6 +106,7 @@ class ErrorHandlerTest extends TestCase
      * @param $result
      * @param $class
      * @param $method
+     * @throws ReflectionException
      */
     public function testGetTypeUrl($result, $class, $method)
     {

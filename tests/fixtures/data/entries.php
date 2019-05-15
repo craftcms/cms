@@ -5,8 +5,6 @@
  * @license https://craftcms.github.io/license/
  */
 
-use \craft\elements\Entry;
-
 return [
     [
         'authorId' => '1',
