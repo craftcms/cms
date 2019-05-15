@@ -142,6 +142,7 @@ class Craft extends Yii2
 
     /**
      * @param TestInterface $test
+     * @throws Exception
      * @throws InvalidConfigException
      */
     public function _after(TestInterface $test)
