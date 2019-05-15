@@ -68,7 +68,6 @@ class Craft extends Yii2
      */
     protected $addedConfig = [
         'plugins' => [],
-        'migrations' => [],
         'setupDb' => null,
         'projectConfig' => null
     ];
@@ -209,8 +208,8 @@ class Craft extends Yii2
             \Craft::$app->setIsInstalled();
 
             // Apply migrations
-            if ($this->_getConfig('dbSetup')['setupMigrations'] === true) {
-                foreach ($this->_getConfig('migrations') as $migration) {
+            if ($migrations = $this->_getConfig('migrations')) {
+                foreach ($migrations as $migration) {
                     TestSetup::validateAndApplyMigration($migration['class'], $migration['params']);
                 }
             }
