@@ -2181,6 +2181,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->drafts) {
+            $this->subQuery->innerJoin(Table::DRAFTS . ' drafts', '[[drafts.id]] = [[elements.draftId]]');
             $this->query
                 ->innerJoin(Table::DRAFTS . ' drafts', '[[drafts.id]] = [[elements.draftId]]')
                 ->addSelect([
@@ -2191,26 +2192,23 @@ class ElementQuery extends Query implements ElementQueryInterface
                     'drafts.notes as draftNotes',
                 ]);
 
-            if ($this->draftId || $this->draftOf || $this->draftCreator) {
-                $this->subQuery->innerJoin(Table::DRAFTS . ' drafts', '[[drafts.id]] = [[elements.draftId]]');
+            if ($this->draftId) {
+                $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
+            }
 
-                if ($this->draftId) {
-                    $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
-                }
+            if ($this->draftOf) {
+                $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf]);
+            }
 
-                if ($this->draftOf) {
-                    $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf]);
-                }
-
-                if ($this->draftCreator) {
-                    $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
-                }
+            if ($this->draftCreator) {
+                $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
         } else {
             $this->subQuery->andWhere(['elements.draftId' => null]);
         }
 
         if ($this->revisions) {
+            $this->subQuery->innerJoin(Table::REVISIONS . ' revisions', '[[revisions.id]] = [[elements.revisionId]]');
             $this->query
                 ->innerJoin(Table::REVISIONS . ' revisions', '[[revisions.id]] = [[elements.revisionId]]')
                 ->addSelect([
@@ -2221,20 +2219,16 @@ class ElementQuery extends Query implements ElementQueryInterface
                     'revisions.notes as revisionNotes',
                 ]);
 
-            if ($this->revisionId || $this->revisionOf || $this->revisionCreator) {
-                $this->subQuery->innerJoin(Table::REVISIONS . ' revisions', '[[revisions.id]] = [[elements.revisionId]]');
+            if ($this->revisionId) {
+                $this->subQuery->andWhere(['elements.revisionId' => $this->revisionId]);
+            }
 
-                if ($this->revisionId) {
-                    $this->subQuery->andWhere(['elements.revisionId' => $this->revisionId]);
-                }
+            if ($this->revisionOf) {
+                $this->subQuery->andWhere(['revisions.sourceId' => $this->revisionOf]);
+            }
 
-                if ($this->revisionOf) {
-                    $this->subQuery->andWhere(['revisions.sourceId' => $this->revisionOf]);
-                }
-
-                if ($this->revisionCreator) {
-                    $this->subQuery->andWhere(['revisions.creatorId' => $this->revisionCreator]);
-                }
+            if ($this->revisionCreator) {
+                $this->subQuery->andWhere(['revisions.creatorId' => $this->revisionCreator]);
             }
         } else {
             $this->subQuery->andWhere(['elements.revisionId' => null]);
