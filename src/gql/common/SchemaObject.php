@@ -14,7 +14,7 @@ abstract class SchemaObject
      *
      * @return array
      */
-    protected static function getCommonFields(): array
+    public static function getCommonFields(): array
     {
         return [
             'id' => Type::id(),
@@ -24,7 +24,17 @@ abstract class SchemaObject
         ];
     }
 
+    /**
+     * Returns an instance of this schema object's type.
+     *
+     * @return Type
+     */
     abstract public static function getType(): Type;
 
+    /**
+     * Returns the fields configured for this type.
+     *
+     * @return array
+     */
     abstract public static function getFields(): array;
 }

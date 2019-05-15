@@ -11,6 +11,9 @@ use GraphQL\Type\Definition\Type;
  */
 class UnsupportedField extends BaseField
 {
+    /**
+     * @inheritdoc
+     */
     public static function getType(): Type
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
@@ -22,6 +25,9 @@ class UnsupportedField extends BaseField
         ]));
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getFields(): array
     {
         return parent::getCommonFields();

@@ -12,7 +12,7 @@ abstract class BaseSiteSettings extends SchemaObject
     /**
      * @inheritdoc
      */
-    protected static function getCommonFields(): array
+    public static function getCommonFields(): array
     {
         return array_merge(parent::getCommonFields(), [
             'site' => Site::getType(),

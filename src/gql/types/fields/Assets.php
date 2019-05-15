@@ -11,6 +11,9 @@ use GraphQL\Type\Definition\Type;
  */
 class Assets extends BaseRelationField
 {
+    /**
+     * @inheritdoc
+     */
     public static function getType(): Type
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
@@ -22,6 +25,9 @@ class Assets extends BaseRelationField
         ]));
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getFields(): array {
         return array_merge(parent::getCommonFields(), [
             'useSingleFolder' => Type::nonNull(Type::boolean()),

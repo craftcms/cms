@@ -11,11 +11,9 @@ use GraphQL\Type\Definition\Type;
 abstract class BaseField extends SchemaObject
 {
     /**
-     * A list of common fields.
-     *
-     * @return array
+     * @inheritdoc
      */
-    protected static function getCommonFields(): array
+    public static function getCommonFields(): array
     {
         return array_merge(parent::getCommonFields(), [
             'fieldGroup' => FieldGroup::getType(),

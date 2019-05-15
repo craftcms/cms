@@ -10,6 +10,9 @@ use GraphQL\Type\Definition\Type;
  */
 class TableColumn extends BaseField
 {
+    /**
+     * @inheritdoc
+     */
     public static function getType(): Type
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
@@ -18,6 +21,9 @@ class TableColumn extends BaseField
         ]));
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getFields(): array
     {
         return [

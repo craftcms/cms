@@ -20,7 +20,11 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class Field
  */
-class Field extends SchemaObject {
+class Field extends SchemaObject
+{
+    /**
+     * @inheritdoc
+     */
     public static function getType(): Type
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class,new InterfaceType([
@@ -43,6 +47,9 @@ class Field extends SchemaObject {
         ]));
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getFields(): array {
         return array_merge(parent::getCommonFields(), [
             'fieldGroup' => FieldGroup::getType(),
