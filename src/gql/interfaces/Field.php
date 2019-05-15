@@ -26,7 +26,7 @@ class Field extends SchemaObject {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class,new InterfaceType([
             'name' => 'FieldInterface',
             'fields' => function () {
-                return array_merge(self::getCommonFields(), [
+                return array_merge(parent::getCommonFields(), [
                     'fieldGroup' => FieldGroup::getType(),
                     'name' => Type::nonNull(Type::string()),
                     'handle' => Type::nonNull(Type::string()),

@@ -11,7 +11,7 @@ abstract class BaseSiteSettings extends SchemaObject
 {
     protected static function getSiteSettingFields(): array
     {
-        return array_merge(self::getCommonFields(), [
+        return array_merge(parent::getCommonFields(), [
             'site' => Site::getType(),
             'hasUrls' => Type::boolean(),
             'uriFormat' => Type::string(),

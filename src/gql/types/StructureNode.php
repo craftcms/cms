@@ -16,7 +16,7 @@ class StructureNode extends SchemaObject
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'StructureNode',
             'fields' => function () {
-                return array_merge(self::getCommonFields(), [
+                return array_merge(parent::getCommonFields(), [
                     'root' => Type::int(),
                     'lft' => Type::nonNull(Type::int()),
                     'rgt' => Type::nonNull(Type::int()),

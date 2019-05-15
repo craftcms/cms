@@ -16,7 +16,7 @@ class AssetTransform extends SchemaObject
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'AssetTransform',
-            'fields' => array_merge(self::getCommonFields(), [
+            'fields' => array_merge(parent::getCommonFields(), [
                 'name' => Type::nonNull(Type::string()),
                 'handle' => Type::nonNull(Type::string()),
                 'width' => Type::int(),

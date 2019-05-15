@@ -18,7 +18,7 @@ class Section extends SchemaObject
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'Section',
             'fields' => function () {
-                return array_merge(self::getCommonFields(), [
+                return array_merge(parent::getCommonFields(), [
                     'structure' => Structure::getType(),
                     'name' => Type::string(),
                     'handle' => Type::string(),
