@@ -499,8 +499,8 @@ class UrlHelper
 
         // Were there already any query string params in the path?
         if (($qpos = mb_strpos($path, '?')) !== false) {
-            $params = substr($path, $qpos + 1) . ($params ? '&' . $params : '');
-            $path = substr($path, 0, $qpos);
+            $params = mb_substr($path, $qpos + 1) . ($params ? '&' . $params : '');
+            $path = mb_substr($path, 0, $qpos);
         }
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();

@@ -95,10 +95,10 @@ const actions = {
         return new Promise((resolve, reject) => {
             api.getDeveloper(developerId)
                 .then(response => {
-                    commit('updateDeveloper', {developer: response})
+                    commit('updateDeveloper', { developer: response.data })
                     resolve(response)
                 })
-                .then(error => {
+                .catch(error => {
                     reject(error.response)
                 })
         })

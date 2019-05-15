@@ -1,4 +1,4 @@
-/*!   - 2019-05-09 */
+/*!   - 2019-05-14 */
 (function($){
 
 /** global: Craft */
@@ -1734,6 +1734,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $clearSearchBtn: null,
 
         $statusMenuBtn: null,
+        $statusMenuContainer: null,
         statusMenu: null,
         status: null,
 
@@ -1798,6 +1799,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$toolbar = this.$container.find('.toolbar:first');
             this.$toolbarFlexContainer = this.$toolbar.children('.flex');
             this.$statusMenuBtn = this.$toolbarFlexContainer.find('.statusmenubtn:first');
+            this.$statusMenuContainer = this.$statusMenuBtn.parent();
             this.$siteMenuBtn = this.$container.find('.sitemenubtn:first');
             this.$sortMenuBtn = this.$toolbarFlexContainer.find('.sortmenubtn:first');
             this.$search = this.$toolbarFlexContainer.find('.search:first input:first');
@@ -2238,13 +2240,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
          * when loading elements.
          */
         getViewParams: function() {
-            var criteria = $.extend({
-                status: this.status,
+            var criteria = {
                 siteId: this.siteId,
                 search: this.searchText,
                 limit: this.settings.batchSize,
                 trashed: this.trashed ? 1 : 0
-            }, this.settings.criteria);
+            };
+
+            if (!Garnish.hasAttr(this.$source, 'data-override-status')) {
+                criteria.status = this.status;
+            }
+
+            $.extend(criteria, this.settings.criteria);
 
             var params = {
                 context: this.settings.context,
@@ -2549,6 +2556,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             this.setStoredSortOptionsForSource();
+
+            // Status menu
+            // ----------------------------------------------------------------------
+
+            if (this.$statusMenuBtn.length) {
+                if (Garnish.hasAttr(this.$source, 'data-override-status')) {
+                    this.$statusMenuContainer.addClass('hidden');
+                } else {
+                    this.$statusMenuContainer.removeClass('hidden');
+                }
+            }
 
             // View mode buttons
             // ----------------------------------------------------------------------
@@ -12752,7 +12770,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
             return true;
         },
-        addRow: function(focus) {
+        addRow: function(focus, prepend) {
             if (!this.canAddRow()) {
                 return;
             }
@@ -12760,7 +12778,12 @@ Craft.EditableTable = Garnish.Base.extend(
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
                 $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
-            $tr.appendTo(this.$tbody);
+            if (prepend) {
+                $tr.prependTo(this.$tbody);
+            } else {
+                $tr.appendTo(this.$tbody);
+            }
+
             var row = new Craft.EditableTable.Row(this, $tr);
             this.sorter.addItems($tr);
 
@@ -12780,6 +12803,39 @@ Craft.EditableTable = Garnish.Base.extend(
 
         createRow: function(rowId, columns, baseName, values) {
             return Craft.EditableTable.createRow(rowId, columns, baseName, values);
+        },
+
+        focusOnPrevRow: function($tr, tdIndex, blurTd) {
+            var $prevTr = $tr.prev('tr');
+            var prevRow;
+
+            if ($prevTr.length) {
+                prevRow = $prevTr.data('editable-table-row');
+            } else {
+                prevRow = this.addRow(false, true);
+            }
+
+            // Focus on the same cell in the previous row
+            if (!prevRow) {
+                return;
+            }
+
+            if (!prevRow.$tds[tdIndex]) {
+                return;
+            }
+
+            if ($(prevRow.$tds[tdIndex]).hasClass('disabled')) {
+                if ($prevTr) {
+                    this.focusOnPrevRow($prevTr, tdIndex, blurTd);
+                }
+                return;
+            }
+
+            var $input = $('textarea,input.text', prevRow.$tds[tdIndex]);
+            if ($input.length) {
+                $(blurTd).trigger('blur');
+                $input.trigger('focus');
+            }
         },
 
         focusOnNextRow: function($tr, tdIndex, blurTd) {
@@ -13072,10 +13128,14 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             var keyCode = ev.keyCode ? ev.keyCode : ev.charCode;
             var ctrl = Garnish.isCtrlKeyPressed(ev);
 
-            // Going to the next row?
+            // Going to the next/previous row?
             if (keyCode === Garnish.RETURN_KEY && (ev.data.type !== 'multiline' || ctrl)) {
                 ev.preventDefault();
-                this.table.focusOnNextRow(this.$tr, ev.data.tdIndex, ev.currentTarget);
+                if (ev.shiftKey) {
+                    this.table.focusOnPrevRow(this.$tr, ev.data.tdIndex, ev.currentTarget);
+                } else {
+                    this.table.focusOnNextRow(this.$tr, ev.data.tdIndex, ev.currentTarget);
+                }
                 return;
             }
 

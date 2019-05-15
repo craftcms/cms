@@ -485,8 +485,6 @@ class Users extends Component
         $userRecord->lastLoginDate = $now;
         $userRecord->invalidLoginWindowStart = null;
         $userRecord->invalidLoginCount = null;
-        $userRecord->verificationCode = null;
-        $userRecord->verificationCodeIssuedDate = null;
 
         if (Craft::$app->getConfig()->getGeneral()->storeUserIps) {
             $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();

@@ -1221,7 +1221,6 @@ class UsersController extends Controller
      */
     public function actionUploadUserPhoto()
     {
-        $this->requireCpRequest();
         $this->requireAcceptsJson();
         $this->requireLogin();
 
@@ -1248,12 +1247,8 @@ class UsersController extends Controller
             move_uploaded_file($file->tempName, $fileLocation);
             $users->saveUserPhoto($fileLocation, $user, $file->name);
 
-            $html = $this->getView()->renderTemplate('users/_photo', [
-                'user' => $user
-            ]);
-
             return $this->asJson([
-                'html' => $html,
+                'html' => $this->_renderPhotoTemplate($user),
             ]);
         } catch (\Throwable $exception) {
             /** @noinspection UnSafeIsSetOverArrayInspection - FP */
@@ -1281,7 +1276,6 @@ class UsersController extends Controller
      */
     public function actionDeleteUserPhoto(): Response
     {
-        $this->requireCpRequest();
         $this->requireAcceptsJson();
         $this->requireLogin();
 
@@ -1300,11 +1294,9 @@ class UsersController extends Controller
         $user->photoId = null;
         Craft::$app->getElements()->saveElement($user, false);
 
-        $html = $this->getView()->renderTemplate('users/_photo', [
-            'user' => $user
+        return $this->asJson([
+            'html' => $this->_renderPhotoTemplate($user),
         ]);
-
-        return $this->asJson(['html' => $html]);
     }
 
     /**
@@ -2065,5 +2057,25 @@ class UsersController extends Controller
         ]);
 
         return null;
+    }
+
+    /**
+     * Renders the user photo template.
+     *
+     * @param User $user
+     * @return string The rendered HTML
+     */
+    private function _renderPhotoTemplate(User $user): string
+    {
+        $view = $this->getView();
+        $templateMode = $view->getTemplateMode();
+        if ($templateMode === View::TEMPLATE_MODE_SITE && !$view->doesTemplateExist('users/_photo')) {
+            $view->setTemplateMode(View::TEMPLATE_MODE_CP);
+        }
+        $html = $view->renderTemplate('users/_photo', [
+            'user' => $user
+        ]);
+        $view->setTemplateMode($templateMode);
+        return $html;
     }
 }
