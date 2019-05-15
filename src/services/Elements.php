@@ -244,6 +244,20 @@ class Elements extends Component
         $query->id = $elementId;
         $query->siteId = $siteId;
         $query->anyStatus();
+
+        // Is this a draft/revision?
+        $data = (new Query())
+            ->select(['draftId', 'revisionId'])
+            ->from([Table::ELEMENTS])
+            ->where(['id' => $elementId])
+            ->one();
+
+        if (!empty($data['draftId'])) {
+            $query->draftId($data['draftId']);
+        } else if (!empty($data['revisionId'])) {
+            $query->revisionId($data['revisionId']);
+        }
+
         return $query->one();
     }
 
@@ -783,9 +797,9 @@ class Elements extends Component
                     $siteClone->duplicateOf = $siteElement;
                     $siteClone->propagating = true;
                     $siteClone->id = $mainClone->id;
-                    $siteClone->siteId = $siteInfo['siteId'];
                     $siteClone->contentId = null;
                     $siteClone->setAttributes($newAttributes, false);
+                    $siteClone->siteId = $siteInfo['siteId'];
 
                     // Set a unique URI on the site clone
                     try {
