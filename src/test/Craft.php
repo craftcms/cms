@@ -17,8 +17,10 @@ use craft\composer\Installer;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\errors\InvalidPluginException;
+use craft\events\DeleteElementEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\services\Elements;
 use ReflectionException;
 use ReflectionObject;
 use Throwable;
@@ -144,6 +146,14 @@ class Craft extends Yii2
      */
     public function _after(TestInterface $test)
     {
+        // Create an event handler that ensures elements get hard deleted.
+        $eventHandler = function(DeleteElementEvent $event) {
+            $event->hardDelete = true;
+        };
+
+        // Ensure it gets hard deleted
+        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, $eventHandler);
+
         parent::_after($test);
 
         ob_start();

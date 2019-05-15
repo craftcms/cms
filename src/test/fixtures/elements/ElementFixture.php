@@ -113,22 +113,12 @@ abstract class ElementFixture extends ActiveFixture
      */
     public function unload(): void
     {
-        // Create an event handler that ensures elements get hard deleted.
-        $eventHandler = function(DeleteElementEvent $event) {
-            $event->hardDelete = true;
-        };
-
-        // Ensure it gets hard deleted
-        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, $eventHandler);
-
         foreach ($this->getData() as $data) {
             $element = $this->getElement($data);
             if ($element && !Craft::$app->getElements()->deleteElement($element)) {
                 throw new InvalidElementException($element, 'Unable to delete element');
             }
         }
-
-        Event::off(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, $eventHandler);
 
         $this->data = [];
     }
