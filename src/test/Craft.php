@@ -269,6 +269,15 @@ class Craft extends Yii2
     }
 
     /**
+     * @param $path
+     * @return string
+     */
+    public static function normalizePathSeparators($path)
+    {
+        return is_string($path) ? str_replace("\\", '/', $path) : false;
+    }
+
+    /**
      * TODO: This is a WIP. Currently its a proof of concept.
      *
      * The problem is how do we update vendor/craftcms/plugins.php file. As far as i can see this is a requirement for ensuring plugins work.

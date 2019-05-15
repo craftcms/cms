@@ -16,6 +16,8 @@ use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
 use craftunit\fixtures\SitesFixture;
+use craft\test\Craft as CraftTest;
+use ReflectionException;
 use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -85,7 +87,7 @@ class ViewTest extends TestCase
 
         $this->assertSame(
             Craft::getAlias('@craftunittemplates/testSite3/craft.twig'),
-            $this->view->resolveTemplate('craft')
+            CraftTest::normalizePathSeparators($this->view->resolveTemplate('craft'))
         );
     }
 
@@ -103,24 +105,25 @@ class ViewTest extends TestCase
             $this->view->setTemplateMode($templateMode);
         }
 
-        $doesIt = $this->view->resolveTemplate($templatePath);
+        $doesIt = CraftTest::normalizePathSeparators($this->view->resolveTemplate($templatePath));
 
         if ($result === false) {
             $this->assertFalse($doesIt);
         } else {
-            $this->assertSame(Craft::getAlias($result), $doesIt);
+            $this->assertSame(CraftTest::normalizePathSeparators(Craft::getAlias($result)), $doesIt);
         }
     }
 
     /**
-     * @dataProvider privateResolveTemplateDataProvider
+     * @dataProvider       privateResolveTemplateDataProvider
      *
      * @param $result
      * @param $basePath
      * @param $name
      * @param null $templateExtensions
      * @param null $viewTemplateNameExtensions
-     * @see          testDoesTemplateExistsInSite
+     * @throws ReflectionException
+     * @see testDoesTemplateExistsInSite
      */
     public function testPrivateResolveTemplate($result, $basePath, $name, $templateExtensions = null, $viewTemplateNameExtensions = null)
     {
@@ -136,7 +139,7 @@ class ViewTest extends TestCase
 
         // Lets test stuff.
         $resolved = $this->_resolveTemplate(Craft::getAlias($basePath), $name);
-        $this->assertSame(Craft::getAlias($result), $resolved);
+        $this->assertSame(CraftTest::normalizePathSeparators(Craft::getAlias($result)), $resolved);
     }
 
     /**
@@ -146,6 +149,7 @@ class ViewTest extends TestCase
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws ReflectionException
      */
     public function testRenderTemplate()
     {
@@ -204,25 +208,22 @@ class ViewTest extends TestCase
 
     /**
      * @throws Exception
+     * @throws ReflectionException
      */
     public function testSetSiteTemplateMode()
     {
-        $genConf = Craft::$app->getConfig()->getGeneral();
-        $genConf->defaultTemplateExtensions = ['doStuff', 'random'];
-        $genConf->indexTemplateFilenames = ['template', 'raaaa'];
-
         $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
         $this->assertSame(
             Craft::getAlias('@crafttestsfolder/templates'),
-            $this->view->templatesPath
+            CraftTest::normalizePathSeparators($this->view->templatesPath)
         );
         $this->assertSame(
-            ['doStuff', 'random'],
+            ['html', 'twig'],
             $this->getInaccessibleProperty($this->view, '_defaultTemplateExtensions')
         );
 
         $this->assertSame(
-            ['template', 'raaaa'],
+            ['index'],
             $this->getInaccessibleProperty($this->view, '_indexTemplateFilenames')
         );
     }
@@ -629,6 +630,7 @@ JS;
     /**
      * @param $which
      * @return mixed
+     * @throws ReflectionException
      */
     private function _getTemplateRoots($which)
     {
@@ -639,9 +641,10 @@ JS;
      * @param $basePath
      * @param $name
      * @return mixed
+     * @throws ReflectionException
      */
     private function _resolveTemplate($basePath, $name)
     {
-        return $this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name]);
+        return CraftTest::normalizePathSeparators($this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name]));
     }
 }

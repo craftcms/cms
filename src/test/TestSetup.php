@@ -123,7 +123,7 @@ class TestSetup
         $_SERVER['REMOTE_ADDR'] = '1.1.1.1';
         $_SERVER['REMOTE_PORT'] = 654321;
 
-        $basePath = dirname(__DIR__, 2);
+        $basePath = CraftTest::normalizePathSeparators(dirname(__DIR__, 2));
 
         $srcPath = $basePath . '/src';
         $vendorPath = CRAFT_VENDOR_PATH;
@@ -133,6 +133,15 @@ class TestSetup
         Craft::setAlias('@craftunitfixtures', $basePath.'/tests/fixtures');
         Craft::setAlias('@testsfolder', $basePath.'/tests');
         Craft::setAlias('@crafttestsfolder', $basePath.'/tests/_craft');
+
+        // Normalize some Craft defined path aliases.
+        Craft::setAlias('@craft', CraftTest::normalizePathSeparators(Craft::getAlias('@craft')));
+        Craft::setAlias('@lib', CraftTest::normalizePathSeparators(Craft::getAlias('@lib')));
+        Craft::setAlias('@config', CraftTest::normalizePathSeparators(Craft::getAlias('@config')));
+        Craft::setAlias('@contentMigrations', CraftTest::normalizePathSeparators(Craft::getAlias('@contentMigrations')));
+        Craft::setAlias('@storage', CraftTest::normalizePathSeparators(Craft::getAlias('@storage')));
+        Craft::setAlias('@templates', CraftTest::normalizePathSeparators(Craft::getAlias('@templates')));
+        Craft::setAlias('@translations', CraftTest::normalizePathSeparators(Craft::getAlias('@translations')));
 
         // Load the config
         $config = ArrayHelper::merge(

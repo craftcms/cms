@@ -171,8 +171,8 @@ class ElementHelperTest extends Unit
             ['word[separator-here]word', 'word word'],
             ['word', 'word'],
             ['123456789', '123456789'],
-            ['abc...dfg', 'abc...dfg'],
-            ['abc...dfg', 'abc...(dfg)'],
+            ['abc--dfg', 'abc...dfg'],
+            ['abc--dfg', 'abc...(dfg)'],
         ];
     }
 
@@ -199,7 +199,7 @@ class ElementHelperTest extends Unit
     {
         return [
             [['uri' => null], ['uriFormat' => null]],
-            [['uri' => ''], ['uriFormat' => '']],
+            [['uri' => null], ['uriFormat' => '']],
             [['uri' => 'craft'], ['uriFormat' => '{slug}', 'slug' => 'craft']],
             [['uri' => 'test'], ['uriFormat' => 'test/{slug}']],
             [['uri' => 'test/test'], ['uriFormat' => 'test/{slug}', 'slug' => 'test']],
