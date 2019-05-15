@@ -1005,6 +1005,29 @@ class Sections extends Component
     }
 
     /**
+     * Returns all entry types.
+     *
+     * ---
+     *
+     * ```php
+     * $entryTypes = Craft::$app->sections->getAllEntryTypes(1);
+     * ```
+     *
+     * @return EntryType[]
+     */
+    public function getAllEntryTypes(): array
+    {
+        $results = $this->_createEntryTypeQuery()
+            ->all();
+
+        foreach ($results as $key => $result) {
+            $results[$key] = new EntryType($result);
+        }
+
+        return $results;
+    }
+
+    /**
      * Returns an entry type by its ID.
      *
      * ---
