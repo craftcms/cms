@@ -814,6 +814,11 @@ class Matrix extends Component
             throw $e;
         }
 
+        // Reset the field value if this is a new element
+        if ($owner->duplicateOf || !$query->ownerId) {
+            $owner->setFieldValue($field->handle, null);
+        }
+
         // Tell the browser to collapse any new block IDs
         if (!Craft::$app->getRequest()->getIsConsoleRequest() && !Craft::$app->getResponse()->isSent && !empty($collapsedBlockIds)) {
             Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
