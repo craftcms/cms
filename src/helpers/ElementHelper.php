@@ -33,13 +33,18 @@ class ElementHelper
      */
     public static function createSlug(string $str): string
     {
+        // Special case for the homepage
+        if ($str === '__home__') {
+            return $str;
+        }
+
         // Remove HTML tags
         $str = StringHelper::stripHtml($str);
 
         // Convert to kebab case
         $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
         $lower = !Craft::$app->getConfig()->getGeneral()->allowUppercaseInSlug;
-        $str = StringHelper::toKebabCase($str, $glue, $lower, false);
+        $str = StringHelper::toKebabCase($str, $glue, $lower);
 
         return $str;
     }
