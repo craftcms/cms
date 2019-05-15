@@ -13,7 +13,7 @@ use yii\db\Exception;
 use Craft;
 
 /**
- * Class EntriesFixture
+ * Class EntryFixture
  *
  * Credit to: https://github.com/robuust/craft-fixtures
  *
@@ -22,7 +22,7 @@ use Craft;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.1
  */
-abstract class EntriesFixture extends ElementFixture
+abstract class EntryFixture extends ElementFixture
 {
     // Public Properties
     // =========================================================================

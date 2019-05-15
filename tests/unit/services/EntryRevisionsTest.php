@@ -19,7 +19,7 @@ use craft\helpers\Json;
 use craft\records\EntryDraft;
 use craft\records\EntryVersion;
 use craft\services\EntryRevisions;
-use craftunit\fixtures\EntriesFixture;
+use craftunit\fixtures\EntryFixture;
 use craftunit\fixtures\EntryDraftsFixture;
 use \craft\models\EntryDraft as EntryDraftModel;
 use UnitTester;
@@ -59,7 +59,7 @@ class EntryRevisionsTest extends Unit
     {
         return [
             'entries' => [
-                'class' => EntriesFixture::class
+                'class' => EntryFixture::class
             ],
         ];
     }

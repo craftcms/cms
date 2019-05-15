@@ -18,7 +18,7 @@ use craft\records\Session;
 use craft\records\User;
 use craft\records\Volume;
 use craft\services\Gc;
-use craftunit\fixtures\EntriesFixture;
+use craftunit\fixtures\EntryFixture;
 use craftunit\fixtures\EntryTypeFixture;
 use craftunit\fixtures\SectionsFixture;
 use craftunit\fixtures\SessionsFixture;
@@ -70,7 +70,7 @@ class GcTest extends Unit
                 'class' => EntryTypeFixture::class
             ],
             'entries' => [
-                'class' => EntriesFixture::class
+                'class' => EntryFixture::class
             ],
             'users' => [
                 'class' => UsersFixture::class

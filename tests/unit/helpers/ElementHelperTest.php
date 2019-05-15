@@ -12,7 +12,7 @@ use Craft;
 use craft\errors\OperationAbortedException;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
-use craftunit\fixtures\EntriesFixture;
+use craftunit\fixtures\EntryFixture;
 use UnitTester;
 use Exception;
 
@@ -43,7 +43,7 @@ class ElementHelperTest extends Unit
     {
         return [
             'entries' => [
-                'class' => EntriesFixture::class
+                'class' => EntryFixture::class
             ]
         ];
     }

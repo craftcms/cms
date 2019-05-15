@@ -7,16 +7,16 @@
 
 namespace craftunit\fixtures;
 
-use craft\test\fixtures\elements\EntriesFixture as BaseEntriesFixture;
+use craft\test\fixtures\elements\EntryFixture as BaseEntriesFixture;
 
 /**
- * Class EntriesFixture
+ * Class EntryFixture
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.1
  */
-class EntriesFixture extends BaseEntriesFixture
+class EntryFixture extends BaseEntriesFixture
 {
     // Properties
     // =========================================================================
