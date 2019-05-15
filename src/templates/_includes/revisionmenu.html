@@ -61,12 +61,12 @@
                             {% set status = siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
                             <li>
                                 {% if siteId == element.siteId %}
-                                    <a class="sel">
+                                    <a class="site-option sel">
                                         <div class="status {{ status }}"></div>{{ site.name|t('site') }}
                                     </a>
                                 {% else %}
                                     {% set url = url(baseUrl, { site: site.handle }) %}
-                                    <a href="{{ url }}">
+                                    <a class="site-option" href="{{ url }}">
                                         <div class="status {{ status }}"></div>{{ site.name|t('site') }}
                                     </a>
                                 {% endif %}

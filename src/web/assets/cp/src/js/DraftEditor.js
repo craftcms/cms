@@ -238,7 +238,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                         $('#apply-btn').removeClass('disabled');
 
                         // Add it to the revision menu
-                        revisionMenu.$options.removeClass('sel');
+                        revisionMenu.$options.filter(':not(.site-option)').removeClass('sel');
                         var $draftsUl = revisionMenu.$container.find('.revision-group-drafts');
                         if (!$draftsUl.length) {
                             var $draftHeading = $('<h6/>', {
@@ -255,6 +255,13 @@ Craft.DraftEditor = Garnish.Base.extend(
                         }).appendTo($draftLi);
                         revisionMenu.addOptions($draftA);
                         revisionMenu.selectOption($draftA);
+
+                        // Update the site URLs
+                        var $siteOptions = revisionMenu.$options.filter('.site-option[href]');
+                        for (var i = 0; i < $siteOptions.length; i++) {
+                            var $siteOption = $siteOptions.eq(i);
+                            $siteOption.attr('href', Craft.getUrl($siteOption.attr('href'), {draftId: response.draftId}));
+                        }
                     }
 
                     revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
