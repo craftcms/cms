@@ -31,6 +31,14 @@ use craft\base\Element;
  */
 abstract class ElementFixture extends ActiveFixture
 {
+    // Public properties
+    // =========================================================================
+
+    /**
+     * @var array
+     */
+    protected $siteIds = [];
+
     // Public Methods
     // =========================================================================
 
@@ -43,6 +51,12 @@ abstract class ElementFixture extends ActiveFixture
 
         if (!($this->getElement() instanceof Element)) {
             throw new InvalidConfigException('"modelClass" must be an Element');
+        }
+
+        $sites = Craft::$app->getSites()->getAllSites();
+
+        foreach ($sites as $site) {
+            $this->siteIds[$site->handle] = $site->id;
         }
     }
 
@@ -124,14 +138,6 @@ abstract class ElementFixture extends ActiveFixture
     }
 
     /**
-     * See if an element's handle is a primary key.
-     *
-     * @param string $key
-     * @return bool
-     */
-    abstract protected function isPrimaryKey(string $key): bool;
-
-    /**
      * Get element model.
      *
      * @param array|null $data The data to get the element by
@@ -154,5 +160,19 @@ abstract class ElementFixture extends ActiveFixture
         }
 
         return $query->one();
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * See if an element's handle is a primary key.
+     *
+     * @param string $key
+     * @return bool
+     */
+    protected function isPrimaryKey(string $key): bool
+    {
+        return $key === 'siteId';
     }
 }

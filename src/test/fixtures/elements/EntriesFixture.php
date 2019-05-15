@@ -9,8 +9,8 @@ namespace craft\test\fixtures\elements;
 
 use craft\elements\Entry;
 use craft\errors\InvalidElementException;
-use craft\services\Sections;
 use yii\db\Exception;
+use Craft;
 
 /**
  * Class EntriesFixture
@@ -22,7 +22,7 @@ use yii\db\Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.1
  */
-class EntriesFixture extends ElementFixture
+abstract class EntriesFixture extends ElementFixture
 {
     // Public Properties
     // =========================================================================
@@ -54,31 +54,25 @@ class EntriesFixture extends ElementFixture
      */
     public function load(): void
     {
-        $this->ensureDataExists();
         parent::load();
     }
 
     /**
-     * @return bool
+     * {@inheritdoc}
      */
-    public function ensureDataExists() : bool
+    public function init(): void
     {
-        if (!$this->sectionIds || !$this->typeIds) {
-            /** @var Sections */
-            $sectionService = \Craft::$app->getSections();
+        parent::init();
 
-            // Get all section and type id's
-            foreach ($sectionService->getAllSections() as $section) {
-                $this->sectionIds[$section->handle] = $section->id;
-                $this->typeIds[$section->handle] = [];
-
-                foreach ($sectionService->getEntryTypesBySectionId($section->id) as $type) {
-                    $this->typeIds[$section->handle][$type->handle] = $type->id;
-                }
+        $sections = Craft::$app->getSections()->getAllSections();
+        foreach ($sections as $section) {
+            $this->sectionIds[$section->handle] = $section->id;
+            $this->typeIds[$section->handle] = [];
+            $types = Craft::$app->getSections()->getEntryTypesBySectionId($section->id);
+            foreach ($types as $type) {
+                $this->typeIds[$section->handle][$type->handle] = $type->id;
             }
         }
-
-        return true;
     }
 
     // Protected Methods
@@ -89,6 +83,6 @@ class EntriesFixture extends ElementFixture
      */
     protected function isPrimaryKey(string $key): bool
     {
-        return in_array($key, ['sectionId', 'typeId', 'title']);
+        return parent::isPrimaryKey($key) || in_array($key, ['sectionId', 'typeId', 'title']);
     }
 }

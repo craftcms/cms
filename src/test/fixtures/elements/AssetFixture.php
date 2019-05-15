@@ -10,6 +10,7 @@ namespace craft\test\fixtures\elements;
 use Craft;
 use craft\base\Element;
 use craft\elements\Asset;
+use craft\records\VolumeFolder;
 use ErrorException;
 
 /**
@@ -17,6 +18,7 @@ use ErrorException;
  *
  * Credit to: https://github.com/robuust/craft-fixtures
  *
+ * @todo https://github.com/robuust/craft-fixtures/blob/master/src/base/AssetFixture.php#L60 ? Why override?
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -32,32 +34,34 @@ abstract class AssetFixture extends ElementFixture
      */
     public $modelClass = Asset::class;
 
+    /**
+     * @var array
+     */
+    protected $volumeIds = [];
+
+    /**
+     * @var array
+     */
+    protected $folderIds = [];
+
     // Public Methods
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
-    public function load(): void
+    public function init(): void
     {
-        $this->data = [];
+        parent::init();
 
-        foreach ($this->getData() as $alias => $data) {
-            $element = $this->getElement();
-
-            if ($element) {
-                foreach ($data as $handle => $value) {
-                    $element->$handle = $value;
-                }
-
-                $result = Craft::$app->getElements()->saveElement($element);
-
-                if (!$result) {
-                    throw new ErrorException(implode(' ', $element->getErrorSummary(true)));
-                }
-
-                $this->data[$alias] = array_merge($data, ['id' => $element->id]);
-            }
+        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+        foreach ($volumes as $volume) {
+            $this->volumeIds[$volume->handle] = $volume->id;
+            $this->folderIds[$volume->handle] = VolumeFolder::findOne([
+                'parentId' => null,
+                'name' => $volume->name,
+                'volumeId' => $volume->id,
+            ])->id;
         }
     }
 
@@ -88,6 +92,6 @@ abstract class AssetFixture extends ElementFixture
      */
     protected function isPrimaryKey(string $key): bool
     {
-        return in_array($key, ['volumeId', 'folderId', 'filename', 'title']);
+        return parent::isPrimaryKey($key) || in_array($key, ['volumeId', 'folderId', 'filename', 'title']);
     }
 }

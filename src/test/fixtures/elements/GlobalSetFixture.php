@@ -7,33 +7,38 @@
 
 namespace craft\test\fixtures\elements;
 
-use craft\elements\User;
+
+use craft\elements\GlobalSet;
 
 /**
- * Class UserFixture
+ * Class GlobalSetFixture
  *
+ * Credit to: https://github.com/robuust/craft-fixtures
+ *
+ * @todo https://github.com/robuust/craft-fixtures/blob/master/src/base/GlobalSetFixture.php#L50 Why?
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.1
  */
-abstract class UserFixture extends ElementFixture
+abstract class GlobalSetFixture extends ElementFixture
 {
-    // Public Properties
+    // Public properties
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
-    public $modelClass = User::class;
+    public $modelClass = GlobalSet::class;
 
     // Protected Methods
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     protected function isPrimaryKey(string $key): bool
     {
-        return parent::isPrimaryKey($key) || in_array($key, ['username', 'email']);
+        return parent::isPrimaryKey($key) || $key === 'handle';
     }
 }
