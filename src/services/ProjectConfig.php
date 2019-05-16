@@ -989,7 +989,7 @@ class ProjectConfig extends Component
                 $deferCounts[$key] = count($item);
             });
 
-            // If this is the first time, just try resolving everything
+            // Don't try to figure out if we're looping if this is the first time we're doing this
             if ($startingDeferCounts !== null) {
                 $movingAlong = false;
 
