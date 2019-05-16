@@ -23,6 +23,7 @@ class TestController extends Controller
         $this->stdout('22');
         $this->stderr('123321123');
         $val = $this->select('Select', ['2', '22']);
+
         if ($val !== '2') {
             throw new InvalidArgumentException('FAIL');
         }

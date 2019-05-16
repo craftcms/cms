@@ -111,7 +111,7 @@ class CommandTest
 
 
     /**
-     *
+     * @throws InvalidArgumentException
      */
     public function run()
     {
@@ -395,7 +395,6 @@ class CommandTest
         }
 
         if (count($this->eventChain) === $this->currentIndex) {
-
             return null;
         }
 
