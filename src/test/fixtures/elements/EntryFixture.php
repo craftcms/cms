@@ -46,21 +46,9 @@ abstract class EntryFixture extends ElementFixture
     // =========================================================================
 
     /**
-     * We load the section data only once we need it. This gives other fixtures
-     * (see for e.g. craftunit\fixtures\SectionsFixture) the time to add their data.
-     *
-     * @throws InvalidElementException
-     * @throws Exception
-     */
-    public function load(): void
-    {
-        parent::load();
-    }
-
-    /**
      * {@inheritdoc}
      */
-    public function init(): void
+    public function init()
     {
         parent::init();
 

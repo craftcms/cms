@@ -42,7 +42,7 @@ abstract class TagFixture extends ElementFixture
     /**
      * {@inheritdoc}
      */
-    public function init(): void
+    public function init()
     {
         parent::init();
 

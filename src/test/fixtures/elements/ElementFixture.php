@@ -41,7 +41,7 @@ abstract class ElementFixture extends ActiveFixture
     /**
      * @inheritDoc
      */
-    public function init(): void
+    public function init()
     {
         parent::init();
 
@@ -119,7 +119,7 @@ abstract class ElementFixture extends ActiveFixture
      * @throws InvalidElementException
      * @throws Throwable
      */
-    public function unload(): void
+    public function unload()
     {
         foreach ($this->getData() as $data) {
             $element = $this->getElement($data);
