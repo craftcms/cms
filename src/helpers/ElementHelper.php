@@ -34,7 +34,7 @@ class ElementHelper
     public static function createSlug(string $str): string
     {
         // Special case for the homepage
-        if ($str === '__home__') {
+        if ($str === '__home__' || strpos($str, '__temp_') === 0) {
             return $str;
         }
 
