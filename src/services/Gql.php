@@ -26,6 +26,7 @@ use craft\gql\types\Structure;
 use craft\gql\types\StructureNode;
 use craft\gql\queries\AssetTransform as AssetTransformQuery;
 use craft\gql\queries\CategoryGroup as CategoryGroupQuery;
+use craft\gql\queries\Entry as EntryQuery;
 use craft\gql\queries\Field as FieldQuery;
 use craft\gql\queries\FieldGroup as FieldGroupQuery;
 use craft\gql\queries\Section as SectionQuery;
@@ -153,6 +154,7 @@ class Gql extends Component
             FieldQuery::getQueries(),
             SectionQuery::getQueries(),
             SiteGroupQuery::getQueries(),
+            EntryQuery::getQueries(),
         ];
 
         $event = new RegisterGqlQueryEvent([
