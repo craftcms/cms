@@ -204,11 +204,8 @@ class Revisions extends Component
                 'id' => $source->id,
                 'uid' => $source->uid,
                 'revisionId' => null,
+                'revisionNotes' => Craft::t('app', 'Reverted to revision {num}.', ['num' => $revision->revisionNum]),
             ]);
-
-            // Now create a new revision
-            $revisionNotes = Craft::t('app', 'Reverted to revision {num}.', ['num' => $revision->revisionNum]);
-            $this->createRevision($newSource, $creatorId, $revisionNotes);
 
             $transaction->commit();
         } catch (\Throwable $e) {
