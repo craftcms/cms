@@ -382,12 +382,8 @@ class EntriesController extends BaseEntriesController
 
         // Can the user delete the entry?
         $variables['canDeleteEntry'] = (
-            !$entry->draftId &&
-            !$entry->revisionId &&
-            (
-                ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries' . $variables['permissionSuffix'])) ||
-                ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
-            )
+            ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries' . $variables['permissionSuffix'])) ||
+            ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
         );
 
         // Render the template!

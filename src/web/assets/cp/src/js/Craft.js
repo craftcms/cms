@@ -1374,7 +1374,10 @@ $.extend($.fn,
                         .appendTo($form);
                 }
 
-                $form.trigger('submit');
+                $form.trigger({
+                    type: 'submit',
+                    customTrigger: true,
+                });
             });
         },
 

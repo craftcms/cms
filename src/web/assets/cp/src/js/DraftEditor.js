@@ -438,9 +438,20 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         handleFormSubmit: function(ev) {
+            // Don't allow a form submit under any circumstances if we’re currently applying a draft
+            if (this.applying) {
+                ev.preventDefault();
+                return;
+            }
+
+            // If the form submit was triggered by a .formsubmit option, don't interfere with it
+            if (ev.customTrigger) {
+                return;
+            }
+
             ev.preventDefault();
 
-            if (!this.settings.draftId || this.applying) {
+            if (!this.settings.draftId) {
                 return;
             }
 

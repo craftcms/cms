@@ -22,6 +22,41 @@
 {% hook "cp.entries.edit" %}
 
 
+{% block actionButton %}
+    {{ parent() }}
+    {% if not isSingle and not isRevision and (canUpdateSource or canDeleteEntry) %}
+        <div class="spacer"></div>
+        <div>
+            <div id="action-menubtn" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}"></div>
+            <div class="menu">
+                <ul>
+                    {% if canUpdateSource %}
+                        {% set duplicateRedirect = "entries/#{section.handle}/{id}-{slug}" %}
+                        <li>
+                            <a class="formsubmit" data-action="entries/save-entry" data-param="duplicate" data-value="1"
+                               data-redirect="{{ duplicateRedirect|hash }}">
+                                {{ 'Save as a new entry'|t('app') }}
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if canDeleteEntry %}
+                        {% if canUpdateSource %}<hr>{% endif %}
+                        <li>
+                            <a class="error formsubmit" data-action="entries/delete-entry"
+                               data-confirm="{{ 'Are you sure you want to delete this entry?'|t('app') }}"
+                               data-redirect="{{ 'entries'|hash }}">
+                                {{ 'Delete entry'|t('app') }}
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div id="action-spinner" class="spinner hidden"></div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+
 {% block content %}
     {% if not isRevision %}
         <input type="hidden" name="sectionId" value="{{ section.id }}">
