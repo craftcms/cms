@@ -603,7 +603,7 @@ class Elements extends Component
             }
 
             // It's now fully saved and propagated
-            if (!$element->propagating) {
+            if (!$element->propagating && !$element->duplicateOf) {
                 $element->afterPropagate($isNewElement);
             }
 
@@ -814,6 +814,9 @@ class Elements extends Component
                     }
                 }
             }
+
+            // It's now fully duplicated and propagated
+            $mainClone->afterPropagate(empty($newAttributes['id']));
 
             $transaction->commit();
         } catch (\Throwable $e) {
