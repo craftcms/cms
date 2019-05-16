@@ -986,38 +986,28 @@ $sidebarLinkSecondaryColor: hsl($hue, 5%, 75%);
   overflow: auto;
 
   .job {
-    @include padding(14px, 138px, 14px, 24px);
-    overflow: hidden;
-
-    &:after {
-      @include clearafter;
-    }
+    padding: 14px 24px;
 
     & + .job {
       border-top: 1px solid $hairlineColor;
     }
 
-    .job-description {
-      position: relative;
+    .flex {
+      align-items: center;
 
-      .indent {
-        position: absolute;
-        top: -1px;
-        @include left(-24px);
-        @include margin-left(0);
+      & > * {
+        margin-bottom: 0;
       }
     }
 
     .job-status {
-      @include floatright;
-      @include margin-right(-114px);
+      @include margin-left(7px);
       width: 100px;
       color: $lightTextColor;
       text-align: center;
 
       .progressbar {
         position: static;
-        margin-top: 4px;
         width: auto;
       }
 

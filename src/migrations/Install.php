@@ -437,6 +437,7 @@ class Install extends Migration
             'dateReserved' => $this->dateTime(),
             'timeUpdated' => $this->integer(),
             'progress' => $this->smallInteger()->notNull()->defaultValue(0),
+            'progressLabel' => $this->string(),
             'attempt' => $this->integer(),
             'fail' => $this->boolean()->defaultValue(false),
             'dateFailed' => $this->dateTime(),

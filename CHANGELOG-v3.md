@@ -5,10 +5,13 @@
 ### Added
 - Dropdown and Multi-select fields can now have optgroups. ([#4236](https://github.com/craftcms/cms/issues/4236))
 - Added the `attr()` Twig function, which can generate a list of HTML/XML attributes. ([#4237](https://github.com/craftcms/cms/pull/4237))
+- Jobs can new set progress labels, which will be shown below their description and progress bar in the queue HUD. ([#1931](https://github.com/craftcms/cms/pull/1931))
 - Added `craft\base\ElementInterface::getUiLabel()`, which is now used to define what an element will be called in the Control Panel. ([#4211](https://github.com/craftcms/cms/pull/4211))
 
 ### Changed
 - `craft\base\ElementInterface::eagerLoadingMap()` and `craft\base\EagerLoadingFieldInterface::getEagerLoadingMap()` can now return `null` to opt out of eager-loading. ([#4220](https://github.com/craftcms/cms/pull/4220))
+- `craft\queue\BaseJob::setProgress()` now has a `$label` argument.
+- `craft\queue\QueueInterface::setProgress()` now has a `$label` argument.
 
 ### Fixed
 - Fixed an error that could occur when updating to 3.2.0-alpha.5 if there were any user groups defined without any permissions. ([#4214](https://github.com/craftcms/cms/pull/4214))

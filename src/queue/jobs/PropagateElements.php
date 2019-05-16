@@ -65,7 +65,11 @@ class PropagateElements extends BaseJob
 
         try {
             foreach ($query->each() as $element) {
-                $this->setProgress($queue, $currentElement++ / $totalElements);
+                $this->setProgress($queue, $currentElement / $totalElements, Craft::t('app', '{step} of {total}', [
+                    'step' => $currentElement + 1,
+                    'total' => $totalElements,
+                ]));
+                $currentElement++;
 
                 /** @var Element $element */
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);

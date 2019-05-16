@@ -34,7 +34,10 @@ class GeneratePendingTransforms extends BaseJob
 
         foreach ($indexIds as $i => $id) {
             if ($index = $assetTransformsService->getTransformIndexModelById($id)) {
-                $this->setProgress($queue, $i / $totalIndexes);
+                $this->setProgress($queue, $i / $totalIndexes, Craft::t('app', '{step} of {total}', [
+                    'step' => $i + 1,
+                    'total' => $totalIndexes,
+                ]));
 
                 // Don't let an exception stop us from processing the rest
                 try {
