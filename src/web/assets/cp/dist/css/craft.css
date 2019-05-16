@@ -1910,23 +1910,14 @@ body.rtl #main-container #main #main-content #details .meta .ui-datepicker { mar
 @media only screen and (max-width: 767px) { #main-container #crumbs, #main-container #main #header, #main-container #main #main-content #content-container #tabs ul li a, #main-container #main #main-content #content-container #content, #main-container #main #main-content #details .meta { padding-left: 12px; padding-right: 12px; }
   #main-container #main #main-content #content-container #tabs ul li a:after { width: 12px; } }
 #queue-hud { padding: 0; overflow: auto; }
-#queue-hud .job { overflow: hidden; }
-body.ltr #queue-hud .job { padding: 14px 138px 14px 24px; }
-body.rtl #queue-hud .job { padding: 14px 24px 14px 138px; }
-#queue-hud .job:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
+#queue-hud .job { padding: 14px 24px; }
 #queue-hud .job + .job { border-top: 1px solid #e3e5e8; }
-#queue-hud .job .job-description { position: relative; }
-#queue-hud .job .job-description .indent { position: absolute; top: -1px; }
-body.ltr #queue-hud .job .job-description .indent { left: -24px; }
-body.rtl #queue-hud .job .job-description .indent { right: -24px; }
-body.ltr #queue-hud .job .job-description .indent { margin-left: 0; }
-body.rtl #queue-hud .job .job-description .indent { margin-right: 0; }
+#queue-hud .job .flex { -webkit-box-align: center; -ms-flex-align: center; align-items: center; }
+#queue-hud .job .flex > * { margin-bottom: 0; }
 #queue-hud .job .job-status { width: 100px; color: #b9bfc6; text-align: center; }
-body.ltr #queue-hud .job .job-status { float: right; }
-body.rtl #queue-hud .job .job-status { float: left; }
-body.ltr #queue-hud .job .job-status { margin-right: -114px; }
-body.rtl #queue-hud .job .job-status { margin-left: -114px; }
-#queue-hud .job .job-status .progressbar { position: static; margin-top: 4px; width: auto; }
+body.ltr #queue-hud .job .job-status { margin-left: 7px; }
+body.rtl #queue-hud .job .job-status { margin-right: 7px; }
+#queue-hud .job .job-status .progressbar { position: static; width: auto; }
 body.ltr #queue-hud .job .job-status .menubtn { margin-right: -22px; }
 body.rtl #queue-hud .job .job-status .menubtn { margin-left: -22px; }
 

@@ -15,6 +15,7 @@
 - Element index pages are now paginated for non-Structure views. ([#818](https://github.com/craftcms/cms/issues/818))
 - Element index pages now have an “Export…” button that will export all of the elements in the current view (across all pages) or up to a custom limit, in either CSV, XLS, XLSX, or ODS format. ([#994](https://github.com/craftcms/cms/issues/994))
 - Added the `attr()` Twig function, which can generate a list of HTML/XML attributes. ([#4237](https://github.com/craftcms/cms/pull/4237))
+- Jobs can new set progress labels, which will be shown below their description and progress bar in the queue HUD. ([#1931](https://github.com/craftcms/cms/pull/1931))
 - The `_layouts/cp` Control Panel template now supports a `footer` block, which will be output below the main content area.
 - Added `craft\base\ElementInterface::getUiLabel()`, which is now used to define what an element will be called in the Control Panel. ([#4211](https://github.com/craftcms/cms/pull/4211))
 - Added `craft\base\ElementInterface::pluralDisplayName()`, which element type classes can use to define the plural of their display name.
@@ -39,6 +40,8 @@
 - `craft\services\Elements::propagateElement()` now has a `$siteElement` argument.
 - `craft\services\Elements::saveElement()` now preserves the `uid`, `dateCreated`, and `dateUpdated` values on new elements if they were explicitly set. ([#2909](https://github.com/craftcms/cms/issues/2909))
 - `craft\services\Elements::saveElement()` now preserves existing elements’ current `dateUpdated` value when propagating or auto-resaving elements.
+- `craft\queue\BaseJob::setProgress()` now has a `$label` argument.
+- `craft\queue\QueueInterface::setProgress()` now has a `$label` argument.
 
 ### Removed
 - Removed the `--batch-size` option from `resave/*` actions.

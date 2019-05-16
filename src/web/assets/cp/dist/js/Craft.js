@@ -1,4 +1,4 @@
-/*!   - 2019-05-14 */
+/*!   - 2019-05-16 */
 (function($){
 
 /** global: Craft */
@@ -11606,6 +11606,7 @@ Craft.CP = Garnish.Base.extend(
                 this.displayedJobInfo &&
                 oldInfo.id === this.displayedJobInfo.id &&
                 oldInfo.progress === this.displayedJobInfo.progress &&
+                oldInfo.progressLabel === this.displayedJobInfo.progressLabel &&
                 oldInfo.status === this.displayedJobInfo.status
             ) {
                 this.displayedJobInfoUnchanged++;
@@ -12007,6 +12008,7 @@ QueueHUD.Job = Garnish.Base.extend(
         $container: null,
         $statusContainer: null,
         $descriptionContainer: null,
+        $progressLabel: null,
 
         _progressBar: null,
 
@@ -12016,9 +12018,10 @@ QueueHUD.Job = Garnish.Base.extend(
             this.id = info.id;
             this.description = info.description;
 
-            this.$container = $('<div class="job"/>');
-            this.$statusContainer = $('<div class="job-status"/>').appendTo(this.$container);
-            this.$descriptionContainer = $('<div class="job-description"/>').appendTo(this.$container).text(info.description);
+            this.$container = $('<div/>', { 'class': 'job' });
+            var $flex = $('<div/>', { 'class': 'flex' }).appendTo(this.$container);
+            $('<div/>', { 'class': 'flex-grow' }).text(info.description).appendTo($flex);
+            this.$statusContainer = $('<div class="job-status"/>').appendTo($flex);
 
             this.$container.data('job', this);
 
@@ -12067,6 +12070,16 @@ QueueHUD.Job = Garnish.Base.extend(
 
             if (this.status === Craft.CP.JOB_STATUS_RESERVED) {
                 this._progressBar.setProgressPercentage(info.progress);
+
+                if (info.progressLabel) {
+                    if (!this.$progressLabel) {
+                        this.$progressLabel = $('<div class="light smalltext"/>').appendTo(this.$container);
+                    }
+                    this.$progressLabel.text(info.progressLabel);
+                }
+            } else if (this.$progressLabel) {
+                this.$progressLabel.remove();
+                this.$progressLabel = null;
             }
         },
 
