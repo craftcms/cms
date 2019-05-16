@@ -203,6 +203,7 @@ class Drafts extends Component
             $newSource = $elementsService->duplicateElement($draft, [
                 'id' => $source->id,
                 'uid' => $source->uid,
+                'dateCreated' => $source->dateCreated,
                 'draftId' => null,
                 'revisionNotes' => $draft->draftNotes ?: $draft->draftName,
             ]);
