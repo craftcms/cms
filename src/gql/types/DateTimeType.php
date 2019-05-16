@@ -43,7 +43,7 @@ class DateTimeType extends ScalarType
      */
     public function serialize($value)
     {
-        return (string) $value;
+        return $value->getTimestamp();
     }
 
     /**
