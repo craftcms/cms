@@ -10,9 +10,10 @@ build:
         before:
           - mysql -e "CREATE DATABASE craft3test CHARACTER SET = 'utf8' COLLATE = 'utf8_unicode_ci'"
       tests:
+        before:
+          - command: 'touch tests/.env'
         override:
-          -
-            command: './vendor/bin/codecept run unit --coverage --coverage-xml --coverage-html'
+          - command: './vendor/bin/codecept run unit --coverage --coverage-xml --coverage-html'
             coverage:
               file: 'tests/_output/coverage.xml'
               format: 'clover'
@@ -23,4 +24,3 @@ build:
       ini:
         date.timezone: 'US/Pacific'
         memory_limit: '-1'
-
