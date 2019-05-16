@@ -789,7 +789,8 @@ class Elements extends Component
                     $siteElement = $siteQuery->one();
 
                     if ($siteElement === null) {
-                        throw new Exception('Element ' . $element->id . ' doesn’t exist in the site ' . $siteInfo['siteId']);
+                        Craft::warning('Element ' . $element->id . ' doesn’t exist in the site ' . $siteInfo['siteId']);
+                        continue;
                     }
 
                     /** @var Element $siteClone */
