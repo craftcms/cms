@@ -22,6 +22,7 @@ coverage:
         - src/translations/*
         - src/migration.php.template
 params:
+    - env
     - tests/.env
 modules:
     config:
