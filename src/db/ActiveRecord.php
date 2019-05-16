@@ -59,10 +59,13 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
             }
         } else if (
             !empty($this->getDirtyAttributes()) &&
-            $this->hasAttribute('dateUpdated') &&
-            !$this->isAttributeChanged('dateUpdated')
+            $this->hasAttribute('dateUpdated')
         ) {
-            $this->dateUpdated = $now;
+            if (!$this->isAttributeChanged('dateUpdated')) {
+                $this->dateUpdated = $now;
+            } else {
+                $this->markAttributeDirty('dateUpdated');
+            }
         }
     }
 }

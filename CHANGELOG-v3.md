@@ -12,6 +12,7 @@
 
 ### Fixed
 - Fixed an error that could occur when updating to 3.2.0-alpha.5 if there were any user groups defined without any permissions. ([#4214](https://github.com/craftcms/cms/pull/4214))
+- Fixed a bug where existing records’ `dateUpdated` values were getting updated unbeknowest to the ActiveRecord object.
 
 ## 3.2.0-alpha.5 - 2019-05-01
 
