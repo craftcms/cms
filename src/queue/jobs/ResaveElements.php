@@ -54,13 +54,16 @@ class ResaveElements extends BaseJob
 
         $callback = function(ResaveElementEvent $e) use ($queue, $query, $count) {
             if ($e->query === $query) {
-                $this->setProgress($queue, $e->position / $count);
+                $this->setProgress($queue, ($e->position - 1) / $count, Craft::t('app', '{step} of {total}', [
+                    'step' => $e->position,
+                    'total' => $count,
+                ]));
             }
         };
 
-        $elementsService->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $callback);
+        $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $callback);
         $elementsService->resaveElements($query);
-        $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $callback);
+        $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $callback);
     }
 
     // Protected Methods
