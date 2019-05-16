@@ -128,6 +128,10 @@ class TestSetup
         $srcPath = $basePath . '/src';
         $vendorPath = CRAFT_VENDOR_PATH;
 
+        // Determine the app type. If the filename contains console. Its a console test. Else, web.
+        $appType = mb_stripos(CraftTest::$currentTestFileName, 'console') !== false ? 'console'
+            : 'web';
+
         Craft::setAlias('@craftunitsupport', $srcPath.'/test');
         Craft::setAlias('@craftunittemplates', $basePath.'/tests/_craft/templates');
         Craft::setAlias('@craftunitfixtures', $basePath.'/tests/fixtures');
@@ -155,7 +159,7 @@ class TestSetup
                 ],
             ],
             require $srcPath . '/config/app.php',
-            require $srcPath . '/config/app.web.php'
+            require $srcPath . '/config/app.'.$appType.'.php'
         );
 
         // Use app.php from the config dir as well.
@@ -177,8 +181,11 @@ class TestSetup
             ],
         ]);
 
+        $class = $appType === 'console' ?  \craft\console\Application::class
+            : Application::class;
+
         return ArrayHelper::merge($config, [
-            'class' => Application::class,
+            'class' => $class,
             'id' => 'craft-test',
             'basePath' => $srcPath
         ]);
