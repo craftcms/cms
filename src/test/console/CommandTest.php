@@ -221,7 +221,7 @@ class CommandTest
      * @param array $options
      * @return CommandTest
      */
-    public function select($prompt, $returnValue, $options = []) : CommandTest
+    public function select(string $prompt, $returnValue, $options = []) : CommandTest
     {
         $chainItem = new ConsoleTestItem([
             'type' => self::SELECT,

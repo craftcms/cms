@@ -100,7 +100,8 @@ module.exports = {
                     'framework/config-options',
                     'framework/fixtures',
                     'framework/mocking',
-                    'framework/test-setup'
+                    'framework/test-setup',
+                    'framework/console'
                 ]
             }
         ],
