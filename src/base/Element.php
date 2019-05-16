@@ -25,6 +25,7 @@ use craft\events\RegisterElementSearchableAttributesEvent;
 use craft\events\RegisterElementSortOptionsEvent;
 use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
+use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\helpers\ArrayHelper;
@@ -151,6 +152,11 @@ abstract class Element extends Component implements ElementInterface
      * @event DefineEagerLoadingMapEvent The event that is triggered when defining an eager-loading map.
      */
     const EVENT_DEFINE_EAGER_LOADING_MAP = 'defineEagerLoadingMap';
+
+    /**
+     * @event RegisterPreviewTargetsEvent The event that is triggered when registering the element’s preview targets.
+     */
+    const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
 
     /**
      * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining the HTML to represent a table attribute.
@@ -1344,6 +1350,24 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getPreviewTargets(): array
+    {
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            return [];
+        }
+
+        // Give plugins a chance to modify them
+        $event = new RegisterPreviewTargetsEvent([
+            'previewTargets' => $this->previewTargets(),
+        ]);
+        $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
+
+        return $event->previewTargets;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getThumbUrl(int $size)
     {
         return null;
@@ -2293,6 +2317,20 @@ abstract class Element extends Component implements ElementInterface
     protected function route()
     {
         return null;
+    }
+
+    /**
+     * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
+     *
+     * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
+     *
+     * @return array
+     * @see getPreviewTargets()
+     * @since 3.2
+     */
+    protected function previewTargets(): array
+    {
+        return [];
     }
 
     /**

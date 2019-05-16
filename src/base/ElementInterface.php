@@ -478,6 +478,16 @@ interface ElementInterface extends ComponentInterface
     public function getCpEditUrl();
 
     /**
+     * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
+     *
+     * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
+     *
+     * @return array
+     * @since 3.2
+     */
+    public function getPreviewTargets(): array;
+
+    /**
      * Returns the URL to the element’s thumbnail, if there is one.
      *
      * @param int $size

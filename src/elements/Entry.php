@@ -738,6 +738,14 @@ class Entry extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function previewTargets(): array
+    {
+        return $this->getSection()->previewTargets;
+    }
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null
