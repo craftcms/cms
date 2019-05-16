@@ -154,7 +154,7 @@ class ProjectConfig extends Component
     /**
      * @var int The maximum number of times deferred events can be re-deferred before we give up on them
      * @see defer()
-     * @see _applyChanges()
+     * @see _processDeferredEvents()
      */
     public $maxDefers = 500;
 
@@ -258,7 +258,7 @@ class ProjectConfig extends Component
     /**
      * @var array Deferred config sync events
      * @see defer()
-     * @see _applyChanges()
+     * @see _processDeferredEvents()
      */
     private $_deferredEvents = [];
 
@@ -854,7 +854,7 @@ class ProjectConfig extends Component
     public function defer(ConfigEvent $event, callable $handler)
     {
         Craft::info('Deferring event handler for ' . $event->path, __METHOD__);
-        $this->_deferredEvents[] = [$event, $event->tokenMatches, $handler];
+        $this->_deferredEvents[$event->path][] = [$event, $event->tokenMatches, $handler];
     }
 
     /**
@@ -958,22 +958,7 @@ class ProjectConfig extends Component
             }
         }
 
-        $defers = -count($this->_deferredEvents);
-        while (!empty($this->_deferredEvents)) {
-            if ($defers > $this->maxDefers) {
-                throw new OperationAbortedException('Maximum number of deferred events reached.');
-            }
-
-            /** @var ConfigEvent $event */
-            /** @var string[]|null $tokenMatches */
-            /** @var callable $handler */
-            list($event, $tokenMatches, $handler) = array_shift($this->_deferredEvents);
-            Craft::info('Re-triggering deferred event for ' . $event->path, __METHOD__);
-            $event->tokenMatches = $tokenMatches;
-            $handler($event);
-            $event->tokenMatches = null;
-            $defers++;
-        }
+        $this->_processDeferredEvents();
 
         Craft::info('Finalizing configuration parsing', __METHOD__);
 
@@ -985,6 +970,70 @@ class ProjectConfig extends Component
         $this->updateParsedConfigTimesAfterRequest();
         $this->_updateConfigMap = true;
         $this->_applyingYamlChanges = false;
+    }
+
+    /**
+     * Process all the deferred events.
+     *
+     * @throws OperationAbortedException
+     */
+    private function _processDeferredEvents()
+    {
+        $startingDeferCounts = null;
+        $deferCounter = 0;
+
+        while (!empty($this->_deferredEvents)) {
+            // Count the times each path is deferred
+            $deferCounts = [];
+            array_walk($this->_deferredEvents, function($item, $key) use (&$deferCounts) {
+                $deferCounts[$key] = count($item);
+            });
+
+            // If this is the first time, just try resolving everything
+            if ($startingDeferCounts !== null) {
+                $movingAlong = false;
+
+                // Deferred event processing is progressing if
+                // a) The counter for at least one path decreases
+                // b) A path is eliminated
+                foreach ($startingDeferCounts as $path => $deferCount) {
+                    if (empty($deferCounts[$path]) || $deferCounts[$path] < $deferCount) {
+                        $movingAlong = true;
+                    }
+                }
+
+                // It's not progressing, so increase the defer counter
+                if (!$movingAlong && ++$deferCounter < $this->maxDefers) {
+                    // Once we reach the failsafe, bail out.
+                    $message = "The following config paths could not be processed succesfully:\n" . implode("\n", array_keys($this->_deferredEvents));
+                    throw new OperationAbortedException($message);
+                }
+            }
+
+            // This will either set this for the first time or update with the new values
+            $startingDeferCounts = $deferCounts;
+
+            // Try to process all events
+            // Make a copy, so we can modify the original array
+            $deferredEvents = $this->_deferredEvents;
+
+            foreach ($deferredEvents as $path => &$events) {
+                /** @var ConfigEvent $event */
+                /** @var string[]|null $tokenMatches */
+                /** @var callable $handler */
+                list($event, $tokenMatches, $handler) = array_shift($events);
+
+                // Clean up the deferred path array, if that was the last one.
+                if (empty($events)) {
+                    unset($this->_deferredEvents[$path]);
+                }
+
+                Craft::info('Re-triggering deferred event for ' . $event->path, __METHOD__);
+                $event->tokenMatches = $tokenMatches;
+                $handler($event);
+                $event->tokenMatches = null;
+            }
+        }
     }
 
     /**
