@@ -96,9 +96,9 @@ class Section extends Model
     public $propagateEntries = true;
 
     /**
-     * @var array Preview contexts
+     * @var array Preview targets
      */
-    public $previewContexts = [];
+    public $previewTargets = [];
 
     /**
      * @var string|null Section's UID
@@ -169,7 +169,7 @@ class Section extends Model
         $rules[] = [['name', 'handle', 'type', 'propagationMethod', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
-        $rules[] = [['previewContexts'], 'validatePreviewContexts'];
+        $rules[] = [['previewTargets'], 'validatePreviewTargets'];
         return $rules;
     }
 
@@ -200,24 +200,25 @@ class Section extends Model
     }
 
     /**
-     * Validates the preview contexts.
+     * Validates the preview targets.
      */
-    public function validatePreviewContexts()
+    public function validatePreviewTargets()
     {
         $hasErrors = false;
 
-        foreach ($this->previewContexts as &$context) {
-            $context['label'] = trim($context['label']);
-            $context['urlFormat'] = trim($context['urlFormat']);
+        foreach ($this->previewTargets as &$target) {
+            $target['label'] = trim($target['label']);
+            $target['urlFormat'] = trim($target['urlFormat']);
 
-            if ($context['label'] === '') {
-                $context['label'] = ['value' => $context['label'], 'hasErrors' => true];
+            if ($target['label'] === '') {
+                $target['label'] = ['value' => $target['label'], 'hasErrors' => true];
                 $hasErrors = true;
             }
         }
+        unset($target);
 
         if ($hasErrors) {
-            $this->addError('previewContexts', Craft::t('app', 'All contexts must have a label.'));
+            $this->addError('previewTargets', Craft::t('app', 'All targets must have a label.'));
         }
     }
 

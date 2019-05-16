@@ -7,16 +7,16 @@ use craft\db\Migration;
 use craft\db\Table;
 
 /**
- * m190504_150349_preview_contexts migration.
+ * m190504_150349_preview_targets migration.
  */
-class m190504_150349_preview_contexts extends Migration
+class m190504_150349_preview_targets extends Migration
 {
     /**
      * @inheritdoc
      */
     public function safeUp()
     {
-        $this->addColumn(Table::SECTIONS, 'previewContexts', $this->text()->after('propagationMethod'));
+        $this->addColumn(Table::SECTIONS, 'previewTargets', $this->text()->after('propagationMethod'));
     }
 
     /**
@@ -24,7 +24,7 @@ class m190504_150349_preview_contexts extends Migration
      */
     public function safeDown()
     {
-        echo "m190504_150349_preview_contexts cannot be reverted.\n";
+        echo "m190504_150349_preview_targets cannot be reverted.\n";
         return false;
     }
 }

@@ -170,26 +170,28 @@
         }) }}
     </div>
 
-    {{ forms.editableTableField({
-        label: 'Preview Contexts'|t('app'),
-        instructions: 'Additional locations that should be available for previewing entries in this section.',
-        id: 'previewContexts',
-        name: 'previewContexts',
-        cols: {
-            label: {
-                type: 'singleline',
-                heading: 'Label'|t('app'),
+    {% if CraftEdition == CraftPro %}
+        {{ forms.editableTableField({
+            label: 'Preview Targets'|t('app'),
+            instructions: 'Additional locations that should be available for previewing entries in this section.',
+            id: 'previewTargets',
+            name: 'previewTargets',
+            cols: {
+                label: {
+                    type: 'singleline',
+                    heading: 'Label'|t('app'),
+                },
+                urlFormat: {
+                    type: 'singleline',
+                    heading: 'URL Format'|t('app'),
+                    info: 'The URL/URI to use for this target.'|t('app'),
+                    code: true,
+                }
             },
-            urlFormat: {
-                type: 'singleline',
-                heading: 'URL Format'|t('app'),
-                info: 'The URL/URI to use for this context.'|t('app'),
-                code: true,
-            }
-        },
-        rows: section.previewContexts,
-        errors: section.getErrors('previewContexts')
-    }) }}
+            rows: section.previewTargets,
+            errors: section.getErrors('previewTargets')
+        }) }}
+    {% endif %}
 {% endblock %}
 
 

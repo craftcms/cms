@@ -12887,16 +12887,16 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
 
-            if (this.settings.previewContexts.length) {
+            if (this.settings.previewTargets.length) {
                 if (this.settings.enablePreview) {
                     this.addListener($('#preview-btn'), 'click', 'openPreview');
                 }
 
                 var $shareBtn = $('#share-btn');
 
-                if (this.settings.previewContexts.length === 1) {
+                if (this.settings.previewTargets.length === 1) {
                     this.addListener($shareBtn, 'click', function() {
-                        this.openShareLink(this.settings.previewContexts[0].url);
+                        this.openShareLink(this.settings.previewTargets[0].url);
                     });
                 } else {
                     this.createShareMenu($shareBtn);
@@ -12932,16 +12932,16 @@ Craft.DraftEditor = Garnish.Base.extend(
             var $li, $a;
             var $a;
 
-            for (var i = 0; i < this.settings.previewContexts.length; i++) {
+            for (var i = 0; i < this.settings.previewTargets.length; i++) {
                 $li = $('<li/>').appendTo($ul);
                 $a = $('<a/>', {
-                    text: this.settings.previewContexts[i].label,
+                    text: this.settings.previewTargets[i].label,
                     data: {
-                        url: this.settings.previewContexts[i].url,
+                        url: this.settings.previewTargets[i].url,
                     }
                 }).appendTo($li);
                 this.addListener($a, 'click', {
-                    url: this.settings.previewContexts[i].url,
+                    url: this.settings.previewTargets[i].url,
                 }, function(ev) {
                     this.openShareLink(ev.data.url);
                 });
@@ -13317,7 +13317,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             deleteDraftAction: null,
             applyDraftAction: null,
             enablePreview: false,
-            previewContexts: [],
+            previewTargets: [],
         }
     }
 );
@@ -17041,14 +17041,14 @@ Craft.Preview = Garnish.Base.extend(
         $savedIcon: null,
         $dragHandle: null,
         $previewContainer: null,
-        $contextBtn: null,
-        $contextMenu: null,
+        $targetBtn: null,
+        $targetMenu: null,
         $iframe: null,
         $tempInput: null,
         $fieldPlaceholder: null,
 
         isActive: false,
-        activeContext: 0,
+        activeTarget: 0,
         url: null,
         fields: null,
 
@@ -17125,27 +17125,27 @@ Craft.Preview = Garnish.Base.extend(
                 this.$spinner = $('<div/>', {'class': 'spinner hidden', title: Craft.t('app', 'Saving')}).appendTo($editorHeader);
                 this.$savedIcon = $('<div/>', {'class': 'checkmark-icon invisible', title: Craft.t('app', 'Saved')}).appendTo($editorHeader);
 
-                if (this.draftEditor.settings.previewContexts.length > 1) {
+                if (this.draftEditor.settings.previewTargets.length > 1) {
                     var $previewHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$previewContainer);
-                    this.$contextBtn = $('<div/>', {
+                    this.$targetBtn = $('<div/>', {
                         'class': 'btn menubtn',
-                        text: this.draftEditor.settings.previewContexts[0].label,
+                        text: this.draftEditor.settings.previewTargets[0].label,
                         role: 'btn',
                     }).appendTo($previewHeader);
-                    this.$contextMenu = $('<div/>', {'class': 'menu lp-context-menu'}).insertAfter(this.$contextBtn);
-                    var $ul = $('<ul/>', {'class': 'padded'}).appendTo(this.$contextMenu);
+                    this.$targetMenu = $('<div/>', {'class': 'menu lp-target-menu'}).insertAfter(this.$targetBtn);
+                    var $ul = $('<ul/>', {'class': 'padded'}).appendTo(this.$targetMenu);
                     var $li, $a;
-                    for (var i = 0; i < this.draftEditor.settings.previewContexts.length; i++) {
+                    for (var i = 0; i < this.draftEditor.settings.previewTargets.length; i++) {
                         $li = $('<li/>').appendTo($ul)
                         $a = $('<a/>', {
-                            data: {context: i},
-                            text: this.draftEditor.settings.previewContexts[i].label,
+                            data: {target: i},
+                            text: this.draftEditor.settings.previewTargets[i].label,
                             'class': i === 0 ? 'sel' : null,
                         }).appendTo($li);
                     }
-                    new Garnish.MenuBtn(this.$contextBtn, {
+                    new Garnish.MenuBtn(this.$targetBtn, {
                         onOptionSelect: $.proxy(function(option) {
-                            this.switchContext($(option).data('context'));
+                            this.switchTarget($(option).data('target'));
                         }, this)
                     });
                 }
@@ -17206,11 +17206,11 @@ Craft.Preview = Garnish.Base.extend(
             this.trigger('open');
         },
 
-        switchContext: function(i) {
-            this.activeContext = i;
-            this.$contextBtn.text(this.draftEditor.settings.previewContexts[i].label);
-            this.$contextMenu.find('a.sel').removeClass('sel');
-            this.$contextMenu.find('a').eq(i).addClass('sel');
+        switchTarget: function(i) {
+            this.activeTarget = i;
+            this.$targetBtn.text(this.draftEditor.settings.previewTargets[i].label);
+            this.$targetMenu.find('a.sel').removeClass('sel');
+            this.$targetMenu.find('a').eq(i).addClass('sel');
             this.updateIframe(true);
         },
 
@@ -17308,7 +17308,7 @@ Craft.Preview = Garnish.Base.extend(
                 return false;
             }
 
-            var url = this.draftEditor.settings.previewContexts[this.activeContext].url;
+            var url = this.draftEditor.settings.previewTargets[this.activeTarget].url;
 
             this.draftEditor.getTokenizedPreviewUrl(url, $.proxy(function(url) {
                 // Possible to just refresh the iframe?

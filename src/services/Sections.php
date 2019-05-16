@@ -196,10 +196,10 @@ class Sections extends Component
         $this->_sections = [];
 
         foreach ($results as $result) {
-            if (!empty($result['previewContexts'])) {
-                $result['previewContexts'] = Json::decode($result['previewContexts']);
+            if (!empty($result['previewTargets'])) {
+                $result['previewTargets'] = Json::decode($result['previewTargets']);
             } else {
-                $result['previewContexts'] = [];
+                $result['previewTargets'] = [];
             }
 
             $this->_sections[] = new Section($result);
@@ -456,8 +456,8 @@ class Sections extends Component
             'siteSettings' => [],
         ];
 
-        if (!empty($section->previewContexts)) {
-            $configData['previewContexts'] = $section->previewContexts;
+        if (!empty($section->previewTargets)) {
+            $configData['previewTargets'] = $section->previewTargets;
         }
 
         if ($section->type === Section::TYPE_STRUCTURE) {
@@ -609,7 +609,7 @@ class Sections extends Component
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? Section::PROPAGATION_METHOD_ALL;
-            $sectionRecord->previewContexts = $data['previewContexts'] ?? null;
+            $sectionRecord->previewTargets = $data['previewTargets'] ?? null;
 
             $isNewSection = $sectionRecord->getIsNewRecord();
 
@@ -1467,7 +1467,7 @@ class Sections extends Component
             $query->addSelect('sections.propagationMethod');
         }
         if (version_compare($schemaVersion, '3.2.5', '>=')) {
-            $query->addSelect('sections.previewContexts');
+            $query->addSelect('sections.previewTargets');
         }
 
         return $query;

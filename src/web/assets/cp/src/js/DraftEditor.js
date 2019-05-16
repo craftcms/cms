@@ -51,16 +51,16 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
 
-            if (this.settings.previewContexts.length) {
+            if (this.settings.previewTargets.length) {
                 if (this.settings.enablePreview) {
                     this.addListener($('#preview-btn'), 'click', 'openPreview');
                 }
 
                 var $shareBtn = $('#share-btn');
 
-                if (this.settings.previewContexts.length === 1) {
+                if (this.settings.previewTargets.length === 1) {
                     this.addListener($shareBtn, 'click', function() {
-                        this.openShareLink(this.settings.previewContexts[0].url);
+                        this.openShareLink(this.settings.previewTargets[0].url);
                     });
                 } else {
                     this.createShareMenu($shareBtn);
@@ -96,16 +96,16 @@ Craft.DraftEditor = Garnish.Base.extend(
             var $li, $a;
             var $a;
 
-            for (var i = 0; i < this.settings.previewContexts.length; i++) {
+            for (var i = 0; i < this.settings.previewTargets.length; i++) {
                 $li = $('<li/>').appendTo($ul);
                 $a = $('<a/>', {
-                    text: this.settings.previewContexts[i].label,
+                    text: this.settings.previewTargets[i].label,
                     data: {
-                        url: this.settings.previewContexts[i].url,
+                        url: this.settings.previewTargets[i].url,
                     }
                 }).appendTo($li);
                 this.addListener($a, 'click', {
-                    url: this.settings.previewContexts[i].url,
+                    url: this.settings.previewTargets[i].url,
                 }, function(ev) {
                     this.openShareLink(ev.data.url);
                 });
@@ -481,7 +481,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             deleteDraftAction: null,
             applyDraftAction: null,
             enablePreview: false,
-            previewContexts: [],
+            previewTargets: [],
         }
     }
 );
