@@ -205,7 +205,7 @@ class Drafts extends Component
                 'uid' => $source->uid,
                 'dateCreated' => $source->dateCreated,
                 'draftId' => null,
-                'revisionNotes' => $draft->draftNotes ?: $draft->draftName,
+                'revisionNotes' => $draft->draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
             ]);
 
             // Now delete the draft
