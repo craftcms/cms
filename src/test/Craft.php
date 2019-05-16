@@ -148,13 +148,10 @@ class Craft extends Yii2
      */
     public function _after(TestInterface $test)
     {
-        // Create an event handler that ensures elements get hard deleted.
-        $eventHandler = function(DeleteElementEvent $event) {
-            $event->hardDelete = true;
-        };
-
         // Ensure it gets hard deleted
-        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, $eventHandler);
+        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, function(DeleteElementEvent $event) {
+            $event->hardDelete = true;
+        });
 
         parent::_after($test);
 
@@ -276,46 +273,6 @@ class Craft extends Yii2
     public static function normalizePathSeparators($path)
     {
         return is_string($path) ? str_replace("\\", '/', $path) : false;
-    }
-
-    /**
-     * @todo This is a WIP. Currently its a proof of concept.
-     *
-     * The problem is how do we update vendor/craftcms/plugins.php file. As far as i can see this is a requirement for ensuring plugins work.
-     * Updating this file is difficult if the plugin is not in the /vendors directory. I.E. If it is the project root
-     *
-     * @param array $pluginArray
-     * @throws InvalidPluginException
-     * @throws ReflectionException
-     *
-     * @internal This is not the final version.
-     * 1. Is there a better what to accessing the plugins.php file than creating a composerInstance? Surely there is.
-     * 2. If not. Should the craft plugin installer be edited. Namely the addPlugin method be made public.
-     *
-     * Basically we can sum up this todo down to: How are we going to ensure that vendor/craftcms/plugins.php contains the plugins defined by the codeception file.
-     */
-    public function addPluginFromRoot(array $pluginArray)
-    {
-        $rootPath = dirname(CRAFT_VENDOR_PATH);
-
-        if (!is_file($rootPath . '/composer.json')) {
-            throw new InvalidPluginException($pluginArray['handle'], 'Selected plugin to be at root, but it is not.');
-        }
-
-        $composer = (new Factory())->createComposer(new NullIO());
-
-        $installer = new Installer(new NullIO(), $composer);
-
-        $package = $composer->getPackage();
-
-        $package->setExtra(
-            ArrayHelper::merge(
-                $package->getExtra(),
-                ['basePath' => $rootPath . '/src', 'class' => $pluginArray['class']]
-            )
-        );
-
-        $this->invokeMethod($installer, 'addPlugin', [$package]);
     }
 
     // Helpers for test methods
@@ -450,5 +407,45 @@ class Craft extends Yii2
         }
 
         return ($projectConfig && array_key_exists('once', $projectConfig) && $projectConfig['once'] === false);
+    }
+
+    /**
+     * @todo This is a WIP. Currently its a proof of concept.
+     *
+     * The problem is how do we update vendor/craftcms/plugins.php file. As far as i can see this is a requirement for ensuring plugins work.
+     * Updating this file is difficult if the plugin is not in the /vendors directory. I.E. If it is the project root
+     *
+     * @param array $pluginArray
+     * @throws InvalidPluginException
+     * @throws ReflectionException
+     *
+     * @internal This is not the final version.
+     * 1. Is there a better what to accessing the plugins.php file than creating a composerInstance? Surely there is.
+     * 2. If not. Should the craft plugin installer be edited. Namely the addPlugin method be made public.
+     *
+     * Basically we can sum up this todo down to: How are we going to ensure that vendor/craftcms/plugins.php contains the plugins defined by the codeception file.
+     */
+    protected function addPluginFromRoot(array $pluginArray)
+    {
+        $rootPath = dirname(CRAFT_VENDOR_PATH);
+
+        if (!is_file($rootPath . '/composer.json')) {
+            throw new InvalidPluginException($pluginArray['handle'], 'Selected plugin to be at root, but it is not.');
+        }
+
+        $composer = (new Factory())->createComposer(new NullIO());
+
+        $installer = new Installer(new NullIO(), $composer);
+
+        $package = $composer->getPackage();
+
+        $package->setExtra(
+            ArrayHelper::merge(
+                $package->getExtra(),
+                ['basePath' => $rootPath . '/src', 'class' => $pluginArray['class']]
+            )
+        );
+
+        $this->invokeMethod($installer, 'addPlugin', [$package]);
     }
 }
