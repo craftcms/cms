@@ -422,6 +422,12 @@ class GeneralConfig extends BaseObject
      */
     public $maxInvalidLogins = 5;
     /**
+     * @var int|null The maximum number of revisions that should be stored for each element.
+     *
+     * Set to `0` if you want to store an unlimited number of revisions.
+     */
+    public $maxRevisions = 50;
+    /**
      * @var int The highest number Craft will tack onto a slug in order to make it unique before giving up and throwing an error.
      */
     public $maxSlugIncrement = 100;

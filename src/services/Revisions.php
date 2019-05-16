@@ -118,6 +118,8 @@ class Revisions extends Component
             $source->getSerializedFieldValues()
         ));
 
+        $elementsService = Craft::$app->getElements();
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Create the revision row
@@ -135,7 +137,7 @@ class Revisions extends Component
 
             // Duplicate the element
             /** @var Element $revision */
-            $revision = Craft::$app->getElements()->duplicateElement($source, [
+            $revision = $elementsService->duplicateElement($source, [
                 'revisionId' => $revisionId,
                 // The revision's dateCreated and dateUpdated should match the source's dateUpdated
                 'dateCreated' => $source->dateUpdated,
@@ -168,6 +170,25 @@ class Revisions extends Component
         }
 
         $mutex->release($lockKey);
+
+        // Prune any excess revisions
+        $maxRevisions = Craft::$app->getConfig()->getGeneral()->maxRevisions;
+        if ($maxRevisions > 0) {
+            // Don't count the current revision
+            /** @var Element|RevisionBehavior|null $lastRevision */
+            $extraRevisions = $source::find()
+                ->revisionOf($source)
+                ->siteId($source->siteId)
+                ->anyStatus()
+                ->orderBy(['num' => SORT_DESC])
+                ->offset($maxRevisions + 1)
+                ->all();
+
+            foreach ($extraRevisions as $revision) {
+                $elementsService->deleteElement($revision, true);
+            }
+        }
+
         return $revision;
     }
 
