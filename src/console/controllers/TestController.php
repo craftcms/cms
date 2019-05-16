@@ -13,7 +13,7 @@ use yii\console\ExitCode;
 
 /**
  * @todo This class is just for show.
- *
+ * @internal It will be removed before the tests are release for public. No need for cleaning the code.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class TestController extends Controller
