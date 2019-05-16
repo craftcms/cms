@@ -119,7 +119,7 @@ class CommandTest
             throw new InvalidArgumentException('Please enter a desired exit code');
         }
 
-        $exitCode = $this->controller->run($this->actionId);
+        $exitCode = $this->controller->run($this->actionId, $this->parameters);
 
         $this->test->assertSame($this->desiredExitCode, $exitCode);
 
