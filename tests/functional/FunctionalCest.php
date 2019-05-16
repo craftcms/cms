@@ -12,7 +12,7 @@ use FunctionalTester;
 use Craft;
 
 /**
- * Class LoginCest
+ * Class FunctionalCest
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
