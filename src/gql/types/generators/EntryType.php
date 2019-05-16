@@ -40,7 +40,7 @@ class EntryType
 
             $entryTypeFields = array_merge(EntryInterface::getFields(), $contentFieldGqlTypes);
 
-            $gqlTypes[] = TypeRegistry::getType($typeName) ?: TypeRegistry::createType($typeName, new ObjectType([
+            $gqlTypes[] = TypeRegistry::getType($entryType->uid) ?: TypeRegistry::createType($entryType->uid, new ObjectType([
                 'name' => $typeName,
                 'fields' => function () use ($entryTypeFields) {
                     return $entryTypeFields;
