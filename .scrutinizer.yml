@@ -19,7 +19,7 @@ build:
   environment:
     timezone: UTC
     php:
-      version: 7.1
+      version: 7.2.13
       ini:
         date.timezone: 'US/Pacific'
         memory_limit: '-1'
