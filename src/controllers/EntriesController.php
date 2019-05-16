@@ -300,9 +300,14 @@ class EntriesController extends BaseEntriesController
             $variables['showEntryTypes'] = false;
         }
 
-        // Enable Live Preview?
-        if (!$request->isMobileBrowser(true) && Craft::$app->getSections()->isSectionTemplateValid($section, $entry->siteId)) {
-            $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
+        $variables['showPreviewBtn'] = false;
+
+        if (!$request->isMobileBrowser(true)) {
+
+            // Enable Live Preview?
+            if (Craft::$app->getSections()->isSectionTemplateValid($section, $entry->siteId)) {
+                $variables['showPreviewBtn'] = true;
+                $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $entry->getUrl(),
@@ -314,10 +319,9 @@ class EntriesController extends BaseEntriesController
                         'versionId' => $entry instanceof EntryVersion ? $entry->versionId : null,
                     ]
                 ]) . ');');
+            }
 
-            $variables['showPreviewBtn'] = true;
-
-            // Should we show the Share button too?
+            // Should we show the Share button?
             if ($entry->id !== null) {
                 $className = get_class($entry);
 
@@ -346,8 +350,6 @@ class EntriesController extends BaseEntriesController
                     $variables['shareUrl'] = UrlHelper::actionUrl('entries/share-entry', $shareParams);
                 }
             }
-        } else {
-            $variables['showPreviewBtn'] = false;
         }
 
         // Set the base CP edit URL

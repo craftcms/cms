@@ -358,9 +358,14 @@ class CategoriesController extends Controller
             ];
         }
 
-        // Enable Live Preview?
-        if (!$request->isMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'], $category->siteId)) {
-            $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
+        $variables['showPreviewBtn'] = false;
+
+        if (!$request->isMobileBrowser(true)) {
+
+            // Enable Live Preview?
+            if (Craft::$app->getCategories()->isGroupTemplateValid($variables['group'], $category->siteId)) {
+                $variables['showPreviewBtn'] = true;
+                $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $category->getUrl(),
@@ -371,24 +376,23 @@ class CategoriesController extends Controller
                         'siteId' => $category->siteId,
                     ]
                 ]) . ');');
+            }
 
-            $variables['showPreviewBtn'] = true;
-
-            // Should we show the Share button too?
+            // Should we show the Share button?
             if ($category->id !== null) {
                 // If the category is enabled, use its main URL as its share URL.
                 if ($category->getStatus() === Element::STATUS_ENABLED) {
                     $variables['shareUrl'] = $category->getUrl();
                 } else {
-                    $variables['shareUrl'] = UrlHelper::actionUrl('categories/share-category',
+                    $variables['shareUrl'] = UrlHelper::actionUrl(
+                        'categories/share-category',
                         [
                             'categoryId' => $category->id,
                             'siteId' => $category->siteId
-                        ]);
+                        ]
+                    );
                 }
             }
-        } else {
-            $variables['showPreviewBtn'] = false;
         }
 
         // Set the base CP edit URL
