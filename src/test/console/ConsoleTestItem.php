@@ -40,4 +40,19 @@ class ConsoleTestItem extends Model
      * @var string
      */
     public $type;
+
+    /**
+     * @var string
+     */
+    public $message;
+
+    /**
+     * @var bool
+     */
+    public $default;
+
+    /**
+     * @var mixed
+     */
+    public $returnValue;
 }

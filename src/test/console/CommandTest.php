@@ -24,6 +24,14 @@ use Closure;
  */
 class CommandTest
 {
+    // Constants
+    // =========================================================================
+    const STD_OUT = 'stdOut';
+    const STD_ERR = 'stderr';
+    const PROMPT = 'prompt';
+    const CONFIRM = 'confirm';
+    const SELECT = 'select';
+
     // Public properties
     // =========================================================================
 
@@ -73,9 +81,14 @@ class CommandTest
     protected $actionId;
 
     /**
-     * @var integer
+     * @var int
      */
     protected $desiredExitCode;
+
+    /**
+     * @var int
+     */
+    protected $eventChainItemsHandled = 0;
 
     // Public Methods
     // =========================================================================
@@ -109,6 +122,8 @@ class CommandTest
         $exitCode = $this->controller->run($this->actionId);
 
         $this->test->assertSame($this->desiredExitCode, $exitCode);
+
+        $this->test->assertSame($this->eventChainItemsHandled, count($this->eventChain));
     }
 
     /**
@@ -128,7 +143,7 @@ class CommandTest
     public function stdOut(string $desiredOutput) : CommandTest
     {
         $chainItem = new ConsoleTestItem([
-            'type' => 'stdOut',
+            'type' => self::STD_OUT,
             'desiredOutput' => $desiredOutput
         ]);
 
@@ -147,7 +162,7 @@ class CommandTest
     public function stderr(string $desiredOutput) : CommandTest
     {
         $chainItem = new ConsoleTestItem([
-            'type' => 'stderr',
+            'type' => self::STD_ERR,
             'desiredOutput' => $desiredOutput
         ]);
 
@@ -163,12 +178,56 @@ class CommandTest
      * @param array $options
      * @return CommandTest
      */
-    public function prompt(string $prompt, array $options = []) : CommandTest
+    public function prompt(string $prompt, $returnValue, array $options = []) : CommandTest
     {
         $chainItem = new ConsoleTestItem([
-            'type' => 'prompt',
+            'type' => self::PROMPT,
             'prompt' => $prompt,
-            'options' => $options
+            'options' => $options,
+            'returnValue' => $returnValue
+        ]);
+
+        $this->addEventChainItem(
+            $chainItem
+        );
+
+        return $this;
+    }
+
+    /**
+     * @param string $message
+     * @param bool $default
+     * @return CommandTest
+     */
+    public function confirm(string $message, $returnValue, bool $default = false) : CommandTest
+    {
+        $chainItem = new ConsoleTestItem([
+            'type' => self::CONFIRM,
+            'message' => $message,
+            'default' => $default,
+            'returnValue' => $returnValue
+        ]);
+
+        $this->addEventChainItem(
+            $chainItem
+        );
+
+        return $this;
+    }
+
+    /**
+     * @param $prompt
+     * @param $returnValue
+     * @param array $options
+     * @return CommandTest
+     */
+    public function select($prompt, $returnValue, $options = []) : CommandTest
+    {
+        $chainItem = new ConsoleTestItem([
+            'type' => self::SELECT,
+            'prompt' => $prompt,
+            'options' => $options,
+            'returnValue' => $returnValue
         ]);
 
         $this->addEventChainItem(
@@ -197,10 +256,10 @@ class CommandTest
 
         $stubController = Stub::construct(get_class($controller), [$controllerId, \Craft::$app], [
             'stdOut' => $this->stdOutHandler(),
-            'stderr' => function() {},
-            'prompt' => function() {},
-            'confirm' => function() {},
-            'select' => function() {}
+            'stderr' => $this->stderrHandler(),
+            'prompt' => $this->promptHandler(),
+            'confirm' => $this->confirmHandler(),
+            'select' => $this->selectHandler()
             ]);
 
         $this->controller = $stubController;
@@ -210,20 +269,120 @@ class CommandTest
     /**
      * @return Closure
      */
-    protected function stdOutHandler()
+    protected function stdOutHandler() : Closure
     {
         return function ($out) {
-            $nextItem = $this->getNextItem();
+            $nextItem = $this->runHandlerCheck($out, self::STD_OUT);
 
-            if (!$nextItem) {
-                $this->test::fail("There are no more items however: $out was printed");
-            }
 
             $this->test::assertSame(
                 $nextItem->desiredOutput,
                 $out
             );
         };
+    }
+
+    /**
+     * @return Closure
+     */
+    protected function stderrHandler() : Closure
+    {
+        return function ($out) {
+            $nextItem = $this->runHandlerCheck($out, self::STD_ERR);
+
+            $this->test::assertSame(
+                $nextItem->desiredOutput,
+                $out
+            );
+        };
+    }
+
+    /**
+     * @return Closure
+     */
+    protected function promptHandler() : Closure
+    {
+        return function ($text, $options = []) {
+            $nextItem = $this->runHandlerCheck('A prompt with value: '. $text, self::PROMPT);
+
+            $this->test::assertSame(
+                $nextItem->prompt,
+                $text
+            );
+
+            $this->test::assertSame(
+                $nextItem->options,
+                $options
+            );
+
+            return $nextItem->returnValue;
+        };
+    }
+
+    /**
+     * @return Closure
+     */
+    protected function confirmHandler() : Closure
+    {
+        return function ($message, $default = false) {
+            $nextItem = $this->runHandlerCheck('A confirm with value: '. $message, self::CONFIRM);
+
+            $this->test::assertSame(
+                $nextItem->message,
+                $message
+            );
+
+            $this->test::assertSame(
+                $nextItem->default,
+                $default
+            );
+
+            return $nextItem->returnValue;
+        };
+    }
+
+    /**
+     * @return Closure
+     */
+    protected function selectHandler() : Closure
+    {
+        return function ($prompt, $options = []) {
+            $nextItem = $this->runHandlerCheck('A select with value: '. $prompt, self::SELECT);
+
+            $this->test::assertSame(
+                $nextItem->prompt,
+                $prompt
+            );
+
+            $this->test::assertSame(
+                $nextItem->options,
+                $options
+            );
+
+            return $nextItem->returnValue;
+        };
+    }
+
+    /**
+     * @param $out
+     * @param $type
+     * @return ConsoleTestItem
+     */
+    protected function runHandlerCheck($out, $type) : ConsoleTestItem
+    {
+        $nextItem = $this->getNextItem();
+
+        if (!$nextItem) {
+            $this->test::fail("There are no more items however: $out was printed");
+        }
+
+        if ($nextItem->type !== $type) {
+            throw new InvalidArgumentException("A stderr message was expected but $nextItem->type was given");
+        }
+
+        $this->eventChainItemsHandled ++;
+
+        return $nextItem;
     }
 
     /**

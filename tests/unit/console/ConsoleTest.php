@@ -34,4 +34,16 @@ class ConsoleTest extends BaseConsoleTest
             ->exitCode(ExitCode::OK)
             ->run();
     }
+
+    public function testTestController()
+    {
+        $this->consoleCommand('test/test')
+            ->stdOut('22')
+            ->stderr('123321123')
+            ->select('Select', '2', ['2', '22'])
+            ->confirm('asd', true, true)
+            ->prompt('A prompt', 'hi', ['2', '22'])
+            ->exitCode(ExitCode::OK)
+            ->run();
+    }
 }
