@@ -61,7 +61,7 @@ class CommandTest
     protected $hasExecuted = false;
 
     /**
-     * @var array|ConsoleTestItem
+     * @var array|CommandTestItem
      */
     protected $eventChain = [];
 
@@ -142,7 +142,7 @@ class CommandTest
      */
     public function stdOut(string $desiredOutput) : CommandTest
     {
-        $chainItem = new ConsoleTestItem([
+        $chainItem = new CommandTestItem([
             'type' => self::STD_OUT,
             'desiredOutput' => $desiredOutput
         ]);
@@ -161,7 +161,7 @@ class CommandTest
      */
     public function stderr(string $desiredOutput) : CommandTest
     {
-        $chainItem = new ConsoleTestItem([
+        $chainItem = new CommandTestItem([
             'type' => self::STD_ERR,
             'desiredOutput' => $desiredOutput
         ]);
@@ -180,7 +180,7 @@ class CommandTest
      */
     public function prompt(string $prompt, $returnValue, array $options = []) : CommandTest
     {
-        $chainItem = new ConsoleTestItem([
+        $chainItem = new CommandTestItem([
             'type' => self::PROMPT,
             'prompt' => $prompt,
             'options' => $options,
@@ -201,7 +201,7 @@ class CommandTest
      */
     public function confirm(string $message, $returnValue, bool $default = false) : CommandTest
     {
-        $chainItem = new ConsoleTestItem([
+        $chainItem = new CommandTestItem([
             'type' => self::CONFIRM,
             'message' => $message,
             'default' => $default,
@@ -223,7 +223,7 @@ class CommandTest
      */
     public function select(string $prompt, $returnValue, $options = []) : CommandTest
     {
-        $chainItem = new ConsoleTestItem([
+        $chainItem = new CommandTestItem([
             'type' => self::SELECT,
             'prompt' => $prompt,
             'options' => $options,
@@ -366,9 +366,10 @@ class CommandTest
     /**
      * @param $out
      * @param $type
-     * @return ConsoleTestItem
+     *
+     * @return CommandTestItem
      */
-    protected function runHandlerCheck($out, $type) : ConsoleTestItem
+    protected function runHandlerCheck($out, $type): CommandTestItem
     {
         $nextItem = $this->getNextItem();
 
@@ -386,7 +387,7 @@ class CommandTest
     }
 
     /**
-     * @return ConsoleTestItem|null
+     * @return CommandTestItem|null
      */
     protected function getNextItem()
     {
@@ -406,9 +407,9 @@ class CommandTest
     }
 
     /**
-     * @param ConsoleTestItem $item
+     * @param CommandTestItem $item
      */
-    protected function addEventChainItem(ConsoleTestItem $item)
+    protected function addEventChainItem(CommandTestItem $item)
     {
         $this->eventChain[] = $item;
     }
