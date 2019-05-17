@@ -142,17 +142,10 @@ class CommandTest
      */
     public function stdOut(string $desiredOutput) : CommandTest
     {
-        $chainItem = new CommandTestItem([
+        return $this->addEventChainItem([
             'type' => self::STD_OUT,
             'desiredOutput' => $desiredOutput
         ]);
-
-
-        $this->addEventChainItem(
-            $chainItem
-        );
-
-        return $this;
     }
 
     /**
@@ -161,16 +154,10 @@ class CommandTest
      */
     public function stderr(string $desiredOutput) : CommandTest
     {
-        $chainItem = new CommandTestItem([
+        return $this->addEventChainItem([
             'type' => self::STD_ERR,
             'desiredOutput' => $desiredOutput
         ]);
-
-        $this->addEventChainItem(
-            $chainItem
-        );
-
-        return $this;
     }
 
     /**
@@ -180,18 +167,12 @@ class CommandTest
      */
     public function prompt(string $prompt, $returnValue, array $options = []) : CommandTest
     {
-        $chainItem = new CommandTestItem([
+        return $this->addEventChainItem([
             'type' => self::PROMPT,
             'prompt' => $prompt,
             'options' => $options,
             'returnValue' => $returnValue
         ]);
-
-        $this->addEventChainItem(
-            $chainItem
-        );
-
-        return $this;
     }
 
     /**
@@ -201,18 +182,12 @@ class CommandTest
      */
     public function confirm(string $message, $returnValue, bool $default = false) : CommandTest
     {
-        $chainItem = new CommandTestItem([
+        return $this->addEventChainItem([
             'type' => self::CONFIRM,
             'message' => $message,
             'default' => $default,
             'returnValue' => $returnValue
         ]);
-
-        $this->addEventChainItem(
-            $chainItem
-        );
-
-        return $this;
     }
 
     /**
@@ -223,18 +198,12 @@ class CommandTest
      */
     public function select(string $prompt, $returnValue, $options = []) : CommandTest
     {
-        $chainItem = new CommandTestItem([
+        return $this->addEventChainItem([
             'type' => self::SELECT,
             'prompt' => $prompt,
             'options' => $options,
             'returnValue' => $returnValue
         ]);
-
-        $this->addEventChainItem(
-            $chainItem
-        );
-
-        return $this;
     }
 
     // Protected Methods
@@ -407,10 +376,16 @@ class CommandTest
     }
 
     /**
-     * @param CommandTestItem $item
+     * @param array $config
+     *
+     * @return CommandTest
      */
-    protected function addEventChainItem(CommandTestItem $item)
+    protected function addEventChainItem(array $config) : CommandTest
     {
-        $this->eventChain[] = $item;
+        $chainItem = new CommandTestItem($config);
+
+        $this->eventChain[] = $chainItem;
+
+        return $this;
     }
 }
