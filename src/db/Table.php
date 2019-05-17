@@ -34,7 +34,11 @@ abstract class Table
     const SEQUENCES = '{{%sequences}}';
     const SYSTEMMESSAGES = '{{%systemmessages}}';
     const ENTRIES = '{{%entries}}';
+    /** @deprecated in 3.2 */
+    const ENTRYDRAFTS = '{{%entrydrafts}}';
     const ENTRYTYPES = '{{%entrytypes}}';
+    /** @deprecated in 3.2 */
+    const ENTRYVERSIONS = '{{%entryversions}}';
     const FIELDGROUPS = '{{%fieldgroups}}';
     const FIELDLAYOUTFIELDS = '{{%fieldlayoutfields}}';
     const FIELDLAYOUTS = '{{%fieldlayouts}}';

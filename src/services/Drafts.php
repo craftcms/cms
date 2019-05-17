@@ -89,10 +89,11 @@ class Drafts extends Component
      * @param int $creatorId The user ID that the draft should be attributed to
      * @param string|null $name The draft name
      * @param string|null $notes The draft notes
+     * @param array $newAttributes any attributes to apply to the draft
      * @return ElementInterface The new draft
      * @throws \Throwable
      */
-    public function createDraft(ElementInterface $source, int $creatorId, string $name = null, string $notes = null): ElementInterface
+    public function createDraft(ElementInterface $source, int $creatorId, string $name = null, string $notes = null, array $newAttributes = []): ElementInterface
     {
         // Make sure the source isn't a draft or revision
         /** @var Element $source */
@@ -137,13 +138,12 @@ class Drafts extends Component
                     'notes' => $notes,
                 ], false)
                 ->execute();
-            $draftId = $db->getLastInsertID(Table::DRAFTS);
+
+            $newAttributes['draftId'] = $db->getLastInsertID(Table::DRAFTS);
 
             // Duplicate the element
             /** @var Element $draft */
-            $draft = Craft::$app->getElements()->duplicateElement($source, [
-                'draftId' => $draftId,
-            ]);
+            $draft = Craft::$app->getElements()->duplicateElement($source, $newAttributes);
 
             $transaction->commit();
         } catch (\Throwable $e) {

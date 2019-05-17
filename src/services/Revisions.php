@@ -65,10 +65,12 @@ class Revisions extends Component
      * @param ElementInterface $source The element to create a revision for
      * @param int $creatorId The user ID that the revision should be attributed to
      * @param string|null $notes The revision notes
+     * @param array $newAttributes any attributes to apply to the draft
+     * @param bool $force Whether to force a new revision even if the element doesn't appear to have changed since the last revision
      * @return ElementInterface The new revision
      * @throws \Throwable
      */
-    public function createRevision(ElementInterface $source, int $creatorId, string $notes = null): ElementInterface
+    public function createRevision(ElementInterface $source, int $creatorId, string $notes = null, array $newAttributes = [], bool $force = false): ElementInterface
     {
         // Make sure the source isn't a draft or revision
         /** @var Element $source */
@@ -83,24 +85,28 @@ class Revisions extends Component
             throw new Exception('Could not acquire a lock to save a revision for element ' . $source->id);
         }
 
-        // Get the source's last revision, if it has one
-        /** @var Element|RevisionBehavior|null $lastRevision */
-        $lastRevision = $source::find()
-            ->revisionOf($source)
-            ->siteId($source->siteId)
-            ->anyStatus()
-            ->orderBy(['num' => SORT_DESC])
-            ->one();
+        $num = ArrayHelper::remove($newAttributes, 'revisionNum');
 
-        // If the source hasn't been updated since the revision's creation date,
-        // there's no need to create a new one
-        if ($lastRevision && $source->dateUpdated->getTimestamp() === $lastRevision->dateCreated->getTimestamp()) {
-            $mutex->release($lockKey);
-            return $lastRevision;
+        if (!$force || !$num) {
+            // Get the source's last revision, if it has one
+            /** @var Element|RevisionBehavior|null $lastRevision */
+            $lastRevision = $source::find()
+                ->revisionOf($source)
+                ->siteId($source->siteId)
+                ->anyStatus()
+                ->orderBy(['num' => SORT_DESC])
+                ->one();
+
+            // If the source hasn't been updated since the revision's creation date,
+            // there's no need to create a new one
+            if (!$force && $lastRevision && $source->dateUpdated->getTimestamp() === $lastRevision->dateCreated->getTimestamp()) {
+                $mutex->release($lockKey);
+                return $lastRevision;
+            }
+
+            // Get the next revision number for this element
+            $num = ($lastRevision->revisionNum ?? 0) + 1;
         }
-
-        // Get the next revision number for this element
-        $num = ($lastRevision->revisionNum ?? 0) + 1;
 
         // Fire a 'beforeCreateRevision' event
         $event = new RevisionEvent([
@@ -133,16 +139,16 @@ class Revisions extends Component
                     'snapshot' => Json::encode($snapshot),
                 ], false)
                 ->execute();
-            $revisionId = $db->getLastInsertID(Table::REVISIONS);
+
+            $newAttributes['revisionId'] = $db->getLastInsertID(Table::REVISIONS);
+
+            if (!isset($newAttributes['dateCreated'])) {
+                $newAttributes['dateCreated'] = $source->dateUpdated;
+            }
 
             // Duplicate the element
             /** @var Element $revision */
-            $revision = $elementsService->duplicateElement($source, [
-                'revisionId' => $revisionId,
-                // The revision's dateCreated and dateUpdated should match the source's dateUpdated
-                'dateCreated' => $source->dateUpdated,
-                'dateUpdated' => $source->dateUpdated,
-            ]);
+            $revision = $elementsService->duplicateElement($source, $newAttributes);
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -175,7 +181,6 @@ class Revisions extends Component
         $maxRevisions = Craft::$app->getConfig()->getGeneral()->maxRevisions;
         if ($maxRevisions > 0) {
             // Don't count the current revision
-            /** @var Element|RevisionBehavior|null $lastRevision */
             $extraRevisions = $source::find()
                 ->revisionOf($source)
                 ->siteId($source->siteId)

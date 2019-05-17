@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Table;
+use craft\queue\jobs\ConvertEntryRevisions;
 
 /**
  * m190312_152740_element_revisions migration.
@@ -48,6 +49,15 @@ class m190312_152740_element_revisions extends Migration
 
         $this->addForeignKey(null, Table::ELEMENTS, ['draftId'], Table::DRAFTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['revisionId'], Table::REVISIONS, ['id'], 'CASCADE', null);
+
+        // add error columns to the old entry draft and version tables
+        $this->addColumn(Table::ENTRYDRAFTS, 'error', $this->string(500));
+        $this->addColumn(Table::ENTRYVERSIONS, 'error', $this->string(500));
+        $this->createIndex(null, Table::ENTRYDRAFTS, ['error', 'id']);
+        $this->createIndex(null, Table::ENTRYVERSIONS, ['error', 'id']);
+
+        // Queue up a ConvertEntryRevisions job
+        Craft::$app->getQueue()->push(new ConvertEntryRevisions());
     }
 
     /**
