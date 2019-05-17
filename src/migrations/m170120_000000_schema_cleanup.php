@@ -20,7 +20,7 @@ class m170120_000000_schema_cleanup extends Migration
             $this->addForeignKey(null, Table::TAGGROUPS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         }
 
-        $this->alterColumn('{{%entryversions}}', 'notes', $this->text());
+        $this->alterColumn(Table::ENTRYVERSIONS, 'notes', $this->text());
         $this->alterColumn(Table::ASSETINDEXDATA, 'uri', $this->text());
 
         return true;
