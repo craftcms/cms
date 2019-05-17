@@ -1988,6 +1988,61 @@ abstract class Element extends Component implements ElementInterface
         }
     }
 
+    public function oldAttributes(): array
+    {
+        $oldInstance = static::find()->id($this->id)->one();
+        if (!$oldInstance) {
+          return null;
+        }
+        return $oldInstance->attributes;
+    }
+
+    public function getDirtyAttributes()
+    {
+        $currentAttributes = $this->attributes;
+        $oldAttributes = $this->oldAttributes();
+
+        if (!$oldAttributes) {
+          return null;
+        }
+
+        $complexTypes = array('object', 'resource');
+
+        $callback = function ($value, $key) use ($oldAttributes, $complexTypes) {
+            if (isset($oldAttributes[$key]) && !in_array(gettype($value), $complexTypes)) {
+              return $value != $oldAttributes[$key];
+            } else if (is_a($value, 'DateTime') && is_a($oldAttributes[$key], 'DateTime')) {
+              return $value->format('Y-m-d H:i:s') != $oldAttributes[$key]->format('Y-m-d H:i:s');
+            } else if (gettype($value) == 'object') {
+              if (!static::isQueryClass($value)) {
+                return !self::areObjectsEqual($value, $oldAttributes[$key]);
+              } else {
+                return false;
+              }
+            }
+            return false;
+        };
+
+        $filteredCollection = array_filter($currentAttributes, $callback, ARRAY_FILTER_USE_BOTH);
+
+        return $filteredCollection;
+    }
+
+    protected static function isQueryClass(object $item)
+    {
+        $queryTypes = array('craft\elements\db\AssetQuery', 'craft\elements\db\EntryQuery');
+
+        return in_array(get_class($item), $queryTypes);
+    }
+
+    protected static function areObjectsEqual($firstObject, $secondObject): bool
+    {
+        $convertedFirst = get_object_vars($firstObject);
+        $convertedSecond = get_object_vars($secondObject);
+
+        return $convertedFirst == $convertedSecond;
+    }
+
     // Protected Methods
     // =========================================================================
 
