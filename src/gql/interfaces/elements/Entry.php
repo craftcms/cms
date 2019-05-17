@@ -8,7 +8,7 @@ use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
 /**
- * Class Element
+ * Class Entry
  */
 class Entry extends BaseElement
 {

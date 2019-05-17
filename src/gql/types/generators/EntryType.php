@@ -8,7 +8,6 @@ use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\TypeRegistry;
 use craft\helpers\StringHelper;
 use craft\models\EntryType as EntryTypeModel;
-use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -28,7 +27,6 @@ class EntryType
         }
 
         $gqlTypes = [];
-        /** @var InterfaceType $interface */
 
         foreach ($entryTypes as $entryType) {
             /** @var EntryTypeModel $entryType */
