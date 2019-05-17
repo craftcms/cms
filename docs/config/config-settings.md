@@ -1243,6 +1243,28 @@ locked.
 
 
 
+### `maxRevisions`
+
+Allowed types
+
+:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
+
+Default value
+
+:   `50`
+
+Defined by
+
+:   [GeneralConfig::$maxRevisions](api:craft\config\GeneralConfig::$maxRevisions)
+
+
+
+The maximum number of revisions that should be stored for each element.
+
+Set to `0` if you want to store an unlimited number of revisions.
+
+
+
 ### `maxSlugIncrement`
 
 Allowed types
