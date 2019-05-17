@@ -47,6 +47,7 @@ use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 
 /**
  * The Elements service provides APIs for managing elements.
@@ -176,6 +177,13 @@ class Elements extends Component
     private $_placeholderElements;
 
     /**
+     * @var array
+     * @see setPlaceholderElement()
+     * @see getElementByUri()
+     */
+    private $_placeholderUris;
+
+    /**
      * @var string[]
      */
     private $_elementTypesByRefHandle = [];
@@ -236,6 +244,20 @@ class Elements extends Component
         $query->id = $elementId;
         $query->siteId = $siteId;
         $query->anyStatus();
+
+        // Is this a draft/revision?
+        $data = (new Query())
+            ->select(['draftId', 'revisionId'])
+            ->from([Table::ELEMENTS])
+            ->where(['id' => $elementId])
+            ->one();
+
+        if (!empty($data['draftId'])) {
+            $query->draftId($data['draftId']);
+        } else if (!empty($data['revisionId'])) {
+            $query->revisionId($data['revisionId']);
+        }
+
         return $query->one();
     }
 
@@ -257,6 +279,11 @@ class Elements extends Component
         if ($siteId === null) {
             /** @noinspection PhpUnhandledExceptionInspection */
             $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        }
+
+        // See if we already have a placeholder for this element URI
+        if (isset($this->_placeholderUris[$uri][$siteId])) {
+            return $this->_placeholderUris[$uri][$siteId];
         }
 
         // First get the element ID and type
@@ -476,6 +503,8 @@ class Elements extends Component
 
             // Set the attributes
             $elementRecord->uid = $element->uid;
+            $elementRecord->draftId = $element->draftId;
+            $elementRecord->revisionId = $element->revisionId;
             $elementRecord->fieldLayoutId = $element->fieldLayoutId = $element->fieldLayoutId ?? $element->getFieldLayout()->id ?? null;
             $elementRecord->enabled = (bool)$element->enabled;
             $elementRecord->archived = (bool)$element->archived;
@@ -559,7 +588,9 @@ class Elements extends Component
             $element->afterSave($isNewElement);
 
             // Update search index
-            Craft::$app->getSearch()->indexElementAttributes($element);
+            if (!$element->draftId && !$element->revisionId) {
+                Craft::$app->getSearch()->indexElementAttributes($element);
+            }
 
             // Update the element across the other sites?
             if ($propagate && $element::isLocalized() && Craft::$app->getIsMultiSite()) {
@@ -569,6 +600,11 @@ class Elements extends Component
                         $this->_propagateElement($element, $isNewElement, $siteInfo);
                     }
                 }
+            }
+
+            // It's now fully saved and propagated
+            if (!$element->propagating && !$element->duplicateOf) {
+                $element->afterPropagate($isNewElement);
             }
 
             $transaction->commit();
@@ -695,15 +731,22 @@ class Elements extends Component
      */
     public function duplicateElement(ElementInterface $element, array $newAttributes = []): ElementInterface
     {
-        // Create our first clone for the $element's site
+        // Make sure the element exists
         /** @var Element $element */
+        if (!$element->id) {
+            throw new Exception('Attempting to duplicate an unsaved element.');
+        }
+
+        // Create our first clone for the $element's site
         $element->getFieldValues();
         /** @var Element $mainClone */
         $mainClone = clone $element;
-        $mainClone->setAttributes($newAttributes, false);
-        $mainClone->duplicateOf = $element;
         $mainClone->id = null;
         $mainClone->contentId = null;
+        $mainClone->duplicateOf = $element;
+
+        $mainClone->setRevisionNotes(ArrayHelper::remove($newAttributes, 'revisionNotes'));
+        $mainClone->setAttributes($newAttributes, false);
 
         // Make sure the element actually supports its own site ID
         $supportedSites = ElementHelper::supportedSitesForElement($mainClone);
@@ -732,20 +775,32 @@ class Elements extends Component
             // Propagate it
             foreach ($supportedSites as $siteInfo) {
                 if ($siteInfo['siteId'] != $mainClone->siteId) {
-                    $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
+                    $siteQuery = $element::find()
+                        ->id($element->id ?: false)
+                        ->siteId($siteInfo['siteId'])
+                        ->anyStatus();
+
+                    if ($element->draftId) {
+                        $siteQuery->drafts();
+                    } else if ($element->revisionId) {
+                        $siteQuery->revisions();
+                    }
+
+                    $siteElement = $siteQuery->one();
 
                     if ($siteElement === null) {
-                        throw new Exception('Element ' . $element->id . ' doesn’t exist in the site ' . $siteInfo['siteId']);
+                        Craft::warning('Element ' . $element->id . ' doesn’t exist in the site ' . $siteInfo['siteId']);
+                        continue;
                     }
 
                     /** @var Element $siteClone */
                     $siteClone = clone $siteElement;
-                    $siteClone->setAttributes($newAttributes, false);
                     $siteClone->duplicateOf = $siteElement;
                     $siteClone->propagating = true;
                     $siteClone->id = $mainClone->id;
-                    $siteClone->siteId = $siteInfo['siteId'];
                     $siteClone->contentId = null;
+                    $siteClone->setAttributes($newAttributes, false);
+                    $siteClone->siteId = $siteInfo['siteId'];
 
                     // Set a unique URI on the site clone
                     try {
@@ -759,6 +814,9 @@ class Elements extends Component
                     }
                 }
             }
+
+            // It's now fully duplicated and propagated
+            $mainClone->afterPropagate(empty($newAttributes['id']));
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -1082,6 +1140,8 @@ class Elements extends Component
         ]);
         $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, $event);
 
+        $element->hardDelete = $hardDelete || $event->hardDelete;
+
         if (!$element->beforeDelete()) {
             return false;
         }
@@ -1111,7 +1171,7 @@ class Elements extends Component
             // this element is suddenly going to show up in a new query)
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
-            if ($hardDelete || $event->hardDelete) {
+            if ($element->hardDelete) {
                 Craft::$app->getDb()->createCommand()
                     ->delete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
@@ -1417,11 +1477,13 @@ class Elements extends Component
     }
 
     /**
-     * Stores a placeholder element that [[findElements()]] should use instead of populating a new element with a
+     * Stores a placeholder element that element queries should use instead of populating a new element with a
      * matching ID and site ID.
+     *
      * This is used by Live Preview and Sharing features.
      *
      * @param ElementInterface $element The element currently being edited by Live Preview.
+     * @throws InvalidArgumentException if the element is missing an ID
      * @see getPlaceholderElement()
      */
     public function setPlaceholderElement(ElementInterface $element)
@@ -1429,23 +1491,27 @@ class Elements extends Component
         /** @var Element $element */
         // Won't be able to do anything with this if it doesn't have an ID or site ID
         if (!$element->id || !$element->siteId) {
-            return;
+            throw new InvalidArgumentException('Placeholder element is missing an ID');
         }
 
-        $this->_placeholderElements[$element->id][$element->siteId] = $element;
+        $this->_placeholderElements[$element->getSourceId()][$element->siteId] = $element;
+
+        if ($element->uri) {
+            $this->_placeholderUris[$element->uri][$element->siteId] = $element;
+        }
     }
 
     /**
      * Returns a placeholder element by its ID and site ID.
      *
-     * @param int $id The element’s ID
+     * @param int $sourceId The element’s ID
      * @param int $siteId The element’s site ID
      * @return ElementInterface|null The placeholder element if one exists, or null.
      * @see setPlaceholderElement()
      */
-    public function getPlaceholderElement(int $id, int $siteId)
+    public function getPlaceholderElement(int $sourceId, int $siteId)
     {
-        return $this->_placeholderElements[$id][$siteId] ?? null;
+        return $this->_placeholderElements[$sourceId][$siteId] ?? null;
     }
 
     /**

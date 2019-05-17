@@ -1373,8 +1373,8 @@ class User extends Element implements IdentityInterface
                 // Update the entry/version/draft tables to point to the new user
                 $userRefs = [
                     Table::ENTRIES => 'authorId',
-                    Table::ENTRYDRAFTS => 'creatorId',
-                    Table::ENTRYVERSIONS => 'creatorId',
+                    Table::DRAFTS => 'creatorId',
+                    Table::REVISIONS => 'creatorId',
                 ];
 
                 foreach ($userRefs as $table => $column) {

@@ -8,16 +8,16 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use craft\behaviors\DraftBehavior;
+use craft\behaviors\RevisionBehavior;
 use yii\base\Event;
 
 /**
- * Draft event class.
+ * Revision event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2
  */
-class DraftEvent extends Event
+class RevisionEvent extends Event
 {
     // Properties
     // =========================================================================
@@ -33,17 +33,17 @@ class DraftEvent extends Event
     public $creatorId;
 
     /**
-     * @var string|null The draft name
+     * @var int The revision number
      */
-    public $draftName;
+    public $revisionNum;
 
     /**
-     * @var string|null The draft notes
+     * @var string|null The revision notes
      */
-    public $draftNotes;
+    public $revisionNotes;
 
     /**
-     * @var ElementInterface|DraftBehavior|null The draft associated with the event (if it exists yet)
+     * @var ElementInterface|RevisionBehavior|null The revision associated with the event (if it exists yet)
      */
-    public $draft;
+    public $revision;
 }

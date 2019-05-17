@@ -22,6 +22,7 @@ use craft\events\FieldEvent;
 use craft\events\SectionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\EntryType;
@@ -195,6 +196,12 @@ class Sections extends Component
         $this->_sections = [];
 
         foreach ($results as $result) {
+            if (!empty($result['previewTargets'])) {
+                $result['previewTargets'] = Json::decode($result['previewTargets']);
+            } else {
+                $result['previewTargets'] = [];
+            }
+
             $this->_sections[] = new Section($result);
         }
 
@@ -449,6 +456,10 @@ class Sections extends Component
             'siteSettings' => [],
         ];
 
+        if (!empty($section->previewTargets)) {
+            $configData['previewTargets'] = $section->previewTargets;
+        }
+
         if ($section->type === Section::TYPE_STRUCTURE) {
             $sectionRecord = $this->_getSectionRecord($section->uid);
             if ($sectionRecord->structureId) {
@@ -598,6 +609,7 @@ class Sections extends Component
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? Section::PROPAGATION_METHOD_ALL;
+            $sectionRecord->previewTargets = $data['previewTargets'] ?? null;
 
             $isNewSection = $sectionRecord->getIsNewRecord();
 
@@ -1450,9 +1462,12 @@ class Sections extends Component
             ->where($condition)
             ->orderBy(['name' => SORT_ASC]);
 
-        // todo: remove schema version condition after next beakpoint
+        // todo: remove schema version conditions after next beakpoint
         if (version_compare($schemaVersion, '3.2.1', '>=')) {
             $query->addSelect('sections.propagationMethod');
+        }
+        if (version_compare($schemaVersion, '3.2.5', '>=')) {
+            $query->addSelect('sections.previewTargets');
         }
 
         return $query;

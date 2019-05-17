@@ -792,7 +792,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
             foreach ($matrixBlocks as $matrixBlock) {
                 $matrixBlock->deletedWithOwner = true;
-                $elementsService->deleteElement($matrixBlock);
+                $elementsService->deleteElement($matrixBlock, $element->hardDelete);
             }
         }
 

@@ -13,11 +13,14 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\behaviors\DraftBehavior;
 use craft\behaviors\ElementQueryBehavior;
+use craft\behaviors\RevisionBehavior;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
+use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\PopulateElementEvent;
@@ -113,6 +116,49 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @used-by asArray()
      */
     public $asArray = false;
+
+    // Drafts and revisions
+    // -------------------------------------------------------------------------
+
+    /**
+     * @var bool Whether draft elements should be returned.
+     */
+    public $drafts = false;
+
+    /**
+     * @var int|null The ID of the draft to return (from the `drafts` table)
+     */
+    public $draftId;
+
+    /**
+     * @var int|null The source element ID that drafts should be returned for
+     */
+    public $draftOf;
+
+    /**
+     * @var int|null The drafts’ creator ID
+     */
+    public $draftCreator;
+
+    /**
+     * @var bool Whether revision elements should be returned.
+     */
+    public $revisions = false;
+
+    /**
+     * @var int|null The ID of the revision to return (from the `revisions` table)
+     */
+    public $revisionId;
+
+    /**
+     * @var int|null The source element ID that revisions should be returned for
+     */
+    public $revisionOf;
+
+    /**
+     * @var int|null The revisions’ creator ID
+     */
+    public $revisionCreator;
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -594,6 +640,124 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function asArray(bool $value = true)
     {
         $this->asArray = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $drafts
+     */
+    public function drafts(bool $value = true)
+    {
+        $this->drafts = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $draftId
+     * @uses $drafts
+     */
+    public function draftId(int $value = null)
+    {
+        $this->draftId = $value;
+        $this->drafts = $value !== null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $draftOf
+     * @uses $drafts
+     */
+    public function draftOf($value)
+    {
+        if ($value instanceof ElementInterface) {
+            /** @var Element $value */
+            $this->draftOf = $value->getSourceId();
+        } else if (is_numeric($value)) {
+            $this->draftOf = $value;
+        } else {
+            throw new InvalidArgumentException('Invalid draftOf value');
+        }
+        $this->drafts = $value !== null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $draftCreator
+     * @uses $drafts
+     */
+    public function draftCreator($value)
+    {
+        if ($value instanceof User) {
+            $this->draftCreator = $value->id;
+        } else if (is_numeric($value)) {
+            $this->draftCreator = $value;
+        } else {
+            throw new InvalidArgumentException('Invalid draftCreator value');
+        }
+        $this->drafts = $value !== null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $revisions
+     */
+    public function revisions(bool $value = true)
+    {
+        $this->revisions = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $revisionId
+     * @uses $revisions
+     */
+    public function revisionId(int $value = null)
+    {
+        $this->revisionId = $value;
+        $this->revisions = $value !== null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $revisionOf
+     * @uses $revisions
+     */
+    public function revisionOf($value)
+    {
+        if ($value instanceof ElementInterface) {
+            /** @var Element $value */
+            $this->revisionOf = $value->getSourceId();
+        } else if (is_numeric($value)) {
+            $this->revisionOf = $value;
+        } else {
+            throw new InvalidArgumentException('Invalid revisionOf value');
+        }
+        $this->revisions = $value !== null;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $revisionCreator
+     * @uses $revisions
+     */
+    public function revisionCreator($value)
+    {
+        if ($value instanceof User) {
+            $this->revisionCreator = $value->id;
+        } else if (is_numeric($value)) {
+            $this->revisionCreator = $value;
+        } else {
+            throw new InvalidArgumentException('Invalid revisionCreator value');
+        }
+        $this->revisions = $value !== null;
         return $this;
     }
 
@@ -1195,6 +1359,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $this->_applyRelatedToParam();
         $this->_applyStructureParams($class);
+        $this->_applyRevisionParams();
         $this->_applySearchParam($builder->db);
         $this->_applyOrderByParams($builder->db);
         $this->_applySelectParam();
@@ -2003,6 +2168,73 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
     }
 
+
+    /**
+     * Applies draft and revision params to the query being prepared.
+     */
+    private function _applyRevisionParams()
+    {
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.2.4', '<')) {
+            return;
+        }
+
+        if ($this->drafts) {
+            $this->subQuery->innerJoin(Table::DRAFTS . ' drafts', '[[drafts.id]] = [[elements.draftId]]');
+            $this->query
+                ->innerJoin(Table::DRAFTS . ' drafts', '[[drafts.id]] = [[elements.draftId]]')
+                ->addSelect([
+                    'elements.draftId',
+                    'drafts.sourceId as draftSourceId',
+                    'drafts.creatorId as draftCreatorId',
+                    'drafts.name as draftName',
+                    'drafts.notes as draftNotes',
+                ]);
+
+            if ($this->draftId) {
+                $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
+            }
+
+            if ($this->draftOf) {
+                $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf]);
+            }
+
+            if ($this->draftCreator) {
+                $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
+            }
+        } else {
+            $this->subQuery->andWhere(['elements.draftId' => null]);
+        }
+
+        if ($this->revisions) {
+            $this->subQuery->innerJoin(Table::REVISIONS . ' revisions', '[[revisions.id]] = [[elements.revisionId]]');
+            $this->query
+                ->innerJoin(Table::REVISIONS . ' revisions', '[[revisions.id]] = [[elements.revisionId]]')
+                ->addSelect([
+                    'elements.revisionId',
+                    'revisions.sourceId as revisionSourceId',
+                    'revisions.creatorId as revisionCreatorId',
+                    'revisions.num as revisionNum',
+                    'revisions.notes as revisionNotes',
+                ]);
+
+            if ($this->revisionId) {
+                $this->subQuery->andWhere(['elements.revisionId' => $this->revisionId]);
+            }
+
+            if ($this->revisionOf) {
+                $this->subQuery->andWhere(['revisions.sourceId' => $this->revisionOf]);
+            }
+
+            if ($this->revisionCreator) {
+                $this->subQuery->andWhere(['revisions.creatorId' => $this->revisionCreator]);
+            }
+        } else {
+            $this->subQuery->andWhere(['elements.revisionId' => null]);
+        }
+    }
+
     /**
      * Normalizes a structure param value to either an Element object or false.
      *
@@ -2423,8 +2655,29 @@ class ElementQuery extends Query implements ElementQueryInterface
             unset($row['dateDeleted']);
         }
 
+        $behaviors = [];
+
+        if ($this->drafts) {
+            $behaviors['draft'] = new DraftBehavior([
+                'sourceId' => ArrayHelper::remove($row, 'draftSourceId'),
+                'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
+                'draftName' => ArrayHelper::remove($row, 'draftName'),
+                'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
+            ]);
+        }
+
+        if ($this->revisions) {
+            $behaviors['revision'] = new RevisionBehavior([
+                'sourceId' => ArrayHelper::remove($row, 'revisionSourceId'),
+                'creatorId' => ArrayHelper::remove($row, 'revisionCreatorId'),
+                'revisionNum' => ArrayHelper::remove($row, 'revisionNum'),
+                'revisionNotes' => ArrayHelper::remove($row, 'revisionNotes'),
+            ]);
+        }
+
         /** @var Element $element */
         $element = new $class($row);
+        $element->attachBehaviors($behaviors);
 
         // Set the custom field values
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */

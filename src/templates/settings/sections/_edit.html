@@ -169,6 +169,29 @@
             errors: section.getErrors('maxLevels')
         }) }}
     </div>
+
+    {% if CraftEdition == CraftPro %}
+        {{ forms.editableTableField({
+            label: 'Preview Targets'|t('app'),
+            instructions: 'Additional locations that should be available for previewing entries in this section.',
+            id: 'previewTargets',
+            name: 'previewTargets',
+            cols: {
+                label: {
+                    type: 'singleline',
+                    heading: 'Label'|t('app'),
+                },
+                urlFormat: {
+                    type: 'singleline',
+                    heading: 'URL Format'|t('app'),
+                    info: 'The URL/URI to use for this target.'|t('app'),
+                    code: true,
+                }
+            },
+            rows: section.previewTargets,
+            errors: section.getErrors('previewTargets')
+        }) }}
+    {% endif %}
 {% endblock %}
 
 

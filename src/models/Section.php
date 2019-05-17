@@ -96,6 +96,11 @@ class Section extends Model
     public $propagateEntries = true;
 
     /**
+     * @var array Preview targets
+     */
+    public $previewTargets = [];
+
+    /**
      * @var string|null Section's UID
      */
     public $uid;
@@ -164,6 +169,7 @@ class Section extends Model
         $rules[] = [['name', 'handle', 'type', 'propagationMethod', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
+        $rules[] = [['previewTargets'], 'validatePreviewTargets'];
         return $rules;
     }
 
@@ -190,6 +196,29 @@ class Section extends Model
             if (!$siteSettings->validate()) {
                 $this->addModelErrors($siteSettings, "siteSettings[{$i}]");
             }
+        }
+    }
+
+    /**
+     * Validates the preview targets.
+     */
+    public function validatePreviewTargets()
+    {
+        $hasErrors = false;
+
+        foreach ($this->previewTargets as &$target) {
+            $target['label'] = trim($target['label']);
+            $target['urlFormat'] = trim($target['urlFormat']);
+
+            if ($target['label'] === '') {
+                $target['label'] = ['value' => $target['label'], 'hasErrors' => true];
+                $hasErrors = true;
+            }
+        }
+        unset($target);
+
+        if ($hasErrors) {
+            $this->addError('previewTargets', Craft::t('app', 'All targets must have a label.'));
         }
     }
 

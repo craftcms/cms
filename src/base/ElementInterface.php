@@ -386,6 +386,13 @@ interface ElementInterface extends ComponentInterface
     public function getId();
 
     /**
+     * Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.
+     *
+     * @return int
+     */
+    public function getSourceId(): int;
+
+    /**
      * Returns the field layout used by this element.
      *
      * @return FieldLayout|null
@@ -469,6 +476,16 @@ interface ElementInterface extends ComponentInterface
      * @return string|null
      */
     public function getCpEditUrl();
+
+    /**
+     * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
+     *
+     * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
+     *
+     * @return array
+     * @since 3.2
+     */
+    public function getPreviewTargets(): array;
 
     /**
      * Returns the URL to the element’s thumbnail, if there is one.
@@ -744,6 +761,20 @@ interface ElementInterface extends ComponentInterface
      */
     public function getHasFreshContent(): bool;
 
+    /**
+     * Sets the revision notes to be saved.
+     *
+     * @param string|null $notes
+     */
+    public function setRevisionNotes(string $notes = null);
+
+    /**
+     * Returns the element’s current revision, if one exists.
+     *
+     * @return ElementInterface|null
+     */
+    public function getCurrentRevision();
+
     // Indexes, etc.
     // -------------------------------------------------------------------------
 
@@ -809,6 +840,17 @@ interface ElementInterface extends ComponentInterface
      * @param bool $isNew Whether the element is brand new
      */
     public function afterSave(bool $isNew);
+
+    /**
+     * Performs actions after an element is fully saved and propagated to other sites.
+     *
+     * ::: tip
+     * This will get called regardless of whether `$propagate` is `true` or `false` for [[\craft\services\Elements::saveElement()]].
+     * :::
+     *
+     * @param bool $isNew Whether the element is brand new
+     */
+    public function afterPropagate(bool $isNew);
 
     /**
      * Performs actions before an element is deleted.

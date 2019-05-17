@@ -7,22 +7,21 @@
 
 namespace craft\events;
 
-use craft\elements\Entry;
 use yii\base\Event;
 
 /**
- * Entry event class.
+ * RegisterPreviewTargetsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.2
  */
-class VersionEvent extends Event
+class RegisterPreviewTargetsEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Entry|null The entry version associated with the event.
+     * @var array The additional locations that should be available for previewing the element.
      */
-    public $version;
+    public $previewTargets;
 }

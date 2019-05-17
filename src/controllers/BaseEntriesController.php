@@ -8,8 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\behaviors\DraftBehavior;
+use craft\behaviors\RevisionBehavior;
 use craft\elements\Entry;
-use craft\models\EntryDraft;
 use craft\models\Section;
 use craft\web\Controller;
 
@@ -49,28 +50,56 @@ abstract class BaseEntriesController extends Controller
         if (!$entry->id || $duplicate) {
             // Make sure they have permission to create new entries in this section
             $this->requirePermission('createEntries' . $permissionSuffix);
-        } else {
-            switch (get_class($entry)) {
-                case Entry::class:
-                    // If it's another user's entry (and it's not a Single), make sure they have permission to edit those
-                    if (
-                        $entry->authorId != $userSession->getIdentity()->id &&
-                        $entry->getSection()->type !== Section::TYPE_SINGLE
-                    ) {
-                        $this->requirePermission('editPeerEntries' . $permissionSuffix);
-                    }
-
-                    break;
-
-                case EntryDraft::class:
-                    // If it's another user's draft, make sure they have permission to edit those
-                    /** @var EntryDraft $entry */
-                    if (!$entry->creatorId || $entry->creatorId != $userSession->getIdentity()->id) {
-                        $this->requirePermission('editPeerEntryDrafts' . $permissionSuffix);
-                    }
-
-                    break;
-            }
+            return;
         }
+
+        if ($entry->draftId) {
+            // If it's another user's draft, make sure they have permission to edit those
+            /** @var Entry|DraftBehavior $entry */
+            if ($entry->creatorId != $userSession->getId()) {
+                $this->requirePermission('editPeerEntryDrafts' . $permissionSuffix);
+            }
+            return;
+        }
+
+        // If it's another user's entry (and it's not a Single), make sure they have permission to edit those
+        if (
+            $entry->authorId != $userSession->getIdentity()->id &&
+            $entry->getSection()->type !== Section::TYPE_SINGLE
+        ) {
+            $this->requirePermission('editPeerEntries' . $permissionSuffix);
+        }
+    }
+
+    /**
+     * Returns the document title that should be used on an Edit Entry page.
+     *
+     * @param Entry
+     * @return string
+     */
+    protected function docTitle(Entry $entry): string
+    {
+        $docTitle = $this->pageTitle($entry);
+
+        if ($entry->draftId) {
+            /** @var Entry|DraftBehavior $entry */
+            $docTitle .= ' (' . $entry->draftName . ')';
+        } else if ($entry->revisionId) {
+            /** @var Entry|RevisionBehavior $entry */
+            $docTitle .= ' (' . $entry->getRevisionLabel() . ')';
+        }
+
+        return $docTitle;
+    }
+
+    /**
+     * Returns the page title that should be used on an Edit Entry page.
+     *
+     * @param Entry
+     * @return string
+     */
+    protected function pageTitle(Entry $entry): string
+    {
+        return trim($entry->title) ?: Craft::t('app', 'Edit Entry');
     }
 }

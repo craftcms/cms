@@ -9,6 +9,8 @@ namespace craft\base;
 
 use Craft;
 use craft\behaviors\ContentBehavior;
+use craft\behaviors\DraftBehavior;
+use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
@@ -23,6 +25,7 @@ use craft\events\RegisterElementSearchableAttributesEvent;
 use craft\events\RegisterElementSortOptionsEvent;
 use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
+use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\helpers\ArrayHelper;
@@ -84,6 +87,7 @@ use yii\validators\Validator;
  * @property int $totalDescendants The total number of descendants that the element has
  * @property string|null $uriFormat The URI format used to generate this element’s URL
  * @property string|null $url The element’s full URL
+ * @property-write string|null $revisionNotes revision notes to be saved
  * @mixin ContentBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -150,6 +154,11 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_DEFINE_EAGER_LOADING_MAP = 'defineEagerLoadingMap';
 
     /**
+     * @event RegisterPreviewTargetsEvent The event that is triggered when registering the element’s preview targets.
+     */
+    const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
+
+    /**
      * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining the HTML to represent a table attribute.
      */
     const EVENT_SET_TABLE_ATTRIBUTE_HTML = 'setTableAttributeHtml';
@@ -185,6 +194,11 @@ abstract class Element extends Component implements ElementInterface
      * @event ModelEvent The event that is triggered after the element is saved
      */
     const EVENT_AFTER_SAVE = 'afterSave';
+
+    /**
+     * @event ModelEvent The event that is triggered after the element is fully saved and propagated to other sites
+     */
+    const EVENT_AFTER_PROPAGATE = 'afterPropagate';
 
     /**
      * @event ModelEvent The event that is triggered before the element is deleted
@@ -728,6 +742,12 @@ abstract class Element extends Component implements ElementInterface
     // =========================================================================
 
     /**
+     * @var string|null Revision notes to be saved
+     * @see setRevisionNotes()
+     */
+    protected $revisionNotes;
+
+    /**
      * @var
      */
     private $_fieldsByHandle;
@@ -771,6 +791,12 @@ abstract class Element extends Component implements ElementInterface
      * @var ElementInterface[]|null
      */
     private $_eagerLoadedElements;
+
+    /**
+     * @var ElementInterface|false
+     * @see getCurrentRevision()
+     */
+    private $_currentRevision;
 
     // Public Methods
     // =========================================================================
@@ -1196,6 +1222,16 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getSourceId(): int
+    {
+        /** @var DraftBehavior|RevisionBehavior|null $behavior */
+        $behavior = $this->getBehavior('draft') ?: $this->getBehavior('revision');
+        return $behavior ? $behavior->sourceId : $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayout()
     {
         if ($this->fieldLayoutId) {
@@ -1309,6 +1345,24 @@ abstract class Element extends Component implements ElementInterface
     public function getCpEditUrl()
     {
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPreviewTargets(): array
+    {
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            return [];
+        }
+
+        // Give plugins a chance to modify them
+        $event = new RegisterPreviewTargetsEvent([
+            'previewTargets' => $this->previewTargets(),
+        ]);
+        $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
+
+        return $event->previewTargets;
     }
 
     /**
@@ -1795,6 +1849,35 @@ abstract class Element extends Component implements ElementInterface
         return ($this->contentId === null && !$this->hasErrors());
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function setRevisionNotes(string $notes = null)
+    {
+        $this->revisionNotes = $notes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCurrentRevision()
+    {
+        if (!$this->id) {
+            return null;
+        }
+
+        if ($this->_currentRevision === null) {
+            $this->_currentRevision = static::find()
+                ->revisionOf($this->getSourceId())
+                ->dateCreated($this->dateUpdated)
+                ->anyStatus()
+                ->orderBy(['num' => SORT_DESC])
+                ->one() ?: false;
+        }
+
+        return $this->_currentRevision ?: null;
+    }
+
     // Indexes, etc.
     // -------------------------------------------------------------------------
 
@@ -1902,6 +1985,24 @@ abstract class Element extends Component implements ElementInterface
         // Trigger an 'afterSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
             $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
+                'isNew' => $isNew,
+            ]));
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterPropagate(bool $isNew)
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            $field->afterElementPropagate($this, $isNew);
+        }
+
+        // Trigger an 'afterPropagate' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_PROPAGATE)) {
+            $this->trigger(self::EVENT_AFTER_PROPAGATE, new ModelEvent([
                 'isNew' => $isNew,
             ]));
         }
@@ -2216,6 +2317,20 @@ abstract class Element extends Component implements ElementInterface
     protected function route()
     {
         return null;
+    }
+
+    /**
+     * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
+     *
+     * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
+     *
+     * @return array
+     * @see getPreviewTargets()
+     * @since 3.2
+     */
+    protected function previewTargets(): array
+    {
+        return [];
     }
 
     /**
