@@ -86,6 +86,9 @@ class UserPermissions extends Component
                     ],
                 ]
             ],
+            'customizeSources' => [
+                'label' => Craft::t('app', 'Customize element sources'),
+            ],
         ];
 
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {

@@ -29,7 +29,11 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionGetCustomizeSourcesModalData(): Response
     {
-        $this->requireAdmin(false);
+        try {
+            $this->requireAdmin(false);
+        } catch (\yii\web\ForbiddenHttpException $e) {
+            $this->requirePermission('customizeSources');
+        }
 
         $elementType = $this->elementType();
 
@@ -77,7 +81,11 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionSaveCustomizeSourcesModalSettings(): Response
     {
-        $this->requireAdmin(false);
+        try {
+            $this->requireAdmin(false);
+        } catch (\yii\web\ForbiddenHttpException $e) {
+            $this->requirePermission('customizeSources');
+        }
 
         $elementType = $this->elementType();
 
