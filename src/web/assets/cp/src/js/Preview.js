@@ -90,7 +90,7 @@ Craft.Preview = Garnish.Base.extend(
                 this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(Garnish.$bod);
                 this.$previewContainer = $('<div/>', {'class': 'lp-preview-container'}).appendTo(Garnish.$bod);
 
-                var $editorHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$editorContainer)
+                var $editorHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$editorContainer);
                 this.$editor = $('<form/>', {'class': 'lp-editor'}).appendTo(this.$editorContainer);
                 this.$dragHandle = $('<div/>', {'class': 'lp-draghandle'}).appendTo(this.$editorContainer);
                 var $closeBtn = $('<div/>', {'class': 'btn', text: Craft.t('app', 'Close Preview')}).appendTo($editorHeader);
