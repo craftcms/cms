@@ -64,9 +64,9 @@ class Craft extends Yii2
     public static $testConfig;
 
     /**
-     * @var string
+     * @var TestInterface
      */
-    public static $currentTestFileName;
+    public static $currentTest;
 
     /**
      * Application config file must be set.
@@ -129,7 +129,7 @@ class Craft extends Yii2
      */
     public function _before(TestInterface $test)
     {
-        self::$currentTestFileName = $test->getMetadata()->getFilename();
+        self::$currentTest = $test;
 
         parent::_before($test);
 

@@ -17,6 +17,7 @@ use craft\models\Site;
 use craft\services\Config;
 use craft\web\Application;
 use craft\web\UploadedFile;
+use craftunit\console\ConsoleTest;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
@@ -128,9 +129,11 @@ class TestSetup
         $srcPath = $basePath . '/src';
         $vendorPath = CRAFT_VENDOR_PATH;
 
-        // Determine the app type. If the filename contains console. Its a console test. Else, web.
-        $appType = mb_stripos(CraftTest::$currentTestFileName, 'console') !== false ? 'console'
-            : 'web';
+        // Determine the app type. If the parent is `craft\test\console\ConsoleTest`. Its a console test. Else, web.
+        $appType = 'web';
+        if (CraftTest::$currentTest instanceof ConsoleTest) {
+            $appType = 'console';
+        }
 
         Craft::setAlias('@craftunitsupport', $srcPath.'/test');
         Craft::setAlias('@craftunittemplates', $basePath.'/tests/_craft/templates');
