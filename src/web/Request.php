@@ -152,7 +152,6 @@ class Request extends \yii\web\Request
     /**
      * @var string|false
      * @see getToken()
-     * @see setToken()
      */
     public $_token;
 
@@ -396,16 +395,6 @@ class Request extends \yii\web\Request
         }
 
         return $this->_token ?: null;
-    }
-
-    /**
-     * Sets the token for the request.
-     *
-     * @param string|null $token
-     */
-    public function setToken(string $token = null)
-    {
-        $this->_token = $token ?? false;
     }
 
     /**
