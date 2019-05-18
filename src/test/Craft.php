@@ -16,11 +16,14 @@ use craft\composer\Factory;
 use craft\composer\Installer;
 use craft\config\DbConfig;
 use craft\db\Connection;
+use craft\db\Query;
+use craft\db\Table;
 use craft\errors\InvalidPluginException;
 use craft\errors\SectionNotFoundException;
 use craft\events\DeleteElementEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\models\FieldLayout;
 use craft\services\Elements;
 use ReflectionException;
 use ReflectionObject;
@@ -330,6 +333,29 @@ class Craft extends Yii2
     public function mockCraftMethods(string $component, array $methods = [], array $constructParams = [])
     {
         return $this->mockMethods(\Craft::$app, $component, $methods, $constructParams);
+    }
+
+    /**
+     * @param string $fieldHandle
+     * @return FieldLayout|null
+     */
+    public function getFieldLayoutByFieldHandle(string $fieldHandle)
+    {
+        if (!$field = \Craft::$app->getFields()->getFieldByHandle($fieldHandle)) {
+            return null;
+        }
+
+        $layoutId = (new Query())->select('layoutId')
+            ->from(Table::FIELDLAYOUTFIELDS)
+            ->where(['fieldId' => $field->id])
+            ->column();
+
+        if ($layoutId) {
+            $layoutId = ArrayHelper::firstValue($layoutId);
+            return \Craft::$app->getFields()->getLayoutById($layoutId);
+        }
+
+        return null;
     }
 
     /**
