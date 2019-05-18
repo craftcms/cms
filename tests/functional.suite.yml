@@ -8,5 +8,5 @@ class_name: FunctionalTester
 modules:
     enabled:
         - \craft\test\Craft:
-              projectConfig: {file: 'tests/_data/project.yaml', once: true}
+              projectConfig: {file: 'tests/_data/project.yaml', once: false}
         - \Helper\Functional
