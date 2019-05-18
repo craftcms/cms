@@ -90,7 +90,8 @@ module.exports = {
                     ['', 'Introduction'],
                     'getting-started',
                     'examples',
-                    'plugins-and-modules'
+                    'plugins-and-modules',
+                    'testing-tips'
                 ]
             },
             {
