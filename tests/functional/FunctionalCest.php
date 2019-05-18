@@ -36,7 +36,6 @@ class FunctionalCest
             ->one();
 
         Craft::$app->getUser()->setIdentity($userEl);
-
     }
 
     /**
@@ -53,8 +52,8 @@ class FunctionalCest
      */
     public function seeTemplateHomepageTest(FunctionalTester $I)
     {
-         $I->amOnPage('?p=/adminustriggerus/entries');
-         $I->see('Craft CMS');
+        $I->amOnPage('?p=/adminustriggerus/entries');
+        $I->see('Craft CMS');
     }
 
     /**
