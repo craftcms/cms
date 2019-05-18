@@ -166,13 +166,7 @@ class Craft extends Yii2
 
         // Create a Craft::$app object
         TestSetup::warmCraft();
-
-        // https://github.com/yiisoft/yii2/issues/11633 || The (possibly) MyISAM {{%searchindex}} table doesnt support transactions.
-        // So we manually delete any rows in there except if the element id is 1 (The user added when creating the DB)
-        \Craft::$app->getDb()->createCommand()
-            ->delete('{{%searchindex}}', 'elementId != 1')
-            ->execute();
-
+        
         if ($this->refreshProjectConfigPerTest()) {
             // Tests over. Reset the project config to its original state.
             TestSetup::setupProjectConfig($this->_getConfig('projectConfig'));
