@@ -20,6 +20,9 @@ use \craft\test\fixtures\FieldLayoutFixture as BaseFieldLayoutFixture;
  */
 class FieldLayoutFixture extends BaseFieldLayoutFixture
 {
+    // Public properties
+    // =========================================================================
+
     /**
      * @inheritdoc
      */

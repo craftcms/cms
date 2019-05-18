@@ -166,7 +166,7 @@ class Craft extends Yii2
 
         // Create a Craft::$app object
         TestSetup::warmCraft();
-        
+
         if ($this->refreshProjectConfigPerTest()) {
             // Tests over. Reset the project config to its original state.
             TestSetup::setupProjectConfig($this->_getConfig('projectConfig'));
