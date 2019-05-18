@@ -1,5 +1,4 @@
 # Fixtures
-## General
 Fixtures are used to setup data in a test suite that is predictable and the same 
 for each test run (so assertions can be conducted based on this data).
 They can be defined in the `fixturesMethod` [defined](config-options.md) in the `codeception.yml` file. 
@@ -9,14 +8,21 @@ you can read about fixture classes and fixture data as well as how these can be 
 To setup fixtures Create a folder called `fixtures` in your `tests` folder. 
 In this folder we will put our fixture classes and fixture data 
 
-## Element fixtures
-As Craft's element types are quite complicated some heavy lifting is required in order to set them for usage in 
-accordance to what the Yii2 docs describe. For this reason support is provided 
+## Craft specific data
+For traditional database rows regular fixtures will suffice. However Craft 
+introduces several concepts of its own, these come attached to some complicated 
+linked data structures that are very difficult to manage with regular fixtures. 
+
+### Element fixtures
+Element types are one of Craft's main selling points for developers. They yield a lot of power.
+That power is courtesy of a complicated data structure and set of api's. 
+A by-product of this is that some heavy lifting is required if element types are to be 
+defined in a single fixture and data file. For this reason support is provided 
 out of the box for setting up various element types. 
 
 ::: tip
 Craft's element fixtures are based on the excellent team over at [robuust](https://robuust.digital/) 
-and their `craft-fixtures` plugin which can be found [here](https://github.com/robuust/craft-fixtures). 
+and their `craft-fixtures`  [plugin](https://github.com/robuust/craft-fixtures). 
 :::
 
 ### `Asset fixtures`
@@ -133,5 +139,54 @@ return [
 
 The primary keys are: `siteId`, `username` and `email`.
 
-## Field layout fixtures
-// TODO Explain field layout fixtures
+### Field layout fixtures
+Another Craft specific concept is field layouts. Field layouts consist 
+of 
+- The layouts themselves
+- Tabs
+- Fields
+
+All of which are linked together, and would be very difficult to manage in a 
+test environment with ordinary fixtures. For this reason Craft provides a special 
+`craft\test\fixtures\FieldLayoutFixture` class that provides all the required support 
+to setup field layouts, the tabs and the underlying fields, including creating the fields in the `content` table.
+
+All you have to do is create an ordinary fixture class and extend `craft\test\fixtures\FieldLayoutFixture`. 
+
+Then add the `public $dataFile = 'path/to/datafile/` property that points to a datafile
+containing at least the following keys (including the nested position)
+
+```php
+<?php
+
+return [
+    [
+            'type' => 'craft\test\Craft', // Required
+            'tabs' => [ // Required - Value can be set to an empty array[]
+                [
+                    'name' => 'Tab 1', // Required
+                    'fields' => [ // Required - Value can be set to an empty array[]
+                        [
+                            'layout-link' => [ // Required
+                                'required' => true // Required
+                            ],
+                            'field' => [
+                                'name' => 'Test field', // Required
+                                'handle' => 'testField2', // Required
+                                'fieldType' => SomeField::class, // Required
+                            ]
+                        ],
+                    ]
+                ]
+            ]
+        ]
+];
+```
+
+::: tip
+The value of the key-value pairs can be set to whatever is required
+for your project. What is crucial 
+is that the array keys are set with __any__ string value. You can add your own parameters to 
+the array value of the `field` key - as long as they correspond to `public` properties in 
+the class defined in the `fieldType` key. 
+:::
