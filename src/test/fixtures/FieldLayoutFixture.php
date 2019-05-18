@@ -1,0 +1,236 @@
+<?php
+/**
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.github.io/license/
+ */
+
+
+namespace craft\test\fixtures;
+
+
+use craft\base\Field;
+use craft\base\Model;
+use craft\db\Query;
+use craft\db\Table;
+use craft\helpers\ArrayHelper;
+use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
+use craft\test\Fixture;
+use yii\base\InvalidArgumentException;
+
+/**
+ * Class FieldLayoutFixture.
+ *
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since  3.1
+ */
+abstract class FieldLayoutFixture extends Fixture
+{
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @throws \Throwable
+     * @throws \yii\base\Exception
+     */
+    public function load()
+    {
+        $fieldsService = \Craft::$app->getFields();
+
+        foreach ($this->getData() as $fieldLayout) {
+            // Get the tabs from the $fieldLayout value and unset the tabs (for later)
+            $tabs = $this->extractTabsFromFieldLayout($fieldLayout);
+
+            // Get the tabs setup in such a way they can be set with $fieldLayout->setTabs()
+            $tabsToAdd = $this->getTabsForFieldLayout($tabs);
+
+            // Setup the field layout and set the tabs
+            $fieldLayout = new FieldLayout($fieldLayout);
+            $fieldLayout->setTabs($tabsToAdd);
+
+            // Save the field layout (Including all the tabs)
+            if (!$fieldsService->saveLayout($fieldLayout)) {
+                $this->throwModelError($fieldLayout);
+            }
+
+            // Loop through the saved tabs (Which now have an id param)
+            foreach ($fieldLayout->getTabs() as $tab) {
+                // Get the content from our fields from the original data array (from $this->dataFile)
+                $tabContent = ArrayHelper::firstValue(
+                    ArrayHelper::filterByValue($tabs, 'name', $tab->name)
+                );
+
+                $fieldSortOrder = 1;
+
+                // Loop and add.
+                foreach ($tabContent['fields'] as $fieldData) {
+                    $field = $fieldData['field'];
+
+                    // Get the class to setup. Then remove it.
+                    $class = $field['fieldType'];
+                    unset($field['fieldType']);
+
+                    // Create and add a field.
+                    $field = new $class($field);
+                    if (!\Craft::$app->getFields()->saveField($field)) {
+                        $this->throwModelError($field);
+                    }
+
+                    // Link it
+                    $link = $fieldData['layout-link'];
+                    $link['sortOrder'] = $fieldSortOrder;
+                    $this->linkFieldToLayout($link, $field, $fieldLayout, $tab);
+
+                    $fieldSortOrder++;
+                }
+            }
+        }
+    }
+
+    /**
+     * @return bool
+     * @throws \Throwable
+     */
+    public function unload()
+    {
+        foreach ($this->getData() as $fieldLayout) {
+            foreach ($fieldLayout['tabs'] as $tab) {
+                foreach ($tab['fields'] as $fieldData) {
+                    $field = $fieldData['field'];
+                    return $this->deleteAllByFieldHandle($field['handle']);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Attempt to delete all fields and field layout by a field handle.
+     *
+     * 1. Get a field by handle
+     * 2. Get its layout
+     * 3. Traverse down the data (getTabs() and then on each tab getFields()
+     * 4. Delete all fields.
+     * 5. Delete the field layout.
+     *
+     * @param string $fieldHandle
+     * @return bool
+     * @throws \Throwable
+     */
+    public function deleteAllByFieldHandle(string $fieldHandle) : bool
+    {
+        if (!$field = \Craft::$app->getFields()->getFieldByHandle($fieldHandle)) {
+            return false;
+        }
+
+        $layoutId = (new Query())->select('layoutId')
+            ->from(Table::FIELDLAYOUTFIELDS)
+            ->where(['fieldId' => $field->id])
+            ->column();
+
+        if ($layoutId) {
+            $layoutId = ArrayHelper::firstValue($layoutId);
+            $layout = \Craft::$app->getFields()->getLayoutById($layoutId);
+
+            foreach ($layout->getTabs() as $tab) {
+                foreach ($tab->getFields() as $field) {
+                    if (!\Craft::$app->getFields()->deleteField($field)) {
+                        $this->throwModelError($field);
+                    }
+                }
+            }
+            return \Craft::$app->getFields()->deleteLayoutById($layoutId);
+        }
+
+        return false;
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @param array $tabs
+     * @return array
+     */
+    protected function getTabsForFieldLayout(array $tabs) : array
+    {
+        $tabSortOrder = 1;
+        $tabsToAdd = [];
+
+        foreach ($tabs as $tab) {
+            if (isset($tab['fields'])) {
+                unset($tab['fields']);
+            }
+
+            $tab['sortOrder'] = $tabSortOrder;
+            $tabsToAdd[] = $tab;
+
+            $tabSortOrder++;
+        }
+
+        return $tabsToAdd;
+    }
+
+    /**
+     * @param array $fieldLayout
+     * @return array
+     */
+    protected function extractTabsFromFieldLayout(array $fieldLayout) : array
+    {
+        $tabs = [];
+
+        if (isset($fieldLayout['tabs'])) {
+            $tabs = $fieldLayout['tabs'];
+            unset($fieldLayout['tabs']);
+        }
+
+        return $tabs;
+    }
+
+    /**
+     * @param Field $field
+     * @param FieldLayout $fieldLayout
+     * @param FieldLayoutTab $tab
+     * @param int $sortOrder
+     * @return bool
+     * @throws \yii\db\Exception
+     */
+    protected function linkFieldToLayout(
+        array $link,
+        Field $field,
+        FieldLayout $fieldLayout,
+        FieldLayoutTab $tab
+    ) : bool {
+        $link['fieldId'] = $field->id;
+        $link['tabId'] = $tab->id;
+        $link['layoutId'] = $fieldLayout->id;
+
+        $executed = \Craft::$app->getDb()->createCommand()
+            ->insert(Table::FIELDLAYOUTFIELDS,
+                $link
+            )->execute();
+
+        if (!$executed) {
+            throw new InvalidArgumentException("Unable to link field $field->handle to field layout $fieldLayout->type");
+        }
+
+        return true;
+    }
+    /**
+     * @param Model $model
+     * @throws InvalidArgumentException
+     */
+    protected function throwModelError(Model $model)
+    {
+        throw new InvalidArgumentException(
+            implode(
+                ' ',
+                $model->getErrorSummary(true)
+            )
+        );
+    }
+}
