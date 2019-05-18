@@ -8,7 +8,7 @@
 - All element types now have the option to support drafts and revisions.
 - Drafts are now autocreated when content is modified, and autosaved whenever the content changes. ([#1034](https://github.com/craftcms/cms/issues/1034))
 - Drafts and revisions now store content across all sites supported by the element. ([#2669](https://github.com/craftcms/cms/issues/2669))
-- Content previewing is now draft-based, and drafts are stored as specialized elements, so it’s no longer necessary to add special cases in templates for preview requests. ([#1787](https://github.com/craftcms/cms/issues/1787))
+- Content previewing is now draft-based, and drafts are stored as specialized elements, so it’s no longer necessary to add special cases in templates for preview requests. ([#1787](https://github.com/craftcms/cms/issues/1787), [#2801](https://github.com/craftcms/cms/issues/2801))
 - Sections now have a “Preview Targets” setting when running Craft Pro, which can be used to configure additional locations that entries can be previewed from. ([#1489](https://github.com/craftcms/cms/issues/1489))
 - Sections now have a “Propagation Method” setting, enabling entries to only be propagated to other sites in the same site group, or with the same language. ([#3554](https://github.com/craftcms/cms/issues/3554))
 - Headless content previewing is now possible by forwarding request tokens off to content API requests. ([#1231](https://github.com/craftcms/cms/issues/1231))
