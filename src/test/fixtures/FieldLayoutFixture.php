@@ -103,7 +103,10 @@ abstract class FieldLayoutFixture extends Fixture
             foreach ($fieldLayout['tabs'] as $tab) {
                 foreach ($tab['fields'] as $fieldData) {
                     $field = $fieldData['field'];
-                    return $this->deleteAllByFieldHandle($field['handle']);
+                    if ($this->deleteAllByFieldHandle($field['handle'])) {
+                        // Its deleted. On-to the next field layout.
+                        continue 3;
+                    }
                 }
             }
         }
