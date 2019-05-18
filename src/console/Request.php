@@ -107,6 +107,7 @@ class Request extends \yii\console\Request
      * Returns whether this is a Live Preview request. (Narrator: It isn't.)
      *
      * @return bool Whether this is a Live Preview request.
+     * @deprecated in 3.2
      */
     public function getIsLivePreview(): bool
     {

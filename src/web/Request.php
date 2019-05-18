@@ -487,6 +487,7 @@ class Request extends \yii\web\Request
      * ```
      *
      * @return bool Whether this is a Live Preview request.
+     * @deprecated in 3.2
      */
     public function getIsLivePreview(): bool
     {

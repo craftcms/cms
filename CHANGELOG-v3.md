@@ -74,8 +74,10 @@
 
 ### Deprecated
 - Deprecated the `Craft.LivePreview` JavaScript class.
+- Deprecated `craft\console\Request::getIsLivePreview()`.
 - Deprecated `craft\controllers\LivePreviewController`.
 - Deprecated `craft\services\EntryRevisions`.
+- Deprecated `craft\web\Request::getIsLivePreview()`.
 
 ### Fixed
 - Fixed an error that could occur when updating to 3.2.0-alpha.5 if there were any user groups defined without any permissions. ([#4214](https://github.com/craftcms/cms/pull/4214))
