@@ -29,7 +29,7 @@ class FunctionalCest
     /**
      * @param FunctionalTester $I
      */
-    protected function _before(FunctionalTester $I)
+    public function _before(FunctionalTester $I)
     {
         $userEl = User::find()
             ->admin()
@@ -37,7 +37,6 @@ class FunctionalCest
 
         Craft::$app->getUser()->setIdentity($userEl);
 
-        $I->amLoggedInAs($userEl);
     }
 
     /**
