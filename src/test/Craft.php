@@ -169,7 +169,7 @@ class Craft extends Yii2
 
         if ($this->refreshProjectConfigPerTest()) {
             // Tests over. Reset the project config to its original state.
-            TestSetup::setupProjectConfig($this->_getConfig('projectConfig'));
+            TestSetup::setupProjectConfig($this->_getConfig('projectConfig')['file']);
             \Craft::$app->getProjectConfig()->applyYamlChanges();
         }
 
