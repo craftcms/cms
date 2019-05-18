@@ -18,10 +18,13 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\test\Fixture;
 use yii\base\InvalidArgumentException;
+use \yii\db\Exception as YiiDbException;
+use Craft;
+use Throwable;
+use \yii\base\Exception as YiiBaseException;
 
 /**
  * Class FieldLayoutFixture.
- *
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -33,12 +36,12 @@ abstract class FieldLayoutFixture extends Fixture
     // =========================================================================
 
     /**
-     * @throws \Throwable
-     * @throws \yii\base\Exception
+     * @throws Throwable
+     * @throws YiiBaseException
      */
     public function load()
     {
-        $fieldsService = \Craft::$app->getFields();
+        $fieldsService = Craft::$app->getFields();
 
         foreach ($this->getData() as $fieldLayout) {
             // Get the tabs from the $fieldLayout value and unset the tabs (for later)
@@ -75,7 +78,7 @@ abstract class FieldLayoutFixture extends Fixture
 
                     // Create and add a field.
                     $field = new $class($field);
-                    if (!\Craft::$app->getFields()->saveField($field)) {
+                    if (!Craft::$app->getFields()->saveField($field)) {
                         $this->throwModelError($field);
                     }
 
@@ -92,7 +95,7 @@ abstract class FieldLayoutFixture extends Fixture
 
     /**
      * @return bool
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function unload()
     {
@@ -119,11 +122,11 @@ abstract class FieldLayoutFixture extends Fixture
      *
      * @param string $fieldHandle
      * @return bool
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function deleteAllByFieldHandle(string $fieldHandle) : bool
     {
-        if (!$field = \Craft::$app->getFields()->getFieldByHandle($fieldHandle)) {
+        if (!$field = Craft::$app->getFields()->getFieldByHandle($fieldHandle)) {
             return false;
         }
 
@@ -134,16 +137,16 @@ abstract class FieldLayoutFixture extends Fixture
 
         if ($layoutId) {
             $layoutId = ArrayHelper::firstValue($layoutId);
-            $layout = \Craft::$app->getFields()->getLayoutById($layoutId);
+            $layout = Craft::$app->getFields()->getLayoutById($layoutId);
 
             foreach ($layout->getTabs() as $tab) {
                 foreach ($tab->getFields() as $field) {
-                    if (!\Craft::$app->getFields()->deleteField($field)) {
+                    if (!Craft::$app->getFields()->deleteField($field)) {
                         $this->throwModelError($field);
                     }
                 }
             }
-            return \Craft::$app->getFields()->deleteLayoutById($layoutId);
+            return Craft::$app->getFields()->deleteLayoutById($layoutId);
         }
 
         return false;
@@ -197,7 +200,7 @@ abstract class FieldLayoutFixture extends Fixture
      * @param FieldLayoutTab $tab
      * @param int $sortOrder
      * @return bool
-     * @throws \yii\db\Exception
+     * @throws YiiDbException
      */
     protected function linkFieldToLayout(
         array $link,
@@ -209,7 +212,7 @@ abstract class FieldLayoutFixture extends Fixture
         $link['tabId'] = $tab->id;
         $link['layoutId'] = $fieldLayout->id;
 
-        $executed = \Craft::$app->getDb()->createCommand()
+        $executed = Craft::$app->getDb()->createCommand()
             ->insert(Table::FIELDLAYOUTFIELDS,
                 $link
             )->execute();
