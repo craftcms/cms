@@ -150,6 +150,12 @@ class TestSetup
         Craft::setAlias('@templates', CraftTest::normalizePathSeparators(Craft::getAlias('@templates')));
         Craft::setAlias('@translations', CraftTest::normalizePathSeparators(Craft::getAlias('@translations')));
 
+        $configService = new Config();
+        $configService->env = 'test';
+        $configService->configDir = CRAFT_CONFIG_PATH;
+        $configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
+
+
         // Load the config
         $config = ArrayHelper::merge(
             [
@@ -162,27 +168,16 @@ class TestSetup
                 ],
             ],
             require $srcPath . '/config/app.php',
-            require $srcPath . '/config/app.'.$appType.'.php'
+            require $srcPath . '/config/app.'.$appType.'.php',
+            $configService->getConfigFromFile('app'),
+            $configService->getConfigFromFile("app.{$appType}")
         );
 
-        // Use app.php from the config dir as well.
-        $craftPath = CRAFT_CONFIG_PATH;
-        $appConfigPath = $craftPath.'/app.php';
-
-        if (is_file($appConfigPath)) {
-            $appConfig = require $appConfigPath;
-            $config = ArrayHelper::merge($config, $appConfig);
+        if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
+            $config['components']['sites']['currentSite'] = defined('CRAFT_SITE') ? CRAFT_SITE : CRAFT_LOCALE;
         }
 
         $config['vendorPath'] = $vendorPath;
-
-        $config = ArrayHelper::merge($config, [
-            'components' => [
-                'sites' => [
-                    'currentSite' => 'default'
-                ]
-            ],
-        ]);
 
         $class = $appType === 'console' ?  \craft\console\Application::class
             : Application::class;
