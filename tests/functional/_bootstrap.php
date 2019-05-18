@@ -1,3 +1,5 @@
 <?php
+// Autoload the fixtures
+use Codeception\Util\Autoload;
 
-// You can initialize variables that will be available to your functional tests here.
+Autoload::addNamespace('', dirname(__DIR__).'/fixtures');
