@@ -17,12 +17,14 @@ use craft\composer\Installer;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\errors\InvalidPluginException;
+use craft\errors\SectionNotFoundException;
 use craft\events\DeleteElementEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\services\Elements;
 use ReflectionException;
 use ReflectionObject;
+use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use yii\base\Application;
 use yii\base\Event;
@@ -133,7 +135,7 @@ class Craft extends Yii2
 
         parent::_before($test);
 
-        // Re-apply project config
+        // Re-apply project config - Fixtures may have done stuff...
         if ($this->refreshProjectConfigPerTest()) {
             \Craft::$app->getProjectConfig()->applyYamlChanges();
         }
@@ -149,9 +151,9 @@ class Craft extends Yii2
 
     /**
      * @param TestInterface $test
-     * @throws Exception
      * @throws InvalidConfigException
-     * @throws \yii\base\Exception
+     * @throws Throwable
+     * @throws SectionNotFoundException
      */
     public function _after(TestInterface $test)
     {
@@ -170,9 +172,13 @@ class Craft extends Yii2
         if ($this->refreshProjectConfigPerTest()) {
             // Tests over. Reset the project config to its original state.
             TestSetup::setupProjectConfig($this->_getConfig('projectConfig')['file']);
-            \Craft::$app->getProjectConfig()->applyYamlChanges();
+
+            \Craft::$app->getProjectConfig()->applyConfigChanges(
+                Yaml::parse(file_get_contents($this->_getConfig('projectConfig')['file']))
+            );
         }
 
+        \Craft::$app->trigger(Application::EVENT_AFTER_REQUEST);
         // Dont output anything or we get header's already sent exception
         ob_end_clean();
         TestSetup::tearDownCraft();
