@@ -9,7 +9,7 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\StringHelper;
-use craft\test\mockclasses\ToStringTest;
+use craft\test\mockclasses\ToString;
 use function mb_strlen;
 use function mb_strpos;
 use stdClass;
@@ -1008,7 +1008,7 @@ class StringHelperTest extends Unit
         return [
             ['test', 'test'],
             ['', new stdClass()],
-            ['ima string', new ToStringTest('ima string')],
+            ['ima string', new ToString('ima string')],
             ['t,e,s,t', ['t', 'e', 's', 't']],
             ['t|e|s|t', ['t', 'e', 's', 't'], '|'],
         ];
