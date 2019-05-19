@@ -102,7 +102,8 @@ module.exports = {
                     'framework/fixtures',
                     'framework/mocking',
                     'framework/test-setup',
-                    'framework/console'
+                    'framework/console',
+                    'framework/support-classes'
                 ]
             }
         ],
