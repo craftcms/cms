@@ -23,7 +23,8 @@ manually delete clear the search index or use an [element fixture](framework/fix
 :::
 
 ### `Cleaup`
-The cleanup option ensures that fixtures are removed after a test. This cleans the database. 
+The cleanup option ensures that fixtures are removed after a test. This cleans any fixture
+data inserted during your test from the database. 
 Before the next test the new fixtures will be added again. 
 
 TODO: More....
