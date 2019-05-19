@@ -139,7 +139,7 @@ class Craft extends Yii2
         parent::_before($test);
 
         // Re-apply project config - Fixtures may have done stuff...
-        if ($this->refreshProjectConfigPerTest()) {
+        if ($projectConfig = $this->_getConfig('projectConfig')) {
             \Craft::$app->getProjectConfig()->applyYamlChanges();
         }
 
@@ -172,12 +172,12 @@ class Craft extends Yii2
         // Create a Craft::$app object
         TestSetup::warmCraft();
 
-        if ($this->refreshProjectConfigPerTest()) {
+        if ($projectConfig = $this->_getConfig('projectConfig')) {
             // Tests over. Reset the project config to its original state.
-            TestSetup::setupProjectConfig($this->_getConfig('projectConfig')['file']);
+            TestSetup::setupProjectConfig($projectConfig['file']);
 
             \Craft::$app->getProjectConfig()->applyConfigChanges(
-                Yaml::parse(file_get_contents($this->_getConfig('projectConfig')['file']))
+                Yaml::parse(file_get_contents($projectConfig['file']))
             );
         }
 
@@ -424,22 +424,6 @@ class Craft extends Yii2
         ]);
 
         $this->configureClient($this->_getConfig());
-    }
-
-    /**
-     * Check if the codeception file wants us to set it up only once
-     *
-     * @return bool
-     */
-    protected function refreshProjectConfigPerTest() : bool
-    {
-        $projectConfig = $this->_getConfig('projectConfig');
-
-        if(!$projectConfig) {
-            return false;
-        }
-
-        return ($projectConfig && array_key_exists('once', $projectConfig) && $projectConfig['once'] === false);
     }
 
     /**

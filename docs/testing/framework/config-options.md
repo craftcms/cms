@@ -21,9 +21,6 @@ The `projectConfig` setting accepts an object with the following parameters:
 - file (Required): What file the project config setting must be copied from. This is not the `project.yml` file in 
 `CRAFT_CONFIG_PATH` but instead the file whose contents will be copied into the `project.yml` file 
 located here. 
-- once: Whether the `project.yml` file in the `CRAFT_CONFIG_PATH` must be deleted and a fresh copy 
-inserted based after every test is completed. The fresh copy will be based on the `file` param
-
 ### `migrations`
 
 Accepts: Array|Object
