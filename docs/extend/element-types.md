@@ -373,7 +373,7 @@ Elements that support multiple sites will have their `afterSave()` method called
 
 ## Statuses
 
-If your elements should have their own statuses, give your element class a static `hasStatuses()` method:
+If your elements should have their own statuses, give your element class a static <api:craft\base\ElementInterface::hasStatuses()> method:
 
 ```php
 public static function hasStatuses(): bool
@@ -382,15 +382,47 @@ public static function hasStatuses(): bool
 }
 ```
 
-Then, if they can have any statuses besides `enabled` and `disabled`, add a static `statuses()` method to define them:
+### Custom Statuses
+
+By default your elements will support two statuses: Enabled and Disabled. If you’d like to give your element type its own custom statuses, first define what they are by overriding its static <api:craft\base\ElementInterface::statuses()> method:
 
 ```php
 public static function statuses(): array
 {
     return [
-        'foo' => \Craft::t('plugin-handle', 'Foo'),
-        'bar' => \Craft::t('plugin-handle', 'Bar'),
+        'foo' => ['label' => \Craft::t('plugin-handle', 'Foo'), 'color' => '27AE60'],
+        'bar' => ['label' => \Craft::t('plugin-handle', 'Bar'), 'color' => 'F2842D'],
     ];
+}
+```
+
+Next add a <api:craft\base\ElementInterface::getStatus()> method that returns the current status of an element:
+
+```php
+public function getStatus()
+{
+    if ($this->fooIsTrue) {
+        return 'foo';
+    }
+
+    return 'bar';
+}
+```
+
+Finally, override the <api:craft\elements\db\ElementQuery::statusCondition()> method on your [element query class](#element-query-class):
+
+```php
+protected function statusCondition(string $status)
+{
+    switch ($status) {
+        case 'foo':
+            return ['foo' => true];
+        case 'bar':
+            return ['bar' => true];
+        default:
+            // call the base method for `enabled` or `disabled`
+            return parent::statusCondition($status);
+    }
 }
 ```
 
