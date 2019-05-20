@@ -153,7 +153,20 @@ class EntriesController extends BaseEntriesController
             ];
 
             if ($section->maxLevels) {
-                $variables['parentOptionCriteria']['level'] = '< ' . $section->maxLevels;
+                if ($entry->id) {
+                    // Figure out how deep the ancestors go
+                    $maxDepth = Entry::find()
+                        ->select('level')
+                        ->descendantOf($entry)
+                        ->anyStatus()
+                        ->leaves()
+                        ->scalar();
+                    $depth = 1 + ($maxDepth ?: $entry->level) - $entry->level;
+                } else {
+                    $depth = 1;
+                }
+
+                $variables['parentOptionCriteria']['level'] = '<= ' . ($section->maxLevels - $depth);
             }
 
             if ($entry->id !== null) {
