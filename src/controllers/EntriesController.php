@@ -249,7 +249,20 @@ class EntriesController extends BaseEntriesController
             ];
 
             if ($section->maxLevels) {
-                $variables['parentOptionCriteria']['level'] = '< ' . $section->maxLevels;
+                if ($entry->id) {
+                    // Figure out how deep the ancestors go
+                    $maxDepth = Entry::find()
+                        ->select('level')
+                        ->descendantOf($entry)
+                        ->anyStatus()
+                        ->leaves()
+                        ->scalar();
+                    $depth = 1 + ($maxDepth ?: $entry->level) - $entry->level;
+                } else {
+                    $depth = 1;
+                }
+
+                $variables['parentOptionCriteria']['level'] = '<= ' . ($section->maxLevels - $depth);
             }
 
             // Get the initially selected parent
@@ -725,7 +738,7 @@ class EntriesController extends BaseEntriesController
      * @param int|null $draftId
      * @param int|null $revisionId
      * @return Response
-     * @throws NotFoundHttpException if the requested category cannot be found
+     * @throws NotFoundHttpException if the requested entry cannot be found
      */
     public function actionViewSharedEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $revisionId = null): Response
     {

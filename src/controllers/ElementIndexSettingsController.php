@@ -29,7 +29,7 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionGetCustomizeSourcesModalData(): Response
     {
-        $this->requireAdmin(false);
+        $this->requirePermission('customizeSources');
 
         $elementType = $this->elementType();
 
@@ -77,7 +77,7 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionSaveCustomizeSourcesModalSettings(): Response
     {
-        $this->requireAdmin(false);
+        $this->requirePermission('customizeSources');
 
         $elementType = $this->elementType();
 

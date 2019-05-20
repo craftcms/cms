@@ -24,6 +24,7 @@ use craft\models\Section;
 use craft\models\UserGroup;
 use craft\records\UserPermission as UserPermissionRecord;
 use yii\base\Component;
+use yii\db\Exception;
 
 /**
  * User Permissions service.
@@ -84,6 +85,9 @@ class UserPermissions extends Component
                         'label' => Craft::t('app', 'Perform Craft CMS and plugin updates')
                     ],
                 ]
+            ],
+            'customizeSources' => [
+                'label' => Craft::t('app', 'Customize element sources'),
             ],
         ];
 
@@ -364,6 +368,7 @@ class UserPermissions extends Component
      * @param array $permissions
      * @return bool
      * @throws WrongEditionException if this is called from Craft Solo edition
+     * @throws Exception
      */
     public function saveUserPermissions(int $userId, array $permissions): bool
     {
@@ -399,7 +404,7 @@ class UserPermissions extends Component
         }
 
         // Cache the new permissions
-        $this->_permissionsByUserId[$userId] = $permissions;
+        $this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $permissions));
 
         return true;
     }
