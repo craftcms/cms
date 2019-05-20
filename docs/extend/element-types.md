@@ -373,7 +373,7 @@ Elements that support multiple sites will have their `afterSave()` method called
 
 ## Statuses
 
-If your elements should have their own statuses, give your element class a static `hasStatuses()` method:
+If your elements should have their own statuses, give your element class a static <api:craft\base\ElementInterface::hasStatuses()> method:
 
 ```php
 public static function hasStatuses(): bool
@@ -382,79 +382,49 @@ public static function hasStatuses(): bool
 }
 ```
 
-Then, if they can have any statuses besides `enabled` and `disabled`, add a static `statuses()` method to define them:
+### Custom Statuses
+
+By default your elements will support two statuses: Enabled and Disabled. If you’d like to give your element type its own custom statuses, first define what they are by overriding its static <api:craft\base\ElementInterface::statuses()> method:
 
 ```php
 public static function statuses(): array
 {
     return [
-        'foo' => \Craft::t('plugin-handle', 'Foo'),
-        'bar' => \Craft::t('plugin-handle', 'Bar'),
+        'foo' => ['label' => \Craft::t('plugin-handle', 'Foo'), 'color' => '27AE60'],
+        'bar' => ['label' => \Craft::t('plugin-handle', 'Bar'), 'color' => 'F2842D'],
     ];
 }
 ```
 
-This updates the dropdown on the `elementsindex` template, showing the custom statuses (`Foo` and `Bar`) you added.
-However, these don't do anything out of the box; you'll have to specify when a status applies to a particular instance of your element with the `getStatus` method.
+Next add a <api:craft\base\ElementInterface::getStatus()> method that returns the current status of an element:
 
 ```php
 public function getStatus()
 {
-    if ($this->fooIsTrue) // some boolean condition on your element
-    {
+    if ($this->fooIsTrue) {
         return 'foo';
     }
+
     return 'bar';
 }
 ```
 
-This method should return a string that matches one of the keys specified in your static `statuses` method.
-These statuses will be applied as a class on the HTML element, indicating the current state of an element.
-You can specify the color you want to for a particular status, making it easier for users to visually see the state of their elements.
-
-```css
-.status.foo {
-      background-color: #27AE60; /* green -- same as enabled */
-  }
-  .status.bar {
-      background-color: #F2842D; /* orange */
-  }
-```
-
-Now the indicator at the beginning of each row will change color based on the status of that particular element.
-
-Visually, the elements look correct, however selecting `Foo` or `Bar` from the dropdown will not filter the list.
-To do this, we need to update the `statusCondition` method on the `ElementQuery` class, otherwise our plugin won't know how to properly filter this list when a status is selected.
+Finally, override the <api:craft\elements\db\ElementQuery::statusCondition()> method on your [element query class](#element-query-class):
 
 ```php
 protected function statusCondition(string $status)
 {
     switch ($status) {
-      case 'foo':
-          return [
-              '<', 'product_table.age', 18
-          ];
+        case 'foo':
+            return ['foo' => true];
         case 'bar':
-            return [
-                'and',
-                [
-                    '>=', 'product_table.age', 18
-                ],
-                [
-                    'product_table.approved' => true
-                ]
-            ];
+            return ['bar' => true];
         default:
-            return parent::statusCondition($status); // call the base method for `enabled` or `disabled`
+            // call the base method for `enabled` or `disabled`
+            return parent::statusCondition($status);
     }
 }
 ```
-
-Here, we are querying our `product_table`, where our data for these elements live.
-We indicate that an element has a status of `foo` if the age specified is under 18.
-For the status of `bar`, we have two conditions -- the element must have an age over 18 specified and it must be marked as `approved`.
-
-Now, making a selection from the dropdown will properly filter our list, which is also color coded based based on status.
 
 ## Sources
 
