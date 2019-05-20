@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the “Customize element sources” user permission. ([#4282](https://github.com/craftcms/cms/pull/4282))
+
 ### Fixed
 - Fixed a bug where slugs could get double-hyphenated. ([#4266](https://github.com/craftcms/cms/issues/4266))
 - Fixed an error that would occur when installing Craft if the `allowAdminChanges` config setting was disabled. ([#4267](https://github.com/craftcms/cms/issues/4267))
