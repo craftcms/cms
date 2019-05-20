@@ -74,6 +74,8 @@ class GqlController extends Controller
         }
 
         $result = GraphQL::executeQuery($schema, $input, null, null, null)->toArray(true);
+
+
         $response = \Craft::$app->getResponse();
         $response->headers->add('Content-Type', 'application/json; charset=UTF-8');
 

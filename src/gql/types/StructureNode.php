@@ -14,12 +14,9 @@ class StructureNode extends SchemaObject
     /**
      * @inheritdoc
      */
-    public static function getType(): Type
+    public static function getName(): string
     {
-        return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
-            'name' => 'StructureNode',
-            'fields' => self::class . '::getFields',
-        ]));
+        return 'StructureNode';
     }
 
     /**
@@ -32,6 +29,7 @@ class StructureNode extends SchemaObject
             'rgt' => Type::nonNull(Type::int()),
             'level' => Type::nonNull(Type::int()),
             'element' => Type::string(),
+            'elementId' => Type::int(),
             'structure' => Structure::getType(),
         ]);
     }

@@ -25,10 +25,10 @@ class Field extends SchemaObject
     /**
      * @inheritdoc
      */
-    public static function getType(): Type
+    public static function getType($fields = null): Type
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class,new InterfaceType([
-            'name' => 'FieldInterface',
+            'name' => static::getName(),
             'fields' => self::class . '::getFields',
             'resolveType' => function (BaseField $value) {
                 switch (get_class($value)) {
@@ -45,6 +45,14 @@ class Field extends SchemaObject
                 }
             }
         ]));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getName(): string
+    {
+        return 'FieldInterface';
     }
 
     /**

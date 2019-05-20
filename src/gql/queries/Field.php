@@ -27,7 +27,6 @@ class Field
                     if (isset($args['uid'])) {
                         return Craft::$app->getFields()->getFieldByUid($args['uid']);
                     }
-
                     if (isset($args['id'])) {
                         return Craft::$app->getFields()->getFieldById($args['id']);
                     }

@@ -14,15 +14,23 @@ class PlainText extends BaseField
     /**
      * @inheritdoc
      */
-    public static function getType(): Type
+    public static function getType($fields = null): Type
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
-            'name' => 'PlainTextField',
+            'name' => static::getName(),
             'fields' => self::class . '::getFields',
             'interfaces' => [
                 Field::getType()
             ]
         ]));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getName(): string
+    {
+        return 'PlainTextField';
     }
 
     /**

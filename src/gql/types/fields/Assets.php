@@ -14,15 +14,23 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function getType(): Type
+    public static function getType($fields = null): Type
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
-            'name' => 'AssetsField',
+            'name' => static::getName(),
             'fields' => self::class . '::getFields',
             'interfaces' => [
                 Field::getType()
             ]
         ]));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getName(): string
+    {
+        return 'AssetsField';
     }
 
     /**

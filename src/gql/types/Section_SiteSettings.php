@@ -13,21 +13,18 @@ class Section_SiteSettings extends BaseSiteSettings
     /**
      * @inheritdoc
      */
-    public static function getType(): Type
-    {
-        return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
-            'name' => 'Section_SiteSettings',
-            'fields' => self::class . '::getFields',
-        ]));
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getFields(): array
     {
         return array_merge(self::getCommonFields(), [
             'section' => Section::getType()
         ]);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getName(): string {
+        return 'Section_SiteSettings';
+    }
+
 }

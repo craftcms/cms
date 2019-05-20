@@ -13,7 +13,7 @@ class TableRow extends BaseField
     /**
      * @inheritdoc
      */
-    public static function getType(): Type
+    public static function getType($fields = null): Type
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
             'name' => 'TableRow',
@@ -29,7 +29,7 @@ class TableRow extends BaseField
         return [
             'cells' => [
                 'type' => Type::listOf(TableCell::getType()),
-                'name' => 'cells',
+                'name' => static::getName(),
                 'resolve' => function ($value) {
                     $output = [];
 
@@ -44,5 +44,13 @@ class TableRow extends BaseField
                 }
             ]
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getName(): string
+    {
+        return 'cells';
     }
 }

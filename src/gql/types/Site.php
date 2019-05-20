@@ -15,17 +15,6 @@ class Site extends SchemaObject
     /**
      * @inheritdoc
      */
-    public static function getType(): Type
-    {
-        return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
-            'name' => 'Site',
-            'fields' => self::class . '::getFields',
-        ]));
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getFields(): array
     {
         return array_merge(parent::getCommonFields(), [
@@ -44,5 +33,13 @@ class Site extends SchemaObject
             'sortOrder' => Type::int(),
             'hasUrls' => Type::boolean(),
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getName(): string
+    {
+        return 'Site';
     }
 }

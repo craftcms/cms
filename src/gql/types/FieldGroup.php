@@ -11,15 +11,12 @@ use GraphQL\Type\Definition\Type;
  */
 class FieldGroup extends SchemaObject
 {
-    /**
+     /**
      * @inheritdoc
      */
-    public static function getType(): Type
+    public static function getName(): string
     {
-        return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
-            'name' => 'FieldGroup',
-            'fields' => self::class . '::getFields',
-        ]));
+        return 'FieldGroup';
     }
 
     /**

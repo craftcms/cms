@@ -8,6 +8,7 @@ use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\TypeRegistry;
 use craft\helpers\StringHelper;
 use craft\models\EntryType as EntryTypeModel;
+use craft\models\Section;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -20,17 +21,17 @@ class EntryType
     {
         $entryTypes = Craft::$app->getSections()->getAllEntryTypes();
         $sections = Craft::$app->getSections()->getAllSections();
-        $sectionHandleById = [];
+        $sectionsById = [];
 
         foreach ($sections as $section) {
-            $sectionHandleById[$section->id] = $section->handle;
+            $sectionsById[$section->id] = $section;
         }
 
         $gqlTypes = [];
 
         foreach ($entryTypes as $entryType) {
             /** @var EntryTypeModel $entryType */
-            $typeName = $sectionHandleById[$entryType->sectionId] . '_' . $entryType->handle;
+            $typeName = self::getName($sectionsById[$entryType->sectionId], $entryType);
             $contentFields = $entryType->getFields();
             $contentFieldGqlTypes = [];
 
@@ -42,7 +43,7 @@ class EntryType
             $entryTypeFields = array_merge(EntryInterface::getFields(), $contentFieldGqlTypes);
 
             // Generate a type for each entry type
-            $gqlTypes[] = TypeRegistry::getType($entryType->uid) ?: TypeRegistry::createType($entryType->uid, new ObjectType([
+            $gqlTypes[$typeName] = TypeRegistry::getType($typeName) ?: TypeRegistry::createType($typeName, new ObjectType([
                 'name' => $typeName,
                 'fields' => function () use ($entryTypeFields) {
                     return $entryTypeFields;
@@ -74,5 +75,17 @@ class EntryType
         }
 
         return $gqlTypes;
+    }
+
+    /**
+     * Return an entry type's GQL type name by section and entry type
+     *
+     * @param Section $section
+     * @param EntryTypeModel $entryType
+     * @return string
+     */
+    public static function getName(Section $section, EntryTypeModel $entryType)
+    {
+        return $section->handle . '_' . $entryType->handle . '_Entry';
     }
 }

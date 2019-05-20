@@ -3,6 +3,7 @@ namespace craft\gql\types;
 
 use craft\gql\common\SchemaObject;
 use craft\gql\TypeRegistry;
+use craft\gql\types\enums\SectionType;
 use craft\models\Section as SectionModel;
 use GraphQL\Type\Definition\EnumType;
 use GraphQL\Type\Definition\ObjectType;
@@ -16,31 +17,13 @@ class Section extends SchemaObject
     /**
      * @inheritdoc
      */
-    public static function getType(): Type
-    {
-        return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
-            'name' => 'Section',
-            'fields' => self::class . '::getFields',
-        ]));
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getFields(): array
     {
         return array_merge(parent::getCommonFields(), [
             'structure' => Structure::getType(),
             'name' => Type::string(),
             'handle' => Type::string(),
-            'type' => Type::nonNull(new EnumType([
-                'name' => 'sectionType',
-                'values' => [
-                    'single',
-                    'channel',
-                    'structure',
-                ],
-            ])),
+            'type' => Type::nonNull(SectionType::getType()),
             'enableVersioning' => Type::nonNull(Type::boolean()),
             'propagateEntries' => Type::nonNull(Type::string()),
             'siteSettings' => [
@@ -51,5 +34,13 @@ class Section extends SchemaObject
                 }
             ],
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getName(): string
+    {
+        return 'Section';
     }
 }

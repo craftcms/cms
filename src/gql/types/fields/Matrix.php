@@ -15,15 +15,23 @@ class Matrix extends BaseField
     /**
      * @inheritdoc
      */
-    public static function getType(): Type
+    public static function getType($fields = null): Type
     {
         return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new ObjectType([
-            'name' => 'MatrixField',
+            'name' => static::getName(),
             'fields' => self::class . '::getFields',
             'interfaces' => [
                 Field::getType()
             ]
         ]));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getName(): string
+    {
+        return 'MatrixField';
     }
 
     /**

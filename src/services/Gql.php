@@ -9,17 +9,27 @@ namespace craft\services;
 
 use craft\events\RegisterGqlQueryEvent;
 use craft\events\RegisterGqlTypeEvent;
+use craft\gql\common\SchemaObject;
 use craft\gql\interfaces\Field as FieldInterface;
+use craft\gql\interfaces\elements\Entry as EntryInterface;
+use craft\gql\TypeLoader;
 use craft\gql\types\AssetTransform;
 use craft\gql\types\CategoryGroup;
+use craft\gql\types\CategoryGroup_SiteSettings;
+use craft\gql\types\DateTimeType;
+use craft\gql\types\enums\SectionType as SectionTypeEnum;
+use craft\gql\types\enums\TransformInterlace as TransformInterlaceEnum;
+use craft\gql\types\enums\TransformMode as TransformModeEnum;
+use craft\gql\types\enums\TransformPosition as TransformPositionEnum;
 use craft\gql\types\FieldGroup;
 use craft\gql\types\fields\Assets as AssetsField;
 use craft\gql\types\fields\Matrix as MatrixType;
 use craft\gql\types\fields\PlainText;
 use craft\gql\types\fields\Table;
 use craft\gql\types\fields\UnsupportedField;
+use craft\gql\types\Query;
 use craft\gql\types\Section;
-use craft\gql\types\generators\EntryType as EntryTypeGenerator;
+use craft\gql\types\Section_SiteSettings;
 use craft\gql\types\Site;
 use craft\gql\types\SiteGroup;
 use craft\gql\types\Structure;
@@ -66,15 +76,12 @@ class Gql extends Component
      * );
      * ```
      */
-    const EVENT_REGISTER_GQL_TYPES = 'registerGraphQlTypes';
+    const EVENT_REGISTER_GQL_TYPES = 'registerGqlTypes';
 
     /**
      * @TODO docs
      */
-    const EVENT_REGISTER_GQL_QUERIES = 'registerGrapQlQueries';
-
-    // Properties
-    // =========================================================================
+    const EVENT_REGISTER_GQL_QUERIES = 'registerGqlQueries';
 
     // Public Methods
     // =========================================================================
@@ -87,64 +94,77 @@ class Gql extends Component
      */
     public function getSchema(string $token = null): Schema
     {
-        // TODO check for cached schema first
-        $types = $this->getGqlTypeDefinitions();
-        $queries = $this->getGqlQueryDefinitions();
+        $this->_registerGqlTypes();
+        $this->_registerGqlQueries();
 
         return new Schema([
-            'types' => $types,
-            'query' => $queries,
+            'typeLoader' => TypeLoader::class . '::loadType',
+            'query' => TypeLoader::loadType('Query'),
         ]);
     }
 
+    // Private Methods
+    // =========================================================================
     /**
      * Get GraphQL type definitions from a list of models that support GraphQL
      *
-     * @return array
+     * @return void
      */
-    public function getGqlTypeDefinitions(): array
+    private function _registerGqlTypes()
     {
         $typeList = [
-            // Interfaces
-            FieldInterface::getType(),
+            // Scalars
+            DateTimeType::class,
 
-            // Entities
-            AssetTransform::getType(),
-            CategoryGroup::getType(),
-            FieldGroup::getType(),
-            Section::getType(),
-            Site::getType(),
-            SiteGroup::getType(),
-            Structure::getType(),
-            StructureNode::getType(),
+            // Interfaces
+            FieldInterface::class,
+            EntryInterface::class,
 
             // Fields
-            AssetsField::getType(),
-            PlainText::getType(),
-            Table::getType(),
-            MatrixType::getType(),
-            UnsupportedField::getType(),
+            AssetsField::class,
+            MatrixType::class,
+            PlainText::class,
+            Table::class,
+            UnsupportedField::class,
 
+            // Entities
+            AssetTransform::class,
+            CategoryGroup::class,
+            CategoryGroup_SiteSettings::class,
+            FieldGroup::class,
+            Section::class,
+            Section_SiteSettings::class,
+            Site::class,
+            SiteGroup::class,
+            Structure::class,
+            StructureNode::class,
+
+            // Enums
+            SectionTypeEnum::class,
+            TransformInterlaceEnum::class,
+            TransformModeEnum::class,
+            TransformPositionEnum::class,
         ];
 
-        // Content
-        $typeList = array_merge($typeList, EntryTypeGenerator::getTypes());
-
         $event = new RegisterGqlTypeEvent([
-            'types' => $typeList
+            'types' => $typeList,
         ]);
 
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
-        return $event->types;
+        foreach ($event->types as $type) {
+            /** @var SchemaObject $type */
+            TypeLoader::registerType($type::getName(), $type . '::getType');
+        }
     }
+
 
     /**
      * Get GraphQL query definitions
      *
-     * @return ObjectType
+     * @return void
      */
-    public function getGqlQueryDefinitions(): ObjectType
+    private function _registerGqlQueries()
     {
         $queryList = [
             // Entities
@@ -163,10 +183,8 @@ class Gql extends Component
 
         $this->trigger(self::EVENT_REGISTER_GQL_QUERIES, $event);
 
-        return new ObjectType([
-            'name' => 'Query',
-            'fields' => $event->queries
-        ]);
+        TypeLoader::registerType('Query', function () use ($event) {
+            return call_user_func(Query::class . '::getType', $event->queries);
+        });
     }
-
 }

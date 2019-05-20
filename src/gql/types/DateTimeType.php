@@ -1,6 +1,7 @@
 <?php
 namespace craft\gql\types;
 
+use craft\gql\TypeRegistry;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 
@@ -20,22 +21,22 @@ class DateTimeType extends ScalarType
     public $description = 'The `DateTime` scalar type represents a point in time.';
 
     /**
-     * @var self
-     */
-    protected static $instance;
-
-    /**
      * Returns a singleton instance to ensure one type per schema.
      *
      * @return DateTimeType
      */
-    public static function instance(): DateTimeType
+    public static function getType(): DateTimeType
     {
-        if (!self::$instance) {
-            self::$instance = new self();
-        }
+        return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new self());
+    }
 
-        return self::$instance;
+    /**
+     *
+     * @return string
+     */
+    public static function getName(): string
+    {
+        return 'DateTime';
     }
 
     /**
