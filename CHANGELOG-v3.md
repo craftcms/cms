@@ -7,6 +7,7 @@
 - Fixed an error that would occur when installing Craft if the `allowAdminChanges` config setting was disabled. ([#4267](https://github.com/craftcms/cms/issues/4267))
 - Fixed a bug where Matrix fields would return the wrong set of Matrix blocks on new or duplicated elements, immediately after they were saved.
 - Fixed a bug where users could not assign additional user groups to their own account if their permission to do so was granted by another user group they belonged to.
+- Fixed a bug where Number fields would attempt to save non-numeric values. ([craftcms/feed-me#527](https://github.com/craftcms/feed-me/issues/527))
 
 ## 3.1.27 - 2019-05-14
 
