@@ -12,6 +12,7 @@
 - Fixed a bug where users could not assign additional user groups to their own account if their permission to do so was granted by another user group they belonged to.
 - Fixed a bug where Number fields would attempt to save non-numeric values. ([craftcms/feed-me#527](https://github.com/craftcms/feed-me/issues/527))
 - Fixed a bug where it was possible to assign a Structure entry or category to a new parent, even if that would cause its descendants to violate the Max Levels setting. ([#4279](https://github.com/craftcms/cms/issues/4279))
+- Fixed an error that could occur when rendering a template from a console request, if the template contained any non-global `{% cache %}` tags. ([#4284](https://github.com/craftcms/cms/pull/4284))
 
 ## 3.1.27 - 2019-05-14
 
