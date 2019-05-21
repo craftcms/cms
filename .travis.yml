@@ -56,13 +56,8 @@ install:
     - travis_retry composer self-update
     - export PATH="$HOME/.composer/vendor/bin:$PATH"
     - travis_retry composer install $DEFAULT_COMPOSER_FLAGS
-
-before_install:
-  - composer clear-cache
-  - composer update
-  - touch tests/.env
-  - mkdir tests/_support/_generated
-  - mysql -e 'CREATE DATABASE craft3test;'
+    - touch tests/.env
+    - tests/_support/_generated
 
 before_script:
   # show some version and environment information
