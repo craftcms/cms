@@ -123,10 +123,9 @@ class PasswordValidatorTest extends Unit
      */
     public function testIsEmpty($result, $input, $isEmptyVal)
     {
-        $this->markTestIncomplete();
-//        $this->passwordValidator->isEmpty = $isEmptyVal;
-//        $isEmpty = $this->passwordValidator->isEmpty($input);
-//        $this->assertSame($result, $isEmpty);
+        $this->passwordValidator->isEmpty = $isEmptyVal;
+        $isEmpty = $this->passwordValidator->isEmpty($input);
+        $this->assertSame($result, $isEmpty);
     }
 
     public function testToStringExpectException()
@@ -195,6 +194,18 @@ class PasswordValidatorTest extends Unit
         return [
             ['im a test', '', self::class.'::testReturn' ],
         ];
+    }
+
+
+    // Required callback methods
+    // =========================================================================
+
+    /**
+     * @return string
+     */
+    public static function testReturn()
+    {
+        return 'im a test';
     }
 
     // Protected Methods
