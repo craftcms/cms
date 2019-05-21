@@ -67,7 +67,7 @@ before_script:
   - php -r "echo INTL_ICU_DATA_VERSION . \"\n\";"
   - psql --version
   - mysql --version
-  -sudo mysql_upgrade
+  - sudo mysql_upgrade
 
   # initialize database
   - travis_retry mysql -e 'CREATE DATABASE `craft3test`;';
