@@ -108,6 +108,7 @@
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
 - Deprecated `craft\models\Section::$propagateEntries`. Use `$propagationMethod` instead.
 - Deprecated `craft\services\EntryRevisions`.
+- Deprecated `craft\web\Request::getIsLivePreview()`.
 - Deprecated `craft\web\Request::getIsSingleActionRequest()` and `craft\console\Request::getIsSingleActionRequest()`.
 - Deprecated the `Craft.LivePreview` JavaScript class.
 
