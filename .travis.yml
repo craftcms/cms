@@ -22,7 +22,6 @@ before_install:
   - composer clear-cache
   - composer update
   - touch tests/.env
-  - mkdir tests/_support
   - mkdir tests/_support/_generated
 
 before_script:
