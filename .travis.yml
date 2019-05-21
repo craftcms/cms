@@ -23,7 +23,7 @@ env:
     - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest"
 
 before_install:
-  - ./composer clear-cache
+  - composer clear-cache
 
 install:
   - if [[ "$DEPENDENCIES" = 'high' ]]; then travis_retry ./tools/composer update $DEFAULT_COMPOSER_FLAGS; fi
@@ -60,4 +60,4 @@ jobs:
       install:
         - phpenv config-rm xdebug.ini
       script:
-        - ./php-cs-fixer fix --dry-run -v --show-progress=dots --diff-format=udiff
+        - php-cs-fixer fix --dry-run -v --show-progress=dots --diff-format=udiff
