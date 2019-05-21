@@ -104,7 +104,7 @@ class TestSetup
     public static function validateAndApplyMigration(string $class, array $params) : bool
     {
         if (!class_exists($class)) {
-            throw new InvalidArgumentException('Class doesnt exist');
+            throw new InvalidArgumentException('Class does not exist');
         }
 
         $migration = new $class($params);
