@@ -103,7 +103,8 @@ module.exports = {
                     'framework/mocking',
                     'framework/test-setup',
                     'framework/console',
-                    'framework/support-classes'
+                    'framework/support-classes',
+                    'framework/queue',
                 ]
             }
         ],
