@@ -74,7 +74,6 @@ class InstallController extends BaseUpdaterController
         if (!$success) {
             $info = Craft::$app->getPlugins()->getComposerPluginInfo($this->data['handle']);
             $pluginName = $info['name'] ?? $this->data['packageName'];
-            $email = $info['developerEmail'] ?? 'support@craftcms.com';
 
             return $this->send([
                 'error' => Craft::t('app', '{name} has been added, but an error occurred when installing it.', ['name' => $pluginName]),

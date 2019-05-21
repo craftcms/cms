@@ -335,12 +335,7 @@ class MigrationHelper
 
         // Restore FKs linking to the column.
         foreach ($allOtherTableFks as $sourceTableName => $fkInfo) {
-
-            $columns = [];
-            $refColumns = [];
             $refTableName = '';
-            $onUpdate = '';
-            $onDelete = '';
 
             // Figure out the reference columns.
             foreach ($fkInfo as $num => $fk) {
