@@ -21,6 +21,7 @@ env:
 before_install:
   - composer clear-cache
   - composer update
+  - touch tests/.env
 
 before_script:
   - |
