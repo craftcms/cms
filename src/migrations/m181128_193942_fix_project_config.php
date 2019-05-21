@@ -31,7 +31,6 @@ class m181128_193942_fix_project_config extends Migration
 
         // Update Matrix settings in the project config to match the DB
         // (correction for m180901_151639_fix_matrixcontent_tables)
-        $fieldsService = Craft::$app->getFields();
         $projectConfig->muteEvents = true;
 
         $matrixFields = (new Query())

@@ -257,27 +257,4 @@ class PluginStore extends Component
 
         return new CraftIdToken($record->getAttributes());
     }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Returns a plugin store token record based on its ID.
-     *
-     * @param int $id
-     * @return OauthTokenRecord
-     */
-    private function _getOauthTokenRecordById($id = null)
-    {
-        if ($id) {
-            $record = OauthTokenRecord::findOne($id);
-            if (!$record) {
-                throw new TokenNotFoundException("No token exists with the ID '{$id}'");
-            }
-        } else {
-            $record = new OauthTokenRecord();
-        }
-
-        return $record;
-    }
 }

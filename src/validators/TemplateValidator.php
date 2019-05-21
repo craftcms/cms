@@ -8,7 +8,6 @@
 namespace craft\validators;
 
 use Craft;
-use craft\helpers\StringHelper;
 use craft\web\View;
 use yii\validators\Validator;
 

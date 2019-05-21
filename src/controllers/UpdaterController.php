@@ -11,7 +11,6 @@ use Composer\IO\BufferIO;
 use Composer\Semver\Comparator;
 use Composer\Semver\VersionParser;
 use Craft;
-use craft\base\Plugin;
 use craft\errors\InvalidPluginException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
