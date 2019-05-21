@@ -8,7 +8,6 @@
 namespace craft\db\mysql;
 
 use Craft;
-use craft\db\Table;
 use craft\db\TableSchema;
 use craft\helpers\FileHelper;
 use yii\db\Exception;

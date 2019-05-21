@@ -358,13 +358,15 @@ class Asset extends Element
      */
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true): array
     {
+        /** @var Volume $volume */
+        $volume = $folder->getVolume();
         $source = [
             'key' => 'folder:' . $folder->uid,
             'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'data' => [
-                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:' . $folder->getVolume()->uid),
+                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:' . $volume->uid),
                 'folder-id' => $folder->id
             ]
         ];
@@ -619,8 +621,10 @@ class Asset extends Element
      */
     public function getIsEditable(): bool
     {
+        /** @var Volume $volume */
+        $volume = $this->getVolume();
         return Craft::$app->getUser()->checkPermission(
-            'saveAssetInVolume:' . $this->getVolume()->uid
+            'saveAssetInVolume:' . $volume->uid
         );
     }
 
@@ -1107,6 +1111,7 @@ class Asset extends Element
             // Is the image editable, and is the user allowed to edit?
             $userSession = Craft::$app->getUser();
 
+            /** @var Volume $volume */
             $volume = $this->getVolume();
 
             $editable = (

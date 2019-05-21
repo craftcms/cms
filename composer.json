@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.1.27",
+  "version": "3.1.28",
   "keywords": [
     "cms",
     "craftcms",
@@ -45,7 +45,7 @@
     "true/punycode": "^2.1.0",
     "twig/twig": "~2.8.1",
     "yii2tech/ar-softdelete": "^1.0.2",
-    "yiisoft/yii2": "~2.0.17.0",
+    "yiisoft/yii2": "~2.0.19.0",
     "yiisoft/yii2-debug": "^2.0.10",
     "yiisoft/yii2-swiftmailer": "^2.1.0",
     "yiisoft/yii2-queue": "2.1.0",

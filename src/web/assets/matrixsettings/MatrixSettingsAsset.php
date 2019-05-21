@@ -45,15 +45,16 @@ class MatrixSettingsAsset extends AssetBundle
             $view->registerTranslations('app', [
                 'Are you sure you want to delete this block type?',
                 'Are you sure you want to delete this field?',
+                'Custom…',
                 'Field Type',
                 'How you’ll refer to this block type in the templates.',
-                'This field is required',
-                'Translation Method',
                 'Not translatable',
+                'This field is required',
                 'Translate for each language',
                 'Translate for each site',
-                'Custom…',
                 'Translation Key Format',
+                'Translation Method',
+                'Use this field’s values as search keywords?',
                 'What this block type will be called in the CP.',
             ]);
         }

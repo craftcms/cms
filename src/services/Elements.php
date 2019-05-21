@@ -921,6 +921,7 @@ class Elements extends Component
      */
     public function deleteElementById(int $elementId, string $elementType = null, int $siteId = null): bool
     {
+        /** @var ElementInterface|string|null $elementType */
         if ($elementType === null) {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $elementType = $this->getElementTypeById($elementId);
