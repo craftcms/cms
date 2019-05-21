@@ -11,6 +11,9 @@ branches:
   only:
     - feature/tests
 
+services:
+  - mysql
+
 env:
   matrix:
     - DRIVER="xdebug"
