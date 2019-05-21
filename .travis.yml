@@ -22,6 +22,7 @@ before_install:
   - composer clear-cache
   - composer update
   - touch tests/.env
+  - touch tests/_support/_generated
 
 before_script:
   - |
