@@ -37,7 +37,7 @@ before_script:
     fi
 
 script:
-  - vendor/bin/codecept unit --coverage --coverage-xml --coverage-html;
+  - vendor/bin/codecept run unit --coverage --coverage-xml --coverage-html;
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
