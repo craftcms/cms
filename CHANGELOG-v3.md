@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased (3.2)
+## 3.2.0-alpha.6 - 2019-05-21
 
 ### Added
 - All element types now have the option to support drafts and revisions.
