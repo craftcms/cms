@@ -57,6 +57,9 @@ install:
     touch tests/.env
     mkdir tests/_support/_generated
 
+    # setup PHP extensions
+    tests/_data/travis/imagick-setup.sh
+
 before_script:
   - |
     # show some version and environment information
@@ -66,7 +69,6 @@ before_script:
     php -r "echo INTL_ICU_DATA_VERSION . \"\n\";"
     psql --version
     mysql --version
-    sudo mysql_upgrade
 
   # initialize database
   - travis_retry mysql -e 'CREATE DATABASE `craft3test`;';
