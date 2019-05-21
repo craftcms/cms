@@ -1413,22 +1413,6 @@ class User extends Element implements IdentityInterface
     // =========================================================================
 
     /**
-     * Saves a new session record for the user.
-     *
-     * @param string $sessionToken
-     * @return string The new session row's UID.
-     */
-    private function _storeSessionToken(string $sessionToken): string
-    {
-        $sessionRecord = new SessionRecord();
-        $sessionRecord->userId = $this->id;
-        $sessionRecord->token = $sessionToken;
-        $sessionRecord->save();
-
-        return $sessionRecord->uid;
-    }
-
-    /**
      * Validates a cookie's stored user agent against the current request's user agent string,
      * if the 'requireMatchingUserAgentForSession' config setting is enabled.
      *
