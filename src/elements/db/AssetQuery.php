@@ -385,7 +385,7 @@ class AssetQuery extends ElementQuery
      * | `'*.jpg'` | with a filename that ends with `.jpg`.
      * | `'*foo*'` | with a filename that contains `foo`.
      * | `'not *foo*'` | with a filename that doesn’t contain `foo`.
-     * | `['*foo*', '*bar*'` | with a filename that contains `foo` or `bar`.
+     * | `['*foo*', '*bar*']` | with a filename that contains `foo` or `bar`.
      * | `['not', '*foo*', '*bar*']` | with a filename that doesn’t contain `foo` or `bar`.
      *
      * ---
