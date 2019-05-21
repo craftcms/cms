@@ -1622,6 +1622,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _joinContentTable(string $class)
     {
+        /** @var ElementInterface|string $class */
         // Join in the content table on both queries
         $this->subQuery->innerJoin($this->contentTable . ' content', '[[content.elementId]] = [[elements.id]]');
         $this->subQuery->addSelect(['contentId' => 'content.id']);

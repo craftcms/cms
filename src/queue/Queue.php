@@ -350,6 +350,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function handleError($id, $job, $ttr, $attempt, $error)
     {
+        /** @var \Throwable $error */
         $this->_executingJobId = null;
 
         if (parent::handleError($id, $job, $ttr, $attempt, $error)) {

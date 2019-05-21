@@ -10,7 +10,6 @@ use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
 
 /**

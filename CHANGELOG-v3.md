@@ -1,5 +1,24 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.1.28 - 2019-05-21
+
+### Added
+- Added the “Customize element sources” user permission. ([#4282](https://github.com/craftcms/cms/pull/4282))
+- Matrix sub-fields now have a “Use this field’s values as search keywords?” setting. ([#4291](https://github.com/craftcms/cms/issues/4291))
+- Added `craft\web\twig\variables::setBasePath()`. ([#4286](https://github.com/craftcms/cms/issues/4286))
+
+### Changed
+- Craft now requires Yii 2.0.19.
+
+### Fixed
+- Fixed a bug where slugs could get double-hyphenated. ([#4266](https://github.com/craftcms/cms/issues/4266))
+- Fixed an error that would occur when installing Craft if the `allowAdminChanges` config setting was disabled. ([#4267](https://github.com/craftcms/cms/issues/4267))
+- Fixed a bug where Matrix fields would return the wrong set of Matrix blocks on new or duplicated elements, immediately after they were saved.
+- Fixed a bug where users could not assign additional user groups to their own account if their permission to do so was granted by another user group they belonged to.
+- Fixed a bug where Number fields would attempt to save non-numeric values. ([craftcms/feed-me#527](https://github.com/craftcms/feed-me/issues/527))
+- Fixed a bug where it was possible to assign a Structure entry or category to a new parent, even if that would cause its descendants to violate the Max Levels setting. ([#4279](https://github.com/craftcms/cms/issues/4279))
+- Fixed an error that could occur when rendering a template from a console request, if the template contained any non-global `{% cache %}` tags. ([#4284](https://github.com/craftcms/cms/pull/4284))
+
 ## 3.1.27 - 2019-05-14
 
 ### Added
