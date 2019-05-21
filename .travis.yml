@@ -4,8 +4,7 @@ dist: trusty
 
 env:
   global:
-    - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest"
-    - TASK_TESTS_COVERAGE=0
+    - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest""
 
 branches:
   only:
@@ -75,7 +74,12 @@ before_script:
   - psql -U postgres -c 'CREATE DATABASE craft3test;';
 
 script:
-  - vendor/bin/codecept run unit --coverage --coverage-xml --coverage-html;
+  - |
+    if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
+      vendor/bin/codecept run unit;
+    else
+      vendor/bin/codecept run unit --coverage --coverage-xml;
+    fi
 
 after_script:
   - |
