@@ -57,9 +57,6 @@ install:
     touch tests/.env
     mkdir tests/_support/_generated
 
-    # setup PHP extensions
-    tests/_data/travis/imagick-setup.sh
-
 before_script:
   - |
     # show some version and environment information
@@ -74,6 +71,12 @@ before_script:
   - travis_retry mysql -e 'CREATE DATABASE `craft3test`;';
   - mysql -e "SET GLOBAL sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';";
   - psql -U postgres -c 'CREATE DATABASE craft3test;';
+
+  # install imagick
+  - pear config-set preferred_state beta
+  - pecl channel-update pecl.php.net
+  - yes | pecl install imagick
+
 
 script:
   - |
