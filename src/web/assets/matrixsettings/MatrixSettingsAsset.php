@@ -54,6 +54,7 @@ class MatrixSettingsAsset extends AssetBundle
                 'Translate for each site',
                 'Translation Key Format',
                 'Translation Method',
+                'Use this field’s values as search keywords?',
                 'What this block type will be called in the CP.',
             ]);
         }

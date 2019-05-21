@@ -100,6 +100,13 @@
                                         checked: field.required
                                     }) }}
 
+                                    {{ forms.checkboxField({
+                                        label: "Use this field’s values as search keywords?"|t('app'),
+                                        id: 'searchable',
+                                        name: 'searchable',
+                                        checked: field.searchable
+                                    }) }}
+
                                     {{ forms.selectField({
                                         label: "Field Type"|t('app'),
                                         warning: (not field.getIsNew() and not field.hasErrors('type') ? "Changing this may result in data loss."|t('app')),
