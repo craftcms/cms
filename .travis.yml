@@ -53,11 +53,10 @@ install:
     fi
 
     # install composer dependencies
-    travis_retry composer self-update
     export PATH="$HOME/.composer/vendor/bin:$PATH"
     travis_retry composer install $DEFAULT_COMPOSER_FLAGS
     touch tests/.env
-    tests/_support/_generated
+    mkdir tests/_support/_generated
 
 before_script:
   - |
