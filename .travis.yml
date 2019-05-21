@@ -26,6 +26,7 @@ before_install:
   - composer update
   - touch tests/.env
   - mkdir tests/_support/_generated
+  - mysql -e 'CREATE DATABASE craft3test;'
 
 before_script:
   - |
