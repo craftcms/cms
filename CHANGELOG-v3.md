@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.28 - 2019-05-21
 
 ### Added
 - Added the “Customize element sources” user permission. ([#4282](https://github.com/craftcms/cms/pull/4282))
