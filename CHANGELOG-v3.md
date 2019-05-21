@@ -172,11 +172,15 @@
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
 
-## Unreleased
+## 3.1.28 - 2019-05-21
 
 ### Added
 - Added the “Customize element sources” user permission. ([#4282](https://github.com/craftcms/cms/pull/4282))
+- Matrix sub-fields now have a “Use this field’s values as search keywords?” setting. ([#4291](https://github.com/craftcms/cms/issues/4291))
 - Added `craft\web\twig\variables::setBasePath()`. ([#4286](https://github.com/craftcms/cms/issues/4286))
+
+### Changed
+- Craft now requires Yii 2.0.19.
 
 ### Fixed
 - Fixed a bug where slugs could get double-hyphenated. ([#4266](https://github.com/craftcms/cms/issues/4266))

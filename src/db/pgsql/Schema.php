@@ -9,7 +9,6 @@ namespace craft\db\pgsql;
 
 use Composer\Util\Platform;
 use Craft;
-use craft\db\Table;
 use craft\db\TableSchema;
 use yii\db\Exception;
 

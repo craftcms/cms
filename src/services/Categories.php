@@ -244,6 +244,7 @@ class Categories extends Component
             $group->uid = StringHelper::UUID();
             $structureUid = StringHelper::UUID();
         } else {
+            /** @var CategoryGroupRecord|null $existingGroupRecord */
             $existingGroupRecord = CategoryGroupRecord::find()
                 ->where(['id' => $group->id])
                 ->one();

@@ -206,6 +206,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'handle' => null,
             'instructions' => null,
             'required' => false,
+            'searchable' => true,
             'translationMethod' => Field::TRANSLATION_METHOD_NONE,
             'translationKeyFormat' => null,
             'typesettings' => null,
@@ -249,6 +250,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                             'handle' => $fieldConfig['handle'],
                             'instructions' => $fieldConfig['instructions'],
                             'required' => (bool)$fieldConfig['required'],
+                            'searchable' => (bool)$fieldConfig['searchable'],
                             'translationMethod' => $fieldConfig['translationMethod'],
                             'translationKeyFormat' => $fieldConfig['translationKeyFormat'],
                             'settings' => $fieldConfig['typesettings'],
@@ -626,8 +628,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
             foreach (Craft::$app->getFields()->getAllFields() as $field) {
                 /** @var Field $field */
-                $fieldValue = $block->getFieldValue($field->handle);
-                $keywords[] = $field->getSearchKeywords($fieldValue, $element);
+                if ($field->searchable) {
+                    $fieldValue = $block->getFieldValue($field->handle);
+                    $keywords[] = $field->getSearchKeywords($fieldValue, $element);
+                }
             }
 
             $contentService->contentTable = $originalContentTable;
@@ -643,8 +647,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
+        /** @var MatrixBlockQuery $value */
         $value = $value->all();
 
+        /** @var MatrixBlock[] $value */
         if (empty($value)) {
             return '<p class="light">' . Craft::t('app', 'No blocks.') . '</p>';
         }
@@ -804,6 +810,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function afterElementRestore(ElementInterface $element)
     {
+        /** @var Element $element */
         // Also restore any Matrix blocks for this element
         $elementsService = Craft::$app->getElements();
         foreach (ElementHelper::supportedSitesForElement($element) as $siteInfo) {

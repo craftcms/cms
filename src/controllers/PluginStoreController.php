@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;

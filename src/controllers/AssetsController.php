@@ -982,7 +982,9 @@ class AssetsController extends Controller
             }
         }
 
-        $this->_requirePermissionByVolumeId($permissionName, $asset->getVolume()->uid);
+        /** @var Volume $volume */
+        $volume = $asset->getVolume();
+        $this->_requirePermissionByVolumeId($permissionName, $volume->uid);
     }
 
     /**
@@ -1002,7 +1004,9 @@ class AssetsController extends Controller
             }
         }
 
-        $this->_requirePermissionByVolumeId($permissionName, $folder->getVolume()->uid);
+        /** @var Volume $volume */
+        $volume = $folder->getVolume();
+        $this->_requirePermissionByVolumeId($permissionName, $volume->uid);
     }
 
     /**
