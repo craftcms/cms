@@ -20,8 +20,6 @@ use yii\log\Logger;
 /**
  * Class ImageHelperTest.
  *
- * @todo GD vs. Imagick tests. i.e. tiff won't work on GD
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.1

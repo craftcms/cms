@@ -89,7 +89,7 @@ class EntryRevisionsTest extends Unit
 
         // Have the props changed
         $this->assertSame($entry->id, $newEntry->id);
-        $this->assertSame('not-pending', $newEntry->slug);
+        $this->assertSame('not--pending', $newEntry->slug);
         $this->assertSame('Not pending', $newEntry->title);
         $this->assertNotNull($entryDraft->revisionNotes);
 
