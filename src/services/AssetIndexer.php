@@ -21,6 +21,7 @@ use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
 use craft\records\AssetIndexData as AssetIndexDataRecord;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Class AssetIndexer

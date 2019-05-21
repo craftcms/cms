@@ -9,14 +9,12 @@ namespace craft\console\controllers;
 
 use Composer\IO\BufferIO;
 use Craft;
-use craft\base\Plugin;
 use craft\errors\InvalidPluginException;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\Update;
 use craft\models\Updates;
-use Ifsnop\Mysqldump\Mysqldump;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use yii\base\InvalidConfigException;

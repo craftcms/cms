@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\User;
 use craft\errors\OperationAbortedException;
 use craft\events\ConfigEvent;
 use craft\events\RebuildConfigEvent;
