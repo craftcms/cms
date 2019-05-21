@@ -24,6 +24,7 @@ use craft\events\DeleteElementEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
+use craft\queue\BaseJob;
 use craft\services\Elements;
 use ReflectionException;
 use ReflectionObject;
@@ -31,6 +32,7 @@ use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use yii\base\Application;
 use yii\base\Event;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
 use yii\db\Exception;
@@ -333,6 +335,27 @@ class Craft extends Yii2
     public function mockCraftMethods(string $component, array $methods = [], array $constructParams = [])
     {
         return $this->mockMethods(\Craft::$app, $component, $methods, $constructParams);
+    }
+
+    /**
+     * An easy way of handling the testing of queue jobs.
+     *
+     * @param string $queueItem
+     * @param array $params
+     * @throws InvalidArgumentException
+     */
+    public function runQueue(string $queueItem, array $params = [])
+    {
+        /* @var BaseJob $job */
+        $job = new $queueItem($params);
+
+        if (!$job instanceof BaseJob) {
+            throw new InvalidArgumentException('Not a job');
+        }
+
+        \Craft::$app->getQueue()->push($job);
+
+        \Craft::$app->getQueue()->run();
     }
 
     /**
