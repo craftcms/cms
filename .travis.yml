@@ -93,12 +93,12 @@ after_script:
       php ocular.phar code-coverage:upload --format=php-clover coverage.clover
     fi
 
-jobs:
-  include:
-    - stage: Static Code Analysis
-      php: 7.3
-      env: php-cs-fixer
-      install:
-        - phpenv config-rm xdebug.ini
-      script:
-        - php-cs-fixer fix --dry-run -v --show-progress=dots --diff-format=udiff
+#jobs:
+#  include:
+#    - stage: Static Code Analysis
+#      php: 7.3
+#      env: php-cs-fixer
+#      install:
+#        - phpenv config-rm xdebug.ini
+#      script:
+#        - php-cs-fixer fix --dry-run -v --show-progress=dots --diff-format=udiff
