@@ -9,6 +9,7 @@ namespace craft\base;
 
 use Craft;
 use craft\console\Application as ConsoleApplication;
+use craft\console\Request as ConsoleRequest;
 use craft\db\Connection;
 use craft\db\MigrationManager;
 use craft\db\Query;
@@ -40,9 +41,11 @@ use craft\services\Users;
 use craft\services\Volumes;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
+use craft\web\Request as WebRequest;
 use craft\web\View;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
+use yii\caching\Cache;
 use yii\mutex\Mutex;
 use yii\web\ServerErrorHttpException;
 
@@ -195,6 +198,7 @@ trait ApplicationTrait
         $this->_gettingLanguage = true;
 
         if ($useUserLanguage === null) {
+            /** @var WebRequest|ConsoleRequest $request */
             $request = $this->getRequest();
             $useUserLanguage = $request->getIsConsoleRequest() || $request->getIsCpRequest();
         }
@@ -363,7 +367,9 @@ trait ApplicationTrait
         $this->getProjectConfig()->set('system.edition', App::editionHandle($edition));
 
         // Fire an 'afterEditionChange' event
-        if (!$this->getRequest()->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
+        /** @var WebRequest|ConsoleRequest $request */
+        $request = $this->getRequest();
+        if (!$request->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
             $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
                 'oldEdition' => $oldEdition,
                 'newEdition' => $edition
@@ -428,8 +434,13 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         $request = $this->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            return false;
+        }
 
-        return !$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@' . $request->getHostName());
+        /** @var Cache $cache */
+        $cache = $this->getCache();
+        return $cache->get('editionTestableDomain@' . $request->getHostName());
     }
 
     /**

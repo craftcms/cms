@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\db\Connection;
 use craft\db\Migration;
+use craft\db\TableSchema;
 
 /**
  * Migration utility methods.
@@ -446,6 +447,7 @@ class MigrationHelper
         $fks = [];
 
         foreach ($allTables as $otherTable) {
+            /** @var TableSchema $otherTable */
             $counter = 0;
 
             foreach ($otherTable->foreignKeys as $fkName => $fk) {

@@ -9,6 +9,7 @@ namespace craft\controllers\pluginstore;
 
 use Craft;
 use craft\controllers\BaseUpdaterController;
+use craft\web\Response;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response as YiiResponse;
 
@@ -67,6 +68,7 @@ class InstallController extends BaseUpdaterController
      */
     public function actionCraftInstall(): YiiResponse
     {
+        /** @var Response $tempResponse */
         list($success, $tempResponse, $errorDetails) = $this->installPlugin($this->data['handle'], $this->data['edition']);
 
         if (!$success) {

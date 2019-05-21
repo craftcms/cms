@@ -281,7 +281,7 @@ class Assets extends BaseRelationField
      */
     public function validateFileSize(ElementInterface $element)
     {
-
+        /** @var Element $element */
         $maxSize = AssetsHelper::getMaxUploadSize();
 
         $filenames = [];
@@ -368,6 +368,7 @@ class Assets extends BaseRelationField
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         // Everything has been handled for propagating fields already.
+        /** @var Element $element */
         if (!$element->propagating) {
             // Were there any uploaded files?
             $uploadedFiles = $this->_getUploadedFiles($element);
@@ -765,6 +766,7 @@ class Assets extends BaseRelationField
             return null;
         }
 
+        /** @var Volume|null $volume */
         $volume = Craft::$app->getVolumes()->getVolumeByUid($parts[1]);
 
         return $volume ? $volume->id : null;
@@ -804,7 +806,9 @@ class Assets extends BaseRelationField
 
             if ($folder) {
                 try {
-                    return 'volume:' . $folder->getVolume()->uid;
+                    /** @var Volume $volume */
+                    $volume = $folder->getVolume();
+                    return 'volume:' . $volume->uid;
                 } catch (InvalidConfigException $e) {
                     // The volume is probably soft-deleted. Just pretend the folder didn't exist.
                 }
@@ -824,6 +828,7 @@ class Assets extends BaseRelationField
     {
         if ($sourceKey && is_string($sourceKey) && strpos($sourceKey, 'volume:') === 0) {
             $parts = explode(':', $sourceKey);
+            /** @var Volume|null $volume */
             $volume = Craft::$app->getVolumes()->getVolumeByUid($parts[1]);
 
             if ($volume && $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id)) {

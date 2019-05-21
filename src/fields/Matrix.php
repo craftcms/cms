@@ -638,8 +638,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
+        /** @var MatrixBlockQuery $value */
         $value = $value->all();
 
+        /** @var MatrixBlock[] $value */
         if (empty($value)) {
             return '<p class="light">' . Craft::t('app', 'No blocks.') . '</p>';
         }
@@ -799,6 +801,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function afterElementRestore(ElementInterface $element)
     {
+        /** @var Element $element */
         // Also restore any Matrix blocks for this element
         $elementsService = Craft::$app->getElements();
         foreach (ElementHelper::supportedSitesForElement($element) as $siteInfo) {

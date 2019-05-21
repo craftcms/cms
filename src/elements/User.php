@@ -37,6 +37,7 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
+use yii\validators\Validator;
 use yii\web\IdentityInterface;
 
 /**
@@ -676,7 +677,7 @@ class User extends Element implements IdentityInterface
         ];
 
         $rules[] = [
-            ['firstName', 'lastName'], function($attribute, $params, $validator) {
+            ['firstName', 'lastName'], function($attribute, $params, Validator $validator) {
                 if (strpos($this->$attribute, '://') !== false) {
                     $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
                 }
