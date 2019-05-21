@@ -104,13 +104,15 @@ class TestSetup
     public static function validateAndApplyMigration(string $class, array $params) : bool
     {
         if (!class_exists($class)) {
-            throw new InvalidArgumentException('Unable to ');
+            throw new InvalidArgumentException('Class doesnt exist');
         }
 
         $migration = new $class($params);
 
         if (!$migration instanceof Migration) {
-            throw new InvalidArgumentException('Migration class is not an instance of craft\migrations\Migration');
+            throw new InvalidArgumentException(
+                'Migration class is not an instance of '. Migration::class .''
+            );
         }
 
         return $migration->safeUp();
@@ -154,7 +156,6 @@ class TestSetup
         $configService->env = 'test';
         $configService->configDir = CRAFT_CONFIG_PATH;
         $configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
-
 
         // Load the config
         $config = ArrayHelper::merge(
@@ -289,18 +290,18 @@ class TestSetup
             );
 
             if ($existingProjectConfig && isset($existingProjectConfig['sites'])) {
-                $siteConfig = ArrayHelper::filterByValue(
+                $doesConfigExist = ArrayHelper::firstWhere(
                     $existingProjectConfig['sites'],
                     'primary',
                     true
                 );
 
-                $siteConfig = ArrayHelper::firstValue(
-                    $siteConfig
-                );
+                if ($doesConfigExist) {
+                    $siteConfig = $doesConfigExist;
 
-                // This isn't a `settable` property of craft/models/Site
-                unset($siteConfig['siteGroup']);
+                    // This isn't a `settable` property of craft/models/Site
+                    unset($siteConfig['siteGroup']);
+                }
             }
         }
 
