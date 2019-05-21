@@ -14,7 +14,7 @@ use craft\helpers\Image;
 use Exception;
 use UnitTester;
 use TypeError;
-use Craft;
+use craft\test\Craft as CraftTest;
 use yii\log\Logger;
 
 /**
@@ -96,7 +96,7 @@ class ImageHelperTest extends Unit
     public function testPngImageInfo($result, $input)
     {
         $imageInfo = Image::pngImageInfo($input);
-        $this->assertSame($result, $imageInfo);
+        $this->assertSame($result, CraftTest::normalizePathSeparators($imageInfo));
     }
 
     /**
@@ -168,7 +168,7 @@ class ImageHelperTest extends Unit
      */
     public function testImageByStreamException($errorLogMessage, $input)
     {
-        Craft::setLogger(
+        CraftTest::setLogger(
             Stub::make(Logger::class, ['log' => function($message) use ($errorLogMessage) {
                 $this->assertSame($errorLogMessage, $message);
             }])
