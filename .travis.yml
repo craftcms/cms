@@ -20,6 +20,7 @@ env:
 
 before_install:
   - composer clear-cache
+  - composer update
 
 before_script:
   - |
