@@ -81,7 +81,7 @@ before_script:
 script:
   - |
     if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
-      php -d display_errors=on -d max_execution_time=-1 -d memory_limit=2048M -d error_reporting=-1 vendor/codeception/codeception/codecept run unit;
+      php -d display_errors=on -d max_execution_time=-1 -d memory_limit=2048M -d error_reporting=-1 vendor/codeception/codeception/codecept -g mail run unit;
     else
       vendor/bin/codecept run unit --coverage --coverage-xml;
     fi
