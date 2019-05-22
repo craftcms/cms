@@ -48,6 +48,7 @@ use craft\records\StructureElement as StructureElementRecord;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\db\Exception as DbException;
 
 /**
  * The Elements service provides APIs for managing elements.
@@ -246,11 +247,15 @@ class Elements extends Component
         $query->anyStatus();
 
         // Is this a draft/revision?
-        $data = (new Query())
-            ->select(['draftId', 'revisionId'])
-            ->from([Table::ELEMENTS])
-            ->where(['id' => $elementId])
-            ->one();
+        try {
+            $data = (new Query())
+                ->select(['draftId', 'revisionId'])
+                ->from([Table::ELEMENTS])
+                ->where(['id' => $elementId])
+                ->one();
+        } catch (DbException $e) {
+            // Not on schema 3.2.6+ yet
+        }
 
         if (!empty($data['draftId'])) {
             $query->draftId($data['draftId']);
