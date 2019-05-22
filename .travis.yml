@@ -81,7 +81,7 @@ before_script:
 script:
   - |
     if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
-      php -d display_errors=on vendor/codeception/codeception/codecept run unit;
+      php -d display_errors=on vendor/codeception/codeception/codecept --step --debug run unit;
     else
       vendor/bin/codecept run unit --coverage --coverage-xml;
     fi
