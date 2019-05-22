@@ -79,7 +79,7 @@ before_script:
 
 script:
   - |
-    php vendor/bincodecept run tests/unit/helpers/ArrayHelperTest.php:testToArray;
+    php vendor/bin/codecept run tests/unit/helpers/ArrayHelperTest.php:testToArray;
 #script:
 #  - |
 #    # if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
