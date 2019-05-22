@@ -1,6 +1,7 @@
 <?php
 namespace craft\gql\resolvers;
 
+use craft\helpers\StringHelper;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -26,7 +27,28 @@ abstract class BaseResolver
     public static function getArrayableArguments(): array
     {
         return [
-            'orderBy'
+            'id',
+            'uid',
         ];
+    }
+
+    /**
+     * Prepare arguments for use, converting to array where applicable.
+     *
+     * @param array $arguments
+     * @return array
+     */
+    public static function prepareArguments(array $arguments): array
+    {
+        $arrayable = static::getArrayableArguments();
+
+        foreach ($arguments as $key => &$value) {
+            if (in_array($key, $arrayable, true) && !empty($value) && !is_array($value)) {
+                // todo maybe trim all the new values?
+                $value = StringHelper::split($value);
+            }
+        }
+
+        return $arguments;
     }
 }

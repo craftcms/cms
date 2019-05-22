@@ -24,14 +24,9 @@ class Entry extends BaseElement
             $query = $source->$fieldName;
         }
 
-        $arrayable = static::getArrayableArguments();
+        $arguments = self::prepareArguments($arguments);
 
         foreach ($arguments as $key => $value) {
-            if (in_array($key, $arrayable, true) && !empty($value)) {
-                // todo maybe trim all the new values?
-                $value = StringHelper::split($value);
-            }
-
             $query->$key($value);
         }
 
