@@ -261,10 +261,6 @@ class Craft extends Yii2
      * @throws InvalidPluginException
      */
     public function installPlugin(array $plugin) {
-        if (isset($plugin['isAtRoot']) && $plugin['isAtRoot'] === true) {
-            $this->addPluginFromRoot($plugin);
-        }
-
         if (!\Craft::$app->getPlugins()->installPlugin($plugin['handle'])) {
             throw new InvalidConfigException('Invalid plugin handle: ' . $plugin['handle'] . '');
         }
@@ -469,30 +465,6 @@ class Craft extends Yii2
     }
 
     /**
-     * @todo Remove once final version of above is published.
-     *
-     * @param $object
-     * @param $method
-     * @param array $args
-     * @param bool $revoke
-     * @return mixed
-     * @throws ReflectionException
-     */
-    protected function invokeMethod($object, $method, $args = [], $revoke = true)
-    {
-        $method = (new ReflectionObject($object))->getMethod($method);
-        $method->setAccessible(true);
-
-        $result = $method->invokeArgs($object, $args);
-
-        if ($revoke) {
-            $method->setAccessible(false);
-        }
-
-        return $result;
-    }
-
-    /**
      * @inheritdoc
      *
      * Completely based on parent except we use CraftConnector. Gives us more control
@@ -512,45 +484,5 @@ class Craft extends Yii2
         ]);
 
         $this->configureClient($this->_getConfig());
-    }
-
-    /**
-     * @todo This is a WIP. Currently its a proof of concept.
-     *
-     * The problem is how do we update vendor/craftcms/plugins.php file. As far as i can see this is a requirement for ensuring plugins work.
-     * Updating this file is difficult if the plugin is not in the /vendors directory. I.E. If it is the project root
-     *
-     * @param array $pluginArray
-     * @throws InvalidPluginException
-     * @throws ReflectionException
-     *
-     * @internal This is not the final version.
-     * 1. Is there a better what to accessing the plugins.php file than creating a composerInstance? Surely there is.
-     * 2. If not. Should the craft plugin installer be edited. Namely the addPlugin method be made public.
-     *
-     * Basically we can sum up this todo down to: How are we going to ensure that vendor/craftcms/plugins.php contains the plugins defined by the codeception file.
-     */
-    protected function addPluginFromRoot(array $pluginArray)
-    {
-        $rootPath = dirname(CRAFT_VENDOR_PATH);
-
-        if (!is_file($rootPath . '/composer.json')) {
-            throw new InvalidPluginException($pluginArray['handle'], 'Selected plugin to be at root, but it is not.');
-        }
-
-        $composer = (new Factory())->createComposer(new NullIO());
-
-        $installer = new Installer(new NullIO(), $composer);
-
-        $package = $composer->getPackage();
-
-        $package->setExtra(
-            ArrayHelper::merge(
-                $package->getExtra(),
-                ['basePath' => $rootPath . '/src', 'class' => $pluginArray['class']]
-            )
-        );
-
-        $this->invokeMethod($installer, 'addPlugin', [$package]);
     }
 }
