@@ -18,6 +18,7 @@ abstract class BaseElement extends BaseArguments
             'status' => Type::string(),
             'archived' => Type::boolean(),
             'trashed' => Type::boolean(),
+            'site' => Type::string(),
             'siteId' => Type::string(),
             'unique' => Type::boolean(),
             'enabledForSite' => Type::boolean(),
