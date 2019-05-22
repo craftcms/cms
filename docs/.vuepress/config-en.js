@@ -84,14 +84,27 @@ module.exports = {
         ],
         '/testing/': [
             {
-                title: 'Testing Craft',
+                title: 'About testing',
                 collapsable: false,
                 children: [
                     ['', 'Introduction'],
-                    'getting-started',
-                    'examples',
-                    'plugins-and-modules',
-                    'testing-tips'
+                    'testing',
+                    'codeception',
+                    'ci'
+                ]
+            },
+            {
+                title: 'Testing Craft',
+                collapsable: false,
+                children: [
+                    'testing-craft/getting-started',
+                    'testing-craft/examples',
+                    'testing-craft/testing-tips',
+                    'testing-craft/plugins-and-modules',
+                    'testing-craft/fixtures',
+                    'testing-craft/console',
+                    'testing-craft/queue',
+                    'testing-craft/events'
                 ]
             },
             {
@@ -99,14 +112,12 @@ module.exports = {
                 collapsable: false,
                 children: [
                     'framework/config-options',
-                    'framework/fixtures',
                     'framework/mocking',
                     'framework/test-setup',
-                    'framework/console',
-                    'framework/support-classes',
-                    'framework/queue',
+                    'framework/support-classes'
                 ]
-            }
+            },
+
         ],
         '/dev/': [
             {

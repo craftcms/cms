@@ -12,7 +12,7 @@ Once this class property is declared you can call the following method:
 $this->tester->runQueue(MyJob::class, [
     'param1' => 'value',
     'param2' => 'value2'
-])
+]);
 ```
 - The first argument is the class of your Job. 
 - The second argument is any arguments that must be passed into your job. 
