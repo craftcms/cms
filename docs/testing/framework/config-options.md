@@ -40,7 +40,6 @@ The `plugins` parameter accepts an Array of objects with the following parameter
 
 - class (Required): [The main plugin class](../../extend/plugin-guide.html#the-plugin-class)
 - handle (Required): The plugin handle
-- atRoot: Whether the plugin is at the root of the directory.
 
 Plugins will be installed before any tests are run.
 
