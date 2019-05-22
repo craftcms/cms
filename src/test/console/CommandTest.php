@@ -162,6 +162,7 @@ class CommandTest
 
     /**
      * @param string $prompt
+     * @param $returnValue
      * @param array $options
      * @return CommandTest
      */
@@ -177,6 +178,7 @@ class CommandTest
 
     /**
      * @param string $message
+     * @param $returnValue
      * @param bool $default
      * @return CommandTest
      */
@@ -347,7 +349,7 @@ class CommandTest
         }
 
         if ($nextItem->type !== $type) {
-            throw new InvalidArgumentException("A stderr message was expected but $nextItem->type was given");
+            throw new InvalidArgumentException("A $type message was expected but $nextItem->type was given");
         }
 
         $this->eventChainItemsHandled ++;
