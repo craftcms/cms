@@ -2177,7 +2177,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         // todo: remove schema version condition after next beakpoint
         $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
-        if (version_compare($schemaVersion, '3.2.4', '<')) {
+        if (version_compare($schemaVersion, '3.2.6', '<')) {
             return;
         }
 

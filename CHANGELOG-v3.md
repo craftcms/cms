@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.2.0-alpha.6.1 - 2019-05-22
+
+### Fixed
+- Fixed SQL errors that could occur when updating from previous versions of Craft 3.2 Alpha.
+
 ## 3.2.0-alpha.6 - 2019-05-21
 
 ### Added

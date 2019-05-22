@@ -1466,7 +1466,7 @@ class Sections extends Component
         if (version_compare($schemaVersion, '3.2.1', '>=')) {
             $query->addSelect('sections.propagationMethod');
         }
-        if (version_compare($schemaVersion, '3.2.5', '>=')) {
+        if (version_compare($schemaVersion, '3.2.6', '>=')) {
             $query->addSelect('sections.previewTargets');
         }
 
