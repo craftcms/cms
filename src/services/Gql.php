@@ -27,6 +27,7 @@ use craft\gql\types\fields\Matrix as MatrixType;
 use craft\gql\types\fields\PlainText;
 use craft\gql\types\fields\Table;
 use craft\gql\types\fields\UnsupportedField;
+use craft\gql\types\generators\EntryType;
 use craft\gql\types\Query;
 use craft\gql\types\Section;
 use craft\gql\types\Section_SiteSettings;
@@ -41,7 +42,6 @@ use craft\gql\queries\Field as FieldQuery;
 use craft\gql\queries\FieldGroup as FieldGroupQuery;
 use craft\gql\queries\Section as SectionQuery;
 use craft\gql\queries\SiteGroup as SiteGroupQuery;
-use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 use yii\base\Component;
 
@@ -83,6 +83,8 @@ class Gql extends Component
      */
     const EVENT_REGISTER_GQL_QUERIES = 'registerGqlQueries';
 
+    private $_schema;
+
     // Public Methods
     // =========================================================================
 
@@ -92,15 +94,30 @@ class Gql extends Component
      * @param string $token the auth token
      * @return Schema
      */
-    public function getSchema(string $token = null): Schema
+    public function getSchema(string $token = null, bool $devMode = false): Schema
     {
-        $this->_registerGqlTypes();
-        $this->_registerGqlQueries();
+        if (!$this->_schema || $devMode) {
+            $this->_registerGqlTypes();
+            $this->_registerGqlQueries();
 
-        return new Schema([
-            'typeLoader' => TypeLoader::class . '::loadType',
-            'query' => TypeLoader::loadType('Query'),
-        ]);
+            $schemaConfig = [
+                'typeLoader' => TypeLoader::class . '::loadType',
+                'query' => TypeLoader::loadType('Query'),
+            ];
+
+            if ($devMode) {
+                // allow plugins to register their generators
+                $schemaConfig['types'] = EntryType::getTypes();
+            }
+
+            $this->_schema = new Schema($schemaConfig);
+
+            if ($devMode) {
+                $this->_schema->assertValid();
+            }
+        }
+
+        return $this->_schema;
     }
 
     // Private Methods

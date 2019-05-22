@@ -1,9 +1,10 @@
 <?php
 namespace craft\gql\queries;
 
-use Craft;
 use craft\elements\Entry as EntryElement;
+use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
+use craft\gql\resolvers\elements\Entry as EntryResolver;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -20,14 +21,8 @@ class Entry
         return [
             'queryEntries' => [
                 'type' => Type::listOf(EntryInterface::getType()),
-                'args' => [
-                    'type' => Type::string(),
-                ],
-                'resolve' => function ($rootValue, $args) {
-                    if (isset($args['type'])) {
-                        return EntryElement::find()->type($args['type'])->all();
-                    }
-                },
+                'args' => EntryArguments::getArguments(),
+                'resolve' => EntryResolver::class . '::resolve',
             ],
         ];
     }

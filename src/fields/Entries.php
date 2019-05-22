@@ -9,6 +9,10 @@ namespace craft\fields;
 
 use Craft;
 use craft\elements\Entry;
+use craft\gql\arguments\elements\Entry as EntryArguments;
+use craft\gql\interfaces\elements\Entry as EntryInterface;
+use craft\gql\resolvers\elements\Entry as EntryResolver;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Entries represents an Entries field.
@@ -43,5 +47,21 @@ class Entries extends BaseRelationField
     public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add an entry');
+    }
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(EntryInterface::getType()),
+            'args' => EntryArguments::getArguments(),
+            'resolve' => EntryResolver::class . '::resolve',
+        ];
     }
 }

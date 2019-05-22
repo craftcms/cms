@@ -58,8 +58,9 @@ class GqlController extends Controller
      */
     public function actionIndex(): Response
     {
-        $schema = Craft::$app->getGql()->getSchema();
-        $schema->assertValid();
+        $start = microtime(true);
+        // todo remove timers and debug parameter
+        $schema = Craft::$app->getGql()->getSchema(null, Craft::$app->getRequest()->getParam('debug', false));
 
         if (Craft::$app->request->isPost && $query=Craft::$app->request->post('query')) {
             $input = $query;
@@ -75,6 +76,10 @@ class GqlController extends Controller
 
         $result = GraphQL::executeQuery($schema, $input, null, null, null)->toArray(true);
 
+
+        $end = microtime(true);
+
+        Craft::error('[GQL] Total time: ' . ($end - $start));
 
         $response = \Craft::$app->getResponse();
         $response->headers->add('Content-Type', 'application/json; charset=UTF-8');
