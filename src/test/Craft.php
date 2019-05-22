@@ -296,15 +296,30 @@ class Craft extends Yii2
      * @param string $class
      * @param string $eventName
      * @param $callback
+     * @param string $eventInstance
+     * @param array $eventValues
      */
-    public function expectEvent(string $class, string $eventName, $callback)
-    {
+    public function expectEvent(
+        string $class,
+        string $eventName,
+        $callback,
+        string $eventInstance = '',
+        array $eventValues = []
+    ) {
         // Add this event.
         $eventTriggered = false;
 
         // Listen to this event and log it.
-        Event::on($class, $eventName, function () use (&$eventTriggered) {
+        Event::on($class, $eventName, function ($event) use (&$eventTriggered, $eventInstance, $eventValues) {
             $eventTriggered = true;
+
+            if ($eventInstance && !$event instanceof $eventInstance) {
+                $this->fail("Triggered event is not instance of $eventInstance");
+            }
+
+            foreach ($eventValues as $eventValue) {
+                $this->validateEventValue($event, $eventValue);
+            }
         });
 
         $callback();
@@ -382,6 +397,20 @@ class Craft extends Yii2
     }
 
     /**
+     * @param array $config
+     * @return array
+     */
+    public function createEventItems(array $config = []) : array
+    {
+        $items = [];
+        foreach ($config as $configItem) {
+            $items[] = new EventItem($configItem);
+        }
+
+        return $items;
+    }
+
+    /**
      * Creates a DB config according to the loaded .env variables.
      *
      * @return DbConfig
@@ -402,6 +431,42 @@ class Craft extends Yii2
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * @param $event
+     * @param EventItem $eventRequirments
+     */
+    protected function validateEventValue($event, EventItem $eventRequirments)
+    {
+        $eventPropItem = $event->{$eventRequirments->eventPropName};
+        $desiredValue = $eventRequirments->desiredValue;
+
+        // Its a class. Special compare requirements exist.
+        if ($eventRequirments->type === EventItem::TYPE_CLASS) {
+            $this->assertInstanceOf(
+                $eventRequirments->desiredClass,
+                $eventPropItem
+            );
+
+            // Compare the properties form the $desiredValue array based on key value.
+            if (is_array($desiredValue) || is_object($desiredValue)) {
+                foreach ($desiredValue as $key => $value) {
+                    $this->assertSame(
+                        $value,
+                        $eventPropItem->{$key}
+                    );
+                }
+            }
+        }
+
+        // Is not a class, i.e. a string, array, bool e.t.c.
+        if ($eventRequirments->type === EventItem::TYPE_OTHERVALUE) {
+            $this->assertSame(
+                $desiredValue,
+                $eventPropItem
+            );
+        }
+    }
 
     /**
      * @todo Remove once final version of above is published.
