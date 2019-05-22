@@ -17,10 +17,10 @@ abstract class BaseArguments
     public static function getArguments(): array
     {
         return [
-            'id' => Type::int(),
-            'uid' => Type::string(),
-            'dateCreated' => DateTimeType::getType(),
-            'dateUpdated' => DateTimeType::getType(),
+            'id' => Type::listOf(Type::int()),
+            'uid' => Type::listOf(Type::string()),
+            'dateCreated' => Type::string(),
+            'dateUpdated' => Type::string(),
             'offset' => Type::int(),
             'limit' => Type::int(),
             'orderBy' => Type::string(),

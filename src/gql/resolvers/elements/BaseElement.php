@@ -16,8 +16,6 @@ abstract class BaseElement extends BaseResolver
         return array_merge(parent::getArrayableArguments(), [
             'status',
             'siteId',
-            'id',
-            'uid',
             'title',
             'slug',
             'uri',

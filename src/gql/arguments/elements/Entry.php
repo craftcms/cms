@@ -29,6 +29,10 @@ class Entry extends StructureElement
             'authorId' => Type::boolean(),
             'authorGroup' => Type::string(),
             'authorGroupId' => Type::int(),
+            'postDate' => Type::string(),
+            'before' => Type::string(),
+            'after' => Type::string(),
+            'expiryDate' => Type::string(),
         ]);
     }
 }
