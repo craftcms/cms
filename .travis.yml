@@ -86,12 +86,12 @@ script:
       vendor/bin/codecept run unit --coverage --coverage-xml;
     fi
 
-after_script:
-  - |
-    if [ $TASK_TESTS_COVERAGE == 1 ]; then
-      travis_retry wget https://scrutinizer-ci.com/ocular.phar
-      php ocular.phar code-coverage:upload --format=php-clover coverage.clover
-    fi
+#after_script:
+#  - |
+#    if [ $TASK_TESTS_COVERAGE == 1 ]; then
+#      travis_retry wget https://scrutinizer-ci.com/ocular.phar
+#      php ocular.phar code-coverage:upload --format=php-clover coverage.clover
+#    fi
 
 #jobs:
 #  include:
