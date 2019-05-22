@@ -79,7 +79,7 @@ before_script:
 
 script:
   - |
-    php -d display_errors=on -d max_execution_time=-1 -d memory_limit=2048M -d error_reporting=-1 vendor/codeception/codeception/codecept run tests/unit/helpers/ArrayHelperTest.php:testToArray;
+    php vendor/bincodecept run tests/unit/helpers/ArrayHelperTest.php:testToArray;
 #script:
 #  - |
 #    # if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
