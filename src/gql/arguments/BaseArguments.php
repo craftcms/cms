@@ -21,6 +21,9 @@ abstract class BaseArguments
             'uid' => Type::string(),
             'dateCreated' => DateTimeType::getType(),
             'dateUpdated' => DateTimeType::getType(),
+            'offset' => Type::int(),
+            'limit' => Type::int(),
+            'orderBy' => Type::string(),
         ];
     }
 }
