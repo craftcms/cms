@@ -3,7 +3,7 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.2.0-alpha.6.1',
+    'version' => '3.2.0-alpha.6.2',
     'schemaVersion' => '3.2.6',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
