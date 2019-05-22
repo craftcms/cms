@@ -15,7 +15,7 @@ class Query extends SchemaObject
      */
     public static function getFields(): array
     {
-        throw new GqlException('Query type should not have any fields listed statically. Types must be set at type register time.');
+        throw new GqlException('Query type should not have any fields listed statically. Fields must be set at type register time.');
     }
 
     /**
