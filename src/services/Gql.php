@@ -10,20 +10,14 @@ namespace craft\services;
 use craft\events\RegisterGqlQueryEvent;
 use craft\events\RegisterGqlTypeEvent;
 use craft\gql\common\SchemaObject;
-use craft\gql\interfaces\Field as FieldInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
+use craft\gql\queries\Entry as EntryQuery;
 use craft\gql\TypeLoader;
 use craft\gql\types\AssetTransform;
 use craft\gql\types\CategoryGroup;
 use craft\gql\types\CategoryGroup_SiteSettings;
 use craft\gql\types\DateTimeType;
-use craft\gql\types\enums\SectionType as SectionTypeEnum;
-use craft\gql\types\enums\TransformInterlace as TransformInterlaceEnum;
-use craft\gql\types\enums\TransformMode as TransformModeEnum;
-use craft\gql\types\enums\TransformPosition as TransformPositionEnum;
 use craft\gql\types\FieldGroup;
-use craft\gql\types\fields\Assets as AssetsField;
-use craft\gql\types\fields\Matrix as MatrixType;
 use craft\gql\types\fields\PlainText;
 use craft\gql\types\fields\Table;
 use craft\gql\types\fields\UnsupportedField;
@@ -35,13 +29,6 @@ use craft\gql\types\Site;
 use craft\gql\types\SiteGroup;
 use craft\gql\types\Structure;
 use craft\gql\types\StructureNode;
-use craft\gql\queries\AssetTransform as AssetTransformQuery;
-use craft\gql\queries\CategoryGroup as CategoryGroupQuery;
-use craft\gql\queries\Entry as EntryQuery;
-use craft\gql\queries\Field as FieldQuery;
-use craft\gql\queries\FieldGroup as FieldGroupQuery;
-use craft\gql\queries\Section as SectionQuery;
-use craft\gql\queries\SiteGroup as SiteGroupQuery;
 use GraphQL\Type\Schema;
 use yii\base\Component;
 
@@ -134,33 +121,7 @@ class Gql extends Component
             DateTimeType::class,
 
             // Interfaces
-            FieldInterface::class,
             EntryInterface::class,
-
-            // Fields
-            AssetsField::class,
-            MatrixType::class,
-            PlainText::class,
-            Table::class,
-            UnsupportedField::class,
-
-            // Entities
-            AssetTransform::class,
-            CategoryGroup::class,
-            CategoryGroup_SiteSettings::class,
-            FieldGroup::class,
-            Section::class,
-            Section_SiteSettings::class,
-            Site::class,
-            SiteGroup::class,
-            Structure::class,
-            StructureNode::class,
-
-            // Enums
-            SectionTypeEnum::class,
-            TransformInterlaceEnum::class,
-            TransformModeEnum::class,
-            TransformPositionEnum::class,
         ];
 
         $event = new RegisterGqlTypeEvent([
@@ -184,13 +145,7 @@ class Gql extends Component
     private function _registerGqlQueries()
     {
         $queryList = [
-            // Entities
-            AssetTransformQuery::getQueries(),
-            CategoryGroupQuery::getQueries(),
-            FieldGroupQuery::getQueries(),
-            FieldQuery::getQueries(),
-            SectionQuery::getQueries(),
-            SiteGroupQuery::getQueries(),
+            // Queries
             EntryQuery::getQueries(),
         ];
 
