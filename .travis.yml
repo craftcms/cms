@@ -81,7 +81,7 @@ before_script:
 script:
   - |
     if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
-      vendor/bin/codecept -v --steps --debug run unit;
+      vendor/bin/codecept --no-exit run unit;
     else
       vendor/bin/codecept run unit --coverage --coverage-xml;
     fi
