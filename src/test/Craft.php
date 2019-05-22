@@ -300,16 +300,16 @@ class Craft extends Yii2
     public function expectEvent(string $class, string $eventName, $callback)
     {
         // Add this event.
-        $requiredEvent = null;
+        $eventTriggered = false;
 
         // Listen to this event and log it.
-        Event::on($class, $eventName, function () use (&$requiredEvent) {
-            $requiredEvent = true;
+        Event::on($class, $eventName, function () use (&$eventTriggered) {
+            $eventTriggered = true;
         });
 
         $callback();
 
-        $this->assertTrue($requiredEvent, 'Asserting that an event is triggered.');
+        $this->assertTrue($eventTriggered, 'Asserting that an event is triggered.');
     }
 
     /**
