@@ -9,13 +9,11 @@ use craft\gql\resolvers\BaseResolver;
 abstract class BaseElement extends BaseResolver
 {
     /**
-     * Returns a list of all the arguments that can be accepted as arrays.
-     *
-     * @return array
+     * @inheritdoc
      */
     public static function getArrayableArguments(): array
     {
-        return [
+        return array_merge(parent::getArrayableArguments(), [
             'status',
             'siteId',
             'id',
@@ -24,6 +22,6 @@ abstract class BaseElement extends BaseResolver
             'slug',
             'uri',
             'ref',
-        ];
+        ]);
     }
 }

@@ -17,4 +17,16 @@ abstract class BaseResolver
      * @param ResolveInfo $resolveInfo The resolve information
      */
     abstract public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo);
+
+    /**
+     * Returns a list of all the arguments that can be accepted as arrays.
+     *
+     * @return array
+     */
+    public static function getArrayableArguments(): array
+    {
+        return [
+            'orderBy'
+        ];
+    }
 }
