@@ -19,8 +19,14 @@ use craft\base\Model;
  */
 class EventItem extends Model
 {
+    // Constants
+    // =========================================================================
+
     const TYPE_CLASS = 'class';
     const TYPE_OTHERVALUE = 'othervalue';
+
+    // Public Properties
+    // =========================================================================
 
     /**
      * @var string
