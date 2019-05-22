@@ -28,6 +28,8 @@ abstract class BaseElement extends BaseArguments
             'uri' => Type::string(),
             'search' => Type::string(),
             'ref' => Type::string(),
+            'fixedOrder' => Type::boolean(),
+            'inReverse' => Type::boolean(),
         ]);
     }
 }
