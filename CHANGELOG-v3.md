@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Asset indexes now sort assets by Date Uploaded in descending order by default. ([#1153](https://github.com/craftcms/cms/issues/1153))
+
 ## 3.1.28 - 2019-05-21
 
 ### Added
