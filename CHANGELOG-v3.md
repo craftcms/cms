@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Improved the error message that gets logged when Craft isn’t able to finish processing project config changes, due to unresolved dependencies.
+
 ## 3.1.30 - 2019-06-11
 
 ### Changed
