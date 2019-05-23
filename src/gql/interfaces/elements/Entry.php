@@ -27,7 +27,7 @@ class Entry extends BaseElement
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
             'resolveType' => function (EntryElement $value) {
-                return TypeRegistry::getType(EntryType::getName($value->getSection(), $value->getType()));
+                return TypeRegistry::getType(EntryType::getName($value->getType()));
             }
         ]));
 

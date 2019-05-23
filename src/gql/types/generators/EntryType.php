@@ -20,18 +20,12 @@ class EntryType
     public static function getTypes(): array
     {
         $entryTypes = Craft::$app->getSections()->getAllEntryTypes();
-        $sections = Craft::$app->getSections()->getAllSections();
-        $sectionsById = [];
-
-        foreach ($sections as $section) {
-            $sectionsById[$section->id] = $section;
-        }
 
         $gqlTypes = [];
 
         foreach ($entryTypes as $entryType) {
             /** @var EntryTypeModel $entryType */
-            $typeName = self::getName($sectionsById[$entryType->sectionId], $entryType);
+            $typeName = self::getName($entryType);
             $contentFields = $entryType->getFields();
             $contentFieldGqlTypes = [];
 
@@ -84,8 +78,8 @@ class EntryType
      * @param EntryTypeModel $entryType
      * @return string
      */
-    public static function getName(Section $section, EntryTypeModel $entryType)
+    public static function getName(EntryTypeModel $entryType)
     {
-        return $section->handle . '_' . $entryType->handle . '_Entry';
+        return $entryType->getSection()->handle . '_' . $entryType->handle . '_Entry';
     }
 }
