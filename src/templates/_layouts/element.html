@@ -19,7 +19,7 @@
 {% extends '_layouts/cp' %}
 {% import '_includes/forms' as forms %}
 
-{% set source = element.draftId or element.revisionId ? element.source : element %}
+{% set source = element.draftId or element.revisionId ? element.getSource() : element %}
 {% set isMultiSiteElement = craft.app.isMultiSite and element.supportedSites|length > 1 %}
 
 {% set previewTargets = CraftEdition == CraftPro ? (element.previewTargets ?? []) : [] %}
