@@ -29,7 +29,31 @@ what the differences are between `fullMock` on and off.
 :::
 
 ## Plugins and modules
+If you enable `fullMock` your module/plugin and its components will be mocked
+up similarly to Craft.
 
-TODO: Implement and document how this works for modules and plugins. 
+In order to support mocking of components within modules and/or plugins, you need to add 
+a `getComponentMap` method in your main class. This method must return an array 
+that, in the order, they are mentioned in: 
 
+- `string` The class of the service
+- `array` An array containing, in the mentioned order: 
+  - `string` The name of the method used to access this service. I.E if you access
+  your module/plugin's service as follows: `MyModule::getInstance()->getMyService()`
+  you would enter 'getMyService' for this parameter. Leave null if you don't access
+  your module/plugin via methods. 
+  - `string` The property name used to access this service. I.E
+  if you access your module/plugin's service as follows:
+   `MyModule::getInstance()->myService` you would enter 'myService' in this parameter. 
+   Leave null if not applicable.  
+   
+::: tip
+See an example map for the `craft\services\Elements` service below. 
 
+```php
+return [
+    [Elements::class, ['getElements', 'elements']],
+];
+```
+More examples shown in `craft\test\TestSetup:getCraftServiceMap()`. 
+:::
