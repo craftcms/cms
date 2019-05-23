@@ -413,13 +413,16 @@ class TestSetup
             $class = $craftComponent[0];
             list ($accessMethod, $accessProperty) = $craftComponent[1];
 
+            // Create a mock. 
             $mock = self::getMock($test, $class);
 
+            // Set the `ServiceLocator::$object->property` magic getter
             if ($accessProperty) {
                 // Set the map.
                 $mockMapForMagicGet[] = [$accessProperty, $mock];
             }
 
+            // Set the ServiceLocator::$object->getProperty()` get method.
             if ($accessMethod) {
                 $mockApp->expects($test->any())
                     ->method($accessMethod)
@@ -427,6 +430,7 @@ class TestSetup
             }
         }
 
+        // Set the map
         $mockApp->expects($test->any())
             ->method('__get')
             ->willReturnMap($mockMapForMagicGet);
