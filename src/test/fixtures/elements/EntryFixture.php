@@ -8,8 +8,6 @@
 namespace craft\test\fixtures\elements;
 
 use craft\elements\Entry;
-use craft\errors\InvalidElementException;
-use yii\db\Exception;
 use Craft;
 
 /**

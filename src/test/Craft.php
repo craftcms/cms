@@ -17,7 +17,6 @@ use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidPluginException;
-use craft\errors\SectionNotFoundException;
 use craft\events\DeleteElementEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -25,8 +24,10 @@ use craft\models\FieldLayout;
 use craft\modules\ExampleModule;
 use craft\queue\BaseJob;
 use craft\services\Elements;
+use ReflectionException;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
+use Yii;
 use yii\base\Application;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
@@ -136,7 +137,7 @@ class Craft extends Yii2
     /**
      * @param TestInterface $test
      * @throws InvalidConfigException
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @throws \yii\base\Exception
      */
     public function _before(TestInterface $test)
@@ -149,7 +150,7 @@ class Craft extends Yii2
         if ($this->_getConfig('fullMock') === true) {
             $mockApp = TestSetup::getMockApp($test);
             \Craft::$app = $mockApp;
-            \Yii::$app = $mockApp;
+            Yii::$app = $mockApp;
 
             $this->mockModulesAndPlugins($test);
 
@@ -157,7 +158,7 @@ class Craft extends Yii2
         }
 
         // Re-apply project config - Fixtures may have done stuff...
-        if ($projectConfig = $this->_getConfig('projectConfig')) {
+        if ($this->_getConfig('projectConfig')) {
             \Craft::$app->getProjectConfig()->applyYamlChanges();
         }
 
@@ -174,7 +175,6 @@ class Craft extends Yii2
      * @param TestInterface $test
      * @throws InvalidConfigException
      * @throws Throwable
-     * @throws SectionNotFoundException
      */
     public function _after(TestInterface $test)
     {
@@ -386,9 +386,9 @@ class Craft extends Yii2
             throw new InvalidArgumentException('Not a job');
         }
 
-        \Craft::$app->getQueue()->push($job);
+        Craft::$app->getQueue()->push($job);
 
-        \Craft::$app->getQueue()->run();
+        Craft::$app->getQueue()->run();
     }
 
     /**
@@ -452,17 +452,17 @@ class Craft extends Yii2
 
     /**
      * @param $event
-     * @param EventItem $eventRequirments
+     * @param EventItem $eventRequirements
      */
-    protected function validateEventValue($event, EventItem $eventRequirments)
+    protected function validateEventValue($event, EventItem $eventRequirements)
     {
-        $eventPropItem = $event->{$eventRequirments->eventPropName};
-        $desiredValue = $eventRequirments->desiredValue;
+        $eventPropItem = $event->{$eventRequirements->eventPropName};
+        $desiredValue = $eventRequirements->desiredValue;
 
         // Its a class. Special compare requirements exist.
-        if ($eventRequirments->type === EventItem::TYPE_CLASS) {
+        if ($eventRequirements->type === EventItem::TYPE_CLASS) {
             $this->assertInstanceOf(
-                $eventRequirments->desiredClass,
+                $eventRequirements->desiredClass,
                 $eventPropItem
             );
 
@@ -478,7 +478,7 @@ class Craft extends Yii2
         }
 
         // Is not a class, i.e. a string, array, bool e.t.c.
-        if ($eventRequirments->type === EventItem::TYPE_OTHERVALUE) {
+        if ($eventRequirements->type === EventItem::TYPE_OTHERVALUE) {
             $this->assertSame(
                 $desiredValue,
                 $eventPropItem
@@ -488,7 +488,7 @@ class Craft extends Yii2
 
     /**
      * @param TestCase $test
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function mockModulesAndPlugins(TestCase $test)
     {
@@ -499,9 +499,7 @@ class Craft extends Yii2
         }
 
         $config = TestSetup::createConfigService();
-        $modules = $config->getConfigFromFile('app')['modules'] ?? [];
-
-        foreach ($modules as $handle => $class) {
+        foreach ($config->getConfigFromFile('app')['modules'] ?? [] as $handle => $class) {
             $this->addModule($test, $class);
         }
     }
@@ -509,7 +507,7 @@ class Craft extends Yii2
     /**
      * @param TestCase $test
      * @param string $moduleClass
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function addModule(TestCase $test, string $moduleClass)
     {
@@ -519,10 +517,8 @@ class Craft extends Yii2
 
         $componentMap = $moduleClass::getComponentMap();
 
-        $mockModule = TestSetup::getMockApp($test, $componentMap, $moduleClass);
-
         // Set it.
-        \Craft::$app->loadedModules[$moduleClass] = $mockModule;
+        \Craft::$app->loadedModules[$moduleClass] = TestSetup::getMockApp($test, $componentMap, $moduleClass);
     }
     /**
      * @inheritdoc

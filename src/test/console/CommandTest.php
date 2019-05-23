@@ -109,7 +109,6 @@ class CommandTest
         $this->setupController();
     }
 
-
     /**
      * @throws InvalidArgumentException
      */
@@ -123,7 +122,7 @@ class CommandTest
 
         $this->test->assertSame($this->desiredExitCode, $exitCode);
 
-        $this->test->assertSame($this->eventChainItemsHandled, count($this->eventChain));
+        $this->test->assertCount($this->eventChainItemsHandled, $this->eventChain);
     }
 
     /**
@@ -225,7 +224,7 @@ class CommandTest
             throw new InvalidArgumentException('Invalid controller');
         }
 
-        $stubController = Stub::construct(get_class($controller), [$controllerId, \Craft::$app], [
+        $stubController = Stub::construct(get_class($controller), [$controllerId, Craft::$app], [
             'stdOut' => $this->stdOutHandler(),
             'stderr' => $this->stderrHandler(),
             'prompt' => $this->promptHandler(),
@@ -384,9 +383,7 @@ class CommandTest
      */
     protected function addEventChainItem(array $config) : CommandTest
     {
-        $chainItem = new CommandTestItem($config);
-
-        $this->eventChain[] = $chainItem;
+        $this->eventChain[] = new CommandTestItem($config);
 
         return $this;
     }

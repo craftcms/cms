@@ -80,6 +80,7 @@ class MailerTest extends TestCase
     /**
      * @throws InvalidConfigException
      * @throws SiteNotFoundException
+     * @throws ReflectionException
      */
     public function testSendMailLanguageDetermination()
     {

@@ -9,7 +9,6 @@ namespace craft\test;
 
 use Craft;
 use Codeception\Lib\Connector\Yii2;
-use Yii;
 use yii\mail\MessageInterface;
 use yii\web\Application;
 

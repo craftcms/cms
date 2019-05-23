@@ -221,6 +221,7 @@ class RequestTest extends TestCase
      * @param string|null $name
      * @param $defaultValue
      * @param array $params
+     * @throws ReflectionException
      */
     public function testGetParam($result, $defaultValue, array $params, string $name = null)
     {
