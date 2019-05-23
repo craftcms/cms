@@ -522,7 +522,6 @@ class Craft extends Yii2
         $mockModule = TestSetup::getMockApp($test, $componentMap, $moduleClass);
 
         // Set it.
-        $moduleClass::setInstance($mockModule);
         \Craft::$app->loadedModules[$moduleClass] = $mockModule;
     }
     /**
