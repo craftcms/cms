@@ -7,28 +7,15 @@
 
 namespace craft\services;
 
-use craft\events\RegisterGqlQueryEvent;
-use craft\events\RegisterGqlTypeEvent;
+use craft\events\RegisterGqlQueriesEvent;
+use craft\events\RegisterGqlTypesEvent;
 use craft\gql\common\SchemaObject;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\queries\Entry as EntryQuery;
 use craft\gql\TypeLoader;
-use craft\gql\types\AssetTransform;
-use craft\gql\types\CategoryGroup;
-use craft\gql\types\CategoryGroup_SiteSettings;
 use craft\gql\types\DateTimeType;
-use craft\gql\types\FieldGroup;
-use craft\gql\types\fields\PlainText;
-use craft\gql\types\fields\Table;
-use craft\gql\types\fields\UnsupportedField;
 use craft\gql\types\generators\EntryType;
 use craft\gql\types\Query;
-use craft\gql\types\Section;
-use craft\gql\types\Section_SiteSettings;
-use craft\gql\types\Site;
-use craft\gql\types\SiteGroup;
-use craft\gql\types\Structure;
-use craft\gql\types\StructureNode;
 use GraphQL\Type\Schema;
 use yii\base\Component;
 
@@ -124,7 +111,7 @@ class Gql extends Component
             EntryInterface::class,
         ];
 
-        $event = new RegisterGqlTypeEvent([
+        $event = new RegisterGqlTypesEvent([
             'types' => $typeList,
         ]);
 
@@ -135,7 +122,6 @@ class Gql extends Component
             TypeLoader::registerType($type::getName(), $type . '::getType');
         }
     }
-
 
     /**
      * Get GraphQL query definitions
@@ -149,7 +135,8 @@ class Gql extends Component
             EntryQuery::getQueries(),
         ];
 
-        $event = new RegisterGqlQueryEvent([
+
+        $event = new RegisterGqlQueriesEvent([
             'queries' => array_merge(...$queryList)
         ]);
 

@@ -31,7 +31,7 @@ class Entry extends BaseElement
             }
         ]));
 
-        foreach (EntryType::getTypes() as $typeName => $generatedType) {
+        foreach (EntryType::generateTypes() as $typeName => $generatedType) {
             TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
         }
 

@@ -8,7 +8,7 @@ use craft\gql\resolvers\elements\Entry as EntryResolver;
 use GraphQL\Type\Definition\Type;
 
 /**
- * Class Section
+ * Class Entry
  */
 class Entry
 {

@@ -16,7 +16,7 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2
  */
-class RegisterGqlQueryEvent extends Event
+class RegisterGqlQueriesEvent extends Event
 {
     // Properties
     // =========================================================================

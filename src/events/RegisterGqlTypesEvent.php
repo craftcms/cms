@@ -16,13 +16,13 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2
  */
-class RegisterGqlTypeEvent extends Event
+class RegisterGqlTypesEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Type[] List of GQL Type definitions
+     * @var Type[] List of GQL Type definition classes
      */
     public $types = [];
 }

@@ -17,7 +17,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  */
 class EntryType
 {
-    public static function getTypes(): array
+    public static function generateTypes(): array
     {
         $entryTypes = Craft::$app->getSections()->getAllEntryTypes();
 
@@ -72,9 +72,8 @@ class EntryType
     }
 
     /**
-     * Return an entry type's GQL type name by section and entry type
+     * Return an entry type's GQL type name by entry type
      *
-     * @param Section $section
      * @param EntryTypeModel $entryType
      * @return string
      */
