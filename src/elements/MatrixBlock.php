@@ -292,7 +292,7 @@ class MatrixBlock extends Element
      */
     public function getContentTable(): string
     {
-        return $this->_getField()->contentTable;
+        return $this->getField()->contentTable;
     }
 
     /**
@@ -433,15 +433,12 @@ class MatrixBlock extends Element
         parent::afterDelete();
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Returns the Matrix field.
      *
      * @return Matrix
      */
-    private function _getField(): Matrix
+    public function getField(): Matrix
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getFields()->getFieldById($this->fieldId);

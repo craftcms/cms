@@ -11,10 +11,13 @@ use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\gql\common\SchemaObject;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
+use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\queries\Entry as EntryQuery;
+use craft\gql\queries\MatrixBlock as MatrixBlockQuery;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTimeType;
 use craft\gql\types\generators\EntryType;
+use craft\gql\types\generators\MatrixBlockType;
 use craft\gql\types\Query;
 use GraphQL\Type\Schema;
 use yii\base\Component;
@@ -80,8 +83,8 @@ class Gql extends Component
             ];
 
             if ($devMode) {
-                // allow plugins to register their generators
-                $schemaConfig['types'] = EntryType::getTypes();
+                // @todo: allow plugins to register their generators
+                $schemaConfig['types'] = array_merge(EntryType::generateTypes(), MatrixBlockType::generateTypes());
             }
 
             $this->_schema = new Schema($schemaConfig);
@@ -109,6 +112,7 @@ class Gql extends Component
 
             // Interfaces
             EntryInterface::class,
+            MatrixBlockInterface::class,
         ];
 
         $event = new RegisterGqlTypesEvent([
@@ -133,6 +137,7 @@ class Gql extends Component
         $queryList = [
             // Queries
             EntryQuery::getQueries(),
+            MatrixBlockQuery::getQueries(),
         ];
 
 

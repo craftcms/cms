@@ -19,6 +19,9 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
+use craft\gql\arguments\elements\MatrixBlock as MatrixBlockArguments;
+use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
+use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -29,6 +32,7 @@ use craft\services\Elements;
 use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\assets\matrixsettings\MatrixSettingsAsset;
+use GraphQL\Type\Definition\Type;
 use yii\base\UnknownPropertyException;
 
 /**
@@ -785,6 +789,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         parent::afterElementRestore($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(MatrixBlockInterface::getType()),
+            'args' => MatrixBlockArguments::getArguments(),
+            'resolve' => MatrixBlockResolver::class . '::resolve',
+        ];
     }
 
     // Private Methods
