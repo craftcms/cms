@@ -37,11 +37,6 @@ class ExportController extends Controller
      */
     public $defaultAction = 'export';
 
-    /**
-     * @inheritdoc
-     */
-    protected $allowAnonymous = true;
-
     // Public Methods
     // =========================================================================
 
