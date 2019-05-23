@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.0-alpha-6.3 - 2019-05-23
 
 ### Changed
 - Revisions no longer need to have a creator.
