@@ -591,15 +591,10 @@ class ViewTest extends TestCase
         foreach ($messages as $message => $translation) {
             $translation = Json::encode($translation);
             $message = Json::encode($message);
-            $js .= ($js !== '' ? "\n" : '') . "Craft.translations[{$category}][{$message}] = {$translation};";
+            $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[{$category}][{$message}] = {$translation};";
         }
 
-        return <<<JS
-if (typeof Craft.translations[{$category}] === 'undefined') {
-    Craft.translations[{$category}] = {};
-}
-{$js}
-JS;
+        return "if (typeof Craft.translations[{$category}] === 'undefined') {".PHP_EOL."    Craft.translations[{$category}] = {};".PHP_EOL."}".PHP_EOL.$js;
     }
 
     /**
