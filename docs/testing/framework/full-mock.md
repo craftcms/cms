@@ -34,7 +34,7 @@ up similarly to Craft.
 
 In order to support mocking of components within modules and/or plugins, you need to add 
 a `getComponentMap` method in your main class. This method must return an array 
-that, in the order, they are mentioned in: 
+containing sub-arrays which meet the following specifications: 
 
 - `string` The class of the service
 - `array` An array containing, in the mentioned order: 
@@ -47,6 +47,7 @@ that, in the order, they are mentioned in:
    `MyModule::getInstance()->myService` you would enter 'myService' in this parameter. 
    Leave null if not applicable.  
    
+The paramteters must be entered in the order as mentioned above. 
 ::: tip
 See an example map for the `craft\services\Elements` service below. 
 
