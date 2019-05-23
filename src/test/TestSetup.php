@@ -363,7 +363,7 @@ class TestSetup
     /**
      * @return array
      */
-    public function getCraftServiceMap() : array
+    public static function getCraftServiceMap() : array
     {
         return [
             [Api::class, ['getApi', 'api']],
