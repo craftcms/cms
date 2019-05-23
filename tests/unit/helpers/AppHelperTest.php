@@ -168,8 +168,6 @@ class AppHelperTest extends TestCase
 
     /**
      * Mailer config now needs a mail settings
-     *
-     * @todo: See tests/unit/mail/MailerTest.php:46
      */
     public function testMailerConfigIndexes()
     {
