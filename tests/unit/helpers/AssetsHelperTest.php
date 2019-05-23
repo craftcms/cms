@@ -190,7 +190,7 @@ class AssetsHelperTest extends Unit
     public function testMaxUploadSize()
     {
         Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1;
-        $this->asssdaertSame(1, Assets::getMaxUploadSize());
+        $this->assertSame(1, Assets::getMaxUploadSize());
     }
 
     // Data Providers
