@@ -33,6 +33,7 @@ use craft\services\Matrix;
 use craft\services\Path;
 use craft\services\Plugins;
 use craft\services\PluginStore;
+use craft\services\ProjectConfig;
 use craft\services\Relations;
 use craft\services\Routes;
 use craft\services\Search;
@@ -129,6 +130,7 @@ class AppTest extends Unit
             [Mutex::class, ['getMutex', 'mutex']],
             [Path::class, ['getPath', 'path']],
             [Plugins::class, ['getPlugins', 'plugins']],
+            [ProjectConfig::class, ['getProjectConfig', 'projectConfig']],
             [PluginStore::class, ['getPluginStore', 'pluginStore']],
             [Queue::class, ['getQueue', 'queue']],
             [Relations::class, ['getRelations', 'relations']],
@@ -137,7 +139,6 @@ class AppTest extends Unit
             [Sections::class, ['getSections', 'sections']],
             [Sites::class, ['getSites', 'sites']],
             [Structures::class, ['getStructures', 'structures']],
-            [SystemSettings::class, ['getSystemSettings', 'systemSettings']],
             [Tags::class, ['getTags', 'tags']],
             [TemplateCaches::class, ['getTemplateCaches', 'templateCaches']],
             [Tokens::class, ['getTokens', 'tokens']],
