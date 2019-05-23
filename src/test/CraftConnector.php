@@ -48,20 +48,9 @@ class CraftConnector extends Yii2
     {
         parent::startApp();
 
-        Craft::$app = Yii::$app;
-
         Craft::$app->set('mailer', ['class' => TestMailer::class, 'callback' => function (MessageInterface $message) {
             $this->emails[] = $message;
         }]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function resetApplication()
-    {
-        parent::resetApplication();
-        TestSetup::tearDownCraft();
     }
 
     /**
