@@ -15,7 +15,6 @@
     (isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 ) %}
 {% set canDeleteDraft = currentUser.can('deletePeerEntryDrafts'~permissionSuffix) %}
-{% set showStatusToggles = not isSingle %}
 
 
 {% hook "cp.entries.edit" %}

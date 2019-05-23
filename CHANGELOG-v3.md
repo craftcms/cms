@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Single entries weren’t getting status fields, and were always getting disabled when saved from their edit pages.
+
 ## 3.2.0-alpha.6.2 - 2019-05-22
 
 ### Fixed
