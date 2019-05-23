@@ -112,7 +112,10 @@
                         {% set url = url(cpEditUrl, baseParams|merge({ revisionId: revision.revisionId })) %}
                         <a{% if revision.revisionId == element.revisionId %} class="sel"{% endif %} href="{{ url }}">
                             {{ revision.revisionLabel }}
-                            <span class="light">{{ revision.dateCreated|timestamp('short') }}, {{ revision.getCreator() }}</span>
+                            {% set creator = revision.getCreator() %}
+                            {% if creator %}
+                                <span class="light">{{ revision.dateCreated|timestamp('short') }}, {{ creator }}</span>
+                            {% endif %}
                         </a>
                     </li>
                 {% endfor %}

@@ -1200,8 +1200,7 @@ EOD;
     {
         // Save a new revision
         if ($this->_shouldSaveRevision()) {
-            $creatorId = Craft::$app->getUser()->getId() ?? $this->authorId;
-            Craft::$app->getRevisions()->createRevision($this, $creatorId, $this->revisionNotes);
+            Craft::$app->getRevisions()->createRevision($this, null, $this->revisionNotes);
         }
 
         parent::afterPropagate($isNew);

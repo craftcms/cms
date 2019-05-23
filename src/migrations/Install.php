@@ -259,7 +259,7 @@ class Install extends Migration
         $this->createTable(Table::REVISIONS, [
             'id' => $this->primaryKey(),
             'sourceId' => $this->integer()->notNull(),
-            'creatorId' => $this->integer()->notNull(),
+            'creatorId' => $this->integer(),
             'num' => $this->integer()->notNull(),
             'notes' => $this->text(),
             'snapshot' => $this->mediumText(),

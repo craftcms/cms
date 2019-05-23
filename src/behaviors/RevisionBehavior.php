@@ -35,7 +35,7 @@ class RevisionBehavior extends Behavior
     public $sourceId;
 
     /**
-     * @var int The revision creator’s ID
+     * @var int|null The revision creator’s ID
      */
     public $creatorId;
 
@@ -86,10 +86,14 @@ class RevisionBehavior extends Behavior
     /**
      * Returns the revision’s creator.
      *
-     * @return User
+     * @return User|null
      */
-    public function getCreator(): User
+    public function getCreator()
     {
+        if (!$this->creatorId) {
+            return null;
+        }
+
         return User::find()
             ->id($this->creatorId)
             ->anyStatus()

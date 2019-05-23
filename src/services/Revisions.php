@@ -63,14 +63,14 @@ class Revisions extends Component
      * If the element appears to have not changed since its last revision, its last revision will be returned instead.
      *
      * @param ElementInterface $source The element to create a revision for
-     * @param int $creatorId The user ID that the revision should be attributed to
+     * @param int|null $creatorId The user ID that the revision should be attributed to
      * @param string|null $notes The revision notes
      * @param array $newAttributes any attributes to apply to the draft
      * @param bool $force Whether to force a new revision even if the element doesn't appear to have changed since the last revision
      * @return ElementInterface The new revision
      * @throws \Throwable
      */
-    public function createRevision(ElementInterface $source, int $creatorId, string $notes = null, array $newAttributes = [], bool $force = false): ElementInterface
+    public function createRevision(ElementInterface $source, int $creatorId = null, string $notes = null, array $newAttributes = [], bool $force = false): ElementInterface
     {
         // Make sure the source isn't a draft or revision
         /** @var Element $source */
@@ -106,6 +106,11 @@ class Revisions extends Component
 
             // Get the next revision number for this element
             $num = ($lastRevision->revisionNum ?? 0) + 1;
+        }
+
+        if ($creatorId === null) {
+            // Default to the logged-in user ID if there is one
+            $creatorId = Craft::$app->getUser()->getId();
         }
 
         // Fire a 'beforeCreateRevision' event

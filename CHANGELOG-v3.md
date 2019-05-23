@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+### Changed
+- Revisions no longer need to have a creator.
+
 ### Fixed
 - Fixed a bug where Single entries weren’t getting status fields, and were always getting disabled when saved from their edit pages.
+- Fixed an error that occurred when programatically resaving a Single entry when no one was logged in. ([#4303](https://github.com/craftcms/cms/issues/4303))
 
 ## 3.2.0-alpha.6.2 - 2019-05-22
 

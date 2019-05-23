@@ -28,7 +28,7 @@ class RevisionEvent extends Event
     public $source;
 
     /**
-     * @var int The creator ID
+     * @var int|null The creator ID
      */
     public $creatorId;
 
