@@ -79,14 +79,17 @@ before_script:
 
 script:
   - |
-    vendor/bin/codecept run unit;
-#script:
-#  - |
-#    # if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
-#      php -d display_errors=on -d max_execution_time=-1 -d memory_limit=2048M -d error_reporting=-1 vendor/codeception/codeception/codecept run tests/unit/helpers/ArrayHelperTest.php:testToArray;
-#    # else
-#    #  vendor/bin/codecept run unit --coverage --coverage-xml;
-#    # fi
+    if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
+      vendor/bin/codecept run unit
+    else
+      vendor/bin/codecept run unit --coverage --coverage-xml;
+    fi
+
+after_script:
+  - |
+    if [ $TASK_TESTS_COVERAGE == 1 ]; then
+      travis_retry php vendor/bin/php-coveralls
+    fi
 
 #after_script:
 #  - |
@@ -94,6 +97,14 @@ script:
 #      travis_retry wget https://scrutinizer-ci.com/ocular.phar
 #      php ocular.phar code-coverage:upload --format=php-clover coverage.clover
 #    fi
+
+#script:
+#  - |
+#    # if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
+#      php -d display_errors=on -d max_execution_time=-1 -d memory_limit=2048M -d error_reporting=-1 vendor/codeception/codeception/codecept run tests/unit/helpers/ArrayHelperTest.php:testToArray;
+#    # else
+#    #  vendor/bin/codecept run unit --coverage --coverage-xml;
+#    # fi
 
 #jobs:
 #  include:
