@@ -131,7 +131,7 @@ class Craft extends Yii2
         $config = $this->_getConfig();
         Craft::$testConfig =  $config;
 
-        if (!$config['fullMock']) {
+        if ($config['fullMock'] !== true) {
             $this->setupDb();
         }
     }
@@ -146,7 +146,7 @@ class Craft extends Yii2
         self::$currentTest = $test;
 
         // If full mock. Create the mock app and dont perform to any further actions.
-        if ($this->_getConfig('fullMock')) {
+        if ($this->_getConfig('fullMock') === true) {
             $mockApp = TestSetup::getMockApp($test);
             \Craft::$app = $mockApp;
             \Yii::$app = $mockApp;
@@ -176,7 +176,7 @@ class Craft extends Yii2
      */
     public function _after(TestInterface $test)
     {
-        if ($this->_getConfig('fullMock')) {
+        if ($this->_getConfig('fullMock') === true) {
             parent::_after($test);
 
             return;
