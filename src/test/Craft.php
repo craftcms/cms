@@ -11,9 +11,7 @@ use Codeception\Lib\ModuleContainer;
 use Codeception\Module\Yii2;
 use Codeception\Stub;
 use Codeception\TestInterface;
-use Composer\IO\NullIO;
-use craft\composer\Factory;
-use craft\composer\Installer;
+use Codeception\PHPUnit\TestCase;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\db\Query;
@@ -24,10 +22,9 @@ use craft\events\DeleteElementEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
+use craft\modules\ExampleModule;
 use craft\queue\BaseJob;
 use craft\services\Elements;
-use ReflectionException;
-use ReflectionObject;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use yii\base\Application;
@@ -137,7 +134,10 @@ class Craft extends Yii2
     }
 
     /**
-     * @inheritDoc
+     * @param TestInterface $test
+     * @throws InvalidConfigException
+     * @throws \ReflectionException
+     * @throws \yii\base\Exception
      */
     public function _before(TestInterface $test)
     {
@@ -150,6 +150,8 @@ class Craft extends Yii2
             $mockApp = TestSetup::getMockApp($test);
             \Craft::$app = $mockApp;
             \Yii::$app = $mockApp;
+
+            $this->mockModulesAndPlugins($test);
 
             return;
         }
@@ -484,6 +486,45 @@ class Craft extends Yii2
         }
     }
 
+    /**
+     * @param TestCase $test
+     * @throws \ReflectionException
+     */
+    protected function mockModulesAndPlugins(TestCase $test)
+    {
+        foreach ($this->_getConfig('plugins') as $plugin) {
+            $moduleClass = $plugin['class'];
+
+            $this->addModule($test, $moduleClass);
+        }
+
+        $config = TestSetup::createConfigService();
+        $modules = $config->getConfigFromFile('app')['modules'] ?? [];
+
+        foreach ($modules as $handle => $class) {
+            $this->addModule($test, $class);
+        }
+    }
+
+    /**
+     * @param TestCase $test
+     * @param string $moduleClass
+     * @throws \ReflectionException
+     */
+    protected function addModule(TestCase $test, string $moduleClass)
+    {
+        if (!method_exists($moduleClass, 'getComponentMap')) {
+            return;
+        }
+
+        $componentMap = $moduleClass::getComponentMap();
+
+        $mockModule = TestSetup::getMockApp($test, $componentMap, $moduleClass);
+
+        // Set it.
+        $moduleClass::setInstance($mockModule);
+        \Craft::$app->loadedModules[$moduleClass] = $mockModule;
+    }
     /**
      * @inheritdoc
      *

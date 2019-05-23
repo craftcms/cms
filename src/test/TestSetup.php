@@ -197,10 +197,7 @@ class TestSetup
         Craft::setAlias('@templates', CraftTest::normalizePathSeparators(Craft::getAlias('@templates')));
         Craft::setAlias('@translations', CraftTest::normalizePathSeparators(Craft::getAlias('@translations')));
 
-        $configService = new Config();
-        $configService->env = 'test';
-        $configService->configDir = CRAFT_CONFIG_PATH;
-        $configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
+        $configService = self::createConfigService();
 
         // Load the config
         $config = ArrayHelper::merge(
@@ -234,6 +231,18 @@ class TestSetup
         ]);
     }
 
+    /**
+     * @return Config
+     */
+    public static function createConfigService() : Config
+    {
+        $configService = new Config();
+        $configService->env = 'test';
+        $configService->configDir = CRAFT_CONFIG_PATH;
+        $configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
+
+        return $configService;
+    }
     /**
      * Determine the app type. If the parent is `craft\test\console\ConsoleTest`.
      * Its a console test. Else, web.
@@ -413,7 +422,7 @@ class TestSetup
             $class = $craftComponent[0];
             list ($accessMethod, $accessProperty) = $craftComponent[1];
 
-            // Create a mock. 
+            // Create a mock.
             $mock = self::getMock($test, $class);
 
             // Set the `ServiceLocator::$object->property` magic getter
