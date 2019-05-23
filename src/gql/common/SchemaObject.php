@@ -1,7 +1,7 @@
 <?php
 namespace craft\gql\common;
 
-use craft\gql\TypeRegistry;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTimeType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
@@ -34,7 +34,7 @@ abstract class SchemaObject
      */
     public static function getType($fields = null): Type
     {
-        return TypeRegistry::getType(static::class) ?: TypeRegistry::createType(static::class, new ObjectType([
+        return GqlEntityRegistry::getEntity(static::class) ?: GqlEntityRegistry::createEntity(static::class, new ObjectType([
             'name' => static::getName(),
             'fields' => $fields ?: (static::class . '::getFields'),
         ]));

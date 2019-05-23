@@ -5,7 +5,7 @@ use Craft;
 use craft\base\Field;
 use craft\elements\Entry as EntryElement;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
-use craft\gql\TypeRegistry;
+use craft\gql\GqlEntityRegistry;
 use craft\helpers\StringHelper;
 use craft\models\EntryType as EntryTypeModel;
 use craft\models\Section;
@@ -37,7 +37,7 @@ class EntryType
             $entryTypeFields = array_merge(EntryInterface::getFields(), $contentFieldGqlTypes);
 
             // Generate a type for each entry type
-            $gqlTypes[$typeName] = TypeRegistry::getType($typeName) ?: TypeRegistry::createType($typeName, new ObjectType([
+            $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new ObjectType([
                 'name' => $typeName,
                 'fields' => function () use ($entryTypeFields) {
                     return $entryTypeFields;

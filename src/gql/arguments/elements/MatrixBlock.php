@@ -4,7 +4,7 @@ namespace craft\gql\arguments\elements;
 use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\elements\StructureElement;
 use craft\gql\TypeLoader;
-use craft\gql\TypeRegistry;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTimeType;
 use craft\gql\types\generators\EntryType;
 use GraphQL\Type\Definition\InterfaceType;

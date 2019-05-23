@@ -5,7 +5,7 @@ use Craft;
 use craft\base\Field;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
-use craft\gql\TypeRegistry;
+use craft\gql\GqlEntityRegistry;
 use craft\helpers\StringHelper;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\models\Section;
@@ -37,7 +37,7 @@ class MatrixBlockType
             $blockTypeFields = array_merge(MatrixBlockInterface::getFields(), $contentFieldGqlTypes);
 
             // Generate a type for each entry type
-            $gqlTypes[$typeName] = TypeRegistry::getType($typeName) ?: TypeRegistry::createType($typeName, new ObjectType([
+            $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new ObjectType([
                 'name' => $typeName,
                 'fields' => function () use ($blockTypeFields) {
                     return $blockTypeFields;

@@ -3,7 +3,7 @@ namespace craft\gql\interfaces\elements;
 
 use craft\elements\Entry as EntryElement;
 use craft\gql\TypeLoader;
-use craft\gql\TypeRegistry;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTimeType;
 use craft\gql\types\generators\EntryType;
 use GraphQL\Type\Definition\InterfaceType;
@@ -19,15 +19,15 @@ class Entry extends BaseElement
      */
     public static function getType($fields = null): Type
     {
-        if ($type = TypeRegistry::getType(self::class)) {
+        if ($type = GqlEntityRegistry::getEntity(self::class)) {
             return $type;
         }
 
-        $type = TypeRegistry::createType(self::class, new InterfaceType([
+        $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
             'resolveType' => function (EntryElement $value) {
-                return TypeRegistry::getType(EntryType::getName($value->getType()));
+                return GqlEntityRegistry::getEntity(EntryType::getName($value->getType()));
             }
         ]));
 

@@ -1,7 +1,7 @@
 <?php
 namespace craft\gql\types;
 
-use craft\gql\TypeRegistry;
+use craft\gql\GqlEntityRegistry;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 
@@ -27,7 +27,7 @@ class DateTimeType extends ScalarType
      */
     public static function getType(): DateTimeType
     {
-        return TypeRegistry::getType(self::class) ?: TypeRegistry::createType(self::class, new self());
+        return GqlEntityRegistry::getEntity(self::class) ?: GqlEntityRegistry::createEntity(self::class, new self());
     }
 
     /**
