@@ -145,7 +145,7 @@ class Craft extends Yii2
 
         self::$currentTest = $test;
 
-        // If full mock. Create the mock app and dont to any further actions.
+        // If full mock. Create the mock app and dont perform to any further actions.
         if ($this->_getConfig('fullMock')) {
             $mockApp = TestSetup::getMockApp($test);
             \Craft::$app = $mockApp;
@@ -153,8 +153,6 @@ class Craft extends Yii2
 
             return;
         }
-
-        parent::_before($test);
 
         // Re-apply project config - Fixtures may have done stuff...
         if ($projectConfig = $this->_getConfig('projectConfig')) {
