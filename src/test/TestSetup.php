@@ -6,6 +6,7 @@
  */
 namespace craft\test;
 
+use Codeception\TestInterface;
 use Craft;
 use craft\mail\Mailer;
 use craft\services\ProjectConfig;
@@ -18,7 +19,12 @@ use craft\migrations\Install;
 use craft\models\Site;
 use craft\services\Config;
 use craft\web\Application;
+use craft\web\ErrorHandler;
+use craft\web\Request;
+use craft\web\Response;
+use craft\web\Session;
 use craft\web\UploadedFile;
+use craft\web\User;
 use craftunit\console\ConsoleTest;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Event;
@@ -65,6 +71,7 @@ use craft\services\Users;
 use craft\services\Utilities;
 use craft\services\Volumes;
 use yii\mutex\Mutex;
+use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 
 /**
  * Class TestSetup.
@@ -173,11 +180,7 @@ class TestSetup
         $srcPath = $basePath . '/src';
         $vendorPath = CRAFT_VENDOR_PATH;
 
-        // Determine the app type. If the parent is `craft\test\console\ConsoleTest`. Its a console test. Else, web.
-        $appType = 'web';
-        if (CraftTest::$currentTest instanceof ConsoleTest) {
-            $appType = 'console';
-        }
+        $appType = self::appType();
 
         Craft::setAlias('@craftunitsupport', $srcPath.'/test');
         Craft::setAlias('@craftunittemplates', $basePath.'/tests/_craft/templates');
@@ -222,14 +225,43 @@ class TestSetup
 
         $config['vendorPath'] = $vendorPath;
 
-        $class = $appType === 'console' ?  \craft\console\Application::class
-            : Application::class;
+        $class = self::appClass($appType);
 
         return ArrayHelper::merge($config, [
             'class' => $class,
             'id' => 'craft-test',
             'basePath' => $srcPath
         ]);
+    }
+
+    /**
+     * Determine the app type. If the parent is `craft\test\console\ConsoleTest`.
+     * Its a console test. Else, web.
+     *
+     * @return string
+     */
+    public static function appType() : string
+    {
+        $appType = 'web';
+        if (CraftTest::$currentTest instanceof ConsoleTest) {
+            $appType = 'console';
+        }
+
+        return $appType;
+    }
+
+    /**
+     * @param string $preDefinedAppType
+     * @return string
+     */
+    public static function appClass(string $preDefinedAppType = '')
+    {
+        if (!$preDefinedAppType) {
+            $preDefinedAppType = self::appType();
+        }
+
+        return $preDefinedAppType === 'console' ?  \craft\console\Application::class
+            : Application::class;
     }
 
     /**
@@ -361,11 +393,70 @@ class TestSetup
     }
 
     /**
+     * @param CodeceptionTestCase $test
+     * @param array $serviceMap
+     * @param string $appClass
+     * @return \PHPUnit\Framework\MockObject\MockObject
+     * @throws \ReflectionException
+     * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
+     */
+    public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], string $appClass = '')
+    {
+        $appClass = $appClass ?: self::appClass();
+        $serviceMap = $serviceMap ?: self::getCraftServiceMap();
+
+        $mockApp = self::getMock($test, $appClass);
+
+        $mockMapForMagicGet = [];
+
+        foreach ($serviceMap as $craftComponent) {
+            $class = $craftComponent[0];
+            list ($accessMethod, $accessProperty) = $craftComponent[1];
+
+            $mock = self::getMock($test, $class);
+
+            if ($accessProperty) {
+                // Set the map.
+                $mockMapForMagicGet[] = [$accessProperty, $mock];
+            }
+
+            if ($accessMethod) {
+                $mockApp->expects($test->any())
+                    ->method($accessMethod)
+                    ->willReturn($mock);
+            }
+        }
+
+        $mockApp->expects($test->any())
+            ->method('__get')
+            ->willReturnMap($mockMapForMagicGet);
+
+        return $mockApp;
+
+    }
+
+    /**
+     * @param CodeceptionTestCase $test
+     * @param string $class
+     * @return \PHPUnit\Framework\MockObject\MockObject
+     * @throws \ReflectionException
+     * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
+     */
+    public static function getMock(CodeceptionTestCase $test, string $class)
+    {
+        return $test->getMockBuilder($class)
+            ->disableOriginalConstructor()
+            ->getMock();
+    }
+
+    /**
+     * @todo Missed any?
+     *
      * @return array
      */
     public static function getCraftServiceMap() : array
     {
-        return [
+        $map = [
             [Api::class, ['getApi', 'api']],
             [Assets::class, ['getAssets', 'assets']],
             [AssetIndexer::class, ['getAssetIndexer', 'assetIndexer']],
@@ -411,5 +502,28 @@ class TestSetup
             [Utilities::class, ['getUtilities', 'utilities']],
             [Volumes::class, ['getVolumes', 'volumes']],
         ];
+
+        $appType = self::appType();
+
+        if ($appType === 'web') {
+            $map = ArrayHelper::merge($map, [
+                [Request::class, ['getRequest', 'request']],
+                [Session::class, ['getSession', 'session']],
+                [ErrorHandler::class, ['getErrorHandler', 'errorHandler']],
+                [Response::class, ['getResponse', 'response']],
+                [User::class, ['getUser', 'user']],
+            ]);
+        }
+
+        if ($appType === 'console') {
+            $map = ArrayHelper::merge($map, [
+                [\craft\console\Request::class, ['getRequest', 'request']],
+                [\yii\console\ErrorHandler::class, ['getErrorHandler', 'errorHandler']],
+                [\yii\console\Response::class, ['getResponse', 'response']],
+                [\craft\console\User::class, ['getUser', 'user']],
+            ]);
+        }
+
+        return $map;
     }
 }

@@ -83,7 +83,8 @@ class Craft extends Yii2
     protected $addedConfig = [
         'plugins' => [],
         'setupDb' => null,
-        'projectConfig' => null
+        'projectConfig' => null,
+        'fullMock' => false,
     ];
 
     /**
@@ -125,10 +126,14 @@ class Craft extends Yii2
      */
     public function _initialize()
     {
-        Craft::$testConfig = $this->_getConfig();
-        $this->setupDb();
-
         parent::_initialize();
+
+        $config = $this->_getConfig();
+        Craft::$testConfig =  $config;
+
+        if (!$config['fullMock']) {
+            $this->setupDb();
+        }
     }
 
     /**
@@ -136,7 +141,18 @@ class Craft extends Yii2
      */
     public function _before(TestInterface $test)
     {
+        parent::_before($test);
+
         self::$currentTest = $test;
+
+        // If full mock. Create the mock app and dont to any further actions.
+        if ($this->_getConfig('fullMock')) {
+            $mockApp = TestSetup::getMockApp($test);
+            \Craft::$app = $mockApp;
+            \Yii::$app = $mockApp;
+
+            return;
+        }
 
         parent::_before($test);
 
@@ -162,6 +178,12 @@ class Craft extends Yii2
      */
     public function _after(TestInterface $test)
     {
+        if ($this->_getConfig('fullMock')) {
+            parent::_after($test);
+
+            return;
+        }
+
         // Ensure elements get hard deleted
         Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, function(DeleteElementEvent $event) {
             $event->hardDelete = true;

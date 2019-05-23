@@ -35,3 +35,4 @@ modules:
             cleanup: true # Should tests and fixtures be cleaned
             transaction: true # Wrap in transaction
             dbSetup: {clean: true, setupCraft: true} # What DB setup work do we need to do.
+            fullMock: false
