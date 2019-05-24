@@ -10,21 +10,20 @@ namespace craft\services;
 use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
-use craft\gql\common\SchemaObject;
+use craft\gql\common\BaseType;
 use craft\gql\directives\BaseDirective;
+use craft\gql\directives\Directive;
 use craft\gql\directives\FormatDateTime;
-use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\queries\Entry as EntryQuery;
 use craft\gql\queries\MatrixBlock as MatrixBlockQuery;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTimeType;
-use craft\gql\types\generators\EntryType;
-use craft\gql\types\generators\MatrixBlockType;
+use craft\gql\types\generators\EntryTypeGenerator;
+use craft\gql\types\generators\MatrixBlockTypeGenerator;
 use craft\gql\types\Query;
 use GraphQL\GraphQL;
-use GraphQL\Type\Definition\Directive;
 use GraphQL\Type\Schema;
 use yii\base\Component;
 
@@ -93,7 +92,7 @@ class Gql extends Component
 
             if ($devMode) {
                 // @todo: allow plugins to register their generators
-                $schemaConfig['types'] = array_merge(EntryType::generateTypes(), MatrixBlockType::generateTypes());
+                $schemaConfig['types'] = array_merge(EntryTypeGenerator::generateTypes(), MatrixBlockTypeGenerator::generateTypes());
             }
 
             $this->_schema = new Schema($schemaConfig);
@@ -131,7 +130,7 @@ class Gql extends Component
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
         foreach ($event->types as $type) {
-            /** @var SchemaObject $type */
+            /** @var BaseType $type */
             TypeLoader::registerType($type::getName(), $type . '::getType');
         }
     }

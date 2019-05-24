@@ -4,7 +4,7 @@ namespace craft\gql\interfaces\elements;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\generators\MatrixBlockType;
+use craft\gql\types\generators\MatrixBlockTypeGenerator;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -26,11 +26,11 @@ class MatrixBlock extends BaseElement
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
             'resolveType' => function (MatrixBlockElement $value) {
-                return GqlEntityRegistry::getEntity(MatrixBlockType::getName($value->getType()));
+                return GqlEntityRegistry::getEntity(MatrixBlockTypeGenerator::getName($value->getType()));
             }
         ]));
 
-        foreach (MatrixBlockType::generateTypes() as $typeName => $generatedType) {
+        foreach (MatrixBlockTypeGenerator::generateTypes() as $typeName => $generatedType) {
             TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
         }
 
