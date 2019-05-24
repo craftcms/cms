@@ -13,7 +13,7 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class MatrixBlock
  */
-class MatrixBlock extends StructureElement
+class MatrixBlock extends BaseElement
 {
     /**
      * @inheritdoc
