@@ -10,6 +10,7 @@ use Craft;
 use craft\mail\Mailer;
 use craft\services\Fields;
 use craft\services\ProjectConfig;
+use craft\services\SystemSettings;
 use craft\test\Craft as CraftTest;
 use craft\db\Connection;
 use craft\db\Migration;
@@ -523,6 +524,8 @@ class TestSetup
             [Sections::class, ['getSections', 'sections']],
             [Sites::class, ['getSites', 'sites']],
             [Structures::class, ['getStructures', 'structures']],
+            [SystemSettings::class, ['getSystemSettings', 'systemSettings']],
+            [SystemMessages::class, ['getSystemMessages', 'systemMessages']],
             [Tags::class, ['getTags', 'tags']],
             [TemplateCaches::class, ['getTemplateCaches', 'templateCaches']],
             [Tokens::class, ['getTokens', 'tokens']],
