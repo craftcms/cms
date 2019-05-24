@@ -141,9 +141,9 @@ class Craft extends Yii2
      */
     public function _before(TestInterface $test)
     {
-        parent::_before($test);
-
         self::$currentTest = $test;
+
+        parent::_before($test);
 
         // If full mock. Create the mock app and dont perform to any further actions.
         if ($this->_getConfig('fullMock') === true) {
