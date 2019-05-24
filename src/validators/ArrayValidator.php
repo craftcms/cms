@@ -102,36 +102,12 @@ class ArrayValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    protected function validateValue($value)
     {
-        $value = $model->$attribute;
-
         if (!$value instanceof \Countable && !is_array($value)) {
             $this->addError($model, $attribute, $this->message);
 
             return;
-        }
-
-        $count = count($value);
-
-        if ($this->min !== null && $count < $this->min) {
-            $this->addError($model, $attribute, $this->tooFew, ['min' => $this->min]);
-        }
-        if ($this->max !== null && $count > $this->max) {
-            $this->addError($model, $attribute, $this->tooMany, ['max' => $this->max]);
-        }
-        if ($this->count !== null && $count !== $this->count) {
-            $this->addError($model, $attribute, $this->notEqual, ['count' => $this->count]);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function validateValue($value)
-    {
-        if (!is_string($value)) {
-            return [$this->message, []];
         }
 
         $count = count((array)$value);
