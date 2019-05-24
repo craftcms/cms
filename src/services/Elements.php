@@ -28,6 +28,7 @@ use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
 use craft\errors\OperationAbortedException;
+use craft\errors\SiteNotFoundException;
 use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
 use craft\events\MergeElementsEvent;
@@ -1411,10 +1412,10 @@ class Elements extends Component
      * Parses a string for element [reference tags](http://craftcms.com/docs/reference-tags).
      *
      * @param string $str The string to parse
-     * @param int|null $siteId The site ID to query the elements in
+     * @param int|null $defaultSiteId The default site ID to query the elements in
      * @return string The parsed string
      */
-    public function parseRefs(string $str, int $siteId = null): string
+    public function parseRefs(string $str, int $defaultSiteId = null): string
     {
         if (!StringHelper::contains($str, '{')) {
             return $str;
@@ -1422,21 +1423,53 @@ class Elements extends Component
 
         // First catalog all of the ref tags by element type, ref type ('id' or 'ref'), and ref name,
         // and replace them with placeholder tokens
+        $sitesService = Craft::$app->getSites();
         $allRefTagTokens = [];
-        $str = preg_replace_callback('/\{([\w\\\\]+)\:([^\:\}]+)(?:\:([^\}]+))?\}/', function($matches) use (&$allRefTagTokens) {
-            // Does it already have a full element type class name?
-            if (is_subclass_of($matches[1], ElementInterface::class)) {
-                $elementType = $matches[1];
-            } else if (($elementType = $this->getElementTypeByRefHandle($matches[1])) === null) {
-                // Leave the tag alone
-                return $matches[0];
-            }
-            $refType = is_numeric($matches[2]) ? 'id' : 'ref';
-            $token = '{' . StringHelper::randomString(9) . '}';
-            $allRefTagTokens[$elementType][$refType][$matches[2]][] = [$token, $matches];
+        $str = preg_replace_callback(
+            '/\{([\w\\\\]+)\:([^@\:\}]+)(?:@([^\:\}]+))?(?:\:([^\}]+))?\}/',
+            function($matches) use (
+                $defaultSiteId,
+                $sitesService,
+                &$allRefTagTokens
+            ) {
+                // Does it already have a full element type class name?
+                if (is_subclass_of($matches[1], ElementInterface::class)) {
+                    $elementType = $matches[1];
+                } else if (($elementType = $this->getElementTypeByRefHandle($matches[1])) === null) {
+                    // Leave the tag alone
+                    return $matches[0];
+                }
 
-            return $token;
-        }, $str, -1, $count);
+                // Get the site
+                if (!empty($matches[3])) {
+                    if (is_numeric($matches[3])) {
+                        $siteId = (int)$matches[3];
+                    } else {
+                        try {
+                            if (StringHelper::isUUID($matches[3])) {
+                                $site = $sitesService->getSiteByUid($matches[3]);
+                            } else {
+                                $site = $sitesService->getSiteByHandle($matches[3]);
+                            }
+                        } catch (SiteNotFoundException $e) {
+                            $site = null;
+                        }
+                        if (!$site) {
+                            // Leave the tag alone
+                            return $matches[0];
+                        }
+                        $siteId = $site->id;
+                    }
+                } else {
+                    $siteId = $defaultSiteId;
+                }
+
+                $refType = is_numeric($matches[2]) ? 'id' : 'ref';
+                $token = '{' . StringHelper::randomString(9) . '}';
+                $allRefTagTokens[$siteId][$elementType][$refType][$matches[2]][] = [$token, $matches];
+
+                return $token;
+            }, $str, -1, $count);
 
         if ($count === 0) {
             // No ref tags
@@ -1447,30 +1480,32 @@ class Elements extends Component
         $search = [];
         $replace = [];
 
-        foreach ($allRefTagTokens as $elementType => $tokensByType) {
-            /** @var Element|string $elementType */
-            foreach ($tokensByType as $refType => $tokensByName) {
-                // Get the elements, indexed by their ref value
-                $refNames = array_keys($tokensByName);
-                $elementQuery = $elementType::find()
-                    ->siteId($siteId)
-                    ->anyStatus();
+        foreach ($allRefTagTokens as $siteId => $siteTokens) {
+            foreach ($siteTokens as $elementType => $tokensByType) {
+                /** @var Element|string $elementType */
+                foreach ($tokensByType as $refType => $tokensByName) {
+                    // Get the elements, indexed by their ref value
+                    $refNames = array_keys($tokensByName);
+                    $elementQuery = $elementType::find()
+                        ->siteId($siteId)
+                        ->anyStatus();
 
-                if ($refType === 'id') {
-                    $elementQuery->id($refNames);
-                } else {
-                    $elementQuery->ref($refNames);
-                }
+                    if ($refType === 'id') {
+                        $elementQuery->id($refNames);
+                    } else {
+                        $elementQuery->ref($refNames);
+                    }
 
-                $elements = ArrayHelper::index($elementQuery->all(), $refType);
+                    $elements = ArrayHelper::index($elementQuery->all(), $refType);
 
-                // Now append new token search/replace strings
-                foreach ($tokensByName as $refName => $tokens) {
-                    $element = $elements[$refName] ?? null;
+                    // Now append new token search/replace strings
+                    foreach ($tokensByName as $refName => $tokens) {
+                        $element = $elements[$refName] ?? null;
 
-                    foreach ($tokens as list($token, $matches)) {
-                        $search[] = $token;
-                        $replace[] = $this->_getRefTokenReplacement($element, $matches);
+                        foreach ($tokens as list($token, $matches)) {
+                            $search[] = $token;
+                            $replace[] = $this->_getRefTokenReplacement($element, $matches);
+                        }
                     }
                 }
             }
@@ -1787,13 +1822,13 @@ class Elements extends Component
             return $matches[0];
         }
 
-        if (empty($matches[3]) || !isset($element->{$matches[3]})) {
+        if (empty($matches[4]) || !isset($element->{$matches[4]})) {
             // Default to the URL
             return (string)$element->getUrl();
         }
 
         try {
-            $value = $element->{$matches[3]};
+            $value = $element->{$matches[4]};
 
             if (is_object($value) && !method_exists($value, '__toString')) {
                 throw new Exception('Object of class ' . get_class($value) . ' could not be converted to string');

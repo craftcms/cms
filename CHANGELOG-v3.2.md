@@ -66,6 +66,7 @@
 
 ### Changed
 - Relational fields are now capable of selecting elements from multiple sites, if they haven’t been locked down to only related elements from a single site. ([#3584](https://github.com/craftcms/cms/issues/3584))
+- Reference tags can now specify the site to load the element from. ([#2956](https://github.com/craftcms/cms/issues/2956))
 - Improved the button layout of Edit Entry pages. ([#2325](https://github.com/craftcms/cms/issues/2325))
 - The Control Panel now shows the sidebar on screens that are at least 1,000 pixels wide. ([#4079](https://github.com/craftcms/cms/issues/4079))
 - The `_layouts/cp` template now supports a `showHeader` variable that can be set to `false` to remove the header.
