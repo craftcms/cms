@@ -4,6 +4,7 @@
 
 ### Changed
 - Asset indexes now sort assets by Date Uploaded in descending order by default. ([#1153](https://github.com/craftcms/cms/issues/1153))
+- `craft\db\Paginator` no longer assumes that the application’s database connection should be used.
 
 ### Fixed
 - Fixed a bug where the Status menu wasn’t visible for the “All users” source on user indexes. ([#4306](https://github.com/craftcms/cms/pull/4306))
