@@ -121,22 +121,22 @@ class Elements extends Component
     const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
 
     /**
-     * @event ElementEvent The event that is triggered before resaving a batch of elements.
+     * @event ResaveElementsEvent The event that is triggered before resaving a batch of elements.
      */
     const EVENT_BEFORE_RESAVE_ELEMENTS = 'beforeResaveElements';
 
     /**
-     * @event ElementEvent The event that is triggered after resaving a batch of elements.
+     * @event ResaveElementsEvent The event that is triggered after resaving a batch of elements.
      */
     const EVENT_AFTER_RESAVE_ELEMENTS = 'afterResaveElements';
 
     /**
-     * @event ElementEvent The event that is triggered before an element is resaved.
+     * @event ResaveElementEvent The event that is triggered before an element is resaved.
      */
     const EVENT_BEFORE_RESAVE_ELEMENT = 'beforeResaveElement';
 
     /**
-     * @event ElementEvent The event that is triggered after an element is resaved.
+     * @event ResaveElementEvent The event that is triggered after an element is resaved.
      */
     const EVENT_AFTER_RESAVE_ELEMENT = 'afterResaveElement';
 
@@ -667,7 +667,7 @@ class Elements extends Component
      */
     public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false)
     {
-        // Fire a 'beforeSaveElements' event
+        // Fire a 'beforeResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
             $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENTS, new ResaveElementsEvent([
                 'query' => $query,
@@ -685,7 +685,7 @@ class Elements extends Component
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
                 $element->resaving = true;
 
-                // Fire a 'beforeSaveElement' event
+                // Fire a 'beforeResaveElement' event
                 if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
                     $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new ResaveElementEvent([
                         'query' => $query,
@@ -704,7 +704,7 @@ class Elements extends Component
                     Craft::$app->getErrorHandler()->logException($e);
                 }
 
-                // Fire an 'afterSaveElement' event
+                // Fire an 'afterResaveElement' event
                 if ($this->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENT)) {
                     $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENT, new ResaveElementEvent([
                         'query' => $query,
@@ -718,7 +718,7 @@ class Elements extends Component
             // Fail silently
         }
 
-        // Fire an 'afterSaveElements' event
+        // Fire an 'afterResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENTS)) {
             $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENTS, new ResaveElementsEvent([
                 'query' => $query,
