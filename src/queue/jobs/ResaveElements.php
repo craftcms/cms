@@ -49,14 +49,14 @@ class ResaveElements extends BaseJob
 
         /** @var ElementQuery $query */
         $query = $this->_query();
-        $count = $query->count();
+        $total = $query->count();
         $elementsService = Craft::$app->getElements();
 
-        $callback = function(BatchElementActionEvent $e) use ($queue, $query, $count) {
+        $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total) {
             if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $count, Craft::t('app', '{step} of {total}', [
+                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step} of {total}', [
                     'step' => $e->position,
-                    'total' => $count,
+                    'total' => $total,
                 ]));
             }
         };
@@ -78,9 +78,9 @@ class ResaveElements extends BaseJob
         $query = $this->_query();
         /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
-        $totalElements = $query->count();
+        $total = $query->count();
         return Craft::t('app', 'Resaving {type}', [
-            'type' => mb_strtolower($totalElements == 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
+            'type' => mb_strtolower($total == 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
         ]);
     }
 

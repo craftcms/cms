@@ -59,15 +59,15 @@ class PropagateElements extends BaseJob
 
         /** @var ElementQuery $query */
         $query = $this->_query();
-        $totalElements = $query->count();
+        $total = $query->count();
         $elementsService = Craft::$app->getElements();
         $currentElement = 0;
 
         try {
             foreach ($query->each() as $element) {
-                $this->setProgress($queue, $currentElement / $totalElements, Craft::t('app', '{step} of {total}', [
+                $this->setProgress($queue, $currentElement / $total, Craft::t('app', '{step} of {total}', [
                     'step' => $currentElement + 1,
-                    'total' => $totalElements,
+                    'total' => $total,
                 ]));
                 $currentElement++;
 
@@ -108,9 +108,9 @@ class PropagateElements extends BaseJob
         $query = $this->_query();
         /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
-        $totalElements = $query->count();
+        $total = $query->count();
         return Craft::t('app', 'Propagating {type}', [
-            'type' => mb_strtolower($totalElements == 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
+            'type' => mb_strtolower($total == 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
         ]);
     }
 
