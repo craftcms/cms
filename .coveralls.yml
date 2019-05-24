@@ -1,2 +1,0 @@
-service_name: travis-pro
-coverage_clover: build/logs/clover.xml
