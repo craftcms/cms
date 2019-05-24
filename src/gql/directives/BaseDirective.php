@@ -25,8 +25,9 @@ abstract class BaseDirective extends Directive
     /**
      * Apply the directive to the value with arguments
      *
-     * @param $value
-     * @param array $arguments
+     * @param mixed $source The original source from which the value was resolved
+     * @param mixed $value The value that was resolved
+     * @param array $arguments for the directive
      */
-    abstract public static function applyDirective($value, array $arguments);
+    abstract public static function applyDirective($source, $value, array $arguments);
 }

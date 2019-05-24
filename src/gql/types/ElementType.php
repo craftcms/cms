@@ -60,7 +60,7 @@ abstract class ElementType extends ObjectType
                     }
                 }
 
-                $value = $directiveEntity::applyDirective($value, $arguments);
+                $value = $directiveEntity::applyDirective($source, $value, $arguments);
             }
         }
 
