@@ -8,6 +8,7 @@
 namespace craftunit\console;
 
 use \craft\test\console\ConsoleTest as BaseConsoleTest;
+use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 
 /**
@@ -23,10 +24,11 @@ class ConsoleTest extends BaseConsoleTest
     // =========================================================================
 
     /**
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function testStuff()
     {
+        $this->markTestIncomplete();
         $this->consoleCommand('update/info')
             ->stdOut('Fetching available updates ... ')
             ->stdOut('done' . PHP_EOL)
@@ -37,6 +39,7 @@ class ConsoleTest extends BaseConsoleTest
 
     public function testTestController()
     {
+        $this->markTestIncomplete();
         $this->consoleCommand('test/test')
             ->stdOut('22')
             ->stderr('123321123')

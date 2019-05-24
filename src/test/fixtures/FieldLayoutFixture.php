@@ -141,9 +141,8 @@ abstract class FieldLayoutFixture extends Fixture
 
         if ($layoutId) {
             $layoutId = ArrayHelper::firstValue($layoutId);
-            $layout = Craft::$app->getFields()->getLayoutById($layoutId);
 
-            foreach ($layout->getTabs() as $tab) {
+            foreach (Craft::$app->getFields()->getLayoutById($layoutId)->getTabs() as $tab) {
                 foreach ($tab->getFields() as $field) {
                     if (!Craft::$app->getFields()->deleteField($field)) {
                         $this->throwModelError($field);
@@ -199,19 +198,14 @@ abstract class FieldLayoutFixture extends Fixture
     }
 
     /**
+     * @param array $link
      * @param Field $field
      * @param FieldLayout $fieldLayout
      * @param FieldLayoutTab $tab
-     * @param int $sortOrder
      * @return bool
      * @throws YiiDbException
      */
-    protected function linkFieldToLayout(
-        array $link,
-        Field $field,
-        FieldLayout $fieldLayout,
-        FieldLayoutTab $tab
-    ) : bool {
+    protected function linkFieldToLayout(array $link, Field $field, FieldLayout $fieldLayout, FieldLayoutTab $tab) : bool {
         $link['fieldId'] = $field->id;
         $link['tabId'] = $tab->id;
         $link['layoutId'] = $fieldLayout->id;

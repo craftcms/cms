@@ -17,16 +17,11 @@ services:
 matrix:
   fast_finish: true
   include:
-    - php: 7.4snapshot
     - php: 7.3
     - php: 7.2
     # Run tests coverage on PHP 7.1
     - php: 7.1
       env: TASK_TESTS_COVERAGE=1
-    - php: 7.0
-
-allow_failures:
-  - php: 7.4snapshot
 
 # Cache some folders to speed things up.
 cache:
@@ -55,7 +50,6 @@ install:
     export PATH="$HOME/.composer/vendor/bin:$PATH"
     travis_retry composer install $DEFAULT_COMPOSER_FLAGS
     touch tests/.env
-    mkdir tests/_support/_generated
 
 before_script:
   - |
@@ -79,14 +73,18 @@ before_script:
 
 script:
   - |
-    php vendor/bin/codecept run tests/unit/helpers/ArrayHelperTest.php:testToArray;
-#script:
-#  - |
-#    # if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
-#      php -d display_errors=on -d max_execution_time=-1 -d memory_limit=2048M -d error_reporting=-1 vendor/codeception/codeception/codecept run tests/unit/helpers/ArrayHelperTest.php:testToArray;
-#    # else
-#    #  vendor/bin/codecept run unit --coverage --coverage-xml;
-#    # fi
+    if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
+      vendor/bin/codecept run unit
+    else
+      mkdir -p build/logs
+      vendor/bin/codecept run unit --coverage-xml coverage.xml;
+    fi
+
+after_script:
+  - |
+    if [ $TASK_TESTS_COVERAGE == 1 ]; then
+      bash <(curl -s https://codecov.io/bash)
+    fi
 
 #after_script:
 #  - |
@@ -94,6 +92,14 @@ script:
 #      travis_retry wget https://scrutinizer-ci.com/ocular.phar
 #      php ocular.phar code-coverage:upload --format=php-clover coverage.clover
 #    fi
+
+#script:
+#  - |
+#    # if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
+#      php -d display_errors=on -d max_execution_time=-1 -d memory_limit=2048M -d error_reporting=-1 vendor/codeception/codeception/codecept run tests/unit/helpers/ArrayHelperTest.php:testToArray;
+#    # else
+#    #  vendor/bin/codecept run unit --coverage --coverage-xml;
+#    # fi
 
 #jobs:
 #  include:

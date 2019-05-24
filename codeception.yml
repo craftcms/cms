@@ -13,15 +13,14 @@ coverage:
   enabled: true
   include:
     - src/*
-      exclude:
-        - tests/_support/_generated/*
-        - src/config/*
-        - src/icons/*
-        - src/test/*
-        - src/migrations/*
-        - src/templates/*
-        - src/translations/*
-        - src/migration.php.template
+  exclude:
+    - tests/_support/_generated/*
+    - src/config/*
+    - src/icons/*
+    - src/test/*
+    - src/migrations/*
+    - src/templates/*
+    - src/translations/*
 params:
   - env
   - tests/.env

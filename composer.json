@@ -58,7 +58,8 @@
     "codeception/verify": "^1.0",
     "vlucas/phpdotenv": "^3.0",
     "league/factory-muffin": "^3.0",
-    "fzaninotto/faker": "^1.8"
+    "fzaninotto/faker": "^1.8",
+    "php-coveralls/php-coveralls": "^2.1"
   },
   "provide": {
     "bower-asset/bootstrap": "3.3.* | 3.2.* | 3.1.*",

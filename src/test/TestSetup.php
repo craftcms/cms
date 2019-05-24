@@ -6,7 +6,6 @@
  */
 namespace craft\test;
 
-use Codeception\TestInterface;
 use Craft;
 use craft\mail\Mailer;
 use craft\services\ProjectConfig;
@@ -26,6 +25,8 @@ use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
 use craftunit\console\ConsoleTest;
+use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionException;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
@@ -405,8 +406,8 @@ class TestSetup
      * @param CodeceptionTestCase $test
      * @param array $serviceMap
      * @param string $appClass
-     * @return \PHPUnit\Framework\MockObject\MockObject
-     * @throws \ReflectionException
+     * @return MockObject
+     * @throws ReflectionException
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
     public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], string $appClass = '')
@@ -451,8 +452,7 @@ class TestSetup
     /**
      * @param CodeceptionTestCase $test
      * @param string $class
-     * @return \PHPUnit\Framework\MockObject\MockObject
-     * @throws \ReflectionException
+     * @return MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
     public static function getMock(CodeceptionTestCase $test, string $class)
