@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Elements::propagateElements()` along with `EVENT_BEFORE_PROPAGATE_ELEMENTS`, `EVENT_AFTER_PROPAGATE_ELEMENTS`, `EVENT_BEFORE_PROPAGATE_ELEMENT`, and `EVENT_AFTER_PROPAGATE_ELEMENT` events. ([#4139](https://github.com/craftcms/cms/issues/4139))
+
 ### Changed
 - Reference tags can now specify the site to load the element from. ([#2956](https://github.com/craftcms/cms/issues/2956))
 - Renamed `craft\events\ResaveElementEvent` to `BatchElementActionEvent`.

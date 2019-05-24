@@ -141,6 +141,26 @@ class Elements extends Component
     const EVENT_AFTER_RESAVE_ELEMENT = 'afterResaveElement';
 
     /**
+     * @event ElementQueryEvent The event that is triggered before propagating a batch of elements.
+     */
+    const EVENT_BEFORE_PROPAGATE_ELEMENTS = 'beforePropagateElements';
+
+    /**
+     * @event ElementQueryEvent The event that is triggered after propagating a batch of elements.
+     */
+    const EVENT_AFTER_PROPAGATE_ELEMENTS = 'afterPropagateElements';
+
+    /**
+     * @event BatchElementActionEvent The event that is triggered before an element is propagated.
+     */
+    const EVENT_BEFORE_PROPAGATE_ELEMENT = 'beforePropagateElement';
+
+    /**
+     * @event BatchElementActionEvent The event that is triggered after an element is propagated.
+     */
+    const EVENT_AFTER_PROPAGATE_ELEMENT = 'afterPropagateElement';
+
+    /**
      * @event ElementEvent The event that is triggered before an element’s slug and URI are updated, usually following a Structure move.
      */
     const EVENT_BEFORE_UPDATE_SLUG_AND_URI = 'beforeUpdateSlugAndUri';
@@ -721,6 +741,92 @@ class Elements extends Component
         // Fire an 'afterResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENTS)) {
             $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENTS, new ElementQueryEvent([
+                'query' => $query,
+            ]));
+        }
+    }
+
+    /**
+     * Propagates all elements that match a given element query to another site(s).
+     *
+     * @param ElementQueryInterface $query The element query to fetch elements with
+     * @var int|int[]|null The site ID(s) that the elements should be propagated to. If null, elements will be
+     * propagated to all supported sites, except the one they were queried in.
+     * @param bool $continueOnError Whether to continue going if an error occurs
+     * @throws \Throwable if reasons
+     * @since 3.2.0
+     */
+    public function propagateElements(ElementQueryInterface $query, $siteIds = null, bool $continueOnError = false)
+    {
+        // Fire a 'beforePropagateElements' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENTS)) {
+            $this->trigger(self::EVENT_BEFORE_PROPAGATE_ELEMENTS, new ElementQueryEvent([
+                'query' => $query,
+            ]));
+        }
+
+        if ($siteIds !== null) {
+            $siteIds = (array)$siteIds;
+        }
+
+        $position = 0;
+
+        try {
+            /** @var ElementQuery $query */
+            foreach ($query->each() as $element) {
+                $position++;
+
+                /** @var Element $element */
+                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                $elementSiteIds = $siteIds ?? ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
+                /** @var ElementInterface|string $elementType */
+                $elementType = get_class($element);
+
+                // Fire a 'beforePropagateElement' event
+                if ($this->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENT)) {
+                    $this->trigger(self::EVENT_BEFORE_PROPAGATE_ELEMENT, new BatchElementActionEvent([
+                        'query' => $query,
+                        'element' => $element,
+                        'position' => $position,
+                    ]));
+                }
+
+                $e = null;
+                try {
+                    foreach ($elementSiteIds as $siteId) {
+                        if ($siteId != $element->siteId) {
+                            // Make sure the site element wasn't updated more recently than the main one
+                            /** @var Element $siteElement */
+                            $siteElement = $this->getElementById($element->id, $elementType, $siteId);
+                            if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
+                                $this->propagateElement($element, $siteId, $siteElement);
+                            }
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    if (!$continueOnError) {
+                        throw $e;
+                    }
+                    Craft::$app->getErrorHandler()->logException($e);
+                }
+
+                // Fire an 'afterPropagateElement' event
+                if ($this->hasEventHandlers(self::EVENT_AFTER_PROPAGATE_ELEMENT)) {
+                    $this->trigger(self::EVENT_AFTER_PROPAGATE_ELEMENT, new BatchElementActionEvent([
+                        'query' => $query,
+                        'element' => $element,
+                        'position' => $position,
+                        'exception' => $e,
+                    ]));
+                }
+            }
+        } catch (QueryAbortedException $e) {
+            // Fail silently
+        }
+
+        // Fire an 'afterPropagateElements' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_PROPAGATE_ELEMENTS)) {
+            $this->trigger(self::EVENT_AFTER_PROPAGATE_ELEMENTS, new ElementQueryEvent([
                 'query' => $query,
             ]));
         }

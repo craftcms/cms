@@ -12,11 +12,13 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
+use craft\events\BatchElementActionEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\elements\db\ElementQueryInterface;
 use craft\queue\BaseJob;
+use craft\services\Elements;
 
 /**
  * PropagateElements job
@@ -61,39 +63,19 @@ class PropagateElements extends BaseJob
         $query = $this->_query();
         $total = $query->count();
         $elementsService = Craft::$app->getElements();
-        $currentElement = 0;
 
-        try {
-            foreach ($query->each() as $element) {
-                $this->setProgress($queue, $currentElement / $total, Craft::t('app', '{step} of {total}', [
-                    'step' => $currentElement + 1,
+        $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total) {
+            if ($e->query === $query) {
+                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step} of {total}', [
+                    'step' => $e->position,
                     'total' => $total,
                 ]));
-                $currentElement++;
-
-                /** @var Element $element */
-                $element->setScenario(Element::SCENARIO_ESSENTIALS);
-
-                if ($this->siteId) {
-                    $siteIds = (array)$this->siteId;
-                } else {
-                    $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
-                }
-
-                foreach ($siteIds as $siteId) {
-                    if ($siteId != $element->siteId) {
-                        // Make sure the site element wasn't updated more recently than the main one
-                        /** @var Element $siteElement */
-                        $siteElement = $elementsService->getElementById($element->id, $this->elementType, $siteId);
-                        if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
-                            $elementsService->propagateElement($element, $siteId, $siteElement);
-                        }
-                    }
-                }
             }
-        } catch (QueryAbortedException $e) {
-            // Fail silently
-        }
+        };
+
+        $elementsService->on(Elements::EVENT_BEFORE_PROPAGATE_ELEMENT, $callback);
+        $elementsService->propagateElements($query, $this->siteId);
+        $elementsService->off(Elements::EVENT_BEFORE_PROPAGATE_ELEMENT, $callback);
     }
 
     // Protected Methods
