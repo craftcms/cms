@@ -452,32 +452,17 @@ class TestSetup
     }
 
     /**
-     * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      * @param CodeceptionTestCase $test
      * @param string $class
-     * @param array $options
      * @return MockObject
      * @throws ReflectionException
+     * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMock(CodeceptionTestCase $test, string $class, array $options = [])
+    public static function getMock(CodeceptionTestCase $test, string $class)
     {
-        $mockBuilder = $test->getMockBuilder($class);
-
-        if (!$options) {
-            return $mockBuilder
-                ->disableOriginalConstructor()
-                ->getMock();
-        }
-
-        foreach ($options as $option) {
-            $params = $option['params'] ?? null;
-
-            $methodName = $option['methodName'];
-
-            $mockBuilder->$methodName($params);
-        }
-
-        return $mockBuilder->getMock();
+        return $test->getMockBuilder($class)
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 
     /**
