@@ -56,7 +56,7 @@
 - Added `craft\helpers\Component::validateComponentClass()`.
 - Added `craft\models\Section::$propagationMethod`.
 - Added `craft\services\Drafts`, accessible via `Craft::$app->drafts`.
-- Added `craft\services\Elements::resaveElements()` along with `EVENT_BEFORE_RESAVE_ELEMENTS`, `EVENT_AFTER_RESAVE_ELEMENTS`, `EVENT_BEFORE_RESAVE_ELEMENT`, and `EVENT_AFTER_RELAVE_ELEMENT` events. ([#3482](https://github.com/craftcms/cms/issues/3482))
+- Added `craft\services\Elements::resaveElements()` along with `EVENT_BEFORE_RESAVE_ELEMENTS`, `EVENT_AFTER_RESAVE_ELEMENTS`, `EVENT_BEFORE_RESAVE_ELEMENT`, and `EVENT_AFTER_RESAVE_ELEMENT` events. ([#3482](https://github.com/craftcms/cms/issues/3482))
 - Added `craft\services\Revisions`, accessible via `Craft::$app->revisions`.
 - Added `craft\web\Request::getIsLoginRequest()` and `craft\console\Request::getIsLoginRequest()`.
 - Added `craft\web\UrlManager::$checkToken`.
