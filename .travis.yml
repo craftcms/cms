@@ -23,7 +23,6 @@ matrix:
     # Run tests coverage on PHP 7.1
     - php: 7.1
       env: TASK_TESTS_COVERAGE=1
-    - php: 7.0
 
 allow_failures:
   - php: 7.4snapshot
@@ -81,7 +80,8 @@ script:
     if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
       vendor/bin/codecept run unit
     else
-      vendor/bin/codecept run unit --coverage --coverage-xml;
+      mkdir -p build/logs
+      vendor/bin/codecept run unit --coverage-xml build/logs/clover.xml;
     fi
 
 after_script:
