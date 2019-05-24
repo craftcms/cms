@@ -1,11 +1,7 @@
 <?php
 namespace craft\gql\directives;
 
-use craft\gql\GqlEntityRegistry;
-use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive;
-use GraphQL\Type\Definition\FieldArgument;
-use GraphQL\Type\Definition\Type;
 
 /**
  * Class BaseDirective

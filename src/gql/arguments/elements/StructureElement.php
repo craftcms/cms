@@ -1,7 +1,6 @@
 <?php
 namespace craft\gql\arguments\elements;
 
-use craft\gql\arguments\BaseArguments;
 use GraphQL\Type\Definition\Type;
 
 /**

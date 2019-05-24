@@ -1,7 +1,6 @@
 <?php
 namespace craft\gql\arguments;
 
-use craft\gql\types\DateTimeType;
 use GraphQL\Type\Definition\Type;
 
 /**
