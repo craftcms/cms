@@ -83,7 +83,7 @@ script:
 after_script:
   - |
     if [ $TASK_TESTS_COVERAGE == 1 ]; then
-      travis_retry php vendor/bin/php-coveralls --coverage_clover=tests\_output\build\logs\clover.xml
+      travis_retry php vendor/bin/php-coveralls --coverage_clover=tests/_output/build/logs/clover.xml
     fi
 
 #after_script:
