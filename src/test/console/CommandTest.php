@@ -348,7 +348,7 @@ class CommandTest
         }
 
         if ($nextItem->type !== $type) {
-            throw new InvalidArgumentException("A $type message was expected but $nextItem->type was given");
+            $this->test::fail("A $type message was expected but $nextItem->type was given");
         }
 
         $this->eventChainItemsHandled ++;
