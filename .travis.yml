@@ -55,7 +55,6 @@ install:
     export PATH="$HOME/.composer/vendor/bin:$PATH"
     travis_retry composer install $DEFAULT_COMPOSER_FLAGS
     touch tests/.env
-    mkdir tests/_support/_generated
 
 before_script:
   - |
