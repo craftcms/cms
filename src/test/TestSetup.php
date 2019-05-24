@@ -8,6 +8,7 @@ namespace craft\test;
 
 use Craft;
 use craft\mail\Mailer;
+use craft\services\Fields;
 use craft\services\ProjectConfig;
 use craft\test\Craft as CraftTest;
 use craft\db\Connection;
@@ -487,6 +488,7 @@ class TestSetup
             [Entries::class, ['getEntries', 'entries']],
             [EntryRevisions::class, ['getEntryRevisions', 'entryRevisions']],
             [Feeds::class, ['getFeeds', 'feeds']],
+            [Fields::class, ['getFields', 'fields']],
             [Globals::class, ['getGlobals', 'globals']],
             [Images::class, ['getImages', 'images']],
             [Locale::class, ['getLocale', 'locale']],
