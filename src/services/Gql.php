@@ -7,9 +7,13 @@
 
 namespace craft\services;
 
+use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\gql\common\SchemaObject;
+use craft\gql\directives\BaseDirective;
+use craft\gql\directives\FormatDateTime;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\queries\Entry as EntryQuery;
@@ -19,6 +23,8 @@ use craft\gql\types\DateTimeType;
 use craft\gql\types\generators\EntryType;
 use craft\gql\types\generators\MatrixBlockType;
 use craft\gql\types\Query;
+use GraphQL\GraphQL;
+use GraphQL\Type\Definition\Directive;
 use GraphQL\Type\Schema;
 use yii\base\Component;
 
@@ -60,6 +66,8 @@ class Gql extends Component
      */
     const EVENT_REGISTER_GQL_QUERIES = 'registerGqlQueries';
 
+    const EVENT_REGISTER_GQL_DIRECTIVES = 'registerGqlDirectives';
+
     private $_schema;
 
     // Public Methods
@@ -80,6 +88,7 @@ class Gql extends Component
             $schemaConfig = [
                 'typeLoader' => TypeLoader::class . '::loadType',
                 'query' => TypeLoader::loadType('Query'),
+                'directives' => $this->_loadGqlDirectives(),
             ];
 
             if ($devMode) {
@@ -150,5 +159,33 @@ class Gql extends Component
         TypeLoader::registerType('Query', function () use ($event) {
             return call_user_func(Query::class . '::getType', $event->queries);
         });
+    }
+
+    /**
+     * Get GraphQL query definitions
+     *
+     * @return Directive[]
+     */
+    private function _loadGqlDirectives(): array
+    {
+        $directiveClasses = [
+            // Queries
+            FormatDateTime::class,
+        ];
+
+        $event = new RegisterGqlDirectivesEvent([
+            'directives' => $directiveClasses
+        ]);
+
+        $this->trigger(self::EVENT_REGISTER_GQL_DIRECTIVES, $event);
+
+        $directives = GraphQL::getStandardDirectives();
+
+        foreach ($event->directives as $directive) {
+            /** @var BaseDirective $directive */
+            $directives[] = $directive::getDirective();
+        }
+
+        return $directives;
     }
 }

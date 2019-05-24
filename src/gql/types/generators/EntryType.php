@@ -6,9 +6,9 @@ use craft\base\Field;
 use craft\elements\Entry as EntryElement;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\GqlEntityRegistry;
+use craft\helpers\Gql;
 use craft\helpers\StringHelper;
 use craft\models\EntryType as EntryTypeModel;
-use craft\models\Section;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -53,17 +53,18 @@ class EntryType
                         $section = $entry->getSection();
                         $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 7));
 
-                        return $section->$property ?? null;
-                    }
-
-                    if (StringHelper::substr($fieldName, 0, 4) === 'type') {
+                        $value = $section->$property ?? null;
+                    } else if (StringHelper::substr($fieldName, 0, 4) === 'type') {
                         $entryType = $entry->getType();
                         $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 4));
 
-                        return $entryType->$property ?? null;
+                        $value = $entryType->$property ?? null;
+                    } else {
+                        $value = $entry->$fieldName;
                     }
 
-                    return $entry->$fieldName;
+                    // NOT A FAN OF THIS.
+                    return Gql::applyDirectivesToField($value, $resolveInfo);
                 },
             ]));
         }

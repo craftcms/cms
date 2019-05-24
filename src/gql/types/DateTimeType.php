@@ -1,6 +1,7 @@
 <?php
 namespace craft\gql\types;
 
+use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
@@ -19,6 +20,14 @@ class DateTimeType extends ScalarType
      * @var string
      */
     public $description = 'The `DateTime` scalar type represents a point in time.';
+
+    public function __construct(array $config = [])
+    {
+        $config['resolve'] = function () {
+            return 'ok;';
+        };
+        parent::__construct($config);
+    }
 
     /**
      * Returns a singleton instance to ensure one type per schema.
@@ -44,7 +53,12 @@ class DateTimeType extends ScalarType
      */
     public function serialize($value)
     {
-        return $value->getTimestamp();
+        if ($value instanceof \DateTime) {
+            $value->setTimezone(new \DateTimeZone(FormatDateTime::DEFAULT_TIMEZONE));
+            $value = $value->format(FormatDateTime::DEFAULT_FORMAT);
+        }
+
+        return $value;
     }
 
     /**

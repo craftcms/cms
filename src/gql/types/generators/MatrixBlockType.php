@@ -6,6 +6,7 @@ use craft\base\Field;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\GqlEntityRegistry;
+use craft\helpers\Gql;
 use craft\helpers\StringHelper;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\models\Section;
@@ -53,31 +54,28 @@ class MatrixBlockType
                         $field = $blockType->getField();
                         $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 5));
 
-                        return $field->$property ?? null;
-                    }
-
-                    if (StringHelper::substr($fieldName, 0, 9) === 'ownerSite') {
+                        $value = $field->$property ?? null;
+                    } else if (StringHelper::substr($fieldName, 0, 9) === 'ownerSite') {
                         $owner = $blockType->getSite();
                         $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 9));
 
-                        return $owner->$property ?? null;
-                    }
-
-                    if (StringHelper::substr($fieldName, 0, 5) === 'owner') {
+                        $value = $owner->$property ?? null;
+                    } else if (StringHelper::substr($fieldName, 0, 5) === 'owner') {
                         $owner = $blockType->getOwner();
                         $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 5));
 
-                        return $owner->$property ?? null;
-                    }
-
-                    if (StringHelper::substr($fieldName, 0, 4) === 'type') {
+                        $value = $owner->$property ?? null;
+                    } else if (StringHelper::substr($fieldName, 0, 4) === 'type') {
                         $entryType = $blockType->getType();
                         $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 4));
 
-                        return $entryType->$property ?? null;
+                        $value = $entryType->$property ?? null;
+                    } else {
+                        $value = $blockType->$fieldName;
                     }
 
-                    return $blockType->$fieldName;
+                    return Gql::applyDirectivesToField($value, $resolveInfo);
+
                 },
             ]));
         }

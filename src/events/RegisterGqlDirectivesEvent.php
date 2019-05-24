@@ -10,18 +10,18 @@ namespace craft\events;
 use yii\base\Event;
 
 /**
- * RegisterGqlTypeEvent class.
+ * RegisterGqlDirectivesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2
  */
-class RegisterGqlTypesEvent extends Event
+class RegisterGqlDirectivesEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var array List of GQL Type definition classes
+     * @var array List of GQL Directive classes
      */
-    public $types = [];
+    public $directives = [];
 }
