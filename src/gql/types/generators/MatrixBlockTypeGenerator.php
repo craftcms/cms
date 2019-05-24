@@ -9,7 +9,7 @@ use craft\gql\types\MatrixBlockType;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 
 /**
- * Class MatrixBlockType
+ * Class MatrixBlockTypeGenerator
  */
 class MatrixBlockTypeGenerator
 {

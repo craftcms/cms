@@ -7,7 +7,7 @@ use craft\helpers\StringHelper;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
- * Class ElementType
+ * Class EntryType
  */
 class EntryType extends ElementType
 {

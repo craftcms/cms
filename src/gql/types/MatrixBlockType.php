@@ -8,7 +8,7 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
- * Class ElementType
+ * Class MatrixBlockType
  */
 class MatrixBlockType extends ObjectType
 {
@@ -26,7 +26,7 @@ class MatrixBlockType extends ObjectType
      */
     protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /** @var MatrixBlockElement $value */
+        /** @var MatrixBlockElement $source */
         $fieldName = $resolveInfo->fieldName;
 
         if (StringHelper::substr($fieldName, 0, 5) === 'field') {

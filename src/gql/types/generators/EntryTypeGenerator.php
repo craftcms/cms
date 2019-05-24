@@ -9,7 +9,7 @@ use craft\gql\types\EntryType;
 use craft\models\EntryType as EntryTypeModel;
 
 /**
- * Class EntryType
+ * Class EntryTypeGenerator
  */
 class EntryTypeGenerator
 {
