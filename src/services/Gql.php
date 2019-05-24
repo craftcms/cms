@@ -10,16 +10,19 @@ namespace craft\services;
 use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
-use craft\gql\common\BaseType;
+use craft\gql\common\SchemaObject;
 use craft\gql\directives\BaseDirective;
-use craft\gql\directives\Directive;
 use craft\gql\directives\FormatDateTime;
+use craft\gql\directives\Transform;
+use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
+use craft\gql\queries\Asset as AssetQuery;
 use craft\gql\queries\Entry as EntryQuery;
 use craft\gql\queries\MatrixBlock as MatrixBlockQuery;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTimeType;
+use craft\gql\types\generators\AssetTypeGenerator;
 use craft\gql\types\generators\EntryTypeGenerator;
 use craft\gql\types\generators\MatrixBlockTypeGenerator;
 use craft\gql\types\Query;
@@ -92,7 +95,11 @@ class Gql extends Component
 
             if ($devMode) {
                 // @todo: allow plugins to register their generators
-                $schemaConfig['types'] = array_merge(EntryTypeGenerator::generateTypes(), MatrixBlockTypeGenerator::generateTypes());
+                $schemaConfig['types'] = array_merge(
+                    EntryTypeGenerator::generateTypes(),
+                    MatrixBlockTypeGenerator::generateTypes(),
+                    AssetTypeGenerator::generateTypes()
+                );
             }
 
             $this->_schema = new Schema($schemaConfig);
@@ -121,6 +128,7 @@ class Gql extends Component
             // Interfaces
             EntryInterface::class,
             MatrixBlockInterface::class,
+            AssetInterface::class,
         ];
 
         $event = new RegisterGqlTypesEvent([
@@ -130,7 +138,7 @@ class Gql extends Component
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
         foreach ($event->types as $type) {
-            /** @var BaseType $type */
+            /** @var SchemaObject $type */
             TypeLoader::registerType($type::getName(), $type . '::getType');
         }
     }
@@ -146,6 +154,7 @@ class Gql extends Component
             // Queries
             EntryQuery::getQueries(),
             MatrixBlockQuery::getQueries(),
+            AssetQuery::getQueries(),
         ];
 
 
@@ -163,13 +172,14 @@ class Gql extends Component
     /**
      * Get GraphQL query definitions
      *
-     * @return Directive[]
+     * @return BaseDirective[]
      */
     private function _loadGqlDirectives(): array
     {
         $directiveClasses = [
             // Queries
             FormatDateTime::class,
+            Transform::class,
         ];
 
         $event = new RegisterGqlDirectivesEvent([
