@@ -12,18 +12,18 @@ use craft\elements\db\ElementQueryInterface;
 use yii\base\Event;
 
 /**
- * Resave Elements event class.
+ * Element query event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
  */
-class ResaveElementsEvent extends Event
+class ElementQueryEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var ElementQueryInterface The element query the elements will be pulled from.
+     * @var ElementQueryInterface The element query.
      */
     public $query;
 }

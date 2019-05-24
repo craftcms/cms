@@ -11,7 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\events\ResaveElementEvent;
+use craft\events\BatchElementActionEvent;
 use craft\queue\BaseJob;
 use craft\services\Elements;
 
@@ -52,7 +52,7 @@ class ResaveElements extends BaseJob
         $count = $query->count();
         $elementsService = Craft::$app->getElements();
 
-        $callback = function(ResaveElementEvent $e) use ($queue, $query, $count) {
+        $callback = function(BatchElementActionEvent $e) use ($queue, $query, $count) {
             if ($e->query === $query) {
                 $this->setProgress($queue, ($e->position - 1) / $count, Craft::t('app', '{step} of {total}', [
                     'step' => $e->position,

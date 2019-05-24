@@ -33,8 +33,8 @@ use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\events\ResaveElementEvent;
-use craft\events\ResaveElementsEvent;
+use craft\events\BatchElementActionEvent;
+use craft\events\ElementQueryEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
@@ -121,22 +121,22 @@ class Elements extends Component
     const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
 
     /**
-     * @event ResaveElementsEvent The event that is triggered before resaving a batch of elements.
+     * @event ElementQueryEvent The event that is triggered before resaving a batch of elements.
      */
     const EVENT_BEFORE_RESAVE_ELEMENTS = 'beforeResaveElements';
 
     /**
-     * @event ResaveElementsEvent The event that is triggered after resaving a batch of elements.
+     * @event ElementQueryEvent The event that is triggered after resaving a batch of elements.
      */
     const EVENT_AFTER_RESAVE_ELEMENTS = 'afterResaveElements';
 
     /**
-     * @event ResaveElementEvent The event that is triggered before an element is resaved.
+     * @event BatchElementActionEvent The event that is triggered before an element is resaved.
      */
     const EVENT_BEFORE_RESAVE_ELEMENT = 'beforeResaveElement';
 
     /**
-     * @event ResaveElementEvent The event that is triggered after an element is resaved.
+     * @event BatchElementActionEvent The event that is triggered after an element is resaved.
      */
     const EVENT_AFTER_RESAVE_ELEMENT = 'afterResaveElement';
 
@@ -669,7 +669,7 @@ class Elements extends Component
     {
         // Fire a 'beforeResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
-            $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENTS, new ResaveElementsEvent([
+            $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENTS, new ElementQueryEvent([
                 'query' => $query,
             ]));
         }
@@ -687,7 +687,7 @@ class Elements extends Component
 
                 // Fire a 'beforeResaveElement' event
                 if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
-                    $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new ResaveElementEvent([
+                    $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new BatchElementActionEvent([
                         'query' => $query,
                         'element' => $element,
                         'position' => $position,
@@ -706,7 +706,7 @@ class Elements extends Component
 
                 // Fire an 'afterResaveElement' event
                 if ($this->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENT)) {
-                    $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENT, new ResaveElementEvent([
+                    $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENT, new BatchElementActionEvent([
                         'query' => $query,
                         'element' => $element,
                         'position' => $position,
@@ -720,7 +720,7 @@ class Elements extends Component
 
         // Fire an 'afterResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENTS)) {
-            $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENTS, new ResaveElementsEvent([
+            $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENTS, new ElementQueryEvent([
                 'query' => $query,
             ]));
         }

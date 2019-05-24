@@ -17,7 +17,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\elements\User;
-use craft\events\ResaveElementEvent;
+use craft\events\BatchElementActionEvent;
 use craft\services\Elements;
 use yii\console\Controller;
 use yii\console\ExitCode;
@@ -246,7 +246,7 @@ class ResaveController extends Controller
         $elementsService = Craft::$app->getElements();
         $fail = false;
 
-        $beforeCallback = function(ResaveElementEvent $e) use ($query) {
+        $beforeCallback = function(BatchElementActionEvent $e) use ($query) {
             if ($e->query === $query) {
                 /** @var Element $element */
                 $element = $e->element;
@@ -254,7 +254,7 @@ class ResaveController extends Controller
             }
         };
 
-        $afterCallback = function(ResaveElementEvent $e) use ($query, &$fail) {
+        $afterCallback = function(BatchElementActionEvent $e) use ($query, &$fail) {
             if ($e->query === $query) {
                 /** @var Element $element */
                 $element = $e->element;

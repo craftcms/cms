@@ -49,6 +49,8 @@
 - Added `craft\behaviors\DraftBehavior`.
 - Added `craft\behaviors\RevisionBehavior`.
 - Added `craft\controllers\PreviewController`.
+- Added `craft\events\BatchElementActionEvent`.
+- Added `craft\events\ElementQueryEvent`.
 - Added `craft\events\RegisterPreviewTargetsEvent`.
 - Added `craft\events\RevisionEvent`.
 - Added `craft\helpers\Component::validateComponentClass()`.
