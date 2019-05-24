@@ -1,7 +1,6 @@
 <?php
 namespace craft\gql\queries;
 
-use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;

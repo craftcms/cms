@@ -2,12 +2,9 @@
 namespace craft\gql\types;
 
 use craft\gql\directives\BaseDirective;
-use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
-use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
-use GraphQL\Type\Definition\ScalarType;
 
 /**
  * Class ElementType

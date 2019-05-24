@@ -5,7 +5,6 @@ use Craft;
 use craft\base\Field;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\ElementType;
 use craft\gql\types\EntryType;
 use craft\models\EntryType as EntryTypeModel;
 

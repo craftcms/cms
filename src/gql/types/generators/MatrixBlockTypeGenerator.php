@@ -7,7 +7,6 @@ use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\MatrixBlockType;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
-use craft\models\Section;
 
 /**
  * Class MatrixBlockType
@@ -48,7 +47,6 @@ class MatrixBlockTypeGenerator
     /**
      * Return a block type's GQL type name by block type
      *
-     * @param Section $section
      * @param MatrixBlockTypeModel $matrixBlockType
      * @return string
      */

@@ -1,8 +1,6 @@
 <?php
 namespace craft\gql;
 
-use GraphQL\Type\Definition\Type;
-
 /**
  * Class GqlEntityRegistry
  */
