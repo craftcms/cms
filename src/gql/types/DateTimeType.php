@@ -53,6 +53,7 @@ class DateTimeType extends ScalarType
      */
     public function serialize($value)
     {
+        // The value not being a datetime would indicate an already formatted date.
         if ($value instanceof \DateTime) {
             $value->setTimezone(new \DateTimeZone(FormatDateTime::DEFAULT_TIMEZONE));
             $value = $value->format(FormatDateTime::DEFAULT_FORMAT);
