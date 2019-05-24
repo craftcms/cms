@@ -22,7 +22,6 @@ use craft\events\DeleteElementEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
-use craft\modules\ExampleModule;
 use craft\queue\BaseJob;
 use craft\services\Elements;
 use Symfony\Component\Yaml\Yaml;
