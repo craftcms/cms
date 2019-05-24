@@ -112,6 +112,26 @@ class Assets extends BaseRelationField
     public $allowedKinds;
 
     /**
+     * @inheritdoc
+     */
+    protected $allowLargeThumbsView = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected $settingsTemplate = '_components/fieldtypes/Assets/settings';
+
+    /**
+     * @inheritdoc
+     */
+    protected $inputTemplate = '_components/fieldtypes/Assets/input';
+
+    /**
+     * @inheritdoc
+     */
+    protected $inputJsClass = 'Craft.AssetSelectInput';
+
+    /**
      * @var array|null References for files uploaded as data strings for this field.
      */
     private $_uploadedDataFiles;
@@ -125,10 +145,6 @@ class Assets extends BaseRelationField
     public function init()
     {
         parent::init();
-        $this->allowLargeThumbsView = true;
-        $this->settingsTemplate = '_components/fieldtypes/Assets/settings';
-        $this->inputTemplate = '_components/fieldtypes/Assets/input';
-        $this->inputJsClass = 'Craft.AssetSelectInput';
 
         $this->defaultUploadLocationSource = $this->_folderSourceToVolumeSource($this->defaultUploadLocationSource);
         $this->singleUploadLocationSource = $this->_folderSourceToVolumeSource($this->singleUploadLocationSource);

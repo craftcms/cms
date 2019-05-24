@@ -62,22 +62,22 @@ class Tags extends BaseRelationField
     // =========================================================================
 
     /**
+     * @inheritdoc
+     */
+    public $allowMultipleSources = false;
+
+    /**
+     * @inheritdoc
+     */
+    public $allowLimit = false;
+
+    /**
      * @var
      */
     private $_tagGroupId;
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-        $this->allowMultipleSources = false;
-        $this->allowLimit = false;
-    }
 
     /**
      * @inheritdoc

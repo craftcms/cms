@@ -61,26 +61,42 @@ class Categories extends BaseRelationField
     // =========================================================================
 
     /**
-     * @var int|null Branch limit
+     * @inheritdoc
      */
-    public $branchLimit;
-
-    // Public Methods
-    // =========================================================================
+    public $allowLimit = false;
 
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        parent::init();
-        $this->allowLimit = false;
-        $this->allowMultipleSources = false;
-        $this->settingsTemplate = '_components/fieldtypes/Categories/settings';
-        $this->inputTemplate = '_components/fieldtypes/Categories/input';
-        $this->inputJsClass = 'Craft.CategorySelectInput';
-        $this->sortable = false;
-    }
+    public $allowMultipleSources = false;
+
+    /**
+     * @var int|null Branch limit
+     */
+    public $branchLimit;
+
+    /**
+     * @inheritdoc
+     */
+    protected $settingsTemplate = '_components/fieldtypes/Categories/settings';
+
+    /**
+     * @inheritdoc
+     */
+    protected $inputTemplate = '_components/fieldtypes/Categories/input';
+
+    /**
+     * @inheritdoc
+     */
+    protected $inputJsClass = 'Craft.CategorySelectInput';
+
+    /**
+     * @inheritdoc
+     */
+    protected $sortable = false;
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * @inheritdoc
