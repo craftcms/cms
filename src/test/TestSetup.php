@@ -460,10 +460,10 @@ class TestSetup
      */
     public static function getMock(CodeceptionTestCase $test, string $class, array $options = [])
     {
-        $builtMock = $test->getMockBuilder($class);
+        $mockBuilder = $test->getMockBuilder($class);
 
         if (!$options) {
-            return $builtMock
+            return $mockBuilder
                 ->disableOriginalConstructor()
                 ->getMock();
         }
@@ -473,10 +473,10 @@ class TestSetup
 
             $methodName = $option['methodName'];
 
-            $builtMock->$methodName($params);
+            $mockBuilder->$methodName($params);
         }
 
-        return $builtMock->getMock();
+        return $mockBuilder->getMock();
     }
 
     /**
