@@ -105,12 +105,10 @@ class ArrayValidator extends Validator
     protected function validateValue($value)
     {
         if (!$value instanceof \Countable && !is_array($value)) {
-            $this->addError($model, $attribute, $this->message);
-
-            return;
+            return [$this->message, []];
         }
 
-        $count = count((array)$value);
+        $count = count($value);
 
         if ($this->min !== null && $count < $this->min) {
             return [$this->tooFew, ['min' => $this->min]];
