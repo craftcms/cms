@@ -77,13 +77,13 @@ script:
       vendor/bin/codecept run unit
     else
       mkdir -p build/logs
-      vendor/bin/codecept run unit --coverage-xml build/logs/clover.xml;
+      vendor/bin/codecept run unit --coverage-xml coverage.xml;
     fi
 
 after_script:
   - |
     if [ $TASK_TESTS_COVERAGE == 1 ]; then
-      travis_retry php vendor/bin/php-coveralls --coverage_clover=tests/_output/build/logs/clover.xml --json_path=tests/_output/build/logs/coveralls-upload.json
+      bash <(curl -s https://codecov.io/bash)
     fi
 
 #after_script:
