@@ -37,10 +37,10 @@ class MatrixBlockType extends ObjectType
         }
 
         if (StringHelper::substr($fieldName, 0, 9) === 'ownerSite') {
-            $owner = $source->getSite();
+            $ownerSite = $source->getSite();
             $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 9));
 
-            return $owner->$property ?? null;
+            return $ownerSite->$property ?? null;
         }
 
         if (StringHelper::substr($fieldName, 0, 5) === 'owner') {
