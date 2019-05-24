@@ -21,6 +21,7 @@ abstract class StructureElement extends BaseElement
             'hasDescendants' => Type::boolean(),
             'ancestorDist' => Type::int(),
             'descendantDist' => Type::int(),
+            'leaves' => Type::boolean(),
         ]);
     }
 }

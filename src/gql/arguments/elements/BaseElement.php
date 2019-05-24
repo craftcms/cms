@@ -22,7 +22,6 @@ abstract class BaseElement extends BaseArguments
             'siteId' => Type::string(),
             'unique' => Type::boolean(),
             'enabledForSite' => Type::boolean(),
-            'leaves' => Type::boolean(),
             'title' => Type::string(),
             'slug' => Type::string(),
             'uri' => Type::string(),
