@@ -49,6 +49,13 @@ class ArrayValidator extends Validator
     public $min;
 
     /**
+     * @var callable|null callback validation for each element in the array
+     * @see invalidElements for the customized message for invalid elements.
+     */
+
+    public $callback;
+
+    /**
      * @var string|null user-defined error message used when the count of the value is smaller than [[min]].
      */
     public $tooFew;
@@ -62,6 +69,11 @@ class ArrayValidator extends Validator
      * @var string|null user-defined error message used when the count of the value is not equal to [[count]].
      */
     public $notEqual;
+
+    /**
+     * @var string|null user-defined error message used when elements in [[callback]] do not validate.
+     */
+    public $invalidElements;
 
     /**
      * @inheritdoc
@@ -97,6 +109,10 @@ class ArrayValidator extends Validator
         if ($this->count !== null && $this->notEqual === null) {
             $this->notEqual = Craft::t('app', '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.');
         }
+
+        if (is_callable($this->callback) && $this->invalidElements === null) {
+            $this->invalidElements = Craft::t('app', '{attribute} must be an array with valid elements.');
+        }
     }
 
     /**
@@ -106,6 +122,14 @@ class ArrayValidator extends Validator
     {
         if (!$value instanceof \Countable && !is_array($value)) {
             return [$this->message, []];
+        }
+
+        if (is_callable($this->callback)) {
+            foreach ($value as $k => $v) {
+                if (!call_user_func($this->callback, $v, $k)) {
+                    return [$this->invalidElements, []];
+                }
+            }
         }
 
         $count = count($value);
