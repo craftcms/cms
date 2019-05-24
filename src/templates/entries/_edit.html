@@ -84,6 +84,7 @@
                 options: entryTypeOptions
             }) }}
         {% endif %}
+    {% endif %}
 
         {{ forms.textField({
             label: "Slug"|t('app'),
@@ -98,6 +99,7 @@
             disabled: isRevision
         }) }}
 
+    {% if not isSingle %}
         {% if parentOptionCriteria is defined %}
             {{ forms.elementSelectField({
                 label: "Parent"|t('app'),

@@ -2,6 +2,9 @@
 
 ## 3.2.0-alpha-6.3 - 2019-05-23
 
+### Added
+- Single entries now have editable slugs. ([#3368](https://github.com/craftcms/cms/issues/3368))
+
 ### Changed
 - Revisions no longer need to have a creator.
 
