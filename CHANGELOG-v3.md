@@ -11,6 +11,9 @@
 - Renamed `craft\events\ResaveElementEvent` to `BatchElementActionEvent`.
 - Renamed `craft\events\ResaveElementsEvent` to `ElementQueryEvent`.
 
+### Fixed
+- Fixed a bug where required fields weren’t getting enforced when saving an entry. ([#4316](https://github.com/craftcms/cms/issues/4316))
+
 ## 3.2.0-alpha.6.4 - 2019-05-26
 
 ### Fixed

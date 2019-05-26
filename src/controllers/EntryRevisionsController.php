@@ -248,7 +248,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Validate it
         if ($draft->enabled && $draft->enabledForSite) {
-            $entry->setScenario(Element::SCENARIO_LIVE);
+            $draft->setScenario(Element::SCENARIO_LIVE);
         }
 
         if (!$draft->validate()) {
