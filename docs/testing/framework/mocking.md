@@ -71,6 +71,7 @@ within `mockCraftMethods`.
 ## Full mock
 Craft provides a `fullMock` setting that can be enabled in your `codeception.yml` file. 
 A full explanation of this setting is given [here](full-mock.md).
-The `fullMock` option ensures all components in `Craft::$app` are set to mocks. 
+The `fullMock` option ensures all components in `Craft::$app` are set to mocks using
+PHP Unit. 
 If you prefer to isolate *all* your dependancies during testing
 this option is for you. `fullMock` also mocks any modules/plugins you define. 
