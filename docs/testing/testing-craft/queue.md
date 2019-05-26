@@ -18,10 +18,9 @@ $this->tester->runQueue(MyJob::class, [
 - The second argument is any arguments that must be passed into your job. 
 
 ::: tip
-Underneath Craft simply runs your job via `Craft::$app->queue`. All methods and actions your job should perform on 
+Underneath Craft simply runs your job via `Craft::$app->getQueue()`. All methods and actions your job should perform on 
 i.e. the database will thus be performed as normal. 
 :::
 
 
 ## Checking queue data
-// TODO: Implement assert methods for Queue and document these. 
