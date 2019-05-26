@@ -391,6 +391,19 @@ class Craft extends Yii2
     }
 
     /**
+     * @param string $description
+     */
+    public function assertPushedToQueue(string $description)
+    {
+        $this->assertTrue((new Query())
+            ->select('id')
+            ->where(['description' => $description])
+            ->from(Table::QUEUE)
+            ->exists()
+        );
+    }
+
+    /**
      * @param string $fieldHandle
      * @return FieldLayout|null
      */
