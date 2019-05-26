@@ -1,4 +1,4 @@
-/*!   - 2019-05-25 */
+/*!   - 2019-05-26 */
 (function($){
 
 /** global: Craft */
@@ -1480,6 +1480,10 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 data.attributes = this.settings.attributes;
             }
 
+            if (this.settings.prevalidate) {
+                data.prevalidate = 1;
+            }
+
             return data;
         },
 
@@ -1716,6 +1720,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             siteId: null,
             attributes: null,
             params: null,
+            prevalidate: false,
             elementIndex: null,
 
             onShowHud: $.noop,
@@ -4227,8 +4232,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             this.updateAddElementsBtn();
         },
 
-        createElementEditor: function($element) {
-            return Craft.createElementEditor(this.settings.elementType, $element);
+        createElementEditor: function($element, settings) {
+            if (!settings) {
+                settings = {};
+            }
+            settings.prevalidate = this.settings.prevalidate;
+            return Craft.createElementEditor(this.settings.elementType, $element, settings);
         },
 
         removeElements: function($elements) {
@@ -4450,6 +4459,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             sortable: true,
             selectable: true,
             editable: true,
+            prevalidate: false,
             editorSettings: {}
         }
     });
@@ -9068,7 +9078,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
          * Create the element editor
          */
         createElementEditor: function($element) {
-            return Craft.createElementEditor(this.settings.elementType, $element, {
+            return this.base($element, {
                 params: {
                     defaultFieldLayoutId: this.settings.defaultFieldLayoutId
                 }

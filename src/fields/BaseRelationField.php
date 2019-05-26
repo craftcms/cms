@@ -118,6 +118,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public $selectionLabel;
 
     /**
+     * @var bool Whether related elements should be validated when the source element is saved.
+     */
+    public $validateRelatedElements = false;
+
+    /**
      * @var int Whether each site should get its own unique set of relations
      */
     public $localizeRelations = false;
@@ -207,6 +212,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $attributes[] = 'limit';
         $attributes[] = 'selectionLabel';
         $attributes[] = 'localizeRelations';
+        $attributes[] = 'validateRelatedElements';
 
         return $attributes;
     }
@@ -216,8 +222,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getSettingsHtml()
     {
+        /** @var ElementInterface|string $elementType */
+        $elementType = $this->elementType();
+
         return Craft::$app->getView()->renderTemplate($this->settingsTemplate, [
             'field' => $this,
+            'pluralElementType' => $elementType::pluralDisplayName(),
         ]);
     }
 
@@ -226,13 +236,51 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getElementValidationRules(): array
     {
-        return [
+        $rules = [
             [
                 ArrayValidator::class,
                 'max' => $this->allowLimit && $this->limit ? $this->limit : null,
                 'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.'),
             ],
         ];
+
+        if ($this->validateRelatedElements) {
+            $rules[] = ['validateRelatedElements', 'on' => [Element::SCENARIO_LIVE]];
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Validates the related elements.
+     *
+     * @param ElementInterface $element
+     */
+    public function validateRelatedElements(ElementInterface $element)
+    {
+        /** @var Element $element */
+        /** @var ElementQueryInterface $query */
+        $query = $element->getFieldValue($this->handle);
+        $errorCount = 0;
+
+        foreach ($query->all() as $i => $related) {
+            /** @var Element $related */
+            if ($related->enabled && $related->enabledForSite) {
+                $related->setScenario(Element::SCENARIO_LIVE);
+                if (!$related->validate()) {
+                    $element->addModelErrors($related, "{$this->handle}[{$i}]");
+                    $errorCount++;
+                }
+            }
+        }
+
+        if ($errorCount) {
+            /** @var ElementInterface|string $elementType */
+            $elementType = static::elementType();
+            $element->addError($this->handle, Craft::t('app', 'Fix validation errors on the related {type}.', [
+                'type' => mb_strtolower($errorCount === 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
+            ]));
+        }
     }
 
     /**
@@ -695,12 +743,23 @@ JS;
      */
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
+        /** @var Element|null $element */
         if ($value instanceof ElementQueryInterface) {
             $value = $value
                 ->anyStatus()
                 ->all();
         } else if (!is_array($value)) {
             $value = [];
+        }
+
+        if ($this->validateRelatedElements) {
+            // Pre-validate related elements
+            foreach ($value as $related) {
+                if ($related->enabled && $related->enabledForSite) {
+                    $related->setScenario(Element::SCENARIO_LIVE);
+                    $related->validate();
+                }
+            }
         }
 
         $selectionCriteria = $this->inputSelectionCriteria();
@@ -725,6 +784,7 @@ JS;
             'viewMode' => $this->viewMode(),
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
             'sortable' => $this->sortable,
+            'prevalidate' => $this->validateRelatedElements,
         ];
     }
 

@@ -304,6 +304,12 @@ class ElementsController extends BaseElementsController
             throw new ForbiddenHttpException('The user doesn’t have permission to edit this element');
         }
 
+        // Prevalidate?
+        if ($request->getBodyParam('prevalidate') && $element->enabled && $element->enabledForSite) {
+            $element->setScenario(Element::SCENARIO_LIVE);
+            $element->validate();
+        }
+
         return $element;
     }
 

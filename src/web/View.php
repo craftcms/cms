@@ -1726,6 +1726,10 @@ JS;
             $htmlAttributes['class'] .= ' removable';
         }
 
+        if ($element->hasErrors()) {
+            $htmlAttributes['class'] .= ' error';
+        }
+
         if ($element::hasStatuses()) {
             $htmlAttributes['class'] .= ' hasstatus';
         }
