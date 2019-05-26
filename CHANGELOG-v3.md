@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.0-alpha.6.4 - 2019-05-26
 
 ### Fixed
 - Fixed errors that would occur when creating or publishing a draft with validation errors.
