@@ -22,6 +22,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
+use craft\queue\Queue;
 use craft\services\Elements;
 use ReflectionException;
 use Symfony\Component\Yaml\Yaml;
@@ -395,12 +396,14 @@ class Craft extends Yii2
      */
     public function assertPushedToQueue(string $description)
     {
-        $this->assertTrue((new Query())
-            ->select('id')
-            ->where(['description' => $description])
-            ->from(Table::QUEUE)
-            ->exists()
-        );
+        if (\Craft::$app->getQueue() instanceof Queue) {
+            $this->assertTrue((new Query())
+                ->select('id')
+                ->where(['description' => $description])
+                ->from(Table::QUEUE)
+                ->exists()
+            );
+        }
     }
 
     /**
