@@ -24,3 +24,14 @@ i.e. the database will thus be performed as normal.
 
 
 ## Checking queue data
+Craft provides a `assertPushedToQueue` method that is accessible via the `$this->tester`
+property. You must pass the description of the queue when calling this method. 
+
+Your test will fail if a job with the desired description is not found in the 
+queue
+
+::: warning
+`assertPushedToQueue` only supports the default Craft queue component (`craft\queue\Queue`).
+Ensure that you are not setting a custom Queue component that does not extend the Craft class
+or no assertions will be made. 
+:::
