@@ -10,6 +10,11 @@
 - Renamed `craft\events\ResaveElementEvent` to `BatchElementActionEvent`.
 - Renamed `craft\events\ResaveElementsEvent` to `ElementQueryEvent`.
 
+## 3.2.0-alpha.6.4 - 2019-05-26
+
+### Fixed
+- Fixed errors that would occur when creating or publishing a draft with validation errors.
+
 ## 3.2.0-alpha-6.3 - 2019-05-23
 
 ### Added

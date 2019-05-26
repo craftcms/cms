@@ -1,4 +1,4 @@
-/*!   - 2019-05-17 */
+/*!   - 2019-05-25 */
 (function($){
 
 /** global: Craft */
@@ -13287,33 +13287,55 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         handleFormSubmit: function(ev) {
-            // Don't allow a form submit under any circumstances if we’re currently applying a draft
-            if (this.applying) {
-                ev.preventDefault();
-                return;
-            }
-
-            // If the form submit was triggered by a .formsubmit option, don't interfere with it
-            if (ev.customTrigger) {
-                return;
-            }
-
             ev.preventDefault();
 
-            if (!this.settings.draftId) {
+            // Don't allow a form submit under any circumstances if we’re currently applying a draft
+            if (this.applying) {
                 return;
+            }
+
+            if (!ev.customTrigger) {
+                // return;
+                if (!this.settings.draftId) {
+                    return;
+                }
+                $('#apply-btn').addClass('disabled');
             }
 
             this.applying = true;
-            $('#apply-btn').addClass('disabled');
 
-            var data = this.getFormData();
-
-            Craft.postActionRequest(this.settings.applyDraftAction, this.prepareData(data), $.proxy(function(response, textStatus) {
-                if (textStatus === 'success') {
-                    window.location.href = this.settings.sourceEditUrl;
+            // Duplicate the form with normalized data
+            var $form = $('<form/>', {
+                attr: {
+                    'accept-charset': Craft.cp.$primaryForm.attr('accept-charset'),
+                    'action': Craft.cp.$primaryForm.attr('action'),
+                    'enctype': Craft.cp.$primaryForm.attr('enctype'),
+                    'method': Craft.cp.$primaryForm.attr('method'),
+                    'target': Craft.cp.$primaryForm.attr('target'),
                 }
-            }, this))
+            });
+            var data = this.prepareData(this.getFormData());
+            var values = data.split('&');
+            var chunks;
+            for (var i = 0; i < values.length; i++) {
+                chunks = values[i].split('=', 2);
+                $('<input/>', {
+                    type: 'hidden',
+                    name: decodeURIComponent(chunks[0]),
+                    value: decodeURIComponent(chunks[1] || '')
+                }).appendTo($form);
+            }
+
+            if (!ev.customTrigger) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: 'action',
+                    value: this.settings.applyDraftAction
+                }).appendTo($form);
+            }
+
+            $form.appendTo(Garnish.$bod);
+            $form.submit();
         },
     },
     {

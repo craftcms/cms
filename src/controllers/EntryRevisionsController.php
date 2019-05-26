@@ -107,6 +107,7 @@ class EntryRevisionsController extends BaseEntriesController
             $this->_setDraftAttributesFromPost($draft);
             $draft->setFieldValuesFromRequest($fieldsLocation);
             $draft->updateTitle();
+            $draft->setScenario(Element::SCENARIO_ESSENTIALS);
 
             if (!$elementsService->saveElement($draft)) {
                 if ($request->getAcceptsJson()) {
@@ -257,6 +258,7 @@ class EntryRevisionsController extends BaseEntriesController
             Craft::$app->getUrlManager()->setRouteParams([
                 'entry' => $draft
             ]);
+            return null;
         }
 
         // Publish the draft (finally!)
