@@ -10,6 +10,7 @@
 - Reference tags can now specify the site to load the element from. ([#2956](https://github.com/craftcms/cms/issues/2956))
 - Renamed `craft\events\ResaveElementEvent` to `BatchElementActionEvent`.
 - Renamed `craft\events\ResaveElementsEvent` to `ElementQueryEvent`.
+- `craft\events\MoveElementEvent` now extends `craft\events\ElementEvent`. ([#4315](https://github.com/craftcms/cms/pull/4315))
 
 ### Fixed
 - Fixed a bug where required fields weren’t getting enforced when saving an entry. ([#4316](https://github.com/craftcms/cms/issues/4316))
