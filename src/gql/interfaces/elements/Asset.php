@@ -4,8 +4,8 @@ namespace craft\gql\interfaces\elements;
 use craft\elements\Asset as AssetElement;
 use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\DateTimeType;
-use craft\gql\types\generators\AssetTypeGenerator;
+use craft\gql\types\DateTime;
+use craft\gql\types\generators\AssetType;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -27,11 +27,11 @@ class Asset extends BaseElement
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
             'resolveType' => function (AssetElement $value) {
-                return GqlEntityRegistry::getEntity(AssetTypeGenerator::getName($value->getVolume()));
+                return GqlEntityRegistry::getEntity(AssetType::getName($value->getVolume()));
             }
         ]));
 
-        foreach (AssetTypeGenerator::generateTypes() as $typeName => $generatedType) {
+        foreach (AssetType::generateTypes() as $typeName => $generatedType) {
             TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
         }
 
@@ -69,7 +69,7 @@ class Asset extends BaseElement
             'url' => Type::string(),
             'mimeType' => Type::string(),
             'path' => Type::string(),
-            'dateModified' => DateTimeType::getType(),
+            'dateModified' => DateTime::getType(),
         ]);
     }
 }

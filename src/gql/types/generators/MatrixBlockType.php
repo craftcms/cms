@@ -5,13 +5,13 @@ use Craft;
 use craft\base\Field;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\MatrixBlockType;
+use craft\gql\types\MatrixBlock;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 
 /**
  * Class MatrixBlockTypeGenerator
  */
-class MatrixBlockTypeGenerator
+class MatrixBlockType
 {
     public static function generateTypes(): array
     {
@@ -33,7 +33,7 @@ class MatrixBlockTypeGenerator
             $blockTypeFields = array_merge(MatrixBlockInterface::getFields(), $contentFieldGqlTypes);
 
             // Generate a type for each entry type
-            $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new MatrixBlockType([
+            $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new MatrixBlock([
                 'name' => $typeName,
                 'fields' => function () use ($blockTypeFields) {
                     return $blockTypeFields;

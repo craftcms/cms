@@ -9,7 +9,7 @@ use GraphQL\Type\Definition\ScalarType;
 /**
  * Class DateTime
  */
-class DateTimeType extends ScalarType
+class DateTime extends ScalarType
 {
     /**
      * @var string
@@ -32,9 +32,9 @@ class DateTimeType extends ScalarType
     /**
      * Returns a singleton instance to ensure one type per schema.
      *
-     * @return DateTimeType
+     * @return DateTime
      */
-    public static function getType(): DateTimeType
+    public static function getType(): DateTime
     {
         return GqlEntityRegistry::getEntity(self::class) ?: GqlEntityRegistry::createEntity(self::class, new self());
     }

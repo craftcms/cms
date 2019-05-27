@@ -4,8 +4,8 @@ namespace craft\gql\interfaces\elements;
 use craft\elements\Entry as EntryElement;
 use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\DateTimeType;
-use craft\gql\types\generators\EntryTypeGenerator;
+use craft\gql\types\DateTime;
+use craft\gql\types\generators\EntryType;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -27,11 +27,11 @@ class Entry extends BaseElement
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
             'resolveType' => function (EntryElement $value) {
-                return GqlEntityRegistry::getEntity(EntryTypeGenerator::getName($value->getType()));
+                return GqlEntityRegistry::getEntity(EntryType::getName($value->getType()));
             }
         ]));
 
-        foreach (EntryTypeGenerator::generateTypes() as $typeName => $generatedType) {
+        foreach (EntryType::generateTypes() as $typeName => $generatedType) {
             TypeLoader::registerType($typeName, function () use ($generatedType) { return $generatedType ;});
         }
 
@@ -59,8 +59,8 @@ class Entry extends BaseElement
             'typeId' => Type::int(),
             'typeHandle' => Type::string(),
             'authorId' => Type::int(),
-            'postDate' => DateTimeType::getType(),
-            'expiryDate' => DateTimeType::getType(),
+            'postDate' => DateTime::getType(),
+            'expiryDate' => DateTime::getType(),
             'revisionCreatorId' => Type::int(),
             'revisionNotes' => Type::string(),
         ]);

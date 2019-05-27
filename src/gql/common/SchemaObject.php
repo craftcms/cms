@@ -2,7 +2,7 @@
 namespace craft\gql\common;
 
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\DateTimeType;
+use craft\gql\types\DateTime;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 
@@ -21,8 +21,8 @@ abstract class SchemaObject
         return [
             'id' => Type::id(),
             'uid' => Type::string(),
-            'dateCreated' => DateTimeType::getType(),
-            'dateUpdated' =>  DateTimeType::getType(),
+            'dateCreated' => DateTime::getType(),
+            'dateUpdated' =>  DateTime::getType(),
         ];
     }
 

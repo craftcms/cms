@@ -21,10 +21,10 @@ use craft\gql\queries\Asset as AssetQuery;
 use craft\gql\queries\Entry as EntryQuery;
 use craft\gql\queries\MatrixBlock as MatrixBlockQuery;
 use craft\gql\TypeLoader;
-use craft\gql\types\DateTimeType;
-use craft\gql\types\generators\AssetTypeGenerator;
-use craft\gql\types\generators\EntryTypeGenerator;
-use craft\gql\types\generators\MatrixBlockTypeGenerator;
+use craft\gql\types\DateTime;
+use craft\gql\types\generators\AssetType;
+use craft\gql\types\generators\EntryType;
+use craft\gql\types\generators\MatrixBlockType;
 use craft\gql\types\Query;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
@@ -96,9 +96,9 @@ class Gql extends Component
             if ($devMode) {
                 // @todo: allow plugins to register their generators
                 $schemaConfig['types'] = array_merge(
-                    EntryTypeGenerator::generateTypes(),
-                    MatrixBlockTypeGenerator::generateTypes(),
-                    AssetTypeGenerator::generateTypes()
+                    EntryType::generateTypes(),
+                    MatrixBlockType::generateTypes(),
+                    AssetType::generateTypes()
                 );
             }
 
@@ -123,7 +123,7 @@ class Gql extends Component
     {
         $typeList = [
             // Scalars
-            DateTimeType::class,
+            DateTime::class,
 
             // Interfaces
             EntryInterface::class,

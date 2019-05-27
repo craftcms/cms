@@ -5,13 +5,13 @@ use Craft;
 use craft\base\Field;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\EntryType;
+use craft\gql\types\Entry;
 use craft\models\EntryType as EntryTypeModel;
 
 /**
  * Class EntryTypeGenerator
  */
-class EntryTypeGenerator
+class EntryType
 {
     public static function generateTypes(): array
     {
@@ -33,7 +33,7 @@ class EntryTypeGenerator
             $entryTypeFields = array_merge(EntryInterface::getFields(), $contentFieldGqlTypes);
 
             // Generate a type for each entry type
-            $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new EntryType([
+            $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Entry([
                 'name' => $typeName,
                 'fields' => function () use ($entryTypeFields) {
                     return $entryTypeFields;
