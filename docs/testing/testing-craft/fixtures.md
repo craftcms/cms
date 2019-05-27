@@ -97,7 +97,23 @@ return [
 The primary keys are: `siteId`, `sectionId`, `typeId` and `title`.
 
 
-// TODO: Globals
+### `Global set fixture`
+
+Extend `craft\test\fixtures\elements\GlobalSetFixture` to add Global Sets. 
+
+The fixture data file could look like this:
+
+```php
+<?php
+
+return [
+    [
+        'handle' => 'aHandle',
+    ],
+];
+```
+
+The primary keys are: `handle`.
 
 ### `Tag fixtures`
 
