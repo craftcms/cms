@@ -31,18 +31,4 @@ class MatrixBlock extends BaseElement
 
         return $query->all();
     }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getArrayableArguments(): array
-    {
-        return array_merge(parent::getArrayableArguments(), [
-            'type',
-            'typeId',
-            'ownerId',
-            'fieldId',
-            'ownerSiteId',
-        ]);
-    }
 }

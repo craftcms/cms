@@ -14,11 +14,11 @@ class MatrixBlock extends BaseElement
     public static function getArguments(): array
     {
         return array_merge(parent::getArguments(), [
-            'fieldId' => Type::int(),
-            'ownerId' => Type::string(),
-            'ownerSiteId' => Type::int(),
-            'typeId' => Type::int(),
-            'type' => Type::string(),
+            'fieldId' => Type::listOf(Type::int()),
+            'ownerId' => Type::listOf(Type::string()),
+            'ownerSiteId' => Type::listOf(Type::int()),
+            'typeId' =>Type::listOf(Type::int()),
+            'type' => Type::listOf(Type::string()),
         ]);
     }
 }

@@ -32,21 +32,4 @@ class Entry extends BaseElement
 
         return $query->all();
     }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getArrayableArguments(): array
-    {
-        return array_merge(parent::getArrayableArguments(), [
-            'section',
-            'type',
-            'authorGroup',
-            'sectionId',
-            'typeId',
-            'authorId',
-            'authorGroupId',
-            'typeId',
-        ]);
-    }
 }

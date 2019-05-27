@@ -26,10 +26,7 @@ abstract class BaseResolver
      */
     public static function getArrayableArguments(): array
     {
-        return [
-            'id',
-            'uid',
-        ];
+        return [];
     }
 
     /**

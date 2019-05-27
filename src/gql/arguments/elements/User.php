@@ -16,12 +16,12 @@ class User extends BaseElement
         return array_merge(parent::getArguments(), [
             'admin' => Type::boolean(),
             'can' => Type::string(),
-            'groupId' => Type::string(),
-            'group' => Type::string(),
-            'email' => Type::string(),
-            'username' => Type::string(),
-            'firstName' => Type::string(),
-            'lastName' => Type::string(),
+            'groupId' => Type::listOf(Type::int()),
+            'group' => Type::listOf(Type::string()),
+            'email' => Type::listOf(Type::string()),
+            'username' => Type::listOf(Type::string()),
+            'firstName' => Type::listOf(Type::string()),
+            'lastName' => Type::listOf(Type::string()),
             'lastLoginDate' => Type::string(),
         ]);
     }

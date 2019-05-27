@@ -14,13 +14,7 @@ abstract class BaseElement extends BaseResolver
     public static function getArrayableArguments(): array
     {
         return array_merge(parent::getArrayableArguments(), [
-            'site',
-            'status',
             'siteId',
-            'title',
-            'slug',
-            'uri',
-            'ref',
         ]);
     }
 }

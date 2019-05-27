@@ -31,20 +31,4 @@ class User extends BaseElement
 
         return $query->all();
     }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getArrayableArguments(): array
-    {
-        return array_merge(parent::getArrayableArguments(), [
-            'username',
-            'firstName',
-            'lastName',
-            'email',
-            'groupId',
-            'group',
-            'can',
-        ]);
-    }
 }

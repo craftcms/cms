@@ -60,11 +60,13 @@ class FormatDateTime extends BaseDirective
      */
     public static function applyDirective($source, $value, array $arguments)
     {
-        /** @var \DateTime $value */
-        $format = $arguments['format'] ?? self::DEFAULT_FORMAT;
-        $timezone = new \DateTimeZone($arguments['timezone'] ?? self::DEFAULT_TIMEZONE);
+        if ($value) {
+            /** @var \DateTime $value */
+            $format = $arguments['format'] ?? self::DEFAULT_FORMAT;
+            $timezone = new \DateTimeZone($arguments['timezone'] ?? self::DEFAULT_TIMEZONE);
 
-        return $value->setTimezone($timezone)->format($format);
+            return $value->setTimezone($timezone)->format($format);
+        }
     }
 
 
