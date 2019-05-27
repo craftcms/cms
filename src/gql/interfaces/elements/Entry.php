@@ -59,6 +59,10 @@ class Entry extends BaseElement
             'typeId' => Type::int(),
             'typeHandle' => Type::string(),
             'authorId' => Type::int(),
+            'author' => [
+                'name' => 'author',
+                'type' => User::getType(),
+            ],
             'postDate' => DateTime::getType(),
             'expiryDate' => DateTime::getType(),
             'revisionCreatorId' => Type::int(),

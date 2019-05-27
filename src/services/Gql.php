@@ -17,14 +17,17 @@ use craft\gql\directives\Transform;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
+use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\queries\Asset as AssetQuery;
 use craft\gql\queries\Entry as EntryQuery;
 use craft\gql\queries\MatrixBlock as MatrixBlockQuery;
+use craft\gql\queries\User as UserQuery;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\AssetType;
 use craft\gql\types\generators\EntryType;
 use craft\gql\types\generators\MatrixBlockType;
+use craft\gql\types\generators\UserType;
 use craft\gql\types\Query;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
@@ -98,7 +101,8 @@ class Gql extends Component
                 $schemaConfig['types'] = array_merge(
                     EntryType::generateTypes(),
                     MatrixBlockType::generateTypes(),
-                    AssetType::generateTypes()
+                    AssetType::generateTypes(),
+                    UserType::generateTypes()
                 );
             }
 
@@ -129,6 +133,7 @@ class Gql extends Component
             EntryInterface::class,
             MatrixBlockInterface::class,
             AssetInterface::class,
+            UserInterface::class,
         ];
 
         $event = new RegisterGqlTypesEvent([
@@ -155,6 +160,7 @@ class Gql extends Component
             EntryQuery::getQueries(),
             MatrixBlockQuery::getQueries(),
             AssetQuery::getQueries(),
+            UserQuery::getQueries(),
         ];
 
 
