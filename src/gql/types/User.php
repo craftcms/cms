@@ -29,7 +29,7 @@ class User extends Element
         /** @var UserElement $source */
         $fieldName = $resolveInfo->fieldName;
 
-        if ($fieldName === 'groups') {
+        if ($fieldName === 'groupHandles') {
             $groups = $source->getGroups();
 
             return array_map(function (UserGroup $userGroup) { return $userGroup->handle;}, $groups);

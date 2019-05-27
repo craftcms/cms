@@ -53,7 +53,7 @@ class User extends BaseElement
             'cooldownEndTime' => DateTime::getType(),
             'friendlyName' => Type::string(),
             'fullName' => Type::string(),
-            'groups' => Type::listOf(Type::string()),
+            'groupHandles' => Type::listOf(Type::string()),
             'name' => Type::string(),
             'photo' => Asset::getType(),
             'filename' => Type::string(),
