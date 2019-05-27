@@ -12,7 +12,7 @@ use GraphQL\Type\Definition\Type;
  */
 class FormatDateTime extends BaseDirective
 {
-    const DEFAULT_FORMAT = 'Y-m-d H:i:s';
+    const DEFAULT_FORMAT = 'Y-m-d\TH:i:sP';
     const DEFAULT_TIMEZONE = 'GMT';
 
     /**
