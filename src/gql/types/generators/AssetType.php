@@ -16,7 +16,6 @@ class AssetType
     public static function generateTypes(): array
     {
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
-
         $gqlTypes = [];
 
         foreach ($volumes as $volume) {

@@ -16,7 +16,6 @@ class MatrixBlockType
     public static function generateTypes(): array
     {
         $matrixBlockTypes = Craft::$app->getMatrix()->getAllBlockTypes();
-
         $gqlTypes = [];
 
         foreach ($matrixBlockTypes as $matrixBlockType) {

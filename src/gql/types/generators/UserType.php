@@ -3,11 +3,9 @@ namespace craft\gql\types\generators;
 
 use Craft;
 use craft\base\Field;
-use craft\base\Volume;
 use craft\elements\User as UserElement;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\types\Asset;
 use craft\gql\types\User;
 
 /**
@@ -17,9 +15,7 @@ class UserType
 {
     public static function generateTypes(): array
     {
-
         $gqlTypes = [];
-
         $typeName = self::getName();
 
         $contentFields = Craft::$app->getFields()->getLayoutByType(UserElement::class)->getFields();

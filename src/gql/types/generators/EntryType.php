@@ -16,7 +16,6 @@ class EntryType
     public static function generateTypes(): array
     {
         $entryTypes = Craft::$app->getSections()->getAllEntryTypes();
-
         $gqlTypes = [];
 
         foreach ($entryTypes as $entryType) {
