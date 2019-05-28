@@ -24,7 +24,8 @@ abstract class BaseElement extends SchemaObject
             'siteUid' => Type::boolean(),
             'searchScore' => Type::string(),
             'trashed' => Type::boolean(),
-            'elementType' => Type::string()
+            'elementType' => Type::string(),
+            'status' => Type::string()
         ]);
     }
 }
