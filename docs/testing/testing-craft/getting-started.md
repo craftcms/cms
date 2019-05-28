@@ -227,6 +227,5 @@ We have just created a unit test and tested a small part of the Craft codebase.
 Codeception provides two other types of testing. A basic overview can be 
 found in the Codeception documentation.
 
-The Craft documentation contain several other useful tips and explain various Craft specific testing concepts. 
-It is recommended you give them a good read before writing a lot of tests.
-
+The Craft documentation contain many other useful tips for testing as well as explaining various Craft specific testing concepts. 
+It is recommended you give them a good read before writing tests for your production code. 
