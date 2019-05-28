@@ -246,11 +246,6 @@ class EntryRevisions extends Component
      */
     public function publishDraft(EntryDraft $draft, bool $runValidation = true): bool
     {
-        // If this is a single, we'll have to set the title manually
-        if ($draft->getSection()->type == Section::TYPE_SINGLE) {
-            $draft->title = $draft->getSection()->name;
-        }
-
         // Set the version notes
         if (!$draft->revisionNotes) {
             $draft->revisionNotes = Craft::t('app', 'Published draft “{name}”.', ['name' => $draft->name]);
@@ -458,11 +453,6 @@ class EntryRevisions extends Component
      */
     public function revertEntryToVersion(EntryVersion $version, bool $runValidation = true): bool
     {
-        // If this is a single, we'll have to set the title manually
-        if ($version->getSection()->type === Section::TYPE_SINGLE) {
-            $version->title = $version->getSection()->name;
-        }
-
         // Set the version notes
         $version->revisionNotes = Craft::t('app', 'Reverted version {num}.', ['num' => $version->num]);
 
