@@ -9,7 +9,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 /**
  * Class EntryType
  */
-class Entry extends Element
+class Entry extends BaseType
 {
     /**
      * @inheritdoc

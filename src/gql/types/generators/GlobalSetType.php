@@ -11,9 +11,12 @@ use craft\gql\types\GlobalSet;
 /**
  * Class GlobalSetType
  */
-class GlobalSetType
+class GlobalSetType implements BaseGenerator
 {
-    public static function generateTypes(): array
+    /**
+     * @inheritdoc
+     */
+    public static function generateTypes($context = null): array
     {
         $globalSets = Craft::$app->getGlobals()->getAllSets();
         $gqlTypes = [];
@@ -45,13 +48,11 @@ class GlobalSetType
     }
 
     /**
-     * Return an entry type's GQL type name by entry type
-     *
-     * @param GlobalSetElement $globalSet
-     * @return string
+     * @inheritdoc
      */
-    public static function getName($globalSet)
+    public static function getName($context = null): string
     {
-        return $globalSet->handle . '_GlobalSet';
+        /** @var GlobalSetElement $context */
+        return $context->handle . '_GlobalSet';
     }
 }

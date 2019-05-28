@@ -10,7 +10,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 /**
  * Class AssetType
  */
-class Asset extends Element
+class Asset extends BaseType
 {
     /**
      * @inheritdoc

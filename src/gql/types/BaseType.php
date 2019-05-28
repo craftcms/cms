@@ -7,9 +7,9 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
- * Class ElementType
+ * Class BaseType
  */
-abstract class Element extends ObjectType
+abstract class BaseType extends ObjectType
 {
     /**
      * @inheritdoc
@@ -34,8 +34,6 @@ abstract class Element extends ObjectType
 
     /**
      * Resolve a value with the directives that apply to it.
-     *
-     * TODO: once we allow querying for structure as well, this will move up to the base type.
      *
      * @param mixed $source The parent data source to use for resolving this field
      * @param array $arguments arguments for resolving this field.

@@ -8,7 +8,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 /**
  * Class GlobalSetType
  */
-class GlobalSet extends Element
+class GlobalSet extends BaseType
 {
     /**
      * @inheritdoc

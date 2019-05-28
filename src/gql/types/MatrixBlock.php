@@ -10,7 +10,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 /**
  * Class MatrixBlockType
  */
-class MatrixBlock extends ObjectType
+class MatrixBlock extends BaseType
 {
     /**
      * @inheritdoc

@@ -11,9 +11,12 @@ use craft\gql\types\User;
 /**
  * Class UserType
  */
-class UserType
+class UserType implements BaseGenerator
 {
-    public static function generateTypes(): array
+    /**
+     * @inheritdoc
+     */
+    public static function generateTypes($context = null): array
     {
         $gqlTypes = [];
         $typeName = self::getName();
@@ -41,11 +44,9 @@ class UserType
     }
 
     /**
-     * Return the user type name
-     *
-     * @return string
+     * @inheritdoc
      */
-    public static function getName()
+    public static function getName($context = null): string
     {
         return 'User';
     }

@@ -11,9 +11,12 @@ use craft\gql\types\Asset;
 /**
  * Class AssetTypeGenerator
  */
-class AssetType
+class AssetType implements BaseGenerator
 {
-    public static function generateTypes(): array
+    /**
+     * @inheritdoc
+     */
+    public static function generateTypes($context = null): array
     {
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
         $gqlTypes = [];
@@ -44,13 +47,11 @@ class AssetType
     }
 
     /**
-     * Return an asset's GQL type name by volume
-     *
-     * @param Volume $volume
-     * @return string
+     * @inheritdoc
      */
-    public static function getName(Volume $volume)
+    public static function getName($context = null): string
     {
-        return $volume->handle . '_Asset';
+        /** @var Volume $context */
+        return $context->handle . '_Asset';
     }
 }

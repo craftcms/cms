@@ -11,9 +11,12 @@ use craft\models\EntryType as EntryTypeModel;
 /**
  * Class EntryTypeGenerator
  */
-class EntryType
+class EntryType implements BaseGenerator
 {
-    public static function generateTypes(): array
+    /**
+     * @inheritdoc
+     */
+    public static function generateTypes($context = null): array
     {
         $entryTypes = Craft::$app->getSections()->getAllEntryTypes();
         $gqlTypes = [];
@@ -44,13 +47,11 @@ class EntryType
     }
 
     /**
-     * Return an entry type's GQL type name by entry type
-     *
-     * @param EntryTypeModel $entryType
-     * @return string
+     * @inheritdoc
      */
-    public static function getName(EntryTypeModel $entryType): string
+    public static function getName($context = null): string
     {
-        return $entryType->getSection()->handle . '_' . $entryType->handle . '_Entry';
+        /** @var EntryTypeModel $context */
+        return $context->getSection()->handle . '_' . $context->handle . '_Entry';
     }
 }

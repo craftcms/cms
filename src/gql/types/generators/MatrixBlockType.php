@@ -11,9 +11,12 @@ use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 /**
  * Class MatrixBlockTypeGenerator
  */
-class MatrixBlockType
+class MatrixBlockType implements BaseGenerator
 {
-    public static function generateTypes(): array
+    /**
+     * @inheritdoc
+     */
+    public static function generateTypes($context = null): array
     {
         $matrixBlockTypes = Craft::$app->getMatrix()->getAllBlockTypes();
         $gqlTypes = [];
@@ -44,13 +47,11 @@ class MatrixBlockType
     }
 
     /**
-     * Return a block type's GQL type name by block type
-     *
-     * @param MatrixBlockTypeModel $matrixBlockType
-     * @return string
+     * @inheritdoc
      */
-    public static function getName(MatrixBlockTypeModel $matrixBlockType)
+    public static function getName($context = null): string
     {
-        return $matrixBlockType->getField()->handle . '_' . $matrixBlockType->handle . '_BlockType';
+        /** @var MatrixBlockTypeModel $context */
+        return $context->getField()->handle . '_' . $context->handle . '_BlockType';
     }
 }

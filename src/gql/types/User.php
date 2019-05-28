@@ -10,7 +10,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 /**
  * Class User
  */
-class User extends Element
+class User extends BaseType
 {
     /**
      * @inheritdoc
