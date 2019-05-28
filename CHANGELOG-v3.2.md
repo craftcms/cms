@@ -99,9 +99,6 @@
 - Removed the `--batch-size` option from `resave/*` actions.
 - Removed the `craft.entryRevisions` Twig component.
 - Removed `craft\events\VersionEvent`.
-- Removed `craft\models\BaseEntryRevisionModel`.
-- Removed `craft\models\EntryDraft`.
-- Removed `craft\models\EntryVersion`.
 - Removed `craft\records\Entry::getVersions()`.
 - Removed `craft\records\EntryDraft`.
 - Removed `craft\records\EntryVersion`.
@@ -115,6 +112,9 @@
 ### Deprecated
 - Deprecated `craft\controllers\LivePreviewController`.
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
+- Deprecated `craft\models\BaseEntryRevisionModel`.
+- Deprecated `craft\models\EntryDraft`.
+- Deprecated `craft\models\EntryVersion`.
 - Deprecated `craft\models\Section::$propagateEntries`. Use `$propagationMethod` instead.
 - Deprecated `craft\services\EntryRevisions`.
 - Deprecated `craft\web\Request::getIsLivePreview()`.
