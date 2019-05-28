@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `restore` command, which restores a database backup.
+
 ### Changed
 - Asset indexes now sort assets by Date Uploaded in descending order by default. ([#1153](https://github.com/craftcms/cms/issues/1153))
 - `craft\db\Paginator` no longer assumes that the application’s database connection should be used.
