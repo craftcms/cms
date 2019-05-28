@@ -16,16 +16,19 @@ use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Transform;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
+use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\queries\Asset as AssetQuery;
 use craft\gql\queries\Entry as EntryQuery;
+use craft\gql\queries\GlobalSet as GlobalSetQuery;
 use craft\gql\queries\MatrixBlock as MatrixBlockQuery;
 use craft\gql\queries\User as UserQuery;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\AssetType;
 use craft\gql\types\generators\EntryType;
+use craft\gql\types\generators\GlobalSetType;
 use craft\gql\types\generators\MatrixBlockType;
 use craft\gql\types\generators\UserType;
 use craft\gql\types\Query;
@@ -102,7 +105,8 @@ class Gql extends Component
                     EntryType::generateTypes(),
                     MatrixBlockType::generateTypes(),
                     AssetType::generateTypes(),
-                    UserType::generateTypes()
+                    UserType::generateTypes(),
+                    GlobalSetType::generateTypes()
                 );
             }
 
@@ -134,6 +138,7 @@ class Gql extends Component
             MatrixBlockInterface::class,
             AssetInterface::class,
             UserInterface::class,
+            GlobalSetInterface::class,
         ];
 
         $event = new RegisterGqlTypesEvent([
@@ -161,6 +166,7 @@ class Gql extends Component
             MatrixBlockQuery::getQueries(),
             AssetQuery::getQueries(),
             UserQuery::getQueries(),
+            GlobalSetQuery::getQueries(),
         ];
 
 
