@@ -86,6 +86,10 @@ SECURITY_KEY=""
 DEFAULT_SITE_URL="https://your-site-url.test/" # Set this to the `entryUrl` param in the `codeception.yml` file.
 ```
 
+::: tip
+You will need to have the `vlucas/phpdotenv` library installed with a minimum version of `^3.0`. 
+You can install this package using `composer require --dev vlucas/phpdotenv ^3.0`.
+:::
 ### Craft constants
 Create a `_bootstrap.php` file in your `tests/` directory and add the following: 
 ```php
@@ -222,4 +226,7 @@ We have just created a unit test and tested a small part of the Craft codebase.
  
 Codeception provides two other types of testing. A basic overview can be 
 found in the Codeception documentation.
+
+The Craft documentation contain several other useful tips and explain various Craft specific testing concepts. 
+It is recommended you give them a good read before writing a lot of tests.
 

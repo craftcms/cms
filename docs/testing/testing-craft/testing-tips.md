@@ -27,4 +27,10 @@ The cleanup option ensures that fixtures are removed after a test. This cleans a
 data inserted during your test from the database. 
 Before the next test the new fixtures will be added again. 
 
+## Use .gitignore
+Through the getting started guide you will have setup a `_craft` folder which contains various directories for testing. 
+One of these directories is the `storage` directory. During testing Craft will create alot of temporary files and logs in this folder. 
+Use a [.gitignore](https://git-scm.com/docs/gitignore) file to not commit these files into your version control system (I.E. GIT). 
+The same policy should apply to the `tests/_output/` directory that Codeception creates for tests
+
 TODO: More....
