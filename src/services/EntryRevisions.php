@@ -247,7 +247,7 @@ class EntryRevisions extends Component
     public function publishDraft(EntryDraft $draft, bool $runValidation = true): bool
     {
         // If this is a single, we'll have to set the title manually
-        if ($draft->getSection()->type == Section::TYPE_SINGLE) {
+        if ($draft->getSection()->type == Section::TYPE_SINGLE && empty($draft->title)) {
             $draft->title = $draft->getSection()->name;
         }
 
