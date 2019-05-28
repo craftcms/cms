@@ -36,7 +36,7 @@ The fixture data file could look like this:
 
 return [
     [
-        'tempFilePath' => 'product.jpg',
+        'tempFilePath' => 'path/to/_craft/storage/runtime/temp/product.jpg',
         'filename' => 'product.jpg',
         'volumeId' => $this->volumeIds['products'],
         'folderId' => $this->folderIds['clothes'],
@@ -44,13 +44,18 @@ return [
 ];
 ```
 
-`project.jpg` (and any of your other testing assets) should live in the `tests/_craft/assets` folder.
+`product.jpg` (and any of your other testing assets) should live in the `tests/_craft/assets` folder.
 
 This will upload and link product.jpg as an asset.
 
 `AssetFixture` will define `$this->volumeIds` and `$this->folderIds` with their handles as key.
 
 The primary keys are: `volumeId`, `folderId`, `filename` and `title`.
+
+::: warning
+The `AssetFixture` class will automatically copy your assets into the `tests/_craft/storage/runtime/temp` folder. 
+Please ensure that the `tempFilePath` points to a filename this directory. 
+:::
 
 ### `Category fixtures`
 
