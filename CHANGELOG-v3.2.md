@@ -89,6 +89,7 @@
 - `craft\queue\QueueInterface::setProgress()` now has a `$label` argument.
 - `craft\services\Elements::deleteElement()` now has a `$hardDelete` argument.
 - `craft\services\Elements::deleteElement()` now has a `$hardDelete` argument. ([#3392](https://github.com/craftcms/cms/issues/3392))
+- `craft\services\Elements::getElementById()` now has a `$criteria` argument.
 - `craft\services\Elements::propagateElement()` now has a `$siteElement` argument.
 - `craft\services\Elements::saveElement()` now preserves existing elements’ current `dateUpdated` value when propagating or auto-resaving elements.
 - `craft\services\Elements::saveElement()` now preserves the `uid`, `dateCreated`, and `dateUpdated` values on new elements if they were explicitly set. ([#2909](https://github.com/craftcms/cms/issues/2909))

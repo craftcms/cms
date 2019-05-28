@@ -243,9 +243,10 @@ class Elements extends Component
      * @param string|null $elementType The element class.
      * @param int|null $siteId The site to fetch the element in.
      * Defaults to the current site.
+     * @param array $criteria
      * @return ElementInterface|null The matching element, or `null`.
      */
-    public function getElementById(int $elementId, string $elementType = null, int $siteId = null)
+    public function getElementById(int $elementId, string $elementType = null, int $siteId = null, array $criteria = [])
     {
         if (!$elementId) {
             return null;
@@ -284,6 +285,7 @@ class Elements extends Component
             $query->revisionId($data['revisionId']);
         }
 
+        Craft::configure($query, $criteria);
         return $query->one();
     }
 

@@ -11,9 +11,11 @@
 - Renamed `craft\events\ResaveElementEvent` to `BatchElementActionEvent`.
 - Renamed `craft\events\ResaveElementsEvent` to `ElementQueryEvent`.
 - `craft\events\MoveElementEvent` now extends `craft\events\ElementEvent`. ([#4315](https://github.com/craftcms/cms/pull/4315))
+- `craft\services\Elements::getElementById()` now has a `$criteria` argument.
 
 ### Fixed
 - Fixed a bug where required fields weren’t getting enforced when saving an entry. ([#4316](https://github.com/craftcms/cms/issues/4316))
+- Fixed a bug where `craft\services\Entry::getEntryById()` and `craft\services\Categories::getCategoryById()` were returning `null` if the given ID was for a revision or draft. ([#4312](https://github.com/craftcms/cms/issues/4312))
 
 ## 3.2.0-alpha.6.4 - 2019-05-26
 
