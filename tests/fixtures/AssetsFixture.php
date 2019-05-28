@@ -64,6 +64,10 @@ class AssetsFixture extends AssetFixture
         $this->_sourceAssetPath = dirname(__FILE__,2).'/_craft/assets/';
         $this->_destinationAssetPath = dirname(__FILE__,2).'/_craft/storage/runtime/temp/';
 
+        if (!is_dir($this->_destinationAssetPath)) {
+            FileHelper::createDirectory($this->_destinationAssetPath);
+        }
+
         $data = require $this->dataFile;
 
         foreach ($data as $fileName) {
