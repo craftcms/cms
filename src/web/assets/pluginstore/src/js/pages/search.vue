@@ -6,7 +6,7 @@
         </div>
 
         <template v-if="loading">
-            <div class="spinner"></div>
+            <spinner></spinner>
         </template>
         <template v-else>
             <plugin-grid :plugins="pluginsToRender"></plugin-grid>
@@ -23,7 +23,6 @@
     import PluginsHelper from '../helpers/plugins'
 
     export default {
-
         data() {
             return {
                 loading: true,
@@ -41,7 +40,6 @@
         },
 
         computed: {
-
             ...mapState({
                 plugins: state => state.pluginStore.plugins,
                 searchQuery: state => state.app.searchQuery,
@@ -50,11 +48,9 @@
             pluginsToRender() {
                 return PluginsHelper.sortPlugins(this.searchResults, this.sortingOptions);
             }
-
         },
 
         methods: {
-
             performSearch() {
                 let searchQuery = this.searchQuery
 
@@ -105,15 +101,12 @@
                     this.loading = false
                 }.bind(this), 1)
             },
-
         },
 
         watch: {
-
             searchQuery() {
                 this.search()
             }
-
         },
 
         mounted() {
@@ -123,6 +116,5 @@
                 this.search()
             }
         }
-
     }
 </script>

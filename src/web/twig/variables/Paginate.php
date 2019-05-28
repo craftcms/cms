@@ -15,6 +15,7 @@ use yii\base\BaseObject;
 /**
  * Paginate variable class.
  *
+ * @property string $basePath
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -71,8 +72,38 @@ class Paginate extends BaseObject
      */
     public $totalPages = 0;
 
+    /**
+     * @var string Base path
+     * @see getBasePath()
+     * @see setBasePath()
+     */
+    private $_basePath;
+
     // Public Methods
     // =========================================================================
+
+    /**
+     * Returns the base path that should be used for pagination URLs.
+     *
+     * @return string
+     */
+    public function getBasePath(): string
+    {
+        if ($this->_basePath !== null) {
+            return $this->_basePath;
+        }
+        return $this->_basePath = Craft::$app->getRequest()->getPathInfo();
+    }
+
+    /**
+     * Sets the base path that should be used for pagination URLs.
+     *
+     * @param string $basePath
+     */
+    public function setBasePath(string $basePath)
+    {
+        $this->_basePath = $basePath;
+    }
 
     /**
      * Returns the URL to a specific page
@@ -83,27 +114,15 @@ class Paginate extends BaseObject
     public function getPageUrl(int $page)
     {
         if ($page >= 1 && $page <= $this->totalPages) {
-            $path = Craft::$app->getRequest()->getPathInfo();
+            $path = $this->getBasePath();
             $params = [];
 
             if ($page != 1) {
-                $pageTrigger = Craft::$app->getConfig()->getGeneral()->pageTrigger;
-
-                if (!is_string($pageTrigger) || $pageTrigger === '') {
-                    $pageTrigger = 'p';
-                }
+                $pageTrigger = Craft::$app->getConfig()->getGeneral()->getPageTrigger();
 
                 // Is this query string-based pagination?
-                if ($pageTrigger[0] === '?') {
-                    $pageTrigger = trim($pageTrigger, '?=');
-
-                    // Avoid conflict with the path param
-                    $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-                    if ($pageTrigger === $pathParam) {
-                        $pageTrigger = $pathParam === 'p' ? 'pg' : 'p';
-                    }
-
-                    $params = [$pageTrigger => $page];
+                if (strpos($pageTrigger, '?') === 0) {
+                   $params = [trim($pageTrigger, '?=') => $page];
                 } else {
                     if ($path) {
                         $path .= '/';

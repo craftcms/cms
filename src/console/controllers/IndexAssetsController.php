@@ -67,7 +67,7 @@ class IndexAssetsController extends Controller
      * @param int $startAt
      * @return int
      */
-    public function actionOne($handle, $startAt = 0)
+    public function actionOne($handle, $startAt = 0): int
     {
         $path = '';
 
@@ -80,7 +80,7 @@ class IndexAssetsController extends Controller
         $volume = Craft::$app->getVolumes()->getVolumeByHandle($handle);
 
         if (!$volume) {
-            $this->stdout('No volume exists with the handle “' . $handle . '”.', Console::FG_RED);
+            $this->stderr("No volume exists with the handle “{$handle}”."  . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 

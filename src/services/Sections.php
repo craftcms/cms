@@ -22,6 +22,7 @@ use craft\events\FieldEvent;
 use craft\events\SectionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\EntryType;
@@ -106,6 +107,16 @@ class Sections extends Component
     // =========================================================================
 
     /**
+     * @var bool Whether entries should be resaved after a section or entry type has been updated.
+     *
+     * ::: warning
+     * Don’t disable this unless you know what you’re doing, as entries won’t reflect section/entry type changes until
+     * they’ve been resaved. (You can resave entries manually by running the `resave/entries` console command.)
+     * :::
+     */
+    public $autoResaveEntries = true;
+
+    /**
      * @var Section[]
      */
     private $_sections;
@@ -185,6 +196,12 @@ class Sections extends Component
         $this->_sections = [];
 
         foreach ($results as $result) {
+            if (!empty($result['previewTargets'])) {
+                $result['previewTargets'] = Json::decode($result['previewTargets']);
+            } else {
+                $result['previewTargets'] = [];
+            }
+
             $this->_sections[] = new Section($result);
         }
 
@@ -422,7 +439,7 @@ class Sections extends Component
 
         // Main section settings
         if ($section->type === Section::TYPE_SINGLE) {
-            $section->propagateEntries = true;
+            $section->propagationMethod = Section::PROPAGATION_METHOD_ALL;
         }
 
         // Assemble the section config
@@ -435,9 +452,13 @@ class Sections extends Component
             'handle' => $section->handle,
             'type' => $section->type,
             'enableVersioning' => (bool)$section->enableVersioning,
-            'propagateEntries' => (bool)$section->propagateEntries,
+            'propagationMethod' => $section->propagationMethod,
             'siteSettings' => [],
         ];
+
+        if (!empty($section->previewTargets)) {
+            $configData['previewTargets'] = $section->previewTargets;
+        }
 
         if ($section->type === Section::TYPE_STRUCTURE) {
             $sectionRecord = $this->_getSectionRecord($section->uid);
@@ -449,7 +470,7 @@ class Sections extends Component
 
             $configData['structure'] = [
                 'uid' => $structureUid,
-                'maxLevels' => $section->maxLevels,
+                'maxLevels' => (int)$section->maxLevels ?: null,
             ];
         }
 
@@ -468,8 +489,8 @@ class Sections extends Component
         foreach ($allSiteSettings as $siteId => $settings) {
             $siteUid = Db::uidById(Table::SITES, $siteId);
             $configData['siteSettings'][$siteUid] = [
-                'enabledByDefault' => $settings['enabledByDefault'],
-                'hasUrls' => $settings['hasUrls'],
+                'enabledByDefault' => (bool)$settings['enabledByDefault'],
+                'hasUrls' => (bool)$settings['hasUrls'],
                 'uriFormat' => $settings['uriFormat'],
                 'template' => $settings['template'],
             ];
@@ -529,7 +550,7 @@ class Sections extends Component
 
             if ($section->type === Section::TYPE_SINGLE) {
                 // Ensure & get the single entry
-                $entry = $this->_ensureSingleEntry($section);
+                $entry = $this->_ensureSingleEntry($section, $configData['siteSettings']);
 
                 // Deal with the section's entry types
                 if (!$isNewSection) {
@@ -582,13 +603,13 @@ class Sections extends Component
 
             // Basic data
             $sectionRecord = $this->_getSectionRecord($sectionUid, true);
-            $oldSectionRecord = clone $sectionRecord;
             $sectionRecord->uid = $sectionUid;
             $sectionRecord->name = $data['name'];
             $sectionRecord->handle = $data['handle'];
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
-            $sectionRecord->propagateEntries = (bool)$data['propagateEntries'];
+            $sectionRecord->propagationMethod = $data['propagationMethod'] ?? Section::PROPAGATION_METHOD_ALL;
+            $sectionRecord->previewTargets = $data['previewTargets'] ?? null;
 
             $isNewSection = $sectionRecord->getIsNewRecord();
 
@@ -607,8 +628,16 @@ class Sections extends Component
                 $isNewStructure = false;
             }
 
+            $resaveEntries = (
+                $sectionRecord->handle !== $sectionRecord->getOldAttribute('handle') ||
+                $sectionRecord->type !== $sectionRecord->getOldAttribute('type') ||
+                $sectionRecord->propagationMethod != $sectionRecord->getOldAttribute('propagationMethod') ||
+                $sectionRecord->structureId != $sectionRecord->getOldAttribute('structureId')
+            );
+
             if ($sectionRecord->dateDeleted) {
                 $sectionRecord->restore();
+                $resaveEntries = true;
             } else {
                 $sectionRecord->save(false);
             }
@@ -638,6 +667,7 @@ class Sections extends Component
                     $siteSettingsRecord = new Section_SiteSettingsRecord();
                     $siteSettingsRecord->sectionId = $sectionRecord->id;
                     $siteSettingsRecord->siteId = $siteId;
+                    $resaveEntries = true;
                 }
 
                 $siteSettingsRecord->enabledByDefault = $siteSettings['enabledByDefault'];
@@ -649,6 +679,12 @@ class Sections extends Component
                     $siteSettingsRecord->uriFormat = $siteSettings['uriFormat'] = null;
                     $siteSettingsRecord->template = $siteSettings['template'] = null;
                 }
+
+                $resaveEntries = (
+                    $resaveEntries ||
+                    $siteSettingsRecord->hasUrls != $siteSettingsRecord->getOldAttribute('hasUrls') ||
+                    $siteSettingsRecord->uriFormat !== $siteSettingsRecord->getOldAttribute('uriFormat')
+                );
 
                 $siteSettingsRecord->save(false);
             }
@@ -663,6 +699,7 @@ class Sections extends Component
                     $siteUid = array_search($siteId, $siteIdMap, false);
                     if (!in_array($siteUid, $affectedSiteUids, false)) {
                         $siteSettingsRecord->delete();
+                        $resaveEntries = true;
                     }
                 }
             }
@@ -676,56 +713,26 @@ class Sections extends Component
                 !$isNewSection &&
                 $isNewStructure
             ) {
-                $this->_populateNewStructure($sectionRecord, $oldSectionRecord, array_keys($allOldSiteSettingsRecords));
+                $this->_populateNewStructure($sectionRecord);
             }
 
             // Finally, deal with the existing entries...
             // -----------------------------------------------------------------
 
-            if (!$isNewSection) {
-                if ($oldSectionRecord->propagateEntries) {
-                    // Find a site that the section was already enabled in, and still is
-                    $oldSiteIds = array_keys($allOldSiteSettingsRecords);
-                    $newSiteIds = $siteIdMap;
-                    $persistentSiteIds = array_values(array_intersect($newSiteIds, $oldSiteIds));
-
-                    // Try to make that the primary site, if it's in the list
-                    $siteId = Craft::$app->getSites()->getPrimarySite()->id;
-                    if (!in_array($siteId, $persistentSiteIds, false)) {
-                        $siteId = $persistentSiteIds[0];
-                    }
-
-                    Craft::$app->getQueue()->push(new ResaveElements([
-                        'description' => Craft::t('app', 'Resaving {section} entries', [
-                            'section' => $sectionRecord->name,
-                        ]),
-                        'elementType' => Entry::class,
-                        'criteria' => [
-                            'siteId' => $siteId,
-                            'sectionId' => $sectionRecord->id,
-                            'status' => null,
-                            'enabledForSite' => false,
-                        ]
-                    ]));
-                } else {
-                    // Resave entries for each site
-                    $sitesService = Craft::$app->getSites();
-                    foreach ($siteSettingData as $siteUid => $siteSettings) {
-                        Craft::$app->getQueue()->push(new ResaveElements([
-                            'description' => Craft::t('app', 'Resaving {section} entries ({site})', [
-                                'section' => $sectionRecord->name,
-                                'site' => $sitesService->getSiteByUid($siteUid)->name
-                            ]),
-                            'elementType' => Entry::class,
-                            'criteria' => [
-                                'siteId' => $siteIdMap[$siteUid],
-                                'sectionId' => $sectionRecord->id,
-                                'status' => null,
-                                'enabledForSite' => false,
-                            ]
-                        ]));
-                    }
-                }
+            if (!$isNewSection && $resaveEntries && $this->autoResaveEntries) {
+                Craft::$app->getQueue()->push(new ResaveElements([
+                    'description' => Craft::t('app', 'Resaving {section} entries', [
+                        'section' => $sectionRecord->name,
+                    ]),
+                    'elementType' => Entry::class,
+                    'criteria' => [
+                        'sectionId' => $sectionRecord->id,
+                        'siteId' => '*',
+                        'unique' => true,
+                        'status' => null,
+                        'enabledForSite' => false,
+                    ]
+                ]));
             }
 
             $transaction->commit();
@@ -747,7 +754,7 @@ class Sections extends Component
             $section->type === Section::TYPE_SINGLE &&
             !Craft::$app->getProjectConfig()->areChangesPending($event->path . '.' . self::CONFIG_ENTRYTYPES_KEY)
         ) {
-            $this->_ensureSingleEntry($section);
+            $this->_ensureSingleEntry($section, $siteSettingData);
         }
 
         // Fire an 'afterSaveSection' event
@@ -1132,10 +1139,10 @@ class Sections extends Component
         $configData = [
             'name' => $entryType->name,
             'handle' => $entryType->handle,
-            'hasTitleField' => $entryType->hasTitleField,
+            'hasTitleField' => (bool)$entryType->hasTitleField,
             'titleLabel' => $entryType->titleLabel,
             'titleFormat' => $entryType->titleFormat,
-            'sortOrder' => $sortOrder,
+            'sortOrder' => (int)$sortOrder,
         ];
 
         $fieldLayout = $entryType->getFieldLayout();
@@ -1215,9 +1222,17 @@ class Sections extends Component
                 $entryTypeRecord->fieldLayoutId = null;
             }
 
+            $resaveEntries = (
+                $entryTypeRecord->handle !== $entryTypeRecord->getOldAttribute('handle') ||
+                $entryTypeRecord->hasTitleField != $entryTypeRecord->getOldAttribute('hasTitleField') ||
+                $entryTypeRecord->titleFormat !== $entryTypeRecord->getOldAttribute('titleFormat') ||
+                $entryTypeRecord->fieldLayoutId != $entryTypeRecord->getOldAttribute('fieldLayoutId')
+            );
+
             // Save the entry type
             if ($wasTrashed = (bool)$entryTypeRecord->dateDeleted) {
                 $entryTypeRecord->restore();
+                $resaveEntries = true;
             } else {
                 $entryTypeRecord->save(false);
             }
@@ -1248,44 +1263,22 @@ class Sections extends Component
         // If this is for a Single section, ensure its entry exists
         if ($section->type === Section::TYPE_SINGLE) {
             $this->_ensureSingleEntry($section);
-        } else if (!$isNewEntryType) {
+        } else if (!$isNewEntryType && $resaveEntries && $this->autoResaveEntries) {
             // Re-save the entries of this type
-            $allSiteSettings = $section->getSiteSettings();
-
-            if ($section->propagateEntries) {
-                $siteIds = array_keys($allSiteSettings);
-
-                Craft::$app->getQueue()->push(new ResaveElements([
-                    'description' => Craft::t('app', 'Resaving {type} entries', [
-                        'type' => ($section->type !== Section::TYPE_SINGLE ? $section->name . ' - ' : '') . $entryType->name,
-                    ]),
-                    'elementType' => Entry::class,
-                    'criteria' => [
-                        'siteId' => $siteIds[0],
-                        'sectionId' => $section->id,
-                        'typeId' => $entryType->id,
-                        'status' => null,
-                        'enabledForSite' => false,
-                    ]
-                ]));
-            } else {
-                foreach ($allSiteSettings as $siteId => $siteSettings) {
-                    Craft::$app->getQueue()->push(new ResaveElements([
-                        'description' => Craft::t('app', 'Resaving {type} entries ({site})', [
-                            'type' => $entryType->name,
-                            'site' => $siteSettings->getSite()->name,
-                        ]),
-                        'elementType' => Entry::class,
-                        'criteria' => [
-                            'siteId' => $siteId,
-                            'sectionId' => $section->id,
-                            'typeId' => $entryType->id,
-                            'status' => null,
-                            'enabledForSite' => false,
-                        ]
-                    ]));
-                }
-            }
+            Craft::$app->getQueue()->push(new ResaveElements([
+                'description' => Craft::t('app', 'Resaving {type} entries', [
+                    'type' => ($section->type !== Section::TYPE_SINGLE ? $section->name . ' - ' : '') . $entryType->name,
+                ]),
+                'elementType' => Entry::class,
+                'criteria' => [
+                    'sectionId' => $section->id,
+                    'typeId' => $entryType->id,
+                    'siteId' => '*',
+                    'unique' => true,
+                    'status' => null,
+                    'enabledForSite' => false,
+                ]
+            ]));
         }
 
         // Fire an 'afterSaveEntryType' event
@@ -1476,7 +1469,7 @@ class Sections extends Component
             ];
         }
 
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'sections.id',
                 'sections.structureId',
@@ -1484,7 +1477,6 @@ class Sections extends Component
                 'sections.handle',
                 'sections.type',
                 'sections.enableVersioning',
-                'sections.propagateEntries',
                 'sections.uid',
                 'structures.maxLevels',
             ])
@@ -1492,22 +1484,35 @@ class Sections extends Component
             ->from(['{{%sections}} sections'])
             ->where($condition)
             ->orderBy(['name' => SORT_ASC]);
+
+        // todo: remove schema version conditions after next beakpoint
+        if (version_compare($schemaVersion, '3.2.1', '>=')) {
+            $query->addSelect('sections.propagationMethod');
+        }
+        if (version_compare($schemaVersion, '3.2.6', '>=')) {
+            $query->addSelect('sections.previewTargets');
+        }
+
+        return $query;
     }
 
     /**
      * Ensures that the given Single section has its one and only entry, and returns it.
      *
      * @param Section $section
+     * @param array|null $siteSettings
      * @return Entry The
      * @see saveSection()
      * @throws Exception if reasons
      */
-    private function _ensureSingleEntry(Section $section): Entry
+    private function _ensureSingleEntry(Section $section, array $siteSettings = null): Entry
     {
         // Get all the entries that currently exist for this section
         // ---------------------------------------------------------------------
 
-        $siteSettings = Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.siteSettings');
+        if ($siteSettings === null) {
+            $siteSettings = Craft::$app->getProjectConfig()->get(self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.siteSettings');
+        }
 
         if (empty($siteSettings)) {
             throw new Exception('No site settings exist for section ' . $section->id);
@@ -1595,40 +1600,25 @@ class Sections extends Component
      * Adds existing entries to a newly-created structure, if the section type was just converted to Structure.
      *
      * @param SectionRecord $sectionRecord
-     * @param SectionRecord $oldSectionRecord
-     * @param string[] $oldSiteIds
      * @see saveSection()
      * @throws Exception if reasons
      */
-    private function _populateNewStructure(SectionRecord $sectionRecord, SectionRecord $oldSectionRecord, array $oldSiteIds)
+    private function _populateNewStructure(SectionRecord $sectionRecord)
     {
-        if ($oldSectionRecord->propagateEntries) {
-            $siteIds = [reset($oldSiteIds)];
-        } else {
-            $siteIds = $oldSiteIds;
-        }
+        // Add all of the entries to the structure
+        $query = Entry::find()
+            ->sectionId($sectionRecord->id)
+            ->siteId('*')
+            ->unique()
+            ->anyStatus()
+            ->orderBy(['elements.id' => SORT_ASC])
+            ->withStructure(false);
 
-        $handledEntryIds = [];
         $structuresService = Craft::$app->getStructures();
 
-        foreach ($siteIds as $siteId) {
-            // Add all of the entries to the structure
-            $query = Entry::find()
-                ->siteId($siteId)
-                ->sectionId($sectionRecord->id)
-                ->anyStatus()
-                ->orderBy(['elements.id' => SORT_ASC])
-                ->withStructure(false);
-
-            if (!empty($handledEntryIds)) {
-                $query->andWhere(['not', ['elements.id' => $handledEntryIds]]);
-            }
-
-            /** @var Entry $entry */
-            foreach ($query->each() as $entry) {
-                $structuresService->appendToRoot($sectionRecord->structureId, $entry, 'insert');
-                $handledEntryIds[] = $entry->id;
-            }
+        /** @var Entry $entry */
+        foreach ($query->each() as $entry) {
+            $structuresService->appendToRoot($sectionRecord->structureId, $entry, 'insert');
         }
     }
 

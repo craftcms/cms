@@ -41,6 +41,8 @@ class VolumesController extends Controller
     {
         // All asset volume actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**
@@ -91,7 +93,7 @@ class VolumesController extends Controller
             }
         }
 
-        /** @var string[] $allVolumeTypes */
+        /** @var string[]|VolumeInterface[] $allVolumeTypes */
         $allVolumeTypes = $volumes->getAllVolumeTypes();
 
         // Make sure the selected volume class is in there
@@ -192,6 +194,7 @@ class VolumesController extends Controller
 
         // If this is an existing volume, populate with properties unchangeable by this action.
         if ($volumeId) {
+            /** @var Volume $savedVolume */
             $savedVolume = $volumes->getVolumeById($volumeId);
             $volumeData['uid'] = $savedVolume->uid;
             $volumeData['sortOrder'] = $savedVolume->sortOrder;

@@ -27,5 +27,5 @@
 </form>
 ```
 
-コンフィグ設定の <config:setPasswordSuccessPath> は、ユーザーがパスワードのリセットを完了（かつ、自動的にログイン）した後にリダイレクトすべき場所を指定します。
+ユーザーがログインに成功すると、コンフィグ設定 <config:setPasswordSuccessPath> で定義されたパスにリダイレクトされます。
 

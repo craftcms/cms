@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
@@ -47,6 +48,14 @@ class Entries extends BaseRelationField
     public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add an entry');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return EntryQuery::class;
     }
 
     // Public Methods

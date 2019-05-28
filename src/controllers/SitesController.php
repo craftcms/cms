@@ -38,6 +38,8 @@ class SitesController extends Controller
     {
         // All actions require an admin account
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**
@@ -258,8 +260,15 @@ class SitesController extends Controller
         $this->requirePostRequest();
         $request = Craft::$app->getRequest();
 
-        $site = new Site();
-        $site->id = $request->getBodyParam('siteId');
+        $siteId = $request->getBodyParam('siteId');
+
+        if ($siteId) {
+            $site = Craft::$app->getSites()->getSiteById($siteId);
+        } else {
+            $site = new Site();
+            $site->id = $request->getBodyParam('siteId');
+        }
+
         $site->groupId = $request->getBodyParam('group');
         $site->name = $request->getBodyParam('name');
         $site->handle = $request->getBodyParam('handle');

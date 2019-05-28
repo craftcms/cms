@@ -3,8 +3,8 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.2.0-alpha.1',
-    'schemaVersion' => '3.1.25',
+    'version' => '3.2.0-alpha.6.4',
+    'schemaVersion' => '3.2.7',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -37,6 +37,9 @@ return [
         ],
         'deprecator' => [
             'class' => craft\services\Deprecator::class,
+        ],
+        'drafts' => [
+            'class' => craft\services\Drafts::class,
         ],
         'elementIndexes' => [
             'class' => craft\services\ElementIndexes::class,
@@ -85,6 +88,9 @@ return [
         ],
         'relations' => [
             'class' => craft\services\Relations::class,
+        ],
+        'revisions' => [
+            'class' => craft\services\Revisions::class,
         ],
         'routes' => [
             'class' => craft\services\Routes::class,

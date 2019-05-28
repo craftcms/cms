@@ -28,7 +28,7 @@ As a convenience, you can extend <api:craft\base\Element>, which provides a base
 
 Create an `elements/` directory within your plugin’s source directory, and create a PHP class file within it, named after the class name you want to give your element type (e.g. `Product.php`).
 
-Define the class within the file, and give it some public properties for any custom attributes your elements will have.
+Define the class within the file, and give a display name and some public properties for any custom attributes your elements will have.
 
 ```php
 <?php
@@ -38,6 +38,22 @@ use craft\base\Element;
 
 class Product extends Element
 {
+    /**
+     * @inheritdoc
+     */
+    public static function displayName(): string
+    {
+        return 'Product';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return 'Products';
+    }
+
     /**
      * @var int Price
      */
@@ -109,6 +125,10 @@ public function afterSave(bool $isNew)
     parent::afterSave($isNew);
 }
 ```
+
+::: tip
+`afterSave()` gets called by <api:craft\services\Elements::saveElement()>, after the main element rows in the `elements`, `elements_sites`, and `content` tables have been saved, and the element has been assigned an `id` and `uid` (if new).
+:::
 
 ### Element Query Class
 
@@ -328,7 +348,7 @@ $product->fieldLayoutId = $productType->fieldLayoutId;
 
 If the `$fieldLayoutId`  property is set, <api:craft\services\Elements::saveElement()> will store it in the `elements.fieldLayoutId` column in the database, and your elements will be re-populated with the values when they are fetched down the road.
 
-Alternatively, you can override the `getFieldLayout()` method, and fetch/return the field layout yourself. This might be preferrable if your element type only has a single field layout (like user accounts).
+Alternatively, you can override the `getFieldLayout()` method, and fetch/return the field layout yourself. This might be preferable if your element type only has a single field layout (like user accounts).
 
 ```php
 public function getFieldLayout()
@@ -363,9 +383,13 @@ public function getSupportedSites(): array
 
 The values in the array returned by `getSupportedSites()` can either be integers (site IDs) or an array with a `siteId` key and optionally an `enabledbyDefault` key (boolean) indicating whether the element should be enabled by default for that site.
 
+::: tip
+Elements that support multiple sites will have their `afterSave()` method called multiple times on save – once for each site that the element supports. You can tell whether it’s being called for the originally-submitted site versus a propagated site by checking `$this->propagating`.
+:::
+
 ## Statuses
 
-If your elements should have their own statuses, give your element class a static `hasStatuses()` method:
+If your elements should have their own statuses, give your element class a static <api:craft\base\ElementInterface::hasStatuses()> method:
 
 ```php
 public static function hasStatuses(): bool
@@ -374,15 +398,47 @@ public static function hasStatuses(): bool
 }
 ```
 
-Then, if they can have any statuses besides `enabled` and `disabled`, add a static `statuses()` method to define them:
+### Custom Statuses
+
+By default your elements will support two statuses: Enabled and Disabled. If you’d like to give your element type its own custom statuses, first define what they are by overriding its static <api:craft\base\ElementInterface::statuses()> method:
 
 ```php
 public static function statuses(): array
 {
     return [
-        'foo' => \Craft::t('plugin-handle', 'Foo'),
-        'bar' => \Craft::t('plugin-handle', 'Bar'),
+        'foo' => ['label' => \Craft::t('plugin-handle', 'Foo'), 'color' => '27AE60'],
+        'bar' => ['label' => \Craft::t('plugin-handle', 'Bar'), 'color' => 'F2842D'],
     ];
+}
+```
+
+Next add a <api:craft\base\ElementInterface::getStatus()> method that returns the current status of an element:
+
+```php
+public function getStatus()
+{
+    if ($this->fooIsTrue) {
+        return 'foo';
+    }
+
+    return 'bar';
+}
+```
+
+Finally, override the <api:craft\elements\db\ElementQuery::statusCondition()> method on your [element query class](#element-query-class):
+
+```php
+protected function statusCondition(string $status)
+{
+    switch ($status) {
+        case 'foo':
+            return ['foo' => true];
+        case 'bar':
+            return ['bar' => true];
+        default:
+            // call the base method for `enabled` or `disabled`
+            return parent::statusCondition($status);
+    }
 }
 ```
 
@@ -451,7 +507,7 @@ protected static function defineActions(string $source = null): array
 
 All element types are [soft-deletable](soft-deletes.md) out of the box, however it’s up to each element type to decide whether they should be restorable.
 
-To make an element restorable, just add the <api:craft\elements\actions\Restore> action to the array returned by your static `defineActions()` method. Craft will automatically hide it during normal index views, and show it when someone selects the “Trashed” status option. 
+To make an element restorable, just add the <api:craft\elements\actions\Restore> action to the array returned by your static `defineActions()` method. Craft will automatically hide it during normal index views, and show it when someone selects the “Trashed” status option.
 
 ### Sort Options
 
@@ -485,7 +541,7 @@ protected static function defineTableAttributes(): array
 ```
 
 ::: tip
-The first attribute you list here is a special case. It defines the header for the first column in the table view, which is the only one admins can’t remove. Its values will be the element string representations (whatever their `__toString()` methods return).
+The first attribute you list here is a special case. It defines the header for the first column in the table view, which is the only one admins can’t remove. Its values will come from your elements’ <api:craft\base\ElementInterface::getUiLabel()> method.
 :::
 
 If it’s a big list, you can also limit which columns should be visible by default for new [sources](#sources) by adding a protected `defineDefaultTableAttributes()` method to your element class:
@@ -657,6 +713,24 @@ The Edit Category page offers a relatively straightforward example of how it cou
   - [actionViewSharedCategory()](api:craft\controllers\CategoriesController::actionViewSharedCategory()) – renders a category’s front-end page for a Share Category token
 
 - Edit Category page template: [categories/_edit.html](https://github.com/craftcms/cms/blob/develop/src/templates/categories/_edit.html)
+
+Here’s a simple example of the code needed to save an element programatically, which could live within an `actionSave()` controller action:
+
+```php
+// Create a new product element
+$product = new Product();
+
+// Set the main properties from POST data
+$product->price = Craft::$app->request->getBodyParam('price');
+$product->currency = Craft::$app->request->getBodyParam('currency');
+$product->enabled = (bool)Craft::$app->request->getBodyParam('enabled');
+
+// Set custom field values from POST data in a `fields` namespace
+$entry->setFieldValuesFromRequest('fields');
+
+// Save the product
+$success = Craft::$app->elements->saveElement($product);
+```
 
 Once you’ve set up an edit page for your element type, you can add a [getCpEditUrl()](api:craft\base\ElementInterface::getCpEditUrl()) method to your element class, which will communicate your elements’ edit page URLs within the Control Panel.
 

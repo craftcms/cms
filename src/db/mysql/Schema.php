@@ -8,7 +8,6 @@
 namespace craft\db\mysql;
 
 use Craft;
-use craft\db\Table;
 use craft\db\TableSchema;
 use craft\helpers\FileHelper;
 use yii\db\Exception;
@@ -323,6 +322,9 @@ SQL;
         }
 
         FileHelper::writeToFile($filePath, $contents);
+
+        // Avoid a “world-writable config file 'my.cnf' is ignored” warning
+        chmod($filePath, 0644);
 
         return $filePath;
     }

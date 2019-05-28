@@ -38,7 +38,6 @@ class TemplatesController extends Controller
      * @inheritdoc
      */
     public $allowAnonymous = [
-        'render' => self::ALLOW_ANONYMOUS_LIVE,
         'offline' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'manual-update-notification' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'config-sync-kickoff' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
@@ -61,9 +60,13 @@ class TemplatesController extends Controller
             throw new ForbiddenHttpException();
         }
 
-        // Allow anonymous access to the Login template even if the site is offline
-        if ($request->getIsLoginRequest()) {
-            $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
+        if ($action->id === 'render') {
+            // Allow anonymous access to the Login template even if the site is offline
+            if ($request->getIsLoginRequest()) {
+                $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
+            } else if ($request->getIsSiteRequest()) {
+                $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
+            }
         }
 
         return parent::beforeAction($action);

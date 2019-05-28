@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Category;
-use craft\elements\Entry;
 use craft\errors\InvalidTypeException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
@@ -127,12 +126,6 @@ class ElementsController extends BaseElementsController
         }
 
         if (Craft::$app->getElements()->saveElement($element)) {
-            // todo: super hacky. Adjust when we add revision support to all element types
-            // If this is an entry, should we save a new version?
-            if (($element instanceof Entry) && $element->getSection()->enableVersioning) {
-                Craft::$app->getEntryRevisions()->saveVersion($element);
-            }
-
             $response = [
                 'success' => true,
                 'id' => $element->id,
@@ -309,6 +302,12 @@ class ElementsController extends BaseElementsController
         // (ElementHelper::isElementEditable() is overkill here since we've already verified the user can edit the element's site)
         if (!$element->getIsEditable()) {
             throw new ForbiddenHttpException('The user doesn’t have permission to edit this element');
+        }
+
+        // Prevalidate?
+        if ($request->getBodyParam('prevalidate') && $element->enabled && $element->enabledForSite) {
+            $element->setScenario(Element::SCENARIO_LIVE);
+            $element->validate();
         }
 
         return $element;

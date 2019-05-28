@@ -149,6 +149,12 @@ class Request extends \yii\web\Request
      */
     private $_encodedBodyParams = false;
 
+    /**
+     * @var string|false
+     * @see getToken()
+     */
+    public $_token;
+
     // Public Methods
     // =========================================================================
 
@@ -215,28 +221,16 @@ class Request extends \yii\web\Request
         }
 
         // Is this a paginated request?
-        $pageTrigger = Craft::$app->getConfig()->getGeneral()->pageTrigger;
-
-        if (!is_string($pageTrigger) || $pageTrigger === '') {
-            $pageTrigger = 'p';
-        }
+        $pageTrigger = $generalConfig->getPageTrigger();
 
         // Is this query string-based pagination?
-        if ($pageTrigger[0] === '?') {
-            $pageTrigger = trim($pageTrigger, '?=');
-
-            // Avoid conflict with the path param
-            $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-            if ($pageTrigger === $pathParam) {
-                $pageTrigger = $pathParam === 'p' ? 'pg' : 'p';
-            }
-
-            $this->_pageNum = (int)$this->getQueryParam($pageTrigger, '1');
+        if (strpos($pageTrigger, '?') === 0) {
+            $this->_pageNum = (int)$this->getQueryParam(trim($pageTrigger, '?='), '1');
         } else if (!empty($this->_segments)) {
             // Match against the entire path string as opposed to just the last segment so that we can support
             // "/page/2"-style pagination URLs
             $path = implode('/', $this->_segments);
-            $pageTrigger = preg_quote($generalConfig->pageTrigger, '/');
+            $pageTrigger = preg_quote($pageTrigger, '/');
 
             if (preg_match("/^(?:(.*)\/)?{$pageTrigger}(\d+)$/", $path, $match)) {
                 // Capture the page num
@@ -393,9 +387,14 @@ class Request extends \yii\web\Request
      */
     public function getToken()
     {
-        $param = Craft::$app->getConfig()->getGeneral()->tokenParam;
-        return $this->getQueryParam($param)
-            ?? $this->getHeaders()->get('X-Craft-Token');
+        if ($this->_token === null) {
+            $param = Craft::$app->getConfig()->getGeneral()->tokenParam;
+            $this->_token = $this->getQueryParam($param)
+                ?? $this->getHeaders()->get('X-Craft-Token')
+                ?? false;
+        }
+
+        return $this->_token ?: null;
     }
 
     /**
@@ -488,6 +487,7 @@ class Request extends \yii\web\Request
      * ```
      *
      * @return bool Whether this is a Live Preview request.
+     * @deprecated in 3.2
      */
     public function getIsLivePreview(): bool
     {

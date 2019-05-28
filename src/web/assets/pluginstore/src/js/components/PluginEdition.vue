@@ -76,7 +76,11 @@
             },
 
             licensedEdition() {
-                return this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo ? this.pluginLicenseInfo.licensedEdition : null)
+                if (!this.pluginLicenseInfo) {
+                    return null
+                }
+                
+                return this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.licensedEdition)
             }
 
         },
@@ -107,12 +111,6 @@
 
                     &:first-child {
                         @apply .border-t;
-                    }
-
-                    svg[data-icon="info-circle"] {
-                        path {
-                            fill: #ccc;
-                        }
                     }
                 }
             }

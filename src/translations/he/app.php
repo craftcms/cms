@@ -650,7 +650,7 @@ return [
     'New user group' => 'קבוצת משתמשים חדשה',
     'New volume' => 'אמצעי אחסון חדש',
     'New widget' => 'ווידג׳ט חדש',
-    'New {class}' => '{class} חדש',
+    'New {type}' => '{type} חדש',
     'New {group} category' => 'קטגוריה {group} חדשה',
     'New {section} entry' => 'רשומה {section} חדשה',
     'Next' => 'הבא',

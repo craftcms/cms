@@ -2,6 +2,17 @@
 
 [Twig に付随する](https://twig.symfony.com/doc/functions/index.html)テンプレートファンクションに加えて、Craft がいくつか独自のものを提供します。
 
+## `actionInput( actionPath )`
+
+特定のコントローラーやアクションのための POST リクエストをルーティングするために使用される不可視項目を出力するためのショートカット。これは、テンプレート内に直接 `<input type="hidden" name="action" value="controller/action-name">` を書き込むのと実質的に同じです。
+
+```twig
+<form method="POST">
+    {{ actionInput('users/save-user') }}
+    <!-- ... -->
+</form>
+```
+
 ## `alias( string )`
 
 その文字列が[エイリアス](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases)ではじまるかをチェックする [Craft::getAlias()](api:yii\BaseYii::getAlias()) に、文字列を渡します。（詳細については、[コンフィギュレーション](../config/README.md#aliases)を参照してください。）
@@ -44,6 +55,22 @@
 {% set articles = clone(query).type('articles') %}
 ```
 
+## `create( type )`
+
+与えられたクラス名やオブジェクト設定に基づいて新しいオブジェクトインスタンスを作成します。サポートされる引数の詳細については、<api:Yii::createObject()> を参照してください。
+
+```twig
+{# Pass in a class name #}
+{% set cookie = create('yii\\web\\Cookie') %}
+
+{# Or a full object configuration array #}
+{% set cookie = create({
+    class: 'yii\\web\\cookie',
+    name: 'foo',
+    value: 'bar'
+}) %}
+```
+
 ## `csrfInput()`
 
 不可視の CSRF トークン入力欄を返します。CSRF 保護が有効になっているすべてのサイトでは、POST 経由で送信するそれぞれのフォームにこれを含めなければなりません。
@@ -68,6 +95,10 @@
 </body>
 ```
 
+## `expression( expression, params, config )`
+
+データベースクエリで使用するための新しい <api:yii\db\Expression> オブジェクトを作成して返します。
+
 ## `floor( num )`
 
 整数値に切り捨てます。
@@ -84,6 +115,10 @@
 {{ getenv('MAPS_API_KEY') }}
 ```
 
+## `parseEnv( str )`
+
+文字列が環境変数（`$VARIABLE_NAME`）、および / または、エイリアス（`@aliasName`）を参照しているかどうかを確認し、参照されている値を返します。
+
 ## `head()`
 
 「head」に登録されたスクリプトやスタイルを出力します。`</head>` タグの直前に配置する必要があります。
@@ -93,6 +128,14 @@
     <title>{{ siteName }}</title>
     {{ head() }}
 </head>
+```
+
+## `plugin( handle )`
+
+ハンドルに従ってプラグインインスタンスを返します。そのハンドルでインストールされ有効化されているプラグインがない場合、`null` を返します。
+
+```twig
+{{ plugin('commerce').version }}
 ```
 
 ## `redirectInput( url )`
@@ -141,7 +184,7 @@
 
 ## `siteUrl( path, params, scheme, siteId )`
 
-サイト上のページへの URL を作成するため _だけ_ という点を除けば、[url()](#url-path-params-protocol-mustshowscriptname) と似ています。
+サイト上のページへの URL を作成するため _だけ_ という点を除けば、[url()](#url-path-params-scheme-mustshowscriptname) と似ています。
 
 ```twig
 <a href="{{ siteUrl('company/contact') }}">Contact Us</a>
@@ -156,35 +199,44 @@
 * **`scheme`** – URL が使用するスキーム（`'http'` または `'https'`）。デフォルト値は、現在のリクエストが SSL 経由で配信されているかどうかに依存します。そうでなければ、サイト URL のスキームが使用され、SSL 経由なら `https` が使用されます。
 * **`siteId`** – URL が指すべきサイト ID。デフォルトでは、現在のサイトが使用されます。
 
-## `svg( svg, sanitize )`
+## `svg( svg, sanitize, namespace, class )`
 
-潜在的な悪意のあるスクリプトのサニタイズをされた SVG 文書を出力します。
+SVG 文書を出力します。
 
-::: tip
-SVG 内の `id` 属性は自動的に名前空間になり、DOM 内の他の `id` 属性との競合を防ぎます。それが望ましくなければ、SVG ファイルを`templates/` フォルダ内に保存し、[include](https://twig.symfony.com/doc/2.x/tags/include.html) タグでロードすることができます。
+次のものを渡すことができます。
+
+- SVG ファイルのパス。
+
+   ```twig
+   {{ svg('@webroot/icons/lemon.svg') }}
+   ```
+
+- [アセットフィールド](../assets-fields.md)から引っ張られたような、<api:craft\elements\Asset> オブジェクト。
+
+   ```twig
+    {% set image = entry.myAssetsField.one() %}
+    {% if image and image.extension == 'svg' %}
+      {{ svg(image) }}
+    {% endif %}
+   ```
+
+- 生の SVG マークアップ。
+
+   ```twig
+    {% set image = include('_includes/icons/lemon.svg') %}
+    {{ svg(image) }}
+   ```
+
+ファンクションにアセットまたは生のマークアップを渡した場合、デフォルトでは SVG は [svg-sanitizer](https://github.com/darylldoyle/svg-sanitizer) を使用して潜在的に悪意のあるスクリプトをサニタイズし、ドキュメント内の ID や class 名が DOM の他の ID や class 名と衝突しないよう名前空間を付加します。引数 `sanitize`、および、`namespace` を使用して、これらの動作を無効にできます。
 
 ```twig
-{% include "_includes/sprites.svg" %}
+{{ svg(image, sanitize=false, namespace=false) }}
 ```
 
-:::
-
-### 引数
-
-`svg()` ファンクションは、次の引数を持っています。
-
-- **`svg`** – SVG ファイルパス、SVG ファイルのコンテンツ、または SVG ファイルに相当する <api:craft\elements\Asset> オブジェクト。
-- **`sanitize`** – SVG が潜在的な悪意あるスクリプトのサニタイズをされるべきかどうか（デフォルトは `true`）。
+引数 `class` を使用して、ルートの `<svg>` ノードに追加する独自の class 名を指定することもできます。
 
 ```twig
-{# file path #}
-{{ svg('@webroot/path/to/file.svg') }}
-
-{# file contents #}
-{{ svg('<svg ... />') }}
-
-{# asset #}
-{{ svg(entry.myAssetsField.one()) }}
+{{ svg('@webroot/icons/lemon.svg', class='lemon-icon') }}
 ```
 
 ## `url( path, params, scheme, mustShowScriptName )`
@@ -213,3 +265,4 @@ URL を返します。
 ```
 
 :::
+

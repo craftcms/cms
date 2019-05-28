@@ -34,6 +34,14 @@ class Number extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Number');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'int|float|null';
+    }
+
     // Properties
     // =========================================================================
 
@@ -159,7 +167,7 @@ class Number extends Field implements PreviewableFieldInterface
             $value = Localization::normalizeNumber($value['value'], $value['locale']);
         }
 
-        return $value === '' ? null : $value;
+        return $value === '' || !is_numeric($value) ? null : $value;
     }
 
     /**

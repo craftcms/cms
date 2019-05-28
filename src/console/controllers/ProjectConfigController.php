@@ -23,6 +23,11 @@ use yii\console\ExitCode;
 class ProjectConfigController extends Controller
 {
     /**
+     * @var bool Whether every entry change should be force-synced.
+     */
+    public $force = false;
+
+    /**
      * Syncs the project config.
      *
      * @return int
@@ -43,6 +48,11 @@ class ProjectConfigController extends Controller
 
         $projectConfig = Craft::$app->getProjectConfig();
 
+        if (!$projectConfig->getAreConfigSchemaVersionsCompatible()) {
+            $this->stdout('Your `project.yaml` file was created for different versions of Craft and/or plugins than what’s currently installed. Try running `composer install` from your terminal to resolve.' . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
         // Do we need to create a new config file?
         if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
             $this->stdout('No project.yaml file found. Generating one from internal config ... ', Console::FG_YELLOW);
@@ -60,7 +70,10 @@ class ProjectConfigController extends Controller
 
             $this->stdout('Applying changes from project.yaml ... ', Console::FG_YELLOW);
             try {
+                $forceUpdate = $projectConfig->forceUpdate;
+                $projectConfig->forceUpdate = $this->force;
                 $projectConfig->applyYamlChanges();
+                $projectConfig->forceUpdate = $forceUpdate;
             } catch (\Throwable $e) {
                 $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
                 Craft::$app->getErrorHandler()->logException($e);
@@ -157,5 +170,19 @@ class ProjectConfigController extends Controller
         }
 
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function options($actionID)
+    {
+        $options = parent::options($actionID);
+
+        if ($actionID == 'sync') {
+            $options[] = 'force';
+        }
+
+        return $options;
     }
 }

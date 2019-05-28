@@ -256,7 +256,7 @@ class Matrix extends Component
             'field' => $parentField->uid,
             'name' => $blockType->name,
             'handle' => $blockType->handle,
-            'sortOrder' => $blockType->sortOrder,
+            'sortOrder' => (int)$blockType->sortOrder,
         ];
 
         // Now, take care of the field layout for this block type
@@ -829,6 +829,11 @@ class Matrix extends Component
             $transaction->rollBack();
 
             throw $e;
+        }
+
+        // Reset the field value if this is a new element
+        if ($owner->duplicateOf || !$query->ownerId) {
+            $owner->setFieldValue($field->handle, null);
         }
 
         // Tell the browser to collapse any new block IDs

@@ -57,6 +57,8 @@ class InstallController extends Controller
         if (!YII_DEBUG && Craft::$app->getIsInstalled()) {
             throw new BadRequestHttpException('Craft is already installed');
         }
+
+        parent::init();
     }
 
     /**

@@ -19,6 +19,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
+use craft\events\BlockTypesEvent;
 use craft\gql\arguments\elements\MatrixBlock as MatrixBlockArguments;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
@@ -33,6 +34,7 @@ use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\assets\matrixsettings\MatrixSettingsAsset;
 use GraphQL\Type\Definition\Type;
+use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
 
 /**
@@ -43,6 +45,14 @@ use yii\base\UnknownPropertyException;
  */
 class Matrix extends Field implements EagerLoadingFieldInterface
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event SectionEvent The event that is triggered before a section is saved.
+     */
+    const EVENT_SET_FIELD_BLOCK_TYPES = 'setFieldBlockTypes';
+
     // Static
     // =========================================================================
 
@@ -63,6 +73,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         return [
             self::TRANSLATION_METHOD_SITE,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return MatrixBlockQuery::class;
     }
 
     // Properties
@@ -192,6 +210,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'handle' => null,
             'instructions' => null,
             'required' => false,
+            'searchable' => true,
             'translationMethod' => Field::TRANSLATION_METHOD_NONE,
             'translationKeyFormat' => null,
             'typesettings' => null,
@@ -235,6 +254,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                             'handle' => $fieldConfig['handle'],
                             'instructions' => $fieldConfig['instructions'],
                             'required' => (bool)$fieldConfig['required'],
+                            'searchable' => (bool)$fieldConfig['searchable'],
                             'translationMethod' => $fieldConfig['translationMethod'],
                             'translationKeyFormat' => $fieldConfig['translationKeyFormat'],
                             'settings' => $fieldConfig['typesettings'],
@@ -402,7 +422,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
         if (is_array($value) || $value === '') {
-            $query->anyStatus();
             $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
         }
 
@@ -442,13 +461,22 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         if ($value === ':notempty:' || $value === ':empty:') {
-            $alias = 'matrixblocks_' . $this->handle;
-            $operator = ($value === ':notempty:' ? '!=' : '=');
+            $ns = $this->handle . '_' . StringHelper::randomString(5);
+            $condition = ['exists', (new Query())
+                ->from(TableName::MATRIXBLOCKS . " matrixblocks_$ns")
+                ->innerJoin(TableName::ELEMENTS . " elements_$ns", "[[elements_$ns.id]] = [[matrixblocks_$ns.id]]")
+                ->where("[[matrixblocks_$ns.ownerId]] = [[elements.id]]")
+                ->andWhere([
+                    "matrixblocks_$ns.fieldId" => $this->id,
+                    "elements_$ns.dateDeleted" => null,
+                ])
+            ];
 
-            $query->subQuery->andWhere(
-                "(select count([[{$alias}.id]]) from {{%matrixblocks}} {{{$alias}}} where [[{$alias}.ownerId]] = [[elements.id]] and [[{$alias}.fieldId]] = :fieldId) {$operator} 0",
-                [':fieldId' => $this->id]
-            );
+            if ($value === ':notempty:') {
+                $query->subQuery->andWhere($condition);
+            } else {
+                $query->subQuery->andWhere(['not', $condition]);
+            }
         } else if ($value !== null) {
             return false;
         }
@@ -466,14 +494,27 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
         $id = Craft::$app->getView()->formatInputId($this->handle);
 
-        // Get the block types data
-        $blockTypeInfo = $this->_getBlockTypeInfoForInput($element);
+        // Let plugins/modules override which block types should be available for this field
+        $event = new BlockTypesEvent([
+            'blockTypes' => $this->getBlockTypes(),
+            'element' => $element,
+            'value' => $value,
+        ]);
+        $this->trigger(self::EVENT_SET_FIELD_BLOCK_TYPES, $event);
+        $blockTypes = array_values($event->blockTypes);
 
+        if (empty($blockTypes)) {
+            throw new InvalidConfigException('At least one block type is required.');
+        }
+
+        // Get the block types data
+        $blockTypeInfo = $this->_getBlockTypeInfoForInput($element, $blockTypes);
         $createDefaultBlocks = $this->minBlocks != 0 && count($blockTypeInfo) === 1;
         $staticBlocks = $createDefaultBlocks && $this->minBlocks == $this->maxBlocks;
 
@@ -492,15 +533,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         if ($value instanceof MatrixBlockQuery) {
-            $value = $value
-                ->limit(null)
-                ->anyStatus()
-                ->all();
+            $value = $value->getCachedResult() ?? $value->limit(null)->anyStatus()->all();
         }
 
         // Safe to set the default blocks?
         if ($createDefaultBlocks) {
-            $blockType = $this->getBlockTypes()[0];
+            $blockType = $blockTypes[0];
 
             for ($i = count($value); $i < $this->minBlocks; $i++) {
                 $block = new MatrixBlock();
@@ -515,7 +553,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             [
                 'id' => $id,
                 'name' => $this->handle,
-                'blockTypes' => $this->getBlockTypes(),
+                'blockTypes' => $blockTypes,
                 'blocks' => $value,
                 'static' => false,
                 'staticBlocks' => $staticBlocks,
@@ -594,8 +632,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
             foreach (Craft::$app->getFields()->getAllFields() as $field) {
                 /** @var Field $field */
-                $fieldValue = $block->getFieldValue($field->handle);
-                $keywords[] = $field->getSearchKeywords($fieldValue, $element);
+                if ($field->searchable) {
+                    $fieldValue = $block->getFieldValue($field->handle);
+                    $keywords[] = $field->getSearchKeywords($fieldValue, $element);
+                }
             }
 
             $contentService->contentTable = $originalContentTable;
@@ -611,8 +651,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
+        /** @var MatrixBlockQuery $value */
         $value = $value->all();
 
+        /** @var MatrixBlock[] $value */
         if (empty($value)) {
             return '<p class="light">' . Craft::t('app', 'No blocks.') . '</p>';
         }
@@ -760,7 +802,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
             foreach ($matrixBlocks as $matrixBlock) {
                 $matrixBlock->deletedWithOwner = true;
-                $elementsService->deleteElement($matrixBlock);
+                $elementsService->deleteElement($matrixBlock, $element->hardDelete);
             }
         }
 
@@ -772,6 +814,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function afterElementRestore(ElementInterface $element)
     {
+        /** @var Element $element */
         // Also restore any Matrix blocks for this element
         $elementsService = Craft::$app->getElements();
         foreach (ElementHelper::supportedSitesForElement($element) as $siteInfo) {
@@ -854,19 +897,20 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      * Returns info about each block type and their field types for the Matrix field input.
      *
      * @param ElementInterface|null $element
+     * @param MatrixBlockType[] $blockTypes
      * @return array
      */
-    private function _getBlockTypeInfoForInput(ElementInterface $element = null): array
+    private function _getBlockTypeInfoForInput(ElementInterface $element = null, array $blockTypes): array
     {
         /** @var Element $element */
-        $blockTypes = [];
+        $blockTypeInfo = [];
 
         // Set a temporary namespace for these
         $originalNamespace = Craft::$app->getView()->getNamespace();
         $namespace = Craft::$app->getView()->namespaceInputName($this->handle . '[__BLOCK__][fields]', $originalNamespace);
         Craft::$app->getView()->setNamespace($namespace);
 
-        foreach ($this->getBlockTypes() as $blockType) {
+        foreach ($blockTypes as $blockType) {
             // Create a fake MatrixBlock so the field types have a way to get at the owner element, if there is one
             $block = new MatrixBlock();
             $block->fieldId = $this->id;
@@ -899,7 +943,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
             $footHtml = Craft::$app->getView()->clearJsBuffer();
 
-            $blockTypes[] = [
+            $blockTypeInfo[] = [
                 'handle' => $blockType->handle,
                 'name' => Craft::t('site', $blockType->name),
                 'bodyHtml' => $bodyHtml,
@@ -909,7 +953,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         Craft::$app->getView()->setNamespace($originalNamespace);
 
-        return $blockTypes;
+        return $blockTypeInfo;
     }
 
     /**

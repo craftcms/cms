@@ -16,6 +16,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
@@ -200,6 +201,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $security = Craft::$app->getSecurity();
 
         return [
+            new TwigFilter('ascii', [StringHelper::class, 'toAscii']),
             new TwigFilter('atom', [$this, 'atomFilter'], ['needs_environment' => true]),
             new TwigFilter('camel', [$this, 'camelFilter']),
             new TwigFilter('column', [ArrayHelper::class, 'getColumn']),
@@ -245,6 +247,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('unique', 'array_unique'),
             new TwigFilter('values', 'array_values'),
             new TwigFilter('without', [$this, 'withoutFilter']),
+            new TwigFilter('withoutKey', [$this, 'withoutKeyFilter']),
         ];
     }
 
@@ -411,6 +414,20 @@ class Extension extends AbstractExtension implements GlobalsInterface
             ArrayHelper::removeValue($arr, $value);
         }
 
+        return $arr;
+    }
+
+    /**
+     * Returns an array without a certain key.
+     *
+     * @param mixed $arr
+     * @param string $key
+     * @return array
+     */
+    public function withoutKeyFilter($arr, string $key): array
+    {
+        $arr = (array)$arr;
+        ArrayHelper::remove($arr, $key);
         return $arr;
     }
 
@@ -715,6 +732,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('alias', [Craft::class, 'getAlias']),
             new TwigFunction('actionInput', [$this, 'actionInputFunction']),
             new TwigFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
+            new TwigFunction('attr', [$this, 'attrFunction']),
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
@@ -743,6 +761,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('getHeadHtml', [$this, 'getHeadHtml']),
             new TwigFunction('getFootHtml', [$this, 'getFootHtml']),
         ];
+    }
+
+    /**
+     * Renders HTML tag attributes with [[\craft\helpers\Html::renderTagAttributes()]]
+     *
+     * @param array $attributes
+     * @return Markup
+     */
+    public function attrFunction(array $config): Markup
+    {
+        return TemplateHelper::raw(Html::renderTagAttributes($config));
     }
 
     /**
@@ -954,11 +983,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 return 'class=' . $matches[1] . implode(' ', $newClasses) . $matches[1];
             }, $svg);
             foreach ($ids as $id) {
-                $quotedId = preg_quote($id, '\\');
+                $quotedId = preg_quote($id, '/');
                 $svg = preg_replace("/#{$quotedId}\b(?!\-)/", "#{$ns}{$id}", $svg);
             }
             foreach ($classes as $c) {
-                $quotedClass = preg_quote($c, '\\');
+                $quotedClass = preg_quote($c, '/');
                 $svg = preg_replace("/\.{$quotedClass}\b(?!\-)/", ".{$ns}{$c}", $svg);
             }
         }

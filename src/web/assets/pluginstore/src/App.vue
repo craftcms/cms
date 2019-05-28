@@ -31,7 +31,6 @@
     import ScreenshotModal from './js/components/ScreenshotModal'
 
     export default {
-
         components: {
             Sidebar,
             Modal,
@@ -46,7 +45,6 @@
             }),
 
         }
-
     }
 </script>
 

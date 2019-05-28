@@ -650,7 +650,7 @@ return [
     'New user group' => 'Nová skupina používateľov',
     'New volume' => 'Nový zväzok',
     'New widget' => 'Nový widget',
-    'New {class}' => 'Nové {class}',
+    'New {type}' => 'Nové {type}',
     'New {group} category' => 'Nová kategoria {group}',
     'New {section} entry' => 'Nový zápis {section}',
     'Next' => 'Ďalší',

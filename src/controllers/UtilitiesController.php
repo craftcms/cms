@@ -185,7 +185,6 @@ class UtilitiesController extends Controller
 
             $missingFolders = [];
             $skippedFiles = [];
-            $grandTotal = 0;
 
             foreach ($volumeIds as $volumeId) {
                 // Get the indexing list
@@ -231,8 +230,6 @@ class UtilitiesController extends Controller
             $missingFiles = Craft::$app->getAssetIndexer()->getMissingFiles($params['sessionId']);
             $missingFolders = Craft::$app->getSession()->get('assetsMissingFolders', []);
             $skippedFiles = Craft::$app->getSession()->get('assetsSkippedFiles', []);
-
-            $responseArray = [];
 
             if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles)) {
                 return $this->asJson([
@@ -453,7 +450,11 @@ class UtilitiesController extends Controller
             $elements = (new Query())
                 ->select(['id', 'type'])
                 ->from([Table::ELEMENTS])
-                ->where(['dateDeleted' => null])
+                ->where([
+                    'draftId' => null,
+                    'revisionId' => null,
+                    'dateDeleted' => null,
+                ])
                 ->all();
 
             $batch = [];

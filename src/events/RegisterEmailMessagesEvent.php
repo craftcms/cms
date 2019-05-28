@@ -21,7 +21,7 @@ class RegisterEmailMessagesEvent extends Event
     // =========================================================================
 
     /**
-     * @var array List of registered email messages. Each message should contain 'key', 'category', and 'sourceLanguage' keys.
+     * @var array List of registered email messages. Each message should contain 'key' and optionally 'heading', 'subject', and 'body' keys.
      */
     public $messages = [];
 }

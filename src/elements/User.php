@@ -37,6 +37,7 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
+use yii\validators\Validator;
 use yii\web\IdentityInterface;
 
 /**
@@ -106,6 +107,14 @@ class User extends Element implements IdentityInterface
     public static function displayName(): string
     {
         return Craft::t('app', 'User');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Users');
     }
 
     /**
@@ -676,7 +685,7 @@ class User extends Element implements IdentityInterface
         ];
 
         $rules[] = [
-            ['firstName', 'lastName'], function($attribute, $params, $validator) {
+            ['firstName', 'lastName'], function($attribute, $params, Validator $validator) {
                 if (strpos($this->$attribute, '://') !== false) {
                     $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
                 }
@@ -735,7 +744,7 @@ class User extends Element implements IdentityInterface
      */
     public function getFieldLayout()
     {
-        return Craft::$app->getFields()->getLayoutByType(static::class);
+        return Craft::$app->getFields()->getLayoutByType(self::class);
     }
 
     /**
@@ -1365,8 +1374,8 @@ class User extends Element implements IdentityInterface
                 // Update the entry/version/draft tables to point to the new user
                 $userRefs = [
                     Table::ENTRIES => 'authorId',
-                    Table::ENTRYDRAFTS => 'creatorId',
-                    Table::ENTRYVERSIONS => 'creatorId',
+                    Table::DRAFTS => 'creatorId',
+                    Table::REVISIONS => 'creatorId',
                 ];
 
                 foreach ($userRefs as $table => $column) {
@@ -1410,22 +1419,6 @@ class User extends Element implements IdentityInterface
 
     // Private Methods
     // =========================================================================
-
-    /**
-     * Saves a new session record for the user.
-     *
-     * @param string $sessionToken
-     * @return string The new session row's UID.
-     */
-    private function _storeSessionToken(string $sessionToken): string
-    {
-        $sessionRecord = new SessionRecord();
-        $sessionRecord->userId = $this->id;
-        $sessionRecord->token = $sessionToken;
-        $sessionRecord->save();
-
-        return $sessionRecord->uid;
-    }
 
     /**
      * Validates a cookie's stored user agent against the current request's user agent string,

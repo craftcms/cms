@@ -1070,7 +1070,8 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function toWords(string $string, bool $lower = false, bool $removePunctuation = false): array
     {
         // Convert CamelCase to multiple words
-        $string = preg_replace('/(?<=[a-z])[A-Z]/u', ' \0', $string);
+        // Regex copied from Inflector::camel2words(), but without dropping punctuation
+        $string = preg_replace('/(?<!\p{Lu})(\p{Lu})|(\p{Lu})(?=\p{Ll})/u', ' \0', $string);
 
         if ($lower) {
             // Make it lowercase

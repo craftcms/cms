@@ -36,7 +36,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return Craft::getAlias('@app/icons/clock.svg');
     }

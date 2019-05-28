@@ -31,6 +31,16 @@ trait ElementTrait
     public $tempId;
 
     /**
+     * @var int|null The ID of the draft’s row in the `drafts` table
+     */
+    public $draftId;
+
+    /**
+     * @var int The ID of the revision’s row in the `revisions` table
+     */
+    public $revisionId;
+
+    /**
      * @var string|null The element’s UID
      */
     public $uid;
@@ -136,7 +146,17 @@ trait ElementTrait
     public $propagating = false;
 
     /**
+     * @var bool Whether the element is being resaved by a ResaveElement job or a `resave` console command.
+     */
+    public $resaving = false;
+
+    /**
      * @var ElementInterface|null The element that this element is being duplicated by.
      */
     public $duplicateOf;
+
+    /**
+     * @var bool Whether the element is being hard-deleted.
+     */
+    public $hardDelete = false;
 }

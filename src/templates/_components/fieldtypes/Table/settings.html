@@ -51,3 +51,9 @@
         }) }}
     </div>
 {% endif %}
+
+{% for colId, column in field.columns %}
+    {% if column.type == 'select' %}
+        <input type="hidden" name="columns[{{ colId }}][options]" value="{{ column.options|json_encode }}">
+    {% endif %}
+{% endfor %}

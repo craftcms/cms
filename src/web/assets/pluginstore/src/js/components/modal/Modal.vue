@@ -19,7 +19,6 @@
     import ThankYou from './steps/ThankYou'
 
     export default {
-
         components: {
             Cart,
             Identity,
@@ -36,7 +35,6 @@
         },
 
         computed: {
-
             ...mapState({
                 identityMode: state => state.cart.identityMode,
             }),
@@ -44,11 +42,9 @@
             modalStep() {
                 return this.$root.modalStep
             }
-
         },
 
         watch: {
-
             show(show) {
                 if (show) {
                     this.modal.show()
@@ -56,11 +52,9 @@
                     this.modal.hide()
                 }
             }
-
         },
 
         methods: {
-
             back() {
                 if (this.identityMode === 'craftid' || this.modalStep === 'identity') {
                     this.$root.openModal('cart')
@@ -68,7 +62,6 @@
                     this.$root.openModal('identity')
                 }
             }
-
         },
 
         mounted() {
@@ -82,7 +75,6 @@
                 }
             })
         }
-
     }
 </script>
 
@@ -165,14 +157,6 @@
             #thank-you-message {
                 @apply .text-center;
                 padding: 48px 24px;
-            }
-
-            #graphic {
-                @apply .inline-block;
-                width: 48px;
-                height: 48px;
-                background-repeat: no-repeat;
-                background-position: 50% 50%;
             }
         }
     }

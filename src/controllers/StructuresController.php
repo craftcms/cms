@@ -87,6 +87,8 @@ class StructuresController extends Controller
         if ($this->_element === null) {
             throw new NotFoundHttpException('Element not found');
         }
+
+        parent::init();
     }
 
     /**

@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\gql\arguments\elements\User as UserArguments;
 use craft\gql\interfaces\elements\User as UserInterface;
@@ -49,6 +50,16 @@ class Users extends BaseRelationField
         return Craft::t('app', 'Add a user');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return UserQuery::class;
+    }
+
+    // Public methods
+    // =========================================================================
     /**
      * @inheritdoc
      */

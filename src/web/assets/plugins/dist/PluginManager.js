@@ -130,6 +130,13 @@
                                     .append(
                                         $('<input/>', {
                                             type: 'hidden',
+                                            name: 'edition',
+                                            value: info.licensedEdition
+                                        })
+                                    )
+                                    .append(
+                                        $('<input/>', {
+                                            type: 'hidden',
                                             name: 'version',
                                             value: info.latestVersion
                                         })
@@ -196,6 +203,7 @@
     var Plugin = Garnish.Base.extend(
         {
             $row: null,
+            $details: null,
             $keyContainer: null,
             $keyInput: null,
             $spinner: null,
@@ -205,6 +213,7 @@
 
             init: function($row) {
                 this.$row = $row;
+                this.$details = this.$row.find('.details');
                 this.$keyContainer = $row.find('.license-key')
                 this.$keyInput = this.$keyContainer.find('input.text').removeAttr('readonly');
                 this.$buyBtn = this.$keyContainer.find('.btn');
@@ -362,8 +371,24 @@
                             $issues = $issues.add($p);
                         }
                     }
-                    $issues.insertAfter(this.$row.find('.license-key'));
+                    $issues.appendTo(this.$details);
                     Craft.initUiElements()
+                }
+
+                // add the expired badge
+                var $oldExpired = this.$row.find('.expired');
+                if (info.expired) {
+                    var $newExpired = $('<p/>', {
+                        'class': 'warning expired',
+                        html: Craft.t('app', 'This license has expired.') +
+                            ' ' +
+                            Craft.t('app', '<a>Renew now</a> for another year of updates.').replace('<a>', '<a href="' + info.renewalUrl + '" target="_blank">')
+                    });
+                    if ($oldExpired.length) {
+                        $oldExpired.replaceWith($newExpired);
+                    } else {
+                        $newExpired.appendTo(this.$details);
+                    }
                 }
 
                 // show/hide the Buy button

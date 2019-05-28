@@ -61,6 +61,14 @@ class Assets extends BaseRelationField
         return Craft::t('app', 'Add an asset');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return AssetQuery::class;
+    }
+
     // Properties
     // =========================================================================
 
@@ -108,6 +116,26 @@ class Assets extends BaseRelationField
     public $allowedKinds;
 
     /**
+     * @inheritdoc
+     */
+    protected $allowLargeThumbsView = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected $settingsTemplate = '_components/fieldtypes/Assets/settings';
+
+    /**
+     * @inheritdoc
+     */
+    protected $inputTemplate = '_components/fieldtypes/Assets/input';
+
+    /**
+     * @inheritdoc
+     */
+    protected $inputJsClass = 'Craft.AssetSelectInput';
+
+    /**
      * @var array|null References for files uploaded as data strings for this field.
      */
     private $_uploadedDataFiles;
@@ -121,10 +149,6 @@ class Assets extends BaseRelationField
     public function init()
     {
         parent::init();
-        $this->allowLargeThumbsView = true;
-        $this->settingsTemplate = '_components/fieldtypes/Assets/settings';
-        $this->inputTemplate = '_components/fieldtypes/Assets/input';
-        $this->inputJsClass = 'Craft.AssetSelectInput';
 
         $this->defaultUploadLocationSource = $this->_folderSourceToVolumeSource($this->defaultUploadLocationSource);
         $this->singleUploadLocationSource = $this->_folderSourceToVolumeSource($this->singleUploadLocationSource);
@@ -285,7 +309,7 @@ class Assets extends BaseRelationField
      */
     public function validateFileSize(ElementInterface $element)
     {
-
+        /** @var Element $element */
         $maxSize = AssetsHelper::getMaxUploadSize();
 
         $filenames = [];
@@ -324,16 +348,25 @@ class Assets extends BaseRelationField
             /** @var Asset $class */
             $class = static::elementType();
             /** @var ElementQuery $query */
-            $query = $class::find()
-                ->siteId($this->targetSiteId($element));
+            $query = $class::find();
+
+            $targetSite = $this->targetSiteId($element);
+            if ($this->targetSiteId) {
+                $query->siteId($targetSite);
+            } else {
+                $query
+                    ->siteId('*')
+                    ->unique()
+                    ->preferSites([$targetSite]);
+            }
 
             // $value might be an array of element IDs
             if (is_array($value)) {
                 $query
-                    ->id(array_filter($value))
+                    ->id(array_values(array_filter($value)))
                     ->fixedOrder();
 
-                if ($this->allowLimit === true && $this->limit) {
+                if ($this->allowLimit && $this->limit) {
                     $query->limit($this->limit);
                 }
 
@@ -385,6 +418,7 @@ class Assets extends BaseRelationField
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         // Everything has been handled for propagating fields already.
+        /** @var Element $element */
         if (!$element->propagating) {
             // Were there any uploaded files?
             $uploadedFiles = $this->_getUploadedFiles($element);
@@ -419,7 +453,7 @@ class Assets extends BaseRelationField
                     $assetIds[] = $asset->id;
                 }
 
-                // Add the with newly uploaded IDs to the mix.
+                // Add the newly uploaded IDs to the mix.
                 if (\is_array($query->id)) {
                     $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
                 } else {
@@ -782,6 +816,7 @@ class Assets extends BaseRelationField
             return null;
         }
 
+        /** @var Volume|null $volume */
         $volume = Craft::$app->getVolumes()->getVolumeByUid($parts[1]);
 
         return $volume ? $volume->id : null;
@@ -821,7 +856,9 @@ class Assets extends BaseRelationField
 
             if ($folder) {
                 try {
-                    return 'volume:' . $folder->getVolume()->uid;
+                    /** @var Volume $volume */
+                    $volume = $folder->getVolume();
+                    return 'volume:' . $volume->uid;
                 } catch (InvalidConfigException $e) {
                     // The volume is probably soft-deleted. Just pretend the folder didn't exist.
                 }
@@ -841,6 +878,7 @@ class Assets extends BaseRelationField
     {
         if ($sourceKey && is_string($sourceKey) && strpos($sourceKey, 'volume:') === 0) {
             $parts = explode(':', $sourceKey);
+            /** @var Volume|null $volume */
             $volume = Craft::$app->getVolumes()->getVolumeByUid($parts[1]);
 
             if ($volume && $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id)) {

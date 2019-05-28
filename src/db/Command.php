@@ -137,7 +137,7 @@ class Command extends \yii\db\Command
      */
     public function update($table, $columns, $condition = '', $params = [], $includeAuditColumns = true)
     {
-        if ($includeAuditColumns) {
+        if ($includeAuditColumns && !isset($columns['dateUpdated'])) {
             $columns['dateUpdated'] = Db::prepareDateForDb(new \DateTime());
         }
 

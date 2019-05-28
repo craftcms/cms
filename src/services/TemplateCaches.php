@@ -119,6 +119,11 @@ class TemplateCaches extends Component
             return null;
         }
 
+        // Don't return anything if it's not a global request and it is a console request.
+        if (!$global && Craft::$app->getRequest()->getIsConsoleRequest()) {
+            return null;
+        }
+
         // Don't return anything if it's not a global request and the path > 255 characters.
         if (!$global && strlen($this->_getPath()) > 255) {
             return null;
@@ -256,6 +261,11 @@ class TemplateCaches extends Component
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
+            return;
+        }
+
+        // Don't return anything if it's not a global request and it's a console request.
+        if (!$global && Craft::$app->getRequest()->getIsConsoleRequest()) {
             return;
         }
 
@@ -659,7 +669,7 @@ class TemplateCaches extends Component
         $this->_path .= Craft::$app->getRequest()->getPathInfo();
 
         if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1) {
-            $this->_path .= '/' . Craft::$app->getConfig()->getGeneral()->pageTrigger . $pageNum;
+            $this->_path .= '/' . Craft::$app->getConfig()->getGeneral()->getPageTrigger() . $pageNum;
         }
 
         return $this->_path;

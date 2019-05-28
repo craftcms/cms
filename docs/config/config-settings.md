@@ -1243,6 +1243,28 @@ locked.
 
 
 
+### `maxRevisions`
+
+Allowed types
+
+:   [integer](http://php.net/language.types.integer), [null](http://php.net/language.types.null)
+
+Default value
+
+:   `50`
+
+Defined by
+
+:   [GeneralConfig::$maxRevisions](api:craft\config\GeneralConfig::$maxRevisions)
+
+
+
+The maximum number of revisions that should be stored for each element.
+
+Set to `0` if you want to store an unlimited number of revisions.
+
+
+
 ### `maxSlugIncrement`
 
 Allowed types
@@ -2401,6 +2423,11 @@ Whether the project config should be saved out to `config/project.yaml`.
 If set to `true`, a hard copy of your system’s project config will be saved in `config/project.yaml`,
 and any changes to `config/project.yaml` will be applied back to the system, making it possible for
 multiple environments to share the same project config despite having separate databases.
+
+::: warning
+Make sure you’ve read the entire [Project Config](https://docs.craftcms.com/v3/project-config.html)
+documentation, and carefully follow the “Enabling the Project Config File” steps when enabling this setting.
+:::
 
 
 

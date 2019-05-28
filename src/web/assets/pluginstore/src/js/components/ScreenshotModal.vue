@@ -6,12 +6,23 @@
             <swiper :options="swiperOption" ref="screenshotModalSwiper">
                 <swiper-slide v-for="(imageUrl, key) in screenshotModalImages" :key="key">
                     <div class="screenshot">
-                        <img :src="imageUrl" />
+                        <div class="swiper-zoom-container">
+                            <img :src="imageUrl" />
+                        </div>
                     </div>
                 </swiper-slide>
-
-                <div class="swiper-pagination" slot="pagination"></div>
             </swiper>
+
+            <template v-if="screenshotModalImages.length > 1">
+                <div class="swiper-button-prev"><icon icon="chevron-left" size="xl" /></div>
+                <div class="swiper-button-next"><icon icon="chevron-right" size="xl" /></div>
+
+                <div class="pagination-wrapper">
+                    <div class="pagination-content">
+                        <div :class="'swiper-pagination'" slot="pagination"></div>
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
 </template>
@@ -20,7 +31,6 @@
     import {mapState} from 'vuex'
 
     export default {
-
         data() {
             return {
                 ratio: '4:3'
@@ -28,7 +38,6 @@
         },
 
         computed: {
-
             ...mapState({
                 screenshotModalImages: state => state.app.screenshotModalImages,
                 screenshotModalImageKey: state => state.app.screenshotModalImageKey,
@@ -47,13 +56,16 @@
                         clickable: true
                     },
                     keyboard: true,
+                    zoom: true,
+                    navigation: {
+                        nextEl: '.swiper-button-next',
+                        prevEl: '.swiper-button-prev'
+                    }
                 }
             }
-
         },
 
         methods: {
-
             close() {
                 this.$store.commit('app/updateShowingScreenshotModal', false)
             },
@@ -98,7 +110,6 @@
                     this.close()
                 }
             }
-
         },
 
         mounted: function () {
@@ -116,7 +127,6 @@
             window.removeEventListener('resize', this.handleResize)
             window.removeEventListener('keydown', this.handleEscapeKey)
         }
-
     }
 </script>
 
@@ -139,43 +149,112 @@
         }
 
         .carousel {
-            @apply .absolute;
-            top: 100px;
-            right: 100px;
-            bottom: 100px;
-            left: 100px;
+            @apply .absolute .flex .pin;
 
             .swiper-container {
-                @apply .flex .overflow-hidden;
+                @apply .flex;
 
                 .swiper-wrapper {
-                    @apply .flex .flex-1 .w-auto .h-auto;
+                    @apply .flex-1 .flex .w-auto .h-auto;
 
                     .swiper-slide {
-                        @apply .flex-1 .flex .text-center .justify-center .items-center .overflow-hidden;
+                        @apply .flex-1 .flex .text-center .justify-center .items-center;
 
                         .screenshot {
-                            @apply .flex .justify-center .items-center;
+                            @apply .flex .flex-1 .justify-center .items-center .h-full;
                             box-sizing: border-box;
 
-                            img {
-                                @apply .max-w-full .max-h-full;
-                                padding-bottom: 50px;
+                            .swiper-zoom-container {
+                                @apply .w-full .h-full .flex .text-center .justify-center .items-center;
+
+                                img {
+                                    @apply .max-w-full .max-h-full;
+                                }
                             }
                         }
                     }
                 }
             }
 
-            .swiper-pagination {
-                @apply .w-full;
-                bottom: 0;
+            .swiper-button-prev,
+            .swiper-button-next {
+                @apply .flex .justify-center .items-center .w-auto;
+                background-color: rgba(248, 250, 252, .7);
+                background-image: none;
 
-                .swiper-pagination-bullet {
-                    @apply .mx-2;
+                .c-icon {
+                    @apply .flex-1 .pin-t;
+                }
+            }
 
-                    &.swiper-pagination-bullet-active {
-                        @apply .bg-grey-darker;
+            .swiper-button-prev {
+                @apply .rounded .px-2 .py-8 .pin-l .ml-4;
+
+                .c-icon {
+                    left: -2px;
+                }
+            }
+
+            .swiper-button-next {
+                @apply .rounded .px-2 .py-8 .pin-r .mr-4;
+            }
+
+            .pagination-wrapper {
+                @apply .w-full .absolute .pin-b .py-0 .flex .z-10;
+                bottom: 40px;
+
+                .pagination-content {
+                    @apply .flex .flex-1 .px-8 .max-w-xs .mx-auto;
+
+                    .swiper-pagination {
+                        @apply .relative .flex .flex-1 .bg-grey-lighter .p-0 .rounded-full;
+
+                        .swiper-pagination-bullet {
+                            @apply .flex-1 .rounded-full .bg-grey-lighter;
+                            height: 8px;
+
+                            &.swiper-pagination-bullet-active {
+                                @apply .bg-grey-darkest;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @media (min-width: 700px) {
+        .carousel {
+            .swiper-container {
+                .swiper-wrapper {
+                    .swiper-slide {
+                        .screenshot {
+                            .swiper-zoom-container {
+                                img {
+                                    padding-left: 100px;
+                                    padding-right: 100px;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @media (min-height: 700px) {
+        .carousel {
+            .swiper-container {
+                .swiper-wrapper {
+                    .swiper-slide {
+                        .screenshot {
+                            .swiper-zoom-container {
+                                img {
+                                    padding-top: 100px;
+                                    padding-bottom: 100px;
+                                }
+                            }
+                        }
                     }
                 }
             }

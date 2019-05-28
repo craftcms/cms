@@ -9,7 +9,6 @@
     import StatusMessage from '../../components/StatusMessage'
 
     export default {
-
         data() {
             return {
                 loading: false,
@@ -22,7 +21,6 @@
         },
 
         methods: {
-
             buyPlugin(plugin) {
                 if (!this.isPluginBuyable(plugin)) {
                     this.loading = false
@@ -68,17 +66,14 @@
 
                 return true
             },
-
         },
 
         computed: {
-
             ...mapGetters({
                 isInCart: 'cart/isInCart',
                 isPluginInstalled: 'craft/isPluginInstalled',
                 getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
             }),
-
         },
 
         mounted() {
@@ -100,7 +95,6 @@
                 }.bind(this))
             }
         }
-
     }
 </script>
 

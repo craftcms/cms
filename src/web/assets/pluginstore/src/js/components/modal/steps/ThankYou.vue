@@ -2,11 +2,11 @@
     <step>
         <template slot="main">
             <div id="thank-you-message">
-                <div class="graphic spinner big success"></div>
+                <icon icon="check-circle" size="4xl" />
                 <h2>{{ "Thank You!"|t('app') }}</h2>
                 <p class="light">{{ "Your order has been processed successfully."|t('app') }}</p>
                 <p>
-                    <a :href="managePluginsUrl" class="btn submit">{{ "Manage plugins"|t('app') }}</a>
+                    <btn kind="primary" :href="managePluginsUrl">{{ "Manage plugins"|t('app') }}</btn>
                 </p>
             </div>
         </template>
@@ -20,13 +20,11 @@
     import Step from '../Step'
 
     export default {
-
         components: {
             Step,
         },
 
         computed: {
-
             ...mapState({
                 craftLogo: state => state.craft.craftLogo,
             }),
@@ -34,8 +32,6 @@
             managePluginsUrl() {
                 return Craft.getCpUrl('settings/plugins')
             }
-
         },
-
     }
 </script>

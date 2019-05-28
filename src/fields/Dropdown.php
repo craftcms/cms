@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\fields\data\SingleOptionFieldData;
 
 /**
  * Dropdown represents a Dropdown field.
@@ -28,6 +29,22 @@ class Dropdown extends BaseOptionsField
     {
         return Craft::t('app', 'Dropdown');
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return SingleOptionFieldData::class;
+    }
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public $optgroups = true;
 
     // Public Methods
     // =========================================================================

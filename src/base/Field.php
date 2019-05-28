@@ -54,6 +54,11 @@ abstract class Field extends SavableComponent implements FieldInterface
     const EVENT_AFTER_ELEMENT_SAVE = 'afterElementSave';
 
     /**
+     * @event FieldElementEvent The event that is triggered after the element is fully saved and propagated to other sites
+     */
+    const EVENT_AFTER_ELEMENT_PROPAGATE = 'afterElementPropagate';
+
+    /**
      * @event FieldElementEvent The event that is triggered before the element is deleted
      * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting deleted.
      */
@@ -113,6 +118,14 @@ abstract class Field extends SavableComponent implements FieldInterface
             self::TRANSLATION_METHOD_LANGUAGE,
             self::TRANSLATION_METHOD_CUSTOM,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'mixed';
     }
 
     // Properties
@@ -193,6 +206,8 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'archived',
                 'attributeLabel',
                 'attributes',
+                'behavior',
+                'behaviors',
                 'children',
                 'contentTable',
                 'dateCreated',
@@ -485,6 +500,20 @@ abstract class Field extends SavableComponent implements FieldInterface
         // Trigger an 'afterElementSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_SAVE)) {
             $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
+                'element' => $element,
+                'isNew' => $isNew,
+            ]));
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementPropagate(ElementInterface $element, bool $isNew)
+    {
+        // Trigger an 'afterElementPropagate' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_PROPAGATE)) {
+            $this->trigger(self::EVENT_AFTER_ELEMENT_PROPAGATE, new FieldElementEvent([
                 'element' => $element,
                 'isNew' => $isNew,
             ]));

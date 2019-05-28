@@ -48,7 +48,6 @@ use yii\di\ServiceLocator;
  * @property UserGroups $userGroups
  * @property UserPermissions $userPermissions
  * @property EmailMessages $emailMessages
- * @property EntryRevisions $entryRevisions
  * @property Rebrand $rebrand
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -105,7 +104,6 @@ class CraftVariable extends ServiceLocator
             'config' => Config::class,
             'deprecator' => Deprecator::class,
             'elementIndexes' => ElementIndexes::class,
-            'entryRevisions' => EntryRevisions::class,
             'feeds' => Feeds::class,
             'fields' => Fields::class,
             'globals' => Globals::class,

@@ -422,6 +422,12 @@ class GeneralConfig extends BaseObject
      */
     public $maxInvalidLogins = 5;
     /**
+     * @var int|null The maximum number of revisions that should be stored for each element.
+     *
+     * Set to `0` if you want to store an unlimited number of revisions.
+     */
+    public $maxRevisions = 50;
+    /**
      * @var int The highest number Craft will tack onto a slug in order to make it unique before giving up and throwing an error.
      */
     public $maxSlugIncrement = 100;
@@ -467,6 +473,8 @@ class GeneralConfig extends BaseObject
      * which is set to `p` by default, and if your server is running Apache, you will need to update the redirect code
      * in your `.htaccess` file to match your new `pathParam` value.
      * :::
+     *
+     * @see getPageTrigger()
      */
     public $pageTrigger = 'p';
     /**
@@ -814,6 +822,11 @@ class GeneralConfig extends BaseObject
      * If set to `true`, a hard copy of your system’s project config will be saved in `config/project.yaml`,
      * and any changes to `config/project.yaml` will be applied back to the system, making it possible for
      * multiple environments to share the same project config despite having separate databases.
+     *
+     * ::: warning
+     * Make sure you’ve read the entire [Project Config](https://docs.craftcms.com/v3/project-config.html)
+     * documentation, and carefully follow the “Enabling the Project Config File” steps when enabling this setting.
+     * :::
      */
     public $useProjectConfigFile = false;
     /**
@@ -1092,5 +1105,35 @@ class GeneralConfig extends BaseObject
     public function getBackupOnUpdate(): bool
     {
         return ($this->backupOnUpdate && $this->backupCommand !== false);
+    }
+
+    /**
+     * Returns the normalized page trigger.
+     *
+     * @return string
+     * @see pageTrigger
+     * @since 3.2.0
+     */
+    public function getPageTrigger(): string
+    {
+        $pageTrigger = $this->pageTrigger;
+
+        if (!is_string($pageTrigger) || $pageTrigger === '') {
+            $pageTrigger = 'p';
+        }
+
+        // Is this query string-based pagination?
+        if (strpos($pageTrigger, '?') === 0) {
+            $pageTrigger = trim($pageTrigger, '?=');
+
+            // Avoid conflict with the path param
+            if ($pageTrigger === $this->pathParam) {
+                $pageTrigger = $this->pathParam === 'p' ? 'pg' : 'p';
+            }
+
+            return '?' . $pageTrigger . '=';
+        }
+
+        return $pageTrigger;
     }
 }

@@ -14,7 +14,7 @@
 
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
 
-{% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') %}
+{% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') ?? true %}
 
 {% if craft.app.request.isPost %}
     {% set currentGroupIds = craft.app.request.getBodyParam('groups') ?: [] %}

@@ -34,7 +34,7 @@
                     '<form id="login-form" method="post" accept-charset="UTF-8" {% if hasLogo -%}
             {%- set logo = craft.rebrand.logo -%}
             {%- set padding = logo.height + 30 -%}
-        class="has-logo" style="background-image: url(\'{{ logo.url }}\'); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ ((353+padding)/2)|round }}px"
+        class="has-logo" style="background-image: url(\'{{ logo.url|e('css')|e('js') }}\'); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ ((353+padding)/2)|round }}px"
                 {%- endif %}>' +
             '{% if not hasLogo -%}<h1>{{ systemName }}</h1>{%- endif %}'+
             "{{ forms.textField({ id: 'loginName', name: 'username', placeholder: usernamePlaceholder, value: username, autocomplete: 'username', type: usernameType })|e('js') }}" +

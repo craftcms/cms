@@ -28,11 +28,6 @@ class ClearCachesController extends Controller
     // =========================================================================
 
     /**
-     * @inheritdoc
-     */
-    public $allowAnonymous = [];
-
-    /**
      * @var array
      */
     private $_actions = [];

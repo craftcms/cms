@@ -118,11 +118,15 @@ class Message extends \yii\swiftmailer\Message
     // =========================================================================
 
     /**
-     * @param string|array|User|User[] $emails
+     * @param string|array|User|User[]|null $emails
      * @return string|array
      */
     private function _normalizeEmails($emails)
     {
+        if (empty($emails)) {
+            return null;
+        }
+
         if (!is_array($emails)) {
             $emails = [$emails];
         }

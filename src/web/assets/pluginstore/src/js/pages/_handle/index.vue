@@ -17,7 +17,7 @@
             </div>
 
             <div v-if="actionsLoading">
-                <div class="spinner"></div>
+                <spinner></spinner>
             </div>
         </div>
 
@@ -51,8 +51,7 @@
                         <ul>
                             <li v-if="plugin.documentationUrl" class="py-1">
                                 <a :href="plugin.documentationUrl" rel="noopener" target="_blank">
-                                    <icon icon="book" />
-                                    {{ "Documentation"|t('app') }}
+                                    <icon icon="book"></icon> {{ "Documentation"|t('app') }}
                                 </a>
                             </li>
 
@@ -98,7 +97,7 @@
                 </div>
 
                 <p>
-                    <a :href="'mailto:issues@craftcms.com?subject=' + encodeURIComponent('Issue with ' + plugin.name) + '&body=' + encodeURIComponent('I would like to report the following issue with '+plugin.name+' (https://plugins.craftcms.com/' + plugin.handle + '):\n\n')">{{ "Report an issue"|t('app') }}</a>
+                    <a :href="'mailto:issues@craftcms.com?subject=' + encodeURIComponent('Issue with ' + plugin.name) + '&body=' + encodeURIComponent('I would like to report the following issue with '+plugin.name+' (https://plugins.craftcms.com/' + plugin.handle + '):\n\n')"><icon icon="exclamation-circle" class="mr-2" />{{ "Report an issue"|t('app') }}</a>
                 </p>
 
                 <hr>
@@ -106,7 +105,7 @@
                 <plugin-changelog :pluginId="$root.pluginId"></plugin-changelog>
             </template>
             <template v-else>
-                <div class="plugin-details-loading spinner"></div>
+                <spinner></spinner>
             </template>
         </div>
     </div>
@@ -122,7 +121,6 @@
     import CopyPackage from '../../components/CopyPackage'
 
     export default {
-
         components: {
             PluginScreenshots,
             PluginEditions,
@@ -139,7 +137,6 @@
         },
 
         computed: {
-
             ...mapState({
                 categories: state => state.pluginStore.categories,
                 plugin: state => state.pluginStore.plugin,
@@ -199,20 +196,16 @@
             showLicenseKeyStatus() {
                 return !this.loading && this.pluginLicenseInfo && this.pluginLicenseInfo.isInstalled && this.pluginLicenseInfo.licenseKey;
             }
-
         },
 
         watch: {
-
             pluginId(pluginId) {
                 this.loadPlugin(pluginId)
                 return pluginId
             }
-
         },
 
         methods: {
-
             ...mapActions({
                 addToCart: 'cart/addToCart'
             }),
@@ -264,7 +257,6 @@
                     }
                 }
             },
-
         },
 
         mounted() {
@@ -286,7 +278,6 @@
                 next()
             }
         }
-
     }
 </script>
 
@@ -352,5 +343,4 @@
             }
         }
     }
-
 </style>

@@ -524,7 +524,7 @@ class App
     {
         return [
             'class' => ProjectConfigService::class,
-            'readOnly' => !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
+            'readOnly' => Craft::$app->getIsInstalled() && !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
         ];
     }
 

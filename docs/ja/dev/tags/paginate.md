@@ -1,9 +1,13 @@
 # `{% paginate %}` タグ
 
-このタグは、複数ページにわたるエレメントのセットを簡単にページ割りできます。
+このタグは、複数ページにわたるクエリ結果を簡単にページ割りできます。
 
 ```twig
-{% paginate craft.entries.section('blog').limit(10) as pageInfo, pageEntries %}
+{% set query = craft.entries()
+    .section('blog')
+    .limit(10) %}
+
+{% paginate query as pageInfo, pageEntries %}
 
 {% for entry in pageEntries %}
     <article>
@@ -30,11 +34,13 @@ URL の実際のページ番号の前にあるものをカスタマイズする�
 
 `{% paginate %}` タグは、次のパラメータを持っています。
 
-### エレメントの判定基準
+### クエリ
 
-`{% paginate %}` タグに渡す最初のものは、ページ割りしたいすべてのエレメントを定義する [Element Query](../element-queries/README.md) オブジェクトです。`limit` パラメータを使用して、ページごとに表示するエレメント数を定義します。
+`{% paginate %}` タグに渡す最初のものは、ページ割りしたいすべての結果を定義する（[エレメントクエリ](../element-queries/README.md)のような）クエリオブジェクトです。`limit` パラメータを使用して、ページごとに表示する結果の数を定義します（デフォルトは 100）。
 
-警告：このパラメータは、実際の ElementCriteriaModel オブジェクトである必要があります。エレメントの配列ではありません。そのため、オブジェクトの `all()` をコールしないでください。
+::: warning
+このパラメータは実際のクエリオブジェクトである必要があります。プリフェッチされた結果の配列ではありません。そのため、それを渡す前のクエリで `all()` をコールしないでください。
+:::
 
 ### `as`
 
@@ -43,18 +49,20 @@ URL の実際のページ番号の前にあるものをカスタマイズする�
 * `as pageInfo, pageEntries`
 * `as pageEntries`
 
-実際の変数名はあなた次第です。ただし、ここに変数名を1つだけ指定した場合、変数 `pageInfo` はデフォルトで「`paginate`」と呼ばれます。
-
 ここで設定されることは、次の通りです。
 
-* `pageInfo` には、現在のページに関する情報や他のページへのリンクを作成するためのいくつかのヘルパーメソッド（[詳細](#the-pageInfo-variable)は以下）を提供する <api:craft\web\twig\variables\Paginate> オブジェクトがセットされます。
-* `pageEntries` には、現在のページに属するエレメントの配列がセットされます。
+* `pageInfo` には、現在のページに関する情報や他のページへのリンクを作成するためのいくつかのヘルパーメソッドを提供する <api:craft\web\twig\variables\Paginate> オブジェクトがセットされます。（詳細は[こちら](#the-pageInfo-variable)を参照してください。）
+* `pageEntries` には、現在のページに属する結果（例：エレメント）の配列がセットされます。
 
-## エレメントの表示
+::: tip
+ここに変数名を1つだけ指定した場合、後方互換性のために変数 `pageInfo` はデフォルトで `paginate` と呼ばれます。
+:::
 
-`{% paginate %}` タグは現在のページのエレメントを実際に出力するわけではありません。すなわち、現在のページにあるべき配列を与えるだけです（`as` パラメータで定義された変数によって参照されます）。
+## 結果の表示
 
-`{% paginate %}` タグに続けて、[for](https://twig.symfony.com/doc/tags/for.html) タグを使用することでこのページのエレメントをループする必要があります。
+`{% paginate %}` タグは、現在のページの結果を実際に出力するわけではありません。（`as` パラメータで定義された変数によって参照される）現在のページにあるべき結果の配列を提供するだけです。
+
+`{% paginate %}` タグに続けて [for](https://twig.symfony.com/doc/tags/for.html) タグを使用し、このページの結果をループする必要があります。
 
 ```twig
 {% paginate craft.entries.section('blog').limit(10) as pageEntries %}
@@ -69,11 +77,11 @@ URL の実際のページ番号の前にあるものをカスタマイズする�
 
 ## `pageInfo` 変数
 
-`pageInfo` 変数（または、あなたが命名した変数、もしくは、デフォルトの `paginate`）は次のプロパティやメソッドを提供します。
+変数 `pageInfo`（または、あなたが命名した変数）は次のプロパティやメソッドを提供します。
 
-* **`pageInfo.first`** – 現在のページの最初のエレメントのオフセット。
+* **`pageInfo.first`** – 現在のページの最初の結果のオフセット。
 * **`pageInfo.last`** – 現在のページの最後のエレメントのオフセット。
-* **`pageInfo.total`** – すべてのページのエレメントの合計数。
+* **`pageInfo.total`** – すべてのページの結果の合計数。
 * **`pageInfo.currentPage`** – 現在のページ番号。
 * **`pageInfo.totalPages`** – すべてのページ数。
 * **`pageInfo.prevUrl`** – 前のページの URL、または、最初のページにいる場合は `null`。
@@ -94,7 +102,11 @@ URL の実際のページ番号の前にあるものをカスタマイズする�
 単純に前のページと次のページのリンクを表示させたいなら、次のようにできます。
 
 ```twig
-{% paginate craft.entries.section('blog').limit(10) as pageInfo, pageEntries %}
+{% set query = craft.entries()
+    .section('blog')
+    .limit(10) %}
+
+{% paginate query as pageInfo, pageEntries %}
 
 {% if pageInfo.prevUrl %}<a href="{{ pageInfo.prevUrl }}">Previous Page</a>{% endif %}
 {% if pageInfo.nextUrl %}<a href="{{ pageInfo.nextUrl }}">Next Page</a>{% endif %}
@@ -107,7 +119,11 @@ URL の実際のページ番号の前にあるものをカスタマイズする�
 最初のページと最後のページのリンクをミックスすることもできます。
 
 ```twig
-{% paginate craft.entries.section('blog').limit(10) as pageInfo, pageEntries %}
+{% set query = craft.entries()
+    .section('blog')
+    .limit(10) %}
+
+{% paginate query as pageInfo, pageEntries %}
 
 <a href="{{ pageInfo.firstUrl }}">First Page</a>
 {% if pageInfo.prevUrl %}<a href="{{ pageInfo.prevUrl }}">Previous Page</a>{% endif %}
@@ -122,7 +138,11 @@ URL の実際のページ番号の前にあるものをカスタマイズする�
 おそらく現在のページ番号周辺の、近くのページのリストを作りたい場合、同様にできます。
 
 ```twig
-{% paginate craft.entries.section('blog').limit(10) as pageInfo, pageEntries %}
+{% set query = craft.entries()
+    .section('blog')
+    .limit(10) %}
+
+{% paginate query as pageInfo, pageEntries %}
 
 <a href="{{ pageInfo.firstUrl }}">First Page</a>
 {% if pageInfo.prevUrl %}<a href="{{ pageInfo.prevUrl }}">Previous Page</a>{% endif %}

@@ -9,6 +9,7 @@ namespace craft\base;
 
 use Craft;
 use craft\console\Application as ConsoleApplication;
+use craft\console\Request as ConsoleRequest;
 use craft\db\Connection;
 use craft\db\MigrationManager;
 use craft\db\Query;
@@ -40,9 +41,11 @@ use craft\services\Users;
 use craft\services\Volumes;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
+use craft\web\Request as WebRequest;
 use craft\web\View;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
+use yii\caching\Cache;
 use yii\mutex\Mutex;
 use yii\web\ServerErrorHttpException;
 
@@ -66,10 +69,10 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\services\Content $content The content service
  * @property-read \craft\services\Dashboard $dashboard The dashboard service
  * @property-read \craft\services\Deprecator $deprecator The deprecator service
+ * @property-read \craft\services\Drafts $drafts The drafts service
  * @property-read \craft\services\ElementIndexes $elementIndexes The element indexes service
  * @property-read \craft\services\Elements $elements The elements service
  * @property-read \craft\services\Entries $entries The entries service
- * @property-read \craft\services\EntryRevisions $entryRevisions The entry revisions service
  * @property-read \craft\services\Fields $fields The fields service
  * @property-read \craft\services\Gc $gc The garbage collection service
  * @property-read \craft\services\Globals $globals The globals service
@@ -81,6 +84,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\services\PluginStore $pluginStore The plugin store service
  * @property-read \craft\services\ProjectConfig $projectConfig The project config service
  * @property-read \craft\services\Relations $relations The relations service
+ * @property-read \craft\services\Revisions $revisions The revisions service
  * @property-read \craft\services\Routes $routes The routes service
  * @property-read \craft\services\Search $search The search service
  * @property-read \craft\services\Sections $sections The sections service
@@ -196,6 +200,7 @@ trait ApplicationTrait
         $this->_gettingLanguage = true;
 
         if ($useUserLanguage === null) {
+            /** @var WebRequest|ConsoleRequest $request */
             $request = $this->getRequest();
             $useUserLanguage = $request->getIsConsoleRequest() || $request->getIsCpRequest();
         }
@@ -364,7 +369,9 @@ trait ApplicationTrait
         $this->getProjectConfig()->set('system.edition', App::editionHandle($edition));
 
         // Fire an 'afterEditionChange' event
-        if (!$this->getRequest()->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
+        /** @var WebRequest|ConsoleRequest $request */
+        $request = $this->getRequest();
+        if (!$request->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
             $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
                 'oldEdition' => $oldEdition,
                 'newEdition' => $edition
@@ -429,8 +436,13 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         $request = $this->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            return false;
+        }
 
-        return !$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@' . $request->getHostName());
+        /** @var Cache $cache */
+        $cache = $this->getCache();
+        return $cache->get('editionTestableDomain@' . $request->getHostName());
     }
 
     /**
@@ -806,6 +818,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the drafts service.
+     *
+     * @return \craft\services\Drafts The drafts service
+     * @since 3.2
+     */
+    public function getDrafts()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('drafts');
+    }
+
+    /**
      * Returns the element indexes service.
      *
      * @return \craft\services\ElementIndexes The element indexes service
@@ -853,6 +877,7 @@ trait ApplicationTrait
      * Returns the entry revisions service.
      *
      * @return \craft\services\EntryRevisions The entry revisions service
+     * @deprecated in 3.2.
      */
     public function getEntryRevisions()
     {
@@ -1033,6 +1058,18 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('relations');
+    }
+
+    /**
+     * Returns the revisions service.
+     *
+     * @return \craft\services\Revisions The revisions service
+     * @since 3.2
+     */
+    public function getRevisions()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('revisions');
     }
 
     /**
@@ -1233,13 +1270,13 @@ trait ApplicationTrait
      */
     private function _postInit()
     {
+        // Register all the listeners for config items
+        $this->_registerConfigListeners();
+
         // Load the plugins
         $this->getPlugins()->loadPlugins();
 
         $this->_isInitialized = true;
-
-        // Register all the listeners for config items
-        $this->_registerConfigListeners();
 
         // Fire an 'init' event
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {

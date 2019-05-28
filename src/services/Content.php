@@ -184,6 +184,18 @@ class Content extends Component
             }
         }
 
+        if (!$element->contentId) {
+            // It could be a draft that's getting published
+            $element->contentId = (new Query())
+                ->select(['id'])
+                ->from([$this->contentTable])
+                ->where([
+                    'elementId' => $element->id,
+                    'siteId' => $element->siteId
+                ])
+                ->scalar();
+        }
+
         // Insert/update the DB row
         if ($element->contentId) {
             // Update the existing row
@@ -198,7 +210,7 @@ class Content extends Component
             $element->contentId = Craft::$app->getDb()->getLastInsertID($this->contentTable);
         }
 
-        if ($fieldLayout) {
+        if ($fieldLayout && !$element->draftId && !$element->revisionId) {
             $this->_updateSearchIndexes($element, $fieldLayout);
         }
 
