@@ -10,7 +10,7 @@ namespace craft\web\twig\nodes;
 use craft\helpers\Template as TemplateHelper;
 use Twig\Compiler;
 use Twig\Extension\SandboxExtension;
-use Twig\Node\Expression\AbstractExpression;
+use Twig\Node\Expression\GetAttrExpression;
 use Twig\Template;
 
 /**
@@ -19,7 +19,7 @@ use Twig\Template;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class GetAttrNode extends AbstractExpression
+class GetAttrNode extends GetAttrExpression
 {
     // Public Methods
     // =========================================================================
