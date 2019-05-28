@@ -111,10 +111,8 @@ class Assets extends Component
      */
     public function getAssetById(int $assetId, int $siteId = null)
     {
-        /** @var Asset|null $asset */
-        $asset = Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
-
-        return $asset;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
     }
 
     /**
