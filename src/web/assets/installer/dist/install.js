@@ -39,6 +39,7 @@
             showModal: function() {
                 if (!this.modal) {
                     this.modal = new Garnish.Modal($('#install-modal').removeClass('hidden'), {
+                        hideOnEsc: false,
                         shadeClass: ''
                     });
                     this.gotoScreen(1);

@@ -91,7 +91,7 @@ class UpdateController extends Controller
      */
     public function actionInfo(): int
     {
-        $updates = $this->_getUpdates(true);
+        $updates = $this->_getUpdates();
 
         if (($total = $updates->getTotal()) === 0) {
             $this->stdout('You’re all up-to-date!' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
