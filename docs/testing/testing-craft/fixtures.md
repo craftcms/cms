@@ -34,9 +34,6 @@ The fixture data file could look like this:
 ```php
 <?php
 
-// We need a copy because Asset will move the temp file
-copy(__DIR__.'/assets/product.jpg', 'product.jpg');
-
 return [
     [
         'tempFilePath' => 'product.jpg',
@@ -46,6 +43,8 @@ return [
     ],
 ];
 ```
+
+`project.jpg` (and any of your other testing assets) should live in the `tests/_craft/assets` folder.
 
 This will upload and link product.jpg as an asset.
 
