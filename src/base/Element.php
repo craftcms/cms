@@ -1240,6 +1240,23 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getSourceUid(): string
+    {
+        $sourceId = $this->getSourceId();
+        if ($sourceId === $this->id) {
+            return $this->uid;
+        }
+        return static::find()
+            ->id($sourceId)
+            ->siteId($this->siteId)
+            ->anyStatus()
+            ->select(['elements.uid'])
+            ->scalar();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayout()
     {
         if ($this->fieldLayoutId) {

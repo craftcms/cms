@@ -393,6 +393,13 @@ interface ElementInterface extends ComponentInterface
     public function getSourceId(): int;
 
     /**
+     * Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.
+     *
+     * @return string
+     */
+    public function getSourceUid(): string;
+
+    /**
      * Returns the field layout used by this element.
      *
      * @return FieldLayout|null
