@@ -10,6 +10,7 @@ namespace craft\test\fixtures\elements;
 use Craft;
 use craft\base\Element;
 use craft\elements\Asset;
+use craft\helpers\FileHelper;
 use craft\records\VolumeFolder;
 
 /**
@@ -44,11 +45,26 @@ abstract class AssetFixture extends ElementFixture
      */
     protected $folderIds = [];
 
+    /**
+     * @var array Used to track the files the fixture data file defines.
+     */
+    protected $files = [];
+
+    /**
+     * @var $string
+     */
+    protected $sourceAssetPath;
+
+    /**
+     * @var $string
+     */
+    protected $destinationAssetPath;
+
     // Public Methods
     // =========================================================================
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function init()
     {
@@ -61,6 +77,19 @@ abstract class AssetFixture extends ElementFixture
                 'name' => $volume->name,
                 'volumeId' => $volume->id,
             ])->id;
+        }
+
+        $this->sourceAssetPath = dirname(__FILE__,5).'/tests/_craft/assets/';
+        $this->destinationAssetPath = dirname(__FILE__,5).'/tests/_craft/storage/runtime/temp/';
+
+        if (!is_dir($this->destinationAssetPath)) {
+            FileHelper::createDirectory($this->destinationAssetPath);
+        }
+
+        $data = require $this->dataFile;
+
+        foreach ($data as $fileName) {
+            $this->files[] = $fileName;
         }
     }
 
@@ -81,6 +110,28 @@ abstract class AssetFixture extends ElementFixture
         }
 
         return $element;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function beforeLoad()
+    {
+        parent::beforeLoad();
+
+        foreach ($this->files as $key => $fileInfo) {
+            copy($this->sourceAssetPath.$fileInfo['filename'], $this->destinationAssetPath.$fileInfo['filename']);
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function beforeUnload()
+    {
+        parent::beforeUnload();
+
+        FileHelper::clearDirectory($this->destinationAssetPath);
     }
 
     // Protected Methods
