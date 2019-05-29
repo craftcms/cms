@@ -9,6 +9,7 @@
 
 ### Fixed
 - Fixed a bug where Assets fields configured with `{id}` in the subpath would move files to folders named after the draft ID rather than the source element ID.
+- Fixed a bug where duplicated elements were getting the same UID as the source element.
 
 ## 3.2.0-alpha.7 - 2019-05-28
 

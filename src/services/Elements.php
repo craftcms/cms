@@ -856,6 +856,7 @@ class Elements extends Component
         /** @var Element $mainClone */
         $mainClone = clone $element;
         $mainClone->id = null;
+        $mainClone->uid = null;
         $mainClone->contentId = null;
         $mainClone->duplicateOf = $element;
 
