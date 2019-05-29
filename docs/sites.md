@@ -130,6 +130,35 @@ If your site has a different language than your default language then you will n
 
 To set the Translation Method, go into each field you'd like to translate and choose the appropriate option under Translation Method.
 
+Fields can have the following translation method:
+
+**Not translatable**  
+The field can have a different value for each of your sites.  
+*Example: create 10 sites, all can have different content.*
+
+**Translate for each site group**  
+Every site group can have a different value.  
+*Example: create 10 site that are all in the same group, all elements will have the same value. Create a site in another group -> that one can have a different value than the other 10.*
+
+**Translate for each language**  
+Every language can have a different value.  
+*Example: create 10 sites, all in the same language, all will have the same content, no matter what group they are in. Create another site in another language -> this one can have different content.*
+
+**Custom**  
+You can define custom behaviors.  
+There will appear an `<input>` below that option and Craft will actually do this:
+
+```twig
+if ($field->getTranslationKey($siteElement) === $field->getTranslationKey($element)) {
+    // Copy the master element's value over
+    $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
+}
+```
+
+Which basically means: it will render both object templates (the original element, and the element for all other sites) and injects the `element` into the template..
+
+For example if you have something like `{ title }` in your template, Craft will render those templates, and will compare them. If the titles are the same, the field is translatable and may contain a different value for all sites, if the titles are equally, the content of your field will be equally as well.
+
 ### Step 5: Test Your Settings
 
 Using new or existing entries, test that the Section, Field, and Translation Method settings work as you expect.
