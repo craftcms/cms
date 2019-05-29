@@ -7,6 +7,9 @@
 - Added `craft\base\Field::getSortOption()`.
 - Added `craft\base\SortableFieldInterface`, which can be implemented by field classes that should be sortable in element indexes.
 
+### Fixed
+- Fixed a bug where Assets fields configured with `{id}` in the subpath would move files to folders named after the draft ID rather than the source element ID.
+
 ## 3.2.0-alpha.7 - 2019-05-28
 
 ### Added
