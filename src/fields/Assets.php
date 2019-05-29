@@ -665,6 +665,7 @@ class Assets extends BaseRelationField
             try {
                 $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element, [
                     'id' => $element->getSourceId(),
+                    'uid' => $element->getSourceUid(),
                 ]);
             } catch (\Throwable $e) {
                 throw new InvalidSubpathException($subpath, null, 0, $e);
