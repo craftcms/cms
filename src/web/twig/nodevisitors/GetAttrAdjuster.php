@@ -32,13 +32,23 @@ class GetAttrAdjuster implements NodeVisitorInterface
         }
 
         // Swap it with our custom GetAttrNode
-        return new GetAttrNode(
-            $node->getNode('node'),
-            $node->getNode('attribute'),
-            $node->hasNode('arguments') ? $node->getNode('arguments') : null,
-            $node->getAttribute('type'),
-            $node->getTemplateLine()
-        );
+        $nodes = [
+            'node' => $node->getNode('node'),
+            'attribute' => $node->getNode('attribute')
+        ];
+
+        if ($node->hasNode('arguments')) {
+            $nodes['arguments'] = $node->getNode('arguments');
+        }
+
+        $attributes = [
+            'type' => $node->getAttribute('type'),
+            'is_defined_test' => $node->getAttribute('is_defined_test'),
+            'ignore_strict_check' => $node->getAttribute('ignore_strict_check'),
+            'optimizable' => $node->getAttribute('optimizable'),
+        ];
+
+        return new GetAttrNode($nodes, $attributes, $node->getTemplateLine(), $node->getNodeTag());
     }
 
     /**
