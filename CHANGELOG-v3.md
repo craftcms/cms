@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Date/Time, Dropdown, Lightswitch, Number, and Radio Buttons fields are now listed as sort options in element indexes. ([#2818](https://github.com/craftcms/cms/issues/2818))
+- Added `craft\base\Field::getSortOption()`.
+- Added `craft\base\SortableFieldInterface`, which can be implemented by field classes that should be sortable in element indexes.
+
 ## 3.2.0-alpha.7 - 2019-05-28
 
 ### Added

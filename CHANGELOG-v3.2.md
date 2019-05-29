@@ -22,6 +22,7 @@
 - Relational fields now have a “Validate related elements” setting, which ensures that the related elements pass validation before the source element can be saved with them selected. ([#4095](https://github.com/craftcms/cms/issues/4095))
 - Table fields can now have Dropdown, Email, and URL columns. ([#811](https://github.com/craftcms/cms/issues/811), [#4180](https://github.com/craftcms/cms/pull/4180))
 - Dropdown and Multi-select fields can now have optgroups. ([#4236](https://github.com/craftcms/cms/issues/4236))
+- Date/Time, Dropdown, Lightswitch, Number, and Radio Buttons fields are now listed as sort options in element indexes. ([#2818](https://github.com/craftcms/cms/issues/2818))
 - Added the `unique` element query param, which can be used to prevent duplicate elements when querying elements across multiple sites.
 - Added the `preferSites` element query param, which can be used to set the preferred sites that should be used for multi-site element queries, when the `unique` param is also enabled.
 - Element index pages are now paginated for non-Structure views. ([#818](https://github.com/craftcms/cms/issues/818))
@@ -45,8 +46,10 @@
 - Added `craft\base\ElementTrait::$hardDelete`.
 - Added `craft\base\ElementTrait::$revisionId`.
 - Added `craft\base\Field::EVENT_AFTER_ELEMENT_PROPAGATE`.
+- Added `craft\base\Field::getSortOption()`.
 - Added `craft\base\FieldInterface::afterElementPropagate()`.
 - Added `craft\base\FieldInterface::valueType()`. ([#3894](https://github.com/craftcms/cms/issues/3894))
+- Added `craft\base\SortableFieldInterface`, which can be implemented by field classes that should be sortable in element indexes.
 - Added `craft\behaviors\DraftBehavior`.
 - Added `craft\behaviors\RevisionBehavior`.
 - Added `craft\controllers\PreviewController`.

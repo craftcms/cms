@@ -479,6 +479,14 @@ abstract class Element extends Component implements ElementInterface
     {
         $sortOptions = static::defineSortOptions();
 
+        // Add custom fields to the fix
+        foreach (Craft::$app->getFields()->getFieldsByElementType(static::class) as $field) {
+            /** @var Field $field */
+            if ($field instanceof SortableFieldInterface) {
+                $sortOptions[] = $field->getSortOption();
+            }
+        }
+
         // Give plugins a chance to modify them
         $event = new RegisterElementSortOptionsEvent([
             'sortOptions' => $sortOptions
