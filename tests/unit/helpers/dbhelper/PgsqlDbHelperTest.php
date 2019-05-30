@@ -12,6 +12,7 @@ use Craft;
 use craft\db\pgsql\Schema;
 use craft\helpers\Db;
 use UnitTester;
+use yii\base\NotSupportedException;
 
 /**
  * Unit tests for the DB Helper class where its output may need to be pgsql specific. Will be skipped if db isn't pgsql.
@@ -41,6 +42,7 @@ class PgsqlDbHelperTest extends Unit
      *
      * @param $type
      * @param $supported
+     * @throws NotSupportedException
      */
     public function testTypeSupport($type, $supported)
     {

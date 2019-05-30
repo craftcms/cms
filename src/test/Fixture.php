@@ -27,6 +27,30 @@ class Fixture extends ActiveFixture
     /**
      * @inheritDoc
      */
+    public function load()
+    {
+        $this->data = [];
+        $tableSchema = $this->getTableSchema();
+        foreach ($this->getData() as $alias => $row) {
+
+            $this->db->createCommand()->insert($tableSchema->fullName, $row)->execute();
+
+            $primaryKeys = [];
+
+            foreach ($tableSchema->primaryKey as $name) {
+                if ($tableSchema->columns[$name]->autoIncrement) {
+                    $primaryKeys[$name] = $this->db->getLastInsertID($tableSchema->sequenceName);
+                    break;
+                }
+            }
+
+            $this->data[$alias] = array_merge($row, $primaryKeys);
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function unload() {
         $table = $this->getTableSchema();
         foreach ($this->getData() as $toBeDeletedRow) {

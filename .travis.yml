@@ -5,9 +5,6 @@ dist: trusty
 env:
   global:
     - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest"
-  matrix:
-    - DB=mysql
-    - DB=postgresql
 
 branches:
   only:
@@ -21,10 +18,17 @@ matrix:
   fast_finish: true
   include:
     - php: 7.3
+      env: DB=mysql
+    - php: 7.3
+      env: DB=pgsql
     - php: 7.2
-    # Run tests coverage on PHP 7.1
+      env: DB=mysql
+    - php: 7.2
+      env: DB=pgsql
     - php: 7.1
-      env: TASK_TESTS_COVERAGE=1
+      env: TASK_TESTS_COVERAGE=1 DB=mysql
+    - php: 7.1
+      env: TASK_TESTS_COVERAGE=1 DB=pgsql
 
 # Cache some folders to speed things up.
 cache:
@@ -52,7 +56,6 @@ install:
     # install composer dependencies
     export PATH="$HOME/.composer/vendor/bin:$PATH"
     travis_retry composer install $DEFAULT_COMPOSER_FLAGS
-    touch tests/.env
 
 before_script:
   - |
@@ -73,6 +76,9 @@ before_script:
   - pear config-set preferred_state beta
   - pecl channel-update pecl.php.net
   - yes | pecl install imagick
+
+  # copy the .env database
+  - cp tests/.env.test.$DB tests/.env
 
 script:
   - |
