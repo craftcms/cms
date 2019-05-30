@@ -8,7 +8,6 @@
 ### Changed
 - Asset indexes now sort assets by Date Uploaded in descending order by default. ([#1153](https://github.com/craftcms/cms/issues/1153))
 - `craft\db\Paginator` no longer assumes that the application’s database connection should be used.
-- When dimensions change for a named transform, Craft now invalidates the generated transforms.
 
 ### Fixed
 - Fixed a bug where the Status menu wasn’t visible for the “All users” source on user indexes. ([#4306](https://github.com/craftcms/cms/pull/4306))
@@ -16,6 +15,7 @@
 - Fixed a bug where `craft\validators\ArrayValidator::validate()` didn’t work. ([#4309](https://github.com/craftcms/cms/pull/4309))
 - Fixed an error that could occur when rendering templates with a `loop.parent.loop` reference in a nested for-loop. ([#4271](https://github.com/craftcms/cms/issues/4271))
 - Fixed a bug where publishing a Single entry’s draft, or reverting a Single entry to a prior version, would overwrite its title to the section name. ([#4323](https://github.com/craftcms/cms/pull/4323))
+- Fixed a bug where Craft wasn’t invalidating existing asset transforms when changing the dimensions of a named transform.
 
 ## 3.1.28 - 2019-05-21
 
