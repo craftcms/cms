@@ -188,7 +188,7 @@ class ElementHelper
             ]);
         }
 
-        if ($element->id) {
+        if ($element->id || $element->draftId || $element->revisionId) {
             $query->andWhere(['not', [
                 'elements.id' => $element->getSourceId(),
             ]]);

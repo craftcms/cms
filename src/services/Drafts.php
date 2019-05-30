@@ -140,6 +140,13 @@ class Drafts extends Component
                 ->execute();
 
             $newAttributes['draftId'] = $db->getLastInsertID(Table::DRAFTS);
+            $newAttributes['behaviors']['draft'] = [
+                'class' => DraftBehavior::class,
+                'sourceId' => $source->id,
+                'creatorId' => $creatorId,
+                'draftName' => $name,
+                'draftNotes' => $notes,
+            ];
 
             // Duplicate the element
             /** @var Element $draft */
@@ -150,13 +157,6 @@ class Drafts extends Component
             $transaction->rollBack();
             throw $e;
         }
-
-        $draft->attachBehavior('draft', new DraftBehavior([
-            'sourceId' => $source->id,
-            'creatorId' => $creatorId,
-            'draftName' => $name,
-            'draftNotes' => $notes,
-        ]));
 
         // Fire an 'afterCreateDraft' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_DRAFT)) {

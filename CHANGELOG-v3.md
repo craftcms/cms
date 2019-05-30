@@ -4,12 +4,14 @@
 
 ### Added
 - Date/Time, Dropdown, Lightswitch, Number, and Radio Buttons fields are now listed as sort options in element indexes. ([#2818](https://github.com/craftcms/cms/issues/2818))
-
 - Added `craft\base\Field::getSortOption()`.
 - Added `craft\base\SortableFieldInterface`, which can be implemented by field classes that should be sortable in element indexes.
 
+### Changed
+- It’s now possible to pass a `behaviors` key to the `$newAttributes` argument of `craft\services\Elements::duplicateElement()`, to preattach behaviors to the cloned element before it’s saved.
+
 ### Fixed
-- Fixed a bug where Assets fields configured with `{id}` in the subpath would move files to folders named after the draft ID rather than the source element ID.
+- Fixed a bug where Assets fields configured with `{id}` in the subpath would move files to folders named after the draft ID rather than the source element ID. ([#4329](https://github.com/craftcms/cms/issues/4329))
 - Fixed a bug where duplicated elements were getting the same UID as the source element.
 
 ## 3.2.0-alpha.7 - 2019-05-28

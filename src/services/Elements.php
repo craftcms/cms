@@ -46,6 +46,7 @@ use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
+use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -860,8 +861,17 @@ class Elements extends Component
         $mainClone->contentId = null;
         $mainClone->duplicateOf = $element;
 
+        $behaviors = ArrayHelper::remove($newAttributes, 'behaviors', []);
         $mainClone->setRevisionNotes(ArrayHelper::remove($newAttributes, 'revisionNotes'));
         $mainClone->setAttributes($newAttributes, false);
+
+        // Attach behaviors
+        foreach ($behaviors as $name => $behavior) {
+            if ($behavior instanceof Behavior) {
+                $behavior = clone $behavior;
+            }
+            $mainClone->attachBehavior($name, $behavior);
+        }
 
         // Make sure the element actually supports its own site ID
         $supportedSites = ElementHelper::supportedSitesForElement($mainClone);
@@ -914,6 +924,15 @@ class Elements extends Component
                     $siteClone->propagating = true;
                     $siteClone->id = $mainClone->id;
                     $siteClone->contentId = null;
+
+                    // Attach behaviors
+                    foreach ($behaviors as $name => $behavior) {
+                        if ($behavior instanceof Behavior) {
+                            $behavior = clone $behavior;
+                        }
+                        $mainClone->attachBehavior($name, $behavior);
+                    }
+
                     $siteClone->setAttributes($newAttributes, false);
                     $siteClone->siteId = $siteInfo['siteId'];
 

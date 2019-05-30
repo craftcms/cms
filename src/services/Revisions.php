@@ -146,6 +146,13 @@ class Revisions extends Component
                 ->execute();
 
             $newAttributes['revisionId'] = $db->getLastInsertID(Table::REVISIONS);
+            $newAttributes['behaviors']['revision'] = [
+                'class' => RevisionBehavior::class,
+                'sourceId' => $source->id,
+                'creatorId' => $creatorId,
+                'revisionNum' => $num,
+                'revisionNotes' => $notes,
+            ];
 
             if (!isset($newAttributes['dateCreated'])) {
                 $newAttributes['dateCreated'] = $source->dateUpdated;
@@ -161,13 +168,6 @@ class Revisions extends Component
             $mutex->release($lockKey);
             throw $e;
         }
-
-        $revision->attachBehavior('revision', new RevisionBehavior([
-            'sourceId' => $source->id,
-            'creatorId' => $creatorId,
-            'revisionNum' => $num,
-            'revisionNotes' => $notes,
-        ]));
 
         // Fire an 'afterCreateRevision' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_REVISION)) {
