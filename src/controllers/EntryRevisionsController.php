@@ -246,12 +246,12 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->setFieldValuesFromRequest($fieldsLocation);
         $draft->updateTitle();
 
-        // Validate it
+        // Validate and save the draft
         if ($draft->enabled && $draft->enabledForSite) {
             $draft->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!$draft->validate()) {
+        if (!Craft::$app->getElements()->saveElement($draft)) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t publish draft.'));
 
             // Send the draft back to the template
