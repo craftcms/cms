@@ -239,6 +239,9 @@
 
 ## Unreleased (3.1)
 
+### Added
+- Added the `restore` command, which restores a database backup.
+
 ### Changed
 - Asset indexes now sort assets by Date Uploaded in descending order by default. ([#1153](https://github.com/craftcms/cms/issues/1153))
 - `craft\db\Paginator` no longer assumes that the application’s database connection should be used.
@@ -247,6 +250,10 @@
 - Fixed a bug where the Status menu wasn’t visible for the “All users” source on user indexes. ([#4306](https://github.com/craftcms/cms/pull/4306))
 - Fixed a bug where pressing the <kbd>Esc</kbd> key in the setup wizard would close the modal window. ([#4307](https://github.com/craftcms/cms/issues/4307))
 - Fixed a bug where `craft\validators\ArrayValidator::validate()` didn’t work. ([#4309](https://github.com/craftcms/cms/pull/4309))
+- Fixed an error that could occur when rendering templates with a `loop.parent.loop` reference in a nested for-loop. ([#4271](https://github.com/craftcms/cms/issues/4271))
+- Fixed a bug where publishing a Single entry’s draft, or reverting a Single entry to a prior version, would overwrite its title to the section name. ([#4323](https://github.com/craftcms/cms/pull/4323))
+- Fixed a bug where Craft wasn’t invalidating existing asset transforms when changing the dimensions of a named transform.
+- Fixed a bug where `craft\services\Fields::getFieldsByElementType()` would return duplicate results if a field was used in more than one field layout for the element type. ([#4336](https://github.com/craftcms/cms/issues/4336))
 
 ## 3.1.28 - 2019-05-21
 
