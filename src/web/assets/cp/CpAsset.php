@@ -251,6 +251,7 @@ JS;
             'omitScriptNameInUrls' => (bool)$generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
             'path' => $request->getPathInfo(),
+            'pathParam' => $generalConfig->pathParam,
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
             'primarySiteLanguage' => $primarySite->language ?? null,
             'Pro' => Craft::Pro,
