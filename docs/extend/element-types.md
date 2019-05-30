@@ -487,6 +487,29 @@ protected static function defineActions(string $source = null): array
 }
 ```
 
+If you would like warning messages before any action, you can specify them within `defineActions()` rather than just returning a flat array.
+This can be useful for delete actions or updates that aren't easily reversible, as the user has to verify they want to continue.
+
+```php
+protected static function defineActions(string $source = null): array
+{
+    return [
+        [
+            'type'                => FooAction::class,
+            'confirmationMessage' => 'Are you sure you want take take the Foo action?',
+            'successMessage'      => 'Foo action completed.',
+        ],
+        [
+            'type'                => BarAction::class,
+            'confirmationMessage' => 'Are you sure you want take take the Bar action?',
+            'successMessage'      => 'Bar action completed.',
+        ],
+    ];
+}
+```
+
+Note that `FooAction` and `BarAction` will need to overwrite `getConfirmationMessage()` in order for the message to appear correctly.
+
 ### Restore Action
 
 All element types are [soft-deletable](soft-deletes.md) out of the box, however it’s up to each element type to decide whether they should be restorable.
