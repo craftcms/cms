@@ -231,6 +231,7 @@ JS;
         $data = [
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
+            'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
             'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),

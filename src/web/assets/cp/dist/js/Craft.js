@@ -1,4 +1,4 @@
-/*!   - 2019-05-14 */
+/*!   - 2019-05-30 */
 (function($){
 
 /** global: Craft */
@@ -16982,7 +16982,9 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend(
             sourceVal = sourceVal.replace(/['"‘’“”\[\]\(\)\{\}:]/g, '');
 
             // Make it lowercase
-            sourceVal = sourceVal.toLowerCase();
+            if (!Craft.allowUppercaseInSlug) {
+                sourceVal = sourceVal.toLowerCase();
+            }
 
             if (Craft.limitAutoSlugsToAscii) {
                 // Convert extended ASCII characters to basic ASCII
