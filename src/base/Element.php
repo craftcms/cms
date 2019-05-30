@@ -2357,6 +2357,37 @@ abstract class Element extends Component implements ElementInterface
         }
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getElementEditTabs(): array
+    {
+        $tabs = $this->getFieldLayout()->getTabs();
+
+        return array_map(function($tab) {
+            $hasErrors = $this->hasErrors() ? $this->doesTabHaveErrors($tab) : false;
+            return [
+                'label' => Craft::t('site', $tab->name),
+                'url' => '#' . $tab->getHtmlId(),
+                'class' => $hasErrors ? 'error' : null
+            ];
+        }, $tabs);
+    }
+
+    protected function doesTabHaveErrors($tab)
+    {
+        $errors = array_filter($tab->getFields(), function ($field) {
+            return $this->doesHandleHaveError($field->handle);
+        });
+
+        return sizeof($errors) > 0;
+    }
+
+    protected function doesHandleHaveErrors(string $handle)
+    {
+        return $this->hasErrors($handle . '.*');
+    }
+
     // Protected Methods
     // =========================================================================
 

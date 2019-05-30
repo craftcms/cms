@@ -722,27 +722,7 @@ class CategoriesController extends Controller
         // Define the content tabs
         // ---------------------------------------------------------------------
 
-        $variables['tabs'] = [];
-
-        foreach ($variables['group']->getFieldLayout()->getTabs() as $index => $tab) {
-            // Do any of the fields on this tab have errors?
-            $hasErrors = false;
-
-            if ($variables['category']->hasErrors()) {
-                foreach ($tab->getFields() as $field) {
-                    /** @var Field $field */
-                    if ($hasErrors = $variables['category']->hasErrors($field->handle . '.*')) {
-                        break;
-                    }
-                }
-            }
-
-            $variables['tabs'][] = [
-                'label' => Craft::t('site', $tab->name),
-                'url' => '#' . $tab->getHtmlId(),
-                'class' => $hasErrors ? 'error' : null
-            ];
-        }
+        $variables['tabs'] = $variables['category']->getElementEditTabs();
     }
 
     /**

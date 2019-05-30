@@ -1003,4 +1003,11 @@ interface ElementInterface extends ComponentInterface
      * @param int $structureId The structure ID
      */
     public function afterMoveInStructure(int $structureId);
+
+    /**
+     * Returns the tab labels for a given element.
+     *
+     * @return array
+     */
+    public function getElementEditTabs();
 }
