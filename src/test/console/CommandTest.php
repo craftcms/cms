@@ -31,6 +31,7 @@ class CommandTest
     const PROMPT = 'prompt';
     const CONFIRM = 'confirm';
     const SELECT = 'select';
+    const OUTPUT_COMMAND = 'outputCommand';
 
     // Public properties
     // =========================================================================
@@ -149,6 +150,20 @@ class CommandTest
 
     /**
      * @param string $desiredOutput
+     * @param bool $withScriptName
+     * @return CommandTest
+     */
+    public function outputCommand(string $desiredOutput, bool $withScriptName = true) : CommandTest
+    {
+        return $this->addEventChainItem([
+            'type' => self::OUTPUT_COMMAND,
+            'desiredOutput' => $desiredOutput,
+            'withScriptName' => $withScriptName
+        ]);
+    }
+
+    /**
+     * @param string $desiredOutput
      * @return CommandTest
      */
     public function stderr(string $desiredOutput) : CommandTest
@@ -229,11 +244,31 @@ class CommandTest
             'stderr' => $this->stderrHandler(),
             'prompt' => $this->promptHandler(),
             'confirm' => $this->confirmHandler(),
-            'select' => $this->selectHandler()
+            'select' => $this->selectHandler(),
+            'outputCommand' => $this->outputCommandHandler()
             ]);
 
         $this->controller = $stubController;
         $this->actionId = $actionId;
+    }
+
+    /**
+     * @return Closure
+     */
+    protected function outputCommandHandler() : Closure
+    {
+        return function ($out, $withScriptName = true) {
+            $nextItem = $this->runHandlerCheck($out, self::OUTPUT_COMMAND);
+
+            $this->test::assertSame(
+                $nextItem->withScriptName,
+                $withScriptName
+            );
+            $this->test::assertSame(
+                $nextItem->desiredOutput,
+                $out
+            );
+        };
     }
 
     /**
