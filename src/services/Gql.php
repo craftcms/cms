@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\errors\GqlException;
 use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
@@ -86,13 +87,13 @@ class Gql extends Component
     /**
      * Returns the GraphQL schema.
      *
+     * @param bool $validateSchema should the schema be deep-scanned and validated
      * @return Schema
+     * @throws GqlException in case of invalid schema
      */
-    public function getSchema(): Schema
+    public function getSchema($validateSchema = false): Schema
     {
-        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
-
-        if (!$this->_schema || $devMode) {
+        if (!$this->_schema || $validateSchema) {
             $this->_registerGqlTypes();
             $this->_registerGqlQueries();
 
@@ -102,7 +103,7 @@ class Gql extends Component
                 'directives' => $this->_loadGqlDirectives(),
             ];
 
-            if (!$devMode ){
+            if (!$validateSchema ){
                 $this->_schema = new Schema($schemaConfig);
             } else {
                 // @todo: allow plugins to register their generators
@@ -113,8 +114,12 @@ class Gql extends Component
                     UserType::generateTypes(),
                     GlobalSetType::generateTypes()
                 );
-                $this->_schema = new Schema($schemaConfig);
-                $this->_schema->assertValid();
+                try {
+                    $this->_schema = new Schema($schemaConfig);
+                    $this->_schema->assertValid();
+                } catch (\Throwable $exception) {
+                    throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage());
+                }
             }
         }
 
