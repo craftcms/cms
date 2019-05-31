@@ -20,5 +20,8 @@ use \yii\console\Controller as BaseConsoleController;
  */
 class Controller extends BaseConsoleController
 {
+    // Traits
+    // =========================================================================
+
     use ConsoleControllerTrait;
 }
