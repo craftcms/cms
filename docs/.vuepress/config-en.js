@@ -113,7 +113,6 @@ module.exports = {
                 children: [
                     'framework/config-options',
                     'framework/mocking',
-                    'framework/test-setup',
                     'framework/support-classes',
                     'framework/full-mock'
 
