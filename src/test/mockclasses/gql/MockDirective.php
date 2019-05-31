@@ -3,7 +3,6 @@ namespace craft\test\mockclasses\gql;
 
 use Craft;
 use craft\gql\directives\BaseDirective;
-use craft\gql\GqlEntityRegistry;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive;
 

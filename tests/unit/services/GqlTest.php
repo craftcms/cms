@@ -42,9 +42,6 @@ class GqlTest extends Unit
      */
     public function testCreateSchema()
     {
-        Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function (RegisterGqlQueriesEvent $event) {
-            $event->queries['mockQuery'] = 'string';
-        });
         $schema = Craft::$app->getGql()->getSchema();
         $this->assertInstanceOf('GraphQL\Type\Schema', $schema);
     }
