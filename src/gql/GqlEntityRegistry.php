@@ -12,6 +12,8 @@ class GqlEntityRegistry
     private static $_entities = [];
 
     /**
+     * Get a registered entity.
+     *
      * @param string $className
      * @return bool|mixed
      */
@@ -21,6 +23,8 @@ class GqlEntityRegistry
     }
 
     /**
+     * Create an entity registry entry.
+     *
      * @param string $className
      * @param mixed $entity
      * @return mixed
@@ -30,5 +34,13 @@ class GqlEntityRegistry
         self::$_entities[$className] = $entity;
 
         return $entity;
+    }
+
+    /**
+     * Flush all registered entities.
+     */
+    public static function flush()
+    {
+        self::$_entities = [];
     }
 }

@@ -30,7 +30,22 @@ class TypeLoader
         throw new GqlException('Tried to load an unregistered type „' . $type . '” ');
     }
 
-    public static function registerType(string $type, callable $loader) {
+    /**
+     * Register a type with a callable loader function.
+     *
+     * @param string $type
+     * @param callable $loader
+     */
+    public static function registerType(string $type, callable $loader)
+    {
         self::$_typeLoaders[$type] = $loader;
+    }
+
+    /**
+     * Flush all registered type loaders.
+     */
+    public static function flush()
+    {
+        self::$_typeLoaders = [];
     }
 }

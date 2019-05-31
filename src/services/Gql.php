@@ -15,6 +15,7 @@ use craft\gql\common\SchemaObject;
 use craft\gql\directives\BaseDirective;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Transform;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
@@ -118,6 +119,18 @@ class Gql extends Component
         }
 
         return $this->_schema;
+    }
+
+    /**
+     * Flush all GQL caches, registries and loaders.
+     *
+     * @return void
+     */
+    public function flushCaches()
+    {
+        $this->_schema = null;
+        TypeLoader::flush();
+        GqlEntityRegistry::flush();
     }
 
     // Private Methods
