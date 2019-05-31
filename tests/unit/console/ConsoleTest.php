@@ -47,6 +47,7 @@ class ConsoleTest extends BaseConsoleTest
             ->select('Select', '2', ['2', '22'])
             ->confirm('asd', true, true)
             ->prompt('A prompt', 'hi', ['2', '22'])
+            ->outputCommand('An output command')
             ->exitCode(ExitCode::OK)
             ->run();
     }
