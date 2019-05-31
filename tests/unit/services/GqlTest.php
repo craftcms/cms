@@ -72,7 +72,9 @@ class GqlTest extends Unit
     public function testValidateSchema()
     {
         Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function (RegisterGqlQueriesEvent $event) {
-            $event->queries['mockQuery'] = ['type' => 'no bueno'];
+            $event->queries['mockQuery'] = [
+                'type' => 'no bueno'
+            ];
         });
 
         $this->expectException('craft\errors\GqlException');
