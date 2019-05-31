@@ -268,7 +268,7 @@ class EntryRevisionsTest extends Unit
             'sectionId' => $entry->sectionId,
             'siteId' => $entry->siteId,
             'creatorId' => 1,
-            'Name' => 'Data',
+            'name' => 'Data',
             'data' => '{"typeId":"'.$entry->typeId.'","authorId":"1","title":"Not pending","slug":"not-pending","expiryDate":null,"enabled":true}'
         ])->execute();
 
