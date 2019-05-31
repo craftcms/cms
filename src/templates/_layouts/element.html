@@ -42,7 +42,9 @@
 
 {% if element.draftId %}
     {% do craft.app.session.authorize('previewDraft:' ~ element.draftId) %}
-{% elseif not element.revisionId %}
+{% elseif element.revisionId %}
+    {% do craft.app.session.authorize('previewRevision:' ~ element.revisionId) %}
+{% else %}
     {% do craft.app.session.authorize('previewElement:' ~ element.id) %}
 {% endif %}
 
@@ -52,7 +54,7 @@
     {{ block('pageTitle') }}
     {{ block('contextMenu') }}
     <div class="flex-grow"></div>
-    {% if not element.revisionId and previewTargets %}
+    {% if previewTargets %}
         <div class="btngroup">
             {% if enablePreview %}
                 <div id="preview-btn" class="btn">{{ "Preview"|t('app') }}</div>
@@ -147,35 +149,34 @@
     </div>
 {% endblock %}
 
-{% if not element.revisionId %}
-    {% set normalizedPreviewTargets = [] %}
-    {% set scheme = craft.app.request.isSecureConnection ? 'https': null %}
-    {% for target in previewTargets %}
-        {% set path = target.url ?? view.renderObjectTemplate(target.urlFormat, element) %}
-        {% set normalizedPreviewTargets = normalizedPreviewTargets|merge([{
-            label: target.label|t('site'),
-            url: siteUrl(path, scheme=scheme, siteId=element.siteId)
-        }]) %}
-    {% endfor %}
+{% set normalizedPreviewTargets = [] %}
+{% set scheme = craft.app.request.isSecureConnection ? 'https': null %}
+{% for target in previewTargets %}
+    {% set path = target.url ?? view.renderObjectTemplate(target.urlFormat, element) %}
+    {% set normalizedPreviewTargets = normalizedPreviewTargets|merge([{
+        label: target.label|t('site'),
+        url: siteUrl(path, scheme=scheme, siteId=element.siteId)
+    }]) %}
+{% endfor %}
 
-    {% set settings = {
-        elementType: className(element),
-        sourceId: element.sourceId,
-        siteId: element.siteId,
-        isLive: not element.draftId and not element.revisionId and element.enabled and element.enabledForSite and element.getRoute(),
-        sourceEditUrl: element.cpEditUrl,
-        draftId: element.draftId,
-        draftName: element.draftId ? element.draftName : null,
-        draftNotes: element.draftId ? element.draftNotes : null,
-        canDeleteDraft: canDeleteDraft,
-        canUpdateSource: canUpdateSource,
-        saveDraftAction: saveDraftAction,
-        deleteDraftAction: deleteDraftAction,
-        applyDraftAction: applyDraftAction,
-        enablePreview: enablePreview,
-        previewTargets: normalizedPreviewTargets,
-    } %}
-    {% js %}
-        new Craft.DraftEditor({{ settings|json_encode|raw }});
-    {% endjs %}
-{% endif %}
+{% set settings = {
+    elementType: className(element),
+    sourceId: element.sourceId,
+    siteId: element.siteId,
+    isLive: not element.draftId and not element.revisionId and element.enabled and element.enabledForSite and element.getRoute(),
+    sourceEditUrl: element.cpEditUrl,
+    draftId: element.draftId,
+    revisionId: element.revisionId,
+    draftName: element.draftId ? element.draftName : null,
+    draftNotes: element.draftId ? element.draftNotes : null,
+    canDeleteDraft: canDeleteDraft,
+    canUpdateSource: canUpdateSource,
+    saveDraftAction: saveDraftAction,
+    deleteDraftAction: deleteDraftAction,
+    applyDraftAction: applyDraftAction,
+    enablePreview: enablePreview,
+    previewTargets: normalizedPreviewTargets,
+} %}
+{% js %}
+    new Craft.DraftEditor({{ settings|json_encode|raw }});
+{% endjs %}

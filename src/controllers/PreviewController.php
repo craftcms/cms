@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
@@ -50,9 +51,12 @@ class PreviewController extends Controller
         $sourceId = $request->getRequiredBodyParam('sourceId');
         $siteId = $request->getRequiredBodyParam('siteId');
         $draftId = $request->getBodyParam('draftId');
+        $revisionId = $request->getBodyParam('revisionId');
 
         if ($draftId) {
             $this->requireAuthorization('previewDraft:' . $draftId);
+        } else if ($revisionId) {
+            $this->requireAuthorization('previewRevision:' . $revisionId);
         } else {
             $this->requireAuthorization('previewElement:' . $sourceId);
         }
@@ -61,9 +65,10 @@ class PreviewController extends Controller
         $route = [
             'preview/preview', [
                 'elementType' => $elementType,
-                'sourceId' => $sourceId,
-                'siteId' => $siteId,
-                'draftId' => $draftId,
+                'sourceId' => (int)$sourceId,
+                'siteId' => (int)$siteId,
+                'draftId' => (int)$draftId ?: null,
+                'revisionId' => (int)$revisionId ?: null,
             ]
         ];
 
@@ -84,11 +89,12 @@ class PreviewController extends Controller
      * @param int $sourceId
      * @param int $siteId
      * @param int|null $draftId
+     * @param int|null $revisionId
      * @return Response
      * @throws BadRequestHttpException
      * @throws \Throwable
      */
-    public function actionPreview(string $elementType, int $sourceId, int $siteId, int $draftId = null): Response
+    public function actionPreview(string $elementType, int $sourceId, int $siteId, int $draftId = null, int $revisionId = null): Response
     {
         // Make sure a token was used to get here
         $this->requireToken();
@@ -100,6 +106,8 @@ class PreviewController extends Controller
 
         if ($draftId) {
             $query->draftId($draftId);
+        } else if ($revisionId) {
+            $query->revisionId($revisionId);
         } else {
             $query->id($sourceId);
         }
@@ -107,6 +115,8 @@ class PreviewController extends Controller
         $element = $query->one();
 
         if ($element) {
+            /** @var Element $element */
+            $element->previewing = true;
             Craft::$app->getElements()->setPlaceholderElement($element);
         }
 
