@@ -7,7 +7,7 @@
 
 namespace craft\test;
 
-use yii\db\Exception;
+use yii\base\InvalidArgumentException;
 use yii\db\TableSchema;
 use yii\test\ActiveFixture;
 
@@ -20,6 +20,13 @@ use yii\test\ActiveFixture;
  */
 class Fixture extends ActiveFixture
 {
+    // Private properties
+    // =========================================================================
+
+    /**
+     * @var array
+     */
+    private $ids = [];
 
     // Public Methods
     // =========================================================================
@@ -29,22 +36,25 @@ class Fixture extends ActiveFixture
      */
     public function load()
     {
-        $this->data = [];
         $tableSchema = $this->getTableSchema();
+        $this->data = [];
         foreach ($this->getData() as $alias => $row) {
+            $modelClass = $this->modelClass;
 
-            $this->db->createCommand()->insert($tableSchema->fullName, $row)->execute();
+            // Fixture data may pass in props that are not for the db. We thus run an extra check to ensure
+            // that we are deleting only based on columns that *actually* exist in the schema
+            $correctRow = $row;
 
-            $primaryKeys = [];
-
-            foreach ($tableSchema->primaryKey as $name) {
-                if ($tableSchema->columns[$name]->autoIncrement) {
-                    $primaryKeys[$name] = $this->db->getLastInsertID($tableSchema->sequenceName);
-                    break;
-                }
+            foreach ($row as $columnName => $rowValue) {
+                $correctRow = $this->ensureColumnIntegrity($tableSchema, $row, $columnName);
             }
 
-            $this->data[$alias] = array_merge($row, $primaryKeys);
+            $arInstance = new $modelClass($correctRow);
+            if (!$arInstance->save()) {
+                throw new InvalidArgumentException('Unable to save fixture data');
+            }
+
+            $this->ids[] = $arInstance->id;
         }
     }
 
@@ -52,18 +62,16 @@ class Fixture extends ActiveFixture
      * @inheritDoc
      */
     public function unload() {
-        $table = $this->getTableSchema();
-        foreach ($this->getData() as $toBeDeletedRow) {
+        if ($this->ids) {
+            foreach ($this->ids as $id) {
+                $arInstance = $this->modelClass::find()
+                    ->where(['id' => $id])
+                    ->one();
 
-            // Fixture data may pass in props that are not for the db. We thus run an extra check to ensure
-            // that we are deleting only based on columns that *actually* exist in the schema
-            $correctRow = $toBeDeletedRow;
-
-            foreach ($toBeDeletedRow as $columnName => $rowValue) {
-                $correctRow = $this->ensureColumnIntegrity($table, $toBeDeletedRow, $columnName);
+                if ($arInstance && !$arInstance->delete()) {
+                    throw new InvalidArgumentException('Unable to delete AR instance');
+                }
             }
-
-            $this->deleteRow($table->fullName, $correctRow);
         }
     }
 
@@ -80,16 +88,5 @@ class Fixture extends ActiveFixture
         }
 
         return $row;
-    }
-
-    /**
-     * @param $tableName
-     * @param $toBeDeletedRow
-     * @return int
-     * @throws Exception
-     */
-    public function deleteRow($tableName, $toBeDeletedRow): int
-    {
-        return $this->db->createCommand()->delete($tableName, $toBeDeletedRow)->execute();
     }
 }
