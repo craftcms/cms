@@ -12,7 +12,7 @@ return [
         'handle' => 'test1',
         'type' => 'channel',
         'enableVersioning' => false,
-        'propagateEntries' => true,
+        'propagationMethod' => 'all',
     ],
     [
         'id' => '1001',
@@ -20,7 +20,7 @@ return [
         'handle' => 'test2',
         'type' => 'channel',
         'enableVersioning' => false,
-        'propagateEntries' => true,
+        'propagationMethod' => 'all',
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
     ],
     [
@@ -29,7 +29,7 @@ return [
         'handle' => 'test3',
         'type' => 'channel',
         'enableVersioning' => false,
-        'propagateEntries' => true,
+        'propagationMethod' => 'all',
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
     ],
     [
@@ -38,7 +38,7 @@ return [
         'handle' => 'withUri1',
         'type' => 'channel',
         'enableVersioning' => false,
-        'propagateEntries' => true,
+        'propagationMethod' => 'all',
     ],
     [
         'id' => '1004',
@@ -46,7 +46,7 @@ return [
         'handle' => 'withVersioning',
         'type' => 'channel',
         'enableVersioning' => true,
-        'propagateEntries' => true,
+        'propagationMethod' => 'all',
     ],
     [
         'id' => '1005',
@@ -54,6 +54,6 @@ return [
         'handle' => 'single',
         'type' => 'single',
         'enableVersioning' => true,
-        'propagateEntries' => true,
+        'propagationMethod' => 'all',
     ],
 ];
