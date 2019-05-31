@@ -144,7 +144,7 @@ class GcTest extends Unit
             ->all();
 
         $this->assertCount($remainingCount, $items);
-        $this->assertSame(ArrayHelper::firstValue($items)['id'], $leftoverId);
+        $this->assertSame((string)ArrayHelper::firstValue($items)['id'], $leftoverId);
     }
 
     /**
