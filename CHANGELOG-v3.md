@@ -17,6 +17,7 @@
 - Fixed a bug where duplicated elements were getting the same UID as the source element.
 - Fixed an error that occurred when clicking “Update entry” for an entry draft that had new Matrix/Super Table blocks that were created after the last page refresh. ([#4331](https://github.com/craftcms/cms/issues/4331))
 - Fixed a bug where previewing pending/expired entries would 404.
+- Fixed a bug where Craft could load a draft or revision when requesting an element’s URI, rather than the source element.
 
 ## 3.2.0-alpha.7 - 2019-05-28
 

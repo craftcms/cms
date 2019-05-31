@@ -324,10 +324,16 @@ class Elements extends Component
                 'elements_sites.siteId' => $siteId,
             ]);
 
-        // todo: remove schema version condition after next beakpoint
+        // todo: remove schema version conditions after next beakpoint
         $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
         if (version_compare($schemaVersion, '3.1.0', '>=')) {
             $query->andWhere(['elements.dateDeleted' => null]);
+        }
+        if (version_compare($schemaVersion, '3.2.6', '>=')) {
+            $query->andWhere([
+                'elements.draftId' => null,
+                'elements.revisionId' => null,
+            ]);
         }
 
         if (Craft::$app->getDb()->getIsMysql()) {
