@@ -8,8 +8,10 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
+use craft\db\Query;
 use craft\errors\InvalidElementException;
 use Throwable;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\test\ActiveFixture;
@@ -34,6 +36,8 @@ abstract class ElementFixture extends ActiveFixture
      * @var array
      */
     protected $siteIds = [];
+
+    protected $ids = [];
 
     // Public Methods
     // =========================================================================
@@ -109,6 +113,7 @@ abstract class ElementFixture extends ActiveFixture
                 }
             }
 
+            $this->ids[] = $element->id;
             $this->data[$alias] = array_merge($data, ['id' => $element->id]);
         }
     }
@@ -121,8 +126,17 @@ abstract class ElementFixture extends ActiveFixture
      */
     public function unload()
     {
-        foreach ($this->getData() as $data) {
-            $element = $this->getElement($data);
+        foreach ($this->ids as $id) {
+            $element = $this->modelClass::find()
+                ->id($id)
+                ->anyStatus()
+                ->trashed(null)
+                ->one();
+
+            if ($id && !$element) {
+                throw new InvalidArgumentException("Unable to delete element $id. We were unable to find it.");
+            }
+
             if ($element && !Craft::$app->getElements()->deleteElement($element)) {
                 throw new InvalidElementException($element, 'Unable to delete element');
             }
