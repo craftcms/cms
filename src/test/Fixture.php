@@ -26,7 +26,7 @@ class Fixture extends ActiveFixture
     /**
      * @var array
      */
-    private $ids = [];
+    protected $ids = [];
 
     // Public Methods
     // =========================================================================
