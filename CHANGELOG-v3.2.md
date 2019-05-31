@@ -29,6 +29,7 @@
 - Element index pages now have an “Export…” button that will export all of the elements in the current view (across all pages) or up to a custom limit, in either CSV, XLS, XLSX, or ODS format. ([#994](https://github.com/craftcms/cms/issues/994))
 - Added the `attr()` Twig function, which can generate a list of HTML/XML attributes. ([#4237](https://github.com/craftcms/cms/pull/4237))
 - Added the `|withoutKey` Twig filter.
+- The `index-assets/*` commands now support a `--create-missing-assets=0` option, which prevents Craft from creating asset records when they don’t exist yet, and offers an opportunity to fix the location of any asset records that are missing their associated files, when the filename matches one of the files missing an index.
 - Jobs can new set progress labels, which will be shown below their description and progress bar in the queue HUD. ([#1931](https://github.com/craftcms/cms/pull/1931))
 - Added the `_layouts/element` template, which can be extended by element edit pages that wish to support drafts, revisions, and content previewing.
 - Added the `_special/sitepicker` template.
@@ -55,6 +56,7 @@
 - Added `craft\behaviors\DraftBehavior`.
 - Added `craft\behaviors\RevisionBehavior`.
 - Added `craft\controllers\PreviewController`.
+- Added `craft\errors\MissingAssetException`.
 - Added `craft\events\BatchElementActionEvent`.
 - Added `craft\events\ElementQueryEvent`.
 - Added `craft\events\RegisterPreviewTargetsEvent`.

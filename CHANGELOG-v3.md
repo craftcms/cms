@@ -4,9 +4,11 @@
 
 ### Added
 - Date/Time, Dropdown, Lightswitch, Number, and Radio Buttons fields are now listed as sort options in element indexes. ([#2818](https://github.com/craftcms/cms/issues/2818))
+- The `index-assets/*` commands now support a `--create-missing-assets=0` option, which prevents Craft from creating asset records when they don’t exist yet, and offers an opportunity to fix the location of any asset records that are missing their associated files, when the filename matches one of the files missing an index.
 - Added `craft\base\ElementTrait::$previewing`.
 - Added `craft\base\Field::getSortOption()`.
 - Added `craft\base\SortableFieldInterface`, which can be implemented by field classes that should be sortable in element indexes.
+- Added `craft\errors\MissingAssetException`.
 
 ### Changed
 - It’s now possible to preview to preview element revisions.
