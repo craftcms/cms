@@ -37,6 +37,9 @@ abstract class ElementFixture extends ActiveFixture
      */
     protected $siteIds = [];
 
+    /**
+     * @var array 
+     */
     protected $ids = [];
 
     // Public Methods
