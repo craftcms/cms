@@ -25,6 +25,7 @@ use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use GraphQL\GraphQL;
 use yii\base\Exception;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -74,15 +75,15 @@ class GqlController extends Controller
             $input = @$data['query'];
         }
 
-        $result = GraphQL::executeQuery($schema, $input, null, null, null)->toArray(true);
-
+        if ($input) {
+            $result = GraphQL::executeQuery($schema, $input, null, null, null)->toArray(true);
+        } else {
+            throw new BadRequestHttpException('Request missing required param');
+        }
 
         $end = microtime(true);
 
         Craft::error('[GQL] Total time: ' . ($end - $start));
-
-        $response = \Craft::$app->getResponse();
-        $response->headers->add('Content-Type', 'application/json; charset=UTF-8');
 
         return $this->asJson($result);
     }
