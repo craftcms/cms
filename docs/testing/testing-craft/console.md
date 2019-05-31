@@ -168,3 +168,9 @@ command calls `$this->outputCommand()`
 
 If your console command calls `$this->outputCommand()` this method ensures that you can test 
 how this method is called and what is output to the user. 
+
+::: warning
+Please ensure you call `$this->outputCommand()` in your console commands and not `craft\helpers\Console::outputCommand()`. 
+This static method will not be taken into account as it is currently not possible to mock static methods - 
+something required for the `CommandTest` class to work. 
+:::
