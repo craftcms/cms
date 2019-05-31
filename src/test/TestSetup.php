@@ -79,7 +79,7 @@ use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 /**
  * Class TestSetup.
  *
- * TestSetup performs various setup tasts required for craft\test\Craft.
+ * TestSetup performs various setup tasks required for craft\test\Craft.
  * It is not intended for use within public tests.
  * Use the various features of `craft\test\Craft` instead.
  *
