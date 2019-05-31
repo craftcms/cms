@@ -162,7 +162,7 @@
         elementType: className(element),
         sourceId: element.sourceId,
         siteId: element.siteId,
-        isLive: not element.draftId and not element.revisionId and element.enabled and element.enabledForSite,
+        isLive: not element.draftId and not element.revisionId and element.enabled and element.enabledForSite and element.getRoute(),
         sourceEditUrl: element.cpEditUrl,
         draftId: element.draftId,
         draftName: element.draftId ? element.draftName : null,

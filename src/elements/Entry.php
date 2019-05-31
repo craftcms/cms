@@ -715,7 +715,7 @@ class Entry extends Element
     protected function route()
     {
         // Make sure that the entry is actually live
-        if ($this->getStatus() != self::STATUS_LIVE) {
+        if (!$this->previewing && $this->getStatus() != self::STATUS_LIVE) {
             return null;
         }
 

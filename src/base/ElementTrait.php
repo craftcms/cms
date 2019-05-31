@@ -156,6 +156,11 @@ trait ElementTrait
     public $duplicateOf;
 
     /**
+     * @var bool Whether the element is currently being previewed.
+     */
+    public $previewing = false;
+
+    /**
      * @var bool Whether the element is being hard-deleted.
      */
     public $hardDelete = false;

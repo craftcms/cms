@@ -45,6 +45,7 @@
 - Added `craft\base\ElementInterface::setRevisionNotes()`.
 - Added `craft\base\ElementTrait::$draftId`.
 - Added `craft\base\ElementTrait::$hardDelete`.
+- Added `craft\base\ElementTrait::$previewing`.
 - Added `craft\base\ElementTrait::$revisionId`.
 - Added `craft\base\Field::EVENT_AFTER_ELEMENT_PROPAGATE`.
 - Added `craft\base\Field::getSortOption()`.
