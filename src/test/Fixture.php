@@ -61,16 +61,15 @@ class Fixture extends ActiveFixture
     /**
      * @inheritDoc
      */
-    public function unload() {
-        if ($this->ids) {
-            foreach ($this->ids as $id) {
-                $arInstance = $this->modelClass::find()
-                    ->where(['id' => $id])
-                    ->one();
+    public function unload()
+    {
+        foreach ($this->ids as $id) {
+            $arInstance = $this->modelClass::find()
+                ->where(['id' => $id])
+                ->one();
 
-                if ($arInstance && !$arInstance->delete()) {
-                    throw new InvalidArgumentException('Unable to delete AR instance');
-                }
+            if ($arInstance && !$arInstance->delete()) {
+                throw new InvalidArgumentException('Unable to delete AR instance');
             }
         }
     }
