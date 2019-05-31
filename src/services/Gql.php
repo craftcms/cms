@@ -7,6 +7,7 @@
 
 namespace craft\services;
 
+use Craft;
 use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
@@ -86,8 +87,10 @@ class Gql extends Component
      *
      * @return Schema
      */
-    public function getSchema(bool $devMode = false): Schema
+    public function getSchema(): Schema
     {
+        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
+
         if (!$this->_schema || $devMode) {
             $this->_registerGqlTypes();
             $this->_registerGqlQueries();
@@ -98,7 +101,9 @@ class Gql extends Component
                 'directives' => $this->_loadGqlDirectives(),
             ];
 
-            if ($devMode) {
+            if (!$devMode ){
+                $this->_schema = new Schema($schemaConfig);
+            } else {
                 // @todo: allow plugins to register their generators
                 $schemaConfig['types'] = array_merge(
                     EntryType::generateTypes(),
@@ -107,11 +112,7 @@ class Gql extends Component
                     UserType::generateTypes(),
                     GlobalSetType::generateTypes()
                 );
-            }
-
-            $this->_schema = new Schema($schemaConfig);
-
-            if ($devMode) {
+                $this->_schema = new Schema($schemaConfig);
                 $this->_schema->assertValid();
             }
         }
