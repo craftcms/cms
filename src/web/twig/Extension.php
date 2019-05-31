@@ -212,7 +212,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('encenc', [$this, 'encencFilter']),
             new TwigFilter('filesize', [$formatter, 'asShortSize']),
             new TwigFilter('filter', 'array_filter'),
-            new TwigFilter('filterByValue', [ArrayHelper::class, 'filterByValue']),
+            new TwigFilter('filterByValue', [ArrayHelper::class, 'where']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$security, 'hashData']),
             new TwigFilter('id', [$this->view, 'formatInputId']),
