@@ -9,11 +9,9 @@ namespace craftunit;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 use craft\mail\Mailer;
 use craft\test\TestSetup;
-use craftunit\fixtures\EntryFixture;
 use UnitTester;
 use yii\base\InvalidConfigException;
 
@@ -34,13 +32,6 @@ class AppTest extends Unit
      */
     public $tester;
 
-    public function _fixtures() {
-        return [
-            'entries' => [
-                'class' => EntryFixture::class
-            ]
-        ];
-    }
     // Public Methods
     // =========================================================================
 
