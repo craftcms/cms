@@ -13,7 +13,7 @@ use craft\base\Volume;
 use craft\base\VolumeInterface;
 use yii\console\ExitCode;
 use yii\helpers\Console;
-use yii\console\Controller;
+use craft\console\Controller;
 
 /**
  * Re-indexes assets in volumes.

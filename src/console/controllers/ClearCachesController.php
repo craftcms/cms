@@ -12,7 +12,7 @@ use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\utilities\ClearCaches;
 use yii\base\InvalidRouteException;
-use yii\console\Controller;
+use craft\console\Controller;
 use yii\console\Exception;
 use yii\console\ExitCode;
 

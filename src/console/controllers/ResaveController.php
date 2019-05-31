@@ -17,7 +17,7 @@ use craft\elements\User;
 use craft\helpers\App;
 use yii\console\ExitCode;
 use yii\helpers\Console;
-use yii\console\Controller;
+use craft\console\Controller;
 use craft\elements\Entry;
 use craft\elements\Category;
 
