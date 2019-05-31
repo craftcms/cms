@@ -84,10 +84,9 @@ class Gql extends Component
     /**
      * Returns the GraphQL schema.
      *
-     * @param string $token the auth token
      * @return Schema
      */
-    public function getSchema(string $token = null, bool $devMode = false): Schema
+    public function getSchema(bool $devMode = false): Schema
     {
         if (!$this->_schema || $devMode) {
             $this->_registerGqlTypes();
