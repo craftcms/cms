@@ -46,6 +46,7 @@ class MigrateController extends BaseMigrateController
 {
     // Traits
     // =========================================================================
+
     use ConsoleControllerTrait;
 
     // Properties
