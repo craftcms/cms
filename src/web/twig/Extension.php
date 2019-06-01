@@ -210,7 +210,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
             new TwigFilter('encenc', [$this, 'encencFilter']),
             new TwigFilter('filesize', [$formatter, 'asShortSize']),
-            new TwigFilter('filter', 'array_filter'),
+            new TwigFilter('filter', [$this, 'filterFilter']),
             new TwigFilter('filterByValue', [ArrayHelper::class, 'filterByValue']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$security, 'hashData']),
@@ -583,6 +583,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function encencFilter($str): string
     {
         return StringHelper::encenc((string)$str);
+    }
+
+    /**
+     * Filters an array.
+     *
+     * @param array|\Traversable $arr
+     * @param callable|null $arrow
+     * @return array|\Traversable
+     */
+    public function filterFilter($arr, $arrow = null)
+    {
+        if ($arrow === null) {
+            return array_filter($arr);
+        }
+
+        return iterator_to_array(twig_array_filter($arr, $arrow));
     }
 
     /**
