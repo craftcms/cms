@@ -230,8 +230,10 @@ class Craft extends Yii2
 
             \Craft::$app->set('db', $dbConnection);
 
+            $dbSetupConfig = $this->_getConfig('dbSetup');
+
             // Get rid of everything.
-            if ($this->_getConfig('dbSetup')['clean'] === true) {
+            if (isset($dbSetupConfig['clean']) && $dbSetupConfig['clean'] === true) {
                 TestSetup::cleanseDb($dbConnection);
             }
 
@@ -243,7 +245,7 @@ class Craft extends Yii2
             }
 
             // Install the db from install.php
-            if ($this->_getConfig('dbSetup')['setupCraft'] === true) {
+            if (isset($dbSetupConfig['setupCraft']) && $dbSetupConfig['setupCraft'] === true) {
                 TestSetup::setupCraftDb($dbConnection, $this);
             }
 
