@@ -10,9 +10,9 @@ namespace craft\console\controllers;
 use Craft;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
+use craft\console\Controller;
 use craft\db\Table;
 use craft\errors\MissingAssetException;
-use yii\console\Controller;
 use yii\console\ExitCode;
 use yii\helpers\Console;
 

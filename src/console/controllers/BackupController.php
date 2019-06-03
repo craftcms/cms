@@ -10,7 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
-use yii\console\Controller;
+use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**
