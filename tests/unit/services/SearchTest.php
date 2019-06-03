@@ -168,7 +168,7 @@ class SearchTest extends Unit
 
             // User4 goes first as it has both user and someemail keywords
             [['user4', 'user1', 'user2', 'user3'], ['user1', 'user2', 'user3', 'user4'], 'user OR someemail', true, 1, false],
-            [['user4', 'user1'], ['user1', 'user2', 'user3', 'user4'],'someemail OR -firstName:*', true, 1, false],
+            [['user4', 'user1'], ['user1', 'user2', 'user3', 'user4'],'someemail OR -firstname:*', true, 1, false],
         ];
     }
 
