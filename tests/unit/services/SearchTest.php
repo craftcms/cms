@@ -202,7 +202,7 @@ class SearchTest extends Unit
                 [
                     ['identifier' => 'user4', 'score' => 1.6666666666666665],
                     ['identifier' => 'user1', 'score' => 0.0],
-                ],['user1', 'user2', 'user3', 'user4'],'someemail OR -firstName:*', true, 1
+                ],['user1', 'user2', 'user3', 'user4'],'someemail OR -firstname:*', true, 1
             ],
             [
                 [
