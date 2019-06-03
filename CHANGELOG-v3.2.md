@@ -63,6 +63,7 @@
 - Added `craft\events\RegisterPreviewTargetsEvent`.
 - Added `craft\events\RevisionEvent`.
 - Added `craft\helpers\Component::validateComponentClass()`.
+- Added `craft\helpers\ElementHelper::isDraftOrRevision()`.
 - Added `craft\helpers\ElementHelper::rootElement()`.
 - Added `craft\models\Section::$propagationMethod`.
 - Added `craft\services\Drafts`, accessible via `Craft::$app->drafts`.

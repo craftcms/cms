@@ -10,6 +10,7 @@
 - Added `craft\base\Field::getSortOption()`.
 - Added `craft\base\SortableFieldInterface`, which can be implemented by field classes that should be sortable in element indexes.
 - Added `craft\errors\MissingAssetException`.
+- Added `craft\helpers\ElementHelper::isDraftOrRevision()`.
 - Added `craft\helpers\ElementHelper::rootElement()`.
 
 ### Changed

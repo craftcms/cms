@@ -305,6 +305,19 @@ class ElementHelper
     }
 
     /**
+     * Returns whether the given element (or its root element if a block element) is a draft or revision.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     */
+    public static function isDraftOrRevision(ElementInterface $element): bool
+    {
+        /** @var Element $root */
+        $root = ElementHelper::rootElement($element);
+        return $root->draftId || $root->revisionId;
+    }
+
+    /**
      * Given an array of elements, will go through and set the appropriate "next"
      * and "prev" elements on them.
      *
