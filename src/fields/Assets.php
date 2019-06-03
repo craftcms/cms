@@ -16,7 +16,9 @@ use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
 use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\web\UploadedFile;
@@ -405,13 +407,21 @@ class Assets extends BaseRelationField
         if (!$element->propagating) {
             $assetsService = Craft::$app->getAssets();
 
+            // Figure out what we're working with
+            $isDraftOrRevision = $element && $element->id && ElementHelper::isDraftOrRevision($element);
+
+            $getTargetFolderId = function() use ($element, $isDraftOrRevision): int {
+                static $targetFolderId;
+                return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, !$isDraftOrRevision);
+            };
+
             // Were there any uploaded files?
             $uploadedFiles = $this->_getUploadedFiles($element);
 
             $query = $element->getFieldValue($this->handle);
 
             if (!empty($uploadedFiles)) {
-                $targetFolderId = $this->_determineUploadFolderId($element);
+                $targetFolderId = $getTargetFolderId();
 
                 // Convert them to assets
                 $assetIds = [];
@@ -457,36 +467,22 @@ class Assets extends BaseRelationField
             $assets = $query->all();
 
             if (!empty($assets)) {
-                $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element);
-
-                // Figure out which (if any) we need to move into place
-                $assetsToMove = [];
-
-                if ($this->useSingleFolder) {
-                    // Move only those Assets that have had their folder changed.
-                    foreach ($assets as $asset) {
-                        if ($targetFolderId != $asset->folderId) {
-                            $assetsToMove[] = $asset;
-                        }
-                    }
+                // Only enforce the single upload folder setting if this isn't a draft or revision
+                if ($this->useSingleFolder && !$isDraftOrRevision) {
+                    $targetFolderId = $getTargetFolderId();
+                    $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
+                        return $asset->folderId != $targetFolderId;
+                    });
                 } else {
-                    $assetIds = [];
-
-                    foreach ($assets as $elementFile) {
-                        $assetIds[] = $elementFile->id;
-                    }
-
                     // Find the files with temp sources and just move those.
-                    $query = Asset::find();
-                    Craft::configure($query, [
-                        'id' => $assetIds,
-                        'volumeId' => ':empty:'
-                    ]);
-                    $assetsToMove = $query->all();
+                    $assetsToMove = Asset::find()
+                        ->id(ArrayHelper::getColumn($assets, 'id'))
+                        ->volumeId(':empty:')
+                        ->all();
                 }
 
-                if (!empty($assetsToMove) && !empty($targetFolderId)) {
-                    $folder = $assetService->getFolderById($targetFolderId);
+                if (!empty($assetsToMove)) {
+                    $folder = $assetsService->getFolderById($getTargetFolderId());
 
                     // Resolve all conflicts by keeping both
                     foreach ($assetsToMove as $asset) {
@@ -664,10 +660,7 @@ class Assets extends BaseRelationField
         } else {
             // Prepare the path by parsing tokens and normalizing slashes.
             try {
-                $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element, [
-                    'id' => $element->getSourceId(),
-                    'uid' => $element->getSourceUid(),
-                ]);
+                $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
             } catch (\Throwable $e) {
                 throw new InvalidSubpathException($subpath, null, 0, $e);
             }

@@ -16,6 +16,8 @@
 ### Changed
 - It’s now possible to preview to preview element revisions.
 - It’s now possible to pass a `behaviors` key to the `$newAttributes` argument of `craft\services\Elements::duplicateElement()`, to preattach behaviors to the cloned element before it’s saved.
+- The “Restrict uploads to a single folder?” setting on Assets fields is no longer enforced when saving a draft or revision.
+- Assets fields no longer create new dynamic upload folders when saving a draft or revision.
 - `craft\services\Assets::getUserTemporaryUploadFolder()` now returns the current user’s temporary upload folder by default if no user is provided.
 
 ### Deprecated
