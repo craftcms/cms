@@ -31,7 +31,6 @@ class GqlTest extends Unit
 
     protected function _after()
     {
-        Craft::$app->getGql()->flushCaches();
     }
 
     // Tests
