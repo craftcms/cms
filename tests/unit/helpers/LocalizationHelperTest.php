@@ -76,20 +76,6 @@ class LocalizationHelperTest extends Unit
     }
 
     /**
-     *
-     */
-    public function testNumberNormalizationCustomLocale()
-    {
-        $locale = null;
-        foreach (Craft::$app->getI18n()->getAllLocaleIds() as $localeId) {
-            if ($localeId !== Craft::$app->language) {
-                $locale = $localeId;
-            }
-        }
-
-        $this->assertSame('29999', Localization::normalizeNumber('2,99,99', $locale));
-    }
-    /**
      * @dataProvider localeDataDataProvider
      *
      * @param $result
