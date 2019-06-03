@@ -78,7 +78,7 @@ before_script:
   - yes | pecl install imagick
 
   # copy the .env database
-  - cp tests/.env.test.$DB tests/.env
+  - cp tests/.env.example.$DB tests/.env
 
 script:
   - |
