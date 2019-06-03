@@ -112,7 +112,7 @@ class MailerTest extends TestCase
 
         $variables = $this->tester->grabLastSentEmail()->variables;
 
-        $this->assertSame('1', $variables['user']->id);
+        $this->assertSame(1, $variables['user']->id);
         $this->assertSame('https://craftcms.com', $variables['link']);
     }
 

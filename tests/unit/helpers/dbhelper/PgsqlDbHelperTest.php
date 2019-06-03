@@ -12,6 +12,7 @@ use Craft;
 use craft\db\pgsql\Schema;
 use craft\helpers\Db;
 use UnitTester;
+use yii\base\Exception;
 use yii\base\NotSupportedException;
 
 /**
@@ -82,10 +83,11 @@ class PgsqlDbHelperTest extends Unit
      *
      * @param $result
      * @param $input
+     * @throws Exception
      */
     public function testGetTextualColumnTypeByContentLength($result, $input)
     {
-        $textualCapacity = Db::getTextualColumnStorageCapacity($input);
+        $textualCapacity = Db::getTextualColumnTypeByContentLength((int)$input);
         $this->assertSame($result, $textualCapacity);
     }
 
