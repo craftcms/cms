@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
@@ -287,6 +288,20 @@ class ElementHelper
         }
 
         return $siteIds;
+    }
+
+    /**
+     * Returns the root element of a given element.
+     *
+     * @param ElementInterface $element
+     * @return ElementInterface
+     */
+    public static function rootElement(ElementInterface $element): ElementInterface
+    {
+        if ($element instanceof BlockElementInterface) {
+            return static::rootElement($element->getOwner());
+        }
+        return $element;
     }
 
     /**

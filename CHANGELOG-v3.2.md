@@ -33,6 +33,7 @@
 - Jobs can new set progress labels, which will be shown below their description and progress bar in the queue HUD. ([#1931](https://github.com/craftcms/cms/pull/1931))
 - Added the `_layouts/element` template, which can be extended by element edit pages that wish to support drafts, revisions, and content previewing.
 - Added the `_special/sitepicker` template.
+- Added `craft\base\BlockElementInterface`.
 - Added `craft\base\Element::EVENT_AFTER_PROPAGATE`.
 - Added `craft\base\Element::EVENT_REGISTER_PREVIEW_TARGETS`.
 - Added `craft\base\Element::previewTargets()`.
@@ -62,6 +63,7 @@
 - Added `craft\events\RegisterPreviewTargetsEvent`.
 - Added `craft\events\RevisionEvent`.
 - Added `craft\helpers\Component::validateComponentClass()`.
+- Added `craft\helpers\ElementHelper::rootElement()`.
 - Added `craft\models\Section::$propagationMethod`.
 - Added `craft\services\Drafts`, accessible via `Craft::$app->drafts`.
 - Added `craft\services\Elements::propagateElements()` along with `EVENT_BEFORE_PROPAGATE_ELEMENTS`, `EVENT_AFTER_PROPAGATE_ELEMENTS`, `EVENT_BEFORE_PROPAGATE_ELEMENT`, and `EVENT_AFTER_PROPAGATE_ELEMENT` events. ([#4139](https://github.com/craftcms/cms/issues/4139))

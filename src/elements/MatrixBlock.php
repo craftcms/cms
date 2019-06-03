@@ -8,6 +8,7 @@
 namespace craft\elements;
 
 use Craft;
+use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Table;
@@ -26,12 +27,12 @@ use yii\base\InvalidConfigException;
 /**
  * MatrixBlock represents a matrix block element.
  *
- * @property ElementInterface|null $owner the owner
+ * @property ElementInterface $owner the owner
  * @property MatrixBlockType $type The block type
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class MatrixBlock extends Element
+class MatrixBlock extends Element implements BlockElementInterface
 {
     // Static
     // =========================================================================
@@ -216,7 +217,13 @@ class MatrixBlock extends Element
             return [$this->ownerSiteId];
         }
 
-        if (($owner = $this->getOwner()) || $this->duplicateOf) {
+        try {
+            $owner = $this->getOwner();
+        } catch (InvalidConfigException $e) {
+            $owner = null;
+        }
+
+        if ($owner || $this->duplicateOf) {
             // Just send back an array of site IDs -- don't pass along enabledByDefault configs
             $siteIds = [];
 
@@ -260,26 +267,23 @@ class MatrixBlock extends Element
     }
 
     /**
-     * Returns the owner.
-     *
-     * @return ElementInterface|null
+     * @inheritdoc
+     * @throws InvalidConfigException
      */
-    public function getOwner()
+    public function getOwner(): ElementInterface
     {
-        if ($this->_owner !== null) {
-            return $this->_owner !== false ? $this->_owner : null;
+        if ($this->_owner === null) {
+            if ($this->ownerId === null) {
+                throw new InvalidConfigException('Matrix block is missing its owner ID');
+            }
+
+            if (($this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId)) === null) {
+                $this->_owner = false;
+            }
         }
 
-        if ($this->ownerId === null) {
-            return null;
-        }
-
-        if (($this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId)) === null) {
-            // Be forgiving of invalid ownerId's in this case, since the field
-            // could be in the process of being saved to a new element/site
-            $this->_owner = false;
-
-            return null;
+        if ($this->_owner === false) {
+            throw new InvalidConfigException('Invalid owner ID: ' . $this->ownerId);
         }
 
         return $this->_owner;
@@ -371,9 +375,11 @@ class MatrixBlock extends Element
     public function getHasFreshContent(): bool
     {
         // Defer to the owner element
-        $owner = $this->getOwner();
-
-        return $owner ? $owner->getHasFreshContent() : false;
+        try {
+            return $this->getOwner()->getHasFreshContent();
+        } catch (InvalidConfigException $e) {
+            return false;
+        }
     }
 
     // Events
