@@ -121,7 +121,6 @@
 - Added `craft\services\Drafts`, accessible via `Craft::$app->drafts`.
 - Added `craft\services\Revisions`, accessible via `Craft::$app->revisions`.
 - Added `craft\web\UrlManager::$checkToken`.
-- Added the `Craft.escapeRegex()` JavaScript method.
 - Added the `Craft.parseUrl()` JavaScript method.
 - Added the `Craft.isSameHost()` JavaScript method.
 - Added the `Craft.DraftEditor` JavaScript class.
@@ -257,10 +256,12 @@
 
 ### Added
 - Added the `restore` command, which restores a database backup.
+- Added the `Craft.escapeRegex()` JavaScript method.
 
 ### Changed
 - Asset indexes now sort assets by Date Uploaded in descending order by default. ([#1153](https://github.com/craftcms/cms/issues/1153))
 - `craft\db\Paginator` no longer assumes that the application’s database connection should be used.
+- Updated Twig to 2.11. ([#4342](https://github.com/craftcms/cms/issues/4342))
 
 ### Fixed
 - Fixed a bug where the Status menu wasn’t visible for the “All users” source on user indexes. ([#4306](https://github.com/craftcms/cms/pull/4306))
@@ -270,6 +271,8 @@
 - Fixed a bug where publishing a Single entry’s draft, or reverting a Single entry to a prior version, would overwrite its title to the section name. ([#4323](https://github.com/craftcms/cms/pull/4323))
 - Fixed a bug where Craft wasn’t invalidating existing asset transforms when changing the dimensions of a named transform.
 - Fixed a bug where `craft\services\Fields::getFieldsByElementType()` would return duplicate results if a field was used in more than one field layout for the element type. ([#4336](https://github.com/craftcms/cms/issues/4336))
+- Fixed a bug where Craft wasn’t respecting the `allowUppercaseInSlug` config setting when generating slugs in the Control Panel. ([#4330](https://github.com/craftcms/cms/issues/4330))
+- Fixed a bug where Control Panel Ajax requests weren’t working if a custom `pathParam` config setting value was set. ([#4334](https://github.com/craftcms/cms/issues/4334))
 
 ## 3.1.28 - 2019-05-21
 
@@ -358,7 +361,7 @@
 - Craft now saves new entry versions every time an entry is saved, unless it’s being propagated or resaved.
 - `users/save-user` and `users/start-elevated-session` requests now check for a `currentPassword` body param in addition to `password`, when looking for the user’s current password. ([#4169](https://github.com/craftcms/cms/issues/4169))
 - `craft\services\Path::getStoragePath()` now has a `$create` argument.
-- Updated Twig to ~2.8.1.
+- Updated Twig to 2.8.
 
 ### Fixed
 - Fixed an error where re-saving a site would reset its sorting order. ([#4147](https://github.com/craftcms/cms/issues/4147))
@@ -378,7 +381,7 @@
 
 ### Changed
 - When creating a new site, global sets are now propagated to it before other element types. ([#3446](https://github.com/craftcms/cms/issues/3446))
-- Locked Twig down to ~2.7.2, to avoid a bug in 2.8.0. ([twigphp/Twig#2942](https://github.com/twigphp/Twig/issues/2942))
+- Locked Twig down to 2.7, to avoid a bug in 2.8.0. ([twigphp/Twig#2942](https://github.com/twigphp/Twig/issues/2942))
 
 ### Fixed
 - Fixed an error that occurred when installing a missing plugin from the Settings → Plugins page. ([#4140](https://github.com/craftcms/cms/issues/4140))
@@ -508,7 +511,7 @@
 ### Changed
 - `Craft::parseEnv()` will now boolean values for environment variables set to `true` or `false`. ([#3975](https://github.com/craftcms/cms/issues/3975))
 - Nested project config keys are no longer sorted alphabetically.
-- Craft now requires Twig ^2.7.2.
+- Craft now requires Twig 2.7+.
 
 ### Fixed
 - Fixed a SQL error that occurred when using a token with a usage limit, if using PostgreSQL. ([#3969](https://github.com/craftcms/cms/issues/3969))
@@ -522,7 +525,7 @@
 ## 3.1.17.2 - 2019-03-12
 
 ### Changed
-- Craft now requires Twig ~2.6.2.
+- Craft now requires Twig 2.6.
 
 ## 3.1.17.1 - 2019-03-08
 
@@ -1071,7 +1074,7 @@
 ## 3.0.41.1 - 2019-03-12
 
 ### Changed
-- Craft now requires Twig ~2.6.2.
+- Craft now requires Twig 2.6.
 
 ## 3.0.41 - 2019-02-22
 
@@ -1539,7 +1542,7 @@
 - The `{% js %}` tag now supports the following position params: `at POS_HEAD`, `at POS_BEGIN`, `at POS_END`, `on POS_READY`, and `on POS_LOAD` (e.g. `{% js at POS_END %}`).
 - Craft once again checks for `X-Forwarded-For` headers when determining the user’s IP. ([#3036](https://github.com/craftcms/cms/issues/3036))
 - Leading/trailing whitespace characters are now stripped from element titles on save. ([#3020](https://github.com/craftcms/cms/issues/3020))
-- Updated svg-sanitize to ~0.9.0.
+- Updated svg-sanitize to 0.9.
 
 ### Deprecated
 - Deprecated `craft\db\Connection::createFromConfig()`. `craft\helpers\App::dbConfig()` should be used instead.

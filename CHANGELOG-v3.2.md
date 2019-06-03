@@ -72,7 +72,6 @@
 - Added `craft\services\Revisions`, accessible via `Craft::$app->revisions`.
 - Added `craft\web\Request::getIsLoginRequest()` and `craft\console\Request::getIsLoginRequest()`.
 - Added `craft\web\UrlManager::$checkToken`.
-- Added the `Craft.escapeRegex()` JavaScript method.
 - Added the `Craft.parseUrl()` JavaScript method.
 - Added the `Craft.isSameHost()` JavaScript method.
 - Added the `Craft.DraftEditor` JavaScript class.

@@ -249,6 +249,7 @@ JS;
         $data = [
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
+            'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
             'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
@@ -270,6 +271,7 @@ JS;
             'pageNum' => $request->getPageNum(),
             'pageTrigger' => $generalConfig->getPageTrigger(),
             'path' => $request->getPathInfo(),
+            'pathParam' => $generalConfig->pathParam,
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
             'primarySiteLanguage' => $primarySite->language ?? null,
             'Pro' => Craft::Pro,
