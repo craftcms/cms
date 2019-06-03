@@ -403,6 +403,8 @@ class Assets extends BaseRelationField
         // Everything has been handled for propagating fields already.
         /** @var Element $element */
         if (!$element->propagating) {
+            $assetsService = Craft::$app->getAssets();
+
             // Were there any uploaded files?
             $uploadedFiles = $this->_getUploadedFiles($element);
 
@@ -423,7 +425,7 @@ class Assets extends BaseRelationField
                         FileHelper::writeToFile($tempPath, $file['data']);
                     }
 
-                    $folder = Craft::$app->getAssets()->getFolderById($targetFolderId);
+                    $folder = $assetsService->getFolderById($targetFolderId);
                     $asset = new Asset();
                     $asset->tempFilePath = $tempPath;
                     $asset->filename = $file['filename'];
@@ -484,13 +486,12 @@ class Assets extends BaseRelationField
                 }
 
                 if (!empty($assetsToMove) && !empty($targetFolderId)) {
-                    $assetService = Craft::$app->getAssets();
                     $folder = $assetService->getFolderById($targetFolderId);
 
                     // Resolve all conflicts by keeping both
                     foreach ($assetsToMove as $asset) {
                         $asset->avoidFilenameConflicts = true;
-                        $assetService->moveAsset($asset, $folder);
+                        $assetsService->moveAsset($asset, $folder);
                     }
                 }
             }
