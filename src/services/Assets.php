@@ -946,23 +946,32 @@ class Assets extends Component
      * Return the current user's temporary upload folder.
      *
      * @return VolumeFolder
+     * @deprecated in 3.2. Use [[getUserTemporaryUploadFolder()]] instead.
      */
     public function getCurrentUserTemporaryUploadFolder()
     {
-        return $this->getUserTemporaryUploadFolder(Craft::$app->getUser()->getIdentity());
+        return $this->getUserTemporaryUploadFolder();
     }
 
     /**
-     * Get the user's temporary upload folder.
+     * Returns the given user's temporary upload folder.
      *
-     * @param User|null $userModel
+     * If no user is provided, the currently-logged in user will be used (if there is one), or a folder named after
+     * the current session ID.
+     *
+     * @param User|null $user
      * @return VolumeFolder
      * @throws VolumeException
      */
-    public function getUserTemporaryUploadFolder(User $userModel = null)
+    public function getUserTemporaryUploadFolder(User $user = null)
     {
-        if ($userModel) {
-            $folderName = 'user_' . $userModel->id;
+        if ($user === null) {
+            // Default to the logged-in user, if there is one
+            $user = Craft::$app->getUser()->getIdentity();
+        }
+
+        if ($user) {
+            $folderName = 'user_' . $user->id;
         } else {
             // A little obfuscation never hurt anyone
             $folderName = 'user_' . sha1(Craft::$app->getSession()->id);

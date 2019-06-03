@@ -201,7 +201,7 @@ class Asset extends Element
             !Craft::$app->getRequest()->getIsConsoleRequest() &&
             !Craft::$app->getProjectConfig()->get('assets.tempVolumeUid')
         ) {
-            $temporaryUploadFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
+            $temporaryUploadFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
             $temporaryUploadFolder->name = Craft::t('app', 'Temporary Uploads');
             $sourceList[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder, false);
         }

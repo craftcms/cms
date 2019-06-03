@@ -96,6 +96,7 @@
 - `craft\queue\BaseJob::setProgress()` now has a `$label` argument.
 - `craft\queue\jobs\PropagateElements` no longer needs to be configured with a `siteId`, and no longer propagates elements to sites if they were updated in the target site more recently than the source site.
 - `craft\queue\QueueInterface::setProgress()` now has a `$label` argument.
+- `craft\services\Assets::getUserTemporaryUploadFolder()` now returns the current user’s temporary upload folder by default if no user is provided.
 - `craft\services\Elements::deleteElement()` now has a `$hardDelete` argument.
 - `craft\services\Elements::deleteElement()` now has a `$hardDelete` argument. ([#3392](https://github.com/craftcms/cms/issues/3392))
 - `craft\services\Elements::getElementById()` now has a `$criteria` argument.
@@ -126,6 +127,7 @@
 - Deprecated `craft\models\EntryDraft`.
 - Deprecated `craft\models\EntryVersion`.
 - Deprecated `craft\models\Section::$propagateEntries`. Use `$propagationMethod` instead.
+- Deprecated `craft\services\Assets::getCurrentUserTemporaryUploadFolder()`.
 - Deprecated `craft\services\EntryRevisions`.
 - Deprecated `craft\web\Request::getIsLivePreview()`.
 - Deprecated `craft\web\Request::getIsSingleActionRequest()` and `craft\console\Request::getIsSingleActionRequest()`.

@@ -772,8 +772,7 @@ class Assets extends BaseRelationField
             // If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}
             // so use the user's upload folder instead
             if ($element === null || !$element->id || !$element->enabled || !$createDynamicFolders) {
-                $userModel = Craft::$app->getUser()->getIdentity();
-                $userFolder = $assets->getUserTemporaryUploadFolder($userModel);
+                $userFolder = $assets->getUserTemporaryUploadFolder();
                 $folderId = $userFolder->id;
             } else {
                 // Existing element, so this is just a bad subpath

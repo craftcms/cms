@@ -15,6 +15,10 @@
 ### Changed
 - It’s now possible to preview to preview element revisions.
 - It’s now possible to pass a `behaviors` key to the `$newAttributes` argument of `craft\services\Elements::duplicateElement()`, to preattach behaviors to the cloned element before it’s saved.
+- `craft\services\Assets::getUserTemporaryUploadFolder()` now returns the current user’s temporary upload folder by default if no user is provided.
+
+### Deprecated
+- Deprecated `craft\services\Assets::getCurrentUserTemporaryUploadFolder()`.
 
 ### Fixed
 - Fixed a bug where Assets fields configured with `{id}` in the subpath would move files to folders named after the draft ID rather than the source element ID. ([#4329](https://github.com/craftcms/cms/issues/4329))
