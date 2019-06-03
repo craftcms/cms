@@ -41,7 +41,11 @@ abstract class BaseResolver
 
         foreach ($arguments as $key => &$value) {
             if (in_array($key, $arrayable, true) && !empty($value) && !is_array($value)) {
-                $value = StringHelper::split($value);
+                $array = StringHelper::split($value);
+
+                if (count($array) > 1) {
+                    $value = $array;
+                }
             }
         }
 
