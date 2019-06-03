@@ -101,11 +101,11 @@ class ImagesTest extends Unit
     }
 
     /**
-     * 
+     *
      */
     public function testRotateImageByExifData()
     {
-        $this->_failIfNoImagick();
+        $this->_skipIfNoImagick();
 
         $this->images->cleanImage($this->sandboxPath.'image-rotated-180.jpg');
         $image = new Imagick($this->sandboxPath.'image-rotated-180.jpg');
@@ -117,7 +117,7 @@ class ImagesTest extends Unit
      */
     public function testCleanImageRotatesOrientation()
     {
-        $this->_failIfNoImagick();
+        $this->_skipIfNoImagick();
 
         $this->images->cleanImage($this->sandboxPath.'image-rotated-180.jpg');
         $currentExif = $this->images->getExifData($this->sandboxPath.'image-rotated-180.jpg');
@@ -130,7 +130,7 @@ class ImagesTest extends Unit
      */
     public function testCleanImageDoesntDoGifWhenSettingDisabled()
     {
-        $this->_failIfNoImagick();
+        $this->_skipIfNoImagick();
 
         Craft::$app->getConfig()->getGeneral()->transformGifs = false;
 
@@ -221,10 +221,10 @@ class ImagesTest extends Unit
     /**
      *
      */
-    private function _failIfNoImagick()
+    private function _skipIfNoImagick()
     {
         if (!($this->images->getIsImagick() && method_exists(Imagick::class, 'getImageOrientation'))) {
-            $this->fail('Need imagick to test this function. Please install it.');
+            $this->markTestSkipped('Need Imagick to test this function.');
         }
     }
 }

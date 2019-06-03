@@ -112,11 +112,16 @@ class ImageHelperTest extends Unit
     /**
      * @dataProvider imageSizeDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param array $result
+     * @param string $input
+     * @param bool $skipIfGd
      */
-    public function testImageSize($result, $input)
+    public function testImageSize($result, $input, $skipIfGd)
     {
+        if ($skipIfGd && Craft::$app->getImages()->getIsGd()) {
+            $this->markTestSkipped('Need Imagick to test this function.');
+        }
+
         $imageSize = Image::imageSize($input);
         $this->assertSame($result, $imageSize);
     }
@@ -230,10 +235,10 @@ class ImageHelperTest extends Unit
     public function imageSizeDataProvider(): array
     {
         return [
-            [[960, 640], dirname(__FILE__, 3).'/_data/assets/files/background.jpg'],
-            [[200, 200], dirname(__FILE__, 3).'/_data/assets/files/google.png'],
-            [[1728, 2376], dirname(__FILE__, 3).'/_data/assets/files/random.tiff'],
-            [[100.0, 100.0], dirname(__FILE__, 3).'/_data/assets/files/gng.svg'],
+            [[960, 640], dirname(__FILE__, 3).'/_data/assets/files/background.jpg', false],
+            [[200, 200], dirname(__FILE__, 3).'/_data/assets/files/google.png', false],
+            [[1728, 2376], dirname(__FILE__, 3).'/_data/assets/files/random.tiff', true],
+            [[100.0, 100.0], dirname(__FILE__, 3).'/_data/assets/files/gng.svg', false],
         ];
     }
 
