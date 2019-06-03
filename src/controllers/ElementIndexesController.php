@@ -385,14 +385,13 @@ class ElementIndexesController extends BaseElementsController
             $responseData['actionsFootHtml'] = $view->getBodyHtml();
         }
 
-        $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
         $showCheckboxes = !empty($this->actions);
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
 
         $responseData['html'] = $elementType::indexHtml(
             $this->elementQuery,
-            $disabledElementIds,
+            $this->disabledElementIds(),
             $this->viewState,
             $this->sourceKey,
             $this->context,
@@ -404,6 +403,19 @@ class ElementIndexesController extends BaseElementsController
         $responseData['footHtml'] = $view->getBodyHtml();
 
         return $responseData;
+    }
+
+    /**
+     * @return array|null
+     */
+    protected function disabledElementIds()
+    {
+        $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
+        if (is_string($disabledElementIds)) {
+            $disabledElementIds = explode(",", $disabledElementIds);
+        }
+
+        return $disabledElementIds;
     }
 
     /**
