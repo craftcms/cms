@@ -8,7 +8,6 @@
 
 namespace craftunit\fixtures;
 
-use craft\helpers\FileHelper;
 use craft\test\fixtures\elements\AssetFixture;
 
 /**

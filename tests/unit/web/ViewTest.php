@@ -594,7 +594,7 @@ class ViewTest extends TestCase
             $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[{$category}][{$message}] = {$translation};";
         }
 
-        return "if (typeof Craft.translations[{$category}] === 'undefined') {".PHP_EOL."    Craft.translations[{$category}] = {};".PHP_EOL."}".PHP_EOL.$js;
+        return "if (typeof Craft.translations[{$category}] === 'undefined') {".PHP_EOL."    Craft.translations[{$category}] = {};".PHP_EOL. '}' .PHP_EOL.$js;
     }
 
     /**
