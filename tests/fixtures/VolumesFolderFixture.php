@@ -10,7 +10,7 @@ namespace craftunit\fixtures;
 use Craft;
 use craft\records\VolumeFolder;
 use craft\services\Volumes;
-use yii\test\ActiveFixture;
+use craft\test\Fixture;
 
 /**
  * Class VolumeFolderFixture.
@@ -19,7 +19,7 @@ use yii\test\ActiveFixture;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.1
  */
-class VolumesFolderFixture extends ActiveFixture
+class VolumesFolderFixture extends Fixture
 {
     // Properties
     // =========================================================================
