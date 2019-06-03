@@ -42,9 +42,14 @@ class LocalizationHelperTest extends Unit
      *
      * @param $result
      * @param $input
+     * @param bool $skipIfNoIntl
      */
-    public function testLanguageNormalization($result, $input)
+    public function testLanguageNormalization($result, $input, $skipIfNoIntl)
     {
+        if ($skipIfNoIntl && !Craft::$app->getI18n()->getIsIntlLoaded()) {
+            $this->markTestSkipped('Need the Intl extension to test this function.');
+        }
+
         $normalized = Localization::normalizeLanguage($input);
         $this->assertSame($result, $normalized);
     }
@@ -116,13 +121,12 @@ class LocalizationHelperTest extends Unit
     public function languageNormalizationDataProvider(): array
     {
         return [
-            ['nl', 'nl'],
-            ['en-US', 'en-US'],
-            ['af', 'af'],
-            ['af-NA', 'af-NA'],
-            ['en-AG', 'en-ag'],
-            ['en-AG', 'EN-AG'],
-
+            ['nl', 'nl', false],
+            ['en-US', 'en-US', false],
+            ['af', 'af', true],
+            ['af-NA', 'af-NA', true],
+            ['en-AG', 'en-ag', true],
+            ['en-AG', 'EN-AG', true],
         ];
     }
 
