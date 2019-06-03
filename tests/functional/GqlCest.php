@@ -16,21 +16,29 @@ class GqlCest
     {
     }
 
-    // tests
+    /**
+     * Test whether missing query parameter is handled correctly.
+     */
     public function forgetQueryParameter(FunctionalTester $I)
     {
-        // If this suite is ran separately, somethis this test fails for no reason.
+        // If this suite is ran separately, sometimes this test fails for no reason.
         // ¯\_(ツ)_/¯
         $I->amOnPage('?action=gql');
         $I->see('Request missing required param');
     }
 
+    /**
+     * Test whether malformed query parameter is handled correctly.
+     */
     public function provideMalformedQueryParameter(FunctionalTester $I)
     {
         $I->amOnPage('?action=gql&query=bogus}');
         $I->see('Syntax Error');
     }
 
+    /**
+     * Test whether all query types work correctly
+     */
     public function testQuerying(FunctionalTester $I)
     {
         $queryTypes = [
@@ -47,6 +55,9 @@ class GqlCest
         }
     }
 
+    /**
+     * Test whether querying for wrong gql field returns the correct error.
+     */
     public function testWrongGqlField(FunctionalTester $I)
     {
         $parameter = 'bogus';
@@ -54,6 +65,9 @@ class GqlCest
         $I->see('"Cannot query field \"' . $parameter . '\"');
     }
 
+    /**
+     * Test whether querying with wrong parameters returns the correct error.
+     */
     public function testWrongGqlQueryParameter(FunctionalTester $I)
     {
         $resp = $I->amOnPage('?action=gql&query={queryEntries(limit:[5,2]){title}}');
