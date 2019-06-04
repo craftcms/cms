@@ -14,8 +14,11 @@ use yii\console\ExitCode;
 use Craft;
 
 /**
- * @internal We use this class to test the `craft\test\CommandTest` functionality.
+ * Clear caches via the CLI
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.2
  */
 class TestController extends Controller
 {
