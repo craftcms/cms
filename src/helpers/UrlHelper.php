@@ -577,8 +577,10 @@ class UrlHelper
             $url = $baseUrl;
 
             if ($path) {
+                // Prepend it to the params array
                 $pathParam = $generalConfig->pathParam;
-                $params[$pathParam] = $path;
+                ArrayHelper::remove($params, $pathParam);
+                $params = array_merge([$pathParam => $path], $params);
             }
         }
 
