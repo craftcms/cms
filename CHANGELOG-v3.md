@@ -33,6 +33,7 @@
 - Fixed an error that could occur when `craft\helpers\UrlHelper` methods were called on console requests.
 - Fixed a bug where the `$creatorId` argument passed to `craft\services\Revisions::revertToRevision()` was being ignored.
 - Fixed a bug where entry drafts weren’t saving custom field values that didn’t exist in the source entry’s field layout. ([#4352](https://github.com/craftcms/cms/issues/4352))
+- Fixed a bug where initial draft creation would fail if something was edited before a slug had been assigned.
 - Fixed a bug where Craft could redirect to a 404 after updating an entry.
 
 ## 3.2.0-alpha.7 - 2019-05-28
