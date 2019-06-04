@@ -11,6 +11,7 @@ namespace craft\test\mockclasses\components;
 use craft\base\Component;
 use yii\base\Event;
 use stdClass;
+
 /**
  * Class EventTriggeringComponent.
  *
