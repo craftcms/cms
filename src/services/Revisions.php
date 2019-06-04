@@ -221,7 +221,7 @@ class Revisions extends Component
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REVERT_TO_REVISION)) {
             $this->trigger(self::EVENT_BEFORE_REVERT_TO_REVISION, new RevisionEvent([
                 'source' => $source,
-                'creatorId' => $revision->creatorId,
+                'creatorId' => $creatorId,
                 'revisionNum' => $revision->revisionNum,
                 'revisionNotes' => $revision->revisionNotes,
                 'revision' => $revision,
@@ -235,6 +235,7 @@ class Revisions extends Component
                 'id' => $source->id,
                 'uid' => $source->uid,
                 'revisionId' => null,
+                'revisionCreatorId' => $creatorId,
                 'revisionNotes' => Craft::t('app', 'Reverted to revision {num}.', ['num' => $revision->revisionNum]),
             ]);
 
@@ -248,7 +249,7 @@ class Revisions extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_REVERT_TO_REVISION)) {
             $this->trigger(self::EVENT_AFTER_REVERT_TO_REVISION, new RevisionEvent([
                 'source' => $newSource,
-                'creatorId' => $revision->creatorId,
+                'creatorId' => $creatorId,
                 'revisionNum' => $revision->revisionNum,
                 'revisionNotes' => $revision->revisionNotes,
                 'revision' => $revision,
