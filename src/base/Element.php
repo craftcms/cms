@@ -170,7 +170,7 @@ abstract class Element extends Component implements ElementInterface
      *     if ($entry->uri === 'pricing') {
      *         $e->route = 'module/pricing/index';
      *     }
-     * }
+     * });
      * ```
      */
     const EVENT_SET_ROUTE = 'setRoute';

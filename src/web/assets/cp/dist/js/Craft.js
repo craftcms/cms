@@ -1,4 +1,4 @@
-/*!   - 2019-05-14 */
+/*!   - 2019-06-04 */
 (function($){
 
 /** global: Craft */
@@ -69,6 +69,17 @@ $.extend(Craft,
          */
         escapeHtml: function(str) {
             return $('<div/>').text(str).html();
+        },
+
+        /**
+         * Escapes special regular expression characters.
+         *
+         * @param {string} str
+         * @return string
+         */
+        escapeRegex: function(str) {
+            // h/t https://stackoverflow.com/a/9310752
+            return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
         },
 
         /**
@@ -202,7 +213,7 @@ $.extend(Craft,
 
                 if (path) {
                     // Does baseUrl already contain a path?
-                    var pathMatch = url.match(/[&\?]p=[^&]+/);
+                    var pathMatch = url.match(new RegExp('[&\?]' + Craft.escapeRegex(Craft.pathParam) + '=[^&]+'));
                     if (pathMatch) {
                         url = url.replace(pathMatch[0], pathMatch[0] + '/' + path);
                         path = '';
@@ -230,8 +241,8 @@ $.extend(Craft,
                 else {
                     // Move the path into the query string params
 
-                    // Is the p= param already set?
-                    if (params && params.substr(0, 2) === 'p=') {
+                    // Is the path param already set?
+                    if (params && params.substr(0, Craft.pathParam.length + 1) === Craft.pathParam + '=') {
                         var basePath,
                             endPath = params.indexOf('&');
 
@@ -251,7 +262,7 @@ $.extend(Craft,
                     }
 
                     // Now move the path into the params
-                    params = 'p=' + path + (params ? '&' + params : '');
+                    params = Craft.pathParam + '=' + path + (params ? '&' + params : '');
                     path = null;
                 }
             }
@@ -4555,8 +4566,14 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
         },
 
         updateTarget: function() {
-            var sourceVal = this.$source.val(),
-                targetVal = this.generateTargetValue(sourceVal);
+            var sourceVal = this.$source.val();
+
+            if (typeof sourceVal === 'undefined') {
+                // The source input may not exist anymore
+                return;
+            }
+
+            var targetVal = this.generateTargetValue(sourceVal);
 
             this.$target.val(targetVal);
             this.$target.trigger('change');
@@ -16982,7 +16999,9 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend(
             sourceVal = sourceVal.replace(/['"‘’“”\[\]\(\)\{\}:]/g, '');
 
             // Make it lowercase
-            sourceVal = sourceVal.toLowerCase();
+            if (!Craft.allowUppercaseInSlug) {
+                sourceVal = sourceVal.toLowerCase();
+            }
 
             if (Craft.limitAutoSlugsToAscii) {
                 // Convert extended ASCII characters to basic ASCII

@@ -685,6 +685,7 @@ class Fields extends Component
                 'fl.type' => $elementType,
                 'fl.dateDeleted' => null,
             ])
+            ->groupBy(['fields.id'])
             ->all();
 
         $fields = [];

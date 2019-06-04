@@ -1,9 +1,8 @@
 # Functions
 
-In addition to the template functions that [Twig comes with](https://twig.symfony.com/doc/functions/index.html), Craft provides a few of its own:
+The following functions are available to Twig templates in Craft:
 
-
-## `actionInput( actionPath )`
+## `actionInput`
 
 A shortcut for outputting a hidden input used to route a POST request to a particular controller and action. This is effectively the same as writing `<input type="hidden" name="action" value="controller/action-name">` directly into a template.
 
@@ -14,7 +13,7 @@ A shortcut for outputting a hidden input used to route a POST request to a parti
 </form>
 ```
 
-## `alias( string )`
+## `alias`
 
 Passes a string through [Craft::getAlias()](api:yii\BaseYii::getAlias()), which will check if the string begins with an [alias](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases). (See [Configuration](../config/README.md#aliases) for more info.)
 
@@ -22,7 +21,13 @@ Passes a string through [Craft::getAlias()](api:yii\BaseYii::getAlias()), which 
 <img src="{{ alias('@assetBaseUrl/images/logo.png') }}">
 ```
 
-## `beginBody()`
+## `attribute`
+
+Accesses a dynamic attribute of a variable.
+
+This works identically to Twig’s core [`attribute`](https://twig.symfony.com/doc/2.x/functions/attribute.html) function.
+
+## `beginBody`
 
 Outputs any scripts and styles that were registered for the “begin body” position. It should be placed right after your `<body>` tag.
 
@@ -35,19 +40,31 @@ Outputs any scripts and styles that were registered for the “begin body” pos
 </body>
 ```
 
-## `ceil( num )`
+## `block`
+
+Prints a block’s output.
+
+This works identically to Twig’s core [`block`](https://twig.symfony.com/doc/2.x/functions/block.html) function.
+
+## `ceil`
 
 Rounds a number up.
 
 ```twig
-{{ ceil(42.1) }} → 43
+{{ ceil(42.1) }}
+{# Output: 43 #}
 ```
 
-## `className( object )`
+## `className`
 
 Returns the fully qualified class name of a given object.
 
-## `clone( object )`
+```twig
+{% set class = className(entry) %}
+{# Result: 'craft\\elements\\Entry' #}
+```
+
+## `clone`
 
 Clones a given object.
 
@@ -56,7 +73,13 @@ Clones a given object.
 {% set articles = clone(query).type('articles') %}
 ```
 
-## `create( type )`
+## `constant`
+
+Returns the constant value for a given string.
+
+This works identically to Twig’s core [`constant`](https://twig.symfony.com/doc/2.x/functions/constant.html) function.
+
+## `create`
 
 Creates a new object instance based on a given class name or object configuration. See <api:Yii::createObject()> for a full explanation of supported arguments.
 
@@ -72,7 +95,7 @@ Creates a new object instance based on a given class name or object configuratio
 }) %}
 ```
 
-## `csrfInput()`
+## `csrfInput`
 
 Returns a hidden CSRF Token input. All sites that have CSRF Protection enabled must include this in each form that submits via POST.
 
@@ -83,7 +106,25 @@ Returns a hidden CSRF Token input. All sites that have CSRF Protection enabled m
 </form>
 ```
 
-## `endBody()`
+## `cycle`
+
+Cycles on an array of values.
+
+This works identically to Twig’s core [`cycle`](https://twig.symfony.com/doc/2.x/functions/cycle.html) function.
+
+## `date`
+
+Converts an argument to a date.
+
+This works identically to Twig’s core [`date`](https://twig.symfony.com/doc/2.x/functions/date.html) function.
+
+## `dump`
+
+Dumps information about a template variable.
+
+This works identically to Twig’s core [`dump`](https://twig.symfony.com/doc/2.x/functions/dump.html) function.
+
+## `endBody`
 
 Outputs any scripts and styles that were registered for the “end body” position. It should be placed right before your `</body>` tag.
 
@@ -96,19 +137,26 @@ Outputs any scripts and styles that were registered for the “end body” posit
 </body>
 ```
 
-## `expression( expression, params, config )`
+## `expression`
 
 Creates and returns a new <api:yii\db\Expression> object, for use in database queries.
 
-## `floor( num )`
+```twig
+{% set entries = craft.entries()
+    .andWhere(expression('[[authorId]] = :authorId', {authorId: currentUser.id}))
+    .all() %}
+```
+
+## `floor`
 
 Rounds a number down.
 
 ```twig
-{{ floor(42.9) }} → 42
+{{ floor(42.9) }}
+{# Output: 42 #}
 ```
 
-## `getenv( name )`
+## `getenv`
 
 Returns the value of an environment variable.
 
@@ -116,11 +164,11 @@ Returns the value of an environment variable.
 {{ getenv('MAPS_API_KEY') }}
 ```
 
-## `parseEnv( str )`
+## `parseEnv`
 
 Checks if a string references an environment variable (`$VARIABLE_NAME`) and/or an alias (`@aliasName`), and returns the referenced value.
 
-## `head()`
+## `head`
 
 Outputs any scripts and styles that were registered for the “head” position. It should be placed right before your `</head>` tag.
 
@@ -131,7 +179,31 @@ Outputs any scripts and styles that were registered for the “head” position.
 </head>
 ```
 
-## `plugin( handle )`
+## `include`
+
+Returns the rendered content of a template.
+
+This works identically to Twig’s core [`include`](https://twig.symfony.com/doc/2.x/functions/include.html) function.
+
+## `max`
+
+Returns the biggest value in an array.
+
+This works identically to Twig’s core [`max`](https://twig.symfony.com/doc/2.x/functions/max.html) function.
+
+## `min`
+
+Returns the lowest value in an array.
+
+This works identically to Twig’s core [`min`](https://twig.symfony.com/doc/2.x/functions/min.html) function.
+
+## `parent`
+
+Returns the parent block’s output.
+
+This works identically to Twig’s core [`parent`](https://twig.symfony.com/doc/2.x/functions/parent.html) function.
+
+## `plugin`
 
 Returns a plugin instance by its handle, or `null` if no plugin is installed and enabled with that handle.
 
@@ -139,11 +211,27 @@ Returns a plugin instance by its handle, or `null` if no plugin is installed and
 {{ plugin('commerce').version }}
 ```
 
-## `redirectInput( url )`
+## `random`
+
+Returns a random value.
+
+This works identically to Twig’s core [`random`](https://twig.symfony.com/doc/2.x/functions/random.html) function.
+
+## `range`
+
+Returns a list containing an arithmetic progression of integers.
+
+This works identically to Twig’s core [`range`](https://twig.symfony.com/doc/2.x/functions/range.html) function.
+
+## `redirectInput`
 
 Shortcut for typing `<input type="hidden" name="redirect" value="{{ url|hash }}">`.
 
-## `seq( name, length, next )`
+```twig
+{{ redirectInput(url) }}
+```
+
+## `seq`
 
 Outputs the next or current number in a sequence, defined by `name`:
 
@@ -167,7 +255,7 @@ To view the current number in the sequence without incrementing it, set the `nex
 <p>{{ seq('hits:' ~ entry.id, next=false) }} views</p>
 ```
 
-## `shuffle( array )`
+## `shuffle`
 
 Randomizes the order of the elements within an array.
 
@@ -183,7 +271,7 @@ Randomizes the order of the elements within an array.
 {% endfor %}
 ```
 
-## `siteUrl( path, params, scheme, siteId )`
+## `siteUrl`
 
 Similar to [url()](#url-path-params-scheme-mustshowscriptname), except _only_ for creating URLs to pages on your site.
 
@@ -200,7 +288,7 @@ The `siteUrl()` function has the following arguments:
 * **`scheme`** – Which scheme the URL should use (`'http'` or `'https'`). The default value depends on whether the current request is served over SSL or not. If not, then the scheme in your Site URL will be used; if so, then `https` will be used.
 * **`siteId`** – The ID of the site that the URL should point to. By default the current site will be used.
 
-## `svg( svg, sanitize, namespace, class )`
+## `svg`
 
 Outputs an SVG document.
 
@@ -240,7 +328,19 @@ You can also specify a custom class name that should be added to the root `<svg>
 {{ svg('@webroot/icons/lemon.svg', class='lemon-icon') }}
 ```
 
-## `url( path, params, scheme, mustShowScriptName )`
+## `source`
+
+Returns the content of a template without rendering it.
+
+This works identically to Twig’s core [`source`](https://twig.symfony.com/doc/2.x/functions/source.html) function.
+
+## `template_from_string`
+
+Loads a template from a string.
+
+This works identically to Twig’s core [`template_from_string`](https://twig.symfony.com/doc/2.x/functions/template_from_string.html) function.
+
+## `url`
 
 Returns a URL.
 

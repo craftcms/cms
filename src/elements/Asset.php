@@ -365,6 +365,7 @@ class Asset extends Element
             'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
+            'defaultSort' => ['dateCreated', 'desc'],
             'data' => [
                 'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:' . $volume->uid),
                 'folder-id' => $folder->id
