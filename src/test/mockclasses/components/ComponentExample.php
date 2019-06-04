@@ -21,6 +21,9 @@ class ComponentExample implements ComponentInterface
     // Public Methods
     // =========================================================================
 
+    /**
+     * @return string
+     */
     public static function displayName(): string
     {
         return 'Component example';
