@@ -90,7 +90,7 @@ class TestsControllerTest extends BaseConsoleTest
             ->confirm('Are you sure you want to generate the tests suite?', true, false)
             ->confirm('Do you want a custom path?', true, false)
             ->prompt('Which path should the "tests/" dir be placed in?', $dstPath)
-            ->stdOut('Test suite generated. Ensure you update your composer file is in accordance with the Craft documentation. "')
+            ->stdOut('Test suite generated. Ensure you update you update your composer dependencies.')
             ->exitCode(ExitCode::OK)
             ->run();
 
