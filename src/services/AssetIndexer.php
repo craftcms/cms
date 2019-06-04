@@ -60,9 +60,7 @@ class AssetIndexer extends Component
     public function prepareIndexList(string $sessionId, int $volumeId, string $directory = ''): array
     {
         try {
-            /**
-             * @var Volume $volume
-             */
+            /** @var Volume $volume */
             $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
             // Get the file list.
@@ -483,9 +481,7 @@ class AssetIndexer extends Component
 
         $folderId = $folder->id;
 
-        /**
-         * @var Asset $asset
-         */
+        /** @var Asset $asset */
         $asset = Asset::find()
             ->filename(Db::escapeParam($filename))
             ->folderId($folderId)

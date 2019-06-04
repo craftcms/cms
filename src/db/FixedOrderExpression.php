@@ -21,7 +21,7 @@ class FixedOrderExpression extends Expression
     // =========================================================================
 
     /**
-     * @var string $column The column name that contains the values
+     * @var string The column name that contains the values
      */
     public $column;
 
