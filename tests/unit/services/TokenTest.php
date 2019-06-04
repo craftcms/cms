@@ -74,23 +74,20 @@ class TokenTest extends Unit
     {
         Craft::$app->getConfig()->getGeneral()->defaultTokenDuration = 10000;
 
-        // Don't allow modification of the DateTime by ActiveRecord's before save
-        Craft::$app->setTimeZone('UTC');
+        // Determine what the expiry date is *supposed* to be
+        $expiryDate = (new DateTime('now', new DateTimeZone('UTC')))->add(new DateInterval('PT10000S'));
+
+        // Create the token
         $token = $this->token->createToken('do/stuff');
+        $this->assertSame(32, strlen($token));
 
         // What actually exists now?
         $tokenRec = Token::findOne(['token' => $token]);
-
-        // Determine what the expiry date is *supposed* to be
-        $interval = new DateInterval('PT10000S');
-        $expiryDate = new DateTime(null, new DateTimeZone('UTC'));
-        $expiryDate->add($interval);
 
         // And does it match
         $this->assertNull($tokenRec->usageLimit);
         $this->assertNull($tokenRec->usageCount);
         $this->assertSame($expiryDate->format('Y-m-d H:i:s'), $tokenRec->expiryDate);
-        $this->assertEquals(32, strlen($token));
     }
 
     // Protected Methods
