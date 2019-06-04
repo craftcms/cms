@@ -218,7 +218,7 @@ If nothing is passed to it, any “empty” elements will be removed.
 {# Result: ['foo', 'bar', 'baz'] #}
 ```
 
-When an arrow function is passed, this works identically to Twig’s core [`escape`](https://twig.symfony.com/doc/2.x/filters/escape.html) filter.
+When an arrow function is passed, this works identically to Twig’s core [`filter`](https://twig.symfony.com/doc/2.x/filters/filter.html) filter.
 
 ```twig
 {% set array = ['foo', 'bar', 'baz'] %}
