@@ -8,7 +8,7 @@ env:
 
 branches:
   only:
-    - feature/tests
+    - 3.2
 
 services:
   - mysql
