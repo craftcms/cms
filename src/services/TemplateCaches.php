@@ -49,13 +49,6 @@ class TemplateCaches extends Component
     // =========================================================================
 
     /**
-     * The duration (in seconds) between the times when Craft will delete any expired template caches.
-     *
-     * @var int
-     */
-    private static $_lastCleanupDateCacheDuration = 86400;
-
-    /**
      * The current request's path, as it will be stored in the templatecaches table.
      *
      * @var string|null
@@ -581,7 +574,7 @@ class TemplateCaches extends Component
         $success = $this->deleteCacheById($cacheIds);
 
         // Don't do it again for a while
-        Craft::$app->getCache()->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), self::$_lastCleanupDateCacheDuration);
+        Craft::$app->getCache()->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), Craft::$app->getConfig()->getGeneral()->cacheCleanupDuration);
         $this->_deletedExpiredCaches = true;
 
         return $success;
@@ -601,7 +594,7 @@ class TemplateCaches extends Component
 
         $lastCleanupDate = Craft::$app->getCache()->get('lastTemplateCacheCleanupDate');
 
-        if ($lastCleanupDate === false || DateTimeHelper::currentTimeStamp() - $lastCleanupDate > self::$_lastCleanupDateCacheDuration) {
+        if ($lastCleanupDate === false || DateTimeHelper::currentTimeStamp() - $lastCleanupDate > Craft::$app->getConfig()->getGeneral()->cacheCleanupDuration) {
             return $this->deleteExpiredCaches();
         }
 
