@@ -341,7 +341,9 @@ class EntryRevisionsController extends BaseEntriesController
         $request = Craft::$app->getRequest();
         /** @var Entry|DraftBehavior $draft */
         $draft->typeId = $request->getBodyParam('typeId');
-        $draft->slug = $request->getBodyParam('slug');
+        // Prevent the last entry type's field layout from being used
+        $draft->fieldLayoutId = null;
+        $draft->slug = $request->getBodyParam('slug') ?: $draft->slug;
         if (($postDate = $request->getBodyParam('postDate')) !== null) {
             $draft->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
         }
@@ -354,6 +356,8 @@ class EntryRevisionsController extends BaseEntriesController
         if (!$draft->typeId) {
             // Default to the section's first entry type
             $draft->typeId = $draft->getSection()->getEntryTypes()[0]->id;
+            // Prevent the last entry type's field layout from being used
+            $draft->fieldLayoutId = null;
         }
 
         // Author

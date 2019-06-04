@@ -90,6 +90,7 @@
 {% endblock %}
 
 {% block main %}
+    {{ redirectInput(element.cpEditUrl) }}
     {% if canUpdateSource and craft.app.isMultiSite %}
         <input type="hidden" name="siteId" value="{{ element.siteId }}">
     {% endif %}
