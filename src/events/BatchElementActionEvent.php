@@ -33,7 +33,7 @@ class BatchElementActionEvent extends ElementQueryEvent
     public $position;
 
     /**
-     * @var \Throwable|null $exception The exception that was thrown if any
+     * @var \Throwable|null The exception that was thrown if any
      */
     public $exception;
 }
