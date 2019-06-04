@@ -1,6 +1,11 @@
 <p align="center"><a href="https://craftcms.com/" rel="noopener" target="_blank"><img width="312" height="90" src="https://craftcms.com/craftcms.svg" alt="Craft CMS"></a></p>
 
-[![codecov](https://codecov.io/gh/craftcms/cms/branch/feature%2Ftests/graph/badge.svg)](https://codecov.io/gh/craftcms/cms)
+![Travis (.com) branch](https://img.shields.io/travis/com/craftcms/cms/feature/tests.svg)
+![Codecov](https://img.shields.io/codecov/c/github/craftcms/cms/feature/tests.svg)
+![Packagist](https://img.shields.io/packagist/dt/craftcms/cms.svg)
+![GitHub latest release](https://img.shields.io/github/tag/craftcms/cms.svg)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/craftcms/cms.svg)
+![Discord](https://img.shields.io/discord/456442477667418113.svg)
 
 ## About Craft CMS
 
