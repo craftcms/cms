@@ -5,6 +5,7 @@
 ### Added
 - Added the `restore` command, which restores a database backup.
 - Added the `Craft.escapeRegex()` JavaScript method.
+- Added the `cacheCleanupDuration` to general settings.
 
 ### Changed
 - Asset indexes now sort assets by Date Uploaded in descending order by default. ([#1153](https://github.com/craftcms/cms/issues/1153))

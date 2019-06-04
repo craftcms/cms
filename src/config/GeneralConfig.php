@@ -139,9 +139,11 @@ class GeneralConfig extends BaseObject
      */
     public $blowfishHashCost = 13;
     /**
-     * @var bool Whether Craft should cache element queries that fall inside `{% cache %}` tags.
+     * @var mixed The duration between the times when Craft will delete any expired template caches.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
-    public $cacheElementQueries = true;
+    public $cacheCleanupDuration = 86400;
     /**
      * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
      *
@@ -150,6 +152,10 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
     public $cacheDuration = 86400;
+    /**
+     * @var bool Whether Craft should cache element queries that fall inside `{% cache %}` tags.
+     */
+    public $cacheElementQueries = true;
     /**
      * @var bool Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
      */

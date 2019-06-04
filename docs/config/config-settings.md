@@ -360,6 +360,28 @@ For example, if the hash takes 1 second to compute when the value is 14 then the
 
 
 
+### `cacheCleanupDuration`
+
+Allowed types
+
+:   `mixed`
+
+Default value
+
+:   `86400`
+
+Defined by
+
+:   [GeneralConfig::$cacheCleanupDuration](api:craft\config\GeneralConfig::$cacheCleanupDuration)
+
+
+
+The duration (in seconds) between the times when Craft will delete any expired template caches.
+
+See [craft\helpers\ConfigHelper::durationInSeconds()](https://docs.craftcms.com/api/v3/craft-helpers-confighelper.html#method-durationinseconds) for a list of supported value types.
+
+
+
 ### `cacheDuration`
 
 Allowed types
