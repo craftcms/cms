@@ -7,9 +7,11 @@
 
 namespace craft\console\controllers;
 
+use craft\helpers\FileHelper;
 use yii\base\InvalidArgumentException;
 use craft\console\Controller;
 use yii\console\ExitCode;
+use Craft;
 
 /**
  * @internal We use this class to test the `craft\test\CommandTest` functionality.
@@ -21,6 +23,37 @@ class TestController extends Controller
     // =========================================================================
 
     /**
+     * @return int
+     * @throws \yii\base\Exception
+     */
+    public function actionSetupTests()
+    {
+        if (!$this->confirm('Are you sure you want to generate the tests suite?')) {
+            $this->stdout('Aborted!');
+            return ExitCode::OK;
+        }
+
+        if ($this->confirm('Do you want a custom path?')) {
+            $dstPath = $this->prompt('Which path should the "tests/" dir be placed in?');
+        } else {
+            $oneUpAtVendor = dirname(Craft::$app->getPath()->getVendorPath());
+            $dstPath = $oneUpAtVendor.DIRECTORY_SEPARATOR.'generated-tests';
+        }
+
+        $testPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'test'.DIRECTORY_SEPARATOR.'internal'.DIRECTORY_SEPARATOR.'example-test-suite';
+
+        FileHelper::copyDirectory(
+            $testPath,
+            $dstPath
+        );
+
+        $this->stdout('Test suite generated. Ensure you update you update your composer dependencies.');
+        return ExitCode::OK;
+    }
+
+    /**
+     * Dont use this method - it wont actually execute anything.
+     * It is just used internally to test Craft based console controller testing.
      * @return int
      */
     public function actionTest()
