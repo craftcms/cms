@@ -33,6 +33,7 @@
 - Fixed an error that could occur when `craft\helpers\UrlHelper` methods were called on console requests.
 - Fixed a bug where the `$creatorId` argument passed to `craft\services\Revisions::revertToRevision()` was being ignored.
 - Fixed a bug where entry drafts weren’t saving custom field values that didn’t exist in the source entry’s field layout. ([#4352](https://github.com/craftcms/cms/issues/4352))
+- Fixed a bug where initial draft creation would fail if something was edited before a slug had been assigned.
 - Fixed a bug where Craft could redirect to a 404 after updating an entry.
 
 ## 3.2.0-alpha.7 - 2019-05-28
@@ -277,6 +278,7 @@
 - Fixed a bug where `craft\services\Fields::getFieldsByElementType()` would return duplicate results if a field was used in more than one field layout for the element type. ([#4336](https://github.com/craftcms/cms/issues/4336))
 - Fixed a bug where Craft wasn’t respecting the `allowUppercaseInSlug` config setting when generating slugs in the Control Panel. ([#4330](https://github.com/craftcms/cms/issues/4330))
 - Fixed a bug where Control Panel Ajax requests weren’t working if a custom `pathParam` config setting value was set. ([#4334](https://github.com/craftcms/cms/issues/4334))
+- Fixed a JavaScript error that could occur when saving a new entry, if the selected entry type didn’t have a Title field. ([#4353](https://github.com/craftcms/cms/issues/4353))
 
 ## 3.1.28 - 2019-05-21
 
