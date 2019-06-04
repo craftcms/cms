@@ -139,7 +139,7 @@ abstract class ElementFixture extends ActiveFixture
                 throw new InvalidArgumentException("Unable to delete element $id. We were unable to find it.");
             }
 
-            if ($element && !Craft::$app->getElements()->deleteElement($element)) {
+            if ($element && !Craft::$app->getElements()->deleteElement($element, true)) {
                 throw new InvalidElementException($element, 'Unable to delete element');
             }
         }
