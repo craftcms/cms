@@ -47,7 +47,7 @@ class PaginatorTest extends Unit
     public function testTotalResults()
     {
         $this->setPaginator([], [], 10);
-        $this->assertSame(10, $this->paginator->getTotalResults());
+        $this->assertSame('10', (string)$this->paginator->getTotalResults());
     }
 
     /**
