@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace tests\functional;
+namespace crafttests\functional;
 
 use Craft;
 use craft\elements\User;

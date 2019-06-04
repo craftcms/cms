@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace tests\acceptance;
+namespace crafttests\acceptance;
 
 use AcceptanceTester;
 
