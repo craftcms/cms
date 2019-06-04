@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\console\Controller;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
@@ -19,7 +20,6 @@ use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\BatchElementActionEvent;
 use craft\services\Elements;
-use yii\console\Controller;
 use yii\console\ExitCode;
 use yii\helpers\Console;
 
