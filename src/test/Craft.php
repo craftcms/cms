@@ -12,6 +12,7 @@ use Codeception\Module\Yii2;
 use Codeception\PHPUnit\TestCase;
 use Codeception\Stub;
 use Codeception\TestInterface;
+use craft\base\Field;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\db\Query;
@@ -419,6 +420,7 @@ class Craft extends Yii2
             return null;
         }
 
+        /** @var Field $field */
         $layoutId = (new Query())
             ->select(['layoutId'])
             ->from([Table::FIELDLAYOUTFIELDS])
