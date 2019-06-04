@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\composer;
+namespace crafttests\unit\composer;
 
 use Composer\Config;
 use Composer\Downloader\DownloadManager;

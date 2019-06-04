@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\log;
+namespace crafttests\unit\log;
 
 use Codeception\Stub;
 use Craft;

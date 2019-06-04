@@ -34,7 +34,7 @@ Your unit test needs to extend `craft\test\console\ConsoleTest`.
 ```php
 <?php
 
-namespace craftunit\console;
+namespace crafttests\unit\console;
 
 use \craft\test\console\ConsoleTest;
 
@@ -49,7 +49,7 @@ Create a test like you would in any other unit test.
 ```php
 <?php
 
-namespace craftunit\console;
+namespace crafttests\unit\console;
 
 use \craft\test\console\ConsoleTest;
 

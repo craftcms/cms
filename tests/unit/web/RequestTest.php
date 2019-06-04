@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\web;
+namespace crafttests\unit\web;
 
 use Craft;
 use craft\test\TestCase;

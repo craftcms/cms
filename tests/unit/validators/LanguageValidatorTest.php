@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\validators;
+namespace crafttests\unit\validators;
 
 use Codeception\Test\Unit;
 use craft\helpers\ArrayHelper;

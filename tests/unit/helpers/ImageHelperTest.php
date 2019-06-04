@@ -6,7 +6,7 @@
  * @license   https://craftcms.github.io/license/
  */
 
-namespace craftunit\helpers;
+namespace crafttests\unit\helpers;
 
 use Codeception\Stub;
 use Codeception\Test\Unit;

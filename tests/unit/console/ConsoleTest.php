@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\console;
+namespace crafttests\unit\console;
 
 use craft\test\console\ConsoleTest as BaseConsoleTest;
 use yii\base\InvalidConfigException;

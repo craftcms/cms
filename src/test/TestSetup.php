@@ -67,7 +67,7 @@ use craft\web\Response;
 use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
-use craftunit\console\ConsoleTest;
+use crafttests\unit\console\ConsoleTest;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionException;
 use Symfony\Component\Yaml\Yaml;

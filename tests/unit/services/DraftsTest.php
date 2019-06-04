@@ -6,7 +6,7 @@
  */
 
 
-namespace craftunit\services;
+namespace crafttests\unit\services;
 
 
 use Codeception\Test\Unit;

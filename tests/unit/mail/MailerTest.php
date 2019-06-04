@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\mail;
+namespace crafttests\unit\mail;
 
 use Craft;
 use craft\elements\User;

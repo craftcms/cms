@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\models;
+namespace crafttests\unit\models;
 
 use Codeception\Test\Unit;
 use Craft;

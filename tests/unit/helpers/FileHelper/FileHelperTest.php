@@ -5,7 +5,7 @@
  * @license   https://craftcms.github.io/license/
  */
 
-namespace craftunit\helpers\filehelper;
+namespace crafttests\unit\helpers\filehelper;
 
 use Codeception\Test\Unit;
 use craft\helpers\FileHelper;

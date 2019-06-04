@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\search;
+namespace crafttests\unit\search;
 
 use Codeception\Test\Unit;
 use craft\search\SearchQuery;
