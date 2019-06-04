@@ -14,7 +14,7 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\services\Search;
-use craftunit\fixtures\UsersFixture;
+use crafttests\fixtures\UsersFixture;
 use UnitTester;
 
 /**

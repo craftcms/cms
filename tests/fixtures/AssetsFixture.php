@@ -6,7 +6,7 @@
  * @license   https://craftcms.github.io/license/
  */
 
-namespace craftunit\fixtures;
+namespace crafttests\fixtures;
 
 use craft\test\fixtures\elements\AssetFixture;
 

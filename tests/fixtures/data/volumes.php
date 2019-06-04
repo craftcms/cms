@@ -6,7 +6,7 @@
  */
 
 use craft\volumes\Local;
-use craftunit\fixtures\VolumesFixture;
+use crafttests\fixtures\VolumesFixture;
 
 return [
     'basic-volume' => [

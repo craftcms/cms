@@ -12,7 +12,7 @@ use Craft;
 use craft\errors\OperationAbortedException;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
-use craftunit\fixtures\EntryFixture;
+use crafttests\fixtures\EntryFixture;
 use Exception;
 use UnitTester;
 

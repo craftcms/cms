@@ -10,7 +10,7 @@ namespace craftunit\web;
 use Craft;
 use craft\test\TestCase;
 use craft\web\Request;
-use craftunit\fixtures\SitesFixture;
+use crafttests\fixtures\SitesFixture;
 use ReflectionException;
 use UnitTester;
 use yii\web\BadRequestHttpException;

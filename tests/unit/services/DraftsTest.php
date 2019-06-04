@@ -23,7 +23,7 @@ use craft\helpers\Json;
 use craft\services\Drafts;
 use craft\services\Elements;
 use craft\services\Revisions;
-use craftunit\fixtures\EntryFixture;
+use crafttests\fixtures\EntryFixture;
 use Throwable;
 use UnitTester;
 use yii\base\Exception;

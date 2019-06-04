@@ -11,7 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Asset;
 use craft\helpers\Assets;
-use craftunit\fixtures\AssetsFixture;
+use crafttests\fixtures\AssetsFixture;
 use UnitTester;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;

@@ -16,7 +16,7 @@ use craft\test\mockclasses\arrayable\ExampleArrayble;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
-use craftunit\fixtures\SitesFixture;
+use crafttests\fixtures\SitesFixture;
 use ReflectionException;
 use Throwable;
 use Twig\Error\LoaderError;
