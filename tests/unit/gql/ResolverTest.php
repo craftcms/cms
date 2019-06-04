@@ -106,8 +106,6 @@ class ResolverTest extends Unit
         $sourceElement->relatedElements = $queryingCallback()->id($ids);
 
         $elementResults = $elementQuery->all();
-        // Populate the resolver info object and call the resolver function
-
         $filterParameters = [];
 
         // If we have more than two results, pick one at random
@@ -118,6 +116,7 @@ class ResolverTest extends Unit
             $elementResults = $queryingCallback()->id($targetId)->all();
         }
 
+        // Populate the resolver info object and call the resolver function
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'relatedElements']);
         $resolvedField = $resolverCallback($sourceElement, $filterParameters, null, $resolveInfo);
 
