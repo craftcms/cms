@@ -25,8 +25,13 @@ use yii\db\Exception;
  */
 class CommandTest extends Unit
 {
-    // Public Methods
+    // Public Properties
     // =========================================================================
+
+    /**
+     * @var DateTime
+     */
+    protected $sessionDate;
 
     // Tests
     // =========================================================================
@@ -45,9 +50,8 @@ class CommandTest extends Unit
     public function testInsertDateCreated()
     {
         $session = $this->ensureSession();
-        $date = new DateTime('now', new DateTimeZone('UTC'));
 
-        $this->assertSame($session['dateCreated'], $date->format('Y-m-d H:i:s'));
+        $this->assertSame($session['dateCreated'], $this->sessionDate->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -84,6 +88,8 @@ class CommandTest extends Unit
      */
     public function ensureSession(): array
     {
+        $this->sessionDate = new DateTime('now', new DateTimeZone('UTC'));
+
         $command = Craft::$app->getDb()->createCommand()
             ->insert(Table::SESSIONS,
                 [
