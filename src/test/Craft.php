@@ -184,11 +184,6 @@ class Craft extends Yii2
             return;
         }
 
-        // Ensure elements get hard deleted
-        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, function(DeleteElementEvent $event) {
-            $event->hardDelete = true;
-        });
-
         parent::_after($test);
 
         ob_start();
