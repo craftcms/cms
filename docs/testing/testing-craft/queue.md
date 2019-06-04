@@ -1,6 +1,6 @@
 # Queue
 Queueing is a crucial part of many Craft apps. The Craft queue allows you to 
-offload many resource intensive or long-running tasks/actions to a seperate process. 
+offload many resource intensive or long-running tasks/actions to a separate process. 
 Because of this added support is provided to help test this part of your module/plugin. 
 
 ## Running the Queue

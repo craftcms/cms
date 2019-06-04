@@ -50,7 +50,7 @@ $this->tester->mockMethods([
 What the above would do is ensure that if 
 `Mailchimp::getInstance()->externals->getUsersFromMailchimp()`
 is called in your tests the value `[['user1'], ['user2']]` will always be returned.
-No quering to the mailchimp servers will be done. This ensures predictable tests
+No querying to the Mailchimp servers will be done. This ensures predictable tests
 that are more performant.
 
 You can call this method multiple times in a single test if you want to mock out 
@@ -73,5 +73,5 @@ Craft provides a `fullMock` setting that can be enabled in your `codeception.yml
 A full explanation of this setting is given [here](full-mock.md).
 The `fullMock` option ensures all components in `Craft::$app` are set to mocks using
 PHP Unit. 
-If you prefer to isolate *all* your dependancies during testing
+If you prefer to isolate *all* your dependencies during testing
 this option is for you. `fullMock` also mocks any modules/plugins you define. 

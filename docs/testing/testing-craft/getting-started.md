@@ -1,6 +1,6 @@
 # Getting started
 In order to get started please ensure you have a basic understanding of the following:
-- Craft CMS 3.1 or higher
+- Craft CMS 3.2 or higher
 - [Codeception](https://codeception.com/docs/01-Introduction)
 - [Composer](https://getcomposer.org/)
 - [Yaml](https://learnxinyminutes.com/docs/yaml/)
@@ -10,7 +10,7 @@ This guide can be used for setting up tests for a Craft site & Modules/Plugins.
 
 [[toc]]
 
-## Step 1: Install Codeception 3.X
+## Step 1: Install Codeception 3.x
 
 Follow instruction 1 and 2 Codeception's [website](https://codeception.com/quickstart)
 ::: tip
@@ -138,7 +138,7 @@ modules:
 
 ## Setup required config
 
-Craft requires a `db.php` file to be present in the config directory. To satisfy this requirment
+Craft requires a `db.php` file to be present in the config directory. To satisfy this requirement
 add a `db.php` file in `tests/_craft/config/` and fill it with the following: 
 ```php
 <?php
@@ -171,7 +171,7 @@ And just place a `<?php` tag in the file.
 ::: tip
 `_bootstrap` in the specific directories will only run once Codeception is told to run that
 type of test. You can thus tailor setup work you only want to be done for a specific test suite 
-in these `_bootstrap.php` files. I.E. If you want specific PHP code to run only before unit tests place it in the `tests/unit/_bootstrap.php` file.
+in these `_bootstrap.php` files. i.e. if you want specific PHP code to run only before unit tests place it in the `tests/unit/_bootstrap.php` file.
 :::
 
 ## Step 4: Adding a test
