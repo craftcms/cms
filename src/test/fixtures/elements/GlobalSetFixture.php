@@ -8,7 +8,9 @@
 namespace craft\test\fixtures\elements;
 
 
+use craft\db\Table;
 use craft\elements\GlobalSet;
+use craft\records\GlobalSet as GlobalSetRecord;
 
 /**
  * Class GlobalSetFixture
@@ -29,6 +31,28 @@ abstract class GlobalSetFixture extends ElementFixture
      * {@inheritdoc}
      */
     public $modelClass = GlobalSet::class;
+
+    /**
+     * @inheritdoc
+     */
+    public $tableName = Table::GLOBALSETS;
+
+    /**
+     * @inheritdoc
+     */
+    public function load()
+    {
+        parent::load();
+
+        // TODO: layouts?
+        foreach ($this->data as $alias => $data) {
+            $record = new GlobalSetRecord();
+            $record->id = $data['id'];
+            $record->name = $data['name'];
+            $record->handle = $data['handle'];
+            $record->save();
+        }
+    }
 
     // Protected Methods
     // =========================================================================
