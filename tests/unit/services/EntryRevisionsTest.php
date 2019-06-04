@@ -40,7 +40,7 @@ class EntryRevisionsTest extends Unit
     // =========================================================================
 
     /**
-     * @var UnitTester $tester
+     * @var UnitTester
      */
     protected $tester;
 

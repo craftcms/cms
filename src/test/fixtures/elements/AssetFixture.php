@@ -31,7 +31,7 @@ abstract class AssetFixture extends ElementFixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public $modelClass = Asset::class;
 
@@ -113,7 +113,7 @@ abstract class AssetFixture extends ElementFixture
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function beforeLoad()
     {
@@ -125,7 +125,7 @@ abstract class AssetFixture extends ElementFixture
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function beforeUnload()
     {
@@ -138,7 +138,7 @@ abstract class AssetFixture extends ElementFixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function isPrimaryKey(string $key): bool
     {

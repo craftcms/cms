@@ -45,7 +45,7 @@ class ExampleModel extends Model
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function datetimeAttributes(): array
     {

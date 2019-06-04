@@ -54,7 +54,7 @@ use yii\db\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class Craft extends Yii2
 {
@@ -120,7 +120,7 @@ class Craft extends Yii2
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function _initialize()
     {

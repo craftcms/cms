@@ -26,7 +26,7 @@ use yii\web\HttpException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class ErrorHandlerTest extends TestCase
 {
@@ -189,7 +189,7 @@ class ErrorHandlerTest extends TestCase
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {
@@ -203,7 +203,7 @@ class ErrorHandlerTest extends TestCase
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _after()
     {

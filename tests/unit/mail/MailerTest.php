@@ -28,7 +28,7 @@ use yii\web\ServerErrorHttpException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class MailerTest extends TestCase
 {
@@ -36,7 +36,7 @@ class MailerTest extends TestCase
     // =========================================================================
 
     /**
-     * @var TestMailer $mailer
+     * @var TestMailer
      */
     public $mailer;
 
@@ -246,7 +246,7 @@ class MailerTest extends TestCase
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {
