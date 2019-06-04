@@ -44,6 +44,7 @@
 - Added `craft\base\ElementInterface::getSourceUid()`.
 - Added `craft\base\ElementInterface::getUiLabel()`, which is now used to define what an element will be called in the Control Panel. ([#4211](https://github.com/craftcms/cms/pull/4211))
 - Added `craft\base\ElementInterface::pluralDisplayName()`, which element type classes can use to define the plural of their display name.
+- Added `craft\base\ElementInterface::setRevisionCreatorId()`.
 - Added `craft\base\ElementInterface::setRevisionNotes()`.
 - Added `craft\base\ElementTrait::$draftId`.
 - Added `craft\base\ElementTrait::$hardDelete`.
