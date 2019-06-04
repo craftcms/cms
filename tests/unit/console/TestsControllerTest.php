@@ -28,22 +28,9 @@ class TestsControllerTest extends BaseConsoleTest
     /**
      * @throws InvalidConfigException
      */
-    public function testStuff()
-    {
-        $this->consoleCommand('update/info')
-            ->stdOut('Fetching available updates ... ')
-            ->stdOut('done' . PHP_EOL)
-            ->stdOut('You’re all up-to-date!' . PHP_EOL . PHP_EOL)
-            ->exitCode(ExitCode::OK)
-            ->run();
-    }
-
-    /**
-     * @throws InvalidConfigException
-     */
     public function testTestController()
     {
-        $this->consoleCommand('test/test')
+        $this->consoleCommand('tests/test')
             ->stdOut('22')
             ->stderr('123321123')
             ->select('Select', '2', ['2', '22'])
@@ -61,7 +48,7 @@ class TestsControllerTest extends BaseConsoleTest
      */
     public function testSetupTests()
     {
-        $this->consoleCommand('test/setup-tests')
+        $this->consoleCommand('tests/setup-tests')
             ->confirm('Are you sure you want to generate the tests suite?', true, false)
             ->confirm('Do you want a custom path?', false, false)
             ->stdOut('Test suite generated. Ensure you update you update your composer dependencies.')
@@ -86,7 +73,7 @@ class TestsControllerTest extends BaseConsoleTest
     {
         $dstPath = __DIR__.DIRECTORY_SEPARATOR.'generated-test-material';
 
-        $this->consoleCommand('test/setup-tests')
+        $this->consoleCommand('tests/setup-tests')
             ->confirm('Are you sure you want to generate the tests suite?', true, false)
             ->confirm('Do you want a custom path?', true, false)
             ->prompt('Which path should the "tests/" dir be placed in?', $dstPath)
@@ -108,7 +95,7 @@ class TestsControllerTest extends BaseConsoleTest
      */
     public function testFailCustomTestSetupIfNoConfirm()
     {
-        $this->consoleCommand('test/setup-tests')
+        $this->consoleCommand('tests/setup-tests')
             ->confirm('Are you sure you want to generate the tests suite?', false, false)
             ->stdOut('Aborted!')
             ->exitCode(ExitCode::OK)

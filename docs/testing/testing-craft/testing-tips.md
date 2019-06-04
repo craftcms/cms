@@ -43,7 +43,7 @@ module or plugin you may want to provide support resources for testing, it is ad
 
 ## Quickly setup tests using the dedicated console command
 If you have a general understanding of the typical Craft testing setup you can use the
-`test/setup-tests` console command which will do all of the important setup work for you. 
+`tests/setup-tests` console command which will do all of the important setup work for you. 
 It will copy from Craft's `src/test/internal/example-test-suite` folder to either your project's root directory.  
 or a directory path of your choosing. All you then have to do is: 
 

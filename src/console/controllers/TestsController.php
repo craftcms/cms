@@ -20,7 +20,7 @@ use Craft;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class TestController extends Controller
+class TestsController extends Controller
 {
     // Public functions
     // =========================================================================
