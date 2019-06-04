@@ -5,7 +5,7 @@ codecov:
       default:
         url: "https://hooks.slack.com/services/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"
         threshold: 1%
-      only_pulls: false
+        only_pulls: false
         branches: null
         flags: null
     paths: null
