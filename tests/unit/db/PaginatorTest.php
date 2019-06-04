@@ -10,6 +10,7 @@ namespace craftunit\db;
 use Codeception\Test\Unit;
 use craft\db\Paginator;
 use craft\db\Query;
+use craft\db\Table;
 use craft\records\Session;
 use UnitTester;
 
@@ -93,7 +94,7 @@ class PaginatorTest extends Unit
     {
         $this->setPaginator([], ['pageSize' => '2']);
 
-        $desiredResults = (new Query())->select('*')->from(Session::tableName())->limit('2')->all();
+        $desiredResults = (new Query())->from([Table::SESSIONS])->limit(2)->all();
         $this->assertSame($desiredResults, $this->paginator->getPageResults());
     }
 
@@ -104,7 +105,7 @@ class PaginatorTest extends Unit
     {
         $this->setPaginator([], ['pageSize' => '2'], 10);
 
-        $desiredResults = (new Query())->select('*')->from(Session::tableName())->limit('4')->all();
+        $desiredResults = (new Query())->from(Table::SESSIONS)->limit(4)->all();
 
         // Should get the first two...
         $this->assertSame([$desiredResults[0], $desiredResults[1]], $this->paginator->getPageResults());
@@ -121,7 +122,7 @@ class PaginatorTest extends Unit
     {
         $this->setPaginator([], ['pageSize' => '2'], 1);
 
-        $desiredResults = (new Query())->select('*')->from(Session::tableName())->limit('1')->all();
+        $desiredResults = (new Query())->from([Table::SESSIONS])->limit(1)->all();
         $this->assertSame($desiredResults, $this->paginator->getPageResults());
     }
 
@@ -179,7 +180,7 @@ class PaginatorTest extends Unit
     {
         $this->tester->haveMultiple(Session::class, $requiredSessions);
 
-        $query = (new Query())->select('*')->from(Session::tableName());
+        $query = (new Query())->from(Table::SESSIONS);
         foreach ($queryParams as $key => $value) {
             $query->$key = $value;
         }

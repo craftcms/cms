@@ -134,8 +134,9 @@ abstract class FieldLayoutFixture extends Fixture
             return false;
         }
 
-        $layoutId = (new Query())->select('layoutId')
-            ->from(Table::FIELDLAYOUTFIELDS)
+        $layoutId = (new Query())
+            ->select(['layoutId'])
+            ->from([Table::FIELDLAYOUTFIELDS])
             ->where(['fieldId' => $field->id])
             ->column();
 

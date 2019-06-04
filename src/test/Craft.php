@@ -401,9 +401,9 @@ class Craft extends Yii2
     {
         if (\Craft::$app->getQueue() instanceof Queue) {
             $this->assertTrue((new Query())
-                ->select('id')
+                ->select(['id'])
                 ->where(['description' => $description])
-                ->from(Table::QUEUE)
+                ->from([Table::QUEUE])
                 ->exists()
             );
         }
@@ -419,8 +419,9 @@ class Craft extends Yii2
             return null;
         }
 
-        $layoutId = (new Query())->select('layoutId')
-            ->from(Table::FIELDLAYOUTFIELDS)
+        $layoutId = (new Query())
+            ->select(['layoutId'])
+            ->from([Table::FIELDLAYOUTFIELDS])
             ->where(['fieldId' => $field->id])
             ->column();
 

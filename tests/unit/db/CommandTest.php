@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\db\Command;
 use craft\db\Query;
+use craft\db\Table;
 use DateTime;
 use DateTimeZone;
 use yii\db\Exception;
@@ -84,7 +85,7 @@ class CommandTest extends Unit
     public function ensureSession(): array
     {
         $command = Craft::$app->getDb()->createCommand()
-            ->insert('{{%sessions}}',
+            ->insert(Table::SESSIONS,
                 [
                     'userId' => 1,
                     'token' => 'test'
@@ -109,7 +110,7 @@ class CommandTest extends Unit
     public function updateSession($values): array
     {
         $command = Craft::$app->getDb()->createCommand()
-            ->update('{{%sessions}}', $values)->execute();
+            ->update(Table::SESSIONS, $values)->execute();
 
         $this->assertGreaterThan(0, $command);
 
@@ -127,6 +128,6 @@ class CommandTest extends Unit
      */
     public function getSession(array $params): array
     {
-        return (new Query())->select('*')->from('{{%sessions}}')->where($params)->one();
+        return (new Query())->from([Table::SESSIONS])->where($params)->one();
     }
 }

@@ -10,6 +10,7 @@ namespace craftunit\services;
 use Codeception\Test\Unit;
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\services\Search;
@@ -135,7 +136,7 @@ class SearchTest extends Unit
         $this->search->indexElementAttributes($user);
 
         // Get the data from the DB
-        $searchIndex = (new Query())->select('*')->from('{{%searchindex}}')->where(['elementId' => $user->id])->all();
+        $searchIndex = (new Query())->from([Table::SEARCHINDEX])->where(['elementId' => $user->id])->all();
 
         $this->assertSame(' testindexelementattributes1 test com ', $this->_getSearchIndexValueByAttribute('email', $searchIndex));
         $this->assertSame(' john smith ', $this->_getSearchIndexValueByAttribute('firstname', $searchIndex));
