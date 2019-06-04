@@ -7,16 +7,17 @@ coverage:
   round: down
   range: "20...100"
 
-  slack:
-    default:
-      url: "https://hooks.slack.com/services/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"
-      threshold: 1%
-      only_pulls: false
-      branches: 3.2
-      flags: null
-      attachments: "sunburst, diff"
-      paths: null
-      message: "Coverage {{changed}} for {{owner}}/{{repo}}"
+  notify:
+    slack:
+      default:
+        url: "https://hooks.slack.com/services/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"
+        threshold: 1%
+        only_pulls: false
+        branches: 3.2
+        flags: null
+        attachments: "sunburst, diff"
+        paths: null
+        message: "Coverage {{changed}} for {{owner}}/{{repo}}"
 
   status:
     project: yes
