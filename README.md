@@ -1,5 +1,7 @@
 <p align="center"><a href="https://craftcms.com/" rel="noopener" target="_blank"><img width="312" height="90" src="https://craftcms.com/craftcms.svg" alt="Craft CMS"></a></p>
 
+[![codecov](https://codecov.io/gh/craftcms/cms/branch/feature%2Ftests/graph/badge.svg)](https://codecov.io/gh/craftcms/cms)
+
 ## About Craft CMS
 
 Craft is a flexible, user-friendly CMS for creating custom digital experiences on the web and beyond.

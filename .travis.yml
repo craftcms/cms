@@ -68,9 +68,9 @@ before_script:
     mysql --version
 
   # initialize database
-  - travis_retry mysql -e 'CREATE DATABASE `craft3test`;';
+  - travis_retry mysql -e 'CREATE DATABASE `craft-test`;';
   - mysql -e "SET GLOBAL sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';";
-  - psql -U postgres -c 'CREATE DATABASE craft3test;';
+  - psql -U postgres -c 'CREATE DATABASE "craft-test";';
 
   # install imagick
   - pear config-set preferred_state beta
