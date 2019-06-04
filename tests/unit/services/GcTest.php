@@ -12,8 +12,9 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
+use craft\elements\User;
 use craft\helpers\ArrayHelper;
-use craft\records\User;
+use craft\records\User as UserRecord;
 use craft\services\Gc;
 use craftunit\fixtures\EntryFixture;
 use craftunit\fixtures\EntryTypeFixture;
@@ -149,34 +150,28 @@ class GcTest extends Unit
     public function testRunForExpiringUsers()
     {
         // 2 days
-        Craft::$app->getConfig()->getGeneral()->purgePendingUsersDuration = 172800;
+        Craft::$app->getConfig()->getGeneral()->purgePendingUsersDuration = 60 * 60 * 24 * 2;
+
+        $count = User::find()
+            ->username(['user1', 'user2', 'user3', 'user4'])
+            ->anyStatus()
+            ->count();
+
+        // Make sure all 4 users are in there
+        $this->assertEquals(4, $count);
 
         // Create then with 3 days
         $this->_createExpiringPendingUsers();
 
         $this->gc->run(true);
 
-        $users = (new Query())
-            ->from(Table::USERS)
-            ->where(['username' => ['user1', 'user2', 'user3', 'user4']])
-            ->all();
+        $count = User::find()
+            ->username(['user1', 'user2', 'user3', 'user4'])
+            ->anyStatus()
+            ->count();
 
-        // Nothing actually gets deleted. The elements dateDeleted should be set for user1 and user2 however
-        $this->assertCount(4, $users);
-
-        $deletedUsers = (new Query())
-            ->from(['users' => Table::USERS])
-            ->where(['username' => ['user1', 'user2', 'user3', 'user4']])
-            ->leftJoin(Table::ELEMENTS . ' elements', '[[elements.id]] = [[users.id]]')
-            ->andWhere(['not', ['elements.dateDeleted' => null]])
-            ->all();
-
-        $this->assertCount(2, $deletedUsers);
-
-        $user3 = ArrayHelper::where($deletedUsers, 'username', 'user3');
-        $user4 = ArrayHelper::where($deletedUsers, 'username', 'user4');
-        $this->assertEmpty($user3);
-        $this->assertEmpty($user4);
+        // Should only be 2 users now
+        $this->assertEquals(2, $count);
     }
 
     // Data Providers
@@ -246,9 +241,9 @@ class GcTest extends Unit
      */
     private function _createExpiringPendingUsers()
     {
-        $date = (new DateTime('now'))->sub(new DateInterval('P3D'))->format('Y-m-d H:i:s');
+        $date = (new DateTime('now', new \DateTimeZone('UTC')))->sub(new DateInterval('P3D'))->format('Y-m-d H:i:s');
 
-        $userRecords = User::find()
+        $userRecords = UserRecord::find()
             ->where(['username' => ['user1', 'user2']])
             ->all();
 
