@@ -14,7 +14,7 @@ use yii\console\ExitCode;
 use Craft;
 
 /**
- * Clear caches via the CLI
+ * Various support resources for testing Craft.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
