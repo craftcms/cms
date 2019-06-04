@@ -26,12 +26,12 @@ class PaginatorTest extends Unit
     // =========================================================================
 
     /**
-     * @var Paginator $paginator
+     * @var Paginator
      */
     private $paginator;
 
     /**
-     * @var UnitTester $tester
+     * @var UnitTester
      */
     protected $tester;
 

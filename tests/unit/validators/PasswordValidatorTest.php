@@ -211,7 +211,7 @@ class PasswordValidatorTest extends Unit
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {

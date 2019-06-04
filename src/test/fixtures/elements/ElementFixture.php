@@ -45,7 +45,7 @@ abstract class ElementFixture extends ActiveFixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function init()
     {
@@ -61,7 +61,7 @@ abstract class ElementFixture extends ActiveFixture
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getModel($name)
     {
@@ -77,7 +77,7 @@ abstract class ElementFixture extends ActiveFixture
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function load()
     {

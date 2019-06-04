@@ -189,7 +189,7 @@ class ErrorHandlerTest extends TestCase
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {
@@ -203,7 +203,7 @@ class ErrorHandlerTest extends TestCase
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _after()
     {

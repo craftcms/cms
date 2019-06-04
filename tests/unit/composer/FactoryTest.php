@@ -27,12 +27,12 @@ class FactoryTest extends TestCase
     // =========================================================================
 
     /**
-     * @var Factory $factory
+     * @var Factory
      */
     protected $factory;
 
     /**
-     * @var UnitTester $tester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -40,7 +40,7 @@ class FactoryTest extends TestCase
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {

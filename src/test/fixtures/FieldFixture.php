@@ -27,7 +27,7 @@ class FieldFixture extends Fixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public $modelClass = Field::class;
 
@@ -35,7 +35,7 @@ class FieldFixture extends Fixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function load()
     {
@@ -63,7 +63,7 @@ class FieldFixture extends Fixture
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function unload()
     {

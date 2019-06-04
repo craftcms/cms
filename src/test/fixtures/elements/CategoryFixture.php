@@ -26,7 +26,7 @@ abstract class CategoryFixture extends ElementFixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public $modelClass = Category::class;
 
@@ -54,7 +54,7 @@ abstract class CategoryFixture extends ElementFixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function isPrimaryKey(string $key): bool
     {

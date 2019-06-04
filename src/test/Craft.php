@@ -120,7 +120,7 @@ class Craft extends Yii2
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function _initialize()
     {

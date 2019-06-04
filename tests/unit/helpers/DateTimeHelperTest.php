@@ -836,7 +836,7 @@ class DateTimeHelperTest extends Unit
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {

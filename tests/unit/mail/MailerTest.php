@@ -36,7 +36,7 @@ class MailerTest extends TestCase
     // =========================================================================
 
     /**
-     * @var TestMailer $mailer
+     * @var TestMailer
      */
     public $mailer;
 
@@ -246,7 +246,7 @@ class MailerTest extends TestCase
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {

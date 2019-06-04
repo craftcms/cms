@@ -26,7 +26,7 @@ abstract class EntryFixture extends ElementFixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public $modelClass = Entry::class;
 
@@ -64,7 +64,7 @@ abstract class EntryFixture extends ElementFixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function isPrimaryKey(string $key): bool
     {

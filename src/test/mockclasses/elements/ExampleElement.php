@@ -30,7 +30,7 @@ class ExampleElement extends Element
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getUriFormat()
     {
