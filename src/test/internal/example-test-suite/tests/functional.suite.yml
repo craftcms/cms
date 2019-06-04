@@ -1,0 +1,5 @@
+actor: UnitTester
+modules:
+  enabled:
+    - \Helper\Functional
+    - \craft\test\Craft
