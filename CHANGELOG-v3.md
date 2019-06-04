@@ -4,7 +4,7 @@
 
 ### Added
 
-- Added `craft\console\controllers\TestController:::actionSetupTests()` which uses a default test setup directory
+- Added `craft\console\controllers\TestController::actionSetupTests()` which uses a default test setup directory
 to setup a test suite for your Craft project very quickly. 
 The default directory can be found in `src/test/internal/example-test-suite`
 
