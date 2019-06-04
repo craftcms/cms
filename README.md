@@ -1,11 +1,11 @@
 <p align="center"><a href="https://craftcms.com/" rel="noopener" target="_blank"><img width="312" height="90" src="https://craftcms.com/craftcms.svg" alt="Craft CMS"></a></p>
 
-![Travis (.com) branch](https://img.shields.io/travis/com/craftcms/cms/feature/tests.svg)
-![Codecov](https://img.shields.io/codecov/c/github/craftcms/cms/feature/tests.svg)
-![Packagist](https://img.shields.io/packagist/dt/craftcms/cms.svg)
-![GitHub latest release](https://img.shields.io/github/tag/craftcms/cms.svg)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/m/craftcms/cms.svg)
-![Discord](https://img.shields.io/discord/456442477667418113.svg)
+![Build](https://img.shields.io/travis/com/craftcms/cms/feature/tests.svg?label=Build)
+![Code Coverage](https://img.shields.io/codecov/c/github/craftcms/cms/feature/tests.svg?label=Code%20Coverage)
+![Packagist Downloads](https://img.shields.io/packagist/dt/craftcms/cms.svg?label=Packagist%20Downloads)
+![Latest Stable Release](https://img.shields.io/github/tag/craftcms/cms.svg?label=Latest%20Stable%20Release)
+![Commit Activity](https://img.shields.io/github/commit-activity/m/craftcms/cms.svg?label=Commit%20Activity)
+![Discord](https://img.shields.io/discord/456442477667418113.svg?label=Discord)
 
 ## About Craft CMS
 
