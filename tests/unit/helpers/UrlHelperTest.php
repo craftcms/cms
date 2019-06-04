@@ -351,17 +351,17 @@ class UrlHelperTest extends Unit
         return [
             'test-empty' => ['', '', []],
             'test-simple-endpoint' => [
-                '/nav&param1=entry1&param2=entry2',
+                '%2Fnav&param1=entry1&param2=entry2',
                 'nav',
                 ['param1' => 'entry1', 'param2' => 'entry2']
             ],
             'test-preexisting-endpoints' => [
-                '/nav&param3=entry3&param1=entry1&param2=entry2',
+                '%2Fnav&param3=entry3&param1=entry1&param2=entry2',
                 'nav?param3=entry3',
                 ['param1' => 'entry1', 'param2' => 'entry2']
             ],
             [
-                '/nav&param1=entry1&param2=entry2',
+                '%2Fnav&param1=entry1&param2=entry2',
                 'nav',
                 [
                     'param1' => 'entry1',
@@ -370,7 +370,7 @@ class UrlHelperTest extends Unit
                 'https'
             ],
             'test-url-gets-ignored' => [
-                '/https://test.craftcms.test&param1=entry1&param2=entry2',
+                '%2Fhttps%3A%2F%2Ftest.craftcms.test&param1=entry1&param2=entry2',
                 'https://test.craftcms.test',
                 ['param1' => 'entry1', 'param2' => 'entry2'],
                 'https'
@@ -429,14 +429,14 @@ class UrlHelperTest extends Unit
                 'urlWithParams'
             ],
             'anchor-gets-kept' => [
-                self::ABSOLUTE_URL_HTTPS . '#anchor?param1=entry1&param2=entry2',
+                self::ABSOLUTE_URL_HTTPS . '?param1=entry1&param2=entry2#anchor',
                 self::ABSOLUTE_URL_HTTPS . '#anchor',
                 'param1=entry1&param2=entry2',
                 'urlWithParams'
             ],
             'prev-param-gets-kept' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '#anchor?param3=entry3&param1=entry1&param2=entry2',
-                self::ABSOLUTE_URL_HTTPS_WWW . '#anchor?param3=entry3',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param3=entry3&param1=entry1&param2=entry2#anchor',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param3=entry3#anchor',
                 '?param1=entry1&param2=entry2',
                 'urlWithParams'
             ],
@@ -459,7 +459,7 @@ class UrlHelperTest extends Unit
                 'urlWithParams'
             ],
             '4-spaces' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?    ',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?++++=',
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 '    ',
                 'urlWithParams'
@@ -503,9 +503,9 @@ class UrlHelperTest extends Unit
                 'urlWithToken'
             ],
             [
-                $baseUrl . '?token=value&token=value',
-                $baseUrl . '?token=value',
-                'value',
+                $baseUrl . '?token=value2',
+                $baseUrl . '?token=value1',
+                'value2',
                 'urlWithToken'
             ],
             [
