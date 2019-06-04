@@ -240,7 +240,7 @@ class SearchTest extends Unit
      */
     private function _getSearchIndexValueByAttribute($attributeName, $searchIndex): string
     {
-        foreach (ArrayHelper::filterByValue($searchIndex, 'attribute', $attributeName) as $array) {
+        foreach (ArrayHelper::where($searchIndex, 'attribute', $attributeName) as $array) {
             if (isset($array['keywords'])) {
                 return $array['keywords'];
             }

@@ -173,8 +173,8 @@ class GcTest extends Unit
 
         $this->assertCount(2, $deletedUsers);
 
-        $user3 = ArrayHelper::filterByValue($deletedUsers, 'username', 'user3');
-        $user4 = ArrayHelper::filterByValue($deletedUsers, 'username', 'user4');
+        $user3 = ArrayHelper::where($deletedUsers, 'username', 'user3');
+        $user4 = ArrayHelper::where($deletedUsers, 'username', 'user4');
         $this->assertEmpty($user3);
         $this->assertEmpty($user4);
     }
@@ -242,7 +242,7 @@ class GcTest extends Unit
 
         // Check any non allowed titles. Fail if an entry exists with a title that isn't allowed.
         foreach ($notAllowedTitles as $notAllowedTitle) {
-            $doesEntryExistWithThisTitle = ArrayHelper::filterByValue($entries, 'title', $notAllowedTitle);
+            $doesEntryExistWithThisTitle = ArrayHelper::where($entries, 'title', $notAllowedTitle);
             if ($doesEntryExistWithThisTitle) {
                 $this->fail("Entries were deleted but an entry with title ($notAllowedTitle) still exists");
             }

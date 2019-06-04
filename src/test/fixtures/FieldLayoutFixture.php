@@ -62,9 +62,7 @@ abstract class FieldLayoutFixture extends Fixture
             // Loop through the saved tabs (Which now have an id param)
             foreach ($fieldLayout->getTabs() as $tab) {
                 // Get the content from our fields from the original data array (from $this->dataFile)
-                $tabContent = ArrayHelper::firstValue(
-                    ArrayHelper::filterByValue($tabs, 'name', $tab->name)
-                );
+                $tabContent = ArrayHelper::firstWhere($tabs, 'name', $tab->name);
 
                 $fieldSortOrder = 1;
 
