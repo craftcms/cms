@@ -12,6 +12,7 @@ use Codeception\Module\Yii2;
 use Codeception\PHPUnit\TestCase;
 use Codeception\Stub;
 use Codeception\TestInterface;
+use craft\base\Field;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\db\Query;
@@ -396,9 +397,9 @@ class Craft extends Yii2
     {
         if (\Craft::$app->getQueue() instanceof Queue) {
             $this->assertTrue((new Query())
-                ->select('id')
+                ->select(['id'])
                 ->where(['description' => $description])
-                ->from(Table::QUEUE)
+                ->from([Table::QUEUE])
                 ->exists()
             );
         }
@@ -414,8 +415,10 @@ class Craft extends Yii2
             return null;
         }
 
-        $layoutId = (new Query())->select('layoutId')
-            ->from(Table::FIELDLAYOUTFIELDS)
+        /** @var Field $field */
+        $layoutId = (new Query())
+            ->select(['layoutId'])
+            ->from([Table::FIELDLAYOUTFIELDS])
             ->where(['fieldId' => $field->id])
             ->column();
 

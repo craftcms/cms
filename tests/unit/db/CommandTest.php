@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\db\Command;
 use craft\db\Query;
+use craft\db\Table;
 use DateTime;
 use DateTimeZone;
 use yii\db\Exception;
@@ -24,8 +25,13 @@ use yii\db\Exception;
  */
 class CommandTest extends Unit
 {
-    // Public Methods
+    // Public Properties
     // =========================================================================
+
+    /**
+     * @var DateTime
+     */
+    protected $sessionDate;
 
     // Tests
     // =========================================================================
@@ -44,9 +50,8 @@ class CommandTest extends Unit
     public function testInsertDateCreated()
     {
         $session = $this->ensureSession();
-        $date = new DateTime('now', new DateTimeZone('UTC'));
 
-        $this->assertSame($session['dateCreated'], $date->format('Y-m-d H:i:s'));
+        $this->assertSame($session['dateCreated'], $this->sessionDate->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -83,8 +88,10 @@ class CommandTest extends Unit
      */
     public function ensureSession(): array
     {
+        $this->sessionDate = new DateTime('now', new DateTimeZone('UTC'));
+
         $command = Craft::$app->getDb()->createCommand()
-            ->insert('{{%sessions}}',
+            ->insert(Table::SESSIONS,
                 [
                     'userId' => 1,
                     'token' => 'test'
@@ -109,7 +116,7 @@ class CommandTest extends Unit
     public function updateSession($values): array
     {
         $command = Craft::$app->getDb()->createCommand()
-            ->update('{{%sessions}}', $values)->execute();
+            ->update(Table::SESSIONS, $values)->execute();
 
         $this->assertGreaterThan(0, $command);
 
@@ -127,6 +134,6 @@ class CommandTest extends Unit
      */
     public function getSession(array $params): array
     {
-        return (new Query())->select('*')->from('{{%sessions}}')->where($params)->one();
+        return (new Query())->from([Table::SESSIONS])->where($params)->one();
     }
 }

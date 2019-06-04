@@ -9,6 +9,7 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\db\Table;
 use craft\helpers\Db;
 use craft\test\mockclasses\serializable\Serializable;
 use DateTime;
@@ -477,7 +478,7 @@ class DbHelperTest extends Unit
     public function deleteTablesDataProvider(): array
     {
         return [
-            [0, '{{%users}} users', "[[users.id]] = 1234567890 and [[users.uid]] = 'THISISNOTAUID'"]
+            [0, Table::USERS . ' users', "[[users.id]] = 1234567890 and [[users.uid]] = 'THISISNOTAUID'"]
         ];
     }
 

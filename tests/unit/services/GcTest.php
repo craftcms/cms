@@ -10,13 +10,10 @@ namespace craftunit\services;
 use Codeception\Test\Unit;
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
-use craft\records\EntryType;
-use craft\records\Section;
-use craft\records\Session;
 use craft\records\User;
-use craft\records\Volume;
 use craft\services\Gc;
 use craftunit\fixtures\EntryFixture;
 use craftunit\fixtures\EntryTypeFixture;
@@ -138,8 +135,7 @@ class GcTest extends Unit
         $this->gc->run(true);
 
         $items = (new Query())
-            ->select('*')
-            ->from($table)
+            ->from([$table])
             ->where(['id' => $ids])
             ->all();
 
@@ -161,8 +157,7 @@ class GcTest extends Unit
         $this->gc->run(true);
 
         $users = (new Query())
-            ->select('*')
-            ->from('{{%users}}')
+            ->from(Table::USERS)
             ->where(['username' => ['user1', 'user2', 'user3', 'user4']])
             ->all();
 
@@ -170,17 +165,16 @@ class GcTest extends Unit
         $this->assertCount(4, $users);
 
         $deletedUsers = (new Query())
-            ->select('*')
-            ->from('{{%users}} users')
+            ->from(['users' => Table::USERS])
             ->where(['username' => ['user1', 'user2', 'user3', 'user4']])
-            ->leftJoin('{{%elements}} elements', '[[elements.id]] = [[users.id]]')
-            ->andWhere('[[elements.dateDeleted]] is not null')
+            ->leftJoin(Table::ELEMENTS . ' elements', '[[elements.id]] = [[users.id]]')
+            ->andWhere(['not', ['elements.dateDeleted' => null]])
             ->all();
 
         $this->assertCount(2, $deletedUsers);
 
-        $user3 = ArrayHelper::filterByValue($deletedUsers, 'username', 'user3');
-        $user4 = ArrayHelper::filterByValue($deletedUsers, 'username', 'user4');
+        $user3 = ArrayHelper::where($deletedUsers, 'username', 'user3');
+        $user4 = ArrayHelper::where($deletedUsers, 'username', 'user4');
         $this->assertEmpty($user3);
         $this->assertEmpty($user4);
     }
@@ -196,10 +190,10 @@ class GcTest extends Unit
     public function gcDataProvider(): array
     {
         return [
-            [1, '1005', Session::tableName(), ['1003', '1004', '1005']],
-            [1, '1000', Section::tableName(), ['1000', '1001', '1002']],
-            [1, '1000', EntryType::tableName(), ['1000', '1001', '1002']],
-            [1, '1000', Volume::tableName(), ['1000', '1001', '1002']],
+            [1, '1005', Table::SESSIONS, ['1003', '1004', '1005']],
+            [1, '1000', Table::SECTIONS, ['1000', '1001', '1002']],
+            [1, '1000', Table::ENTRYTYPES, ['1000', '1001', '1002']],
+            [1, '1000', Table::VOLUMES, ['1000', '1001', '1002']],
         ];
     }
 
@@ -231,10 +225,10 @@ class GcTest extends Unit
     {
         // Query with joins is needed to take into account any revisions.
         $totalEntries = (new Query())
-            ->select('entries.id')
-            ->from('{{%entries}} entries')
-            ->leftJoin('{{%elements}} elements', '[[elements.id]] = [[entries.id]]')
-            ->where('[[elements.revisionId]] IS NULL')
+            ->select(['entries.id'])
+            ->from(['entries' => Table::ENTRIES])
+            ->leftJoin(Table::ELEMENTS . ' elements', '[[elements.id]] = [[entries.id]]')
+            ->where(['elements.revisionId' => null])
             ->distinct()
             ->count();
 
@@ -248,7 +242,7 @@ class GcTest extends Unit
 
         // Check any non allowed titles. Fail if an entry exists with a title that isn't allowed.
         foreach ($notAllowedTitles as $notAllowedTitle) {
-            $doesEntryExistWithThisTitle = ArrayHelper::filterByValue($entries, 'title', $notAllowedTitle);
+            $doesEntryExistWithThisTitle = ArrayHelper::where($entries, 'title', $notAllowedTitle);
             if ($doesEntryExistWithThisTitle) {
                 $this->fail("Entries were deleted but an entry with title ($notAllowedTitle) still exists");
             }
