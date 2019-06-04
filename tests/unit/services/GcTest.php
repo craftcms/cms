@@ -168,7 +168,7 @@ class GcTest extends Unit
             ->from(['users' => Table::USERS])
             ->where(['username' => ['user1', 'user2', 'user3', 'user4']])
             ->leftJoin(Table::ELEMENTS . ' elements', '[[elements.id]] = [[users.id]]')
-            ->andWhere('[[elements.dateDeleted]] is not null')
+            ->andWhere(['not', ['elements.dateDeleted' => null]])
             ->all();
 
         $this->assertCount(2, $deletedUsers);
@@ -228,7 +228,7 @@ class GcTest extends Unit
             ->select(['entries.id'])
             ->from(['entries' => Table::ENTRIES])
             ->leftJoin(Table::ELEMENTS . ' elements', '[[elements.id]] = [[entries.id]]')
-            ->where('[[elements.revisionId]] IS NULL')
+            ->where(['elements.revisionId' => null])
             ->distinct()
             ->count();
 
