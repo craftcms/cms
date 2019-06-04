@@ -59,10 +59,10 @@ class LocalizationHelperTest extends Unit
      */
     public function testLanguageNormalizationExceptions()
     {
-        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             Localization::normalizeLanguage('dutch');
         });
-        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             Localization::normalizeLanguage('notalang');
         });
     }
@@ -148,17 +148,19 @@ class LocalizationHelperTest extends Unit
      */
     public function localeDataDataProvider(): array
     {
-        $dir = dirname(__DIR__, 3).'/src/config/locales/nl.php';
+        $dir = dirname(__DIR__, 3) . '/src/config/locales/nl.php';
         $nlTranslation = require $dir;
 
         return [
-            [[
-                'english' => 'language',
-                'spanish' => 'language',
-                'french' => [
-                    'language', 'france'
-                ]
-            ], 'a-locale-id'],
+            [
+                [
+                    'english' => 'language',
+                    'spanish' => 'language',
+                    'french' => [
+                        'language', 'france'
+                    ]
+                ], 'a-locale-id'
+            ],
             ['language', 'another-locale-id'],
             [['language2'], '/sub/another-locale-id'],
             [ArrayHelper::merge($nlTranslation, ['dutch' => 'a language']), 'nl']

@@ -70,20 +70,20 @@ class ConfigHelperTest extends Unit
     public function testDurationSecondsException()
     {
         $this->tester->expectThrowable(
-            InvalidConfigException::class, function () {
-                ConfigHelper::durationInSeconds(true);
+            InvalidConfigException::class, function() {
+            ConfigHelper::durationInSeconds(true);
         });
 
-        $this->tester->expectThrowable(ErrorException::class, function (){
+        $this->tester->expectThrowable(ErrorException::class, function() {
             ConfigHelper::durationInSeconds(['test' => 'test']);
         });
 
-        $this->tester->expectThrowable(ErrorException::class, function (){
+        $this->tester->expectThrowable(ErrorException::class, function() {
             $dateTime = new DateTime('2018-08-08 20:0:00');
             ConfigHelper::durationInSeconds($dateTime);
         });
 
-        $this->tester->expectThrowable(ErrorException::class, function (){
+        $this->tester->expectThrowable(ErrorException::class, function() {
             $std = new stdClass();
             $std->a = 'a';
             ConfigHelper::durationInSeconds($std);
@@ -118,7 +118,11 @@ class ConfigHelperTest extends Unit
             ['imavalue', ['imahandle' => 'imavalue'], 'imahandle'],
 
             // If variable is callable.  Ensure the handle gets passed into the callable.
-            ['imahandle', function($handle){  return $handle; }, 'imahandle'],
+            [
+                'imahandle', function($handle) {
+                return $handle;
+            }, 'imahandle'
+            ],
             ['imaparam', $exampleModel],
             [reset($exampleModel), $exampleModel],
             ['imnotavalue', ['imnotahandle' => 'imnotavalue', 'anotherkey' => 'anothervalue'], 'imahandle'],
@@ -128,7 +132,7 @@ class ConfigHelperTest extends Unit
             [123, 123],
             [false, false],
             [true, true],
-            [12345678901234567890,12345678901234567890 ],
+            [12345678901234567890, 12345678901234567890],
 
         ];
     }

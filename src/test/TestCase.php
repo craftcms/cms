@@ -34,7 +34,7 @@ class TestCase extends Unit
      */
     public function assertObjectIsInstanceOfClassCallback(string $class): callable
     {
-        return function ($object) use ($class) {
+        return function($object) use ($class) {
             $this->assertSame($class, get_class($object));
         };
     }

@@ -10,21 +10,21 @@ namespace craftunit\services;
 
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\db\Query;
 use craft\elements\Entry;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
+use craft\models\EntryDraft as EntryDraftModel;
 use craft\records\EntryDraft;
 use craft\records\EntryVersion;
 use craft\services\EntryRevisions;
-use craftunit\fixtures\EntryFixture;
 use craftunit\fixtures\EntryDraftsFixture;
-use \craft\models\EntryDraft as EntryDraftModel;
-use UnitTester;
-use Craft;
+use craftunit\fixtures\EntryFixture;
 use Throwable;
+use UnitTester;
 use yii\base\Exception;
 
 /**
@@ -55,7 +55,7 @@ class EntryRevisionsTest extends Unit
     /**
      * @return array
      */
-    public function _fixtures() : array
+    public function _fixtures(): array
     {
         return [
             'entries' => [
@@ -69,6 +69,7 @@ class EntryRevisionsTest extends Unit
 
     /**
      * Test various features of publishing an entry draft.
+     *
      * @throws \yii\db\Exception
      */
     public function testPublishDraftPublishesDraft()
@@ -170,7 +171,7 @@ class EntryRevisionsTest extends Unit
         $this->entryRevisions->publishDraft($entryDraft);
 
         // Ensure that our own notes dont get overriden
-        $this->assertSame( 'Custom revision notes', $entryDraft->revisionNotes);
+        $this->assertSame('Custom revision notes', $entryDraft->revisionNotes);
     }
 
     /**
@@ -230,7 +231,7 @@ class EntryRevisionsTest extends Unit
      * @throws InvalidElementException
      * @throws Throwable
      */
-    protected function _setupEntryRevert(string $entryTitle, array $changes = []) : array
+    protected function _setupEntryRevert(string $entryTitle, array $changes = []): array
     {
         $entry = Entry::find()
             ->title($entryTitle)
@@ -244,7 +245,7 @@ class EntryRevisionsTest extends Unit
             throw new InvalidElementException($entry);
         }
 
-        $versions = $this->entryRevisions->getVersionsByEntryId($entry->id, null, null,true);
+        $versions = $this->entryRevisions->getVersionsByEntryId($entry->id, null, null, true);
         $v1 = ArrayHelper::firstValue(
             ArrayHelper::filterByValue(
                 $versions,
@@ -261,7 +262,7 @@ class EntryRevisionsTest extends Unit
      * @return EntryDraftModel
      * @throws \yii\db\Exception
      */
-    protected function _setupEntryDraft(Entry $entry) : EntryDraftModel
+    protected function _setupEntryDraft(Entry $entry): EntryDraftModel
     {
         Craft::$app->getDb()->createCommand()->insert(EntryDraft::tableName(), [
             'entryId' => $entry->id,
@@ -269,13 +270,14 @@ class EntryRevisionsTest extends Unit
             'siteId' => $entry->siteId,
             'creatorId' => 1,
             'name' => 'Data',
-            'data' => '{"typeId":"'.$entry->typeId.'","authorId":"1","title":"Not pending","slug":"not-pending","expiryDate":null,"enabled":true}'
+            'data' => '{"typeId":"' . $entry->typeId . '","authorId":"1","title":"Not pending","slug":"not-pending","expiryDate":null,"enabled":true}'
         ])->execute();
 
         return ArrayHelper::firstValue(
             Craft::$app->getEntryRevisions()->getDraftsByEntryId($entry->id)
         );
     }
+
     /**
      * @inheritdoc
      */

@@ -50,7 +50,7 @@ class SearchTest extends Unit
     {
         return [
             'users' => [
-              'class' => UsersFixture::class,
+                'class' => UsersFixture::class,
             ]
         ];
     }
@@ -160,7 +160,7 @@ class SearchTest extends Unit
             [['user4', 'user1', 'user2', 'user3'], [], 'user', true, 1, false],
             [['user1', 'user2', 'user3'], ['user1', 'user2', 'user3'], 'user', true, 1, false],
             [['user4'], ['user1', 'user2', 'user3', 'user4'], 'user someemail', true, 1, false],
-            [[], ['user1', 'user2', 'user3'], 'user someemail', true, 1, false ],
+            [[], ['user1', 'user2', 'user3'], 'user someemail', true, 1, false],
 
             // This should work. If you want an empty slug you should try: -slug:*
             [[], ['user1', 'user2', 'user3', 'user4'], 'slug:', true, 1, false],
@@ -168,7 +168,7 @@ class SearchTest extends Unit
 
             // User4 goes first as it has both user and someemail keywords
             [['user4', 'user1', 'user2', 'user3'], ['user1', 'user2', 'user3', 'user4'], 'user OR someemail', true, 1, false],
-            [['user4', 'user1'], ['user1', 'user2', 'user3', 'user4'],'someemail OR -firstname:*', true, 1, false],
+            [['user4', 'user1'], ['user1', 'user2', 'user3', 'user4'], 'someemail OR -firstname:*', true, 1, false],
         ];
     }
 
@@ -179,7 +179,8 @@ class SearchTest extends Unit
     {
         return [
             [
-                [['identifier' => 'user1', 'score' => 13.333333333333332]
+                [
+                    ['identifier' => 'user1', 'score' => 13.333333333333332]
                 ], ['user1'], 'user', true, 1
             ],
             [
@@ -202,7 +203,7 @@ class SearchTest extends Unit
                 [
                     ['identifier' => 'user4', 'score' => 1.6666666666666665],
                     ['identifier' => 'user1', 'score' => 0.0],
-                ],['user1', 'user2', 'user3', 'user4'],'someemail OR -firstname:*', true, 1
+                ], ['user1', 'user2', 'user3', 'user4'], 'someemail OR -firstname:*', true, 1
             ],
             [
                 [
@@ -236,7 +237,7 @@ class SearchTest extends Unit
      * @param $searchIndex
      * @return string
      */
-    private function _getSearchIndexValueByAttribute($attributeName, $searchIndex) : string
+    private function _getSearchIndexValueByAttribute($attributeName, $searchIndex): string
     {
         foreach (ArrayHelper::filterByValue($searchIndex, 'attribute', $attributeName) as $array) {
             if (isset($array['keywords'])) {

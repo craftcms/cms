@@ -32,7 +32,7 @@ class SitesFixture extends Fixture
     /**
      * @inheritdoc
      */
-    public $dataFile = __DIR__.'/data/sites.php';
+    public $dataFile = __DIR__ . '/data/sites.php';
 
     // Public Methods
     // =========================================================================

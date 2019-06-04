@@ -125,18 +125,20 @@ class MailerTest extends TestCase
     public function testMessageProperties()
     {
         /* @todo: This is failing on Travis with:
-
-        Expected: Craft CMS || info@craftcms.com
-        Actual: Craft || info@craftcms.com
-
-        No idea why... works for me locally, but going to mark it as incomplete until I can look into it.
-        */
+         *
+         * Expected: Craft CMS || info@craftcms.com
+         * Actual: Craft || info@craftcms.com
+         *
+         * No idea why... works for me locally, but going to mark it as incomplete until I can look into it.
+         */
         $this->markTestIncomplete();
         Craft::$app->getProjectConfig()->set('email', ['fromName' => '$FROM_EMAIL_NAME', 'fromEmail' => '$FROM_EMAIL_ADDRESS']);
-        $this->tester->mockCraftMethods('systemMessages', ['getMessage' => new SystemMessage([
-            'body' => '{{fromEmail}} || {{fromName}}',
-            'subject' => '{{fromName}} || {{fromEmail}}',
-        ])]);
+        $this->tester->mockCraftMethods('systemMessages', [
+            'getMessage' => new SystemMessage([
+                'body' => '{{fromEmail}} || {{fromName}}',
+                'subject' => '{{fromName}} || {{fromEmail}}',
+            ])
+        ]);
 
         $this->_sendMail();
 
@@ -202,7 +204,7 @@ class MailerTest extends TestCase
      */
     public function fromKeyCompositionDataProvider(): array
     {
-        return[
+        return [
             ['account_activation', []],
             ['not_a_key that exists']
         ];

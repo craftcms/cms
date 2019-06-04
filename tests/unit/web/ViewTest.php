@@ -11,12 +11,12 @@ use Codeception\Stub;
 use Craft;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\Json;
+use craft\test\Craft as CraftTest;
 use craft\test\mockclasses\arrayable\ExampleArrayble;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
 use craftunit\fixtures\SitesFixture;
-use craft\test\Craft as CraftTest;
 use ReflectionException;
 use Throwable;
 use Twig\Error\LoaderError;
@@ -123,7 +123,7 @@ class ViewTest extends TestCase
      * @param null $templateExtensions
      * @param null $viewTemplateNameExtensions
      * @throws ReflectionException
-     * @see testDoesTemplateExistsInSite
+     * @see                testDoesTemplateExistsInSite
      */
     public function testPrivateResolveTemplate($result, $basePath, $name, $templateExtensions = null, $viewTemplateNameExtensions = null)
     {
@@ -256,7 +256,7 @@ class ViewTest extends TestCase
      */
     public function testTemplateModeException()
     {
-        $this->tester->expectThrowable(Exception::class, function () {
+        $this->tester->expectThrowable(Exception::class, function() {
             $this->view->setTemplateMode('i dont exist');
         });
     }
@@ -287,10 +287,10 @@ class ViewTest extends TestCase
         $this->setInaccessibleProperty($this->view, '_hooks', [
             'demoHook' => [
                 function() {
-            return '22';
+                    return '22';
                 },
                 function($val) {
-            return $val[0];
+                    return $val[0];
                 }
             ]
         ]);
@@ -350,7 +350,7 @@ class ViewTest extends TestCase
      */
     public function testGetTemplateRoots($result, $which, $rootsToBeAdded)
     {
-        Event::on(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function (RegisterTemplateRootsEvent $event) use ($rootsToBeAdded){
+        Event::on(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function(RegisterTemplateRootsEvent $event) use ($rootsToBeAdded) {
             $event->roots = $rootsToBeAdded;
         });
 
@@ -363,10 +363,10 @@ class ViewTest extends TestCase
      */
     public function testGetTemplateRootsEvents()
     {
-        $this->tester->expectEvent(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function () {
+        $this->tester->expectEvent(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function() {
             $this->_getTemplateRoots('cp');
         });
-        $this->tester->expectEvent(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function () {
+        $this->tester->expectEvent(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function() {
             $this->_getTemplateRoots('doesnt-matter-what-this-is');
         });
     }
@@ -594,7 +594,7 @@ class ViewTest extends TestCase
             $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[{$category}][{$message}] = {$translation};";
         }
 
-        return "if (typeof Craft.translations[{$category}] === 'undefined') {".PHP_EOL."    Craft.translations[{$category}] = {};".PHP_EOL. '}' .PHP_EOL.$js;
+        return "if (typeof Craft.translations[{$category}] === 'undefined') {" . PHP_EOL . "    Craft.translations[{$category}] = {};" . PHP_EOL . '}' . PHP_EOL . $js;
     }
 
     /**
@@ -607,10 +607,12 @@ class ViewTest extends TestCase
         $this->view = Stub::construct(
             View::class,
             [],
-            ['registerJs' => function ($inputJs, $inputPosition) use ($desiredJs, $desiredPosition) {
-                $this->assertSame($desiredJs, $inputJs);
-                $this->assertSame($desiredPosition, $inputPosition);
-            }]
+            [
+                'registerJs' => function($inputJs, $inputPosition) use ($desiredJs, $desiredPosition) {
+                    $this->assertSame($desiredJs, $inputJs);
+                    $this->assertSame($desiredPosition, $inputPosition);
+                }
+            ]
         );
     }
 

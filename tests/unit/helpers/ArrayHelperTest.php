@@ -151,7 +151,7 @@ class ArrayHelperTest extends Unit
 
         $filtered = ArrayHelper::filterByValue($array, 'name', 'array 1');
         $this->assertCount(1, $filtered);
-        $this->assertSame( 'the first array', $filtered[0]['description']);
+        $this->assertSame('the first array', $filtered[0]['description']);
 
         // Set the name to empty and see if we can filter by keys with an empty value
         $array[0]['name'] = '';
@@ -174,13 +174,13 @@ class ArrayHelperTest extends Unit
         // See if we can filter by an array as a value.
         $this->assertSame([['name' => ['testname' => true]]],
             ArrayHelper::filterByValue(
-            [
-                ['name' => ['testname' => true]],
-                ['name' => '22'],
-            ],
-            'name',
-            ['testname' => true]
-        ));
+                [
+                    ['name' => ['testname' => true]],
+                    ['name' => '22'],
+                ],
+                'name',
+                ['testname' => true]
+            ));
 
         // Strict will only return 1. Non strict will typecast integer to string and thus find 2.
         $this->assertCount(2,
@@ -209,14 +209,14 @@ class ArrayHelperTest extends Unit
         $this->assertSame(
             [['name' => 'john']],
             ArrayHelper::filterByValue(
-            [
-                ['name' => 'john'],
-                ['name' => 'michael'],
-            ],
-            'name',
-            'john',
-            true
-        ));
+                [
+                    ['name' => 'john'],
+                    ['name' => 'michael'],
+                ],
+                'name',
+                'john',
+                true
+            ));
 
         $this->assertSame(
             [['name' => 'john']],
@@ -225,7 +225,7 @@ class ArrayHelperTest extends Unit
                     ['name' => 'john'],
                     ['name' => 'michael'],
                 ],
-                function ($array){
+                function($array) {
                     return $array['name'];
                 },
                 'john',
@@ -237,7 +237,7 @@ class ArrayHelperTest extends Unit
                 'name' => '',
                 'description' => 'the first array',
                 '' => '',
-                '😀' =>'😘'
+                '😀' => '😘'
 
             ],
             [
@@ -265,9 +265,9 @@ class ArrayHelperTest extends Unit
         $stdClass->prop2 = '22';
         $stdClass->prop3 = $stdClass2;
 
-        return[
+        return [
             [[], null],
-            [[], null], [[1,2,3], [1,2,3]],
+            [[], null], [[1, 2, 3], [1, 2, 3]],
             [['prop1' => '11', 'prop2' => '22', 'prop3' => ['subProp' => 'value']], $stdClass],
         ];
     }
@@ -278,10 +278,10 @@ class ArrayHelperTest extends Unit
     public function prependOrAppendDataProvider(): array
     {
         return [
-            [[1, 2, 3, 4],  [1, 2, 3], 4, false],
-            [[4, 1, 2, 3],  [1, 2, 3], 4, true],
-            [[1, 2, 3, ['22']],  [1, 2, 3], ['22'], false],
-            [[1, 2, 3, null],  [1, 2, 3], null, false],
+            [[1, 2, 3, 4], [1, 2, 3], 4, false],
+            [[4, 1, 2, 3], [1, 2, 3], 4, true],
+            [[1, 2, 3, ['22']], [1, 2, 3], ['22'], false],
+            [[1, 2, 3, null], [1, 2, 3], null, false],
         ];
     }
 

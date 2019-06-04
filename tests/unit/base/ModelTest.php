@@ -76,6 +76,7 @@ class ModelTest extends Unit
 
         $this->assertSame('2018-11-12 20:00:00', $model->exampleParam);
     }
+
     /**
      * Test that if you create an empty model and then set the param it isn't converted to \DateTime
      */
@@ -94,7 +95,7 @@ class ModelTest extends Unit
     {
         $model1 = new ExampleModel();
         $model2 = new ExampleModel();
-        $model2->addError('exampleParam','thisAintGood');
+        $model2->addError('exampleParam', 'thisAintGood');
 
         $model1->addModelErrors($model2);
 
@@ -110,10 +111,10 @@ class ModelTest extends Unit
     public function testMergingWithExistingParams()
     {
         $model1 = new ExampleModel();
-        $model1->addError('exampleParam','thisAintGood');
+        $model1->addError('exampleParam', 'thisAintGood');
 
         $model2 = new ExampleModel();
-        $model2->addError('exampleParam','alsoAintGood');
+        $model2->addError('exampleParam', 'alsoAintGood');
 
         $model1->addModelErrors($model2);
 
@@ -130,10 +131,10 @@ class ModelTest extends Unit
     public function testAttributePrefix()
     {
         $model1 = new ExampleModel();
-        $model1->addError('exampleParam','thisAintGood');
+        $model1->addError('exampleParam', 'thisAintGood');
 
         $model2 = new ExampleModel();
-        $model2->addError('exampleParam','alsoAintGood');
+        $model2->addError('exampleParam', 'alsoAintGood');
 
         $model1->addModelErrors($model2, '-custom-');
 

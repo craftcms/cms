@@ -54,7 +54,7 @@ class ControllerTest extends Unit
      */
     public function testBeforeAction()
     {
-        $this->tester->expectThrowable(ExitException::class, function () {
+        $this->tester->expectThrowable(ExitException::class, function() {
             // AllowAnonymous should redirect and Craft::$app->exit(); I.E. An exit exception
             $this->controller->beforeAction(new Action('not-allow-anonymous', $this->controller));
         });
@@ -135,7 +135,7 @@ class ControllerTest extends Unit
         // What happens when we pass in a param.
         Craft::$app->getRequest()->setBodyParams(['redirect' => $redirect]);
         $default = $this->controller->redirectToPostedUrl();
-        $this->assertSame($baseUrl.'?p=craft/do/stuff', $default->headers->get('Location'));
+        $this->assertSame($baseUrl . '?p=craft/do/stuff', $default->headers->get('Location'));
     }
 
     /**
@@ -145,8 +145,7 @@ class ControllerTest extends Unit
     {
         $baseUrl = $this->_getBaseUrlForRedirect();
         $withDefault = $this->controller->redirectToPostedUrl(null, 'craft/do/stuff');
-        $this->assertSame($baseUrl.'?p=craft/do/stuff', $withDefault->headers->get('Location'));
-
+        $this->assertSame($baseUrl . '?p=craft/do/stuff', $withDefault->headers->get('Location'));
     }
 
     /**
@@ -185,7 +184,7 @@ class ControllerTest extends Unit
     public function testRedirect()
     {
         $this->assertSame(
-            $this->_getBaseUrlForRedirect().'?p=do/stuff',
+            $this->_getBaseUrlForRedirect() . '?p=do/stuff',
             $this->controller->redirect('do/stuff')->headers->get('Location')
         );
 
@@ -233,6 +232,6 @@ class ControllerTest extends Unit
     private function _getBaseUrlForRedirect(): string
     {
         $scheme = $this->_determineUrlScheme();
-        return UrlHelper::urlWithScheme(Craft::$app->getConfig()->getGeneral()->siteUrl.'index.php', $scheme);
+        return UrlHelper::urlWithScheme(Craft::$app->getConfig()->getGeneral()->siteUrl . 'index.php', $scheme);
     }
 }

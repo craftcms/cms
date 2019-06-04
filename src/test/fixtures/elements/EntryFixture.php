@@ -7,8 +7,8 @@
 
 namespace craft\test\fixtures\elements;
 
-use craft\elements\Entry;
 use Craft;
+use craft\elements\Entry;
 
 /**
  * Class EntryFixture

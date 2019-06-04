@@ -47,8 +47,8 @@ class RoutesTest extends Unit
      * @dataProvider saveRouteDataProvider
      *
      * @param $result
-     * @param array       $uriParts
-     * @param string      $template
+     * @param array $uriParts
+     * @param string $template
      * @param string|null $siteUid
      * @param string|null $routeUid
      */
@@ -58,7 +58,7 @@ class RoutesTest extends Unit
 
         $this->assertSame(
             $result,
-            Craft::$app->getProjectConfig()->get(Routes::CONFIG_ROUTES_KEY.'.'.$routeUUID)
+            Craft::$app->getProjectConfig()->get(Routes::CONFIG_ROUTES_KEY . '.' . $routeUUID)
         );
 
         $this->assertTrue(StringHelper::isUUID($routeUUID));
@@ -110,7 +110,7 @@ class RoutesTest extends Unit
                     'sortOrder' => 1,
                     'siteUid' => null
                 ],
-                [['validHandle', 'date'], ['!@#$%^&*(', 'validHandle'],  ['validHandle', '!@#$%^&*(']], '_test'
+                [['validHandle', 'date'], ['!@#$%^&*(', 'validHandle'], ['validHandle', '!@#$%^&*(']], '_test'
             ],
             [
                 [

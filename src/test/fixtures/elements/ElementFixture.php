@@ -8,14 +8,13 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
-use craft\db\Query;
+use craft\base\Element;
 use craft\errors\InvalidElementException;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\test\ActiveFixture;
-use craft\base\Element;
 
 /**
  * Class ElementFixture is a base class for setting up fixtures for Craft 3's element types.
@@ -38,7 +37,7 @@ abstract class ElementFixture extends ActiveFixture
     protected $siteIds = [];
 
     /**
-     * @var array 
+     * @var array
      */
     protected $ids = [];
 

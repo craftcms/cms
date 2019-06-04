@@ -9,10 +9,10 @@ namespace craftunit\web;
 
 use Craft;
 use craft\elements\User as UserElement;
-use craft\web\User as WebUser;
 use craft\errors\UserLockedException;
 use craft\services\Config;
 use craft\test\TestCase;
+use craft\web\User as WebUser;
 use ReflectionException;
 use UnitTester;
 
@@ -248,9 +248,11 @@ class UserTest extends TestCase
      */
     private function _ensureSetSessionIsOfValue($value)
     {
-        $this->tester->mockCraftMethods('session', ['set' => function($name, $val) use ($value) {
-            $this->assertSame($value, $val);
-        }]);
+        $this->tester->mockCraftMethods('session', [
+            'set' => function($name, $val) use ($value) {
+                $this->assertSame($value, $val);
+            }
+        ]);
     }
 
     /**

@@ -4,6 +4,7 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit\db;
 
 use Codeception\Test\Unit;
@@ -75,7 +76,7 @@ class ActiveRecordTest extends Unit
 
         $dateTimeZone = new DateTimeZone('UTC');
         $date = new DateTime('now', $dateTimeZone);
-        $oldDate  = new DateTime($session->dateUpdated, $dateTimeZone);
+        $oldDate = new DateTime($session->dateUpdated, $dateTimeZone);
 
         $this->assertGreaterThan($oldDate, $date);
 
@@ -140,6 +141,7 @@ class ActiveRecordTest extends Unit
             [false, false],
         ];
     }
+
     /**
      * Test that values cannot be overwritten.
      *
@@ -149,7 +151,7 @@ class ActiveRecordTest extends Unit
     {
         $utcTz = new DateTimeZone('UTC');
         $oneDayAgo = new DateTime('-1 day', $utcTz);
-        $now =  new DateTime('now', $utcTz);
+        $now = new DateTime('now', $utcTz);
 
         $uuid = StringHelper::UUID();
 
@@ -200,7 +202,7 @@ class ActiveRecordTest extends Unit
     /**
      * @return Session
      */
-    public function ensureSession() : Session
+    public function ensureSession(): Session
     {
         $session = new Session();
         $session->userId = 1;

@@ -80,7 +80,7 @@ class Fixture extends ActiveFixture
      * @param string $column
      * @return array $row
      */
-    public function ensureColumnIntegrity(TableSchema $table, array $row, string $column) : array
+    public function ensureColumnIntegrity(TableSchema $table, array $row, string $column): array
     {
         if (!isset($table->columns[$column])) {
             unset($row[$column]);

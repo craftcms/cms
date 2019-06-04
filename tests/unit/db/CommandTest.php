@@ -61,7 +61,7 @@ class CommandTest extends Unit
 
         $dateTimeZone = new DateTimeZone('UTC');
         $date = new DateTime('now', $dateTimeZone);
-        $oldDate  = new DateTime($session['dateUpdated'], $dateTimeZone);
+        $oldDate = new DateTime($session['dateUpdated'], $dateTimeZone);
 
         $this->assertGreaterThan($oldDate, $date);
 
@@ -77,7 +77,7 @@ class CommandTest extends Unit
      * @return array
      * @throws Exception
      */
-    public function ensureSession() : array
+    public function ensureSession(): array
     {
         $command = Craft::$app->getDb()->createCommand()
             ->insert('{{%sessions}}',
@@ -121,7 +121,7 @@ class CommandTest extends Unit
      * @param array $params
      * @return array
      */
-    public function getSession(array $params) : array
+    public function getSession(array $params): array
     {
         return (new Query())->select('*')->from('{{%sessions}}')->where($params)->one();
     }

@@ -25,7 +25,7 @@ class EntryTypeFixture extends Fixture
     /**
      * @inheritdoc
      */
-    public $dataFile = __DIR__.'/data/entry-types.php';
+    public $dataFile = __DIR__ . '/data/entry-types.php';
 
     /**
      * @inheritdoc

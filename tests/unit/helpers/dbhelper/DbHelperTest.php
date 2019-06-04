@@ -7,10 +7,10 @@
 
 namespace craftunit\helpers;
 
+use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\Db;
 use craft\test\mockclasses\serializable\Serializable;
-use Codeception\Test\Unit;
 use DateTime;
 use DateTimeZone;
 use stdClass;
@@ -171,15 +171,15 @@ class DbHelperTest extends Unit
     }
 
     /**
-     * @todo Set this up with a fixture or a migration so that we can *actually* delete tables
-     *
-     * @dataProvider deleteTablesDataProvider
-     *
      * @param $result
      * @param string $table
      * @param string $condition
      * @param array $params
      * @throws Exception
+     * @todo Set this up with a fixture or a migration so that we can *actually* delete tables
+     *
+     * @dataProvider deleteTablesDataProvider
+     *
      */
     public function testDeleteIfExists($result, string $table, $condition = '', array $params = [])
     {
@@ -191,7 +191,7 @@ class DbHelperTest extends Unit
      */
     public function testDeleteIfExistsException()
     {
-        $this->tester->expectThrowable(Exception::class, function () {
+        $this->tester->expectThrowable(Exception::class, function() {
             Db::deleteIfExists('iamnotatable12345678900987654321');
         });
     }
@@ -254,12 +254,12 @@ class DbHelperTest extends Unit
     }
 
     /**
+     * @param $result
+     * @param $input
      * @todo Why do all these fail?
      *
      * @dataProvider isNumericDataProvider
      *
-     * @param $result
-     * @param $input
      */
     public function testIsNumericColumnType($result, $input)
     {
@@ -325,7 +325,7 @@ class DbHelperTest extends Unit
     {
         return [
             'basic' => [
-                ['or', [ 'in', 'foo', [ 'bar']]],
+                ['or', ['in', 'foo', ['bar']]],
                 'foo', 'bar'
             ],
             'multi-array-format' => [
@@ -345,23 +345,28 @@ class DbHelperTest extends Unit
                 'content_table', 'field_1, field_2', '!='
             ],
             'empty' => [
-                ['or',[
+                [
+                    'or', [
                     'in',
-                    '',[
+                    '', [
                         'field_1',
-                    ]]],
+                    ]
+                ]
+                ],
                 '', 'field_1',
             ],
             'random-symbol' => [
-                ['or',
-                    ['raaa',  'content_table', 'field_1'],
+                [
+                    'or',
+                    ['raaa', 'content_table', 'field_1'],
                 ],
                 'content_table', 'field_1', 'raaa',
             ],
             'random-symbol-multi' => [
-                ['or',
-                    ['raaa',  'content_table', 'field_1'],
-                    [ 'raaa', 'content_table', 'field_2' ]
+                [
+                    'or',
+                    ['raaa', 'content_table', 'field_1'],
+                    ['raaa', 'content_table', 'field_2']
                 ],
                 'content_table', 'field_1, field_2', 'raaa',
             ],
@@ -371,11 +376,11 @@ class DbHelperTest extends Unit
             ['', 'content', null],
             ['', 'contentCol', ''],
 
-            'firstval-or' =>[
+            'firstval-or' => [
                 ['or', ['in', 'content_table', ['field_1', 'field_2']]],
                 'content_table', ['or', 'field_1', 'field_2'],
             ],
-            'firstval-not' =>[
+            'firstval-not' => [
                 ['and', ['not in', 'content_table', ['field_1', 'field_2']]],
                 'content_table', ['not', 'field_1', 'field_2'],
             ],
@@ -420,14 +425,14 @@ class DbHelperTest extends Unit
         return [
             'smallint1-minus' => ['smallint(1)', -0, -5],
             'smallint1' => ['smallint(1)', 0, 5],
-            'smallint1-minus-string' => [ 'smallint(1)', '-2', '-5',],
+            'smallint1-minus-string' => ['smallint(1)', '-2', '-5',],
             'smallint1-string' => ['smallint(1)', '0', '5'],
             'smallint0' => ['smallint(0)', 0, 0],
             'smallint2' => ['smallint(2)', 0, 10],
             'smallint3' => ['smallint(3)', 0, 100],
             'smallint3-2' => ['smallint(3)', 100, 0],
             'smallint7' => ['integer(7)', 0, 1231224],
-            'smallint9' => [ 'integer(9)', 0, 230221224],
+            'smallint9' => ['integer(9)', 0, 230221224],
             'non-numeric' => ['integer(10)', null, null],
             'decimals' => ['decimal(6,2)', 123, 1233, 2],
         ];

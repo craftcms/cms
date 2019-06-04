@@ -42,7 +42,7 @@ class VolumesFixture extends Fixture
     /**
      * @inheritdoc
      */
-    public $dataFile = __DIR__.'/data/volumes.php';
+    public $dataFile = __DIR__ . '/data/volumes.php';
 
     // Public Methods
     // =========================================================================

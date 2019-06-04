@@ -75,7 +75,7 @@ class AssetsHelperTest extends Unit
     public function testTempFilePath()
     {
         $tempPath = Assets::tempFilePath();
-        $this->assertNotFalse(strpos($tempPath, ''.DIRECTORY_SEPARATOR.'_craft'.DIRECTORY_SEPARATOR.'storage'.DIRECTORY_SEPARATOR.'runtime'.DIRECTORY_SEPARATOR.'temp'));
+        $this->assertNotFalse(strpos($tempPath, '' . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'temp'));
         $tempPath = Assets::tempFilePath('test');
         $this->assertNotFalse(strpos($tempPath, '.test'));
     }
@@ -173,13 +173,13 @@ class AssetsHelperTest extends Unit
      */
     public function testParseFileLocationException()
     {
-        $this->tester->expectThrowable(Exception::class, function (){
+        $this->tester->expectThrowable(Exception::class, function() {
             Assets::parseFileLocation('!@#$%^&*()_');
         });
-        $this->tester->expectThrowable(Exception::class, function (){
+        $this->tester->expectThrowable(Exception::class, function() {
             Assets::parseFileLocation('');
         });
-        $this->tester->expectThrowable(Exception::class, function (){
+        $this->tester->expectThrowable(Exception::class, function() {
             Assets::parseFileLocation('{folder:string}.');
         });
     }

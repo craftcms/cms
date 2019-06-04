@@ -128,10 +128,10 @@ class GcTest extends Unit
     /**
      * @dataProvider gcDataProvider
      *
-     * @param int    $remainingCount
+     * @param int $remainingCount
      * @param string $leftoverId
      * @param string $table
-     * @param array  $ids
+     * @param array $ids
      */
     public function testGc(int $remainingCount, string $leftoverId, string $table, array $ids)
     {
@@ -189,9 +189,9 @@ class GcTest extends Unit
     // =========================================================================
 
     /**
+     * @return array
      * @todo Other GC tables
      *
-     * @return array
      */
     public function gcDataProvider(): array
     {
@@ -224,7 +224,7 @@ class GcTest extends Unit
      * to indicate how many entries should be deleted and a $notAllowedTitles to
      * indicate what titles are not allowed to be present.
      *
-     * @param int        $expectedRemoval
+     * @param int $expectedRemoval
      * @param array|null $notAllowedTitles
      */
     private function _doEntryTest(int $expectedRemoval, array $notAllowedTitles = null)

@@ -55,7 +55,7 @@ class FileTargetTest extends TestCase
     public function testgetMessagePrefixWithUserFunc()
     {
         $wasCalled = false;
-        $this->fileTarget->prefix = function ($mess) use (&$wasCalled) {
+        $this->fileTarget->prefix = function($mess) use (&$wasCalled) {
             $wasCalled = true;
             $this->assertSame('message', $mess);
         };
@@ -117,16 +117,17 @@ class FileTargetTest extends TestCase
 
         $stubArray = Craft::$app->getComponents();
 
-        $stubArray['request']  = Stub::construct(Request::class, [], ['getUserIp' => '192.168.10.10']);
+        $stubArray['request'] = Stub::construct(Request::class, [], ['getUserIp' => '192.168.10.10']);
         $stubArray['user'] = Stub::construct(\craft\web\User::class, [['identityClass' => User::class]], ['getIdentity' => $identityStub]);
         $stubArray['session'] = Stub::construct(Session::class, [], ['getIsActive' => true, 'getId' => '999']);
 
         Craft::$app = Stub::make(Application::class, [
                 'has' => true,
                 'getRequest' => $stubArray['request'],
-                'get' => function ($type) use ($stubArray) {
+                'get' => function($type) use ($stubArray) {
                     return $stubArray[$type] ?? null;
-                }]
+                }
+            ]
         );
     }
 }

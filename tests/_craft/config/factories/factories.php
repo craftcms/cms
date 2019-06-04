@@ -7,5 +7,5 @@ $faker = Factory::create();
 
 $fm->define(Session::class)->setDefinitions([
     'userId' => '1',
-    'token'  => $faker->text(36),
+    'token' => $faker->text(36),
 ]);

@@ -9,9 +9,9 @@ namespace craft\test;
 
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module\Yii2;
+use Codeception\PHPUnit\TestCase;
 use Codeception\Stub;
 use Codeception\TestInterface;
-use Codeception\PHPUnit\TestCase;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\db\Query;
@@ -127,7 +127,7 @@ class Craft extends Yii2
         parent::_initialize();
 
         $config = $this->_getConfig();
-        Craft::$testConfig =  $config;
+        Craft::$testConfig = $config;
 
         if ($config['fullMock'] !== true) {
             $this->setupDb();
@@ -284,7 +284,8 @@ class Craft extends Yii2
      * @throws Throwable
      * @throws InvalidPluginException
      */
-    public function installPlugin(array $plugin) {
+    public function installPlugin(array $plugin)
+    {
         if (!\Craft::$app->getPlugins()->installPlugin($plugin['handle'])) {
             throw new InvalidConfigException('Invalid plugin handle: ' . $plugin['handle'] . '');
         }
@@ -293,7 +294,7 @@ class Craft extends Yii2
     /**
      * @return string
      */
-    public static function getCodeceptionName() : string
+    public static function getCodeceptionName(): string
     {
         return '\craft\test\Craft';
     }
@@ -330,7 +331,7 @@ class Craft extends Yii2
         $eventTriggered = false;
 
         // Listen to this event and log it.
-        Event::on($class, $eventName, function ($event) use (&$eventTriggered, $eventInstance, $eventValues) {
+        Event::on($class, $eventName, function($event) use (&$eventTriggered, $eventInstance, $eventValues) {
             $eventTriggered = true;
 
             if ($eventInstance && !$event instanceof $eventInstance) {
@@ -435,7 +436,7 @@ class Craft extends Yii2
      * @param array $config
      * @return array
      */
-    public function createEventItems(array $config = []) : array
+    public function createEventItems(array $config = []): array
     {
         $items = [];
         foreach ($config as $configItem) {
@@ -450,7 +451,7 @@ class Craft extends Yii2
      *
      * @return DbConfig
      */
-    public static function createDbConfig() : DbConfig
+    public static function createDbConfig(): DbConfig
     {
         return new DbConfig([
             'password' => getenv('DB_PASSWORD'),
@@ -537,6 +538,7 @@ class Craft extends Yii2
         // Set it.
         \Craft::$app->loadedModules[$moduleClass] = TestSetup::getMockApp($test, $componentMap, $moduleClass);
     }
+
     /**
      * @inheritdoc
      *

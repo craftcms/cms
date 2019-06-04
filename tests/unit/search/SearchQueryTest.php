@@ -60,7 +60,7 @@ class SearchQueryTest extends Unit
      * @param $config
      * @return SearchQueryTerm
      */
-    public function createDefaultSearchQueryTermFromString(string $term, array $config) : SearchQueryTerm
+    public function createDefaultSearchQueryTermFromString(string $term, array $config): SearchQueryTerm
     {
         if (!isset($config['term'])) {
             $config['term'] = $term;
@@ -99,7 +99,7 @@ class SearchQueryTest extends Unit
     public function ensureIdenticalSearchTermObjects(SearchQueryTerm $one, SearchQueryTerm $two)
     {
         $this->assertSame([
-            $one->exclude, $one->exact, $one->subLeft, $one->subRight,$one->attribute, $one->term, $one->phrase
+            $one->exclude, $one->exact, $one->subLeft, $one->subRight, $one->attribute, $one->term, $one->phrase
         ], [$two->exclude, $two->exact, $two->subLeft, $two->subRight, $two->attribute, $two->term, $two->phrase]);
     }
 
@@ -109,7 +109,8 @@ class SearchQueryTest extends Unit
     /**
      *
      */
-    public function testSearchQueryGrouping() {
+    public function testSearchQueryGrouping()
+    {
         $search = new SearchQuery('i live OR die');
 
         $options = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
@@ -197,7 +198,7 @@ class SearchQueryTest extends Unit
         $search = new SearchQuery($query);
 
         // If we have to count the array. Count the array.
-        if ($sizeOfArray !== null){
+        if ($sizeOfArray !== null) {
             $this->assertCount($sizeOfArray, $search->getTokens());
         }
 

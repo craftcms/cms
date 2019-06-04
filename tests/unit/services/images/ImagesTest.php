@@ -9,13 +9,14 @@ namespace craftunit\services;
 
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\services\Images;
+use Imagick;
 use UnitTester;
 use yii\base\Exception;
-use Craft;
-use Imagick;
+
 /**
  * Unit tests for images service.
  *
@@ -56,7 +57,7 @@ class ImagesTest extends Unit
      */
     public function testCheckMemoryForImage($result, $filePath)
     {
-        $memory = $this->images->checkMemoryForImage($this->path.$filePath, false);
+        $memory = $this->images->checkMemoryForImage($this->path . $filePath, false);
         $this->assertSame($memory, $result);
     }
 
@@ -66,10 +67,10 @@ class ImagesTest extends Unit
     public function testCleanImageSvg()
     {
         $this->images->cleanImage(
-            $this->sandboxPath.'dirty-svg.svg'
+            $this->sandboxPath . 'dirty-svg.svg'
         );
 
-        $contents = file_get_contents($this->sandboxPath.'dirty-svg.svg');
+        $contents = file_get_contents($this->sandboxPath . 'dirty-svg.svg');
 
         $this->assertFalse(
             StringHelper::contains($contents, '<script>')
@@ -87,10 +88,10 @@ class ImagesTest extends Unit
         Craft::$app->getConfig()->getGeneral()->sanitizeSvgUploads = false;
 
         $this->images->cleanImage(
-            $this->sandboxPath.'dirty-svg.svg'
+            $this->sandboxPath . 'dirty-svg.svg'
         );
 
-        $contents = file_get_contents($this->sandboxPath.'dirty-svg.svg');
+        $contents = file_get_contents($this->sandboxPath . 'dirty-svg.svg');
 
         $this->assertTrue(
             StringHelper::contains($contents, '<script>')
@@ -107,8 +108,8 @@ class ImagesTest extends Unit
     {
         $this->_skipIfNoImagick();
 
-        $this->images->cleanImage($this->sandboxPath.'image-rotated-180.jpg');
-        $image = new Imagick($this->sandboxPath.'image-rotated-180.jpg');
+        $this->images->cleanImage($this->sandboxPath . 'image-rotated-180.jpg');
+        $image = new Imagick($this->sandboxPath . 'image-rotated-180.jpg');
         $this->assertSame(0, $image->getImageOrientation());
     }
 
@@ -119,13 +120,14 @@ class ImagesTest extends Unit
     {
         $this->_skipIfNoImagick();
 
-        $this->images->cleanImage($this->sandboxPath.'image-rotated-180.jpg');
-        $currentExif = $this->images->getExifData($this->sandboxPath.'image-rotated-180.jpg');
+        $this->images->cleanImage($this->sandboxPath . 'image-rotated-180.jpg');
+        $currentExif = $this->images->getExifData($this->sandboxPath . 'image-rotated-180.jpg');
         $this->assertSame(Imagick::ORIENTATION_UNDEFINED, $currentExif['ifd0.Orientation']);
     }
 
     /**
      * Tests respect for the transformGifs config setting.
+     *
      * @throws Exception
      */
     public function testCleanImageDoesntDoGifWhenSettingDisabled()
@@ -134,13 +136,13 @@ class ImagesTest extends Unit
 
         Craft::$app->getConfig()->getGeneral()->transformGifs = false;
 
-        $oldContents = file_get_contents($this->sandboxPath.'example-gif.gif');
-        $this->assertNull($this->images->cleanImage($this->sandboxPath.'example-gif.gif'));
-        $this->assertSame($oldContents, file_get_contents($this->sandboxPath.'example-gif.gif'));
+        $oldContents = file_get_contents($this->sandboxPath . 'example-gif.gif');
+        $this->assertNull($this->images->cleanImage($this->sandboxPath . 'example-gif.gif'));
+        $this->assertSame($oldContents, file_get_contents($this->sandboxPath . 'example-gif.gif'));
 
         Craft::$app->getConfig()->getGeneral()->transformGifs = true;
-        $this->images->cleanImage($this->sandboxPath.'example-gif.gif');
-        $this->assertNotSame($oldContents, file_get_contents($this->sandboxPath.'example-gif.gif'));
+        $this->images->cleanImage($this->sandboxPath . 'example-gif.gif');
+        $this->assertNotSame($oldContents, file_get_contents($this->sandboxPath . 'example-gif.gif'));
     }
 
     /**
@@ -148,7 +150,7 @@ class ImagesTest extends Unit
      */
     public function testGetExifData()
     {
-        $exifData = $this->images->getExifData($this->sandboxPath.'image-rotated-180.jpg');
+        $exifData = $this->images->getExifData($this->sandboxPath . 'image-rotated-180.jpg');
 
         $requiredValues = [
             'ifd0.Orientation' => 4,
@@ -168,18 +170,18 @@ class ImagesTest extends Unit
      */
     public function testNoExifFalses()
     {
-        $this->assertNull($this->images->getExifData($this->sandboxPath.'craft-logo.svg'));
-        $this->assertFalse($this->images->rotateImageByExifData($this->sandboxPath.'craft-logo.svg'));
-        $this->assertFalse($this->images->stripOrientationFromExifData($this->sandboxPath.'craft-logo.svg'));
+        $this->assertNull($this->images->getExifData($this->sandboxPath . 'craft-logo.svg'));
+        $this->assertFalse($this->images->rotateImageByExifData($this->sandboxPath . 'craft-logo.svg'));
+        $this->assertFalse($this->images->stripOrientationFromExifData($this->sandboxPath . 'craft-logo.svg'));
     }
 
     // Data Providers
     // =========================================================================
 
     /**
+     * @return array
      * @todo Can we get this to fail?
      *
-     * @return array
      */
     public function memoryForImageDataProvider()
     {
@@ -198,8 +200,8 @@ class ImagesTest extends Unit
     protected function _before()
     {
         parent::_before();
-        $this->path = dirname(__DIR__, 3).'/_data/assets/files/';
-        $this->sandboxPath = dirname(__DIR__).'/images/sandbox/';
+        $this->path = dirname(__DIR__, 3) . '/_data/assets/files/';
+        $this->sandboxPath = dirname(__DIR__) . '/images/sandbox/';
 
         $this->images = Craft::$app->getImages();
 
@@ -209,10 +211,10 @@ class ImagesTest extends Unit
 
         FileHelper::clearDirectory($this->sandboxPath);
 
-        copy($this->path.'dirty-svg.svg', $this->sandboxPath.'dirty-svg.svg');
-        copy($this->path.'image-rotated-180.jpg', $this->sandboxPath.'image-rotated-180.jpg');
-        copy($this->path.'craft-logo.svg', $this->sandboxPath.'craft-logo.svg');
-        copy($this->path.'example-gif.gif', $this->sandboxPath.'example-gif.gif');
+        copy($this->path . 'dirty-svg.svg', $this->sandboxPath . 'dirty-svg.svg');
+        copy($this->path . 'image-rotated-180.jpg', $this->sandboxPath . 'image-rotated-180.jpg');
+        copy($this->path . 'craft-logo.svg', $this->sandboxPath . 'craft-logo.svg');
+        copy($this->path . 'example-gif.gif', $this->sandboxPath . 'example-gif.gif');
     }
 
     // Private Methods

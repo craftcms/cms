@@ -24,5 +24,5 @@ class FieldsFixture extends FieldFixture
     /**
      * @inheritdoc
      */
-    public $dataFile = __DIR__.'/data/fields.php';
+    public $dataFile = __DIR__ . '/data/fields.php';
 }

@@ -12,7 +12,6 @@ use Craft;
 use craft\base\Field;
 use craft\behaviors\ContentBehavior;
 use craft\fields\PlainText;
-
 use InvalidArgumentException;
 use UnitTester;
 
@@ -73,7 +72,7 @@ class ContentBehaviorTest extends Unit
 
         // Cleanup and remove the column from the content table.
         if (!Craft::$app->getFields()->deleteField($field)) {
-            throw new InvalidArgumentException('Unable to delete field: '.$field->name.'');
+            throw new InvalidArgumentException('Unable to delete field: ' . $field->name . '');
         }
     }
 
@@ -81,11 +80,11 @@ class ContentBehaviorTest extends Unit
     // =========================================================================
 
     /**
+     * @return array
      * @todo Help needed. Saving fields with fixtures doesnt update the ContentBehavior class props. I cant find a way to solve this.
      *
-     * @return array
      */
-    public function existingFieldHandlesDataProvider() : array
+    public function existingFieldHandlesDataProvider(): array
     {
         return [
             //['testField'],

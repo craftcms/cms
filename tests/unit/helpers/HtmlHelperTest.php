@@ -69,7 +69,7 @@ class HtmlHelperTest extends Unit
             [$pureVariableString, $pureVariableString, []],
             [
                 '<p>Im a paragraph. What am i, !@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`</p>!@#$%^&*(){}|::"<><?>/*-~`',
-                $htmlTagString.'!@#$%^&*(){}|::"<><?>/*-~`',
+                $htmlTagString . '!@#$%^&*(){}|::"<><?>/*-~`',
                 ['whatIsThis' => '!@#$%^&*(){}|::"<><?>/*-~`']
             ],
             ['😘!@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`, {variable2}', $pureVariableString, ['variable1' => '😘!@#$%^&*(){}|::"<><?>/*-~`']]

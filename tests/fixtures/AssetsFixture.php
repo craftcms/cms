@@ -25,7 +25,7 @@ class AssetsFixture extends AssetFixture
     /**
      * @inheritdoc
      */
-    public $dataFile = __DIR__.'/data/assets.php';
+    public $dataFile = __DIR__ . '/data/assets.php';
 
     /**
      * @inheritdoc

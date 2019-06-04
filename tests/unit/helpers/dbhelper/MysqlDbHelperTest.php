@@ -167,7 +167,7 @@ class MysqlDbHelperTest extends Unit
             }
         }
 
-        return  $returnArray;
+        return $returnArray;
     }
 
     // Protected Methods

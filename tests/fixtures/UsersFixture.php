@@ -24,5 +24,5 @@ class UsersFixture extends UserFixture
     /**
      * @inheritdoc
      */
-    public $dataFile = __DIR__.'/data/users.php';
+    public $dataFile = __DIR__ . '/data/users.php';
 }

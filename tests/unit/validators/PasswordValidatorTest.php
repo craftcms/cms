@@ -90,7 +90,6 @@ class PasswordValidatorTest extends Unit
         } else {
             $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
-
     }
 
     /**
@@ -131,7 +130,7 @@ class PasswordValidatorTest extends Unit
     public function testToStringExpectException()
     {
         $passVal = $this->passwordValidator;
-        $this->tester->expectThrowable(ErrorException::class, function () use ($passVal) {
+        $this->tester->expectThrowable(ErrorException::class, function() use ($passVal) {
             $passVal->isEmpty = 'craft_increment';
             $passVal->isEmpty(1);
         });
@@ -192,7 +191,7 @@ class PasswordValidatorTest extends Unit
     public function isEmptyDataProvider(): array
     {
         return [
-            ['im a test', '', self::class.'::testReturn' ],
+            ['im a test', '', self::class . '::testReturn'],
         ];
     }
 

@@ -27,7 +27,7 @@ class SectionsFixture extends Fixture
     /**
      * @inheritdoc
      */
-    public $dataFile = __DIR__.'/data/sections.php';
+    public $dataFile = __DIR__ . '/data/sections.php';
 
     /**
      * @inheritdoc
