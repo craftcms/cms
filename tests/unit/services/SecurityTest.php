@@ -62,7 +62,7 @@ class SecurityTest extends Unit
     /**
      * @return array
      */
-    public function redactIfSensitiveDataProvider() : array
+    public function redactIfSensitiveDataProvider(): array
     {
         return [
             ['••••••••••••••••••••', 'Name', 'test stuff craft cms', []],

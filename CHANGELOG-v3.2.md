@@ -22,15 +22,18 @@
 - Relational fields now have a “Validate related elements” setting, which ensures that the related elements pass validation before the source element can be saved with them selected. ([#4095](https://github.com/craftcms/cms/issues/4095))
 - Table fields can now have Dropdown, Email, and URL columns. ([#811](https://github.com/craftcms/cms/issues/811), [#4180](https://github.com/craftcms/cms/pull/4180))
 - Dropdown and Multi-select fields can now have optgroups. ([#4236](https://github.com/craftcms/cms/issues/4236))
+- Date/Time, Dropdown, Lightswitch, Number, and Radio Buttons fields are now listed as sort options in element indexes. ([#2818](https://github.com/craftcms/cms/issues/2818))
 - Added the `unique` element query param, which can be used to prevent duplicate elements when querying elements across multiple sites.
 - Added the `preferSites` element query param, which can be used to set the preferred sites that should be used for multi-site element queries, when the `unique` param is also enabled.
 - Element index pages are now paginated for non-Structure views. ([#818](https://github.com/craftcms/cms/issues/818))
 - Element index pages now have an “Export…” button that will export all of the elements in the current view (across all pages) or up to a custom limit, in either CSV, XLS, XLSX, or ODS format. ([#994](https://github.com/craftcms/cms/issues/994))
 - Added the `attr()` Twig function, which can generate a list of HTML/XML attributes. ([#4237](https://github.com/craftcms/cms/pull/4237))
 - Added the `|withoutKey` Twig filter.
+- The `index-assets/*` commands now support a `--create-missing-assets=0` option, which prevents Craft from creating asset records when they don’t exist yet, and offers an opportunity to fix the location of any asset records that are missing their associated files, when the filename matches one of the files missing an index.
 - Jobs can new set progress labels, which will be shown below their description and progress bar in the queue HUD. ([#1931](https://github.com/craftcms/cms/pull/1931))
 - Added the `_layouts/element` template, which can be extended by element edit pages that wish to support drafts, revisions, and content previewing.
 - Added the `_special/sitepicker` template.
+- Added `craft\base\BlockElementInterface`.
 - Added `craft\base\Element::EVENT_AFTER_PROPAGATE`.
 - Added `craft\base\Element::EVENT_REGISTER_PREVIEW_TARGETS`.
 - Added `craft\base\Element::previewTargets()`.
@@ -38,23 +41,30 @@
 - Added `craft\base\ElementInterface::getCurrentRevision()`.
 - Added `craft\base\ElementInterface::getPreviewTargets()`.
 - Added `craft\base\ElementInterface::getSourceId()`.
+- Added `craft\base\ElementInterface::getSourceUid()`.
 - Added `craft\base\ElementInterface::getUiLabel()`, which is now used to define what an element will be called in the Control Panel. ([#4211](https://github.com/craftcms/cms/pull/4211))
 - Added `craft\base\ElementInterface::pluralDisplayName()`, which element type classes can use to define the plural of their display name.
 - Added `craft\base\ElementInterface::setRevisionNotes()`.
 - Added `craft\base\ElementTrait::$draftId`.
 - Added `craft\base\ElementTrait::$hardDelete`.
+- Added `craft\base\ElementTrait::$previewing`.
 - Added `craft\base\ElementTrait::$revisionId`.
 - Added `craft\base\Field::EVENT_AFTER_ELEMENT_PROPAGATE`.
+- Added `craft\base\Field::getSortOption()`.
 - Added `craft\base\FieldInterface::afterElementPropagate()`.
 - Added `craft\base\FieldInterface::valueType()`. ([#3894](https://github.com/craftcms/cms/issues/3894))
+- Added `craft\base\SortableFieldInterface`, which can be implemented by field classes that should be sortable in element indexes.
 - Added `craft\behaviors\DraftBehavior`.
 - Added `craft\behaviors\RevisionBehavior`.
 - Added `craft\controllers\PreviewController`.
+- Added `craft\errors\MissingAssetException`.
 - Added `craft\events\BatchElementActionEvent`.
 - Added `craft\events\ElementQueryEvent`.
 - Added `craft\events\RegisterPreviewTargetsEvent`.
 - Added `craft\events\RevisionEvent`.
 - Added `craft\helpers\Component::validateComponentClass()`.
+- Added `craft\helpers\ElementHelper::isDraftOrRevision()`.
+- Added `craft\helpers\ElementHelper::rootElement()`.
 - Added `craft\models\Section::$propagationMethod`.
 - Added `craft\services\Drafts`, accessible via `Craft::$app->drafts`.
 - Added `craft\services\Elements::propagateElements()` along with `EVENT_BEFORE_PROPAGATE_ELEMENTS`, `EVENT_AFTER_PROPAGATE_ELEMENTS`, `EVENT_BEFORE_PROPAGATE_ELEMENT`, and `EVENT_AFTER_PROPAGATE_ELEMENT` events. ([#4139](https://github.com/craftcms/cms/issues/4139))
@@ -62,7 +72,6 @@
 - Added `craft\services\Revisions`, accessible via `Craft::$app->revisions`.
 - Added `craft\web\Request::getIsLoginRequest()` and `craft\console\Request::getIsLoginRequest()`.
 - Added `craft\web\UrlManager::$checkToken`.
-- Added the `Craft.escapeRegex()` JavaScript method.
 - Added the `Craft.parseUrl()` JavaScript method.
 - Added the `Craft.isSameHost()` JavaScript method.
 - Added the `Craft.DraftEditor` JavaScript class.
@@ -87,20 +96,20 @@
 - `craft\queue\BaseJob::setProgress()` now has a `$label` argument.
 - `craft\queue\jobs\PropagateElements` no longer needs to be configured with a `siteId`, and no longer propagates elements to sites if they were updated in the target site more recently than the source site.
 - `craft\queue\QueueInterface::setProgress()` now has a `$label` argument.
+- `craft\services\Assets::getUserTemporaryUploadFolder()` now returns the current user’s temporary upload folder by default if no user is provided.
 - `craft\services\Elements::deleteElement()` now has a `$hardDelete` argument.
 - `craft\services\Elements::deleteElement()` now has a `$hardDelete` argument. ([#3392](https://github.com/craftcms/cms/issues/3392))
+- `craft\services\Elements::getElementById()` now has a `$criteria` argument.
 - `craft\services\Elements::propagateElement()` now has a `$siteElement` argument.
 - `craft\services\Elements::saveElement()` now preserves existing elements’ current `dateUpdated` value when propagating or auto-resaving elements.
 - `craft\services\Elements::saveElement()` now preserves the `uid`, `dateCreated`, and `dateUpdated` values on new elements if they were explicitly set. ([#2909](https://github.com/craftcms/cms/issues/2909))
 - `craft\web\UrlManager::setRouteParams()` now has a `$merge` argument, which can be set to `false` to completely override the route params.
+- It’s now possible to pass a `behaviors` key to the `$newAttributes` argument of `craft\services\Elements::duplicateElement()`, to preattach behaviors to the cloned element before it’s saved.
 
 ### Removed
 - Removed the `--batch-size` option from `resave/*` actions.
 - Removed the `craft.entryRevisions` Twig component.
 - Removed `craft\events\VersionEvent`.
-- Removed `craft\models\BaseEntryRevisionModel`.
-- Removed `craft\models\EntryDraft`.
-- Removed `craft\models\EntryVersion`.
 - Removed `craft\records\Entry::getVersions()`.
 - Removed `craft\records\EntryDraft`.
 - Removed `craft\records\EntryVersion`.
@@ -114,7 +123,11 @@
 ### Deprecated
 - Deprecated `craft\controllers\LivePreviewController`.
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
+- Deprecated `craft\models\BaseEntryRevisionModel`.
+- Deprecated `craft\models\EntryDraft`.
+- Deprecated `craft\models\EntryVersion`.
 - Deprecated `craft\models\Section::$propagateEntries`. Use `$propagationMethod` instead.
+- Deprecated `craft\services\Assets::getCurrentUserTemporaryUploadFolder()`.
 - Deprecated `craft\services\EntryRevisions`.
 - Deprecated `craft\web\Request::getIsLivePreview()`.
 - Deprecated `craft\web\Request::getIsSingleActionRequest()` and `craft\console\Request::getIsSingleActionRequest()`.

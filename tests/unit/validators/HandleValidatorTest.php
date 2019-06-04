@@ -8,8 +8,8 @@
 namespace craftunit\validators;
 
 use Codeception\Test\Unit;
-use craft\validators\HandleValidator;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\validators\HandleValidator;
 
 /**
  * Class HandleValidatorTest.
@@ -41,7 +41,7 @@ class HandleValidatorTest extends Unit
     /**
      * @var array
      */
-    protected static $reservedWords =  ['bird', 'is', 'the', 'word'];
+    protected static $reservedWords = ['bird', 'is', 'the', 'word'];
 
     // Public Methods
     // =========================================================================
@@ -54,10 +54,10 @@ class HandleValidatorTest extends Unit
         $this->assertSame('[a-zA-Z][a-zA-Z0-9_]*', HandleValidator::$handlePattern);
         $this->assertSame(
             [
-                'attribute', 'attributeLabels','attributeNames', 'attributes', 'classHandle', 'content',
+                'attribute', 'attributeLabels', 'attributeNames', 'attributes', 'classHandle', 'content',
                 'dateCreated', 'dateUpdated', 'false', 'fields', 'handle', 'id', 'n', 'name', 'no',
                 'rawContent', 'rules', 'searchKeywords', 'section', 'this',
-                'true', 'type', 'uid', 'value', 'y','yes',
+                'true', 'type', 'uid', 'value', 'y', 'yes',
             ],
             HandleValidator::$baseReservedWords
         );
@@ -132,6 +132,6 @@ class HandleValidatorTest extends Unit
         $this->handleValidator = new HandleValidator(['reservedWords' => self::$reservedWords]);
 
         $this->assertSame(self::$reservedWords, $this->handleValidator->reservedWords);
-        self::$reservedWords  = array_merge(self::$reservedWords, HandleValidator::$baseReservedWords);
+        self::$reservedWords = array_merge(self::$reservedWords, HandleValidator::$baseReservedWords);
     }
 }

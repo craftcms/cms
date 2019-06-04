@@ -165,7 +165,7 @@ class DateTimeHelperTest extends Unit
      * @dataProvider toDateTimeWithTzFormatsDataProvider
      *
      * @param              $format
-     * @param DateTime     $expectedResult
+     * @param DateTime $expectedResult
      * @param DateTimeZone $expectedTimezone
      * @throws Exception
      */
@@ -184,7 +184,7 @@ class DateTimeHelperTest extends Unit
      *
      * @param         $format
      * @param Closure $expectedResult
-     * @param null    $closureParam
+     * @param null $closureParam
      * @throws Exception
      */
     public function testToDateTimeCreation($format, Closure $expectedResult, $closureParam = null)
@@ -205,7 +205,7 @@ class DateTimeHelperTest extends Unit
         $dt = DateTimeHelper::toDateTime(['date' => '', 'time' => '08:00PM']);
 
         $created = new DateTime('now', $this->utcTimezone);
-        $comparable = new DateTime($created->format('Y-m-d').' 20:00:00', $this->utcTimezone);
+        $comparable = new DateTime($created->format('Y-m-d') . ' 20:00:00', $this->utcTimezone);
         $comparable->setTimezone($this->systemTimezone);
 
         $this->assertSame($comparable->format('Y-m-d H:i:s'), $dt->format('Y-m-d H:i:s'));
@@ -464,7 +464,7 @@ class DateTimeHelperTest extends Unit
      */
     public function testTimezoneOffsetException()
     {
-        $this->tester->expect(Exception::class, function () {
+        $this->tester->expect(Exception::class, function() {
             DateTimeHelper::timeZoneOffset('invalid');
         });
     }
@@ -598,7 +598,7 @@ class DateTimeHelperTest extends Unit
      */
     public function toDateTimeWithTzFormatsDataProvider(): array
     {
-        $basicDateTimeCreator = function ($timezone){
+        $basicDateTimeCreator = function($timezone) {
             $tz = new DateTimezone($timezone);
             return new DateTime('2018-08-09 20:00:00', $tz);
         };
@@ -628,7 +628,7 @@ class DateTimeHelperTest extends Unit
     public function toDateTimeFormatsDataProvider(): array
     {
         // Because we dont have access to Craft::$app here we smuggle this in via callback and call it in the test function. Which does have access to Craft::$app.
-        $dt = function ($dateParam = '2018-08-09 20:00:00') {
+        $dt = function($dateParam = '2018-08-09 20:00:00') {
             $systemTimezone = new DateTimezone(Craft::$app->getTimeZone());
             $utcTz = new DateTimeZone('UTC');
 

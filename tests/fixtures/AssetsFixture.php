@@ -8,7 +8,6 @@
 
 namespace craftunit\fixtures;
 
-use craft\helpers\FileHelper;
 use craft\test\fixtures\elements\AssetFixture;
 
 /**
@@ -26,7 +25,7 @@ class AssetsFixture extends AssetFixture
     /**
      * @inheritdoc
      */
-    public $dataFile = __DIR__.'/data/assets.php';
+    public $dataFile = __DIR__ . '/data/assets.php';
 
     /**
      * @inheritdoc

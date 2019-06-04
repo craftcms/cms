@@ -13,8 +13,8 @@ use craft\errors\OperationAbortedException;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
 use craftunit\fixtures\EntryFixture;
-use UnitTester;
 use Exception;
+use UnitTester;
 
 /**
  * Class ElementHelperTest.
@@ -70,10 +70,10 @@ class ElementHelperTest extends Unit
      */
     public function testLowerRemoveFromCreateSlug()
     {
-        $general =  Craft::$app->getConfig()->getGeneral();
+        $general = Craft::$app->getConfig()->getGeneral();
         $general->allowUppercaseInSlug = false;
 
-        $this->assertSame('word'.$general->slugWordSeparator.'word', ElementHelper::createSlug('word WORD'));
+        $this->assertSame('word' . $general->slugWordSeparator . 'word', ElementHelper::createSlug('word WORD'));
     }
 
     /**
@@ -112,7 +112,7 @@ class ElementHelperTest extends Unit
     public function testMaxSlugIncrementDoesntThrow()
     {
         Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = 0;
-        $this->tester->expectThrowable(OperationAbortedException::class, function () {
+        $this->tester->expectThrowable(OperationAbortedException::class, function() {
             $el = new ExampleElement(['uriFormat' => 'test/{slug}']);
             ElementHelper::setUniqueUri($el);
         });

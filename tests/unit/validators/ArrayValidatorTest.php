@@ -8,8 +8,8 @@
 namespace craftunit\validators;
 
 use Codeception\Test\Unit;
-use craft\validators\ArrayValidator;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\validators\ArrayValidator;
 
 /**
  * Class ArrayValidator.
@@ -129,13 +129,13 @@ class ArrayValidatorTest extends Unit
     public function arrayValidatorValuesDataProvider(): array
     {
         return [
-            [[1, 2, 3, 4 ], true],
-            [[1, 2, 3, 4, 5 ], true],
-            [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ], true],
-            [[[1, 1], [2, 2], [3, 3], 4, 5, 6, 7, 8, 9, 10 ], true],
+            [[1, 2, 3, 4], true],
+            [[1, 2, 3, 4, 5], true],
+            [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], true],
+            [[[1, 1], [2, 2], [3, 3], 4, 5, 6, 7, 8, 9, 10], true],
             ['hello', false],
             [[1, 2], false],
-            [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ], false],
+            [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], false],
         ];
     }
 

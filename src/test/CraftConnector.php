@@ -7,8 +7,8 @@
 
 namespace craft\test;
 
-use Craft;
 use Codeception\Lib\Connector\Yii2;
+use Craft;
 use yii\mail\MessageInterface;
 use yii\web\Application;
 
@@ -35,7 +35,7 @@ class CraftConnector extends Yii2
     /**
      * @inheritdoc
      */
-    public function getEmails() : array
+    public function getEmails(): array
     {
         return $this->emails;
     }
@@ -47,9 +47,11 @@ class CraftConnector extends Yii2
     {
         parent::startApp();
 
-        Craft::$app->set('mailer', ['class' => TestMailer::class, 'callback' => function (MessageInterface $message) {
-            $this->emails[] = $message;
-        }]);
+        Craft::$app->set('mailer', [
+            'class' => TestMailer::class, 'callback' => function(MessageInterface $message) {
+                $this->emails[] = $message;
+            }
+        ]);
     }
 
     /**

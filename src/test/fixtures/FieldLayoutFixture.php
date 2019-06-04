@@ -9,6 +9,7 @@
 namespace craft\test\fixtures;
 
 
+use Craft;
 use craft\base\Field;
 use craft\base\Model;
 use craft\db\Query;
@@ -17,11 +18,10 @@ use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\test\Fixture;
-use yii\base\InvalidArgumentException;
-use \yii\db\Exception as YiiDbException;
-use Craft;
 use Throwable;
-use \yii\base\Exception as YiiBaseException;
+use yii\base\Exception as YiiBaseException;
+use yii\base\InvalidArgumentException;
+use yii\db\Exception as YiiDbException;
 
 /**
  * Class FieldLayoutFixture.
@@ -123,12 +123,12 @@ abstract class FieldLayoutFixture extends Fixture
      * 4. Delete all fields.
      * 5. Delete the field layout.
      *
-     * @todo Can we use `craft\test\Craft`:getFieldLayoutByFieldHandle()?
      * @param string $fieldHandle
      * @return bool
      * @throws Throwable
+     * @todo Can we use `craft\test\Craft`:getFieldLayoutByFieldHandle()?
      */
-    public function deleteAllByFieldHandle(string $fieldHandle) : bool
+    public function deleteAllByFieldHandle(string $fieldHandle): bool
     {
         if (!$field = Craft::$app->getFields()->getFieldByHandle($fieldHandle)) {
             return false;
@@ -162,7 +162,7 @@ abstract class FieldLayoutFixture extends Fixture
      * @param array $tabs
      * @return array
      */
-    protected function getTabsForFieldLayout(array $tabs) : array
+    protected function getTabsForFieldLayout(array $tabs): array
     {
         $tabSortOrder = 1;
         $tabsToAdd = [];
@@ -185,7 +185,7 @@ abstract class FieldLayoutFixture extends Fixture
      * @param array $fieldLayout
      * @return array
      */
-    protected function extractTabsFromFieldLayout(array $fieldLayout) : array
+    protected function extractTabsFromFieldLayout(array $fieldLayout): array
     {
         $tabs = [];
 
@@ -205,7 +205,8 @@ abstract class FieldLayoutFixture extends Fixture
      * @return bool
      * @throws YiiDbException
      */
-    protected function linkFieldToLayout(array $link, Field $field, FieldLayout $fieldLayout, FieldLayoutTab $tab) : bool {
+    protected function linkFieldToLayout(array $link, Field $field, FieldLayout $fieldLayout, FieldLayoutTab $tab): bool
+    {
         $link['fieldId'] = $field->id;
         $link['tabId'] = $tab->id;
         $link['layoutId'] = $fieldLayout->id;
@@ -221,6 +222,7 @@ abstract class FieldLayoutFixture extends Fixture
 
         return true;
     }
+
     /**
      * @param Model $model
      * @throws InvalidArgumentException

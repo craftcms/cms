@@ -8,12 +8,13 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
+use craft\base\Element;
 use craft\errors\InvalidElementException;
 use Throwable;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\test\ActiveFixture;
-use craft\base\Element;
 
 /**
  * Class ElementFixture is a base class for setting up fixtures for Craft 3's element types.
@@ -34,6 +35,11 @@ abstract class ElementFixture extends ActiveFixture
      * @var array
      */
     protected $siteIds = [];
+
+    /**
+     * @var array
+     */
+    protected $ids = [];
 
     // Public Methods
     // =========================================================================
@@ -109,6 +115,7 @@ abstract class ElementFixture extends ActiveFixture
                 }
             }
 
+            $this->ids[] = $element->id;
             $this->data[$alias] = array_merge($data, ['id' => $element->id]);
         }
     }
@@ -121,9 +128,18 @@ abstract class ElementFixture extends ActiveFixture
      */
     public function unload()
     {
-        foreach ($this->getData() as $data) {
-            $element = $this->getElement($data);
-            if ($element && !Craft::$app->getElements()->deleteElement($element)) {
+        foreach ($this->ids as $id) {
+            $element = $this->modelClass::find()
+                ->id($id)
+                ->anyStatus()
+                ->trashed(null)
+                ->one();
+
+            if ($id && !$element) {
+                throw new InvalidArgumentException("Unable to delete element $id. We were unable to find it.");
+            }
+
+            if ($element && !Craft::$app->getElements()->deleteElement($element, true)) {
                 throw new InvalidElementException($element, 'Unable to delete element');
             }
         }

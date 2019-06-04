@@ -24,7 +24,7 @@ class EntryFixture extends BaseEntriesFixture
     /**
      * @inheritdoc
      */
-    public $dataFile = __DIR__.'/data/entries.php';
+    public $dataFile = __DIR__ . '/data/entries.php';
 
     /**
      * @inheritdoc

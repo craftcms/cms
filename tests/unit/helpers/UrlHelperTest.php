@@ -9,9 +9,9 @@ namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\test\Craft as CraftTest;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\UrlHelper;
+use craft\test\Craft as CraftTest;
 use UnitTester;
 use yii\base\Exception;
 
@@ -79,10 +79,10 @@ class UrlHelperTest extends Unit
      *
      * @return string
      */
-    public function urlWithScheme(string $url, string $scheme) : string
+    public function urlWithScheme(string $url, string $scheme): string
     {
         // Did they pass the $scheme in with :// or without? If no exists then add it.
-        $scheme = strpos('://', $scheme) !== false ? $scheme : $scheme.'://';
+        $scheme = strpos('://', $scheme) !== false ? $scheme : $scheme . '://';
 
         if (strpos($url, 'http://') !== false) {
             $url = str_replace('http://', $scheme, $url);
@@ -136,7 +136,7 @@ class UrlHelperTest extends Unit
      * @param $inputUrl
      * @param $params
      * @param string $scheme
-    */
+     */
     public function testCpUrlCreation($result, $inputUrl, $params, $scheme = 'https')
     {
         // Make sure https is enabled for the base url.
@@ -146,7 +146,7 @@ class UrlHelperTest extends Unit
             $baseUrl = str_replace('https://', 'http://', $this->baseUrlWithScript);
         }
 
-        $expectedUrl = $baseUrl.'?p='.$this->cpTrigger.''.$result.'';
+        $expectedUrl = $baseUrl . '?p=' . $this->cpTrigger . '' . $result . '';
 
         $this->assertSame(
             $expectedUrl,
@@ -167,7 +167,7 @@ class UrlHelperTest extends Unit
      * @param      $url
      * @param      $modifier
      * @param      $method
-    */
+     */
     public function testUrlModifiers($result, $url, $modifier, $method)
     {
         Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls = true;
@@ -181,20 +181,20 @@ class UrlHelperTest extends Unit
      * @dataProvider urlFunctionDataProvider
      *
      * @param             $result
-     * @param string      $path
-     * @param null        $params
+     * @param string $path
+     * @param null $params
      * @param string|null $scheme
-     * @param bool|null   $showScriptName
-     * @param bool        $isNonCompletedUrl
-*/
+     * @param bool|null $showScriptName
+     * @param bool $isNonCompletedUrl
+     */
     public function testUrlFunction($result, string $path = '', $params = null, string $scheme = null, bool $showScriptName = null, bool $isNonCompletedUrl = false)
     {
         if ($isNonCompletedUrl === true || !UrlHelper::isAbsoluteUrl($result)) {
             $oldResult = $result;
-            $result = $this->baseUrl.$oldResult;
+            $result = $this->baseUrl . $oldResult;
 
             $this->assertSame($result, UrlHelper::url($path, $params, $scheme, false));
-            $result = $this->baseUrlWithScript.'?p='.$oldResult;
+            $result = $this->baseUrlWithScript . '?p=' . $oldResult;
         }
 
         // If no scheme was passed in. We need to set the result to whatever the the url() function will use aswell.
@@ -256,7 +256,7 @@ class UrlHelperTest extends Unit
     public function testSchemeForTokenizedBasedOnConfig()
     {
         // Run down the logic to see what we will need to require.
-        $config =  Craft::$app->getConfig()->getGeneral();
+        $config = Craft::$app->getConfig()->getGeneral();
 
         $config->useSslOnTokenizedUrls = true;
         $this->assertSame('https', UrlHelper::getSchemeForTokenizedUrl());
@@ -287,7 +287,7 @@ class UrlHelperTest extends Unit
      */
     public function testSiteUrlExceptions()
     {
-        $this->tester->expectThrowable(Exception::class, function () {
+        $this->tester->expectThrowable(Exception::class, function() {
             UrlHelper::siteUrl('', null, null, 12892);
         });
     }
@@ -301,12 +301,12 @@ class UrlHelperTest extends Unit
     public function absoluteUrlDataProvider(): array
     {
         return [
-            'absolute-url' => [ self::ABSOLUTE_URL, true, 'isAbsoluteUrl' ],
-            'absolute-url-https' => [ self::ABSOLUTE_URL_HTTPS, true, 'isAbsoluteUrl' ],
-            'absolute-url-https-www' => [ self::ABSOLUTE_URL_HTTPS_WWW, true, 'isAbsoluteUrl' ],
-            'absolute-url-www' => [ self::ABSOLUTE_URL_WWW, true, 'isAbsoluteUrl' ],
+            'absolute-url' => [self::ABSOLUTE_URL, true, 'isAbsoluteUrl'],
+            'absolute-url-https' => [self::ABSOLUTE_URL_HTTPS, true, 'isAbsoluteUrl'],
+            'absolute-url-https-www' => [self::ABSOLUTE_URL_HTTPS_WWW, true, 'isAbsoluteUrl'],
+            'absolute-url-www' => [self::ABSOLUTE_URL_WWW, true, 'isAbsoluteUrl'],
             'non-url' => [self::NON_ABSOLUTE_URL, false, 'isAbsoluteUrl'],
-            'non-absolute-url-www' => [ self::NON_ABSOLUTE_URL_WWW, false, 'isAbsoluteUrl' ]
+            'non-absolute-url-www' => [self::NON_ABSOLUTE_URL_WWW, false, 'isAbsoluteUrl']
         ];
     }
 
@@ -316,17 +316,17 @@ class UrlHelperTest extends Unit
     public function fulUrlDataProvider(): array
     {
         return [
-            'absolute-url' => [ self::ABSOLUTE_URL, true, 'isFullUrl' ],
-            'absolute-url-https' => [ self::ABSOLUTE_URL_HTTPS, true, 'isFullUrl' ],
-            'absolute-url-https-www' => [ self::ABSOLUTE_URL_HTTPS_WWW, true, 'isFullUrl' ],
-            'absolute-url-www' => [ self::ABSOLUTE_URL_WWW, true, 'isFullUrl' ],
-            'root-relative' => [ '/22', true, 'isFullUrl' ],
-            'protocol-relative' => [ self::PROTOCOL_RELATIVE_URL, true, 'isFullUrl' ],
-            'mb4-string' => [ '😀😘', false, 'isFullUrl' ],
-            'random-chars' => [ '!@#$%^&*()<>', false, 'isFullUrl' ],
+            'absolute-url' => [self::ABSOLUTE_URL, true, 'isFullUrl'],
+            'absolute-url-https' => [self::ABSOLUTE_URL_HTTPS, true, 'isFullUrl'],
+            'absolute-url-https-www' => [self::ABSOLUTE_URL_HTTPS_WWW, true, 'isFullUrl'],
+            'absolute-url-www' => [self::ABSOLUTE_URL_WWW, true, 'isFullUrl'],
+            'root-relative' => ['/22', true, 'isFullUrl'],
+            'protocol-relative' => [self::PROTOCOL_RELATIVE_URL, true, 'isFullUrl'],
+            'mb4-string' => ['😀😘', false, 'isFullUrl'],
+            'random-chars' => ['!@#$%^&*()<>', false, 'isFullUrl'],
             'random-string' => ['hello', false, 'isFullUrl'],
             'non-url' => [self::NON_ABSOLUTE_URL, false, 'isFullUrl'],
-            'non-absolute-url-www' => [ self::NON_ABSOLUTE_URL_WWW, false, 'isFullUrl' ],
+            'non-absolute-url-www' => [self::NON_ABSOLUTE_URL_WWW, false, 'isFullUrl'],
         ];
     }
 
@@ -336,9 +336,9 @@ class UrlHelperTest extends Unit
     public function protocolRelativeUrlDataProvider(): array
     {
         return [
-            'root-relative-true' => [ '/22', true, 'isRootRelativeUrl'],
-            'protocol-relative' => [ '//cdn.craftcms.com/22', false, 'isRootRelativeUrl' ],
-            'absolute-url-https-www' => [ self::ABSOLUTE_URL_HTTPS_WWW, false, 'isRootRelativeUrl' ],
+            'root-relative-true' => ['/22', true, 'isRootRelativeUrl'],
+            'protocol-relative' => ['//cdn.craftcms.com/22', false, 'isRootRelativeUrl'],
+            'absolute-url-https-www' => [self::ABSOLUTE_URL_HTTPS_WWW, false, 'isRootRelativeUrl'],
             'start-with-param' => ['?p=test', false, 'isRootRelativeUrl']
         ];
     }
@@ -351,17 +351,17 @@ class UrlHelperTest extends Unit
         return [
             'test-empty' => ['', '', []],
             'test-simple-endpoint' => [
-                '/nav&param1=entry1&param2=entry2',
+                '%2Fnav&param1=entry1&param2=entry2',
                 'nav',
                 ['param1' => 'entry1', 'param2' => 'entry2']
             ],
             'test-preexisting-endpoints' => [
-                '/nav&param3=entry3&param1=entry1&param2=entry2',
+                '%2Fnav&param3=entry3&param1=entry1&param2=entry2',
                 'nav?param3=entry3',
                 ['param1' => 'entry1', 'param2' => 'entry2']
             ],
             [
-                '/nav&param1=entry1&param2=entry2',
+                '%2Fnav&param1=entry1&param2=entry2',
                 'nav',
                 [
                     'param1' => 'entry1',
@@ -370,7 +370,7 @@ class UrlHelperTest extends Unit
                 'https'
             ],
             'test-url-gets-ignored' => [
-                '/https://test.craftcms.test&param1=entry1&param2=entry2',
+                '%2Fhttps%3A%2F%2Ftest.craftcms.test&param1=entry1&param2=entry2',
                 'https://test.craftcms.test',
                 ['param1' => 'entry1', 'param2' => 'entry2'],
                 'https'
@@ -388,7 +388,7 @@ class UrlHelperTest extends Unit
         return [
             'invalid-query-string' => [
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                self::ABSOLUTE_URL_HTTPS_WWW.'&query=string',
+                self::ABSOLUTE_URL_HTTPS_WWW . '&query=string',
                 null,
                 'stripQueryString'
             ],
@@ -400,13 +400,13 @@ class UrlHelperTest extends Unit
             ],
             [
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=entry1',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=entry1',
                 null,
                 'stripQueryString'
             ],
             [
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=entry1?param2=entry2',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=entry1?param2=entry2',
                 null,
                 'stripQueryString'
             ]
@@ -423,31 +423,31 @@ class UrlHelperTest extends Unit
     {
         return [
             'with-fragment' => [
-                self::ABSOLUTE_URL_HTTPS.'?param1=entry1#some-hashtag',
+                self::ABSOLUTE_URL_HTTPS . '?param1=entry1#some-hashtag',
                 self::ABSOLUTE_URL_HTTPS,
                 ['param1' => 'entry1', '#' => 'some-hashtag'],
                 'urlWithParams'
             ],
             'anchor-gets-kept' => [
-                self::ABSOLUTE_URL_HTTPS.'#anchor?param1=entry1&param2=entry2',
-                self::ABSOLUTE_URL_HTTPS.'#anchor',
+                self::ABSOLUTE_URL_HTTPS . '?param1=entry1&param2=entry2#anchor',
+                self::ABSOLUTE_URL_HTTPS . '#anchor',
                 'param1=entry1&param2=entry2',
                 'urlWithParams'
             ],
             'prev-param-gets-kept' => [
-                self::ABSOLUTE_URL_HTTPS_WWW.'#anchor?param3=entry3&param1=entry1&param2=entry2',
-                self::ABSOLUTE_URL_HTTPS_WWW.'#anchor?param3=entry3',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param3=entry3&param1=entry1&param2=entry2#anchor',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param3=entry3#anchor',
                 '?param1=entry1&param2=entry2',
                 'urlWithParams'
             ],
             '#' => [
-                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2#anchor',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=name&param2=name2#anchor',
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 ['param1' => 'name', 'param2' => 'name2', '#' => 'anchor'],
                 'urlWithParams'
             ],
             'basic-array' => [
-                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=name&param2=name2',
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 ['param1' => 'name', 'param2' => 'name2'],
                 'urlWithParams'
@@ -459,26 +459,26 @@ class UrlHelperTest extends Unit
                 'urlWithParams'
             ],
             '4-spaces' => [
-                self::ABSOLUTE_URL_HTTPS_WWW.'?    ',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?++++=',
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 '    ',
                 'urlWithParams'
             ],
-            'numerical-index-array'  => [
-                self::ABSOLUTE_URL_HTTPS_WWW.'?0=someparam',
+            'numerical-index-array' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?0=someparam',
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 ['someparam'],
                 'urlWithParams'
             ],
             'query-string' => [
-                self::ABSOLUTE_URL_HTTPS_WWW.'?param1=name&param2=name2',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=name&param2=name2',
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 '?param1=name&param2=name2',
                 'urlWithParams'
             ],
             'pre-queried-url' => [
-                self::ABSOLUTE_URL_HTTPS_WWW.'?param3=name3&param1=name&param2=name2',
-                self::ABSOLUTE_URL_HTTPS_WWW.'?param3=name3',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param3=name3&param1=name&param2=name2',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param3=name3',
                 '?param1=name&param2=name2',
                 'urlWithParams'
             ],
@@ -497,25 +497,25 @@ class UrlHelperTest extends Unit
 
         return [
             [
-                $baseUrl.'?token=value',
+                $baseUrl . '?token=value',
                 $baseUrl,
                 'value',
                 'urlWithToken'
             ],
             [
-                $baseUrl.'?token=value&token=value',
-                $baseUrl.'?token=value',
-                'value',
+                $baseUrl . '?token=value2',
+                $baseUrl . '?token=value1',
+                'value2',
                 'urlWithToken'
             ],
             [
-                $baseUrl.'?token=',
-                $baseUrl.'',
+                $baseUrl . '?token=',
+                $baseUrl . '',
                 '',
                 'urlWithToken'
             ],
             'ensure-scheme-is-overridden' => [
-                $https ? self::ABSOLUTE_URL_HTTPS.'?token=value' : self::ABSOLUTE_URL.'?token=value',
+                $https ? self::ABSOLUTE_URL_HTTPS . '?token=value' : self::ABSOLUTE_URL . '?token=value',
                 $https ? self::ABSOLUTE_URL : self::ABSOLUTE_URL_HTTPS,
                 'value',
                 'urlWithToken'
@@ -600,13 +600,13 @@ class UrlHelperTest extends Unit
     public function urlFunctionDataProvider(): array
     {
         return [
-            'base' => ['endpoint', 'endpoint',  null,  null, null, true],
-            'full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
-            'scheme-override' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL,  null,  'https'],
+            'base' => ['endpoint', 'endpoint', null, null, null, true],
+            'full-url-scheme' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL, null, 'https'],
+            'scheme-override' => [self::ABSOLUTE_URL_HTTPS, self::ABSOLUTE_URL, null, 'https'],
             'scheme-override-param-add' => [
-                self::ABSOLUTE_URL_HTTPS.'?param1=entry1&param2=entry2',
+                self::ABSOLUTE_URL_HTTPS . '?param1=entry1&param2=entry2',
                 self::ABSOLUTE_URL,
-                ['param1'=> 'entry1', 'param2'=>'entry2'],
+                ['param1' => 'entry1', 'param2' => 'entry2'],
                 'https'
             ],
         ];

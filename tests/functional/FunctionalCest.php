@@ -7,9 +7,9 @@
 
 namespace tests\functional;
 
+use Craft;
 use craft\elements\User;
 use FunctionalTester;
-use Craft;
 
 /**
  * Class FunctionalCest

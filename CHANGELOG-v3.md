@@ -3,6 +3,37 @@
 ## Unreleased
 
 ### Added
+- Date/Time, Dropdown, Lightswitch, Number, and Radio Buttons fields are now listed as sort options in element indexes. ([#2818](https://github.com/craftcms/cms/issues/2818))
+- The `index-assets/*` commands now support a `--create-missing-assets=0` option, which prevents Craft from creating asset records when they don’t exist yet, and offers an opportunity to fix the location of any asset records that are missing their associated files, when the filename matches one of the files missing an index.
+- Added `craft\base\BlockElementInterface`.
+- Added `craft\base\ElementTrait::$previewing`.
+- Added `craft\base\Field::getSortOption()`.
+- Added `craft\base\SortableFieldInterface`, which can be implemented by field classes that should be sortable in element indexes.
+- Added `craft\errors\MissingAssetException`.
+- Added `craft\helpers\ElementHelper::isDraftOrRevision()`.
+- Added `craft\helpers\ElementHelper::rootElement()`.
+
+### Changed
+- It’s now possible to preview to preview element revisions.
+- It’s now possible to pass a `behaviors` key to the `$newAttributes` argument of `craft\services\Elements::duplicateElement()`, to preattach behaviors to the cloned element before it’s saved.
+- The “Restrict uploads to a single folder?” setting on Assets fields is no longer enforced when saving a draft or revision.
+- Assets fields no longer create new dynamic upload folders when saving a draft or revision.
+- `craft\services\Assets::getUserTemporaryUploadFolder()` now returns the current user’s temporary upload folder by default if no user is provided.
+
+### Deprecated
+- Deprecated `craft\services\Assets::getCurrentUserTemporaryUploadFolder()`.
+
+### Fixed
+- Fixed a bug where Assets fields configured with `{id}` in the subpath would move files to folders named after the draft ID rather than the source element ID. ([#4329](https://github.com/craftcms/cms/issues/4329))
+- Fixed a bug where duplicated elements were getting the same UID as the source element.
+- Fixed an error that occurred when clicking “Update entry” for an entry draft that had new Matrix/Super Table blocks that were created after the last page refresh. ([#4331](https://github.com/craftcms/cms/issues/4331))
+- Fixed a bug where previewing pending/expired entries would 404.
+- Fixed a bug where Craft could load a draft or revision when requesting an element’s URI, rather than the source element.
+- Fixed an error that could occur when `craft\helpers\UrlHelper` methods were called on console requests.
+
+## 3.2.0-alpha.7 - 2019-05-28
+
+### Added
 - Relational fields now have a “Validate related elements” setting, which ensures that the related elements pass validation before the source element can be saved with them selected. ([#4095](https://github.com/craftcms/cms/issues/4095))
 - Added `craft\services\Elements::propagateElements()` along with `EVENT_BEFORE_PROPAGATE_ELEMENTS`, `EVENT_AFTER_PROPAGATE_ELEMENTS`, `EVENT_BEFORE_PROPAGATE_ELEMENT`, and `EVENT_AFTER_PROPAGATE_ELEMENT` events. ([#4139](https://github.com/craftcms/cms/issues/4139))
 
@@ -11,9 +42,16 @@
 - Renamed `craft\events\ResaveElementEvent` to `BatchElementActionEvent`.
 - Renamed `craft\events\ResaveElementsEvent` to `ElementQueryEvent`.
 - `craft\events\MoveElementEvent` now extends `craft\events\ElementEvent`. ([#4315](https://github.com/craftcms/cms/pull/4315))
+- `craft\services\Elements::getElementById()` now has a `$criteria` argument.
+
+### Deprecated
+- Deprecated `craft\models\BaseEntryRevisionModel` (previously removed).
+- Deprecated `craft\models\EntryDraft` (previously removed).
+- Deprecated `craft\models\EntryVersion` (previously removed).
 
 ### Fixed
 - Fixed a bug where required fields weren’t getting enforced when saving an entry. ([#4316](https://github.com/craftcms/cms/issues/4316))
+- Fixed a bug where `craft\services\Entry::getEntryById()` and `craft\services\Categories::getCategoryById()` were returning `null` if the given ID was for a revision or draft. ([#4312](https://github.com/craftcms/cms/issues/4312))
 
 ## 3.2.0-alpha.6.4 - 2019-05-26
 
@@ -83,7 +121,6 @@
 - Added `craft\services\Drafts`, accessible via `Craft::$app->drafts`.
 - Added `craft\services\Revisions`, accessible via `Craft::$app->revisions`.
 - Added `craft\web\UrlManager::$checkToken`.
-- Added the `Craft.escapeRegex()` JavaScript method.
 - Added the `Craft.parseUrl()` JavaScript method.
 - Added the `Craft.isSameHost()` JavaScript method.
 - Added the `Craft.DraftEditor` JavaScript class.
@@ -215,6 +252,28 @@
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
 
+## Unreleased (3.1)
+
+### Added
+- Added the `restore` command, which restores a database backup.
+- Added the `Craft.escapeRegex()` JavaScript method.
+
+### Changed
+- Asset indexes now sort assets by Date Uploaded in descending order by default. ([#1153](https://github.com/craftcms/cms/issues/1153))
+- `craft\db\Paginator` no longer assumes that the application’s database connection should be used.
+- Updated Twig to 2.11. ([#4342](https://github.com/craftcms/cms/issues/4342))
+
+### Fixed
+- Fixed a bug where the Status menu wasn’t visible for the “All users” source on user indexes. ([#4306](https://github.com/craftcms/cms/pull/4306))
+- Fixed a bug where pressing the <kbd>Esc</kbd> key in the setup wizard would close the modal window. ([#4307](https://github.com/craftcms/cms/issues/4307))
+- Fixed a bug where `craft\validators\ArrayValidator::validate()` didn’t work. ([#4309](https://github.com/craftcms/cms/pull/4309))
+- Fixed an error that could occur when rendering templates with a `loop.parent.loop` reference in a nested for-loop. ([#4271](https://github.com/craftcms/cms/issues/4271))
+- Fixed a bug where publishing a Single entry’s draft, or reverting a Single entry to a prior version, would overwrite its title to the section name. ([#4323](https://github.com/craftcms/cms/pull/4323))
+- Fixed a bug where Craft wasn’t invalidating existing asset transforms when changing the dimensions of a named transform.
+- Fixed a bug where `craft\services\Fields::getFieldsByElementType()` would return duplicate results if a field was used in more than one field layout for the element type. ([#4336](https://github.com/craftcms/cms/issues/4336))
+- Fixed a bug where Craft wasn’t respecting the `allowUppercaseInSlug` config setting when generating slugs in the Control Panel. ([#4330](https://github.com/craftcms/cms/issues/4330))
+- Fixed a bug where Control Panel Ajax requests weren’t working if a custom `pathParam` config setting value was set. ([#4334](https://github.com/craftcms/cms/issues/4334))
+
 ## 3.1.28 - 2019-05-21
 
 ### Added
@@ -302,7 +361,7 @@
 - Craft now saves new entry versions every time an entry is saved, unless it’s being propagated or resaved.
 - `users/save-user` and `users/start-elevated-session` requests now check for a `currentPassword` body param in addition to `password`, when looking for the user’s current password. ([#4169](https://github.com/craftcms/cms/issues/4169))
 - `craft\services\Path::getStoragePath()` now has a `$create` argument.
-- Updated Twig to ~2.8.1.
+- Updated Twig to 2.8.
 
 ### Fixed
 - Fixed an error where re-saving a site would reset its sorting order. ([#4147](https://github.com/craftcms/cms/issues/4147))
@@ -322,7 +381,7 @@
 
 ### Changed
 - When creating a new site, global sets are now propagated to it before other element types. ([#3446](https://github.com/craftcms/cms/issues/3446))
-- Locked Twig down to ~2.7.2, to avoid a bug in 2.8.0. ([twigphp/Twig#2942](https://github.com/twigphp/Twig/issues/2942))
+- Locked Twig down to 2.7, to avoid a bug in 2.8.0. ([twigphp/Twig#2942](https://github.com/twigphp/Twig/issues/2942))
 
 ### Fixed
 - Fixed an error that occurred when installing a missing plugin from the Settings → Plugins page. ([#4140](https://github.com/craftcms/cms/issues/4140))
@@ -452,7 +511,7 @@
 ### Changed
 - `Craft::parseEnv()` will now boolean values for environment variables set to `true` or `false`. ([#3975](https://github.com/craftcms/cms/issues/3975))
 - Nested project config keys are no longer sorted alphabetically.
-- Craft now requires Twig ^2.7.2.
+- Craft now requires Twig 2.7+.
 
 ### Fixed
 - Fixed a SQL error that occurred when using a token with a usage limit, if using PostgreSQL. ([#3969](https://github.com/craftcms/cms/issues/3969))
@@ -466,7 +525,7 @@
 ## 3.1.17.2 - 2019-03-12
 
 ### Changed
-- Craft now requires Twig ~2.6.2.
+- Craft now requires Twig 2.6.
 
 ## 3.1.17.1 - 2019-03-08
 
@@ -1015,7 +1074,7 @@
 ## 3.0.41.1 - 2019-03-12
 
 ### Changed
-- Craft now requires Twig ~2.6.2.
+- Craft now requires Twig 2.6.
 
 ## 3.0.41 - 2019-02-22
 
@@ -1483,7 +1542,7 @@
 - The `{% js %}` tag now supports the following position params: `at POS_HEAD`, `at POS_BEGIN`, `at POS_END`, `on POS_READY`, and `on POS_LOAD` (e.g. `{% js at POS_END %}`).
 - Craft once again checks for `X-Forwarded-For` headers when determining the user’s IP. ([#3036](https://github.com/craftcms/cms/issues/3036))
 - Leading/trailing whitespace characters are now stripped from element titles on save. ([#3020](https://github.com/craftcms/cms/issues/3020))
-- Updated svg-sanitize to ~0.9.0.
+- Updated svg-sanitize to 0.9.
 
 ### Deprecated
 - Deprecated `craft\db\Connection::createFromConfig()`. `craft\helpers\App::dbConfig()` should be used instead.

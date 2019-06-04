@@ -7,7 +7,7 @@
  * You can see a list of the default settings in craft/app/config/defaults/general.php
  */
 $config = [
-    'devMode'=>true,
+    'devMode' => true,
     'cpTrigger' => 'adminustriggerus',
     'siteUrl' => 'https://test.craftcms.test/',
     'slugWordSeparator' => '--',

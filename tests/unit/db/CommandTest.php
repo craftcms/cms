@@ -60,15 +60,19 @@ class CommandTest extends Unit
         sleep(5);
 
         $dateTimeZone = new DateTimeZone('UTC');
+        $oldDate = new DateTime($session['dateUpdated'], $dateTimeZone);
+
+        // Save it again. Ensure dateUpdated is the same, as nothing has changed.
+        $session = $this->updateSession($session);
+        $this->assertSame($oldDate->format('Y-m-d H:i:s'), $session['dateUpdated']);
+
+        // Save it again without a dateUpdated value. Ensure dateUpdated is now current.
         $date = new DateTime('now', $dateTimeZone);
-        $oldDate  = new DateTime($session['dateUpdated'], $dateTimeZone);
 
-        $this->assertGreaterThan($oldDate, $date);
-
-        // Save it again. Ensure dateUpdated is now current.
+        unset($session['dateUpdated']);
         $session = $this->updateSession($session);
 
-        $this->assertSame($session['dateUpdated'], $date->format('Y-m-d H:i:s'));
+        $this->assertSame($date->format('Y-m-d H:i:s'), $session['dateUpdated']);
     }
 
     /**
@@ -77,7 +81,7 @@ class CommandTest extends Unit
      * @return array
      * @throws Exception
      */
-    public function ensureSession() : array
+    public function ensureSession(): array
     {
         $command = Craft::$app->getDb()->createCommand()
             ->insert('{{%sessions}}',
@@ -121,7 +125,7 @@ class CommandTest extends Unit
      * @param array $params
      * @return array
      */
-    public function getSession(array $params) : array
+    public function getSession(array $params): array
     {
         return (new Query())->select('*')->from('{{%sessions}}')->where($params)->one();
     }

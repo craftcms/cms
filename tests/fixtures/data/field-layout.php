@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-use \craft\fields\Number;
+use craft\fields\Number;
 
 return [
     [

@@ -40,8 +40,8 @@ class SearchHelperTest extends Unit
      * @param       $result
      * @param       $keyword
      * @param array $ignore
-     * @param bool  $processMap
-     * @param null  $language
+     * @param bool $processMap
+     * @param null $language
      */
     public function testKeywordNormalization($result, $keyword, $ignore = [], $processMap = true, $language = null)
     {

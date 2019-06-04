@@ -32,7 +32,7 @@ class VolumesFolderFixture extends Fixture
     /**
      * @inheritdoc
      */
-    public $dataFile = __DIR__.'/data/volumefolder.php';
+    public $dataFile = __DIR__ . '/data/volumefolder.php';
 
     /**
      * @inheritdoc

@@ -4,21 +4,62 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.github.io/license/
  */
+
 namespace craft\test;
 
+use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Craft;
-use craft\mail\Mailer;
-use craft\services\Fields;
-use craft\services\ProjectConfig;
-use craft\services\SystemSettings;
-use craft\test\Craft as CraftTest;
 use craft\db\Connection;
 use craft\db\Migration;
+use craft\db\MigrationManager;
+use craft\feeds\Feeds;
 use craft\helpers\ArrayHelper;
 use craft\helpers\MigrationHelper;
+use craft\i18n\Locale;
+use craft\mail\Mailer;
 use craft\migrations\Install;
 use craft\models\Site;
+use craft\queue\Queue;
+use craft\services\Api;
+use craft\services\AssetIndexer;
+use craft\services\Assets;
+use craft\services\AssetTransforms;
+use craft\services\Categories;
+use craft\services\Composer;
 use craft\services\Config;
+use craft\services\Content;
+use craft\services\Dashboard;
+use craft\services\Deprecator;
+use craft\services\ElementIndexes;
+use craft\services\Elements;
+use craft\services\Entries;
+use craft\services\EntryRevisions;
+use craft\services\Fields;
+use craft\services\Globals;
+use craft\services\Images;
+use craft\services\Matrix;
+use craft\services\Path;
+use craft\services\Plugins;
+use craft\services\PluginStore;
+use craft\services\ProjectConfig;
+use craft\services\Relations;
+use craft\services\Routes;
+use craft\services\Search;
+use craft\services\Sections;
+use craft\services\Sites;
+use craft\services\Structures;
+use craft\services\SystemMessages;
+use craft\services\SystemSettings;
+use craft\services\Tags;
+use craft\services\TemplateCaches;
+use craft\services\Tokens;
+use craft\services\Updates;
+use craft\services\UserGroups;
+use craft\services\UserPermissions;
+use craft\services\Users;
+use craft\services\Utilities;
+use craft\services\Volumes;
+use craft\test\Craft as CraftTest;
 use craft\web\Application;
 use craft\web\ErrorHandler;
 use craft\web\Request;
@@ -34,50 +75,14 @@ use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
-use craft\db\MigrationManager;
-use craft\feeds\Feeds;
-use craft\i18n\Locale;
-use craft\queue\Queue;
-use craft\services\Api;
-use craft\services\AssetIndexer;
-use craft\services\Assets;
-use craft\services\AssetTransforms;
-use craft\services\Categories;
-use craft\services\Composer;
-use craft\services\Content;
-use craft\services\Dashboard;
-use craft\services\Deprecator;
-use craft\services\ElementIndexes;
-use craft\services\Elements;
-use craft\services\Entries;
-use craft\services\EntryRevisions;
-use craft\services\Globals;
-use craft\services\Images;
-use craft\services\Matrix;
-use craft\services\Path;
-use craft\services\Plugins;
-use craft\services\PluginStore;
-use craft\services\Relations;
-use craft\services\Routes;
-use craft\services\Search;
-use craft\services\Sections;
-use craft\services\Sites;
-use craft\services\Structures;
-use craft\services\SystemMessages;
-use craft\services\Tags;
-use craft\services\TemplateCaches;
-use craft\services\Tokens;
-use craft\services\Updates;
-use craft\services\UserGroups;
-use craft\services\UserPermissions;
-use craft\services\Users;
-use craft\services\Utilities;
-use craft\services\Volumes;
 use yii\mutex\Mutex;
-use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 
 /**
  * Class TestSetup.
+ *
+ * TestSetup performs various setup tasks required for craft\test\Craft.
+ * It is not intended for use within public tests.
+ * Use the various features of `craft\test\Craft` instead.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -122,7 +127,6 @@ class TestSetup
         Craft::setLogger(null);
 
         Craft::$app = null;
-
     }
 
     /**
@@ -130,14 +134,13 @@ class TestSetup
      * @return bool
      * @throws Exception
      */
-    public static function cleanseDb(Connection $connection) : bool
+    public static function cleanseDb(Connection $connection): bool
     {
         $tables = $connection->schema->getTableNames();
 
         foreach ($tables as $table) {
             MigrationHelper::dropTable($table);
         }
-
 
         $tables = $connection->schema->getTableNames();
 
@@ -153,7 +156,7 @@ class TestSetup
      * @param array $params
      * @return false|null
      */
-    public static function validateAndApplyMigration(string $class, array $params) : bool
+    public static function validateAndApplyMigration(string $class, array $params): bool
     {
         if (!class_exists($class)) {
             throw new InvalidArgumentException('Class does not exist');
@@ -163,7 +166,7 @@ class TestSetup
 
         if (!$migration instanceof Migration) {
             throw new InvalidArgumentException(
-                'Migration class is not an instance of '. Migration::class .''
+                'Migration class is not an instance of ' . Migration::class . ''
             );
         }
 
@@ -173,7 +176,7 @@ class TestSetup
     /**
      * @return array
      */
-    public static function createTestCraftObjectConfig() : array
+    public static function createTestCraftObjectConfig(): array
     {
         $_SERVER['REMOTE_ADDR'] = '1.1.1.1';
         $_SERVER['REMOTE_PORT'] = 654321;
@@ -185,11 +188,11 @@ class TestSetup
 
         $appType = self::appType();
 
-        Craft::setAlias('@craftunitsupport', $srcPath.'/test');
-        Craft::setAlias('@craftunittemplates', $basePath.'/tests/_craft/templates');
-        Craft::setAlias('@craftunitfixtures', $basePath.'/tests/fixtures');
-        Craft::setAlias('@testsfolder', $basePath.'/tests');
-        Craft::setAlias('@crafttestsfolder', $basePath.'/tests/_craft');
+        Craft::setAlias('@craftunitsupport', $srcPath . '/test');
+        Craft::setAlias('@craftunittemplates', $basePath . '/tests/_craft/templates');
+        Craft::setAlias('@craftunitfixtures', $basePath . '/tests/fixtures');
+        Craft::setAlias('@testsfolder', $basePath . '/tests');
+        Craft::setAlias('@crafttestsfolder', $basePath . '/tests/_craft');
 
         // Normalize some Craft defined path aliases.
         Craft::setAlias('@craft', CraftTest::normalizePathSeparators(Craft::getAlias('@craft')));
@@ -214,7 +217,7 @@ class TestSetup
                 ],
             ],
             require $srcPath . '/config/app.php',
-            require $srcPath . '/config/app.'.$appType.'.php',
+            require $srcPath . '/config/app.' . $appType . '.php',
             $configService->getConfigFromFile('app'),
             $configService->getConfigFromFile("app.{$appType}")
         );
@@ -237,7 +240,7 @@ class TestSetup
     /**
      * @return Config
      */
-    public static function createConfigService() : Config
+    public static function createConfigService(): Config
     {
         $configService = new Config();
         $configService->env = 'test';
@@ -246,13 +249,14 @@ class TestSetup
 
         return $configService;
     }
+
     /**
      * Determine the app type. If the parent is `craft\test\console\ConsoleTest`.
      * Its a console test. Else, web.
      *
      * @return string
      */
-    public static function appType() : string
+    public static function appType(): string
     {
         $appType = 'web';
         if (CraftTest::$currentTest instanceof ConsoleTest) {
@@ -272,14 +276,14 @@ class TestSetup
             $preDefinedAppType = self::appType();
         }
 
-        return $preDefinedAppType === 'console' ?  \craft\console\Application::class
+        return $preDefinedAppType === 'console' ? \craft\console\Application::class
             : Application::class;
     }
 
     /**
      * @return bool
      */
-    public static function configureCraft() : bool
+    public static function configureCraft(): bool
     {
         define('YII_ENV', 'test');
 
@@ -305,10 +309,10 @@ class TestSetup
 
         $libPath = dirname(__DIR__, 2) . '/lib';
 
-        $srcPath  = dirname(__DIR__);
+        $srcPath = dirname(__DIR__);
 
         require $libPath . '/yii2/Yii.php';
-        require $srcPath.'/Craft.php';
+        require $srcPath . '/Craft.php';
 
         // Set aliases
         Craft::setAlias('@vendor', $vendorPath);
@@ -333,7 +337,7 @@ class TestSetup
             throw new InvalidArgumentException('Project config is not a file');
         }
 
-        $testSuiteProjectConfigPath = CRAFT_CONFIG_PATH.'/project.yaml';
+        $testSuiteProjectConfigPath = CRAFT_CONFIG_PATH . '/project.yaml';
         $contents = file_get_contents($projectConfigFile);
         $arrayContents = Yaml::parse($contents);
 
@@ -448,7 +452,6 @@ class TestSetup
             ->willReturnMap($mockMapForMagicGet);
 
         return $mockApp;
-
     }
 
     /**
@@ -466,11 +469,11 @@ class TestSetup
     }
 
     /**
+     * @return array
      * @todo Missed any?
      *
-     * @return array
      */
-    public static function getCraftServiceMap() : array
+    public static function getCraftServiceMap(): array
     {
         $map = [
             [Api::class, ['getApi', 'api']],

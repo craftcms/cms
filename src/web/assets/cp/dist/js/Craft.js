@@ -1,4 +1,4 @@
-/*!   - 2019-05-26 */
+/*!   - 2019-06-03 */
 (function($){
 
 /** global: Craft */
@@ -74,7 +74,7 @@ $.extend(Craft,
         /**
          * Escapes special regular expression characters.
          *
-         * @param {string} tr
+         * @param {string} str
          * @return string
          */
         escapeRegex: function(str) {
@@ -213,7 +213,7 @@ $.extend(Craft,
 
                 if (path) {
                     // Does baseUrl already contain a path?
-                    var pathMatch = url.match(/[&\?]p=[^&]+/);
+                    var pathMatch = url.match(new RegExp('[&\?]' + Craft.escapeRegex(Craft.pathParam) + '=[^&]+'));
                     if (pathMatch) {
                         url = url.replace(pathMatch[0], pathMatch[0] + '/' + path);
                         path = '';
@@ -241,8 +241,8 @@ $.extend(Craft,
                 else {
                     // Move the path into the query string params
 
-                    // Is the p= param already set?
-                    if (params && params.substr(0, 2) === 'p=') {
+                    // Is the path param already set?
+                    if (params && params.substr(0, Craft.pathParam.length + 1) === Craft.pathParam + '=') {
                         var basePath,
                             endPath = params.indexOf('&');
 
@@ -262,7 +262,7 @@ $.extend(Craft,
                     }
 
                     // Now move the path into the params
-                    params = 'p=' + path + (params ? '&' + params : '');
+                    params = Craft.pathParam + '=' + path + (params ? '&' + params : '');
                     path = null;
                 }
             }
@@ -12900,16 +12900,6 @@ Craft.DraftEditor = Garnish.Base.extend(
                 this.createEditMetaBtn();
             }
 
-            // Just to be safe
-            Craft.cp.$primaryForm.data('initialSerializedValue', this.getFormData());
-
-            this.addListener(Garnish.$bod, 'keypress keyup change focus blur click mousedown mouseup', function(ev) {
-                clearTimeout(this.timeout);
-                this.timeout = setTimeout($.proxy(this, 'checkForm'), 500);
-            });
-
-            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
-
             if (this.settings.previewTargets.length) {
                 if (this.settings.enablePreview) {
                     this.addListener($('#preview-btn'), 'click', 'openPreview');
@@ -12925,6 +12915,21 @@ Craft.DraftEditor = Garnish.Base.extend(
                     this.createShareMenu($shareBtn);
                 }
             }
+
+            // If this is a revision, then we're done here
+            if (this.settings.revisionId) {
+                return;
+            }
+
+            // Just to be safe
+            Craft.cp.$primaryForm.data('initialSerializedValue', this.getFormData());
+
+            this.addListener(Garnish.$bod, 'keypress keyup change focus blur click mousedown mouseup', function(ev) {
+                clearTimeout(this.timeout);
+                this.timeout = setTimeout($.proxy(this, 'checkForm'), 500);
+            });
+
+            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
         },
 
         spinners: function() {
@@ -12982,6 +12987,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                 sourceId: this.settings.sourceId,
                 siteId: this.settings.siteId,
                 draftId: this.settings.draftId,
+                revisionId: this.settings.revisionId,
             }, $.proxy(function(response, textStatus) {
                 if (textStatus === 'success') {
                     this.previewToken = response.token;
@@ -13355,6 +13361,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             siteId: null,
             sourceEditUrl: null,
             draftId: null,
+            revisionId: null,
             draftName: null,
             draftNotes: null,
             canDeleteDraft: false,
@@ -18153,7 +18160,9 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend(
             sourceVal = sourceVal.replace(/['"‘’“”\[\]\(\)\{\}:]/g, '');
 
             // Make it lowercase
-            sourceVal = sourceVal.toLowerCase();
+            if (!Craft.allowUppercaseInSlug) {
+                sourceVal = sourceVal.toLowerCase();
+            }
 
             if (Craft.limitAutoSlugsToAscii) {
                 // Convert extended ASCII characters to basic ASCII

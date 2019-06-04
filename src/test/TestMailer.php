@@ -41,7 +41,7 @@ class TestMailer extends Mailer
      * @param $message
      * @return bool
      */
-    protected function sendMessage($message) : bool
+    protected function sendMessage($message): bool
     {
         call_user_func($this->callback, $message);
         return true;
@@ -51,7 +51,7 @@ class TestMailer extends Mailer
      * @param MessageInterface $message
      * @return bool
      */
-    protected function saveMessage($message) : bool
+    protected function saveMessage($message): bool
     {
         call_user_func($this->callback, $message);
         return true;

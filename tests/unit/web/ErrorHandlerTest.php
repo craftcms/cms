@@ -155,7 +155,7 @@ class ErrorHandlerTest extends TestCase
     /**
      * @return array
      */
-    public function getTypeUrlDataProvider() : array
+    public function getTypeUrlDataProvider(): array
     {
         return [
             ['http://twig.sensiolabs.org/api/2.x/Twig\Template.html#method_render', '__TwigTemplate_', 'render'],
@@ -175,12 +175,12 @@ class ErrorHandlerTest extends TestCase
         $craftPath = Craft::getAlias('@craft');
 
         return [
-            [true, $path.'/created_path'],
-            [true, $vendorPath.'/twig/twig/LICENSE'],
-            [true, $vendorPath.'/twig/twig/composer.json'],
-            [true, $craftPath.'/web/twig/Template.php'],
+            [true, $path . '/created_path'],
+            [true, $vendorPath . '/twig/twig/LICENSE'],
+            [true, $vendorPath . '/twig/twig/composer.json'],
+            [true, $craftPath . '/web/twig/Template.php'],
 
-            [false, $craftPath.'/web/twig'],
+            [false, $craftPath . '/web/twig'],
             [false, __DIR__]
         ];
     }
@@ -197,7 +197,7 @@ class ErrorHandlerTest extends TestCase
 
         // Create a dir in compiled templates. See self::144
         $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
-        mkdir($path.'/created_path');
+        mkdir($path . '/created_path');
 
         $this->errorHandler = Craft::createObject(ErrorHandler::class);
     }
@@ -209,7 +209,7 @@ class ErrorHandlerTest extends TestCase
     {
         // Remove the dir created in _before
         $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
-        rmdir($path.'/created_path');
+        rmdir($path . '/created_path');
 
         parent::_after();
     }

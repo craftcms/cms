@@ -4,6 +4,7 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
+
 namespace craftunit\db;
 
 use Codeception\Test\Unit;
@@ -74,14 +75,18 @@ class ActiveRecordTest extends Unit
         sleep(5);
 
         $dateTimeZone = new DateTimeZone('UTC');
-        $date = new DateTime('now', $dateTimeZone);
-        $oldDate  = new DateTime($session->dateUpdated, $dateTimeZone);
+        $oldDate = new DateTime($session->dateUpdated, $dateTimeZone);
 
+        // Save it again. Ensure dateUpdated is the same, as nothing has changed.
+        $session->save();
+        $this->assertSame($session->dateUpdated, $oldDate->format('Y-m-d H:i:s'));
+
+        // Save it again with a new value. Ensure dateUpdated is now current.
+        $date = new DateTime('now', $dateTimeZone);
         $this->assertGreaterThan($oldDate, $date);
 
-        // Save it again. Ensure dateUpdated is now current.
+        $session->token = 'test2';
         $session->save();
-
         $this->assertSame($session->dateUpdated, $date->format('Y-m-d H:i:s'));
     }
 
@@ -140,33 +145,6 @@ class ActiveRecordTest extends Unit
             [false, false],
         ];
     }
-    /**
-     * Test that values cannot be overwritten.
-     *
-     * @throws Exception
-     */
-    public function testOverrides()
-    {
-        $utcTz = new DateTimeZone('UTC');
-        $oneDayAgo = new DateTime('-1 day', $utcTz);
-        $now =  new DateTime('now', $utcTz);
-
-        $uuid = StringHelper::UUID();
-
-        $session = new Session();
-        $session->userId = 1;
-        $session->token = 'test';
-        $session->dateCreated = $oneDayAgo;
-        $session->dateUpdated = $oneDayAgo;
-        $session->uid = $uuid;
-        $save = $session->save();
-
-        $this->assertTrue($save);
-
-        $this->assertSame($now->format('Y-m-d H:i:s'), $session->dateCreated);
-        $this->assertSame($now->format('Y-m-d H:i:s'), $session->dateUpdated);
-        $this->assertSame($uuid, $session->uid);
-    }
 
     /**
      *
@@ -200,7 +178,7 @@ class ActiveRecordTest extends Unit
     /**
      * @return Session
      */
-    public function ensureSession() : Session
+    public function ensureSession(): Session
     {
         $session = new Session();
         $session->userId = 1;

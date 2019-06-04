@@ -179,7 +179,7 @@ abstract class Element extends Component implements ElementInterface
      *     if ($entry->uri === 'pricing') {
      *         $e->route = 'module/pricing/index';
      *     }
-     * }
+     * });
      * ```
      */
     const EVENT_SET_ROUTE = 'setRoute';
@@ -478,6 +478,14 @@ abstract class Element extends Component implements ElementInterface
     public static function sortOptions(): array
     {
         $sortOptions = static::defineSortOptions();
+
+        // Add custom fields to the fix
+        foreach (Craft::$app->getFields()->getFieldsByElementType(static::class) as $field) {
+            /** @var Field $field */
+            if ($field instanceof SortableFieldInterface) {
+                $sortOptions[] = $field->getSortOption();
+            }
+        }
 
         // Give plugins a chance to modify them
         $event = new RegisterElementSortOptionsEvent([
@@ -1227,6 +1235,23 @@ abstract class Element extends Component implements ElementInterface
         /** @var DraftBehavior|RevisionBehavior|null $behavior */
         $behavior = $this->getBehavior('draft') ?: $this->getBehavior('revision');
         return $behavior ? $behavior->sourceId : $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSourceUid(): string
+    {
+        $sourceId = $this->getSourceId();
+        if ($sourceId === $this->id) {
+            return $this->uid;
+        }
+        return static::find()
+            ->id($sourceId)
+            ->siteId($this->siteId)
+            ->anyStatus()
+            ->select(['elements.uid'])
+            ->scalar();
     }
 
     /**

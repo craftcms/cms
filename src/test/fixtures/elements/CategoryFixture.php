@@ -7,8 +7,8 @@
 
 namespace craft\test\fixtures\elements;
 
-use craft\elements\Category;
 use Craft;
+use craft\elements\Category;
 
 /**
  * Class CategoryFixture.

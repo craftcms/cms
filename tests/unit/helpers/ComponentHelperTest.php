@@ -68,10 +68,10 @@ class ComponentHelperTest extends Unit
     {
         $this->tester->expectThrowable(
             $requiredException,
-            function () use($settings, $desiredParent){
+            function() use ($settings, $desiredParent) {
                 Component::createComponent($settings, $desiredParent);
             }
-            );
+        );
     }
 
     /**
@@ -103,12 +103,12 @@ class ComponentHelperTest extends Unit
     {
         return [
             'string-to-class-conversion' => [
-                function(){
+                function() {
                     return Component::createComponent(ComponentExample::class);
                 },
             ],
             'successful-basic' => [
-                function(){
+                function() {
                     return Component::createComponent([
                         'type' => ComponentExample::class,
                     ]);

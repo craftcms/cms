@@ -518,16 +518,20 @@ class UrlHelper
         $params = array_merge($baseParams, $params);
         $fragment = $fragment ?? $baseFragment;
 
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $request = Craft::$app->getRequest();
+
         // If this is a site URL and there was a token on the request, pass it along
         if (!$cpUrl) {
-            $tokenParam = Craft::$app->getConfig()->getGeneral()->tokenParam;
-            if (!isset($params[$tokenParam]) && ($token = Craft::$app->getRequest()->getToken()) !== null) {
+            $tokenParam = $generalConfig->tokenParam;
+            if (
+                !isset($params[$tokenParam]) &&
+                !$request->getIsConsoleRequest() &&
+                ($token = $request->getToken()) !== null
+            ) {
                 $params[$tokenParam] = $token;
             }
         }
-
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $request = Craft::$app->getRequest();
 
         if ($showScriptName === null) {
             $showScriptName = !$generalConfig->omitScriptNameInUrls;
@@ -573,8 +577,10 @@ class UrlHelper
             $url = $baseUrl;
 
             if ($path) {
+                // Prepend it to the params array
                 $pathParam = $generalConfig->pathParam;
-                $params[$pathParam] = $path;
+                ArrayHelper::remove($params, $pathParam);
+                $params = array_merge([$pathParam => $path], $params);
             }
         }
 

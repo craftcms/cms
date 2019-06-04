@@ -160,6 +160,17 @@ by your console command when calling `$this->select()`
 - **$returnValue:** The value that is returned to your console command by `$this->select()`
 - **$options = []:** The options passed into `$this->select()` by your console command
 
+### `outputCommand`
 
-If your console command calls `$this->select()` this method ensures that you can test 
-how this method is called and what user input is returned (as there is no *actual* user in testing). 
+- **string $command:** The command to output when calling `$this->outputCommand()`
+- **bool $withScriptName = true:** What value should be passed as second argument when your console
+command calls `$this->outputCommand()`
+
+If your console command calls `$this->outputCommand()` this method ensures that you can test 
+how this method is called and what is output to the user. 
+
+::: warning
+Please ensure you call `$this->outputCommand()` in your console commands and not `craft\helpers\Console::outputCommand()`. 
+This static method will not be taken into account as it is currently not possible to mock static methods - 
+something required for the `CommandTest` class to work. 
+:::

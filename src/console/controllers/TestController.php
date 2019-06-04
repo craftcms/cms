@@ -8,16 +8,21 @@
 namespace craft\console\controllers;
 
 use yii\base\InvalidArgumentException;
-use yii\console\Controller;
+use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**
- * @todo This class is just for show.
- * @internal It will be removed before the tests are release for public. No need for cleaning the code.
+ * @internal We use this class to test the `craft\test\CommandTest` functionality.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class TestController extends Controller
 {
+    // Public functions
+    // =========================================================================
+
+    /**
+     * @return int
+     */
     public function actionTest()
     {
         $this->stdout('22');
@@ -37,6 +42,8 @@ class TestController extends Controller
         if ($prompts !== 'hi') {
             throw new InvalidArgumentException('FAIL');
         }
+
+        $this->outputCommand('An output command');
 
         return ExitCode::OK;
     }

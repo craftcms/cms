@@ -1,5 +1,12 @@
 <p align="center"><a href="https://craftcms.com/" rel="noopener" target="_blank"><img width="312" height="90" src="https://craftcms.com/craftcms.svg" alt="Craft CMS"></a></p>
 
+![Build](https://img.shields.io/travis/com/craftcms/cms/feature/tests.svg?label=Build&link=https://travis-ci.com/craftcms/cms)
+![Code Coverage](https://img.shields.io/codecov/c/github/craftcms/cms/feature/tests.svg?label=Code%20Coverage&link=https://codecov.io/gh/craftcms/cms)
+![Packagist Downloads](https://img.shields.io/packagist/dt/craftcms/cms.svg?label=Packagist%20Downloads&link=https://packagist.org/packages/craftcms/cms)
+![Latest Stable Release](https://img.shields.io/github/tag/craftcms/cms.svg?label=Latest%20Stable%20Release&link=https://github.com/craftcms/cms/releases)
+![Commit Activity](https://img.shields.io/github/commit-activity/m/craftcms/cms.svg?label=Commit%20Activity&link=https://github.com/craftcms/cms/commits/develop)
+![Discord](https://img.shields.io/discord/456442477667418113.svg?label=Discord&link=https://craftcms.com/discord)
+
 ## About Craft CMS
 
 Craft is a flexible, user-friendly CMS for creating custom digital experiences on the web and beyond.

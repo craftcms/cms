@@ -10,11 +10,11 @@ namespace craftunit\helpers;
 
 use Codeception\Stub;
 use Codeception\Test\Unit;
+use Craft;
 use craft\helpers\Image;
 use Exception;
-use UnitTester;
 use TypeError;
-use Craft;
+use UnitTester;
 use yii\log\Logger;
 
 /**
@@ -112,11 +112,16 @@ class ImageHelperTest extends Unit
     /**
      * @dataProvider imageSizeDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param array $result
+     * @param string $input
+     * @param bool $skipIfGd
      */
-    public function testImageSize($result, $input)
+    public function testImageSize($result, $input, $skipIfGd)
     {
+        if ($skipIfGd && Craft::$app->getImages()->getIsGd()) {
+            $this->markTestSkipped('Need Imagick to test this function.');
+        }
+
         $imageSize = Image::imageSize($input);
         $this->assertSame($result, $imageSize);
     }
@@ -167,9 +172,11 @@ class ImageHelperTest extends Unit
     public function testImageByStreamException($errorLogMessage, $input)
     {
         Craft::setLogger(
-            Stub::make(Logger::class, ['log' => function($message) use ($errorLogMessage) {
-                $this->assertSame($errorLogMessage, $message);
-            }])
+            Stub::make(Logger::class, [
+                'log' => function($message) use ($errorLogMessage) {
+                    $this->assertSame($errorLogMessage, $message);
+                }
+            ])
         );
 
         $result = Image::imageSizeByStream($input);
@@ -187,25 +194,25 @@ class ImageHelperTest extends Unit
         $dirnameFile3 = dirname(__FILE__, 3);
 
         return [
-            [[400, 300], fopen($dirnameFile3.'/_data/assets/files/example-gif.gif', 'rb')],
-            [[960, 640], fopen($dirnameFile3.'/_data/assets/files/background.jpg', 'rb')],
-            [[200, 200], fopen($dirnameFile3.'/_data/assets/files/google.png', 'rb')],
-            [false, fopen($dirnameFile3.'/_data/assets/files/craft-logo.svg', 'rb')],
+            [[400, 300], fopen($dirnameFile3 . '/_data/assets/files/example-gif.gif', 'rb')],
+            [[960, 640], fopen($dirnameFile3 . '/_data/assets/files/background.jpg', 'rb')],
+            [[200, 200], fopen($dirnameFile3 . '/_data/assets/files/google.png', 'rb')],
+            [false, fopen($dirnameFile3 . '/_data/assets/files/craft-logo.svg', 'rb')],
         ];
     }
 
     /**
      * @return array
      */
-    public function exceptionTriggeringImageByStreamDataProvider() : array
+    public function exceptionTriggeringImageByStreamDataProvider(): array
     {
         $dirnameFile3 = dirname(__FILE__, 3);
 
         return [
-            ['Unrecognized JPG file structure.', fopen($dirnameFile3.'/_data/assets/files/broken-jpg-structure.jpg', 'rb')],
-            ['Unrecognized image signature.', fopen($dirnameFile3.'/_data/assets/files/broken-gif-signature.gif', 'rb')],
-            ['Unrecognized image signature.', fopen($dirnameFile3.'/_data/assets/files/broken-png-signature.png', 'rb')],
-            ['Unrecognized PNG file structure.', fopen($dirnameFile3.'/_data/assets/files/invalid-ihdr.png', 'rb')],
+            ['Unrecognized JPG file structure.', fopen($dirnameFile3 . '/_data/assets/files/broken-jpg-structure.jpg', 'rb')],
+            ['Unrecognized image signature.', fopen($dirnameFile3 . '/_data/assets/files/broken-gif-signature.gif', 'rb')],
+            ['Unrecognized image signature.', fopen($dirnameFile3 . '/_data/assets/files/broken-png-signature.png', 'rb')],
+            ['Unrecognized PNG file structure.', fopen($dirnameFile3 . '/_data/assets/files/invalid-ihdr.png', 'rb')],
         ];
     }
 
@@ -215,12 +222,12 @@ class ImageHelperTest extends Unit
     public function parseSvgDataProvider(): array
     {
         return [
-            [[140.0, 41.0], file_get_contents(dirname(__FILE__, 3).'/_data/assets/files/craft-logo.svg')],
-            [[100.0, 100.0], file_get_contents(dirname(__FILE__, 3).'/_data/assets/files/gng.svg')],
+            [[140.0, 41.0], file_get_contents(dirname(__FILE__, 3) . '/_data/assets/files/craft-logo.svg')],
+            [[100.0, 100.0], file_get_contents(dirname(__FILE__, 3) . '/_data/assets/files/gng.svg')],
 
             // This svg is same as craft-logo but we removed viewbox="" and height=""/width="" so it returns 100.0 100.0 instead of 140.0 41.0
-            [[100, 100], file_get_contents(dirname(__FILE__, 3).'/_data/assets/files/no-dimension-svg.svg')],
-            [[100, 100], file_get_contents(dirname(__FILE__, 3).'/_data/assets/files/google.png')],
+            [[100, 100], file_get_contents(dirname(__FILE__, 3) . '/_data/assets/files/no-dimension-svg.svg')],
+            [[100, 100], file_get_contents(dirname(__FILE__, 3) . '/_data/assets/files/google.png')],
         ];
     }
 
@@ -230,10 +237,10 @@ class ImageHelperTest extends Unit
     public function imageSizeDataProvider(): array
     {
         return [
-            [[960, 640], dirname(__FILE__, 3).'/_data/assets/files/background.jpg'],
-            [[200, 200], dirname(__FILE__, 3).'/_data/assets/files/google.png'],
-            [[1728, 2376], dirname(__FILE__, 3).'/_data/assets/files/random.tiff'],
-            [[100.0, 100.0], dirname(__FILE__, 3).'/_data/assets/files/gng.svg'],
+            [[960, 640], dirname(__FILE__, 3) . '/_data/assets/files/background.jpg', false],
+            [[200, 200], dirname(__FILE__, 3) . '/_data/assets/files/google.png', false],
+            [[1728, 2376], dirname(__FILE__, 3) . '/_data/assets/files/random.tiff', true],
+            [[100.0, 100.0], dirname(__FILE__, 3) . '/_data/assets/files/gng.svg', false],
         ];
     }
 
@@ -243,39 +250,41 @@ class ImageHelperTest extends Unit
     public function canHaveExitDataProvider(): array
     {
         return [
-            [true, dirname(__FILE__, 3).'/_data/assets/files/background.jpg'],
-            [true, dirname(__FILE__, 3).'/_data/assets/files/background.jpeg'],
-            [true, dirname(__FILE__, 3).'/_data/assets/files/random.tiff'],
+            [true, dirname(__FILE__, 3) . '/_data/assets/files/background.jpg'],
+            [true, dirname(__FILE__, 3) . '/_data/assets/files/background.jpeg'],
+            [true, dirname(__FILE__, 3) . '/_data/assets/files/random.tiff'],
 
-            [false, dirname(__FILE__, 3).'/_data/assets/files/random.tif'],
-            [false, dirname(__FILE__, 3).'/_data/assets/files/empty-file.text'],
-            [false, dirname(__FILE__, 3).'/_data/assets/files/google.png'],
+            [false, dirname(__FILE__, 3) . '/_data/assets/files/random.tif'],
+            [false, dirname(__FILE__, 3) . '/_data/assets/files/empty-file.text'],
+            [false, dirname(__FILE__, 3) . '/_data/assets/files/google.png'],
         ];
     }
 
     /**
+     * @return array
      * @todo Test empty unpack() function and invalid IHDR chunks and INVALID color value. See coverage for more.
      *
-     * @return array
      */
     public function pngImageInfoDataProvider(): array
     {
         return [
-            [[
-                'width' => 200,
-                'height' => 200,
-                'bit-depth' => 8,
-                'color' => 2,
-                'compression' => 0,
-                'filter' => 0,
-                'interface' => 0,
-                'color-type' => 'Truecolour',
-                'channels' => 3
-            ], dirname(__FILE__, 3).'/_data/assets/files/google.png'],
-            [false, dirname(__FILE__, 3).'/_data/assets/files/no-ihdr.png'],
-            [false, dirname(__FILE__, 3).'/_data/assets/files/invalid-ihdr.png'],
+            [
+                [
+                    'width' => 200,
+                    'height' => 200,
+                    'bit-depth' => 8,
+                    'color' => 2,
+                    'compression' => 0,
+                    'filter' => 0,
+                    'interface' => 0,
+                    'color-type' => 'Truecolour',
+                    'channels' => 3
+                ], dirname(__FILE__, 3) . '/_data/assets/files/google.png'
+            ],
+            [false, dirname(__FILE__, 3) . '/_data/assets/files/no-ihdr.png'],
+            [false, dirname(__FILE__, 3) . '/_data/assets/files/invalid-ihdr.png'],
             [false, ''],
-            [false, dirname(__FILE__, 3).'/_data/assets/files/ign.jpg'],
+            [false, dirname(__FILE__, 3) . '/_data/assets/files/ign.jpg'],
         ];
     }
 

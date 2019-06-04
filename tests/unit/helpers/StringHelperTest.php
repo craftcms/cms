@@ -10,13 +10,13 @@ namespace craftunit\helpers;
 use Codeception\Test\Unit;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\ToString;
-use function mb_strlen;
-use function mb_strpos;
 use stdClass;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use function mb_strlen;
+use function mb_strpos;
 
 /**
  * Unit tests for the String Helper class.
@@ -107,7 +107,7 @@ class StringHelperTest extends Unit
     public function testContainsAllExceptions()
     {
         // Test that empty array with a string in it returns an exception.
-        $this->tester->expectThrowable(ErrorException::class, function (){
+        $this->tester->expectThrowable(ErrorException::class, function() {
             StringHelper::containsAll('', ['']);
         });
     }
@@ -142,7 +142,7 @@ class StringHelperTest extends Unit
      */
     public function testStringIndexException()
     {
-        $this->tester->expectThrowable(ErrorException::class, function (){
+        $this->tester->expectThrowable(ErrorException::class, function() {
             StringHelper::indexOf('', '');
         });
     }
@@ -215,7 +215,7 @@ class StringHelperTest extends Unit
      */
     public function testFirst($result, $input, $requiredChars)
     {
-        $stripped =  StringHelper::first($input, $requiredChars);
+        $stripped = StringHelper::first($input, $requiredChars);
         $this->assertSame($result, $stripped);
     }
 
@@ -321,7 +321,7 @@ class StringHelperTest extends Unit
         $this->assertSame($length, $strLen);
 
         // Loop through the string and see if any of the characters arent on the list of allowed chars.
-        for ($i = 0; $i<$strLen; $i++) {
+        for ($i = 0; $i < $strLen; $i++) {
             if (mb_strpos($valid, $str[$i]) === false) {
                 $this->fail('Invalid chars');
             }
@@ -337,7 +337,7 @@ class StringHelperTest extends Unit
     public function testMb4Encoding($result, $input)
     {
         $mb4String = StringHelper::encodeMb4($input);
-       $this->assertSame($result, $mb4String);
+        $this->assertSame($result, $mb4String);
         $this->assertIsString($mb4String);
 
         $this->assertFalse(StringHelper::containsMb4($mb4String));
@@ -374,7 +374,7 @@ class StringHelperTest extends Unit
      */
     public function testAsciiCharMap()
     {
-        $deArray = ['ä',  'ö',  'ü',  'Ä',  'Ö',  'Ü'];
+        $deArray = ['ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü'];
         $this->assertArrayNotHasKey('de', StringHelper::asciiCharMap(false, 'de'));
         $deMap = StringHelper::asciiCharMap(true, 'de');
 
@@ -750,7 +750,7 @@ class StringHelperTest extends Unit
             [true, 'c74e8f78-c052-4978-b0e8-77a307f7b946'],
             [true, '469e6ed2-f270-458a-a80e-173821fee715'],
             [false, '00000000-0000-0000-0000-000000000000'],
-            [false, StringHelper::UUID().StringHelper::UUID()],
+            [false, StringHelper::UUID() . StringHelper::UUID()],
             [false, 'abc'],
             [false, '123'],
             [false, ''],
@@ -1089,15 +1089,20 @@ class StringHelperTest extends Unit
     public function linesDataProvider(): array
     {
         return [
-            [4, 'test
+            [
+                4, 'test
              
              
-             test'],
+             test'
+            ],
             [1, 'test <br> test'],
             [1, 'thesearetabs       notspaces'],
-            [2, '😂
-            😁'],
-            [11, '
+            [
+                2, '😂
+            😁'
+            ],
+            [
+                11, '
             
             
             
@@ -1107,7 +1112,8 @@ class StringHelperTest extends Unit
             
             
             
-            ']
+            '
+            ]
         ];
     }
 

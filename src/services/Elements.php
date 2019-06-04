@@ -46,6 +46,7 @@ use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
+use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -243,9 +244,10 @@ class Elements extends Component
      * @param string|null $elementType The element class.
      * @param int|null $siteId The site to fetch the element in.
      * Defaults to the current site.
+     * @param array $criteria
      * @return ElementInterface|null The matching element, or `null`.
      */
-    public function getElementById(int $elementId, string $elementType = null, int $siteId = null)
+    public function getElementById(int $elementId, string $elementType = null, int $siteId = null, array $criteria = [])
     {
         if (!$elementId) {
             return null;
@@ -284,6 +286,7 @@ class Elements extends Component
             $query->revisionId($data['revisionId']);
         }
 
+        Craft::configure($query, $criteria);
         return $query->one();
     }
 
@@ -321,10 +324,16 @@ class Elements extends Component
                 'elements_sites.siteId' => $siteId,
             ]);
 
-        // todo: remove schema version condition after next beakpoint
+        // todo: remove schema version conditions after next beakpoint
         $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
         if (version_compare($schemaVersion, '3.1.0', '>=')) {
             $query->andWhere(['elements.dateDeleted' => null]);
+        }
+        if (version_compare($schemaVersion, '3.2.6', '>=')) {
+            $query->andWhere([
+                'elements.draftId' => null,
+                'elements.revisionId' => null,
+            ]);
         }
 
         if (Craft::$app->getDb()->getIsMysql()) {
@@ -854,11 +863,21 @@ class Elements extends Component
         /** @var Element $mainClone */
         $mainClone = clone $element;
         $mainClone->id = null;
+        $mainClone->uid = null;
         $mainClone->contentId = null;
         $mainClone->duplicateOf = $element;
 
+        $behaviors = ArrayHelper::remove($newAttributes, 'behaviors', []);
         $mainClone->setRevisionNotes(ArrayHelper::remove($newAttributes, 'revisionNotes'));
         $mainClone->setAttributes($newAttributes, false);
+
+        // Attach behaviors
+        foreach ($behaviors as $name => $behavior) {
+            if ($behavior instanceof Behavior) {
+                $behavior = clone $behavior;
+            }
+            $mainClone->attachBehavior($name, $behavior);
+        }
 
         // Make sure the element actually supports its own site ID
         $supportedSites = ElementHelper::supportedSitesForElement($mainClone);
@@ -911,6 +930,15 @@ class Elements extends Component
                     $siteClone->propagating = true;
                     $siteClone->id = $mainClone->id;
                     $siteClone->contentId = null;
+
+                    // Attach behaviors
+                    foreach ($behaviors as $name => $behavior) {
+                        if ($behavior instanceof Behavior) {
+                            $behavior = clone $behavior;
+                        }
+                        $mainClone->attachBehavior($name, $behavior);
+                    }
+
                     $siteClone->setAttributes($newAttributes, false);
                     $siteClone->siteId = $siteInfo['siteId'];
 

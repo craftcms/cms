@@ -10,7 +10,8 @@ namespace craft\web\twig\nodes;
 use craft\helpers\Template as TemplateHelper;
 use Twig\Compiler;
 use Twig\Extension\SandboxExtension;
-use Twig\Node\Expression\AbstractExpression;
+use Twig\Node\Expression\GetAttrExpression;
+use Twig\Node\Node;
 use Twig\Template;
 
 /**
@@ -19,10 +20,22 @@ use Twig\Template;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class GetAttrNode extends AbstractExpression
+class GetAttrNode extends GetAttrExpression
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * @param array  $nodes      An array of named nodes
+     * @param array  $attributes An array of attributes (should not be nodes)
+     * @param int    $lineno     The line number
+     * @param string $tag        The tag name associated with the Node
+     */
+    public function __construct(array $nodes = [], array $attributes = [], int $lineno = 0, string $tag = null)
+    {
+        // Skip parent::__construct()
+        Node::__construct($nodes, $attributes, $lineno, $tag);
+    }
 
     /**
      * @inheritdoc

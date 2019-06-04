@@ -6,32 +6,17 @@ Fields are defined globally from Settings → Fields. They are organized into Fi
 
 All fields share a few common settings:
 
-* The Field Group to which it belongs
-* Name
-* Handle
-* Instruction text
+- **Group** – The field group that the field should be shown in
+- **Name** – How the field will be referenced throughout the Control Panel
+- **Handle** – How the field will be referenced from your templates
+- **Instructions** – Instruction text to guide the authors
+- **Field Type** – What type of field it is
 
 ![Field Settings](./images/fields-field-settings.png)
 
-## Translatable Fields
-
-If you’re running a multi-language site with Craft you have the option to mark fields as translatable.
-
-Craft provides five different “translation modes”:
-
-- Not translatable
-- Translate for each site
-- Translate for each site group
-- Translate for each language
-- Custom
-
-If a field is marked as “Not translatable”, then its values will always copied across all sites.
-
-The “Custom” translation mode can be used to implement custom translation logic. You can define the field’s custom “translation key” format, and field values will be copied to all sites that produce the same key. For example, to make the field translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.
-
 ## Field Types
 
-The final setting that all fields have is the “Field Type” setting. This determines what type of field it is – what its input UI is going to look like, what type of data it can store, and how you’ll be able to interact with that data from your templates.
+Choosing a field type determines what the field’s input UI is going to look like, what type of data it can store, and how you’ll be able to interact with that data from your templates.
 
 Craft comes with the following built-in field types:
 
@@ -54,6 +39,21 @@ Craft comes with the following built-in field types:
 * URL
 * [Users](users-fields.md)
 
+## Translation Methods
+
+If you’re running a multi-site Craft installation, most of your fields will have a “Translation Method” setting (depending on their type).
+
+Fields can have the following translation method:
+	
+- **Not translatable** – The field will have the same value across all sites.
+- **Translate for each site** – The field can have a different value for each site.
+- **Translate for each site group** – The field can have a different value for each site group.
+- **Translate for each language** – The field can have a different value for each unique language associated with your sites.
+- **Custom…** – The field can have different values based on a custom differentiator.
+
+If you choose “Custom…”, a “Translation Key Format” setting will appear below, where you can define a template that will help Craft which sites to copy the field value over to. When a new field value is saved, Craft will render this template for all sites, and the field value will be copied to all sites where the translation key matches the original site’s.
+
+For example, if a field’s translation key format were `{site.handle[0:2]}`, then new field values would be copied over to any other sites where the first two characters of the site handle matches the first to characters of the original site’s handle.
 
 ## Field Layouts
 

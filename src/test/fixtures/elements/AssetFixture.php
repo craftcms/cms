@@ -79,8 +79,8 @@ abstract class AssetFixture extends ElementFixture
             ])->id;
         }
 
-        $this->sourceAssetPath = dirname(__FILE__,5).'/tests/_craft/assets/';
-        $this->destinationAssetPath = dirname(__FILE__,5).'/tests/_craft/storage/runtime/temp/';
+        $this->sourceAssetPath = dirname(__FILE__, 5) . '/tests/_craft/assets/';
+        $this->destinationAssetPath = dirname(__FILE__, 5) . '/tests/_craft/storage/runtime/temp/';
 
         if (!is_dir($this->destinationAssetPath)) {
             FileHelper::createDirectory($this->destinationAssetPath);
@@ -120,7 +120,7 @@ abstract class AssetFixture extends ElementFixture
         parent::beforeLoad();
 
         foreach ($this->files as $key => $fileInfo) {
-            copy($this->sourceAssetPath.$fileInfo['filename'], $this->destinationAssetPath.$fileInfo['filename']);
+            copy($this->sourceAssetPath . $fileInfo['filename'], $this->destinationAssetPath . $fileInfo['filename']);
         }
     }
 

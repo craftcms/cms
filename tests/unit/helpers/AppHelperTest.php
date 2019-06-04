@@ -120,9 +120,10 @@ class AppHelperTest extends TestCase
     /**
      * @todo 3.1 added new functions to test.
      */
-    public function testMaxPowerCaptain(){
+    public function testMaxPowerCaptain()
+    {
         $oldMemoryLimit = ini_get('memory_limit');
-        $oldMaxExecution= ini_get('max_execution_time');
+        $oldMaxExecution = ini_get('max_execution_time');
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $generalConfig->phpMaxMemoryLimit = '512M';
@@ -223,13 +224,13 @@ class AppHelperTest extends TestCase
     {
         return [
             ['assetManagerConfig', ['class', 'basePath', 'baseUrl', 'fileMode', 'dirMode', 'appendTimestamp']],
-            ['dbConfig', [ 'class', 'dsn', 'password', 'username',  'charset', 'tablePrefix',  'schemaMap',  'commandMap',  'attributes','enableSchemaCache' ]],
-            ['webRequestConfig', [ 'class',  'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam',  ]],
-            ['cacheConfig', [ 'class',  'cachePath', 'fileMode', 'dirMode', 'defaultDuration']],
-            ['mutexConfig', [ 'class',  'fileMode', 'dirMode']],
-            ['logConfig', [ 'class',  'targets']],
-            ['sessionConfig', [ 'class',  'flashParam', 'authAccessParam', 'name', 'cookieParams']],
-            ['userConfig', [ 'class',  'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'identityCookie', 'usernameCookie', 'idParam', 'authTimeoutParam', 'absoluteAuthTimeoutParam', 'returnUrlParam']],
+            ['dbConfig', ['class', 'dsn', 'password', 'username', 'charset', 'tablePrefix', 'schemaMap', 'commandMap', 'attributes', 'enableSchemaCache']],
+            ['webRequestConfig', ['class', 'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam',]],
+            ['cacheConfig', ['class', 'cachePath', 'fileMode', 'dirMode', 'defaultDuration']],
+            ['mutexConfig', ['class', 'fileMode', 'dirMode']],
+            ['logConfig', ['class', 'targets']],
+            ['sessionConfig', ['class', 'flashParam', 'authAccessParam', 'name', 'cookieParams']],
+            ['userConfig', ['class', 'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'identityCookie', 'usernameCookie', 'idParam', 'authTimeoutParam', 'absoluteAuthTimeoutParam', 'returnUrlParam']],
         ];
     }
 
@@ -273,7 +274,7 @@ class AppHelperTest extends TestCase
      * @param array $desiredSchemaArray
      * @return bool
      */
-    private function _areKeysMissing(array $configArray, array $desiredSchemaArray) : bool
+    private function _areKeysMissing(array $configArray, array $desiredSchemaArray): bool
     {
         foreach ($desiredSchemaArray as $desiredSchemaItem) {
             if (!array_key_exists($desiredSchemaItem, $configArray)) {

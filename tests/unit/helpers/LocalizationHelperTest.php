@@ -42,9 +42,14 @@ class LocalizationHelperTest extends Unit
      *
      * @param $result
      * @param $input
+     * @param bool $skipIfNoIntl
      */
-    public function testLanguageNormalization($result, $input)
+    public function testLanguageNormalization($result, $input, $skipIfNoIntl)
     {
+        if ($skipIfNoIntl && !Craft::$app->getI18n()->getIsIntlLoaded()) {
+            $this->markTestSkipped('Need the Intl extension to test this function.');
+        }
+
         $normalized = Localization::normalizeLanguage($input);
         $this->assertSame($result, $normalized);
     }
@@ -54,10 +59,10 @@ class LocalizationHelperTest extends Unit
      */
     public function testLanguageNormalizationExceptions()
     {
-        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             Localization::normalizeLanguage('dutch');
         });
-        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             Localization::normalizeLanguage('notalang');
         });
     }
@@ -75,20 +80,6 @@ class LocalizationHelperTest extends Unit
         $this->assertSame($result, $normalization);
     }
 
-    /**
-     *
-     */
-    public function testNumberNormalizationCustomLocale()
-    {
-        $locale = null;
-        foreach (Craft::$app->getI18n()->getAllLocaleIds() as $localeId) {
-            if ($localeId !== Craft::$app->language) {
-                $locale = $localeId;
-            }
-        }
-
-        $this->assertSame('29999', Localization::normalizeNumber('2,99,99', $locale));
-    }
     /**
      * @dataProvider localeDataDataProvider
      *
@@ -130,13 +121,12 @@ class LocalizationHelperTest extends Unit
     public function languageNormalizationDataProvider(): array
     {
         return [
-            ['nl', 'nl'],
-            ['en-US', 'en-US'],
-            ['af', 'af'],
-            ['af-NA', 'af-NA'],
-            ['en-AG', 'en-ag'],
-            ['en-AG', 'EN-AG'],
-
+            ['nl', 'nl', false],
+            ['en-US', 'en-US', false],
+            ['af', 'af', true],
+            ['af-NA', 'af-NA', true],
+            ['en-AG', 'en-ag', true],
+            ['en-AG', 'EN-AG', true],
         ];
     }
 
@@ -158,17 +148,19 @@ class LocalizationHelperTest extends Unit
      */
     public function localeDataDataProvider(): array
     {
-        $dir = dirname(__DIR__, 3).'/src/config/locales/nl.php';
+        $dir = dirname(__DIR__, 3) . '/src/config/locales/nl.php';
         $nlTranslation = require $dir;
 
         return [
-            [[
-                'english' => 'language',
-                'spanish' => 'language',
-                'french' => [
-                    'language', 'france'
-                ]
-            ], 'a-locale-id'],
+            [
+                [
+                    'english' => 'language',
+                    'spanish' => 'language',
+                    'french' => [
+                        'language', 'france'
+                    ]
+                ], 'a-locale-id'
+            ],
             ['language', 'another-locale-id'],
             [['language2'], '/sub/another-locale-id'],
             [ArrayHelper::merge($nlTranslation, ['dutch' => 'a language']), 'nl']

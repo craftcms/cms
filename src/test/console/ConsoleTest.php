@@ -28,7 +28,7 @@ class ConsoleTest extends TestCase
      * @return CommandTest
      * @throws InvalidConfigException
      */
-    public function consoleCommand(string $command, array $parameters = []) : CommandTest
+    public function consoleCommand(string $command, array $parameters = []): CommandTest
     {
         return new CommandTest($this, $command, $parameters);
     }

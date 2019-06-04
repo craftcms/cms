@@ -74,7 +74,7 @@ class RequestTest extends TestCase
         $this->request->setBodyParams(['test' => 'RAAA']);
         $this->assertSame('RAAA', $this->request->getRequiredParam('test'));
 
-        $this->tester->expectThrowable(BadRequestHttpException::class, function () {
+        $this->tester->expectThrowable(BadRequestHttpException::class, function() {
             $this->request->getRequiredParam('not-a-param');
         });
     }
@@ -111,7 +111,7 @@ class RequestTest extends TestCase
     public function testGetRequiredQueryParam()
     {
         $this->request->setBodyParams(['bodyTest' => 'RAAA']);
-        $this->tester->expectThrowable(BadRequestHttpException::class, function () {
+        $this->tester->expectThrowable(BadRequestHttpException::class, function() {
             $this->request->getRequiredQueryParam('bodyTest');
         });
 
@@ -125,7 +125,7 @@ class RequestTest extends TestCase
     public function testGetRequiredBodyParam()
     {
         $this->request->setQueryParams(['queryTest' => 'RAAA']);
-        $this->tester->expectThrowable(BadRequestHttpException::class, function () {
+        $this->tester->expectThrowable(BadRequestHttpException::class, function() {
             $this->request->getRequiredBodyParam('queryTest');
         });
 
@@ -405,7 +405,7 @@ class RequestTest extends TestCase
             [['param1', 'param2', 'param3'], null, ['param1', 'param2', 'param3'], null],
             ['param1', null, ['param1', 'param2', 'param3'], '0'],
             ['param1', null, ['key' => 'param1', 'param2', 'param3'], 'key'],
-            ['val1', null, ['key' => [ 'key2' => 'val1', 'key3' => 'val2'], 'param2', 'param3'], 'key.key2'],
+            ['val1', null, ['key' => ['key2' => 'val1', 'key3' => 'val2'], 'param2', 'param3'], 'key.key2'],
             ['DEFAULT', 'DEFAULT', ['key' => 'param1', 'param2', 'param3'], 'key.notaparam'],
         ];
     }
@@ -459,7 +459,6 @@ class RequestTest extends TestCase
     private function _getParam(string $name = null, $defaultValue, array $params)
     {
         return $this->invokeMethod($this->request, '_getParam', [$name, $defaultValue, $params]);
-
     }
 
     /**

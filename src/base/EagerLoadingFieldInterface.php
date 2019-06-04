@@ -8,12 +8,12 @@
 namespace craft\base;
 
 /**
- * EagerLoadingFieldInterface defines the common interface to be implemented by field classes.
+ * EagerLoadingFieldInterface defines the common interface to be implemented by field classes that support eager-loading.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-interface EagerLoadingFieldInterface extends SavableComponentInterface
+interface EagerLoadingFieldInterface
 {
     // Public Methods
     // =========================================================================

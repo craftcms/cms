@@ -8,8 +8,8 @@
 namespace craftunit\validators;
 
 use Codeception\Test\Unit;
-use craft\validators\ColorValidator;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\validators\ColorValidator;
 use ErrorException;
 
 /**
@@ -73,7 +73,7 @@ class ColorValidatorTest extends Unit
      */
     public function testColorNormalizationException()
     {
-        $this->tester->expectException(ErrorException::class, function (){
+        $this->tester->expectException(ErrorException::class, function() {
             ColorValidator::normalizeColor('');
         });
     }
@@ -92,7 +92,7 @@ class ColorValidatorTest extends Unit
 
         if (!$mustValidate) {
             $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
-        } else{
+        } else {
             $this->assertSame([], $this->model->getErrors());
         }
 

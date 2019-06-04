@@ -65,7 +65,7 @@ class ResponseTest extends Unit
         $this->assertSame('cache', $headers->get('Pragma'));
         $this->assertSame('cache', $headers->get('Pragma'));
         $this->assertSame('max-age=31536000', $headers->get('Cache-Control'));
-        $this->assertSame(gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT', $headers->get('Expires'));
+        $this->assertSame(gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT', $headers->get('Expires'));
     }
 
     /**
@@ -74,7 +74,7 @@ class ResponseTest extends Unit
     public function testSetLastModifiedHeader()
     {
         // Use the current file
-        $path = dirname(__DIR__).'/web/ResponseTest.php';
+        $path = dirname(__DIR__) . '/web/ResponseTest.php';
         $modifiedTime = filemtime($path);
 
         $this->response->setLastModifiedHeader($path);

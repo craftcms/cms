@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\SortableFieldInterface;
 use craft\fields\data\SingleOptionFieldData;
 
 /**
@@ -17,7 +18,7 @@ use craft\fields\data\SingleOptionFieldData;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class RadioButtons extends BaseOptionsField
+class RadioButtons extends BaseOptionsField implements SortableFieldInterface
 {
     // Static
     // =========================================================================

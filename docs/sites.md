@@ -116,19 +116,15 @@ Create the template directories and templates for your new site.
 
 We recommend you have template directories named after the sites handles (e.g. `templates/default` and `templates/beta`). You store the site-specific templates in each site template directory.
 
-### Step 3: Update the Site Sections and Fields
+### Step 3: Update the Sections
 
 1. Go into each Section that you want to be available in the new site and enable the site using the Site Settings table.
 2. Define the Entry URI Format, Template, and Status for the new site in each Section.
-3. Choose whether you want to propagate the entries across all sites. If checked, Craft will create a new entry in every site in the system. If the option is unchecked, Craft will only save the new entry to the site you have currently selected.
+3. Choose whether you want to propagate the entries across all sites. If checked, entries in the section will be saved for all of the sites the section is enabled for. If unchecked, entries will only be saved in the site they were originally created in.
 
 ### Step 4: Define Translation Method of Fields
 
-By default, your custom fields will store values on a per-site basis. If you have a Body field, each site can store its only content in that field.
-
-If your site has a different language than your default language then you will need to set each field as Translatable (by site, by language, or site group).
-
-To set the Translation Method, go into each field you'd like to translate and choose the appropriate option under Translation Method.
+By default, custom fields are set to store the same value across all sites. If any fields should have unique values across your sites, then you will need to edit their [Translation Method](fields.md#translation-methods) settings.
 
 ### Step 5: Test Your Settings
 

@@ -25,7 +25,7 @@ class SessionsFixture extends Fixture
     /**
      * @inheritdoc
      */
-    public $dataFile = __DIR__.'/data/sessions.php';
+    public $dataFile = __DIR__ . '/data/sessions.php';
 
     /**
      * @inheritdoc

@@ -90,7 +90,7 @@ class FileHelperTest extends Unit
      */
     public function testClearException()
     {
-        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             FileHelper::clearDirectory('not-a-dir');
         });
     }
@@ -126,13 +126,13 @@ class FileHelperTest extends Unit
      */
     public function testIsDirEmptyExceptions()
     {
-        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             FileHelper::isDirectoryEmpty('aaaaa//notadir');
         });
-        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             FileHelper::isDirectoryEmpty(__DIR__ . '/sandbox/isdirempty/dotfile/no/test');
         });
-        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             FileHelper::isDirectoryEmpty('ftp://google.com');
         });
     }
@@ -185,7 +185,7 @@ class FileHelperTest extends Unit
      */
     public function testGetMimeTypeExceptions()
     {
-        $this->tester->expectThrowable(ErrorException::class, function () {
+        $this->tester->expectThrowable(ErrorException::class, function() {
             FileHelper::getMimeType('notafile');
         });
     }
@@ -262,7 +262,6 @@ class FileHelperTest extends Unit
         } else {
             FileHelper::unlink($file);
         }
-
     }
 
     /**
@@ -270,8 +269,8 @@ class FileHelperTest extends Unit
      */
     public function testWriteToFileAppend()
     {
-        $sandboxDir = __DIR__.'/sandbox/writeto';
-        $file = $sandboxDir.'/test-file';
+        $sandboxDir = __DIR__ . '/sandbox/writeto';
+        $file = $sandboxDir . '/test-file';
 
         FileHelper::writeToFile($file, 'contents');
         $this->assertSame('contents', file_get_contents($file));
@@ -290,7 +289,7 @@ class FileHelperTest extends Unit
      */
     public function testWriteToFileExceptions()
     {
-        $this->tester->expectThrowable(InvalidArgumentException::class, function () {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             FileHelper::writeToFile('notafile/folder', 'somecontent', ['createDirs' => false]);
         });
     }
@@ -391,12 +390,12 @@ class FileHelperTest extends Unit
      */
     public function writeToFileDataProvider(): array
     {
-        $sandboxDir = __DIR__.'/sandbox/writeto';
+        $sandboxDir = __DIR__ . '/sandbox/writeto';
 
         return [
-            ['content', $sandboxDir.'/notafile', 'content', []],
-            ['content', $sandboxDir.'/notadir/notafile', 'content', [], true, $sandboxDir.'/notadir'],
-            ['content', $sandboxDir.'/notafile2', 'content', ['lock' => true]],
+            ['content', $sandboxDir . '/notafile', 'content', []],
+            ['content', $sandboxDir . '/notadir/notafile', 'content', [], true, $sandboxDir . '/notadir'],
+            ['content', $sandboxDir . '/notafile2', 'content', ['lock' => true]],
 
         ];
     }
@@ -412,13 +411,13 @@ class FileHelperTest extends Unit
         if (!is_dir(__DIR__ . '/sandbox/copyInto')) {
             FileHelper::createDirectory(__DIR__ . '/sandbox/copyInto');
         }
-        
+
         FileHelper::clearDirectory(__DIR__ . '/sandbox/copyInto');
 
-        if (!is_dir(__DIR__.'/sandbox/isdirempty/yes')) {
-            FileHelper::createDirectory(__DIR__.'/sandbox/isdirempty/yes');
+        if (!is_dir(__DIR__ . '/sandbox/isdirempty/yes')) {
+            FileHelper::createDirectory(__DIR__ . '/sandbox/isdirempty/yes');
         }
 
-        FileHelper::clearDirectory(__DIR__.'/sandbox/isdirempty/yes');
+        FileHelper::clearDirectory(__DIR__ . '/sandbox/isdirempty/yes');
     }
 }

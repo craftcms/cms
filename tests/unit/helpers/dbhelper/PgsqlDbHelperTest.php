@@ -12,6 +12,7 @@ use Craft;
 use craft\db\pgsql\Schema;
 use craft\helpers\Db;
 use UnitTester;
+use yii\base\Exception;
 use yii\base\NotSupportedException;
 
 /**
@@ -82,10 +83,11 @@ class PgsqlDbHelperTest extends Unit
      *
      * @param $result
      * @param $input
+     * @throws Exception
      */
     public function testGetTextualColumnTypeByContentLength($result, $input)
     {
-        $textualCapacity = Db::getTextualColumnStorageCapacity($input);
+        $textualCapacity = Db::getTextualColumnTypeByContentLength((int)$input);
         $this->assertSame($result, $textualCapacity);
     }
 
@@ -101,7 +103,7 @@ class PgsqlDbHelperTest extends Unit
             'multi-:empty:-param' => [
                 [
                     'or',
-                    [ 'not', ['content_table' => null], ],
+                    ['not', ['content_table' => null],],
                     ['!=', 'content_table', 'field_2']
                 ],
                 'content_table', ':empty:, field_2', '!='
@@ -142,7 +144,7 @@ class PgsqlDbHelperTest extends Unit
             }
         }
 
-        return  $returnArray;
+        return $returnArray;
     }
 
     /**

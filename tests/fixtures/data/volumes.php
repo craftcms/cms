@@ -17,7 +17,7 @@ return [
         'url' => null,
         'hasUrls' => true,
         'settings' => json_encode([
-            'path' => dirname(__FILE__, 3).'/_data/assets/volume-folder-1/',
+            'path' => dirname(__FILE__, 3) . '/_data/assets/volume-folder-1/',
             'url' => VolumesFixture::BASE_URL
         ]),
         'sortOrder' => 5,
@@ -32,7 +32,7 @@ return [
         'type' => Local::class,
         'url' => null,
         'settings' => json_encode([
-            'path' => dirname(__FILE__, 3).'/_data/assets/volume-folder-1/',
+            'path' => dirname(__FILE__, 3) . '/_data/assets/volume-folder-1/',
             'url' => VolumesFixture::BASE_URL
         ]),
         'hasUrls' => true,
@@ -50,7 +50,7 @@ return [
         'type' => Local::class,
         'url' => null,
         'settings' => json_encode([
-            'path' => dirname(__FILE__, 3).'/_data/assets/volume-folder-1/',
+            'path' => dirname(__FILE__, 3) . '/_data/assets/volume-folder-1/',
             'url' => VolumesFixture::BASE_URL
         ]),
         'hasUrls' => true,

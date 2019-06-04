@@ -41,16 +41,6 @@ Craft.DraftEditor = Garnish.Base.extend(
                 this.createEditMetaBtn();
             }
 
-            // Just to be safe
-            Craft.cp.$primaryForm.data('initialSerializedValue', this.getFormData());
-
-            this.addListener(Garnish.$bod, 'keypress keyup change focus blur click mousedown mouseup', function(ev) {
-                clearTimeout(this.timeout);
-                this.timeout = setTimeout($.proxy(this, 'checkForm'), 500);
-            });
-
-            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
-
             if (this.settings.previewTargets.length) {
                 if (this.settings.enablePreview) {
                     this.addListener($('#preview-btn'), 'click', 'openPreview');
@@ -66,6 +56,21 @@ Craft.DraftEditor = Garnish.Base.extend(
                     this.createShareMenu($shareBtn);
                 }
             }
+
+            // If this is a revision, then we're done here
+            if (this.settings.revisionId) {
+                return;
+            }
+
+            // Just to be safe
+            Craft.cp.$primaryForm.data('initialSerializedValue', this.getFormData());
+
+            this.addListener(Garnish.$bod, 'keypress keyup change focus blur click mousedown mouseup', function(ev) {
+                clearTimeout(this.timeout);
+                this.timeout = setTimeout($.proxy(this, 'checkForm'), 500);
+            });
+
+            this.addListener(Craft.cp.$primaryForm, 'submit', 'handleFormSubmit');
         },
 
         spinners: function() {
@@ -123,6 +128,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                 sourceId: this.settings.sourceId,
                 siteId: this.settings.siteId,
                 draftId: this.settings.draftId,
+                revisionId: this.settings.revisionId,
             }, $.proxy(function(response, textStatus) {
                 if (textStatus === 'success') {
                     this.previewToken = response.token;
@@ -496,6 +502,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             siteId: null,
             sourceEditUrl: null,
             draftId: null,
+            revisionId: null,
             draftName: null,
             draftNotes: null,
             canDeleteDraft: false,

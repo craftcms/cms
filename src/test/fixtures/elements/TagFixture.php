@@ -8,8 +8,8 @@
 namespace craft\test\fixtures\elements;
 
 
-use craft\elements\Tag;
 use Craft;
+use craft\elements\Tag;
 
 /**
  * Class TagFixture

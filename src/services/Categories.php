@@ -744,12 +744,10 @@ class Categories extends Component
             return null;
         }
 
-        $query = Category::find();
-        $query->id($categoryId);
-        $query->structureId($structureId);
-        $query->siteId($siteId);
-        $query->anyStatus();
-        return $query->one();
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::$app->getElements()->getElementById($categoryId, Category::class, $siteId, [
+            'structureId' => $structureId,
+        ]);
     }
 
     /**

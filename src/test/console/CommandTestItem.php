@@ -55,4 +55,9 @@ class CommandTestItem extends Model
      * @var mixed
      */
     public $returnValue;
+
+    /**
+     * @var string
+     */
+    public $withScriptName;
 }

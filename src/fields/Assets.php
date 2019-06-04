@@ -19,7 +19,9 @@ use craft\errors\InvalidVolumeException;
 use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\web\UploadedFile;
@@ -420,13 +422,23 @@ class Assets extends BaseRelationField
         // Everything has been handled for propagating fields already.
         /** @var Element $element */
         if (!$element->propagating) {
+            $assetsService = Craft::$app->getAssets();
+
+            // Figure out what we're working with
+            $isDraftOrRevision = $element && $element->id && ElementHelper::isDraftOrRevision($element);
+
+            $getTargetFolderId = function() use ($element, $isDraftOrRevision): int {
+                static $targetFolderId;
+                return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, !$isDraftOrRevision);
+            };
+
             // Were there any uploaded files?
             $uploadedFiles = $this->_getUploadedFiles($element);
 
             $query = $element->getFieldValue($this->handle);
 
             if (!empty($uploadedFiles)) {
-                $targetFolderId = $this->_determineUploadFolderId($element);
+                $targetFolderId = $getTargetFolderId();
 
                 // Convert them to assets
                 $assetIds = [];
@@ -440,7 +452,7 @@ class Assets extends BaseRelationField
                         FileHelper::writeToFile($tempPath, $file['data']);
                     }
 
-                    $folder = Craft::$app->getAssets()->getFolderById($targetFolderId);
+                    $folder = $assetsService->getFolderById($targetFolderId);
                     $asset = new Asset();
                     $asset->tempFilePath = $tempPath;
                     $asset->filename = $file['filename'];
@@ -472,42 +484,27 @@ class Assets extends BaseRelationField
             $assets = $query->all();
 
             if (!empty($assets)) {
-                $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element);
-
-                // Figure out which (if any) we need to move into place
-                $assetsToMove = [];
-
-                if ($this->useSingleFolder) {
-                    // Move only those Assets that have had their folder changed.
-                    foreach ($assets as $asset) {
-                        if ($targetFolderId != $asset->folderId) {
-                            $assetsToMove[] = $asset;
-                        }
-                    }
+                // Only enforce the single upload folder setting if this isn't a draft or revision
+                if ($this->useSingleFolder && !$isDraftOrRevision) {
+                    $targetFolderId = $getTargetFolderId();
+                    $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
+                        return $asset->folderId != $targetFolderId;
+                    });
                 } else {
-                    $assetIds = [];
-
-                    foreach ($assets as $elementFile) {
-                        $assetIds[] = $elementFile->id;
-                    }
-
                     // Find the files with temp sources and just move those.
-                    $query = Asset::find();
-                    Craft::configure($query, [
-                        'id' => $assetIds,
-                        'volumeId' => ':empty:'
-                    ]);
-                    $assetsToMove = $query->all();
+                    $assetsToMove = Asset::find()
+                        ->id(ArrayHelper::getColumn($assets, 'id'))
+                        ->volumeId(':empty:')
+                        ->all();
                 }
 
-                if (!empty($assetsToMove) && !empty($targetFolderId)) {
-                    $assetService = Craft::$app->getAssets();
-                    $folder = $assetService->getFolderById($targetFolderId);
+                if (!empty($assetsToMove)) {
+                    $folder = $assetsService->getFolderById($getTargetFolderId());
 
                     // Resolve all conflicts by keeping both
                     foreach ($assetsToMove as $asset) {
                         $asset->avoidFilenameConflicts = true;
-                        $assetService->moveAsset($asset, $folder);
+                        $assetsService->moveAsset($asset, $folder);
                     }
                 }
             }
@@ -786,8 +783,7 @@ class Assets extends BaseRelationField
             // If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}
             // so use the user's upload folder instead
             if ($element === null || !$element->id || !$element->enabled || !$createDynamicFolders) {
-                $userModel = Craft::$app->getUser()->getIdentity();
-                $userFolder = $assets->getUserTemporaryUploadFolder($userModel);
+                $userFolder = $assets->getUserTemporaryUploadFolder();
                 $folderId = $userFolder->id;
             } else {
                 // Existing element, so this is just a bad subpath
