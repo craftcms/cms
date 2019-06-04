@@ -23,6 +23,8 @@ use craft\gql\resolvers\elements\User as UserResolver;
 use craft\test\mockclasses\elements\ExampleElement;
 use craftunit\fixtures\AssetsFixture;
 use craftunit\fixtures\EntryFixture;
+use craftunit\fixtures\GlobalSetFixture;
+use craftunit\fixtures\UsersFixture;
 use GraphQL\Type\Definition\ResolveInfo;
 
 class ResolverTest extends Unit
@@ -49,6 +51,12 @@ class ResolverTest extends Unit
             ],
             'assets' => [
                 'class' => AssetsFixture::class
+            ],
+            'users' => [
+                'class' => UsersFixture::class
+            ],
+            'globalSets' => [
+                'class' => GlobalSetFixture::class
             ]
         ];
     }
@@ -137,8 +145,49 @@ class ResolverTest extends Unit
         $this->assertEquals($resolvedField, $assetQuery->all());
     }
 
+    /**
+     * Test resolving a related user.
+     */
+    public function testUserResolving()
+    {
+        $sourceElement = new ExampleElement();
+
+        $username = 'user1';
+        $userQuery = UserElement::find()->username($username);
+        $relatedUser = clone $userQuery;
+        $relatedUser = $relatedUser->one();
+
+        $fieldName = 'relatedElements';
+        $sourceElement->$fieldName = UserElement::find()->id($relatedUser->id);
+        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => $fieldName]);
+
+        $resolvedField = UserResolver::resolve($sourceElement, [], null, $resolveInfo);
+
+        $this->assertEquals($resolvedField, $userQuery->all());
+    }
+
+    /**
+     * Test resolving a global set.
+     */
+    public function testGlobalSetResolving()
+    {
+        $sourceElement = new ExampleElement();
+
+        $handle = 'aGlobalSet';
+        $globalSetQuery = GlobalSetElement::find()->handle($handle);
+        $relatedSet = clone $globalSetQuery;
+        $relatedSet = $relatedSet->one();
+
+        $fieldName = 'relatedElements';
+        $sourceElement->$fieldName = GlobalSetElement::find()->id($relatedSet->id);
+        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => $fieldName]);
+
+        $resolvedField = GlobalSetResolver::resolve($sourceElement, [], null, $resolveInfo);
+
+        // Global sets can't be used in relational fields, so these must not be equal
+        $this->assertNotEquals($resolvedField, $globalSetQuery->all());
+    }
+
     // Todo
     // Matrix Blocks
-    // Users
-    // Global Sets
 }
