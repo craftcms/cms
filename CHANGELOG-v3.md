@@ -258,7 +258,7 @@
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
 
-## Unreleased (3.1)
+## 3.1.29 - 2019-06-04
 
 ### Added
 - Added the `restore` command, which restores a database backup.
