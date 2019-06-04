@@ -223,19 +223,11 @@ class GcTest extends Unit
      */
     private function _doEntryTest(int $expectedRemoval, array $notAllowedTitles = [])
     {
-        // Query with joins is needed to take into account any revisions.
-        $totalEntries = (new Query())
-            ->select(['entries.id'])
-            ->from(['entries' => Table::ENTRIES])
-            ->leftJoin(Table::ELEMENTS . ' elements', '[[elements.id]] = [[entries.id]]')
-            ->where(['elements.revisionId' => null])
-            ->distinct()
-            ->count();
-
+        $totalEntries = Entry::find()->trashed()->count();
         $this->gc->run(true);
         $entries = Entry::find()
+            ->trashed()
             ->asArray()
-            ->trashed(null)
             ->all();
 
         $this->assertCount($totalEntries - $expectedRemoval, $entries);
