@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+
+- Added `craft\console\controllers\TestController:::actionSetupTests()` which uses a default test setup directory
+to setup a test suite for your Craft project very quickly. 
+The default directory can be found in `src/test/internal/example-test-suite`
+
 ## 3.2.0-beta.1 - 2019-06-04
 
 ### Added
