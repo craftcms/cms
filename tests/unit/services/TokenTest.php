@@ -50,10 +50,7 @@ class TokenTest extends Unit
      */
     public function testCreateToken()
     {
-        // Don't allow modification of the DateTime by ActiveRecord's before save
-        Craft::$app->setTimeZone('UTC');
-
-        $dt = new DateTime('2019-12-12 13:00:00');
+        $dt = (new DateTime('now', new DateTimeZone('UTC')))->add(new DateInterval('P1D'));
         $token = $this->token->createToken('do/stuff', 1, $dt);
 
         // What actually exists now?
@@ -63,7 +60,7 @@ class TokenTest extends Unit
         $this->assertSame('do/stuff', $tokenRec->route);
         $this->assertSame(1, $tokenRec->usageLimit);
         $this->assertSame(0, $tokenRec->usageCount);
-        $this->assertSame('2019-12-12 13:00:00', $tokenRec->expiryDate);
+        $this->assertSame($dt->format('Y-m-d H:i:s'), $tokenRec->expiryDate);
         $this->assertEquals(32, strlen($token));
     }
 
