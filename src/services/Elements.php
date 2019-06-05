@@ -393,6 +393,11 @@ class Elements extends Component
         /** @var Element $element */
         $isNewElement = !$element->id;
 
+        // If this is a new element, give it a UID right away
+        if ($isNewElement && !$element->uid) {
+            $element->uid = StringHelper::UUID();
+        }
+
         // Fire a 'beforeSaveElement' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ELEMENT)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, new ElementEvent([
@@ -445,6 +450,7 @@ class Elements extends Component
             } else {
                 $elementRecord = new ElementRecord();
                 $elementRecord->type = get_class($element);
+                $elementRecord->uid = $element->uid;
             }
 
             // Set the attributes
@@ -474,7 +480,6 @@ class Elements extends Component
             if ($isNewElement) {
                 // Save the element ID on the element model
                 $element->id = $elementRecord->id;
-                $element->uid = $elementRecord->uid;
 
                 // If there's a temp ID, update the URI
                 if ($element->tempId && $element->uri) {
