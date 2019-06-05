@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Craft no longer installs dev dependencies when running Composer commands internally. ([#4365](https://github.com/craftcms/cms/issues/4365))
+
 ## 3.1.29 - 2019-06-04
 
 ### Added

@@ -46,4 +46,4 @@ By default, Craft will update you to the latest available version. To update to 
 ./craft update element-api:2.5.4
 ```
 
-Craft also provides an `update/composer-install` command, which behaves like the `composer install` command, but doesn’t require you to have Composer installed.
+Craft also provides an `update/composer-install` command, which behaves like the `composer install --no-dev` command, but doesn’t require you to have Composer installed.

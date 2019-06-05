@@ -46,5 +46,5 @@ Craft 3.0.38 および 3.1.4 では、Craft およびプラグインのアップ
 ./craft update element-api:2.5.4
 ```
 
-Craft は `composer install` コマンドのように動作する `update/composer-install` コマンドも提供しますが、Composer をインストールする必要はありません。
+Craft は `composer install --no-dev` コマンドのように動作する `update/composer-install` コマンドも提供しますが、Composer をインストールする必要はありません。
 
