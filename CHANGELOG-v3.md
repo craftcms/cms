@@ -8,6 +8,13 @@
 to setup a test suite for your Craft project very quickly. 
 The default directory can be found in `src/test/internal/example-test-suite`
 
+### Fixed
+
+- Fixed a bug where `craft\test\TestSetup::appType()` was not returning the correct results because it was comparing against the 
+correct parent. 
+- Fixed a bug where testing plugins in functional tests could result in failed tests because the Plugins console
+controllers were being used instead of the web controllers.
+
 ## 3.2.0-beta.1 - 2019-06-04
 
 ### Added
