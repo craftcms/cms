@@ -46,7 +46,7 @@ abstract class BaseType extends ObjectType
     {
         $value = $this->resolve($source, $arguments, $context, $resolveInfo);
 
-        if (isset($resolveInfo->fieldNodes[0])) {
+        if (isset($resolveInfo->fieldNodes[0]->directives)) {
             foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
                 /** @var BaseDirective $directiveEntity */
                 $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
