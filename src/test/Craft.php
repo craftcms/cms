@@ -147,6 +147,9 @@ class Craft extends Yii2
 
         parent::_before($test);
 
+        // Set plugin namespaces - these could go to their console version when init() is called. See `craft\base\Plugin::init()`
+        $this->setPluginNamespaces();
+
         // If full mock. Create the mock app and dont perform to any further actions.
         if ($this->_getConfig('fullMock') === true) {
             $mockApp = TestSetup::getMockApp($test);
@@ -499,6 +502,31 @@ class Craft extends Yii2
                 $desiredValue,
                 $eventPropItem
             );
+        }
+    }
+
+    /**
+     * Sets registered plugin namespaces.
+     */
+    protected function setPluginNamespaces()
+    {
+        foreach ($this->_getConfig('plugins') as $plugin) {
+            $pluginClass = $plugin['class'];
+
+            if (!$instance = $pluginClass::getInstance()) {
+                throw new InvalidArgumentException("Plugin $pluginClass is not set");
+            }
+
+            $testType = TestSetup::appType();
+            // Copied from base plugin
+            if (($pos = strrpos($pluginClass, '\\')) !== false) {
+                $namespace = substr($pluginClass, 0, $pos);
+                if ($testType === 'console') {
+                    $instance->controllerNamespace = $namespace . '\\console\\controllers';
+                } else {
+                    $instance->controllerNamespace = $namespace . '\\controllers';
+                }
+            }
         }
     }
 
