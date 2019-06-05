@@ -90,7 +90,7 @@ class FieldResolverTest extends Unit
      * @param string $resolverClass The resolver class being tested
      * @param boolean $mustNotBeSame Whether the results should differ instead
      */
-    public function testRunGraphQlResolveTest(string $elementType, array $params, string $resolverClass, bool $mustNotBeSame = false)
+    public function testRunGqlResolveTest(string $elementType, array $params, string $resolverClass, bool $mustNotBeSame = false)
     {
         $elementQuery = Craft::configure($elementType::find(), $params);
 
@@ -99,7 +99,7 @@ class FieldResolverTest extends Unit
         $elementResults = $elementQuery->all();
 
         $sourceElement = new ExampleElement();
-        $sourceElement->relatedElements = $elementType::find()->id($ids);
+        $sourceElement->someField = $elementType::find()->id($ids);
 
         $filterParameters = [];
 
@@ -111,7 +111,7 @@ class FieldResolverTest extends Unit
             $elementResults = $elementType::find()->id($targetId)->all();
         }
 
-        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'relatedElements']);
+        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'someField']);
 
         $resolvedField = $resolverClass::resolve($sourceElement, $filterParameters, null, $resolveInfo);
 
