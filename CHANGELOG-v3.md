@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where new elements weren’t assigned a UID in time if their URI format contained a `{uid}` token. ([#4364](https://github.com/craftcms/cms/issues/4364))
+- Fixed a bug where Craft was modifying custom log target configs before executing queue jobs. ([#3766](https://github.com/craftcms/cms/issues/3766))
 
 ## 3.1.29 - 2019-06-04
 
