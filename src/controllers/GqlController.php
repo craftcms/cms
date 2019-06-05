@@ -65,11 +65,9 @@ class GqlController extends Controller
 
         if (Craft::$app->request->isPost && $query=Craft::$app->request->post('query')) {
             $input = $query;
-        }
-        else if (Craft::$app->request->isGet && $query=Craft::$app->request->get('query')) {
+        } else if (Craft::$app->request->isGet && $query=Craft::$app->request->get('query')) {
             $input = $query;
-        }
-        else {
+        } else {
             $data = Craft::$app->request->getRawBody();
             $data = json_decode($data, true);
             $input = @$data['query'];
