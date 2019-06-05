@@ -7,11 +7,12 @@
 
 namespace craft\console\controllers;
 
+use Craft;
+use craft\console\Controller;
+use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use yii\base\InvalidArgumentException;
-use craft\console\Controller;
 use yii\console\ExitCode;
-use Craft;
 
 /**
  * Various support resources for testing Craft.
@@ -26,40 +27,83 @@ class TestsController extends Controller
     // =========================================================================
 
     /**
+     * Sets up a test suite for the current project.
+     *
      * @return int
-     * @throws \yii\base\Exception
      */
-    public function actionSetupTests()
+    public function actionSetup(): int
     {
-        if (!$this->confirm('Are you sure you want to generate the tests suite?')) {
-            $this->stdout('Aborted!');
-            return ExitCode::OK;
+        $src = dirname(__DIR__, 2). DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'internal' . DIRECTORY_SEPARATOR . 'example-test-suite';
+        $dst = getcwd();
+
+        // Figure out the plan and check for conflicts
+        $plan = [];
+        $conflicts = [];
+
+        $handle = opendir($src);
+        if ($handle === false) {
+            throw new InvalidArgumentException("Unable to open directory: $src");
         }
 
-        if ($this->confirm('Do you want a custom path?')) {
-            $dstPath = $this->prompt('Which path should the "tests/" dir be placed in?');
-        } else {
-            $oneUpAtVendor = dirname(Craft::$app->getPath()->getVendorPath());
-            $dstPath = $oneUpAtVendor.DIRECTORY_SEPARATOR.'generated-tests';
+        while (($file = readdir($handle)) !== false) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+            $from = $src . DIRECTORY_SEPARATOR . $file;
+            $to = $dst . DIRECTORY_SEPARATOR . $file;
+            $humanTo = $to . (is_dir($from) ? DIRECTORY_SEPARATOR : '');
+            $plan[] = $humanTo;
+            if (file_exists($to)) {
+                $conflicts[] = $humanTo;
+            }
+        }
+        closedir($handle);
+
+        // Warn about conflicts
+        if (!empty($conflicts)) {
+            $this->stdout('The following files/folders will be overwritten:' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+            foreach ($conflicts as $file) {
+                $this->stdout("- {$file}" . PHP_EOL, Console::FG_YELLOW);
+            }
+            $this->stdout(PHP_EOL);
+            if (!$this->confirm('Are you sure you want to continue?')) {
+                $this->stdout('Aborting.' . PHP_EOL);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+            $this->stdout(PHP_EOL);
         }
 
-        $testPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'test'.DIRECTORY_SEPARATOR.'internal'.DIRECTORY_SEPARATOR.'example-test-suite';
+        // Confirm
+        $this->stdout('The following files/folders will be created:' . PHP_EOL . PHP_EOL);
+        foreach ($plan as $file) {
+            $this->stdout("- {$file}" . PHP_EOL);
+        }
+        $this->stdout(PHP_EOL);
+        if (!$this->confirm('Continue?', true)) {
+            $this->stdout('Aborting.' . PHP_EOL);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
 
-        FileHelper::copyDirectory(
-            $testPath,
-            $dstPath
-        );
-
-        $this->stdout('Test suite generated. Ensure you update you update your composer dependencies.');
+        $this->stdout(PHP_EOL . 'Generating the test suite ... ');
+        try {
+            FileHelper::copyDirectory($src, $dst);
+        } catch (\Throwable $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+            $this->stdout('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+        $this->stdout('done.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
 
     /**
      * Dont use this method - it wont actually execute anything.
-     * It is just used internally to test Craft based console controller testing.
+     * It is just used internally to test Craft-based console controller testing.
+     *
      * @return int
+     * @internal
      */
-    public function actionTest()
+    public function actionTest(): int
     {
         $this->stdout('22');
         $this->stderr('123321123');

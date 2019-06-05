@@ -3,9 +3,15 @@ codecov:
     require_ci_to_pass: yes
 
 coverage:
-  precision: 2
+  range: 20..100
   round: down
-  range: "20...100"
+  precision: 2
+  status:
+    project:
+      default:
+        target: auto
+        threshold: null
+        base: auto
 
   notify:
     slack:
@@ -20,7 +26,7 @@ coverage:
         message: "Coverage {{changed}} for {{owner}}/{{repo}}"
 
   status:
-    project: yes
+    project: no
     patch: yes
     changes: no
 
@@ -32,10 +38,7 @@ parsers:
       method: no
       macro: no
 
-comment:
-  layout: "header, diff"
-  behavior: default
-  require_changes: no
+comment: off
 
 ignore:
   - "src/web/assets"  # ignore assets folder

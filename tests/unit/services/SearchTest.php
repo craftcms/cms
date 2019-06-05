@@ -78,6 +78,9 @@ class SearchTest extends Unit
         // Filter them
         $filtered = $this->search->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, $returnScores);
 
+        sort($result, SORT_NUMERIC);
+        sort($filtered, SORT_NUMERIC);
+
         $this->assertSame($result, $filtered);
     }
 
