@@ -9,8 +9,9 @@
 
 - Fixed a bug where `craft\test\TestSetup::appType()` was not returning the correct results because it was comparing against the 
 correct parent. 
-- Fixed a bug where testing plugins in functional tests could result in failed tests because the Plugins console
-controllers were being used instead of the web controllers.
+- Fixed problems originating from the fact that plugins and module's `init()` function was not being called before each 
+functional test request causing mismatch in configuration before tests (I.E. that they were not registering CP urls 
+for CP Requests). 
 
 ## 3.2.0-beta.1 - 2019-06-04
 
