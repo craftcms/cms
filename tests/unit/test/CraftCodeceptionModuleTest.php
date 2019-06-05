@@ -7,7 +7,11 @@
 
 namespace crafttests\unit\test;
 
+use craft\elements\Entry;
+use craft\elements\User;
 use craft\test\mockclasses\components\EventTriggeringComponent;
+use crafttests\fixtures\EntryFixture;
+use PHPUnit\Framework\ExpectationFailedException;
 use UnitTester;
 use yii\base\Event;
 use Codeception\Test\Unit;
@@ -85,5 +89,73 @@ class CraftCodeceptionModuleTest extends Unit
                 ]
             ])
         );
+    }
+
+    /**
+     * @throws \Throwable
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \yii\base\Exception
+     */
+    public function testAssertElementsExist()
+    {
+        $configArray = [
+            'firstName' => 'john',
+            'lastName' => 'smith',
+            'username' => 'user2',
+            'email' => 'user2@crafttest.com',
+        ];
+
+        $user = new User($configArray);
+
+        \Craft::$app->getElements()->saveElement($user);
+
+        $this->tester->assertElementsExist(User::class, $configArray);
+    }
+
+    /**
+     * @throws \Throwable
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \yii\base\Exception
+     */
+    public function testAssertElementFails()
+    {
+        $configArray = [
+            'firstName' => 'john',
+            'lastName' => 'smith',
+            'username' => 'user2',
+            'email' => 'user2@crafttest.com',
+        ];
+
+        $user = new User($configArray);
+
+        \Craft::$app->getElements()->saveElement($user);
+
+        $this->tester->ensureTestFails(function() use ($configArray) {
+            $this->tester->assertElementsExist(User::class, $configArray, 2);
+        });
+    }
+
+    /**
+     * @throws \Throwable
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \craft\errors\InvalidElementException
+     * @throws \yii\base\Exception
+     */
+    public function testAssertElementExistsWorksWithMultiple()
+    {
+        $configArray = [
+            'firstName' => 'john',
+            'lastName' => 'smith',
+            'username' => 'user2',
+            'email' => 'user2@crafttest.com',
+        ];
+
+        $user = new User($configArray);
+
+        \Craft::$app->getElements()->saveElement($user);
+
+        \Craft::$app->getElements()->duplicateElement($user);
+
+        $this->tester->assertElementsExist(User::class, $configArray, 2);
     }
 }
