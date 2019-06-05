@@ -130,7 +130,7 @@ class CraftCodeceptionModuleTest extends Unit
 
         \Craft::$app->getElements()->saveElement($user);
 
-        $this->tester->ensureTestFails(function() use ($configArray) {
+        $this->tester->assertTestFails(function() use ($configArray) {
             $this->tester->assertElementsExist(User::class, $configArray, 2);
         });
     }

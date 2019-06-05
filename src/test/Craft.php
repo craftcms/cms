@@ -368,7 +368,7 @@ class Craft extends Yii2
      * @param callable $callable
      * @param string $message
      */
-    public function ensureTestFails(callable $callable, string $message = '')
+    public function assertTestFails(callable $callable, string $message = '')
     {
         $failed = false;
         try {
