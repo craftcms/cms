@@ -5,8 +5,10 @@
 ### Added
 - Added the `tests/setup` command, which generates a test suite for the current Craft project.
 
-### Fixed
+### Changed
+- Craft now deletes expired template caches as part of its garbage collection routine.
 
+### Fixed
 - Fixed a bug where `craft\test\TestSetup::appType()` was not returning the correct results because it was comparing against the 
 correct parent. 
 - Fixed problems originating from the fact that plugins and module's `init()` function was not being called before each 
