@@ -60,7 +60,7 @@ constants must be defined in the `tests/_bootstrap.php`.
 ### `CRAFT_STORAGE_PATH`
 The [storage path](directory-structure.md#storage) Craft can use during testing.
 
-### `CRAFT_STORAGE_PATH`
+### `CRAFT_TEMPLATES_PATH`
 The [templates path](directory-structure.md#templates) Craft can use during testing.
 
 ### `CRAFT_CONFIG_PATH`
@@ -78,5 +78,5 @@ The path to the folder where all your [migration](extend/migrations.md) classes 
 The path to the folder where all your [translations](static-translations.md) are stored.
 
 ### `CRAFT_VENDOR_PATH`
-Path to the vendor directory.
+Path to the [vendor](directory-structure.html#vendor) directory.
 
