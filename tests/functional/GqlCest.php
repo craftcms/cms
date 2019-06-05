@@ -73,11 +73,4 @@ class GqlCest
         $resp = $I->amOnPage('?action=gql&query={queryEntries(limit:[5,2]){title}}');
         $I->see('"debugMessage":"Expected');
     }
-
-    // @todo: figure out how to test paging. Probably after we have fixtures for a lot of stuff.
-//    public function testPaging(FunctionalTester $I)
-//    {
-//        $I->amOnPage('?action=gql&query={queryEntries(limit:2){title}}');
-//        $I->see('"debugMessage":"Expected');
-//    }
 }
