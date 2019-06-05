@@ -120,7 +120,7 @@ Craft がサポートするコンフィグ設定の完全なリストは、次�
 
 これを無効にすると、設定およびプラグインストアのセクションは非表示になり、Craft 本体のエディションとプラグインのバージョンがロックされ、プロジェクトコンフィグは読み取り専用になります。
 
-そのため、[useProjectConfigFile](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#useprojectconfigfile) が有効になっている production 環境のみ、これを無効にするべきです。そして、デプロイメントワークフローでデプロイ時に自動的に `composer install --no-dev` を実行するようにします。
+そのため、[useProjectConfigFile](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#useprojectconfigfile) が有効になっている production 環境のみ、これを無効にするべきです。そして、デプロイメントワークフローでデプロイ時に自動的に `composer install` を実行するようにします。
 
 ::: warning
 **すべての**環境が Craft 3.1.0 以降にアップデートされるまで、この設定を無効にしないでください。
