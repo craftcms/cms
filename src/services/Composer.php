@@ -151,7 +151,6 @@ class Composer extends Component
 
         $installer = Installer::create($io, $composer)
             ->setPreferDist()
-            ->setDevMode(false)
             ->setSkipSuggest()
             ->setDumpAutoloader()
             ->setRunScripts(false)
