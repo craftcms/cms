@@ -9,12 +9,12 @@ namespace craftunit\gql;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\elements\Asset as AssetElement;
+use craft\elements\Asset;
 use craft\elements\db\ElementQuery;
-use craft\elements\Entry as EntryElement;
-use craft\elements\GlobalSet as GlobalSetElement;
+use craft\elements\Entry;
+use craft\elements\GlobalSet;
 use craft\elements\MatrixBlock as MatrixBlockElement;
-use craft\elements\User as UserElement;
+use craft\elements\User;
 use craft\gql\resolvers\elements\BaseElement as BaseResolver;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
@@ -85,27 +85,22 @@ class ResolverTest extends Unit
      *
      * @dataProvider resolverDataProvider
      *
+     * @param string $elementType The element class providing the elements
      * @param array $parameterSet Querying parameters to use
-     * @param callable $queryingCallback Alias for {ElementType}::find()
-     * @param callable $resolverCallback Alias for {ResolverType}::resolve()
-     * @param boolean $testInequality Whether inequality should be tested instead
+     * @param string $resolverClass The resolver class being tested
+     * @param boolean $mustNotBeSame Whether the results should differ instead
      */
-    public function testRelationshsipFieldResolving(array $parameterSet, callable $queryingCallback, callable $resolverCallback, bool $testInequality = false)
+    public function testRunGraphQlResolveTest(string $elementType, array $params, string $resolverClass, bool $mustNotBeSame = false)
     {
-        // Create the `find()` method.
-        $elementQuery = $queryingCallback();
-        /** @var ElementQuery $elementQuery */
+        $elementQuery = Craft::configure($elementType::find(), $params);
 
-        // Populate with the provided parameters
-        $elementQuery = Craft::configure($elementQuery, $parameterSet);
-        $ids = (clone $elementQuery)->ids();
-
-        // Create a new element that has a relational field set on it
-        $sourceElement = new ExampleElement();
-        // And set an element query with pre-loaded ids on it
-        $sourceElement->relatedElements = $queryingCallback()->id($ids);
-
+        // Get the ids and elements.
+        $ids = $elementQuery->ids();
         $elementResults = $elementQuery->all();
+
+        $sourceElement = new ExampleElement();
+        $sourceElement->relatedElements = $elementType::find()->id($ids);
+
         $filterParameters = [];
 
         // If we have more than two results, pick one at random
@@ -113,15 +108,14 @@ class ResolverTest extends Unit
             $randomEntry = $elementResults[array_rand($elementResults, 1)];
             $targetId = $randomEntry->id;
             $filterParameters = ['id' => $targetId];
-            $elementResults = $queryingCallback()->id($targetId)->all();
+            $elementResults = $elementType::find()->id($targetId)->all();
         }
 
-        // Populate the resolver info object and call the resolver function
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'relatedElements']);
-        $resolvedField = $resolverCallback($sourceElement, $filterParameters, null, $resolveInfo);
 
-        // Make sure that the resolver returns the expected result
-        if ($testInequality) {
+        $resolvedField = $resolverClass::resolve($sourceElement, $filterParameters, null, $resolveInfo);
+
+        if ($mustNotBeSame) {
             $this->assertNotEquals($resolvedField, $elementResults);
         } else {
             $this->assertEquals($resolvedField, $elementResults);
@@ -146,54 +140,29 @@ class ResolverTest extends Unit
 
     public function resolverDataProvider()
     {
-        $data = [];
+        return [
+            // Assets
+            [Asset::class, ['filename' => 'product.jpg'], AssetResolver::class],
+            [Asset::class, ['folderId' => 1000], AssetResolver::class],
+            [Asset::class, ['folderId' => 1], AssetResolver::class],
+            [Asset::class, ['filename' => StringHelper::randomString(128)], AssetResolver::class],
 
-        $parameters = [
-            ['title' => 'Theories of life'],
-            ['title' => StringHelper::randomString(128)],
-            ['authorId' => [1]],
+            // Entries
+            [Entry::class, ['title' => 'Theories of life'], EntryResolver::class],
+            [Entry::class, ['title' => StringHelper::randomString(128)], EntryResolver::class],
+            [Entry::class, ['authorId' => [1]], EntryResolver::class],
+
+            // Globals
+            [GlobalSet::class, ['handle' => 'aGlobalSet'], GlobalSetResolver::class, true],
+            [GlobalSet::class, ['handle' => ['aGlobalSet', 'aDifferentGlobalSet']], GlobalSetResolver::class, true],
+            [GlobalSet::class, ['handle' => 'aDeletedGlobalSet'], GlobalSetResolver::class, true],
+            [GlobalSet::class, ['handle' => StringHelper::randomString(128)], GlobalSetResolver::class, true],
+
+            // Users
+            [User::class, ['username' => 'user1'], UserResolver::class],
+            [User::class, ['username' => ['user1', 'admin']], UserResolver::class],
+            [User::class, ['username' => ['user1', 'admin', 'user2', 'user3']], UserResolver::class],
+            [User::class, ['username' => StringHelper::randomString(128)], UserResolver::class],
         ];
-
-        foreach ($parameters as $parameterSet) {
-            // Provide the query parameter set, callback to the element finder method and the resolver function we're testing
-            $data[] = [$parameterSet, EntryElement::class . '::find', EntryResolver::class . '::resolve'];
-        }
-
-        $parameters = [
-            ['filename' => 'product.jpg'],
-            ['folderId' => 1000],
-            ['folderId' => 1],
-            ['filename' => StringHelper::randomString(128)]
-        ];
-
-        foreach ($parameters as $parameterSet) {
-            $data[] = [$parameterSet, AssetElement::class . '::find', AssetResolver::class . '::resolve'];
-        }
-
-        $parameters = [
-            ['username' => 'user1'],
-            ['username' => ['user1', 'admin']],
-            ['username' => ['user1', 'admin', 'user2', 'user3']],
-            ['username' => StringHelper::randomString(128)],
-        ];
-
-        foreach ($parameters as $parameterSet) {
-            $userData[] = [$parameterSet, UserElement::class . '::find', UserResolver::class . '::resolve'];
-        }
-
-        $parameters = [
-            ['handle' => 'aGlobalSet'],
-            ['handle' => ['aGlobalSet', 'aDifferentGlobalSet']],
-            ['handle' => 'aDeletedGlobalSet'],
-            ['handle' => StringHelper::randomString(128)],
-        ];
-
-        foreach ($parameters as $parameterSet) {
-            // Test for inequality for global sets, because it's impossible to have global sets as relations and the resolver
-            // must always return all the global sets
-            $data[] = [$parameterSet, GlobalSetElement::class . '::find', GlobalSetResolver::class . '::resolve', true];
-        }
-
-        return $data;
     }
 }
