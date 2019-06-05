@@ -52,6 +52,11 @@ class CommandTest
     protected $parameters;
 
     /**
+     * @var bool
+     */
+    protected $ignoreStdOut = false;
+
+    /**
      * @var int
      */
     protected $expectedExitCode;
@@ -100,12 +105,14 @@ class CommandTest
      * @param ConsoleTest $consoleTest
      * @param string $command
      * @param array $parameters
+     * @param bool $ignoreStdOut
      * @throws InvalidConfigException
      */
-    public function __construct(ConsoleTest $consoleTest, string $command, array $parameters = [])
+    public function __construct(ConsoleTest $consoleTest, string $command, array $parameters = [], bool $ignoreStdOut = false)
     {
         $this->command = $command;
         $this->parameters = $parameters;
+        $this->ignoreStdOut = $ignoreStdOut;
         $this->test = $consoleTest;
         $this->setupController();
     }
@@ -277,13 +284,10 @@ class CommandTest
     protected function stdOutHandler(): Closure
     {
         return function($out) {
-            $nextItem = $this->runHandlerCheck($out, self::STD_OUT);
-
-
-            $this->test::assertSame(
-                $nextItem->desiredOutput,
-                $out
-            );
+            if (!$this->ignoreStdOut) {
+                $nextItem = $this->runHandlerCheck($out, self::STD_OUT);
+                $this->test::assertSame($nextItem->desiredOutput, $out);
+            }
         };
     }
 

@@ -25,11 +25,12 @@ class ConsoleTest extends TestCase
     /**
      * @param string $command
      * @param array $parameters
+     * @param bool $ignoreStdOut
      * @return CommandTest
      * @throws InvalidConfigException
      */
-    public function consoleCommand(string $command, array $parameters = []): CommandTest
+    public function consoleCommand(string $command, array $parameters = [], bool $ignoreStdOut = false): CommandTest
     {
-        return new CommandTest($this, $command, $parameters);
+        return new CommandTest($this, $command, $parameters, $ignoreStdOut);
     }
 }
