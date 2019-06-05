@@ -3,10 +3,7 @@
 ## Unreleased
 
 ### Added
-
-- Added `craft\console\controllers\TestsController::actionSetupTests()` which uses a default test setup directory
-to setup a test suite for your Craft project very quickly. 
-The default directory can be found in `src/test/internal/example-test-suite`
+- Added the `tests/setup` command, which generates a test suite for the current Craft project.
 
 ### Fixed
 
