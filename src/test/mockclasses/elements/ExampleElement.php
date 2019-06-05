@@ -28,6 +28,8 @@ class ExampleElement extends Element
 
     public $relatedElements;
 
+    public $someField;
+
     // Public Methods
     // =========================================================================
 

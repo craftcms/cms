@@ -37,6 +37,8 @@ class MockDirective extends BaseDirective
      */
     public static function applyDirective($source, $value, array $arguments)
     {
+        $prefix = $arguments['prefix'] ?? 'mock';
+        return $prefix.$value;
     }
 
 
