@@ -11,6 +11,7 @@
 - Craft now deletes expired template caches as part of its garbage collection routine.
 
 ### Fixed
+- Fixed a SQL error that occurred when creating new entries on multi-site installs. ([#4363](https://github.com/craftcms/cms/issues/4363))
 - Fixed test reliability issues.
 - Fixed a bug where `craft\test\TestSetup::appType()` wasn’t returning the correct results.
 
