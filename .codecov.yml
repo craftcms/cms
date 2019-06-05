@@ -36,3 +36,7 @@ comment:
   layout: "header, diff"
   behavior: default
   require_changes: no
+
+ignore:
+  - "src/web/assets"  # ignore assets folder
+  - "src/test/internal" # ignore internal test material (I.E. the example test suite.)
