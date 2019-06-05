@@ -15,7 +15,7 @@ Composer 1.3.0 以降を稼働させるべきです。起動しているター�
 新しい Craft プロジェクトを作成するため、次のコマンドを実行してください。（Composer が作成するプロジェクトのパスの代わりに`<Path>` と記載しています。）
 
 ```bash
-composer create-project craftcms/craft <Path>
+composer create-project craftcms/craft <Path> --no-dev
 ```
 
 Composer がすべてをロードするのに、数分かかるでしょう。完了すると、成功メッセージが表示されます。

@@ -62,7 +62,7 @@ class GeneralConfig extends BaseObject
      * the Craft edition and Craft/plugin versions will be locked, and the project config will become read-only.
      *
      * Therefore you should only disable this in production environments when [[useProjectConfigFile]] is enabled,
-     * and you have a deployment workflow that runs `composer install` automatically on deploy.
+     * and you have a deployment workflow that runs `composer install --no-dev` automatically on deploy.
      *
      * ::: warning
      * Don’t disable this setting until **all** environments have been updated to Craft 3.1.0 or later.

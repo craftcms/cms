@@ -141,7 +141,7 @@ If this is disabled, the Settings and Plugin Store sections will be hidden,
 the Craft edition and Craft/plugin versions will be locked, and the project config will become read-only.
 
 Therefore you should only disable this in production environments when [useProjectConfigFile](https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#useprojectconfigfile) is enabled,
-and you have a deployment workflow that runs `composer install` automatically on deploy.
+and you have a deployment workflow that runs `composer install --no-dev` automatically on deploy.
 
 ::: warning
 Don’t disable this setting until **all** environments have been updated to Craft 3.1.0 or later.
