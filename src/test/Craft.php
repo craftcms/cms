@@ -25,6 +25,7 @@ use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
 use craft\services\Elements;
+use PHPUnit\Framework\ExpectationFailedException;
 use ReflectionException;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
@@ -342,6 +343,48 @@ class Craft extends Yii2
         $callback();
 
         $this->assertTrue($eventTriggered, 'Asserting that an event is triggered.');
+    }
+
+    /**
+     * @param string $elementType
+     * @param array $searchProperties
+     * @param int $amount
+     * @return mixed
+     */
+    public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1) : array
+    {
+        $elementQuery = $elementType::find();
+        foreach ($searchProperties as $searchProperty => $value) {
+            $elementQuery->$searchProperty = $value;
+        }
+
+        $elements = $elementQuery->all();
+        $this->assertCount($amount, $elements);
+
+        return $elements;
+    }
+
+    /**
+     * @param callable $callable
+     * @param string $message
+     */
+    public function ensureTestFails(callable $callable, string $message = '')
+    {
+        $failed = false;
+        try {
+            $callable();
+        } catch (ExpectationFailedException $exception) {
+            $failed = true;
+            if ($message) {
+                $this->assertSame($message, $exception->getMessage());
+            }
+
+            $this->assertTrue(true, 'Test failed as was expected.');
+        }
+
+        if ($failed === false) {
+            $this->fail('Test was supposed to fail but didnt.');
+        }
     }
 
     /**
