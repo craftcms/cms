@@ -102,17 +102,4 @@ class TemplateCachesTest extends Unit
             ], false)
             ->execute();
     }
-
-    /**
-     * @inheritdoc
-     */
-    protected function _after()
-    {
-        parent::_after();
-
-        // Delete all the template caches
-        $this->db->createCommand()
-            ->delete(Table::TEMPLATECACHES)
-            ->execute();
-    }
 }
