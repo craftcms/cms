@@ -8,6 +8,7 @@
 namespace crafttests\unit\console;
 
 use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
 use craft\test\console\ConsoleTest as BaseConsoleTest;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
@@ -46,24 +47,12 @@ class TestsControllerTest extends BaseConsoleTest
      * @throws \yii\base\ErrorException
      * @throws \yii\base\Exception
      */
-    public function testSetupTests()
+    public function testSetupWithDefaultPath()
     {
-        $this->consoleCommand('tests/setup-tests')
-            ->confirm('Are you sure you want to generate the tests suite?', true, false)
-            ->confirm('Do you want a custom path?', false, false)
-            ->stdOut('Test suite generated. Ensure you update you update your composer dependencies.')
-            ->exitCode(ExitCode::OK)
+        $this->consoleCommand('tests/setup', [], true)
+            ->confirm('Are you sure you want to continue?', false, false)
+            ->exitCode(ExitCode::UNSPECIFIED_ERROR)
             ->run();
-
-        $oneUpAtVendor = dirname(Craft::$app->getPath()->getVendorPath());
-
-        $dstPath = $oneUpAtVendor.DIRECTORY_SEPARATOR.'generated-tests';
-
-        if (!is_dir($dstPath) || FileHelper::isDirectoryEmpty($dstPath)) {
-            $this->fail('Setting up tests failed to create directory');
-        }
-
-        FileHelper::removeDirectory($dstPath);
     }
 
     /**
@@ -71,44 +60,22 @@ class TestsControllerTest extends BaseConsoleTest
      */
     public function testSetupTestsWithCustomPath()
     {
-        $dstPath = __DIR__.DIRECTORY_SEPARATOR.'generated-test-material';
+        $dst = getcwd() . DIRECTORY_SEPARATOR . StringHelper::randomString();
 
-        $this->consoleCommand('tests/setup-tests')
-            ->confirm('Are you sure you want to generate the tests suite?', true, false)
-            ->confirm('Do you want a custom path?', true, false)
-            ->prompt('Which path should the "tests/" dir be placed in?', $dstPath)
-            ->stdOut('Test suite generated. Ensure you update you update your composer dependencies.')
+        $this->consoleCommand('tests/setup', [$dst], true)
+            ->confirm('Continue?', false, true)
+            ->exitCode(ExitCode::UNSPECIFIED_ERROR)
+            ->run();
+
+        $this->consoleCommand('tests/setup', [$dst], true)
+            ->confirm('Continue?', true, true)
             ->exitCode(ExitCode::OK)
             ->run();
 
-        if (!is_dir($dstPath) || FileHelper::isDirectoryEmpty($dstPath)) {
+        if (!is_dir($dst) || FileHelper::isDirectoryEmpty($dst)) {
             $this->fail('Setting up tests failed to create directory');
         }
 
-        FileHelper::removeDirectory($dstPath);
-    }
-
-    /**
-     * @throws InvalidConfigException
-     * @throws \yii\base\ErrorException
-     * @throws \yii\base\Exception
-     */
-    public function testFailCustomTestSetupIfNoConfirm()
-    {
-        $this->consoleCommand('tests/setup-tests')
-            ->confirm('Are you sure you want to generate the tests suite?', false, false)
-            ->stdOut('Aborted!')
-            ->exitCode(ExitCode::OK)
-            ->run();
-
-        $oneUpAtVendor = dirname(Craft::$app->getPath()->getVendorPath());
-
-        $dstPath = $oneUpAtVendor.DIRECTORY_SEPARATOR.'generated-tests';
-
-        if (is_dir($dstPath)) {
-            $this->fail('Setting up tests created a directory when it shouldnt.');
-        }
-
-        FileHelper::removeDirectory($dstPath);
+        FileHelper::removeDirectory($dst);
     }
 }

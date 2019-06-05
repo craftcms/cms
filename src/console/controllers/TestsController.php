@@ -29,12 +29,17 @@ class TestsController extends Controller
     /**
      * Sets up a test suite for the current project.
      *
+     * @param string|null $dst The folder that the test suite should be generated in.
+     * Defaults to the current working directory.
      * @return int
      */
-    public function actionSetup(): int
+    public function actionSetup(string $dst = null): int
     {
+        if ($dst === null) {
+            $dst = getcwd();
+        }
+
         $src = dirname(__DIR__, 2). DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'internal' . DIRECTORY_SEPARATOR . 'example-test-suite';
-        $dst = getcwd();
 
         // Figure out the plan and check for conflicts
         $plan = [];
