@@ -4,10 +4,8 @@
 
 ### Added
 - Added the `tests/setup` command, which generates a test suite for the current Craft project.
-- Added the `craft\test\Craft::assertElementsExist()` function which can be used for checking if and how many
-elements should exist in the Database.
-Added the `craft\test\Craft::assertTestFails()` which can be used to check whether a test must 
-fail through making for example an incorrect assertion or calling `$this->fail()`.
+- Added `craft\test\Craft::assertElementsExist()`.
+- Added `craft\test\Craft::assertTestFails()`.
 
 ### Changed
 - Craft now deletes expired template caches as part of its garbage collection routine.
