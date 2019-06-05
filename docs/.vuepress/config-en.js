@@ -114,8 +114,8 @@ module.exports = {
                     'framework/config-options',
                     'framework/mocking',
                     'framework/support-classes',
-                    'framework/full-mock'
-
+                    'framework/full-mock',
+                    'framework/assertion-helpers'
                 ]
             },
 
