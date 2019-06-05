@@ -79,6 +79,7 @@ class GqlTest extends Unit
 
     /**
      * Test adding custom directives to schema
+     * // todo: stub instead of mock?
      */
     public function testRegisterDirective()
     {
