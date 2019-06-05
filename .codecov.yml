@@ -32,10 +32,7 @@ parsers:
       method: no
       macro: no
 
-comment:
-  layout: "header, diff"
-  behavior: default
-  require_changes: no
+comment: off
 
 ignore:
   - "src/web/assets"  # ignore assets folder
