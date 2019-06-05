@@ -47,49 +47,64 @@ class DirectiveTest extends Unit
     /**
      * Test if directives are being applied at all.
      *
-     * @dataProvider directiveDataProvider
+     * @dataProvider genericDirectiveDataProvider
      *
      * @param string $in input string
      * @param array $directives an array of directive data as expected by GQL
      * @param string $result expected result
      */
-    public function testDirectivesBeingApplied($in, $directives, $result)
+    public function testDirectivesBeingApplied($in, array $directives, $result)
     {
         /** @var GqlEntryType $type */
         $type = $this->make(GqlEntryType::class);
         $element = new ExampleElement();
         $element->someField = $in;
 
-        $fieldNodes = [];
-        $node = Json::decode('{"directives":[]}', false);
-        $node->directives = $directives;
-        $fieldNodes[] = $node;
+        $fieldNodes = [Json::decode('{"directives":[' . implode(',', $directives) . ']}', false)];
 
         $resolveInfo = $this->make(ResolveInfo::class, [
             'fieldName' => 'someField',
             'fieldNodes' => $fieldNodes
         ]);
 
-        $this->assertEquals($type->resolveWithDirectives($element, [], null, $resolveInfo), $result);
+        $this->assertEquals($result, $type->resolveWithDirectives($element, [], null, $resolveInfo));
     }
 
 
     // Data Providers
     // =========================================================================
 
-    public function directiveDataProvider()
+    public function genericDirectiveDataProvider()
     {
-        $noArgumentDirective = Json::decode('{"name": {"value": "' . MockDirective::getName() . '", "arguments": []}}', false);
-        $directiveWithArguments = Json::decode('{"name": {"value": "' . MockDirective::getName() . '"}, "arguments": [{"name": {"value":"prefix"}, "value": {"value": "lazy"}}]}', false);
+        $name = MockDirective::getName();
+        $noArgumentDirective = $this->_buildDirective($name);
 
         return [
             ['something', [$noArgumentDirective], 'mocksomething'],
-            ['something', [$noArgumentDirective, $noArgumentDirective], 'mockmocksomething'],
+            ['otherThing', [$noArgumentDirective, $noArgumentDirective], 'mockmockotherThing'],
             ['something', [], 'something'],
-            ['something', [$directiveWithArguments], 'lazysomething'],
-            ['something', [$directiveWithArguments, $directiveWithArguments], 'lazylazysomething'],
-            ['something', [$directiveWithArguments, $noArgumentDirective, $directiveWithArguments], 'lazymocklazysomething'],
-            ['something', null, 'something'],
+            ['dog', [$this->_buildDirective($name, ['prefix' => 'lazy'])], 'lazydog'],
+            ['fox', [$this->_buildDirective($name, ['prefix' => 'brown']), $this->_buildDirective($name, ['prefix' => 'quick'])], 'quickbrownfox'],
+            ['someText', [$this->_buildDirective($name, ['prefix' => 'brown']), $noArgumentDirective, $this->_buildDirective($name, ['prefix' => 'stuff'])], 'stuffmockbrownsomeText'],
         ];
+    }
+    /**
+     * Build the JSON string to be used as a directive object
+     * 
+     * @param string $directiveName
+     * @param array $arguments
+     * @return string
+     */
+    private function _buildDirective(string $directiveName, array $arguments = [])
+    {
+        $directiveTemplate = '{"name": {"value": "%s"}, "arguments": [%s]}';
+        $argumentTemplate = '{"name": {"value":"%s"}, "value": {"value": "%s"}}';
+
+        $argumentList = [];
+        foreach ($arguments as $key => $value) {
+            $argumentList[] = sprintf($argumentTemplate, $key, $value);
+        }
+
+        return sprintf($directiveTemplate, $directiveName, implode(', ', $argumentList));
     }
 }
