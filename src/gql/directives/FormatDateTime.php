@@ -13,7 +13,7 @@ use GraphQL\Type\Definition\Type;
 class FormatDateTime extends BaseDirective
 {
     const DEFAULT_FORMAT = 'Y-m-d\TH:i:sP';
-    const DEFAULT_TIMEZONE = 'GMT';
+    const DEFAULT_TIMEZONE = 'UTC';
 
     /**
      * @inheritdoc
@@ -38,7 +38,7 @@ class FormatDateTime extends BaseDirective
                 new FieldArgument([
                     'name' => 'timezone',
                     'type' => Type::string(),
-                    'description' => 'The full name of the timezone, defaults to GMT. (E.g., America/New_York)',
+                    'description' => 'The full name of the timezone, defaults to UTC. (E.g., America/New_York)',
                     'defaultValue' => self::DEFAULT_TIMEZONE
                 ])
             ],
