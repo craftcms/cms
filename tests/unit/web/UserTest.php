@@ -250,7 +250,7 @@ class UserTest extends TestCase
     {
         $this->tester->mockCraftMethods('session', [
             'set' => function($name, $val) use ($value) {
-                $this->assertSame($value, $val);
+                $this->assertEqualsWithDelta($value, $val, 1);
             }
         ]);
     }
