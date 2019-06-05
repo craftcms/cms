@@ -9,11 +9,14 @@ namespace craftunit\gql;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\fields\Date;
+use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\Entry as GqlEntryType;
 use craft\helpers\Json;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
+use DateTime;
 use GraphQL\Type\Definition\ResolveInfo;
 
 class DirectiveTest extends Unit
@@ -25,12 +28,6 @@ class DirectiveTest extends Unit
 
     protected function _before()
     {
-        // Make sure the mock directive is available in the entity registry
-        $directiveName = MockDirective::getName();
-
-        if (!GqlEntityRegistry::getEntity($directiveName)) {
-            GqlEntityRegistry::createEntity($directiveName, MockDirective::getDirective());
-        }
     }
 
     protected function _after()
@@ -47,7 +44,7 @@ class DirectiveTest extends Unit
     /**
      * Test if directives are being applied at all.
      *
-     * @dataProvider genericDirectiveDataProvider
+     * @dataProvider directiveDataProvider
      *
      * @param string $in input string
      * @param array $directives an array of directive data as expected by GQL
@@ -70,41 +67,63 @@ class DirectiveTest extends Unit
         $this->assertEquals($result, $type->resolveWithDirectives($element, [], null, $resolveInfo));
     }
 
-
     // Data Providers
     // =========================================================================
 
-    public function genericDirectiveDataProvider()
+    public function directiveDataProvider()
     {
-        $name = MockDirective::getName();
-        $noArgumentDirective = $this->_buildDirective($name);
+        $mockDirective = MockDirective::class;
+        $formatDateTime = FormatDateTime::class;
+        $dateTime = new DateTime('now');
 
         return [
-            ['something', [$noArgumentDirective], 'mocksomething'],
-            ['otherThing', [$noArgumentDirective, $noArgumentDirective], 'mockmockotherThing'],
-            ['something', [], 'something'],
-            ['dog', [$this->_buildDirective($name, ['prefix' => 'lazy'])], 'lazydog'],
-            ['fox', [$this->_buildDirective($name, ['prefix' => 'brown']), $this->_buildDirective($name, ['prefix' => 'quick'])], 'quickbrownfox'],
-            ['someText', [$this->_buildDirective($name, ['prefix' => 'brown']), $noArgumentDirective, $this->_buildDirective($name, ['prefix' => 'stuff'])], 'stuffmockbrownsomeText'],
+            ['TestString', [$this->_buildDirective($mockDirective, ['prefix' => 'Foo'])], 'FooTestString'],
+            ['TestString', [$this->_buildDirective($mockDirective, ['prefix' => 'Bar']), $this->_buildDirective($mockDirective, ['prefix' => 'Foo'])], 'FooBarTestString'],
+            [$dateTime, [$this->_buildDirective($formatDateTime, ['format' => 'Y-m-d H:i:s'])], $dateTime->format('Y-m-d H:i:s')],
+            [$dateTime, [$this->_buildDirective($formatDateTime, ['format' => DateTime::ATOM])], $dateTime->format(DateTime::ATOM)],
+            [$dateTime, [$this->_buildDirective($formatDateTime, ['format' => DateTime::COOKIE])], $dateTime->format(DateTime::COOKIE)],
+            [$dateTime,
+                [$this->_buildDirective($formatDateTime, ['format' => DateTime::COOKIE, 'timezone' => 'America/New_York'])],
+                $dateTime->setTimezone(new \DateTimeZone('America/New_York'))->format(DateTime::COOKIE)
+            ],
+            ['what time is it?', [$this->_buildDirective($formatDateTime, ['format' => DateTime::COOKIE])], 'what time is it?'],
         ];
     }
+
     /**
      * Build the JSON string to be used as a directive object
      * 
-     * @param string $directiveName
+     * @param string $className
      * @param array $arguments
      * @return string
      */
-    private function _buildDirective(string $directiveName, array $arguments = [])
+    private function _buildDirective(string $className, array $arguments = [])
     {
+        $this->_registerDirective($className);
+
         $directiveTemplate = '{"name": {"value": "%s"}, "arguments": [%s]}';
         $argumentTemplate = '{"name": {"value":"%s"}, "value": {"value": "%s"}}';
 
         $argumentList = [];
         foreach ($arguments as $key => $value) {
-            $argumentList[] = sprintf($argumentTemplate, $key, $value);
+            $argumentList[] = sprintf($argumentTemplate, $key, addslashes($value));
         }
 
-        return sprintf($directiveTemplate, $directiveName, implode(', ', $argumentList));
+        return sprintf($directiveTemplate, $className::getName(), implode(', ', $argumentList));
+    }
+
+    /**
+     * Register a directive by class name.
+     *
+     * @param $className
+     */
+    private function _registerDirective($className) {
+        // Make sure the mock directive is available in the entity registry
+        $directiveName = $className::getName();
+
+        if (!GqlEntityRegistry::getEntity($directiveName)) {
+            GqlEntityRegistry::createEntity($directiveName, $className::getDirective());
+        }
+
     }
 }
