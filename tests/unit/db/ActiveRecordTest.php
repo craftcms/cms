@@ -57,9 +57,8 @@ class ActiveRecordTest extends Unit
      */
     public function testDateCreated()
     {
-        $session = $this->ensureSession();
-
         $date = new DateTime('now', new DateTimeZone('UTC'));
+        $session = $this->ensureSession();
 
         $this->assertSame($session->dateCreated, $date->format('Y-m-d H:i:s'));
     }
