@@ -84,6 +84,10 @@ class Transform extends BaseDirective
      */
     public static function applyDirective($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
+        if ($resolveInfo->fieldName !== 'url') {
+            return $value;
+        }
+
         $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->general->generateTransformsBeforePageLoad;
         unset($arguments['immediately']);
 
