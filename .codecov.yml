@@ -9,9 +9,8 @@ coverage:
   status:
     project:
       default:
-        target: auto
-        threshold: null
-        base: auto
+        threshold: .1
+        base: pr
 
   notify:
     slack:
