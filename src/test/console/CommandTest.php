@@ -244,7 +244,7 @@ class CommandTest
         $controller = $controllerArray[0];
         if (!$controller instanceof Controller) {
             throw new InvalidArgumentException(
-                'Invalid controller. Please ensure your controller extends craft\console\Controller'
+                'Invalid controller. Please ensure your controller extends: ' . Controller::class
             );
         }
 
