@@ -10,8 +10,8 @@ namespace crafttests\unit;
 use Codeception\Test\Unit;
 use Craft;
 use craft\db\Query;
-use crafttests\fixtures\EntryFixture;
-use crafttests\fixtures\FieldLayoutFixture;
+use crafttests\fixtures\EntryWithFieldsFixture;
+use UnitTester;
 
 /**
  * Unit tests for App
@@ -22,18 +22,32 @@ use crafttests\fixtures\FieldLayoutFixture;
  */
 class FieldLayoutTest extends Unit
 {
+    // Public Properties
+    // =========================================================================
+
+    /**
+     * @var UnitTester
+     */
+    protected $tester;
+
+    // Public Methods
+    // =========================================================================
+
     public function _fixtures()
     {
         return [
-            'fieldlayout' => [
-                'class' => FieldLayoutFixture::class
-            ],
-            'entry' => [
-                'class' => EntryFixture::class
+            'entry-with-fields' => [
+                'class' => EntryWithFieldsFixture::class
             ]
         ];
     }
 
+    // Tests
+    // =========================================================================
+
+    /**
+     * @throws \yii\base\NotSupportedException
+     */
     public function testFieldLayoutMatrix()
     {
         $tableNames = Craft::$app->getDb()->getSchema()->tableNames;
