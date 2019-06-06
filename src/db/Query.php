@@ -127,7 +127,7 @@ class Query extends \yii\db\Query
         foreach ($columns as $columnAlias => $columnDefinition) {
             if (is_string($columnAlias)) {
                 $select[$columnAlias] = $columnDefinition;
-            } else if (preg_match('/^\w+$/', $columnDefinition)) {
+            } else if (is_string($columnDefinition) && preg_match('/^\w+$/', $columnDefinition)) {
                 $select[$columnDefinition] = $columnDefinition;
             } else {
                 $select[] = $columnDefinition;
