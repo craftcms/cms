@@ -58,6 +58,8 @@ class FieldLayoutTest extends Unit
         $matrixRows = (new Query())
             ->select('*')->from($matrixTableName)->all();
 
+        $this->assertCount(2, $matrixRows);
+        
         foreach ($matrixRows as $row) {
             $this->assertSame('Some text',$row['field_aBlock_firstSubfield']);
         }
