@@ -10,10 +10,9 @@ namespace craft\test\console;
 use Closure;
 use Codeception\Stub;
 use Craft;
-use craft\helpers\StringHelper;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\console\Controller;
+use craft\console\Controller;
 
 /**
  * Class ConsoleTest
@@ -237,16 +236,21 @@ class CommandTest
      */
     protected function setupController()
     {
-        $parts = StringHelper::split($this->command, '/');
-        $controllerId = $parts[0];
-        $actionId = $parts[1];
-
-        $controller = Craft::$app->createControllerByID($controllerId);
-        if (!$controller instanceof Controller) {
+        $controllerArray = Craft::$app->createController($this->command);
+        if (!$controllerArray) {
             throw new InvalidArgumentException('Invalid controller');
         }
 
-        $stubController = Stub::construct(get_class($controller), [$controllerId, Craft::$app], [
+        $controller = $controllerArray[0];
+        if (!$controller instanceof Controller) {
+            throw new InvalidArgumentException(
+                'Invalid controller. Please ensure your controller extends craft\console\Controller'
+            );
+        }
+
+        $actionId = $controllerArray[1];
+
+        $stubController = Stub::construct(get_class($controller), [$controller->id, Craft::$app], [
             'stdOut' => $this->stdOutHandler(),
             'stderr' => $this->stderrHandler(),
             'prompt' => $this->promptHandler(),

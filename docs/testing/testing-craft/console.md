@@ -118,7 +118,7 @@ $this->consoleCommand('test-controller/test-action')
 As this **will** fail. 
 
 ::: tip
-If you want to ignore all `stdOut` calls you can pass `false` as the third parameter of the `consoleCommand()` 
+If you want to ignore all `stdOut` calls you can pass `false` as the fourth parameter of the `consoleCommand()` 
 call. You will then not have to define your `stdOut` calls when calling `$this->consoleCommand()` and Craft 
 will ignore then when checking what your console command returns to the user. 
 :::
