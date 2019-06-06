@@ -12,6 +12,7 @@ use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
 use yii\base\Exception;
 use yii\db\Connection as YiiConnection;
+use yii\db\ExpressionInterface;
 
 /**
  * Class Query
@@ -82,6 +83,57 @@ class Query extends \yii\db\Query
         }
 
         return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function select($columns, $option = null)
+    {
+        $this->select = $this->normalizeSelect($columns);
+        $this->selectOption = $option;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addSelect($columns)
+    {
+        if ($this->select === null) {
+            return $this->select($columns);
+        }
+        if (!is_array($this->select)) {
+            $this->select = $this->normalizeSelect($this->select);
+        }
+        $this->select = array_merge($this->select, $this->normalizeSelect($columns));
+        return $this;
+    }
+
+    /**
+     * Normalizes the SELECT columns passed to [[select()]] or [[addSelect()]]
+     *
+     * @param string|array|ExpressionInterface $columns
+     * @return array
+     */
+    protected function normalizeSelect($columns): array
+    {
+        if ($columns instanceof ExpressionInterface) {
+            $columns = [$columns];
+        } else if (!is_array($columns)) {
+            $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
+        }
+        $select = [];
+        foreach ($columns as $columnAlias => $columnDefinition) {
+            if (is_string($columnAlias)) {
+                $select[$columnAlias] = $columnDefinition;
+            } else if (preg_match('/^\w+$/', $columnDefinition)) {
+                $select[$columnDefinition] = $columnDefinition;
+            } else {
+                $select[] = $columnDefinition;
+            }
+        }
+        return $select;
     }
 
     /**
