@@ -13,6 +13,7 @@
 
 ### Fixed
 - Fixed a SQL error that occurred when creating new entries on multi-site installs. ([#4363](https://github.com/craftcms/cms/issues/4363))
+- Fixed an error that occurred when a user attempted to edit an entry if they didn’t have the “Publish live changes” permission for the section. ([#4368](https://github.com/craftcms/cms/issues/4368))
 - Fixed test reliability issues.
 - Fixed a bug where `craft\test\TestSetup::appType()` wasn’t returning the correct results.
 
