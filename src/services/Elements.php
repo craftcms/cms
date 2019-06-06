@@ -383,6 +383,7 @@ class Elements extends Component
      * @param ElementInterface $element The element that is being saved
      * @param bool $runValidation Whether the element should be validated
      * @param bool $propagate Whether the element should be saved across all of its supported sites
+     * (this can only be disabled when updating an existing element)
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
@@ -524,7 +525,7 @@ class Elements extends Component
             Craft::$app->getSearch()->indexElementAttributes($element);
 
             // Update the element across the other sites?
-            if ($propagate && $element::isLocalized() && Craft::$app->getIsMultiSite()) {
+            if (($isNewElement || $propagate) && $element::isLocalized() && Craft::$app->getIsMultiSite()) {
                 foreach ($supportedSites as $siteInfo) {
                     // Skip the master site
                     if ($siteInfo['siteId'] != $element->siteId) {
