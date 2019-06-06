@@ -60,6 +60,10 @@ class Transform extends BaseDirective
                     'name' => 'format',
                     'type' => Type::string(),
                 ]),
+             new FieldArgument([
+                    'name' => 'immediately',
+                    'type' => Type::boolean(),
+                ]),
             ],
         ]));
 
@@ -79,13 +83,16 @@ class Transform extends BaseDirective
      */
     public static function applyDirective($source, $value, array $arguments)
     {
+        $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->general->generateTransformsBeforePageLoad;
+        unset($arguments['immediately']);
+
         if (!empty($arguments['handle'])) {
             $transform = $arguments['handle'];
         } else {
             $transform = $arguments;
         }
 
-        return Craft::$app->getAssets()->getAssetUrl($source, $transform);
+        return Craft::$app->getAssets()->getAssetUrl($source, $transform, $generateNow);
     }
 
 
