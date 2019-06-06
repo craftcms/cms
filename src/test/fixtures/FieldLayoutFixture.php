@@ -131,6 +131,19 @@ abstract class FieldLayoutFixture extends Fixture
     }
 
     /**
+     * Unloading fixtures removes fields and possible tables - so we need to refresh the DB Schema before our parent calls.
+     * Craft::$app->getDb()->createCommand()->checkIntegrity(true);
+     *
+     * @throws \yii\base\NotSupportedException
+     */
+    public function afterUnload()
+    {
+        $this->db->getSchema()->refresh();
+
+        parent::afterUnload();
+    }
+
+    /**
      * Attempt to delete all fields and field layout by a field handle.
      *
      * 1. Get a field by handle
