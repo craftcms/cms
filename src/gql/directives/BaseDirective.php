@@ -2,6 +2,7 @@
 namespace craft\gql\directives;
 
 use GraphQL\Type\Definition\Directive;
+use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class BaseDirective
@@ -28,6 +29,7 @@ abstract class BaseDirective extends Directive
      * @param mixed $source The original source from which the value was resolved
      * @param mixed $value The value that was resolved
      * @param array $arguments for the directive
+     * @param ResolveInfo $resolveInfo resolve info object
      */
-    abstract public static function applyDirective($source, $value, array $arguments);
+    abstract public static function applyDirective($source, $value, array $arguments, ResolveInfo $resolveInfo);
 }

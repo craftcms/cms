@@ -6,6 +6,7 @@ use craft\gql\GqlEntityRegistry;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive;
 use GraphQL\Type\Definition\FieldArgument;
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -81,7 +82,7 @@ class Transform extends BaseDirective
     /**
      * @inheritdoc
      */
-    public static function applyDirective($source, $value, array $arguments)
+    public static function applyDirective($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
         $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->general->generateTransformsBeforePageLoad;
         unset($arguments['immediately']);
@@ -94,6 +95,4 @@ class Transform extends BaseDirective
 
         return Craft::$app->getAssets()->getAssetUrl($source, $transform, $generateNow);
     }
-
-
 }

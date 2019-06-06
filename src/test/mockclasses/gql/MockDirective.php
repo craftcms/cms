@@ -5,6 +5,7 @@ use Craft;
 use craft\gql\directives\BaseDirective;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive;
+use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class MockDirective
@@ -35,7 +36,7 @@ class MockDirective extends BaseDirective
     /**
      * @inheritdoc
      */
-    public static function applyDirective($source, $value, array $arguments)
+    public static function applyDirective($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
         $prefix = $arguments['prefix'] ?? 'mock';
         return $prefix.$value;

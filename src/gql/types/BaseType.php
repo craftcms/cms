@@ -58,7 +58,7 @@ abstract class BaseType extends ObjectType
                     }
                 }
 
-                $value = $directiveEntity::applyDirective($source, $value, $arguments);
+                $value = $directiveEntity::applyDirective($source, $value, $arguments, $resolveInfo);
             }
         }
 
