@@ -24,7 +24,7 @@ class EntryWithFieldsFixture extends BaseEntriesFixture
     /**
      * @inheritdoc
      */
-    public $dataFile = __DIR__ . '/data/entries.php';
+    public $dataFile = __DIR__ . '/data/entry-with-fields.php';
 
     /**
      * @inheritdoc
