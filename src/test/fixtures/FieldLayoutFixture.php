@@ -18,6 +18,7 @@ use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
+use craft\services\Fields;
 use craft\test\Fixture;
 use Throwable;
 use yii\base\Exception as YiiBaseException;
@@ -84,6 +85,7 @@ abstract class FieldLayoutFixture extends Fixture
                     }
 
                     // Create and add a field.
+                    /* @var Field $field*/
                     $field = new $class($field);
                     if (!Craft::$app->getFields()->saveField($field)) {
                         $this->throwModelError($field);
@@ -103,6 +105,8 @@ abstract class FieldLayoutFixture extends Fixture
                 }
             }
         }
+
+        Craft::$app->set('fields', new Fields());
     }
 
     /**

@@ -95,13 +95,10 @@ abstract class ElementFixture extends ActiveFixture
                 unset($data['dateDeleted']);
             }
 
-            foreach ($data as $handle => $value) {
-                $element->$handle = $value;
-            }
-
             // Set the field layout
             if (isset($data['fieldLayoutType'])) {
                 $fieldLayoutType = $data['fieldLayoutType'];
+                unset($data['fieldLayoutType']);
 
                 $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
                 if ($fieldLayout) {
@@ -109,6 +106,10 @@ abstract class ElementFixture extends ActiveFixture
                 } else {
                     codecept_debug("Field layout with type: $fieldLayoutType but this was not findable");
                 }
+            }
+
+            foreach ($data as $handle => $value) {
+                $element->$handle = $value;
             }
 
             if (!Craft::$app->getElements()->saveElement($element)) {
