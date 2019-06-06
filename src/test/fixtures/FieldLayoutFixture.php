@@ -14,6 +14,7 @@ use craft\base\Field;
 use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
+use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
@@ -74,10 +75,23 @@ abstract class FieldLayoutFixture extends Fixture
                     $class = $field['fieldType'];
                     unset($field['fieldType']);
 
+                    $blockTypes = [];
+                    if ($class instanceof Matrix) {
+                        if (isset($field['blockTypes'])) {
+                            $blockTypes = $field['blockTypes'];
+                            unset($field['blockTypes']);
+                        }
+                    }
+
                     // Create and add a field.
                     $field = new $class($field);
                     if (!Craft::$app->getFields()->saveField($field)) {
                         $this->throwModelError($field);
+                    }
+
+                    // Set any block types to the matrix.
+                    if ($field instanceof Matrix && $blockTypes) {
+                        $field->setBlockTypes($blockTypes);
                     }
 
                     // Link it
