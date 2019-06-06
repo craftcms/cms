@@ -15,7 +15,6 @@
 - Fixed a SQL error that occurred when creating new entries on multi-site installs. ([#4363](https://github.com/craftcms/cms/issues/4363))
 - Fixed test reliability issues.
 - Fixed a bug where `craft\test\TestSetup::appType()` wasn’t returning the correct results.
-- Fixed a bug where plugin console command tests were not correctly creating the plugin controller. 
 
 ## 3.2.0-beta.1 - 2019-06-04
 
