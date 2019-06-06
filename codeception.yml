@@ -14,13 +14,19 @@ coverage:
   include:
     - src/*
   exclude:
-    - tests/_support/_generated/*
     - src/config/*
     - src/icons/*
-    - src/test/*
+    - src/test/internal/*
     - src/migrations/*
     - src/templates/*
     - src/translations/*
+    - src/views/*
+    - src/web/assets/*
+    - bootstrap/*
+    - docs/*
+    - lib/*
+    - tests/*
+    - vendor/*
 params:
   - env
   - tests/.env

@@ -35,5 +35,18 @@ parsers:
 comment: off
 
 ignore:
-  - "src/web/assets"  # ignore assets folder
-  - "src/test/internal" # ignore internal test material (I.E. the example test suite.)
+  - "src/web/assets"
+  - "src/test/internal"
+  - "src/config"
+  - "src/icons"
+  - "src/test/internal"
+  - "src/migrations"
+  - "src/templates"
+  - "src/translations"
+  - "src/views"
+  - "src/web/assets"
+  - "bootstrap"
+  - "docs"
+  - "lib"
+  - "tests"
+  - "vendor"
