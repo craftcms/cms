@@ -25,11 +25,6 @@ coverage:
         paths: null
         message: "Coverage {{changed}} for {{owner}}/{{repo}}"
 
-  status:
-    project: no
-    patch: yes
-    changes: no
-
 parsers:
   gcov:
     branch_detection:
