@@ -195,7 +195,7 @@ class DirectiveTest extends Unit
             [[$this->_buildDirective($assetTransform, $transformParameters[5])], $transformParameters[5]],
         ];
     }
-    
+
     /**
      * Build the JSON string to be used as a directive object
      * 
