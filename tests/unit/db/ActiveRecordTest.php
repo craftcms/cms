@@ -181,7 +181,7 @@ class ActiveRecordTest extends Unit
     {
         $session = new Session();
         $session->userId = 1;
-        $session->token = 'test';
+        $session->token = 'test' . StringHelper::randomString();
         $save = $session->save();
 
         $this->assertTrue($save);
