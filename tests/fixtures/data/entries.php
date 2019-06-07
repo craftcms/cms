@@ -73,4 +73,5 @@ return [
         'typeId' => '1005',
         'title' => 'Single entry'
     ],
+
 ];

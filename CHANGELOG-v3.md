@@ -10,6 +10,8 @@
 ### Changed
 - Craft now deletes expired template caches as part of its garbage collection routine.
 - `craft\test\console\ConsoleTest::consoleCommand()` now accepts a third argument to ignore `stdOut` calls. 
+- `craft\test\fixtures\elements\ElementFixture` now supports a `fieldLayoutType` key in fixture data.
+- `craft\test\fixtures\FieldLayoutFixture` now supports Matrix fields. 
 
 ### Fixed
 - Fixed a SQL error that occurred when creating new entries on multi-site installs. ([#4363](https://github.com/craftcms/cms/issues/4363))

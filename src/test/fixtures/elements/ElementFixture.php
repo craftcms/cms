@@ -84,6 +84,7 @@ abstract class ElementFixture extends ActiveFixture
         $this->data = [];
 
         foreach ($this->getData() as $alias => $data) {
+            /* @var Element $element */
             $element = $this->getElement();
 
             // If they want to add a date deleted. Store it but dont set that as an element property
@@ -92,6 +93,19 @@ abstract class ElementFixture extends ActiveFixture
             if (isset($data['dateDeleted'])) {
                 $dateDeleted = $data['dateDeleted'];
                 unset($data['dateDeleted']);
+            }
+
+            // Set the field layout
+            if (isset($data['fieldLayoutType'])) {
+                $fieldLayoutType = $data['fieldLayoutType'];
+                unset($data['fieldLayoutType']);
+
+                $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
+                if ($fieldLayout) {
+                    $element->fieldLayoutId = $fieldLayout->id;
+                } else {
+                    codecept_debug("Field layout with type: $fieldLayoutType but this was not findable");
+                }
             }
 
             foreach ($data as $handle => $value) {
