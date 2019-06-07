@@ -22,6 +22,7 @@
 - Fixed a bug where the Dropdown Options modal in Table field settings wasn’t scrolling if there were too many dropdown options to fit in the viewport. ([#4376](https://github.com/craftcms/cms/issues/4376))
 - Fixed a bug where Craft was appending token params to action URLs that were generated on tokenized site requests.
 - Fixed a bug where preview and share URLs for the homepage entry were getting a URI of `__home__`. ([#4377](https://github.com/craftcms/cms/issues/4377))
+- Fixed a SQL error that could occur when updating to Craft 3.2.
 - Fixed test reliability issues.
 
 ## 3.2.0-beta.1 - 2019-06-04
