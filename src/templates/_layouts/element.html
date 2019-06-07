@@ -26,7 +26,7 @@
 {% if source.uri %}
     {% set previewTargets = [{
         label: 'Primary {type} page'|t('app', { type: element.displayName()|lower }),
-        url: element.uri
+        url: element.uri == '__home__' ? '' : element.uri
     }]|merge(previewTargets) %}
 {% endif %}
 {% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
