@@ -147,7 +147,15 @@ class UrlHelper
     public static function rootRelativeUrl(string $url): string
     {
         $url = static::urlWithScheme($url, 'http');
-        return substr($url, strpos($url, '/', 7));
+        if (strlen($url) > 7 && ($slash = strpos($url, '/', 7)) !== false) {
+            return substr($url, $slash);
+        }
+        // Is this a host without a URI?
+        if (strpos($url, '//') !== false) {
+            return '/';
+        }
+        // Must just be a URI, then
+        return '/' . $url;
     }
 
     /**
@@ -204,6 +212,11 @@ class UrlHelper
      */
     public static function cpUrl(string $path = '', $params = null, string $scheme = null): string
     {
+        // If this is already an absolute or root-relative URL, don't change it
+        if (static::isAbsoluteUrl($path) || static::isRootRelativeUrl($path)) {
+            return static::url($path, $params, $scheme);
+        }
+
         $path = trim($path, '/');
         $path = Craft::$app->getConfig()->getGeneral()->cpTrigger . ($path ? '/' . $path : '');
 
