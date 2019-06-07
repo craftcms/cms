@@ -285,6 +285,25 @@ class UrlHelperTest extends Unit
     /**
      *
      */
+    public function testTokenizedSiteUrl()
+    {
+        $this->tester->mockCraftMethods('request', [
+            'getToken' => 't0k3n',
+        ]);
+
+        $siteUrl = UrlHelper::url('endpoint');
+        $this->assertSame('http://test.craftcms.test/index.php?p=endpoint&token=t0k3n', $siteUrl);
+
+        $siteUrl = UrlHelper::siteUrl('endpoint');
+        $this->assertSame('http://test.craftcms.test/index.php?p=endpoint&token=t0k3n', $siteUrl);
+
+        $siteUrl = UrlHelper::actionUrl('endpoint');
+        $this->assertSame('http://test.craftcms.test/index.php?p=actions%2Fendpoint', $siteUrl);
+    }
+
+    /**
+     *
+     */
     public function testSiteUrlExceptions()
     {
         $this->tester->expectThrowable(Exception::class, function() {
@@ -613,6 +632,13 @@ class UrlHelperTest extends Unit
     }
 
     public function siteUrlDataProvider(): array
+    {
+        return [
+            ['http://test.craftcms.test/index.php?p=endpoint', 'endpoint'],
+        ];
+    }
+
+    public function tokenizedSiteUrlDataProvider(): array
     {
         return [
             ['http://test.craftcms.test/index.php?p=endpoint', 'endpoint'],

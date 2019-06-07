@@ -274,7 +274,21 @@ class UrlHelper
     {
         $path = Craft::$app->getConfig()->getGeneral()->actionTrigger . '/' . trim($path, '/');
 
-        return static::url($path, $params, $scheme, true);
+        $request = Craft::$app->getRequest();
+
+        if ($request->getIsCpRequest()) {
+            $path = Craft::$app->getConfig()->getGeneral()->cpTrigger . ($path ? '/' . $path : '');
+            $cpUrl = true;
+        } else {
+            $cpUrl = false;
+        }
+
+        // Stick with SSL if the current request is over SSL and a scheme wasn't defined
+        if ($scheme === null && !$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
+            $scheme = 'https';
+        }
+
+        return self::_createUrl($path, $params, $scheme, $cpUrl, true, false);
     }
 
     /**
@@ -504,9 +518,10 @@ class UrlHelper
      * @param string|null $scheme
      * @param bool $cpUrl
      * @param bool|null $showScriptName
+     * @param bool|null $addToken
      * @return string
      */
-    private static function _createUrl(string $path, $params, string $scheme = null, bool $cpUrl, bool $showScriptName = null): string
+    private static function _createUrl(string $path, $params, string $scheme = null, bool $cpUrl, bool $showScriptName = null, bool $addToken = null): string
     {
         // Extract any params/fragment from the path
         list($path, $baseParams, $baseFragment) = self::_extractParams($path);
@@ -522,11 +537,10 @@ class UrlHelper
         $request = Craft::$app->getRequest();
 
         // If this is a site URL and there was a token on the request, pass it along
-        if (!$cpUrl) {
+        if (!$cpUrl && $addToken !== false) {
             $tokenParam = $generalConfig->tokenParam;
             if (
                 !isset($params[$tokenParam]) &&
-                !$request->getIsConsoleRequest() &&
                 ($token = $request->getToken()) !== null
             ) {
                 $params[$tokenParam] = $token;

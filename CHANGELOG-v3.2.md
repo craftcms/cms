@@ -59,6 +59,7 @@
 - Added `craft\base\SortableFieldInterface`, which can be implemented by field classes that should be sortable in element indexes.
 - Added `craft\behaviors\DraftBehavior`.
 - Added `craft\behaviors\RevisionBehavior`.
+- Added `craft\console\Request::getToken()`.
 - Added `craft\controllers\PreviewController`.
 - Added `craft\errors\MissingAssetException`.
 - Added `craft\events\BatchElementActionEvent`.
