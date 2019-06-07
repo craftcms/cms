@@ -343,7 +343,7 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->typeId = $request->getBodyParam('typeId');
         // Prevent the last entry type's field layout from being used
         $draft->fieldLayoutId = null;
-        $draft->slug = $request->getBodyParam('slug') ?: $draft->slug;
+        $draft->slug = $request->getBodyParam('slug', $draft->slug);
         if (($postDate = $request->getBodyParam('postDate')) !== null) {
             $draft->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
         }
