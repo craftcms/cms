@@ -61,18 +61,18 @@ class ExtensionTest extends Unit
         Craft::$app->getRequest()->setRawBody('This is a raw body');
 
         // Current user
-        $this->globalExtensionRenderTest(
+        $this->extensionRenderTest(
             '{{ currentUser.firstName }} | {{ currentUser.lastName }}',
             'John | Smith'
         );
 
         // Craft variable - poke various calls.
-        $this->globalExtensionRenderTest(
+        $this->extensionRenderTest(
             '{{ craft.app.user.getIdentity().firstName }}',
             'John'
         );
 
-        $this->globalExtensionRenderTest(
+        $this->extensionRenderTest(
             '{{ craft.app.request.getRawBody() }}',
             'This is a raw body'
         );
@@ -82,7 +82,7 @@ class ExtensionTest extends Unit
     {
         Craft::$app->setEdition(Craft::Pro);
         Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_CP);
-        $this->globalExtensionRenderTest(
+        $this->extensionRenderTest(
             '{{ CraftEdition }} | {{ CraftSolo }} | {{ CraftPro }}',
             ''.Craft::$app->getEdition().' | '. Craft::Solo . ' | '. Craft::Pro
         );
@@ -91,7 +91,7 @@ class ExtensionTest extends Unit
     public function testSiteGlobals()
     {
         Craft::$app->getProjectConfig()->set('system.name', 'Im a test system');
-        $this->globalExtensionRenderTest(
+        $this->extensionRenderTest(
             '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}',
             'Im a test system | default Craft test site https://test.craftcms.test/'
         );
@@ -101,11 +101,95 @@ class ExtensionTest extends Unit
     {
         Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
 
-        $this->globalExtensionRenderTest(
+        $this->extensionRenderTest(
             '{{ aGlobalSet }} | {{ aDifferentGlobalSet }}',
             'A global set | A different global set'
         );
     }
+
+    public function testCsrfInput()
+    {
+        Craft::$app->getConfig()->getGeneral()->enableCsrfProtection = false;
+        $this->extensionRenderTest('{{ csrfInput() }}', '');
+
+        Craft::$app->getConfig()->getGeneral()->enableCsrfProtection = true;
+        $this->extensionRenderTest(
+            '{{ csrfInput() }}',
+            '<input type="hidden" name="CRAFT_CSRF_TOKEN" value="'.Craft::$app->getRequest()->getCsrfToken().'">'
+        );
+
+        // Custom name - just to be sure.
+        Craft::$app->getConfig()->getGeneral()->csrfTokenName = 'HACKER_POOF';
+        $this->extensionRenderTest(
+            '{{ csrfInput() }}',
+            '<input type="hidden" name="HACKER_POOF" value="'.Craft::$app->getRequest()->getCsrfToken().'">'
+        );
+    }
+
+    public function testRedirectInput()
+    {
+        $this->extensionRenderTest(
+            '{{ redirectInput("A URL") }}',
+            '<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData('A URL').'">'
+        );
+
+        $this->extensionRenderTest(
+            '{{ redirectInput("A URL WITH CHARS !@#$%^&*()😋") }}',
+            '<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData('A URL WITH CHARS !@#$%^&*()😋').'">'
+        );
+    }
+
+    public function testActionInput()
+    {
+        $this->extensionRenderTest(
+            '{{ actionInput("A URL") }}',
+            '<input type="hidden" name="action" value="A URL">'
+        );
+
+        $this->extensionRenderTest(
+            '{{ actionInput("A URL WITH CHARS !@#$%^&*()😋") }}',
+            '<input type="hidden" name="action" value="A URL WITH CHARS !@#$%^&*()😋">'
+        );
+    }
+
+    public function testRenderObjectTemplate()
+    {
+        // This is some next level inception stuff IMO.....
+        $this->extensionRenderTest(
+            '{{ renderObjectTemplate("{{ object.firstName}}", {firstName: "John"}) }}',
+            'John'
+        );
+    }
+
+    public function testExpression()
+    {
+        $this->extensionRenderTest(
+            '{% set expression =  expression("Im an expression", ["var"]) %}{{ expression }} | {{ expression.params[0] }} | {{ expression.expression }}',
+            'Im an expression | var | Im an expression'
+        );
+    }
+
+    public function testGetEnv()
+    {
+        $this->extensionRenderTest(
+            '{{ getenv("FROM_EMAIL_NAME") }} | {{ getenv("FROM_EMAIL_ADDRESS") }}',
+            'Craft CMS | info@craftcms.com'
+        );
+    }
+
+    public function testEnvParsing()
+    {
+        $this->extensionRenderTest(
+            '{{ parseEnv("$FROM_EMAIL_NAME") }}',
+            'Craft CMS'
+        );
+
+        $this->extensionRenderTest(
+            '{{ parseEnv("FROM_EMAIL_NAME") }}',
+            'FROM_EMAIL_NAME'
+        );
+    }
+
 
     // Protected Methods
     // =========================================================================
@@ -116,9 +200,8 @@ class ExtensionTest extends Unit
      * @throws \Twig\Error\LoaderError
      * @throws \Twig\Error\SyntaxError
      */
-    protected function globalExtensionRenderTest(string $renderString, string $expectedString)
+    protected function extensionRenderTest(string $renderString, string $expectedString)
     {
-
         $result = $this->view->renderString($renderString);
         $this->assertSame(
             $expectedString,
