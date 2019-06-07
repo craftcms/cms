@@ -14,6 +14,7 @@ use craft\web\View;
 use crafttests\fixtures\GlobalSetFixture;
 use UnitTester;
 use craft\web\twig\Extension;
+use ArrayObject;
 
 /**
  * Unit tests for the Various functions in the Extension class.
@@ -86,6 +87,16 @@ class ExtensionTest extends Unit
             '{{ CraftEdition }} | {{ CraftSolo }} | {{ CraftPro }}',
             ''.Craft::$app->getEdition().' | '. Craft::Solo . ' | '. Craft::Pro
         );
+    }
+
+    public function testGlobalsWithUninstalledCraft()
+    {
+        Craft::$app->setIsInstalled(false);
+        $this->extensionRenderTest(
+            '{{ systemName }} | {{ currentSite }} | {{ siteName }} | {{ siteUrl }}',
+            ' |  |  | '
+        );
+
     }
 
     public function testSiteGlobals()
@@ -190,6 +201,27 @@ class ExtensionTest extends Unit
         );
     }
 
+    public function testIndexOf()
+    {
+        $arrayObject = new ArrayObject(['John', 'Smith']);
+
+        $this->extensionRenderTest(
+            '{{ "Im a string"|indexOf("a") }}',
+            '3'
+        );
+
+        $this->extensionRenderTest(
+            '{{ [2, 3, 4, 5]|indexOf(3) }}',
+            '1'
+        );
+
+        $this->extensionRenderTest(
+            '{{ ArrayObject|indexOf("Smith") }}',
+            '1',
+            ['ArrayObject' => $arrayObject]
+        );
+    }
+
 
     // Protected Methods
     // =========================================================================
@@ -200,9 +232,9 @@ class ExtensionTest extends Unit
      * @throws \Twig\Error\LoaderError
      * @throws \Twig\Error\SyntaxError
      */
-    protected function extensionRenderTest(string $renderString, string $expectedString)
+    protected function extensionRenderTest(string $renderString, string $expectedString, array $variables = [])
     {
-        $result = $this->view->renderString($renderString);
+        $result = $this->view->renderString($renderString, $variables);
         $this->assertSame(
             $expectedString,
             $result
