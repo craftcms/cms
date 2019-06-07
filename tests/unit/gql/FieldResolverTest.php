@@ -38,7 +38,6 @@ class FieldResolverTest extends Unit
 
     protected function _before()
     {
-        Craft::$app->getGql()->flushCaches();
     }
 
     protected function _after()
