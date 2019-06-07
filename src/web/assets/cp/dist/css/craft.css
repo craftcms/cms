@@ -1180,6 +1180,7 @@ body.ltr .deleteusermodal .buttons .spinner { margin-left: -4px; }
 body.rtl .deleteusermodal .buttons .spinner { margin-right: -4px; }
 
 .dropdownsettingsmodal { width: auto; height: auto; min-width: 0; min-height: 0; max-width: 400px; }
+.dropdownsettingsmodal .body { max-height: 100%; overflow-y: auto; }
 
 /* ----------------------------------------
 /*  Menus
