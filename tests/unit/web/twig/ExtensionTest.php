@@ -277,7 +277,28 @@ class ExtensionTest extends Unit
             ['ArrayObject' => $arrayObject]
         );
     }
-    
+
+    /**
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\SyntaxError
+     */
+    public function testShuffle()
+    {
+        // 1 means true (string version of bool)
+        $this->extensionRenderTest(
+            '{% set shuffled = shuffle([2, [[2, 3], 3], 4])%}{{ shuffled != [2, [[2, 3], 3], 4] }}',
+            '1'
+        );
+
+        $arrayObject = new ArrayObject(['John', 'Smith', '22', '512']);
+
+        $this->extensionRenderTest(
+            '{% set shuffled = shuffle(arrayObject)%}{{ shuffled != ["John", "Smith", "22", "512"] }}',
+            '1',
+            ['arrayObject' => $arrayObject]
+        );
+    }
+
     // Protected Methods
     // =========================================================================
 
