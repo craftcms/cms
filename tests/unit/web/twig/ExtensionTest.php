@@ -53,6 +53,10 @@ class ExtensionTest extends Unit
     // Tests
     // =========================================================================
 
+    /**
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\SyntaxError
+     */
     public function testGlobals()
     {
         // We want web for this part.
@@ -79,6 +83,11 @@ class ExtensionTest extends Unit
         );
     }
 
+    /**
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\SyntaxError
+     * @throws \yii\base\Exception
+     */
     public function testCraftSystemGlobals()
     {
         Craft::$app->setEdition(Craft::Pro);
@@ -89,6 +98,10 @@ class ExtensionTest extends Unit
         );
     }
 
+    /**
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\SyntaxError
+     */
     public function testGlobalsWithUninstalledCraft()
     {
         Craft::$app->setIsInstalled(false);
@@ -99,6 +112,14 @@ class ExtensionTest extends Unit
 
     }
 
+    /**
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\SyntaxError
+     * @throws \yii\base\ErrorException
+     * @throws \yii\base\Exception
+     * @throws \yii\base\NotSupportedException
+     * @throws \yii\web\ServerErrorHttpException
+     */
     public function testSiteGlobals()
     {
         Craft::$app->getProjectConfig()->set('system.name', 'Im a test system');
@@ -108,6 +129,11 @@ class ExtensionTest extends Unit
         );
     }
 
+    /**
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\SyntaxError
+     * @throws \yii\base\Exception
+     */
     public function testElementGlobals()
     {
         Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
@@ -118,6 +144,10 @@ class ExtensionTest extends Unit
         );
     }
 
+    /**
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\SyntaxError
+     */
     public function testCsrfInput()
     {
         Craft::$app->getConfig()->getGeneral()->enableCsrfProtection = false;
@@ -137,6 +167,12 @@ class ExtensionTest extends Unit
         );
     }
 
+    /**
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\SyntaxError
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
+     */
     public function testRedirectInput()
     {
         $this->extensionRenderTest(
@@ -150,6 +186,10 @@ class ExtensionTest extends Unit
         );
     }
 
+    /**
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\SyntaxError
+     */
     public function testActionInput()
     {
         $this->extensionRenderTest(
@@ -163,6 +203,10 @@ class ExtensionTest extends Unit
         );
     }
 
+    /**
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\SyntaxError
+     */
     public function testRenderObjectTemplate()
     {
         // This is some next level inception stuff IMO.....
@@ -180,6 +224,10 @@ class ExtensionTest extends Unit
         );
     }
 
+    /**
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\SyntaxError
+     */
     public function testGetEnv()
     {
         $this->extensionRenderTest(
@@ -188,6 +236,10 @@ class ExtensionTest extends Unit
         );
     }
 
+    /**
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\SyntaxError
+     */
     public function testEnvParsing()
     {
         $this->extensionRenderTest(
@@ -201,6 +253,10 @@ class ExtensionTest extends Unit
         );
     }
 
+    /**
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\SyntaxError
+     */
     public function testIndexOf()
     {
         $arrayObject = new ArrayObject(['John', 'Smith']);
@@ -221,8 +277,7 @@ class ExtensionTest extends Unit
             ['ArrayObject' => $arrayObject]
         );
     }
-
-
+    
     // Protected Methods
     // =========================================================================
 
