@@ -14,6 +14,7 @@
 ### Fixed
 - Fixed a SQL error that occurred when creating new entries on multi-site installs. ([#4363](https://github.com/craftcms/cms/issues/4363))
 - Fixed an error that occurred when a user attempted to edit an entry if they didn’t have the “Publish live changes” permission for the section. ([#4368](https://github.com/craftcms/cms/issues/4368))
+- Fixed a bug where entries weren’t getting generated slug values if their entry type had a custom title format. ([#4373](https://github.com/craftcms/cms/issues/4373))
 - Fixed test reliability issues.
 
 ## 3.2.0-beta.1 - 2019-06-04
