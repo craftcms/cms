@@ -299,12 +299,11 @@ class UsersTest extends TestCase
         $dateTime = new DateTime('now', new DateTimeZone('UTC'));
 
         // First. Set the correct conditions
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::USERS, [
-                // The past.
-                'invalidLoginWindowStart' => Db::prepareDateForDb(new DateTime()),
-                'invalidLoginCount' => '1',
-            ], ['id' => $this->activeUser->id])->execute();
+        $this->updateUser([
+            // The past.
+            'invalidLoginWindowStart' => Db::prepareDateForDb(new DateTime()),
+            'invalidLoginCount' => '1',
+        ], ['id' => $this->activeUser->id]);
 
         // 3 max - that's important for a little bit later. Also a 2 day invalidLoginWindowDuration
         Craft::$app->getConfig()->getGeneral()->maxInvalidLogins = 3;
@@ -320,7 +319,7 @@ class UsersTest extends TestCase
 
         // Wrap this in an event check - because the EVENT_AFTER_LOCK_USER only get's thrown under specific circumstances.
         $this->tester->expectEvent(Users::class, Users::EVENT_AFTER_LOCK_USER, function() use ($dateTime) {
-            // The user should now be locked out. 
+            // The user should now be locked out.
             $this->users->handleInvalidLogin($this->activeUser);
             $user = $this->getUserQuery($this->activeUser->id);
             $this->assertTrue((bool)$user['locked']);
@@ -340,8 +339,64 @@ class UsersTest extends TestCase
         ]));
     }
 
+    public function testHandleValidLogin()
+    {
+        $dateTime = new DateTime('now', new DateTimeZone('UTC'));
+
+        $this->users->handleValidLogin($this->activeUser);
+
+        $user = $this->getUserQuery($this->activeUser->id);
+
+        $this->tester->assertEqualDates($this, $dateTime->format('Y-m-d H:i:s'), $user['lastLoginDate']);
+        $this->assertNull($user['lastLoginAttemptIp']);
+    }
+
+    public function testHandleValidLoginIpCollection()
+    {
+        $this->tester->mockCraftMethods('request', [
+            'getUserIP' => '127.0.0.1'
+        ]);
+
+        Craft::$app->getConfig()->getGeneral()->storeUserIps = true;
+
+        $this->users->handleValidLogin($this->activeUser);
+
+        $user = $this->getUserQuery($this->activeUser->id);
+
+        $this->assertSame('127.0.0.1', $user['lastLoginAttemptIp']);
+    }
+
+    public function testHandleValidLoginClearsValues()
+    {
+        $this->updateUser([
+            'invalidLoginWindowStart' => '2019-06-06 20:00:00',
+            'invalidLoginCount' => '5',
+        ], ['id' => $this->activeUser->id]);
+
+        $this->users->handleValidLogin($this->activeUser);
+
+        // These variables are now overriden to null.
+        $user = $this->getUserQuery($this->activeUser->id);
+        $this->assertNull($user['invalidLoginWindowStart']);
+        $this->assertNull($user['invalidLoginCount']);
+    }
+
     // Protected Methods
     // =========================================================================
+
+    /**
+     * @param array $collumns
+     * @param array $conditions
+     * @return int
+     * @throws \yii\db\Exception
+     */
+    protected function updateUser(array $collumns, array $conditions) : int
+    {
+        // First. Set the correct conditions
+        return Craft::$app->getDb()->createCommand()
+            ->update(Table::USERS, $collumns, $conditions)
+            ->execute();
+    }
 
     /**
      * @param int $userId
