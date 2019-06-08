@@ -392,10 +392,10 @@ class Craft extends Yii2
      * @param string $dateTwo
      * @param int $secondsDelta
      */
-    public function assertEqualDates(TestInterface $test, string $dateOne, string $dateTwo, string $format = 'Y-m-d H:i:s', int $secondsDelta = 5)
+    public function assertEqualDates(TestInterface $test, string $dateOne, string $dateTwo, int $secondsDelta = 5)
     {
-        $dateOne = DateTime::createFromFormat($format, $dateOne);
-        $dateTwo = DateTime::createFromFormat($format, $dateTwo);
+        $dateOne = new DateTime($dateOne);
+        $dateTwo = new DateTime($dateTwo);
 
         if (method_exists($test, 'assertEqualsWithDelta')) {
             $test->assertEqualsWithDelta($dateOne->format('U'), $dateTwo->format('U'), $secondsDelta);
