@@ -29,7 +29,7 @@
             <div class="menu">
                 <ul>
                     {% if canUpdateSource %}
-                        {% set duplicateRedirect = "entries/#{section.handle}/{id}-{slug}" %}
+                        {% set duplicateRedirect = "entries/#{section.handle}/{id}-{slug}#" %}
                         <li>
                             <a class="formsubmit" data-action="entries/save-entry" data-param="duplicate" data-value="1"
                                data-redirect="{{ duplicateRedirect|hash }}">
