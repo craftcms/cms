@@ -136,24 +136,6 @@ class UserElementTest extends TestCase
 
         $this->users = Craft::$app->getUsers();
 
-        $this->saveElement($this->activeUser);
-    }
-
-    /**
-     * @param Element $element
-     * @return bool
-     * @throws Exception
-     * @throws \Throwable
-     * @throws \craft\errors\ElementNotFoundException
-     */
-    protected function saveElement(Element $element)
-    {
-        if (!Craft::$app->getElements()->saveElement($element)) {
-            throw new InvalidArgumentException(
-                implode(', ', $element->getErrorSummary(true))
-            );
-        }
-
-        return true;
+        $this->tester->saveElement($this->activeUser);
     }
 }
