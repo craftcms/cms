@@ -120,7 +120,7 @@ class UsersTest extends TestCase
     {
         // Set useEmailAsUsername to true and add an unverified email.
         Craft::$app->getConfig()->getGeneral()->useEmailAsUsername = true;
-        $this->saveElement($this->pendingUser);
+        $this->tester->saveElement($this->pendingUser);
 
         $this->users->activateUser($this->pendingUser);
 
@@ -471,7 +471,6 @@ class UsersTest extends TestCase
         );
     }
 
-
     // Protected Methods
     // =========================================================================
 
@@ -570,27 +569,9 @@ class UsersTest extends TestCase
             ]
         );
 
-        $this->saveElement($this->pendingUser);
-        $this->saveElement($this->suspendedUser);
-        $this->saveElement($this->lockedUser);
-        $this->saveElement($this->activeUser);
-    }
-
-    /**
-     * @param Element $element
-     * @return bool
-     * @throws Throwable
-     * @throws ElementNotFoundException
-     * @throws Exception
-     */
-    protected function saveElement(Element $element)
-    {
-        if (!Craft::$app->getElements()->saveElement($element)) {
-            throw new InvalidArgumentException(
-                implode(', ', $element->getErrorSummary(true))
-            );
-        }
-
-        return true;
+        $this->tester->saveElement($this->pendingUser);
+        $this->tester->saveElement($this->suspendedUser);
+        $this->tester->saveElement($this->lockedUser);
+        $this->tester->saveElement($this->activeUser);
     }
 }
