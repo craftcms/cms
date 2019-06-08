@@ -12,11 +12,13 @@ use Codeception\Module\Yii2;
 use Codeception\PHPUnit\TestCase;
 use Codeception\Stub;
 use Codeception\TestInterface;
+use craft\base\Element;
 use craft\base\Field;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
+use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -35,6 +37,7 @@ use yii\base\InvalidConfigException;
 use yii\base\Module;
 use yii\db\Exception;
 use DateTime;
+use yii\base\Exception as YiiBaseException;
 
 /**
  * Craft module for codeception
@@ -342,6 +345,29 @@ class Craft extends Yii2
         $callback();
 
         $this->assertTrue($eventTriggered, 'Asserting that an event is triggered.');
+    }
+
+    /**
+     * @param Element $element
+     * @param bool $failHard
+     * @return bool|Element
+     * @throws ElementNotFoundException
+     * @throws Throwable
+     * @throws YiiBaseException
+     */
+    protected function saveElement(Element $element, bool $failHard = true)
+    {
+        if (!\Craft::$app->getElements()->saveElement($element)) {
+            if ($failHard) {
+                throw new InvalidArgumentException(
+                    implode(', ', $element->getErrorSummary(true))
+                );
+            } else {
+                return $element;
+            }
+        }
+
+        return true;
     }
 
     /**

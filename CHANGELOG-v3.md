@@ -8,6 +8,7 @@
 - Added `craft\test\Craft::assertElementsExist()`.
 - Added `craft\test\Craft::assertTestFails()`.
 - Added `craft\test\Craft::assertEqualDates()`.
+- Added `craft\test\Craft::saveElement()`.
 
 ### Changed
 - Craft now deletes expired template caches as part of its garbage collection routine.
