@@ -12,8 +12,10 @@ use craft\base\Element;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\events\UserEvent;
 use craft\helpers\Db;
 use craft\services\Users;
+use craft\test\EventItem;
 use craft\test\TestCase;
 use crafttests\fixtures\UserGroupsFixture;
 use UnitTester;
@@ -161,7 +163,7 @@ class UsersTest extends TestCase
     public function testSetVerificaitonCodeOnUser()
     {
         $verificationCode = $this->users->setVerificationCodeOnUser($this->pendingUser);
-        $dateTime = new DateTime(null, new DateTimeZone('UTC'));
+        $dateTime = new DateTime('now', new DateTimeZone('UTC'));
 
         $user = (new Query())
             ->select('*')
@@ -238,8 +240,8 @@ class UsersTest extends TestCase
         $user = $this->getUserQuery($this->activeUser->id);
 
         $this->assertSame('1', (string)$user['invalidLoginCount']);
-        $this->assertEqualsWithDelta($user['invalidLoginWindowStart'], $dateTime->format('Y-m-d H:i:s'), 1.5);
-        $this->assertSame($user['lastInvalidLoginDate'], $dateTime->format('Y-m-d H:i:s'), 1.5);
+        $this->tester->assertEqualDates($this, $user['invalidLoginWindowStart'], $dateTime->format('Y-m-d H:i:s'));
+        $this->tester->assertEqualDates($this, $user['lastInvalidLoginDate'], $dateTime->format('Y-m-d H:i:s'));
     }
 
     public function testHandleInvalidLoginUserIpStore()
@@ -275,21 +277,68 @@ class UsersTest extends TestCase
 
     public function testHandleInvalidLoginWithMaxOutsideWindow()
     {
-        $dateTime = new DateTime(null, new DateTimeZone('UTC'));
+        $dateTime = new DateTime('now', new DateTimeZone('UTC'));
 
         Craft::$app->getDb()->createCommand()
             ->update(Table::USERS, ['invalidLoginWindowStart' => null], ['id' => $this->activeUser->id])->execute();
 
-        Craft::$app->getConfig()->getGeneral()->maxInvalidLogins = 5;
+        Craft::$app->getConfig()->getGeneral()->maxInvalidLogins = 1;
         $this->users->handleInvalidLogin($this->activeUser);
 
         $user = $this->getUserQuery($this->activeUser->id);
 
-        $this->tester->assertEqualDates($this, $dateTime->format('Y-m-d H:i:s'), (string)$user['invalidLoginCount']);
+        $this->tester->assertEqualDates($this, $dateTime->format('Y-m-d H:i:s'), $user['invalidLoginWindowStart']);
         $this->assertSame('1', (string)$user['invalidLoginCount']);
-        $this->assertSame($dateTime->format('Y-m-d H:i:s'), (string)$user['invalidLoginCount']);
+        $this->assertFalse((bool)$user['locked']);
+        $this->assertNull($user['lockoutDate']);
+        $this->assertNull($user['lockoutDate']);
     }
 
+    public function testHandleInvalidLoginInsideWindow()
+    {
+        $dateTime = new DateTime('now', new DateTimeZone('UTC'));
+
+        // First. Set the correct conditions
+        Craft::$app->getDb()->createCommand()
+            ->update(Table::USERS, [
+                // The past.
+                'invalidLoginWindowStart' => Db::prepareDateForDb(new DateTime()),
+                'invalidLoginCount' => '1',
+            ], ['id' => $this->activeUser->id])->execute();
+
+        // 3 max - that's important for a little bit later. Also a 2 day invalidLoginWindowDuration
+        Craft::$app->getConfig()->getGeneral()->maxInvalidLogins = 3;
+        Craft::$app->getConfig()->getGeneral()->invalidLoginWindowDuration = 172800;
+
+        // 1 st invalid login.
+        $this->users->handleInvalidLogin($this->activeUser);
+
+        // This should just increment the invalidLoginCount
+        $user = $this->getUserQuery($this->activeUser->id);
+        $this->assertSame('2', $user['invalidLoginCount']);
+        $this->assertFalse((bool)$user['locked']);
+
+        // Wrap this in an event check - because the EVENT_AFTER_LOCK_USER only get's thrown under specific circumstances.
+        $this->tester->expectEvent(Users::class, Users::EVENT_AFTER_LOCK_USER, function() use ($dateTime) {
+            // The user should now be locked out. 
+            $this->users->handleInvalidLogin($this->activeUser);
+            $user = $this->getUserQuery($this->activeUser->id);
+            $this->assertTrue((bool)$user['locked']);
+            $this->assertNull($user['invalidLoginCount']);
+            $this->assertNull($user['invalidLoginWindowStart']);
+            $this->tester->assertEqualDates($this, $dateTime->format('Y-m-d H:i:s'), $user['lockoutDate'], 10);
+        }, UserEvent::class, $this->tester->createEventItems([
+            [
+                'type' => EventItem::TYPE_CLASS,
+                'eventPropName' => 'user',
+                'desiredClass' => User::class,
+                'desiredValue' => [
+                    'id' => $this->activeUser->id,
+                    'locked' => true
+                ]
+            ]
+        ]));
+    }
 
     // Protected Methods
     // =========================================================================
