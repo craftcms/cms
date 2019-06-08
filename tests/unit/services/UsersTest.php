@@ -445,8 +445,42 @@ class UsersTest extends TestCase
         $this->assertNull($user['invalidLoginCount']);
     }
 
+    public function testIsVerificationCodeValidForUser()
+    {
+        // Ensure password validation is irrelevant
+        $this->ensurePasswordValidationReturns(true);
+        Craft::$app->getConfig()->getGeneral()->verificationCodeDuration = 172800;
+
+        $this->updateUser([
+            // The past.
+            'verificationCodeIssuedDate' => '2018-06-06 20:00:00',
+        ], ['id' => $this->activeUser->id]);
+
+        $this->assertFalse(
+            $this->users->isVerificationCodeValidForUser($this->activeUser, 'irrelevant_code')
+        );
+
+        // Now the code should be present - within 2 day window
+        $this->updateUser([
+            // The present.
+            'verificationCodeIssuedDate' => Db::prepareDateForDb(new DateTime('now')),
+        ], ['id' => $this->activeUser->id]);
+
+        $this->assertTrue(
+            $this->users->isVerificationCodeValidForUser($this->activeUser, 'irrelevant_code')
+        );
+    }
+
+
     // Protected Methods
     // =========================================================================
+
+    protected function ensurePasswordValidationReturns(bool $result)
+    {
+        $this->tester->mockCraftMethods('security', [
+            'validatePassword' => $result
+        ]);
+    }
 
     /**
      * @param array $collumns
