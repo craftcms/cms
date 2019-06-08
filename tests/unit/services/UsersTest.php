@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\errors\ElementNotFoundException;
 use craft\events\UserEvent;
 use craft\helpers\Db;
 use craft\services\Users;
@@ -19,9 +20,13 @@ use craft\test\EventItem;
 use craft\test\TestCase;
 use crafttests\fixtures\UserGroupsFixture;
 use UnitTester;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use DateTime;
 use DateTimeZone;
+use Throwable;
+use ReflectionException;
+use yii\db\Exception as YiiDbException;
 
 /**
  * Unit tests for the Users service
@@ -80,6 +85,9 @@ class UsersTest extends TestCase
     // Tests
     // =========================================================================
 
+    /**
+     *
+     */
     public function testUserCreation()
     {
         $this->assertSame(User::STATUS_ACTIVE, $this->lockedUser->getStatus());
@@ -90,6 +98,9 @@ class UsersTest extends TestCase
         $this->assertTrue($this->suspendedUser->suspended);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testUserActivation()
     {
         $this->users->activateUser($this->pendingUser);
@@ -100,6 +111,11 @@ class UsersTest extends TestCase
         $this->assertSame('jsmith', $user->username);
     }
 
+    /**
+     * @throws Throwable
+     * @throws ElementNotFoundException
+     * @throws Exception
+     */
     public function testUserActivationEmailAsUsernameWithAnUnverifedEmail()
     {
         // Set useEmailAsUsername to true and add an unverified email.
@@ -114,6 +130,9 @@ class UsersTest extends TestCase
         $this->assertSame('jsmith@gmail.com', $user->username);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testUserActivationEmailAsUsernameWithNoUnverifedEmail()
     {
         // Run the same test as above but without an unverified email.
@@ -130,6 +149,9 @@ class UsersTest extends TestCase
         $this->assertSame('jsmith', $user->username);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testUserUnlocking()
     {
         $this->users->unlockUser($this->lockedUser);
@@ -140,6 +162,9 @@ class UsersTest extends TestCase
         $this->assertSame(User::STATUS_ACTIVE, $this->lockedUser->getStatus());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testUserSuspending()
     {
         $this->users->suspendUser($this->activeUser);
@@ -148,6 +173,9 @@ class UsersTest extends TestCase
         $this->assertSame(User::STATUS_SUSPENDED, $this->activeUser->getStatus());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testUserUnSuspending()
     {
         $this->users->unsuspendUser($this->suspendedUser);
@@ -158,7 +186,7 @@ class UsersTest extends TestCase
 
     /**
      * @todo Monitor this one doesn't break on travis
-     * @throws \Exception
+     * @throws Exception
      */
     public function testSetVerificaitonCodeOnUser()
     {
@@ -180,6 +208,9 @@ class UsersTest extends TestCase
         );
     }
 
+    /**
+     *
+     */
     public function testUserGroupAssignment()
     {
         // Need fancy Craft for this.
@@ -194,6 +225,9 @@ class UsersTest extends TestCase
         $this->assertCount(3, $groups);
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function testUserGroupAssignmentInvalidation()
     {
         // Need fancy Craft for this.
@@ -220,6 +254,12 @@ class UsersTest extends TestCase
         $this->assertCount(2, $groups);
     }
 
+    /**
+     * @throws \yii\base\ErrorException
+     * @throws \yii\base\Exception
+     * @throws \yii\base\NotSupportedException
+     * @throws \yii\web\ServerErrorHttpException
+     */
     public function testUserAssignmentToDefaultGroup()
     {
         Craft::$app->setEdition(Craft::Pro);
@@ -232,6 +272,9 @@ class UsersTest extends TestCase
         $this->assertSame('Group 3', $groups[0]->name);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testHandleInvalidLogin()
     {
         $this->users->handleInvalidLogin($this->activeUser);
@@ -244,6 +287,9 @@ class UsersTest extends TestCase
         $this->tester->assertEqualDates($this, $user['lastInvalidLoginDate'], $dateTime->format('Y-m-d H:i:s'));
     }
 
+    /**
+     *
+     */
     public function testHandleInvalidLoginUserIpStore()
     {
         Craft::$app->getConfig()->getGeneral()->storeUserIps = true;
@@ -257,6 +303,9 @@ class UsersTest extends TestCase
         $this->assertSame('127.0.0.1', $user['lastLoginAttemptIp']);
     }
 
+    /**
+     *
+     */
     public function testHandleInvalidLoginWithoutLimit()
     {
         Craft::$app->getConfig()->getGeneral()->maxInvalidLogins = false;
@@ -275,6 +324,9 @@ class UsersTest extends TestCase
         $this->assertNull($user['lockoutDate']);
     }
 
+    /**
+     * @throws \yii\db\Exception
+     */
     public function testHandleInvalidLoginWithMaxOutsideWindow()
     {
         $dateTime = new DateTime('now', new DateTimeZone('UTC'));
@@ -294,6 +346,9 @@ class UsersTest extends TestCase
         $this->assertNull($user['lockoutDate']);
     }
 
+    /**
+     * @throws \yii\db\Exception
+     */
     public function testHandleInvalidLoginInsideWindow()
     {
         $dateTime = new DateTime('now', new DateTimeZone('UTC'));
@@ -339,6 +394,9 @@ class UsersTest extends TestCase
         ]));
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testHandleValidLogin()
     {
         $dateTime = new DateTime('now', new DateTimeZone('UTC'));
@@ -351,6 +409,9 @@ class UsersTest extends TestCase
         $this->assertNull($user['lastLoginAttemptIp']);
     }
 
+    /**
+     *
+     */
     public function testHandleValidLoginIpCollection()
     {
         $this->tester->mockCraftMethods('request', [
@@ -366,6 +427,9 @@ class UsersTest extends TestCase
         $this->assertSame('127.0.0.1', $user['lastLoginAttemptIp']);
     }
 
+    /**
+     * @throws YiiDbException
+     */
     public function testHandleValidLoginClearsValues()
     {
         $this->updateUser([
@@ -388,7 +452,7 @@ class UsersTest extends TestCase
      * @param array $collumns
      * @param array $conditions
      * @return int
-     * @throws \yii\db\Exception
+     * @throws YiiDbException
      */
     protected function updateUser(array $collumns, array $conditions) : int
     {
@@ -481,9 +545,9 @@ class UsersTest extends TestCase
     /**
      * @param Element $element
      * @return bool
-     * @throws \Throwable
-     * @throws \craft\errors\ElementNotFoundException
-     * @throws \yii\base\Exception
+     * @throws Throwable
+     * @throws ElementNotFoundException
+     * @throws Exception
      */
     protected function saveElement(Element $element)
     {
