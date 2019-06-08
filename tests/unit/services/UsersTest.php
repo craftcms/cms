@@ -12,9 +12,11 @@ use Craft;
 use craft\base\Element;
 use craft\db\Table;
 use craft\elements\User;
+use craft\helpers\Db;
 use craft\services\Users;
 use UnitTester;
 use yii\base\InvalidArgumentException;
+use DateTime;
 
 /**
  * Unit tests for the Users service
@@ -43,11 +45,29 @@ class UsersTest extends Unit
      */
     protected $pendingUser;
 
+    /**
+     * @var User
+     */
+    protected $lockedUser;
+
+    /**
+     * @var User
+     */
+    protected $activeUser;
+
     // Public Methods
     // =========================================================================
 
     // Tests
     // =========================================================================
+
+    public function testUserCreation()
+    {
+        $this->assertSame(User::STATUS_ACTIVE, $this->lockedUser->getStatus());
+        $this->assertTrue($this->lockedUser->locked);
+        $this->assertSame(User::STATUS_PENDING, $this->pendingUser->getStatus());
+        $this->assertSame(User::STATUS_ACTIVE, $this->activeUser->getStatus());
+    }
 
     public function testUserActivation()
     {
@@ -89,6 +109,29 @@ class UsersTest extends Unit
         $this->assertSame('jsmith', $user->username);
     }
 
+    public function testUserUnlocking()
+    {
+        $this->users->unlockUser($this->lockedUser);
+
+        $this->assertFalse($this->lockedUser->locked);
+        $this->assertNull($this->lockedUser->lockoutDate);
+        $this->assertNull($this->lockedUser->invalidLoginCount);
+        $this->assertSame(User::STATUS_ACTIVE, $this->lockedUser->getStatus());
+    }
+
+    public function testUserSuspending()
+    {
+        $this->users->suspendUser($this->activeUser);
+
+        $this->assertTrue($this->activeUser->suspended);
+        $this->assertSame(User::STATUS_SUSPENDED, $this->activeUser->getStatus());
+    }
+
+    public function testUserUnSuspending()
+    {
+
+    }
+    
     // Protected Methods
     // =========================================================================
 
@@ -106,7 +149,7 @@ class UsersTest extends Unit
     }
 
     /**
-     * @todo Use fixtures?
+     * @todo These classes are 'Dependancy Injected` -ish so i'll swap them out with fixtures later.
      * @inheritdoc
      */
     protected function _before()
@@ -126,7 +169,31 @@ class UsersTest extends Unit
             ]
         );
 
+        $this->lockedUser = new User(
+            [
+                'firstName' => 'locked',
+                'lastName' => 'user',
+                'username' => 'lockedUser',
+                'email' => 'locked@user.com',
+                'locked' => true,
+                'invalidLoginCount' => 2,
+                'lockoutDate' => Db::prepareDateForDb(new DateTime('now'))
+            ]
+        );
+
+        $this->activeUser = new User(
+            [
+                'firstName' => 'active',
+                'lastName' => 'user',
+                'username' => 'activeUser',
+                'email' => 'active@user.com',
+            ]
+        );
+
+
         $this->saveElement($this->pendingUser);
+        $this->saveElement($this->lockedUser);
+        $this->saveElement($this->activeUser);
     }
 
     /**
