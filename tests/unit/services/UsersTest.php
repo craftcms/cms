@@ -218,10 +218,94 @@ class UsersTest extends TestCase
         $this->assertCount(2, $groups);
     }
 
+    public function testUserAssignmentToDefaultGroup()
+    {
+        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->getProjectConfig()->set('users.defaultGroup', '9bea2a4a-52c9-42xe-b30b-dd844c4343f4');
+
+        $this->users->assignUserToDefaultGroup($this->activeUser);
+
+        $groups = $this->activeUser->getGroups();
+        $this->assertCount(1, $groups);
+        $this->assertSame('Group 3', $groups[0]->name);
+    }
+
+    public function testHandleInvalidLogin()
+    {
+        $this->users->handleInvalidLogin($this->activeUser);
+        $dateTime = new DateTime('now', new DateTimeZone('UTC'));
+
+        $user = $this->getUserQuery($this->activeUser->id);
+
+        $this->assertSame('1', (string)$user['invalidLoginCount']);
+        $this->assertEqualsWithDelta($user['invalidLoginWindowStart'], $dateTime->format('Y-m-d H:i:s'), 1.5);
+        $this->assertSame($user['lastInvalidLoginDate'], $dateTime->format('Y-m-d H:i:s'), 1.5);
+    }
+
+    public function testHandleInvalidLoginUserIpStore()
+    {
+        Craft::$app->getConfig()->getGeneral()->storeUserIps = true;
+        $this->tester->mockCraftMethods('request', [
+            'getUserIP' => '127.0.0.1'
+        ]);
+
+        $this->users->handleInvalidLogin($this->activeUser);
+
+        $user = $this->getUserQuery($this->activeUser->id);
+        $this->assertSame('127.0.0.1', $user['lastLoginAttemptIp']);
+    }
+
+    public function testHandleInvalidLoginWithoutLimit()
+    {
+        Craft::$app->getConfig()->getGeneral()->maxInvalidLogins = false;
+        Craft::$app->getConfig()->getGeneral()->storeUserIps = true;
+        $this->tester->mockCraftMethods('request', [
+            'getUserIP' => '127.0.0.1'
+        ]);
+
+        $this->users->handleInvalidLogin($this->activeUser);
+
+        $user = $this->getUserQuery($this->activeUser->id);
+        $this->assertSame('127.0.0.1', $user['lastLoginAttemptIp']);
+        $this->assertNull($user['invalidLoginWindowStart']);
+        $this->assertNull($user['invalidLoginCount']);
+        $this->assertNotNull($user['lastInvalidLoginDate']);
+        $this->assertNull($user['lockoutDate']);
+    }
+
+    public function testHandleInvalidLoginWithMaxOutsideWindow()
+    {
+        $dateTime = new DateTime(null, new DateTimeZone('UTC'));
+
+        Craft::$app->getDb()->createCommand()
+            ->update(Table::USERS, ['invalidLoginWindowStart' => null], ['id' => $this->activeUser->id])->execute();
+
+        Craft::$app->getConfig()->getGeneral()->maxInvalidLogins = 5;
+        $this->users->handleInvalidLogin($this->activeUser);
+
+        $user = $this->getUserQuery($this->activeUser->id);
+
+        $this->tester->assertEqualDates($this, $dateTime->format('Y-m-d H:i:s'), (string)$user['invalidLoginCount']);
+        $this->assertSame('1', (string)$user['invalidLoginCount']);
+        $this->assertSame($dateTime->format('Y-m-d H:i:s'), (string)$user['invalidLoginCount']);
+    }
 
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * @param int $userId
+     * @return array|bool
+     */
+    protected function getUserQuery(int $userId)
+    {
+        return (new Query())
+            ->select('*')
+            ->from(Table::USERS)
+            ->where(['id' => $userId])
+            ->one();
+    }
 
     /**
      * @param int|null $userId
