@@ -18,13 +18,11 @@ use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidPluginException;
-use craft\events\DeleteElementEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
-use craft\services\Elements;
 use PHPUnit\Framework\ExpectationFailedException;
 use ReflectionException;
 use Symfony\Component\Yaml\Yaml;
@@ -36,6 +34,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
 use yii\db\Exception;
+use DateTime;
 
 /**
  * Craft module for codeception
@@ -384,6 +383,22 @@ class Craft extends Yii2
 
         if ($failed === false) {
             $this->fail('Test was supposed to fail but didnt.');
+        }
+    }
+
+    /**
+     * @param TestCase $test
+     * @param string $dateOne
+     * @param string $dateTwo
+     * @param int $secondsDelta
+     */
+    public function assertEqualDates(TestInterface $test, string $dateOne, string $dateTwo, string $format = 'Y-m-d H:i:s', int $secondsDelta = 5)
+    {
+        $dateOne = DateTime::createFromFormat($format, $dateOne);
+        $dateTwo = DateTime::createFromFormat($format, $dateTwo);
+
+        if (method_exists($test, 'assertEqualsWithDelta')) {
+            $test->assertEqualsWithDelta($dateOne->format('U'), $dateTwo->format('U'), $secondsDelta);
         }
     }
 
