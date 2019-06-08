@@ -7,6 +7,7 @@
 - Added `craft\console\Request::getToken()`.
 - Added `craft\test\Craft::assertElementsExist()`.
 - Added `craft\test\Craft::assertTestFails()`.
+- Added `craft\test\Craft::assertEqualDates()`.
 
 ### Changed
 - Craft now deletes expired template caches as part of its garbage collection routine.
