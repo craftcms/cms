@@ -92,6 +92,11 @@ class Connection extends \yii\db\Connection
 
     /**
      * @var string[]
+     * @see quoteTableName()
+     */
+    private $_quotedTableNames;
+    /**
+     * @var string[]
      * @see quoteColumnName()
      */
     private $_quotedColumnNames;
@@ -339,6 +344,17 @@ class Connection extends \yii\db\Connection
     public function quoteDatabaseName(string $name): string
     {
         return $this->getSchema()->quoteTableName($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function quoteTableName($name)
+    {
+        if (isset($this->_quotedTableNames[$name])) {
+            return $this->_quotedTableNames[$name];
+        }
+        return $this->_quotedTableNames[$name] = parent::quoteTableName($name);
     }
 
     /**
