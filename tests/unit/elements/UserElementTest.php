@@ -9,6 +9,7 @@ namespace crafttests\unit\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\db\Table;
 use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\ArrayHelper;
@@ -115,6 +116,62 @@ class UserElementTest extends TestCase
         });
     }
 
+    public function testValidateAuthKey()
+    {
+        $validUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36';
+        Craft::$app->getDb()->createCommand()
+            ->insert(Table::SESSIONS, [
+                'userId' => $this->activeUser->id,
+                'token' => 'EXAMPLE_TOKEN'
+            ])->execute();
+
+        $this->assertFalse($this->activeUser->validateAuthKey('NOT_JSON'));
+        $this->assertFalse($this->activeUser->validateAuthKey('["JSON_ONE_ITEM"]'));
+        $this->assertFalse(
+            $this->activeUser->validateAuthKey(
+                '["EXAMPLE_TOKEN",null,"NOT_A_USER_AGENT"]'
+            )
+        );
+        $this->assertFalse(
+            $this->activeUser->validateAuthKey(
+                '["NOT_A_VALID_TOKEN",null,"'.$validUserAgent.'"]'
+            )
+        );
+
+        Craft::$app->getConfig()->getGeneral()->requireMatchingUserAgentForSession = true;
+
+        // Valid token, user agent, and json string
+        $this->tester->mockCraftMethods('request', [
+            'getUserAgent' => $validUserAgent
+        ]);
+        $this->assertTrue(
+            $this->activeUser->validateAuthKey(
+                '["EXAMPLE_TOKEN",null,"'.$validUserAgent.'"]'
+            )
+        );
+    }
+
+    public function testValidateAuthKeyWithConfigDisabled()
+    {
+        $validUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36';
+
+        Craft::$app->getConfig()->getGeneral()->requireMatchingUserAgentForSession = false;
+        $this->tester->mockCraftMethods('request', [
+            'getUserAgent' => $validUserAgent
+        ]);
+
+        Craft::$app->getDb()->createCommand()
+            ->insert(Table::SESSIONS, [
+                'userId' => $this->activeUser->id,
+                'token' => 'EXAMPLE_TOKEN'
+            ])->execute();
+
+        $this->assertTrue(
+            $this->activeUser->validateAuthKey(
+                '["EXAMPLE_TOKEN",null,"INVALID_USER_AGENT"]'
+            )
+        );
+    }
     // Protected Methods
     // =========================================================================
 
