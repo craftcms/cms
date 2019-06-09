@@ -52,6 +52,9 @@ class UserElementTest extends TestCase
     // Tests Methods
     // =========================================================================
 
+    /**
+     *
+     */
     public function testValidateUnverifiedEmail()
     {
         $validator = new InlineValidator();
@@ -76,6 +79,9 @@ class UserElementTest extends TestCase
         );
     }
 
+    /**
+     * @throws Exception
+     */
     public function testGetAuthKey()
     {
         $this->tester->mockCraftMethods('session', [
@@ -96,6 +102,9 @@ class UserElementTest extends TestCase
         );
     }
 
+    /**
+     *
+     */
     public function testGetAuthKeyException()
     {
         $this->tester->mockCraftMethods('session', [
@@ -107,6 +116,9 @@ class UserElementTest extends TestCase
         });
     }
 
+    /**
+     * @throws \yii\db\Exception
+     */
     public function testValidateAuthKey()
     {
         $validUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36';
@@ -142,6 +154,9 @@ class UserElementTest extends TestCase
         );
     }
 
+    /**
+     * @throws \yii\db\Exception
+     */
     public function testValidateAuthKeyWithConfigDisabled()
     {
         $validUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36';
@@ -164,6 +179,9 @@ class UserElementTest extends TestCase
         );
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testGetCooldownEndTime()
     {
         $this->activeUser->locked = false;
@@ -188,6 +206,21 @@ class UserElementTest extends TestCase
             $dateTime->format('Y-m-d H:i:s'),
             5
         );
+    }
+
+    public function testGetRemainingCooldownTime()
+    {
+        $this->assertNull($this->activeUser->getRemainingCooldownTime());
+
+        $this->activeUser->locked = true;
+        $this->activeUser->lockoutDate = new DateTime('now', new DateTimeZone('UTC'));
+        Craft::$app->getConfig()->getGeneral()->cooldownDuration = 172800;
+
+        $this->assertInstanceOf(DateInterval::class, $interval = $this->activeUser->getRemainingCooldownTime());
+        $this->assertSame('2', (string)$interval->d);
+
+        $this->activeUser->lockoutDate->sub(new DateInterval('P10D'));
+        $this->assertNull($this->activeUser->getRemainingCooldownTime());
     }
 
     // Protected Methods

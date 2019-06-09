@@ -172,7 +172,7 @@ class CraftCodeceptionModuleTest extends Unit
             $dateTime->format('Y-m-d H:i:s')
         );
 
-        $otherDateTime =  new DateTime('now', new DateTimeZone('UTC'));
+        $otherDateTime = new DateTime('now', new DateTimeZone('UTC'));
         $otherDateTime->add(new DateInterval('P1D'));
 
         $this->tester->assertTestFails(function() use ($dateTime, $otherDateTime) {
