@@ -159,6 +159,9 @@ class CraftCodeceptionModuleTest extends Unit
         $this->tester->assertElementsExist(User::class, $configArray, 2);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testDateTimeCompare()
     {
         $dateTime = new DateTime('now', new DateTimeZone('UTC'));
@@ -190,7 +193,7 @@ class CraftCodeceptionModuleTest extends Unit
             3
         );
 
-        // No delta. No Bueno. 
+        // No delta. No Bueno.
         $this->tester->assertTestFails(function() use ($dateTime, $otherDateTime) {
             $this->tester->assertEqualDates(
                 $this,
