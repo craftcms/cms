@@ -8,25 +8,16 @@
 namespace crafttests\unit\elements;
 
 use Craft;
-use craft\base\Element;
 use craft\db\Table;
 use craft\elements\User;
-use craft\errors\SiteNotFoundException;
-use craft\helpers\ArrayHelper;
-use craft\mail\Message;
-use craft\models\SystemMessage;
 use craft\services\Users;
 use craft\test\TestCase;
-use craft\test\TestMailer;
-use ReflectionException;
 use UnitTester;
-use yii\base\ErrorException;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
-use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
-use yii\web\ServerErrorHttpException;
+use DateTime;
+use DateTimeZone;
+use DateInterval;
 
 /**
  * Unit tests for the User Element
@@ -172,6 +163,33 @@ class UserElementTest extends TestCase
             )
         );
     }
+
+    public function testGetCooldownEndTime()
+    {
+        $this->activeUser->locked = false;
+        $this->assertNull($this->activeUser->getCooldownEndTime());
+
+        $this->activeUser->locked = true;
+        $this->activeUser->lockoutDate = null;
+        $this->assertNull($this->activeUser->getCooldownEndTime());
+
+
+        Craft::$app->getConfig()->getGeneral()->cooldownDuration = 172800;
+        $this->activeUser->locked = true;
+        $this->activeUser->lockoutDate = new DateTime('now', new DateTimeZone('UTC'));
+        $cooldown = $this->activeUser->getCooldownEndTime();
+
+        // Check valid.
+        $dateTime = new DateTime('now', new DateTimeZone('UTC'));
+        $dateTime->add(new DateInterval('P2D'));
+        $this->tester->assertEqualDates(
+            $this,
+            $cooldown->format('Y-m-d H:i:s'),
+            $dateTime->format('Y-m-d H:i:s'),
+            5
+        );
+    }
+
     // Protected Methods
     // =========================================================================
 
