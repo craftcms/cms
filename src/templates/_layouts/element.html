@@ -164,7 +164,7 @@
 
 {% set settings = {
     elementType: className(element),
-    sourceId: element.sourceId,
+    sourceId: element.getSourceId(),
     siteId: element.siteId,
     isLive: not element.draftId and not element.revisionId and element.enabled and element.enabledForSite and element.getRoute(),
     sourceEditUrl: element.cpEditUrl,
