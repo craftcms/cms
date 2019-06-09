@@ -15,6 +15,8 @@ use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\events\UserEvent;
 use craft\helpers\Db;
+use craft\helpers\StringHelper;
+use craft\mail\Message;
 use craft\services\Users;
 use craft\test\EventItem;
 use craft\test\TestCase;
@@ -471,8 +473,62 @@ class UsersTest extends TestCase
         );
     }
 
+    public function testSendActivationEmail()
+    {
+        // Ensure we know what the unhashed code is - so we can compare against it later.
+        $this->tester->mockCraftMethods('security', [
+            'generateRandomString' => $string = StringHelper::randomString(32)
+        ]);
+
+        // Test send activation email with password null
+        $this->pendingUser->password = null;
+        $this->users->sendActivationEmail($this->pendingUser);
+        $this->testUsersEmailFunctions(
+            'account_activation',
+            'actions/users/set-password&code='.$string.''
+        );
+
+        $this->pendingUser->password = 'some_password';
+        $this->users->sendActivationEmail($this->pendingUser);
+        $this->testUsersEmailFunctions(
+            'account_activation',
+            'actions/users/verify-email&code='.$string.''
+        );
+        $this->pendingUser->password = null;
+
+        // Test send Email Verify
+        $this->users->sendNewEmailVerifyEmail($this->pendingUser);
+        $this->testUsersEmailFunctions(
+            'verify_new_email',
+            'actions/users/verify-email&code='.$string.''
+        );
+
+        // Test password reset email
+        $this->users->sendPasswordResetEmail($this->pendingUser);
+        $this->testUsersEmailFunctions(
+            'forgot_password',
+            'actions/users/set-password&code='.$string.''
+        );
+    }
+
+
     // Protected Methods
     // =========================================================================
+
+    /**
+     * @param string $desiredKey
+     * @param string $desiredLinkResult
+     */
+    protected function testUsersEmailFunctions(string $desiredKey, string $desiredLinkResult)
+    {
+        /* @var Message $lastEmail */
+        $lastEmail = $this->tester->grabLastSentEmail();
+        $this->assertSame($desiredKey, $lastEmail->key);
+        $this->assertStringContainsString(
+            $desiredLinkResult,
+            urldecode($lastEmail->variables['link'])
+        );
+    }
 
     protected function ensurePasswordValidationReturns(bool $result)
     {
