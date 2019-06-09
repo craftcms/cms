@@ -8,8 +8,11 @@
 namespace crafttests\unit\elements;
 
 use Craft;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\helpers\StringHelper;
+use craft\records\Session;
 use craft\services\Users;
 use craft\test\TestCase;
 use UnitTester;
@@ -208,6 +211,9 @@ class UserElementTest extends TestCase
         );
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testGetRemainingCooldownTime()
     {
         $this->assertNull($this->activeUser->getRemainingCooldownTime());
@@ -221,6 +227,57 @@ class UserElementTest extends TestCase
 
         $this->activeUser->lockoutDate->sub(new DateInterval('P10D'));
         $this->assertNull($this->activeUser->getRemainingCooldownTime());
+    }
+
+    /**
+     * 
+     */
+    public function testChangePasswordNukesSessions()
+    {
+        Craft::$app->getDb()->createCommand()
+            ->batchInsert(Table::SESSIONS, [
+                'userId',
+                'token'
+            ], [[
+                $this->activeUser->id,
+                StringHelper::randomString(32)
+            ], [
+                $this->activeUser->id,
+                StringHelper::randomString(32)
+            ]]);
+
+        $this->activeUser->newPassword = 'random_password';
+        $this->tester->saveElement($this->activeUser);
+
+        $exists = (new Query())->from(Table::SESSIONS)->where(['userId' => $this->activeUser->id])->exists();
+        $this->assertFalse($exists);
+    }
+
+    /**
+     *
+     */
+    public function testNotAllowedToSwitchStatusValues()
+    {
+        // Change locked
+        $this->activeUser->locked = true;
+        $this->tester->expectThrowable(Exception::class, function() {
+            $this->activeUser->afterSave(false);
+        });
+        $this->activeUser->locked = false;
+
+        // Change suspended
+        $this->activeUser->suspended = true;
+        $this->tester->expectThrowable(Exception::class, function() {
+            $this->activeUser->afterSave(false);
+        });
+        $this->activeUser->suspended = false;
+
+        // Change pending
+        $this->activeUser->pending = true;
+        $this->tester->expectThrowable(Exception::class, function() {
+            $this->activeUser->afterSave(false);
+        });
+        $this->activeUser->pending = false;
     }
 
     // Protected Methods
