@@ -355,7 +355,7 @@ class Craft extends Yii2
      * @throws Throwable
      * @throws YiiBaseException
      */
-    protected function saveElement(Element $element, bool $failHard = true)
+    public function saveElement(Element $element, bool $failHard = true)
     {
         if (!\Craft::$app->getElements()->saveElement($element)) {
             if ($failHard) {
