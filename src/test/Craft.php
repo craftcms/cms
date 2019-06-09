@@ -413,18 +413,19 @@ class Craft extends Yii2
     }
 
     /**
-     * @param TestCase $test
+     * @param TestInterface $test
      * @param string $dateOne
      * @param string $dateTwo
-     * @param int $secondsDelta
+     * @param float $secondsDelta
+     * @throws \Exception
      */
-    public function assertEqualDates(TestInterface $test, string $dateOne, string $dateTwo, int $secondsDelta = 5)
+    public function assertEqualDates(TestInterface $test, string $dateOne, string $dateTwo, float $secondsDelta = 5.0)
     {
         $dateOne = new DateTime($dateOne);
         $dateTwo = new DateTime($dateTwo);
 
         if (method_exists($test, 'assertEqualsWithDelta')) {
-            $test->assertEqualsWithDelta($dateOne->format('U'), $dateTwo->format('U'), $secondsDelta);
+            $test->assertEqualsWithDelta((float)$dateOne->format('U'), (float)$dateTwo->format('U'), $secondsDelta);
         }
     }
 
