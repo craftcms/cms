@@ -162,8 +162,14 @@ class Craft extends Yii2
         }
 
         // Re-apply project config - Fixtures may have done stuff...
-        if ($this->_getConfig('projectConfig')) {
-            \Craft::$app->getProjectConfig()->applyYamlChanges();
+        if ($projectConfig = $this->_getConfig('projectConfig')) {
+            // Tests over. Reset the project config to its original state.
+            TestSetup::setupProjectConfig($projectConfig['file']);
+
+            \Craft::$app->getProjectConfig()->applyConfigChanges(
+                Yaml::parse(file_get_contents($projectConfig['file']))
+            );
+            \Craft::$app->getProjectConfig()->saveModifiedConfigData();
         }
 
         App::maxPowerCaptain();
@@ -173,41 +179,6 @@ class Craft extends Yii2
         );
 
         \Craft::$app->set('db', $db);
-    }
-
-    /**
-     * @param TestInterface $test
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
-    public function _after(TestInterface $test)
-    {
-        if ($this->_getConfig('fullMock') === true) {
-            parent::_after($test);
-
-            return;
-        }
-
-        parent::_after($test);
-
-        ob_start();
-
-        // Create a Craft::$app object
-        TestSetup::warmCraft();
-
-        if ($projectConfig = $this->_getConfig('projectConfig')) {
-            // Tests over. Reset the project config to its original state.
-            TestSetup::setupProjectConfig($projectConfig['file']);
-
-            \Craft::$app->getProjectConfig()->applyConfigChanges(
-                Yaml::parse(file_get_contents($projectConfig['file']))
-            );
-        }
-
-        \Craft::$app->trigger(Application::EVENT_AFTER_REQUEST);
-        // Dont output anything or we get header's already sent exception
-        ob_end_clean();
-        TestSetup::tearDownCraft();
     }
 
     /**
