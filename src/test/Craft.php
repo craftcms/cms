@@ -413,6 +413,7 @@ class Craft extends Yii2
     }
 
     /**
+     * @todo Allow passing of DateTime objects as param 2 and 3 - won't be hard to implement.
      * @param TestInterface $test
      * @param string $dateOne
      * @param string $dateTwo
