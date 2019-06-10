@@ -171,7 +171,7 @@ class UserPermissionsTest extends TestCase
         $this->assertTrue(
             $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
         );
-        $this->assertFalse(
+        $this->assertTrue(
             $this->userPermissions->doesUserHavePermission($user->id, 'accessCp')
         );
     }
