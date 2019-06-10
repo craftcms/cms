@@ -176,6 +176,33 @@ class UserPermissionsTest extends TestCase
         );
     }
 
+    public function testPermissionGet()
+    {
+        // Setup user and craft
+        Craft::$app->setEdition(Craft::Pro);
+        $this->userPermissions->saveGroupPermissions('1001', ['utility:php-info']);
+        $this->userPermissions->saveGroupPermissions('1000', ['accessCp', 'utility:updates']);
+
+        $user = User::find()
+            ->admin(false)
+            ->one();
+
+        // You may kiss the bride...
+        Craft::$app->getUsers()->assignUserToGroups($user->id, ['1000', '1001']);
+
+        $this->assertSame(['accesscp', 'utility:updates', 'utility:php-info'], $this->userPermissions->getPermissionsByUserId($user->id));
+        $this->assertSame(
+            ['accesscp', 'utility:updates', 'utility:php-info'],
+            $this->userPermissions->getGroupPermissionsByUserId($user->id)
+        );
+
+        $this->assertSame(
+            ['accesscp', 'utility:updates'],
+            $this->userPermissions->getPermissionsByGroupId('1000')
+        );
+    }
+
+
     // Protected Methods
     // =========================================================================
 
