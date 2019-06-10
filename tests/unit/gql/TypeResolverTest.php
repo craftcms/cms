@@ -23,10 +23,10 @@ use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\elements\ExampleElement;
-use craftunit\fixtures\AssetsFixture;
-use craftunit\fixtures\EntryFixture;
-use craftunit\fixtures\GlobalSetFixture;
-use craftunit\fixtures\UsersFixture;
+use crafttests\fixtures\AssetsFixture;
+use crafttests\fixtures\EntryFixture;
+use crafttests\fixtures\GlobalSetFixture;
+use crafttests\fixtures\UsersFixture;
 use GraphQL\Type\Definition\ResolveInfo;
 
 class TypeResolverTest extends Unit

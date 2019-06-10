@@ -19,8 +19,8 @@ use craft\gql\types\Entry as GqlEntryType;
 use craft\helpers\Json;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
-use craftunit\fixtures\AssetsFixture;
-use craftunit\fixtures\TransformsFixture;
+use crafttests\fixtures\AssetsFixture;
+use crafttests\fixtures\TransformsFixture;
 use DateTime;
 use GraphQL\Type\Definition\ResolveInfo;
 

@@ -7,7 +7,7 @@
 
 namespace tests\functional;
 
-use craftunit\fixtures\EntryFixture;
+use crafttests\fixtures\EntryFixture;
 use FunctionalTester;
 
 class GqlCest
