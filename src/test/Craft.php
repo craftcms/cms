@@ -330,12 +330,12 @@ class Craft extends Yii2
     /**
      * @param Element $element
      * @param bool $failHard
-     * @return bool|Element
+     * @return bool
      * @throws ElementNotFoundException
      * @throws Throwable
      * @throws YiiBaseException
      */
-    public function saveElement(Element $element, bool $failHard = true)
+    public function saveElement(Element $element, bool $failHard = true) : bool
     {
         if (!\Craft::$app->getElements()->saveElement($element)) {
             if ($failHard) {
@@ -343,7 +343,7 @@ class Craft extends Yii2
                     implode(', ', $element->getErrorSummary(true))
                 );
             } else {
-                return $element;
+                return false;
             }
         }
 
