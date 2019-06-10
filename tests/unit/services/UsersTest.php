@@ -22,13 +22,16 @@ use craft\test\EventItem;
 use craft\test\TestCase;
 use crafttests\fixtures\UserGroupsFixture;
 use UnitTester;
+use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use DateTime;
 use DateTimeZone;
 use Throwable;
 use ReflectionException;
+use yii\base\NotSupportedException;
 use yii\db\Exception as YiiDbException;
+use yii\web\ServerErrorHttpException;
 
 /**
  * Unit tests for the Users service
@@ -190,7 +193,7 @@ class UsersTest extends TestCase
      * @todo Monitor this one doesn't break on travis
      * @throws Exception
      */
-    public function testSetVerificaitonCodeOnUser()
+    public function testSetVerificationCodeOnUser()
     {
         $verificationCode = $this->users->setVerificationCodeOnUser($this->pendingUser);
         $dateTime = new DateTime('now', new DateTimeZone('UTC'));
@@ -257,10 +260,10 @@ class UsersTest extends TestCase
     }
 
     /**
-     * @throws \yii\base\ErrorException
-     * @throws \yii\base\Exception
-     * @throws \yii\base\NotSupportedException
-     * @throws \yii\web\ServerErrorHttpException
+     * @throws ErrorException
+     * @throws Exception
+     * @throws NotSupportedException
+     * @throws ServerErrorHttpException
      */
     public function testUserAssignmentToDefaultGroup()
     {
@@ -327,7 +330,7 @@ class UsersTest extends TestCase
     }
 
     /**
-     * @throws \yii\db\Exception
+     * @throws YiiDbException
      */
     public function testHandleInvalidLoginWithMaxOutsideWindow()
     {
@@ -349,7 +352,7 @@ class UsersTest extends TestCase
     }
 
     /**
-     * @throws \yii\db\Exception
+     * @throws YiiDbException
      */
     public function testHandleInvalidLoginInsideWindow()
     {

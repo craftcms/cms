@@ -72,8 +72,8 @@ class PreflightCheckCest
             ['url' => '/dashboard', 'title' => 'Dashboard'],
             ['url' => '/entries', 'title' => 'Entries'],
             ['url' => '/users', 'title' => 'Users'],
-       // TODO: fix globals fixture     ['url' => '/globals', 'title' => 'Globals'],
-            // todo: Requires fixtures data. ['url' => '/categories', 'title' => 'Categories'],
+            // TODO: fix globals fixture     ['url' => '/globals', 'title' => 'Globals'],
+            // TODO: Requires fixtures data. ['url' => '/categories', 'title' => 'Categories'],
             ['url' => '/settings/plugins', 'title' => 'Plugins'],
             ['url' => '/settings/sections', 'title' => 'Sections', 'extraContent' => [
                 'Craft CMS Test section'

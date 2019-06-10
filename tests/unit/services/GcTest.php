@@ -24,6 +24,7 @@ use crafttests\fixtures\UsersFixture;
 use crafttests\fixtures\VolumesFixture;
 use DateInterval;
 use DateTime;
+use DateTimeZone;
 use Exception;
 use UnitTester;
 use yii\base\InvalidArgumentException;
@@ -180,7 +181,6 @@ class GcTest extends Unit
     /**
      * @return array
      * @todo Other GC tables
-     *
      */
     public function gcDataProvider(): array
     {
@@ -241,7 +241,7 @@ class GcTest extends Unit
      */
     private function _createExpiringPendingUsers()
     {
-        $date = (new DateTime('now', new \DateTimeZone('UTC')))->sub(new DateInterval('P3D'))->format('Y-m-d H:i:s');
+        $date = (new DateTime('now', new DateTimeZone('UTC')))->sub(new DateInterval('P3D'))->format('Y-m-d H:i:s');
 
         $userRecords = UserRecord::find()
             ->where(['username' => ['user1', 'user2']])

@@ -12,9 +12,16 @@ use Craft;
 use craft\elements\User;
 use craft\web\View;
 use crafttests\fixtures\GlobalSetFixture;
+use Twig\Error\LoaderError;
+use Twig\Error\SyntaxError;
 use UnitTester;
 use craft\web\twig\Extension;
 use ArrayObject;
+use yii\base\ErrorException;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
+use yii\web\ServerErrorHttpException;
 
 /**
  * Unit tests for the Various functions in the Extension class.
@@ -54,8 +61,8 @@ class ExtensionTest extends Unit
     // =========================================================================
 
     /**
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws SyntaxError
      */
     public function testGlobals()
     {
@@ -84,9 +91,9 @@ class ExtensionTest extends Unit
     }
 
     /**
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\SyntaxError
-     * @throws \yii\base\Exception
+     * @throws LoaderError
+     * @throws SyntaxError
+     * @throws Exception
      */
     public function testCraftSystemGlobals()
     {
@@ -99,8 +106,8 @@ class ExtensionTest extends Unit
     }
 
     /**
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws SyntaxError
      */
     public function testGlobalsWithUninstalledCraft()
     {
@@ -113,12 +120,12 @@ class ExtensionTest extends Unit
     }
 
     /**
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\SyntaxError
-     * @throws \yii\base\ErrorException
-     * @throws \yii\base\Exception
-     * @throws \yii\base\NotSupportedException
-     * @throws \yii\web\ServerErrorHttpException
+     * @throws LoaderError
+     * @throws SyntaxError
+     * @throws ErrorException
+     * @throws Exception
+     * @throws NotSupportedException
+     * @throws ServerErrorHttpException
      */
     public function testSiteGlobals()
     {
@@ -130,9 +137,9 @@ class ExtensionTest extends Unit
     }
 
     /**
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\SyntaxError
-     * @throws \yii\base\Exception
+     * @throws LoaderError
+     * @throws SyntaxError
+     * @throws Exception
      */
     public function testElementGlobals()
     {
@@ -145,8 +152,8 @@ class ExtensionTest extends Unit
     }
 
     /**
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws SyntaxError
      */
     public function testCsrfInput()
     {
@@ -168,10 +175,10 @@ class ExtensionTest extends Unit
     }
 
     /**
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\SyntaxError
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
+     * @throws LoaderError
+     * @throws SyntaxError
+     * @throws Exception
+     * @throws InvalidConfigException
      */
     public function testRedirectInput()
     {
@@ -187,8 +194,8 @@ class ExtensionTest extends Unit
     }
 
     /**
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws SyntaxError
      */
     public function testActionInput()
     {
@@ -204,8 +211,8 @@ class ExtensionTest extends Unit
     }
 
     /**
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws SyntaxError
      */
     public function testRenderObjectTemplate()
     {
@@ -225,8 +232,8 @@ class ExtensionTest extends Unit
     }
 
     /**
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws SyntaxError
      */
     public function testGetEnv()
     {
@@ -237,8 +244,8 @@ class ExtensionTest extends Unit
     }
 
     /**
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws SyntaxError
      */
     public function testEnvParsing()
     {
@@ -254,8 +261,8 @@ class ExtensionTest extends Unit
     }
 
     /**
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws SyntaxError
      */
     public function testIndexOf()
     {
@@ -279,8 +286,8 @@ class ExtensionTest extends Unit
     }
 
     /**
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws SyntaxError
      */
     public function testShuffle()
     {
@@ -305,8 +312,8 @@ class ExtensionTest extends Unit
     /**
      * @param string $renderString
      * @param string $expectedString
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws SyntaxError
      */
     protected function extensionRenderTest(string $renderString, string $expectedString, array $variables = [])
     {

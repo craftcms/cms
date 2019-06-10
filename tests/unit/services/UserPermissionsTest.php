@@ -13,6 +13,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
+use craft\errors\WrongEditionException;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\UserEvent;
 use craft\helpers\Db;
@@ -116,7 +117,7 @@ class UserPermissionsTest extends TestCase
     }
 
     /**
-     * @throws \craft\errors\WrongEditionException
+     * @throws WrongEditionException
      */
     public function testDoesGroupHavePermission()
     {
@@ -152,7 +153,7 @@ class UserPermissionsTest extends TestCase
     /**
      * @todo Tests for _filterOrphanedPermissions - use codecov.io for this.
      * @throws YiiDbException
-     * @throws \craft\errors\WrongEditionException
+     * @throws WrongEditionException
      */
     public function testDoesUserHavePermission()
     {
@@ -182,7 +183,7 @@ class UserPermissionsTest extends TestCase
     }
 
     /**
-     * @throws \craft\errors\WrongEditionException
+     * @throws WrongEditionException
      */
     public function testPermissionGet()
     {

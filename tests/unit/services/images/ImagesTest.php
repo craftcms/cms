@@ -181,7 +181,6 @@ class ImagesTest extends Unit
     /**
      * @return array
      * @todo Can we get this to fail?
-     *
      */
     public function memoryForImageDataProvider()
     {
