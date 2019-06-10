@@ -43,7 +43,7 @@ class Asset extends BaseType
             return $folder->$property ?? null;
         }
 
-        return $source->$fieldName;
+        return $source->$fieldName ?? null;
     }
 
 }
