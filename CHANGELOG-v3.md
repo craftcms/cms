@@ -3,8 +3,14 @@
 ## Unreleased
 
 ### Added
+- The entry creation workflow is now more similar to how it was in past versions of Craft. Entries are initially created as “unsaved drafts”, and are not converted to real entries until the “Save entry” button is pressed. ([#4384](https://github.com/craftcms/cms/issues/4384))
+- Added the `purgeUnsavedDraftsDuration` config setting, which determines how long unsaved drafts should be allowed to exist before getting deleted via garbage collection.
 - Added the `tests/setup` command, which generates a test suite for the current Craft project.
+- Added `craft\base\ElementInterface::getIsUnsavedDraft()`.
+- Added `craft\base\ElementTrait::$propagateAll`.
 - Added `craft\console\Request::getToken()`.
+- Added `craft\services\Drafts::purgeUnsavedDrafts()`.
+- Added `craft\services\Drafts::saveElementAsDraft()`.
 - Added `craft\test\Craft::assertElementsExist()`.
 - Added `craft\test\Craft::assertTestFails()`.
 

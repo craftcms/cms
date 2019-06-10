@@ -26,7 +26,7 @@ use yii\base\Behavior;
 class DraftBehavior extends Behavior
 {
     /**
-     * @var int The source element’s ID
+     * @var int|null The source element’s ID
      */
     public $sourceId;
 
@@ -82,10 +82,14 @@ class DraftBehavior extends Behavior
     /**
      * Returns the draft’s source element.
      *
-     * @return ElementInterface
+     * @return ElementInterface|null
      */
-    public function getSource(): ElementInterface
+    public function getSource()
     {
+        if (!$this->sourceId) {
+            return null;
+        }
+
         return $this->owner::find()
             ->id($this->sourceId)
             ->siteId($this->owner->siteId)

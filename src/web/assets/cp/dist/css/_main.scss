@@ -349,6 +349,12 @@ li.sel a {
 #revision-btngroup {
   @include margin-right(7px);
 }
+#revision-btn.disabled {
+  opacity: 1;
+  color: $mediumDarkTextColor;
+  background: transparent;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
 
 /* checkmark icon */
 .checkmark-icon {

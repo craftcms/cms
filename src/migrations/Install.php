@@ -213,8 +213,8 @@ class Install extends Migration
         ]);
         $this->createTable(Table::DRAFTS, [
             'id' => $this->primaryKey(),
-            'sourceId' => $this->integer()->notNull(),
-            'revisionId' => $this->integer()->notNull(),
+            'sourceId' => $this->integer(),
+            'revisionId' => $this->integer(),
             'creatorId' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
             'notes' => $this->text(),

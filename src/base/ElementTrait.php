@@ -146,6 +146,12 @@ trait ElementTrait
     public $propagating = false;
 
     /**
+     * @var bool Whether all element attributes should be propagated across all its supported sites, even if that means
+     * overwriting existing site-specific values.
+     */
+    public $propagateAll = false;
+
+    /**
      * @var bool Whether the element is being resaved by a ResaveElement job or a `resave` console command.
      */
     public $resaving = false;

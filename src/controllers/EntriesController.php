@@ -68,90 +68,6 @@ class EntriesController extends BaseEntriesController
     // =========================================================================
 
     /**
-     * Creates a new entry and redirects the client to its edit URL
-     *
-     * @param string $section The section’s handle
-     * @param string|null $site The site handle, if specified.
-     * @return Response
-     * @throws BadRequestHttpException
-     */
-    public function actionCreateEntry(string $section, string $site = null): Response
-    {
-        $sectionHandle = $section;
-        $section = Craft::$app->getSections()->getSectionByHandle($sectionHandle);
-        if (!$section) {
-            throw new BadRequestHttpException('Invalid section handle: ' . $sectionHandle);
-        }
-
-        $editableSiteIds = $this->_editableSiteIds($section);
-        $sitesService = Craft::$app->getSites();
-
-        if ($site !== null) {
-            $siteHandle = $site;
-            $site = $sitesService->getSiteByHandle($siteHandle);
-            if (!$site) {
-                throw new BadRequestHttpException('Invalid site handle: ' . $siteHandle);
-            }
-        }
-
-        // If there's only one site, go with that
-        if ($site === null && count($editableSiteIds) === 1) {
-            $site = $sitesService->getSiteById($editableSiteIds[0]);
-        }
-
-        // If entries get propagated to all sites, it doesn't really matter which site we start with
-        if ($site === null && $section->propagationMethod === Section::PROPAGATION_METHOD_ALL) {
-            $site = $sitesService->getPrimarySite();
-            if (!in_array($site->id, $editableSiteIds, false)) {
-                $site = $sitesService->getSiteById($editableSiteIds[0]);
-            }
-        }
-
-        // If we still don't know the site, give the user a chance to pick one
-        if ($site === null) {
-            return $this->renderTemplate('_special/sitepicker', [
-                'siteIds' => $editableSiteIds,
-                'baseUrl' => "entries/{$section->handle}/new",
-            ]);
-        }
-
-        // Create & populate the entry
-        $request = Craft::$app->getRequest();
-        $entry = new Entry();
-        $entry->siteId = $site->id;
-        $entry->sectionId = $section->id;
-        $entry->typeId = $request->getQueryParam('typeId', $section->getEntryTypes()[0]->id);
-        $entry->authorId = $request->getQueryParam('authorId', Craft::$app->getUser()->getId());
-        $entry->slug = '__temp_' . StringHelper::randomString();
-        $entry->enabled = false;
-
-        // Structure parent
-        if (
-            $section->type === Section::TYPE_STRUCTURE &&
-            (int)$section->maxLevels !== 1
-        ) {
-            // Get the initially selected parent
-            $entry->newParentId = $request->getParam('parentId');
-            if (is_array($entry->newParentId)) {
-                $entry->newParentId = reset($parentId) ?: null;
-            }
-        }
-
-        // Make sure the user is allowed to create this entry
-        $this->enforceEditEntryPermissions($entry);
-
-        // Save it and redirect to its edit page
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-
-        if (!Craft::$app->getElements()->saveElement($entry)) {
-            throw new Exception('Unable to save entry');
-        }
-        return $this->redirect(UrlHelper::url($entry->getCpEditUrl(), [
-            'fresh' => 1,
-        ]));
-    }
-
-    /**
      * Called when a user beings up an entry for editing before being displayed.
      *
      * @param string $section The section’s handle
@@ -771,29 +687,6 @@ class EntriesController extends BaseEntriesController
     // =========================================================================
 
     /**
-     * Returns the editable site IDs for a section.
-     *
-     * @param Section $section
-     * @return int[]
-     * @throws ForbiddenHttpException
-     */
-    private function _editableSiteIds(Section $section): array
-    {
-        if (!Craft::$app->getIsMultiSite()) {
-            return [Craft::$app->getSites()->getPrimarySite()->id];
-        }
-
-        // Only use the sites that the user has access to
-        $sectionSiteIds = array_keys($section->getSiteSettings());
-        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
-        $siteIds = array_merge(array_intersect($sectionSiteIds, $editableSiteIds));
-        if (empty($siteIds)) {
-            throw new ForbiddenHttpException('User not permitted to edit content in any sites supported by this section');
-        }
-        return $siteIds;
-    }
-
-    /**
      * Preps entry edit variables.
      *
      * @param array &$variables
@@ -820,7 +713,7 @@ class EntriesController extends BaseEntriesController
         // Get the site
         // ---------------------------------------------------------------------
 
-        $variables['siteIds'] = $this->_editableSiteIds($variables['section']);
+        $variables['siteIds'] = $this->editableSiteIds($variables['section']);
 
         if (empty($variables['site'])) {
             /** @noinspection PhpUnhandledExceptionInspection */
@@ -899,22 +792,6 @@ class EntriesController extends BaseEntriesController
             Craft::$app->getIsMultiSite() &&
             count($variables['entry']->getSupportedSites()) > 1
         );
-
-        // Set the default statuses if this is a fresh entry
-        // ---------------------------------------------------------------------
-
-        if ($request->getQueryParam('fresh')) {
-            // Set the default status based on the section's settings
-            /** @var Section_SiteSettings $siteSettings */
-            $siteSettings = ArrayHelper::firstWhere($variables['section']->getSiteSettings(), 'siteId', $variables['entry']->siteId);
-            if ($variables['isMultiSiteEntry']) {
-                $variables['entry']->enabled = true;
-                $variables['entry']->enabledForSite = $siteSettings->enabledByDefault;
-            } else {
-                $variables['entry']->enabled = $siteSettings->enabledByDefault;
-                $variables['entry']->enabledForSite = true;
-            }
-        }
 
         // Get the entry type
         // ---------------------------------------------------------------------

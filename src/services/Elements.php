@@ -1904,6 +1904,12 @@ class Elements extends Component
             $siteElement->siteId = $siteInfo['siteId'];
             $siteElement->contentId = null;
             $siteElement->enabledForSite = $siteInfo['enabledByDefault'];
+        } else if ($element->propagateAll) {
+            $oldSiteElement = $siteElement;
+            $siteElement = clone $element;
+            $siteElement->siteId = $oldSiteElement->siteId;
+            $siteElement->contentId = $oldSiteElement->contentId;
+            $siteElement->enabledForSite = $oldSiteElement->enabledForSite;
         } else {
             $siteElement->enabled = $element->enabled;
             $siteElement->resaving = $element->resaving;

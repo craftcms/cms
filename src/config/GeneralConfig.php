@@ -573,6 +573,14 @@ class GeneralConfig extends BaseObject
      */
     public $purgePendingUsersDuration = 0;
     /**
+     * @var mixed The amount of time to wait before Craft purges drafts of new elements that were never formally saved.
+     *
+     * Set to `0` to disable this feature.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     */
+    public $purgeUnsavedDraftsDuration = 2592000;
+    /**
      * @var mixed The amount of time Craft will remember a username and pre-populate it on the CP login page.
      *
      * Set to `0` to disable this feature altogether.
