@@ -89,7 +89,7 @@ class UserQueryTest extends TestCase
     public function testCount()
     {
         $count = User::find()->count();
-        $this->assertSame(3, $count);
+        $this->assertSame('3', (string)$count);
     }
 
     /*
@@ -116,7 +116,7 @@ class UserQueryTest extends TestCase
             ->status([User::STATUS_SUSPENDED, User::STATUS_PENDING])
             ->count();
 
-        $this->assertSame(2, $results);
+        $this->assertSame('2', (string)$results);
     }
 
     /**
@@ -141,23 +141,23 @@ class UserQueryTest extends TestCase
 
         Craft::$app->getUsers()->assignUserToGroups($this->activeUser->id, ['1000', '1001', '1002']);
 
-        $this->assertSame(1, User::find()->groupId('1000')->count());
-        $this->assertSame(0, User::find()->groupId('123121223')->count());
-        $this->assertSame(1, User::find()->groupId(['1001', 1002])->count());
-        $this->assertSame(1, User::find()->groupId(['1001', '123121223'])->count());
+        $this->assertSame('1', (string)User::find()->groupId('1000')->count());
+        $this->assertSame('0', (string)User::find()->groupId('123121223')->count());
+        $this->assertSame('1', (string)User::find()->groupId(['1001', 1002])->count());
+        $this->assertSame('1', (string)User::find()->groupId(['1001', '123121223'])->count());
 
         Craft::$app->getUsers()->assignUserToGroups($this->lockedUser->id, ['1000', '1002']);
-        $this->assertSame(2, User::find()->groupId(['1001', '1002'])->count());
-        $this->assertSame(1, User::find()->groupId(['1001'])->count());
+        $this->assertSame('2', (string)User::find()->groupId(['1001', '1002'])->count());
+        $this->assertSame('1', (string)User::find()->groupId(['1001'])->count());
 
 
-        $this->assertSame(2, User::find()->group('group1')->count());
-        $this->assertSame(2, User::find()->group(['group1', 'group2'])->count());
-        $this->assertSame(1, User::find()->group(['group2'])->count());
-        $this->assertSame(0, User::find()->group(['invald_handle'])->count());
+        $this->assertSame('2', (string)User::find()->group('group1')->count());
+        $this->assertSame('2', (string)User::find()->group(['group1', 'group2'])->count());
+        $this->assertSame('1', (string)User::find()->group(['group2'])->count());
+        $this->assertSame('0', (string)User::find()->group(['invald_handle'])->count());
 
         $userGroup = Craft::$app->getUserGroups()->getGroupByHandle('group1');
-        $this->assertSame(2, User::find()->group($userGroup)->count());
+        $this->assertSame('2', (string)User::find()->group($userGroup)->count());
     }
 
     /**
@@ -169,14 +169,14 @@ class UserQueryTest extends TestCase
         $results = User::find()
             ->can('accessCp')
             ->count();
-        $this->assertSame(1, $results);
+        $this->assertSame('1', (string)$results);
 
         Craft::$app->getUserPermissions()->saveGroupPermissions('1000', ['accessCp']);
         Craft::$app->getUsers()->assignUserToGroups($this->activeUser->id, ['1000']);
         $results = User::find()
             ->can('accessCp')
             ->count();
-        $this->assertSame(2, $results);
+        $this->assertSame('2', (string)$results);
     }
 
     // Protected Methods
