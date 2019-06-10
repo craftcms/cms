@@ -8,8 +8,11 @@
 namespace craftunit\gql;
 
 use Codeception\Test\Unit;
+use craft\elements\Asset as AssetElement;
 use craft\elements\Entry as EntryElement;
+use craft\gql\types\Asset as AssetGqlType;
 use craft\gql\types\Entry as EntryGqlType;
+use crafttests\fixtures\AssetWithFieldsFixture;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -22,6 +25,8 @@ class FieldResolverTest extends Unit
 
     private static $_entry = null;
 
+    private static $_asset = null;
+
     protected function _before()
     {
     }
@@ -33,6 +38,9 @@ class FieldResolverTest extends Unit
     public function _fixtures()
     {
         return [
+            'assets' => [
+                'class' => AssetWithFieldsFixture::class
+            ],
             'entries' => [
                 'class' => EntryWithFieldsFixture::class
             ],
@@ -52,17 +60,17 @@ class FieldResolverTest extends Unit
      * @param string $propertyName The propery being tested
      * @param mixed $result True for exact match, false for non-existing, an array for all other result fetching to mimick the `resolve` method.
      */
-    public function testEntryFieldResolving(callable $getElement, string $gqlTypeClass, string $propertyName, $result)
+    public function testElementFieldResolving(callable $getElement, string $gqlTypeClass, string $propertyName, $result)
     {
-        $entry = $getElement();
+        $element = $getElement();
 
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => $propertyName]);
-        $resolvedValue = $this->make($gqlTypeClass)->resolve($entry, [], null, $resolveInfo);
+        $resolvedValue = $this->make($gqlTypeClass)->resolve($element, [], null, $resolveInfo);
 
         if (is_array($result)) {
-            $this->assertEquals($entry->{$result[0]}()->{$result[1]}, $resolvedValue);
+            $this->assertEquals($element->{$result[0]}()->{$result[1]}, $resolvedValue);
         } else if ($result === true) {
-            $this->assertEquals($entry->$propertyName, $resolvedValue);
+            $this->assertEquals($element->$propertyName, $resolvedValue);
         } else {
             $this->assertNull($resolvedValue);
         }
@@ -71,23 +79,42 @@ class FieldResolverTest extends Unit
     public function entryFieldTestDataProvider()
     {
         return [
-            // Entry types
+            // Entries
             [[$this, '_getEntry'], EntryGqlType::class, 'sectionId', true],
             [[$this, '_getEntry'], EntryGqlType::class, 'sectionUid', ['getSection', 'uid']],
             [[$this, '_getEntry'], EntryGqlType::class, 'sectionInvalid', false],
+            [[$this, '_getEntry'], EntryGqlType::class, 'missingProperty', false],
             [[$this, '_getEntry'], EntryGqlType::class, 'typeId', true],
             [[$this, '_getEntry'], EntryGqlType::class, 'typeUid', ['getType', 'uid']],
-            [[$this, '_getEntry'], EntryGqlType::class, 'typeInvalid', false],
             [[$this, '_getEntry'], EntryGqlType::class, 'plainTextField', true],
             [[$this, '_getEntry'], EntryGqlType::class, 'postDate', true],
+
+            // Assets
+            [[$this, '_getAsset'], AssetGqlType::class, 'volumeId', true],
+            [[$this, '_getAsset'], AssetGqlType::class, 'volumeUid', ['getVolume', 'uid']],
+            [[$this, '_getAsset'], AssetGqlType::class, 'volumeInvalid', false],
+            [[$this, '_getAsset'], AssetGqlType::class, 'missingProperty', false],
+            [[$this, '_getAsset'], AssetGqlType::class, 'folderId', true],
+            [[$this, '_getAsset'], AssetGqlType::class, 'folderUid', ['getFolder', 'uid']],
+            [[$this, '_getAsset'], AssetGqlType::class, 'plainTextField', true],
+            [[$this, '_getAsset'], AssetGqlType::class, 'filename', true],
+
         ];
     }
-    
+
     public function _getEntry() {
         if (!self::$_entry) {
             self::$_entry = EntryElement::findOne(['title' => 'Theories of matrix']);
         }
 
         return self::$_entry;
+    }
+
+    public function _getAsset() {
+        if (!self::$_asset) {
+            self::$_asset = AssetElement::findOne(['filename' => 'product.jpg']);
+        }
+
+        return self::$_asset;
     }
 }
