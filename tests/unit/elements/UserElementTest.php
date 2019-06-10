@@ -73,7 +73,7 @@ class UserElementTest extends TestCase
             'unverifiedEmail' => 'unverifemail@email.com',
         ]);
 
-        $this->saveElement($user);
+        $this->tester->saveElement($user);
 
         $this->activeUser->validateUnverifiedEmail('unverifiedEmail', [], $validator);
         $this->assertSame(
@@ -230,7 +230,7 @@ class UserElementTest extends TestCase
     }
 
     /**
-     * 
+     *
      */
     public function testChangePasswordNukesSessions()
     {
