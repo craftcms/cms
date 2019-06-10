@@ -49,7 +49,7 @@ class PreflightCheckCest
     {
         $adminTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
 
-        $I->amOnPage('?p=/'.$adminTrigger.''.$example['url']);
+        $I->amOnPage('/'.$adminTrigger.''.$example['url']);
         $I->see($example['title']);
         $I->seeResponseCodeIs(200);
 
