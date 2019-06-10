@@ -329,6 +329,7 @@ class TestSetup
     }
 
     /**
+     * @todo the $mergeExistingConfig is not being used by us - deprecate it?
      * @param string $projectConfigFile
      * @param bool $mergeExistingConfig
      */
