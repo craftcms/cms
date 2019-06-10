@@ -170,6 +170,13 @@ class UserQueryTest extends TestCase
             ->can('accessCp')
             ->count();
         $this->assertSame(1, $results);
+
+        Craft::$app->getUserPermissions()->saveGroupPermissions('1000', ['accessCp']);
+        Craft::$app->getUsers()->assignUserToGroups($this->activeUser->id, ['1000']);
+        $results = User::find()
+            ->can('accessCp')
+            ->count();
+        $this->assertSame(2, $results);
     }
 
     // Protected Methods
