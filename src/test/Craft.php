@@ -38,6 +38,7 @@ use yii\base\Module;
 use yii\db\Exception;
 use DateTime;
 use yii\base\Exception as YiiBaseException;
+use yii\base\ErrorException as YiiBaseErrorException;
 
 /**
  * Craft module for codeception
@@ -142,7 +143,8 @@ class Craft extends Yii2
      * @param TestInterface $test
      * @throws InvalidConfigException
      * @throws ReflectionException
-     * @throws \yii\base\Exception
+     * @throws Throwable
+     * @throws YiiBaseErrorException
      */
     public function _before(TestInterface $test)
     {
@@ -161,18 +163,23 @@ class Craft extends Yii2
             return;
         }
 
-        // Re-apply project config - Fixtures may have done stuff...
+        // TODO: With this - if someone makes a sections fixture - their data will be overriden by the project.yml file.
+        // TODO: They should probably define that section data within their project.yml file - but perhaps a docs note for this?
+        // Re-apply project config
         if ($projectConfig = $this->_getConfig('projectConfig')) {
-            // Tests over. Reset the project config to its original state.
+            // Tests just beginning. . Reset the project config to its original state.
             TestSetup::setupProjectConfig($projectConfig['file']);
 
             \Craft::$app->getProjectConfig()->applyConfigChanges(
                 Yaml::parse(file_get_contents($projectConfig['file']))
             );
-            \Craft::$app->getProjectConfig()->saveModifiedConfigData();
-        }
 
-        App::maxPowerCaptain();
+            \Craft::$app->getProjectConfig()->saveModifiedConfigData();
+        } else {
+            // No project config - we are probably using DB based fixtures so we need to rebuild based on that.
+            // Without rebuilding, Craft::$app->getProjectConfig()->get(); calls are unreliable
+            \Craft::$app->getProjectConfig()->rebuild();
+        }
 
         $db = \Craft::createObject(
             App::dbConfig(self::createDbConfig())
@@ -191,6 +198,8 @@ class Craft extends Yii2
         try {
             // Create a Craft::$app object
             TestSetup::warmCraft();
+
+            App::maxPowerCaptain();
 
             $dbConnection = \Craft::createObject(App::dbConfig(self::createDbConfig()));
 
