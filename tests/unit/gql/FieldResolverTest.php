@@ -10,10 +10,13 @@ namespace craftunit\gql;
 use Codeception\Test\Unit;
 use craft\elements\Asset as AssetElement;
 use craft\elements\Entry as EntryElement;
+use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\types\Asset as AssetGqlType;
 use craft\gql\types\Entry as EntryGqlType;
+use craft\gql\types\GlobalSet as GlobalSetGqlType;
 use crafttests\fixtures\AssetWithFieldsFixture;
 use crafttests\fixtures\EntryWithFieldsFixture;
+use crafttests\fixtures\GlobalSetFixture;
 use GraphQL\Type\Definition\ResolveInfo;
 
 class FieldResolverTest extends Unit
@@ -26,6 +29,8 @@ class FieldResolverTest extends Unit
     private static $_entry = null;
 
     private static $_asset = null;
+
+    private static $_globalSet = null;
 
     protected function _before()
     {
@@ -44,6 +49,10 @@ class FieldResolverTest extends Unit
             'entries' => [
                 'class' => EntryWithFieldsFixture::class
             ],
+            'globalSets' => [
+                'class' => GlobalSetFixture::class
+            ],
+            
         ];
     }
 
@@ -99,6 +108,11 @@ class FieldResolverTest extends Unit
             [[$this, '_getAsset'], AssetGqlType::class, 'plainTextField', true],
             [[$this, '_getAsset'], AssetGqlType::class, 'filename', true],
 
+            // Global Set
+            [[$this, '_getGlobalSet'], GlobalSetGqlType::class, 'missingProperty', false],
+            [[$this, '_getGlobalSet'], GlobalSetGqlType::class, 'plainTextField', true],
+            [[$this, '_getGlobalSet'], GlobalSetGqlType::class, 'handle', true],
+
         ];
     }
 
@@ -116,5 +130,13 @@ class FieldResolverTest extends Unit
         }
 
         return self::$_asset;
+    }
+
+    public function _getGlobalSet() {
+        if (!self::$_globalSet) {
+            self::$_globalSet = GlobalSetElement::findOne(['handle' => 'aGlobalSet']);
+        }
+
+        return self::$_globalSet;
     }
 }
