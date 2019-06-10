@@ -12,6 +12,6 @@ return [
         'volumeId' => '1000',
         'folderId' => '1000',
         'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
-        'plainTextField' => "Paint me like one of your French girls",
+        'plainTextField' => 'Paint me like one of your French girls',
     ],
 ];
