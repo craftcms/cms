@@ -87,6 +87,7 @@ class Query extends \yii\db\Query
 
     /**
      * @inheritdoc
+     * @todo remove this once Yii 2.0.21 is released
      */
     public function select($columns, $option = null)
     {
@@ -97,6 +98,7 @@ class Query extends \yii\db\Query
 
     /**
      * @inheritdoc
+     * @todo remove this once Yii 2.0.21 is released
      */
     public function addSelect($columns)
     {
@@ -116,6 +118,7 @@ class Query extends \yii\db\Query
      *
      * @param string|array|ExpressionInterface $columns
      * @return array
+     * @todo remove this once Yii 2.0.21 is released
      */
     protected function normalizeSelect($columns): array
     {
