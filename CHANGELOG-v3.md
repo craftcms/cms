@@ -24,6 +24,7 @@
 - Fixed a bug where Craft was appending token params to action URLs that were generated on tokenized site requests.
 - Fixed a bug where preview and share URLs for the homepage entry were getting a URI of `__home__`. ([#4377](https://github.com/craftcms/cms/issues/4377))
 - Fixed test reliability issues.
+- Fixed a bug where Project Config was not returning data setup through `craft\test\Fixture` when testing.
 
 ## 3.2.0-beta.1 - 2019-06-04
 
