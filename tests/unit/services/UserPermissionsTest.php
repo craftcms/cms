@@ -167,9 +167,9 @@ class UserPermissionsTest extends TestCase
             $this->userPermissions->doesUserHavePermission($user->id, 'invalidPermission')
         );
 
-        $this->userPermissions->saveUserPermissions($user->id, ['assignUserPermissions']);
+        $this->userPermissions->saveUserPermissions($user->id, ['editUsers']);
         $this->assertTrue(
-            $this->userPermissions->doesUserHavePermission($user->id, 'assignUserPermissions')
+            $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
         );
         $this->assertFalse(
             $this->userPermissions->doesUserHavePermission($user->id, 'accessCp')
