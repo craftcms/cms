@@ -149,6 +149,11 @@ class UserPermissionsTest extends TestCase
         );
     }
 
+    /**
+     * @todo Tests for _filterOrphanedPermissions - use codecov.io for this.
+     * @throws YiiDbException
+     * @throws \craft\errors\WrongEditionException
+     */
     public function testDoesUserHavePermission()
     {
         Craft::$app->setEdition(Craft::Pro);
@@ -176,6 +181,9 @@ class UserPermissionsTest extends TestCase
         );
     }
 
+    /**
+     * @throws \craft\errors\WrongEditionException
+     */
     public function testPermissionGet()
     {
         // Setup user and craft
@@ -200,6 +208,26 @@ class UserPermissionsTest extends TestCase
             ['accesscp', 'utility:updates'],
             $this->userPermissions->getPermissionsByGroupId('1000')
         );
+    }
+
+    public function testChangedGroupPermissions()
+    {
+        // Setup user and craft
+        Craft::$app->setEdition(Craft::Pro);
+        $this->userPermissions->saveGroupPermissions('1000', ['accessCp']);
+
+        $user = User::find()
+            ->admin(false)
+            ->one();
+        Craft::$app->getUsers()->assignUserToGroups($user->id, ['1000']);
+
+        $this->assertTrue($this->userPermissions->doesUserHavePermission($user->id, 'accessCp'));
+        $this->assertFalse($this->userPermissions->doesUserHavePermission($user->id, 'utility:updates'));
+
+        // Add a permission and check again.
+        $this->userPermissions->saveGroupPermissions('1000', ['accessCp', 'utility:updates']);
+        $this->assertTrue($this->userPermissions->doesUserHavePermission($user->id, 'accessCp'));
+        $this->assertFalse($this->userPermissions->doesUserHavePermission($user->id, 'utility:updates'));
     }
 
 
