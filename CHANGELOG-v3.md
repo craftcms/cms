@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Improved query performance. ([yiisoft/yii2#17344](https://github.com/yiisoft/yii2/pull/17344), [yiisoft/yii2#17345](https://github.com/yiisoft/yii2/pull/17345), [yiisoft/yii2#17348](https://github.com/yiisoft/yii2/pull/17348))
 - `craft\services\Elements::saveElement()` now always propagates elements regardless of the `$propagate` argument value, when saving new elements. ([#4370](https://github.com/craftcms/cms/issues/4370))
 
 ### Fixed
