@@ -20,6 +20,8 @@ class FieldResolverTest extends Unit
      */
     protected $tester;
 
+    private static $_entry = null;
+
     protected function _before()
     {
     }
@@ -45,15 +47,17 @@ class FieldResolverTest extends Unit
      *
      * @dataProvider entryFieldTestDataProvider, maybe?
      *
+     * @param callable $getElement The callback which returns the element for testing
+     * @param string $gqlTypeClass The Gql type class
      * @param string $propertyName The propery being tested
      * @param mixed $result True for exact match, false for non-existing, an array for all other result fetching to mimick the `resolve` method.
      */
-    public function testEntryFieldResolving(string $propertyName, $result)
+    public function testEntryFieldResolving(callable $getElement, string $gqlTypeClass, string $propertyName, $result)
     {
-        $entry = EntryElement::findOne(['title' => 'Theories of matrix']);
+        $entry = $getElement();
 
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => $propertyName]);
-        $resolvedValue = $this->make(EntryGqlType::class)->resolve($entry, [], null, $resolveInfo);
+        $resolvedValue = $this->make($gqlTypeClass)->resolve($entry, [], null, $resolveInfo);
 
         if (is_array($result)) {
             $this->assertEquals($entry->{$result[0]}()->{$result[1]}, $resolvedValue);
@@ -62,25 +66,28 @@ class FieldResolverTest extends Unit
         } else {
             $this->assertNull($resolvedValue);
         }
-
-        // After that, create a type generator test
-        // That one should register the interface and trigger making all types
-        // Then it should instantiate a specific entry type and ensure content is available there.
-
-        // Follow the same pattern for all elements
     }
 
     public function entryFieldTestDataProvider()
     {
         return [
-            ['sectionId', true],
-            ['sectionUid', ['getSection', 'uid']],
-            ['sectionInvalid', false],
-            ['typeId', true],
-            ['typeUid', ['getType', 'uid']],
-            ['typeInvalid', false],
-            ['plainTextField', true],
-            ['postDate', true],
+            // Entry types
+            [[$this, '_getEntry'], EntryGqlType::class, 'sectionId', true],
+            [[$this, '_getEntry'], EntryGqlType::class, 'sectionUid', ['getSection', 'uid']],
+            [[$this, '_getEntry'], EntryGqlType::class, 'sectionInvalid', false],
+            [[$this, '_getEntry'], EntryGqlType::class, 'typeId', true],
+            [[$this, '_getEntry'], EntryGqlType::class, 'typeUid', ['getType', 'uid']],
+            [[$this, '_getEntry'], EntryGqlType::class, 'typeInvalid', false],
+            [[$this, '_getEntry'], EntryGqlType::class, 'plainTextField', true],
+            [[$this, '_getEntry'], EntryGqlType::class, 'postDate', true],
         ];
+    }
+    
+    public function _getEntry() {
+        if (!self::$_entry) {
+            self::$_entry = EntryElement::findOne(['title' => 'Theories of matrix']);
+        }
+
+        return self::$_entry;
     }
 }
