@@ -125,7 +125,7 @@ class ExtensionTest extends Unit
         Craft::$app->getProjectConfig()->set('system.name', 'Im a test system');
         $this->extensionRenderTest(
             '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}',
-            'Im a test system | default Craft test site https://test.craftcms.test/'
+            'Im a test system | default Craft test site https://test.craftcms.test/index.php/'
         );
     }
 

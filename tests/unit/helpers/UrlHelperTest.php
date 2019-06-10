@@ -192,7 +192,7 @@ class UrlHelperTest extends Unit
     {
         if ($isNonCompletedUrl === true || !UrlHelper::isAbsoluteUrl($result)) {
             $oldResult = $result;
-            $result = $this->baseUrl . $oldResult;
+            $result = $this->baseUrlWithScript . '/'. $oldResult;
 
             $this->assertSame($result, UrlHelper::url($path, $params, $scheme, false));
             $result = $this->baseUrlWithScript . '?p=' . $oldResult;

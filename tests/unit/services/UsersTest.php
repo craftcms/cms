@@ -371,7 +371,7 @@ class UsersTest extends TestCase
 
         // This should just increment the invalidLoginCount
         $user = $this->getUserQuery($this->activeUser->id);
-        $this->assertSame('2', $user['invalidLoginCount']);
+        $this->assertSame('2', (string)$user['invalidLoginCount']);
         $this->assertFalse((bool)$user['locked']);
 
         // Wrap this in an event check - because the EVENT_AFTER_LOCK_USER only get's thrown under specific circumstances.
