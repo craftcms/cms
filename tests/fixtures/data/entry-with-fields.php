@@ -7,6 +7,7 @@ return [
         'typeId' => '1000',
         'title' => 'Theories of matrix',
         'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
+        'plainTextField' => "You think it's code you're testing now?",
         'matrixFirst' => [
             'new1' => [
                 'type' => 'aBlock',
