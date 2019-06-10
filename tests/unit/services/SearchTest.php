@@ -289,7 +289,7 @@ class SearchTest extends Unit
      * @param string $emailOrUsername
      * @return User|null
      */
-    private function _getUserIdByEmailOrUserName(string $emailOrUsername): ?User
+    private function _getUserIdByEmailOrUserName(string $emailOrUsername)
     {
         return Craft::$app->getUsers()->getUserByUsernameOrEmail($emailOrUsername);
     }
