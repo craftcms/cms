@@ -6,7 +6,7 @@
  * @license   https://craftcms.github.io/license/
  */
 
-namespace craftunit\fixtures;
+namespace crafttests\fixtures;
 
 use craft\test\fixtures\elements\AssetFixture;
 
@@ -15,7 +15,7 @@ use craft\test\fixtures\elements\AssetFixture;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class AssetsFixture extends AssetFixture
 {

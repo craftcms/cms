@@ -1,7 +1,7 @@
 # Testing
 ## Introduction
 Testing is a crucial part of ensuring that software continues to work 
-as the initial design expected. Things often tend to break when changing existing codebases
+as the initial design expected. Things often tend to break when changing existing code bases
 and often not directly in the places you are working on when errors occur. 
 
 > You can’t sleep well if you are not confident that your last commit didn’t take down the whole application. 
@@ -13,7 +13,7 @@ Reducing bugs before they are discovered by clients in production saved you the 
 of debugging the bug and communicating with the client, win-win. 
 
 ## Craft testing framework
-As of 3.(TODO: The release num in which the framework gets shipped) Craft provides a formalized testing framework that is based on [Codeception](https://codeception.com/) 
+As of 3.2, Craft provides a formalized testing framework that is based on [Codeception](https://codeception.com/) 
 and implements the [Yii 2 codeception module](https://codeception.com/for/yii). 
 
 On top of all the tools that Codeception and Yii 2 natively provide for testing. 

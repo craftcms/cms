@@ -32,7 +32,7 @@ class Fixture extends ActiveFixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function load()
     {
@@ -59,7 +59,7 @@ class Fixture extends ActiveFixture
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function unload()
     {

@@ -5,7 +5,7 @@
  * @license   https://craftcms.github.io/license/
  */
 
-namespace craftunit\validators;
+namespace crafttests\unit\validators;
 
 use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
@@ -17,7 +17,7 @@ use ErrorException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class ColorValidatorTest extends Unit
 {
@@ -146,7 +146,7 @@ class ColorValidatorTest extends Unit
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {

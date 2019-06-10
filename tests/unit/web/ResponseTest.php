@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\web;
+namespace crafttests\unit\web;
 
 use Codeception\Test\Unit;
 use craft\web\Response;
@@ -15,7 +15,7 @@ use craft\web\Response;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class ResponseTest extends Unit
 {
@@ -105,7 +105,7 @@ class ResponseTest extends Unit
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {

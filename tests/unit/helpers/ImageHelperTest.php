@@ -6,7 +6,7 @@
  * @license   https://craftcms.github.io/license/
  */
 
-namespace craftunit\helpers;
+namespace crafttests\unit\helpers;
 
 use Codeception\Stub;
 use Codeception\Test\Unit;
@@ -22,7 +22,7 @@ use yii\log\Logger;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class ImageHelperTest extends Unit
 {

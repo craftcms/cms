@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\db;
+namespace crafttests\unit\db;
 
 use Codeception\Test\Unit;
 use craft\db\ActiveRecord;
@@ -25,7 +25,7 @@ use UnitTester;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class ActiveRecordTest extends Unit
 {
@@ -57,9 +57,8 @@ class ActiveRecordTest extends Unit
      */
     public function testDateCreated()
     {
-        $session = $this->ensureSession();
-
         $date = new DateTime('now', new DateTimeZone('UTC'));
+        $session = $this->ensureSession();
 
         $this->assertSame($session->dateCreated, $date->format('Y-m-d H:i:s'));
     }
@@ -182,7 +181,7 @@ class ActiveRecordTest extends Unit
     {
         $session = new Session();
         $session->userId = 1;
-        $session->token = 'test';
+        $session->token = 'test' . StringHelper::randomString();
         $save = $session->save();
 
         $this->assertTrue($save);

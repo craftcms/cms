@@ -10,17 +10,16 @@ namespace craft\test\console;
 use Closure;
 use Codeception\Stub;
 use Craft;
-use craft\helpers\StringHelper;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\console\Controller;
+use craft\console\Controller;
 
 /**
  * Class ConsoleTest
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class CommandTest
 {
@@ -50,6 +49,11 @@ class CommandTest
      * @var array
      */
     protected $parameters;
+
+    /**
+     * @var bool
+     */
+    protected $ignoreStdOut = false;
 
     /**
      * @var int
@@ -100,12 +104,14 @@ class CommandTest
      * @param ConsoleTest $consoleTest
      * @param string $command
      * @param array $parameters
+     * @param bool $ignoreStdOut
      * @throws InvalidConfigException
      */
-    public function __construct(ConsoleTest $consoleTest, string $command, array $parameters = [])
+    public function __construct(ConsoleTest $consoleTest, string $command, array $parameters = [], bool $ignoreStdOut = false)
     {
         $this->command = $command;
         $this->parameters = $parameters;
+        $this->ignoreStdOut = $ignoreStdOut;
         $this->test = $consoleTest;
         $this->setupController();
     }
@@ -230,16 +236,21 @@ class CommandTest
      */
     protected function setupController()
     {
-        $parts = StringHelper::split($this->command, '/');
-        $controllerId = $parts[0];
-        $actionId = $parts[1];
-
-        $controller = Craft::$app->createControllerByID($controllerId);
-        if (!$controller instanceof Controller) {
+        $controllerArray = Craft::$app->createController($this->command);
+        if (!$controllerArray) {
             throw new InvalidArgumentException('Invalid controller');
         }
 
-        $stubController = Stub::construct(get_class($controller), [$controllerId, Craft::$app], [
+        $controller = $controllerArray[0];
+        if (!$controller instanceof Controller) {
+            throw new InvalidArgumentException(
+                'Invalid controller. Please ensure your controller extends: ' . Controller::class
+            );
+        }
+
+        $actionId = $controllerArray[1];
+
+        $stubController = Stub::construct(get_class($controller), [$controller->id, Craft::$app], [
             'stdOut' => $this->stdOutHandler(),
             'stderr' => $this->stderrHandler(),
             'prompt' => $this->promptHandler(),
@@ -277,13 +288,10 @@ class CommandTest
     protected function stdOutHandler(): Closure
     {
         return function($out) {
-            $nextItem = $this->runHandlerCheck($out, self::STD_OUT);
-
-
-            $this->test::assertSame(
-                $nextItem->desiredOutput,
-                $out
-            );
+            if (!$this->ignoreStdOut) {
+                $nextItem = $this->runHandlerCheck($out, self::STD_OUT);
+                $this->test::assertSame($nextItem->desiredOutput, $out);
+            }
         };
     }
 

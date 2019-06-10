@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\web;
+namespace crafttests\unit\web;
 
 use Codeception\Test\Unit;
 use craft\web\UrlRule;
@@ -15,7 +15,7 @@ use craft\web\UrlRule;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class UrlRuleTest extends Unit
 {

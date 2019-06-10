@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\search;
+namespace crafttests\unit\search;
 
 use Codeception\Test\Unit;
 use craft\search\SearchQuery;
@@ -22,7 +22,7 @@ use craft\search\SearchQueryTermGroup;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class SearchQueryTest extends Unit
 {

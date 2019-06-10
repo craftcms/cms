@@ -24,7 +24,7 @@ use yii\test\ActiveFixture;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author  Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.1
+ * @since  3.2
  */
 abstract class ElementFixture extends ActiveFixture
 {
@@ -45,7 +45,7 @@ abstract class ElementFixture extends ActiveFixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function init()
     {
@@ -61,7 +61,7 @@ abstract class ElementFixture extends ActiveFixture
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getModel($name)
     {
@@ -77,13 +77,14 @@ abstract class ElementFixture extends ActiveFixture
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function load()
     {
         $this->data = [];
 
         foreach ($this->getData() as $alias => $data) {
+            /* @var Element $element */
             $element = $this->getElement();
 
             // If they want to add a date deleted. Store it but dont set that as an element property
@@ -92,6 +93,19 @@ abstract class ElementFixture extends ActiveFixture
             if (isset($data['dateDeleted'])) {
                 $dateDeleted = $data['dateDeleted'];
                 unset($data['dateDeleted']);
+            }
+
+            // Set the field layout
+            if (isset($data['fieldLayoutType'])) {
+                $fieldLayoutType = $data['fieldLayoutType'];
+                unset($data['fieldLayoutType']);
+
+                $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
+                if ($fieldLayout) {
+                    $element->fieldLayoutId = $fieldLayout->id;
+                } else {
+                    codecept_debug("Field layout with type: $fieldLayoutType but this was not findable");
+                }
             }
 
             foreach ($data as $handle => $value) {

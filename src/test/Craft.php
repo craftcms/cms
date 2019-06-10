@@ -12,6 +12,7 @@ use Codeception\Module\Yii2;
 use Codeception\PHPUnit\TestCase;
 use Codeception\Stub;
 use Codeception\TestInterface;
+use craft\base\Field;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\db\Query;
@@ -24,6 +25,7 @@ use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
 use craft\services\Elements;
+use PHPUnit\Framework\ExpectationFailedException;
 use ReflectionException;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
@@ -54,7 +56,7 @@ use yii\db\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class Craft extends Yii2
 {
@@ -120,7 +122,7 @@ class Craft extends Yii2
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function _initialize()
     {
@@ -183,11 +185,6 @@ class Craft extends Yii2
 
             return;
         }
-
-        // Ensure elements get hard deleted
-        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, function(DeleteElementEvent $event) {
-            $event->hardDelete = true;
-        });
 
         parent::_after($test);
 
@@ -349,6 +346,48 @@ class Craft extends Yii2
     }
 
     /**
+     * @param string $elementType
+     * @param array $searchProperties
+     * @param int $amount
+     * @return mixed
+     */
+    public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1) : array
+    {
+        $elementQuery = $elementType::find();
+        foreach ($searchProperties as $searchProperty => $value) {
+            $elementQuery->$searchProperty = $value;
+        }
+
+        $elements = $elementQuery->all();
+        $this->assertCount($amount, $elements);
+
+        return $elements;
+    }
+
+    /**
+     * @param callable $callable
+     * @param string $message
+     */
+    public function assertTestFails(callable $callable, string $message = '')
+    {
+        $failed = false;
+        try {
+            $callable();
+        } catch (ExpectationFailedException $exception) {
+            $failed = true;
+            if ($message) {
+                $this->assertSame($message, $exception->getMessage());
+            }
+
+            $this->assertTrue(true, 'Test failed as was expected.');
+        }
+
+        if ($failed === false) {
+            $this->fail('Test was supposed to fail but didnt.');
+        }
+    }
+
+    /**
      * @param Module $module
      * @param string $component
      * @param array $methods
@@ -401,9 +440,9 @@ class Craft extends Yii2
     {
         if (\Craft::$app->getQueue() instanceof Queue) {
             $this->assertTrue((new Query())
-                ->select('id')
+                ->select(['id'])
                 ->where(['description' => $description])
-                ->from(Table::QUEUE)
+                ->from([Table::QUEUE])
                 ->exists()
             );
         }
@@ -419,8 +458,10 @@ class Craft extends Yii2
             return null;
         }
 
-        $layoutId = (new Query())->select('layoutId')
-            ->from(Table::FIELDLAYOUTFIELDS)
+        /** @var Field $field */
+        $layoutId = (new Query())
+            ->select(['layoutId'])
+            ->from([Table::FIELDLAYOUTFIELDS])
             ->where(['fieldId' => $field->id])
             ->column();
 

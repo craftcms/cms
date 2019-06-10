@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\validators;
+namespace crafttests\unit\validators;
 
 use Codeception\Test\Unit;
 use craft\validators\UsernameValidator;
@@ -17,7 +17,7 @@ use yii\base\NotSupportedException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class UsernameValidatorTest extends Unit
 {
@@ -71,7 +71,7 @@ class UsernameValidatorTest extends Unit
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {

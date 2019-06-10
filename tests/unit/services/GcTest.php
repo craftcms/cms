@@ -5,25 +5,23 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\services;
+namespace crafttests\unit\services;
 
 use Codeception\Test\Unit;
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
+use craft\elements\User;
 use craft\helpers\ArrayHelper;
-use craft\records\EntryType;
-use craft\records\Section;
-use craft\records\Session;
-use craft\records\User;
-use craft\records\Volume;
+use craft\records\User as UserRecord;
 use craft\services\Gc;
-use craftunit\fixtures\EntryFixture;
-use craftunit\fixtures\EntryTypeFixture;
-use craftunit\fixtures\SectionsFixture;
-use craftunit\fixtures\SessionsFixture;
-use craftunit\fixtures\UsersFixture;
-use craftunit\fixtures\VolumesFixture;
+use crafttests\fixtures\EntryFixture;
+use crafttests\fixtures\EntryTypeFixture;
+use crafttests\fixtures\SectionsFixture;
+use crafttests\fixtures\SessionsFixture;
+use crafttests\fixtures\UsersFixture;
+use crafttests\fixtures\VolumesFixture;
 use DateInterval;
 use DateTime;
 use Exception;
@@ -37,7 +35,7 @@ use yii\base\InvalidArgumentException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class GcTest extends Unit
 {
@@ -138,8 +136,7 @@ class GcTest extends Unit
         $this->gc->run(true);
 
         $items = (new Query())
-            ->select('*')
-            ->from($table)
+            ->from([$table])
             ->where(['id' => $ids])
             ->all();
 
@@ -153,36 +150,28 @@ class GcTest extends Unit
     public function testRunForExpiringUsers()
     {
         // 2 days
-        Craft::$app->getConfig()->getGeneral()->purgePendingUsersDuration = 172800;
+        Craft::$app->getConfig()->getGeneral()->purgePendingUsersDuration = 60 * 60 * 24 * 2;
+
+        $count = User::find()
+            ->username(['user1', 'user2', 'user3', 'user4'])
+            ->anyStatus()
+            ->count();
+
+        // Make sure all 4 users are in there
+        $this->assertEquals(4, $count);
 
         // Create then with 3 days
         $this->_createExpiringPendingUsers();
 
         $this->gc->run(true);
 
-        $users = (new Query())
-            ->select('*')
-            ->from('{{%users}}')
-            ->where(['username' => ['user1', 'user2', 'user3', 'user4']])
-            ->all();
+        $count = User::find()
+            ->username(['user1', 'user2', 'user3', 'user4'])
+            ->anyStatus()
+            ->count();
 
-        // Nothing actually gets deleted. The elements dateDeleted should be set for user1 and user2 however
-        $this->assertCount(4, $users);
-
-        $deletedUsers = (new Query())
-            ->select('*')
-            ->from('{{%users}} users')
-            ->where(['username' => ['user1', 'user2', 'user3', 'user4']])
-            ->leftJoin('{{%elements}} elements', '[[elements.id]] = [[users.id]]')
-            ->andWhere('[[elements.dateDeleted]] is not null')
-            ->all();
-
-        $this->assertCount(2, $deletedUsers);
-
-        $user3 = ArrayHelper::filterByValue($deletedUsers, 'username', 'user3');
-        $user4 = ArrayHelper::filterByValue($deletedUsers, 'username', 'user4');
-        $this->assertEmpty($user3);
-        $this->assertEmpty($user4);
+        // Should only be 2 users now
+        $this->assertEquals(2, $count);
     }
 
     // Data Providers
@@ -196,10 +185,10 @@ class GcTest extends Unit
     public function gcDataProvider(): array
     {
         return [
-            [1, '1005', Session::tableName(), ['1003', '1004', '1005']],
-            [1, '1000', Section::tableName(), ['1000', '1001', '1002']],
-            [1, '1000', EntryType::tableName(), ['1000', '1001', '1002']],
-            [1, '1000', Volume::tableName(), ['1000', '1001', '1002']],
+            [1, '1005', Table::SESSIONS, ['1003', '1004', '1005']],
+            [1, '1000', Table::SECTIONS, ['1000', '1001', '1002']],
+            [1, '1000', Table::ENTRYTYPES, ['1000', '1001', '1002']],
+            [1, '1000', Table::VOLUMES, ['1000', '1001', '1002']],
         ];
     }
 
@@ -207,7 +196,7 @@ class GcTest extends Unit
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {
@@ -227,20 +216,20 @@ class GcTest extends Unit
      * @param int $expectedRemoval
      * @param array|null $notAllowedTitles
      */
-    private function _doEntryTest(int $expectedRemoval, array $notAllowedTitles = null)
+    private function _doEntryTest(int $expectedRemoval, array $notAllowedTitles = [])
     {
-        $totalEntries = (new Query())->select('*')->from('{{%entries}}')->count();
+        $totalEntries = Entry::find()->trashed()->count();
         $this->gc->run(true);
         $entries = Entry::find()
+            ->trashed()
             ->asArray()
-            ->trashed(null)
             ->all();
 
         $this->assertCount($totalEntries - $expectedRemoval, $entries);
 
         // Check any non allowed titles. Fail if an entry exists with a title that isn't allowed.
         foreach ($notAllowedTitles as $notAllowedTitle) {
-            $doesEntryExistWithThisTitle = ArrayHelper::filterByValue($entries, 'title', $notAllowedTitle);
+            $doesEntryExistWithThisTitle = ArrayHelper::where($entries, 'title', $notAllowedTitle);
             if ($doesEntryExistWithThisTitle) {
                 $this->fail("Entries were deleted but an entry with title ($notAllowedTitle) still exists");
             }
@@ -252,9 +241,9 @@ class GcTest extends Unit
      */
     private function _createExpiringPendingUsers()
     {
-        $date = (new DateTime('now'))->sub(new DateInterval('P3D'))->format('Y-m-d H:i:s');
+        $date = (new DateTime('now', new \DateTimeZone('UTC')))->sub(new DateInterval('P3D'))->format('Y-m-d H:i:s');
 
-        $userRecords = User::find()
+        $userRecords = UserRecord::find()
             ->where(['username' => ['user1', 'user2']])
             ->all();
 

@@ -5,10 +5,11 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\helpers;
+namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\db\Table;
 use craft\helpers\Db;
 use craft\test\mockclasses\serializable\Serializable;
 use DateTime;
@@ -23,7 +24,7 @@ use yii\db\Schema;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class DbHelperTest extends Unit
 {
@@ -477,7 +478,7 @@ class DbHelperTest extends Unit
     public function deleteTablesDataProvider(): array
     {
         return [
-            [0, '{{%users}} users', "[[users.id]] = 1234567890 and [[users.uid]] = 'THISISNOTAUID'"]
+            [0, Table::USERS . ' users', "[[users.id]] = 1234567890 and [[users.uid]] = 'THISISNOTAUID'"]
         ];
     }
 
@@ -607,7 +608,7 @@ class DbHelperTest extends Unit
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {

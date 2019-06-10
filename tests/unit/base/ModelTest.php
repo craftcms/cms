@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\models;
+namespace crafttests\unit\models;
 
 use Codeception\Test\Unit;
 use Craft;
@@ -19,7 +19,7 @@ use Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class ModelTest extends Unit
 {

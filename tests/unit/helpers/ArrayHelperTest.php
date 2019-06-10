@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\helpers;
+namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\ArrayHelper;
@@ -17,7 +17,7 @@ use UnitTester;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class ArrayHelperTest extends Unit
 {
@@ -136,7 +136,7 @@ class ArrayHelperTest extends Unit
     /**
      *
      */
-    public function testFilterbyValue()
+    public function testWhere()
     {
         $array = [
             [
@@ -149,31 +149,31 @@ class ArrayHelperTest extends Unit
             ]
         ];
 
-        $filtered = ArrayHelper::filterByValue($array, 'name', 'array 1');
+        $filtered = ArrayHelper::where($array, 'name', 'array 1');
         $this->assertCount(1, $filtered);
         $this->assertSame('the first array', $filtered[0]['description']);
 
         // Set the name to empty and see if we can filter by keys with an empty value
         $array[0]['name'] = '';
-        $filtered = ArrayHelper::filterByValue($array, 'name', '');
+        $filtered = ArrayHelper::where($array, 'name', '');
         $this->assertCount(1, $filtered);
         $this->assertSame('the first array', $filtered[0]['description']);
 
         // Add a new key to the array that it empty and with an empty value. Make sure that when filtering empty by empty  it returns everything.
         $array[0][''] = '';
-        $filtered = ArrayHelper::filterByValue($array, '', '');
+        $filtered = ArrayHelper::where($array, '', '');
         $this->assertCount(count($array), $filtered);
         $this->assertSame($array, $filtered);
 
         // Filter by emojis?
         $array[0]['😀'] = '😘';
-        $filtered = ArrayHelper::filterByValue($array, '😀', '😘');
+        $filtered = ArrayHelper::where($array, '😀', '😘');
         $this->assertCount(1, $filtered);
         $this->assertSame('the first array', $filtered[0]['description']);
 
         // See if we can filter by an array as a value.
         $this->assertSame([['name' => ['testname' => true]]],
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => ['testname' => true]],
                     ['name' => '22'],
@@ -184,7 +184,7 @@ class ArrayHelperTest extends Unit
 
         // Strict will only return 1. Non strict will typecast integer to string and thus find 2.
         $this->assertCount(2,
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => 22],
                     ['name' => '22'],
@@ -195,7 +195,7 @@ class ArrayHelperTest extends Unit
             )
         );
         $this->assertCount(1,
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => 22],
                     ['name' => '22'],
@@ -208,7 +208,7 @@ class ArrayHelperTest extends Unit
 
         $this->assertSame(
             [['name' => 'john']],
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => 'john'],
                     ['name' => 'michael'],
@@ -220,7 +220,7 @@ class ArrayHelperTest extends Unit
 
         $this->assertSame(
             [['name' => 'john']],
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => 'john'],
                     ['name' => 'michael'],

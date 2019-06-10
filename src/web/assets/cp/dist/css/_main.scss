@@ -3281,6 +3281,11 @@ ul.tree,
   min-width: 0;
   min-height: 0;
   max-width: 400px;
+
+  .body {
+    max-height: 100%;
+    overflow-y: auto;
+  }
 }
 
 /* ----------------------------------------

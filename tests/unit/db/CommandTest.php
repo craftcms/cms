@@ -5,12 +5,13 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\db;
+namespace crafttests\unit\db;
 
 use Codeception\Test\Unit;
 use Craft;
 use craft\db\Command;
 use craft\db\Query;
+use craft\db\Table;
 use DateTime;
 use DateTimeZone;
 use yii\db\Exception;
@@ -20,12 +21,17 @@ use yii\db\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class CommandTest extends Unit
 {
-    // Public Methods
+    // Public Properties
     // =========================================================================
+
+    /**
+     * @var DateTime
+     */
+    protected $sessionDate;
 
     // Tests
     // =========================================================================
@@ -44,9 +50,8 @@ class CommandTest extends Unit
     public function testInsertDateCreated()
     {
         $session = $this->ensureSession();
-        $date = new DateTime('now', new DateTimeZone('UTC'));
 
-        $this->assertSame($session['dateCreated'], $date->format('Y-m-d H:i:s'));
+        $this->assertSame($session['dateCreated'], $this->sessionDate->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -57,18 +62,10 @@ class CommandTest extends Unit
         $session = $this->ensureSession();
 
         // Ensure that there is a diff in dates....
-        sleep(5);
-
-        $dateTimeZone = new DateTimeZone('UTC');
-        $oldDate = new DateTime($session['dateUpdated'], $dateTimeZone);
-
-        // Save it again. Ensure dateUpdated is the same, as nothing has changed.
-        $session = $this->updateSession($session);
-        $this->assertSame($oldDate->format('Y-m-d H:i:s'), $session['dateUpdated']);
+        sleep(1);
 
         // Save it again without a dateUpdated value. Ensure dateUpdated is now current.
-        $date = new DateTime('now', $dateTimeZone);
-
+        $date = new DateTime('now', new DateTimeZone('UTC'));
         unset($session['dateUpdated']);
         $session = $this->updateSession($session);
 
@@ -83,8 +80,10 @@ class CommandTest extends Unit
      */
     public function ensureSession(): array
     {
+        $this->sessionDate = new DateTime('now', new DateTimeZone('UTC'));
+
         $command = Craft::$app->getDb()->createCommand()
-            ->insert('{{%sessions}}',
+            ->insert(Table::SESSIONS,
                 [
                     'userId' => 1,
                     'token' => 'test'
@@ -108,25 +107,26 @@ class CommandTest extends Unit
      */
     public function updateSession($values): array
     {
-        $command = Craft::$app->getDb()->createCommand()
-            ->update('{{%sessions}}', $values)->execute();
-
-        $this->assertGreaterThan(0, $command);
-
-        return $this->getSession([
+        $condition = [
             'userId' => $values['userId'],
             'token' => $values['token']
-        ]);
+        ];
+
+        $command = Craft::$app->getDb()->createCommand()
+            ->update(Table::SESSIONS, $values, $condition)
+            ->execute();
+
+        return $this->getSession($condition);
     }
 
     /**
      * Gets a session row
      *
-     * @param array $params
+     * @param array $condition
      * @return array
      */
-    public function getSession(array $params): array
+    public function getSession(array $condition): array
     {
-        return (new Query())->select('*')->from('{{%sessions}}')->where($params)->one();
+        return (new Query())->from([Table::SESSIONS])->where($condition)->one();
     }
 }

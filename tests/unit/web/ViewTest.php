@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\web;
+namespace crafttests\unit\web;
 
 use Codeception\Stub;
 use Craft;
@@ -16,7 +16,7 @@ use craft\test\mockclasses\arrayable\ExampleArrayble;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
-use craftunit\fixtures\SitesFixture;
+use crafttests\fixtures\SitesFixture;
 use ReflectionException;
 use Throwable;
 use Twig\Error\LoaderError;
@@ -31,7 +31,7 @@ use yii\base\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class ViewTest extends TestCase
 {
@@ -564,7 +564,7 @@ class ViewTest extends TestCase
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {

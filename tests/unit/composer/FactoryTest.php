@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\composer;
+namespace crafttests\unit\composer;
 
 use Composer\Config;
 use Composer\Downloader\DownloadManager;
@@ -19,7 +19,7 @@ use UnitTester;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class FactoryTest extends TestCase
 {
@@ -27,12 +27,12 @@ class FactoryTest extends TestCase
     // =========================================================================
 
     /**
-     * @var Factory $factory
+     * @var Factory
      */
     protected $factory;
 
     /**
-     * @var UnitTester $tester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -40,7 +40,7 @@ class FactoryTest extends TestCase
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {

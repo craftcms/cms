@@ -5,15 +5,16 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\services;
+namespace crafttests\unit\services;
 
 use Codeception\Test\Unit;
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\services\Search;
-use craftunit\fixtures\UsersFixture;
+use crafttests\fixtures\UsersFixture;
 use UnitTester;
 
 /**
@@ -26,7 +27,7 @@ use UnitTester;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class SearchTest extends Unit
 {
@@ -76,6 +77,9 @@ class SearchTest extends Unit
 
         // Filter them
         $filtered = $this->search->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, $returnScores);
+
+        sort($result, SORT_NUMERIC);
+        sort($filtered, SORT_NUMERIC);
 
         $this->assertSame($result, $filtered);
     }
@@ -135,7 +139,7 @@ class SearchTest extends Unit
         $this->search->indexElementAttributes($user);
 
         // Get the data from the DB
-        $searchIndex = (new Query())->select('*')->from('{{%searchindex}}')->where(['elementId' => $user->id])->all();
+        $searchIndex = (new Query())->from([Table::SEARCHINDEX])->where(['elementId' => $user->id])->all();
 
         $this->assertSame(' testindexelementattributes1 test com ', $this->_getSearchIndexValueByAttribute('email', $searchIndex));
         $this->assertSame(' john smith ', $this->_getSearchIndexValueByAttribute('firstname', $searchIndex));
@@ -220,7 +224,7 @@ class SearchTest extends Unit
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {
@@ -239,7 +243,7 @@ class SearchTest extends Unit
      */
     private function _getSearchIndexValueByAttribute($attributeName, $searchIndex): string
     {
-        foreach (ArrayHelper::filterByValue($searchIndex, 'attribute', $attributeName) as $array) {
+        foreach (ArrayHelper::where($searchIndex, 'attribute', $attributeName) as $array) {
             if (isset($array['keywords'])) {
                 return $array['keywords'];
             }

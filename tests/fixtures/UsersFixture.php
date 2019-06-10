@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\fixtures;
+namespace crafttests\fixtures;
 
 use craft\test\fixtures\elements\UserFixture;
 
@@ -14,7 +14,7 @@ use craft\test\fixtures\elements\UserFixture;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class UsersFixture extends UserFixture
 {

@@ -3,9 +3,39 @@
 ## Unreleased
 
 ### Added
+- Added the `tests/setup` command, which generates a test suite for the current Craft project.
+- Added `craft\console\Request::getToken()`.
+- Added `craft\test\Craft::assertElementsExist()`.
+- Added `craft\test\Craft::assertTestFails()`.
+
+### Changed
+- Craft now deletes expired template caches as part of its garbage collection routine.
+- Improved the reliability of `craft\helpers\UrlHelper::rootRelativeUrl()` and `cpUrl()`.
+- `craft\test\console\ConsoleTest::consoleCommand()` now accepts a third argument to ignore `stdOut` calls.
+- `craft\test\fixtures\elements\ElementFixture` now supports a `fieldLayoutType` key in fixture data.
+- `craft\test\fixtures\FieldLayoutFixture` now supports Matrix fields.
+
+### Fixed
+- Fixed a SQL error that occurred when creating new entries on multi-site installs. ([#4363](https://github.com/craftcms/cms/issues/4363))
+- Fixed an error that occurred when a user attempted to edit an entry if they didn’t have the “Publish live changes” permission for the section. ([#4368](https://github.com/craftcms/cms/issues/4368))
+- Fixed a bug where entries weren’t getting generated slug values if their entry type had a custom title format. ([#4373](https://github.com/craftcms/cms/issues/4373))
+- Fixed a bug where Craft wouldn’t remember the selected tab when clicking “Update entry”. ([#4386](https://github.com/craftcms/cms/issues/4386))
+- Fixed a bug where the Dropdown Options modal in Table field settings wasn’t scrolling if there were too many dropdown options to fit in the viewport. ([#4376](https://github.com/craftcms/cms/issues/4376))
+- Fixed a bug where Craft was appending token params to action URLs that were generated on tokenized site requests.
+- Fixed a bug where preview and share URLs for the homepage entry were getting a URI of `__home__`. ([#4377](https://github.com/craftcms/cms/issues/4377))
+- Fixed a bug where element index modals weren’t lazy-loading additional batches of elements. ([#4385](https://github.com/craftcms/cms/issues/4385))
+- Fixed a SQL error that could occur when updating to Craft 3.2.
+- Fixed a bug where updating to Craft 3.2 could take a long time. ([#4374](https://github.com/craftcms/cms/issues/4374))
+- Fixed test reliability issues.
+
+## 3.2.0-beta.1 - 2019-06-04
+
+### Added
 - Date/Time, Dropdown, Lightswitch, Number, and Radio Buttons fields are now listed as sort options in element indexes. ([#2818](https://github.com/craftcms/cms/issues/2818))
 - The `index-assets/*` commands now support a `--create-missing-assets=0` option, which prevents Craft from creating asset records when they don’t exist yet, and offers an opportunity to fix the location of any asset records that are missing their associated files, when the filename matches one of the files missing an index.
+- Added a testing framework for Craft and plugins, powered by Codeception. ([#3382](https://github.com/craftcms/cms/pull/3382), [#1485](https://github.com/craftcms/cms/issues/1485), [#944](https://github.com/craftcms/cms/issues/944))
 - Added `craft\base\BlockElementInterface`.
+- Added `craft\base\ElementInterface::setRevisionCreatorId()`.
 - Added `craft\base\ElementTrait::$previewing`.
 - Added `craft\base\Field::getSortOption()`.
 - Added `craft\base\SortableFieldInterface`, which can be implemented by field classes that should be sortable in element indexes.
@@ -30,6 +60,10 @@
 - Fixed a bug where previewing pending/expired entries would 404.
 - Fixed a bug where Craft could load a draft or revision when requesting an element’s URI, rather than the source element.
 - Fixed an error that could occur when `craft\helpers\UrlHelper` methods were called on console requests.
+- Fixed a bug where the `$creatorId` argument passed to `craft\services\Revisions::revertToRevision()` was being ignored.
+- Fixed a bug where entry drafts weren’t saving custom field values that didn’t exist in the source entry’s field layout. ([#4352](https://github.com/craftcms/cms/issues/4352))
+- Fixed a bug where initial draft creation would fail if something was edited before a slug had been assigned.
+- Fixed a bug where Craft could redirect to a 404 after updating an entry.
 
 ## 3.2.0-alpha.7 - 2019-05-28
 
@@ -252,7 +286,7 @@
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
 
-## Unreleased (3.1)
+## 3.1.29 - 2019-06-04
 
 ### Added
 - Added the `restore` command, which restores a database backup.
@@ -273,6 +307,7 @@
 - Fixed a bug where `craft\services\Fields::getFieldsByElementType()` would return duplicate results if a field was used in more than one field layout for the element type. ([#4336](https://github.com/craftcms/cms/issues/4336))
 - Fixed a bug where Craft wasn’t respecting the `allowUppercaseInSlug` config setting when generating slugs in the Control Panel. ([#4330](https://github.com/craftcms/cms/issues/4330))
 - Fixed a bug where Control Panel Ajax requests weren’t working if a custom `pathParam` config setting value was set. ([#4334](https://github.com/craftcms/cms/issues/4334))
+- Fixed a JavaScript error that could occur when saving a new entry, if the selected entry type didn’t have a Title field. ([#4353](https://github.com/craftcms/cms/issues/4353))
 
 ## 3.1.28 - 2019-05-21
 

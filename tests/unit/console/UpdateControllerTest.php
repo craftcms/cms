@@ -5,20 +5,20 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\console;
+namespace crafttests\unit\console;
 
 use craft\test\console\ConsoleTest as BaseConsoleTest;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 
 /**
- * Class ConsoleTest
+ * Class UpdateControllerTest
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
-class ConsoleTest extends BaseConsoleTest
+class UpdateControllerTest extends BaseConsoleTest
 {
     // Public methods
     // =========================================================================
@@ -26,28 +26,12 @@ class ConsoleTest extends BaseConsoleTest
     /**
      * @throws InvalidConfigException
      */
-    public function testStuff()
+    public function testUpdateInfo()
     {
         $this->consoleCommand('update/info')
             ->stdOut('Fetching available updates ... ')
             ->stdOut('done' . PHP_EOL)
             ->stdOut('You’re all up-to-date!' . PHP_EOL . PHP_EOL)
-            ->exitCode(ExitCode::OK)
-            ->run();
-    }
-
-    /**
-     * @throws InvalidConfigException
-     */
-    public function testTestController()
-    {
-        $this->consoleCommand('test/test')
-            ->stdOut('22')
-            ->stderr('123321123')
-            ->select('Select', '2', ['2', '22'])
-            ->confirm('asd', true, true)
-            ->prompt('A prompt', 'hi', ['2', '22'])
-            ->outputCommand('An output command')
             ->exitCode(ExitCode::OK)
             ->run();
     }

@@ -20,9 +20,13 @@ A by-product of this is that some heavy lifting is required if element types are
 defined in a single fixture and data file. For this reason support is provided 
 out of the box for setting up various element types. 
 
+Provide your own custom element type? 
+You can extend `craft\test\fixtures\elements\ElementFixture` to provide developers using your module/plugin support 
+for their testing code - or just provide yourself support for testing your own module/plugin.  
+
 ::: tip
 Craft's element fixtures are based on the excellent team over at [robuust](https://robuust.digital/) 
-and their `craft-fixtures`  [plugin](https://github.com/robuust/craft-fixtures). 
+and their `craft-fixtures`  [plugin](https://github.com/robuust/craft-fixtures).
 :::
 
 ### `Asset fixtures`
@@ -159,6 +163,53 @@ return [
 
 The primary keys are: `siteId`, `username` and `email`.
 
+### Element fixture field layout and content. 
+
+If you pass a `fieldLayoutType` into any class that extends the base `ElementFixture` class Craft 
+will automatically try to find that the field layout associated with the type you passed in and link this field 
+layout to the new Element you are creating. 
+
+If you want to set custom field values you can simply include those into your fixture data file (the examples as shown above). 
+Here's an example of a fixture data file that is creating an entry with a title and some custom fields: 
+
+````php
+<?php
+return [
+    [
+        // Standard `craft\elements\Entry` fields. 
+        'authorId' => '1',
+        'sectionId' => '1000',
+        'typeId' => '1000',
+        'title' => 'Theories of matrix',
+        
+        // Set a  field layout
+        'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
+        
+        // Set field values
+        'aPlainTextFieldHandle' => 'value of text field',
+        'anotherPlainTextFieldHandle' => 'another valu',
+        
+        // If your field layout defines matrix fields - you can set those too!
+        'matrixFirst' => [
+            'new1' => [
+                'type' => 'aBlock',
+                'fields' => [
+                    'firstSubfield' => 'Some text'
+    
+                ],
+            ],
+            'new2' => [
+                'type' => 'aBlock',
+                'fields' => [
+                    'firstSubfield' => 'Some text'
+                ],
+            ],
+        ],
+    ]
+];
+
+````
+
 ### Field layout fixtures
 Another Craft specific concept is field layouts. Field layouts consist 
 of 
@@ -178,28 +229,74 @@ containing at least the following keys (including the nested position)
 
 ```php
 <?php
+use craft\fields\Matrix;
 
 return [
     [
-            'type' => 'craft\test\Craft', // Required
-            'tabs' => [ // Required - Value can be set to an empty array[]
-                [
-                    'name' => 'Tab 1', // Required
-                    'fields' => [ // Required - Value can be set to an empty array[]
-                        [
-                            'layout-link' => [ // Required
-                                'required' => true // Required
-                            ],
-                            'field' => [
-                                'name' => 'Test field', // Required
-                                'handle' => 'testField2', // Required
-                                'fieldType' => SomeField::class, // Required
-                            ]
+        'type' => 'craft\test\Craft', // Required - can be set to whatever you want. 
+        'tabs' => [ // Required - Value can be set to an empty array[]
+            [
+                'name' => 'Tab 1', // Required
+                'fields' => [ // Required - Value can be set to an empty array[]
+                    [
+                        'layout-link' => [ // Required
+                            'required' => true // Required
                         ],
-                    ]
+                        'field' => [
+                            'name' => 'Test field', // Required
+                            'handle' => 'testField2', // Required
+                            'fieldType' => SomeField::class, // Required
+                        ]
+                    ],
+                    // Even matrix fields are supported in the following config: 
+                    [
+                        'layout-link' => [
+                            'required' => false
+                        ],
+                        'field' => [
+                            'name' => 'Matrix 1',
+                            'handle' => 'matrixFirst',
+                            'fieldType' => Matrix::class,
+                            'blockTypes' => [
+                                'new1' => [
+                                    'name' => "A Block",
+                                    'handle' => "aBlock",
+                                    'fields' => [
+                                        'new1' => [
+                                            'type' => SomeField::class,
+                                            'name' => 'First Subfield',
+                                            'handle' => 'firstSubfield',
+                                            'instructions' => '',
+                                            'required' => false,
+                                            'typesettings' => [
+                                                'multiline' => ''
+                                            ]
+                                        ]
+                                    ]
+                                ],
+                                'new2' => [
+                                    'name' => "Another Block",
+                                    'handle' => "another Block",
+                                    'fields' => [
+                                        'new1' => [
+                                            'type' => SomeField::class,
+                                            'name' => 'Another Subfield',
+                                            'handle' => 'anotherSubfield',
+                                            'instructions' => '',
+                                            'required' => false,
+                                            'typesettings' => [
+                                                'multiline' => ''
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
                 ]
             ]
         ]
+    ]
 ];
 ```
 

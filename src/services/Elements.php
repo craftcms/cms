@@ -929,6 +929,7 @@ class Elements extends Component
                     $siteClone->duplicateOf = $siteElement;
                     $siteClone->propagating = true;
                     $siteClone->id = $mainClone->id;
+                    $siteClone->uid = $mainClone->uid;
                     $siteClone->contentId = null;
 
                     // Attach behaviors

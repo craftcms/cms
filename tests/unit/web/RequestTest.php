@@ -5,12 +5,12 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\web;
+namespace crafttests\unit\web;
 
 use Craft;
 use craft\test\TestCase;
 use craft\web\Request;
-use craftunit\fixtures\SitesFixture;
+use crafttests\fixtures\SitesFixture;
 use ReflectionException;
 use UnitTester;
 use yii\web\BadRequestHttpException;
@@ -20,7 +20,7 @@ use yii\web\BadRequestHttpException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class RequestTest extends TestCase
 {
@@ -426,7 +426,7 @@ class RequestTest extends TestCase
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {

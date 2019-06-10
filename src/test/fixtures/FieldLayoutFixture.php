@@ -5,18 +5,18 @@
  * @license   https://craftcms.github.io/license/
  */
 
-
 namespace craft\test\fixtures;
-
 
 use Craft;
 use craft\base\Field;
 use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
+use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
+use craft\services\Fields;
 use craft\test\Fixture;
 use Throwable;
 use yii\base\Exception as YiiBaseException;
@@ -28,7 +28,7 @@ use yii\db\Exception as YiiDbException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.1
+ * @since  3.2
  */
 abstract class FieldLayoutFixture extends Fixture
 {
@@ -62,9 +62,7 @@ abstract class FieldLayoutFixture extends Fixture
             // Loop through the saved tabs (Which now have an id param)
             foreach ($fieldLayout->getTabs() as $tab) {
                 // Get the content from our fields from the original data array (from $this->dataFile)
-                $tabContent = ArrayHelper::firstValue(
-                    ArrayHelper::filterByValue($tabs, 'name', $tab->name)
-                );
+                $tabContent = ArrayHelper::firstWhere($tabs, 'name', $tab->name);
 
                 $fieldSortOrder = 1;
 
@@ -76,10 +74,24 @@ abstract class FieldLayoutFixture extends Fixture
                     $class = $field['fieldType'];
                     unset($field['fieldType']);
 
+                    $blockTypes = [];
+                    if ($class instanceof Matrix) {
+                        if (isset($field['blockTypes'])) {
+                            $blockTypes = $field['blockTypes'];
+                            unset($field['blockTypes']);
+                        }
+                    }
+
                     // Create and add a field.
+                    /* @var Field $field*/
                     $field = new $class($field);
                     if (!Craft::$app->getFields()->saveField($field)) {
                         $this->throwModelError($field);
+                    }
+
+                    // Set any block types to the matrix.
+                    if ($field instanceof Matrix && $blockTypes) {
+                        $field->setBlockTypes($blockTypes);
                     }
 
                     // Link it
@@ -91,6 +103,8 @@ abstract class FieldLayoutFixture extends Fixture
                 }
             }
         }
+
+        Craft::$app->set('fields', new Fields());
     }
 
     /**
@@ -115,6 +129,19 @@ abstract class FieldLayoutFixture extends Fixture
     }
 
     /**
+     * Unloading fixtures removes fields and possible tables - so we need to refresh the DB Schema before our parent calls.
+     * Craft::$app->getDb()->createCommand()->checkIntegrity(true);
+     *
+     * @throws \yii\base\NotSupportedException
+     */
+    public function afterUnload()
+    {
+        $this->db->getSchema()->refresh();
+
+        parent::afterUnload();
+    }
+
+    /**
      * Attempt to delete all fields and field layout by a field handle.
      *
      * 1. Get a field by handle
@@ -134,8 +161,10 @@ abstract class FieldLayoutFixture extends Fixture
             return false;
         }
 
-        $layoutId = (new Query())->select('layoutId')
-            ->from(Table::FIELDLAYOUTFIELDS)
+        /** @var Field $field */
+        $layoutId = (new Query())
+            ->select(['layoutId'])
+            ->from([Table::FIELDLAYOUTFIELDS])
             ->where(['fieldId' => $field->id])
             ->column();
 

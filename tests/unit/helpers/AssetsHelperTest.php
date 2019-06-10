@@ -5,13 +5,13 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\helpers;
+namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Asset;
 use craft\helpers\Assets;
-use craftunit\fixtures\AssetsFixture;
+use crafttests\fixtures\AssetsFixture;
 use UnitTester;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -21,7 +21,7 @@ use yii\base\InvalidConfigException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class AssetsHelperTest extends Unit
 {

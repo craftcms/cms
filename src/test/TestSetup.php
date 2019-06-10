@@ -59,6 +59,7 @@ use craft\services\UserPermissions;
 use craft\services\Users;
 use craft\services\Utilities;
 use craft\services\Volumes;
+use craft\test\console\ConsoleTest;
 use craft\test\Craft as CraftTest;
 use craft\web\Application;
 use craft\web\ErrorHandler;
@@ -67,13 +68,13 @@ use craft\web\Response;
 use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
-use craftunit\console\ConsoleTest;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionException;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\console\Controller;
 use yii\db\Exception;
 use yii\mutex\Mutex;
 
@@ -86,7 +87,7 @@ use yii\mutex\Mutex;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.1
+ * @since  3.2
  */
 class TestSetup
 {

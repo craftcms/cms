@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\fixtures;
+namespace crafttests\fixtures;
 
 use craft\test\fixtures\elements\EntryFixture as BaseEntriesFixture;
 
@@ -14,7 +14,7 @@ use craft\test\fixtures\elements\EntryFixture as BaseEntriesFixture;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class EntryFixture extends BaseEntriesFixture
 {

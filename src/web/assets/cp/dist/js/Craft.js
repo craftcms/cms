@@ -1,4 +1,4 @@
-/*!   - 2019-06-03 */
+/*!   - 2019-06-07 */
 (function($){
 
 /** global: Craft */
@@ -3381,7 +3381,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.view = this.createView(this.getSelectedViewMode(), {
                 context: this.settings.context,
-                batchSize: this.getSelectedSortAttribute() === 'structure' ? this.settings.batchSize : null,
+                batchSize: this.settings.context !== 'index' || this.getSelectedSortAttribute() === 'structure' ? this.settings.batchSize : null,
                 params: params,
                 selectable: selectable,
                 multiSelect: (this.actions || this.settings.multiSelect),
@@ -4779,8 +4779,14 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
         },
 
         updateTarget: function() {
-            var sourceVal = this.$source.val(),
-                targetVal = this.generateTargetValue(sourceVal);
+            var sourceVal = this.$source.val();
+
+            if (typeof sourceVal === 'undefined') {
+                // The source input may not exist anymore
+                return;
+            }
+
+            var targetVal = this.generateTargetValue(sourceVal);
 
             this.$target.val(targetVal);
             this.$target.trigger('change');
@@ -13094,7 +13100,18 @@ Craft.DraftEditor = Garnish.Base.extend(
 
                     // Did we just create a draft?
                     if (!this.settings.draftId) {
-                        history.replaceState({}, '', document.location.href + (document.location.href.match(/\?/) ? '&' : '?') + 'draftId=' + response.draftId);
+                        var newHref;
+                        var anchorPos = document.location.href.search('#');
+                        if (anchorPos !== -1) {
+                            newHref = document.location.href.substr(0, anchorPos);
+                        } else {
+                            newHref = document.location.href;
+                        }
+                        newHref += (newHref.match(/\?/) ? '&' : '?') + 'draftId=' + response.draftId;
+                        if (anchorPos !== -1) {
+                            newHref += document.location.href.substr(anchorPos);
+                        }
+                        history.replaceState({}, '', newHref);
                         this.settings.draftId = response.draftId;
                         this.settings.isLive = false;
                         this.settings.canDeleteDraft = true;

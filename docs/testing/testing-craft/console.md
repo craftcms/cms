@@ -34,7 +34,7 @@ Your unit test needs to extend `craft\test\console\ConsoleTest`.
 ```php
 <?php
 
-namespace craftunit\console;
+namespace crafttests\unit\console;
 
 use \craft\test\console\ConsoleTest;
 
@@ -49,7 +49,7 @@ Create a test like you would in any other unit test.
 ```php
 <?php
 
-namespace craftunit\console;
+namespace crafttests\unit\console;
 
 use \craft\test\console\ConsoleTest;
 
@@ -84,8 +84,8 @@ specify what 'user journey' your console command will follow.
 public function testSomething()
 {
     $this->consoleCommand('test-controller/test-action')
-        ->stdout('This output must be given')
-        ->stdout('Followed by this one')
+        ->stdOut('This output must be given')
+        ->stdOut('Followed by this one')
         ->prompt('The user must then input something', 'This will be returned in the controller action (your console command)', 'the $default value')
         ->exitCode(ExitCode::OK)
         ->run();
@@ -101,8 +101,8 @@ The commands will be checked in the order you define them.
 So if your console command is structured as follows: 
 ```php
 public function actionSomething() {
-    $this->stdout('first');
-    $this->stdout('second');
+    $this->stdOut('first');
+    $this->stdOut('second');
 }
 ```
 
@@ -110,28 +110,33 @@ Dont setup your method call as follows:
 
 ```php
 $this->consoleCommand('test-controller/test-action')
-        ->stdout('second')
-        ->stdout('first')
+        ->stdOut('second')
+        ->stdOut('first')
         ->exitCode(ExitCode::OK)
         ->run();
 ```
 As this **will** fail. 
 
+::: tip
+If you want to ignore all `stdOut` calls you can pass `false` as the third parameter of the `consoleCommand()` 
+call. You will then not have to define your `stdOut` calls when calling `$this->consoleCommand()` and Craft 
+will ignore then when checking what your console command returns to the user. 
+:::
 
 ## Methods
-### `stdout`
+### `stdOut`
 
  - **string $desiredOutput:** The string that should be output by your console command
 
-If your console command calls `$this->stdout()` you should test that this method is correctly
-called using the `stdout` method. The value you pass in will be checked against what your 
-console command passes in when calling `$this->stdout()`
+If your console command calls `$this->stdOut()` you should test that this method is correctly
+called using the `stdOut` method. The value you pass in will be checked against what your 
+console command passes in when calling `$this->stdOut()`
 
 ### `stderr`
 
 - **string $desiredOutput:** The error string that should be output by your console command
 
-Exactly the same principal as `stdout` above - except for the `$this->stderr()` method.
+Exactly the same principal as `stdOut` above - except for the `$this->stderr()` method.
 
 ### `prompt`
 

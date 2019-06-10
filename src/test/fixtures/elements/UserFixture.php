@@ -14,7 +14,7 @@ use craft\elements\User;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 abstract class UserFixture extends ElementFixture
 {
@@ -22,7 +22,7 @@ abstract class UserFixture extends ElementFixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public $modelClass = User::class;
 
@@ -30,7 +30,7 @@ abstract class UserFixture extends ElementFixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function isPrimaryKey(string $key): bool
     {

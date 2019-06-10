@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\behaviors;
+namespace crafttests\unit\behaviors;
 
 use Codeception\Test\Unit;
 use Craft;
@@ -20,7 +20,7 @@ use UnitTester;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class ContentBehaviorTest extends Unit
 {

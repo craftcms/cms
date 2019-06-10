@@ -113,4 +113,14 @@ class Request extends \yii\console\Request
     {
         return false;
     }
+
+    /**
+     * Returns the token submitted with the request, if there is one.
+     *
+     * @return string|null The token, or `null` if there isn’t one.
+     */
+    public function getToken()
+    {
+        return null;
+    }
 }

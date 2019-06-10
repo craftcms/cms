@@ -769,6 +769,13 @@ interface ElementInterface extends ComponentInterface
     public function getHasFreshContent(): bool;
 
     /**
+     * Sets the revision creator ID to be saved.
+     *
+     * @param int|null $creatorId
+     */
+    public function setRevisionCreatorId(int $creatorId = null);
+
+    /**
      * Sets the revision notes to be saved.
      *
      * @param string|null $notes

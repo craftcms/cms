@@ -47,7 +47,7 @@ containing sub-arrays which meet the following specifications:
    `MyModule::getInstance()->myService` you would enter 'myService' in this parameter. 
    Leave null if not applicable.  
    
-The paramteters must be entered in the order as mentioned above. 
+The parameters must be entered in the order as mentioned above. 
 ::: tip
 See an example map for the `craft\services\Elements` service below. 
 

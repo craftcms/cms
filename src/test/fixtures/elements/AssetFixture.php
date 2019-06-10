@@ -23,7 +23,7 @@ use craft\records\VolumeFolder;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.1
+ * @since  3.2
  */
 abstract class AssetFixture extends ElementFixture
 {
@@ -31,7 +31,7 @@ abstract class AssetFixture extends ElementFixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public $modelClass = Asset::class;
 
@@ -113,7 +113,7 @@ abstract class AssetFixture extends ElementFixture
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function beforeLoad()
     {
@@ -125,7 +125,7 @@ abstract class AssetFixture extends ElementFixture
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function beforeUnload()
     {
@@ -138,7 +138,7 @@ abstract class AssetFixture extends ElementFixture
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function isPrimaryKey(string $key): bool
     {

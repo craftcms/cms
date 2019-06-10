@@ -63,8 +63,9 @@ class SlugValidator extends Validator
     public function validateAttribute($model, $attribute)
     {
         $slug = $originalSlug = (string)$model->$attribute;
+        $isTemp = strpos($slug, '__temp_') === 0;
 
-        if ($slug === '' && $this->sourceAttribute !== null) {
+        if (($slug === '' || $isTemp) && $this->sourceAttribute !== null) {
             // Create a slug for them, based on the element's title.
             // Replace periods, underscores, and hyphens with spaces so they get separated with the slugWordSeparator
             // to mimic the default JavaScript-based slug generation.
@@ -80,7 +81,7 @@ class SlugValidator extends Validator
 
         if ($slug !== '') {
             $model->$attribute = $slug;
-        } else {
+        } else if (!$isTemp) {
             if ($originalSlug !== '') {
                 $this->addError($model, $attribute, Craft::t('yii', '{attribute} is invalid.'));
             } else {

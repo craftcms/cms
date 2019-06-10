@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\web;
+namespace crafttests\unit\web;
 
 use Craft;
 use craft\elements\User as UserElement;
@@ -21,7 +21,7 @@ use UnitTester;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class UserTest extends TestCase
 {
@@ -218,7 +218,7 @@ class UserTest extends TestCase
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function _before()
     {
@@ -250,7 +250,7 @@ class UserTest extends TestCase
     {
         $this->tester->mockCraftMethods('session', [
             'set' => function($name, $val) use ($value) {
-                $this->assertSame($value, $val);
+                $this->assertEqualsWithDelta($value, $val, 1);
             }
         ]);
     }

@@ -40,9 +40,6 @@ class m190529_204501_fix_duplicate_uids extends Migration
             // Duplicate! Give this element a unique UID
             $this->update(Table::ELEMENTS, ['uid' => StringHelper::UUID()], ['id' => $result['id']], [], false);
         }
-
-        // Now make sure this doesn't happen again
-        $this->createIndex(null, Table::ELEMENTS, ['uid'], true);
     }
 
     /**

@@ -87,6 +87,7 @@ use yii\validators\Validator;
  * @property int $totalDescendants The total number of descendants that the element has
  * @property string|null $uriFormat The URI format used to generate this element’s URL
  * @property string|null $url The element’s full URL
+ * @property-write int|null $revisionCreatorId revision creator ID to be saved
  * @property-write string|null $revisionNotes revision notes to be saved
  * @mixin ContentBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -748,6 +749,12 @@ abstract class Element extends Component implements ElementInterface
 
     // Properties
     // =========================================================================
+
+    /**
+     * @var string|null Revision creator ID to be saved
+     * @see setRevisionCreatorId()
+     */
+    protected $revisionCreatorId;
 
     /**
      * @var string|null Revision notes to be saved
@@ -1872,6 +1879,14 @@ abstract class Element extends Component implements ElementInterface
     public function getHasFreshContent(): bool
     {
         return ($this->contentId === null && !$this->hasErrors());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setRevisionCreatorId(int $creatorId = null)
+    {
+        $this->revisionCreatorId = $creatorId;
     }
 
     /**

@@ -5,14 +5,14 @@
  * @license   https://craftcms.github.io/license/
  */
 
-namespace craftunit\helpers;
+namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use Craft;
 use craft\errors\OperationAbortedException;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
-use craftunit\fixtures\EntryFixture;
+use crafttests\fixtures\EntryFixture;
 use Exception;
 use UnitTester;
 
@@ -21,7 +21,7 @@ use UnitTester;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
 class ElementHelperTest extends Unit
 {
