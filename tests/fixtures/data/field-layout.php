@@ -74,7 +74,7 @@ return [
                         'field' => [
                             'name' => 'Plain Text Field',
                             'handle' => 'plainTextField',
-                            'fieldType' => Number::class,
+                            'fieldType' => PlainText::class,
                         ]
                     ],
                 ]
