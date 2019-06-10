@@ -22,7 +22,7 @@ class GlobalSet extends BaseType
     /**
      * @inheritdoc
      */
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    public function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
         /** @var GlobalSetElement $source */
         $fieldName = $resolveInfo->fieldName;

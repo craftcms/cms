@@ -12,7 +12,7 @@ class TableRow extends BaseType
     /**
      * @inheritdoc
      */
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    public function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
         $fieldName = $resolveInfo->fieldName;
 

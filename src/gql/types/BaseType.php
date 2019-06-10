@@ -30,7 +30,7 @@ abstract class BaseType extends ObjectType
      *
      * @return mixed $result
      */
-    abstract protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo);
+    abstract public function resolve($source, $arguments, $context, ResolveInfo $resolveInfo);
 
     /**
      * Resolve a value with the directives that apply to it.
