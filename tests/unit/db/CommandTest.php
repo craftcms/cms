@@ -112,7 +112,7 @@ class CommandTest extends Unit
             'token' => $values['token']
         ];
 
-        $command = Craft::$app->getDb()->createCommand()
+        Craft::$app->getDb()->createCommand()
             ->update(Table::SESSIONS, $values, $condition)
             ->execute();
 

@@ -21,6 +21,7 @@ use craft\test\Fixture;
 use Throwable;
 use yii\base\Exception as YiiBaseException;
 use yii\base\InvalidArgumentException;
+use yii\base\NotSupportedException;
 use yii\db\Exception as YiiDbException;
 
 /**
@@ -75,11 +76,9 @@ abstract class FieldLayoutFixture extends Fixture
                     unset($field['fieldType']);
 
                     $blockTypes = [];
-                    if ($class instanceof Matrix) {
-                        if (isset($field['blockTypes'])) {
-                            $blockTypes = $field['blockTypes'];
-                            unset($field['blockTypes']);
-                        }
+                    if (($class instanceof Matrix) && isset($field['blockTypes'])) {
+                        $blockTypes = $field['blockTypes'];
+                        unset($field['blockTypes']);
                     }
 
                     // Create and add a field.
@@ -132,7 +131,7 @@ abstract class FieldLayoutFixture extends Fixture
      * Unloading fixtures removes fields and possible tables - so we need to refresh the DB Schema before our parent calls.
      * Craft::$app->getDb()->createCommand()->checkIntegrity(true);
      *
-     * @throws \yii\base\NotSupportedException
+     * @throws NotSupportedException
      */
     public function afterUnload()
     {

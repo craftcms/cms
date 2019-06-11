@@ -13,6 +13,8 @@
 - Added `craft\services\Drafts::saveElementAsDraft()`.
 - Added `craft\test\Craft::assertElementsExist()`.
 - Added `craft\test\Craft::assertTestFails()`.
+- Added `craft\test\Craft::assertEqualDates()`.
+- Added `craft\test\Craft::saveElement()`.
 
 ### Changed
 - Craft now deletes expired template caches as part of its garbage collection routine.
@@ -34,6 +36,7 @@
 - Fixed a SQL error that could occur when updating to Craft 3.2.
 - Fixed a bug where updating to Craft 3.2 could take a long time. ([#4374](https://github.com/craftcms/cms/issues/4374))
 - Fixed test reliability issues.
+- Fixed a bug where Project Config was not returning data setup through `craft\test\Fixture` when testing.
 
 ## 3.2.0-beta.1 - 2019-06-04
 

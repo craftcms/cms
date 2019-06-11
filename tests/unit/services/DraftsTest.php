@@ -18,8 +18,6 @@ use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
-use craft\helpers\ArrayHelper;
-use craft\helpers\Json;
 use craft\services\Drafts;
 use craft\services\Elements;
 use craft\services\Revisions;
@@ -81,7 +79,7 @@ class DraftsTest extends Unit
     /**
      * Test applying draft changes to an entry
      *
-     * @throws \yii\db\Exception
+     * @throws Throwable
      */
     public function testApplyDraft()
     {
@@ -216,7 +214,7 @@ class DraftsTest extends Unit
     /**
      * @param Entry $entry
      * @return Entry|DraftBehavior
-     * @throws \yii\db\Exception
+     * @throws Throwable
      */
     protected function _setupEntryDraft(Entry $entry): Entry
     {
