@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.0-beta.2 - 2019-06-11
 
 ### Added
 - The entry creation workflow is now more similar to how it was in past versions of Craft. Entries are initially created as “unsaved drafts”, and are not converted to real entries until the “Save entry” button is pressed. ([#4384](https://github.com/craftcms/cms/issues/4384))
@@ -36,7 +36,6 @@
 - Fixed a SQL error that could occur when updating to Craft 3.2.
 - Fixed a bug where updating to Craft 3.2 could take a long time. ([#4374](https://github.com/craftcms/cms/issues/4374))
 - Fixed test reliability issues.
-- Fixed a bug where Project Config was not returning data setup through `craft\test\Fixture` when testing.
 
 ## 3.2.0-beta.1 - 2019-06-04
 
