@@ -268,7 +268,7 @@ class UserTest extends TestCase
     /**
      * @return UserElement|null
      */
-    private function _getUser()
+    private function _getUser(): ?UserElement
     {
         return Craft::$app->getUsers()->getUserById('1');
     }
