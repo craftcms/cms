@@ -24,7 +24,7 @@ class MatrixBlock extends BaseType
     /**
      * @inheritdoc
      */
-    public function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
         /** @var MatrixBlockElement $source */
         $fieldName = $resolveInfo->fieldName;

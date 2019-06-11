@@ -23,7 +23,7 @@ class Entry extends BaseType
     /**
      * @inheritdoc
      */
-    public function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
         /** @var EntryElement $source */
         $fieldName = $resolveInfo->fieldName;

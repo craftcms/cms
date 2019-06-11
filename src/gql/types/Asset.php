@@ -24,7 +24,7 @@ class Asset extends BaseType
     /**
      * @inheritdoc
      */
-    public function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
         /** @var AssetElement $source */
         $fieldName = $resolveInfo->fieldName;

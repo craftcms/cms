@@ -24,7 +24,7 @@ class User extends BaseType
     /**
      * @inheritdoc
      */
-    public function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
         /** @var UserElement $source */
         $fieldName = $resolveInfo->fieldName;
