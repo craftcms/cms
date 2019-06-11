@@ -414,7 +414,6 @@ class TestSetup
      * @param array $serviceMap
      * @param string $appClass
      * @return MockObject
-     * @throws ReflectionException
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
     public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], string $appClass = '')
