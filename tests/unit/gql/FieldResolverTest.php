@@ -11,12 +11,15 @@ use Codeception\Test\Unit;
 use craft\elements\Asset as AssetElement;
 use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
+use craft\elements\User as UserElement;
 use craft\gql\types\Asset as AssetGqlType;
 use craft\gql\types\Entry as EntryGqlType;
+use craft\gql\types\User as UserGqlType;
 use craft\gql\types\GlobalSet as GlobalSetGqlType;
-use crafttests\fixtures\AssetWithFieldsFixture;
+use crafttests\fixtures\AssetsFixture;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use crafttests\fixtures\GlobalSetFixture;
+use crafttests\fixtures\UsersFixture;
 use GraphQL\Type\Definition\ResolveInfo;
 
 class FieldResolverTest extends Unit
@@ -25,13 +28,7 @@ class FieldResolverTest extends Unit
      * @var \UnitTester
      */
     protected $tester;
-
-    private static $_entry = null;
-
-    private static $_asset = null;
-
-    private static $_globalSet = null;
-
+    
     protected function _before()
     {
     }
@@ -44,7 +41,7 @@ class FieldResolverTest extends Unit
     {
         return [
             'assets' => [
-                'class' => AssetWithFieldsFixture::class
+                'class' => AssetsFixture::class
             ],
             'entries' => [
                 'class' => EntryWithFieldsFixture::class
@@ -52,7 +49,9 @@ class FieldResolverTest extends Unit
             'globalSets' => [
                 'class' => GlobalSetFixture::class
             ],
-            
+            'users' => [
+                'class' => UsersFixture::class
+            ],
         ];
     }
 
@@ -80,6 +79,7 @@ class FieldResolverTest extends Unit
             $this->assertEquals($element->{$result[0]}()->{$result[1]}, $resolvedValue);
         } else if ($result === true) {
             $this->assertEquals($element->$propertyName, $resolvedValue);
+            $this->assertNotNull($element->$propertyName);
         } else {
             $this->assertNull($resolvedValue);
         }
@@ -105,7 +105,7 @@ class FieldResolverTest extends Unit
             [[$this, '_getAsset'], AssetGqlType::class, 'missingProperty', false],
             [[$this, '_getAsset'], AssetGqlType::class, 'folderId', true],
             [[$this, '_getAsset'], AssetGqlType::class, 'folderUid', ['getFolder', 'uid']],
-            [[$this, '_getAsset'], AssetGqlType::class, 'plainTextField', true],
+            [[$this, '_getAsset'], AssetGqlType::class, 'imageDescription', true],
             [[$this, '_getAsset'], AssetGqlType::class, 'filename', true],
 
             // Global Set
@@ -113,30 +113,29 @@ class FieldResolverTest extends Unit
             [[$this, '_getGlobalSet'], GlobalSetGqlType::class, 'plainTextField', true],
             [[$this, '_getGlobalSet'], GlobalSetGqlType::class, 'handle', true],
 
+            // User
+            [[$this, '_getUser'], UserGqlType::class, 'missingProperty', false],
+            [[$this, '_getUser'], UserGqlType::class, 'shortBio', true],
+            [[$this, '_getUser'], UserGqlType::class, 'username', true],
+//            [[$this, '_getUser'], UserGqlType::class, 'groupHandles', true],
+//            [[$this, '_getUser'], UserGqlType::class, 'preferences', true],
+
         ];
     }
 
     public function _getEntry() {
-        if (!self::$_entry) {
-            self::$_entry = EntryElement::findOne(['title' => 'Theories of matrix']);
-        }
-
-        return self::$_entry;
+        return EntryElement::findOne(['title' => 'Theories of matrix']);
     }
 
     public function _getAsset() {
-        if (!self::$_asset) {
-            self::$_asset = AssetElement::findOne(['filename' => 'product.jpg']);
-        }
-
-        return self::$_asset;
+        return AssetElement::findOne(['filename' => 'product.jpg']);
     }
 
     public function _getGlobalSet() {
-        if (!self::$_globalSet) {
-            self::$_globalSet = GlobalSetElement::findOne(['handle' => 'aGlobalSet']);
-        }
+        return GlobalSetElement::findOne(['handle' => 'aGlobalSet']);
+    }
 
-        return self::$_globalSet;
+    public function _getUser() {
+        return UserElement::findOne(['username' => 'user1']);
     }
 }
