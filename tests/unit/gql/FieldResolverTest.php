@@ -8,14 +8,17 @@
 namespace craftunit\gql;
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\elements\Asset as AssetElement;
 use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
+use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\elements\User as UserElement;
 use craft\gql\types\Asset as AssetGqlType;
 use craft\gql\types\Entry as EntryGqlType;
-use craft\gql\types\User as UserGqlType;
 use craft\gql\types\GlobalSet as GlobalSetGqlType;
+use craft\gql\types\MatrixBlock as MatrixBlockGqlType;
+use craft\gql\types\User as UserGqlType;
 use craft\helpers\Json;
 use crafttests\fixtures\AssetsFixture;
 use crafttests\fixtures\EntryWithFieldsFixture;
@@ -96,6 +99,7 @@ class FieldResolverTest extends Unit
             [[$this, '_getEntry'], EntryGqlType::class, 'missingProperty', false],
             [[$this, '_getEntry'], EntryGqlType::class, 'typeId', true],
             [[$this, '_getEntry'], EntryGqlType::class, 'typeUid', function ($source) { return $source->getType()->uid;}],
+            [[$this, '_getEntry'], EntryGqlType::class, 'typeInvalid', false],
             [[$this, '_getEntry'], EntryGqlType::class, 'plainTextField', true],
             [[$this, '_getEntry'], EntryGqlType::class, 'postDate', true],
 
@@ -113,6 +117,21 @@ class FieldResolverTest extends Unit
             [[$this, '_getGlobalSet'], GlobalSetGqlType::class, 'missingProperty', false],
             [[$this, '_getGlobalSet'], GlobalSetGqlType::class, 'plainTextField', true],
             [[$this, '_getGlobalSet'], GlobalSetGqlType::class, 'handle', true],
+
+            // Matrix Block
+            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'missingProperty', false],
+            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'firstSubfield', true],
+            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'fieldId', true],
+            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'fieldUid', function ($source) { return $source->getField()->uid;}],
+            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'fieldInvalid', false],
+            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'ownerSiteId', function ($source) { return $source->getOwner()->getSite()->id;}],
+            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'ownerSiteInvalid', false],
+            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'ownerId', true],
+            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'ownerUid', function ($source) { return $source->getOwner()->uid;}],
+            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'ownerInvalid', false],
+            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'typeId', true],
+            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'typeUid', function ($source) { return $source->getType()->uid;}],
+            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'typeInvalid', false],
 
             // User
             [[$this, '_getUser'], UserGqlType::class, 'missingProperty', false],
@@ -135,6 +154,11 @@ class FieldResolverTest extends Unit
 
     public function _getGlobalSet() {
         return GlobalSetElement::findOne(['handle' => 'aGlobalSet']);
+    }
+
+    public function _getMatrixBlock() {
+        $field = Craft::$app->getFields()->getFieldByHandle('matrixFirst');
+        return MatrixBlockElement::findOne(['type' => 'aBlock', 'fieldId' => $field->id]);
     }
 
     public function _getUser() {
