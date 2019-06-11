@@ -39,7 +39,7 @@ class User extends BaseType
             return Json::encode($source->preferences);
         }
 
-        return $source->$fieldName;
+        return $source->$fieldName ?? null;
     }
 
 }
