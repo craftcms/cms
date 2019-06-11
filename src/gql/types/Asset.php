@@ -33,17 +33,17 @@ class Asset extends BaseType
             $volume = $source->getVolume();
             $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 6));
 
-            return $volume->$property ?? null;
+            return $volume->$property;
         }
 
         if (StringHelper::substr($fieldName, 0, 6) === 'folder') {
             $folder = $source->getFolder();
             $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 6));
 
-            return $folder->$property ?? null;
+            return $folder->$property;
         }
 
-        return $source->$fieldName ?? null;
+        return $source->$fieldName;
     }
 
 }

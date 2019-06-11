@@ -27,6 +27,6 @@ class GlobalSet extends BaseType
         /** @var GlobalSetElement $source */
         $fieldName = $resolveInfo->fieldName;
 
-        return $source->$fieldName ?? null;
+        return $source->$fieldName;
     }
 }
