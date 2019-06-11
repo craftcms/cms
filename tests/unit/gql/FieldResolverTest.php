@@ -77,7 +77,7 @@ class FieldResolverTest extends Unit
         $element = $getElement();
 
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => $propertyName]);
-        $resolvedValue = $this->make($gqlTypeClass)->resolve($element, [], null, $resolveInfo);
+        $resolvedValue = $this->make($gqlTypeClass)->resolveWithDirectives($element, [], null, $resolveInfo);
 
         if (is_callable($result)) {
             $this->assertEquals($result($element), $resolvedValue);
