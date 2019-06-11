@@ -11,6 +11,7 @@
 - Fixed a bug where Craft was modifying custom log target configs before executing queue jobs. ([#3766](https://github.com/craftcms/cms/issues/3766))
 - Fixed a bug where `craft\helpers\ChartHelper::getRunChartDataFromQuery()` assumed that the value would be integers. ([craftcms/commerce#849](https://github.com/craftcms/commerce/issues/849))
 - Fixed a bug where `craft\services\Security::validateData()` was returning an empty string instead of `false` when the data didn’t validate. ([#4387](https://github.com/craftcms/cms/issues/4387))
+- Fixed a bug where Craft could inject unexpected JavaScript into front-end requests. ([#4390](https://github.com/craftcms/cms/issues/4390))
 
 ## 3.1.29 - 2019-06-04
 
