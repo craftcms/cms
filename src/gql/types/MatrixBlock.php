@@ -50,7 +50,7 @@ class MatrixBlock extends BaseType
             return $entryType->$property ?? null;
         }
 
-        return $source->$fieldName;
+        return $source->$fieldName ?? null;
     }
 
 }
