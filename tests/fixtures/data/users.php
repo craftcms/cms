@@ -9,7 +9,7 @@ return [
     [
         'username' => 'user1',
         'email' => 'user1@crafttest.com',
-        'fieldLayoutType' => 'user_field_layout',
+        'fieldLayoutType' => 'craft\elements\User',
         'shortBio' => "I'm Commander Sheppard and this is my favorite user in this install",
     ],
     [
@@ -17,7 +17,7 @@ return [
         'lastName' => 'smith',
         'username' => 'user2',
         'email' => 'user2@crafttest.com',
-        'fieldLayoutType' => 'user_field_layout',
+        'fieldLayoutType' => 'craft\elements\User',
         'shortBio' => 'This is the guy who knows stuff',
     ],
     [

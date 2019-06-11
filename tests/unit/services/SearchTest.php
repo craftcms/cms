@@ -184,13 +184,13 @@ class SearchTest extends Unit
         return [
             [
                 [
-                    ['identifier' => 'user1', 'score' => 13.333333333333332]
+                    ['identifier' => 'user1', 'score' => 14.102564102564102]
                 ], ['user1'], 'user', true, 1
             ],
             [
                 [
                     ['identifier' => 'user4', 'score' => 118.33333333333333],
-                    ['identifier' => 'user1', 'score' => 13.333333333333332],
+                    ['identifier' => 'user1', 'score' => 14.102564102564102],
                     ['identifier' => 'user2', 'score' => 13.333333333333332],
                     ['identifier' => 'user3', 'score' => 13.333333333333332]
                 ], ['user1', 'user2', 'user3', 'user4'], 'user', true, 1
@@ -198,7 +198,7 @@ class SearchTest extends Unit
             [
                 [
                     ['identifier' => 'user4', 'score' => 118.33333333333333],
-                    ['identifier' => 'user1', 'score' => 13.333333333333332],
+                    ['identifier' => 'user1', 'score' => 14.102564102564102],
                     ['identifier' => 'user2', 'score' => 13.333333333333332],
                     ['identifier' => 'user3', 'score' => 13.333333333333332]
                 ], [], 'user', true, 1
@@ -212,7 +212,7 @@ class SearchTest extends Unit
             [
                 [
                     ['identifier' => 'user4', 'score' => 60.833333333333336],
-                    ['identifier' => 'user1', 'score' => 6.666666666666666],
+                    ['identifier' => 'user1', 'score' => 7.051282051282051],
                     ['identifier' => 'user2', 'score' => 6.666666666666666],
                     ['identifier' => 'user3', 'score' => 6.666666666666666]
                 ], ['user1', 'user2', 'user3', 'user4'], 'user OR someemail', true, 1
