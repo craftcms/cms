@@ -7,6 +7,7 @@
 
 namespace craft\test;
 
+use Craft;
 use yii\base\InvalidArgumentException;
 use yii\db\TableSchema;
 use yii\test\ActiveFixture;
@@ -44,6 +45,19 @@ class Fixture extends ActiveFixture
             // Fixture data may pass in props that are not for the db. We thus run an extra check to ensure
             // that we are deleting only based on columns that *actually* exist in the schema
             $correctRow = $row;
+
+            // Set the field layout if it exists.
+            if (isset($row['fieldLayoutType'])) {
+                $fieldLayoutType = $row['fieldLayoutType'];
+                unset($row['fieldLayoutType']);
+
+                $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
+                if ($fieldLayout) {
+                    $row['fieldLayoutId'] = $fieldLayout->id;
+                } else {
+                    codecept_debug("Field layout with type: $fieldLayoutType could not be found");
+                }
+            }
 
             foreach ($row as $columnName => $rowValue) {
                 $correctRow = $this->ensureColumnIntegrity($tableSchema, $row, $columnName);
