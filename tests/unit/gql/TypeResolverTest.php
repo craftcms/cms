@@ -10,10 +10,9 @@ namespace craftunit\gql;
 use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Asset;
-use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
-use craft\elements\MatrixBlock as MatrixBlockElement;
+use craft\elements\MatrixBlock;
 use craft\elements\User;
 use craft\gql\resolvers\elements\BaseElement as BaseResolver;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
@@ -162,6 +161,12 @@ class TypeResolverTest extends Unit
             [User::class, ['username' => ['user1', 'admin']], UserResolver::class],
             [User::class, ['username' => ['user1', 'admin', 'user2', 'user3']], UserResolver::class],
             [User::class, ['username' => StringHelper::randomString(128)], UserResolver::class],
+
+            // Matrix Blocks
+            [MatrixBlock::class, ['type' => 'aBlock'], MatrixBlockResolver::class],
+            [MatrixBlock::class, ['site' => 'testSite1'], MatrixBlockResolver::class],
+            [MatrixBlock::class, ['type' => 'MISSING'], MatrixBlockResolver::class],
+            [MatrixBlock::class, [], MatrixBlockResolver::class],
         ];
     }
 }
