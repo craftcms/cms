@@ -30,6 +30,7 @@
 - Fixed a bug where Craft was appending token params to action URLs that were generated on tokenized site requests.
 - Fixed a bug where preview and share URLs for the homepage entry were getting a URI of `__home__`. ([#4377](https://github.com/craftcms/cms/issues/4377))
 - Fixed a bug where element index modals weren’t lazy-loading additional batches of elements. ([#4385](https://github.com/craftcms/cms/issues/4385))
+- Fixed an error that occurred when running the `project-config/rebuild` command.
 - Fixed a SQL error that could occur when updating to Craft 3.2.
 - Fixed a bug where updating to Craft 3.2 could take a long time. ([#4374](https://github.com/craftcms/cms/issues/4374))
 - Fixed test reliability issues.
