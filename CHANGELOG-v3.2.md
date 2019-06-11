@@ -16,6 +16,7 @@
 - Preview iframes are now created with a `src` attribute already in place, improving SPA support. ([#2120](https://github.com/craftcms/cms/issues/2120))
 - Added the “Temp Uploads Location” system setting (available from Settings → Assets → Settings), which makes it possible to choose the volume and path that temporary asset uploads should be stored. ([#4010](https://github.com/craftcms/cms/issues/4010))
 - Added the `maxRevisions` config setting. ([#926](https://github.com/craftcms/cms/issues/926))
+- Added the `purgeUnsavedDraftsDuration` config setting, which determines how long unsaved drafts should be allowed to exist before getting deleted via garbage collection.
 - Added `editImagesInVolume` permission. ([#3349](https://github.com/craftcms/cms/issues/3349))
 - Added the `drafts`, `draftId`, `draftOf`, `draftCreator`, `revisions`, `revisionId`, `revisionOf`, and `revisionCreator` element query params.
 - The `site` element query params now support passing multiple site handles, or `'*'`, to query elements across multiple sites at once. ([#2854](https://github.com/craftcms/cms/issues/2854))
@@ -41,6 +42,7 @@
 - Added `craft\base\Element::previewTargets()`.
 - Added `craft\base\ElementInterface::afterPropagate()`.
 - Added `craft\base\ElementInterface::getCurrentRevision()`.
+- Added `craft\base\ElementInterface::getIsUnsavedDraft()`.
 - Added `craft\base\ElementInterface::getPreviewTargets()`.
 - Added `craft\base\ElementInterface::getSourceId()`.
 - Added `craft\base\ElementInterface::getSourceUid()`.
@@ -51,6 +53,7 @@
 - Added `craft\base\ElementTrait::$draftId`.
 - Added `craft\base\ElementTrait::$hardDelete`.
 - Added `craft\base\ElementTrait::$previewing`.
+- Added `craft\base\ElementTrait::$propagateAll`.
 - Added `craft\base\ElementTrait::$revisionId`.
 - Added `craft\base\Field::EVENT_AFTER_ELEMENT_PROPAGATE`.
 - Added `craft\base\Field::getSortOption()`.
@@ -93,6 +96,7 @@
 - Controllers can now set `$allowAnonymous` to a combination of bitwise integers `self::ALLOW_ANONYMOUS_LIVE` and `self::ALLOW_ANONYMOUS_OFFLINE`, or an array of action ID/bitwise integer pairs, to define whether their actions should be accessible anonymously even when the system is offline.
 - Improved the error message when Project Config reaches the maximum deferred event count.
 - Craft now deletes expired template caches as part of its garbage collection routine.- Craft now deletes expired template caches as part of its garbage collection routine.
+- Improved the reliability of `craft\helpers\UrlHelper::rootRelativeUrl()` and `cpUrl()`.
 - `craft\base\ElementInterface::eagerLoadingMap()` and `craft\base\EagerLoadingFieldInterface::getEagerLoadingMap()` can now return `null` to opt out of eager-loading. ([#4220](https://github.com/craftcms/cms/pull/4220))
 - `craft\db\ActiveRecord` no longer sets the `uid`, `dateCreated`, or `dateUpdated` values for new records if they were already explicitly set.
 - `craft\db\ActiveRecord` no longer updates the `dateUpdated` value for existing records if nothing else changed or if `dateUpdated` had already been explicitly changed.

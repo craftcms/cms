@@ -22,14 +22,14 @@
 
 {% block actionButton %}
     {{ parent() }}
-    {% if not isSingle and not isRevision and (canUpdateSource or canDeleteEntry) %}
+    {% if not isSingle and not isRevision and (canUpdateSource or canDeleteEntry) and not entry.isUnsavedDraft %}
         <div class="spacer"></div>
         <div>
             <div id="action-menubtn" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}"></div>
             <div class="menu">
                 <ul>
                     {% if canUpdateSource %}
-                        {% set duplicateRedirect = "entries/#{section.handle}/{id}-{slug}" %}
+                        {% set duplicateRedirect = "entries/#{section.handle}/{id}-{slug}#" %}
                         <li>
                             <a class="formsubmit" data-action="entries/save-entry" data-param="duplicate" data-value="1"
                                data-redirect="{{ duplicateRedirect|hash }}">

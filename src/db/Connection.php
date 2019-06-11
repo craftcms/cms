@@ -90,6 +90,17 @@ class Connection extends \yii\db\Connection
      */
     private $_supportsMb4;
 
+    /**
+     * @var string[]
+     * @see quoteTableName()
+     */
+    private $_quotedTableNames;
+    /**
+     * @var string[]
+     * @see quoteColumnName()
+     */
+    private $_quotedColumnNames;
+
     // Public Methods
     // =========================================================================
 
@@ -333,6 +344,28 @@ class Connection extends \yii\db\Connection
     public function quoteDatabaseName(string $name): string
     {
         return $this->getSchema()->quoteTableName($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function quoteTableName($name)
+    {
+        if (isset($this->_quotedTableNames[$name])) {
+            return $this->_quotedTableNames[$name];
+        }
+        return $this->_quotedTableNames[$name] = parent::quoteTableName($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function quoteColumnName($name)
+    {
+        if (isset($this->_quotedColumnNames[$name])) {
+            return $this->_quotedColumnNames[$name];
+        }
+        return $this->_quotedColumnNames[$name] = parent::quoteColumnName($name);
     }
 
     /**

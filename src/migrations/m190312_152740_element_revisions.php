@@ -50,11 +50,19 @@ class m190312_152740_element_revisions extends Migration
         $this->addForeignKey(null, Table::ELEMENTS, ['draftId'], Table::DRAFTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['revisionId'], Table::REVISIONS, ['id'], 'CASCADE', null);
 
-        // add error columns to the old entry draft and version tables
-        $this->addColumn(Table::ENTRYDRAFTS, 'error', $this->string(500));
-        $this->addColumn(Table::ENTRYVERSIONS, 'error', $this->string(500));
-        $this->createIndex(null, Table::ENTRYDRAFTS, ['error', 'id']);
-        $this->createIndex(null, Table::ENTRYVERSIONS, ['error', 'id']);
+        // add error tables for old entry draft and version migration
+        $this->createTable('{{%entrydrafterrors}}', [
+            'id' => $this->primaryKey(),
+            'draftId' => $this->integer(),
+            'error' => $this->text(),
+        ]);
+        $this->createTable('{{%entryversionerrors}}', [
+            'id' => $this->primaryKey(),
+            'versionId' => $this->integer(),
+            'error' => $this->text(),
+        ]);
+        $this->addForeignKey(null, '{{%entrydrafterrors}}', ['draftId'], Table::ENTRYDRAFTS, ['id'], 'CASCADE');
+        $this->addForeignKey(null, '{{%entryversionerrors}}', ['versionId'], Table::ENTRYVERSIONS, ['id'], 'CASCADE');
 
         // Queue up a ConvertEntryRevisions job
         Craft::$app->getQueue()->push(new ConvertEntryRevisions());

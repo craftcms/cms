@@ -1528,7 +1528,6 @@ class ProjectConfig extends Component
             $uid = $section['uid'];
             unset($section['id'], $section['structureMaxLevels'], $section['uid']);
 
-            $section['propagateEntries'] = (bool)$section['propagateEntries'];
             $section['enableVersioning'] = (bool)$section['enableVersioning'];
 
             $sectionData[$uid] = $section;

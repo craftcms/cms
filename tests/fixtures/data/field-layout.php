@@ -31,6 +31,47 @@ return [
         ]
     ],
     [
+        // Because User elements fetch layout by type
+        'type' => 'craft\elements\User',
+        'tabs' => [
+            [
+                'name' => 'Tab 1',
+                'fields' => [
+                    [
+                        'layout-link' => [
+                            'required' => true
+                        ],
+                        'field' => [
+                            'name' => 'Short Biography',
+                            'handle' => 'shortBio',
+                            'fieldType' => PlainText::class,
+                        ]
+                    ],
+                ]
+            ]
+        ]
+    ],
+    [
+        'type' => 'volume_field_layout',
+        'tabs' => [
+            [
+                'name' => 'Tab 1',
+                'fields' => [
+                    [
+                        'layout-link' => [
+                            'required' => true
+                        ],
+                        'field' => [
+                            'name' => 'Image description',
+                            'handle' => 'imageDescription',
+                            'fieldType' => PlainText::class,
+                        ]
+                    ],
+                ]
+            ]
+        ]
+    ],
+    [
         'type' => 'field_layout_with_matrix_and_normal_fields',
         'tabs' => [
             [
@@ -74,7 +115,7 @@ return [
                         'field' => [
                             'name' => 'Plain Text Field',
                             'handle' => 'plainTextField',
-                            'fieldType' => Number::class,
+                            'fieldType' => PlainText::class,
                         ]
                     ],
                 ]

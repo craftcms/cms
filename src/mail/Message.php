@@ -100,7 +100,7 @@ class Message extends \yii\swiftmailer\Message
     /**
      * Sets the BCC (hidden copy receiver) addresses of this message.
      *
-     * @param string|array|User|User[] $bcc The hidden copied receiver’ email address, or their user model(s).
+     * @param string|array|User|User[] $bcc The hidden copied receiver’s email address, or their user model(s).
      * You may pass an array of addresses if multiple recipients should receive this message.
      * You may also specify receiver name in addition to email address using format:
      * `[email => name]`.

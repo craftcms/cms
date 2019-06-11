@@ -114,12 +114,6 @@ class ConvertEntryRevisions extends BaseJob
         }
     }
 
-    private function error(\Throwable $e): string
-    {
-        $error = $e->getMessage();
-        return strlen($error) > 500 ? substr($error, 0, 500) : $error;
-    }
-
     private function convertDrafts()
     {
         if (!$this->db->tableExists(Table::ENTRYDRAFTS)) {
@@ -128,8 +122,8 @@ class ConvertEntryRevisions extends BaseJob
 
         $query = (new Query())
             ->select(['id', 'entryId', 'siteId', 'creatorId', 'name', 'notes', 'data', 'dateCreated'])
-            ->from([Table::ENTRYDRAFTS])
-            ->where(['error' => null])
+            ->from(['d' => Table::ENTRYDRAFTS])
+            ->where(['not exists', (new Query())->from(['{{%entrydrafterrors}}'])->where('[[draftId]] = [[d.id]]')])
             ->orderBy(['id' => SORT_DESC]);
 
         $total = $query->count();
@@ -140,7 +134,10 @@ class ConvertEntryRevisions extends BaseJob
                 $this->convertDraft($result);
             } catch (\Throwable $e) {
                 $this->db->createCommand()
-                    ->update(Table::ENTRYDRAFTS, ['error' => $this->error($e)], ['id' => $result['id']], [], false)
+                    ->insert('{{%entrydrafterrors}}', [
+                        'draftId' => $result['id'],
+                        'error' => $e->getMessage(),
+                    ], false)
                     ->execute();
                 continue;
             }
@@ -194,7 +191,7 @@ class ConvertEntryRevisions extends BaseJob
         $query = (new Query())
             ->select(['id', 'entryId', 'creatorId', 'siteId', 'num', 'notes', 'data', 'dateCreated', 'uid'])
             ->from(['v' => Table::ENTRYVERSIONS])
-            ->where(['error' => null])
+            ->where(['not exists', (new Query())->from(['{{%entryversionerrors}}'])->where('[[versionId]] = [[v.id]]')])
             ->orderBy(['id' => SORT_DESC]);
 
         // If maxRevisions is set, filter out versions that would have been deleted by now
@@ -216,7 +213,10 @@ class ConvertEntryRevisions extends BaseJob
                 $this->convertVersion($result);
             } catch (\Throwable $e) {
                 $this->db->createCommand()
-                    ->update(Table::ENTRYVERSIONS, ['error' => $this->error($e)], ['id' => $result['id']], [], false)
+                    ->insert('{{%entryversionerrors}}', [
+                        'versionId' => $result['id'],
+                        'error' => $e->getMessage(),
+                    ], false)
                     ->execute();
                 continue;
             }

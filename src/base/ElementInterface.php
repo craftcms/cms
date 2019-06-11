@@ -388,9 +388,9 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.
      *
-     * @return int
+     * @return int|null
      */
-    public function getSourceId(): int;
+    public function getSourceId();
 
     /**
      * Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.
@@ -398,6 +398,13 @@ interface ElementInterface extends ComponentInterface
      * @return string
      */
     public function getSourceUid(): string;
+
+    /**
+     * Returns whether the element is an unsaved draft.
+     *
+     * @return bool
+     */
+    public function getIsUnsavedDraft(): bool;
 
     /**
      * Returns the field layout used by this element.

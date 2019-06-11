@@ -138,8 +138,12 @@ class UrlHelperTest extends Unit
      * @param $params
      * @param string $scheme
      */
-    public function testCpUrlCreation($result, $inputUrl, $params, $scheme = 'https')
+    public function testCpUrlCreation($result, $inputUrl, $params, $scheme = null)
     {
+        $this->tester->mockCraftMethods('request', [
+            'getIsSecureConnection' => false,
+        ]);
+
         // Make sure https is enabled for the base url.
         if ($scheme === 'https') {
             $baseUrl = str_replace('http://', 'https://', $this->baseUrlWithScript);
@@ -147,12 +151,19 @@ class UrlHelperTest extends Unit
             $baseUrl = str_replace('https://', 'http://', $this->baseUrlWithScript);
         }
 
-        $expectedUrl = $baseUrl . '?p=' . $this->cpTrigger . '' . $result . '';
-
-        $this->assertSame(
-            $expectedUrl,
-            UrlHelper::cpUrl($inputUrl, $params, $scheme)
+        $expectedUrl = str_replace(
+            ['{baseUrl}', '{cpTrigger}'],
+            [$baseUrl, $this->cpTrigger],
+            $result
         );
+
+        $this->assertSame($expectedUrl, UrlHelper::cpUrl($inputUrl, $params, $scheme));
+
+        $this->tester->mockCraftMethods('request', [
+            'getIsCpRequest' => true,
+        ]);
+
+        $this->assertSame($expectedUrl, UrlHelper::url($inputUrl, $params, $scheme));
     }
 
     /**
@@ -174,6 +185,19 @@ class UrlHelperTest extends Unit
         Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls = true;
 
         $this->assertSame($result, UrlHelper::$method($url, $modifier));
+    }
+
+    /**
+     * Tests the UrlHelper::rootRelativeUrl() method.
+     *
+     * @dataProvider rootRelativeUrlDataProvider
+     *
+     * @param string $url
+     * @param string $expected
+     */
+    public function testRootRelativeUrl(string $url, string $expected)
+    {
+        $this->assertSame($expected, UrlHelper::rootRelativeUrl($url));
     }
 
     /**
@@ -380,19 +404,19 @@ class UrlHelperTest extends Unit
     public function cpUrlCreationDataProvider(): array
     {
         return [
-            'test-empty' => ['', '', []],
+            'test-empty' => ['{baseUrl}?p={cpTrigger}', '', []],
             'test-simple-endpoint' => [
-                '%2Fnav&param1=entry1&param2=entry2',
+                '{baseUrl}?p={cpTrigger}%2Fnav&param1=entry1&param2=entry2',
                 'nav',
                 ['param1' => 'entry1', 'param2' => 'entry2']
             ],
             'test-preexisting-endpoints' => [
-                '%2Fnav&param3=entry3&param1=entry1&param2=entry2',
+                '{baseUrl}?p={cpTrigger}%2Fnav&param3=entry3&param1=entry1&param2=entry2',
                 'nav?param3=entry3',
                 ['param1' => 'entry1', 'param2' => 'entry2']
             ],
             [
-                '%2Fnav&param1=entry1&param2=entry2',
+                '{baseUrl}?p={cpTrigger}%2Fnav&param1=entry1&param2=entry2',
                 'nav',
                 [
                     'param1' => 'entry1',
@@ -400,8 +424,8 @@ class UrlHelperTest extends Unit
                 ],
                 'https'
             ],
-            'test-url-gets-ignored' => [
-                '%2Fhttps%3A%2F%2Ftest.craftcms.test&param1=entry1&param2=entry2',
+            [
+                'https://test.craftcms.test?param1=entry1&param2=entry2',
                 'https://test.craftcms.test',
                 ['param1' => 'entry1', 'param2' => 'entry2'],
                 'https'
@@ -622,6 +646,30 @@ class UrlHelperTest extends Unit
                 'sftp',
                 'urlWithScheme'
             ],
+        ];
+    }
+
+    /**
+     * Tests for UrlHelper::rootRelativeUrl()
+     *
+     * @return array
+     */
+    public function rootRelativeUrlDataProvider(): array
+    {
+        return [
+            ['', '/'],
+            ['foo/bar', '/foo/bar'],
+            ['/', '/'],
+            ['/foo/bar', '/foo/bar'],
+            ['http://test.com', '/'],
+            ['http://test.com/', '/'],
+            ['http://test.com/foo/bar', '/foo/bar'],
+            ['https://test.com', '/'],
+            ['https://test.com/', '/'],
+            ['https://test.com/foo/bar', '/foo/bar'],
+            ['//test.com', '/'],
+            ['//test.com/', '/'],
+            ['//test.com/foo/bar', '/foo/bar'],
         ];
     }
 

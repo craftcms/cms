@@ -19,11 +19,11 @@
 {% extends '_layouts/cp' %}
 {% import '_includes/forms' as forms %}
 
-{% set source = element.draftId or element.revisionId ? element.getSource() : element %}
 {% set isMultiSiteElement = craft.app.isMultiSite and element.supportedSites|length > 1 %}
+{% set isUnsavedDraft = element.getIsUnsavedDraft() %}
 
 {% set previewTargets = CraftEdition == CraftPro ? (element.previewTargets ?? []) : [] %}
-{% if source.uri %}
+{% if element.uri %}
     {% set previewTargets = [{
         label: 'Primary {type} page'|t('app', { type: element.displayName()|lower }),
         url: element.uri == '__home__' ? '' : element.uri
@@ -86,7 +86,11 @@
             {% endif %}
         {% else %}
             <div class="spacer"></div>
-            <input type="submit" id="apply-btn" class="btn submit{% if not element.draftId %} disabled{% endif %}" value="{{ 'Update {type}'|t('app', { type: element.displayName()|lower }) }}">
+            {% if isUnsavedDraft %}
+                <input type="submit" id="apply-btn" class="btn submit{% if not element.draftId %} disabled{% endif %}" value="{{ 'Save {type}'|t('app', { type: element.displayName()|lower }) }}">
+            {% else %}
+                <input type="submit" id="apply-btn" class="btn submit{% if not element.draftId %} disabled{% endif %}" value="{{ 'Update {type}'|t('app', { type: element.displayName()|lower }) }}">
+            {% endif %}
         {% endif %}
     {% endif %}
 {% endblock %}
@@ -164,14 +168,15 @@
 
 {% set settings = {
     elementType: className(element),
-    sourceId: element.sourceId,
+    sourceId: element.getSourceId(),
     siteId: element.siteId,
     isLive: not element.draftId and not element.revisionId and element.enabled and element.enabledForSite and element.getRoute(),
-    sourceEditUrl: element.cpEditUrl,
+    cpEditUrl: element.cpEditUrl,
     draftId: element.draftId,
     revisionId: element.revisionId,
     draftName: element.draftId ? element.draftName : null,
     draftNotes: element.draftId ? element.draftNotes : null,
+    propagateAll: isUnsavedDraft and craft.app.request.getQueryParam('fresh'),
     canDeleteDraft: canDeleteDraft,
     canUpdateSource: canUpdateSource,
     saveDraftAction: saveDraftAction,

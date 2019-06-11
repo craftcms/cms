@@ -22,7 +22,7 @@ sections:
     handle: craftCmsTestSection
     type: channel
     enableVersioning: true
-    propagateEntries: true
+    propagationMethod: all
     siteSettings:
       2fa19d28-c359-4955-8b0d-35a35e3f1128:
         enabledByDefault: true

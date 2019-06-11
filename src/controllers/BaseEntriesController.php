@@ -13,6 +13,7 @@ use craft\behaviors\RevisionBehavior;
 use craft\elements\Entry;
 use craft\models\Section;
 use craft\web\Controller;
+use yii\web\ForbiddenHttpException;
 
 /**
  * BaseEntriesController is a base class that any entry-related controllers, such as [[EntriesController]] and
@@ -26,6 +27,29 @@ abstract class BaseEntriesController extends Controller
 {
     // Protected Methods
     // =========================================================================
+
+    /**
+     * Returns the editable site IDs for a section.
+     *
+     * @param Section $section
+     * @return int[]
+     * @throws ForbiddenHttpException
+     */
+    protected function editableSiteIds(Section $section): array
+    {
+        if (!Craft::$app->getIsMultiSite()) {
+            return [Craft::$app->getSites()->getPrimarySite()->id];
+        }
+
+        // Only use the sites that the user has access to
+        $sectionSiteIds = array_keys($section->getSiteSettings());
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $siteIds = array_merge(array_intersect($sectionSiteIds, $editableSiteIds));
+        if (empty($siteIds)) {
+            throw new ForbiddenHttpException('User not permitted to edit content in any sites supported by this section');
+        }
+        return $siteIds;
+    }
 
     /**
      * Enforces all Edit Entry permissions.
@@ -100,6 +124,9 @@ abstract class BaseEntriesController extends Controller
      */
     protected function pageTitle(Entry $entry): string
     {
+        if ($entry->draftId && $entry->getSourceId() == $entry->id) {
+            return Craft::t('app', 'Create a new entry');
+        }
         return trim($entry->title) ?: Craft::t('app', 'Edit Entry');
     }
 }

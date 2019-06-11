@@ -213,8 +213,8 @@ class Install extends Migration
         ]);
         $this->createTable(Table::DRAFTS, [
             'id' => $this->primaryKey(),
-            'sourceId' => $this->integer()->notNull(),
-            'revisionId' => $this->integer()->notNull(),
+            'sourceId' => $this->integer(),
+            'revisionId' => $this->integer(),
             'creatorId' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
             'notes' => $this->text(),
@@ -730,7 +730,6 @@ class Install extends Migration
         $this->createIndex(null, Table::ELEMENTS, ['type'], false);
         $this->createIndex(null, Table::ELEMENTS, ['enabled'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateCreated'], false);
-        $this->createIndex(null, Table::ELEMENTS, ['uid'], true);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['elementId', 'siteId'], true);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['siteId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['slug', 'siteId'], false);
