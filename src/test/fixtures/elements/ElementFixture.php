@@ -104,7 +104,7 @@ abstract class ElementFixture extends ActiveFixture
                 if ($fieldLayout) {
                     $element->fieldLayoutId = $fieldLayout->id;
                 } else {
-                    codecept_debug("Field layout with type: $fieldLayoutType but this was not findable");
+                    codecept_debug("Field layout with type: $fieldLayoutType could not be found");
                 }
             }
 
