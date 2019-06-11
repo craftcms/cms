@@ -34,7 +34,7 @@ class FieldLayoutTest extends Unit
     // Public Methods
     // =========================================================================
 
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'entry-with-fields' => [

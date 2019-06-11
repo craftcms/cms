@@ -10,7 +10,6 @@ namespace crafttests\functional;
 use Codeception\Example;
 use Craft;
 use craft\elements\User;
-use crafttests\fixtures\GlobalSetFixture;
 use FunctionalTester;
 
 /**

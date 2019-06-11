@@ -10,6 +10,7 @@ namespace craft\test;
 use Codeception\Lib\Connector\Yii2;
 use Craft;
 use craft\base\Plugin;
+use craft\errors\InvalidPluginException;
 use yii\base\Module;
 use yii\mail\MessageInterface;
 use yii\web\Application;
@@ -35,14 +36,6 @@ class CraftConnector extends Yii2
     // =========================================================================
 
     /**
-     * @inheritdoc
-     */
-    public function getEmails(): array
-    {
-        return $this->emails;
-    }
-
-    /**
      *
      */
     public function startApp()
@@ -58,16 +51,15 @@ class CraftConnector extends Yii2
 
     /**
      * @param Application $app
-     * @throws \craft\errors\InvalidPluginException
+     * @throws InvalidPluginException
      */
     public function resetRequest(Application $app)
     {
         parent::resetRequest($app);
         $app->getRequest()->setIsConsoleRequest(false);
 
-        $modules = Craft::$app->getModules();
         /* @var Module $module */
-        foreach ($modules as $module) {
+        foreach (Craft::$app->getModules() as $module) {
             $moduleClass = get_class($module);
             $moduleId = $module->id;
 

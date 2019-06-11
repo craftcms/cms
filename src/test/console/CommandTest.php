@@ -127,9 +127,9 @@ class CommandTest
 
         $exitCode = $this->controller->run($this->actionId, $this->parameters);
 
-        $this->test->assertSame($this->desiredExitCode, $exitCode);
+        $this->test::assertSame($this->desiredExitCode, $exitCode);
 
-        $this->test->assertCount($this->eventChainItemsHandled, $this->eventChain);
+        $this->test::assertCount($this->eventChainItemsHandled, $this->eventChain);
     }
 
     /**

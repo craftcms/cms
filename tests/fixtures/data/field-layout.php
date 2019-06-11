@@ -47,8 +47,8 @@ return [
                             'fieldType' => Matrix::class,
                             'blockTypes' => [
                                 'new1' => [
-                                    'name' => "A Block",
-                                    'handle' => "aBlock",
+                                    'name' => 'A Block',
+                                    'handle' => 'aBlock',
                                     'fields' => [
                                         'new1' => [
                                             'type' => PlainText::class,

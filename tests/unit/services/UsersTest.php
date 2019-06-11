@@ -8,11 +8,9 @@
 namespace crafttests\unit\services;
 
 use Craft;
-use craft\base\Element;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
-use craft\errors\ElementNotFoundException;
 use craft\events\UserEvent;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -24,7 +22,6 @@ use crafttests\fixtures\UserGroupsFixture;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use DateTime;
 use DateTimeZone;
 use Throwable;
@@ -118,8 +115,6 @@ class UsersTest extends TestCase
 
     /**
      * @throws Throwable
-     * @throws ElementNotFoundException
-     * @throws Exception
      */
     public function testUserActivationEmailAsUsernameWithAnUnverifedEmail()
     {
@@ -191,7 +186,7 @@ class UsersTest extends TestCase
 
     /**
      * @todo Monitor this one doesn't break on travis
-     * @throws Exception
+     * @throws \Exception
      */
     public function testSetVerificationCodeOnUser()
     {

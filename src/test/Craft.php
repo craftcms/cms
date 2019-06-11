@@ -163,7 +163,7 @@ class Craft extends Yii2
             return;
         }
 
-        // TODO: With this - if someone makes a sections fixture - their data will be overriden by the project.yml file.
+        // TODO: With this - if someone makes a sections fixture - their data will be overwritten by the project.yml file.
         // TODO: They should probably define that section data within their project.yml file - but perhaps a docs note for this?
         // Re-apply project config
         if ($projectConfig = $this->_getConfig('projectConfig')) {
@@ -282,7 +282,7 @@ class Craft extends Yii2
      * @param $path
      * @return string
      */
-    public static function normalizePathSeparators($path)
+    public static function normalizePathSeparators($path): string
     {
         return is_string($path) ? str_replace("\\", '/', $path) : false;
     }
@@ -342,9 +342,9 @@ class Craft extends Yii2
                 throw new InvalidArgumentException(
                     implode(', ', $element->getErrorSummary(true))
                 );
-            } else {
-                return false;
             }
+
+            return false;
         }
 
         return true;

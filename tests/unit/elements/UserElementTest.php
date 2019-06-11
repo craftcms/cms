@@ -12,7 +12,6 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\StringHelper;
-use craft\records\Session;
 use craft\services\Users;
 use craft\test\TestCase;
 use UnitTester;

@@ -8,20 +8,10 @@
 namespace crafttests\unit\services;
 
 use Craft;
-use craft\base\Element;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\User;
-use craft\errors\ElementNotFoundException;
 use craft\errors\WrongEditionException;
 use craft\events\RegisterUserPermissionsEvent;
-use craft\events\UserEvent;
-use craft\helpers\Db;
-use craft\helpers\StringHelper;
-use craft\mail\Message;
 use craft\services\UserPermissions;
-use craft\services\Users;
-use craft\test\EventItem;
 use craft\test\TestCase;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\SectionsFixture;
@@ -30,12 +20,6 @@ use crafttests\fixtures\UserGroupsFixture;
 use crafttests\fixtures\UsersFixture;
 use crafttests\fixtures\VolumesFixture;
 use UnitTester;
-use yii\base\Exception;
-use yii\base\InvalidArgumentException;
-use DateTime;
-use DateTimeZone;
-use Throwable;
-use ReflectionException;
 use yii\db\Exception as YiiDbException;
 
 /**

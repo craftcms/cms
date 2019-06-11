@@ -15,7 +15,6 @@ use crafttests\fixtures\GlobalSetFixture;
 use Twig\Error\LoaderError;
 use Twig\Error\SyntaxError;
 use UnitTester;
-use craft\web\twig\Extension;
 use ArrayObject;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -48,7 +47,7 @@ class ExtensionTest extends Unit
     // Public Methods
     // =========================================================================
 
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'globals' => [
@@ -312,6 +311,7 @@ class ExtensionTest extends Unit
     /**
      * @param string $renderString
      * @param string $expectedString
+     * @param array $variables
      * @throws LoaderError
      * @throws SyntaxError
      */
