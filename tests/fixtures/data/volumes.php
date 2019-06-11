@@ -21,7 +21,7 @@ return [
             'url' => VolumesFixture::BASE_URL
         ]),
         'sortOrder' => 5,
-        'fieldLayoutId' => null,
+        'fieldLayoutType' => 'volume_field_layout',
         'uid' => '09a48e85-2f12-44a8-b82c-45b14b13d8ce'
     ],
 
@@ -37,7 +37,7 @@ return [
         ]),
         'hasUrls' => true,
         'sortOrder' => 6,
-        'fieldLayoutId' => null,
+        'fieldLayoutType' => 'volume_field_layout',
         'uid' => '09a48e85-2f12-44a8-b82c-45b14b13d8ce',
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
 
@@ -55,7 +55,7 @@ return [
         ]),
         'hasUrls' => true,
         'sortOrder' => 7,
-        'fieldLayoutId' => null,
+        'fieldLayoutType' => 'volume_field_layout',
         'uid' => '09a48e85-2f12-44a8-b82c-45b14b13d8ce',
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
 
