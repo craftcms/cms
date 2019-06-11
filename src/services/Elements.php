@@ -383,6 +383,7 @@ class Elements extends Component
      * @param ElementInterface $element The element that is being saved
      * @param bool $runValidation Whether the element should be validated
      * @param bool $propagate Whether the element should be saved across all of its supported sites
+     * (this can only be disabled when updating an existing element)
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
@@ -392,6 +393,11 @@ class Elements extends Component
     {
         /** @var Element $element */
         $isNewElement = !$element->id;
+
+        // If this is a new element, give it a UID right away
+        if ($isNewElement && !$element->uid) {
+            $element->uid = StringHelper::UUID();
+        }
 
         // Fire a 'beforeSaveElement' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ELEMENT)) {
@@ -445,6 +451,7 @@ class Elements extends Component
             } else {
                 $elementRecord = new ElementRecord();
                 $elementRecord->type = get_class($element);
+                $elementRecord->uid = $element->uid;
             }
 
             // Set the attributes
@@ -474,7 +481,6 @@ class Elements extends Component
             if ($isNewElement) {
                 // Save the element ID on the element model
                 $element->id = $elementRecord->id;
-                $element->uid = $elementRecord->uid;
 
                 // If there's a temp ID, update the URI
                 if ($element->tempId && $element->uri) {
@@ -519,7 +525,7 @@ class Elements extends Component
             Craft::$app->getSearch()->indexElementAttributes($element);
 
             // Update the element across the other sites?
-            if ($propagate && $element::isLocalized() && Craft::$app->getIsMultiSite()) {
+            if (($isNewElement || $propagate) && $element::isLocalized() && Craft::$app->getIsMultiSite()) {
                 foreach ($supportedSites as $siteInfo) {
                     // Skip the master site
                     if ($siteInfo['siteId'] != $element->siteId) {
