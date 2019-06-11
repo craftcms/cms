@@ -280,9 +280,9 @@ class Craft extends Yii2
 
     /**
      * @param $path
-     * @return string
+     * @return string|bool
      */
-    public static function normalizePathSeparators($path): string
+    public static function normalizePathSeparators($path)
     {
         return is_string($path) ? str_replace("\\", '/', $path) : false;
     }

@@ -99,7 +99,7 @@ class ViewTest extends TestCase
      * @param null $templateMode
      * @throws Exception
      */
-    public function testDoesTemplateExistsInSite($result, $templatePath, $templateMode = null)
+    public function testDoesTemplateExistInSite($result, $templatePath, $templateMode = null)
     {
         if ($templateMode !== null) {
             $this->view->setTemplateMode($templateMode);

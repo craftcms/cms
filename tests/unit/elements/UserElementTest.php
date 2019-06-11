@@ -219,7 +219,7 @@ class UserElementTest extends TestCase
 
         $this->activeUser->locked = true;
         $this->activeUser->lockoutDate = new DateTime('now', new DateTimeZone('UTC'));
-        Craft::$app->getConfig()->getGeneral()->cooldownDuration = 172800;
+        Craft::$app->getConfig()->getGeneral()->cooldownDuration = (60*60*24*2)+10; // 2 days and 10 seconds
 
         $this->assertInstanceOf(DateInterval::class, $interval = $this->activeUser->getRemainingCooldownTime());
         $this->assertSame('2', (string)$interval->d);
