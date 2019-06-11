@@ -36,6 +36,14 @@ class CraftConnector extends Yii2
     // =========================================================================
 
     /**
+     * @inheritdoc
+     */
+    public function getEmails(): array
+    {
+        return $this->emails;
+    }
+
+    /**
      *
      */
     public function startApp()
