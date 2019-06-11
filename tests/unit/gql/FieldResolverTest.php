@@ -14,6 +14,7 @@ use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\elements\User as UserElement;
+use craft\errors\GqlException;
 use craft\gql\types\Asset as AssetGqlType;
 use craft\gql\types\Entry as EntryGqlType;
 use craft\gql\types\GlobalSet as GlobalSetGqlType;
@@ -77,15 +78,15 @@ class FieldResolverTest extends Unit
         $element = $getElement();
 
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => $propertyName]);
-        $resolvedValue = $this->make($gqlTypeClass)->resolveWithDirectives($element, [], null, $resolveInfo);
+        $resolve = function () use ($gqlTypeClass, $element, $resolveInfo) { return $this->make($gqlTypeClass)->resolveWithDirectives($element, [], null, $resolveInfo);};
 
         if (is_callable($result)) {
-            $this->assertEquals($result($element), $resolvedValue);
+            $this->assertEquals($result($element), $resolve());
         } else if ($result === true) {
-            $this->assertEquals($element->$propertyName, $resolvedValue);
+            $this->assertEquals($element->$propertyName, $resolve());
             $this->assertNotNull($element->$propertyName);
         } else {
-            $this->assertNull($resolvedValue);
+            $this->tester->expectException(GqlException::class, $resolve);
         }
     }
 
