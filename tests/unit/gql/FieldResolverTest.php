@@ -16,6 +16,7 @@ use craft\gql\types\Asset as AssetGqlType;
 use craft\gql\types\Entry as EntryGqlType;
 use craft\gql\types\User as UserGqlType;
 use craft\gql\types\GlobalSet as GlobalSetGqlType;
+use craft\helpers\Json;
 use crafttests\fixtures\AssetsFixture;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use crafttests\fixtures\GlobalSetFixture;
@@ -28,7 +29,7 @@ class FieldResolverTest extends Unit
      * @var \UnitTester
      */
     protected $tester;
-    
+
     protected function _before()
     {
     }
@@ -66,7 +67,7 @@ class FieldResolverTest extends Unit
      * @param callable $getElement The callback which returns the element for testing
      * @param string $gqlTypeClass The Gql type class
      * @param string $propertyName The propery being tested
-     * @param mixed $result True for exact match, false for non-existing, an array for all other result fetching to mimick the `resolve` method.
+     * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
     public function testElementFieldResolving(callable $getElement, string $gqlTypeClass, string $propertyName, $result)
     {
@@ -75,8 +76,8 @@ class FieldResolverTest extends Unit
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => $propertyName]);
         $resolvedValue = $this->make($gqlTypeClass)->resolve($element, [], null, $resolveInfo);
 
-        if (is_array($result)) {
-            $this->assertEquals($element->{$result[0]}()->{$result[1]}, $resolvedValue);
+        if (is_callable($result)) {
+            $this->assertEquals($result($element), $resolvedValue);
         } else if ($result === true) {
             $this->assertEquals($element->$propertyName, $resolvedValue);
             $this->assertNotNull($element->$propertyName);
@@ -90,21 +91,21 @@ class FieldResolverTest extends Unit
         return [
             // Entries
             [[$this, '_getEntry'], EntryGqlType::class, 'sectionId', true],
-            [[$this, '_getEntry'], EntryGqlType::class, 'sectionUid', ['getSection', 'uid']],
+            [[$this, '_getEntry'], EntryGqlType::class, 'sectionUid', function ($source) { return $source->getSection()->uid;}],
             [[$this, '_getEntry'], EntryGqlType::class, 'sectionInvalid', false],
             [[$this, '_getEntry'], EntryGqlType::class, 'missingProperty', false],
             [[$this, '_getEntry'], EntryGqlType::class, 'typeId', true],
-            [[$this, '_getEntry'], EntryGqlType::class, 'typeUid', ['getType', 'uid']],
+            [[$this, '_getEntry'], EntryGqlType::class, 'typeUid', function ($source) { return $source->getType()->uid;}],
             [[$this, '_getEntry'], EntryGqlType::class, 'plainTextField', true],
             [[$this, '_getEntry'], EntryGqlType::class, 'postDate', true],
 
             // Assets
             [[$this, '_getAsset'], AssetGqlType::class, 'volumeId', true],
-            [[$this, '_getAsset'], AssetGqlType::class, 'volumeUid', ['getVolume', 'uid']],
+            [[$this, '_getAsset'], AssetGqlType::class, 'volumeUid', function ($source) { return $source->getVolume()->uid;}],
             [[$this, '_getAsset'], AssetGqlType::class, 'volumeInvalid', false],
             [[$this, '_getAsset'], AssetGqlType::class, 'missingProperty', false],
             [[$this, '_getAsset'], AssetGqlType::class, 'folderId', true],
-            [[$this, '_getAsset'], AssetGqlType::class, 'folderUid', ['getFolder', 'uid']],
+            [[$this, '_getAsset'], AssetGqlType::class, 'folderUid', function ($source) { return $source->getFolder()->uid;}],
             [[$this, '_getAsset'], AssetGqlType::class, 'imageDescription', true],
             [[$this, '_getAsset'], AssetGqlType::class, 'filename', true],
 
@@ -117,8 +118,9 @@ class FieldResolverTest extends Unit
             [[$this, '_getUser'], UserGqlType::class, 'missingProperty', false],
             [[$this, '_getUser'], UserGqlType::class, 'shortBio', true],
             [[$this, '_getUser'], UserGqlType::class, 'username', true],
-//            [[$this, '_getUser'], UserGqlType::class, 'groupHandles', true],
-//            [[$this, '_getUser'], UserGqlType::class, 'preferences', true],
+            [[$this, '_getUser'], UserGqlType::class, 'preferences', function ($source) { return Json::encode($source->preferences);}],
+            // TODO make sure this test works also when we have user groups in fixtures
+            [[$this, '_getUser'], UserGqlType::class, 'groupHandles', function ($source) {return array_map(function ($userGroup) { return $userGroup->handle;}, $source->getGroups());}],
 
         ];
     }
