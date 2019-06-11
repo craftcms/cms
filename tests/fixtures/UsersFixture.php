@@ -25,4 +25,9 @@ class UsersFixture extends UserFixture
      * @inheritdoc
      */
     public $dataFile = __DIR__ . '/data/users.php';
+
+    /**
+     * @inheritdoc
+     */
+    public $depends = [FieldLayoutFixture::class];
 }

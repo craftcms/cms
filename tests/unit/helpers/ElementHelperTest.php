@@ -39,7 +39,7 @@ class ElementHelperTest extends Unit
     // Fixtures
     // =========================================================================
 
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'entries' => [

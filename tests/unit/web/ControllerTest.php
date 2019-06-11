@@ -188,10 +188,9 @@ class ControllerTest extends Unit
             $this->controller->redirect('do/stuff')->headers->get('Location')
         );
 
-        // Based on the entryScript param in the craft module. If nothing is passed in the Craft::$app->getHomeUrl(); will be called
-        // Which will redirect to the $_SERVER['SCRIPT_NAME'] param.
+        // We dont use _getBaseUrlForRedirect because the :port80 wont work with urlWithScheme.
         $this->assertSame(
-            'index.php',
+            'https://test.craftcms.test:80/index.php',
             $this->controller->redirect(null)->headers->get('Location')
         );
 
@@ -232,6 +231,6 @@ class ControllerTest extends Unit
     private function _getBaseUrlForRedirect(): string
     {
         $scheme = $this->_determineUrlScheme();
-        return UrlHelper::urlWithScheme(Craft::$app->getConfig()->getGeneral()->siteUrl . 'index.php', $scheme);
+        return UrlHelper::urlWithScheme(Craft::$app->getConfig()->getGeneral()->siteUrl, $scheme);
     }
 }

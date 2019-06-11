@@ -15,7 +15,7 @@ class ExampleFunctionalCest
     // =========================================================================
 
     /**
-     *
+     * @param FunctionalTester $I
      */
     public function testCraftEdition(FunctionalTester $I)
     {

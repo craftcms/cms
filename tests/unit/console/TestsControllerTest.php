@@ -10,9 +10,9 @@ namespace crafttests\unit\console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\test\console\ConsoleTest as BaseConsoleTest;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
-use Craft;
 
 /**
  * Class ConsoleTest
@@ -44,8 +44,7 @@ class TestsControllerTest extends BaseConsoleTest
 
     /**
      * @throws InvalidConfigException
-     * @throws \yii\base\ErrorException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function testSetupWithDefaultPath()
     {

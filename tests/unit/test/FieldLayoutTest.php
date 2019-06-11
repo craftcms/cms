@@ -12,6 +12,7 @@ use Craft;
 use craft\db\Query;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use UnitTester;
+use yii\base\NotSupportedException;
 
 /**
  * Unit tests for App
@@ -33,7 +34,7 @@ class FieldLayoutTest extends Unit
     // Public Methods
     // =========================================================================
 
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'entry-with-fields' => [
@@ -46,7 +47,7 @@ class FieldLayoutTest extends Unit
     // =========================================================================
 
     /**
-     * @throws \yii\base\NotSupportedException
+     * @throws NotSupportedException
      */
     public function testFieldLayoutMatrix()
     {

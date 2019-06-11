@@ -12,19 +12,19 @@ use Codeception\Module\Yii2;
 use Codeception\PHPUnit\TestCase;
 use Codeception\Stub;
 use Codeception\TestInterface;
+use craft\base\Element;
 use craft\base\Field;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
+use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidPluginException;
-use craft\events\DeleteElementEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
-use craft\services\Elements;
 use PHPUnit\Framework\ExpectationFailedException;
 use ReflectionException;
 use Symfony\Component\Yaml\Yaml;
@@ -36,6 +36,9 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
 use yii\db\Exception;
+use DateTime;
+use yii\base\Exception as YiiBaseException;
+use yii\base\ErrorException as YiiBaseErrorException;
 
 /**
  * Craft module for codeception
@@ -140,7 +143,8 @@ class Craft extends Yii2
      * @param TestInterface $test
      * @throws InvalidConfigException
      * @throws ReflectionException
-     * @throws \yii\base\Exception
+     * @throws Throwable
+     * @throws YiiBaseErrorException
      */
     public function _before(TestInterface $test)
     {
@@ -159,53 +163,29 @@ class Craft extends Yii2
             return;
         }
 
-        // Re-apply project config - Fixtures may have done stuff...
-        if ($this->_getConfig('projectConfig')) {
-            \Craft::$app->getProjectConfig()->applyYamlChanges();
-        }
+        // TODO: With this - if someone makes a sections fixture - their data will be overwritten by the project.yml file.
+        // TODO: They should probably define that section data within their project.yml file - but perhaps a docs note for this?
+        // Re-apply project config
+        if ($projectConfig = $this->_getConfig('projectConfig')) {
+            // Tests just beginning. . Reset the project config to its original state.
+            TestSetup::setupProjectConfig($projectConfig['file']);
 
-        App::maxPowerCaptain();
+            \Craft::$app->getProjectConfig()->applyConfigChanges(
+                Yaml::parse(file_get_contents($projectConfig['file']))
+            );
+
+            \Craft::$app->getProjectConfig()->saveModifiedConfigData();
+        } else {
+            // No project config - we are probably using DB based fixtures so we need to rebuild based on that.
+            // Without rebuilding, Craft::$app->getProjectConfig()->get(); calls are unreliable
+            \Craft::$app->getProjectConfig()->rebuild();
+        }
 
         $db = \Craft::createObject(
             App::dbConfig(self::createDbConfig())
         );
 
         \Craft::$app->set('db', $db);
-    }
-
-    /**
-     * @param TestInterface $test
-     * @throws InvalidConfigException
-     * @throws Throwable
-     */
-    public function _after(TestInterface $test)
-    {
-        if ($this->_getConfig('fullMock') === true) {
-            parent::_after($test);
-
-            return;
-        }
-
-        parent::_after($test);
-
-        ob_start();
-
-        // Create a Craft::$app object
-        TestSetup::warmCraft();
-
-        if ($projectConfig = $this->_getConfig('projectConfig')) {
-            // Tests over. Reset the project config to its original state.
-            TestSetup::setupProjectConfig($projectConfig['file']);
-
-            \Craft::$app->getProjectConfig()->applyConfigChanges(
-                Yaml::parse(file_get_contents($projectConfig['file']))
-            );
-        }
-
-        \Craft::$app->trigger(Application::EVENT_AFTER_REQUEST);
-        // Dont output anything or we get header's already sent exception
-        ob_end_clean();
-        TestSetup::tearDownCraft();
     }
 
     /**
@@ -218,6 +198,8 @@ class Craft extends Yii2
         try {
             // Create a Craft::$app object
             TestSetup::warmCraft();
+
+            App::maxPowerCaptain();
 
             $dbConnection = \Craft::createObject(App::dbConfig(self::createDbConfig()));
 
@@ -298,7 +280,7 @@ class Craft extends Yii2
 
     /**
      * @param $path
-     * @return string
+     * @return string|bool
      */
     public static function normalizePathSeparators($path)
     {
@@ -346,6 +328,29 @@ class Craft extends Yii2
     }
 
     /**
+     * @param Element $element
+     * @param bool $failHard
+     * @return bool
+     * @throws ElementNotFoundException
+     * @throws Throwable
+     * @throws YiiBaseException
+     */
+    public function saveElement(Element $element, bool $failHard = true) : bool
+    {
+        if (!\Craft::$app->getElements()->saveElement($element)) {
+            if ($failHard) {
+                throw new InvalidArgumentException(
+                    implode(', ', $element->getErrorSummary(true))
+                );
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * @param string $elementType
      * @param array $searchProperties
      * @param int $amount
@@ -384,6 +389,24 @@ class Craft extends Yii2
 
         if ($failed === false) {
             $this->fail('Test was supposed to fail but didnt.');
+        }
+    }
+
+    /**
+     * @todo Allow passing of DateTime objects as param 2 and 3 - won't be hard to implement.
+     * @param TestInterface $test
+     * @param string $dateOne
+     * @param string $dateTwo
+     * @param float $secondsDelta
+     * @throws \Exception
+     */
+    public function assertEqualDates(TestInterface $test, string $dateOne, string $dateTwo, float $secondsDelta = 5.0)
+    {
+        $dateOne = new DateTime($dateOne);
+        $dateTwo = new DateTime($dateTwo);
+
+        if (method_exists($test, 'assertEqualsWithDelta')) {
+            $test->assertEqualsWithDelta((float)$dateOne->format('U'), (float)$dateTwo->format('U'), $secondsDelta);
         }
     }
 

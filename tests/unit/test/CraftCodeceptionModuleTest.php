@@ -7,14 +7,20 @@
 
 namespace crafttests\unit\test;
 
-use craft\elements\Entry;
+use Craft;
 use craft\elements\User;
+use craft\errors\ElementNotFoundException;
+use craft\errors\InvalidElementException;
 use craft\test\mockclasses\components\EventTriggeringComponent;
-use crafttests\fixtures\EntryFixture;
-use PHPUnit\Framework\ExpectationFailedException;
+use Exception;
+use stdClass;
+use Throwable;
 use UnitTester;
 use yii\base\Event;
 use Codeception\Test\Unit;
+use DateTime;
+use DateTimeZone;
+use DateInterval;
 
 /**
  * CraftCodeceptionModuleTest
@@ -82,7 +88,7 @@ class CraftCodeceptionModuleTest extends Unit
                 [
                     'type' => 'class',
                     'eventPropName' => 'sender',
-                    'desiredClass' => \stdClass::class,
+                    'desiredClass' => stdClass::class,
                     'desiredValue' => [
                         'a' => '22'
                     ]
@@ -92,8 +98,8 @@ class CraftCodeceptionModuleTest extends Unit
     }
 
     /**
-     * @throws \Throwable
-     * @throws \craft\errors\ElementNotFoundException
+     * @throws Throwable
+     * @throws ElementNotFoundException
      * @throws \yii\base\Exception
      */
     public function testAssertElementsExist()
@@ -107,14 +113,14 @@ class CraftCodeceptionModuleTest extends Unit
 
         $user = new User($configArray);
 
-        \Craft::$app->getElements()->saveElement($user);
+        Craft::$app->getElements()->saveElement($user);
 
         $this->tester->assertElementsExist(User::class, $configArray);
     }
 
     /**
-     * @throws \Throwable
-     * @throws \craft\errors\ElementNotFoundException
+     * @throws Throwable
+     * @throws ElementNotFoundException
      * @throws \yii\base\Exception
      */
     public function testAssertElementFails()
@@ -128,7 +134,7 @@ class CraftCodeceptionModuleTest extends Unit
 
         $user = new User($configArray);
 
-        \Craft::$app->getElements()->saveElement($user);
+        Craft::$app->getElements()->saveElement($user);
 
         $this->tester->assertTestFails(function() use ($configArray) {
             $this->tester->assertElementsExist(User::class, $configArray, 2);
@@ -136,9 +142,9 @@ class CraftCodeceptionModuleTest extends Unit
     }
 
     /**
-     * @throws \Throwable
-     * @throws \craft\errors\ElementNotFoundException
-     * @throws \craft\errors\InvalidElementException
+     * @throws Throwable
+     * @throws ElementNotFoundException
+     * @throws InvalidElementException
      * @throws \yii\base\Exception
      */
     public function testAssertElementExistsWorksWithMultiple()
@@ -152,10 +158,55 @@ class CraftCodeceptionModuleTest extends Unit
 
         $user = new User($configArray);
 
-        \Craft::$app->getElements()->saveElement($user);
+        Craft::$app->getElements()->saveElement($user);
 
-        \Craft::$app->getElements()->duplicateElement($user);
+        Craft::$app->getElements()->duplicateElement($user);
 
         $this->tester->assertElementsExist(User::class, $configArray, 2);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testDateTimeCompare()
+    {
+        $dateTime = new DateTime('now', new DateTimeZone('UTC'));
+
+        $this->tester->assertEqualDates(
+            $this,
+            $dateTime->format('Y-m-d H:i:s'),
+            $dateTime->format('Y-m-d H:i:s')
+        );
+
+        $otherDateTime = new DateTime('now', new DateTimeZone('UTC'));
+        $otherDateTime->add(new DateInterval('P1D'));
+
+        $this->tester->assertTestFails(function() use ($dateTime, $otherDateTime) {
+            $this->tester->assertEqualDates(
+                $this,
+                $dateTime->format('Y-m-d H:i:s'),
+                $otherDateTime->format('Y-m-d H:i:s')
+            );
+        });
+
+        $dateTime = new DateTime('now', new DateTimeZone('UTC'));
+        $otherDateTime =  new DateTime('now', new DateTimeZone('UTC'));
+        $otherDateTime->add(new DateInterval('PT1S'));
+        $this->tester->assertEqualDates(
+            $this,
+            $dateTime->format('Y-m-d H:i:s'),
+            $otherDateTime->format('Y-m-d H:i:s'),
+            3
+        );
+
+        // No delta. No Bueno.
+        $this->tester->assertTestFails(function() use ($dateTime, $otherDateTime) {
+            $this->tester->assertEqualDates(
+                $this,
+                $dateTime->format('Y-m-d H:i:s'),
+                $otherDateTime->format('Y-m-d H:i:s'),
+                0.0
+            );
+        });
     }
 }

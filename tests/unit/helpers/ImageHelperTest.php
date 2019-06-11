@@ -263,7 +263,6 @@ class ImageHelperTest extends Unit
     /**
      * @return array
      * @todo Test empty unpack() function and invalid IHDR chunks and INVALID color value. See coverage for more.
-     *
      */
     public function pngImageInfoDataProvider(): array
     {
