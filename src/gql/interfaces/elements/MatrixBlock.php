@@ -54,8 +54,8 @@ class MatrixBlock extends BaseElement
             'fieldUid' => Type::string(),
             'fieldId' => Type::int(),
             'ownerUid' => Type::string(),
+            // Todo make it possible to travel upwards (make element interface not abstract)
             'ownerId' => Type::int(),
-            'ownerSiteUid' => Type::string(),
             'ownerSiteId' => Type::int(),
             'typeUid' => Type::string(),
             'typeId' => Type::int(),

@@ -36,13 +36,6 @@ class MatrixBlock extends BaseType
             return $field->$property ?? null;
         }
 
-        if (StringHelper::substr($fieldName, 0, 9) === 'ownerSite') {
-            $ownerSite = $source->getSite();
-            $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 9));
-
-            return $ownerSite->$property ?? null;
-        }
-
         if (StringHelper::substr($fieldName, 0, 5) === 'owner') {
             $owner = $source->getOwner();
             $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 5));
