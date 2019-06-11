@@ -127,7 +127,7 @@ class Security extends \yii\base\Security
      * @throws InvalidConfigException when HMAC generation fails.
      * @see hashData()
      */
-    public function validateData($data, $key = null, $rawHash = false): string
+    public function validateData($data, $key = null, $rawHash = false)
     {
         if ($key === null) {
             $key = Craft::$app->getConfig()->getGeneral()->securityKey;
