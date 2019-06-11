@@ -44,6 +44,11 @@ class VolumesFixture extends Fixture
      */
     public $dataFile = __DIR__ . '/data/volumes.php';
 
+    /**
+     * @inheritdoc
+     */
+    public $depends = [FieldLayoutFixture::class];
+
     // Public Methods
     // =========================================================================
 
