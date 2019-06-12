@@ -57,3 +57,13 @@ users:
   allowPublicRegistration: false
   defaultGroup: ''
   groups:
+volumes:
+  13b7bf8c-b8d7-44e1-a45c-20899421387d:
+    name: 'Test volume 1'
+    handle: testVolume1
+    type: craft\volumes\Local
+    hasUrls: '0'
+    url: null
+    settings:
+      path: '@root/test-assets'
+    sortOrder: '1'
