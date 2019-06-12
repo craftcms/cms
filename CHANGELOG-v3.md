@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-### Added
+### Changed
 - `craft\test\Craft::assertElementsExist()` now accepts a fourth argument indicating whether to search 
 through trashed and non-active Elements as well. 
 
