@@ -19,7 +19,7 @@ use FunctionalTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class PreflightCheckCest
+class PageRenderChecksCest
 {
     // Public Methods
     // =========================================================================
@@ -113,12 +113,18 @@ class PreflightCheckCest
             ['url' => '/settings/routes', 'title' => 'Routes', 'extraContent' => [
                 '_includes/route-handler'
             ]],
-
             ['url' => '/settings/fields', 'title' => 'Fields', 'extraContent' => [
                 'Test field group 1',
                 'Example text field 1'
             ]],
-
+            ['url' => '/settings/assets', 'title' => 'Asset Settings', 'extraContent' => [
+                'Test volume 1',
+                'Volumes',
+                'Image Transforms'
+            ]],
+            ['url' => '/settings/assets/transforms', 'title' => 'Asset Settings', 'extraContent' => [
+                'Example transform 1'
+            ]],
 
             // Utility pages
             ['url' => '/utilities', 'title' => 'System Report', 'extraContent' => [

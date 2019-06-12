@@ -84,6 +84,17 @@ users:
       handle: testGroup1
       permissions:
         - accesscp
+imageTransforms:
+  b756da68-5290-4145-b7d9-180a1d869b5a:
+    format: null
+    handle: 'exampleTransform'
+    height: '15'
+    interlace: none
+    mode: crop
+    name: 'Example transform 1'
+    position: center-center
+    quality: null
+    width: '10'
 volumes:
   13b7bf8c-b8d7-44e1-a45c-20899421387d:
     name: 'Test volume 1'
