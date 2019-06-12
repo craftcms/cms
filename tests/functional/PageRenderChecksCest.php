@@ -22,6 +22,19 @@ use FunctionalTester;
  */
 class PageRenderChecksCest
 {
+    // Public Properties
+    // =========================================================================
+
+    /**
+     * @var string
+     */
+    public $cpTrigger;
+
+    /**
+     * @var
+     */
+    public $currentUser;
+
     // Public Methods
     // =========================================================================
 
@@ -33,11 +46,35 @@ class PageRenderChecksCest
      */
     public function _before(FunctionalTester $I)
     {
-        $userEl = User::find()
+        $this->currentUser = User::find()
             ->admin()
             ->one();
 
-        Craft::$app->getUser()->setIdentity($userEl);
+        Craft::$app->getUser()->setIdentity($this->currentUser);
+        $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
+    }
+
+    /**
+     * @param FunctionalTester $I
+     */
+    public function testMyAccountPage(FunctionalTester $I)
+    {
+        $I->amOnPage('/'.$this->cpTrigger.'/myaccount');
+
+        $I->submitForm('#userform', [
+            'firstName' => 'IM A CHANGED FIRSTNAME'
+        ]);
+
+        $I->see('Users');
+
+        // Check that the Db was updated.
+        $I->assertSame(
+            'IM A CHANGED FIRSTNAME',
+            User::find()
+                ->id($this->currentUser->id)
+                ->one()->firstName
+        );
+
     }
 
     /**
@@ -47,9 +84,7 @@ class PageRenderChecksCest
      */
     public function test200Page(FunctionalTester $I, Example $example)
     {
-        $adminTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
-
-        $I->amOnPage('/'.$adminTrigger.''.$example['url']);
+        $I->amOnPage('/'.$this->cpTrigger.''.$example['url']);
         $I->seeInTitle($example['title']);
         $I->seeResponseCodeIs(200);
 
@@ -66,6 +101,9 @@ class PageRenderChecksCest
     // Data providers
     // =========================================================================
 
+    /**
+     * @return array
+     */
     protected function pagesDataProvider() : array
     {
         return [
