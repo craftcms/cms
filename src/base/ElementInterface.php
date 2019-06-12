@@ -389,6 +389,7 @@ interface ElementInterface extends ComponentInterface
      * Returns whether this is a draft.
      *
      * @return bool
+     * @since 3.2
      */
     public function getIsDraft(): bool;
 
@@ -396,6 +397,7 @@ interface ElementInterface extends ComponentInterface
      * Returns whether this is a revision.
      *
      * @return bool
+     * @since 3.2
      */
     public function getIsRevision(): bool;
 
@@ -403,6 +405,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.
      *
      * @return int|null
+     * @since 3.2
      */
     public function getSourceId();
 
@@ -410,6 +413,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.
      *
      * @return string
+     * @since 3.2
      */
     public function getSourceUid(): string;
 
@@ -417,6 +421,7 @@ interface ElementInterface extends ComponentInterface
      * Returns whether the element is an unsaved draft.
      *
      * @return bool
+     * @since 3.2
      */
     public function getIsUnsavedDraft(): bool;
 
