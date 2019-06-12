@@ -13,7 +13,8 @@ use craft\elements\User;
 use FunctionalTester;
 
 /**
- * Class PreflightCheckCest
+ * Test that most pages within Craft are rendered successfully and that we can - some a minor degree -
+ * establish that the correct content is loaded on those pages.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
