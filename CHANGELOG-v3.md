@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.0-beta.2 - 2019-06-11
 
 ### Added
 - The entry creation workflow is now more similar to how it was in past versions of Craft. Entries are initially created as “unsaved drafts”, and are not converted to real entries until the “Save entry” button is pressed. ([#4384](https://github.com/craftcms/cms/issues/4384))
@@ -36,7 +36,6 @@
 - Fixed a SQL error that could occur when updating to Craft 3.2.
 - Fixed a bug where updating to Craft 3.2 could take a long time. ([#4374](https://github.com/craftcms/cms/issues/4374))
 - Fixed test reliability issues.
-- Fixed a bug where Project Config was not returning data setup through `craft\test\Fixture` when testing.
 
 ## 3.2.0-beta.1 - 2019-06-04
 
@@ -296,7 +295,7 @@
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
 
-## Unreleased (3.1)
+## 3.1.30 - 2019-06-11
 
 ### Changed
 - Improved query performance. ([yiisoft/yii2#17344](https://github.com/yiisoft/yii2/pull/17344), [yiisoft/yii2#17345](https://github.com/yiisoft/yii2/pull/17345), [yiisoft/yii2#17348](https://github.com/yiisoft/yii2/pull/17348))
@@ -306,6 +305,8 @@
 - Fixed a bug where new elements weren’t assigned a UID in time if their URI format contained a `{uid}` token. ([#4364](https://github.com/craftcms/cms/issues/4364))
 - Fixed a bug where Craft was modifying custom log target configs before executing queue jobs. ([#3766](https://github.com/craftcms/cms/issues/3766))
 - Fixed a bug where `craft\helpers\ChartHelper::getRunChartDataFromQuery()` assumed that the value would be integers. ([craftcms/commerce#849](https://github.com/craftcms/commerce/issues/849))
+- Fixed a bug where `craft\services\Security::validateData()` was returning an empty string instead of `false` when the data didn’t validate. ([#4387](https://github.com/craftcms/cms/issues/4387))
+- Fixed a bug where Craft could inject unexpected JavaScript into front-end requests. ([#4390](https://github.com/craftcms/cms/issues/4390))
 
 ## 3.1.29 - 2019-06-04
 

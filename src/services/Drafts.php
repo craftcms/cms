@@ -253,7 +253,8 @@ class Drafts extends Component
                 // Resave the draft without its draftId
                 $draft->draftId = null;
                 $draft->detachBehavior('draft');
-                if (!$elementsService->saveElement($draft, false)) {
+                $draft->setScenario(Element::SCENARIO_ESSENTIALS);
+                if (!$elementsService->saveElement($draft)) {
                     throw new InvalidElementException($draft, 'Couldn\'t save element.');
                 }
 

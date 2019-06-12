@@ -902,7 +902,8 @@ class Elements extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Start with $element's site
-            if (!$this->saveElement($mainClone, false, false)) {
+            $mainClone->setScenario(Element::SCENARIO_ESSENTIALS);
+            if (!$this->saveElement($mainClone, true, false)) {
                 throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
             }
 
