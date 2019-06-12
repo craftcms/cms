@@ -7,10 +7,11 @@ email:
   transportSettings: null
 routes:
   4e726457-352a-4baf-9435-1c2a09aa7eea:
-    template: daasdads
+    template: _includes/route-handler
     uriParts:
-      - daads
-    uriPattern: daads
+      - part1
+      - part2
+    uriPattern: part1part2
     sortOrder: 1
     siteUid: null
 siteGroups:
@@ -57,6 +58,11 @@ users:
   allowPublicRegistration: false
   defaultGroup: ''
   groups:
+    ed97d72d-63ec-4d68-8f2c-b37e33a5109a:
+      name: Test group1
+      handle: testGroup1
+      permissions:
+        - accesscp
 volumes:
   13b7bf8c-b8d7-44e1-a45c-20899421387d:
     name: 'Test volume 1'
