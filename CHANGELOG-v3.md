@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- It’s now possible to set plugin license keys to environment variables using the `$VARIABLE_NAME` syntax. ([#4393](https://github.com/craftcms/cms/issues/4393))
+
 ### Changed
 - The default email template no longer sets text or background colors, so emails look better in dark mode. ([#4396](https://github.com/craftcms/cms/pull/4396))
 - Improved the error message that gets logged when Craft isn’t able to finish processing project config changes, due to unresolved dependencies.
