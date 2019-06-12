@@ -73,13 +73,40 @@ class PreflightCheckCest
             ['url' => '/users', 'title' => 'Users'],
             // TODO: fix globals fixture     ['url' => '/globals', 'title' => 'Globals'],
             // TODO: Requires fixtures data. ['url' => '/categories', 'title' => 'Categories'],
-            ['url' => '/settings/plugins', 'title' => 'Plugins'],
+
+            // Settings pages
+            ['url' => '/settings/general', 'title' => 'General Settings', 'extraContent' => [
+                'System Name',
+                'System Status',
+                'Time Zone',
+                'Login Page Logo'
+            ]],
             ['url' => '/settings/sections', 'title' => 'Sections', 'extraContent' => [
                 'Craft CMS Test section'
             ]],
+            ['url' => '/settings/users', 'title' => 'User Settings', 'extraContent' => [
+                'User Groups',
+                'Fields',
+                'Test group1'
+            ]],
+            ['url' => '/settings/email', 'title' => 'Email Settings', 'extraContent' => [
+                'Email Settings',
+                'This can be set to an environment variable. Learn more',
+                'Transport Type'
+            ]],
+            ['url' => '/settings/plugins', 'title' => 'Plugins'],
             ['url' => '/settings/sites', 'title' => 'Sites', 'extraContent' => [
                 'Craft CMS testing'
             ]],
+            ['url' => '/settings/routes', 'title' => 'Routes', 'extraContent' => [
+                '_includes/route-handler'
+            ]],
+            ['url' => '/settings/routes', 'title' => 'Routes', 'extraContent' => [
+                '_includes/route-handler'
+            ]],
+
+
+            // Utility pages
             ['url' => '/utilities', 'title' => 'System Report', 'extraContent' => [
                 'Application Info',
                 'Yii version',
