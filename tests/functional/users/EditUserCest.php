@@ -51,6 +51,26 @@ class EditUserCest
 
     // Tests
     // =========================================================================
+
+    public function testNewUser(FunctionalTester $I)
+    {
+        $I->amOnPage('/'.$this->cpTrigger.'/users/new');
+        $I->see('New User');
+
+        $variables = [
+            'username' => 'newusernameforcreateuserfunctest',
+            'firstName' => 'NewUserFirstName',
+            'lastName' => 'NewUserLastName',
+            'email' => 'NewUser@email.com'
+        ];
+
+        $I->submitForm('#userform', $variables);
+
+        $I->see('Users');
+
+        $I->assertElementsExist(User::class, $variables, 1, true);
+    }
+
     /**
      * @param FunctionalTester $I
      */
