@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- `craft\test\Craft::assertElementsExist()` now accepts a fourth argument indicating whether to search 
+through trashed and non-active Elements as well. 
+
+### Fixed
+- Fixed a bug where `craft\test\Craft::amLoggedInAs` was not logging a user in.
+
 ## 3.2.0-beta.2 - 2019-06-11
 
 ### Added

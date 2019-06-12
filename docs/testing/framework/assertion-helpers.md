@@ -13,6 +13,9 @@ It accepts three arguments:
 - `string $elementType` what [element type](../../extend/element-types.md) must these elements be of. 
 - `array $searchParameters` the params that they must match (see below). 
 - `int $amount = 1` the amount of elements that must be found. 
+- `bool $searchAll = false` whether `anyStatus()` and `trashed(null)` should be used when searching for possible Elements. 
+Do so if you, for example, need to search for a newly created User who will have `User::STATUS_DRAFT` as applicable status. 
+
 ::: tip
 Under the hood the Craft module will call `$elementType::find()` creating a `craft\elements\db\ElementQuery`. 
 Then it will apply the `$searchParameters` with the `$key` being the property of the `ElementQuery` and `$value` what
