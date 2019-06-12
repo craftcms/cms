@@ -48,7 +48,7 @@ class PageRenderChecksCest
             ->admin()
             ->one();
 
-        Craft::$app->getUser()->setIdentity($this->currentUser);
+        $I->amLoggedInAs($this->currentUser);
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
     }
 
