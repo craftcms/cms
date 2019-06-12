@@ -18,6 +18,7 @@ use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\models\MatrixBlockType;
+use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\records\MatrixBlock as MatrixBlockRecord;
 use craft\validators\SiteIdValidator;
 use craft\web\assets\matrix\MatrixAsset;
@@ -380,6 +381,23 @@ class MatrixBlock extends Element implements BlockElementInterface
         } catch (InvalidConfigException $e) {
             return false;
         }
+    }
+    
+    /**
+     * @inheritdoc
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::getGqlTypeNameByContext($this->getType());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlTypeNameByContext($context)
+    {
+        /** @var MatrixBlockTypeModel $context */
+        return $context->getField()->handle . '_' . $context->handle . '_BlockType';
     }
 
     // Events

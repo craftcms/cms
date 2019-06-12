@@ -3,6 +3,7 @@ namespace craft\gql\types\generators;
 
 use Craft;
 use craft\base\Field;
+use craft\elements\Entry as EntryElement;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\Entry;
@@ -23,7 +24,7 @@ class EntryType implements BaseGenerator
 
         foreach ($entryTypes as $entryType) {
             /** @var EntryTypeModel $entryType */
-            $typeName = self::getName($entryType);
+            $typeName = EntryElement::getGqlTypeNameByContext($entryType);
             $contentFields = $entryType->getFields();
             $contentFieldGqlTypes = [];
 
@@ -44,14 +45,5 @@ class EntryType implements BaseGenerator
         }
 
         return $gqlTypes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getName($context = null): string
-    {
-        /** @var EntryTypeModel $context */
-        return $context->getSection()->handle . '_' . $context->handle . '_Entry';
     }
 }

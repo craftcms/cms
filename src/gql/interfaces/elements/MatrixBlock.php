@@ -4,6 +4,7 @@ namespace craft\gql\interfaces\elements;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\gql\TypeLoader;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\interfaces\elements\Element as ElementInterface;
 use craft\gql\types\generators\MatrixBlockType;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
@@ -11,7 +12,7 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class MatrixBlock
  */
-class MatrixBlock extends BaseElement
+class MatrixBlock extends Element
 {
     /**
      * @inheritdoc
@@ -26,7 +27,7 @@ class MatrixBlock extends BaseElement
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
             'resolveType' => function (MatrixBlockElement $value) {
-                return GqlEntityRegistry::getEntity(MatrixBlockType::getName($value->getType()));
+                return GqlEntityRegistry::getEntity($value->getGqlTypeName());
             }
         ]));
 
@@ -55,6 +56,7 @@ class MatrixBlock extends BaseElement
             'fieldId' => Type::int(),
             'ownerUid' => Type::string(),
             // Todo make it possible to travel upwards (make element interface not abstract)
+            'owner' => ElementInterface::getType(),
             'ownerId' => Type::int(),
             'ownerSiteId' => Type::int(),
             'typeUid' => Type::string(),

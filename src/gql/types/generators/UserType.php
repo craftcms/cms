@@ -19,7 +19,7 @@ class UserType implements BaseGenerator
     public static function generateTypes($context = null): array
     {
         $gqlTypes = [];
-        $typeName = self::getName();
+        $typeName = UserElement::getGqlTypeNameByContext(null);
 
         $contentFields = Craft::$app->getFields()->getLayoutByType(UserElement::class)->getFields();
         $contentFieldGqlTypes = [];
@@ -41,13 +41,5 @@ class UserType implements BaseGenerator
 
 
         return $gqlTypes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getName($context = null): string
-    {
-        return 'User';
     }
 }

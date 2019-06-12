@@ -1180,6 +1180,23 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public function getGqlTypeName(): string
+    {
+        return static::getGqlTypeNameByContext($this->getVolume());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlTypeNameByContext($context)
+    {
+        /** @var Volume $context */
+        return $context->handle . '_Asset';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributes()
     {
         $names = parent::attributes();

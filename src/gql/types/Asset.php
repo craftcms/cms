@@ -3,6 +3,7 @@ namespace craft\gql\types;
 
 use craft\elements\Asset as AssetElement;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\gql\interfaces\elements\Element as ElementInterface;
 use craft\helpers\StringHelper;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -17,7 +18,11 @@ class Asset extends BaseType
      */
     public function __construct(array $config)
     {
-        $config['interfaces'] = [AssetInterface::getType()];
+        $config['interfaces'] = [
+            AssetInterface::getType(),
+            ElementInterface::getType(),
+        ];
+
         parent::__construct($config);
     }
 

@@ -7,7 +7,6 @@
 
 namespace craft\services;
 
-use Craft;
 use craft\errors\GqlException;
 use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlQueriesEvent;
@@ -18,6 +17,7 @@ use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\gql\interfaces\elements\Element as ElementInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
@@ -152,6 +152,7 @@ class Gql extends Component
             DateTime::class,
 
             // Interfaces
+            ElementInterface::class,
             EntryInterface::class,
             MatrixBlockInterface::class,
             AssetInterface::class,

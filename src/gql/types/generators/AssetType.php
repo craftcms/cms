@@ -4,6 +4,7 @@ namespace craft\gql\types\generators;
 use Craft;
 use craft\base\Field;
 use craft\base\Volume;
+use craft\elements\Asset as AssetElement;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\Asset;
@@ -23,7 +24,7 @@ class AssetType implements BaseGenerator
 
         foreach ($volumes as $volume) {
             /** @var Volume $volume */
-            $typeName = self::getName($volume);
+            $typeName = AssetElement::getGqlTypeNameByContext($volume);
             $contentFields = $volume->getFields();
             $contentFieldGqlTypes = [];
 
@@ -44,14 +45,5 @@ class AssetType implements BaseGenerator
         }
 
         return $gqlTypes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getName($context = null): string
-    {
-        /** @var Volume $context */
-        return $context->handle . '_Asset';
     }
 }

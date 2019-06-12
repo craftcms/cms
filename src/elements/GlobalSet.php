@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\GlobalSetQuery;
+use craft\elements\GlobalSet as GlobalSetElement;
 use craft\helpers\UrlHelper;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
@@ -162,6 +163,23 @@ class GlobalSet extends Element
         }
 
         return UrlHelper::cpUrl('globals/' . $this->handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::getGqlTypeNameByContext($this);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlTypeNameByContext($context)
+    {
+        /** @var GlobalSetElement $context */
+        return $context->handle . '_GlobalSet';
     }
 
     // Events

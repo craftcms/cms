@@ -3,6 +3,7 @@ namespace craft\gql\types\generators;
 
 use Craft;
 use craft\base\Field;
+use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\MatrixBlock;
@@ -23,7 +24,7 @@ class MatrixBlockType implements BaseGenerator
 
         foreach ($matrixBlockTypes as $matrixBlockType) {
             /** @var MatrixBlockTypeModel $matrixBlockType */
-            $typeName = self::getName($matrixBlockType);
+            $typeName = MatrixBlockElement::getGqlTypeNameByContext($matrixBlockType);
             $contentFields = $matrixBlockType->getFields();
             $contentFieldGqlTypes = [];
 
@@ -44,14 +45,5 @@ class MatrixBlockType implements BaseGenerator
         }
 
         return $gqlTypes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getName($context = null): string
-    {
-        /** @var MatrixBlockTypeModel $context */
-        return $context->getField()->handle . '_' . $context->handle . '_BlockType';
     }
 }

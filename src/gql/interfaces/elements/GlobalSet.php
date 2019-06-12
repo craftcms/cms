@@ -1,6 +1,7 @@
 <?php
 namespace craft\gql\interfaces\elements;
 
+use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeLoader;
 use craft\gql\types\generators\GlobalSetType;
@@ -10,7 +11,7 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class GlobalSet
  */
-class GlobalSet extends BaseElement
+class GlobalSet extends Element
 {
     /**
      * @inheritdoc
@@ -24,8 +25,8 @@ class GlobalSet extends BaseElement
         $type = GqlEntityRegistry::createEntity(self::class, new InterfaceType([
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
-            'resolveType' => function ($value) {
-                return GqlEntityRegistry::getEntity(GlobalSetType::getName($value));
+            'resolveType' => function (GlobalSetElement $value) {
+                return GqlEntityRegistry::getEntity($value->getGqlTypeName());
             }
         ]));
 

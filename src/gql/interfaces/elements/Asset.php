@@ -12,7 +12,7 @@ use GraphQL\Type\Definition\Type;
 /**
  * Class Asset
  */
-class Asset extends BaseElement
+class Asset extends Element
 {
     /**
      * @inheritdoc
@@ -27,7 +27,7 @@ class Asset extends BaseElement
             'name' => static::getName(),
             'fields' => self::class . '::getFields',
             'resolveType' => function (AssetElement $value) {
-                return GqlEntityRegistry::getEntity(AssetType::getName($value->getVolume()));
+                return GqlEntityRegistry::getEntity($value->getGqlTypeName());
             }
         ]));
 

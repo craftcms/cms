@@ -15,12 +15,4 @@ interface BaseGenerator
      * @return array
      */
     public static function generateTypes($context = null): array;
-
-    /**
-     * Get type name for the context
-     *
-     * @param mixed $context Context for type name
-     * @return string
-     */
-    public static function getName($context = null): string;
 }

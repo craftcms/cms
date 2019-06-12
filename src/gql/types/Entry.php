@@ -2,6 +2,7 @@
 namespace craft\gql\types;
 
 use craft\elements\Entry as EntryElement;
+use craft\gql\interfaces\elements\Element as ElementInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\helpers\StringHelper;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -16,7 +17,11 @@ class Entry extends BaseType
      */
     public function __construct(array $config)
     {
-        $config['interfaces'] = [EntryInterface::getType()];
+        $config['interfaces'] = [
+            EntryInterface::getType(),
+            ElementInterface::getType(),
+        ];
+
         parent::__construct($config);
     }
 

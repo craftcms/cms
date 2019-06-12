@@ -2,6 +2,7 @@
 namespace craft\gql\types;
 
 use craft\elements\GlobalSet as GlobalSetElement;
+use craft\gql\interfaces\elements\Element as ElementInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -15,7 +16,11 @@ class GlobalSet extends BaseType
      */
     public function __construct(array $config)
     {
-        $config['interfaces'] = [GlobalSetInterface::getType()];
+        $config['interfaces'] = [
+            GlobalSetInterface::getType(),
+            ElementInterface::getType(),
+        ];
+
         parent::__construct($config);
     }
 

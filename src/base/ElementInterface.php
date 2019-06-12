@@ -837,6 +837,21 @@ interface ElementInterface extends ComponentInterface
      */
     public function getEditorHtml(): string;
 
+    /**
+     * Returns the GQL type name for this element.
+     *
+     * @return string
+     */
+    public function getGqlTypeName(): string;
+
+    /**
+     * Returns the GQL type name by element's context.
+     *
+     * @param mixed $context The element's context - such as Volume, Entry Type or Matrix Block Type.
+     * @return mixed
+     */
+    public static function getGqlTypeNameByContext($context);
+
     // Events
     // -------------------------------------------------------------------------
 
