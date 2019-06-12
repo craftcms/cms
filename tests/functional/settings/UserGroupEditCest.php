@@ -56,7 +56,7 @@ class UserGroupEditCest
     /**
      * @param FunctionalTester $I
      */
-    public function testEditSite(FunctionalTester $I)
+    public function testEditUserGroup(FunctionalTester $I)
     {
         $I->amOnPage('/'.$this->cpTrigger.'/settings/users');
         $I->click('Test group1');
