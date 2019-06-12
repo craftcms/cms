@@ -38,8 +38,6 @@ class PageRenderChecksCest
     // Public Methods
     // =========================================================================
 
-    // Tests
-    // =========================================================================
 
     /**
      * @param FunctionalTester $I
@@ -54,28 +52,8 @@ class PageRenderChecksCest
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
     }
 
-    /**
-     * @param FunctionalTester $I
-     */
-    public function testMyAccountPage(FunctionalTester $I)
-    {
-        $I->amOnPage('/'.$this->cpTrigger.'/myaccount');
-
-        $I->submitForm('#userform', [
-            'firstName' => 'IM A CHANGED FIRSTNAME'
-        ]);
-
-        $I->see('Users');
-
-        // Check that the Db was updated.
-        $I->assertSame(
-            'IM A CHANGED FIRSTNAME',
-            User::find()
-                ->id($this->currentUser->id)
-                ->one()->firstName
-        );
-
-    }
+    // Tests
+    // =========================================================================
 
     /**
      * @param FunctionalTester $I
