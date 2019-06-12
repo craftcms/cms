@@ -591,9 +591,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Return the GQL type to be used for this type of field.
-     *
-     * @return Type|array
+     * @inheritdoc
      */
     public function getContentGqlType()
     {
