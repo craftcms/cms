@@ -78,6 +78,15 @@ system:
 users:
   allowPublicRegistration: false
   defaultGroup: ''
+  fieldLayouts:
+    2da91a33-0856-4fe4-a2ae-ca3fb7b5eaed:
+      tabs:
+        - name: General
+          sortOrder: '1'
+          fields:
+            024666e4-a54f-49b4-aea7-f1a3c1eb0994:
+              required: true
+              sortOrder: '1'
   groups:
     ed97d72d-63ec-4d68-8f2c-b37e33a5109a:
       name: Test group1
