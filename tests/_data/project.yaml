@@ -5,6 +5,27 @@ email:
   template: ''
   transportType: craft\mail\transportadapters\Sendmail
   transportSettings: null
+fieldGroups:
+  3470df71-5cf1-4ad7-bd38-eeaeb4258b13:
+    name: 'Test field group 1'
+fields:
+  024666e4-a54f-49b4-aea7-f1a3c1eb0994:
+    name: 'Example text field 1'
+    handle: exampleTextField1
+    instructions: ''
+    searchable: true
+    translationMethod: none
+    translationKeyFormat: null
+    type: craft\fields\PlainText
+    settings:
+      placeholder: ''
+      code: ''
+      multiline: ''
+      initialRows: '4'
+      charLimit: ''
+      columnType: text
+    contentColumnType: text
+    fieldGroup: 3470df71-5cf1-4ad7-bd38-eeaeb4258b13
 routes:
   4e726457-352a-4baf-9435-1c2a09aa7eea:
     template: _includes/route-handler

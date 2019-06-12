@@ -89,6 +89,15 @@ class PreflightCheckCest
                 'Fields',
                 'Test group1'
             ]],
+            ['url' => '/settings/users/settings', 'title' => 'User Settings', 'extraContent' => [
+                'User Photo Location',
+                'Verify email addresses?',
+                'Allow public registration?'
+            ]],
+            ['url' => '/settings/users/fields', 'title' => 'User Settings', 'extraContent' => [
+                'Design your field layout'
+            ]],
+
             ['url' => '/settings/email', 'title' => 'Email Settings', 'extraContent' => [
                 'Email Settings',
                 'This can be set to an environment variable. Learn more',
@@ -103,6 +112,11 @@ class PreflightCheckCest
             ]],
             ['url' => '/settings/routes', 'title' => 'Routes', 'extraContent' => [
                 '_includes/route-handler'
+            ]],
+
+            ['url' => '/settings/fields', 'title' => 'Fields', 'extraContent' => [
+                'Test field group 1',
+                'Example text field 1'
             ]],
 
 
@@ -137,6 +151,12 @@ class PreflightCheckCest
             ]],
             ['url' => '/utilities/migrations', 'title' => 'Migrations', 'extraContent' => [
                 'No content migrations.'
+            ]],
+            ['url' => '/utilities/clear-caches', 'title' => 'Clear Caches', 'extraContent' => [
+                'Asset caches'
+            ]],
+            ['url' => '/utilities/db-backup', 'title' => 'Database Backup', 'extraContent' => [
+                'Download backup?'
             ]],
         ];
     }
