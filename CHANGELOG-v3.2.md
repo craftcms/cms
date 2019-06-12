@@ -42,6 +42,8 @@
 - Added `craft\base\Element::previewTargets()`.
 - Added `craft\base\ElementInterface::afterPropagate()`.
 - Added `craft\base\ElementInterface::getCurrentRevision()`.
+- Added `craft\base\ElementInterface::getIsDraft()`.
+- Added `craft\base\ElementInterface::getIsRevision()`.
 - Added `craft\base\ElementInterface::getIsUnsavedDraft()`.
 - Added `craft\base\ElementInterface::getPreviewTargets()`.
 - Added `craft\base\ElementInterface::getSourceId()`.

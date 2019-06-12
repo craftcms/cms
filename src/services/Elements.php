@@ -629,7 +629,7 @@ class Elements extends Component
             $element->afterSave($isNewElement);
 
             // Update search index
-            if (!$element->draftId && !$element->revisionId) {
+            if (!ElementHelper::isDraftOrRevision($element)) {
                 Craft::$app->getSearch()->indexElementAttributes($element);
             }
 
@@ -918,9 +918,9 @@ class Elements extends Component
                         ->siteId($siteInfo['siteId'])
                         ->anyStatus();
 
-                    if ($element->draftId) {
+                    if ($element->getIsDraft()) {
                         $siteQuery->drafts();
-                    } else if ($element->revisionId) {
+                    } else if ($element->getIsRevision()) {
                         $siteQuery->revisions();
                     }
 

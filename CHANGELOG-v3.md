@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased (3.2)
+
+### Added
+- Added `craft\base\ElementInterface::getIsDraft()`.
+- Added `craft\base\ElementInterface::getIsRevision()`.
+
 ## 3.2.0-beta.2 - 2019-06-11
 
 ### Added

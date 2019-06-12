@@ -74,7 +74,7 @@ class Revisions extends Component
     {
         // Make sure the source isn't a draft or revision
         /** @var Element $source */
-        if ($source->draftId || $source->revisionId) {
+        if ($source->getIsDraft() || $source->getIsRevision()) {
             throw new InvalidArgumentException('Cannot create a revision from another revision or draft.');
         }
 

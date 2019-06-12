@@ -100,7 +100,7 @@ class Drafts extends Component
     {
         // Make sure the source isn't a draft or revision
         /** @var Element $source */
-        if ($source->draftId || $source->revisionId) {
+        if ($source->getIsDraft() || $source->getIsRevision()) {
             throw new InvalidArgumentException('Cannot create a draft from another draft or revision.');
         }
 

@@ -46,7 +46,7 @@ class ElementUriValidator extends UriValidator
 
         // If this is a draft or revision and it already has a URI, leave it alone
         /** @var Element $model */
-        if (($model->draftId || $model->revisionId) && $model->uri) {
+        if (($model->getIsDraft() || $model->getIsRevision()) && $model->uri) {
             return;
         }
 

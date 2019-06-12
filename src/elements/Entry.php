@@ -1352,8 +1352,8 @@ EOD;
             $this->id &&
             !$this->propagating &&
             !$this->resaving &&
-            !$this->draftId &&
-            !$this->revisionId &&
+            !$this->getIsDraft() &&
+            !$this->getIsRevision() &&
             $this->getSection()->enableVersioning
         );
     }

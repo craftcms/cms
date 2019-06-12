@@ -210,7 +210,7 @@ class Content extends Component
             $element->contentId = Craft::$app->getDb()->getLastInsertID($this->contentTable);
         }
 
-        if ($fieldLayout && !$element->draftId && !$element->revisionId) {
+        if ($fieldLayout && !$element->getIsDraft() && !$element->getIsRevision()) {
             $this->_updateSearchIndexes($element, $fieldLayout);
         }
 

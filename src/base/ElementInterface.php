@@ -386,6 +386,20 @@ interface ElementInterface extends ComponentInterface
     public function getId();
 
     /**
+     * Returns whether this is a draft.
+     *
+     * @return bool
+     */
+    public function getIsDraft(): bool;
+
+    /**
+     * Returns whether this is a revision.
+     *
+     * @return bool
+     */
+    public function getIsRevision(): bool;
+
+    /**
      * Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.
      *
      * @return int|null

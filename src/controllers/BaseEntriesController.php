@@ -77,7 +77,7 @@ abstract class BaseEntriesController extends Controller
             return;
         }
 
-        if ($entry->draftId) {
+        if ($entry->getIsDraft()) {
             // If it's another user's draft, make sure they have permission to edit those
             /** @var Entry|DraftBehavior $entry */
             if ($entry->creatorId != $userSession->getId()) {
@@ -105,10 +105,10 @@ abstract class BaseEntriesController extends Controller
     {
         $docTitle = $this->pageTitle($entry);
 
-        if ($entry->draftId) {
+        if ($entry->getIsDraft()) {
             /** @var Entry|DraftBehavior $entry */
             $docTitle .= ' (' . $entry->draftName . ')';
-        } else if ($entry->revisionId) {
+        } else if ($entry->getIsRevision()) {
             /** @var Entry|RevisionBehavior $entry */
             $docTitle .= ' (' . $entry->getRevisionLabel() . ')';
         }
@@ -124,7 +124,7 @@ abstract class BaseEntriesController extends Controller
      */
     protected function pageTitle(Entry $entry): string
     {
-        if ($entry->draftId && $entry->getSourceId() == $entry->id) {
+        if ($entry->getIsUnsavedDraft()) {
             return Craft::t('app', 'Create a new entry');
         }
         return trim($entry->title) ?: Craft::t('app', 'Edit Entry');
