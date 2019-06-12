@@ -1,4 +1,4 @@
-/*!   - 2019-06-10 */
+/*!   - 2019-06-12 */
 (function($){
 
 /** global: Craft */
@@ -3273,7 +3273,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$countContainer.html('');
             var elementTypeName = (response.count == 1 ? this.settings.elementTypeName : this.settings.elementTypePluralName).toLowerCase();
 
-            if (this.settings.context !== 'index' || this.getSelectedSortAttribute() === 'structure' || response.count <= this.settings.batchSize) {
+            if (this.settings.context !== 'index' || this.settings.context === 'modal' || this.getSelectedSortAttribute() === 'structure' || response.count <= this.settings.batchSize) {
                 this.$countContainer.text(response.count + ' ' + elementTypeName);
             } else {
                 var $paginationContainer = $('<div class="flex pagination"/>').appendTo(this.$countContainer);
@@ -3381,7 +3381,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.view = this.createView(this.getSelectedViewMode(), {
                 context: this.settings.context,
-                batchSize: this.settings.context !== 'index' || this.getSelectedSortAttribute() === 'structure' ? this.settings.batchSize : null,
+                batchSize: this.settings.context !== 'index' || this.settings.context === 'modal' || this.getSelectedSortAttribute() === 'structure' ? this.settings.batchSize : null,
                 params: params,
                 selectable: selectable,
                 multiSelect: (this.actions || this.settings.multiSelect),
