@@ -25,6 +25,14 @@ interface ElementInterface extends ComponentInterface
     // =========================================================================
 
     /**
+     * Returns the plural version of [[displayName()]].
+     *
+     * @return string
+     * @since 3.2.0
+     */
+    public static function pluralDisplayName(): string;
+
+    /**
      * Returns the handle that should be used to refer to this element type from reference tags.
      *
      * @return string|null The reference handle, or null if the element type doesn’t support reference tags
@@ -360,7 +368,8 @@ interface ElementInterface extends ComponentInterface
      *
      * @param ElementInterface[] $sourceElements An array of the source elements
      * @param string $handle The property handle used to identify which target elements should be included in the map
-     * @return array|false The eager-loading element ID mappings, or false if no mappings exist
+     * @return array|false|null The eager-loading element ID mappings, false if no mappings exist, or null if the result
+     * should be ignored
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle);
 
@@ -375,6 +384,46 @@ interface ElementInterface extends ComponentInterface
      * go here rather than only in [[\craft\elements\User]].
      */
     public function getId();
+
+    /**
+     * Returns whether this is a draft.
+     *
+     * @return bool
+     * @since 3.2
+     */
+    public function getIsDraft(): bool;
+
+    /**
+     * Returns whether this is a revision.
+     *
+     * @return bool
+     * @since 3.2
+     */
+    public function getIsRevision(): bool;
+
+    /**
+     * Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.
+     *
+     * @return int|null
+     * @since 3.2
+     */
+    public function getSourceId();
+
+    /**
+     * Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.
+     *
+     * @return string
+     * @since 3.2
+     */
+    public function getSourceUid(): string;
+
+    /**
+     * Returns whether the element is an unsaved draft.
+     *
+     * @return bool
+     * @since 3.2
+     */
+    public function getIsUnsavedDraft(): bool;
 
     /**
      * Returns the field layout used by this element.
@@ -434,6 +483,13 @@ interface ElementInterface extends ComponentInterface
     public function getLink();
 
     /**
+     * Returns what the element should be called within the Control Panel.
+     *
+     * @return string
+     */
+    public function getUiLabel(): string;
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null
@@ -453,6 +509,16 @@ interface ElementInterface extends ComponentInterface
      * @return string|null
      */
     public function getCpEditUrl();
+
+    /**
+     * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
+     *
+     * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
+     *
+     * @return array
+     * @since 3.2
+     */
+    public function getPreviewTargets(): array;
 
     /**
      * Returns the URL to the element’s thumbnail, if there is one.
@@ -728,6 +794,27 @@ interface ElementInterface extends ComponentInterface
      */
     public function getHasFreshContent(): bool;
 
+    /**
+     * Sets the revision creator ID to be saved.
+     *
+     * @param int|null $creatorId
+     */
+    public function setRevisionCreatorId(int $creatorId = null);
+
+    /**
+     * Sets the revision notes to be saved.
+     *
+     * @param string|null $notes
+     */
+    public function setRevisionNotes(string $notes = null);
+
+    /**
+     * Returns the element’s current revision, if one exists.
+     *
+     * @return ElementInterface|null
+     */
+    public function getCurrentRevision();
+
     // Indexes, etc.
     // -------------------------------------------------------------------------
 
@@ -793,6 +880,17 @@ interface ElementInterface extends ComponentInterface
      * @param bool $isNew Whether the element is brand new
      */
     public function afterSave(bool $isNew);
+
+    /**
+     * Performs actions after an element is fully saved and propagated to other sites.
+     *
+     * ::: tip
+     * This will get called regardless of whether `$propagate` is `true` or `false` for [[\craft\services\Elements::saveElement()]].
+     * :::
+     *
+     * @param bool $isNew Whether the element is brand new
+     */
+    public function afterPropagate(bool $isNew);
 
     /**
      * Performs actions before an element is deleted.

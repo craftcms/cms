@@ -40,6 +40,14 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Global Sets');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function refHandle()
     {
         return 'globalset';

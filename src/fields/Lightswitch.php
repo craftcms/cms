@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\base\SortableFieldInterface;
 use yii\db\Schema;
 
 /**
@@ -19,7 +20,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Lightswitch extends Field implements PreviewableFieldInterface
+class Lightswitch extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
     // Static
     // =========================================================================
@@ -30,6 +31,14 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     public static function displayName(): string
     {
         return Craft::t('app', 'Lightswitch');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'bool';
     }
 
     // Properties

@@ -118,23 +118,11 @@ class Paginate extends BaseObject
             $params = [];
 
             if ($page != 1) {
-                $pageTrigger = Craft::$app->getConfig()->getGeneral()->pageTrigger;
-
-                if (!is_string($pageTrigger) || $pageTrigger === '') {
-                    $pageTrigger = 'p';
-                }
+                $pageTrigger = Craft::$app->getConfig()->getGeneral()->getPageTrigger();
 
                 // Is this query string-based pagination?
-                if ($pageTrigger[0] === '?') {
-                    $pageTrigger = trim($pageTrigger, '?=');
-
-                    // Avoid conflict with the path param
-                    $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-                    if ($pageTrigger === $pathParam) {
-                        $pageTrigger = $pathParam === 'p' ? 'pg' : 'p';
-                    }
-
-                    $params = [$pageTrigger => $page];
+                if (strpos($pageTrigger, '?') === 0) {
+                   $params = [trim($pageTrigger, '?=') => $page];
                 } else {
                     if ($path) {
                         $path .= '/';

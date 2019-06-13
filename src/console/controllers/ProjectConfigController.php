@@ -11,7 +11,7 @@ use Craft;
 use craft\db\Table;
 use craft\helpers\Console;
 use craft\services\Plugins;
-use yii\console\Controller;
+use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**

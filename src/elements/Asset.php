@@ -130,6 +130,14 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Assets');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function refHandle()
     {
         return 'asset';
@@ -187,9 +195,13 @@ class Asset extends Element
 
         $sourceList = self::_assembleSourceList($tree, $context !== 'settings');
 
-        // Add the customized temporary upload source
-        if ($context !== 'settings' && !Craft::$app->getRequest()->getIsConsoleRequest()) {
-            $temporaryUploadFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
+        // Add the Temporary Uploads location, if that's not set to a real volume
+        if (
+            $context !== 'settings' &&
+            !Craft::$app->getRequest()->getIsConsoleRequest() &&
+            !Craft::$app->getProjectConfig()->get('assets.tempVolumeUid')
+        ) {
+            $temporaryUploadFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
             $temporaryUploadFolder->name = Craft::t('app', 'Temporary Uploads');
             $sourceList[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder, false);
         }

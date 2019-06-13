@@ -75,22 +75,23 @@ class UrlHelper
      */
     public static function urlWithParams(string $url, $params): string
     {
-        $params = self::_normalizeParams($params, $fragment);
+        // Extract any params/fragment from the base URL
+        list($url, $baseParams, $baseFragment) = self::_extractParams($url);
 
-        if ($params) {
-            if (StringHelper::contains($url, '?')) {
-                $url .= '&';
-            } else {
-                $url .= '?';
-            }
+        // Normalize the passed-in params/fragment
+        list($params, $fragment) = self::_normalizeParams($params);
 
-            $url .= $params;
+        // Combine them
+        $params = array_merge($baseParams, $params);
+        $fragment = $fragment ?? $baseFragment;
+
+        // Append to the base URL and return
+        if (!empty($params)) {
+            $url .= '?' . http_build_query($params);
         }
-
-        if ($fragment) {
-            $url .= $fragment;
+        if ($fragment !== null) {
+            $url .= '#' . $fragment;
         }
-
         return $url;
     }
 
@@ -146,7 +147,15 @@ class UrlHelper
     public static function rootRelativeUrl(string $url): string
     {
         $url = static::urlWithScheme($url, 'http');
-        return substr($url, strpos($url, '/', 7));
+        if (strlen($url) > 7 && ($slash = strpos($url, '/', 7)) !== false) {
+            return substr($url, $slash);
+        }
+        // Is this a host without a URI?
+        if (strpos($url, '//') !== false) {
+            return '/';
+        }
+        // Must just be a URI, then
+        return '/' . $url;
     }
 
     /**
@@ -203,6 +212,11 @@ class UrlHelper
      */
     public static function cpUrl(string $path = '', $params = null, string $scheme = null): string
     {
+        // If this is already an absolute or root-relative URL, don't change it
+        if (static::isAbsoluteUrl($path) || static::isRootRelativeUrl($path)) {
+            return static::url($path, $params, $scheme);
+        }
+
         $path = trim($path, '/');
         $path = Craft::$app->getConfig()->getGeneral()->cpTrigger . ($path ? '/' . $path : '');
 
@@ -221,6 +235,19 @@ class UrlHelper
      */
     public static function siteUrl(string $path = '', $params = null, string $scheme = null, int $siteId = null): string
     {
+        // Return $path if it appears to be an absolute URL.
+        if (static::isAbsoluteUrl($path) || static::isProtocolRelativeUrl($path)) {
+            if ($params) {
+                $path = static::urlWithParams($path, $params);
+            }
+
+            if ($scheme !== null) {
+                $path = static::urlWithScheme($path, $scheme);
+            }
+
+            return $path;
+        }
+
         // Does this URL point to a different site?
         $sites = Craft::$app->getSites();
 
@@ -260,7 +287,21 @@ class UrlHelper
     {
         $path = Craft::$app->getConfig()->getGeneral()->actionTrigger . '/' . trim($path, '/');
 
-        return static::url($path, $params, $scheme, true);
+        $request = Craft::$app->getRequest();
+
+        if ($request->getIsCpRequest()) {
+            $path = Craft::$app->getConfig()->getGeneral()->cpTrigger . ($path ? '/' . $path : '');
+            $cpUrl = true;
+        } else {
+            $cpUrl = false;
+        }
+
+        // Stick with SSL if the current request is over SSL and a scheme wasn't defined
+        if ($scheme === null && !$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
+            $scheme = 'https';
+        }
+
+        return self::_createUrl($path, $params, $scheme, $cpUrl, true, false);
     }
 
     /**
@@ -490,21 +531,34 @@ class UrlHelper
      * @param string|null $scheme
      * @param bool $cpUrl
      * @param bool|null $showScriptName
+     * @param bool|null $addToken
      * @return string
      */
-    private static function _createUrl(string $path, $params, string $scheme = null, bool $cpUrl, bool $showScriptName = null): string
+    private static function _createUrl(string $path, $params, string $scheme = null, bool $cpUrl, bool $showScriptName = null, bool $addToken = null): string
     {
-        // Normalize the params
-        $params = self::_normalizeParams($params, $fragment);
+        // Extract any params/fragment from the path
+        list($path, $baseParams, $baseFragment) = self::_extractParams($path);
 
-        // Were there already any query string params in the path?
-        if (($qpos = mb_strpos($path, '?')) !== false) {
-            $params = mb_substr($path, $qpos + 1) . ($params ? '&' . $params : '');
-            $path = mb_substr($path, 0, $qpos);
-        }
+        // Normalize the passed-in params/fragment
+        list($params, $fragment) = self::_normalizeParams($params);
+
+        // Combine them
+        $params = array_merge($baseParams, $params);
+        $fragment = $fragment ?? $baseFragment;
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $request = Craft::$app->getRequest();
+
+        // If this is a site URL and there was a token on the request, pass it along
+        if (!$cpUrl && $addToken !== false) {
+            $tokenParam = $generalConfig->tokenParam;
+            if (
+                !isset($params[$tokenParam]) &&
+                ($token = $request->getToken()) !== null
+            ) {
+                $params[$tokenParam] = $token;
+            }
+        }
 
         if ($showScriptName === null) {
             $showScriptName = !$generalConfig->omitScriptNameInUrls;
@@ -550,17 +604,19 @@ class UrlHelper
             $url = $baseUrl;
 
             if ($path) {
+                // Prepend it to the params array
                 $pathParam = $generalConfig->pathParam;
-                $params = $pathParam . '=' . $path . ($params ? '&' . $params : '');
+                ArrayHelper::remove($params, $pathParam);
+                $params = array_merge([$pathParam => $path], $params);
             }
         }
 
-        if ($params) {
-            $url .= '?' . $params;
+        if (!empty($params)) {
+            $url .= '?' . http_build_query($params);
         }
 
-        if ($fragment) {
-            $url .= $fragment;
+        if ($fragment !== null) {
+            $url .= '#' . $fragment;
         }
 
         return $url;
@@ -570,23 +626,48 @@ class UrlHelper
      * Normalizes query string params.
      *
      * @param string|array|null $params
-     * @param string|null &$fragment
-     * @return string
+     * @return array
      */
-    private static function _normalizeParams($params, &$fragment = null): string
+    private static function _normalizeParams($params): array
     {
+        // If it's already an array, just split out the fragment and return
         if (is_array($params)) {
-            // See if there's an anchor
-            if (isset($params['#'])) {
-                $fragment = '#' . $params['#'];
-                unset($params['#']);
-            }
-
-            $params = http_build_query($params);
-        } else {
-            $params = trim($params, '&?');
+            $fragment = ArrayHelper::remove($params, '#');
+            return [$params, $fragment];
         }
 
-        return $params;
+        $arr = [];
+        $fragment = null;
+
+        if (is_string($params)) {
+            if (($fragmentPos = strpos($params, '#')) !== false) {
+                $fragment = substr($params, $fragmentPos + 1);
+                $params = substr($params, 0, $fragmentPos);
+            }
+
+            $chunks = array_filter(explode('&', trim($params, '&?')));
+            foreach ($chunks as $chunk) {
+                $kv = explode('=', $chunk, 2);
+                $arr[$kv[0]] = $kv[1] ?? '';
+            }
+        }
+
+        return [$arr, $fragment];
+    }
+
+    /**
+     * Extracts the params and fragment from a given URL, and merges those with another set of params.
+     *
+     * @param string $url
+     * @return array
+     */
+    private static function _extractParams(string $url): array
+    {
+        if (($queryPos = strpos($url, '?')) === false && ($queryPos = strpos($url, '#')) === false) {
+            return [$url, [], null];
+        }
+
+        list($params, $fragment) = self::_normalizeParams(substr($url, $queryPos));
+        return [substr($url, 0, $queryPos), $params, $fragment];
     }
 }

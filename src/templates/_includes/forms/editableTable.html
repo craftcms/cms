@@ -47,62 +47,72 @@
                     {% else %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
-                        {% set textual = (col.type in ['color', 'date', 'multiline', 'number', 'singleline', 'template', 'time']) %}
+                        {% set textual = (col.type in ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url']) %}
                         {% set isCode = col.code is defined or col.type == 'color' %}
                         <td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
-                            {%- switch col.type -%}
-                                {%- case 'checkbox' -%}
-                                    {% include "_includes/forms/checkbox" with {
-                                        name: cellName,
-                                        value:  col.value ?? 1,
-                                        checked: value is not empty,
-                                        disabled: static
-                                    } only %}
-                                {%- case 'color' -%}
-                                    {% include "_includes/forms/color" with {
-                                        name: cellName,
-                                        value: value,
-                                        small: true,
-                                        disabled: static
-                                    } only %}
-                                {%- case 'date' -%}
-                                    {% include "_includes/forms/date" with {
-                                        name: cellName,
-                                        value: value,
-                                        disabled: static
-                                    } only %}
-                                {%- case 'lightswitch' -%}
-                                    {% include "_includes/forms/lightswitch" with {
-                                        name: cellName,
-                                        on: value,
-                                        value: col.value ?? 1,
-                                        small: true,
-                                        disabled: static
-                                    } only %}
-                                {% case 'select' -%}
-                                    {% include "_includes/forms/select" with {
-                                        class: 'small',
-                                        name: cellName,
-                                        options: cell.options ?? col.options,
-                                        value: value,
-                                        disabled: static
-                                    } only %}
-                                {%- case 'time' -%}
-                                    {% include "_includes/forms/time" with {
-                                        name: cellName,
-                                        value: value,
-                                        disabled: static
-                                    } only %}
-                                {%- case 'template' -%}
-                                    {% include "_includes/forms/autosuggest" with {
-                                        name: cellName,
-                                        suggestions: craft.cp.getTemplateSuggestions(),
-                                        value: value,
-                                        disabled: static
-                                    } only %}
-                                {%- default -%}
-                                    <textarea name="{{ cellName }}" rows="1"{% if static %} disabled{% endif %}{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
-                            {%- endswitch -%}
+                            {% block tablecell %}
+                                {%- switch col.type -%}
+                                    {%- case 'checkbox' -%}
+                                        {% include "_includes/forms/checkbox" with {
+                                            name: cellName,
+                                            value:  col.value ?? 1,
+                                            checked: value is not empty,
+                                            disabled: static
+                                        } only %}
+                                    {%- case 'color' -%}
+                                        {% include "_includes/forms/color" with {
+                                            name: cellName,
+                                            value: value,
+                                            small: true,
+                                            disabled: static
+                                        } only %}
+                                    {%- case 'date' -%}
+                                        {% include "_includes/forms/date" with {
+                                            name: cellName,
+                                            value: value,
+                                            disabled: static
+                                        } only %}
+                                    {%- case 'lightswitch' -%}
+                                        {% include "_includes/forms/lightswitch" with {
+                                            name: cellName,
+                                            on: value,
+                                            value: col.value ?? 1,
+                                            small: true,
+                                            disabled: static
+                                        } only %}
+                                    {% case 'select' -%}
+                                        {% include "_includes/forms/select" with {
+                                            class: 'small',
+                                            name: cellName,
+                                            options: cell.options ?? col.options,
+                                            value: value,
+                                            disabled: static
+                                        } only %}
+                                    {%- case 'time' -%}
+                                        {% include "_includes/forms/time" with {
+                                            name: cellName,
+                                            value: value,
+                                            disabled: static
+                                        } only %}
+                                    {%- case 'email' or 'url' -%}
+                                        {% include "_includes/forms/text" with {
+                                            type: col.type,
+                                            name: cellName,
+                                            placeholder: col.placeholder ?? null,
+                                            value:  value,
+                                            disabled: static
+                                        } only %}
+                                    {%- case 'template' -%}
+                                        {% include "_includes/forms/autosuggest" with {
+                                            name: cellName,
+                                            suggestions: craft.cp.getTemplateSuggestions(),
+                                            value: value,
+                                            disabled: static
+                                        } only %}
+                                    {%- default -%}
+                                        <textarea name="{{ cellName }}" rows="1"{% if static %} disabled{% endif %}{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
+                                {%- endswitch -%}
+                            {% endblock %}
                         </td>
                     {% endif %}
                 {% endfor %}

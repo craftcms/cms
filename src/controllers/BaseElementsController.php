@@ -34,6 +34,7 @@ abstract class BaseElementsController extends Controller
     {
         $this->requireAcceptsJson();
         $this->requireCpRequest();
+        parent::init();
     }
 
     // Protected Methods

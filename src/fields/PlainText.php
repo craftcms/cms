@@ -34,6 +34,14 @@ class PlainText extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Plain Text');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'string|null';
+    }
+
     // Properties
     // =========================================================================
 

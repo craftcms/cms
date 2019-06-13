@@ -974,7 +974,7 @@ class View extends \yii\web\View
             if ($translation !== $message) {
                 $jsMessage = Json::encode($message);
                 $jsTranslation = Json::encode($translation);
-                $js .= ($js !== '' ? "\n" : '') . "Craft.translations[{$jsCategory}][{$jsMessage}] = {$jsTranslation};";
+                $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[{$jsCategory}][{$jsMessage}] = {$jsTranslation};";
             }
         }
 
@@ -1726,6 +1726,10 @@ JS;
             $htmlAttributes['class'] .= ' removable';
         }
 
+        if ($element->hasErrors()) {
+            $htmlAttributes['class'] .= ' error';
+        }
+
         if ($element::hasStatuses()) {
             $htmlAttributes['class'] .= ' hasstatus';
         }
@@ -1766,7 +1770,7 @@ JS;
 
         $html .= '<span class="title">';
 
-        $label = HtmlHelper::encode($element);
+        $label = HtmlHelper::encode($element->getUiLabel());
 
         if ($context['context'] === 'index' && !$element->trashed && ($cpEditUrl = $element->getCpEditUrl())) {
             $cpEditUrl = HtmlHelper::encode($cpEditUrl);

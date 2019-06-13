@@ -82,6 +82,44 @@ module.exports = {
                 ]
             }
         ],
+        '/testing/': [
+            {
+                title: 'About testing',
+                collapsable: false,
+                children: [
+                    ['', 'Introduction'],
+                    'testing',
+                    'codeception',
+                    'ci'
+                ]
+            },
+            {
+                title: 'Testing Craft',
+                collapsable: false,
+                children: [
+                    'testing-craft/getting-started',
+                    'testing-craft/examples',
+                    'testing-craft/testing-tips',
+                    'testing-craft/plugins-and-modules',
+                    'testing-craft/fixtures',
+                    'testing-craft/console',
+                    'testing-craft/queue',
+                    'testing-craft/events'
+                ]
+            },
+            {
+                title: 'Craft testing framework',
+                collapsable: false,
+                children: [
+                    'framework/config-options',
+                    'framework/mocking',
+                    'framework/support-classes',
+                    'framework/full-mock',
+                    'framework/assertion-helpers'
+                ]
+            },
+
+        ],
         '/dev/': [
             {
                 title: 'Front-End Development',
@@ -227,6 +265,7 @@ module.exports = {
                 children: [
                     'dev/',
                     'extend/',
+                    'testing/'
                 ]
             },
             {

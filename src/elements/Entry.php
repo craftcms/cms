@@ -28,6 +28,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
+use craft\models\Site;
 use craft\records\Entry as EntryRecord;
 use craft\validators\DateTimeValidator;
 use yii\base\Exception;
@@ -60,6 +61,14 @@ class Entry extends Element
     public static function displayName(): string
     {
         return Craft::t('app', 'Entry');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Entries');
     }
 
     /**
@@ -574,18 +583,6 @@ class Entry extends Element
     public $newParentId;
 
     /**
-     * @var int|null Revision creator ID
-     * @internal
-     */
-    public $revisionCreatorId;
-
-    /**
-     * @var string|null Revision notes
-     * @internal
-     */
-    public $revisionNotes;
-
-    /**
      * @var bool Whether the entry was deleted along with its entry type
      * @see beforeDelete()
      * @internal
@@ -666,10 +663,27 @@ class Entry extends Element
     public function getSupportedSites(): array
     {
         $section = $this->getSection();
+        /** @var Site[] $allSites */
+        $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $sites = [];
 
         foreach ($section->getSiteSettings() as $siteSettings) {
-            if ($section->propagateEntries || $siteSettings->siteId == $this->siteId) {
+            switch ($section->propagationMethod) {
+                case Section::PROPAGATION_METHOD_NONE:
+                    $include = $siteSettings->siteId == $this->siteId;
+                    break;
+                case Section::PROPAGATION_METHOD_SITE_GROUP:
+                    $include = $allSites[$siteSettings->siteId]->groupId == $allSites[$this->siteId]->groupId;
+                    break;
+                case Section::PROPAGATION_METHOD_LANGUAGE:
+                    $include = $allSites[$siteSettings->siteId]->language == $allSites[$this->siteId]->language;
+                    break;
+                default:
+                    $include = true;
+                    break;
+            }
+
+            if ($include) {
                 $sites[] = [
                     'siteId' => $siteSettings->siteId,
                     'enabledByDefault' => $siteSettings->enabledByDefault
@@ -701,7 +715,7 @@ class Entry extends Element
     protected function route()
     {
         // Make sure that the entry is actually live
-        if ($this->getStatus() != self::STATUS_LIVE) {
+        if (!$this->previewing && $this->getStatus() != self::STATUS_LIVE) {
             return null;
         }
 
@@ -721,6 +735,14 @@ class Entry extends Element
                 ]
             ]
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function previewTargets(): array
+    {
+        return $this->getSection()->previewTargets;
     }
 
     /**
@@ -912,13 +934,15 @@ class Entry extends Element
         $section = $this->getSection();
 
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
-        $url = UrlHelper::cpUrl('entries/' . $section->handle . '/' . $this->id . ($this->slug ? '-' . $this->slug : ''));
+        $path = 'entries/' . $section->handle . '/' . $this->getSourceId() .
+            ($this->slug && strpos($this->slug, '__') !== 0 ? '-' . $this->slug : '');
 
+        $params = [];
         if (Craft::$app->getIsMultiSite()) {
-            $url .= '/' . $this->getSite()->handle;
+            $params['site'] = $this->getSite()->handle;
         }
 
-        return $url;
+        return UrlHelper::cpUrl($path, $params);
     }
 
     /**
@@ -1069,14 +1093,21 @@ EOD;
             throw new Exception("The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
         }
 
-        // Make sure the entry has at least one version if the section has versioning enabled
-        if ($section->enableVersioning && $this->id && !$this->propagating && !$this->resaving) {
-            $revisionsService = Craft::$app->getEntryRevisions();
-            if (!$revisionsService->doesEntryHaveVersions($this->id, $this->siteId)) {
-                $currentEntry = Craft::$app->getEntries()->getEntryById($this->id, $this->siteId);
-                $currentEntry->revisionCreatorId = $this->authorId;
-                $currentEntry->revisionNotes = 'Revision from ' . Craft::$app->getFormatter()->asDatetime($this->dateUpdated);
-                $revisionsService->saveVersion($currentEntry);
+        // Make sure the entry has at least one revision if the section has versioning enabled
+        if ($this->_shouldSaveRevision()) {
+            $hasRevisions = self::find()
+                ->revisionOf($this)
+                ->siteId('*')
+                ->anyStatus()
+                ->exists();
+            if (!$hasRevisions) {
+                $currentEntry = self::find()
+                    ->id($this->id)
+                    ->siteId('*')
+                    ->anyStatus()
+                    ->one();
+                $revisionNotes = 'Revision from ' . Craft::$app->getFormatter()->asDatetime($currentEntry->dateUpdated);
+                Craft::$app->getRevisions()->createRevision($currentEntry, $currentEntry->authorId, $revisionNotes);
             }
         }
 
@@ -1160,11 +1191,19 @@ EOD;
         }
 
         parent::afterSave($isNew);
+    }
 
-        // Save a new version
-        if ($section->enableVersioning && !$this->propagating && !$this->resaving) {
-            Craft::$app->getEntryRevisions()->saveVersion($this);
+    /**
+     * @inheritdoc
+     */
+    public function afterPropagate(bool $isNew)
+    {
+        // Save a new revision
+        if ($this->_shouldSaveRevision()) {
+            Craft::$app->getRevisions()->createRevision($this, $this->revisionCreatorId, $this->revisionNotes);
         }
+
+        parent::afterPropagate($isNew);
     }
 
     /**
@@ -1300,5 +1339,22 @@ EOD;
         $oldParentId = $oldParentQuery->scalar();
 
         return $this->newParentId != $oldParentId;
+    }
+
+    /**
+     * Returns whether the entry should be saving revisions on save.
+     *
+     * @return bool
+     */
+    private function _shouldSaveRevision(): bool
+    {
+        return (
+            $this->id &&
+            !$this->propagating &&
+            !$this->resaving &&
+            !$this->getIsDraft() &&
+            !$this->getIsRevision() &&
+            $this->getSection()->enableVersioning
+        );
     }
 }

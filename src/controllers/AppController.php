@@ -41,7 +41,7 @@ class AppController extends Controller
      * @inheritdoc
      */
     public $allowAnonymous = [
-        'migrate'
+        'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     // Public Methods

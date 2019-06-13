@@ -71,6 +71,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return MatrixBlockQuery::class;
+    }
+
     // Properties
     // =========================================================================
 
@@ -790,7 +798,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
             foreach ($matrixBlocks as $matrixBlock) {
                 $matrixBlock->deletedWithOwner = true;
-                $elementsService->deleteElement($matrixBlock);
+                $elementsService->deleteElement($matrixBlock, $element->hardDelete);
             }
         }
 

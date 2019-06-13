@@ -35,6 +35,14 @@ class Color extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Color');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return ColorData::class . '|null';
+    }
+
     // Properties
     // =========================================================================
 

@@ -33,6 +33,14 @@ class Email extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Email');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'string|null';
+    }
+
     // Properties
     // =========================================================================
 

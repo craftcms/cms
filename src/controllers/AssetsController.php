@@ -655,12 +655,7 @@ class AssetsController extends Controller
 
             // Do what you want with your own photo.
             if ($asset->id != Craft::$app->getUser()->getIdentity()->photoId) {
-                $this->_requirePermissionByAsset('saveAssetInVolume', $asset);
-
-                // If replacing, check for permissions to replace existing Asset files.
-                if ($replace) {
-                    $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
-                }
+                $this->_requirePermissionByAsset('editImagesInVolume', $asset);
             }
 
             // Verify parameter adequacy
@@ -979,7 +974,7 @@ class AssetsController extends Controller
     private function _requirePermissionByAsset(string $permissionName, Asset $asset)
     {
         if (!$asset->volumeId) {
-            $userTemporaryFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
+            $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
 
             // Skip permission check only if it's the user's temporary folder
             if ($userTemporaryFolder->id == $asset->folderId) {
@@ -1001,7 +996,7 @@ class AssetsController extends Controller
     private function _requirePermissionByFolder(string $permissionName, VolumeFolder $folder)
     {
         if (!$folder->volumeId) {
-            $userTemporaryFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
+            $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
 
             // Skip permission check only if it's the user's temporary folder
             if ($userTemporaryFolder->id == $folder->id) {

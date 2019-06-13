@@ -16,6 +16,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
@@ -211,7 +212,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('encenc', [$this, 'encencFilter']),
             new TwigFilter('filesize', [$formatter, 'asShortSize']),
             new TwigFilter('filter', [$this, 'filterFilter']),
-            new TwigFilter('filterByValue', [ArrayHelper::class, 'filterByValue']),
+            new TwigFilter('filterByValue', [ArrayHelper::class, 'where']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$security, 'hashData']),
             new TwigFilter('id', [$this->view, 'formatInputId']),
@@ -246,6 +247,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('unique', 'array_unique'),
             new TwigFilter('values', 'array_values'),
             new TwigFilter('without', [$this, 'withoutFilter']),
+            new TwigFilter('withoutKey', [$this, 'withoutKeyFilter']),
         ];
     }
 
@@ -412,6 +414,20 @@ class Extension extends AbstractExtension implements GlobalsInterface
             ArrayHelper::removeValue($arr, $value);
         }
 
+        return $arr;
+    }
+
+    /**
+     * Returns an array without a certain key.
+     *
+     * @param mixed $arr
+     * @param string $key
+     * @return array
+     */
+    public function withoutKeyFilter($arr, string $key): array
+    {
+        $arr = (array)$arr;
+        ArrayHelper::remove($arr, $key);
         return $arr;
     }
 
@@ -732,6 +748,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('alias', [Craft::class, 'getAlias']),
             new TwigFunction('actionInput', [$this, 'actionInputFunction']),
             new TwigFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
+            new TwigFunction('attr', [$this, 'attrFunction']),
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
@@ -760,6 +777,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('getHeadHtml', [$this, 'getHeadHtml']),
             new TwigFunction('getFootHtml', [$this, 'getFootHtml']),
         ];
+    }
+
+    /**
+     * Renders HTML tag attributes with [[\craft\helpers\Html::renderTagAttributes()]]
+     *
+     * @param array $attributes
+     * @return Markup
+     */
+    public function attrFunction(array $config): Markup
+    {
+        return TemplateHelper::raw(Html::renderTagAttributes($config));
     }
 
     /**

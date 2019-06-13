@@ -21,7 +21,8 @@ use yii\db\ActiveQueryInterface;
  * @property string $handle Handle
  * @property string $type Type
  * @property bool $enableVersioning Enable versioning
- * @property bool $propagateEntries Propagate entries
+ * @property bool $propagationMethod Propagation method
+ * @property array $previewTargets Preview targets
  * @property Section_SiteSettings[] $siteSettings Site settings
  * @property Structure $structure Structure
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

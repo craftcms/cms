@@ -225,8 +225,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             this.updateAddElementsBtn();
         },
 
-        createElementEditor: function($element) {
-            return Craft.createElementEditor(this.settings.elementType, $element);
+        createElementEditor: function($element, settings) {
+            if (!settings) {
+                settings = {};
+            }
+            settings.prevalidate = this.settings.prevalidate;
+            return Craft.createElementEditor(this.settings.elementType, $element, settings);
         },
 
         removeElements: function($elements) {
@@ -448,6 +452,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             sortable: true,
             selectable: true,
             editable: true,
+            prevalidate: false,
             editorSettings: {}
         }
     });

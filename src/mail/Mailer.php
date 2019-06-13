@@ -33,7 +33,7 @@ class Mailer extends \yii\swiftmailer\Mailer
     public $template;
 
     /**
-     * @var string|array|User|User[]|null $from The default sender’s email address, or their user model(s).
+     * @var string|array|User|User[]|null The default sender’s email address, or their user model(s).
      */
     public $from;
 

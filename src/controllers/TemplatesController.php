@@ -37,7 +37,14 @@ class TemplatesController extends Controller
     /**
      * @inheritdoc
      */
-    public $allowAnonymous = true;
+    public $allowAnonymous = [
+        'offline' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'manual-update-notification' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'config-sync-kickoff' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'incompatible-config-alert' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'requirements-check' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'render-error' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+    ];
 
     // Public Methods
     // =========================================================================
@@ -47,9 +54,19 @@ class TemplatesController extends Controller
      */
     public function beforeAction($action)
     {
-        $actionSegments = Craft::$app->getRequest()->getActionSegments();
+        $request = Craft::$app->getRequest();
+        $actionSegments = $request->getActionSegments();
         if (isset($actionSegments[0]) && strtolower($actionSegments[0]) === 'templates') {
             throw new ForbiddenHttpException();
+        }
+
+        if ($action->id === 'render') {
+            // Allow anonymous access to the Login template even if the site is offline
+            if ($request->getIsLoginRequest()) {
+                $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
+            } else if ($request->getIsSiteRequest()) {
+                $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
+            }
         }
 
         return parent::beforeAction($action);
