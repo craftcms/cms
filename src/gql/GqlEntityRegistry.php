@@ -14,24 +14,24 @@ class GqlEntityRegistry
     /**
      * Get a registered entity.
      *
-     * @param string $className
+     * @param string $entityName
      * @return bool|mixed
      */
-    public static function getEntity(string $className)
+    public static function getEntity(string $entityName)
     {
-        return self::$_entities[$className] ?? false;
+        return self::$_entities[$entityName] ?? false;
     }
 
     /**
      * Create an entity registry entry.
      *
-     * @param string $className
+     * @param string $entityName
      * @param mixed $entity
      * @return mixed
      */
-    public static function createEntity(string $className, $entity)
+    public static function createEntity(string $entityName, $entity)
     {
-        self::$_entities[$className] = $entity;
+        self::$_entities[$entityName] = $entity;
 
         return $entity;
     }
