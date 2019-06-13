@@ -82,7 +82,7 @@ class TestsController extends Controller
         $selectedOption = null;
 
         foreach ($transportAdapters as $transportAdapter) {
-            if ($this->confirm("Do you want to user {$transportAdapter}?".PHP_EOL)) {
+            if ($this->confirm("Do you want to use {$transportAdapter}?" . PHP_EOL)) {
                 $selectedOption = $transportAdapter;
                 break;
             }
