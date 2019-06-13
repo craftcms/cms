@@ -29,6 +29,7 @@ use craft\web\View;
 use yii\base\InvalidArgumentException;
 use yii\caching\FileCache;
 use yii\helpers\Inflector;
+use yii\i18n\PhpMessageSource;
 use yii\log\Dispatcher;
 use yii\log\Logger;
 use yii\mutex\FileMutex;
@@ -497,8 +498,8 @@ class App
             'dirMode' => $generalConfig->defaultDirMode,
             'includeUserIp' => $generalConfig->storeUserIps,
             'except' => [
-                'yii\i18n\PhpMessageSource:*'
-            ]
+                PhpMessageSource::class . ':*',
+            ],
         ];
 
         if ($isConsoleRequest) {
