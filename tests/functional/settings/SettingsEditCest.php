@@ -10,6 +10,7 @@ namespace crafttests\functional;
 use Codeception\Example;
 use Craft;
 use craft\elements\User;
+use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use FunctionalTester;
 
@@ -64,8 +65,17 @@ class SettingsEditCest
         $I->amOnPage('/'.$this->cpTrigger.''.$example['url'].'');
         $I->click($example['linkPropValue']);
         $I->see($example['linkPropValue']);
+        $I->seeInTitle($example['linkPropValue']);
 
-        $I->submitForm('#main-form', [$example['propName'] => $randString = StringHelper::randomString(10)]);
+        $postData = [$example['propName'] => $randString = StringHelper::randomString(10)];
+        if (isset($example['additionalPostData'])) {
+            $postData = ArrayHelper::merge(
+                $postData,
+                $example['additionalPostData']
+            );
+        }
+
+        $I->submitForm('#main-form', $postData);
 
         $data = Craft::$app->{$example['craftAppProp']}->{$example['methodInvoker']}($example['methodProp']);
         $I->assertSame($randString, $data->{$example['propName']});
@@ -100,6 +110,41 @@ class SettingsEditCest
                 'craftAppProp' => 'userGroups',
                 'methodInvoker' => 'getGroupByHandle',
                 'methodProp' => 'testGroup1'
+            ],
+            [
+                'url' => '/settings/assets/transforms',
+                'linkPropValue' => 'Example transform 1',
+                'propName' => 'name',
+                'craftAppProp' => 'assetTransforms',
+                'methodInvoker' => 'getTransformByHandle',
+                'methodProp' => 'exampleTransform'
+            ],
+            [
+                'url' => '/settings/sections',
+                'linkPropValue' => 'Craft CMS Test section',
+                'propName' => 'name',
+                'craftAppProp' => 'sections',
+                'methodInvoker' => 'getSectionByHandle',
+                'methodProp' => 'craftCmsTestSection'
+            ],
+            [
+                'url' => '/settings/tags',
+                'linkPropValue' => 'Test tag group 1',
+                'propName' => 'name',
+                'craftAppProp' => 'tags',
+                'methodInvoker' => 'getTagGroupByHandle',
+                'methodProp' => 'testTaggroup1'
+            ],
+            [
+                'url' => '/settings/categories',
+                'linkPropValue' => 'Test category group 1',
+                'propName' => 'name',
+                'craftAppProp' => 'categories',
+                'methodInvoker' => 'getGroupByHandle',
+                'methodProp' => 'testCategoryGroup1',
+                'additionalPostData' => [
+                    'sites' => ['default' => ['uriFormat' => 'test/{slug', 'template' => 'data']]
+                ]
             ]
         ];
     }
