@@ -4,6 +4,7 @@
 
 ### Added
 - It’s now possible to set plugin license keys to environment variables using the `$VARIABLE_NAME` syntax. ([#4393](https://github.com/craftcms/cms/issues/4393))
+- Impersonating a user can now be done by any user that has the `impersonateUsers` permission rather than just admins ([#1186](https://github.com/craftcms/cms/issues/1186))
 
 ### Changed
 - The default email template no longer sets text or background colors, so emails look better in dark mode. ([#4396](https://github.com/craftcms/cms/pull/4396))
