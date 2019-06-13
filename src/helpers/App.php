@@ -496,6 +496,9 @@ class App
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
             'includeUserIp' => $generalConfig->storeUserIps,
+            'except' => [
+                'yii\i18n\PhpMessageSource:*'
+            ]
         ];
 
         if ($isConsoleRequest) {
