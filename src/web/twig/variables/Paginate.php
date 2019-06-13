@@ -147,7 +147,15 @@ class Paginate extends BaseObject
             }
         }
 
-        return UrlHelper::url($path, $params);
+        // Build the URL with the same query string as the current request
+        $url = UrlHelper::url($path, Craft::$app->getRequest()->getQueryStringWithoutPath());
+
+        // Then add the page param if there is one
+        if (!empty($params)) {
+            $url = UrlHelper::urlWithParams($url, $params);
+        }
+
+        return $url;
     }
 
     /**
