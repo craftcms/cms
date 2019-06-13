@@ -382,7 +382,7 @@ class MatrixBlock extends Element implements BlockElementInterface
             return false;
         }
     }
-    
+
     /**
      * @inheritdoc
      */

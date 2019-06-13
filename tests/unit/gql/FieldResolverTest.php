@@ -64,19 +64,85 @@ class FieldResolverTest extends Unit
     // =========================================================================
 
     /**
-     * Test resolving fields on elements.
+     * Test resolving fields on entries.
      *
-     * @dataProvider entryFieldTestDataProvider, maybe?
+     * @dataProvider entryFieldTestDataProvider
      *
-     * @param callable $getElement The callback which returns the element for testing
      * @param string $gqlTypeClass The Gql type class
      * @param string $propertyName The propery being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testElementFieldResolving(callable $getElement, string $gqlTypeClass, string $propertyName, $result)
+    public function testEntryFieldResolving(string $gqlTypeClass, string $propertyName, $result)
     {
-        $element = $getElement();
+        $this->_runTest(EntryElement::findOne(['title' => 'Theories of matrix']), $gqlTypeClass, $propertyName, $result);
+    }
 
+    /**
+     * Test resolving fields on assets.
+     *
+     * @dataProvider assetFieldTestDataProvider
+     *
+     * @param string $gqlTypeClass The Gql type class
+     * @param string $propertyName The propery being tested
+     * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
+     */
+    public function testAssetFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    {
+        $this->_runTest(AssetElement::findOne(['filename' => 'product.jpg']), $gqlTypeClass, $propertyName, $result);
+    }
+
+    /**
+     * Test resolving fields on global sets.
+     *
+     * @dataProvider globalSetFieldTestDataProvider
+     *
+     * @param string $gqlTypeClass The Gql type class
+     * @param string $propertyName The propery being tested
+     * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
+     */
+    public function testGlobalSetFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    {
+        $this->_runTest(GlobalSetElement::findOne(['handle' => 'aGlobalSet']), $gqlTypeClass, $propertyName, $result);
+    }
+
+    /**
+     * Test resolving fields on matrix blocks.
+     *
+     * @dataProvider matrixBlockFieldTestDataProvider
+     *
+     * @param string $gqlTypeClass The Gql type class
+     * @param string $propertyName The propery being tested
+     * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
+     */
+    public function testMatrixBlockFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    {
+        $field = Craft::$app->getFields()->getFieldByHandle('matrixFirst');
+        $this->_runTest(MatrixBlockElement::findOne(['type' => 'aBlock', 'fieldId' => $field->id]), $gqlTypeClass, $propertyName, $result);
+    }
+
+    /**
+     * Test resolving fields on users.
+     *
+     * @dataProvider userFieldTestDataProvider
+     *
+     * @param string $gqlTypeClass The Gql type class
+     * @param string $propertyName The propery being tested
+     * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
+     */
+    public function testUserFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    {
+        $this->_runTest(UserElement::findOne(['username' => 'user1']), $gqlTypeClass, $propertyName, $result);
+    }
+
+    /**
+     * Run the test on an element for a type class with the property name.
+     *
+     * @param string $gqlTypeClass The Gql type class
+     * @param string $propertyName The propery being tested
+     * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
+     */
+    public function _runTest($element, string $gqlTypeClass, string $propertyName, $result)
+    {
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => $propertyName]);
         $resolve = function () use ($gqlTypeClass, $element, $resolveInfo) { return $this->make($gqlTypeClass)->resolveWithDirectives($element, [], null, $resolveInfo);};
 
@@ -89,80 +155,68 @@ class FieldResolverTest extends Unit
             $this->tester->expectException(GqlException::class, $resolve);
         }
     }
+    
+    // Data providers
+    // =========================================================================
 
-    public function entryFieldTestDataProvider()
+    public function entryFieldTestDataProvider(): array
     {
         return [
             // Entries
-            [[$this, '_getEntry'], EntryGqlType::class, 'sectionId', true],
-            [[$this, '_getEntry'], EntryGqlType::class, 'sectionUid', function ($source) { return $source->getSection()->uid;}],
-            [[$this, '_getEntry'], EntryGqlType::class, 'sectionInvalid', false],
-            [[$this, '_getEntry'], EntryGqlType::class, 'missingProperty', false],
-            [[$this, '_getEntry'], EntryGqlType::class, 'typeId', true],
-            [[$this, '_getEntry'], EntryGqlType::class, 'typeUid', function ($source) { return $source->getType()->uid;}],
-            [[$this, '_getEntry'], EntryGqlType::class, 'typeInvalid', false],
-            [[$this, '_getEntry'], EntryGqlType::class, 'plainTextField', true],
-            [[$this, '_getEntry'], EntryGqlType::class, 'postDate', true],
-
-            // Assets
-            [[$this, '_getAsset'], AssetGqlType::class, 'volumeId', true],
-            [[$this, '_getAsset'], AssetGqlType::class, 'volumeUid', function ($source) { return $source->getVolume()->uid;}],
-            [[$this, '_getAsset'], AssetGqlType::class, 'volumeInvalid', false],
-            [[$this, '_getAsset'], AssetGqlType::class, 'missingProperty', false],
-            [[$this, '_getAsset'], AssetGqlType::class, 'folderId', true],
-            [[$this, '_getAsset'], AssetGqlType::class, 'folderUid', function ($source) { return $source->getFolder()->uid;}],
-            [[$this, '_getAsset'], AssetGqlType::class, 'imageDescription', true],
-            [[$this, '_getAsset'], AssetGqlType::class, 'filename', true],
-
-            // Global Set
-            [[$this, '_getGlobalSet'], GlobalSetGqlType::class, 'missingProperty', false],
-            [[$this, '_getGlobalSet'], GlobalSetGqlType::class, 'plainTextField', true],
-            [[$this, '_getGlobalSet'], GlobalSetGqlType::class, 'handle', true],
-
-            // Matrix Block
-            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'missingProperty', false],
-            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'firstSubfield', true],
-            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'fieldId', true],
-            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'fieldUid', function ($source) { return $source->getField()->uid;}],
-            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'fieldInvalid', false],
-            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'ownerSiteId', function ($source) { return $source->getOwner()->getSite()->id;}],
-            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'ownerSiteInvalid', false],
-            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'ownerId', true],
-            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'ownerUid', function ($source) { return $source->getOwner()->uid;}],
-            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'ownerInvalid', false],
-            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'typeId', true],
-            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'typeUid', function ($source) { return $source->getType()->uid;}],
-            [[$this, '_getMatrixBlock'], MatrixBlockGqlType::class, 'typeInvalid', false],
-
-            // User
-            [[$this, '_getUser'], UserGqlType::class, 'missingProperty', false],
-            [[$this, '_getUser'], UserGqlType::class, 'shortBio', true],
-            [[$this, '_getUser'], UserGqlType::class, 'username', true],
-            [[$this, '_getUser'], UserGqlType::class, 'preferences', function ($source) { return Json::encode($source->preferences);}],
-            // TODO make sure this test works also when we have user groups in fixtures
-            [[$this, '_getUser'], UserGqlType::class, 'groupHandles', function ($source) {return array_map(function ($userGroup) { return $userGroup->handle;}, $source->getGroups());}],
-
+            [EntryGqlType::class, 'sectionUid', function ($source) { return $source->getSection()->uid;}],
+            [EntryGqlType::class, 'typeUid', function ($source) { return $source->getType()->uid;}],
+            [EntryGqlType::class, 'missingProperty', false],
+            [EntryGqlType::class, 'typeInvalid', false],
+            [EntryGqlType::class, 'plainTextField', true],
+            [EntryGqlType::class, 'postDate', true],
         ];
     }
 
-    public function _getEntry() {
-        return EntryElement::findOne(['title' => 'Theories of matrix']);
+    public function assetFieldTestDataProvider(): array
+    {
+        return [
+            [AssetGqlType::class, 'volumeUid', function ($source) { return $source->getVolume()->uid;}],
+            [AssetGqlType::class, 'missingProperty', false],
+            [AssetGqlType::class, 'folderUid', function ($source) { return $source->getFolder()->uid;}],
+            [AssetGqlType::class, 'imageDescription', true],
+            // TODO this test fails because the resolver looks for "andMass" property on the volume object.
+            // The best clean way is to add all the structure entities as types and just nest the queries.
+//            [AssetGqlType::class, 'volumeAndMass', true],
+        ];
     }
 
-    public function _getAsset() {
-        return AssetElement::findOne(['filename' => 'product.jpg']);
+    public function globalSetFieldTestDataProvider(): array
+    {
+        return [
+            [GlobalSetGqlType::class, 'missingProperty', false],
+            [GlobalSetGqlType::class, 'plainTextField', true],
+            [GlobalSetGqlType::class, 'handle', true],
+        ];
     }
 
-    public function _getGlobalSet() {
-        return GlobalSetElement::findOne(['handle' => 'aGlobalSet']);
+    public function matrixBlockFieldTestDataProvider(): array
+    {
+        return [
+            [MatrixBlockGqlType::class, 'missingProperty', false],
+            [MatrixBlockGqlType::class, 'firstSubfield', true],
+            [MatrixBlockGqlType::class, 'fieldId', true],
+            [MatrixBlockGqlType::class, 'fieldInvalid', false],
+            [MatrixBlockGqlType::class, 'fieldUid', function ($source) { return $source->getField()->uid;}],
+            [MatrixBlockGqlType::class, 'ownerSiteId', function ($source) { return $source->getOwner()->getSite()->id;}],
+            [MatrixBlockGqlType::class, 'ownerUid', function ($source) { return $source->getOwner()->uid;}],
+            [MatrixBlockGqlType::class, 'typeUid', function ($source) { return $source->getType()->uid;}],
+        ];
     }
 
-    public function _getMatrixBlock() {
-        $field = Craft::$app->getFields()->getFieldByHandle('matrixFirst');
-        return MatrixBlockElement::findOne(['type' => 'aBlock', 'fieldId' => $field->id]);
-    }
-
-    public function _getUser() {
-        return UserElement::findOne(['username' => 'user1']);
+    public function userFieldTestDataProvider(): array
+    {
+        return [
+            [UserGqlType::class, 'missingProperty', false],
+            [UserGqlType::class, 'shortBio', true],
+            [UserGqlType::class, 'username', true],
+            [UserGqlType::class, 'preferences', function ($source) { return Json::encode($source->preferences);}],
+            // TODO figure out user groups and fixtures
+            [UserGqlType::class, 'groupHandles', function ($source) {return array_map(function ($userGroup) { return $userGroup->handle;}, $source->getGroups());}],
+        ];
     }
 }
