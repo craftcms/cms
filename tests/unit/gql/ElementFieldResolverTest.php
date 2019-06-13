@@ -27,7 +27,7 @@ use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\UsersFixture;
 use GraphQL\Type\Definition\ResolveInfo;
 
-class FieldResolverTest extends Unit
+class ElementFieldResolverTest extends Unit
 {
     /**
      * @var \UnitTester
