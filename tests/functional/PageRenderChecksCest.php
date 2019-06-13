@@ -38,7 +38,6 @@ class PageRenderChecksCest
     // Public Methods
     // =========================================================================
 
-
     /**
      * @param FunctionalTester $I
      */
