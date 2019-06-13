@@ -19,7 +19,7 @@ class TableRowType implements BaseGenerator
     public static function generateTypes($context = null): array
     {
         /** @var TableField $context */
-        $typeName = self::getName($context);
+        $typeName = $context->handle . '_TableRow';
 
         $contentFields = [];
 
@@ -41,14 +41,4 @@ class TableRowType implements BaseGenerator
 
         return [$tableRowType];
     }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getName($context = null): string
-    {
-        /** @var TableField $context */
-        return $context->handle . '_TableRow';
-    }
-
 }
