@@ -180,7 +180,7 @@ class UsersController extends Controller
     public function actionImpersonate()
     {
         $this->requireLogin();
-        $this->requireAdmin(false);
+        $this->requirePermission('impersonateUsers');
         $this->requirePostRequest();
 
         $userSession = Craft::$app->getUser();
@@ -697,7 +697,7 @@ class UsersController extends Controller
             }
 
             if (!$isCurrentUser) {
-                if ($userSession->getIsAdmin()) {
+                if ($userSession->checkPermission('impersonateUsers')) {
                     $sessionActions[] = [
                         'action' => 'users/impersonate',
                         'label' => Craft::t('app', 'Login as {user}', ['user' => $user->getName()])
