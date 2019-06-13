@@ -10,6 +10,9 @@
 - Improved the error message that gets logged when Craft isn’t able to finish processing project config changes, due to unresolved dependencies.
 - Craft will no longer log errors and warnings arising from `yii\i18n\PhpMessageSource`. ([#4109](https://github.com/craftcms/cms/issues/4109))
 
+### Fixed
+- Fixed a bug where `Craft::dd()` wouldn’t work properly if output buffering was enabled. ([#4399](https://github.com/craftcms/cms/issues/4399))
+
 ## 3.1.30 - 2019-06-11
 
 ### Changed
