@@ -8,6 +8,7 @@
 ### Changed
 - The default email template no longer sets text or background colors, so emails look better in dark mode. ([#4396](https://github.com/craftcms/cms/pull/4396))
 - Improved the error message that gets logged when Craft isn’t able to finish processing project config changes, due to unresolved dependencies.
+- Craft will no longer log errors and warnings arising from `yii\i18n\PhpMessageSource`. 
 
 ## 3.1.30 - 2019-06-11
 
