@@ -9,12 +9,18 @@ namespace craftunit\services;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\elements\User;
+use craft\errors\GqlException;
 use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
+use craft\gql\GqlEntityRegistry;
+use craft\gql\interfaces\elements\User as UserInterface;
+use craft\gql\TypeLoader;
 use craft\services\Gql;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
+use GraphQL\Type\Definition\ObjectType;
 use yii\base\Event;
 
 class GqlTest extends Unit
@@ -102,5 +108,25 @@ class GqlTest extends Unit
 
         $mockType = Craft::$app->getGql()->getSchema()->getType(MockType::getName());
         $this->assertInstanceOf('GraphQL\Type\Definition\ObjectType', $mockType);
+    }
+
+    /**
+     * Test if flushing works.
+     */
+    public function testFlushing()
+    {
+        // Generate types by creating the interface.
+        UserInterface::getType();
+        $typeName = User::getGqlTypeNameByContext(null);
+
+        $this->assertNotFalse(GqlEntityRegistry::getEntity($typeName));
+        $this->assertInstanceOf(ObjectType::class, TypeLoader::loadType($typeName));
+
+        Craft::$app->getGql()->flushCaches();
+
+        $this->assertFalse(GqlEntityRegistry::getEntity($typeName));
+        $this->tester->expectException(GqlException::class, function () use ($typeName) {
+            TypeLoader::loadType($typeName);
+        });
     }
 }
