@@ -67,6 +67,16 @@ return [
                             'fieldType' => PlainText::class,
                         ]
                     ],
+                    [
+                        'layout-link' => [
+                            'required' => true
+                        ],
+                        'field' => [
+                            'name' => 'Volume and mass',
+                            'handle' => 'volumeAndMass',
+                            'fieldType' => PlainText::class,
+                        ]
+                    ],
                 ]
             ]
         ]
