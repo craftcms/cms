@@ -795,7 +795,7 @@ class Elements extends Component
     }
 
     /**
-     * Merges two elements together.
+     * Merges two elements together by their IDs.
      *
      * This method will update the following:
      * - Any relations involving the merged element
@@ -805,23 +805,22 @@ class Elements extends Component
      * @param int $mergedElementId The ID of the element that is going away.
      * @param int $prevailingElementId The ID of the element that is sticking around.
      * @return bool Whether the elements were merged successfully.
+     * @throws ElementNotFoundException if one of the elemet IDs don’t exist.
      * @throws \Throwable if reasons
      */
     public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool
     {
-        // Make sure the merged element exists
+        // Get the elements
         $mergedElement = $this->getElementById($mergedElementId);
-        if(!$mergedElement) {
+        if (!$mergedElement) {
             throw new ElementNotFoundException("No element exists with the ID '{$mergedElementId}'");
         }
-
-        // Make sure the prevailing element exists
         $prevailingElement = $this->getElementById($prevailingElementId);
-        if(!$prevailingElement) {
+        if (!$prevailingElement) {
             throw new ElementNotFoundException("No element exists with the ID '{$prevailingElementId}'");
         }
 
-        // Merge elements
+        // Merge them
         return $this->mergeElements($mergedElement, $prevailingElement);
     }
 
