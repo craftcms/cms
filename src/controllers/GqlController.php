@@ -61,7 +61,7 @@ class GqlController extends Controller
     {
         $start = microtime(true);
         // todo remove timers and debug parameter
-        $schema = Craft::$app->getGql()->getSchema(null, Craft::$app->getRequest()->getParam('debug', false));
+        $schema = Craft::$app->getGql()->getSchema(Craft::$app->getRequest()->getParam('debug', false));
 
         if (Craft::$app->request->isPost && $query=Craft::$app->request->post('query')) {
             $input = $query;
