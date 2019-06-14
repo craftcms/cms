@@ -246,15 +246,14 @@ class User extends \yii\web\User
     {
         $user = $this->getIdentity();
 
-
         if ($previousUserId = Craft::$app->getSession()->get(UserElement::IMPERSONATE_KEY)) {
-            $user = UserElement::find()
+            $impersonatingUser = UserElement::find()
                 ->addSelect(['users.password'])
                 ->id($previousUserId)
                 ->one();
 
             // Ensure that the impersonator can also access this resource.
-            if (!$user || !$user->can($permissionName)) {
+            if (!$impersonatingUser || !$impersonatingUser->can($permissionName)) {
                 return false;
             }
         }
@@ -325,6 +324,7 @@ class User extends \yii\web\User
             $user = UserElement::find()
                 ->addSelect(['users.password'])
                 ->id($previousUserId)
+                ->admin(true)
                 ->one();
 
             // TODO: @brandonkelly - have a look at this. I removed the ->admin() call in favour of this.
