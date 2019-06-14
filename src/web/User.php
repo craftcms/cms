@@ -326,13 +326,6 @@ class User extends \yii\web\User
                 ->addSelect(['users.password'])
                 ->id($previousUserId)
                 ->one();
-
-            // TODO: @brandonkelly - have a look at this. I removed the ->admin() call in favour of this.
-            // TODO: It seems more appropriate
-            if (!$user->can('impersonateUsers')) {
-                $this->_handleLoginFailure(UserElement::AUTH_INVALID_CREDENTIALS);
-                return false;
-            }
         } else {
             // Get the current user
             $user = $this->getIdentity();
