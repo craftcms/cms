@@ -8,6 +8,7 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\helpers\Component;
 use craft\console\Controller;
 use craft\helpers\App;
 use craft\helpers\Console;
@@ -92,11 +93,14 @@ class TestsController extends Controller
             $selectedOption = $this->prompt("Which transport type do you want to use?");
         }
 
-        /* @var BaseTransportAdapter $transport */
-        $transport = new $selectedOption();
-
-        if (!$transport instanceof BaseTransportAdapter) {
-            $this->stderr("$selectedOption is not an instance of " . BaseTransportAdapter::class . "");
+        // Create the mailer
+        try {
+            /* @var BaseTransportAdapter $transport */
+            $transport = Component::createComponent([
+                'class' => $selectedOption
+            ], BaseTransportAdapter::class);
+        } catch (\Throwable $exception) {
+            $this->stderr("The following problem occured: $exception");
             return ExitCode::OK;
         }
 
