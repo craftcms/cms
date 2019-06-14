@@ -62,7 +62,7 @@ class TestsController extends Controller
             );
 
             $mailParams['settings'] = $this->_renderMailSettingsString(
-                App::mailSettings(),
+                $settingsModel,
                 $adapter
             );
 
@@ -72,6 +72,7 @@ class TestsController extends Controller
 
             return $this->_testEmailSending($message);
         }
+
 
         // Otherwise we let the user decide....
         $transportAdapters = [
