@@ -106,7 +106,7 @@ class TestsController extends Controller
         }
 
         if (!$selectedOption) {
-            $selectedOption = $this->prompt(PHP_EOL."You have not entered a custom transport type - please enter one now.");
+            $selectedOption = $this->prompt(PHP_EOL.'You have not entered a custom transport type - please enter one now.');
         }
 
         // Create the mailer
