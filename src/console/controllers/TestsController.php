@@ -67,12 +67,8 @@ class TestsController extends Controller
                 $settingsModel,
                 $adapter
             );
-
-            $message = Craft::$app->getMailer()
-                ->composeFromKey('test_email', $mailParams)
-                ->setTo($recieverEmail);
-
-            return $this->_testEmailSending($message);
+            
+            return $this->_testEmailSending($mailParams, $recieverEmail);
         }
 
         // Environment settings
@@ -98,11 +94,7 @@ class TestsController extends Controller
 
             $mailParams['settings'] = '';
 
-            $message = Craft::$app->getMailer()
-                ->composeFromKey('test_email', $mailParams)
-                ->setTo($recieverEmail);
-
-            return $this->_testEmailSending($message);
+            return $this->_testEmailSending($mailParams, $recieverEmail);
         }
 
         // Otherwise we let the user decide....
@@ -180,12 +172,8 @@ class TestsController extends Controller
         // For the template
         $mailParams['settings'] = $this->_renderMailSettingsString($settingsModel, $transport);
 
-        $message = $mailer
-            ->composeFromKey('test_email', $mailParams)
-            ->setTo($recieverEmail);
-
         // FOR... SPARTAAA!
-        return $this->_testEmailSending($message);
+        return $this->_testEmailSending($mailParams, $recieverEmail);
     }
 
     /**
@@ -335,11 +323,17 @@ class TestsController extends Controller
     }
 
     /**
-     * @param Message $message
+     * @param array $mailParams
+     * @param $reciever
      * @return int
+     * @throws \yii\base\InvalidConfigException
      */
-    protected function _testEmailSending(Message $message) : int
+    protected function _testEmailSending(array $mailParams, $reciever) : int
     {
+        $message = Craft::$app->getMailer()
+            ->composeFromKey('test_email', $mailParams)
+            ->setTo($reciever);
+
         if ($message->send()) {
             $this->stdout('Email sent successfully! Check your inbox.'.PHP_EOL.PHP_EOL);
         } else {
