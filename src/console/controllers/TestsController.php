@@ -73,14 +73,16 @@ class TestsController extends Controller
             return $this->_testEmailSending($message);
         }
 
-
         // Otherwise we let the user decide....
         $transportAdapters = [
+            $settingsModel->transportType,
             Smtp::class,
             Gmail::class,
             Sendmail::class,
             'Other'
         ];
+        $transportAdapters = array_unique($transportAdapters);
+
         $selectedOption = null;
 
         foreach ($transportAdapters as $transportAdapter) {
