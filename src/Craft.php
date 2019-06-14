@@ -119,6 +119,15 @@ class Craft extends Yii
      */
     public static function dd($var, int $depth = 10, bool $highlight = true)
     {
+        // Turn off output buffering and discard OB contents
+        while (ob_get_length() !== false) {
+            // If ob_start() didn't have the PHP_OUTPUT_HANDLER_CLEANABLE flag, ob_get_clean() will cause a PHP notice
+            // and return false.
+            if (@ob_get_clean() === false) {
+                break;
+            }
+        }
+
         VarDumper::dump($var, $depth, $highlight);
         exit();
     }

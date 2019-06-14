@@ -365,7 +365,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->elementType = $elementType;
 
         // Use ** as a placeholder for "all the default columns"
-        $config['select'] = $config['select'] ?? ['**'];
+        $config['select'] = $config['select'] ?? ['**' => '**'];
 
         parent::__construct($config);
     }
@@ -1261,7 +1261,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $select = $this->select;
-        $this->select = ['elements.id'];
+        $this->select = ['elements.id' => 'elements.id'];
         $result = $this->column($db);
         $this->select($select);
 
@@ -1998,7 +1998,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->offset = null;
 
             $select = $this->query->select;
-            $this->query->select = ['elements.id'];
+            $this->query->select = ['elements.id' => 'elements.id'];
             $elementIds = $this->query->column();
             $this->query->select = $select;
             $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->siteId, true);
@@ -2143,26 +2143,26 @@ class ElementQuery extends Query implements ElementQueryInterface
         $select = array_merge((array)$this->select);
 
         // Is there still a ** placeholder param?
-        if (($placeholderPos = array_search('**', $select, true)) !== false) {
-            array_splice($select, $placeholderPos, 1);
+        if (isset($select['**'])) {
+            unset($select['**']);
 
             // Merge in the default columns
             $select = array_merge($select, [
-                'elements.id',
-                'elements.fieldLayoutId',
-                'elements.uid',
-                'elements.enabled',
-                'elements.archived',
-                'elements.dateCreated',
-                'elements.dateUpdated',
-                'elements_sites.slug',
-                'elements_sites.uri',
+                'elements.id' => 'elements.id',
+                'elements.fieldLayoutId' => 'elements.fieldLayoutId',
+                'elements.uid' => 'elements.uid',
+                'elements.enabled' => 'elements.enabled',
+                'elements.archived' => 'elements.archived',
+                'elements.dateCreated' => 'elements.dateCreated',
+                'elements.dateUpdated' => 'elements.dateUpdated',
+                'elements_sites.slug' => 'elements_sites.slug',
+                'elements_sites.uri' => 'elements_sites.uri',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
 
             // If the query includes soft-deleted elements, include the date deleted
             if ($this->trashed !== false) {
-                $select[] = 'elements.dateDeleted';
+                $select['elements.dateDeleted'] = 'elements.dateDeleted';
             }
 
             // If the query already specifies any columns, merge those in too
