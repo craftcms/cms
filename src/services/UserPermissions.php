@@ -350,7 +350,7 @@ class UserPermissions extends Component
     }
 
     /**
-     * @param User $user
+     * @param User $impersonator
      * @param User $userToImpersonate
      * @return bool
      */
