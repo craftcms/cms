@@ -14,6 +14,7 @@ use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\MailerHelper;
+use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Gmail;
@@ -66,6 +67,36 @@ class TestsController extends Controller
                 $settingsModel,
                 $adapter
             );
+
+            $message = Craft::$app->getMailer()
+                ->composeFromKey('test_email', $mailParams)
+                ->setTo($recieverEmail);
+
+            return $this->_testEmailSending($message);
+        }
+
+        // Environment settings
+        if ($this->confirm(PHP_EOL.'Do you want to use email settings from a specific environment?')) {
+            $env = $this->prompt(PHP_EOL.'Which environment do you want to use?');
+
+            // Get the env
+            $oldEnv = Craft::$app->getConfig()->env;
+            Craft::$app->getConfig()->env = $env;
+            $configSettings = Craft::$app->getConfig()->getConfigFromFile('app');
+            Craft::$app->getConfig()->env = $oldEnv;
+
+            // Does it even exist?
+            if (!isset($configSettings['components']) || !isset($configSettings['components']['mailer'])) {
+                $this->stderr(PHP_EOL."No mailer configuration was found for the env: $env");
+                return ExitCode::OK;
+            }
+
+            /* @var Mailer $mailer */
+            $mailer = Craft::createObject($configSettings['components']['mailer']);
+
+            Craft::$app->set('mailer', $mailer);
+
+            $mailParams['settings'] = '';
 
             $message = Craft::$app->getMailer()
                 ->composeFromKey('test_email', $mailParams)
