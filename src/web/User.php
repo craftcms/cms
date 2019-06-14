@@ -248,13 +248,12 @@ class User extends \yii\web\User
 
         if ($previousUserId = Craft::$app->getSession()->get(UserElement::IMPERSONATE_KEY)) {
             $impersonatingUser = UserElement::find()
-                ->addSelect(['users.password'])
                 ->id($previousUserId)
                 ->one();
 
             // Ensure that the impersonator can also access this resource.
             // TODO: This could cause a problem where if the IMPERSONATE_KEY wasn't flushed
-            // TODO: Then `checkPermission` could be unreliable. 
+            // TODO: Then `checkPermission` could be unreliable.
             if (!$impersonatingUser || !$impersonatingUser->can($permissionName)) {
                 return false;
             }
