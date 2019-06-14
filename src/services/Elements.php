@@ -805,7 +805,7 @@ class Elements extends Component
      * @param int $mergedElementId The ID of the element that is going away.
      * @param int $prevailingElementId The ID of the element that is sticking around.
      * @return bool Whether the elements were merged successfully.
-     * @throws ElementNotFoundException if one of the elemet IDs don’t exist.
+     * @throws ElementNotFoundException if one of the element IDs don’t exist.
      * @throws \Throwable if reasons
      */
     public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool

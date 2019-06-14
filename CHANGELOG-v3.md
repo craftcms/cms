@@ -4,6 +4,7 @@
 
 ### Added
 - It’s now possible to set plugin license keys to environment variables using the `$VARIABLE_NAME` syntax. ([#4393](https://github.com/craftcms/cms/issues/4393))
+- Added `craft\services\Elements::mergeElements()`. ([#4404](https://github.com/craftcms/cms/pull/4404))
 
 ### Changed
 - Pagination URLs now include any query string parameters set on the current request.
