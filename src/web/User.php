@@ -240,24 +240,10 @@ class User extends \yii\web\User
      *
      * @param string $permissionName The name of the permission.
      * @return bool Whether the current user has the permission.
-     * @throws MissingComponentException
      */
     public function checkPermission(string $permissionName): bool
     {
         $user = $this->getIdentity();
-
-        if ($previousUserId = Craft::$app->getSession()->get(UserElement::IMPERSONATE_KEY)) {
-            $impersonatingUser = UserElement::find()
-                ->id($previousUserId)
-                ->one();
-
-            // Ensure that the impersonator can also access this resource.
-            // TODO: This could cause a problem where if the IMPERSONATE_KEY wasn't flushed
-            // TODO: Then `checkPermission` could be unreliable.
-            if (!$impersonatingUser || !$impersonatingUser->can($permissionName)) {
-                return false;
-            }
-        }
 
         return ($user && $user->can($permissionName));
     }
