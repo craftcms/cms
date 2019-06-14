@@ -79,7 +79,7 @@ class TestsController extends Controller
             Smtp::class,
             Gmail::class,
             Sendmail::class,
-            'Other'
+            'A custom transport adapter'
         ];
         $transportAdapters = array_unique($transportAdapters);
 
@@ -92,10 +92,14 @@ class TestsController extends Controller
             }
         }
 
-        if ($selectedOption === 'Other') {
+        if ($selectedOption === 'A custom transport adapter') {
             $selectedOption = $this->prompt("Which transport type do you want to use?");
         }
 
+        if (!$selectedOption) {
+            $selectedOption = $this->prompt("You have not entered a custom transport type - please enter one now.");
+        }
+        
         // Create the mailer
         try {
             /* @var BaseTransportAdapter $transport */
