@@ -324,7 +324,6 @@ class User extends \yii\web\User
             $user = UserElement::find()
                 ->addSelect(['users.password'])
                 ->id($previousUserId)
-                ->admin(true)
                 ->one();
 
             // TODO: @brandonkelly - have a look at this. I removed the ->admin() call in favour of this.
