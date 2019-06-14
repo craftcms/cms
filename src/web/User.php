@@ -240,7 +240,7 @@ class User extends \yii\web\User
      *
      * @param string $permissionName
      * @return bool
-     * @throws \craft\errors\MissingComponentException
+     * @throws MissingComponentException
      */
     public function checkPermission(string $permissionName): bool
     {
@@ -253,6 +253,7 @@ class User extends \yii\web\User
                 ->id($previousUserId)
                 ->one();
 
+            // Ensure that the impersonator can also access this resource.
             if (!$user || !$user->can($permissionName)) {
                 return false;
             }

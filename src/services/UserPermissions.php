@@ -129,7 +129,8 @@ class UserPermissions extends Component
                             'warning' => Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.'),
                         ],
                         'impersonateUsers' => [
-                            'label' => Craft::t('app', 'Impersonate users')
+                            'label' => Craft::t('app', 'Impersonate users'),
+                            'warning' => Craft::t('app', 'Once impersonated the user can perform all actions through a child account for which you have assigned them permissions.'),
                         ]
                     ],
                 ],
