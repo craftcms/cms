@@ -15,6 +15,7 @@
 ### Fixed
 - Fixed a bug where `Craft::dd()` wouldn’t work properly if output buffering was enabled. ([#4399](https://github.com/craftcms/cms/issues/4399))
 - Fixed a bug where `Craft::alias()` wasn’t working on Windows servers. ([#4405](https://github.com/craftcms/cms/issues/4405))
+- Fixed a bug where `DbConfig` wasn't parsing the `dsn` setting properly if it was supplied.
 
 ## 3.1.30 - 2019-06-11
 
