@@ -57,7 +57,7 @@ class Yii extends BaseYii
 
         $path = FileHelper::normalizePath($path);
         foreach (self::$_aliasPaths as $alias => $aliasPath) {
-            if (strpos($path . '/', $aliasPath . '/') === 0) {
+            if (strpos($path . DIRECTORY_SEPARATOR, $aliasPath . DIRECTORY_SEPARATOR) === 0) {
                 return $alias . substr($path, strlen($aliasPath));
             }
         }
