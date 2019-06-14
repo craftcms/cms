@@ -299,30 +299,35 @@ class TestsController extends Controller
     // =========================================================================
 
     /**
-     * @param MailSettings $settings
-     * @param $adapter
+     * @param MailSettings|null $settings
+     * @param null $adapter
      * @return string
      */
-    protected function _renderMailSettingsString(MailSettings $settings, $adapter) : string
+    protected function _renderMailSettingsString(MailSettings $settings = null, $adapter = null) : string
     {
         // Compose the settings list as HTML
         $settingsList = '';
 
-        foreach (['fromEmail', 'fromName', 'template'] as $name) {
-            if (!empty($settings->$name)) {
-                $settingsList .= '- **' . $settings->getAttributeLabel($name) . ':** ' . $settings->$name . "\n";
+        if ($settings) {
+            foreach (['fromEmail', 'fromName', 'template'] as $name) {
+                if (!empty($settings->$name)) {
+                    $settingsList .= '- **' . $settings->getAttributeLabel($name) . ':** ' . $settings->$name . "\n";
+                }
             }
         }
 
-        $settingsList .= '- **' . 'Transport Type' . ':** ' . $adapter::displayName() . "\n";
 
-        $security = Craft::$app->getSecurity();
+        if ($adapter) {
+            $settingsList .= '- **' . 'Transport Type' . ':** ' . $adapter::displayName() . "\n";
 
-        foreach ($adapter->settingsAttributes() as $name) {
-            if (!empty($adapter->$name)) {
-                $label = $adapter->getAttributeLabel($name);
-                $value = $security->redactIfSensitive($name, $adapter->$name);
-                $settingsList .= "- **{$label}:** {$value}\n";
+            $security = Craft::$app->getSecurity();
+
+            foreach ($adapter->settingsAttributes() as $name) {
+                if (!empty($adapter->$name)) {
+                    $label = $adapter->getAttributeLabel($name);
+                    $value = $security->redactIfSensitive($name, $adapter->$name);
+                    $settingsList .= "- **{$label}:** {$value}\n";
+                }
             }
         }
 
