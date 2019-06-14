@@ -98,7 +98,7 @@ class TestsController extends Controller
         try {
             /* @var BaseTransportAdapter $transport */
             $transport = Component::createComponent([
-                'class' => $selectedOption
+                'type' => $selectedOption
             ], BaseTransportAdapter::class);
         } catch (\Throwable $exception) {
             $this->stderr("The following problem occured when creating the mailer: $exception");
@@ -107,7 +107,13 @@ class TestsController extends Controller
 
         // What do they want to use?
         foreach ($transport->settingsAttributes() as $property) {
-            $transport->$property = $this->prompt("What must $property be set to?");
+            // Try and find a default.
+            $default = null;
+            if (isset($settingsModel->transportSettings[$property])) {
+                $default = $settingsModel->transportSettings[$property];
+            }
+
+            $transport->$property = $this->prompt("What must $property be set to?", ['default' => $default]);
         }
 
         // Save the new stuff to the settings
