@@ -75,31 +75,38 @@ class TestsController extends Controller
 
         // Otherwise we let the user decide....
         $transportAdapters = [
-            $settingsModel->transportType,
-            Smtp::class,
-            Gmail::class,
-            Sendmail::class,
-            'A custom transport adapter'
+            $settingsModel->transportType::displayName() => $settingsModel->transportType,
+            'Smtp' => Smtp::class,
+            'Gmail' => Gmail::class,
+            'Sendmail'=> Sendmail::class,
+            'Other' => 'Other'
         ];
         $transportAdapters = array_unique($transportAdapters);
 
+        $userInput = $this->select('Which transport type do you want to use?', $transportAdapters);
+
         $selectedOption = null;
-
-        foreach ($transportAdapters as $transportAdapter) {
-            if ($this->confirm("Do you want to use {$transportAdapter}?")) {
-                $selectedOption = $transportAdapter;
+        switch ($userInput) {
+            case 'Smtp':
+                $selectedOption = Smtp::class;
                 break;
-            }
-        }
-
-        if ($selectedOption === 'A custom transport adapter') {
-            $selectedOption = $this->prompt("Which transport type do you want to use?");
+            case 'Gmail':
+                $selectedOption = Gmail::class;
+                break;
+            case 'Sendmail':
+                $selectedOption = Sendmail::class;
+                break;
+            case 'Other':
+                $selectedOption = $this->prompt("Which transport type do you want to use?");
+            default:
+                $this->stderr('You have entered an invalid transport type.');
+                return ExitCode::OK;
         }
 
         if (!$selectedOption) {
             $selectedOption = $this->prompt("You have not entered a custom transport type - please enter one now.");
         }
-        
+
         // Create the mailer
         try {
             /* @var BaseTransportAdapter $transport */
