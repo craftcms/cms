@@ -309,9 +309,11 @@ class User extends \yii\web\User
     /**
      * Starts an elevated user session for the current user.
      *
-     * @param string $password the current user’s password
-     * @return bool Whether the password was valid, and the user session has been elevated
-     * @throws UserLockedException if the user is locked.
+     * @param string $password
+     * @return bool
+     * @throws UserLockedException
+     * @throws MissingComponentException
+     * @throws InvalidArgumentException
      */
     public function startElevatedSession(string $password): bool
     {
@@ -322,8 +324,14 @@ class User extends \yii\web\User
             $user = UserElement::find()
                 ->addSelect(['users.password'])
                 ->id($previousUserId)
-                ->admin(true)
                 ->one();
+
+            // TODO: @brandonkelly - have a look at this. I removed the ->admin() call in favour of this.
+            // TODO: It seems more appropriate
+            if (!$user->can('impersonateUsers')) {
+                $this->_handleLoginFailure(UserElement::AUTH_INVALID_CREDENTIALS);
+                return false;
+            }
         } else {
             // Get the current user
             $user = $this->getIdentity();
