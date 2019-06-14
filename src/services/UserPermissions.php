@@ -377,22 +377,23 @@ class UserPermissions extends Component
             return false;
         }
 
-        // Mkay
         return true;
     }
 
     /**
      * Checks whether a user with id ($userId1) has more permissions than a user with id ($userId2)
      *
-     * @param int $userId1
-     * @param int $userId2
+     * @param int $userId1 The user that should have more permissions
+     * @param int $userId2 - The user to compare against.
      * @return bool
      */
     public function doesFirstUserHaveMorePermissions(int $userId1, int $userId2) : bool
     {
+        // Get both their permissions
         $mainUser = $this->getPermissionsByUserId($userId1);
         $secondaryUser = $this->getPermissionsByUserId($userId2);
 
+        // Does $mainUser have more than $secondaryUser
         $difference = array_diff($mainUser, $secondaryUser);
 
         return $difference ? true : false;
