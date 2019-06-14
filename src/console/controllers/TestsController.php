@@ -41,7 +41,7 @@ class TestsController extends Controller
      * @throws \craft\errors\MissingComponentException
      * @throws \yii\base\InvalidConfigException
      */
-    public function actionTestEmailSettings()
+    public function actionEmailSettings()
     {
         $recieverEmail = $this->prompt('Which email address must we send this test email to?');
 
@@ -55,7 +55,7 @@ class TestsController extends Controller
         $settingsModel = App::mailSettings();
 
         // Default settings?
-        if ($this->confirm('Do you want to test Crafts default email settings?')) {
+        if ($this->confirm('Do you want to test using the current email settings?')) {
             $adapter = MailerHelper::createTransportAdapter(
                 $settingsModel->transportType,
                 $settingsModel->transportSettings
@@ -86,7 +86,7 @@ class TestsController extends Controller
         $selectedOption = null;
 
         foreach ($transportAdapters as $transportAdapter) {
-            if ($this->confirm("Do you want to use {$transportAdapter}?" . PHP_EOL)) {
+            if ($this->confirm("Do you want to use {$transportAdapter}?")) {
                 $selectedOption = $transportAdapter;
                 break;
             }
@@ -103,7 +103,8 @@ class TestsController extends Controller
                 'type' => $selectedOption
             ], BaseTransportAdapter::class);
         } catch (\Throwable $exception) {
-            $this->stderr("The following problem occured when creating the mailer: $exception");
+            $message = $exception->getMessage();
+            $this->stderr("The following problem occured when creating the mailer: $message".PHP_EOL, Console::FG_RED);
             return ExitCode::OK;
         }
 
@@ -115,7 +116,7 @@ class TestsController extends Controller
                 $default = $settingsModel->transportSettings[$property];
             }
 
-            $transport->$property = $this->prompt("What must $property be set to?", ['default' => $default]);
+            $transport->$property = $this->prompt(PHP_EOL."What must $property be set to?", ['default' => $default]);
         }
 
         // Save the new stuff to the settings
