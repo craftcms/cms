@@ -43,7 +43,7 @@ class TestsController extends Controller
      */
     public function actionEmailSettings()
     {
-        $recieverEmail = $this->prompt('Which email address must we send this test email to?');
+        $recieverEmail = $this->prompt(PHP_EOL.'Which email address must we send this test email to?');
 
         $mailParams = [
             'user' => new UserElement([
@@ -55,7 +55,7 @@ class TestsController extends Controller
         $settingsModel = App::mailSettings();
 
         // Default settings?
-        if ($this->confirm('Do you want to test using the current email settings?')) {
+        if ($this->confirm(PHP_EOL.'Do you want to test using the current email settings?')) {
             $adapter = MailerHelper::createTransportAdapter(
                 $settingsModel->transportType,
                 $settingsModel->transportSettings
@@ -83,7 +83,7 @@ class TestsController extends Controller
         ];
         $transportAdapters = array_unique($transportAdapters);
 
-        $userInput = $this->select('Which transport type do you want to use?', $transportAdapters);
+        $userInput = $this->select(PHP_EOL.'Which transport type do you want to use?', $transportAdapters);
 
         $selectedOption = null;
         switch ($userInput) {
@@ -97,14 +97,15 @@ class TestsController extends Controller
                 $selectedOption = Sendmail::class;
                 break;
             case 'Other':
-                $selectedOption = $this->prompt("Which transport type do you want to use?");
+                $selectedOption = $this->prompt(PHP_EOL.'Which custom transport type do you want to use?');
+                break;
             default:
-                $this->stderr('You have entered an invalid transport type.');
+                $this->stderr(PHP_EOL.'You have entered an invalid transport type.');
                 return ExitCode::OK;
         }
 
         if (!$selectedOption) {
-            $selectedOption = $this->prompt("You have not entered a custom transport type - please enter one now.");
+            $selectedOption = $this->prompt(PHP_EOL."You have not entered a custom transport type - please enter one now.");
         }
 
         // Create the mailer
@@ -115,7 +116,7 @@ class TestsController extends Controller
             ], BaseTransportAdapter::class);
         } catch (\Throwable $exception) {
             $message = $exception->getMessage();
-            $this->stderr("The following problem occured when creating the mailer: $message".PHP_EOL, Console::FG_RED);
+            $this->stderr(PHP_EOL."The following problem occured when creating the mailer: $message", Console::FG_RED);
             return ExitCode::OK;
         }
 
