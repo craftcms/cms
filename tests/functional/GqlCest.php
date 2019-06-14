@@ -8,10 +8,20 @@
 namespace tests\functional;
 
 use crafttests\fixtures\EntryFixture;
+use crafttests\fixtures\EntryWithFieldsFixture;
 use FunctionalTester;
 
 class GqlCest
 {
+    public function _fixtures()
+    {
+        return [
+            'entriesWithField' => [
+                'class' => EntryWithFieldsFixture::class
+            ],
+        ];
+    }
+
     public function _before(FunctionalTester $I)
     {
     }
@@ -41,6 +51,7 @@ class GqlCest
      */
     public function testQuerying(FunctionalTester $I)
     {
+
         $queryTypes = [
             'Entries',
             'MatrixBlocks',
@@ -70,7 +81,20 @@ class GqlCest
      */
     public function testWrongGqlQueryParameter(FunctionalTester $I)
     {
-        $resp = $I->amOnPage('?action=gql&query={queryEntries(limit:[5,2]){title}}');
+        $I->amOnPage('?action=gql&query={queryEntries(limit:[5,2]){title}}');
         $I->see('"debugMessage":"Expected');
+    }
+
+    /**
+     * Test whether query results yield the expected results.
+     */
+    public function testQueryResults(FunctionalTester $I)
+    {
+        $testData = file_get_contents(__DIR__ . '/data/gql.txt');
+        foreach (explode('-----TEST DELIMITER-----', $testData) as $case) {
+            list ($query, $response) = explode('-----RESPONSE DELIMITER-----', $case);
+            $I->amOnPage('?action=gql&query='.urlencode(trim($query)));
+            $I->see(trim($response));
+        }
     }
 }
