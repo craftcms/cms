@@ -351,6 +351,8 @@ class UserPermissions extends Component
     }
 
     /**
+     * Checks whether the $impersonator can impersonate the $userToImpersonate
+     *
      * @param User $impersonator
      * @param User $userToImpersonate
      * @return bool
