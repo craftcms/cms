@@ -238,8 +238,8 @@ class User extends \yii\web\User
     /**
      * Returns whether the current user has a given permission.
      *
-     * @param string $permissionName
-     * @return bool
+     * @param string $permissionName The name of the permission.
+     * @return bool Whether the current user has the permission.
      * @throws MissingComponentException
      */
     public function checkPermission(string $permissionName): bool
@@ -310,9 +310,9 @@ class User extends \yii\web\User
     /**
      * Starts an elevated user session for the current user.
      *
-     * @param string $password
-     * @return bool
-     * @throws UserLockedException
+     * @param string $password the current user’s password
+     * @return bool Whether the password was valid, and the user session has been elevated
+     * @throws UserLockedException if the user is locked.
      * @throws MissingComponentException
      * @throws InvalidArgumentException
      */
