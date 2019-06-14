@@ -12,6 +12,7 @@ use craft\controllers\UsersController;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User as UserElement;
+use craft\errors\MissingComponentException;
 use craft\errors\UserLockedException;
 use craft\events\LoginFailureEvent;
 use craft\helpers\ConfigHelper;
@@ -19,6 +20,7 @@ use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\validators\UserPasswordValidator;
+use yii\base\InvalidArgumentException;
 use yii\web\Cookie;
 
 /**
@@ -236,12 +238,25 @@ class User extends \yii\web\User
     /**
      * Returns whether the current user has a given permission.
      *
-     * @param string $permissionName The name of the permission.
-     * @return bool Whether the current user has the permission.
+     * @param string $permissionName
+     * @return bool
+     * @throws \craft\errors\MissingComponentException
      */
     public function checkPermission(string $permissionName): bool
     {
         $user = $this->getIdentity();
+
+
+        if ($previousUserId = Craft::$app->getSession()->get(UserElement::IMPERSONATE_KEY)) {
+            $user = UserElement::find()
+                ->addSelect(['users.password'])
+                ->id($previousUserId)
+                ->one();
+
+            if (!$user || !$user->can($permissionName)) {
+                return false;
+            }
+        }
 
         return ($user && $user->can($permissionName));
     }
