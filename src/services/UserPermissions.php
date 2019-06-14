@@ -350,6 +350,54 @@ class UserPermissions extends Component
     }
 
     /**
+     * @param User $user
+     * @param User $userToImpersonate
+     * @return bool
+     */
+    public function isImpersonationAllowed(User $impersonator, User $userToImpersonate) : bool
+    {
+        // Too easy
+        if ($impersonator->admin) {
+            return true;
+        }
+
+        // Is the impersonator not an admin but the impersonatee is - then no.
+        if ($userToImpersonate->admin) {
+            return false;
+        }
+
+        // Be gone!
+        if (!$impersonator->can('impersonateUsers')) {
+            return false;
+        }
+
+        // The user that is going to get impersonated cannot have more rights than the impersonator.
+        if ($this->doesFirstUserHaveMorePermissions($userToImpersonate->id, $impersonator->id)) {
+            return false;
+        }
+
+        // Mkay
+        return true;
+    }
+
+    /**
+     * Checks whether a user with id ($userId1) has more permissions than a user with id ($userId2)
+     *
+     * @param int $userId1
+     * @param int $userId2
+     * @return bool
+     */
+    public function doesFirstUserHaveMorePermissions(int $userId1, int $userId2) : bool
+    {
+        $mainUser = $this->getPermissionsByUserId($userId1);
+        $secondaryUser = $this->getPermissionsByUserId($userId2);
+
+        $difference = array_diff($mainUser, $secondaryUser);
+
+        return $difference ? true : false;
+    }
+
+    /**
      * Returns whether a given user has a given permission.
      *
      * @param int $userId
