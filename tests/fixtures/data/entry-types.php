@@ -15,6 +15,7 @@ return [
         'titleLabel' => 'Title',
         'titleFormat' => null,
         'sortOrder' => '1',
+        'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields'
     ],
     [
         'id' => '1001',
