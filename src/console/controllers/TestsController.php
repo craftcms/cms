@@ -100,7 +100,7 @@ class TestsController extends Controller
                 'class' => $selectedOption
             ], BaseTransportAdapter::class);
         } catch (\Throwable $exception) {
-            $this->stderr("The following problem occured: $exception");
+            $this->stderr("The following problem occured when creating the mailer: $exception");
             return ExitCode::OK;
         }
 
