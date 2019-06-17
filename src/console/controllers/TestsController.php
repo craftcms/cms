@@ -42,7 +42,7 @@ class TestsController extends Controller
      *
      * 1. Testing the default settings used in Craft::$app->getMailer()->send();
      * 2. Test sending according to email settings used in a custom config defined through app.php
-     * 3. Define your own custom Transport adapter and test using one off settings.
+     * 3. Choose your own custom Transport adapter and test using once off settings.
      *
      * @return int
      * @throws \craft\errors\MissingComponentException
