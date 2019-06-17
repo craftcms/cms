@@ -291,6 +291,8 @@ class TestsController extends Controller
     // =========================================================================
 
     /**
+     * Copied from `craft\controllers\SystemSettingsController::actionTestEmailSettings()`
+     *
      * @param MailSettings|null $settings
      * @param null $adapter
      * @return string
