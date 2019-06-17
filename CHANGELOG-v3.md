@@ -16,6 +16,7 @@
 - Fixed a bug where `Craft::dd()` wouldn’t work properly if output buffering was enabled. ([#4399](https://github.com/craftcms/cms/issues/4399))
 - Fixed a bug where `Craft::alias()` wasn’t working on Windows servers. ([#4405](https://github.com/craftcms/cms/issues/4405))
 - Fixed a bug where Craft wasn't parsing the `dsn` DB connection setting properly if it was supplied.
+- Fixed a performance issue on the user index page when viewing a user group when a large number of users using MariaDB.
 
 ### Security
 - Fixed an XSS vulnerability.
