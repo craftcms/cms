@@ -11,12 +11,12 @@
 - The default email template no longer sets text or background colors, so emails look better in dark mode. ([#4396](https://github.com/craftcms/cms/pull/4396))
 - Improved the error message that gets logged when Craft isn’t able to finish processing project config changes, due to unresolved dependencies.
 - Craft will no longer log errors and warnings arising from `yii\i18n\PhpMessageSource`. ([#4109](https://github.com/craftcms/cms/issues/4109))
+- Improved the performance and reliability of user queries when the `group` param is set to a user group with a large number of users.
 
 ### Fixed
 - Fixed a bug where `Craft::dd()` wouldn’t work properly if output buffering was enabled. ([#4399](https://github.com/craftcms/cms/issues/4399))
 - Fixed a bug where `Craft::alias()` wasn’t working on Windows servers. ([#4405](https://github.com/craftcms/cms/issues/4405))
 - Fixed a bug where Craft wasn't parsing the `dsn` DB connection setting properly if it was supplied.
-- Fixed a performance issue on the user index page when viewing a user group when a large number of users using MariaDB.
 
 ### Security
 - Fixed an XSS vulnerability.
