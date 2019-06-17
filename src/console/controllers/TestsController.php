@@ -15,7 +15,6 @@ use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\MailerHelper;
 use craft\mail\Mailer;
-use craft\mail\Message;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Gmail;
 use craft\mail\transportadapters\Sendmail;
@@ -39,11 +38,17 @@ class TestsController extends Controller
     // =========================================================================
 
     /**
+     * Allows for the testing of email settings within Craft using one of the following scenarios:
+     *
+     * 1. Testing the default settings used in Craft::$app->getMailer()->send();
+     * 2. Test sending according to email settings used in a custom config defined through app.php
+     * 3. Define your own custom Transport adapter and test using one off settings.
+     *
      * @return int
      * @throws \craft\errors\MissingComponentException
      * @throws \yii\base\InvalidConfigException
      */
-    public function actionEmailSettings()
+    public function actionEmailSettings() : int
     {
         $recieverEmail = $this->prompt(PHP_EOL.'Which email address must we send this test email to?');
 
@@ -67,7 +72,7 @@ class TestsController extends Controller
                 $settingsModel,
                 $adapter
             );
-            
+
             return $this->_testEmailSending($mailParams, $recieverEmail);
         }
 
@@ -75,14 +80,14 @@ class TestsController extends Controller
         if ($this->confirm(PHP_EOL.'Do you want to use email settings from a specific environment?')) {
             $env = $this->prompt(PHP_EOL.'Which environment do you want to use?');
 
-            // Get the env
+            // Get the env - then the appropriate config - then set the env back.
             $oldEnv = Craft::$app->getConfig()->env;
             Craft::$app->getConfig()->env = $env;
             $configSettings = Craft::$app->getConfig()->getConfigFromFile('app');
             Craft::$app->getConfig()->env = $oldEnv;
 
             // Does it even exist?
-            if (!isset($configSettings['components']) || !isset($configSettings['components']['mailer'])) {
+            if (!isset($configSettings['components']['mailer'])) {
                 $this->stderr(PHP_EOL."No mailer configuration was found for the env: $env");
                 return ExitCode::OK;
             }
@@ -92,6 +97,7 @@ class TestsController extends Controller
 
             Craft::$app->set('mailer', $mailer);
 
+            // TODO: Is there a way to extract the MailSettings and TransportAdapter settings from Craft::$app->getMailer()
             $mailParams['settings'] = '';
 
             return $this->_testEmailSending($mailParams, $recieverEmail);
@@ -106,9 +112,9 @@ class TestsController extends Controller
             'Other' => 'Other'
         ];
         $transportAdapters = array_unique($transportAdapters);
-
         $userInput = $this->select(PHP_EOL.'Which transport type do you want to use?', $transportAdapters);
 
+        // Attempt to resolve the user input into a class
         $selectedOption = null;
         switch ($userInput) {
             case 'Smtp':
@@ -128,6 +134,7 @@ class TestsController extends Controller
                 return ExitCode::OK;
         }
 
+        // Be kind...
         if (!$selectedOption) {
             $selectedOption = $this->prompt(PHP_EOL.'You have not entered a custom transport type - please enter one now.');
         }
@@ -144,7 +151,7 @@ class TestsController extends Controller
             return ExitCode::OK;
         }
 
-        // What do they want to use?
+        // What settings do they want to use?
         foreach ($transport->settingsAttributes() as $property) {
             // Try and find a default.
             $default = null;
@@ -165,11 +172,8 @@ class TestsController extends Controller
             return ExitCode::OK;
         }
 
-        // Setup the mailer.
-        $mailer = Craft::$app->getMailer();
-        $mailer->transport = $transport->defineTransport();
-
-        // For the template
+        // Setup the new transport and settings for sending the email.
+        Craft::$app->getMailer()->transport = $transport->defineTransport();
         $mailParams['settings'] = $this->_renderMailSettingsString($settingsModel, $transport);
 
         // FOR... SPARTAAA!
