@@ -5,6 +5,9 @@
 ### Fixed
 - Fixed a bug where a user could not add more user groups to their account, even if they had the “Assign Usergroup Permissions” permission.
 
+### Changed
+- Craft now redacts potentially sensitive keyword values from `devMode` console output.
+
 ## 2.7.8 - 2019-04-02
 
 ### Changed
