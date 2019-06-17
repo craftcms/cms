@@ -17,6 +17,9 @@
 - Fixed a bug where `Craft::alias()` wasn’t working on Windows servers. ([#4405](https://github.com/craftcms/cms/issues/4405))
 - Fixed a bug where Craft wasn't parsing the `dsn` DB connection setting properly if it was supplied.
 
+### Security
+- Fixed an XSS vulnerability.
+
 ## 3.1.30 - 2019-06-11
 
 ### Changed
