@@ -176,6 +176,7 @@ class UsersController extends Controller
      * Logs a user in for impersonation. Requires you to be an administrator.
      *
      * @return Response|null
+     * @throws ForbiddenHttpException
      */
     public function actionImpersonate()
     {
@@ -188,15 +189,11 @@ class UsersController extends Controller
 
         $userId = $request->getBodyParam('userId');
 
-        // Are they actually allowed to impersonate this user?
-        $currentUser = $userSession->getIdentity();
-
-        // Fast track people who are admins - so we dont have to call any DB.
-        if (!$currentUser->admin) {
-            $desiredImpersonationSubject = Craft::$app->getUsers()->getUserById($userId);
-            if (!Craft::$app->getUserPermissions()->isImpersonationAllowed($currentUser, $desiredImpersonationSubject)) {
-                throw new ForbiddenHttpException('You do not have suffecient priveleges to impersonate this user');
-            }
+        // Make sure they're allowed to impersonate this user
+        $usersService = Craft::$app->getUsers();
+        $impersonatee = $usersService->getUserById($userId);
+        if (!$usersService->canImpersonate($userSession->getIdentity(), $impersonatee)) {
+            throw new ForbiddenHttpException('You do not have sufficient permissions to impersonate this user');
         }
 
         // Save the original user ID to the session now so User::findIdentity()
@@ -707,7 +704,7 @@ class UsersController extends Controller
             }
 
             if (!$isCurrentUser) {
-                if (Craft::$app->getUserPermissions()->isImpersonationAllowed($currentUser, $user)) {
+                if (Craft::$app->getUsers()->canImpersonate($currentUser, $user)) {
                     $sessionActions[] = [
                         'action' => 'users/impersonate',
                         'label' => Craft::t('app', 'Login as {user}', ['user' => $user->getName()])

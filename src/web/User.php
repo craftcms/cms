@@ -12,7 +12,6 @@ use craft\controllers\UsersController;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User as UserElement;
-use craft\errors\MissingComponentException;
 use craft\errors\UserLockedException;
 use craft\events\LoginFailureEvent;
 use craft\helpers\ConfigHelper;
@@ -20,7 +19,6 @@ use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\validators\UserPasswordValidator;
-use yii\base\InvalidArgumentException;
 use yii\web\Cookie;
 
 /**
@@ -299,8 +297,6 @@ class User extends \yii\web\User
      * @param string $password the current user’s password
      * @return bool Whether the password was valid, and the user session has been elevated
      * @throws UserLockedException if the user is locked.
-     * @throws MissingComponentException
-     * @throws InvalidArgumentException
      */
     public function startElevatedSession(string $password): bool
     {

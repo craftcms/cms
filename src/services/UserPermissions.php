@@ -130,8 +130,7 @@ class UserPermissions extends Component
                         ],
                         'impersonateUsers' => [
                             'label' => Craft::t('app', 'Impersonate users'),
-                            'warning' => Craft::t('app', 'Once impersonated the user can perform all actions through a child account for which you have assigned them permissions.'),
-                        ]
+                        ],
                     ],
                 ],
                 'deleteUsers' => [
@@ -348,57 +347,6 @@ class UserPermissions extends Component
         }
 
         return $this->_permissionsByUserId[$userId];
-    }
-
-    /**
-     * Checks whether the $impersonator can impersonate the $userToImpersonate
-     *
-     * @param User $impersonator
-     * @param User $userToImpersonate
-     * @return bool
-     */
-    public function isImpersonationAllowed(User $impersonator, User $userToImpersonate) : bool
-    {
-        // Too easy
-        if ($impersonator->admin) {
-            return true;
-        }
-
-        // Is the impersonator not an admin but the impersonatee is - then no.
-        if ($userToImpersonate->admin) {
-            return false;
-        }
-
-        // Be gone!
-        if (!$impersonator->can('impersonateUsers')) {
-            return false;
-        }
-
-        // The user that is going to get impersonated cannot have more rights than the impersonator.
-        if ($this->doesFirstUserHaveMorePermissions($userToImpersonate->id, $impersonator->id)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Checks whether a user with id ($userId1) has more permissions than a user with id ($userId2)
-     *
-     * @param int $userId1 The user that should have more permissions
-     * @param int $userId2 - The user to compare against.
-     * @return bool
-     */
-    public function doesFirstUserHaveMorePermissions(int $userId1, int $userId2) : bool
-    {
-        // Get both their permissions
-        $mainUser = $this->getPermissionsByUserId($userId1);
-        $secondaryUser = $this->getPermissionsByUserId($userId2);
-
-        // Does $mainUser have more than $secondaryUser
-        $difference = array_diff($mainUser, $secondaryUser);
-
-        return $difference ? true : false;
     }
 
     /**
