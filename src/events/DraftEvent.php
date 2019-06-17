@@ -23,7 +23,7 @@ class DraftEvent extends Event
     // =========================================================================
 
     /**
-     * @var ElementInterface The source element
+     * @var ElementInterface|null The source element
      */
     public $source;
 

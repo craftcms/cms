@@ -12,9 +12,12 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\events\DraftEvent;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
@@ -85,7 +88,7 @@ class Drafts extends Component
     /**
      * Creates a new draft for the given element.
      *
-     * @param ElementInterface $source The element to create a revision for
+     * @param ElementInterface $source The element to create a draft for
      * @param int $creatorId The user ID that the draft should be attributed to
      * @param string|null $name The draft name
      * @param string|null $notes The draft notes
@@ -97,7 +100,7 @@ class Drafts extends Component
     {
         // Make sure the source isn't a draft or revision
         /** @var Element $source */
-        if ($source->draftId || $source->revisionId) {
+        if ($source->getIsDraft() || $source->getIsRevision()) {
             throw new InvalidArgumentException('Cannot create a draft from another draft or revision.');
         }
 
@@ -128,18 +131,9 @@ class Drafts extends Component
             $revision = Craft::$app->getRevisions()->createRevision($source, $creatorId, 'Created automatically for draft');
 
             // Create the draft row
-            $db = Craft::$app->getDb();
-            $db->createCommand()
-                ->insert(Table::DRAFTS, [
-                    'sourceId' => $source->id,
-                    'revisionId' => $revision->revisionId,
-                    'creatorId' => $creatorId,
-                    'name' => $name,
-                    'notes' => $notes,
-                ], false)
-                ->execute();
+            $draftId = $this->_insertDraftRow($source->id, $revision->revisionId, $creatorId, $name, $notes);
 
-            $newAttributes['draftId'] = $db->getLastInsertID(Table::DRAFTS);
+            $newAttributes['draftId'] = $draftId;
             $newAttributes['behaviors']['draft'] = [
                 'class' => DraftBehavior::class,
                 'sourceId' => $source->id,
@@ -173,6 +167,37 @@ class Drafts extends Component
     }
 
     /**
+     * Saves an element as a draft.
+     *
+     * @param ElementInterface $element
+     * @param int $creatorId
+     * @param string|null $name
+     * @param string|null $notes
+     * @return bool
+     * @throws \Throwable
+     */
+    public function saveElementAsDraft(ElementInterface $element, int $creatorId, string $name = null, string $notes = null): bool
+    {
+        if ($name === null) {
+            $name = 'First draft';
+        }
+
+        // Create the draft row
+        $draftId = $this->_insertDraftRow(null, null, $creatorId, $name, $notes);
+
+        /** @var Element $element */
+        $element->draftId = $draftId;
+        $element->attachBehavior('draft', new DraftBehavior([
+            'creatorId' => $creatorId,
+            'draftName' => $name,
+            'draftNotes' => $notes,
+        ]));
+
+        // Try to save and return the result
+        return Craft::$app->getElements()->saveElement($element);
+    }
+
+    /**
      * Applies a draft onto its source element.
      *
      * @param ElementInterface $draft The draft
@@ -182,7 +207,7 @@ class Drafts extends Component
     public function applyDraft(ElementInterface $draft): ElementInterface
     {
         /** @var Element|DraftBehavior $draft */
-        /** @var Element $source */
+        /** @var Element|null $source */
         $source = $draft->getSource();
 
         // Fire a 'beforeApplyDraft' event
@@ -196,20 +221,45 @@ class Drafts extends Component
             ]));
         }
 
+
+        $elementsService = Craft::$app->getElements();
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // "Duplicate" the draft with the source element's ID, UID, and content ID
-            $elementsService = Craft::$app->getElements();
-            $newSource = $elementsService->duplicateElement($draft, [
-                'id' => $source->id,
-                'uid' => $source->uid,
-                'dateCreated' => $source->dateCreated,
-                'draftId' => null,
-                'revisionNotes' => $draft->draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
-            ]);
+            if ($source) {
+                // "Duplicate" the draft with the source element's ID, UID, and content ID
+                $newSource = $elementsService->duplicateElement($draft, [
+                    'id' => $source->id,
+                    'uid' => $source->uid,
+                    'dateCreated' => $source->dateCreated,
+                    'draftId' => null,
+                    'revisionNotes' => $draft->draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
+                ]);
 
-            // Now delete the draft
-            $elementsService->deleteElement($draft, true);
+                // Now delete the draft
+                $elementsService->deleteElement($draft, true);
+            } else {
+                // Delete the draftId from the elements table
+                $db = Craft::$app->getDb();
+                $db->createCommand()
+                    ->update(Table::ELEMENTS, ['draftId' => null], ['id' => $draft->id], [], false)
+                    ->execute();
+
+                // Delete the row from the drafts table
+                $db->createCommand()
+                    ->delete(Table::DRAFTS, ['id' => $draft->draftId])
+                    ->execute();
+
+                // Resave the draft without its draftId
+                $draft->draftId = null;
+                $draft->detachBehavior('draft');
+                $draft->setScenario(Element::SCENARIO_ESSENTIALS);
+                if (!$elementsService->saveElement($draft)) {
+                    throw new InvalidElementException($draft, 'Couldn\'t save element.');
+                }
+
+                $newSource = $draft;
+            }
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -229,5 +279,77 @@ class Drafts extends Component
         }
 
         return $newSource;
+    }
+
+    /**
+     * Deletes any sourceless drafts that were never formally saved.
+     *
+     * This method will check the
+     * [[\craft\config\GeneralConfig::purgeUnsavedDraftsDuration|purgeUnsavedDraftsDuration]] config
+     * setting, and if it is set to a valid duration, it will delete any sourceless drafts that were created that
+     * duration ago, and have still not been formally saved.
+     */
+    public function purgeUnsavedDrafts()
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($generalConfig->purgeUnsavedDraftsDuration === 0) {
+            return;
+        }
+
+        $interval = DateTimeHelper::secondsToInterval($generalConfig->purgeUnsavedDraftsDuration);
+        $expire = DateTimeHelper::currentUTCDateTime();
+        $pastTime = $expire->sub($interval);
+
+        $drafts = (new Query())
+            ->select(['e.draftId', 'e.type'])
+            ->from(['e' => Table::ELEMENTS])
+            ->innerJoin(Table::DRAFTS . ' d', '[[d.id]] = [[e.draftId]]')
+            ->where(['d.sourceId' => null])
+            ->andWhere(['<', 'e.dateCreated', Db::prepareDateForDb($pastTime)])
+            ->all();
+
+        $elementsService = Craft::$app->getElements();
+
+        foreach ($drafts as $draftInfo) {
+            /** @var ElementInterface|string $elementType */
+            $elementType = $draftInfo['type'];
+            $draft = $elementType::find()
+                ->draftId($draftInfo['draftId'])
+                ->anyStatus()
+                ->siteId('*')
+                ->one();
+            $elementsService->deleteElement($draft, true);
+            Craft::info("Just deleted unsaved draft ID {$draftInfo['draftId']}", __METHOD__);
+        }
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Creates a new row in the `drafts` table.
+     *
+     * @param int $creatorId
+     * @param string|null $name
+     * @param string|null $notes
+     * @param int|null $sourceId
+     * @param int|null $revisionId
+     * @return int The new draft ID
+     * @throws DbException
+     */
+    private function _insertDraftRow(int $sourceId = null, int $revisionId = null, int $creatorId, string $name = null, string $notes = null): int
+    {
+        $db = Craft::$app->getDb();
+        $db->createCommand()
+            ->insert(Table::DRAFTS, [
+                'sourceId' => $sourceId,
+                'revisionId' => $revisionId,
+                'creatorId' => $creatorId,
+                'name' => $name,
+                'notes' => $notes,
+            ], false)
+            ->execute();
+        return $db->getLastInsertID(Table::DRAFTS);
     }
 }

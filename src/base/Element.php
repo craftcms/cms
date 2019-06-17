@@ -1237,11 +1237,27 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getSourceId(): int
+    public function getIsDraft(): bool
+    {
+        return !empty($this->draftId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsRevision(): bool
+    {
+        return !empty($this->revisionId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSourceId()
     {
         /** @var DraftBehavior|RevisionBehavior|null $behavior */
         $behavior = $this->getBehavior('draft') ?: $this->getBehavior('revision');
-        return $behavior ? $behavior->sourceId : $this->id;
+        return $behavior->sourceId ?? $this->id;
     }
 
     /**
@@ -1259,6 +1275,18 @@ abstract class Element extends Component implements ElementInterface
             ->anyStatus()
             ->select(['elements.uid'])
             ->scalar();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsUnsavedDraft(): bool
+    {
+        if (!$this->getIsDraft()) {
+            return false;
+        }
+        $sourceId = $this->getSourceId();
+        return !$sourceId || $sourceId == $this->id;
     }
 
     /**

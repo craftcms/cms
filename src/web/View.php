@@ -1453,7 +1453,7 @@ JS;
      */
     protected function registerAssetFlashes()
     {
-        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+        if (!Craft::$app->getRequest()->getIsCpRequest()) {
             return;
         }
 

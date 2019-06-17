@@ -74,7 +74,6 @@ use Symfony\Component\Yaml\Yaml;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\console\Controller;
 use yii\db\Exception;
 use yii\mutex\Mutex;
 
@@ -271,7 +270,7 @@ class TestSetup
      * @param string $preDefinedAppType
      * @return string
      */
-    public static function appClass(string $preDefinedAppType = '')
+    public static function appClass(string $preDefinedAppType = ''): string
     {
         if (!$preDefinedAppType) {
             $preDefinedAppType = self::appType();
@@ -329,6 +328,7 @@ class TestSetup
     }
 
     /**
+     * @todo the $mergeExistingConfig is not being used by us - deprecate it?
      * @param string $projectConfigFile
      * @param bool $mergeExistingConfig
      */
@@ -414,7 +414,6 @@ class TestSetup
      * @param array $serviceMap
      * @param string $appClass
      * @return MockObject
-     * @throws ReflectionException
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
     public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], string $appClass = '')
@@ -459,7 +458,6 @@ class TestSetup
      * @param CodeceptionTestCase $test
      * @param string $class
      * @return MockObject
-     * @throws ReflectionException
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
     public static function getMock(CodeceptionTestCase $test, string $class)

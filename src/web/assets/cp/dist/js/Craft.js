@@ -1,4 +1,4 @@
-/*!   - 2019-06-07 */
+/*!   - 2019-06-10 */
 (function($){
 
 /** global: Craft */
@@ -13176,6 +13176,10 @@ Craft.DraftEditor = Garnish.Base.extend(
                 data += '&draftId=' + this.settings.draftId
                     + '&draftName=' + encodeURIComponent(this.settings.draftName)
                     + '&draftNotes=' + encodeURIComponent(this.settings.draftNotes || '');
+
+                if (this.settings.propagateAll) {
+                    data += '&propagateAll=1';
+                }
             }
 
             return data;
@@ -13314,7 +13318,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             Craft.postActionRequest(this.settings.deleteDraftAction, {draftId: this.settings.draftId}, $.proxy(function(response, textStatus) {
                 if (textStatus === 'success') {
-                    window.location.href = this.settings.sourceEditUrl;
+                    window.location.href = this.settings.cpEditUrl;
                 }
             }, this))
         },
@@ -13376,12 +13380,15 @@ Craft.DraftEditor = Garnish.Base.extend(
             elementType: null,
             sourceId: null,
             siteId: null,
-            sourceEditUrl: null,
+            isLive: false,
+            cpEditUrl: null,
             draftId: null,
             revisionId: null,
             draftName: null,
             draftNotes: null,
+            propagateAll: false,
             canDeleteDraft: false,
+            canUpdateSource: false,
             saveDraftAction: null,
             deleteDraftAction: null,
             applyDraftAction: null,

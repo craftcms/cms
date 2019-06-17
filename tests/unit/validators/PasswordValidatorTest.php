@@ -202,7 +202,7 @@ class PasswordValidatorTest extends Unit
     /**
      * @return string
      */
-    public static function testReturn()
+    public static function testReturn(): string
     {
         return 'im a test';
     }

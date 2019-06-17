@@ -11,7 +11,7 @@ return [
     'categories/<groupHandle:{handle}>/new/<siteHandle:{handle}>' => 'categories/edit-category',
     'dashboard' => 'dashboard/index',
     'entries/<sectionHandle:{handle}>' => ['template' => 'entries'],
-    'entries/<section:{handle}>/new' => 'entries/create-entry',
+    'entries/<section:{handle}>/new' => 'entry-revisions/create-draft',
     'entries/<section:{handle}>/<entryId:\d+><slug:(?:-[^\/]*)?>' => 'entries/edit-entry',
     'globals' => 'globals',
     'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',

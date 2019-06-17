@@ -189,9 +189,9 @@ class ElementHelper
             ]);
         }
 
-        if ($element->id || $element->draftId || $element->revisionId) {
+        if (($sourceId = $element->getSourceId()) !== null) {
             $query->andWhere(['not', [
-                'elements.id' => $element->getSourceId(),
+                'elements.id' => $sourceId,
             ]]);
         }
 
@@ -314,7 +314,7 @@ class ElementHelper
     {
         /** @var Element $root */
         $root = ElementHelper::rootElement($element);
-        return $root->draftId || $root->revisionId;
+        return $root->getIsDraft() || $root->getIsRevision();
     }
 
     /**

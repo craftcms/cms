@@ -10,6 +10,7 @@ namespace crafttests\unit\helpers;
 use Codeception\Test\Unit;
 use Craft;
 use craft\errors\SiteNotFoundException;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\test\Craft as CraftTest;
 use UnitTester;
@@ -215,7 +216,7 @@ class UrlHelperTest extends Unit
     {
         if ($isNonCompletedUrl === true || !UrlHelper::isAbsoluteUrl($result)) {
             $oldResult = $result;
-            $result = $this->baseUrl . $oldResult;
+            $result = $this->baseUrlWithScript . '/'. $oldResult;
 
             $this->assertSame($result, UrlHelper::url($path, $params, $scheme, false));
             $result = $this->baseUrlWithScript . '?p=' . $oldResult;
@@ -249,13 +250,24 @@ class UrlHelperTest extends Unit
      */
     public function testBaseTesting()
     {
-        $this->assertSame($this->baseUrl, UrlHelper::baseUrl());
-        $this->assertSame($this->baseUrl, UrlHelper::baseSiteUrl());
-        $this->assertSame(rtrim($this->baseUrl, '/'), UrlHelper::host());
+        $baseSiteUrl = Craft::$app->getSites()->getCurrentSite()->getBaseUrl();
+        $host = rtrim($this->baseUrl, '/');
+        if (mb_strpos($host, '/index.php') !== false) {
+            $host = StringHelper::replace($host, '/index.php', '');
+        }
+
+        $this->assertSame($baseSiteUrl, UrlHelper::baseUrl());
+        $this->assertSame($baseSiteUrl, UrlHelper::baseSiteUrl());
+        $this->assertSame($host, UrlHelper::host());
 
         $this->assertSame('/', UrlHelper::baseCpUrl());
         $this->assertSame('/', UrlHelper::baseRequestUrl());
+
+        // @todo: This right?
         $this->assertSame('', UrlHelper::cpHost());
+
+        Craft::$app->getConfig()->getGeneral()->baseCpUrl = 'https://craftcms.com/test/test';
+        $this->assertSame('https://craftcms.com', UrlHelper::cpHost());
     }
 
     /**
@@ -297,8 +309,6 @@ class UrlHelperTest extends Unit
      * @param null $params
      * @param null $scheme
      * @param null $siteId
-     *
-     * @throws Exception
      */
     public function testSiteUrl($result, $path, $params = null, $scheme = null, $siteId = null)
     {
@@ -715,7 +725,7 @@ class UrlHelperTest extends Unit
 
         $this->baseUrl = $configSiteUrl;
 
-        // Add the entry script. This  is for the withScript variable.
+        // Add the entry script. This is for the withScript variable.
         if (strpos($this->entryScript, $configSiteUrl) === false) {
             $configSiteUrl .= $this->entryScript;
         }

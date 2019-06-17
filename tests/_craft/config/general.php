@@ -9,7 +9,7 @@
 $config = [
     'devMode' => true,
     'cpTrigger' => 'adminustriggerus',
-    'siteUrl' => 'https://test.craftcms.test/',
+    'siteUrl' => 'https://test.craftcms.test/index.php',
     'slugWordSeparator' => '--',
     'allowUppercaseInSlug' => true,
     'securityKey' => getenv('SECURITY_KEY')

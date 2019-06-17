@@ -2,8 +2,8 @@
 {% import "_includes/forms" as forms %}
 
 {% set isSingle = section.type == 'single' %}
-{% set isRevision = entry.revisionId is not empty %}
-{% set isDraft = entry.draftId is not empty %}
+{% set isDraft = entry.getIsDraft() %}
+{% set isRevision = entry.getIsRevision() %}
 
 {% set element = entry %}
 {% set saveDraftAction = 'entry-revisions/save-draft' %}
@@ -22,7 +22,7 @@
 
 {% block actionButton %}
     {{ parent() }}
-    {% if not isSingle and not isRevision and (canUpdateSource or canDeleteEntry) %}
+    {% if not isSingle and not isRevision and (canUpdateSource or canDeleteEntry) and not entry.isUnsavedDraft %}
         <div class="spacer"></div>
         <div>
             <div id="action-menubtn" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}"></div>
