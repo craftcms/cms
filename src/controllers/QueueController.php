@@ -100,7 +100,7 @@ class QueueController extends Controller
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
-        $this->requirePermission('accessCp');
+        $this->requirePermission('utility:queue-manager');
 
         $id = Craft::$app->getRequest()->getRequiredBodyParam('id');
         Craft::$app->getQueue()->retry($id);
@@ -118,7 +118,7 @@ class QueueController extends Controller
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
-        $this->requirePermission('accessCp');
+        $this->requirePermission('utility:queue-manager');
 
         $id = Craft::$app->getRequest()->getRequiredBodyParam('id');
         Craft::$app->getQueue()->release($id);
@@ -140,7 +140,7 @@ class QueueController extends Controller
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
-        $this->requirePermission('accessCp');
+        $this->requirePermission('utility:queue-manager');
 
         Craft::$app->getQueue()->releaseAll();
 
@@ -160,7 +160,7 @@ class QueueController extends Controller
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
-        $this->requirePermission('accessCp');
+        $this->requirePermission('utility:queue-manager');
 
         Craft::$app->getQueue()->retryAll();
 
@@ -177,7 +177,7 @@ class QueueController extends Controller
     public function actionGetJobDetails() : Response
     {
         $this->requireAcceptsJson();
-        $this->requirePermission('accessCp');
+        $this->requirePermission('utility:queue-manager');
 
         $jobId = Craft::$app->getRequest()->getBodyParam('jobId');
 
@@ -187,6 +187,7 @@ class QueueController extends Controller
     /**
      * Returns info about all the jobs in the queue.
      *
+     * @todo Not sure if we can use `utility:queue-manager` on this. Investigation needed.
      * @return Response
      */
     public function actionGetJobInfo(): Response
