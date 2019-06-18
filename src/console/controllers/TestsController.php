@@ -100,7 +100,6 @@ class TestsController extends Controller
 
             Craft::$app->set('mailer', $mailer);
 
-            // TODO: Is there a way to extract the MailSettings and TransportAdapter settings from Craft::$app->getMailer()
             $mailParams['settings'] = '';
 
             return $this->_testEmailSending($mailParams, $receiverEmail);
