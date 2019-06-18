@@ -70,6 +70,7 @@
 - Added `craft\behaviors\RevisionBehavior`.
 - Added `craft\console\CallableAction`.
 - Added `craft\console\Controller`.
+- Added `craft\console\controllers\ResaveController::saveElements()`.
 - Added `craft\console\ControllerTrait`.
 - Added `craft\console\Request::getToken()`.
 - Added `craft\controllers\PreviewController`.

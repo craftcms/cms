@@ -11,6 +11,7 @@
 - Added `craft\console\CallableAction`.
 - Added `craft\console\Controller::defineActions()`.
 - Added `craft\console\Controller::EVENT_DEFINE_ACTIONS`.
+- Added `craft\console\controllers\ResaveController::saveElements()`.
 - Added `craft\events\DefineConsoleActionsEvent`.
 - Added `craft\services\Users::canImpersonate()`.
 
