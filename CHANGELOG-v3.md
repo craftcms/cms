@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Craft might not match a domain to the proper site if it had a non-ASCII character in the host name.
+
 ## 3.1.31 - 2019-06-18
 
 ### Added
