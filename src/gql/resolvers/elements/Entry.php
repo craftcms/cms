@@ -15,7 +15,7 @@ class Entry extends BaseElement
      */
     public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        // If this is the begining of a resolver chain, start fresh
+        // If this is the beginning of a resolver chain, start fresh
         if ($source === null) {
             $query = EntryElement::find();
         // If not, get the prepared element query
