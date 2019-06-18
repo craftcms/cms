@@ -5,8 +5,13 @@
 ### Added
 - Added the “Impersonate users” permission. ([#3501](https://github.com/craftcms/cms/issues/3501))
 - Added the `mailer/test` command. ([#4020](https://github.com/craftcms/cms/issues/4020))
+- It’s now possible for plugins and modules to define custom actions on console controllers.
 - Added `craft\base\ElementInterface::getIsDraft()`.
 - Added `craft\base\ElementInterface::getIsRevision()`.
+- Added `craft\console\CallableAction`.
+- Added `craft\console\Controller::defineActions()`.
+- Added `craft\console\Controller::EVENT_DEFINE_ACTIONS`.
+- Added `craft\events\DefineConsoleActionsEvent`.
 - Added `craft\services\Users::canImpersonate()`.
 
 ### Fixed
