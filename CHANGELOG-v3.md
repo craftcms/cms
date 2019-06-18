@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased (3.2)
+## 3.2.0-beta.3 - 2019-06-18
 
 ### Added
 - Added the “Impersonate users” permission. ([#3501](https://github.com/craftcms/cms/issues/3501))
