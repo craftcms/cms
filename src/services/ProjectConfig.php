@@ -969,7 +969,7 @@ class ProjectConfig extends Component
                     $paths[$deferredEvent->path] = true;
                 }
 
-                $message = "The following config paths could not be processed succesfully:\n" . implode("\n", array_keys($paths));
+                $message = "The following config paths could not be processed successfully:\n" . implode("\n", array_keys($paths));
                 throw new OperationAbortedException($message);
             }
 

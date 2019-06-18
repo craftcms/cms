@@ -113,29 +113,37 @@ class Paginate extends BaseObject
      */
     public function getPageUrl(int $page)
     {
-        if ($page >= 1 && $page <= $this->totalPages) {
-            $path = $this->getBasePath();
-            $params = [];
-
-            if ($page != 1) {
-                $pageTrigger = Craft::$app->getConfig()->getGeneral()->getPageTrigger();
-
-                // Is this query string-based pagination?
-                if (strpos($pageTrigger, '?') === 0) {
-                   $params = [trim($pageTrigger, '?=') => $page];
-                } else {
-                    if ($path) {
-                        $path .= '/';
-                    }
-
-                    $path .= $pageTrigger . $page;
-                }
-            }
-
-            return UrlHelper::url($path, $params);
+        if ($page < 1 || $page > $this->totalPages) {
+            return null;
         }
 
-        return null;
+        $path = $this->getBasePath();
+        $params = null;
+
+        if ($page != 1) {
+            $pageTrigger = Craft::$app->getConfig()->getGeneral()->getPageTrigger();
+
+            // Is this query string-based pagination?
+            if (strpos($pageTrigger, '?') === 0) {
+                $params = [trim($pageTrigger, '?=') => $page];
+            } else {
+                if ($path) {
+                    $path .= '/';
+                }
+
+                $path .= $pageTrigger . $page;
+            }
+        }
+
+        // Build the URL with the same query string as the current request
+        $url = UrlHelper::url($path, Craft::$app->getRequest()->getQueryStringWithoutPath());
+
+        // Then add the page param if there is one
+        if ($params !== null) {
+            $url = UrlHelper::urlWithParams($url, $params);
+        }
+
+        return $url;
     }
 
     /**

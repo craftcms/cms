@@ -590,17 +590,11 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->groupId) {
-            $userIds = (new Query())
-                ->select(['userId'])
-                ->from([Table::USERGROUPS_USERS])
-                ->where(Db::parseParam('groupId', $this->groupId))
-                ->column();
-
-            if (!empty($userIds)) {
-                $this->subQuery->andWhere(['elements.id' => $userIds]);
-            } else {
-                return false;
-            }
+            $this->subQuery->andWhere(['exists', (new Query())
+                ->from(['ugu' => Table::USERGROUPS_USERS])
+                ->where('[[elements.id]] = [[ugu.userId]]')
+                ->andWhere(Db::parseParam('groupId', $this->groupId))
+            ]);
         }
 
         if ($this->email) {

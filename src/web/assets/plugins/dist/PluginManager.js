@@ -192,8 +192,11 @@
             }
         }, {
             normalizeUserKey: function(key) {
-                if (typeof key !== 'string') {
+                if (typeof key !== 'string' || key === '') {
                     return '';
+                }
+                if (key[0] === '$') {
+                    return key;
                 }
                 return key.replace(/.{4}/g, '$&-').substr(0, 29).toUpperCase();
             }
@@ -236,7 +239,7 @@
                     clearTimeout(this.updateTimeout);
                 }
                 var key = this.getKey();
-                if (key.length === 0 || key.length === 24) {
+                if (key.length === 0 || key.length === 24 || (key.length > 1 && key[0] === '$')) {
                     // normalize
                     var userKey = Craft.PluginManager.normalizeUserKey(key);
                     this.$keyInput
