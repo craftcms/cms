@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.31 - 2019-06-18
 
 ### Added
 - It’s now possible to set plugin license keys to environment variables using the `$VARIABLE_NAME` syntax. ([#4393](https://github.com/craftcms/cms/issues/4393))
