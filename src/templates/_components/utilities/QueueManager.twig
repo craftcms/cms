@@ -7,6 +7,18 @@
     </div>
     <div v-else>
 
+        <div>
+        <div class="right">
+            <a class="btn submit">
+                Retry all
+            </a>
+
+            <a class="btn submit">
+                Release all
+            </a>
+        </div>
+        </div>
+
         <table class="data fullwidth collapsible" v-if="jobs">
             <thead>
 
@@ -26,8 +38,7 @@
                         <div v-if="job.status == 1">Pending</div>
                         <div v-else-if="job.status == 2">Reserved</div>
                         <div v-else-if="job.status == 3">Done</div>
-                        <div v-else-if="job.status == 4">Failed</div>
-
+                        <div v-else-if="job.status == 4" class="error">Failed</div>
                     </td>
                     <td><a class="btn" @click="retryJob(job)">Retry</a> </td>
                     <td><a class="btn" @click="releaseJob(job)">Cancel</a> </td>

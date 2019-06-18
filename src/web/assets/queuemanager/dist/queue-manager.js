@@ -10,13 +10,12 @@ new Vue({
     },
 
     mounted() {
-
         this.updateJobs().then(this.handleDataResponse)
 
-        window.setInterval(this.silentUpdateJobs, 2500);
+        window.setInterval(this.reIndexJobs, 2500);
     },
     methods: {
-        silentUpdateJobs() {
+        reIndexJobs() {
             this.updateJobs().then(this.handleDataResponse)
         },
         updateJobs() {
@@ -35,17 +34,36 @@ new Vue({
             this.loading = false
         },
 
+        retryAll() {
+            if (confirm('Are you sure?')) {
+                this.craftPost('queue/retry-all', {id: job.id}).then(function(response) {
+                    Craft.cp.displayNotice('All jobs will be retried. They will soon show progress.')
+                })
+            }
+        },
+        releaseAll() {
+            if (confirm('Are you sure?')) {
+                this.craftPost('queue/release-all', {id: job.id}).then(function(response) {
+                    this.jobs = []
+                    Craft.cp.displayNotice('All jobs released')
+                })
+            }
+        },
         retryJob(job) {
-            this.craftPost('queue/retry', {id: job.id}).then(function(response) {
-                Craft.cp.displayNotice('Job retried. It will be updated soon.')
-            })
+            if (confirm('Are you sure?')) {
+                this.craftPost('queue/retry', {id: job.id}).then(function(response) {
+                    Craft.cp.displayNotice('Job retried. It will be updated soon.')
+                })
+            }
         },
 
         releaseJob(job) {
-            this.craftPost('queue/release', {id: job.id}).then(response => {
-                this.quickRemoveJob(job.id)
-                Craft.cp.displayNotice('Job released')
-            })
+            if (confirm('Are you sure?')) {
+                this.craftPost('queue/release', {id: job.id}).then(response => {
+                    this.quickRemoveJob(job.id)
+                    Craft.cp.displayNotice('Job released')
+                })
+            }
         },
 
         quickRemoveJob(jobId) {
