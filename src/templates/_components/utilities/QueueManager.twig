@@ -23,13 +23,14 @@
                     <td><code>[[job.progress]]/ 100</code></td>
                     <td><code>[[job.ttr]]</code></td>
                     <td>
-                        <div v-if="job.fail">Failed</div>
-                        <div v-else-if="!job.timeUpdated">Pending</div>
-                        <div v-else>Reserved</div>
+                        <div v-if="job.status == 1">Pending</div>
+                        <div v-else-if="job.status == 2">Reserved</div>
+                        <div v-else-if="job.status == 3">Done</div>
+                        <div v-else-if="job.status == 4">Failed</div>
 
                     </td>
-                    <td><a class="btn" @click="retry(job)">Retry</a> </td>
-                    <td><a class="btn">Cancel</a> </td>
+                    <td><a class="btn" @click="retryJob(job)">Retry</a> </td>
+                    <td><a class="btn" @click="releaseJob(job)">Cancel</a> </td>
                     <div>
 
                     </div>

@@ -5,21 +5,28 @@ new Vue({
     data() {
         return {
             loading: true,
-            jobs: []
+            jobs: [],
         };
     },
 
     mounted() {
-        this.updateJobs()
 
-        window.setInterval(this.updateJobs, 2500);
+        this.updateJobs().then(this.handleDataResponse)
+
+        window.setInterval(this.silentUpdateJobs, 2500);
     },
     methods: {
-        updateJobs(notify = false) {
-            axios.get(Craft.getActionUrl('queue/get-job-info')).then(this.handleDataResponse, function(response) {
-                if (notify) {
-                    Craft.cp.displayError(response.message)
-                }
+        silentUpdateJobs() {
+            this.updateJobs().then(this.handleDataResponse)
+        },
+        updateJobs() {
+            return new Promise(function(resolve, reject) {
+                axios.get(Craft.getActionUrl('queue/get-job-info')).then(function(response) {
+                    resolve(response)
+                }, function(response) {
+                    Craft.cp.displayError(response.response.data.error)
+                    reject(response)
+                })
             })
         },
 
@@ -28,15 +35,31 @@ new Vue({
             this.loading = false
         },
 
-        retry(job) {
-            Craft.postActionRequest('queue/retry', {id: job.id}, this.updateJobs)
+        retryJob(job) {
+            this.craftPost('queue/retry', {id: job.id}).then(function(response) {
+                Craft.cp.displayNotice('Job retried')
+            })
         },
-        cancel() {
+        releaseJob(job) {
+            this.craftPost('queue/release', {id: job.id}).then(function(response) {
+                Craft.cp.displayNotice('Job released')
+            })
+        },
+
+        quickRemoveJob(jobId) {
 
         },
 
-        replaceJob() {
-
+        /**
+         * Helper for Craft.postActionRequest that incorporates the Promise<> lib.
+         * @param action
+         * @param params
+         * @returns {Promise<any>}
+         */
+        craftPost(action, params) {
+            return new Promise(function(resolve, reject) {
+                Craft.postActionRequest(action, params, resolve)
+            })
         }
     }
 })
