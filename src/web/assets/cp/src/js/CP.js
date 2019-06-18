@@ -1056,23 +1056,6 @@ QueueHUD.Job = Garnish.Base.extend(
                             title: info.error
                         }).appendTo(this.$statusContainer);
 
-                     /**
-                      * TODO: Remove....
-                      * var $actionBtn = $('<a class="menubtn error" title="' + Craft.t('app', 'Options') + '"/>').appendTo(this.$statusContainer);
-                        $(
-                            '<div class="menu">' +
-                            '<ul>' +
-                            '<li><a data-action="retry">' + Craft.t('app', 'Try again') + '</a></li>' +
-                            '<li><a data-action="release">' + Craft.t('app', 'Cancel') + '</a></li>' +
-                            '</ul>' +
-                            '</div>'
-                        ).appendTo(this.$statusContainer);
-
-                        new Garnish.MenuBtn($actionBtn, {
-                            onOptionSelect: $.proxy(this, 'performErrorAction')
-                        });
-**/
-
                         break;
                     }
                 }
