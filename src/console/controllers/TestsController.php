@@ -341,7 +341,7 @@ class TestsController extends Controller
         if ($message->send()) {
             $this->stdout('Email sent successfully! Check your inbox.'.PHP_EOL.PHP_EOL);
         } else {
-            $this->stderr('There was an error testing your email settings.'.PHP_EOL.PHP_EOL);
+            $this->stderr('There was an error testing your email settings. Please check the Craft log files.'.PHP_EOL.PHP_EOL);
         }
 
         return ExitCode::OK;
