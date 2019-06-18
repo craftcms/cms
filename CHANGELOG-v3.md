@@ -3,8 +3,10 @@
 ## Unreleased (3.2)
 
 ### Added
+- Added the “Impersonate users” permission. ([#3501](https://github.com/craftcms/cms/issues/3501))
 - Added `craft\base\ElementInterface::getIsDraft()`.
 - Added `craft\base\ElementInterface::getIsRevision()`.
+- Added `craft\services\Users::canImpersonate()`.
 - Added the `tests/email-settings` console command to test your email settings ([#4020](https://github.com/craftcms/cms/issues/4020))
 
 ### Fixed
