@@ -307,6 +307,12 @@ class Cp extends Component
             'label' => Craft::t('app', 'Tags')
         ];
 
+        $label = Craft::t('app', 'GraphQL');
+        $settings[$label]['graphql/tokens'] = [
+            'icon' => '@app/icons/plugin.svg',
+            'label' => Craft::t('app', 'Tokens')
+        ];
+
         $label = Craft::t('app', 'Plugins');
 
         $pluginsService = Craft::$app->getPlugins();

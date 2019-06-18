@@ -7,6 +7,8 @@
 
 namespace craft\services;
 
+use Craft;
+use craft\db\Table;
 use craft\errors\GqlException;
 use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlQueriesEvent;
@@ -35,6 +37,9 @@ use craft\gql\types\generators\GlobalSetType;
 use craft\gql\types\generators\MatrixBlockType;
 use craft\gql\types\generators\UserType;
 use craft\gql\types\Query;
+use craft\models\GqlToken;
+use craft\models\Section;
+use craft\records\GqlToken as GqlTokenRecord;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
 use yii\base\Component;
@@ -103,7 +108,7 @@ class Gql extends Component
                 'directives' => $this->_loadGqlDirectives(),
             ];
 
-            if (!$validateSchema ){
+            if (!$validateSchema) {
                 $this->_schema = new Schema($schemaConfig);
             } else {
                 // @todo: allow plugins to register their generators
@@ -127,6 +132,45 @@ class Gql extends Component
     }
 
     /**
+     * Return an array of all tokens.
+     *
+     * @return array
+     */
+    public function getTokens(): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns all of the known GQL permissions, sorted by category.
+     *
+     * @return array
+     */
+    public function getAllPermissions(): array
+    {
+        $permissions = [];
+
+        // Entries
+        // ---------------------------------------------------------------------
+        $permissions = array_merge($permissions, $this->_getSectionPermissions());
+
+        // Assets
+        // ---------------------------------------------------------------------
+        $permissions = array_merge($permissions, $this->_getVolumePermissions());
+
+        // Global Sets
+        // ---------------------------------------------------------------------
+        $permissions = array_merge($permissions, $this->_getGlobalSetPermissions());
+
+        // Users
+        // ---------------------------------------------------------------------
+        $permissions = array_merge($permissions, $this->_getUserPermissions());
+
+        return $permissions;
+
+    }
+
+    /**
      * Flush all GQL caches, registries and loaders.
      *
      * @return void
@@ -136,6 +180,69 @@ class Gql extends Component
         $this->_schema = null;
         TypeLoader::flush();
         GqlEntityRegistry::flush();
+    }
+
+    /**
+     * Return a GQL token by its id.
+     *
+     * @param int $tokenId
+     * @return GqlToken|null
+     */
+    public function getTokenById(int $tokenId)
+    {
+        $tokenRow = $this->_createTokenQuery()->where(['id' => $tokenId])->one();
+        return $tokenRow ? new GqlToken($tokenRow) : null;
+    }
+
+    /**
+     * Return a GQL token by its access token.
+     *
+     * @param string $accessToken
+     * @return GqlToken|null
+     */
+    public function getTokenByAccessToken(string $accessToken)
+    {
+        $tokenRow = $this->_createTokenQuery()->where(['accessToken' => $accessToken])->one();
+        return $tokenRow ? new GqlToken($tokenRow) : null;
+    }
+
+    /**
+     * Save a GQL token.
+     *
+     * @param GqlToken $token the token to save
+     * @param bool $runValidation Whether the token should be validated
+     * @return bool Whether the token was saved successfully
+     * @throws \yii\base\Exception
+     */
+    public function saveToken(GqlToken $token, $runValidation = true): bool
+    {
+        $isNewToken = !$token->id;
+
+        if ($isNewToken) {
+            $token->accessToken = Craft::$app->getSecurity()->generateRandomString(32);
+        }
+
+        if ($runValidation && !$token->validate()) {
+            Craft::info('Token not saved due to validation error.', __METHOD__);
+            return false;
+        }
+
+        if ($isNewToken) {
+            $tokenRecord = new GqlTokenRecord();
+        } else {
+            $tokenRecord = GqlTokenRecord::findOne($token->id) ?: new GqlTokenRecord();
+        }
+
+        $tokenRecord->name = $token->name;
+        $tokenRecord->enabled = $token->enabled;
+        $tokenRecord->expiryDate = $token->expiryDate;
+        $tokenRecord->permissions = $token->permissions;
+
+        if ($isNewToken) {
+            $tokenRecord->accessToken = $token->accessToken;
+        }
+
+        return $tokenRecord->save();
     }
 
     // Private Methods
@@ -228,4 +335,142 @@ class Gql extends Component
 
         return $directives;
     }
+
+    /**
+     * Return section permissions.
+     *
+     * @return array
+     */
+    private function _getSectionPermissions(): array
+    {
+        $permissions = [];
+
+        $sortedEntryTypes = [];
+
+        foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
+            $sortedEntryTypes[$entryType->sectionId][] = $entryType;
+        }
+
+        if (!empty($sortedEntryTypes)) {
+            $label = Craft::t('app', 'Entries');
+
+            $sectionPermissions = [];
+
+            foreach (Craft::$app->getSections()->getAllSections() as $section) {
+                $suffix = 'sections.' . $section->uid;
+                $nested = ['label' => Craft::t('app', 'View section - {section}', ['section' => Craft::t('site', $section->name)])];
+
+                if ($section->type != Section::TYPE_SINGLE) {
+                    foreach ($sortedEntryTypes[$section->id] as $entryType) {
+                        $nested['nested'][$suffix . '.entryTypes.' . $entryType->uid . '.view'] = ['label' => Craft::t('app', 'View entry type - {entryType}', ['entryType' => Craft::t('site', $entryType->name)])];
+                    }
+                }
+
+                $sectionPermissions[$suffix . '.view'] = $nested;
+            }
+
+            $permissions[$label] = $sectionPermissions;
+        }
+
+        return $permissions;
+    }
+
+    /**
+     * Return volume permissions.
+     *
+     * @return array
+     */
+    private function _getVolumePermissions(): array
+    {
+        $permissions = [];
+
+        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+
+        if (!empty($volumes)) {
+            $label = Craft::t('app', 'Assets');
+            $volumePermissions = [];
+
+            foreach ($volumes as $volume) {
+                $suffix = 'volumes.' . $volume->uid;
+                $volumePermissions[$suffix . '.view'] = ['label' => Craft::t('app', 'View volume - {volume}', ['volume' => Craft::t('site', $volume->name)])];
+            }
+
+            $permissions[$label] = $volumePermissions;
+        }
+
+        return $permissions;
+    }
+
+    /**
+     * Return volume permissions.
+     *
+     * @return array
+     */
+    private function _getGlobalSetPermissions(): array
+    {
+        $permissions = [];
+
+        $globalSets = Craft::$app->getGlobals()->getAllSets();
+
+        if (!empty($globalSets)) {
+            $label = Craft::t('app', 'Globals');
+            $globalSetPermissions = [];
+
+            foreach ($globalSets as $globalSet) {
+                $suffix = 'globalSets.' . $globalSet->uid;
+                $globalSetPermissions[$suffix . '.view'] = ['label' => Craft::t('app', 'View global set - {globalSet}', ['globalSet' => Craft::t('site', $globalSet->name)])];
+            }
+
+            $permissions[$label] = $globalSetPermissions;
+        }
+
+        return $permissions;
+    }
+    /**
+     * Return volume permissions.
+     *
+     * @return array
+     */
+    private function _getUserPermissions(): array
+    {
+        $permissions = [];
+
+        $userGroups = Craft::$app->getUserGroups()->getAllGroups();
+
+        $label = Craft::t('app', 'Users');
+        $userPermissions = ['userGroups.admin.view' => ['label' => Craft::t('app', 'View user group - Admin')]];
+
+        foreach ($userGroups as $userGroup) {
+            $suffix = 'userGroups.' . $userGroup->uid;
+            $userPermissions[$suffix . '.view'] = ['label' => Craft::t('app', 'View user group - {userGroup}', ['userGroup' => Craft::t('site', $userGroup->name)])];
+        }
+
+        $permissions[$label] = $userPermissions;
+
+        return $permissions;
+    }
+
+    /**
+     * Returns a DbCommand object prepped for retrieving volumes.
+     *
+     * @return \craft\db\Query
+     */
+    private function _createTokenQuery(): Query
+    {
+        $query = (new Query())
+            ->select([
+                'id',
+                'name',
+                'accessToken',
+                'enabled',
+                'expiryDate',
+                'lastUsed',
+                'settings',
+                'uid'
+            ])
+            ->from([Table::GQLTOKENS]);
+
+        return $query;
+    }
+
 }

@@ -1,0 +1,53 @@
+{% extends "_layouts/cp" %}
+{% set title = "GraphQL tokens"|t('app') %}
+
+{% requireEdition CraftPro %}
+
+{% block content %}
+    {% set tokens = craft.app.gql.tokens %}
+
+    <p id="notokens"{% if tokens|length %} class="hidden"{% endif %}>
+        {{ "No tokens exist yet."|t('app') }}
+    </p>
+
+    {% if tokens|length %}}
+        <table id="tokens" class="data fullwidth collapsible">
+            <thead>
+                <th scope="col">{{ "Token name"|t('app') }}</th>
+                <th scope="col">{{ "Created"|t('app') }}</th>
+                <th scope="col">{{ "Last used"|t('app') }}</th>
+                <th scope="col">{{ "Expires"|t('app') }}</th>
+                <th scope="col">{{ "View token"|t('app') }}</th>
+                <th scope="col">{{ "Enabled"|t('app') }}</th>
+            </thead>
+            <tbody>
+                {% for token in tokens %}
+                    <tr data-id="{{ token.id }}">
+                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/graphql/tokens/' ~ token.id) }}">{{ token.name }}</a></th>
+                        <td data-title="{{ 'Created'|t('app') }}"><code>{{ token.created }}</code></td>
+                        <td data-title="{{ 'Last used'|t('app') }}">{{ token.lastUsed}}</td>
+                        <td data-title="{{ 'Expires'|t('app') }}"><code>{{ token.expires }}</code></td>
+                        <td class="thin" data-title="{{ 'View token'|t('app') }}"><OK></OK></td>
+                        <td class="thin" data-title="{{ 'Enabled'|t('app') }}">{% if token.enabled %}<div data-icon="check"></div>{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    {% endif %}
+
+    <div class="buttons">
+        <a class="btn submit add icon" href="{{ url('settings/graphql/tokens/new') }}">{{ "New token"|t('app') }}</a>
+    </div>
+{% endblock %}
+
+
+{% js on ready %}
+    new Craft.AdminTable({
+        tableSelector: '#tokens',
+        noItemsSelector: '#notokens',
+        minItems: 1,
+        sortable: false,
+        deleteAction: 'gql/delete-token',
+    });
+{% endjs %}

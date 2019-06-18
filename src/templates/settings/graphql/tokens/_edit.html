@@ -1,0 +1,114 @@
+{% extends "_layouts/cp" %}
+
+{% set fullPageForm = true %}
+
+{% import "_includes/forms" as forms %}
+
+{% macro permissionList(token, permissions, id, disabled) %}
+    {% from "_includes/forms" import checkbox %}
+    {% from _self import permissionList %}
+
+    <ul{% if id %} id="{{ id|replace(':', '-') }}"{% endif %}>
+        {% for permissionName, props in permissions %}
+            {% if token.hasPermission(permissionName) %}
+                {% set checked = true %}
+            {% else %}
+                {% set checked = false %}
+            {% endif %}
+
+            <li>
+                {{ checkbox({
+                    label: props.label|e,
+                    name: 'permissions[]',
+                    value: permissionName,
+                    checked: checked,
+                    disabled: disabled
+                }) }}
+
+                {% if props.info ?? false %}
+                    <div class="info">{{ props.info }}</div>
+                {% endif %}
+
+                {% if props.warning ?? false %}
+                    <div class="info warning">{{ props.warning }}</div>
+                {% endif %}
+
+                {% if props.nested ?? false %}
+                    {{ permissionList(token, props.nested, permissionName~'-nested', not checked) }}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% from _self import permissionList %}
+
+{% block content %}
+    <input type="hidden" name="action" value="gql/save-token">
+    {{ redirectInput('settings/graphql/tokens') }}
+    {% if token.id %}<input type="hidden" name="tokenId" value="{{ token.id }}">{% endif %}
+
+    <div id="token-settings">
+        {{ forms.textField({
+            first: true,
+            label: "Name"|t('app'),
+            instructions: "What this token will be called in the CP."|t('app'),
+            id: 'name',
+            name: 'name',
+            value: token.name,
+            errors: token.getErrors('name'),
+            autofocus: true,
+            required: true,
+        }) }}
+
+        {{ forms.textField({
+            first: true,
+            label: "Token"|t('app'),
+            instructions: "The access token"|t('app'),
+            id: 'accessToken',
+            name: 'accessToken',
+            value: token.accessToken,
+            errors: token.getErrors('accessToken'),
+            readonly: true,
+            placeholder: "This is generated automatically"|t('app')
+        }) }}
+
+
+        {{ forms.dateTimeField({
+            label: "Expiry date"|t('app'),
+            id: 'expiryDate',
+            name: 'expiryDate',
+            instructions: "Token's expiry date."|t('app'),
+            value: (token.expires ? token.expires : null),
+            errors: token.getErrors('expires')
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Enabled'|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: token.enabled,
+        }) }}
+
+        {# Require Craft Pro for this? #}
+
+        {% do view.registerTranslations('app', [
+            "Select All",
+            "Deselect All",
+        ]) %}
+
+        {% do view.registerAssetBundle("craft\\web\\assets\\userpermissions\\UserPermissionsAsset") %}
+
+        {% set gqlPermissions = craft.app.gql.allPermissions %}
+
+        {% for category, catPermissions in craft.app.gql.allPermissions %}
+        <div class="user-permissions">
+            <h3>{{ category }}</h3>
+            <div class="select-all"></div>
+
+            {{ permissionList(token, catPermissions) }}
+        </div>
+        {% endfor %}
+
+    </div>
+{% endblock %}

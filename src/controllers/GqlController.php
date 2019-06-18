@@ -12,12 +12,14 @@ use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\MailerHelper;
 use craft\helpers\UrlHelper;
 use craft\mail\Mailer;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\TransportAdapterInterface;
+use craft\models\GqlToken;
 use craft\models\MailSettings;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
@@ -29,12 +31,14 @@ use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
+Craft::$app->requireEdition(Craft::Pro);
+
 /**
  * The GqlController class is a controller that handles various GraphQL related tasks.
  * @TODO Docs
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.3
  */
 class GqlController extends Controller
 {
@@ -48,12 +52,11 @@ class GqlController extends Controller
      */
     public function init()
     {
-        // All system setting actions require an admin
-//        $this->requireAdmin();
+
     }
 
     /**
-     * Shows the general settings form.
+     * Perform a GQL query.
      *
      * @return Response
      */
@@ -78,5 +81,51 @@ class GqlController extends Controller
         }
 
         return $this->asJson($result);
+    }
+
+    public function actionSaveToken()
+    {
+        $this->requirePostRequest();
+        $this->requireAdmin();
+
+        $gqlService = Craft::$app->getGql();
+        $request = Craft::$app->getRequest();
+
+        $tokenId = $request->getBodyParam('tokenId');
+
+        if ($tokenId) {
+            $token = $gqlService->getTokenById($tokenId);
+
+            if (!$token) {
+                throw new NotFoundHttpException('Token not found');
+            }
+        } else {
+            $token = new GqlToken();
+        }
+
+        $token->name = $request->getBodyParam('name');
+        $token->enabled = $request->getBodyParam('enabled');
+        $token->permissions = $request->getBodyParam('permissions');
+
+        if (($expiryDate = $request->getBodyParam('expiryDate')) !== null) {
+            $token->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
+        }
+
+        $session = Craft::$app->getSession();
+
+        if (!$gqlService->saveToken($token)) {
+            $session->setError(Craft::t('app', 'Couldn’t save token.'));
+
+            // Send the volume back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'token' => $token
+            ]);
+
+            return null;
+        }
+
+        $session->setNotice(Craft::t('app', 'Token saved.'));
+
+        return $this->redirectToPostedUrl();
     }
 }
