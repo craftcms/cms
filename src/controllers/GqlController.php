@@ -59,9 +59,7 @@ class GqlController extends Controller
      */
     public function actionIndex(): Response
     {
-        $start = microtime(true);
-        // todo remove timers and debug parameter
-        $schema = Craft::$app->getGql()->getSchema(Craft::$app->getRequest()->getParam('debug', false));
+        $schema = Craft::$app->getGql()->getSchema(Craft::$app->getConfig()->getGeneral()->devMode);
 
         if (Craft::$app->request->isPost && $query=Craft::$app->request->post('query')) {
             $input = $query;
@@ -78,10 +76,6 @@ class GqlController extends Controller
         } else {
             throw new BadRequestHttpException('Request missing required param');
         }
-
-        $end = microtime(true);
-
-        Craft::error('[GQL] Total time: ' . ($end - $start));
 
         return $this->asJson($result);
     }
