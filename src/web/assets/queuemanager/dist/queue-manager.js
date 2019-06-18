@@ -10,20 +10,32 @@ new Vue({
     },
 
     mounted() {
-        axios.get(Craft.getActionUrl('queue/get-full-jobs')).then(this.handleDataResponse, function(response) {
-            Craft.cp.displayError(response.message)
-        })
+        this.updateJobs()
+
+        window.setInterval(this.updateJobs, 2500);
     },
     methods: {
+        updateJobs(notify = false) {
+            axios.get(Craft.getActionUrl('queue/get-job-info')).then(this.handleDataResponse, function(response) {
+                if (notify) {
+                    Craft.cp.displayError(response.message)
+                }
+            })
+        },
+
         handleDataResponse(response) {
             this.jobs = response.data
             this.loading = false
         },
 
-        retry() {
-
+        retry(job) {
+            Craft.postActionRequest('queue/retry', {id: job.id}, this.updateJobs)
         },
         cancel() {
+
+        },
+
+        replaceJob() {
 
         }
     }
