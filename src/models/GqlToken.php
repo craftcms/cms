@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use craft\base\Model;
+use craft\helpers\Json;
 use craft\records\GqlToken as GqlTokenRecord;
 use craft\validators\UniqueValidator;
 
@@ -65,6 +66,15 @@ class GqlToken extends Model
     // Public Methods
     // =========================================================================
 
+    public function __construct($config = [])
+    {
+        parent::__construct($config);
+
+        if (is_string($this->permissions)) {
+            $this->permissions = Json::decodeIfJson($this->permissions);
+        }
+    }
+
     /**
      * @inheritdoc
      */
@@ -110,6 +120,6 @@ class GqlToken extends Model
      */
     public function hasPermission(string $permissionName): bool
     {
-        return $this->enabled && isset($this->permissions[$permissionName]);
+        return $this->enabled && in_array($permissionName, $this->permissions);
     }
 }
