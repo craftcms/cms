@@ -128,6 +128,7 @@
 - It’s now possible to pass a `behaviors` key to the `$newAttributes` argument of `craft\services\Elements::duplicateElement()`, to preattach behaviors to the cloned element before it’s saved.
 
 ### Removed
+- Removed the Search Indexes utility. ([#3698](https://github.com/craftcms/cms/issues/3698))
 - Removed the `--batch-size` option from `resave/*` actions.
 - Removed the `craft.entryRevisions` Twig component.
 - Removed `craft\events\VersionEvent`.
