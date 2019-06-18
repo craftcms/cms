@@ -7,21 +7,19 @@
 
 namespace craft\console;
 
-
-use craft\base\ConsoleControllerTrait;
-use \yii\console\Controller as BaseConsoleController;
+use yii\console\Controller as YiiController;
 
 /**
  * Base console controller
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
-class Controller extends BaseConsoleController
+class Controller extends YiiController
 {
     // Traits
     // =========================================================================
 
-    use ConsoleControllerTrait;
+    use ControllerTrait;
 }

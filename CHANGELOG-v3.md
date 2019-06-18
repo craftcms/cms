@@ -4,10 +4,10 @@
 
 ### Added
 - Added the “Impersonate users” permission. ([#3501](https://github.com/craftcms/cms/issues/3501))
+- Added the `mailer/test` command. ([#4020](https://github.com/craftcms/cms/issues/4020))
 - Added `craft\base\ElementInterface::getIsDraft()`.
 - Added `craft\base\ElementInterface::getIsRevision()`.
 - Added `craft\services\Users::canImpersonate()`.
-- Added the `tests/email-settings` console command to test system email settings. ([#4020](https://github.com/craftcms/cms/issues/4020))
 
 ### Fixed
 - Fixed a bug where entry drafts weren’t getting updated slug values once their initial slug had been saved, if their entry type had a custom title format. ([#4373](https://github.com/craftcms/cms/issues/4373))

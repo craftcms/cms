@@ -18,7 +18,8 @@
 - Added the “Temp Uploads Location” system setting (available from Settings → Assets → Settings), which makes it possible to choose the volume and path that temporary asset uploads should be stored. ([#4010](https://github.com/craftcms/cms/issues/4010))
 - Added the `maxRevisions` config setting. ([#926](https://github.com/craftcms/cms/issues/926))
 - Added the `purgeUnsavedDraftsDuration` config setting, which determines how long unsaved drafts should be allowed to exist before getting deleted via garbage collection.
-- Added `editImagesInVolume` permission. ([#3349](https://github.com/craftcms/cms/issues/3349))
+- Added the “Edit images” permission. ([#3349](https://github.com/craftcms/cms/issues/3349))
+- Added the “Impersonate users” permission. ([#3501](https://github.com/craftcms/cms/issues/3501))
 - Added the `drafts`, `draftId`, `draftOf`, `draftCreator`, `revisions`, `revisionId`, `revisionOf`, and `revisionCreator` element query params.
 - The `site` element query params now support passing multiple site handles, or `'*'`, to query elements across multiple sites at once. ([#2854](https://github.com/craftcms/cms/issues/2854))
 - Relational fields now have a “Validate related elements” setting, which ensures that the related elements pass validation before the source element can be saved with them selected. ([#4095](https://github.com/craftcms/cms/issues/4095))
@@ -32,6 +33,7 @@
 - Added the `attr()` Twig function, which can generate a list of HTML/XML attributes. ([#4237](https://github.com/craftcms/cms/pull/4237))
 - Added the `|withoutKey` Twig filter.
 - The `index-assets/*` commands now support a `--create-missing-assets=0` option, which prevents Craft from creating asset records when they don’t exist yet, and offers an opportunity to fix the location of any asset records that are missing their associated files, when the filename matches one of the files missing an index.
+- Added the `mailer/test` command. ([#4020](https://github.com/craftcms/cms/issues/4020))
 - Added the `tests/setup` command, which generates a test suite for the current Craft project.
 - Jobs can new set progress labels, which will be shown below their description and progress bar in the queue HUD. ([#1931](https://github.com/craftcms/cms/pull/1931))
 - Added the `_layouts/element` template, which can be extended by element edit pages that wish to support drafts, revisions, and content previewing.
@@ -65,6 +67,8 @@
 - Added `craft\base\SortableFieldInterface`, which can be implemented by field classes that should be sortable in element indexes.
 - Added `craft\behaviors\DraftBehavior`.
 - Added `craft\behaviors\RevisionBehavior`.
+- Added `craft\console\Controller`.
+- Added `craft\console\ControllerTrait`.
 - Added `craft\console\Request::getToken()`.
 - Added `craft\controllers\PreviewController`.
 - Added `craft\errors\MissingAssetException`.
@@ -80,6 +84,7 @@
 - Added `craft\services\Elements::propagateElements()` along with `EVENT_BEFORE_PROPAGATE_ELEMENTS`, `EVENT_AFTER_PROPAGATE_ELEMENTS`, `EVENT_BEFORE_PROPAGATE_ELEMENT`, and `EVENT_AFTER_PROPAGATE_ELEMENT` events. ([#4139](https://github.com/craftcms/cms/issues/4139))
 - Added `craft\services\Elements::resaveElements()` along with `EVENT_BEFORE_RESAVE_ELEMENTS`, `EVENT_AFTER_RESAVE_ELEMENTS`, `EVENT_BEFORE_RESAVE_ELEMENT`, and `EVENT_AFTER_RESAVE_ELEMENT` events. ([#3482](https://github.com/craftcms/cms/issues/3482))
 - Added `craft\services\Revisions`, accessible via `Craft::$app->revisions`.
+- Added `craft\services\Users::canImpersonate()`.
 - Added `craft\web\Request::getIsLoginRequest()` and `craft\console\Request::getIsLoginRequest()`.
 - Added `craft\web\UrlManager::$checkToken`.
 - Added the `Craft.parseUrl()` JavaScript method.
