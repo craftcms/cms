@@ -17,6 +17,19 @@ class WebLogRoute extends \CWebLogRoute
 	// =========================================================================
 
 	/**
+	 * @inheritDoc
+	 */
+	public function processLogs($logs)
+	{
+		foreach ($logs as &$log)
+		{
+			$log[0] = LoggingHelper::redact($log[0]);
+		}
+
+		parent::processLogs($logs);
+	}
+
+	/**
 	 * @param $view
 	 * @param $data
 	 *

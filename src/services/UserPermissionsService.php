@@ -399,7 +399,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		}
 
 		// Cache the new permissions
-		$this->_permissionsByUserId[$userId] = $permissions;
+		$this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $permissions));
 
 		return true;
 	}
@@ -637,7 +637,7 @@ class UserPermissionsService extends BaseApplicationComponent
 
 		foreach ($permissionsGroup as $name => $data)
 		{
-		    $name = strtolower($name);
+			$name = strtolower($name);
 
 			// Should the user have this permission (either directly or via their group)?
 			if (($inPostedPermissions = in_array($name, $postedPermissions)) || in_array($name, $groupPermissions))

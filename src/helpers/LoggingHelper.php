@@ -66,14 +66,10 @@ class LoggingHelper
 	 */
 	public static function redact($log)
 	{
-		// Will match 'password => 'secretPassword', which gets logged in the POST params during debug mode.
-		$log = preg_replace("/'password' => (')(.*)('),/uim", "'password' => REDACTED,", $log);
-
-		// Will match 'newPassword => 'secretPassword', which gets logged in the POST params during debug mode.
-		$log = preg_replace("/'newPassword' => (')(.*)('),/uim", "'newPassword' => REDACTED,", $log);
-
-		// Will match 'smtpPassword => 'secretPassword', which gets logged in the POST params during debug mode.
-		$log = preg_replace("/'smtpPassword' => (')(.*)('),/uim", "'newPassword' => REDACTED,", $log);
+		foreach (array('key', 'pass', 'password', 'pw', 'secret', 'tok', 'token',) as $keyword)
+		{
+			$log = preg_replace("/'(.*)({$keyword})(.*)' => '(.*)'/uim", "'$1$2$3' => REDACTED", $log);
+		}
 
 		return $log;
 	}
