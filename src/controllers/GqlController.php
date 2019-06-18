@@ -83,6 +83,40 @@ class GqlController extends Controller
         return $this->asJson($result);
     }
 
+    public function actionViewTokens()
+    {
+        $this->requireAdmin();
+
+        return $this->renderTemplate('settings/graphql/tokens/_index');
+    }
+
+    public function actionEditToken(int $tokenId = null, GqlToken $token = null)
+    {
+        $this->requireAdmin();
+
+        $gqlService = Craft::$app->getGql();
+
+        if ($token || $tokenId) {
+            if (!$token) {
+                $token = $gqlService->getTokenById($tokenId);
+            }
+
+            if (!$token) {
+                throw new NotFoundHttpException('Token not found');
+            }
+
+            $title = trim($token->name) ?: Craft::t('app', 'Edit GraphQL Token');
+        } else {
+            $token = new GqlToken();
+            $title = trim($token->name) ?: Craft::t('app', 'Create a new GraphQL token');
+        }
+
+        return $this->renderTemplate('settings/graphql/tokens/_edit', compact(
+            'token',
+            'title'
+        ));
+    }
+
     public function actionSaveToken()
     {
         $this->requirePostRequest();
@@ -104,7 +138,7 @@ class GqlController extends Controller
         }
 
         $token->name = $request->getBodyParam('name');
-        $token->enabled = $request->getBodyParam('enabled');
+        $token->enabled = $request->getBodyParam('enabled', false);
         $token->permissions = $request->getBodyParam('permissions');
 
         if (($expiryDate = $request->getBodyParam('expiryDate')) !== null) {

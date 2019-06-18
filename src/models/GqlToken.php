@@ -57,6 +57,11 @@ class GqlToken extends Model
      */
     public $permissions = [];
 
+    /**
+     * @var \DateTime|null Date created
+     */
+    public $dateCreated;
+
     // Public Methods
     // =========================================================================
 
@@ -77,7 +82,7 @@ class GqlToken extends Model
     public function rules()
     {
         $rules = parent::rules();
-        $rules[] = [['permissions', 'name', 'accessToken'], 'required'];
+        $rules[] = [['name', 'accessToken'], 'required'];
         $rules[] = [
             ['name', 'accessToken'],
             UniqueValidator::class,

@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Table;
+use craft\db\Query as DbQuery;
 use craft\errors\GqlException;
 use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlQueriesEvent;
@@ -138,7 +139,14 @@ class Gql extends Component
      */
     public function getTokens(): array
     {
-        return [];
+        $rows = $this->_createTokenQuery()->all();
+        $tokens = [];
+
+        foreach ($rows as $row) {
+            $tokens[] = new GqlToken($row);
+        }
+
+        return $tokens;
     }
 
     /**
@@ -234,7 +242,7 @@ class Gql extends Component
         }
 
         $tokenRecord->name = $token->name;
-        $tokenRecord->enabled = $token->enabled;
+        $tokenRecord->enabled = (bool) $token->enabled;
         $tokenRecord->expiryDate = $token->expiryDate;
         $tokenRecord->permissions = $token->permissions;
 
@@ -402,7 +410,7 @@ class Gql extends Component
     }
 
     /**
-     * Return volume permissions.
+     * Return global set permissions.
      *
      * @return array
      */
@@ -427,7 +435,7 @@ class Gql extends Component
         return $permissions;
     }
     /**
-     * Return volume permissions.
+     * Return user permissions.
      *
      * @return array
      */
@@ -453,11 +461,11 @@ class Gql extends Component
     /**
      * Returns a DbCommand object prepped for retrieving volumes.
      *
-     * @return \craft\db\Query
+     * @return DbQuery
      */
-    private function _createTokenQuery(): Query
+    private function _createTokenQuery(): DbQuery
     {
-        $query = (new Query())
+        $query = (new DbQuery())
             ->select([
                 'id',
                 'name',
@@ -465,8 +473,8 @@ class Gql extends Component
                 'enabled',
                 'expiryDate',
                 'lastUsed',
-                'settings',
-                'uid'
+                'permissions',
+                'permissions',
             ])
             ->from([Table::GQLTOKENS]);
 

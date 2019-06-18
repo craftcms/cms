@@ -10,25 +10,25 @@
         {{ "No tokens exist yet."|t('app') }}
     </p>
 
-    {% if tokens|length %}}
+    {% if tokens|length %}
         <table id="tokens" class="data fullwidth collapsible">
             <thead>
                 <th scope="col">{{ "Token name"|t('app') }}</th>
-                <th scope="col">{{ "Created"|t('app') }}</th>
+                <th scope="col">{{ "Access token"|t('app') }}</th>
+                <th scope="col">{{ "Enabled"|t('app') }}</th>
                 <th scope="col">{{ "Last used"|t('app') }}</th>
                 <th scope="col">{{ "Expires"|t('app') }}</th>
-                <th scope="col">{{ "View token"|t('app') }}</th>
-                <th scope="col">{{ "Enabled"|t('app') }}</th>
+                <th scope="col">{{ "Created"|t('app') }}</th>
             </thead>
             <tbody>
                 {% for token in tokens %}
                     <tr data-id="{{ token.id }}">
                         <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/graphql/tokens/' ~ token.id) }}">{{ token.name }}</a></th>
-                        <td data-title="{{ 'Created'|t('app') }}"><code>{{ token.created }}</code></td>
-                        <td data-title="{{ 'Last used'|t('app') }}">{{ token.lastUsed}}</td>
-                        <td data-title="{{ 'Expires'|t('app') }}"><code>{{ token.expires }}</code></td>
-                        <td class="thin" data-title="{{ 'View token'|t('app') }}"><OK></OK></td>
+                        <td data-title="{{ 'Access token'|t('app') }}">{{ token.accessToken }}</td>
                         <td class="thin" data-title="{{ 'Enabled'|t('app') }}">{% if token.enabled %}<div data-icon="check"></div>{% endif %}</td>
+                        <td data-title="{{ 'Last used'|t('app') }}">{{ token.lastUsed ? token.lastUsed|datetime('short') : ''}}</td>
+                        <td data-title="{{ 'Expires'|t('app') }}"><code>{{ token.expiryDate ? token.expiryDate|datetime('short') : ''}}</code></td>
+                        <td data-title="{{ 'Created'|t('app') }}"><code>{{ token.dateCreated|datetime('short') }}</code></td>
                     </tr>
                 {% endfor %}
             </tbody>

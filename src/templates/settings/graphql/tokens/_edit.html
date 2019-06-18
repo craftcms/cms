@@ -2,6 +2,11 @@
 
 {% set fullPageForm = true %}
 
+{% set crumbs = [
+    { label: "Settings"|t('app'), url: url('settings') },
+    { label: "Graph QL Tokens"|t('app'), url: url('settings/graphql/tokens') }
+] %}
+
 {% import "_includes/forms" as forms %}
 
 {% macro permissionList(token, permissions, id, disabled) %}
@@ -79,8 +84,8 @@
             id: 'expiryDate',
             name: 'expiryDate',
             instructions: "Token's expiry date."|t('app'),
-            value: (token.expires ? token.expires : null),
-            errors: token.getErrors('expires')
+            value: (token.expiryDate ? token.expiryDate : null),
+            errors: token.getErrors('expiryDate')
         }) }}
 
         {{ forms.lightswitchField({
