@@ -19,7 +19,7 @@
         </div>
         </div>
 
-        <table class="data fullwidth collapsible" v-if="jobs">
+        <table class="data fullwidth collapsible" v-if="jobs && !activeJob">
             <thead>
 
             <tr>
@@ -42,12 +42,13 @@
                     </td>
                     <td><a class="btn" @click="retryJob(job)">Retry</a> </td>
                     <td><a class="btn" @click="releaseJob(job)">Cancel</a> </td>
-                    <div>
-
-                    </div>
+                    <td><a class="btn" @click="setActiveJob(job)">View details</a> </td>
                 </tr>
             </tbody>
         </table>
+        <div v-else-if="activeJob">
+            asdasdsda
+        </div>
         <div v-else>
             No open jobs
         </div>
