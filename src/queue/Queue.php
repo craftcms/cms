@@ -318,6 +318,40 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
+     * @param int|null $limit
+     * @return array
+     */
+    public function getJobs(int $limit = null) : array
+    {
+        $jobs = (new Query())
+            ->from(Table::QUEUE)
+            ->limit($limit)
+            ->all();
+
+        $results = [];
+        foreach ($jobs as $job) {
+            $results[] = [
+                'id'          => $job['id'],
+                'description' => $job['description'],
+                'timePushed'  => $job['timePushed'],
+                'timeUpdated' => $job['timeUpdated'],
+                'job' => is_resource($job['job'])
+                    ? stream_get_contents($job['job'])
+                    : $this->serializer->unserialize($job['job']),
+                'ttr'         => $job['ttr'],
+                'priority'    => $job['priority'],
+                'progress'    => $job['progress'],
+                'fail'        => (bool)$job['fail'],
+                'dateFailed'  => $job['dateFailed'],
+                'error'       => $job['error'],
+            ];
+        }
+
+
+        return $results;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getJobInfo(int $limit = null): array

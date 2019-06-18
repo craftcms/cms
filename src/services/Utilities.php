@@ -17,6 +17,7 @@ use craft\utilities\DeprecationErrors;
 use craft\utilities\FindAndReplace;
 use craft\utilities\Migrations;
 use craft\utilities\PhpInfo;
+use craft\utilities\QueueManager;
 use craft\utilities\SearchIndexes;
 use craft\utilities\SystemMessages as SystemMessagesUtility;
 use craft\utilities\SystemReport;
@@ -71,6 +72,7 @@ class Utilities extends Component
             UpdatesUtility::class,
             SystemReport::class,
             PhpInfo::class,
+            QueueManager::class
         ];
 
         if (Craft::$app->getEdition() === Craft::Pro) {

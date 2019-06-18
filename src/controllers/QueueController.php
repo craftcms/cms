@@ -127,6 +127,21 @@ class QueueController extends Controller
     }
 
     /**
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public function actionGetFullJobs()
+    {
+        $this->requireAcceptsJson();
+        $this->requirePermission('accessCp');
+
+        $limit = Craft::$app->getRequest()->getBodyParam('limit');
+
+        return $this->asJson(Craft::$app->getQueue()->getJobs($limit));
+    }
+
+    /**
      * Returns info about all the jobs in the queue.
      *
      * @return Response
