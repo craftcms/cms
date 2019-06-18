@@ -37,17 +37,28 @@ new Vue({
 
         retryJob(job) {
             this.craftPost('queue/retry', {id: job.id}).then(function(response) {
-                Craft.cp.displayNotice('Job retried')
+                Craft.cp.displayNotice('Job retried. It will be updated soon.')
             })
         },
+
         releaseJob(job) {
-            this.craftPost('queue/release', {id: job.id}).then(function(response) {
+            this.craftPost('queue/release', {id: job.id}).then(response => {
+                this.quickRemoveJob(job.id)
                 Craft.cp.displayNotice('Job released')
             })
         },
 
         quickRemoveJob(jobId) {
+            let job = this.jobs.find(function(job) {
+                return job.id == jobId
+            })
 
+            if (job) {
+                this.jobs.splice(
+                    this.jobs.indexOf(job),
+                    1
+                )
+            }
         },
 
         /**
