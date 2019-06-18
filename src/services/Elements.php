@@ -795,7 +795,7 @@ class Elements extends Component
     }
 
     /**
-     * Merges two elements together.
+     * Merges two elements together by their IDs.
      *
      * This method will update the following:
      * - Any relations involving the merged element
@@ -805,9 +805,39 @@ class Elements extends Component
      * @param int $mergedElementId The ID of the element that is going away.
      * @param int $prevailingElementId The ID of the element that is sticking around.
      * @return bool Whether the elements were merged successfully.
+     * @throws ElementNotFoundException if one of the element IDs don’t exist.
      * @throws \Throwable if reasons
      */
     public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool
+    {
+        // Get the elements
+        $mergedElement = $this->getElementById($mergedElementId);
+        if (!$mergedElement) {
+            throw new ElementNotFoundException("No element exists with the ID '{$mergedElementId}'");
+        }
+        $prevailingElement = $this->getElementById($prevailingElementId);
+        if (!$prevailingElement) {
+            throw new ElementNotFoundException("No element exists with the ID '{$prevailingElementId}'");
+        }
+
+        // Merge them
+        return $this->mergeElements($mergedElement, $prevailingElement);
+    }
+
+    /**
+     * Merges two elements together.
+     *
+     * This method will update the following:
+     * - Any relations involving the merged element
+     * - Any structures that contain the merged element
+     * - Any reference tags in textual custom fields referencing the merged element
+     *
+     * @param ElementInterface $mergedElement The element that is going away.
+     * @param ElementInterface $prevailingElement The element that is sticking around.
+     * @return bool Whether the elements were merged successfully.
+     * @throws \Throwable if reasons
+     */
+    public function mergeElements(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -815,7 +845,7 @@ class Elements extends Component
             $relations = (new Query())
                 ->select(['id', 'fieldId', 'sourceId', 'sourceSiteId'])
                 ->from([Table::RELATIONS])
-                ->where(['targetId' => $mergedElementId])
+                ->where(['targetId' => $mergedElement->id])
                 ->all();
 
             foreach ($relations as $relation) {
@@ -826,7 +856,7 @@ class Elements extends Component
                         'fieldId' => $relation['fieldId'],
                         'sourceId' => $relation['sourceId'],
                         'sourceSiteId' => $relation['sourceSiteId'],
-                        'targetId' => $prevailingElementId
+                        'targetId' => $prevailingElement->id
                     ])
                     ->exists();
 
@@ -835,7 +865,7 @@ class Elements extends Component
                         ->update(
                             Table::RELATIONS,
                             [
-                                'targetId' => $prevailingElementId
+                                'targetId' => $prevailingElement->id
                             ],
                             [
                                 'id' => $relation['id']
@@ -848,7 +878,7 @@ class Elements extends Component
             $structureElements = (new Query())
                 ->select(['id', 'structureId'])
                 ->from([Table::STRUCTUREELEMENTS])
-                ->where(['elementId' => $mergedElementId])
+                ->where(['elementId' => $mergedElement->id])
                 ->all();
 
             foreach ($structureElements as $structureElement) {
@@ -857,7 +887,7 @@ class Elements extends Component
                     ->from([Table::STRUCTUREELEMENTS])
                     ->where([
                         'structureId' => $structureElement['structureId'],
-                        'elementId' => $prevailingElementId
+                        'elementId' => $prevailingElement->id
                     ])
                     ->exists();
 
@@ -865,7 +895,7 @@ class Elements extends Component
                     Craft::$app->getDb()->createCommand()
                         ->update(Table::RELATIONS,
                             [
-                                'elementId' => $prevailingElementId
+                                'elementId' => $prevailingElement->id
                             ],
                             [
                                 'id' => $structureElement['id']
@@ -876,7 +906,7 @@ class Elements extends Component
 
             // Update any reference tags
             /** @var ElementInterface|null $elementType */
-            $elementType = $this->getElementTypeById($prevailingElementId);
+            $elementType = $this->getElementTypeById($prevailingElement->id);
 
             if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
                 $refTagPrefix = "{{$refHandle}:";
@@ -884,27 +914,27 @@ class Elements extends Component
 
                 $queue->push(new FindAndReplace([
                     'description' => Craft::t('app', 'Updating element references'),
-                    'find' => $refTagPrefix . $mergedElementId . ':',
-                    'replace' => $refTagPrefix . $prevailingElementId . ':',
+                    'find' => $refTagPrefix . $mergedElement->id . ':',
+                    'replace' => $refTagPrefix . $prevailingElement->id . ':',
                 ]));
 
                 $queue->push(new FindAndReplace([
                     'description' => Craft::t('app', 'Updating element references'),
-                    'find' => $refTagPrefix . $mergedElementId . '}',
-                    'replace' => $refTagPrefix . $prevailingElementId . '}',
+                    'find' => $refTagPrefix . $mergedElement->id . '}',
+                    'replace' => $refTagPrefix . $prevailingElement->id . '}',
                 ]));
             }
 
             // Fire an 'afterMergeElements' event
             if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_ELEMENTS)) {
                 $this->trigger(self::EVENT_AFTER_MERGE_ELEMENTS, new MergeElementsEvent([
-                    'mergedElementId' => $mergedElementId,
-                    'prevailingElementId' => $prevailingElementId
+                    'mergedElementId' => $mergedElement->id,
+                    'prevailingElementId' => $prevailingElement->id
                 ]));
             }
 
             // Now delete the merged element
-            $success = $this->deleteElementById($mergedElementId);
+            $success = $this->deleteElement($mergedElement);
 
             $transaction->commit();
 

@@ -961,7 +961,16 @@ class ProjectConfig extends Component
         $defers = -count($this->_deferredEvents);
         while (!empty($this->_deferredEvents)) {
             if ($defers > $this->maxDefers) {
-                throw new OperationAbortedException('Maximum number of deferred events reached.');
+                $paths = [];
+
+                // Grab a list of all deferred event paths
+                foreach ($this->_deferredEvents as list($deferredEvent)) {
+                    // Save us the trouble of filtering out duplicates later
+                    $paths[$deferredEvent->path] = true;
+                }
+
+                $message = "The following config paths could not be processed successfully:\n" . implode("\n", array_keys($paths));
+                throw new OperationAbortedException($message);
             }
 
             /** @var ConfigEvent $event */

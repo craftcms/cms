@@ -113,41 +113,49 @@ class Paginate extends BaseObject
      */
     public function getPageUrl(int $page)
     {
-        if ($page >= 1 && $page <= $this->totalPages) {
-            $path = $this->getBasePath();
-            $params = [];
-
-            if ($page != 1) {
-                $pageTrigger = Craft::$app->getConfig()->getGeneral()->pageTrigger;
-
-                if (!is_string($pageTrigger) || $pageTrigger === '') {
-                    $pageTrigger = 'p';
-                }
-
-                // Is this query string-based pagination?
-                if ($pageTrigger[0] === '?') {
-                    $pageTrigger = trim($pageTrigger, '?=');
-
-                    // Avoid conflict with the path param
-                    $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-                    if ($pageTrigger === $pathParam) {
-                        $pageTrigger = $pathParam === 'p' ? 'pg' : 'p';
-                    }
-
-                    $params = [$pageTrigger => $page];
-                } else {
-                    if ($path) {
-                        $path .= '/';
-                    }
-
-                    $path .= $pageTrigger . $page;
-                }
-            }
-
-            return UrlHelper::url($path, $params);
+        if ($page < 1 || $page > $this->totalPages) {
+            return null;
         }
 
-        return null;
+        $path = $this->getBasePath();
+        $params = [];
+
+        if ($page != 1) {
+            $pageTrigger = Craft::$app->getConfig()->getGeneral()->pageTrigger;
+
+            if (!is_string($pageTrigger) || $pageTrigger === '') {
+                $pageTrigger = 'p';
+            }
+
+            // Is this query string-based pagination?
+            if ($pageTrigger[0] === '?') {
+                $pageTrigger = trim($pageTrigger, '?=');
+
+                // Avoid conflict with the path param
+                $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
+                if ($pageTrigger === $pathParam) {
+                    $pageTrigger = $pathParam === 'p' ? 'pg' : 'p';
+                }
+
+                $params = [$pageTrigger => $page];
+            } else {
+                if ($path) {
+                    $path .= '/';
+                }
+
+                $path .= $pageTrigger . $page;
+            }
+        }
+
+        // Build the URL with the same query string as the current request
+        $url = UrlHelper::url($path, Craft::$app->getRequest()->getQueryStringWithoutPath());
+
+        // Then add the page param if there is one
+        if (!empty($params)) {
+            $url = UrlHelper::urlWithParams($url, $params);
+        }
+
+        return $url;
     }
 
     /**
