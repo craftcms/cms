@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.7.9 - 2019-06-18
+
 ### Fixed
 - Fixed a bug where users could not assign additional user groups to their own account if their permission to do so was granted by another user group they belonged to.
 
