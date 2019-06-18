@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.31 - 2019-06-18
 
 ### Added
 - It’s now possible to set plugin license keys to environment variables using the `$VARIABLE_NAME` syntax. ([#4393](https://github.com/craftcms/cms/issues/4393))
@@ -12,6 +12,7 @@
 - Improved the error message that gets logged when Craft isn’t able to finish processing project config changes, due to unresolved dependencies.
 - Craft will no longer log errors and warnings arising from `yii\i18n\PhpMessageSource`. ([#4109](https://github.com/craftcms/cms/issues/4109))
 - Improved the performance and reliability of user queries when the `group` param is set to a user group with a large number of users.
+- Updated Yii to 2.0.21.
 
 ### Fixed
 - Fixed a bug where `Craft::dd()` wouldn’t work properly if output buffering was enabled. ([#4399](https://github.com/craftcms/cms/issues/4399))
