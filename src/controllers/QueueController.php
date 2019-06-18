@@ -179,7 +179,7 @@ class QueueController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('utility:queue-manager');
 
-        $jobId = Craft::$app->getRequest()->getBodyParam('jobId');
+        $jobId = Craft::$app->getRequest()->getRequiredParam('id');
 
         return $this->asJson(Craft::$app->getQueue()->getJobDetails($jobId));
     }

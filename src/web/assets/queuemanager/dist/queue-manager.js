@@ -57,7 +57,16 @@ new Vue({
         },
 
         setActiveJob(job) {
-            this.activeJob = job
+            this.loading = true
+            let $this = this
+
+            axios.get(Craft.getActionUrl('queue/get-job-details?id='+job.id+'', {})).then(function(response) {
+                $this.activeJob = response.data
+                $this.loading = false
+            }, function(response) {
+                Craft.cp.displayError(response.response.data.error)
+                reject(response)
+            })
         },
 
         /**
@@ -87,6 +96,7 @@ new Vue({
             if (confirm('Are you sure?')) {
                 this.craftPost('queue/release-all', {}).then(function(response) {
                     this.jobs = []
+                    this.activeJob = null
                     Craft.cp.displayNotice('All jobs released')
                 })
             }
@@ -99,6 +109,7 @@ new Vue({
         retryJob(job) {
             if (confirm('Are you sure?')) {
                 this.craftPost('queue/retry', {id: job.id}).then(function(response) {
+                    this.activeJob = null
                     Craft.cp.displayNotice('Job retried. It will be updated soon.')
                 })
             }
@@ -112,6 +123,7 @@ new Vue({
             if (confirm('Are you sure?')) {
                 this.craftPost('queue/release', {id: job.id}).then(response => {
                     this.quickRemoveJob(job.id)
+                    this.activeJob = null
                     Craft.cp.displayNotice('Job released')
                 })
             }
@@ -131,6 +143,38 @@ new Vue({
                     this.jobs.indexOf(job),
                     1
                 )
+            }
+        },
+
+        /**
+         * Resets an active job so that the index screen is displayed.
+         */
+        resetActiveJob() {
+            this.activeJob = null
+        },
+
+        /**
+         * Gets a job status code
+         *
+         * @param job
+         * @returns {string}
+         */
+        jobStatusDeterminer(job) {
+            switch (job.status.toString()) {
+                case '1':
+                    return 'Pending'
+                    break;
+                case '2':
+                    return 'Reserved'
+                    break;
+                case '3':
+                    return 'Done'
+                    break;
+                case '4':
+                    return 'Failed'
+                    break;
+                default:
+                    return 'Unkown status'
             }
         },
 

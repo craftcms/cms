@@ -349,6 +349,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'job' => is_resource($job['job'])
                 ? stream_get_contents($job['job'])
                 : $this->serializer->unserialize($job['job']),
+            'status' => $this->_status($job),
             'ttr' => $job['ttr'],
             'priority' => $job['priority'],
             'progress' => $job['progress'],

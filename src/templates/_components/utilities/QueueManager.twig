@@ -8,7 +8,7 @@
     <div v-else>
 
         <div>
-        <div class="right">
+        <div class="right" v-if="jobs && !activeJob">
             <a class="btn submit" @click="retryAll">
                 Retry all
             </a>
@@ -25,7 +25,6 @@
             <tr>
                 <th scope="col">Job</th>
                 <th scope="col">Progress</th>
-                <th scope="col">TTR</th>
                 <th scope="col">Status</th>
             </tr>
             </thead>
@@ -33,12 +32,8 @@
                 <tr v-for="job in jobs">
                     <th><a>[[job.description]]</a></th>
                     <td><code>[[job.progress]]/ 100</code></td>
-                    <td><code>[[job.ttr]]</code></td>
                     <td>
-                        <div v-if="job.status == 1">Pending</div>
-                        <div v-else-if="job.status == 2">Reserved</div>
-                        <div v-else-if="job.status == 3">Done</div>
-                        <div v-else-if="job.status == 4" class="error">Failed</div>
+                        <div>[[jobStatusDeterminer(job)]]</div>
                     </td>
                     <td><a class="btn" @click="retryJob(job)">Retry</a> </td>
                     <td><a class="btn" @click="releaseJob(job)">Cancel</a> </td>
@@ -47,7 +42,51 @@
             </tbody>
         </table>
         <div v-else-if="activeJob">
-            asdasdsda
+            <h2>[[activeJob.description]]</h2>
+            <p v-if="activeJob.error" class="error">[[activeJob.error]]</p>
+
+            <table class="data fullwidth collapsible">
+                <thead>
+                <tr>
+                    <th scope="col">Progress</th>
+                    <th scope="col">TTR</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Time pushed</th>
+                    <th scope="col">Time updated</th>
+                    <th scope="col">Date failed</th>
+                    <th scope="col">Priority</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><code>[[activeJob.progress]]/ 100</code></td>
+                    <td><code>[[activeJob.ttr]]</code></td>
+                    <td>
+                        <div>[[jobStatusDeterminer(activeJob)]]</div>
+                    </td>
+                    <td><code>[[activeJob.timePushed]]</code></td>
+                    <td><code>[[activeJob.timeUpdated]]</code></td>
+                    <td><code>[[activeJob.dateFailed]]</code></td>
+                    <td><code>[[activeJob.priority]]</code></td>
+                    <td><a class="btn" @click="retryJob(activeJob)">Retry</a> </td>
+                    <td><a class="btn" @click="releaseJob(activeJob)">Cancel</a> </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <hr>
+
+            <h2>Job data:</h2>
+
+            <!-- TODO: Remove inline styles -->
+            <div style="background-color: #22292f;color: #38c172; padding: 20px;">
+                <code>[[activeJob.job]]</code>
+            </div>
+            <hr>
+
+            <a @click="resetActiveJob">
+                Back to index
+            </a>
         </div>
         <div v-else>
             No open jobs
