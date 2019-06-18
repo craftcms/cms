@@ -19,10 +19,16 @@ use Craft;
  */
 class QueueController extends Controller
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var bool Whether every entry change should be force-synced.
      */
     public $force = false;
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * @return int
