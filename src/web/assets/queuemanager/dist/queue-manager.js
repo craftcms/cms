@@ -36,14 +36,14 @@ new Vue({
 
         retryAll() {
             if (confirm('Are you sure?')) {
-                this.craftPost('queue/retry-all', {id: job.id}).then(function(response) {
+                this.craftPost('queue/retry-all', {}).then(function(response) {
                     Craft.cp.displayNotice('All jobs will be retried. They will soon show progress.')
                 })
             }
         },
         releaseAll() {
             if (confirm('Are you sure?')) {
-                this.craftPost('queue/release-all', {id: job.id}).then(function(response) {
+                this.craftPost('queue/release-all', {}).then(function(response) {
                     this.jobs = []
                     Craft.cp.displayNotice('All jobs released')
                 })

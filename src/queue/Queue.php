@@ -225,6 +225,19 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
+     * @return bool
+     * @throws \yii\db\Exception
+     */
+    public function releaseAll() : bool
+    {
+        Craft::$app->getDb()->createCommand()
+            ->delete(Table::QUEUE, [])
+            ->execute();
+
+        return true;
+    }
+
+    /**
      * @inheritdoc
      */
     public function setProgress(int $progress, string $label = null)

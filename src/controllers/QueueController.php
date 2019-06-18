@@ -12,8 +12,10 @@ use craft\helpers\App;
 use craft\queue\QueueInterface;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+use yii\db\Exception as YiiDbException;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -127,11 +129,52 @@ class QueueController extends Controller
     }
 
     /**
+     * Releases ALL jobs
+     *
      * @return Response
      * @throws BadRequestHttpException
-     * @throws \yii\web\ForbiddenHttpException
+     * @throws YiiDbException
+     * @throws ForbiddenHttpException
      */
-    public function actionGetJobDetails()
+    public function actionReleaseAll(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePostRequest();
+        $this->requirePermission('accessCp');
+
+        Craft::$app->getQueue()->releaseAll();
+
+        return $this->asJson([
+            'success' => true
+        ]);
+    }
+
+    /**
+     * Retries ALL jobs
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     */
+    public function actionRetryAll() : Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePostRequest();
+        $this->requirePermission('accessCp');
+
+        Craft::$app->getQueue()->retryAll();
+
+        return $this->actionRun();
+    }
+
+    /**
+     * Returns the details for a particular job. This includes the `job` column containing a lot of raw data.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     */
+    public function actionGetJobDetails() : Response
     {
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
