@@ -8,6 +8,7 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\errors\MissingComponentException;
 use craft\helpers\Component;
 use craft\console\Controller;
 use craft\helpers\App;
@@ -20,13 +21,15 @@ use craft\mail\transportadapters\Gmail;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\models\MailSettings;
+use Throwable;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 use craft\elements\User as UserElement;
 
 /**
- * The TestsController provides various support resources for testing both Craft's own services and your implementation of
- * Craft within your project.
+ * The TestsController provides various support resources for testing both Craft's
+ * own services and your implementation of Craft within your project.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -45,17 +48,17 @@ class TestsController extends Controller
      * 3. Choose your own custom Transport adapter and test using once off settings.
      *
      * @return int
-     * @throws \craft\errors\MissingComponentException
-     * @throws \yii\base\InvalidConfigException
+     * @throws MissingComponentException
+     * @throws InvalidConfigException
      */
     public function actionEmailSettings() : int
     {
-        $recieverEmail = $this->prompt(PHP_EOL.'Which email address must we send this test email to?');
+        $receiverEmail = $this->prompt(PHP_EOL.'Which email address should we send this test email to?');
 
         $mailParams = [
             'user' => new UserElement([
-                'email' => $recieverEmail,
-                'username' => $recieverEmail
+                'email' => $receiverEmail,
+                'username' => $receiverEmail
             ])
         ];
 
@@ -73,7 +76,7 @@ class TestsController extends Controller
                 $adapter
             );
 
-            return $this->_testEmailSending($mailParams, $recieverEmail);
+            return $this->_testEmailSending($mailParams, $receiverEmail);
         }
 
         // Environment settings
@@ -88,7 +91,7 @@ class TestsController extends Controller
 
             // Does it even exist?
             if (!isset($configSettings['components']['mailer'])) {
-                $this->stderr(PHP_EOL."No mailer configuration was found for the env: $env");
+                $this->stderr(PHP_EOL."No mailer configuration was found for the env: {$env}");
                 return ExitCode::OK;
             }
 
@@ -100,18 +103,17 @@ class TestsController extends Controller
             // TODO: Is there a way to extract the MailSettings and TransportAdapter settings from Craft::$app->getMailer()
             $mailParams['settings'] = '';
 
-            return $this->_testEmailSending($mailParams, $recieverEmail);
+            return $this->_testEmailSending($mailParams, $receiverEmail);
         }
 
         // Otherwise we let the user decide....
-        $transportAdapters = [
+        $transportAdapters = array_unique([
             $settingsModel->transportType::displayName() => $settingsModel->transportType,
             'Smtp' => Smtp::class,
             'Gmail' => Gmail::class,
             'Sendmail'=> Sendmail::class,
             'Other' => 'Other'
-        ];
-        $transportAdapters = array_unique($transportAdapters);
+        ]);
         $userInput = $this->select(PHP_EOL.'Which transport type do you want to use?', $transportAdapters);
 
         // Attempt to resolve the user input into a class
@@ -142,24 +144,18 @@ class TestsController extends Controller
         // Create the mailer
         try {
             /* @var BaseTransportAdapter $transport */
-            $transport = Component::createComponent([
-                'type' => $selectedOption
-            ], BaseTransportAdapter::class);
-        } catch (\Throwable $exception) {
+            $transport = Component::createComponent(['type' => $selectedOption], BaseTransportAdapter::class);
+        } catch (Throwable $exception) {
             $message = $exception->getMessage();
-            $this->stderr(PHP_EOL."The following problem occured when creating the mailer: $message", Console::FG_RED);
+            $this->stderr(PHP_EOL."The following problem occurred when creating the mailer: $message", Console::FG_RED);
             return ExitCode::OK;
         }
 
         // What settings do they want to use?
         foreach ($transport->settingsAttributes() as $property) {
             // Try and find a default.
-            $default = null;
-            if (isset($settingsModel->transportSettings[$property])) {
-                $default = $settingsModel->transportSettings[$property];
-            }
-
-            $transport->$property = $this->prompt(PHP_EOL."What must $property be set to?", ['default' => $default]);
+            $default = $settingsModel->transportSettings[$property] ?? null;
+            $transport->$property = $this->prompt(PHP_EOL."What must {$property} be set to?", ['default' => $default]);
         }
 
         // Save the new stuff to the settings
@@ -177,14 +173,15 @@ class TestsController extends Controller
         $mailParams['settings'] = $this->_renderMailSettingsString($settingsModel, $transport);
 
         // FOR... SPARTAAA!
-        return $this->_testEmailSending($mailParams, $recieverEmail);
+        return $this->_testEmailSending($mailParams, $receiverEmail);
     }
 
     /**
      * Sets up a test suite for the current project.
      *
      * @param string|null $dst The folder that the test suite should be generated in.
-     * Defaults to the current working directory.
+     *                         Defaults to the current working directory.
+     *
      * @return int
      */
     public function actionSetup(string $dst = null): int
@@ -201,7 +198,7 @@ class TestsController extends Controller
 
         $handle = opendir($src);
         if ($handle === false) {
-            throw new InvalidArgumentException("Unable to open directory: $src");
+            throw new InvalidArgumentException("Unable to open directory: {$src}");
         }
 
         while (($file = readdir($handle)) !== false) {
@@ -221,9 +218,11 @@ class TestsController extends Controller
         // Warn about conflicts
         if (!empty($conflicts)) {
             $this->stdout('The following files/folders will be overwritten:' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+
             foreach ($conflicts as $file) {
                 $this->stdout("- {$file}" . PHP_EOL, Console::FG_YELLOW);
             }
+
             $this->stdout(PHP_EOL);
             if (!$this->confirm('Are you sure you want to continue?')) {
                 $this->stdout('Aborting.' . PHP_EOL);
@@ -246,7 +245,7 @@ class TestsController extends Controller
         $this->stdout(PHP_EOL . 'Generating the test suite ... ');
         try {
             FileHelper::copyDirectory($src, $dst);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stdout('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
@@ -256,7 +255,7 @@ class TestsController extends Controller
     }
 
     /**
-     * Dont use this method - it wont actually execute anything.
+     * Don't use this method - it won't actually execute anything.
      * It is just used internally to test Craft-based console controller testing.
      *
      * @return int
@@ -330,15 +329,15 @@ class TestsController extends Controller
 
     /**
      * @param array $mailParams
-     * @param $reciever
+     * @param $receiver
      * @return int
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    protected function _testEmailSending(array $mailParams, $reciever) : int
+    protected function _testEmailSending(array $mailParams, $receiver) : int
     {
         $message = Craft::$app->getMailer()
             ->composeFromKey('test_email', $mailParams)
-            ->setTo($reciever);
+            ->setTo($receiver);
 
         if ($message->send()) {
             $this->stdout('Email sent successfully! Check your inbox.'.PHP_EOL.PHP_EOL);
