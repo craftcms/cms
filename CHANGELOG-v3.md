@@ -5,6 +5,12 @@
 ### Added
 - Added the `{% dd %}` Twig tag. ([#4399](https://github.com/craftcms/cms/issues/4399))
 
+### Changed
+- `craft\web\twig\variables\CraftVariable` no longer triggers the `defineComponents` event. ([#4416](https://github.com/craftcms/cms/issues/4416))
+
+### Deprecated
+- Deprecated `craft\events\DefineComponentsEvent`.
+
 ## 3.2.0-beta.3 - 2019-06-18
 
 ### Added

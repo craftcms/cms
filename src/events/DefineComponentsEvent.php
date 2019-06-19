@@ -14,6 +14,7 @@ use yii\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
+ * @deprecated in 3.2.
  */
 class DefineComponentsEvent extends Event
 {

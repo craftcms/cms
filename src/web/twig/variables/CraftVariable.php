@@ -24,7 +24,6 @@ use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
-use craft\events\DefineComponentsEvent;
 use yii\di\ServiceLocator;
 
 /**
@@ -127,17 +126,6 @@ class CraftVariable extends ServiceLocator
                 'userPermissions' => UserPermissions::class,
             ]);
         }
-
-        // todo: remove all this before 3.0 GA
-        // Let plugins add their own components
-        $event = new DefineComponentsEvent([
-            'components' => $components,
-        ]);
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_COMPONENTS)) {
-            Craft::$app->getDeprecator()->log('CraftVariable::defineComponents', 'The `defineComponents` event on CraftVariable has been deprecated. Use the `init` event to register custom components instead.');
-            $this->trigger(self::EVENT_DEFINE_COMPONENTS, $event);
-        }
-        $components = $event->components;
 
         $config['components'] = $components;
 
