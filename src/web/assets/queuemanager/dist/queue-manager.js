@@ -22,7 +22,7 @@ new Vue({
     mounted() {
         this.reIndexJobs()
 
-        window.setInterval(this.reIndexJobs, 2000);
+        window.setInterval(this.reIndexJobs, 2500);
     },
 
     filters: {
