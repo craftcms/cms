@@ -7,7 +7,7 @@ use craft\elements\Entry as EntryElement;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\Entry;
-use craft\helpers\Gql;
+use craft\helpers\Gql as GqlHelper;
 use craft\models\EntryType as EntryTypeModel;
 
 /**
@@ -28,7 +28,7 @@ class EntryType implements BaseGenerator
             $typeName = EntryElement::getGqlTypeNameByContext($entryType);
             $requiredContexts = EntryElement::getGqlScopesByContext($entryType);
 
-            if (!Gql::isTokenAwareOf($requiredContexts)) {
+            if (!GqlHelper::isTokenAwareOf($requiredContexts)) {
                 continue;
             }
 

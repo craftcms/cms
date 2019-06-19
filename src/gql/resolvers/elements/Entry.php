@@ -4,8 +4,7 @@ namespace craft\gql\resolvers\elements;
 use craft\db\Table;
 use craft\elements\Entry as EntryElement;
 use craft\helpers\Db;
-use craft\helpers\Gql;
-use craft\helpers\StringHelper;
+use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -33,7 +32,7 @@ class Entry extends BaseElement
             $query->$key($value);
         }
 
-        $pairs = Gql::extractAllowedEntitiesFromToken('read');
+        $pairs = GqlHelper::extractAllowedEntitiesFromToken('read');
 
         if (!empty($pairs['sections'])) {
             $allowedIds = Db::idsByUids(Table::SECTIONS, $pairs['sections']);

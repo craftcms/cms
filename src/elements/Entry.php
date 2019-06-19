@@ -968,14 +968,10 @@ class Entry extends Element
     public static function getGqlScopesByContext($context): array
     {
         /** @var EntryType $context */
-        $section = $context->getSection();
-
-        $scopes = [
-            'sections.' . $section->uid,
+        return [
+            'sections.' . $context->getSection()->uid,
             'entrytypes.' . $context->uid,
         ];
-        
-        return $scopes;
     }
 
     /**
