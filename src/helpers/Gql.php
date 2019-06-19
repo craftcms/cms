@@ -9,7 +9,6 @@ namespace craft\helpers;
 
 use Craft;
 use craft\errors\GqlException;
-use craft\services\ProjectConfig as ProjectConfigService;
 
 /**
  * Class Gql
@@ -32,7 +31,7 @@ class Gql
             $scopes = [$scopes];
         }
 
-        $permissions = Craft::$app->getGql()->getCurrentToken()->permissions;
+        $permissions = (array) Craft::$app->getGql()->getCurrentToken()->permissions;
 
         foreach ($scopes as $scope) {
             if (empty(preg_grep('/^' . preg_quote($scope, '/') . '\:/i', $permissions))) {
@@ -52,7 +51,7 @@ class Gql
      */
     public static function extractAllowedEntitiesFromToken($action): array
     {
-        $permissions = Craft::$app->getGql()->getCurrentToken()->permissions;
+        $permissions = (array) Craft::$app->getGql()->getCurrentToken()->permissions;
         $pairs = [];
 
         foreach ($permissions as $permission) {
