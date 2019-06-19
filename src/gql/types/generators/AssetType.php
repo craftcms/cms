@@ -8,6 +8,7 @@ use craft\elements\Asset as AssetElement;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\Asset;
+use craft\helpers\Gql as GqlHelper;
 
 /**
  * Class AssetTypeGenerator
@@ -25,6 +26,12 @@ class AssetType implements BaseGenerator
         foreach ($volumes as $volume) {
             /** @var Volume $volume */
             $typeName = AssetElement::getGqlTypeNameByContext($volume);
+            $requiredContexts = AssetElement::getGqlScopesByContext($volume);
+
+            if (!GqlHelper::isTokenAwareOf($requiredContexts)) {
+                continue;
+            }
+
             $contentFields = $volume->getFields();
             $contentFieldGqlTypes = [];
 

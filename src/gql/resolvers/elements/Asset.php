@@ -1,7 +1,10 @@
 <?php
 namespace craft\gql\resolvers\elements;
 
+use craft\db\Table;
 use craft\elements\Asset as AssetElement;
+use craft\helpers\Db;
+use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -27,6 +30,15 @@ class Asset extends BaseElement
 
         foreach ($arguments as $key => $value) {
             $query->$key($value);
+        }
+
+        $pairs = GqlHelper::extractAllowedEntitiesFromToken('read');
+
+        if (!empty($pairs['volumes'])) {
+            $allowedIds = Db::idsByUids(Table::VOLUMES, $pairs['volumes']);
+            $query->volumeId = $query->volumeId ? array_intersect($allowedIds, (array)$query->volumeId) : $allowedIds;
+        } else {
+            return [];
         }
 
         return $query->all();

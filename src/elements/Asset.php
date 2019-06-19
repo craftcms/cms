@@ -1197,6 +1197,15 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public static function getGqlScopesByContext($context): array
+    {
+        /** @var Volume $context */
+        return ['volumes.' . $context->uid];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributes()
     {
         $names = parent::attributes();
