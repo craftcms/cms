@@ -43,8 +43,8 @@
         </table>
         <div v-else-if="activeJob">
             <div class="right">
-                <a class="btn" @click="retryJob(activeJob)">Retry</a>
-                <a class="btn" @click="releaseJob(activeJob)">Cancel</a>
+                <a class="btn submit" @click="retryJob(activeJob)">Retry</a>
+                <a class="btn submit" @click="releaseJob(activeJob)">Cancel</a>
             </div>
 
             <h2>[[activeJob.description]]</h2>

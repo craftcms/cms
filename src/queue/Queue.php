@@ -9,6 +9,7 @@ namespace craft\queue;
 
 use Craft;
 use craft\db\Table;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -344,8 +345,14 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $result = [
             'id' => $job['id'],
             'description' => $job['description'],
-            'timePushed' => $job['timePushed'],
-            'timeUpdated' => $job['timeUpdated'],
+            'timePushed' => $job['timePushed']
+                ? DateTimeHelper::toDateTime($job['timePushed'])->format('Y-m-d H:i:s')
+                : 'No time',
+
+            'timeUpdated' => $job['timeUpdated']
+                ? DateTimeHelper::toDateTime($job['timeUpdated'])->format('Y-m-d H:i:s')
+                : 'No time',
+            
             'job' => is_resource($job['job'])
                 ? stream_get_contents($job['job'])
                 : $this->serializer->unserialize($job['job']),
