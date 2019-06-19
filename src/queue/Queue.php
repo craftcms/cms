@@ -352,7 +352,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'timeUpdated' => $job['timeUpdated']
                 ? DateTimeHelper::toDateTime($job['timeUpdated'])->format('Y-m-d H:i:s')
                 : 'No time',
-            
+
             'job' => is_resource($job['job'])
                 ? stream_get_contents($job['job'])
                 : $this->serializer->unserialize($job['job']),

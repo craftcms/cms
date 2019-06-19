@@ -30,14 +30,13 @@
             </thead>
             <tbody>
                 <tr v-for="job in jobs">
-                    <th><a>[[job.description]]</a></th>
+                    <th><a @click="setActiveJob(job)">[[job.description]]</a></th>
                     <td><code>[[job.progress]]/ 100</code></td>
                     <td>
                         <div>[[jobStatusDeterminer(job)]]</div>
                     </td>
                     <td><a class="btn" @click="retryJob(job)">Retry</a> </td>
                     <td><a class="btn" @click="releaseJob(job)">Cancel</a> </td>
-                    <td><a class="btn" @click="setActiveJob(job)">View details</a> </td>
                 </tr>
             </tbody>
         </table>
@@ -47,10 +46,11 @@
                 <a class="btn submit" @click="releaseJob(activeJob)">Cancel</a>
             </div>
 
-            <h2>[[activeJob.description]]</h2>
+            <h2>[[activeJob.description]] | [[ jobStatusDeterminer(activeJob) ]]</h2>
             <p v-if="activeJob.error" class="error">[[activeJob.error]]</p>
 
             <div class="pane">
+                <h3>Job values:</h3>
                 <ul>
                     <li v-for="(value, name) in activeJob" v-if="name !== 'error' && name !== 'job'">
                         <strong>[[ name|capitalize ]]</strong>: [[ value ]]
@@ -58,16 +58,16 @@
                 </ul>
             </div>
 
-            <hr>
+            <div class="pane">
+                <h3>Job data:</h3>
 
-            <h2>Job data:</h2>
-
-            <!-- TODO: Remove inline styles -->
-            <div style="background-color: #22292f;color: #38c172; padding: 20px;" v-if="activeJob.job">
-                <code>[[activeJob.job]]</code>
-            </div>
-            <div v-else>
-                No job data to display
+                <!-- TODO: Remove inline styles -->
+                <div style="background-color: #22292f;color: #38c172; padding: 20px;" v-if="activeJob.job">
+                    <code>[[activeJob.job]]</code>
+                </div>
+                <div v-else>
+                    No job data to display
+                </div>
             </div>
             <hr>
 

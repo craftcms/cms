@@ -97,9 +97,11 @@ new Vue({
          */
         releaseAll() {
             if (confirm('Are you sure?')) {
+                let $this = this
+
                 this.craftPost('queue/release-all', {}).then(function(response) {
-                    this.jobs = []
-                    this.activeJob = null
+                    $this.jobs = []
+                    $this.activeJob = null
                     Craft.cp.displayNotice('All jobs released')
                 })
             }
@@ -111,8 +113,9 @@ new Vue({
          */
         retryJob(job) {
             if (confirm('Are you sure?')) {
+                let $this = this
                 this.craftPost('queue/retry', {id: job.id}).then(function(response) {
-                    this.activeJob = null
+                    $this.activeJob = null
                     Craft.cp.displayNotice('Job retried. It will be updated soon.')
                 })
             }
