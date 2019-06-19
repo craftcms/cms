@@ -87,7 +87,14 @@ interface QueueInterface
     public function getJobInfo(int $limit = null): array;
 
     /**
-     * TODO: This required?
+     * Returns all possible information on a single queue job.
+     *
+     * In the QueueUtility this method is used to display details about your queue job.
+     * The key `job` will be displayed in a <code></code> tag and should return the raw debug data about your queue.
+     * The key `error` will be displayed in red indicating a problem with the job.
+     * The key `status` should return the status in accordance with `self::getJobInfo().
+     * The key `progress` should return the job progress (0-100). 
+     *
      * @param int $jobId
      *
      * @return mixed
