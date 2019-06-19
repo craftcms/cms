@@ -4,6 +4,13 @@
  * @license https://craftcms.github.io/license/
  */
 
+/**
+ * Vue component for the Queue manager
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @since 3.2
+ */
 new Vue({
     el: "#queue-manager-utility",
     delimiters: ['[[',']]'],

@@ -12,9 +12,10 @@ use craft\base\Utility;
 use craft\web\assets\queuemanager\QueueManagerAsset;
 
 /**
- * SearchIndexes represents a SearchIndexes dashboard widget.
+ * Queue manager is a utility used for managing jobs in the Queue.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
 class QueueManager extends Utility

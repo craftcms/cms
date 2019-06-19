@@ -10,6 +10,7 @@
 - Added `craft\queue\Queue::releaseAll()`
 - Added `craft\controllers\QueueController::actionReleaseAll()`
 - Added `craft\controllers\QueueController::actionRetryAll()`
+- Added `craft\controllers\QueueController::actionGetJobDetails()`
 - Added `craft\web\assets\queuemanager\QueueManagerAsset`
 
 ### Changed

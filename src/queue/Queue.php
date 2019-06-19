@@ -18,6 +18,8 @@ use yii\db\Query;
 use yii\queue\cli\Signal;
 use yii\queue\ExecEvent;
 use yii\web\Response;
+use yii\db\Exception as YiiDbException;
+use Exception as BasePhpException;
 
 /**
  * Craft Queue
@@ -226,8 +228,10 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
+     * Releases all jobs from the Queue.
+     *
      * @return bool
-     * @throws \yii\db\Exception
+     * @throws YiiDbException
      */
     public function releaseAll() : bool
     {
@@ -332,8 +336,11 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
-     * @param int|null $limit
-     * @return array
+     * Returns all specific details about a job including the raw data form the `job` collumn
+     *
+     * @param int $jobId
+     * @return array|mixed
+     * @throws BasePhpException
      */
     public function getJobDetails(int $jobId)
     {
