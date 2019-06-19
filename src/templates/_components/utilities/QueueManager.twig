@@ -7,8 +7,7 @@
     </div>
     <div v-else>
 
-        <div>
-        <div class="right" v-if="jobs && !activeJob">
+        <div class="right" v-if="jobs.length > 0 && !activeJob">
             <a class="btn submit" @click="retryAll">
                 Retry all
             </a>
@@ -17,9 +16,8 @@
                 Release all
             </a>
         </div>
-        </div>
 
-        <table class="data fullwidth collapsible" v-if="jobs && !activeJob">
+        <table class="data fullwidth collapsible" v-if="jobs.length > 0 && !activeJob">
             <thead>
 
             <tr>
@@ -36,14 +34,15 @@
                         <div>[[jobStatusDeterminer(job)]]</div>
                     </td>
                     <td><a class="btn" @click="retryJob(job)">Retry</a> </td>
-                    <td><a class="btn" @click="releaseJob(job)">Cancel</a> </td>
+                    <td><a class="delete icon" title="Delete" role="button" @click="releaseJob(job)"></a> </td>
                 </tr>
             </tbody>
         </table>
+
         <div v-else-if="activeJob">
             <div class="right">
                 <a class="btn submit" @click="retryJob(activeJob)">Retry</a>
-                <a class="btn submit" @click="releaseJob(activeJob)">Cancel</a>
+                <a class="btn submit" @click="releaseJob(activeJob)">Release</a>
             </div>
 
             <h2>[[activeJob.description]] | [[ jobStatusDeterminer(activeJob) ]]</h2>
