@@ -1,5 +1,21 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\base\utilities\QueueManager`. ([#3489](https://github.com/craftcms/cms/issues/3489) and [#2753](https://github.com/craftcms/cms/issues/2753))
+- Added `craft\queue\Command::actionRelease()`
+- Added the `queue/release` console command
+- Added `craft\queue\Queue::getJobDetails()`
+- Added `craft\queue\Queue::releaseAll()`
+- Added `craft\controllers\QueueController::actionReleaseAll()`
+- Added `craft\controllers\QueueController::actionRetryAll()`
+- Added `craft\web\assets\queuemanager\QueueManagerAsset`
+
+### Changed
+- Queue actions in `craft\controllers\QueueController` now require `utility:queue-manager` ([#4040](https://github.com/craftcms/cms/issues/4040))
+- The `craft\queue\QueueInterface` now requires a `getJobDetails` and `releaseAll` method.
+
 ## 3.2.0-beta.3 - 2019-06-18
 
 ### Added
