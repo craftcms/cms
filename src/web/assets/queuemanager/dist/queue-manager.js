@@ -63,10 +63,10 @@ new Vue({
             this.loading = true
             let $this = this
 
-            axios.get(Craft.getActionUrl('queue/get-job-details?id='+job.id+'', {})).then(function(response) {
+            axios.get(Craft.getActionUrl('queue/get-job-details?id='+job.id+'', {})).then(response => {
                 $this.activeJob = response.data
                 $this.loading = false
-            }, function(response) {
+            }, response => {
                 Craft.cp.displayError(response.response.data.error)
                 reject(response)
             })
@@ -86,7 +86,7 @@ new Vue({
          */
         retryAll() {
             if (confirm('Are you sure?')) {
-                this.craftPost('queue/retry-all', {}).then(function(response) {
+                this.craftPost('queue/retry-all', {}).then(response => {
                     Craft.cp.displayNotice('All jobs will be retried. They will soon show progress.')
                 })
             }
@@ -97,11 +97,9 @@ new Vue({
          */
         releaseAll() {
             if (confirm('Are you sure?')) {
-                let $this = this
-
-                this.craftPost('queue/release-all', {}).then(function(response) {
-                    $this.jobs = []
-                    $this.activeJob = null
+                this.craftPost('queue/release-all', {}).then(response => {
+                    this.jobs = []
+                    this.activeJob = null
                     Craft.cp.displayNotice('All jobs released')
                 })
             }
@@ -113,9 +111,8 @@ new Vue({
          */
         retryJob(job) {
             if (confirm('Are you sure?')) {
-                let $this = this
-                this.craftPost('queue/retry', {id: job.id}).then(function(response) {
-                    $this.activeJob = null
+                this.craftPost('queue/retry', {id: job.id}).then(response => {
+                    this.activeJob = null
                     Craft.cp.displayNotice('Job retried. It will be updated soon.')
                 })
             }
