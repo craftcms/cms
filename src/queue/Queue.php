@@ -358,7 +358,6 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'error' => $job['error'],
         ];
 
-
         return $result;
     }
 

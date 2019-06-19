@@ -36,7 +36,7 @@ interface QueueInterface
 
     /**
      * Releases all jobs
-     * 
+     *
      * @return mixed
      */
     public function releaseAll();
@@ -85,4 +85,12 @@ interface QueueInterface
      * @return array
      */
     public function getJobInfo(int $limit = null): array;
+
+    /**
+     * TODO: This required?
+     * @param int $jobId
+     *
+     * @return mixed
+     */
+    public function getJobDetails(int $jobId);
 }
