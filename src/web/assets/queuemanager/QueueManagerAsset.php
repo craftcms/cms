@@ -36,6 +36,7 @@ class QueueManagerAsset extends AssetBundle
             VueAsset::class
         ];
 
+        // TODO: Once Babel is setup we can use $this->dotJs()
         $this->js = [
             'queue-manager.js',
         ];
