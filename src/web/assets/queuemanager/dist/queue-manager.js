@@ -11,7 +11,6 @@ new Vue({
         return {
             loading: true,
             jobs: [],
-            modal: null,
             activeJob: null,
         };
     },
@@ -20,14 +19,6 @@ new Vue({
      * Mounted function
      */
     mounted() {
-        this.modal = new Garnish.Modal(this.$refs.detailmodal, {
-            autoShow: false,
-            resizable: true,
-            onHide() {
-                $this.$emit('update:show', false)
-            }
-        })
-
         this.updateJobs().then(this.handleDataResponse)
 
         window.setInterval(this.reIndexJobs, 2500);
