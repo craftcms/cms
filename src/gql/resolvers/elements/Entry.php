@@ -35,15 +35,13 @@ class Entry extends BaseElement
         $pairs = GqlHelper::extractAllowedEntitiesFromToken('read');
 
         if (!empty($pairs['sections'])) {
-            $allowedIds = Db::idsByUids(Table::SECTIONS, $pairs['sections']);
-            $query->sectionId = $query->sectionId ? array_intersect($allowedIds, (array)$query->sectionId) : $allowedIds;
+            $query->andWhere(['in', 'entries.sectionId', array_values(Db::idsByUids(Table::SECTIONS, $pairs['sections']))]);
         } else {
             return [];
         }
 
         if (!empty($pairs['entrytypes'])) {
-            $allowedIds = Db::idsByUids(Table::ENTRYTYPES, $pairs['entrytypes']);
-            $query->typeId = $query->typeId ? array_intersect($allowedIds, (array)$query->typeId) : $allowedIds;
+            $query->andWhere(['in', 'entries.typeId', array_values(Db::idsByUids(Table::ENTRYTYPES, $pairs['entrytypes']))]);
         } else {
             return [];
         }
