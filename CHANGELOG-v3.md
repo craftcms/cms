@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- Added `craft\base\utilities\QueueManager`. ([#3489](https://github.com/craftcms/cms/issues/3489) and [#2753](https://github.com/craftcms/cms/issues/2753))
+- Added `craft\utilities\QueueManager`. ([#3489](https://github.com/craftcms/cms/issues/3489) and [#2753](https://github.com/craftcms/cms/issues/2753))
 - Added `craft\queue\Command::actionRelease()`
 - Added the `queue/release` console command
 - Added `craft\queue\Queue::getJobDetails()`
