@@ -79,9 +79,8 @@ class ResaveElements extends BaseJob
         $query = $this->_query();
         /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
-        $total = $query->count();
         return Craft::t('app', 'Resaving {type}', [
-            'type' => mb_strtolower($total == 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
+            'type' => mb_strtolower($elementType::pluralDisplayName()),
         ]);
     }
 

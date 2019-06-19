@@ -38,6 +38,7 @@
 - Jobs can new set progress labels, which will be shown below their description and progress bar in the queue HUD. ([#1931](https://github.com/craftcms/cms/pull/1931))
 - Added the `_layouts/element` template, which can be extended by element edit pages that wish to support drafts, revisions, and content previewing.
 - Added the `_special/sitepicker` template.
+- It’s now possible for plugins and modules to define custom actions on console controllers.
 - Added a testing framework for Craft and plugins, powered by Codeception. ([#3382](https://github.com/craftcms/cms/pull/3382), [#1485](https://github.com/craftcms/cms/issues/1485), [#944](https://github.com/craftcms/cms/issues/944))
 - Added `craft\base\BlockElementInterface`.
 - Added `craft\base\Element::EVENT_AFTER_PROPAGATE`.
@@ -67,12 +68,15 @@
 - Added `craft\base\SortableFieldInterface`, which can be implemented by field classes that should be sortable in element indexes.
 - Added `craft\behaviors\DraftBehavior`.
 - Added `craft\behaviors\RevisionBehavior`.
+- Added `craft\console\CallableAction`.
 - Added `craft\console\Controller`.
+- Added `craft\console\controllers\ResaveController::saveElements()`.
 - Added `craft\console\ControllerTrait`.
 - Added `craft\console\Request::getToken()`.
 - Added `craft\controllers\PreviewController`.
 - Added `craft\errors\MissingAssetException`.
 - Added `craft\events\BatchElementActionEvent`.
+- Added `craft\events\DefineConsoleActionsEvent`.
 - Added `craft\events\ElementQueryEvent`.
 - Added `craft\events\RegisterPreviewTargetsEvent`.
 - Added `craft\events\RevisionEvent`.
@@ -124,6 +128,7 @@
 - It’s now possible to pass a `behaviors` key to the `$newAttributes` argument of `craft\services\Elements::duplicateElement()`, to preattach behaviors to the cloned element before it’s saved.
 
 ### Removed
+- Removed the Search Indexes utility. ([#3698](https://github.com/craftcms/cms/issues/3698))
 - Removed the `--batch-size` option from `resave/*` actions.
 - Removed the `craft.entryRevisions` Twig component.
 - Removed `craft\events\VersionEvent`.

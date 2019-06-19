@@ -10,7 +10,6 @@ namespace craft\services;
 use Craft;
 use craft\base\UtilityInterface;
 use craft\events\RegisterComponentTypesEvent;
-use craft\queue\QueueInterface;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use craft\utilities\DbBackup;
@@ -18,8 +17,6 @@ use craft\utilities\DeprecationErrors;
 use craft\utilities\FindAndReplace;
 use craft\utilities\Migrations;
 use craft\utilities\PhpInfo;
-use craft\utilities\QueueManager;
-use craft\utilities\SearchIndexes;
 use craft\utilities\SystemMessages as SystemMessagesUtility;
 use craft\utilities\SystemReport;
 use craft\utilities\Updates as UpdatesUtility;
@@ -72,22 +69,15 @@ class Utilities extends Component
         $utilityTypes = [
             UpdatesUtility::class,
             SystemReport::class,
-            PhpInfo::class
+            PhpInfo::class,
         ];
 
         if (Craft::$app->getEdition() === Craft::Pro) {
             $utilityTypes[] = SystemMessagesUtility::class;
         }
 
-        $utilityTypes[] = SearchIndexes::class;
-
         if (!empty(Craft::$app->getVolumes()->getAllVolumes())) {
             $utilityTypes[] = AssetIndexes::class;
-        }
-
-        // Ensure we only implement queue if we can use the corresponding web based controller.
-        if (Craft::$app->getQueue() instanceof QueueInterface) {
-            $utilityTypes[] = QueueManager::class;
         }
 
         $utilityTypes[] = ClearCaches::class;
