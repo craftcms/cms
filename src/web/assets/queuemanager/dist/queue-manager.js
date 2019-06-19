@@ -24,6 +24,18 @@ new Vue({
         window.setInterval(this.reIndexJobs, 2500);
     },
 
+    filters: {
+        /**
+         * Capitalize a string
+         * @param string
+         * @returns {string}
+         */
+        capitalize(string) {
+            if (!string) return ''
+            string = string.toString()
+            return string.charAt(0).toUpperCase() + string.slice(1)
+        }
+    },
     methods: {
         /**
          * Updates and sets the this.jobs.

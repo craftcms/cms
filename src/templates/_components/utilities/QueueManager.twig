@@ -53,7 +53,7 @@
             <div class="pane">
                 <ul>
                     <li v-for="(value, name) in activeJob" v-if="name !== 'error' && name !== 'job'">
-                        {{ name }}: {{ value }}
+                        <strong>[[ name|capitalize ]]</strong>: [[ value ]]
                     </li>
                 </ul>
             </div>
