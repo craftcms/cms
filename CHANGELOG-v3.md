@@ -12,6 +12,7 @@
 - Added `craft\controllers\QueueController::actionRetryAll()`
 - Added `craft\controllers\QueueController::actionGetJobDetails()`
 - Added `craft\web\assets\queuemanager\QueueManagerAsset`
+- Added the `{% dd %}` Twig tag. ([#4399](https://github.com/craftcms/cms/issues/4399))
 
 ### Changed
 - Queue actions in `craft\controllers\QueueController` now require `utility:queue-manager` ([#4040](https://github.com/craftcms/cms/issues/4040))
