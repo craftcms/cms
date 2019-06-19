@@ -63,8 +63,11 @@
             <h2>Job data:</h2>
 
             <!-- TODO: Remove inline styles -->
-            <div style="background-color: #22292f;color: #38c172; padding: 20px;">
+            <div style="background-color: #22292f;color: #38c172; padding: 20px;" v-if="activeJob.job">
                 <code>[[activeJob.job]]</code>
+            </div>
+            <div v-else>
+                No job data to display
             </div>
             <hr>
 
