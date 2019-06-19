@@ -7,6 +7,7 @@ use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\GlobalSet;
+use craft\helpers\Gql as GqlHelper;
 
 /**
  * Class GlobalSetType
@@ -24,6 +25,12 @@ class GlobalSetType implements BaseGenerator
         foreach ($globalSets as $globalSet) {
             /** @var GlobalSetElement $globalSet */
             $typeName = self::getName($globalSet);
+            $requiredContexts = GlobalSetElement::getGqlScopesByContext($globalSet);
+
+            if (!GqlHelper::isTokenAwareOf($requiredContexts)) {
+                continue;
+            }
+
             $contentFields = $globalSet->getFields();
             $contentFieldGqlTypes = [];
 

@@ -182,6 +182,15 @@ class GlobalSet extends Element
         return $context->handle . '_GlobalSet';
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlScopesByContext($context): array
+    {
+        /** @var GlobalSetElement $context */
+        return ['globalsets.' . $context->uid];
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
