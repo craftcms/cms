@@ -28,6 +28,20 @@ interface QueueInterface
     public function retry(string $id);
 
     /**
+     * Retries all jobs
+     *
+     * @return mixed
+     */
+    public function retryAll();
+
+    /**
+     * Releases all jobs
+     * 
+     * @return mixed
+     */
+    public function releaseAll();
+
+    /**
      * Releases a job from the queue.
      *
      * @param string $id
