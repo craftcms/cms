@@ -207,20 +207,21 @@ class Drafts extends Component
     public function applyDraft(ElementInterface $draft): ElementInterface
     {
         /** @var Element|DraftBehavior $draft */
+        /** @var DraftBehavior $behavior */
+        $behavior = $draft->getBehavior('draft');
         /** @var Element|null $source */
-        $source = $draft->getSource();
+        $source = $behavior->getSource();
 
         // Fire a 'beforeApplyDraft' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DRAFT)) {
             $this->trigger(self::EVENT_BEFORE_APPLY_DRAFT, new DraftEvent([
                 'source' => $source,
-                'creatorId' => $draft->creatorId,
-                'draftName' => $draft->draftName,
-                'draftNotes' => $draft->draftNotes,
+                'creatorId' => $behavior->creatorId,
+                'draftName' => $behavior->draftName,
+                'draftNotes' => $behavior->draftNotes,
                 'draft' => $draft,
             ]));
         }
-
 
         $elementsService = Craft::$app->getElements();
 
@@ -271,9 +272,9 @@ class Drafts extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_APPLY_DRAFT)) {
             $this->trigger(self::EVENT_AFTER_APPLY_DRAFT, new DraftEvent([
                 'source' => $newSource,
-                'creatorId' => $draft->creatorId,
-                'draftName' => $draft->draftName,
-                'draftNotes' => $draft->draftNotes,
+                'creatorId' => $behavior->creatorId,
+                'draftName' => $behavior->draftName,
+                'draftNotes' => $behavior->draftNotes,
                 'draft' => $draft,
             ]));
         }

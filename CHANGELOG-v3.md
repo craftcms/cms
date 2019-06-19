@@ -11,6 +11,9 @@
 ### Deprecated
 - Deprecated `craft\events\DefineComponentsEvent`.
 
+### Fixed
+- Fixed an error that could occur when saving an entry for the first time.
+
 ## 3.2.0-beta.3 - 2019-06-18
 
 ### Added
