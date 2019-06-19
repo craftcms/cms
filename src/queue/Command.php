@@ -128,7 +128,7 @@ class Command extends \yii\queue\cli\Command
      * @return int
      * @throws YiiDbException
      */
-    public function actionReleaseAll($job): int
+    public function actionRelease($job): int
     {
         if (strtolower($job) === 'all') {
             $this->stdout('Releasing all queue jobs' . PHP_EOL);
