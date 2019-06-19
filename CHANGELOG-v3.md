@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleaed
+
+### Added
+- Added the `{% dd %}` Twig tag. ([#4399](https://github.com/craftcms/cms/issues/4399))
+
 ## 3.2.0-beta.3 - 2019-06-18
 
 ### Added
