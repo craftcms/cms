@@ -187,7 +187,6 @@ class QueueController extends Controller
     /**
      * Returns info about all the jobs in the queue.
      *
-     * @todo Not sure if we can use `utility:queue-manager` on this. Investigation needed.
      * @return Response
      */
     public function actionGetJobInfo(): Response
@@ -195,7 +194,7 @@ class QueueController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
 
-        $limit = Craft::$app->getRequest()->getBodyParam('limit');
+        $limit = Craft::$app->getRequest()->getParam('limit');
 
         return $this->asJson(Craft::$app->getQueue()->getJobInfo($limit));
     }
