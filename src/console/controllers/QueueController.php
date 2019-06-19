@@ -31,6 +31,25 @@ class QueueController extends Controller
     // =========================================================================
 
     /**
+     * TODO: What to return in beforeAction on fail?
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        // Make sure the queue uses our interface
+        if (!Craft::$app->getQueue() instanceof QueueInterface) {
+            $this->stderr('The queue class ' . get_class(Craft::$app->getQueue()) . ' doesn’t support console-based runners.');
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * @return int
      */
     public function actionRun()
