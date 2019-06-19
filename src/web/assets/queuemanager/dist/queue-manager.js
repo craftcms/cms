@@ -12,6 +12,7 @@ new Vue({
             loading: true,
             jobs: [],
             activeJob: null,
+            limit: 50
         };
     },
 
@@ -19,9 +20,9 @@ new Vue({
      * Mounted function
      */
     mounted() {
-        this.updateJobs().then(this.handleDataResponse)
+        this.reIndexJobs()
 
-        window.setInterval(this.reIndexJobs, 2500);
+        window.setInterval(this.reIndexJobs, 2000);
     },
 
     filters: {
@@ -49,8 +50,8 @@ new Vue({
          * @returns {Promise<any>}
          */
         updateJobs() {
-            return new Promise(function(resolve, reject) {
-                axios.get(Craft.getActionUrl('queue/get-job-info')).then(function(response) {
+            return new Promise((resolve, reject) => {
+                axios.get(Craft.getActionUrl('queue/get-job-info', {limit: this.limit})).then(function(response) {
                     resolve(response)
                 }, function(response) {
                     Craft.cp.displayError(response.response.data.error)
@@ -96,7 +97,7 @@ new Vue({
          * Releases all jobs
          */
         releaseAll() {
-            if (confirm('Are you sure?')) {
+            if (confirm('Are you sure? This will delete all jobs in the Queue - not just those displayed below.')) {
                 this.craftPost('queue/release-all', {}).then(response => {
                     this.jobs = []
                     this.activeJob = null
@@ -137,7 +138,7 @@ new Vue({
          * @param jobId
          */
         quickRemoveJob(jobId) {
-            let job = this.jobs.find(function(job) {
+            let job = this.jobs.find(job => {
                 return job.id == jobId
             })
 
@@ -188,7 +189,7 @@ new Vue({
          * @returns {Promise<any>}
          */
         craftPost(action, params) {
-            return new Promise(function(resolve, reject) {
+            return new Promise((resolve, reject) => {
                 Craft.postActionRequest(action, params, resolve)
             })
         }
