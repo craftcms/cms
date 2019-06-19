@@ -23,9 +23,9 @@ class QueueController extends Controller
     // =========================================================================
 
     /**
-     * @var bool Whether every entry change should be force-synced.
+     * @var bool Whether all actions should be executed on a queue action
      */
-    public $force = false;
+    public $all = false;
 
     // Public Methods
     // =========================================================================
@@ -53,8 +53,8 @@ class QueueController extends Controller
         if ($this->force = true) {
             $this->stdout('Retrying all jobs'. PHP_EOL);
 
-            \Craft::$app->getQueue()->retryAll();
-            \Craft::$app->getQueue()->run();
+            Craft::$app->getQueue()->retryAll();
+            Craft::$app->getQueue()->run();
 
             $this->stdout('All jobs retried'. PHP_EOL);
 
