@@ -58,9 +58,9 @@ new Vue({
          */
         updateJobs() {
             return new Promise((resolve, reject) => {
-                axios.get(Craft.getActionUrl('queue/get-job-info', {limit: this.limit})).then(function(response) {
+                axios.get(Craft.getActionUrl('queue/get-job-info', {limit: this.limit})).then(response => {
                     resolve(response)
-                }, function(response) {
+                }, response => {
                     Craft.cp.displayError(response.response.data.error)
                     reject(response)
                 })
