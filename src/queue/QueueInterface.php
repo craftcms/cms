@@ -93,7 +93,10 @@ interface QueueInterface
      * The key `job` will be displayed in a <code></code> tag and should return the raw debug data about your queue.
      * The key `error` will be displayed in red indicating a problem with the job.
      * The key `status` should return the status in accordance with `self::getJobInfo().
-     * The key `progress` should return the job progress (0-100). 
+     * The key `progress` should return the job progress (0-100).
+     * The key `description` should return the description of the job
+     *
+     * Any other key value pairs are allowed and will be displayed on the details page.
      *
      * @param int $jobId
      *

@@ -42,38 +42,21 @@
             </tbody>
         </table>
         <div v-else-if="activeJob">
+            <div class="right">
+                <a class="btn" @click="retryJob(activeJob)">Retry</a>
+                <a class="btn" @click="releaseJob(activeJob)">Cancel</a>
+            </div>
+
             <h2>[[activeJob.description]]</h2>
             <p v-if="activeJob.error" class="error">[[activeJob.error]]</p>
 
-            <!-- TODO: Loop over each property in the Queue and stop using the HTML table - use a list instead. We need to support multiple types of queue interface -->
-            <table class="data fullwidth collapsible">
-                <thead>
-                <tr>
-                    <th scope="col">Progress</th>
-                    <th scope="col">TTR</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Time pushed</th>
-                    <th scope="col">Time updated</th>
-                    <th scope="col">Date failed</th>
-                    <th scope="col">Priority</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td><code>[[activeJob.progress]]/ 100</code></td>
-                    <td><code>[[activeJob.ttr]]</code></td>
-                    <td>
-                        <div>[[jobStatusDeterminer(activeJob)]]</div>
-                    </td>
-                    <td><code>[[activeJob.timePushed]]</code></td>
-                    <td><code>[[activeJob.timeUpdated]]</code></td>
-                    <td><code>[[activeJob.dateFailed]]</code></td>
-                    <td><code>[[activeJob.priority]]</code></td>
-                    <td><a class="btn" @click="retryJob(activeJob)">Retry</a> </td>
-                    <td><a class="btn" @click="releaseJob(activeJob)">Cancel</a> </td>
-                </tr>
-                </tbody>
-            </table>
+            <div class="pane">
+                <ul>
+                    <li v-for="(value, name) in activeJob" v-if="name !== 'error' && name !== 'job'">
+                        {{ name }}: {{ value }}
+                    </li>
+                </ul>
+            </div>
 
             <hr>
 
