@@ -45,6 +45,7 @@
             <h2>[[activeJob.description]]</h2>
             <p v-if="activeJob.error" class="error">[[activeJob.error]]</p>
 
+            <!-- TODO: Loop over each property in the Queue and stop using the HTML table - use a list instead. We need to support multiple types of queue interface -->
             <table class="data fullwidth collapsible">
                 <thead>
                 <tr>
