@@ -4,7 +4,7 @@ namespace craft\gql\types\generators;
 
 
 /**
- * Class AssetTypeGenerator
+ * Class BaseGenerator
  */
 interface BaseGenerator
 {

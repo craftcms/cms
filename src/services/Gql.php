@@ -38,6 +38,7 @@ use craft\gql\types\generators\GlobalSetType;
 use craft\gql\types\generators\MatrixBlockType;
 use craft\gql\types\generators\UserType;
 use craft\gql\types\Query;
+use craft\helpers\DateTimeHelper;
 use craft\models\GqlToken;
 use craft\models\Section;
 use craft\records\GqlToken as GqlTokenRecord;
@@ -87,18 +88,25 @@ class Gql extends Component
 
     private $_schema;
 
+    private $_token;
+
     // Public Methods
     // =========================================================================
 
     /**
      * Returns the GraphQL schema.
      *
+     * @param GqlToken $token
      * @param bool $validateSchema should the schema be deep-scanned and validated
      * @return Schema
      * @throws GqlException in case of invalid schema
      */
-    public function getSchema($validateSchema = false): Schema
+    public function getSchema($token = null, $validateSchema = false): Schema
     {
+        if ($token) {
+            $this->setToken($token);
+        }
+
         if (!$this->_schema || $validateSchema) {
             $this->_registerGqlTypes();
             $this->_registerGqlQueries();
@@ -130,6 +138,28 @@ class Gql extends Component
         }
 
         return $this->_schema;
+    }
+
+    public function setToken(GqlToken $token)
+    {
+        $this->_token = $token;
+        $token->lastUsed = DateTimeHelper::currentUTCDateTime();
+        $this->saveToken($token);
+    }
+
+    /**
+     * Return the token in use for the current GQL request.
+     *
+     * @return GqlToken
+     * @throws GqlException if no token set.
+     */
+    public function getCurrentToken(): GqlToken
+    {
+        if (!$this->_token) {
+            throw new GqlException('No access token set.');
+        }
+
+        return $this->_token;
     }
 
     /**
@@ -244,6 +274,7 @@ class Gql extends Component
         $tokenRecord->name = $token->name;
         $tokenRecord->enabled = (bool) $token->enabled;
         $tokenRecord->expiryDate = $token->expiryDate;
+        $tokenRecord->lastUsed = $token->lastUsed;
         $tokenRecord->permissions = $token->permissions;
 
         if ($isNewToken) {
@@ -365,16 +396,13 @@ class Gql extends Component
             $sectionPermissions = [];
 
             foreach (Craft::$app->getSections()->getAllSections() as $section) {
-                $suffix = 'sections.' . $section->uid;
                 $nested = ['label' => Craft::t('app', 'View section - {section}', ['section' => Craft::t('site', $section->name)])];
 
-                if ($section->type != Section::TYPE_SINGLE) {
-                    foreach ($sortedEntryTypes[$section->id] as $entryType) {
-                        $nested['nested'][$suffix . '.entryTypes.' . $entryType->uid . '.view'] = ['label' => Craft::t('app', 'View entry type - {entryType}', ['entryType' => Craft::t('site', $entryType->name)])];
-                    }
+                foreach ($sortedEntryTypes[$section->id] as $entryType) {
+                    $nested['nested']['entrytypes.' . $entryType->uid . ':read'] = ['label' => Craft::t('app', 'View entry type - {entryType}', ['entryType' => Craft::t('site', $entryType->name)])];
                 }
 
-                $sectionPermissions[$suffix . '.view'] = $nested;
+                $sectionPermissions['sections.' . $section->uid . ':read'] = $nested;
             }
 
             $permissions[$label] = $sectionPermissions;
@@ -399,8 +427,7 @@ class Gql extends Component
             $volumePermissions = [];
 
             foreach ($volumes as $volume) {
-                $suffix = 'volumes.' . $volume->uid;
-                $volumePermissions[$suffix . '.view'] = ['label' => Craft::t('app', 'View volume - {volume}', ['volume' => Craft::t('site', $volume->name)])];
+                $volumePermissions['volumes.' . $volume->uid . ':read'] = ['label' => Craft::t('app', 'View volume - {volume}', ['volume' => Craft::t('site', $volume->name)])];
             }
 
             $permissions[$label] = $volumePermissions;
@@ -425,8 +452,8 @@ class Gql extends Component
             $globalSetPermissions = [];
 
             foreach ($globalSets as $globalSet) {
-                $suffix = 'globalSets.' . $globalSet->uid;
-                $globalSetPermissions[$suffix . '.view'] = ['label' => Craft::t('app', 'View global set - {globalSet}', ['globalSet' => Craft::t('site', $globalSet->name)])];
+                $suffix = 'globalsets.' . $globalSet->uid;
+                $globalSetPermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View global set - {globalSet}', ['globalSet' => Craft::t('site', $globalSet->name)])];
             }
 
             $permissions[$label] = $globalSetPermissions;
@@ -446,11 +473,11 @@ class Gql extends Component
         $userGroups = Craft::$app->getUserGroups()->getAllGroups();
 
         $label = Craft::t('app', 'Users');
-        $userPermissions = ['userGroups.admin.view' => ['label' => Craft::t('app', 'View user group - Admin')]];
+        $userPermissions = ['usergroups.admin:read' => ['label' => Craft::t('app', 'View user group - Admin')]];
 
         foreach ($userGroups as $userGroup) {
-            $suffix = 'userGroups.' . $userGroup->uid;
-            $userPermissions[$suffix . '.view'] = ['label' => Craft::t('app', 'View user group - {userGroup}', ['userGroup' => Craft::t('site', $userGroup->name)])];
+            $suffix = 'usergroups.' . $userGroup->uid;
+            $userPermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View user group - {userGroup}', ['userGroup' => Craft::t('site', $userGroup->name)])];
         }
 
         $permissions[$label] = $userPermissions;

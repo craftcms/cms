@@ -2034,6 +2034,15 @@ abstract class Element extends Component implements ElementInterface
         return 'Element';
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function getGqlScopesByContext($context): array
+    {
+        // Default to no scopes required
+        return [];
+    }
+
     // Events
     // -------------------------------------------------------------------------
 

@@ -878,6 +878,14 @@ interface ElementInterface extends ComponentInterface
      */
     public static function getGqlTypeNameByContext($context);
 
+    /**
+     * Returns the GQL scopes required by element's context.
+     *
+     * @param mixed $context The element's context - such as Volume, Entry Type or Matrix Block Type.
+     * @return array
+     */
+    public static function getGqlScopesByContext($context): array;
+
     // Events
     // -------------------------------------------------------------------------
 

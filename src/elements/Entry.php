@@ -965,6 +965,22 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public static function getGqlScopesByContext($context): array
+    {
+        /** @var EntryType $context */
+        $section = $context->getSection();
+
+        $scopes = [
+            'sections.' . $section->uid,
+            'entrytypes.' . $context->uid,
+        ];
+        
+        return $scopes;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setEagerLoadedElements(string $handle, array $elements)
     {
         if ($handle === 'author') {

@@ -28,6 +28,7 @@ use DateTime;
 use GraphQL\GraphQL;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -50,9 +51,12 @@ class GqlController extends Controller
     /**
      * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
+        // disable csrf
+        $this->enableCsrfValidation = false;
 
+        return parent::beforeAction($action);
     }
 
     /**
@@ -62,14 +66,30 @@ class GqlController extends Controller
      */
     public function actionIndex(): Response
     {
-        $schema = Craft::$app->getGql()->getSchema(Craft::$app->getConfig()->getGeneral()->devMode);
+        $gqlService = Craft::$app->getGql();
+        $request = Craft::$app->getRequest();
 
-        if (Craft::$app->request->isPost && $query=Craft::$app->request->post('query')) {
+        $token = null;
+        $authorizationHeader = Craft::$app->request->headers->get('authorization');
+        if (preg_match('/^Bearer\s+(.+)$/i', $authorizationHeader, $matches)) {
+            $accessToken = $matches[1];
+            $token = $gqlService->getTokenByAccessToken($accessToken);
+        }
+
+        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
+
+        if (!$token) {
+            throw new ForbiddenHttpException('Invalid authorization token.');
+        }
+
+        $schema = $gqlService->getSchema($token, $devMode);
+
+        if ($request->getIsPost() && $query= $request->post('query')) {
             $input = $query;
-        } else if (Craft::$app->request->isGet && $query=Craft::$app->request->get('query')) {
+        } else if ($request->getIsGet() && $query= $request->get('query')) {
             $input = $query;
         } else {
-            $data = Craft::$app->request->getRawBody();
+            $data = $request->getRawBody();
             $data = json_decode($data, true);
             $input = @$data['query'];
         }
