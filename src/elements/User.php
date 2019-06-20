@@ -13,6 +13,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\Edit;
+use craft\elements\actions\HardDelete;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
@@ -229,6 +230,13 @@ class User extends Element implements IdentityInterface
         if (Craft::$app->getUser()->checkPermission('deleteUsers')) {
             // Delete
             $actions[] = DeleteUsers::class;
+
+            $actions[] = $elementsService->createAction([
+                'type' => HardDelete::class,
+                'successMessage' => Craft::t('app', 'Users deleted.'),
+                'partialSuccessMessage' => Craft::t('app', 'Some users deleted.'),
+                'failMessage' => Craft::t('app', 'Users not deleted.'),
+            ]);
         }
 
         // Restore

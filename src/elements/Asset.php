@@ -18,6 +18,7 @@ use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
 use craft\elements\actions\Edit;
 use craft\elements\actions\EditImage;
+use craft\elements\actions\HardDelete;
 use craft\elements\actions\PreviewAsset;
 use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
@@ -270,9 +271,11 @@ class Asset extends Element
                 $actions[] = EditImage::class;
             }
 
+            // TODO: Do we need to do a checkPermission in HardDelete for assets? It's done above. Why does the DeleteAssets class do this?
             // Delete
             if ($userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid)) {
                 $actions[] = DeleteAssets::class;
+                $actions[] = HardDelete::class;
             }
         }
 

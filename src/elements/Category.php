@@ -16,6 +16,7 @@ use craft\elements\actions\DeepDuplicate;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
+use craft\elements\actions\HardDelete;
 use craft\elements\actions\NewChild;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SetStatus;
@@ -216,6 +217,12 @@ class Category extends Element
             // Delete
             $actions[] = $elementsService->createAction([
                 'type' => Delete::class,
+                'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
+                'successMessage' => Craft::t('app', 'Categories deleted.'),
+            ]);
+
+            $actions[] = $elementsService->createAction([
+                'type' => HardDelete::class,
                 'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
                 'successMessage' => Craft::t('app', 'Categories deleted.'),
             ]);
