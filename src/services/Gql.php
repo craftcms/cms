@@ -473,7 +473,6 @@ class Gql extends Component
         $userGroups = Craft::$app->getUserGroups()->getAllGroups();
 
         $label = Craft::t('app', 'Users');
-        $userPermissions = ['usergroups.admin:read' => ['label' => Craft::t('app', 'View user group - Admin')]];
 
         foreach ($userGroups as $userGroup) {
             $suffix = 'usergroups.' . $userGroup->uid;
