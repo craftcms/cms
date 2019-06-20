@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleaed
+## Unreleased
 
 ### Added
 - Added the `{% dd %}` Twig tag. ([#4399](https://github.com/craftcms/cms/issues/4399))
@@ -12,7 +12,7 @@
 - Deprecated `craft\events\DefineComponentsEvent`.
 
 ### Fixed
-- Fixed an error that could occur when saving an entry for the first time.
+- Fixed an error that could occur when saving an entry for the first time. ([#4421](https://github.com/craftcms/cms/issues/4421))
 
 ## 3.2.0-beta.3 - 2019-06-18
 
