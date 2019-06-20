@@ -101,7 +101,7 @@
 
 ### Changed
 
-- The `craft\queue\QueueInterface` now requires a `getJobDetails` and `releaseAll` method.
+- The `craft\queue\QueueInterface` now requires a `getJobDetails`, `retryAll` and `releaseAll` method.
 - Queue actions in `craft\controllers\QueueController` now require `utility:queue-manager` ([#4040](https://github.com/craftcms/cms/issues/4040))
 - Relational fields are now capable of selecting elements from multiple sites, if they haven’t been locked down to only related elements from a single site. ([#3584](https://github.com/craftcms/cms/issues/3584))
 - Reference tags can now specify the site to load the element from. ([#2956](https://github.com/craftcms/cms/issues/2956))

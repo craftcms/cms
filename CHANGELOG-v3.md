@@ -16,7 +16,7 @@
 
 ### Changed
 - Queue actions in `craft\controllers\QueueController` now require `utility:queue-manager` ([#4040](https://github.com/craftcms/cms/issues/4040))
-- The `craft\queue\QueueInterface` now requires a `getJobDetails` and `releaseAll` method.
+- The `craft\queue\QueueInterface` now requires a `getJobDetails`, `retryAll` and `releaseAll` method.
 
 ## 3.2.0-beta.3 - 2019-06-18
 
