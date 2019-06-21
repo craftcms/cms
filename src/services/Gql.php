@@ -28,7 +28,6 @@ use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\queries\Asset as AssetQuery;
 use craft\gql\queries\Entry as EntryQuery;
 use craft\gql\queries\GlobalSet as GlobalSetQuery;
-use craft\gql\queries\MatrixBlock as MatrixBlockQuery;
 use craft\gql\queries\User as UserQuery;
 use craft\gql\TypeLoader;
 use craft\gql\types\DateTime;
@@ -327,7 +326,6 @@ class Gql extends Component
         $queryList = [
             // Queries
             EntryQuery::getQueries(),
-            MatrixBlockQuery::getQueries(),
             AssetQuery::getQueries(),
             UserQuery::getQueries(),
             GlobalSetQuery::getQueries(),
