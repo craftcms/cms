@@ -274,7 +274,11 @@ class Asset extends Element
             // Delete
             if ($userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid)) {
                 $actions[] = DeleteAssets::class;
-                $actions[] = HardDelete::class;
+                $actions[] = Craft::$app->getElements()->createAction([
+                    'type' => HardDelete::class,
+                    'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected assets?'),
+                    'successMessage' => Craft::t('app', 'Assets deleted.'),
+                ]);
             }
         }
 

@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementAction;
 use craft\elements\Asset;
 use craft\elements\db\ElementQueryInterface;
-use yii\base\InvalidArgumentException;
 
 /**
  * HardDelete represents a Hard delete element action.
