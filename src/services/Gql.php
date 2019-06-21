@@ -40,7 +40,6 @@ use craft\gql\types\generators\UserType;
 use craft\gql\types\Query;
 use craft\helpers\DateTimeHelper;
 use craft\models\GqlToken;
-use craft\models\Section;
 use craft\records\GqlToken as GqlTokenRecord;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
@@ -354,7 +353,7 @@ class Gql extends Component
     private function _loadGqlDirectives(): array
     {
         $directiveClasses = [
-            // Queries
+            // Directives
             FormatDateTime::class,
             Transform::class,
         ];
