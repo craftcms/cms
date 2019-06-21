@@ -33,6 +33,12 @@ class GqlCest
         $gqlService->setToken($token);
     }
 
+    public function _after(FunctionalTester $I)
+    {
+        $gqlService = Craft::$app->getGql();
+        $gqlService->flushCaches();
+    }
+
     /**
      * Test whether missing query parameter is handled correctly.
      * @group gql
