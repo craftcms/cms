@@ -263,7 +263,7 @@ class UsersTest extends TestCase
     public function testUserAssignmentToDefaultGroup()
     {
         Craft::$app->setEdition(Craft::Pro);
-        Craft::$app->getProjectConfig()->set('users.defaultGroup', 'usergroup-1002-uid');
+        Craft::$app->getProjectConfig()->set('users.defaultGroup', 'usergroup-1002-------------------uid');
 
         $this->users->assignUserToDefaultGroup($this->activeUser);
 
