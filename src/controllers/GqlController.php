@@ -77,7 +77,7 @@ class GqlController extends Controller
             $token = $gqlService->getTokenByAccessToken($accessToken);
         }
 
-        $tokenExpired = $token->expiryDate && $token->expiryDate->getTimestamp() <= DateTimeHelper::currentTimeStamp();
+        $tokenExpired = $token && $token->expiryDate && $token->expiryDate->getTimestamp() <= DateTimeHelper::currentTimeStamp();
 
         if (!$token || !$token->enabled || $tokenExpired) {
             throw new ForbiddenHttpException('Invalid authorization token.');
