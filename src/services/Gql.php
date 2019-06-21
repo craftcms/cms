@@ -140,7 +140,7 @@ class Gql extends Component
 
     /**
      * Set the GQL token to be used.
-     * 
+     *
      * @param GqlToken $token
      * @throws \yii\base\Exception
      */
@@ -219,6 +219,7 @@ class Gql extends Component
      */
     public function flushCaches()
     {
+        $this->_token = null;
         $this->_schema = null;
         TypeLoader::flush();
         GqlEntityRegistry::flush();
