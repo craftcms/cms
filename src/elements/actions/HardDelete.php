@@ -50,6 +50,14 @@ class HardDelete extends ElementAction
     /**
      * @inheritdoc
      */
+    public function getTriggerHtml()
+    {
+        return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function isDestructive(): bool
     {
         return true;
