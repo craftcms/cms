@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\elements\GlobalSet;
+use craft\errors\GqlException;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -75,6 +76,15 @@ class GqlController extends Controller
         if (preg_match('/^Bearer\s+(.+)$/i', $authorizationHeader, $matches)) {
             $accessToken = $matches[1];
             $token = $gqlService->getTokenByAccessToken($accessToken);
+        }
+
+        // What if something already set it on the service?
+        if (!$token) {
+            try {
+                $token = $gqlService->getCurrentToken();
+            } catch (GqlException $exception) {
+                // Or not.
+            }
         }
 
         $tokenExpired = $token && $token->expiryDate && $token->expiryDate->getTimestamp() <= DateTimeHelper::currentTimeStamp();
