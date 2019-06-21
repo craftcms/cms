@@ -99,7 +99,7 @@ class Gql extends Component
      * @return Schema
      * @throws GqlException in case of invalid schema
      */
-    public function getSchema($token, $validateSchema = false): Schema
+    public function getSchema($token = null, $validateSchema = false): Schema
     {
         if ($token) {
             $this->setToken($token);
