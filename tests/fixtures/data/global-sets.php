@@ -11,7 +11,7 @@ return [
         'handle' => 'aGlobalSet',
         'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
         'plainTextField' => 'There is some information here',
-        'uid' => 'globalset-1-uid',
+        'uid' => 'globalset-0-uid',
     ],
 
     [
