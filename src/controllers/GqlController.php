@@ -71,17 +71,19 @@ class GqlController extends Controller
 
         $token = null;
         $authorizationHeader = Craft::$app->request->headers->get('authorization');
+
         if (preg_match('/^Bearer\s+(.+)$/i', $authorizationHeader, $matches)) {
             $accessToken = $matches[1];
             $token = $gqlService->getTokenByAccessToken($accessToken);
         }
 
-        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
+        $tokenExpired = $token->expiryDate && $token->expiryDate->getTimestamp() <= DateTimeHelper::currentTimeStamp();
 
-        if (!$token) {
+        if (!$token || !$token->enabled || $tokenExpired) {
             throw new ForbiddenHttpException('Invalid authorization token.');
         }
 
+        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
         $schema = $gqlService->getSchema($token, $devMode);
 
         if ($request->getIsPost() && $query= $request->post('query')) {

@@ -120,6 +120,6 @@ class GqlToken extends Model
      */
     public function hasPermission(string $permissionName): bool
     {
-        return $this->enabled && is_array($this->permissions) && in_array($permissionName, $this->permissions, true);
+        return is_array($this->permissions) && in_array($permissionName, $this->permissions, true);
     }
 }
