@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Project Config now sorts arrays when all of the keys are UIDs. ([#4425](https://github.com/craftcms/cms/issues/4425))
+
 ### Fixed
 - Fixed a bug where Craft might not match a domain to the proper site if it had a non-ASCII character in the host name.
 
