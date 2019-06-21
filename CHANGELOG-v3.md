@@ -13,6 +13,7 @@
 
 ### Fixed
 - Fixed an error that could occur when saving an entry for the first time. ([#4421](https://github.com/craftcms/cms/issues/4421))
+- Fixed an error that could occur when installing Craft with an existing `project.yaml` file that defined a Single section.
 
 ## 3.2.0-beta.3 - 2019-06-18
 
