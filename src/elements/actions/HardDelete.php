@@ -8,6 +8,7 @@
 namespace craft\elements\actions;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementAction;
 use craft\elements\Asset;
 use craft\elements\db\ElementQueryInterface;
@@ -78,7 +79,14 @@ class HardDelete extends ElementAction
     public function performAction(ElementQueryInterface $query): bool
     {
         $elementsService = Craft::$app->getElements();
+
+        /* @var Element $element */
         foreach ($query->all() as $element) {
+            // Nope. Soft-deletion first.
+            if (!$element->trashed) {
+                return true;
+            }
+
             if ($element instanceof Asset) {
                 $volume = $element->getVolume();
                 if (!Craft::$app->getUser()->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid)) {
