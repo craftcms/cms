@@ -11,11 +11,13 @@ use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
+use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
 
 /**
- * Various support resources for testing Craft.
+ * The TestsController provides various support resources for testing both Craft's
+ * own services and your implementation of Craft within your project.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -30,7 +32,8 @@ class TestsController extends Controller
      * Sets up a test suite for the current project.
      *
      * @param string|null $dst The folder that the test suite should be generated in.
-     * Defaults to the current working directory.
+     *                         Defaults to the current working directory.
+     *
      * @return int
      */
     public function actionSetup(string $dst = null): int
@@ -39,7 +42,7 @@ class TestsController extends Controller
             $dst = getcwd();
         }
 
-        $src = dirname(__DIR__, 2). DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'internal' . DIRECTORY_SEPARATOR . 'example-test-suite';
+        $src = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'internal' . DIRECTORY_SEPARATOR . 'example-test-suite';
 
         // Figure out the plan and check for conflicts
         $plan = [];
@@ -47,7 +50,7 @@ class TestsController extends Controller
 
         $handle = opendir($src);
         if ($handle === false) {
-            throw new InvalidArgumentException("Unable to open directory: $src");
+            throw new InvalidArgumentException("Unable to open directory: {$src}");
         }
 
         while (($file = readdir($handle)) !== false) {
@@ -67,9 +70,11 @@ class TestsController extends Controller
         // Warn about conflicts
         if (!empty($conflicts)) {
             $this->stdout('The following files/folders will be overwritten:' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+
             foreach ($conflicts as $file) {
                 $this->stdout("- {$file}" . PHP_EOL, Console::FG_YELLOW);
             }
+
             $this->stdout(PHP_EOL);
             if (!$this->confirm('Are you sure you want to continue?')) {
                 $this->stdout('Aborting.' . PHP_EOL);
@@ -92,7 +97,7 @@ class TestsController extends Controller
         $this->stdout(PHP_EOL . 'Generating the test suite ... ');
         try {
             FileHelper::copyDirectory($src, $dst);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stdout('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
@@ -102,7 +107,7 @@ class TestsController extends Controller
     }
 
     /**
-     * Dont use this method - it wont actually execute anything.
+     * Don't use this method - it won't actually execute anything.
      * It is just used internally to test Craft-based console controller testing.
      *
      * @return int

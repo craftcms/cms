@@ -176,11 +176,11 @@ class UsersController extends Controller
      * Logs a user in for impersonation. Requires you to be an administrator.
      *
      * @return Response|null
+     * @throws ForbiddenHttpException
      */
     public function actionImpersonate()
     {
         $this->requireLogin();
-        $this->requireAdmin(false);
         $this->requirePostRequest();
 
         $userSession = Craft::$app->getUser();
@@ -188,6 +188,13 @@ class UsersController extends Controller
         $request = Craft::$app->getRequest();
 
         $userId = $request->getBodyParam('userId');
+
+        // Make sure they're allowed to impersonate this user
+        $usersService = Craft::$app->getUsers();
+        $impersonatee = $usersService->getUserById($userId);
+        if (!$usersService->canImpersonate($userSession->getIdentity(), $impersonatee)) {
+            throw new ForbiddenHttpException('You do not have sufficient permissions to impersonate this user');
+        }
 
         // Save the original user ID to the session now so User::findIdentity()
         // knows not to worry if the user isn't active yet
@@ -697,7 +704,7 @@ class UsersController extends Controller
             }
 
             if (!$isCurrentUser) {
-                if ($userSession->getIsAdmin()) {
+                if (Craft::$app->getUsers()->canImpersonate($currentUser, $user)) {
                     $sessionActions[] = [
                         'action' => 'users/impersonate',
                         'label' => Craft::t('app', 'Login as {user}', ['user' => $user->getName()])

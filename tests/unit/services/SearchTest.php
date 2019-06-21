@@ -233,6 +233,16 @@ class SearchTest extends Unit
         $this->search = Craft::$app->getSearch();
     }
 
+    /**
+     * @inheritDoc
+     */
+    protected function _after()
+    {
+        parent::_after();
+
+        Craft::$app->getDb()->createCommand()->truncateTable('{{%searchindex}}')->execute();
+    }
+
     // Private Methods
     // =========================================================================
 

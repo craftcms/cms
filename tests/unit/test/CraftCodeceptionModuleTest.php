@@ -160,9 +160,11 @@ class CraftCodeceptionModuleTest extends Unit
 
         Craft::$app->getElements()->saveElement($user);
 
-        Craft::$app->getElements()->duplicateElement($user);
+        $dupeConfig = ['username' => 'user3', 'email' => 'user3@crafttest.com'];
+        Craft::$app->getElements()->duplicateElement($user, $dupeConfig);
 
-        $this->tester->assertElementsExist(User::class, $configArray, 2);
+        $this->tester->assertElementsExist(User::class, $configArray, 1);
+        $this->tester->assertElementsExist(User::class, array_merge($configArray, $dupeConfig), 1);
     }
 
     /**

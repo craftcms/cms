@@ -1,10 +1,36 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased (3.2)
+## Unreleased
 
 ### Added
+- Added the `{% dd %}` Twig tag. ([#4399](https://github.com/craftcms/cms/issues/4399))
+
+### Changed
+- `craft\web\twig\variables\CraftVariable` no longer triggers the `defineComponents` event. ([#4416](https://github.com/craftcms/cms/issues/4416))
+
+### Deprecated
+- Deprecated `craft\events\DefineComponentsEvent`.
+
+### Fixed
+- Fixed an error that could occur when saving an entry for the first time. ([#4421](https://github.com/craftcms/cms/issues/4421))
+
+## 3.2.0-beta.3 - 2019-06-18
+
+### Added
+- Added the “Impersonate users” permission. ([#3501](https://github.com/craftcms/cms/issues/3501))
+- Added the `mailer/test` command. ([#4020](https://github.com/craftcms/cms/issues/4020))
+- It’s now possible for plugins and modules to define custom actions on console controllers.
 - Added `craft\base\ElementInterface::getIsDraft()`.
 - Added `craft\base\ElementInterface::getIsRevision()`.
+- Added `craft\console\CallableAction`.
+- Added `craft\console\Controller::defineActions()`.
+- Added `craft\console\Controller::EVENT_DEFINE_ACTIONS`.
+- Added `craft\console\controllers\ResaveController::saveElements()`.
+- Added `craft\events\DefineConsoleActionsEvent`.
+- Added `craft\services\Users::canImpersonate()`.
+
+### Removed
+- Removed the Search Indexes utility. ([#3698](https://github.com/craftcms/cms/issues/3698))
 
 ### Fixed
 - Fixed a bug where entry drafts weren’t getting updated slug values once their initial slug had been saved, if their entry type had a custom title format. ([#4373](https://github.com/craftcms/cms/issues/4373))
@@ -62,7 +88,7 @@
 - Added `craft\helpers\ElementHelper::rootElement()`.
 
 ### Changed
-- It’s now possible to preview to preview element revisions.
+- It’s now possible to preview element revisions.
 - It’s now possible to pass a `behaviors` key to the `$newAttributes` argument of `craft\services\Elements::duplicateElement()`, to preattach behaviors to the cloned element before it’s saved.
 - The “Restrict uploads to a single folder?” setting on Assets fields is no longer enforced when saving a draft or revision.
 - Assets fields no longer create new dynamic upload folders when saving a draft or revision.
@@ -303,6 +329,28 @@
 
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
+
+## 3.1.31 - 2019-06-18
+
+### Added
+- It’s now possible to set plugin license keys to environment variables using the `$VARIABLE_NAME` syntax. ([#4393](https://github.com/craftcms/cms/issues/4393))
+- Added `craft\services\Elements::mergeElements()`. ([#4404](https://github.com/craftcms/cms/pull/4404))
+
+### Changed
+- Pagination URLs now include any query string parameters set on the current request.
+- The default email template no longer sets text or background colors, so emails look better in dark mode. ([#4396](https://github.com/craftcms/cms/pull/4396))
+- Improved the error message that gets logged when Craft isn’t able to finish processing project config changes, due to unresolved dependencies.
+- Craft will no longer log errors and warnings arising from `yii\i18n\PhpMessageSource`. ([#4109](https://github.com/craftcms/cms/issues/4109))
+- Improved the performance and reliability of user queries when the `group` param is set to a user group with a large number of users.
+- Updated Yii to 2.0.21.
+
+### Fixed
+- Fixed a bug where `Craft::dd()` wouldn’t work properly if output buffering was enabled. ([#4399](https://github.com/craftcms/cms/issues/4399))
+- Fixed a bug where `Craft::alias()` wasn’t working on Windows servers. ([#4405](https://github.com/craftcms/cms/issues/4405))
+- Fixed a bug where Craft wasn't parsing the `dsn` DB connection setting properly if it was supplied.
+
+### Security
+- Fixed an XSS vulnerability.
 
 ## 3.1.30 - 2019-06-11
 

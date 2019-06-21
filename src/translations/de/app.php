@@ -770,7 +770,7 @@ return [
     'Recent {section} Entries' => 'Aktuelle {section}-Einträge',
     'Register a new user' => 'Einen neuen Benutzer registrieren',
     'Register users' => 'Benutzer anmelden',
-    'Registered at' => 'Registriert bei',
+    'Registered at' => 'Registriert seit',
     'Relate {type} from a specific site?' => 'Beziehung mit {type} von einer bestimmten Website herstellen?',
     'Remove' => 'Entfernen',
     'Remove files and folders' => 'Dateien und Ordner entfernen',

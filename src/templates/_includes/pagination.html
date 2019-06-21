@@ -5,9 +5,9 @@
     <div class="page-info">
         {% if pageInfo.total %}
             {{ "{first}-{last} of {total}"|t('app', {
-                first: pageInfo.first,
-                last: pageInfo.last,
-                total: pageInfo.total
+                first: pageInfo.first|number,
+                last: pageInfo.last|number,
+                total: pageInfo.total|number
             }) }}
         {% else %}
             {{ noResultsLabel ?? 'No results'|t('app') }}

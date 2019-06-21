@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\base;
+namespace craft\console;
 
 use craft\helpers\Console;
 
@@ -14,9 +14,9 @@ use craft\helpers\Console;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.1
+ * @since 3.2
  */
-trait ConsoleControllerTrait
+trait ControllerTrait
 {
     // Protected methods
     // =========================================================================

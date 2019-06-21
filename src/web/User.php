@@ -307,7 +307,6 @@ class User extends \yii\web\User
             $user = UserElement::find()
                 ->addSelect(['users.password'])
                 ->id($previousUserId)
-                ->admin(true)
                 ->one();
         } else {
             // Get the current user

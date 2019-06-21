@@ -7,22 +7,24 @@
 
 namespace craft\events;
 
+use craft\base\ElementInterface;
 use yii\base\Event;
 
 /**
- * Define components event class.
+ * DefineConsoleActionsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
- * @deprecated in 3.2.
+ * @since 3.2
  */
-class DefineComponentsEvent extends Event
+class DefineConsoleActionsEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var array The component definitions
+     * @var array The additional actions that should be available to console controllers.
+     *
+     * See [[\craft\console\Controller::defineActions()]] for details on what to set on this.
      */
-    public $components = [];
+    public $actions = [];
 }
