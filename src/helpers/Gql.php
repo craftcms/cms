@@ -31,7 +31,12 @@ class Gql
             $scopes = [$scopes];
         }
 
-        $permissions = (array) Craft::$app->getGql()->getCurrentToken()->permissions;
+        try {
+            $permissions = (array) Craft::$app->getGql()->getCurrentToken()->permissions;
+        } catch (GqlException $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+            return false;
+        }
 
         foreach ($scopes as $scope) {
             if (empty(preg_grep('/^' . preg_quote($scope, '/') . '\:/i', $permissions))) {
