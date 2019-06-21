@@ -271,7 +271,6 @@ class Asset extends Element
                 $actions[] = EditImage::class;
             }
 
-            // TODO: Do we need to do a checkPermission in HardDelete for assets? It's done above. Why does the DeleteAssets class do this?
             // Delete
             if ($userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid)) {
                 $actions[] = DeleteAssets::class;

@@ -9,7 +9,9 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use craft\elements\Asset;
 use craft\elements\db\ElementQueryInterface;
+use yii\base\InvalidArgumentException;
 
 /**
  * HardDelete represents a Hard delete element action.
@@ -78,6 +80,13 @@ class HardDelete extends ElementAction
     {
         $elementsService = Craft::$app->getElements();
         foreach ($query->all() as $element) {
+            if ($element instanceof Asset) {
+                $volume = $element->getVolume();
+                if (!Craft::$app->getUser()->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid)) {
+                    return true;
+                }
+            }
+
             $elementsService->deleteElement($element, true);
         }
 
