@@ -16,7 +16,7 @@
 
 ### Changed
 - Queue actions in `craft\controllers\QueueController` now require `utility:queue-manager` ([#4040](https://github.com/craftcms/cms/issues/4040))
-- The `craft\queue\QueueInterface` now requires a `getJobDetails` and `releaseAll` method.
+- The `craft\queue\QueueInterface` now requires a `getJobDetails`, `retryAll` and `releaseAll` method.
 - `craft\web\twig\variables\CraftVariable` no longer triggers the `defineComponents` event. ([#4416](https://github.com/craftcms/cms/issues/4416))
 
 ### Deprecated
