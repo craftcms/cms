@@ -64,7 +64,6 @@ class GqlCest
 
         $queryTypes = [
             'Entries',
-            'MatrixBlocks',
             'Users',
             'Assets',
             'GlobalSets',
