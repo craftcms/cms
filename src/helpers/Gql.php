@@ -45,28 +45,73 @@ class Gql
     /**
      * Extracts all the allowed entities from the token permissions for the action.
      *
-     * @param $action
+     * @param string $action The action for which the entities should be extracted. Defaults to "read"
      * @return array
-     * @throws GqlException
      */
-    public static function extractAllowedEntitiesFromToken($action): array
+    public static function extractAllowedEntitiesFromToken($action = 'read'): array
     {
-        $permissions = (array) Craft::$app->getGql()->getCurrentToken()->permissions;
-        $pairs = [];
+        try {
+            $permissions = (array) Craft::$app->getGql()->getCurrentToken()->permissions;
+            $pairs = [];
 
-        foreach ($permissions as $permission) {
-            // Check if this is for the requested action
-            if (StringHelper::endsWith($permission, ':' . $action)) {
-                $permission = StringHelper::removeRight($permission, ':' . $action);
+            foreach ($permissions as $permission) {
+                // Check if this is for the requested action
+                if (StringHelper::endsWith($permission, ':' . $action)) {
+                    $permission = StringHelper::removeRight($permission, ':' . $action);
 
-                $parts = explode('.', $permission);
+                    $parts = explode('.', $permission);
 
-                if (count($parts) === 2) {
-                    $pairs[$parts[0]][] = $parts[1];
+                    if (count($parts) === 2) {
+                        $pairs[$parts[0]][] = $parts[1];
+                    }
                 }
             }
-        }
 
-        return $pairs;
+            return $pairs;
+        } catch (GqlException $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+            return [];
+        }
+    }
+
+    /**
+     * Return true if current token can query entries.
+     *
+     * @return bool
+     */
+    public static function canQueryEntries(): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromToken();
+        return isset($allowedEntities['sections'], $allowedEntities['entrytypes']);
+    }
+
+    /**
+     * Return true if current token can query entries.
+     *
+     * @return bool
+     */
+    public static function canQueryAssets(): bool
+    {
+        return isset(self::extractAllowedEntitiesFromToken()['volumes']);
+    }
+
+    /**
+     * Return true if current token can query entries.
+     *
+     * @return bool
+     */
+    public static function canQueryGlobalSets(): bool
+    {
+        return isset(self::extractAllowedEntitiesFromToken()['globalsets']);
+    }
+
+    /**
+     * Return true if current token can query entries.
+     *
+     * @return bool
+     */
+    public static function canQueryUsers(): bool
+    {
+        return isset(self::extractAllowedEntitiesFromToken()['usergroups']);
     }
 }

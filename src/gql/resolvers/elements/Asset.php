@@ -34,11 +34,11 @@ class Asset extends BaseElement
 
         $pairs = GqlHelper::extractAllowedEntitiesFromToken('read');
 
-        if (!empty($pairs['volumes'])) {
-            $query->andWhere(['in', 'assets.volumeId', array_values(Db::idsByUids(Table::VOLUMES, $pairs['volumes']))]);
-        } else {
+        if (!GqlHelper::canQueryAssets()) {
             return [];
         }
+
+        $query->andWhere(['in', 'assets.volumeId', array_values(Db::idsByUids(Table::VOLUMES, $pairs['volumes']))]);
 
         return $query->all();
     }

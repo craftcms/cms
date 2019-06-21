@@ -1,9 +1,7 @@
 <?php
 namespace craft\gql\resolvers\elements;
 
-use craft\db\Table;
 use craft\elements\GlobalSet as GlobalSetElement;
-use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -27,11 +25,11 @@ class GlobalSet extends BaseElement
 
         $pairs = GqlHelper::extractAllowedEntitiesFromToken('read');
 
-        if (!empty($pairs['globalsets'])) {
-            $query->andWhere(['in', 'globalsets.uid', $pairs['globalsets']]);
-        } else {
+        if (!GqlHelper::canQueryGlobalSets()) {
             return [];
         }
+
+        $query->andWhere(['in', 'globalsets.uid', $pairs['globalsets']]);
 
         return $query->all();
     }

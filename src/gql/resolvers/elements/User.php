@@ -34,19 +34,20 @@ class User extends BaseElement
 
         $pairs = GqlHelper::extractAllowedEntitiesFromToken('read');
 
-        if (!empty($pairs['usergroups'])) {
-            $query->innerJoin(Table::USERGROUPS_USERS . ' usergroups_users',
-                ['and',
-                    '[[users.id]] = [[usergroups_users.userId]]',
-                    ['in', '[[usergroups_users.groupId]]', array_values(Db::idsByUids(Table::USERGROUPS, $pairs['usergroups']))]
-                ]
-            );
-
-            // todo might be a better way to do this.
-            $query->groupBy = ['users.id'];
-        } else {
+        if (!GqlHelper::canQueryUsers()) {
             return [];
         }
+
+        $query->innerJoin(Table::USERGROUPS_USERS . ' usergroups_users',
+            ['and',
+                '[[users.id]] = [[usergroups_users.userId]]',
+                ['in', '[[usergroups_users.groupId]]', array_values(Db::idsByUids(Table::USERGROUPS, $pairs['usergroups']))]
+            ]
+        );
+
+        // todo might be a better way to do this.
+        $query->groupBy = ['users.id'];
+
         return $query->all();
     }
 }
