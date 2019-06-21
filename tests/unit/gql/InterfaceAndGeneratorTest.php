@@ -68,7 +68,8 @@ class InterfaceAndGeneratorTest extends Unit
     // =========================================================================
 
     /**
-     * Test resolving fields on entries.
+     * Test interfaces running type generators.
+     * @group gql
      *
      * @dataProvider interfaceDataProvider
      *
@@ -87,6 +88,12 @@ class InterfaceAndGeneratorTest extends Unit
         }
     }
 
+    /**
+     * Test table row generator
+     * @group gql
+     *
+     * @throws \craft\errors\GqlException
+     */
     public function testTableRowTypeGenerator()
     {
         $tableField = Craft::$app->getFields()->getFieldByHandle('appointments');

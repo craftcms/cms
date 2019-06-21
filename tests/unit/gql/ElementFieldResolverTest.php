@@ -65,6 +65,7 @@ class ElementFieldResolverTest extends Unit
 
     /**
      * Test resolving fields on entries.
+     * @group gql
      *
      * @dataProvider entryFieldTestDataProvider
      *
@@ -79,6 +80,7 @@ class ElementFieldResolverTest extends Unit
 
     /**
      * Test resolving fields on assets.
+     * @group gql
      *
      * @dataProvider assetFieldTestDataProvider
      *
@@ -93,6 +95,7 @@ class ElementFieldResolverTest extends Unit
 
     /**
      * Test resolving fields on global sets.
+     * @group gql
      *
      * @dataProvider globalSetFieldTestDataProvider
      *
@@ -107,6 +110,7 @@ class ElementFieldResolverTest extends Unit
 
     /**
      * Test resolving fields on matrix blocks.
+     * @group gql
      *
      * @dataProvider matrixBlockFieldTestDataProvider
      *
@@ -122,6 +126,7 @@ class ElementFieldResolverTest extends Unit
 
     /**
      * Test resolving fields on users.
+     * @group gql
      *
      * @dataProvider userFieldTestDataProvider
      *
@@ -136,6 +141,7 @@ class ElementFieldResolverTest extends Unit
 
     /**
      * Run the test on an element for a type class with the property name.
+     * @group gql
      *
      * @param string $gqlTypeClass The Gql type class
      * @param string $propertyName The propery being tested

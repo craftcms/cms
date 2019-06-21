@@ -66,6 +66,7 @@ class TypeResolverTest extends Unit
 
     /**
      * Test an arrayable string is split by comma
+     * @group gql
      *
      * @dataProvider arrayableDataProvider
      */
@@ -80,6 +81,7 @@ class TypeResolverTest extends Unit
 
     /**
      * Test resolving a related element.
+     * @group gql
      *
      * @dataProvider resolverDataProvider
      *

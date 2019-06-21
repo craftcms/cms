@@ -28,6 +28,7 @@ class GqlCest
 
     /**
      * Test whether missing query parameter is handled correctly.
+     * @group gql
      */
     public function forgetQueryParameter(FunctionalTester $I)
     {
@@ -39,6 +40,7 @@ class GqlCest
 
     /**
      * Test whether malformed query parameter is handled correctly.
+     * @group gql
      */
     public function provideMalformedQueryParameter(FunctionalTester $I)
     {
@@ -48,6 +50,7 @@ class GqlCest
 
     /**
      * Test whether all query types work correctly
+     * @group gql
      */
     public function testQuerying(FunctionalTester $I)
     {
@@ -68,6 +71,7 @@ class GqlCest
 
     /**
      * Test whether querying for wrong gql field returns the correct error.
+     * @group gql
      */
     public function testWrongGqlField(FunctionalTester $I)
     {
@@ -78,6 +82,7 @@ class GqlCest
 
     /**
      * Test whether querying with wrong parameters returns the correct error.
+     * @group gql
      */
     public function testWrongGqlQueryParameter(FunctionalTester $I)
     {
@@ -87,6 +92,7 @@ class GqlCest
 
     /**
      * Test whether query results yield the expected results.
+     * @group gql
      */
     public function testQueryResults(FunctionalTester $I)
     {
