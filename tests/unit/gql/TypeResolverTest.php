@@ -25,6 +25,7 @@ use craft\test\mockclasses\elements\ExampleElement;
 use crafttests\fixtures\AssetsFixture;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;
+use crafttests\fixtures\GqlTokensFixture;
 use crafttests\fixtures\UsersFixture;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -37,10 +38,14 @@ class TypeResolverTest extends Unit
 
     protected function _before()
     {
+        $gqlService = Craft::$app->getGql();
+        $token = $gqlService->getTokenByAccessToken('My+voice+is+my+passport.+Verify me.');
+        $gqlService->setToken($token);
     }
 
     protected function _after()
     {
+        Craft::$app->getGql()->flushCaches();
     }
 
     public function _fixtures()
@@ -57,7 +62,10 @@ class TypeResolverTest extends Unit
             ],
             'globalSets' => [
                 'class' => GlobalSetFixture::class
-            ]
+            ],
+            'gqlTokens' => [
+                'class' => GqlTokensFixture::class
+            ],
         ];
     }
 
@@ -121,9 +129,6 @@ class TypeResolverTest extends Unit
             $this->assertEquals($resolvedField, $elementResults);
         }
     }
-
-    // Todo
-    // Matrix Blocks
 
     // Data Providers
     // =========================================================================
