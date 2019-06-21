@@ -118,14 +118,14 @@ class Gql extends Component
             if (!$validateSchema) {
                 $this->_schema = new Schema($schemaConfig);
             } else {
-                // @todo: allow plugins to register their generators
-                $schemaConfig['types'] = array_merge(
-                    EntryType::generateTypes(),
-                    MatrixBlockType::generateTypes(),
-                    AssetType::generateTypes(),
-                    UserType::generateTypes(),
-                    GlobalSetType::generateTypes()
-                );
+                // @todo: probably split out interfaces from types plugins can preload all the types for devmode schema
+                $schemaConfig['types'] = [
+                    EntryInterface::getType(),
+                    MatrixBlockInterface::getType(),
+                    AssetInterface::getType(),
+                    UserInterface::getType(),
+                    GlobalSetInterface::getType(),
+                ];
                 try {
                     $this->_schema = new Schema($schemaConfig);
                     $this->_schema->assertValid();
