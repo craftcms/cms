@@ -17,6 +17,13 @@
 ### Changed
 - Queue actions in `craft\controllers\QueueController` now require `utility:queue-manager` ([#4040](https://github.com/craftcms/cms/issues/4040))
 - The `craft\queue\QueueInterface` now requires a `getJobDetails` and `releaseAll` method.
+- `craft\web\twig\variables\CraftVariable` no longer triggers the `defineComponents` event. ([#4416](https://github.com/craftcms/cms/issues/4416))
+
+### Deprecated
+- Deprecated `craft\events\DefineComponentsEvent`.
+
+### Fixed
+- Fixed an error that could occur when saving an entry for the first time. ([#4421](https://github.com/craftcms/cms/issues/4421))
 
 ## 3.2.0-beta.3 - 2019-06-18
 
@@ -92,7 +99,7 @@
 - Added `craft\helpers\ElementHelper::rootElement()`.
 
 ### Changed
-- It’s now possible to preview to preview element revisions.
+- It’s now possible to preview element revisions.
 - It’s now possible to pass a `behaviors` key to the `$newAttributes` argument of `craft\services\Elements::duplicateElement()`, to preattach behaviors to the cloned element before it’s saved.
 - The “Restrict uploads to a single folder?” setting on Assets fields is no longer enforced when saving a draft or revision.
 - Assets fields no longer create new dynamic upload folders when saving a draft or revision.
