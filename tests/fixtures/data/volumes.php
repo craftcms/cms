@@ -22,7 +22,7 @@ return [
         ]),
         'sortOrder' => 5,
         'fieldLayoutType' => 'volume_field_layout',
-        'uid' => '09a48e85-2f12-44a8-b82c-45b14b13d8ce'
+        'uid' => 'volume-1000-uid',
     ],
 
     'deleted1' => [
@@ -38,9 +38,8 @@ return [
         'hasUrls' => true,
         'sortOrder' => 6,
         'fieldLayoutType' => 'volume_field_layout',
-        'uid' => '09a48e85-2f12-44a8-b82c-45b14b13d8ce',
+        'uid' => 'volume-1001-uid',
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
-
     ],
 
     'deleted2' => [
@@ -56,7 +55,7 @@ return [
         'hasUrls' => true,
         'sortOrder' => 7,
         'fieldLayoutType' => 'volume_field_layout',
-        'uid' => '09a48e85-2f12-44a8-b82c-45b14b13d8ce',
+        'uid' => 'volume-1002-uid',
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
 
     ],

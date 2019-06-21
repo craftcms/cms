@@ -10,18 +10,18 @@ return [
         'id' => '1000',
         'name' => 'Group 1',
         'handle' => 'group1',
-        'uid' => '9bea2a4a-52c9-42be-b30b-dd844c4343f4',
+        'uid' => 'usergroup-1000-uid',
     ],
     [
         'id' => '1001',
         'name' => 'Group 2',
         'handle' => 'group2',
-        'uid' => '9bea2a4a-52c9-42ze-b30b-dd844c4343f4',
+        'uid' => 'usergroup-1001-uid',
     ],
     [
         'id' => '1002',
         'name' => 'Group 3',
         'handle' => 'group3',
-        'uid' => '9bea2a4a-52c9-42xe-b30b-dd844c4343f4',
+        'uid' => 'usergroup-1002-uid',
     ],
 ];
