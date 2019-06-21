@@ -482,10 +482,10 @@ class ElementIndexesController extends BaseElementsController
             }
 
             if ($this->elementQuery->trashed) {
-                if (!$action instanceof Restore || !$action instanceof HardDelete) {
+                if (!$action instanceof Restore && !$action instanceof HardDelete) {
                     unset($actions[$i]);
                 }
-            } else if ($action instanceof Restore || $action instanceof HardDelete) {
+            } else if ($action instanceof Restore && $action instanceof HardDelete) {
                 unset($actions[$i]);
             }
         }
