@@ -154,9 +154,9 @@ class DirectiveTest extends Unit
         $dateTime = new DateTime('now');
 
         $dateTimeParameters = [
-            ['format' => 'Y-m-d H:i:s'],
-            ['format' => DateTime::ATOM],
-            ['format' => DateTime::COOKIE],
+            ['format' => 'Y-m-d H:i:s', 'timezone' => 'America/New_York'],
+            ['format' => DateTime::ATOM, 'timezone' => 'America/New_York'],
+            ['format' => DateTime::COOKIE, 'timezone' => 'America/New_York'],
             ['format' => DateTime::COOKIE, 'timezone' => 'America/New_York'],
         ];
 
@@ -166,9 +166,9 @@ class DirectiveTest extends Unit
             ['TestString', [$this->_buildDirective($mockDirective, ['prefix' => 'Bar']), $this->_buildDirective($mockDirective, ['prefix' => 'Foo'])], 'FooBarTestString'],
 
             // format date time (not as handy as for transform parameters, but still better than duplicating formats.
-            [$dateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[0])], $dateTime->format($dateTimeParameters[0]['format'])],
-            [$dateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[1])], $dateTime->format($dateTimeParameters[1]['format'])],
-            [$dateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[2])], $dateTime->format($dateTimeParameters[2]['format'])],
+            [$dateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[0])], $dateTime->setTimezone(new \DateTimeZone($dateTimeParameters[0]['timezone']))->format($dateTimeParameters[0]['format'])],
+            [$dateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[1])], $dateTime->setTimezone(new \DateTimeZone($dateTimeParameters[1]['timezone']))->format($dateTimeParameters[1]['format'])],
+            [$dateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[2])], $dateTime->setTimezone(new \DateTimeZone($dateTimeParameters[2]['timezone']))->format($dateTimeParameters[2]['format'])],
             [$dateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[3])], $dateTime->setTimezone(new \DateTimeZone($dateTimeParameters[3]['timezone']))->format($dateTimeParameters[3]['format'])],
             ['what time is it?', [$this->_buildDirective($formatDateTime, $dateTimeParameters[2])], 'what time is it?'],
         ];
