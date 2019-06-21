@@ -138,6 +138,12 @@ class Gql extends Component
         return $this->_schema;
     }
 
+    /**
+     * Set the GQL token to be used.
+     * 
+     * @param GqlToken $token
+     * @throws \yii\base\Exception
+     */
     public function setToken(GqlToken $token)
     {
         $this->_token = $token;
