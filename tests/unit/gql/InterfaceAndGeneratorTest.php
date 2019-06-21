@@ -27,6 +27,7 @@ use craft\gql\types\generators\TableRowType;
 use crafttests\fixtures\AssetsFixture;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use crafttests\fixtures\GlobalSetFixture;
+use crafttests\fixtures\GqlTokensFixture;
 use crafttests\fixtures\UsersFixture;
 use GraphQL\Type\Definition\ObjectType;
 
@@ -39,11 +40,14 @@ class InterfaceAndGeneratorTest extends Unit
 
     protected function _before()
     {
-        Craft::$app->getGql()->flushCaches();
+        $gqlService = Craft::$app->getGql();
+        $token = $gqlService->getTokenByAccessToken('My+voice+is+my+passport.+Verify me.');
+        $gqlService->setToken($token);
     }
 
     protected function _after()
     {
+        Craft::$app->getGql()->flushCaches();
     }
 
     public function _fixtures()
@@ -61,6 +65,9 @@ class InterfaceAndGeneratorTest extends Unit
             'users' => [
                 'class' => UsersFixture::class
             ],
+            'gqlTokens' => [
+                'class' => GqlTokensFixture::class
+            ],
         ];
     }
 
@@ -77,7 +84,7 @@ class InterfaceAndGeneratorTest extends Unit
      * @param callable $getAllContexts The callback that provides an array of all contexts for generated types
      * @param callable $getTypeNameByContext The callback to generate the GQL type name by context
      */
-    public function testInterfacesGeneratingAllTypes(string $gqlInterfaceClass, callable $getAllContexts, callable $getTypeNameByContext)
+    public function testInterfacesGeneratingTypes(string $gqlInterfaceClass, callable $getAllContexts, callable $getTypeNameByContext)
     {
         $gqlInterfaceClass::getType();
 
@@ -110,10 +117,10 @@ class InterfaceAndGeneratorTest extends Unit
     public function interfaceDataProvider(): array
     {
         return [
-            [AssetInterface::class, function () { return Craft::$app->getVolumes()->getAllVolumes();}, [AssetElement::class, 'getGqlTypeNameByContext']],
+            [AssetInterface::class, function () { return [Craft::$app->getVolumes()->getVolumeByUid('volume-1000-uid')];}, [AssetElement::class, 'getGqlTypeNameByContext']],
             [ElementInterface::class, function () {return ['Element'];}, [BaseElement::class, 'getGqlTypeNameByContext']],
-            [EntryInterface::class, function () { return Craft::$app->getSections()->getAllEntryTypes();}, [EntryElement::class, 'getGqlTypeNameByContext']],
-            [GlobalSetInterface::class, function () { return Craft::$app->getGlobals()->getAllSets();}, [GlobalSetElement::class, 'getGqlTypeNameByContext']],
+            [EntryInterface::class, function () { return [Craft::$app->getSections()->getEntryTypeById(1000)];}, [EntryElement::class, 'getGqlTypeNameByContext']],
+            [GlobalSetInterface::class, function () { return [Craft::$app->getGlobals()->getSetByHandle('aGlobalSet')];}, [GlobalSetElement::class, 'getGqlTypeNameByContext']],
             [MatrixBlockInterface::class, function () { return Craft::$app->getMatrix()->getAllBlockTypes();}, [MatrixBlockElement::class, 'getGqlTypeNameByContext']],
             [UserInterface::class, function () {return ['User'];}, [UserElement::class, 'getGqlTypeNameByContext']],
         ];
