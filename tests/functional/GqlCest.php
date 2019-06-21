@@ -22,7 +22,7 @@ class GqlCest
             ],
             'gqlTokens' => [
                 'class' => GqlTokensFixture::class
-            ]
+            ],
         ];
     }
 
