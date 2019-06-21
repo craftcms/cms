@@ -4,6 +4,7 @@ namespace craft\gql\queries;
 use craft\gql\arguments\elements\User as UserArguments;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\resolvers\elements\User as UserResolver;
+use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -16,7 +17,10 @@ class User
      */
     public static function getQueries(): array
     {
-        // inheritance. base element query shares all that jazz.
+        if (!GqlHelper::canQueryUsers()) {
+            return [];
+        }
+
         return [
             'queryUsers' => [
                 'type' => Type::listOf(UserInterface::getType()),

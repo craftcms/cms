@@ -4,6 +4,7 @@ namespace craft\gql\queries;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
+use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -16,7 +17,10 @@ class Entry
      */
     public static function getQueries(): array
     {
-        // inheritance. base element query shares all that jazz.
+        if (!GqlHelper::canQueryEntries()) {
+            return [];
+        }
+
         return [
             'queryEntries' => [
                 'type' => Type::listOf(EntryInterface::getType()),

@@ -4,6 +4,7 @@ namespace craft\gql\queries;
 use craft\gql\arguments\elements\GlobalSet as GlobalSetArguments;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
+use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -16,7 +17,10 @@ class GlobalSet
      */
     public static function getQueries(): array
     {
-        // inheritance. base element query shares all that jazz.
+        if (!GqlHelper::canQueryGlobalSets()) {
+            return [];
+        }
+
         return [
             'queryGlobalSets' => [
                 'type' => Type::listOf(GlobalSetInterface::getType()),
