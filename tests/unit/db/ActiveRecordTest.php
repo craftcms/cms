@@ -12,6 +12,7 @@ use craft\db\ActiveRecord;
 use craft\helpers\StringHelper;
 use craft\records\Session;
 use craft\records\Volume;
+use craft\test\Craft;
 use craft\test\mockclasses\serializable\Serializable;
 use craft\volumes\Local;
 use DateTime;
@@ -60,7 +61,7 @@ class ActiveRecordTest extends Unit
         $date = new DateTime('now', new DateTimeZone('UTC'));
         $session = $this->ensureSession();
 
-        $this->assertSame($session->dateCreated, $date->format('Y-m-d H:i:s'));
+        $this->tester->assertEqualDates($this, $session->dateCreated, $date->format('Y-m-d H:i:s'), 2);
     }
 
     /**
