@@ -149,7 +149,7 @@ class TypeResolverTest extends Unit
             // Assets
             [Asset::class, ['filename' => 'product.jpg'], AssetResolver::class],
             [Asset::class, ['folderId' => 1000], AssetResolver::class],
-            [Asset::class, ['folderId' => 1], AssetResolver::class],
+            [Asset::class, ['folderId' => 1], AssetResolver::class, true],
             [Asset::class, ['filename' => StringHelper::randomString(128)], AssetResolver::class],
 
             // Entries
