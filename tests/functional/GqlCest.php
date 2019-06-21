@@ -7,8 +7,9 @@
 
 namespace tests\functional;
 
-use crafttests\fixtures\EntryFixture;
+use Craft;
 use crafttests\fixtures\EntryWithFieldsFixture;
+use crafttests\fixtures\GqlTokensFixture;
 use FunctionalTester;
 
 class GqlCest
@@ -19,11 +20,17 @@ class GqlCest
             'entriesWithField' => [
                 'class' => EntryWithFieldsFixture::class
             ],
+            'gqlTokens' => [
+                'class' => GqlTokensFixture::class
+            ]
         ];
     }
 
     public function _before(FunctionalTester $I)
     {
+        $gqlService = Craft::$app->getGql();
+        $token = $gqlService->getTokenByAccessToken('My+voice+is+my+passport.+Verify me.');
+        $gqlService->setToken($token);
     }
 
     /**
