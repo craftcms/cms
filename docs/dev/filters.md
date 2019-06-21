@@ -272,7 +272,7 @@ Prefixes the given string with a keyed-hash message authentication code (HMAC), 
 PHP scripts can validate the value via [Security::validateData()](api:yii\base\Security::validateData()):
 
 ```php
-$foo = Craft::$app->request->getPost('foo');
+$foo = Craft::$app->request->getBodyParam('foo');
 $foo = Craft::$app->security->validateData($foo);
 
 if ($foo !== false) {
