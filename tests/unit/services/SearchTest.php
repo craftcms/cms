@@ -240,12 +240,12 @@ class SearchTest extends Unit
     {
         parent::_after();
 
-        // Because MyIsam doesn't support transactions we delete all search index elements except for user with id 1.
+        // Because MyISAM doesn't support transactions we delete all search index elements except for user with id 1.
         // (The admin user created during test setup)
         Craft::$app->getDb()->createCommand()
             ->delete(
                 Table::SEARCHINDEX,
-                ['[[elementId]] != 1']
+                ['not', ['elementId' => 1]]
             )->execute();
     }
 
