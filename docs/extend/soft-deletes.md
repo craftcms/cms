@@ -56,6 +56,8 @@ public function init()
 
 [hardDelete()](api:craft\services\Gc::hardDelete()) method will delete any rows with a `dateDeleted` value set to a timestamp that’s older than the <config:softDeleteDuration> config setting. 
 
+If you want to support hard-deleting your element from the CP add the [Hard Delete Action](element-types.md#hard-delete-action) to the array returned by your `defineActions()` method. 
+
 ::: tip
 If you need to check multiple tables for stale rows, you can pass an array of table names into [hardDelete()](api:craft\services\Gc::hardDelete()) instead.
 :::

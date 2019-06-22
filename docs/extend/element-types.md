@@ -509,6 +509,12 @@ All element types are [soft-deletable](soft-deletes.md) out of the box, however 
 
 To make an element restorable, just add the <api:craft\elements\actions\Restore> action to the array returned by your static `defineActions()` method. Craft will automatically hide it during normal index views, and show it when someone selects the “Trashed” status option.
 
+### Hard Delete Action
+
+Any [soft-deleted](soft-deletes.md) elements can be individually hard-deleted via the CP. 
+
+To enable hard-deletion, just add the <api:craft\elements\actions\HardDelete> action to the array returned by your static `defineActions()` method. The hard-delete button will, exactly as the restore action above, only be visible if someone selects the "trashed" status option. 
+
 ### Sort Options
 
 You can define the sort options for your element indexes by adding a protected static `defineSortOptions()` method to your element class:
