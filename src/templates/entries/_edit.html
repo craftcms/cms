@@ -2,8 +2,8 @@
 {% import "_includes/forms" as forms %}
 
 {% set isSingle = section.type == 'single' %}
-{% set isRevision = entry.revisionId is not empty %}
-{% set isDraft = entry.draftId is not empty %}
+{% set isDraft = entry.getIsDraft() %}
+{% set isRevision = entry.getIsRevision() %}
 
 {% set element = entry %}
 {% set saveDraftAction = 'entry-revisions/save-draft' %}

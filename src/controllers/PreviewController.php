@@ -37,6 +37,19 @@ class PreviewController extends Controller
     // =========================================================================
 
     /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        // Don't require CSRF validation for POSTed preview requests
+        if ($action->id === 'preview') {
+            $this->enableCsrfValidation = false;
+        }
+
+        return parent::beforeAction($action);
+    }
+
+    /**
      * Creates a token for previewing/sharing an element.
      *
      * @throws ServerErrorHttpException if the token couldn't be created

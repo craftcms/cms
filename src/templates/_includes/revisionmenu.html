@@ -24,11 +24,13 @@
 {% set baseParams = craft.app.request.queryParams|withoutKey(craft.app.config.general.pathParam)|withoutKey('draftId')|withoutKey('revisionId')|withoutKey('siteId')|withoutKey('fresh') %}
 {% set supportedSites = craft.app.isMultiSite ? element.supportedSites : [element.site] %}
 {% set isMultiSiteElement = supportedSites|length > 1 %}
+{% set isDraft = element.getIsDraft() %}
+{% set isRevision = element.getIsRevision() %}
 {% set showSiteLabel = showSiteLabel ?? isMultiSiteElement %}
 {% set cpEditUrl = element.getCpEditUrl() %}
-{% if element.draftId %}
+{% if isDraft %}
     {% set baseUrl = url(cpEditUrl, baseParams|merge({ draftId: element.draftId })) %}
-{% elseif element.revisionId %}
+{% elseif isRevision %}
     {% set baseUrl = url(cpEditUrl, baseParams|merge({ revisionId: element.revisionId })) %}
 {% else %}
     {% set baseUrl = cpEditUrl %}
@@ -41,9 +43,9 @@
     <div id="revision-btn" class="btn {% if enableMenu %}menubtn{% else %}disabled{% endif %}"{% if showSiteLabel %} data-icon="world"{% endif %}>
         {% if showSiteLabel %}{{ element.site.name|t('site') }} –{% endif %}
         <span id="revision-label">
-            {%- if element.draftId %}
+            {%- if isDraft %}
                 {{- element.draftName }}
-            {%- elseif element.revisionId %}
+            {%- elseif isRevision %}
                 {{- element.revisionLabel }}
             {%- else %}
                 {{- 'Current'|t('app') }}
@@ -86,7 +88,7 @@
                 <ul class="padded revision-group-current">
                     {% set currentRevisionEditTime = element.currentRevision.dateCreated ?? element.dateUpdated %}
                     <li>
-                        <a{% if not element.draftId and not element.revisionId %} class="sel"{% endif %} href="{{ cpEditUrl }}">{{ "Current"|t('app') }}
+                        <a{% if not isDraft and not isRevision %} class="sel"{% endif %} href="{{ cpEditUrl }}">{{ "Current"|t('app') }}
                             <span class="light">{{ currentRevisionEditTime|timestamp('short') }}
                                 {%- if element.currentRevision %}, {{ element.currentRevision.creator }}{% endif %}
                             </span>

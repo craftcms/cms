@@ -8,8 +8,8 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\ConsoleControllerTrait;
 use craft\base\Plugin;
+use craft\console\ControllerTrait;
 use craft\db\MigrationManager;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
@@ -47,7 +47,7 @@ class MigrateController extends BaseMigrateController
     // Traits
     // =========================================================================
 
-    use ConsoleControllerTrait;
+    use ControllerTrait;
 
     // Properties
     // =========================================================================

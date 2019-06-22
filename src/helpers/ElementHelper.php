@@ -314,7 +314,7 @@ class ElementHelper
     {
         /** @var Element $root */
         $root = ElementHelper::rootElement($element);
-        return $root->draftId || $root->revisionId;
+        return $root->getIsDraft() || $root->getIsRevision();
     }
 
     /**

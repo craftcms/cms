@@ -140,6 +140,7 @@ module.exports = {
                     'tests',
                     'tags/cache',
                     'tags/css',
+                    'tags/dd',
                     'tags/exit',
                     'tags/header',
                     'tags/hook',

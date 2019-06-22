@@ -233,6 +233,22 @@ class SearchTest extends Unit
         $this->search = Craft::$app->getSearch();
     }
 
+    /**
+     * @inheritDoc
+     */
+    protected function _after()
+    {
+        parent::_after();
+
+        // Because MyISAM doesn't support transactions we delete all search index elements except for user with id 1.
+        // (The admin user created during test setup)
+        Craft::$app->getDb()->createCommand()
+            ->delete(
+                Table::SEARCHINDEX,
+                ['not', ['elementId' => 1]]
+            )->execute();
+    }
+
     // Private Methods
     // =========================================================================
 

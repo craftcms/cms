@@ -8,6 +8,7 @@
 namespace craft\validators;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use yii\validators\Validator;
@@ -64,6 +65,12 @@ class SlugValidator extends Validator
     {
         $slug = $originalSlug = (string)$model->$attribute;
         $isTemp = strpos($slug, '__temp_') === 0;
+        $isDraft = $model instanceof ElementInterface && $model->getIsDraft();
+
+        // If this is a draft with a temp slug, leave it alone
+        if ($isTemp && $isDraft) {
+            return;
+        }
 
         if (($slug === '' || $isTemp) && $this->sourceAttribute !== null) {
             // Create a slug for them, based on the element's title.

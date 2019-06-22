@@ -286,12 +286,12 @@ class EntriesController extends BaseEntriesController
 
             $variables['showPreviewBtn'] = true;
 
-            if ($entry->draftId) {
+            if ($entry->getIsDraft()) {
                 /** @var Entry|DraftBehavior $entry */
                 $variables['shareUrl'] = UrlHelper::actionUrl('entries/share-entry', [
                     'draftId' => $entry->draftId,
                 ]);
-            } else if ($entry->revisionId) {
+            } else if ($entry->getIsRevision()) {
                 /** @var Entry|RevisionBehavior $entry */
                 $variables['shareUrl'] = UrlHelper::actionUrl('entries/share-entry', [
                     'revisionId' => $entry->revisionId,

@@ -20,7 +20,9 @@
 {% import '_includes/forms' as forms %}
 
 {% set isMultiSiteElement = craft.app.isMultiSite and element.supportedSites|length > 1 %}
+{% set isDraft = element.getIsDraft() %}
 {% set isUnsavedDraft = element.getIsUnsavedDraft() %}
+{% set isRevision = element.getIsRevision() %}
 
 {% set previewTargets = CraftEdition == CraftPro ? (element.previewTargets ?? []) : [] %}
 {% if element.uri %}
@@ -31,18 +33,18 @@
 {% endif %}
 {% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
 
-{% set canDeleteDraft = element.draftId and ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) %}
+{% set canDeleteDraft = isDraft and ((canDeleteDraft ?? false) or element.creatorId == currentUser.id) %}
 {% set canUpdateSource = canUpdateSource ?? false %}
 {% set shareUrl = shareUrl ?? null %}
 {% set revertSourceAction = revertSourceAction ?? null %}
 
-{% if not element.revisionId %}
+{% if not isRevision %}
     {% set fullPageForm = true %}
 {% endif %}
 
-{% if element.draftId %}
+{% if isDraft %}
     {% do craft.app.session.authorize('previewDraft:' ~ element.draftId) %}
-{% elseif element.revisionId %}
+{% elseif isRevision %}
     {% do craft.app.session.authorize('previewRevision:' ~ element.revisionId) %}
 {% else %}
     {% do craft.app.session.authorize('previewElement:' ~ element.id) %}
@@ -71,7 +73,7 @@
 
 {% block actionButton %}
     {% if canUpdateSource %}
-        {% if element.revisionId %}
+        {% if isRevision %}
             {% if revertSourceAction %}
                 <div class="spacer"></div>
                 <form method="post" accept-charset="UTF-8">
@@ -87,9 +89,9 @@
         {% else %}
             <div class="spacer"></div>
             {% if isUnsavedDraft %}
-                <input type="submit" id="apply-btn" class="btn submit{% if not element.draftId %} disabled{% endif %}" value="{{ 'Save {type}'|t('app', { type: element.displayName()|lower }) }}">
+                <input type="submit" id="apply-btn" class="btn submit{% if not isDraft %} disabled{% endif %}" value="{{ 'Save {type}'|t('app', { type: element.displayName()|lower }) }}">
             {% else %}
-                <input type="submit" id="apply-btn" class="btn submit{% if not element.draftId %} disabled{% endif %}" value="{{ 'Update {type}'|t('app', { type: element.displayName()|lower }) }}">
+                <input type="submit" id="apply-btn" class="btn submit{% if not isDraft %} disabled{% endif %}" value="{{ 'Update {type}'|t('app', { type: element.displayName()|lower }) }}">
             {% endif %}
         {% endif %}
     {% endif %}
@@ -112,7 +114,7 @@
                     id: 'enabled',
                     name: 'enabled',
                     on: element.enabled,
-                    disabled: element.revisionId,
+                    disabled: isRevision,
                     toggle: 'enabledForSite-field'
                 }) }}
 
@@ -123,7 +125,7 @@
                         id: 'enabledForSite',
                         name: 'enabledForSite',
                         on: element.enabledForSite,
-                        disabled: element.revisionId
+                        disabled: isRevision
                     }) }}
                 {% endif %}
             {% endif %}
@@ -139,9 +141,9 @@
                 <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
                 <div class="value">{{ element.dateUpdated|datetime('short') }}</div>
             </div>
-            {% if element.revisionId %}
+            {% if isRevision %}
                 {% set revisionNotes = element.revisionNotes %}
-            {% elseif not element.draftId and element.currentRevision %}
+            {% elseif not isDraft and element.currentRevision %}
                 {% set revisionNotes = element.currentRevision.revisionNotes %}
             {% else %}
                 {% set revisionNotes = null %}
@@ -170,12 +172,12 @@
     elementType: className(element),
     sourceId: element.getSourceId(),
     siteId: element.siteId,
-    isLive: not element.draftId and not element.revisionId and element.enabled and element.enabledForSite and element.getRoute(),
+    isLive: not isDraft and not isRevision and element.enabled and element.enabledForSite and element.getRoute(),
     cpEditUrl: element.cpEditUrl,
     draftId: element.draftId,
     revisionId: element.revisionId,
-    draftName: element.draftId ? element.draftName : null,
-    draftNotes: element.draftId ? element.draftNotes : null,
+    draftName: isDraft ? element.draftName : null,
+    draftNotes: isDraft ? element.draftNotes : null,
     propagateAll: isUnsavedDraft and craft.app.request.getQueryParam('fresh'),
     canDeleteDraft: canDeleteDraft,
     canUpdateSource: canUpdateSource,

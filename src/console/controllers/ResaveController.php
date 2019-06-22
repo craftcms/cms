@@ -133,7 +133,7 @@ class ResaveController extends Controller
         if ($this->volume !== null) {
             $query->volume(explode(',', $this->volume));
         }
-        return $this->_saveElements($query);
+        return $this->saveElements($query);
     }
 
     /**
@@ -147,7 +147,7 @@ class ResaveController extends Controller
         if ($this->group !== null) {
             $query->group(explode(',', $this->group));
         }
-        return $this->_saveElements($query);
+        return $this->saveElements($query);
     }
 
     /**
@@ -164,7 +164,7 @@ class ResaveController extends Controller
         if ($this->type !== null) {
             $query->type(explode(',', $this->type));
         }
-        return $this->_saveElements($query);
+        return $this->saveElements($query);
     }
 
     /**
@@ -178,7 +178,7 @@ class ResaveController extends Controller
         if ($this->group !== null) {
             $query->group(explode(',', $this->group));
         }
-        return $this->_saveElements($query);
+        return $this->saveElements($query);
     }
 
     /**
@@ -192,14 +192,14 @@ class ResaveController extends Controller
         if ($this->group !== null) {
             $query->group(explode(',', $this->group));
         }
-        return $this->_saveElements($query);
+        return $this->saveElements($query);
     }
 
     /**
      * @param ElementQueryInterface $query
      * @return int
      */
-    private function _saveElements(ElementQueryInterface $query): int
+    public function saveElements(ElementQueryInterface $query): int
     {
         /** @var ElementQuery $query */
         /** @var ElementInterface $elementType */

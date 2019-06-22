@@ -128,7 +128,7 @@ class DbConfig extends BaseObject
                     throw new InvalidConfigException('Invalid DSN param: ' . $param);
                 }
                 $paramName = substr($param, 0, $pos);
-                $paramValue = substr($params, $pos + 1);
+                $paramValue = substr($param, $pos + 1);
                 switch ($paramName) {
                     case 'host':
                         $this->server = $paramValue;

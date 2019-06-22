@@ -292,7 +292,7 @@ class ExtensionTest extends Unit
     {
         // 1 means true (string version of bool)
         $this->extensionRenderTest(
-            '{% set shuffled = shuffle([2, [[2, 3], 3], 4])%}{{ shuffled != [2, [[2, 3], 3], 4] }}',
+            '{% set shuffled = shuffle([2, 9, 2, 1, 3, [[2, 3], 3], 4, 9, 1, 2, 3, 4, 5, 6])%}{{ shuffled != [2, 9, 2, 1, 3, [[2, 3], 3], 4, 9, 1, 2, 3, 4, 5, 6] }}',
             '1'
         );
 

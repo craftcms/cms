@@ -1237,6 +1237,22 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getIsDraft(): bool
+    {
+        return !empty($this->draftId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsRevision(): bool
+    {
+        return !empty($this->revisionId);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSourceId()
     {
         /** @var DraftBehavior|RevisionBehavior|null $behavior */
@@ -1266,7 +1282,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getIsUnsavedDraft(): bool
     {
-        if (!$this->draftId) {
+        if (!$this->getIsDraft()) {
             return false;
         }
         $sourceId = $this->getSourceId();
