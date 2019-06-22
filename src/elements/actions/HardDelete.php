@@ -16,8 +16,8 @@ use craft\elements\db\ElementQueryInterface;
 /**
  * HardDelete represents a Hard delete element action.
  *
- * Unline craft\elements\actions\Delete this action **will** remove any rows of the element from the DB and skip (if applicable)
- * the `trashed` state.
+ * Unlike craft\elements\actions\Delete this action **will** remove any rows of the element from the DB.
+ * Elements MUST be `trashed` before HardDelete actually deletes the elements.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
