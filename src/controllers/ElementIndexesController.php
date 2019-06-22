@@ -481,11 +481,12 @@ class ElementIndexesController extends BaseElementsController
                 }
             }
 
+            // Determine the actions to be displayed/hidden if we are showing trashed/non-trashed elements.
             if ($this->elementQuery->trashed) {
-                if (!$action instanceof Restore && !$action instanceof HardDelete) {
+                if (!in_array(get_class($action), [Restore::class, HardDelete::class], true)) {
                     unset($actions[$i]);
                 }
-            } else if ($action instanceof Restore && $action instanceof HardDelete) {
+            } else if (in_array(get_class($action), [Restore::class, HardDelete::class], true)) {
                 unset($actions[$i]);
             }
         }
