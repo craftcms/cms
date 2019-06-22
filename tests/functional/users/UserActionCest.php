@@ -10,6 +10,8 @@ namespace crafttests\functional\users;
 use Craft;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
+use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use crafttests\fixtures\UsersFixture;
 use FunctionalTester;
 
@@ -56,8 +58,10 @@ class UserActionCest
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
         $user = new User(['username' => 'craftcmsfunctionaltest', 'email' => 'craft@cms.com']);
 
+        Craft::$app->setEdition(Craft::Pro);
         $I->saveElement($user);
         Craft::$app->getUsers()->activateUser($user);
+        Craft::$app->getUserPermissions()->saveUserPermissions($user->id, ['accessCp']);
 
         $this->activeUser = User::find()
             ->id($user->id)
@@ -75,17 +79,19 @@ class UserActionCest
         $I->amOnPage('/'.$this->cpTrigger.'/users/'.$this->activeUser->id.'');
 
         $I->see('Login as');
-        $I->submitForm('#userform', [
-            'action' => 'users/impersonate'
-        ]);
 
         Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession = false;
+        $I->submitForm('#userform', [
+            'action' => 'users/impersonate',
+            'redirect' => Craft::$app->getSecurity()->hashData(UrlHelper::cpUrl('dashboard'))
+        ]);
+
         $I->see('Dashboard');
         $I->see('Logged in');
 
         $I->assertSame(
             (string)$this->activeUser->id,
-            (string)Craft::$app->getUser()->getId()
+            (string)$user = Craft::$app->getUser()->getId()
         );
     }
 }
