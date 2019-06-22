@@ -986,6 +986,10 @@ class Install extends Migration
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $projectConfig = Craft::$app->getProjectConfig();
+
+        // Set the schema version so element queries know it's safe to factor in draft/revision params
+        $projectConfig->set('system.schemaVersion', Craft::$app->schemaVersion);
+
         $applyExistingProjectConfig = false;
 
         if ($generalConfig->useProjectConfigFile) {

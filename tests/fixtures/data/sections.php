@@ -13,6 +13,7 @@ return [
         'type' => 'channel',
         'enableVersioning' => false,
         'propagationMethod' => 'all',
+        'uid' => 'section-1000---------------------uid'
     ],
     [
         'id' => '1001',
@@ -21,7 +22,8 @@ return [
         'type' => 'channel',
         'enableVersioning' => false,
         'propagationMethod' => 'all',
-        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
+        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d'),
+        'uid' => 'section-1001---------------------uid'
     ],
     [
         'id' => '1002',
@@ -30,7 +32,8 @@ return [
         'type' => 'channel',
         'enableVersioning' => false,
         'propagationMethod' => 'all',
-        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
+        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d'),
+        'uid' => 'section-1002---------------------uid'
     ],
     [
         'id' => '1003',
@@ -39,6 +42,7 @@ return [
         'type' => 'channel',
         'enableVersioning' => false,
         'propagationMethod' => 'all',
+        'uid' => 'section-1003---------------------uid'
     ],
     [
         'id' => '1004',
@@ -47,6 +51,7 @@ return [
         'type' => 'channel',
         'enableVersioning' => true,
         'propagationMethod' => 'all',
+        'uid' => 'section-1004---------------------uid'
     ],
     [
         'id' => '1005',
@@ -55,5 +60,6 @@ return [
         'type' => 'single',
         'enableVersioning' => true,
         'propagationMethod' => 'all',
+        'uid' => 'section-1005---------------------uid'
     ],
 ];

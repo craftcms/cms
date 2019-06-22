@@ -50,6 +50,7 @@ abstract class GlobalSetFixture extends ElementFixture
             $record->id = $data['id'];
             $record->name = $data['name'];
             $record->handle = $data['handle'];
+            $record->uid = $data['uid'];
             $record->save();
         }
     }
