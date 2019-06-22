@@ -771,8 +771,25 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
-        Craft::$app->getMatrix()->saveField($this, $element);
+        // Save blocks now if we *are* managing them on a per-site basis
+        if ($this->localizeBlocks) {
+            Craft::$app->getMatrix()->saveField($this, $element);
+        }
+
         parent::afterElementSave($element, $isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementPropagate(ElementInterface $element, bool $isNew)
+    {
+        // Save blocks now if we're *not* managing them on a per-site basis
+        if (!$this->localizeBlocks) {
+            Craft::$app->getMatrix()->saveField($this, $element);
+        }
+
+        parent::afterElementPropagate($element, $isNew);
     }
 
     /**
