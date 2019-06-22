@@ -234,8 +234,7 @@ class User extends Element implements IdentityInterface
             $actions[] = $elementsService->createAction([
                 'type' => HardDelete::class,
                 'successMessage' => Craft::t('app', 'Users deleted.'),
-                'partialSuccessMessage' => Craft::t('app', 'Some users deleted.'),
-                'failMessage' => Craft::t('app', 'Users not deleted.'),
+                'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the users?'),
             ]);
         }
 
