@@ -171,7 +171,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     public $deletedWithOwner = false;
 
     /**
-     * @var ElementInterface|false|null The owner element, or false if [[ownerId]] is invalid
+     * @var ElementInterface|null The owner element, or false if [[ownerId]] is invalid
      */
     private $_owner;
 
@@ -278,12 +278,8 @@ class MatrixBlock extends Element implements BlockElementInterface
             }
 
             if (($this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId)) === null) {
-                $this->_owner = false;
+                throw new InvalidConfigException('Invalid owner ID: ' . $this->ownerId);
             }
-        }
-
-        if ($this->_owner === false) {
-            throw new InvalidConfigException('Invalid owner ID: ' . $this->ownerId);
         }
 
         return $this->_owner;

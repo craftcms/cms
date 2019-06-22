@@ -124,7 +124,6 @@ class UserPermissionsTest extends TestCase
             $this->userPermissions->doesGroupHavePermission('1000', 'invalidPermission')
         );
 
-        // TODO: @Internal - these tests fail?!?
         $this->userPermissions->saveGroupPermissions('1000', ['assignUserPermissions', 'accessCp']);
         $this->assertFalse(
             $this->userPermissions->doesGroupHavePermission('1000', 'assignUserPermissions')
