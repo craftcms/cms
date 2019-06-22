@@ -2272,4 +2272,3 @@ through trashed and non-active Elements as well.
 
 ### Security
 - Craft uses OpenSSL for encryption rather than mcrypt, which is far more secure and well-maintained.
-Bui
