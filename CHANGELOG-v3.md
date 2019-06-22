@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `{% dd %}` Twig tag. ([#4399](https://github.com/craftcms/cms/issues/4399))
+- Added `craft\elements\actions\HardDelete`.
 
 ### Changed
 - `craft\web\twig\variables\CraftVariable` no longer triggers the `defineComponents` event. ([#4416](https://github.com/craftcms/cms/issues/4416))
