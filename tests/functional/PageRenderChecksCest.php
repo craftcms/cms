@@ -153,14 +153,9 @@ class PageRenderChecksCest
                 'Craft CMS',
                 'Update'
             ]],
-            // TODO: This fails
-            /**['url' => '/utilities/php-info', 'title' => 'PHP Info', 'extraContent' => [
-                'allow_url_fopen'
-            ]],**/
             ['url' => '/utilities/system-messages', 'title' => 'System Messages', 'extraContent' => [
                 'When someone creates an account'
             ]],
-            ['url' => '/utilities/search-indexes', 'title' => 'Search Indexes'],
             ['url' => '/utilities/asset-indexes', 'title' => 'Asset Indexes', 'extraContent' => [
                 'Test volume 1'
             ]],
