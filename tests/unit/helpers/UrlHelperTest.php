@@ -309,6 +309,7 @@ class UrlHelperTest extends Unit
      * @param null $params
      * @param null $scheme
      * @param null $siteId
+     * @throws Exception
      */
     public function testSiteUrl($result, $path, $params = null, $scheme = null, $siteId = null)
     {

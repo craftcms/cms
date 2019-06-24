@@ -56,9 +56,9 @@ class SettingsEditCest
     // =========================================================================
 
     /**
+     * @dataProvider editOptionsDataProvider
      * @param FunctionalTester $I
      * @param Example $example
-     * @dataProvider editOptionsDataProvider
      */
     public function testEditData(FunctionalTester $I, Example $example)
     {
@@ -80,6 +80,12 @@ class SettingsEditCest
         $data = Craft::$app->{$example['craftAppProp']}->{$example['methodInvoker']}($example['methodProp']);
         $I->assertSame($randString, $data->{$example['propName']});
     }
+
+    // Protected Methods
+    // =========================================================================
+
+    // Data Providers
+    // =========================================================================
 
     /**
      * @return array
