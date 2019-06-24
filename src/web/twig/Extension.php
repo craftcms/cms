@@ -590,7 +590,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param array|\Traversable $arr
      * @param callable|null $arrow
-     * @return array|\Traversable
+     * @return array
      */
     public function filterFilter($arr, $arrow = null)
     {
@@ -600,7 +600,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         $filtered = twig_array_filter($arr, $arrow);
 
-        // ¯\_(ツ)_/¯ (https://github.com/craftcms/cms/issues/4437)
         if (is_array($filtered)) {
             return $filtered;
         }
