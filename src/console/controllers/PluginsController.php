@@ -8,8 +8,11 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\base\Plugin;
 use craft\console\Controller;
 use craft\helpers\Console;
+use craft\helpers\StringHelper;
+use craft\services\Plugins;
 use yii\console\ExitCode;
 
 /**
@@ -24,33 +27,115 @@ class PluginsController extends Controller
     // Public functions
     // =========================================================================
 
-    public function actionUninstall(string $param = null)
+    /**
+     * @return int
+     */
+    public function manage() : int
     {
-        if ($param === 'all') {
-            if (!$this->stdout('Are you sure? This will uninstall ALL plugins and their associated data?')) {
-                $this->stdout('Cancelling');
+        $pluginsService = Craft::$app->getPlugins();
+
+        if (($actionablePlugins = $this->prompt(
+            'Enter plugins seperated by comma. Enter "No" if you want a list of plugins and the option to select from that list.'.PHP_EOL)
+            ) !== 'No') {
+            $actionablePlugins = StringHelper::split($actionablePlugins, ',');
+
+            // Hmmm.
+            if (!$actionablePlugins) {
+                $this->stderr('Invalid plugin input. Please try again'.PHP_EOL);
+                return ExitCode::OK;
+            }
+        }
+
+        // Show them a list...
+        if (!$actionablePlugins) {
+            $actionablePlugins = [];
+            $this->prompt('Which plugin(s) do you want to manage?');
+
+            $plugins = $pluginsService->getAllPlugins();
+
+            /* @var Plugin $plugin */
+            foreach ($plugins as $plugin) {
+                $pluginName = $plugin->name;
+                $handle = $plugin->getHandle();
+                $version = $plugin->getVersion();
+
+                $result = $this->select(
+                    "$pluginName - $handle - $version" . PHP_EOL,
+                    ['Yes' => 'Yes', 'No' => 'No']
+                );
+
+                if ($result) {
+                    $actionablePlugins[] = $handle;
+                }
+            }
+        }
+
+        foreach ($actionablePlugins as $actionablePlugin) {
+            $isInstalled = Craft::$app->getPlugins()->isPluginInstalled($actionablePlugin);
+
+            // Hmmm.
+            if (!$isInstalled) {
+                $this->stderr("$actionablePlugin is not installed. Cancelling.");
                 return ExitCode::OK;
             }
 
-            $this->stdout('Uninstalling all plugins'.PHP_EOL);
+            // Ensure we know what they want.
+            $action = $this->select("What do you want to do to $actionablePlugin?", [
+                'Uninstall' => 'Uninstall',
+                'Install' => 'Install',
+                'Disable' => 'Disable',
+                'Enable' => 'Enable',
+            ]);
 
-            foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
-                Craft::$app->getPlugins()->uninstallPlugin($plugin->getHandle());
+            try {
+                switch ($action) {
+                    case 'Uninstall':
+                        if (!Craft::$app->getPlugins()->uninstallPlugin($actionablePlugin)) {
+                            return $this->_handleFailedPluginAction($actionablePlugin, $action);
+                        }
+                        break;
+                    case 'Install':
+                        $edition = $this->prompt('Which edition must the plugin be installed?');
+                        if (!Craft::$app->getPlugins()->installPlugin($actionablePlugin, $edition)) {
+                            return $this->_handleFailedPluginAction($actionablePlugin, $action);
+                        }
+                        break;
+                    case 'Disable':
+                        if (!Craft::$app->getPlugins()->disablePlugin($actionablePlugin)) {
+                            return $this->_handleFailedPluginAction($actionablePlugin, $action);
+                        }
+                        break;
+                    case 'Enable':
+                        if (!Craft::$app->getPlugins()->enablePlugin($actionablePlugin)) {
+                            return $this->_handleFailedPluginAction($actionablePlugin, $action);
+                        }
+                        break;
+                }
+            } catch (\Throwable $exception) {
+                return $this->_handleFailedPluginAction($actionablePlugin, $action, $exception->getMessage());
             }
-
-            $this->stdout('Uninstalled all plugins');
         }
 
-        $plugin = Craft::$app->getPlugins()->getPlugin($param);
+        $this->prompt('All actions processed successfully.');
+        return ExitCode::OK;
+    }
 
-        if (!$plugin) {
-            $this->stdout('No plugin');
-            return ExitCode::OK;
+
+    // Protected functions
+    // =========================================================================
+
+    /**
+     * @param $plugin
+     * @param string $action
+     * @return int
+     */
+    protected function _handleFailedPluginAction($plugin, string $action, string $exceptionMessage = null) : int
+    {
+        $this->stderr("We were unable to $action $plugin" . PHP_EOL);
+        if ($exceptionMessage) {
+            $this->stderr("Additionally an exception was thrown: $exceptionMessage");
         }
-
-        Craft::$app->getPlugins()->uninstallPlugin($plugin);
-
-        $this->stdout('Plugin uninstalled');
+        
         return ExitCode::OK;
     }
 }
