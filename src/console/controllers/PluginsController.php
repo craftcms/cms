@@ -42,35 +42,9 @@ class PluginsController extends Controller
      * @return int
      * @throws InvalidPluginException
      */
-    public function actionView(string $pluginHandle = null) : int
+    public function actionView() : int
     {
-        $pluginsService = Craft::$app->getPlugins();
         $plugins = $this->_assemblePlugins();
-
-        // Single plugin display
-        if ($pluginHandle) {
-            $plugin = $pluginsService->getComposerPluginInfo($pluginHandle);
-            if (!$plugin) {
-                $this->stderr('No plugin exists by that handle.'.PHP_EOL);
-                return ExitCode::UNSPECIFIED_ERROR;
-            }
-
-            $this->stdout('Plugin with name: '.$plugin['name'].''.PHP_EOL.PHP_EOL);
-
-            foreach ($plugin as $propName => $value) {
-                if (is_array($value)) {
-                    $value = implode(', ', $value);
-                }
-
-                $this->stdout("$propName: $value" . PHP_EOL);
-            }
-
-            $isInstalled = $pluginsService->isPluginInstalled($pluginHandle) ? 'Yes': 'No';
-            $this->stdout("Is installed: $isInstalled".PHP_EOL);
-            $this->stdout(PHP_EOL);
-
-            return ExitCode::OK;
-        }
 
         $this->stdout('We are able to detect the following plugins: '.PHP_EOL);
 
