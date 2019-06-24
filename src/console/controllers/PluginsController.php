@@ -28,9 +28,52 @@ class PluginsController extends Controller
     // =========================================================================
 
     /**
+     * @inheritdoc
+     */
+    public $defaultAction = 'view';
+
+    /**
      * @return int
      */
-    public function manage() : int
+    public function actionView() : int
+    {
+        $this->stdout('We are able to detect the following plugins: '.PHP_EOL);
+
+        $plugins = $this->_assemblePlugins();
+
+        if (!$plugins) {
+            $this->stdout('No plugins detected'.PHP_EOL);
+            return ExitCode::OK;
+        }
+
+        /* @var Plugin $plugin */
+        foreach ($plugins as $plugin) {
+            $pluginName = $plugin->name;
+            $handle = $plugin->getHandle();
+            $version = $plugin->getVersion();
+
+            $result = $this->stdout(
+                "$pluginName - $handle - $version" . PHP_EOL
+            );
+
+            if ($result) {
+                $actionablePlugins[] = $handle;
+            }
+        }
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * Manage plugins and perform various Craft related actions on them including:
+     * Uninstalling them
+     * Installing them
+     * Disabling them
+     * Enabling them
+     *
+     * @return int
+     */
+    public function actionManage() : int
     {
         $pluginsService = Craft::$app->getPlugins();
 
@@ -51,7 +94,7 @@ class PluginsController extends Controller
             $actionablePlugins = [];
             $this->prompt('Which plugin(s) do you want to manage?');
 
-            $plugins = $pluginsService->getAllPlugins();
+            $plugins = $this->_assemblePlugins();
 
             /* @var Plugin $plugin */
             foreach ($plugins as $plugin) {
@@ -125,6 +168,27 @@ class PluginsController extends Controller
     // =========================================================================
 
     /**
+     * @return array
+     * @throws \craft\errors\InvalidPluginException
+     */
+    protected function _assemblePlugins() : array
+    {
+        $pluginsService = Craft::$app->getPlugins();
+        $plugins = [];
+        $composerInfo = Craft::$app->getPlugins()->getComposerPluginInfo();
+
+        foreach ($composerInfo as $handle => $composerPlugin) {
+            if ($pluginsService->isPluginInstalled($handle)) {
+                $plugins[] = $pluginsService->getPlugin($handle);
+            } else {
+                $plugins[] = $pluginsService->createPlugin($handle);
+            }
+        }
+
+        return $plugins;
+    }
+
+    /**
      * @param $plugin
      * @param string $action
      * @return int
@@ -135,7 +199,7 @@ class PluginsController extends Controller
         if ($exceptionMessage) {
             $this->stderr("Additionally an exception was thrown: $exceptionMessage");
         }
-        
+
         return ExitCode::OK;
     }
 }
