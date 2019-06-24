@@ -292,16 +292,8 @@ class ExtensionTest extends Unit
     {
         // 1 means true (string version of bool)
         $this->extensionRenderTest(
-            '{% set shuffled = shuffle([2, 9, 2, 1, 3, [[2, 3], 3], 4, 9, 1, 2, 3, 4, 5, 6])%}{{ shuffled != [2, 9, 2, 1, 3, [[2, 3], 3], 4, 9, 1, 2, 3, 4, 5, 6] }}',
+            '{% set a = [0,1,2,3,4,5,6,7,8,9,"a","b","c","d","e","f"] %}{{ a != shuffle(a) or a != shuffle(a) }}',
             '1'
-        );
-
-        $arrayObject = new ArrayObject(['John', 'Smith', '22', '512']);
-
-        $this->extensionRenderTest(
-            '{% set shuffled = shuffle(arrayObject)%}{{ shuffled != ["John", "Smith", "22", "512"] }}',
-            '1',
-            ['arrayObject' => $arrayObject]
         );
     }
 
