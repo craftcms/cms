@@ -103,6 +103,12 @@ class PluginsController extends Controller
         }
 
         foreach ($actionablePlugins as $actionablePlugin) {
+            $composerInfo = Craft::$app->getPlugins()->getComposerPluginInfo($actionablePlugin);
+            if (!$composerInfo) {
+                $this->stderr("Invalid plugin handle: $actionablePlugin".PHP_EOL);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
             if (($result = $this->_processPluginAction($actionablePlugin, $action)) !== 0) {
                 return $result;
             }
