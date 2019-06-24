@@ -86,7 +86,7 @@ class PluginsController extends Controller
         ]);
 
         $actionablePlugins = $this->prompt(
-            'Enter plugins seperated by a comma.'
+            'Enter the applicable plugin handles seperated by a comma.'
         );
 
         if (!$actionablePlugins) {
