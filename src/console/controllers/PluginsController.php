@@ -72,73 +72,45 @@ class PluginsController extends Controller
     }
 
     /**
-     * Manage plugins and perform various Craft related actions on them including:
-     * Uninstalling them
-     * Installing them
-     * Disabling them
-     * Enabling them
+     * Allows you to perform bulk a bulk action on a specified set of plugins.
      *
      * @return int
-     * @throws InvalidPluginException
      */
-    public function actionManage() : int
+    public function actionBulk()
     {
-        $plugins = $this->_assemblePlugins();
+        $action = $this->select('What bulk actions do you want to perform?' . PHP_EOL, [
+            'Uninstall' => 'This will Uninstall this plugin',
+            'Install' => 'This will Install this plugin',
+            'Disable' => 'This will Disable this plugin',
+            'Enable' => 'This will Enable this plugin'
+        ]);
 
-        if (!$plugins) {
-            $this->stdout('No plugins no manage'.PHP_EOL);
+        $actionablePlugins = $this->prompt(
+            'Enter plugins seperated by comma.'
+        );
+
+        if (!$actionablePlugins) {
+            $this->stderr('No plugins entered Please try again'.PHP_EOL);
             return ExitCode::OK;
         }
 
-        if ($actionablePlugins = $this->prompt(
-            'Enter plugins seperated by comma. Enter nothing if you want a list of plugins and the option to select from that list.')
-            ) {
-            $actionablePlugins = StringHelper::split($actionablePlugins, ',');
+        $actionablePlugins = StringHelper::split($actionablePlugins, ',');
 
-            // Hmmm.
-            if (!$actionablePlugins) {
-                $this->stderr('Invalid plugin input. Please try again'.PHP_EOL);
-                return ExitCode::OK;
-            }
-
-            foreach ($actionablePlugins as $actionablePlugin) {
-                if (($result = $this->_processPluginAction($actionablePlugin)) !== 0) {
-                    return $result;
-                }
-            }
-        }
-
-        // Show them a list...
+        // Hmmm.
         if (!$actionablePlugins) {
+            $this->stderr('Invalid plugin input. Please try again'.PHP_EOL);
+            return ExitCode::OK;
+        }
 
-            $this->stdout('Which plugin(s) do you want to manage?'.PHP_EOL.PHP_EOL);
-
-            /* @var Plugin $plugin */
-            foreach ($plugins as $plugin) {
-                $pluginName = $plugin->name;
-                $handle = $plugin->getHandle();
-                $version = $plugin->getVersion();
-
-                $result = $this->select(
-                    "$pluginName - $handle - $version",
-                    [
-                        'Yes' => 'This will proceed to allow you to select what action you want to perform (I.E. Install or Enable a plugin)',
-                        'No' => 'This will skip to the next plugin without performing actions on this one. '
-                    ]
-                );
-
-                if ($result === 'Yes') {
-                    if (($result = $this->_processPluginAction($handle)) !== 0) {
-                        return $result;
-                    }
-                }
+        foreach ($actionablePlugins as $actionablePlugin) {
+            if (($result = $this->_processPluginAction($actionablePlugin, $action)) !== 0) {
+                return $result;
             }
         }
 
-        $this->stdout('All actions processed successfully.'.PHP_EOL);
+        $this->stdout('Bulk actions performed.'.PHP_EOL);
         return ExitCode::OK;
     }
-
 
     // Protected functions
     // =========================================================================
@@ -147,20 +119,22 @@ class PluginsController extends Controller
      * @param string $actionablePluginHandle
      * @return int
      */
-    protected function _processPluginAction(string $actionablePluginHandle)
+    protected function _processPluginAction(string $actionablePluginHandle, string $action = null)
     {
         $pluginsService = Craft::$app->getPlugins();
 
         $this->stdout(PHP_EOL);
 
-        // Ensure we know what they want.
-        $action = $this->select("What do you want to do to: $actionablePluginHandle?".PHP_EOL, [
-            'Uninstall' => 'This will Uninstall this plugin',
-            'Install' => 'This will Install this plugin',
-            'Disable' => 'This will Disable this plugin',
-            'Enable' => 'This will Enable this plugin',
-            'No Action' => 'No Action will be taken. We will move to the next plugin.'
-        ]);
+        if (!$action) {
+            // Ensure we know what they want.
+            $action = $this->select("What do you want to do to: $actionablePluginHandle?" . PHP_EOL, [
+                'Uninstall' => 'This will Uninstall this plugin',
+                'Install' => 'This will Install this plugin',
+                'Disable' => 'This will Disable this plugin',
+                'Enable' => 'This will Enable this plugin',
+                'No Action' => 'No Action will be taken. We will move to the next plugin.'
+            ]);
+        }
 
         $isInstalled = $pluginsService->isPluginInstalled($actionablePluginHandle);
 
@@ -180,7 +154,7 @@ class PluginsController extends Controller
                     }
                     break;
                 case 'Install':
-                    $edition = $this->prompt('Which edition must the plugin be installed?');
+                    $edition = $this->prompt("Which edition must $actionablePluginHandle be installed with?");
 
                     $this->stdout("Installing plugin: $actionablePluginHandle...".PHP_EOL);
 
