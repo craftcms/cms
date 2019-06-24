@@ -65,7 +65,6 @@ class PluginsController extends Controller
             $enabled = $pluginService->isPluginEnabled($plugin->handle);
             $disabled = $pluginService->isPluginDisabled($plugin->handle);
 
-            $status = 'Unkown';
             if ($enabled) {
                 $status = 'Enabled';
             } else if ($disabled) {
