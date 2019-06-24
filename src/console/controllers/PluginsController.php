@@ -263,7 +263,7 @@ class PluginsController extends Controller
     {
         $this->stderr("We were unable to $action $plugin" . PHP_EOL);
         if ($exceptionMessage) {
-            $this->stderr("Additionally an exception was thrown: $exceptionMessage");
+            $this->stderr("Additionally an exception was thrown: $exceptionMessage".PHP_EOL);
         }
 
         return ExitCode::OK;
