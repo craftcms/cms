@@ -27,13 +27,16 @@ use yii\console\ExitCode;
  */
 class PluginsController extends Controller
 {
-    // Public functions
+    // Properties
     // =========================================================================
 
     /**
      * @inheritdoc
      */
     public $defaultAction = 'view';
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * View basic information about all plugins or all information about one plugin.
@@ -118,7 +121,7 @@ class PluginsController extends Controller
         return ExitCode::OK;
     }
 
-    // Protected functions
+    // Protected Methods
     // =========================================================================
 
     /**
