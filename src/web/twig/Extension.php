@@ -598,7 +598,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return array_filter($arr);
         }
 
-        return iterator_to_array(twig_array_filter($arr, $arrow));
+        $filtered = twig_array_filter($arr, $arrow);
+
+        // ¯\_(ツ)_/¯ (https://github.com/craftcms/cms/issues/4437)
+        if (is_array($filtered)) {
+            return $filtered;
+        }
+
+        return iterator_to_array($filtered);
     }
 
     /**
