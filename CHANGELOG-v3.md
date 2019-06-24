@@ -8,6 +8,7 @@
 ### Fixed
 - Fixed a bug where Craft might not match a domain to the proper site if it had a non-ASCII character in the host name.
 - Fixed an error that could occur when using the `|filter` Twig filter. ([#4437](https://github.com/craftcms/cms/issues/4437))
+- Fixed a bug where pagination URL could get repeated page params added to the query string if using query string-based pagination.
 
 ## 3.1.31 - 2019-06-18
 
