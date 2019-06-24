@@ -47,6 +47,7 @@ class PluginsController extends Controller
      */
     public function actionView() : int
     {
+        $pluginService = Craft::$app->getPlugins();
         $plugins = $this->_assemblePlugins();
 
         $this->stdout('We are able to detect the following plugins: '.PHP_EOL);
@@ -61,9 +62,20 @@ class PluginsController extends Controller
             $pluginName = $plugin->name;
             $handle = $plugin->getHandle();
             $version = $plugin->getVersion();
+            $enabled = $pluginService->isPluginEnabled($plugin->handle);
+            $disabled = $pluginService->isPluginDisabled($plugin->handle);
+
+            $status = 'Unkown';
+            if ($enabled) {
+                $status = 'Enabled';
+            } else if ($disabled) {
+                $status = 'Disabled';
+            } else {
+                $status = 'Not installed';
+            }
 
             $result = $this->stdout(
-                "$pluginName - $handle - $version" . PHP_EOL
+                "$pluginName - $handle - $version - $status" . PHP_EOL
             );
 
             if ($result) {
