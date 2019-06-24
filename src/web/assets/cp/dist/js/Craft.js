@@ -12875,7 +12875,6 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
  */
 Craft.DraftEditor = Garnish.Base.extend(
     {
-        revisionMenu: null,
         $revisionBtn: null,
         $revisionLabel: null,
         $spinner: null,
@@ -13104,7 +13103,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                     this.settings.draftName = response.draftName;
                     this.settings.draftNotes = response.draftNotes;
 
-                    var revisionMenu = this.$revisionBtn.data('menubtn').menu;
+                    var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null;
 
                     // Did we just create a draft?
                     if (!this.settings.draftId) {
@@ -13128,36 +13127,40 @@ Craft.DraftEditor = Garnish.Base.extend(
                         $('#apply-btn').removeClass('disabled');
 
                         // Add it to the revision menu
-                        revisionMenu.$options.filter(':not(.site-option)').removeClass('sel');
-                        var $draftsUl = revisionMenu.$container.find('.revision-group-drafts');
-                        if (!$draftsUl.length) {
-                            var $draftHeading = $('<h6/>', {
-                                text: Craft.t('app', 'Drafts'),
-                            }).insertAfter(revisionMenu.$container.find('.revision-group-current'));
-                            $draftsUl = $('<ul/>', {
-                                'class': 'padded revision-group-drafts',
-                            }).insertAfter($draftHeading);
-                        }
-                        var $draftLi = $('<li/>').appendTo($draftsUl);
-                        var $draftA = $('<a/>', {
-                            'class': 'sel',
-                            html: '<span class="draft-name"></span> <span class="draft-creator light"></span>',
-                        }).appendTo($draftLi);
-                        revisionMenu.addOptions($draftA);
-                        revisionMenu.selectOption($draftA);
+                        if (revisionMenu) {
+                            revisionMenu.$options.filter(':not(.site-option)').removeClass('sel');
+                            var $draftsUl = revisionMenu.$container.find('.revision-group-drafts');
+                            if (!$draftsUl.length) {
+                                var $draftHeading = $('<h6/>', {
+                                    text: Craft.t('app', 'Drafts'),
+                                }).insertAfter(revisionMenu.$container.find('.revision-group-current'));
+                                $draftsUl = $('<ul/>', {
+                                    'class': 'padded revision-group-drafts',
+                                }).insertAfter($draftHeading);
+                            }
+                            var $draftLi = $('<li/>').appendTo($draftsUl);
+                            var $draftA = $('<a/>', {
+                                'class': 'sel',
+                                html: '<span class="draft-name"></span> <span class="draft-creator light"></span>',
+                            }).appendTo($draftLi);
+                            revisionMenu.addOptions($draftA);
+                            revisionMenu.selectOption($draftA);
 
-                        // Update the site URLs
-                        var $siteOptions = revisionMenu.$options.filter('.site-option[href]');
-                        for (var i = 0; i < $siteOptions.length; i++) {
-                            var $siteOption = $siteOptions.eq(i);
-                            $siteOption.attr('href', Craft.getUrl($siteOption.attr('href'), {draftId: response.draftId}));
+                            // Update the site URLs
+                            var $siteOptions = revisionMenu.$options.filter('.site-option[href]');
+                            for (var i = 0; i < $siteOptions.length; i++) {
+                                var $siteOption = $siteOptions.eq(i);
+                                $siteOption.attr('href', Craft.getUrl($siteOption.attr('href'), {draftId: response.draftId}));
+                            }
                         }
                     }
 
-                    revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
-                    revisionMenu.$options.filter('.sel').find('.draft-creator').text(Craft.t('app', 'by {creator}', {
-                        creator: response.creator
-                    }));
+                    if (revisionMenu) {
+                        revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
+                        revisionMenu.$options.filter('.sel').find('.draft-creator').text(Craft.t('app', 'by {creator}', {
+                            creator: response.creator
+                        }));
+                    }
 
                     this.afterUpdate(data);
 
