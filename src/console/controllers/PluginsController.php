@@ -36,6 +36,8 @@ class PluginsController extends Controller
     public $defaultAction = 'view';
 
     /**
+     * View basic information about all plugins or all information about one plugin.
+     *
      * @param string|null $pluginHandle
      * @return int
      * @throws InvalidPluginException
@@ -145,7 +147,10 @@ class PluginsController extends Controller
 
                 $result = $this->select(
                     "$pluginName - $handle - $version",
-                    ['Yes' => 'Yes', 'No' => 'No']
+                    [
+                        'Yes' => 'This will proceed to allow you to select what action you want to perform (I.E. Install or Enable a plugin)',
+                        'No' => 'This will skip to the next plugin without performing actions on this one. '
+                    ]
                 );
 
                 if ($result === 'Yes') {
@@ -172,13 +177,15 @@ class PluginsController extends Controller
     {
         $pluginsService = Craft::$app->getPlugins();
 
+        $this->stdout(PHP_EOL);
+
         // Ensure we know what they want.
         $action = $this->select("What do you want to do to: $actionablePluginHandle?".PHP_EOL, [
-            'Uninstall' => 'Uninstall',
-            'Install' => 'Install',
-            'Disable' => 'Disable',
-            'Enable' => 'Enable',
-            'No Action' => 'No Action'
+            'Uninstall' => 'This will Uninstall this plugin',
+            'Install' => 'This will Install this plugin',
+            'Disable' => 'This will Disable this plugin',
+            'Enable' => 'This will Enable this plugin',
+            'No Action' => 'No Action will be taken. We will move to the next plugin.'
         ]);
 
         $isInstalled = $pluginsService->isPluginInstalled($actionablePluginHandle);
