@@ -173,11 +173,12 @@ class PluginsController extends Controller
         $pluginsService = Craft::$app->getPlugins();
 
         // Ensure we know what they want.
-        $action = $this->select("What do you want to do to $actionablePluginHandle?".PHP_EOL, [
+        $action = $this->select("What do you want to do to: $actionablePluginHandle?".PHP_EOL, [
             'Uninstall' => 'Uninstall',
             'Install' => 'Install',
             'Disable' => 'Disable',
             'Enable' => 'Enable',
+            'No Action' => 'No Action'
         ]);
 
         $isInstalled = $pluginsService->isPluginInstalled($actionablePluginHandle);
@@ -220,11 +221,15 @@ class PluginsController extends Controller
                         return $this->_handleFailedPluginAction($actionablePluginHandle, $action);
                     }
                     break;
+                case 'No Action':
+                    $this->stdout("No action taken. Proceeding to next plugin...".PHP_EOL);
+                    break;
             }
         } catch (\Throwable $exception) {
             return $this->_handleFailedPluginAction($actionablePluginHandle, $action, $exception->getMessage());
         }
 
+        $this->stdout(PHP_EOL);
         return ExitCode::OK;
     }
 
@@ -240,7 +245,7 @@ class PluginsController extends Controller
 
         foreach ($composerInfo as $handle => $composerPlugin) {
             $plugins[] = $plugin = $pluginsService->createPlugin($handle);
-            
+
             if (!$plugin) {
                 throw new InvalidArgumentException("Unable to create a plugin by handle: $handle");
             }
