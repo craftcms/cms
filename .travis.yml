@@ -6,6 +6,7 @@ env:
 branches:
   only:
   - 3.2
+  - feature/tests
 services:
 - mysql
 - postgresql
