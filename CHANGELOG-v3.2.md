@@ -42,6 +42,7 @@
 - Added the `_special/sitepicker` template.
 - It’s now possible for plugins and modules to define custom actions on console controllers.
 - Added a testing framework for Craft and plugins, powered by Codeception. ([#3382](https://github.com/craftcms/cms/pull/3382), [#1485](https://github.com/craftcms/cms/issues/1485), [#944](https://github.com/craftcms/cms/issues/944))
+- Added `craft\console\PluginsController`
 - Added `craft\base\BlockElementInterface`.
 - Added `craft\base\Element::EVENT_AFTER_PROPAGATE`.
 - Added `craft\base\Element::EVENT_REGISTER_PREVIEW_TARGETS`.
