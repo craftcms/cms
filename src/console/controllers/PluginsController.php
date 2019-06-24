@@ -15,6 +15,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\StringHelper;
 use craft\services\Plugins;
+use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
 
 /**
@@ -155,7 +156,7 @@ class PluginsController extends Controller
             }
         }
 
-        $this->prompt('All actions processed successfully.');
+        $this->stdout('All actions processed successfully.'.PHP_EOL);
         return ExitCode::OK;
     }
 
@@ -190,22 +191,31 @@ class PluginsController extends Controller
         try {
             switch ($action) {
                 case 'Uninstall':
+                    $this->stdout("Uninstalling plugin: $actionablePluginHandle...".PHP_EOL);
+
                     if (!$pluginsService->uninstallPlugin($actionablePluginHandle)) {
                         return $this->_handleFailedPluginAction($actionablePluginHandle, $action);
                     }
                     break;
                 case 'Install':
                     $edition = $this->prompt('Which edition must the plugin be installed?');
+
+                    $this->stdout("Installing plugin: $actionablePluginHandle...".PHP_EOL);
+
                     if (!$pluginsService->installPlugin($actionablePluginHandle, $edition)) {
                         return $this->_handleFailedPluginAction($actionablePluginHandle, $action);
                     }
                     break;
                 case 'Disable':
+                    $this->stdout("Disabling plugin: $actionablePluginHandle...".PHP_EOL);
+
                     if (!$pluginsService->disablePlugin($actionablePluginHandle)) {
                         return $this->_handleFailedPluginAction($actionablePluginHandle, $action);
                     }
                     break;
                 case 'Enable':
+                    $this->stdout("Enabling plugin: $actionablePluginHandle...".PHP_EOL);
+
                     if (!$pluginsService->enablePlugin($actionablePluginHandle)) {
                         return $this->_handleFailedPluginAction($actionablePluginHandle, $action);
                     }
@@ -229,10 +239,10 @@ class PluginsController extends Controller
         $composerInfo = Craft::$app->getPlugins()->getComposerPluginInfo();
 
         foreach ($composerInfo as $handle => $composerPlugin) {
-            if ($pluginsService->isPluginInstalled($handle)) {
-                $plugins[] = $pluginsService->getPlugin($handle);
-            } else {
-                $plugins[] = $pluginsService->createPlugin($handle);
+            $plugins[] = $plugin = $pluginsService->createPlugin($handle);
+            
+            if (!$plugin) {
+                throw new InvalidArgumentException("Unable to create a plugin by handle: $handle");
             }
         }
 
