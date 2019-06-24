@@ -41,11 +41,12 @@ class PluginsController extends Controller
      */
     public function actionView(string $pluginHandle = null) : int
     {
+        $pluginsService = Craft::$app->getPlugins();
         $plugins = $this->_assemblePlugins();
 
         // Single plugin display
         if ($pluginHandle) {
-            $plugin = Craft::$app->getPlugins()->getComposerPluginInfo($pluginHandle);
+            $plugin = $pluginsService->getComposerPluginInfo($pluginHandle);
             if (!$plugin) {
                 $this->stderr('No plugin exists by that handle.'.PHP_EOL);
                 return ExitCode::UNSPECIFIED_ERROR;
@@ -61,7 +62,7 @@ class PluginsController extends Controller
                 $this->stdout("$propName: $value" . PHP_EOL);
             }
 
-            $isInstalled = Craft::$app->getPlugins()->isPluginInstalled($pluginHandle) ? 'Yes': 'No';
+            $isInstalled = $pluginsService->isPluginInstalled($pluginHandle) ? 'Yes': 'No';
             $this->stdout("Is installed: $isInstalled".PHP_EOL);
             $this->stdout(PHP_EOL);
 
@@ -105,7 +106,12 @@ class PluginsController extends Controller
      */
     public function actionManage() : int
     {
-        $pluginsService = Craft::$app->getPlugins();
+        $plugins = $this->_assemblePlugins();
+
+        if (!$plugins) {
+            $this->stdout('No plugins no manage'.PHP_EOL);
+            return ExitCode::OK;
+        }
 
         if ($actionablePlugins = $this->prompt(
             'Enter plugins seperated by comma. Enter nothing if you want a list of plugins and the option to select from that list.')
@@ -117,14 +123,18 @@ class PluginsController extends Controller
                 $this->stderr('Invalid plugin input. Please try again'.PHP_EOL);
                 return ExitCode::OK;
             }
+
+            foreach ($actionablePlugins as $actionablePlugin) {
+                if (($result = $this->_processPluginAction($actionablePlugin)) !== 0) {
+                    return $result;
+                }
+            }
         }
 
         // Show them a list...
         if (!$actionablePlugins) {
-            $actionablePlugins = [];
-            $this->prompt('Which plugin(s) do you want to manage?');
 
-            $plugins = $this->_assemblePlugins();
+            $this->stdout('Which plugin(s) do you want to manage?'.PHP_EOL.PHP_EOL);
 
             /* @var Plugin $plugin */
             foreach ($plugins as $plugin) {
@@ -133,59 +143,15 @@ class PluginsController extends Controller
                 $version = $plugin->getVersion();
 
                 $result = $this->select(
-                    "$pluginName - $handle - $version" . PHP_EOL,
+                    "$pluginName - $handle - $version",
                     ['Yes' => 'Yes', 'No' => 'No']
                 );
 
-                if ($result) {
-                    $actionablePlugins[] = $handle;
+                if ($result === 'Yes') {
+                    if (($result = $this->_processPluginAction($handle)) !== 0) {
+                        return $result;
+                    }
                 }
-            }
-        }
-
-        foreach ($actionablePlugins as $actionablePlugin) {
-            $isInstalled = $pluginsService->isPluginInstalled($actionablePlugin);
-
-            // Hmmm.
-            if (!$isInstalled) {
-                $this->stderr("$actionablePlugin is not installed. Cancelling.");
-                return ExitCode::OK;
-            }
-
-            // Ensure we know what they want.
-            $action = $this->select("What do you want to do to $actionablePlugin?", [
-                'Uninstall' => 'Uninstall',
-                'Install' => 'Install',
-                'Disable' => 'Disable',
-                'Enable' => 'Enable',
-            ]);
-
-            try {
-                switch ($action) {
-                    case 'Uninstall':
-                        if (!$pluginsService->uninstallPlugin($actionablePlugin)) {
-                            return $this->_handleFailedPluginAction($actionablePlugin, $action);
-                        }
-                        break;
-                    case 'Install':
-                        $edition = $this->prompt('Which edition must the plugin be installed?');
-                        if (!$pluginsService->installPlugin($actionablePlugin, $edition)) {
-                            return $this->_handleFailedPluginAction($actionablePlugin, $action);
-                        }
-                        break;
-                    case 'Disable':
-                        if (!$pluginsService->disablePlugin($actionablePlugin)) {
-                            return $this->_handleFailedPluginAction($actionablePlugin, $action);
-                        }
-                        break;
-                    case 'Enable':
-                        if (!$pluginsService->enablePlugin($actionablePlugin)) {
-                            return $this->_handleFailedPluginAction($actionablePlugin, $action);
-                        }
-                        break;
-                }
-            } catch (\Throwable $exception) {
-                return $this->_handleFailedPluginAction($actionablePlugin, $action, $exception->getMessage());
             }
         }
 
@@ -196,6 +162,61 @@ class PluginsController extends Controller
 
     // Protected functions
     // =========================================================================
+
+    /**
+     * @param string $actionablePluginHandle
+     * @return int
+     */
+    protected function _processPluginAction(string $actionablePluginHandle)
+    {
+        $pluginsService = Craft::$app->getPlugins();
+
+        // Ensure we know what they want.
+        $action = $this->select("What do you want to do to $actionablePluginHandle?".PHP_EOL, [
+            'Uninstall' => 'Uninstall',
+            'Install' => 'Install',
+            'Disable' => 'Disable',
+            'Enable' => 'Enable',
+        ]);
+
+        $isInstalled = $pluginsService->isPluginInstalled($actionablePluginHandle);
+
+        // Hmmm.
+        if (!$isInstalled && $action !== 'Install') {
+            $this->stderr("$actionablePluginHandle is not installed. Cancelling.".PHP_EOL);
+            return ExitCode::OK;
+        }
+
+        try {
+            switch ($action) {
+                case 'Uninstall':
+                    if (!$pluginsService->uninstallPlugin($actionablePluginHandle)) {
+                        return $this->_handleFailedPluginAction($actionablePluginHandle, $action);
+                    }
+                    break;
+                case 'Install':
+                    $edition = $this->prompt('Which edition must the plugin be installed?');
+                    if (!$pluginsService->installPlugin($actionablePluginHandle, $edition)) {
+                        return $this->_handleFailedPluginAction($actionablePluginHandle, $action);
+                    }
+                    break;
+                case 'Disable':
+                    if (!$pluginsService->disablePlugin($actionablePluginHandle)) {
+                        return $this->_handleFailedPluginAction($actionablePluginHandle, $action);
+                    }
+                    break;
+                case 'Enable':
+                    if (!$pluginsService->enablePlugin($actionablePluginHandle)) {
+                        return $this->_handleFailedPluginAction($actionablePluginHandle, $action);
+                    }
+                    break;
+            }
+        } catch (\Throwable $exception) {
+            return $this->_handleFailedPluginAction($actionablePluginHandle, $action, $exception->getMessage());
+        }
+
+        return ExitCode::OK;
+    }
 
     /**
      * @return array
