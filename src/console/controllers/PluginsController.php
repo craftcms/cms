@@ -125,22 +125,11 @@ class PluginsController extends Controller
      * @param string $actionablePluginHandle
      * @return int
      */
-    protected function _processPluginAction(string $actionablePluginHandle, string $action = null)
+    protected function _processPluginAction(string $actionablePluginHandle, string $action)
     {
         $pluginsService = Craft::$app->getPlugins();
 
         $this->stdout(PHP_EOL);
-
-        if (!$action) {
-            // Ensure we know what they want.
-            $action = $this->select("What do you want to do to: $actionablePluginHandle?" . PHP_EOL, [
-                'Uninstall' => 'This will Uninstall this plugin',
-                'Install' => 'This will Install this plugin',
-                'Disable' => 'This will Disable this plugin',
-                'Enable' => 'This will Enable this plugin',
-                'No Action' => 'No Action will be taken. We will move to the next plugin.'
-            ]);
-        }
 
         $isInstalled = $pluginsService->isPluginInstalled($actionablePluginHandle);
 
@@ -181,9 +170,6 @@ class PluginsController extends Controller
                     if (!$pluginsService->enablePlugin($actionablePluginHandle)) {
                         return $this->_handleFailedPluginAction($actionablePluginHandle, $action);
                     }
-                    break;
-                case 'No Action':
-                    $this->stdout("No action taken. Proceeding to next plugin...".PHP_EOL);
                     break;
             }
         } catch (\Throwable $exception) {
