@@ -1,4 +1,4 @@
-/*!   - 2019-06-10 */
+/*!   - 2019-06-24 */
 (function($){
 
 /** global: Craft */
@@ -11204,7 +11204,7 @@ Craft.CP = Garnish.Base.extend(
 
             this.addListener(Garnish.$win, 'beforeunload', function(ev) {
                 var confirmUnload = false;
-                var $form;
+                var $form, serialized;
                 if (
                     Craft.forceConfirmUnload ||
                     (
@@ -11216,7 +11216,12 @@ Craft.CP = Garnish.Base.extend(
                 } else {
                     for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
                         $form = this.$confirmUnloadForms.eq(i);
-                        if ($form.data('initialSerializedValue') !== $form.serialize()) {
+                        if (typeof $form.data('serializer') === 'function') {
+                            serialized = $form.data('serializer')();
+                        } else {
+                            serialized = $form.serialize();
+                        }
+                        if ($form.data('initialSerializedValue') !== serialized) {
                             confirmUnload = true;
                             break;
                         }
@@ -12928,7 +12933,10 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             // Just to be safe
-            Craft.cp.$primaryForm.data('initialSerializedValue', this.getFormData());
+            Craft.cp.$primaryForm.data('initialSerializedValue', this.serializeForm());
+
+            // Override the serializer to use our own
+            Craft.cp.$primaryForm.data('serializer', $.proxy(this, 'serializeForm'));
 
             this.addListener(Garnish.$bod, 'keypress keyup change focus blur click mousedown mouseup', function(ev) {
                 clearTimeout(this.timeout);
@@ -13031,7 +13039,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             this.getPreview().open();
         },
 
-        getFormData: function() {
+        serializeForm: function() {
             var data = Craft.cp.$primaryForm.serialize();
 
             if (this.isPreviewActive()) {
@@ -13046,7 +13054,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             this.timeout = null;
 
             // Has anything changed?
-            var data = this.getFormData();
+            var data = this.serializeForm();
             if (force || data !== Craft.cp.$primaryForm.data('initialSerializedValue')) {
                 this.saveDraft(data);
             }
@@ -13351,7 +13359,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                     'target': Craft.cp.$primaryForm.attr('target'),
                 }
             });
-            var data = this.prepareData(this.getFormData());
+            var data = this.prepareData(this.serializeForm());
             var values = data.split('&');
             var chunks;
             for (var i = 0; i < values.length; i++) {

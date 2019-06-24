@@ -16,6 +16,7 @@
 - Fixed an error that could occur when saving an entry for the first time. ([#4421](https://github.com/craftcms/cms/issues/4421))
 - Fixed an error that could occur when installing Craft with an existing `project.yaml` file that defined a Single section.
 - Fixed an error that could occur when saving an entry with Matrix blocks on a multi-site Craft install. ([#4429](https://github.com/craftcms/cms/issues/4429))
+- Craft no longer warns about losing unsaved changes when leaving the page while previewing entries, if the changes were autosaved. ([#4439](https://github.com/craftcms/cms/issues/4439))
 
 ## 3.2.0-beta.3 - 2019-06-18
 

@@ -161,3 +161,4 @@
 
 ### Fixed
 - Fixed a bug where `craft\helpers\UrlHelper` methods could add duplicate query params on generated URLs.
+- Craft no longer warns about losing unsaved changes when leaving the page while previewing entries, if the changes were autosaved. ([#4439](https://github.com/craftcms/cms/issues/4439))
