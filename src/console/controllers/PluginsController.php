@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\base\Plugin;
 use craft\console\Controller;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\StringHelper;
 use craft\services\Plugins;
@@ -35,11 +36,34 @@ class PluginsController extends Controller
     /**
      * @return int
      */
-    public function actionView() : int
+    public function actionView(string $pluginHandle = null) : int
     {
-        $this->stdout('We are able to detect the following plugins: '.PHP_EOL);
-
         $plugins = $this->_assemblePlugins();
+
+        if ($pluginHandle) {
+            $plugin = ArrayHelper::where(
+                $plugins,
+                'handle',
+                $pluginHandle
+            );
+            $plugin = ArrayHelper::firstValue($plugin);
+
+            foreach ($plugin as $propName => $value) {
+                if (is_array($value)) {
+                    $value = implode(', ', $value);
+                }
+
+                if (is_object($value) && !method_exists($value, '__toString')) {
+                    $value = 'Unkown';
+                }
+                
+                $this->stdout("$propName: $value" . PHP_EOL);
+            }
+
+            return ExitCode::OK;
+        }
+
+        $this->stdout('We are able to detect the following plugins: '.PHP_EOL);
 
         if (!$plugins) {
             $this->stdout('No plugins detected'.PHP_EOL);
