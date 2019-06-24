@@ -79,7 +79,7 @@ class PluginsController extends Controller
      *
      * @return int
      */
-    public function actionBulk()
+    public function actionBulk() : int
     {
         $action = $this->select('What bulk actions do you want to perform?' . PHP_EOL, [
             'Uninstall' => 'This will Uninstall this plugin',
@@ -128,7 +128,7 @@ class PluginsController extends Controller
      * @param string $actionablePluginHandle
      * @return int
      */
-    protected function _processPluginAction(string $actionablePluginHandle, string $action)
+    protected function _processPluginAction(string $actionablePluginHandle, string $action) : int
     {
         $pluginsService = Craft::$app->getPlugins();
 
