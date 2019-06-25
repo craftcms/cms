@@ -15,6 +15,8 @@ use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\elements\User as UserElement;
+use craft\fields\PlainText;
+use craft\fields\Table;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Element as ElementInterface;
@@ -24,11 +26,10 @@ use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
 use craft\gql\types\generators\TableRowType;
-use crafttests\fixtures\AssetsFixture;
-use crafttests\fixtures\EntryWithFieldsFixture;
-use crafttests\fixtures\GlobalSetFixture;
-use crafttests\fixtures\GqlTokensFixture;
-use crafttests\fixtures\UsersFixture;
+use craft\models\EntryType;
+use craft\models\GqlToken;
+use craft\models\Section;
+use craft\volumes\Local;
 use GraphQL\Type\Definition\ObjectType;
 
 class InterfaceAndGeneratorTest extends Unit
@@ -40,35 +41,48 @@ class InterfaceAndGeneratorTest extends Unit
 
     protected function _before()
     {
-        $gqlService = Craft::$app->getGql();
-        $token = $gqlService->getTokenByAccessToken('My+voice+is+my+passport.+Verify me.');
-        $gqlService->setToken($token);
+        // Mock the GQL token for the volumes below
+        $this->tester->mockMethods(
+            Craft::$app,
+            'gql',
+            ['getCurrentToken' => $this->make(GqlToken::class, [
+                'permissions' => [
+                    'volumes.volume-uid-1:read',
+                    'volumes.volume-uid-2:read',
+                    'sections.section-uid-1:read',
+                    'entrytypes.entrytype-uid-1:read',
+                    'entrytypes.entrytype-uid-2:read',
+                    'globalsets.globalset-uid-1:read',
+                    'entrytypes.globalset-uid-2:read',
+                ]
+            ])]
+
+        );
+
+        // Fake out all the different entity fetches.
+        $this->tester->mockMethods(
+            Craft::$app,
+            'volumes',
+            ['getAllVolumes' => function () { return $this->mockVolumes();}]
+        );
+
+        $this->tester->mockMethods(
+            Craft::$app,
+            'sections',
+            ['getAllEntryTypes' => function () { return $this->mockEntryTypes();}]
+        );
+
+        $this->tester->mockMethods(
+            Craft::$app,
+            'globals',
+            ['getAllSets' => function () { return $this->mockGlobalSets();}]
+        );
+
     }
 
     protected function _after()
     {
         Craft::$app->getGql()->flushCaches();
-    }
-
-    public function _fixtures()
-    {
-        return [
-            'assets' => [
-                'class' => AssetsFixture::class
-            ],
-            'entries' => [
-                'class' => EntryWithFieldsFixture::class
-            ],
-            'globalSets' => [
-                'class' => GlobalSetFixture::class
-            ],
-            'users' => [
-                'class' => UsersFixture::class
-            ],
-            'gqlTokens' => [
-                'class' => GqlTokensFixture::class
-            ],
-        ];
     }
 
     // Tests
@@ -103,7 +117,30 @@ class InterfaceAndGeneratorTest extends Unit
      */
     public function testTableRowTypeGenerator()
     {
-        $tableField = Craft::$app->getFields()->getFieldByHandle('appointments');
+        $tableField = $this->make(Table::class, [
+            'columns' => [
+                'col1' => [
+                    'heading' => 'What',
+                    'handle' => 'one',
+                    'type' => 'singleline',
+                ],
+                'col2' => [
+                    'heading' => 'When',
+                    'handle' => 'two',
+                    'type' => 'date',
+                ],
+                'col3' => [
+                    'heading' => 'How many',
+                    'handle' => 'howMany',
+                    'type' => 'number',
+                ],
+                'col4' => [
+                    'heading' => 'Allow?',
+                    'handle' => 'allow',
+                    'type' => 'lightswitch',
+                ],
+            ]
+        ]);
         TableRowType::generateTypes($tableField);
         $typeName = TableRowType::getName($tableField);
         $this->assertNotFalse(GqlEntityRegistry::getEntity($typeName));
@@ -117,12 +154,85 @@ class InterfaceAndGeneratorTest extends Unit
     public function interfaceDataProvider(): array
     {
         return [
-            [AssetInterface::class, function () { return [Craft::$app->getVolumes()->getVolumeByUid('volume-1000-uid')];}, [AssetElement::class, 'getGqlTypeNameByContext']],
+            [AssetInterface::class, [$this, 'mockVolumes'], [AssetElement::class, 'getGqlTypeNameByContext']],
             [ElementInterface::class, function () {return ['Element'];}, [BaseElement::class, 'getGqlTypeNameByContext']],
-            [EntryInterface::class, function () { return [Craft::$app->getSections()->getEntryTypeById(1000)];}, [EntryElement::class, 'getGqlTypeNameByContext']],
-            [GlobalSetInterface::class, function () { return [Craft::$app->getGlobals()->getSetByHandle('aGlobalSet')];}, [GlobalSetElement::class, 'getGqlTypeNameByContext']],
+            [EntryInterface::class, [$this, 'mockEntryTypes'], [EntryElement::class, 'getGqlTypeNameByContext']],
+            [GlobalSetInterface::class, [$this, 'mockGlobalSets'], [GlobalSetElement::class, 'getGqlTypeNameByContext']],
             [MatrixBlockInterface::class, function () { return Craft::$app->getMatrix()->getAllBlockTypes();}, [MatrixBlockElement::class, 'getGqlTypeNameByContext']],
             [UserInterface::class, function () {return ['User'];}, [UserElement::class, 'getGqlTypeNameByContext']],
+        ];
+    }
+
+    /**
+     * Mock the volumes for tests.
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function mockVolumes(): array
+    {
+        return [
+            $this->make(Local::class, [
+                'uid' => 'volume-uid-1',
+                'handle' => 'mockVolume1',
+                '__call' => function ($name, $params) {
+                    return $name == 'getFields' ? [] : parent::__get($name, $params);
+                },
+            ]),
+            $this->make(Local::class, [
+                'uid' => 'volume-uid-2',
+                'handle' => 'mockVolume2',
+                '__call' => function ($name, $params) {
+                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'mockField'])] : parent::__get($name, $params);
+                },
+            ]),
+        ];
+    }
+
+    /**
+     * Mock the entry types for tests.
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function mockEntryTypes(): array
+    {
+        return [
+            $this->make(EntryType::class, [
+                'uid' => 'entrytype-uid-1',
+                'handle' => 'mockType1',
+                'getSection' => $this->make(Section::class, ['uid' => 'section-uid-1']),
+                '__call' => function ($name, $params) {
+                    return $name == 'getFields' ? [] : parent::__get($name, $params);
+                },
+            ]),
+            $this->make(EntryType::class, [
+                'uid' => 'entrytype-uid-1',
+                'handle' => 'mockType2',
+                'getSection' => $this->make(Section::class, ['uid' => 'section-uid-1']),
+                '__call' => function ($name, $params) {
+                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'mockField'])] : parent::__get($name, $params);
+                },
+            ]),
+        ];
+    }
+
+    /**
+     * Mock the global sets for tests.
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function mockGlobalSets(): array
+    {
+        return [
+            $this->make(GlobalSetElement::class, [
+                'uid' => 'globalset-uid-1',
+                'handle' => 'mockGlobal',
+                '__call' => function ($name, $params) {
+                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'mockField'])] : parent::__get($name, $params);
+                },
+            ]),
         ];
     }
 }
