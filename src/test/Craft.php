@@ -23,6 +23,7 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
@@ -199,6 +200,9 @@ class Craft extends Yii2
         try {
             // Create a Craft::$app object
             TestSetup::warmCraft();
+
+            // Prevent's a static properties bug.
+            ProjectConfig::reset();
 
             App::maxPowerCaptain();
 

@@ -113,6 +113,18 @@ class ProjectConfig
     }
 
     /**
+     * Resets the static memoization variables.
+     *
+     * @return void
+     */
+    public static function reset()
+    {
+        static::$_processedFields = false;
+        static::$_processedSites = false;
+        static::$_processedUserGroups = false;
+    }
+
+    /**
      * Traverse and clean a config array, removing empty values and sorting keys.
      *
      * @param array $config Config array to clean
