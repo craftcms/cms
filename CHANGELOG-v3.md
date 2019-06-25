@@ -8,6 +8,7 @@
 - Asset, category, entry, and user indexes can now have “UID” columns. ([#4433](https://github.com/craftcms/cms/issues/4433))
 
 ### Changed
+- `craft\services\Elements::resaveElements()` now has a `$skipRevisions` argument.
 - `craft\web\twig\variables\CraftVariable` no longer triggers the `defineComponents` event. ([#4416](https://github.com/craftcms/cms/issues/4416))
 - Craft no longer warns about losing unsaved changes when leaving the page while previewing entries, if the changes were autosaved. ([#4439](https://github.com/craftcms/cms/issues/4439))
 
