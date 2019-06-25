@@ -3,16 +3,21 @@
 ## Unreleased
 
 ### Added
+- Matrix fields now have a “Propagation Method” setting, enabling blocks to only be propagated to other sites in the same site group, or with the same language. ([#3554](https://github.com/craftcms/cms/issues/3554))
 - Added the `resave/matrix-blocks` console command.
 - Added the `{% dd %}` Twig tag. ([#4399](https://github.com/craftcms/cms/issues/4399))
 - Asset, category, entry, and user indexes can now have “UID” columns. ([#4433](https://github.com/craftcms/cms/issues/4433))
+- Added `craft\services\Matrix::getSupportedSiteIdsForField()`.
 
 ### Changed
 - `craft\services\Elements::resaveElements()` now has a `$skipRevisions` argument.
+- `craft\services\Matrix::saveField()` now has a `$checkOtherSites` argument.
 - `craft\web\twig\variables\CraftVariable` no longer triggers the `defineComponents` event. ([#4416](https://github.com/craftcms/cms/issues/4416))
 - Craft no longer warns about losing unsaved changes when leaving the page while previewing entries, if the changes were autosaved. ([#4439](https://github.com/craftcms/cms/issues/4439))
 
 ### Deprecated
+- Deprecated the `ownerSite` and `ownerSiteId` Matrix block query params.
+- Deprecated `craft\elements\MatrixBlock::$ownerSiteId`.
 - Deprecated `craft\events\DefineComponentsEvent`.
 
 ### Fixed

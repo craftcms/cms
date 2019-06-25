@@ -383,7 +383,6 @@ class Install extends Migration
         $this->createTable(Table::MATRIXBLOCKS, [
             'id' => $this->integer()->notNull(),
             'ownerId' => $this->integer()->notNull(),
-            'ownerSiteId' => $this->integer(),
             'fieldId' => $this->integer()->notNull(),
             'typeId' => $this->integer()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
@@ -765,7 +764,6 @@ class Install extends Migration
         $this->createIndex(null, Table::MATRIXBLOCKS, ['fieldId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['typeId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['sortOrder'], false);
-        $this->createIndex(null, Table::MATRIXBLOCKS, ['ownerSiteId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['name', 'fieldId'], true);
         $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['handle', 'fieldId'], true);
         $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['fieldId'], false);
@@ -926,7 +924,6 @@ class Install extends Migration
         $this->addForeignKey(null, Table::MATRIXBLOCKS, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::MATRIXBLOCKS, ['ownerSiteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::MATRIXBLOCKS, ['typeId'], Table::MATRIXBLOCKTYPES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKTYPES, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKTYPES, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
