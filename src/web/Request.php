@@ -1105,7 +1105,15 @@ class Request extends \yii\web\Request
             }
 
             // Does the site URL specify a host name?
-            if (!empty($parsed['host']) && $hostName && $parsed['host'] !== $hostName) {
+            if (
+                !empty($parsed['host']) &&
+                $hostName &&
+                $parsed['host'] !== $hostName &&
+                (
+                    !function_exists('idn_to_ascii') ||
+                    idn_to_ascii($parsed['host'], IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) !== $hostName
+                )
+            ) {
                 continue;
             }
 
