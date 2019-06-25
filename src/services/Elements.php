@@ -29,12 +29,12 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
 use craft\errors\OperationAbortedException;
 use craft\errors\SiteNotFoundException;
+use craft\events\BatchElementActionEvent;
 use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
+use craft\events\ElementQueryEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\events\BatchElementActionEvent;
-use craft\events\ElementQueryEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
@@ -782,10 +782,10 @@ class Elements extends Component
      * Propagates all elements that match a given element query to another site(s).
      *
      * @param ElementQueryInterface $query The element query to fetch elements with
-     * @var int|int[]|null The site ID(s) that the elements should be propagated to. If null, elements will be
-     * propagated to all supported sites, except the one they were queried in.
      * @param bool $continueOnError Whether to continue going if an error occurs
      * @throws \Throwable if reasons
+     * @var int|int[]|null The site ID(s) that the elements should be propagated to. If null, elements will be
+     * propagated to all supported sites, except the one they were queried in.
      * @since 3.2.0
      */
     public function propagateElements(ElementQueryInterface $query, $siteIds = null, bool $continueOnError = false)
