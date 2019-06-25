@@ -153,7 +153,7 @@ Craft.CP = Garnish.Base.extend(
 
             this.addListener(Garnish.$win, 'beforeunload', function(ev) {
                 var confirmUnload = false;
-                var $form;
+                var $form, serialized;
                 if (
                     Craft.forceConfirmUnload ||
                     (
@@ -165,7 +165,12 @@ Craft.CP = Garnish.Base.extend(
                 } else {
                     for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
                         $form = this.$confirmUnloadForms.eq(i);
-                        if ($form.data('initialSerializedValue') !== $form.serialize()) {
+                        if (typeof $form.data('serializer') === 'function') {
+                            serialized = $form.data('serializer')();
+                        } else {
+                            serialized = $form.serialize();
+                        }
+                        if ($form.data('initialSerializedValue') !== serialized) {
                             confirmUnload = true;
                             break;
                         }

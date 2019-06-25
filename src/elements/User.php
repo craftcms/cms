@@ -314,6 +314,7 @@ class User extends Element implements IdentityInterface
         }
 
         $attributes['id'] = ['label' => Craft::t('app', 'ID')];
+        $attributes['uid'] = ['label' => Craft::t('app', 'UID')];
         $attributes['lastLoginDate'] = ['label' => Craft::t('app', 'Last Login')];
         $attributes['dateCreated'] = ['label' => Craft::t('app', 'Date Created')];
         $attributes['dateUpdated'] = ['label' => Craft::t('app', 'Date Updated')];

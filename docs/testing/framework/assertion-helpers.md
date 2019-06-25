@@ -32,10 +32,10 @@ accepts two arguments:
 - `string $message = ''` the message the test should fail with. 
 ## `expectEvent`
 
-Please see our seperate page on [events testing](../testing-craft/events.md) for everything you need to know about
+Please see our separate page on [events testing](../testing-craft/events.md) for everything you need to know about
 testing for events. 
 
 ## `assertPushedToQueue`
 
-See the seperate page on [queue testing](../testing-craft/queue.md) for everything you need to know
+See the separate page on [queue testing](../testing-craft/queue.md) for everything you need to know
 about testing the [queue](../../config/app.md#queue-component). 

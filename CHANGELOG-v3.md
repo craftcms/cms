@@ -4,11 +4,12 @@
 
 ### Added
 - Added the `{% dd %}` Twig tag. ([#4399](https://github.com/craftcms/cms/issues/4399))
+- Asset, category, entry, and user indexes can now have “UID” columns. ([#4433](https://github.com/craftcms/cms/issues/4433))
 
 ### Changed
 - `craft\web\twig\variables\CraftVariable` no longer triggers the `defineComponents` event. ([#4416](https://github.com/craftcms/cms/issues/4416))
-- `craft\test\Craft::assertElementsExist()` now accepts a fourth argument indicating whether to search 
-through trashed and non-active Elements as well. 
+- Craft no longer warns about losing unsaved changes when leaving the page while previewing entries, if the changes were autosaved. ([#4439](https://github.com/craftcms/cms/issues/4439))
+- `craft\test\Craft::assertElementsExist()` now accepts a fourth argument indicating whether to additionally search through trashed and non-active elements.
 
 ### Deprecated
 - Deprecated `craft\events\DefineComponentsEvent`.
@@ -16,8 +17,9 @@ through trashed and non-active Elements as well.
 ### Fixed
 - Fixed an error that could occur when saving an entry for the first time. ([#4421](https://github.com/craftcms/cms/issues/4421))
 - Fixed an error that could occur when installing Craft with an existing `project.yaml` file that defined a Single section.
-- Fixed an error that could occur when saving an entry with Matrix blocks on a multi-site Craft install.
-- Fixed a bug where `craft\test\Craft::amLoggedInAs` was not logging a user in.
+- Fixed an error that could occur when saving an entry with Matrix blocks on a multi-site Craft install. ([#4429](https://github.com/craftcms/cms/issues/4429))
+- Fixed a JavaScript error that could occur when creating new entries. ([#4443](https://github.com/craftcms/cms/issues/4443))
+- Fixed a bug where `craft\test\Craft::amLoggedInAs` would not login a user.
 
 ## 3.2.0-beta.3 - 2019-06-18
 

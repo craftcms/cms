@@ -493,7 +493,7 @@ class DbHelperTest extends Unit
         $jsonableClass->name = 'name';
         $serializable = new Serializable();
 
-        $dateTime = new DateTime('2018-06-06 18:00:00');
+        $dateTime = new DateTime('2018-06-06 18:00:00', new DateTimeZone('UTC'));
 
         return [
             ['2018-06-06 18:00:00', $dateTime],
@@ -589,10 +589,7 @@ class DbHelperTest extends Unit
         $jsonableClass->name = 'name';
         $serializable = new Serializable();
 
-        $excpectedDateTime = new DateTime('2018-06-06 18:00:00');
-        $excpectedDateTime->setTimezone(new DateTimeZone('UTC'));
-
-        $dateTime = new DateTime('2018-06-06 18:00:00');
+        $dateTime = new DateTime('2018-06-06 18:00:00', new DateTimeZone('UTC'));
 
         return [
             [['{"date":"2018-06-06 18:00:00.000000","timezone_type":3,"timezone":"UTC"}'], [$dateTime]],

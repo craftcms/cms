@@ -9,11 +9,11 @@ namespace crafttests\functional\users;
 
 use Craft;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
-use craft\helpers\StringHelper;
+use craft\errors\WrongEditionException;
 use craft\helpers\UrlHelper;
-use crafttests\fixtures\UsersFixture;
 use FunctionalTester;
+use yii\base\InvalidConfigException;
+use yii\db\Exception;
 
 /**
  * Test various actions you can perform on a user.
@@ -47,6 +47,9 @@ class UserActionCest
 
     /**
      * @param FunctionalTester $I
+     * @throws \Throwable
+     * @throws WrongEditionException
+     * @throws Exception
      */
     public function _before(FunctionalTester $I)
     {
@@ -73,6 +76,8 @@ class UserActionCest
 
     /**
      * @param FunctionalTester $I
+     * @throws InvalidConfigException
+     * @throws \yii\base\Exception
      */
     public function seeUserImpersonation(FunctionalTester $I)
     {
