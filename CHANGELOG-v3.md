@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.1.32.1 - 2019-06-25
+
+### Fixed
+- Fixed a couple Windows compatibility issues.
+
 ## 3.1.32 - 2019-06-25
 
 ### Changed
