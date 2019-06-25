@@ -12,7 +12,6 @@ use craft\db\ActiveRecord;
 use craft\helpers\StringHelper;
 use craft\records\Session;
 use craft\records\Volume;
-use craft\test\Craft;
 use craft\test\mockclasses\serializable\Serializable;
 use craft\volumes\Local;
 use DateTime;

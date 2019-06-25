@@ -18,10 +18,12 @@ use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\db\ElementQuery;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
@@ -199,6 +201,9 @@ class Craft extends Yii2
             // Create a Craft::$app object
             TestSetup::warmCraft();
 
+            // Prevent's a static properties bug.
+            ProjectConfig::reset();
+
             App::maxPowerCaptain();
 
             $dbConnection = \Craft::createObject(App::dbConfig(self::createDbConfig()));
@@ -354,11 +359,18 @@ class Craft extends Yii2
      * @param string $elementType
      * @param array $searchProperties
      * @param int $amount
-     * @return mixed
+     * @param bool $searchAll - Wether anyStatus() and trashed(null) should be applied
+     * @return array
      */
-    public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1) : array
+    public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false) : array
     {
+        /* @var ElementQuery $elementQuery */
         $elementQuery = $elementType::find();
+        if ($searchAll) {
+            $elementQuery->anyStatus();
+            $elementQuery->trashed(null);
+        }
+
         foreach ($searchProperties as $searchProperty => $value) {
             $elementQuery->$searchProperty = $value;
         }

@@ -7,6 +7,7 @@
 
 namespace craft\test;
 
+use Codeception\Exception\ConfigurationException;
 use Codeception\Lib\Connector\Yii2;
 use Craft;
 use craft\base\Plugin;
@@ -41,6 +42,26 @@ class CraftConnector extends Yii2
     public function getEmails(): array
     {
         return $this->emails;
+    }
+
+    /**
+     * We override to prevent a bug with the matching of user agent and session.
+     * @param $user
+     * @param bool $disableRequiredUserAgent
+     * @throws ConfigurationException
+     */
+    public function findAndLoginUser($user, bool $disableRequiredUserAgent = true)
+    {
+        $oldRequirement = Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession;
+        if ($disableRequiredUserAgent) {
+            Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession = false;
+        }
+
+        parent::findAndLoginUser($user);
+
+        if ($disableRequiredUserAgent) {
+            Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession = $oldRequirement;
+        }
     }
 
     /**

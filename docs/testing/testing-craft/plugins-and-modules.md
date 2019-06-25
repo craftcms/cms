@@ -1,4 +1,5 @@
 # Modules & Plugins
+
 ## Modules
 Setting up modules for testing is quite simple. In your config directory ensure 
 an `app.php` is present. Once this file exists you register your Module exactly 
