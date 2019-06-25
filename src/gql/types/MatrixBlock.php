@@ -33,13 +33,14 @@ class MatrixBlock extends BaseType
         /** @var MatrixBlockElement $source */
         $fieldName = $resolveInfo->fieldName;
 
-        if (StringHelper::substr($fieldName, 0, 5) === 'field') {
+        if (StringHelper::substr($fieldName, 0, 5) === 'field' && $fieldName !== 'fieldId') {
             $field = $source->getField();
             $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 5));
 
             return $field->$property;
         }
 
+        // Not very clean or nice in any other aspect. Get structure elements in ASAP.
         if (StringHelper::substr($fieldName, 0, 5) === 'owner') {
             $owner = $source->getOwner();
             $property = StringHelper::lowercaseFirst(StringHelper::substr($fieldName, 5));

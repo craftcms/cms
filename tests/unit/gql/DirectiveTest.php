@@ -10,17 +10,15 @@ namespace craftunit\gql;
 use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Asset;
-use craft\fields\Date;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\Asset as GqlAssetType;
 use craft\gql\types\Entry as GqlEntryType;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
-use crafttests\fixtures\AssetsFixture;
-use crafttests\fixtures\TransformsFixture;
 use DateTime;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -37,18 +35,6 @@ class DirectiveTest extends Unit
 
     protected function _after()
     {
-    }
-
-    public function _fixtures()
-    {
-        return [
-            'assets' => [
-                'class' => AssetsFixture::class
-            ],
-            'transforms' => [
-                'class' => TransformsFixture::class
-            ]
-        ];
     }
 
     // Tests
@@ -93,8 +79,20 @@ class DirectiveTest extends Unit
      */
     public function testTransformDirective(array $directives, $parameters, $mustNotBeSame = false)
     {
+        $this->tester->mockMethods(
+            Craft::$app,
+            'assets',
+            [
+                'getAssetUrl' => function ($asset, $parameters, $generateNow) {
+                $transformed = is_array($parameters) ? implode('-', $parameters) : $parameters;
+                    return $transformed . ($generateNow ? ($asset->filename . '-generateNow') : ($asset->filename . 'generateLater'));
+                }
+            ],
+            []
+        );
+
         /** @var Asset $asset */
-        $asset = Asset::find()->filename('product.jpg')->folderId(1000)->one();
+        $asset = $this->make(Asset::class, ['filename' => StringHelper::randomString() . '.jpg']);
 
         /** @var GqlAssetType $type */
         $type = $this->make(GqlAssetType::class);
@@ -128,7 +126,7 @@ class DirectiveTest extends Unit
     public function testTransformOnlyUrl()
     {
         /** @var Asset $asset */
-        $asset = Asset::find()->filename('product.jpg')->folderId(1000)->one();
+        $asset = $this->make(Asset::class, ['filename' => StringHelper::randomString() . '.jpg']);
 
         /** @var GqlAssetType $type */
         $type = $this->make(GqlAssetType::class);
@@ -179,12 +177,10 @@ class DirectiveTest extends Unit
         $assetTransform = Transform::class;
 
         $transformParameters = [
-            ['width' => 20, 'immediately' => true],
             ['handle' => 'anExampleTransform', 'immediately' => false],
             ['handle' => 'anExampleTransform', 'immediately' => true],
-            ['mode' => 'crop', 'width' => 25, 'immediately' => true],
             ['mode' => 'fit', 'width' => 30, 'height' => 40, 'format' => 'png', 'position' => 'top-left', 'interlace' => 'line', 'quality' => 5, 'immediately' => true],
-            ['width' => 25, 'immediately' => false],
+            ['mode' => 'fit', 'width' => 30, 'height' => 40, 'format' => 'png', 'position' => 'top-left', 'interlace' => 'line', 'quality' => 5, 'immediately' => false],
         ];
 
         // asset transform
@@ -193,8 +189,6 @@ class DirectiveTest extends Unit
             [[$this->_buildDirective($assetTransform, $transformParameters[1])], $transformParameters[1]],
             [[$this->_buildDirective($assetTransform, $transformParameters[2])], $transformParameters[2]],
             [[$this->_buildDirective($assetTransform, $transformParameters[3])], $transformParameters[3]],
-            [[$this->_buildDirective($assetTransform, $transformParameters[4])], $transformParameters[4]],
-            [[$this->_buildDirective($assetTransform, $transformParameters[5])], $transformParameters[5]],
         ];
     }
 

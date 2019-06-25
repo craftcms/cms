@@ -9,22 +9,28 @@ namespace craftunit\gql;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\base\Volume;
 use craft\elements\Asset as AssetElement;
 use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\elements\User as UserElement;
 use craft\errors\GqlException;
+use craft\fields\Matrix;
 use craft\gql\types\Asset as AssetGqlType;
 use craft\gql\types\Entry as EntryGqlType;
 use craft\gql\types\GlobalSet as GlobalSetGqlType;
 use craft\gql\types\MatrixBlock as MatrixBlockGqlType;
 use craft\gql\types\User as UserGqlType;
 use craft\helpers\Json;
-use crafttests\fixtures\AssetsFixture;
-use crafttests\fixtures\EntryWithFieldsFixture;
-use crafttests\fixtures\GlobalSetFixture;
-use crafttests\fixtures\UsersFixture;
+use craft\helpers\StringHelper;
+use craft\models\EntryType;
+use craft\models\GqlToken;
+use craft\models\MatrixBlockType;
+use craft\models\Section;
+use craft\models\Site;
+use craft\models\UserGroup;
+use craft\models\VolumeFolder;
 use GraphQL\Type\Definition\ResolveInfo;
 
 class ElementFieldResolverTest extends Unit
@@ -42,24 +48,6 @@ class ElementFieldResolverTest extends Unit
     {
     }
 
-    public function _fixtures()
-    {
-        return [
-            'assets' => [
-                'class' => AssetsFixture::class
-            ],
-            'entries' => [
-                'class' => EntryWithFieldsFixture::class
-            ],
-            'globalSets' => [
-                'class' => GlobalSetFixture::class
-            ],
-            'users' => [
-                'class' => UsersFixture::class
-            ],
-        ];
-    }
-
     // Tests
     // =========================================================================
 
@@ -75,7 +63,25 @@ class ElementFieldResolverTest extends Unit
      */
     public function testEntryFieldResolving(string $gqlTypeClass, string $propertyName, $result)
     {
-        $this->_runTest(EntryElement::findOne(['title' => 'Theories of matrix']), $gqlTypeClass, $propertyName, $result);
+        $sectionUid = StringHelper::UUID();
+        $typeUid = StringHelper::UUID();
+        $mockElement = $this->make(
+            EntryElement::class, [
+                'postDate' => new \DateTime(),
+                '__get' => function ($property) {
+                    // Assume a content field named 'plainTextField'
+                    return $property == 'plainTextField' ? 'ok' : $this->$property;
+                },
+                'getSection' => function () use ($sectionUid) {
+                    return $this->make(Section::class, ['uid' => $sectionUid]);
+                },
+                'getType' => function () use ($typeUid) {
+                    return $this->make(EntryType::class, ['uid' => $typeUid]);
+                }
+            ]
+        );
+
+        $this->_runTest($mockElement, $gqlTypeClass, $propertyName, $result);
     }
 
     /**
@@ -90,7 +96,24 @@ class ElementFieldResolverTest extends Unit
      */
     public function testAssetFieldResolving(string $gqlTypeClass, string $propertyName, $result)
     {
-        $this->_runTest(AssetElement::findOne(['filename' => 'product.jpg']), $gqlTypeClass, $propertyName, $result);
+        $volumeUid = StringHelper::UUID();
+        $folderUid = StringHelper::UUID();
+        $mockElement = $this->make(
+            AssetElement::class, [
+                '__get' => function ($property) {
+                    // Assume a content field named 'plainTextField'
+                    return $property == 'imageDescription' ? 'ok' : $this->$property;
+                },
+                'getVolume' => function () use ($volumeUid) {
+                    return $this->make(Volume::class, ['uid' => $volumeUid]);
+                },
+                'getFolder' => function () use ($folderUid) {
+                    return $this->make(VolumeFolder::class, ['uid' => $folderUid]);
+                }
+            ]
+        );
+
+        $this->_runTest($mockElement, $gqlTypeClass, $propertyName, $result);
     }
 
     /**
@@ -105,7 +128,17 @@ class ElementFieldResolverTest extends Unit
      */
     public function testGlobalSetFieldResolving(string $gqlTypeClass, string $propertyName, $result)
     {
-        $this->_runTest(GlobalSetElement::findOne(['handle' => 'aGlobalSet']), $gqlTypeClass, $propertyName, $result);
+        $mockElement = $this->make(
+            GlobalSetElement::class, [
+                '__get' => function ($property) {
+                    // Assume a content field named 'plainTextField'
+                    return $property == 'plainTextField' ? 'ok' : $this->$property;
+                },
+                'handle' => 'aHandle'
+            ]
+        );
+
+        $this->_runTest($mockElement, $gqlTypeClass, $propertyName, $result);
     }
 
     /**
@@ -120,8 +153,36 @@ class ElementFieldResolverTest extends Unit
      */
     public function testMatrixBlockFieldResolving(string $gqlTypeClass, string $propertyName, $result)
     {
-        $field = Craft::$app->getFields()->getFieldByHandle('matrixFirst');
-        $this->_runTest(MatrixBlockElement::findOne(['type' => 'aBlock', 'fieldId' => $field->id]), $gqlTypeClass, $propertyName, $result);
+        $fieldUid = StringHelper::UUID();
+        $typeUid = StringHelper::UUID();
+        $ownerUid = StringHelper::UUID();
+
+        $mockElement = $this->make(
+            MatrixBlockElement::class, [
+                '__get' => function ($property) {
+                    // Assume a content field named 'plainTextField'
+                    return $property == 'firstSubfield' ? 'ok' : $this->$property;
+                },
+                'fieldId' => 1000,
+                'getField' => function () use ($fieldUid) {
+                    return $this->make(Matrix::class, ['uid' => $fieldUid]);
+                },
+                'getOwner' => function () use ($ownerUid) {
+                    return $this->make(EntryElement::class, [
+                        'uid' => $ownerUid,
+                        'getSite' => function () {
+                            return $this->make(Site::class, ['id' => 1000]);
+                        },
+                        'siteId' => 1000,
+                    ]);
+                },
+                'getType' => function () use ($typeUid) {
+                    return $this->make(MatrixBlockType::class, ['uid' => $typeUid]);
+                }
+            ]
+        );
+
+        $this->_runTest($mockElement, $gqlTypeClass, $propertyName, $result);
     }
 
     /**
@@ -136,7 +197,23 @@ class ElementFieldResolverTest extends Unit
      */
     public function testUserFieldResolving(string $gqlTypeClass, string $propertyName, $result)
     {
-        $this->_runTest(UserElement::findOne(['username' => 'user1']), $gqlTypeClass, $propertyName, $result);
+        $mockElement = $this->make(
+            UserElement::class, [
+                '__get' => function ($property) {
+                    // Assume a content field named 'plainTextField'
+                    return $property == 'shortBio' ? 'ok' : $this->$property;
+                },
+                'username' => 'admin',
+                'getPreferences' => function () {
+                    return [
+                        'aPreference' => 'value',
+                        'timeZone' => 'Fiji'
+                    ];
+                },
+            ]
+        );
+
+        $this->_runTest($mockElement, $gqlTypeClass, $propertyName, $result);
     }
 
     /**
@@ -150,7 +227,9 @@ class ElementFieldResolverTest extends Unit
     public function _runTest($element, string $gqlTypeClass, string $propertyName, $result)
     {
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => $propertyName]);
-        $resolve = function () use ($gqlTypeClass, $element, $resolveInfo) { return $this->make($gqlTypeClass)->resolveWithDirectives($element, [], null, $resolveInfo);};
+        $resolve = function () use ($gqlTypeClass, $element, $resolveInfo) {
+            return $this->make($gqlTypeClass)->resolveWithDirectives($element, [], null, $resolveInfo);
+        };
 
         if (is_callable($result)) {
             $this->assertEquals($result($element), $resolve());

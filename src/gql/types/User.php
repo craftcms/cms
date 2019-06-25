@@ -55,7 +55,7 @@ class User extends BaseType
         }
 
         if ($fieldName === 'preferences') {
-            return Json::encode($source->preferences);
+            return Json::encode($source->getPreferences());
         }
 
         return $source->$fieldName;
