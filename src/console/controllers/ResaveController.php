@@ -11,14 +11,18 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\console\Controller;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
+use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\BatchElementActionEvent;
+use craft\fields\Matrix;
 use craft\services\Elements;
 use yii\console\ExitCode;
 use yii\helpers\Console;
@@ -77,7 +81,7 @@ class ResaveController extends Controller
     public $section;
 
     /**
-     * @var string|null The entry type handle(s) of the entries to resave.
+     * @var string|null The type handle(s) of the elements to resave.
      */
     public $type;
 
@@ -85,6 +89,11 @@ class ResaveController extends Controller
      * @var string|null The volume handle(s) to save assets from. Can be set to multiple comma-separated volumes.
      */
     public $volume;
+
+    /**
+     * @var string|null The field handle to save Matrix blocks for.
+     */
+    public $field;
 
     /**
      * @inheritdoc
@@ -109,6 +118,10 @@ class ResaveController extends Controller
                 break;
             case 'entries':
                 $options[] = 'section';
+                $options[] = 'type';
+                break;
+            case 'matrix-blocks':
+                $options[] = 'field';
                 $options[] = 'type';
                 break;
             case 'tags':
@@ -160,6 +173,33 @@ class ResaveController extends Controller
         $query = Entry::find();
         if ($this->section !== null) {
             $query->section(explode(',', $this->section));
+        }
+        if ($this->type !== null) {
+            $query->type(explode(',', $this->type));
+        }
+        return $this->saveElements($query);
+    }
+
+    /**
+     * Re-saves Matrix blocks.
+     *
+     * @return int
+     * @since 3.2
+     */
+    public function actionMatrixBlocks(): int
+    {
+        $query = MatrixBlock::find();
+        if ($this->field !== null) {
+            $fieldId = (new Query())
+                ->select(['id'])
+                ->from([Table::FIELDS])
+                ->where(['type' => Matrix::class, 'handle' => $this->field])
+                ->scalar();
+            if (!$fieldId) {
+                $this->stderr("No Matrix field exists with the handle \"{$this->field}\"." . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+            $query->fieldId($fieldId);
         }
         if ($this->type !== null) {
             $query->type(explode(',', $this->type));

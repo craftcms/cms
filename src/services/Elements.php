@@ -29,12 +29,12 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
 use craft\errors\OperationAbortedException;
 use craft\errors\SiteNotFoundException;
+use craft\events\BatchElementActionEvent;
 use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
+use craft\events\ElementQueryEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\events\BatchElementActionEvent;
-use craft\events\ElementQueryEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
@@ -697,10 +697,11 @@ class Elements extends Component
      *
      * @param ElementQueryInterface $query The element query to fetch elements with
      * @param bool $continueOnError Whether to continue going if an error occurs
+     * @param bool $skipRevisions Whether elements that are (or belong to) a revision should be skipped
      * @throws \Throwable if reasons
      * @since 3.2.0
      */
-    public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false)
+    public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false, $skipRevisions = true)
     {
         // Fire a 'beforeResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
@@ -730,13 +731,29 @@ class Elements extends Component
                 }
 
                 $e = null;
-                try {
-                    $this->saveElement($element);
-                } catch (\Throwable $e) {
-                    if (!$continueOnError) {
-                        throw $e;
+
+                // Make sure this isn't a revision
+                if ($skipRevisions) {
+                    try {
+                        $root = ElementHelper::rootElement($element);
+                    } catch (\Throwable $rootException) {
+                        $root = null;
+                        $e = new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) due to an error obtaining its root element: " . $rootException->getMessage());
                     }
-                    Craft::$app->getErrorHandler()->logException($e);
+                    if ($root && $root->getIsRevision()) {
+                        $e = new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it's a revision.");
+                    }
+                }
+
+                if ($e === null) {
+                    try {
+                        $this->saveElement($element);
+                    } catch (\Throwable $e) {
+                        if (!$continueOnError) {
+                            throw $e;
+                        }
+                        Craft::$app->getErrorHandler()->logException($e);
+                    }
                 }
 
                 // Fire an 'afterResaveElement' event
@@ -765,10 +782,10 @@ class Elements extends Component
      * Propagates all elements that match a given element query to another site(s).
      *
      * @param ElementQueryInterface $query The element query to fetch elements with
-     * @var int|int[]|null The site ID(s) that the elements should be propagated to. If null, elements will be
-     * propagated to all supported sites, except the one they were queried in.
      * @param bool $continueOnError Whether to continue going if an error occurs
      * @throws \Throwable if reasons
+     * @var int|int[]|null The site ID(s) that the elements should be propagated to. If null, elements will be
+     * propagated to all supported sites, except the one they were queried in.
      * @since 3.2.0
      */
     public function propagateElements(ElementQueryInterface $query, $siteIds = null, bool $continueOnError = false)

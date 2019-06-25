@@ -3,15 +3,22 @@
 ## Unreleased
 
 ### Added
+- Matrix fields now have a “Propagation Method” setting, enabling blocks to only be propagated to other sites in the same site group, or with the same language. ([#3554](https://github.com/craftcms/cms/issues/3554))
+- Added the `resave/matrix-blocks` console command.
 - Added the `{% dd %}` Twig tag. ([#4399](https://github.com/craftcms/cms/issues/4399))
 - Asset, category, entry, and user indexes can now have “UID” columns. ([#4433](https://github.com/craftcms/cms/issues/4433))
+- Added `craft\services\Matrix::getSupportedSiteIdsForField()`.
 
 ### Changed
+- `craft\services\Elements::resaveElements()` now has a `$skipRevisions` argument.
+- `craft\services\Matrix::saveField()` now has a `$checkOtherSites` argument.
 - `craft\web\twig\variables\CraftVariable` no longer triggers the `defineComponents` event. ([#4416](https://github.com/craftcms/cms/issues/4416))
 - Craft no longer warns about losing unsaved changes when leaving the page while previewing entries, if the changes were autosaved. ([#4439](https://github.com/craftcms/cms/issues/4439))
 - `craft\test\Craft::assertElementsExist()` now accepts a fourth argument indicating whether to additionally search through trashed and non-active elements.
 
 ### Deprecated
+- Deprecated the `ownerSite` and `ownerSiteId` Matrix block query params.
+- Deprecated `craft\elements\MatrixBlock::$ownerSiteId`.
 - Deprecated `craft\events\DefineComponentsEvent`.
 
 ### Fixed
@@ -337,6 +344,16 @@
 
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
+
+## 3.1.32 - 2019-06-25
+
+### Changed
+- Project Config now sorts arrays when all of the keys are UIDs. ([#4425](https://github.com/craftcms/cms/issues/4425))
+
+### Fixed
+- Fixed a bug where Craft might not match a domain to the proper site if it had a non-ASCII character in the host name.
+- Fixed an error that could occur when using the `|filter` Twig filter. ([#4437](https://github.com/craftcms/cms/issues/4437))
+- Fixed a bug where pagination URL could get repeated page params added to the query string if using query string-based pagination.
 
 ## 3.1.31 - 2019-06-18
 

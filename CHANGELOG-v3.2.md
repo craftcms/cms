@@ -11,6 +11,7 @@
 - Content previewing is now draft-based, and drafts are stored as specialized elements, so it’s no longer necessary to add special cases in templates for preview requests. ([#1787](https://github.com/craftcms/cms/issues/1787), [#2801](https://github.com/craftcms/cms/issues/2801))
 - Sections now have a “Preview Targets” setting when running Craft Pro, which can be used to configure additional locations that entries can be previewed from. ([#1489](https://github.com/craftcms/cms/issues/1489))
 - Sections now have a “Propagation Method” setting, enabling entries to only be propagated to other sites in the same site group, or with the same language. ([#3554](https://github.com/craftcms/cms/issues/3554))
+- Matrix fields now have a “Propagation Method” setting, enabling blocks to only be propagated to other sites in the same site group, or with the same language. ([#3554](https://github.com/craftcms/cms/issues/3554))
 - Single entries now have editable slugs. ([#3368](https://github.com/craftcms/cms/issues/3368))
 - Headless content previewing is now possible by forwarding request tokens off to content API requests. ([#1231](https://github.com/craftcms/cms/issues/1231))
 - Preview iframes are now created with a `src` attribute already in place, improving SPA support. ([#2120](https://github.com/craftcms/cms/issues/2120))
@@ -34,6 +35,7 @@
 - Added the `{% dd %}` Twig tag. ([#4399](https://github.com/craftcms/cms/issues/4399))
 - Added the `attr()` Twig function, which can generate a list of HTML/XML attributes. ([#4237](https://github.com/craftcms/cms/pull/4237))
 - Added the `|withoutKey` Twig filter.
+- Added the `resave/matrix-blocks` console command.
 - The `index-assets/*` commands now support a `--create-missing-assets=0` option, which prevents Craft from creating asset records when they don’t exist yet, and offers an opportunity to fix the location of any asset records that are missing their associated files, when the filename matches one of the files missing an index.
 - Added the `mailer/test` command. ([#4020](https://github.com/craftcms/cms/issues/4020))
 - Added the `tests/setup` command, which generates a test suite for the current Craft project.
@@ -89,6 +91,7 @@
 - Added `craft\services\Drafts`, accessible via `Craft::$app->drafts`.
 - Added `craft\services\Elements::propagateElements()` along with `EVENT_BEFORE_PROPAGATE_ELEMENTS`, `EVENT_AFTER_PROPAGATE_ELEMENTS`, `EVENT_BEFORE_PROPAGATE_ELEMENT`, and `EVENT_AFTER_PROPAGATE_ELEMENT` events. ([#4139](https://github.com/craftcms/cms/issues/4139))
 - Added `craft\services\Elements::resaveElements()` along with `EVENT_BEFORE_RESAVE_ELEMENTS`, `EVENT_AFTER_RESAVE_ELEMENTS`, `EVENT_BEFORE_RESAVE_ELEMENT`, and `EVENT_AFTER_RESAVE_ELEMENT` events. ([#3482](https://github.com/craftcms/cms/issues/3482))
+- Added `craft\services\Matrix::getSupportedSiteIdsForField()`.
 - Added `craft\services\Revisions`, accessible via `Craft::$app->revisions`.
 - Added `craft\services\Users::canImpersonate()`.
 - Added `craft\web\Request::getIsLoginRequest()` and `craft\console\Request::getIsLoginRequest()`.
@@ -127,6 +130,7 @@
 - `craft\services\Elements::propagateElement()` now has a `$siteElement` argument.
 - `craft\services\Elements::saveElement()` now preserves existing elements’ current `dateUpdated` value when propagating or auto-resaving elements.
 - `craft\services\Elements::saveElement()` now preserves the `uid`, `dateCreated`, and `dateUpdated` values on new elements if they were explicitly set. ([#2909](https://github.com/craftcms/cms/issues/2909))
+- `craft\services\Matrix::saveField()` now has a `$checkOtherSites` argument.
 - `craft\web\twig\variables\CraftVariable` no longer triggers the `defineComponents` event. ([#4416](https://github.com/craftcms/cms/issues/4416))
 - `craft\web\UrlManager::setRouteParams()` now has a `$merge` argument, which can be set to `false` to completely override the route params.
 - It’s now possible to pass a `behaviors` key to the `$newAttributes` argument of `craft\services\Elements::duplicateElement()`, to preattach behaviors to the cloned element before it’s saved.
@@ -147,7 +151,9 @@
 - Removed the `Craft.EntryDraftEditor` JavaScript class.
 
 ### Deprecated
+- Deprecated the `ownerSite` and `ownerSiteId` Matrix block query params.
 - Deprecated `craft\controllers\LivePreviewController`.
+- Deprecated `craft\elements\MatrixBlock::$ownerSiteId`.
 - Deprecated `craft\events\DefineComponentsEvent`.
 - Deprecated `craft\helpers\ArrayHelper::filterByValue()`. Use `where()` instead.
 - Deprecated `craft\models\BaseEntryRevisionModel`.

@@ -135,6 +135,7 @@ class ProjectConfig
     public static function cleanupConfig(array $config): array
     {
         $remove = [];
+        $sortItems = true;
 
         foreach ($config as $key => &$value) {
             // Only scalars, arrays and simple objects allowed.
@@ -155,12 +156,21 @@ class ProjectConfig
                     $remove[] = $key;
                 }
             }
+
+            // If the key isn't a UID, then don't sort this array
+            if ($sortItems && !StringHelper::isUUID($key)) {
+                $sortItems = false;
+            }
         }
         unset($value);
 
         // Remove empty stuff
         foreach ($remove as $removeKey) {
             unset($config[$removeKey]);
+        }
+
+        if ($sortItems) {
+            ksort($config);
         }
 
         return $config;
