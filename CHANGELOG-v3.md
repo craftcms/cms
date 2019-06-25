@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `resave/matrix-blocks` console command.
 - Added the `{% dd %}` Twig tag. ([#4399](https://github.com/craftcms/cms/issues/4399))
 - Asset, category, entry, and user indexes can now have “UID” columns. ([#4433](https://github.com/craftcms/cms/issues/4433))
 

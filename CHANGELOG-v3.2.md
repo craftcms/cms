@@ -34,6 +34,7 @@
 - Added the `{% dd %}` Twig tag. ([#4399](https://github.com/craftcms/cms/issues/4399))
 - Added the `attr()` Twig function, which can generate a list of HTML/XML attributes. ([#4237](https://github.com/craftcms/cms/pull/4237))
 - Added the `|withoutKey` Twig filter.
+- Added the `resave/matrix-blocks` console command.
 - The `index-assets/*` commands now support a `--create-missing-assets=0` option, which prevents Craft from creating asset records when they don’t exist yet, and offers an opportunity to fix the location of any asset records that are missing their associated files, when the filename matches one of the files missing an index.
 - Added the `mailer/test` command. ([#4020](https://github.com/craftcms/cms/issues/4020))
 - Added the `tests/setup` command, which generates a test suite for the current Craft project.
