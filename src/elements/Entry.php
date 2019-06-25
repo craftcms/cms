@@ -607,6 +607,15 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public function __clone()
+    {
+        parent::__clone();
+        $this->_hasNewParent = null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function extraFields()
     {
         $names = parent::extraFields();
