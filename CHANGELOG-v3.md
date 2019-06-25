@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.0-RC1 - 2019-06-25
 
 ### Added
 - Matrix fields now have a “Propagation Method” setting, enabling blocks to only be propagated to other sites in the same site group, or with the same language. ([#3554](https://github.com/craftcms/cms/issues/3554))
