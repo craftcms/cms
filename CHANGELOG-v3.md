@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.1.32 - 2019-06-25
 
 ### Changed
 - Project Config now sorts arrays when all of the keys are UIDs. ([#4425](https://github.com/craftcms/cms/issues/4425))
