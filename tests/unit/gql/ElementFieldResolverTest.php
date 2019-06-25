@@ -220,9 +220,7 @@ class ElementFieldResolverTest extends Unit
             [UserGqlType::class, 'missingProperty', false],
             [UserGqlType::class, 'shortBio', true],
             [UserGqlType::class, 'username', true],
-            [UserGqlType::class, 'preferences', function ($source) { return Json::encode($source->preferences);}],
-            // TODO figure out user groups and fixtures
-            [UserGqlType::class, 'groupHandles', function ($source) {return array_map(function ($userGroup) { return $userGroup->handle;}, $source->getGroups());}],
+            [UserGqlType::class, 'preferences', function ($source) { return Json::encode($source->getPreferences());}],
         ];
     }
 }
