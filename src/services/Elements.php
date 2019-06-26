@@ -966,7 +966,7 @@ class Elements extends Component
                         if ($behavior instanceof Behavior) {
                             $behavior = clone $behavior;
                         }
-                        $mainClone->attachBehavior($name, $behavior);
+                        $siteClone->attachBehavior($name, $behavior);
                     }
 
                     $siteClone->setAttributes($newAttributes, false);
