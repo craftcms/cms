@@ -719,50 +719,24 @@ class Matrix extends Component
      *
      * @param MatrixField $field The Matrix field
      * @param ElementInterface $owner The element the field is associated with
-     * @param bool $checkOtherSites Whether to check other sites if the owner was just duplicated
      * @throws \Throwable if reasons
      */
-    public function saveField(MatrixField $field, ElementInterface $owner, $checkOtherSites = false)
+    public function saveField(MatrixField $field, ElementInterface $owner)
     {
-        // Was the owner duplicated from another element?
         /** @var Element $owner */
-        if ($owner->duplicateOf !== null) {
-            /** @var MatrixBlockQuery $query */
-            $query = $owner->duplicateOf->getFieldValue($field->handle);
-            $duplicateBlocks = true;
-        } else {
-            /** @var MatrixBlockQuery $query */
-            $query = $owner->getFieldValue($field->handle);
-            $duplicateBlocks = false;
-        }
-
-        // Fetch the Matrix blocks
+        $elementsService = Craft::$app->getElements();
+        /** @var MatrixBlockQuery $query */
+        $query = $owner->getFieldValue($field->handle);
         /** @var MatrixBlock[] $blocks */
         $blocks = $query->getCachedResult() ?? (clone $query)->anyStatus()->all();
-
-        $elementsService = Craft::$app->getElements();
+        $blockIds = [];
+        $collapsedBlockIds = [];
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            $blockIds = [];
-            $collapsedBlockIds = [];
-
-            // Only propagate the blocks if the owner isn't being propagated
-            $propagate = !$owner->propagating;
-
             foreach ($blocks as $block) {
-                if ($duplicateBlocks) {
-                    $block = $elementsService->duplicateElement($block, [
-                        'ownerId' => $owner->id,
-                        'siteId' => $owner->siteId,
-                        'propagating' => false,
-                    ]);
-                } else {
-                    $block->ownerId = $owner->id;
-                    $block->propagating = $owner->propagating;
-                    $elementsService->saveElement($block, false, $propagate);
-                }
-
+                $block->ownerId = $owner->id;
+                $elementsService->saveElement($block, false);
                 $blockIds[] = $block->id;
 
                 // Tell the browser to collapse this block?
@@ -772,28 +746,12 @@ class Matrix extends Component
             }
 
             // Delete any blocks that shouldn't be there anymore
-            $deleteBlocks = MatrixBlock::find()
-                ->anyStatus()
-                ->ownerId($owner->id)
-                ->fieldId($field->id)
-                ->siteId($owner->siteId)
-                ->andWhere(['not', ['elements.id' => $blockIds]])
-                ->all();
-
-            foreach ($deleteBlocks as $deleteBlock) {
-                $elementsService->deleteElement($deleteBlock);
-            }
+            $this->_deleteOtherBlocks($field, $owner, $blockIds);
 
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
-        }
-
-        // Reset the field value if this is a new element
-        if ($owner->duplicateOf || !$query->ownerId) {
-            $owner->setFieldValue($field->handle, null);
         }
 
         // Tell the browser to collapse any new block IDs
@@ -804,47 +762,96 @@ class Matrix extends Component
                 Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId(' . $blockId . ');', View::POS_END);
             }
         }
+    }
 
-        // If the owner was just duplicated from another element, duplicate any other blocks it had for other sites
-        if ($owner->duplicateOf !== null && $checkOtherSites && $field->propagationMethod !== MatrixField::PROPAGATION_METHOD_ALL) {
-            // Find the owner's site IDs that *aren't* supported by this site's Matrix blocks
-            $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
-            $supportedSiteIds = $this->getSupportedSiteIdsForField($field, $owner);
-            $checkSiteIds = array_diff($ownerSiteIds, $supportedSiteIds);
+    /**
+     * Duplicates Matrix blocks from one owner element to another.
+     *
+     * @param MatrixField $field The Matrix field to duplicate blocks for
+     * @param ElementInterface $source The source element blocks should be duplicated from
+     * @param ElementInterface $target The target element blocks should be duplicated to
+     * @param bool $checkOtherSites Whether to duplicate blocks for the source element's other supported sites
+     * @throws \Throwable if reasons
+     */
+    public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false)
+    {
+        /** @var Element $source */
+        /** @var Element $target */
+        $elementsService = Craft::$app->getElements();
+        /** @var MatrixBlockQuery $query */
+        $query = $source->getFieldValue($field->handle);
+        /** @var MatrixBlock[] $blocks */
+        $blocks = $query->getCachedResult() ?? (clone $query)->anyStatus()->all();
+        $newBlockIds = [];
 
-            if (!empty($checkSiteIds)) {
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            foreach ($blocks as $block) {
+                /** @var MatrixBlock $newBlock */
+                $newBlock = $elementsService->duplicateElement($block, [
+                    'ownerId' => $target->id,
+                    'owner' => $target,
+                    'siteId' => $target->siteId,
+                    'propagating' => false,
+                ]);
+                $newBlockIds[] = $newBlock->id;
+            }
+
+            // Delete any blocks that shouldn't be there anymore
+            $this->_deleteOtherBlocks($field, $target, $newBlockIds);
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        // Duplicate blocks for other sites as well?
+        if ($checkOtherSites && $field->propagationMethod !== MatrixField::PROPAGATION_METHOD_ALL) {
+            // Find the target's site IDs that *aren't* supported by this site's Matrix blocks
+            $targetSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($target), 'siteId');
+            $fieldSiteIds = $this->getSupportedSiteIdsForField($field, $target);
+            $otherSiteIds = array_diff($targetSiteIds, $fieldSiteIds);
+
+            if (!empty($otherSiteIds)) {
                 // Get the original element and duplicated element for each of those sites
                 /** @var Element[] $otherSources */
-                $otherSources = $owner::find()
-                    ->id($owner->duplicateOf->id)
-                    ->siteId($checkSiteIds)
+                $otherSources = $target::find()
+                    ->drafts($source->getIsDraft())
+                    ->revisions($source->getIsRevision())
+                    ->id($source->id)
+                    ->siteId($otherSiteIds)
                     ->anyStatus()
                     ->all();
-                /** @var Element[] $otherOwners */
-                $otherOwners = $owner::find()
-                    ->id($owner->id)
-                    ->siteId($checkSiteIds)
+                /** @var Element[] $otherTargets */
+                $otherTargets = $target::find()
+                    ->drafts($target->getIsDraft())
+                    ->revisions($target->getIsRevision())
+                    ->id($target->id)
+                    ->siteId($otherSiteIds)
                     ->anyStatus()
                     ->indexBy('siteId')
                     ->all();
 
                 // Duplicate Matrix blocks, ensuring we don't process the same blocks more than once
-                $checkedSiteIds = [];
+                $handledSiteIds = [];
 
-                foreach ($otherSources as $source) {
-                    if (!isset($otherOwners[$source->siteId])) {
+                foreach ($otherSources as $otherSource) {
+                    // Make sure the target actually exists for this site
+                    if (!isset($otherTargets[$otherSource->siteId])) {
                         continue;
                     }
-                    if (isset($checkedSiteIds[$source->siteId])) {
+
+                    // Make sure we haven't already duplicated blocks for this site, via propagation from another site
+                    if (isset($handledSiteIds[$otherSource->siteId])) {
                         continue;
                     }
 
-                    $otherOwners[$source->siteId]->duplicateOf = $source;
-                    $this->saveField($field, $otherOwners[$source->siteId]->duplicateOf, false);
+                    $this->duplicateBlocks($field, $otherSource, $otherTargets[$otherSource->siteId]);
 
-                    // Make sure we don't handle any of the sites supported by this source again
-                    $sourceSupportedSiteIds = $this->getSupportedSiteIdsForField($field, $source);
-                    $checkedSiteIds = array_merge($checkedSiteIds, array_flip($sourceSupportedSiteIds));
+                    // Make sure we don't duplicate blocks for any of the sites that were just propagated to
+                    $sourceSupportedSiteIds = $this->getSupportedSiteIdsForField($field, $otherSource);
+                    $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
                 }
             }
         }
@@ -963,5 +970,30 @@ class Matrix extends Component
         ob_start();
         $migration->up();
         ob_end_clean();
+    }
+
+    /**
+     * Deletes blocks from an owner element
+     *
+     * @param MatrixField $field The Matrix field
+     * @param ElementInterface The owner element
+     * @param int[] $except Block IDs that should be left alone
+     */
+    private function _deleteOtherBlocks(MatrixField $field, ElementInterface $owner, array $except)
+    {
+        /** @var Element $owner */
+        $deleteBlocks = MatrixBlock::find()
+            ->anyStatus()
+            ->ownerId($owner->id)
+            ->fieldId($field->id)
+            ->siteId($owner->siteId)
+            ->andWhere(['not', ['elements.id' => $except]])
+            ->all();
+
+        $elementsService = Craft::$app->getElements();
+
+        foreach ($deleteBlocks as $deleteBlock) {
+            $elementsService->deleteElement($deleteBlock);
+        }
     }
 }

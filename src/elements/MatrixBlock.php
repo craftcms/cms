@@ -189,6 +189,16 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
+    public function attributes()
+    {
+        $names = parent::attributes();
+        $names[] = 'owner';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function extraFields()
     {
         $names = parent::extraFields();

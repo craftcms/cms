@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Matrix::duplicateBlocks()`.
+
+### Changed
+- `craft\services\Matrix::saveField()` no longer has a `$checkOtherSites` argument, and is no longer is responsible for duplicating blocks from other elements.
+
 ### Fixed
 - Fixed a bug where Edit Entry pages would show unnecessary page unload warnings in Chrome 75.
 - Fixed an error that could occur when editing entries on multi-site installs.

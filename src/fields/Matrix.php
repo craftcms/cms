@@ -855,7 +855,20 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function afterElementPropagate(ElementInterface $element, bool $isNew)
     {
-        Craft::$app->getMatrix()->saveField($this, $element, true);
+        $matrixService = Craft::$app->getMatrix();
+
+        /** @var Element $element */
+        if ($element->duplicateOf !== null) {
+            $matrixService->duplicateBlocks($this, $element->duplicateOf, $element, true);
+        } else {
+            $matrixService->saveField($this, $element);
+        }
+
+        // Reset the field value if this is a new element
+        if ($element->duplicateOf || $isNew) {
+            $element->setFieldValue($this->handle, null);
+        }
+
         parent::afterElementPropagate($element, $isNew);
     }
 
