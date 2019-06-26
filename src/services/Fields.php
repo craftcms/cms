@@ -1610,7 +1610,7 @@ class Fields extends Component
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
 
         // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.0', '>=')) {
             $query->addSelect(['fields.searchable']);
         }
@@ -1634,7 +1634,7 @@ class Fields extends Component
             ->from([Table::FIELDLAYOUTS]);
 
         // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.0', '>=')) {
             $query->where(['dateDeleted' => null]);
         }

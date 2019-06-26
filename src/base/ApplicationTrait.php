@@ -32,6 +32,7 @@ use craft\services\Categories;
 use craft\services\Fields;
 use craft\services\Globals;
 use craft\services\Matrix;
+use craft\services\ProjectConfig;
 use craft\services\Sections;
 use craft\services\Security;
 use craft\services\Sites;
@@ -114,6 +115,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read I18N $i18n The internationalization (i18n) component
  * @property-read Queue|QueueInterface $queue The job queue
  * @property-read Security $security The security component
+ * @property-read string $installedSchemaVersion The installed schema version
  * @property-read View $view The view component
  * @method AssetManager getAssetManager() Returns the asset manager component.
  * @method Connection getDb() Returns the database connection component.
@@ -257,6 +259,16 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         $this->_isInstalled = $value;
+    }
+
+    /**
+     * Returns the installed schema version.
+     *
+     * @return string
+     */
+    public function getInstalledSchemaVersion(): string
+    {
+        return $this->getProjectConfig()->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY) ?? $this->schemaVersion;
     }
 
     /**
