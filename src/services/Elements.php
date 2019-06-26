@@ -479,9 +479,14 @@ class Elements extends Component
         /** @var Element $element */
         $isNewElement = !$element->id;
 
-        // If this is a new element, give it a UID right away
-        if ($isNewElement && !$element->uid) {
-            $element->uid = StringHelper::UUID();
+        if ($isNewElement) {
+            // Give it a UID right away
+            if (!$element->uid) {
+                $element->uid = StringHelper::UUID();
+            }
+
+            // Let Matrix fields, etc., know they should be duplicating their values across all sites.
+            $element->propagateAll = true;
         }
 
         // Fire a 'beforeSaveElement' event

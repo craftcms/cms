@@ -11,6 +11,7 @@
 ### Fixed
 - Fixed a bug where Edit Entry pages would show unnecessary page unload warnings in Chrome 75.
 - Fixed an error that could occur when editing entries on multi-site installs.
+- Fixed a bug where Matrix blocks weren’t getting duplicated for other sites when creating a new element. ([#4449](https://github.com/craftcms/cms/issues/4449))
 
 ## 3.2.0-RC1 - 2019-06-25
 

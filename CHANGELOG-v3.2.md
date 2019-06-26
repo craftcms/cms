@@ -169,3 +169,4 @@
 
 ### Fixed
 - Fixed a bug where `craft\helpers\UrlHelper` methods could add duplicate query params on generated URLs.
+- Fixed a bug where Matrix blocks weren’t getting duplicated for other sites when creating a new element. ([#4449](https://github.com/craftcms/cms/issues/4449))

@@ -748,6 +748,48 @@ class Matrix extends Component
             // Delete any blocks that shouldn't be there anymore
             $this->_deleteOtherBlocks($field, $owner, $blockIds);
 
+            // Should we duplicate the blocks to other sites?
+            if ($owner->propagateAll && $field->propagationMethod !== MatrixField::PROPAGATION_METHOD_ALL) {
+                // Find the owner's site IDs that *aren't* supported by this site's Matrix blocks
+                $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
+                $fieldSiteIds = $this->getSupportedSiteIdsForField($field, $owner);
+                $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
+
+                if (!empty($otherSiteIds)) {
+                    // Get the original element and duplicated element for each of those sites
+                    /** @var Element[] $otherTargets */
+                    $otherTargets = $owner::find()
+                        ->drafts($owner->getIsDraft())
+                        ->revisions($owner->getIsRevision())
+                        ->id($owner->id)
+                        ->siteId($otherSiteIds)
+                        ->anyStatus()
+                        ->all();
+
+                    // Duplicate Matrix blocks, ensuring we don't process the same blocks more than once
+                    $handledSiteIds = [];
+
+                    $cachedQuery = (clone $query)->anyStatus();
+                    $cachedQuery->setCachedResult($blocks);
+                    $owner->setFieldValue($field->handle, $cachedQuery);
+
+                    foreach ($otherTargets as $otherTarget) {
+                        // Make sure we haven't already duplicated blocks for this site, via propagation from another site
+                        if (isset($handledSiteIds[$otherTarget->siteId])) {
+                            continue;
+                        }
+
+                        $this->duplicateBlocks($field, $owner, $otherTarget);
+
+                        // Make sure we don't duplicate blocks for any of the sites that were just propagated to
+                        $sourceSupportedSiteIds = $this->getSupportedSiteIdsForField($field, $otherTarget);
+                        $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
+                    }
+
+                    $owner->setFieldValue($field->handle, $query);
+                }
+            }
+
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
