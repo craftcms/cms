@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Edit Entry pages would show unnecessary page unload warnings in Chrome 75.
+
 ## 3.2.0-RC1 - 2019-06-25
 
 ### Added

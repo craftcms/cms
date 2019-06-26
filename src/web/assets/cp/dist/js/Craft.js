@@ -1,4 +1,4 @@
-/*!   - 2019-06-24 */
+/*!   - 2019-06-26 */
 (function($){
 
 /** global: Craft */
@@ -11192,11 +11192,7 @@ Craft.CP = Garnish.Base.extend(
 
             for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
                 $form = this.$confirmUnloadForms.eq(i);
-
-                if (!Craft.forceConfirmUnload) {
-                    $form.data('initialSerializedValue', $form.serialize());
-                }
-
+                $form.data('initialSerializedValue', $form.serialize());
                 this.addListener($form, 'submit', function() {
                     this.removeListener(Garnish.$win, 'beforeunload');
                 });
@@ -11205,13 +11201,7 @@ Craft.CP = Garnish.Base.extend(
             this.addListener(Garnish.$win, 'beforeunload', function(ev) {
                 var confirmUnload = false;
                 var $form, serialized;
-                if (
-                    Craft.forceConfirmUnload ||
-                    (
-                        typeof Craft.livePreview !== 'undefined' &&
-                        Craft.livePreview.inPreviewMode
-                    )
-                ) {
+                if (typeof Craft.livePreview !== 'undefined' && Craft.livePreview.inPreviewMode) {
                     confirmUnload = true;
                 } else {
                     for (var i = 0; i < this.$confirmUnloadForms.length; i++) {

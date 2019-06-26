@@ -259,7 +259,6 @@ JS;
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
             'fileKinds' => Assets::getFileKinds(),
-            'forceConfirmUnload' => Craft::$app->getSession()->hasFlash('error'),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
             'isMultiSite' => Craft::$app->getIsMultiSite(),
             'language' => Craft::$app->language,
