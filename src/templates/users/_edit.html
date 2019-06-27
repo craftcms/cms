@@ -33,15 +33,20 @@
 
 {% block contextMenu %}
 {% if craft.app.getIsMultiSite() %}
+    {% if user.getIsCurrent() %}
+        {% set urlFormat =
+            url("myaccount/{handle}/")
+        %}
+    {% else %}
         {% set urlFormat =
             url("users/"~ user.id ~"/{handle}/")
         %}
-
-        {% include "_elements/sitemenu" with {
-            siteIds: siteIds,
-            selectedSiteId: user.siteId,
-            urlFormat: urlFormat
-        } only %}
+    {% endif %}
+    {% include "_elements/sitemenu" with {
+        siteIds: siteIds,
+        selectedSiteId: user.siteId,
+        urlFormat: urlFormat
+    } only %}
 {% endif %}
 {% endblock %}
 
