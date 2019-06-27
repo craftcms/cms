@@ -69,6 +69,18 @@
                 }, include('users/_photo', {user: user}, with_context = false)) }}
             {% endif %}
 
+            {{ forms.textField({
+                    label: "Slug"|t('app'),
+                    siteId: user.siteId,
+                    id: 'slug',
+                    name: 'slug',
+                    autocorrect: false,
+                    autocapitalize: false,
+                    value: user.slug,
+                    placeholder: "Enter slug"|t('app'),
+                    errors: (user.getErrors('slug')|merge(user.getErrors('uri')))
+                }) }}
+
             <hr>
 
             {% if isNewUser %}
@@ -327,18 +339,6 @@
                             <p class="value">{{ user.invalidLoginCount }}</p>
                         </div>
                     {% endif %}
-
-                {{ forms.textField({
-                        label: "Slug"|t('app'),
-                        siteId: user.siteId,
-                        id: 'slug',
-                        name: 'slug',
-                        autocorrect: false,
-                        autocapitalize: false,
-                        value: user.slug,
-                        placeholder: "Enter slug"|t('app'),
-                        errors: (user.getErrors('slug')|merge(user.getErrors('uri')))
-                    }) }}
                 {% endif %}
             </form>
         {% endif %}
