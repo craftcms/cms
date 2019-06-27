@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Security
+- Fixed an XSS vulnerability.
+
 ## 3.1.32.1 - 2019-06-25
 
 ### Fixed

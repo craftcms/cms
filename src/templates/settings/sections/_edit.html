@@ -68,7 +68,7 @@
         {% endif %}
         {% set siteRows = siteRows|merge({
             (site.handle): {
-                heading: site.name|t('site'),
+                heading: site.name|t('site')|e,
                 enabled: include('_includes/forms/lightswitch', {
                     name: 'sites['~site.handle~'][enabled]',
                     on: brandNewSection or siteSettings,
