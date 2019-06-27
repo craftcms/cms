@@ -84,7 +84,7 @@ class DirectiveTest extends Unit
             'assets',
             [
                 'getAssetUrl' => function ($asset, $parameters, $generateNow) {
-                $transformed = is_array($parameters) ? implode('-', $parameters) : $parameters;
+                    $transformed = is_array($parameters) ? implode('-', $parameters) : $parameters;
                     return $transformed . ($generateNow ? ($asset->filename . '-generateNow') : ($asset->filename . 'generateLater'));
                 }
             ],
