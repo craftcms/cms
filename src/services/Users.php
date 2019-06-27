@@ -1119,11 +1119,11 @@ class Users extends Component
      */
     public function handleChangedUserSiteSettings(ConfigEvent $event)
     {
-        $siteSettings = $event->newValue;
+        $sitesData = $event->newValue;
         $db = Craft::$app->getDb();
 
         // Nothing set - we can do this easily.
-        if (!$siteSettings) {
+        if (!$sitesData) {
             $db->createCommand()
                 ->delete(Table::USERS_SITES)
                 ->execute();
@@ -1147,10 +1147,10 @@ class Users extends Component
 
         $sitesNowWithoutUrls = [];
         $sitesWithNewUriFormats = [];
-        $siteIdMap = Db::idsByUids(Table::SITES, array_keys($siteSettings));
+        $siteIdMap = Db::idsByUids(Table::SITES, array_keys($sitesData));
 
         // Figure out what needs to be done
-        foreach ($siteSettings as $siteUid => $siteSetting) {
+        foreach ($sitesData as $siteUid => $siteSetting) {
             $siteId = $siteIdMap[$siteUid];
 
             $siteSettingsRecord = UserSiteSettingsRecord::find()
@@ -1163,9 +1163,9 @@ class Users extends Component
                 $siteSettingsRecord->siteId = $siteId;
             }
 
-            if ($siteSettingsRecord->hasUrls = $siteSettings['hasUrls']) {
-                $siteSettingsRecord->uriFormat = $siteSettings['uriFormat'];
-                $siteSettingsRecord->template = $siteSettings['template'];
+            if ($siteSettingsRecord->hasUrls = $siteSetting['hasUrls']) {
+                $siteSettingsRecord->uriFormat = $siteSetting['uriFormat'];
+                $siteSettingsRecord->template = $siteSetting['template'];
             } else {
                 $siteSettingsRecord->uriFormat = null;
                 $siteSettingsRecord->template = null;
@@ -1173,12 +1173,12 @@ class Users extends Component
 
             if (!$siteSettingsRecord->getIsNewRecord()) {
                 // Did it used to have URLs, but not anymore?
-                if ($siteSettingsRecord->isAttributeChanged('hasUrls', false) && !$siteSettings['hasUrls']) {
+                if ($siteSettingsRecord->isAttributeChanged('hasUrls', false) && !$siteSetting['hasUrls']) {
                     $sitesNowWithoutUrls[] = $siteId;
                 }
 
                 // Does it have URLs, and has its URI format changed?
-                if ($siteSettings['hasUrls'] && $siteSettingsRecord->isAttributeChanged('uriFormat', false)) {
+                if ($siteSetting['hasUrls'] && $siteSettingsRecord->isAttributeChanged('uriFormat', false)) {
                     $sitesWithNewUriFormats[] = $siteId;
                 }
             }

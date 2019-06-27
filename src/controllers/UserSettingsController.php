@@ -144,7 +144,7 @@ class UserSettingsController extends Controller
             $siteSetting = $request->getParam('sites.'.$site->handle.'');
 
             $siteSettings[$site->uid] = [
-                'hasUrls' => !empty($siteSettings['uriFormat']),
+                'hasUrls' => !empty($siteSetting['uriFormat']),
                 'uriFormat' => $siteSetting['uriFormat'],
                 'template' => $siteSetting['template'],
             ];
