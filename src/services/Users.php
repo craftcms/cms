@@ -23,6 +23,8 @@ use craft\events\FieldEvent;
 use craft\events\UserAssignGroupEvent;
 use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
+use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -33,11 +35,13 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use craft\models\User_SiteSettings;
 use craft\records\User as UserRecord;
 use DateTime;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
+use craft\records\User_SiteSettings as UserSiteSettingsRecord;
 
 /**
  * The Users service provides APIs for managing users.
@@ -48,6 +52,11 @@ use yii\db\Exception as DbException;
  */
 class Users extends Component
 {
+    /**
+     * @var array
+     */
+    private $_siteSettings;
+
     // Constants
     // =========================================================================
 
@@ -139,7 +148,15 @@ class Users extends Component
      */
     const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
+    /**
+     * The project config key for user's field layouts
+     */
     const CONFIG_USERLAYOUT_KEY = 'users.fieldLayouts';
+
+    /**
+     * The project config key for user site settings
+     */
+    const CONFIG_USERSITES_KEY = 'users.siteSettings';
 
     // Public Methods
     // =========================================================================
@@ -158,6 +175,51 @@ class Users extends Component
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($userId, User::class);
+    }
+
+    /**
+     * Get all user site settings
+     *
+     * @return array
+     */
+    public function getAllSiteSettings() : array
+    {
+        if ($this->_siteSettings) {
+            return $this->_siteSettings;
+        }
+
+        $settings = (new Query())
+            ->from(Table::USERS_SITES)
+            ->all();
+
+        $this->_siteSettings = [];
+        foreach ($settings as $settingArray) {
+            $this->_siteSettings[] = new User_SiteSettings($settingArray);
+        }
+
+        return $this->_siteSettings;
+    }
+
+    /**
+     * Get's a site specific settings model.
+     *
+     * @param int $siteId
+     * @return User_SiteSettings|null
+     */
+    public function getSiteSettingsBySiteId(int $siteId)
+    {
+        return ArrayHelper::firstWhere($this->getAllSiteSettings(), 'siteId', $siteId);
+    }
+
+    /**
+     * Get's a site settings model by it's UID.
+     *
+     * @param int $uid
+     * @return User_SiteSettings|null
+     */
+    public function getSiteSettingsByUid(int $uid)
+    {
+        return ArrayHelper::firstWhere($this->getAllSiteSettings(), 'uid', $uid);
     }
 
     /**
@@ -1049,6 +1111,118 @@ class Users extends Component
         $layout->type = User::class;
         $layout->uid = key($data);
         $fieldsService->saveLayout($layout);
+    }
+
+    /**
+     * @return bool
+     * @throws DbException
+     */
+    public function handleChangedUserSiteSettings(ConfigEvent $event)
+    {
+        $siteSettings = $event->newValue;
+        $db = Craft::$app->getDb();
+
+        // Nothing set - we can do this easily.
+        if (!$siteSettings) {
+            $db->createCommand()
+                ->delete(Table::USERS_SITES)
+                ->execute();
+
+            // Get all of the user IDs
+            $userIds = User::find()
+                ->anyStatus()
+                ->ids();
+
+            Craft::$app->getDb()->createCommand()
+                ->update(
+                    Table::ELEMENTS_SITES,
+                    ['uri' => null],
+                    [
+                        'elementId' => $userIds
+                    ])
+                ->execute();
+
+            return true;
+        }
+
+        $sitesNowWithoutUrls = [];
+        $sitesWithNewUriFormats = [];
+        $siteIdMap = Db::idsByUids(Table::SITES, array_keys($siteSettings));
+
+        // Figure out what needs to be done
+        foreach ($siteSettings as $siteUid => $siteSetting) {
+            $siteId = $siteIdMap[$siteUid];
+
+            $siteSettingsRecord = UserSiteSettingsRecord::find()
+                ->where(['siteId' => $siteId])
+                ->one();
+
+            // Was this already selected?
+            if (!$siteSettingsRecord) {
+                $siteSettingsRecord = new UserSiteSettingsRecord();
+                $siteSettingsRecord->siteId = $siteId;
+            }
+
+            if ($siteSettingsRecord->hasUrls = $siteSettings['hasUrls']) {
+                $siteSettingsRecord->uriFormat = $siteSettings['uriFormat'];
+                $siteSettingsRecord->template = $siteSettings['template'];
+            } else {
+                $siteSettingsRecord->uriFormat = null;
+                $siteSettingsRecord->template = null;
+            }
+
+            if (!$siteSettingsRecord->getIsNewRecord()) {
+                // Did it used to have URLs, but not anymore?
+                if ($siteSettingsRecord->isAttributeChanged('hasUrls', false) && !$siteSettings['hasUrls']) {
+                    $sitesNowWithoutUrls[] = $siteId;
+                }
+
+                // Does it have URLs, and has its URI format changed?
+                if ($siteSettings['hasUrls'] && $siteSettingsRecord->isAttributeChanged('uriFormat', false)) {
+                    $sitesWithNewUriFormats[] = $siteId;
+                }
+            }
+
+            $siteSettingsRecord->save(false);
+        }
+
+        // Get all of the user IDs
+        $userIds = User::find()
+            ->anyStatus()
+            ->ids();
+
+        if ($sitesNowWithoutUrls) {
+            Craft::$app->getDb()->createCommand()
+                ->update(
+                    Table::ELEMENTS_SITES,
+                    ['uri' => null],
+                    [
+                        'elementId' => $userIds,
+                        'siteId' => $sitesNowWithoutUrls,
+                    ])
+                ->execute();
+        }
+
+        //
+        if ($sitesWithNewUriFormats) {
+            App::maxPowerCaptain();
+
+            foreach ($userIds as $userId) {
+                // Loop through each of the changed sites and update all of the categories’ slugs and
+                // URIs
+                foreach ($sitesWithNewUriFormats as $siteId) {
+                    $user = User::find()
+                        ->id($userId)
+                        ->siteId($siteId)
+                        ->anyStatus()
+                        ->one();
+
+                    if ($user) {
+                        Craft::$app->getElements()->updateElementSlugAndUri($user, false, false);
+                    }
+                }
+            }
+        }
     }
 
     /**

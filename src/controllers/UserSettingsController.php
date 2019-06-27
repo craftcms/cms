@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\models\UserGroup;
+use craft\services\Users;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -126,17 +127,32 @@ class UserSettingsController extends Controller
         $this->requirePostRequest();
         $projectConfig = Craft::$app->getProjectConfig();
         $settings = $projectConfig->get('users') ?? [];
+        $request = Craft::$app->getRequest();
 
-        $settings['photoVolumeUid'] = Craft::$app->getRequest()->getBodyParam('photoVolumeUid') ?: null;
-        $settings['photoSubpath'] = Craft::$app->getRequest()->getBodyParam('photoSubpath');
+        $settings['photoVolumeUid'] = $request->getBodyParam('photoVolumeUid') ?: null;
+        $settings['photoSubpath'] = $request->getBodyParam('photoSubpath');
 
         if (Craft::$app->getEdition() === Craft::Pro) {
-            $settings['requireEmailVerification'] = (bool)Craft::$app->getRequest()->getBodyParam('requireEmailVerification');
-            $settings['allowPublicRegistration'] = (bool)Craft::$app->getRequest()->getBodyParam('allowPublicRegistration');
-            $settings['defaultGroup'] = Craft::$app->getRequest()->getBodyParam('defaultGroup');
+            $settings['requireEmailVerification'] = (bool)$request->getBodyParam('requireEmailVerification');
+            $settings['allowPublicRegistration'] = (bool)$request->getBodyParam('allowPublicRegistration');
+            $settings['defaultGroup'] = $request->getBodyParam('defaultGroup');
         }
 
+        // Assemble the site settings
+        $siteSettings = [];
+        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            $siteSetting = $request->getParam('sites.'.$site->handle.'');
+
+            $siteSettings[$site->uid] = [
+                'hasUrls' => !empty($siteSettings['uriFormat']),
+                'uriFormat' => $siteSetting['uriFormat'],
+                'template' => $siteSetting['template'],
+            ];
+        }
+
+        // Project config - do yo thang
         $projectConfig->set('users', $settings);
+        $projectConfig->set(Users::CONFIG_USERSITES_KEY, $siteSettings);
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
         return $this->redirectToPostedUrl();

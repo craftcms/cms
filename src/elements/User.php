@@ -28,6 +28,7 @@ use craft\i18n\Locale;
 use craft\models\UserGroup;
 use craft\records\Session as SessionRecord;
 use craft\records\User as UserRecord;
+use craft\services\Users;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
@@ -35,6 +36,7 @@ use craft\validators\UserPasswordValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
 use yii\validators\Validator;
@@ -140,6 +142,64 @@ class User extends Element implements IdentityInterface
     {
         return true;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function isLocalized(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function hasUris(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @return mixed|string|null
+     */
+    public function getUriFormat()
+    {
+        $uriFormat = Craft::$app->getProjectConfig()->get('users.uriFormat');
+
+        // Default to no Uri on this user.
+        if (!$uriFormat) {
+            return null;
+        }
+
+        return $uriFormat;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function route()
+    {
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            return null;
+        }
+
+        $templatePath = Craft::$app->getProjectConfig()->get('users.templatePath');
+
+        // Default to no routing on this user
+        if (!$templatePath) {
+            return null;
+        }
+
+        return [
+            'templates/render', [
+                'template' => $templatePath,
+                'variables' => [
+                    'user' => $this,
+                ]
+            ]
+        ];
+    }
+
 
     /**
      * @inheritdoc

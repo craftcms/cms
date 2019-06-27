@@ -73,6 +73,7 @@ abstract class Table
     const USERPERMISSIONS_USERS = '{{%userpermissions_users}}';
     const USERPREFERENCES = '{{%userpreferences}}';
     const USERS = '{{%users}}';
+    const USERS_SITES = '{{%users_sites}}';
     const VOLUMEFOLDERS = '{{%volumefolders}}';
     const VOLUMES = '{{%volumes}}';
     const WIDGETS = '{{%widgets}}';

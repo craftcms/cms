@@ -69,7 +69,56 @@
         {% endif %}
 
         {% if CraftEdition == CraftPro %}
-            {{ forms.checkboxField({
+
+        {% set siteRows = [] %}
+
+        {% for site in craft.app.sites.getAllSites() %}
+            {% set siteSettings = craft.app.users.getSiteSettingsBySiteId(site.id) ?? null %}
+            {% set siteRows = siteRows|merge({
+            (site.handle): {
+                heading: site.name|t('site'),
+                uriFormat: {
+                    value: siteSettings.uriFormat ?? null,
+                    hasErrors: siteSettings.hasErrors('uriFormat') ?? false
+                },
+                template: {
+                    value: siteSettings.template ?? null,
+                    hasErrors: siteSettings.hasErrors('template') ?? false,
+                }
+            }
+            }) %}
+        {% endfor %}
+
+        {{ forms.editableTableField({
+            label: "Site Settings"|t('app'),
+            instructions: "Configure the category group’s site-specific settings."|t('app'),
+            id: 'sites',
+            name: 'sites',
+            cols: {
+                heading: {
+                type: 'heading',
+                heading: "Site"|t('app'),
+                class: 'thin'
+            },
+            uriFormat: {
+                type: 'singleline',
+                    heading: "User URI Format"|t('app'),
+                    info: "What user URIs should look like for the site."|t('app'),
+                    placeholder: "Leave blank if users don’t have URLs"|t('app'),
+                    code: true
+                },
+                template: {
+                    type: 'template',
+                    heading: "Template"|t('app'),
+                    info: "Which template should be loaded when a users URL is requested."|t('app'),
+                    code: true
+                },
+            },
+            rows: siteRows,
+            staticRows: true,
+        }) }}
+
+        {{ forms.checkboxField({
                 label: "Verify email addresses?"|t('app'),
                 instructions: "Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)"|t('app'),
                 name: 'requireEmailVerification',

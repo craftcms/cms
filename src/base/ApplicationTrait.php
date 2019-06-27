@@ -1448,6 +1448,12 @@ trait ApplicationTrait
             ->onRemove(Users::CONFIG_USERLAYOUT_KEY, [$usersService, 'handleChangedUserFieldLayout']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$usersService, 'pruneDeletedField']);
 
+        // User's site settings
+        $projectConfigService
+            ->onAdd(Users::CONFIG_USERSITES_KEY, [$usersService, 'handleChangedUserSiteSettings'])
+            ->onUpdate(Users::CONFIG_USERSITES_KEY, [$usersService, 'handleChangedUserSiteSettings'])
+            ->onRemove(Users::CONFIG_USERSITES_KEY, [$usersService, 'handleChangedUserSiteSettings']);
+
         // Global sets
         $globalsService = $this->getGlobals();
         $projectConfigService
