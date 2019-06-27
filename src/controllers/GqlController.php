@@ -8,26 +8,11 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\elements\GlobalSet;
 use craft\errors\GqlException;
-use craft\errors\MissingComponentException;
-use craft\helpers\App;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\MailerHelper;
-use craft\helpers\UrlHelper;
-use craft\mail\Mailer;
-use craft\mail\transportadapters\BaseTransportAdapter;
-use craft\mail\transportadapters\Sendmail;
-use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\GqlToken;
-use craft\models\MailSettings;
-use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
-use craft\web\twig\TemplateLoaderException;
-use DateTime;
 use GraphQL\GraphQL;
-use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
