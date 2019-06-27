@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.2.0-RC2 - 2019-06-26
 
 ### Added
 - Added `craft\base\ApplicationTrait::getInstalledSchemaVersion()`.
