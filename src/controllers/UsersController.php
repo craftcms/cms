@@ -989,6 +989,7 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         $userId = $request->getBodyParam('userId');
+        $siteId = $request->getParam('siteId');
         $isNewUser = !$userId;
         $thisIsPublicRegistration = false;
 
@@ -997,9 +998,12 @@ class UsersController extends Controller
             $user = User::find()
                 ->id($userId)
                 ->anyStatus()
-                ->addSelect(['users.password', 'users.passwordResetRequired'])
-                ->one();
+                ->addSelect(['users.password', 'users.passwordResetRequired']);
+            if ($siteId) {
+                $user->siteId($siteId);
+            }
 
+            $user = $user->one();
             if (!$user) {
                 throw new NotFoundHttpException('User not found');
             }
